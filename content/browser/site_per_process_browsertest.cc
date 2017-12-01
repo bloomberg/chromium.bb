@@ -19,6 +19,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -80,6 +81,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_overscroll_observer.h"
 #include "ipc/constants.mojom.h"
@@ -622,6 +624,25 @@ class TestInterstitialDelegate : public InterstitialPageDelegate {
   std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
 };
 
+#if defined(USE_AURA) || defined(OS_ANDROID)
+bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
+  if (!value)
+    return false;
+  base::DictionaryValue* root;
+  if (!value->GetAsDictionary(&root))
+    return false;
+  double x, y;
+  if (!root->GetDouble("x", &x))
+    return false;
+  if (!root->GetDouble("y", &y))
+    return false;
+  point->set_x(x);
+  point->set_y(y);
+  return true;
+}
+#endif  // defined(USE_AURA) || defined (OS_ANDROID)
+
 }  // namespace
 
 //
@@ -1114,6 +1135,159 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // frame. If the test fails, then the test times out.
   gesture_fling_start_ack_observer.Wait();
 }
+
+// Restrict to Aura to we can use routable MouseWheel event via
+// RenderWidgetHostViewAura::OnScrollEvent().
+#if defined(USE_AURA)
+class SitePerProcessInternalsBrowserTest : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessInternalsBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+    // Needed to guarantee the scrollable div we're testing with is not given
+    // its own compositing layer.
+    command_line->AppendSwitch(switches::kDisablePreferCompositingToLCDText);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessInternalsBrowserTest,
+                       ScrollNestedLocalNonFastScrollableDiv) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* parent_iframe_node = root->child_at(0);
+
+  GURL site_url(embedded_test_server()->GetURL(
+      "b.com", "/tall_page_with_local_iframe.html"));
+  NavigateFrameToURL(parent_iframe_node, site_url);
+
+  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
+  WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  const char* get_element_location_script_fmt =
+      "var rect = "
+      "document.getElementById('%s').getBoundingClientRect();\n"
+      "var point = {\n"
+      "  x: rect.left,\n"
+      "  y: rect.top\n"
+      "};\n"
+      "window.domAutomationController.send(JSON.stringify(point));";
+
+  // Since the nested local b-frame shares the RenderWidgetHostViewChildFrame
+  // with the parent frame, we need to query element offsets in both documents
+  // before converting to root space coordinates for the wheel event.
+  std::string str;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      nested_iframe_node->current_frame_host(),
+      base::StringPrintf(get_element_location_script_fmt, "scrollable_div"),
+      &str));
+  gfx::PointF nested_point_f;
+  ConvertJSONToPoint(str, &nested_point_f);
+
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      parent_iframe_node->current_frame_host(),
+      base::StringPrintf(get_element_location_script_fmt, "nested_frame"),
+      &str));
+  gfx::PointF parent_offset_f;
+  ConvertJSONToPoint(str, &parent_offset_f);
+
+  // Compute location for wheel event.
+  gfx::PointF point_f(parent_offset_f.x() + nested_point_f.x() + 5.f,
+                      parent_offset_f.y() + nested_point_f.y() + 5.f);
+
+  RenderWidgetHostViewChildFrame* rwhv_nested =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          nested_iframe_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+  point_f = rwhv_nested->TransformPointToRootCoordSpaceF(point_f);
+
+  RenderWidgetHostViewAura* rwhv_root = static_cast<RenderWidgetHostViewAura*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  gfx::PointF nested_in_parent;
+  rwhv_root->TransformPointToCoordSpaceForView(
+      point_f,
+      parent_iframe_node->current_frame_host()
+          ->GetRenderWidgetHost()
+          ->GetView(),
+      &nested_in_parent);
+
+  // Get original scroll position.
+  int div_scroll_top_start;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      nested_iframe_node->current_frame_host(),
+      "window.domAutomationController.send("
+      "document.getElementById('scrollable_div').scrollTop);",
+      &div_scroll_top_start));
+  EXPECT_EQ(0, div_scroll_top_start);
+
+  // Wait until renderer's compositor thread is synced. Otherwise the event
+  // handler won't be installed when the event arrives.
+  MainThreadFrameObserver observer(rwhv_root->GetRenderWidgetHost());
+  observer.Wait();
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        // tiny_timeout() is too small to run without flakes, but
+        // action_timeout() is 100 times bigger, which is overkill. We use a
+        // custom delay here to achieve a balance.
+        base::TimeDelta::FromMilliseconds(1000));
+    run_loop.Run();
+  }
+
+  // Send a wheel to scroll the div.
+  gfx::Point location(point_f.x(), point_f.y());
+  ui::ScrollEvent scroll_event(ui::ET_SCROLL, location, ui::EventTimeForNow(),
+                               0, 0, -ui::MouseWheelEvent::kWheelDelta, 0,
+                               ui::MouseWheelEvent::kWheelDelta,
+                               2);  // This must be '2' or it gets silently
+                                    // dropped.
+  rwhv_root->OnScrollEvent(&scroll_event);
+
+  InputEventAckWaiter ack_observer(
+      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollUpdate);
+  ack_observer.Wait();
+
+  // Check compositor layers.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      nested_iframe_node->current_frame_host(),
+      "window.domAutomationController.send("
+      "window.internals.layerTreeAsText(document));",
+      &str));
+  // We expect the nested OOPIF to not have any compositor layers.
+  EXPECT_EQ(std::string(), str);
+
+  // Verify the div scrolled.
+  int div_scroll_top = div_scroll_top_start;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      nested_iframe_node->current_frame_host(),
+      "window.domAutomationController.send("
+      "document.getElementById('scrollable_div').scrollTop);",
+      &div_scroll_top));
+  EXPECT_NE(div_scroll_top_start, div_scroll_top);
+}
+#endif  // defined(USE_AURA)
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
@@ -11963,27 +12137,6 @@ class TouchSelectionControllerClientTestWrapper
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerClientTestWrapper);
 };
-
-namespace {
-
-bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
-  if (!value)
-    return false;
-  base::DictionaryValue* root;
-  if (!value->GetAsDictionary(&root))
-    return false;
-  double x, y;
-  if (!root->GetDouble("x", &x))
-    return false;
-  if (!root->GetDouble("y", &y))
-    return false;
-  point->set_x(x);
-  point->set_y(y);
-  return true;
-}
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
                        BasicSelectionIsolatedIframe) {

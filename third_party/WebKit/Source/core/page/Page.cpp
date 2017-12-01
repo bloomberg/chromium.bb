@@ -245,7 +245,7 @@ DOMRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
   if (ScrollingCoordinator* scrolling_coordinator =
           this->GetScrollingCoordinator()) {
     // Hits in compositing/iframes/iframe-composited-scrolling.html
-    scrolling_coordinator->UpdateAfterCompositingChangeIfNeeded();
+    scrolling_coordinator->UpdateAfterCompositingChangeIfNeeded(frame->View());
   }
 
   GraphicsLayer* layer =

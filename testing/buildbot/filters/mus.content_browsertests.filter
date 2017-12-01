@@ -57,6 +57,7 @@
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.SurfaceHitTestTest
 -SitePerProcessHighDPIBrowserTest.SurfaceHitTestTest
+-SitePerProcessInternalsBrowserTest.ScrollNestedLocalNonFastScrollableDiv
 
 # TODO: reenable, uses RendererFrameNumber(), http://crbug.com/775030.
 -SitePerProcessBrowserTest.CompositorFrameSwapped

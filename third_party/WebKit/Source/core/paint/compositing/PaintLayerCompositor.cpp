@@ -479,8 +479,10 @@ void PaintLayerCompositor::UpdateIfNeeded(
     if (layers_changed) {
       update_type = std::max(update_type, kCompositingUpdateRebuildTree);
       if (ScrollingCoordinator* scrolling_coordinator =
-              GetScrollingCoordinator())
-        scrolling_coordinator->NotifyGeometryChanged();
+              GetScrollingCoordinator()) {
+        LocalFrameView* frame_view = layout_view_.GetFrameView();
+        scrolling_coordinator->NotifyGeometryChanged(frame_view);
+      }
     }
   }
 

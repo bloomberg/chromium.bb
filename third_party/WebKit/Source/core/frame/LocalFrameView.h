@@ -948,6 +948,24 @@ class CORE_EXPORT LocalFrameView final
       ForceThrottlingInvalidationBehavior = kDontForceThrottlingInvalidation,
       NotifyChildrenBehavior = kNotifyChildren);
 
+  // The following three functions may change when https://crbug.com/680606 is
+  // resolved.
+
+  // Indicates that the local root's subtree needs to have its non-fast
+  // scrollable regions updated by ScrollingCoordinator. Should only ever be
+  // called on the local root's view.
+  bool ScrollGestureRegionIsDirty() const;
+
+  // Updates a flag on the local root's LocalFrameView to mark the local
+  // subtree as needing to update its regions with ScrollingCoordinator.
+  // Only ScrollingCoordinator should ever call this function with |dirty| set
+  // to |false|.
+  void SetScrollGestureRegionIsDirty(bool dirty);
+
+  // Should be called whenever this LocalFrameView adds or removes a
+  // scrollable area, or gains/loses a composited layer.
+  void ScrollableAreasDidChange();
+
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);
@@ -1299,6 +1317,7 @@ class CORE_EXPORT LocalFrameView final
   bool forcing_layout_parent_view_;
   bool needs_intersection_observation_;
   bool needs_forced_compositing_update_;
+  bool scroll_gesture_region_is_dirty_;
 
   Member<ElementVisibilityObserver> visibility_observer_;
 
