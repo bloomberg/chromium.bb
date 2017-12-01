@@ -2759,11 +2759,12 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/params/ParameterAnnotations.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterProvider.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
-      "test/android/javatests/src/org/chromium/base/test/util/AnnotationProcessor.java",
+      "test/android/javatests/src/org/chromium/base/test/util/AnnotationRule.java",
       "test/android/javatests/src/org/chromium/base/test/util/CallbackHelper.java",
       "test/android/javatests/src/org/chromium/base/test/util/CommandLineFlags.java",
       "test/android/javatests/src/org/chromium/base/test/util/DisableIf.java",
       "test/android/javatests/src/org/chromium/base/test/util/DisableIfSkipCheck.java",
+      "test/android/javatests/src/org/chromium/base/test/util/AnnotationProcessingUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/DisabledTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/EnormousTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/Feature.java",
@@ -2822,6 +2823,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/process_launcher/ChildProcessConnectionTest.java",
       "test/android/junit/src/org/chromium/base/test/SetUpStatementTest.java",
       "test/android/junit/src/org/chromium/base/test/TestListInstrumentationRunListenerTest.java",
+      "test/android/junit/src/org/chromium/base/test/util/AnnotationProcessingUtilsTest.java",
       "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
       "test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java",
@@ -2836,6 +2838,7 @@ if (is_android) {
       ":base_java_process_launcher_test_support",
       ":base_java_test_support",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/hamcrest:hamcrest_java",
     ]
     srcjar_deps = [ ":base_build_config_gen" ]
   }

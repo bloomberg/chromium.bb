@@ -7,13 +7,11 @@ package org.chromium.chrome.test.util.browser;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import org.junit.rules.ExternalResource;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.chrome.browser.ChromeFeatureList;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
@@ -151,23 +149,14 @@ public class Features {
      * to enable, or get rid of exceptions when the production code tries to check for enabled
      * features.
      */
-    private static abstract class Processor extends ExternalResource {
-        private Description mDescription;
-
-        @Override
-        public Statement apply(Statement base, Description description) {
-            mDescription = description;
-            return super.apply(base, description);
+    private static abstract class Processor extends AnnotationRule {
+        public Processor() {
+            super(EnableFeatures.class, DisableFeatures.class);
         }
 
         @Override
         protected void before() throws Throwable {
-            collectDisabledFeatures(
-                    mDescription.getTestClass().getAnnotation(DisableFeatures.class));
-            collectEnabledFeatures(mDescription.getTestClass().getAnnotation(EnableFeatures.class));
-            collectDisabledFeatures(mDescription.getAnnotation(DisableFeatures.class));
-            collectEnabledFeatures(mDescription.getAnnotation(EnableFeatures.class));
-
+            collectFeatures();
             applyFeatures();
         }
 
@@ -178,12 +167,14 @@ public class Features {
 
         abstract protected void applyFeatures();
 
-        private void collectEnabledFeatures(@Nullable EnableFeatures annotation) {
-            if (annotation != null) getInstance().enable(annotation.value());
-        }
-
-        private void collectDisabledFeatures(@Nullable DisableFeatures annotation) {
-            if (annotation != null) getInstance().disable(annotation.value());
+        private void collectFeatures() {
+            for (Annotation annotation : getAnnotations()) {
+                if (annotation instanceof EnableFeatures) {
+                    getInstance().enable(((EnableFeatures) annotation).value());
+                } else if (annotation instanceof DisableFeatures) {
+                    getInstance().disable(((DisableFeatures) annotation).value());
+                }
+            }
         }
     }
 }

@@ -11,13 +11,12 @@ import android.os.StrictMode;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.test.util.AnnotationProcessor;
+import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -29,7 +28,6 @@ import java.lang.annotation.Target;
  * @see ChromeHome.Processor
  * @see FeatureUtilities#isChromeHomeEnabled()
  */
-@Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface ChromeHome {
@@ -43,7 +41,7 @@ public @interface ChromeHome {
      * used by explicitly calling methods ({@link #setPrefs(boolean)} and {@link #clearTestState()})
      * or by using the {@link ChromeHome} annotation on tests.
      */
-    class Processor extends AnnotationProcessor<ChromeHome> {
+    class Processor extends AnnotationRule {
         private Boolean mOldState;
 
         public Processor() {
@@ -52,7 +50,7 @@ public @interface ChromeHome {
 
         @Override
         protected void before() throws Throwable {
-            boolean enabled = getRequestedState();
+            boolean enabled = getAnnotation(ChromeHome.class).value();
             if (enabled) {
                 Features.getInstance().enable(ChromeFeatureList.CHROME_HOME);
             } else {
@@ -107,13 +105,6 @@ public @interface ChromeHome {
             }
 
             commandLine.appendSwitch(ENABLE_FLAGS);
-        }
-
-        private boolean getRequestedState() {
-            if (getTestAnnotation() != null) return getTestAnnotation().value();
-            if (getClassAnnotation() != null) return getClassAnnotation().value();
-
-            throw new IllegalStateException("Rule called with no annotation");
         }
     }
 }
