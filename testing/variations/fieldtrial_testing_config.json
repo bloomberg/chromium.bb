@@ -3257,6 +3257,37 @@
             ]
         }
     ],
+    "SavePreviousDocumentResources": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "until-dcl",
+                    "params": {
+                        "until": "onDOMContentLoaded"
+                    },
+                    "enable_features": [
+                        "SavePreviousDocumentResources"
+                    ]
+                },
+                {
+                    "name": "until-onload",
+                    "params": {
+                        "until": "onload"
+                    },
+                    "enable_features": [
+                        "SavePreviousDocumentResources"
+                    ]
+                }
+            ]
+        }
+    ],
     "SearchEnginePromo": [
         {
             "platforms": [
