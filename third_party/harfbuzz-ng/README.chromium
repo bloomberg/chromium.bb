@@ -24,3 +24,7 @@ Locally added #undef PAGE_SIZE to hb-set-private.hh to avoid a collision with
 
 Temporarily patched to original CoreText default font size 36.f that was used
 before to ease Blink reabaselining.
+
+Locally patching hb_set implementation back to the pre 1.6.1 implemention to see
+whether this addresses reports of performance regressions in issues 781794,
+782220.
