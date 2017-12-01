@@ -114,9 +114,10 @@ namespace {
 void CleanUpQueue(MainThreadTaskQueue* queue) {
   if (!queue)
     return;
-  queue->ShutdownTaskQueue();
+  queue->DetachFromRendererScheduler();
   queue->SetFrameScheduler(nullptr);
   queue->SetBlameContext(nullptr);
+  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
 }
 
 }  // namespace
