@@ -69,11 +69,7 @@ struct NetworkContextParams {
   // proxy lookups will be deferred until a configuration is received via
   // |proxy_config_client_request|.
   //
-  // If both are null, the NetworkContext will attempt to automatically
-  // detect the system proxy configuration (Which defaults to no proxy on
-  // Linux and Android).
-  //
-  // TODO(mmenke): Use direct connections by default instead.
+  // If both are null, the NetworkContext will not use a proxy.
   ProxyConfig? initial_proxy_config;
   ProxyConfigClient&? proxy_config_client_request;
 

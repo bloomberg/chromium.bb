@@ -779,6 +779,8 @@ split_static_library("browser") {
     "net/profile_network_context_service.h",
     "net/profile_network_context_service_factory.cc",
     "net/profile_network_context_service_factory.h",
+    "net/proxy_config_monitor.cc",
+    "net/proxy_config_monitor.h",
     "net/proxy_service_factory.cc",
     "net/proxy_service_factory.h",
     "net/quota_policy_channel_id_store.cc",

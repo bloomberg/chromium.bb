@@ -53,7 +53,6 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/predictor.h"
-#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -108,7 +107,6 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/ssl_config/ssl_config_service_manager.h"
@@ -749,9 +747,6 @@ ProfileImpl::~ProfileImpl() {
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
 
-  if (pref_proxy_config_tracker_)
-    pref_proxy_config_tracker_->DetachFromPrefService();
-
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
     SetExitType(EXIT_NORMAL);
@@ -1252,12 +1247,6 @@ void ProfileImpl::InitChromeOSPreferences() {
 
 #endif  // defined(OS_CHROMEOS)
 
-PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_)
-    pref_proxy_config_tracker_.reset(CreateProxyConfigTracker());
-  return pref_proxy_config_tracker_.get();
-}
-
 chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
   return predictor_;
 }
@@ -1350,17 +1339,6 @@ void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
     *cache_path = path.Append(cache_path->BaseName());
 
   *max_size = prefs_->GetInteger(prefs::kMediaCacheSize);
-}
-
-PrefProxyConfigTracker* ProfileImpl::CreateProxyConfigTracker() {
-#if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(this)) {
-    return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
-        g_browser_process->local_state());
-  }
-#endif  // defined(OS_CHROMEOS)
-  return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
-      GetPrefs(), g_browser_process->local_state());
 }
 
 std::unique_ptr<domain_reliability::DomainReliabilityMonitor>

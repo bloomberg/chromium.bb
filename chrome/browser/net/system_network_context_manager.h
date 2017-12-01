@@ -8,7 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/net/proxy_config_monitor.h"
 #include "content/public/common/network_service.mojom.h"
+
+class ProxyConfigMonitor;
 
 // Responsible for creating and managing access to the system NetworkContext.
 // Lives on the UI thread. The NetworkContext this owns is intended for requests
@@ -62,7 +65,16 @@ class SystemNetworkContextManager {
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();
 
+  // Flushes all pending proxy configuration changes.
+  void FlushProxyConfigMonitorForTesting();
+
  private:
+  // Creates parameters for the NetworkContext. May only be called once, since
+  // it initializes some class members.
+  content::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
+
+  ProxyConfigMonitor proxy_config_monitor_;
+
   // NetworkContext using the network service, if the network service is
   // enabled. nullptr, otherwise.
   content::mojom::NetworkContextPtr network_service_network_context_;

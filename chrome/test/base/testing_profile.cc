@@ -35,7 +35,6 @@
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -78,7 +77,6 @@
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/testing_pref_store.h"
-#include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -537,9 +535,6 @@ TestingProfile::~TestingProfile() {
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
 
-  if (pref_proxy_config_tracker_.get())
-    pref_proxy_config_tracker_->DetachFromPrefService();
-
   // Shutdown storage partitions before we post a task to delete
   // the resource context.
   ShutdownStoragePartitions();
@@ -886,16 +881,6 @@ base::FilePath TestingProfile::last_selected_directory() {
 
 void TestingProfile::set_last_selected_directory(const base::FilePath& path) {
   last_selected_directory_ = path;
-}
-
-PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_.get()) {
-    // TestingProfile is used in unit tests, where local state is not available.
-    pref_proxy_config_tracker_.reset(
-        ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(GetPrefs(),
-                                                                   NULL));
-  }
-  return pref_proxy_config_tracker_.get();
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {

@@ -51,11 +51,14 @@ class PtrSet {
 
   bool empty() const { return ptrs_.empty(); }
 
+  // Calls FlushForTesting on all Ptrs sequentially. Since each call is a
+  // blocking operation, may be very slow as the number of pointers increases.
   void FlushForTesting() {
     for (const auto& it : ptrs_) {
       if (it)
         it->FlushForTesting();
     }
+    ClearNullPtrs();
   }
 
  private:

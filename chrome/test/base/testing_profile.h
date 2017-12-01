@@ -328,8 +328,6 @@ class TestingProfile : public Profile {
   void InitChromeOSPreferences() override {}
 #endif  // defined(OS_CHROMEOS)
 
-  PrefProxyConfigTracker* GetProxyConfigTracker() override;
-
   // Schedules a task on the history backend and runs a nested loop until the
   // task is processed.  This has the effect of blocking the caller until the
   // history service processes all pending requests.
@@ -406,9 +404,6 @@ class TestingProfile : public Profile {
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 #endif
-
-  // The proxy prefs tracker.
-  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   // The path to this profile. This will be valid in either of the two above
   // cases.

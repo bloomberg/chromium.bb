@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -19,6 +21,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/prefs/pref_service.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -34,6 +39,7 @@
 #include "content/public/test/test_url_loader_client.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/base/filename_util.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -132,6 +138,49 @@ class NetworkContextConfigurationBrowserTest
     }
     NOTREACHED();
     return StorageType::kNone;
+  }
+
+  // Sets the proxy preference on a PrefService based on the NetworkContextType,
+  // and waits for it to be applied.
+  void SetProxyPref(const net::HostPortPair& host_port_pair) {
+    // Get the correct PrefService.
+    PrefService* pref_service = nullptr;
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+        pref_service = g_browser_process->local_state();
+        break;
+      case NetworkContextType::kProfile:
+        pref_service = browser()->profile()->GetPrefs();
+        break;
+      case NetworkContextType::kIncognitoProfile:
+        // Incognito uses the non-incognito prefs.
+        pref_service =
+            browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+        break;
+    }
+
+    pref_service->Set(proxy_config::prefs::kProxy,
+                      *ProxyConfigDictionary::CreateFixedServers(
+                          host_port_pair.ToString(), std::string()));
+
+    // Wait for the new ProxyConfig to be passed over the pipe. Needed because
+    // Mojo doesn't guarantee ordering of events on different Mojo pipes, and
+    // requests are sent on a separate pipe from ProxyConfigs.
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+        g_browser_process->system_network_context_manager()
+            ->FlushProxyConfigMonitorForTesting();
+        break;
+      case NetworkContextType::kProfile:
+        ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
+            ->FlushProxyConfigMonitorForTesting();
+        break;
+      case NetworkContextType::kIncognitoProfile:
+        ProfileNetworkContextServiceFactory::GetForContext(
+            browser()->profile()->GetOffTheRecordProfile())
+            ->FlushProxyConfigMonitorForTesting();
+        break;
+    }
   }
 
  private:
@@ -330,6 +379,28 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
+  SetProxyPref(embedded_test_server()->host_port_pair());
+
+  std::unique_ptr<content::ResourceRequest> request =
+      std::make_unique<content::ResourceRequest>();
+  // This URL should be directed to the test server because of the proxy.
+  request->url = GURL("http://jabberwocky.com:1872/echo");
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  EXPECT_EQ(net::OK, simple_loader->NetError());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+}
+
 class NetworkContextConfigurationFixedPortBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
@@ -342,8 +413,6 @@ class NetworkContextConfigurationFixedPortBrowserTest
         base::StringPrintf("%u", embedded_test_server()->port()));
     LOG(WARNING) << base::StringPrintf("%u", embedded_test_server()->port());
   }
-
- private:
 };
 
 // Test that the command line switch makes it to the network service and is
@@ -356,6 +425,42 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFixedPortBrowserTest,
   // command line switch should make it result in the request being directed to
   // the test server anyways.
   request->url = GURL("http://127.0.0.1/echo");
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader =
+      content::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  EXPECT_EQ(net::OK, simple_loader->NetError());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+}
+
+class NetworkContextConfigurationProxyOnStartBrowserTest
+    : public NetworkContextConfigurationBrowserTest {
+ public:
+  NetworkContextConfigurationProxyOnStartBrowserTest() {}
+  ~NetworkContextConfigurationProxyOnStartBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kProxyServer,
+        embedded_test_server()->host_port_pair().ToString());
+  }
+};
+
+// Test that when there's a proxy configuration at startup, the initial requests
+// use that configuration.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
+                       TestInitialProxyConfig) {
+  std::unique_ptr<content::ResourceRequest> request =
+      std::make_unique<content::ResourceRequest>();
+  // This URL should be directed to the test server because of the proxy.
+  request->url = GURL("http://jabberwocky.com:1872/echo");
+
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<content::SimpleURLLoader> simple_loader =
       content::SimpleURLLoader::Create(std::move(request),
@@ -398,5 +503,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFixedPortBrowserTest,
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationFixedPortBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationProxyOnStartBrowserTest);
 
 }  // namespace
