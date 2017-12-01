@@ -62,8 +62,8 @@ class V8ScriptRunnerTest : public ::testing::Test {
     return !V8ScriptRunner::CompileScript(
                 script_state, V8String(script_state->GetIsolate(), Code()),
                 Filename(), String(), WTF::TextPosition(),
-                ScriptSourceLocationType::kExternalFile, resource_.Get(),
-                nullptr, resource_.Get() ? resource_->CacheHandler() : nullptr,
+                ScriptSourceLocationType::kExternalFile, nullptr,
+                resource_.Get() ? resource_->CacheHandler() : nullptr,
                 kNotSharableCrossOrigin, cache_options, ReferrerScriptInfo())
                 .IsEmpty();
   }

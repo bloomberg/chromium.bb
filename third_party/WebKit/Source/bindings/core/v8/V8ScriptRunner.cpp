@@ -39,7 +39,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ThreadDebugger.h"
-#include "core/loader/resource/ScriptResource.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
@@ -403,9 +402,8 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   return CompileScript(script_state, V8String(isolate, source.Source()),
                        source.Url(), source.SourceMapUrl(),
                        source.StartPosition(), source.SourceLocationType(),
-                       source.GetResource(), source.Streamer(),
-                       cache_metadata_handler, access_control_status,
-                       v8_cache_options, referrer_info);
+                       source.Streamer(), cache_metadata_handler,
+                       access_control_status, v8_cache_options, referrer_info);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
@@ -415,7 +413,6 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     const String& source_map_url,
     const TextPosition& script_start_position,
     ScriptSourceLocationType source_location_type,
-    ScriptResource* resource,
     ScriptStreamer* streamer,
     CachedMetadataHandler* cache_handler,
     AccessControlStatus access_control_status,
@@ -427,11 +424,6 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   probe::V8Compile probe(ExecutionContext::From(script_state), file_name,
                          script_start_position.line_.ZeroBasedInt(),
                          script_start_position.column_.ZeroBasedInt());
-
-  DCHECK(!streamer || resource);
-  DCHECK(!resource || resource->CacheHandler() == cache_handler);
-  DCHECK(!resource ||
-         source_location_type == ScriptSourceLocationType::kExternalFile);
 
   // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
   // 1, whereas v8 starts at 0.
@@ -558,7 +550,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
   // - parser_state: always "not parser inserted" for internal scripts.
   if (!V8ScriptRunner::CompileScript(
            script_state, source, file_name, String(), script_start_position,
-           ScriptSourceLocationType::kInternal, nullptr, nullptr, nullptr,
+           ScriptSourceLocationType::kInternal, nullptr, nullptr,
            kSharableCrossOrigin, kV8CacheOptionsDefault, ReferrerScriptInfo())
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
