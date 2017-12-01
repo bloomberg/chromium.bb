@@ -421,6 +421,34 @@ TEST_F(NavigationAndLoadCallbacksTest, NewPageNavigation) {
   LoadUrl(url);
 }
 
+// Tests that if web usage is already enabled, enabling it again would not cause
+// any page loads (related to restoring cached session). This is a regression
+// test for crbug.com/781916.
+TEST_F(NavigationAndLoadCallbacksTest, EnableWebUsageTwice) {
+  const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  std::map<GURL, std::string> responses;
+  responses[url] = "Chromium Test";
+  web::test::SetUpSimpleHttpServer(responses);
+
+  // Only expect one set of load events from the first LoadUrl(), not subsequent
+  // SetWebUsageEnabled(true) calls. Web usage is already enabled, so the
+  // subsequent calls should be noops.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, &context));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+
+  LoadUrl(url);
+  web_state()->SetWebUsageEnabled(true);
+  web_state()->SetWebUsageEnabled(true);
+}
+
 // Tests failed navigation to a new page.
 TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
   const GURL url = HttpServer::MakeUrl("unsupported://chromium.test");

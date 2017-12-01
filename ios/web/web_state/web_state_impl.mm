@@ -551,8 +551,10 @@ void WebStateImpl::SetWebUsageEnabled(bool enabled) {
   // the newly created WKWebView.
   // TODO(crbug.com/557963): don't destroy WKWebView to clear browser data.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    if (enabled && cached_session_storage_) {
-      RestoreSessionStorage(cached_session_storage_.get());
+    if (enabled) {
+      if (cached_session_storage_) {
+        RestoreSessionStorage(cached_session_storage_.get());
+      }
       cached_session_storage_.reset();
     } else {
       cached_session_storage_.reset(BuildSessionStorage());
