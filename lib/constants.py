@@ -1143,6 +1143,7 @@ CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
 
 # Buildbucket buckets
 TRYSERVER_BUILDBUCKET_BUCKET = 'master.chromiumos.tryserver'
+CHROMEOS_RELEASE_BUILDBUCKET_BUCKET = 'master.chromeos_release'
 CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
 CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'
 INTERNAL_SWARMING_BUILDBUCKET_BUCKET = 'luci.chromeos.general'

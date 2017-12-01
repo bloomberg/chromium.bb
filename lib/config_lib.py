@@ -188,7 +188,8 @@ def UseBuildbucketScheduler(config):
   """Returns True if this build uses Buildbucket to schedule builds."""
   return (config.active_waterfall in (waterfall.WATERFALL_INTERNAL,
                                       waterfall.WATERFALL_EXTERNAL,
-                                      waterfall.WATERFALL_TRYBOT) and
+                                      waterfall.WATERFALL_TRYBOT,
+                                      waterfall.WATERFALL_RELEASE) and
           config.name in (constants.CQ_MASTER,
                           constants.CANARY_MASTER,
                           constants.PFQ_MASTER,

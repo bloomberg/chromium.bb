@@ -955,7 +955,7 @@ class ConfigLibHelperTests(cros_test_lib.TestCase):
     release_branch_config = config_lib.BuildConfig(
         name=constants.CANARY_MASTER,
         active_waterfall=waterfall.WATERFALL_RELEASE)
-    self.assertFalse(config_lib.UseBuildbucketScheduler(
+    self.assertTrue(config_lib.UseBuildbucketScheduler(
         release_branch_config))
 
   def testScheduledByBuildbucket(self):
