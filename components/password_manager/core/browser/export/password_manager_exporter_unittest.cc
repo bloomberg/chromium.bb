@@ -59,7 +59,7 @@ class MockDestination : public password_manager::Destination {
   MockDestination() = default;
   ~MockDestination() override = default;
 
-  MOCK_METHOD1(Write, bool(const std::string& data));
+  MOCK_METHOD1(Write, base::string16(const std::string& data));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDestination);

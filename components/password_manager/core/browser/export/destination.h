@@ -16,8 +16,9 @@ class Destination {
   Destination() = default;
   virtual ~Destination() = default;
 
-  // Send the data to the destination, synchronously.
-  virtual bool Write(const std::string& data) = 0;
+  // Send the data to the destination, synchronously. On failure, a
+  // human-readable error message will be returned.
+  virtual base::string16 Write(const std::string& data) = 0;
 };
 
 }  // namespace password_manager
