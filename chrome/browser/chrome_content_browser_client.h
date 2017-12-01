@@ -387,6 +387,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* frame_host,
       const GURL& frame_url,
       NonNetworkURLLoaderFactoryMap* factories) override;
+  bool AllowRenderingMhtmlOverHttp(
+      content::NavigationUIData* navigation_ui_data) const override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

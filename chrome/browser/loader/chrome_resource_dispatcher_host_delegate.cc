@@ -992,20 +992,3 @@ ChromeResourceDispatcherHostDelegate::CreateClientCertStore(
   return ProfileIOData::FromResourceContext(resource_context)->
       CreateClientCertStore();
 }
-
-bool ChromeResourceDispatcherHostDelegate::AllowRenderingMhtmlOverHttp(
-    net::URLRequest* request) const {
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  // It is OK to load the saved offline copy, in MHTML format.
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  ChromeNavigationUIData* navigation_data =
-      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
-  if (!navigation_data)
-    return false;
-  offline_pages::OfflinePageNavigationUIData* offline_page_data =
-      navigation_data->GetOfflinePageNavigationUIData();
-  return offline_page_data && offline_page_data->is_offline_page();
-#else
-  return false;
-#endif
-}

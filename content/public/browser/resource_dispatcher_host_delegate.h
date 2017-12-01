@@ -142,9 +142,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceContext* resource_context);
 
-  // Whether or not to allow load and render MHTML page from http/https URLs.
-  virtual bool AllowRenderingMhtmlOverHttp(net::URLRequest* request) const;
-
  protected:
   virtual ~ResourceDispatcherHostDelegate();
 };

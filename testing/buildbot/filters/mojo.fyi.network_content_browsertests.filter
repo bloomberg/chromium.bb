@@ -15,10 +15,6 @@
 # https://crbug.com/756312
 -ServiceWorkerVersionBrowserV8CacheTest.Restart
 
-# http://crbug.com/715630
-# This started failing when the test got added in r514724.
--DownloadContentTest.ForceDownloadMhtml
-
 # http://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
 -ClearSiteDataThrottleBrowserTest.Credentials
