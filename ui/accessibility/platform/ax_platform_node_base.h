@@ -147,9 +147,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   ~AXPlatformNodeBase() override;
 
   bool IsTextOnlyObject() const;
-  bool IsNativeTextControl() const;
-  bool IsSimpleTextControl() const;
-  bool IsRichTextControl();
+  bool IsPlainTextField() const;
+  bool IsRichTextField() const;
   bool IsRangeValueSupported() const;
 
   // Get the range value text, which might come from aria-valuetext or

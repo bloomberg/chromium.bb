@@ -42,7 +42,10 @@ bool HasOnlyTextChildren(const AXNode* node) {
 
 // TODO(muyuanli): share with BrowserAccessibility.
 bool IsSimpleTextControl(const AXNode* node, uint32_t state) {
-  return IsEditField(node->data().role) &&
+  return (node->data().role == AX_ROLE_TEXT_FIELD ||
+          node->data().role == AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX ||
+          node->data().role == AX_ROLE_SEARCH_BOX ||
+          node->data().HasBoolAttribute(AX_ATTR_EDITABLE_ROOT)) &&
          !node->data().HasState(AX_STATE_RICHLY_EDITABLE);
 }
 

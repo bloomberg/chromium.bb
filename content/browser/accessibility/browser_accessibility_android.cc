@@ -217,7 +217,7 @@ bool BrowserAccessibilityAndroid::IsDismissable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsEditableText() const {
-  return ui::IsEditField(GetRole());
+  return IsPlainTextField() || IsRichTextField();
 }
 
 bool BrowserAccessibilityAndroid::IsEnabled() const {

@@ -311,10 +311,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsWebAreaForPresentationalIframe() const;
 
   virtual bool IsClickable() const;
-  bool IsNativeTextControl() const;
-  bool IsSimpleTextControl() const;
-  // Indicates if this object is at the root of a rich edit text control.
-  bool IsRichTextControl() const;
+  bool IsPlainTextField() const;
+  bool IsRichTextField() const;
 
   // Return true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;

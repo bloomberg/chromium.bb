@@ -301,7 +301,7 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
     std::swap(start_offset, end_offset);
 
   int trim_length = 0;
-  if ((end_object->IsSimpleTextControl() || end_object->IsTextOnlyObject()) &&
+  if ((end_object->IsPlainTextField() || end_object->IsTextOnlyObject()) &&
       end_offset < static_cast<int>(end_object->GetText().length())) {
     trim_length = static_cast<int>(end_object->GetText().length()) - end_offset;
   }
@@ -1520,9 +1520,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return NSAccessibilityGroupRole;
   }
 
-  if ((browserAccessibility_->IsSimpleTextControl() &&
+  if ((browserAccessibility_->IsPlainTextField() &&
        browserAccessibility_->HasState(ui::AX_STATE_MULTILINE)) ||
-      browserAccessibility_->IsRichTextControl()) {
+      browserAccessibility_->IsRichTextField()) {
     return NSAccessibilityTextAreaRole;
   }
 
@@ -1955,19 +1955,19 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSString*) subrole {
   if (![self instanceActive])
     return nil;
-  ui::AXRole browserAccessibilityRole = [self internalRole];
-  if (ui::IsEditField(browserAccessibilityRole) &&
+
+  if (browserAccessibility_->IsPlainTextField() &&
       GetState(browserAccessibility_, ui::AX_STATE_PROTECTED)) {
     return NSAccessibilitySecureTextFieldSubrole;
   }
 
-  if (browserAccessibilityRole == ui::AX_ROLE_DESCRIPTION_LIST)
+  if ([self internalRole] == ui::AX_ROLE_DESCRIPTION_LIST)
     return NSAccessibilityDefinitionListSubrole;
 
-  if (browserAccessibilityRole == ui::AX_ROLE_LIST)
+  if ([self internalRole] == ui::AX_ROLE_LIST)
     return NSAccessibilityContentListSubrole;
 
-  return [AXPlatformNodeCocoa nativeSubroleFromAXRole:browserAccessibilityRole];
+  return [AXPlatformNodeCocoa nativeSubroleFromAXRole:[self internalRole]];
 }
 
 // Returns all tabs in this subtree.

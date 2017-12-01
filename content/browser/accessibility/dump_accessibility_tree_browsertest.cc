@@ -765,7 +765,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaSearchbox) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    AccessibilityAriaSearchboxWithSelection) {
+                       DISABLED_AccessibilityAriaSearchboxWithSelection) {
   RunAriaTest(FILE_PATH_LITERAL("aria-searchbox-with-selection.html"));
 }
 
@@ -838,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityAriaTextboxWithSelection) {
+                       DISABLED_AccessibilityAriaTextboxWithSelection) {
   RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-selection.html"));
 }
 

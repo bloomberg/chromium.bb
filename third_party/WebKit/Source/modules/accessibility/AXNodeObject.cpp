@@ -33,6 +33,7 @@
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
@@ -765,6 +766,21 @@ bool AXNodeObject::IsControllingVideoElement() const {
 
   return IsHTMLVideoElement(
       MediaControlElementsHelper::ToParentMediaElement(node));
+}
+
+bool AXNodeObject::ComputeIsEditableRoot() const {
+  Node* node = GetNode();
+  if (!node)
+    return false;
+  if (IsNativeTextControl())
+    return true;
+  if (IsRootEditableElement(*node)) {
+    // Editable roots created by the user agent are handled by
+    // |IsNativeTextControl| above.
+    ShadowRoot* root = node->ContainingShadowRoot();
+    return !root || root->GetType() != ShadowRootType::kUserAgent;
+  }
+  return false;
 }
 
 bool AXNodeObject::IsEmbeddedObject() const {

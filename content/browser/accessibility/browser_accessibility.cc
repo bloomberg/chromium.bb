@@ -49,10 +49,7 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   // implementation details, but we want to expose them as leaves to platform
   // accessibility APIs because screen readers might be confused if they find
   // any children.
-  // Note that if a combo box, search box or text field are not native, they
-  // might present a menu of choices using aria-owns which should not be hidden
-  // from tree.
-  if (IsNativeTextControl() || IsTextOnlyObject())
+  if (IsPlainTextField() || IsTextOnlyObject())
     return true;
 
   // Roles whose children are only presentational according to the ARIA and
@@ -140,6 +137,7 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
 
 bool BrowserAccessibility::PlatformIsChildOfLeaf() const {
   BrowserAccessibility* ancestor = InternalGetParent();
+
   while (ancestor) {
     if (ancestor->PlatformIsLeaf())
       return true;
@@ -348,7 +346,7 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
   // Standard text fields such as textarea have an embedded div inside them that
   // holds all the text.
   // TODO(nektar): This is fragile! Replace with code that flattens tree.
-  if (IsSimpleTextControl() && InternalChildCount() == 1)
+  if (IsPlainTextField() && InternalChildCount() == 1)
     return InternalGetChild(0)->GetPageBoundsForRange(start, len);
 
   if (GetRole() != ui::AX_ROLE_STATIC_TEXT) {
@@ -482,13 +480,11 @@ gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start, int len)
 
 base::string16 BrowserAccessibility::GetValue() const {
   base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
-  // Some screen readers like Jaws and older versions of VoiceOver require a
-  // value to be set in text fields with rich content, even though the same
-  // information is available on the children.
-  if (value.empty() &&
-      (IsSimpleTextControl() || IsRichTextControl()) &&
-      !IsNativeTextControl())
-    value = GetInnerText();
+  // Some screen readers like Jaws and VoiceOver require a value to be set in
+  // text fields with rich content, even though the same information is
+  // available on the children.
+  if (value.empty() && IsRichTextField())
+    return GetInnerText();
   return value;
 }
 
@@ -723,7 +719,7 @@ bool BrowserAccessibility::HasAction(ui::AXAction action_enum) const {
 }
 
 bool BrowserAccessibility::HasCaret() const {
-  if (IsSimpleTextControl() && HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
+  if (IsPlainTextField() && HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
       HasIntAttribute(ui::AX_ATTR_TEXT_SEL_END)) {
     return true;
   }
@@ -754,29 +750,20 @@ bool BrowserAccessibility::IsClickable() const {
   return ui::IsRoleClickable(GetRole());
 }
 
-bool BrowserAccessibility::IsNativeTextControl() const {
-  const std::string& html_tag = GetStringAttribute(ui::AX_ATTR_HTML_TAG);
-  if (html_tag == "input") {
-    std::string input_type;
-    if (!GetHtmlAttribute("type", &input_type))
-      return true;
-    return input_type.empty() || input_type == "email" ||
-           input_type == "password" || input_type == "search" ||
-           input_type == "tel" || input_type == "text" || input_type == "url" ||
-           input_type == "number";
-  }
-  return html_tag == "textarea";
+bool BrowserAccessibility::IsPlainTextField() const {
+  // We need to check both the role and editable state, because some ARIA text
+  // fields may in fact not be editable, whilst some editable fields might not
+  // have the role.
+  return !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+         (GetRole() == ui::AX_ROLE_TEXT_FIELD ||
+          GetRole() == ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX ||
+          GetRole() == ui::AX_ROLE_SEARCH_BOX ||
+          GetBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT));
 }
 
-bool BrowserAccessibility::IsSimpleTextControl() const {
-  return ui::IsEditField(GetRole()) && !HasState(ui::AX_STATE_RICHLY_EDITABLE);
-}
-
-// Indicates if this object is at the root of a rich edit text control.
-bool BrowserAccessibility::IsRichTextControl() const {
-  return HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
-         (!PlatformGetParent() ||
-          !PlatformGetParent()->HasState(ui::AX_STATE_RICHLY_EDITABLE));
+bool BrowserAccessibility::IsRichTextField() const {
+  return GetBoolAttribute(ui::AX_ATTR_EDITABLE_ROOT) &&
+         HasState(ui::AX_STATE_RICHLY_EDITABLE);
 }
 
 bool BrowserAccessibility::HasExplicitlyEmptyName() const {
