@@ -281,14 +281,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   ::testing::Mock::VerifyAndClearExpectations(mock_client_);
 }
 
-// The running worker is detected as a memory leak. crbug.com/586897
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DontPauseAfterDownload DISABLED_DontPauseAfterDownload
-#else
-#define MAYBE_DontPauseAfterDownload DontPauseAfterDownload
-#endif
-
-TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
+TEST_F(WebEmbeddedWorkerImplTest, DontPauseAfterDownload) {
   EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
   worker_->StartWorkerContext(start_data_);
   ::testing::Mock::VerifyAndClearExpectations(mock_client_);
@@ -334,14 +327,7 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
   mock_client_->WaitUntilThreadTermination();
 }
 
-// The running worker is detected as a memory leak. crbug.com/586897
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_PauseAfterDownload DISABLED_PauseAfterDownload
-#else
-#define MAYBE_PauseAfterDownload PauseAfterDownload
-#endif
-
-TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
+TEST_F(WebEmbeddedWorkerImplTest, PauseAfterDownload) {
   EXPECT_CALL(*mock_client_, WorkerReadyForInspection()).Times(1);
   start_data_.pause_after_download_mode =
       WebEmbeddedWorkerStartData::kPauseAfterDownload;

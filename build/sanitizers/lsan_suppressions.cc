@@ -93,6 +93,10 @@ char kLSanDefaultSuppressions[] =
     // https://crbug.com/755670
     "leak:third_party/yasm/\n"
 
+    // v8 leaks caused by weak ref not call
+    "leak:blink::DOMWrapperWorld::Create\n"
+    "leak:blink::ScriptState::Create\n"
+
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
     // End of suppressions.
