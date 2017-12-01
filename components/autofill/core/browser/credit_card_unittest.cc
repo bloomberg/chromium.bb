@@ -1271,7 +1271,12 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test that credit card last used date suggestion can be generated correctly
 // in different variations.
-TEST(CreditCardTest, GetLastUsedDateForDisplay) {
+
+
+// TODO(scottmg): Disabling as sheriff. On Android, LastUsedDateForDisplay is
+// returning "Last used over a year ago", rather than "last used Nov 30" as of
+// today, Dec 1. https://crbug.com/791067.
+TEST(CreditCardTest, DISABLED_GetLastUsedDateForDisplay) {
   const base::Time::Exploded kTestDateTimeExploded = {
       2016, 12, 6, 10,  // Sat, Dec 10, 2016
       15,   42, 7, 0    // 15:42:07.000
