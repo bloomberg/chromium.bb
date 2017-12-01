@@ -35,6 +35,8 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       const OverlayCandidateList::PromotionHintInfoMap& promotion_hints);
 #endif
 
+  void WaitSyncToken(viz::ResourceId id);
+
   // The following lock classes are part of the DisplayResourceProvider API and
   // are needed to read the resource contents. The user must ensure that they
   // only use GL locks on GL resources, etc, and this is enforced by assertions.
