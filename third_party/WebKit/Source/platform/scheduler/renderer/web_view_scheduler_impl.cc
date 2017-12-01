@@ -244,6 +244,7 @@ void WebViewSchedulerImpl::OnTraceLogEnabled() {
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->OnTraceLogEnabled();
   }
+  BackgroundCPUTimeBudgetPool()->OnTraceLogEnabled();
 }
 
 void WebViewSchedulerImpl::AsValueInto(
