@@ -174,6 +174,13 @@ if sys.platform == 'win32':
               (path, ctypes.GetLastError()))
 
 
+  def readlink(path):
+    extend(path)
+    raise NotImplementedError(
+        'Implement readlink() via DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, '
+        '...)')
+
+
   def walk(top, *args, **kwargs):
     return os.walk(extend(top), *args, **kwargs)
 
@@ -206,8 +213,14 @@ else:
   def symlink(source, link_name):
     return os.symlink(source, extend(link_name))
 
+
   def unlink(path):
     return os.unlink(extend(path))
+
+
+  def readlink(path):
+    return os.readlink(extend(path)).decode('utf-8')
+
 
   def walk(top, *args, **kwargs):
     for root, dirs, files in os.walk(extend(top), *args, **kwargs):

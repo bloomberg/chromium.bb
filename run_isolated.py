@@ -178,6 +178,13 @@ def _to_str(s):
   return s.encode('utf-8')
 
 
+def _to_unicode(s):
+  """Upgrades a str instance to unicode. Pass unicode through as-is."""
+  if isinstance(s, unicode) or s is None:
+    return s
+  return s.decode('utf-8')
+
+
 def make_temp_dir(prefix, root_dir):
   """Returns a new unique temporary directory."""
   return unicode(tempfile.mkdtemp(prefix=prefix, dir=root_dir))
@@ -749,6 +756,7 @@ def run_tha_test(
   Returns:
     Process exit code that should be used.
   """
+  root_dir = _to_unicode(root_dir)
   if result_json:
     # Write a json output file right away in case we get killed.
     result = {
@@ -1146,11 +1154,7 @@ def main(args):
     parser.error(
         '--env required key=value form. value can be skipped to delete '
         'the variable')
-  # Take the occasion to assert that everything is converted to str instances,
-  # subprocess.Popen doesn't like unicode.
-  options.env = {
-    _to_str(k): _to_str(v) for k, v in (i.split('=', 1) for i in options.env)
-  }
+  options.env = dict(i.split('=', 1) for i in options.env)
 
   prefixes = {}
   cwd = os.path.realpath(os.getcwd())
@@ -1159,8 +1163,7 @@ def main(args):
       parser.error(
         '--env-prefix %r is malformed, must be in the form `VAR=./path`'
         % item)
-    # Downgrade to str as for env above.
-    key, opath = _to_str(item).split('=', 1)
+    key, opath = item.split('=', 1)
     if os.path.isabs(opath):
       parser.error('--env-prefix %r path is bad, must be relative.' % opath)
     opath = os.path.normpath(opath)

@@ -181,7 +181,7 @@ def expand_symlinks(indir, relfile):
     # readlink doesn't exist on Windows.
     # pylint: disable=E1101
     target = os.path.normpath(os.path.join(done, pre_symlink))
-    symlink_target = os.readlink(symlink_path)
+    symlink_target = fs.readlink(symlink_path)
     if os.path.isabs(symlink_target):
       # Absolute path are considered a normal directories. The use case is
       # generally someone who puts the output directory on a separate drive.
@@ -190,7 +190,7 @@ def expand_symlinks(indir, relfile):
       # The symlink itself could be using the wrong path case.
       target = file_path.fix_native_path_case(target, symlink_target)
 
-    if not os.path.exists(target):
+    if not fs.exists(target):
       raise MappingError(
           'Symlink target doesn\'t exist: %s -> %s' % (symlink_path, target))
     target = file_path.get_native_path_case(target)
@@ -234,17 +234,17 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     ln -s .. foo
   """
   if os.path.isabs(relfile):
-    raise MappingError('Can\'t map absolute path %s' % relfile)
+    raise MappingError(u'Can\'t map absolute path %s' % relfile)
 
   infile = file_path.normpath(os.path.join(indir, relfile))
   if not infile.startswith(indir):
-    raise MappingError('Can\'t map file %s outside %s' % (infile, indir))
+    raise MappingError(u'Can\'t map file %s outside %s' % (infile, indir))
 
   filepath = os.path.join(indir, relfile)
   native_filepath = file_path.get_native_path_case(filepath)
   if filepath != native_filepath:
     # Special case './'.
-    if filepath != native_filepath + '.' + os.path.sep:
+    if filepath != native_filepath + u'.' + os.path.sep:
       # While it'd be nice to enforce path casing on Windows, it's impractical.
       # Also give up enforcing strict path case on OSX. Really, it's that sad.
       # The case where it happens is very specific and hard to reproduce:
@@ -262,7 +262,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       # have no idea why.
       if sys.platform not in ('darwin', 'win32'):
         raise MappingError(
-            'File path doesn\'t equal native file path\n%s != %s' %
+            u'File path doesn\'t equal native file path\n%s != %s' %
             (filepath, native_filepath))
 
   symlinks = []
@@ -274,12 +274,12 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       pass
 
   if relfile.endswith(os.path.sep):
-    if not os.path.isdir(infile):
+    if not fs.isdir(infile):
       raise MappingError(
-          '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
+          u'%s is not a directory but ends with "%s"' % (infile, os.path.sep))
 
     # Special case './'.
-    if relfile.startswith('.' + os.path.sep):
+    if relfile.startswith(u'.' + os.path.sep):
       relfile = relfile[2:]
     outfiles = symlinks
     try:
@@ -287,7 +287,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
         inner_relfile = os.path.join(relfile, filename)
         if blacklist and blacklist(inner_relfile):
           continue
-        if os.path.isdir(os.path.join(indir, inner_relfile)):
+        if fs.isdir(os.path.join(indir, inner_relfile)):
           inner_relfile += os.path.sep
         outfiles.extend(
             expand_directory_and_symlink(indir, inner_relfile, blacklist,
@@ -295,15 +295,15 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
       return outfiles
     except OSError as e:
       raise MappingError(
-          'Unable to iterate over directory %s.\n%s' % (infile, e))
+          u'Unable to iterate over directory %s.\n%s' % (infile, e))
   else:
     # Always add individual files even if they were blacklisted.
-    if os.path.isdir(infile):
+    if fs.isdir(infile):
       raise MappingError(
-          'Input directory %s must have a trailing slash' % infile)
+          u'Input directory %s must have a trailing slash' % infile)
 
-    if not os.path.isfile(infile):
-      raise MappingError('Input file %s doesn\'t exist' % infile)
+    if not fs.isfile(infile):
+      raise MappingError(u'Input file %s doesn\'t exist' % infile)
 
     return symlinks + [relfile]
 
@@ -364,10 +364,10 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
   try:
     if collapse_symlinks:
       # os.stat follows symbolic links
-      filestats = os.stat(filepath)
+      filestats = fs.stat(filepath)
     else:
       # os.lstat does not follow symbolic links, and thus preserves them.
-      filestats = os.lstat(filepath)
+      filestats = fs.lstat(filepath)
   except OSError:
     # The file is not present.
     raise MappingError('%s is missing' % filepath)
@@ -413,7 +413,7 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
       # TODO(maruel): It'd be better if it was only done once, in
       # expand_directory_and_symlink(), so it would not be necessary to do again
       # here.
-      symlink_value = os.readlink(filepath)  # pylint: disable=E1101
+      symlink_value = fs.readlink(filepath)  # pylint: disable=E1101
       filedir = file_path.get_native_path_case(os.path.dirname(filepath))
       native_dest = file_path.fix_native_path_case(filedir, symlink_value)
       out['l'] = os.path.relpath(native_dest, filedir)

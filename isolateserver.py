@@ -1737,7 +1737,7 @@ def directory_to_metadata(root, algo, blacklist):
   """Returns the FileItem list and .isolated metadata for a directory."""
   root = file_path.get_native_path_case(root)
   paths = isolated_format.expand_directory_and_symlink(
-      root, '.' + os.path.sep, blacklist, sys.platform != 'win32')
+      root, u'.' + os.path.sep, blacklist, sys.platform != 'win32')
   metadata = {
     relpath: isolated_format.file_to_metadata(
         os.path.join(root, relpath), {}, 0, algo, False)
