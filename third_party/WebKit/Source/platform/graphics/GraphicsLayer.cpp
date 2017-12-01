@@ -331,9 +331,8 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       DrawsContent()) {
     auto& tracking = EnsureRasterInvalidator().EnsureTracking();
-    tracking.CheckUnderInvalidations(
-        DebugName(), CapturePaintRecord(), InterestRect(),
-        layer_state_ ? layer_state_->offset : IntPoint());
+    tracking.CheckUnderInvalidations(DebugName(), CapturePaintRecord(),
+                                     InterestRect());
     if (auto record = tracking.UnderInvalidationRecord()) {
       // Add the under-invalidation overlay onto the painted result.
       GetPaintController().AppendDebugDrawingAfterCommit(
@@ -1306,15 +1305,18 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && !layer_state_) {
+    LOG(WARNING) << "No layer state for GraphicsLayer: " << DebugName();
     // TODO(wangxianzhu): Remove this condition when all drawable layers have
     // layer_state_ for SPv175.
     for (const auto& display_item :
          GetPaintController().GetPaintArtifact().GetDisplayItemList())
       display_item.Replay(graphics_context);
-  } else {
+  } else if (layer_state_) {
     GetPaintController().GetPaintArtifact().Replay(
-        graphics_context,
-        layer_state_ ? layer_state_->state : PropertyTreeState::Root());
+        graphics_context, layer_state_->state, layer_state_->offset);
+  } else {
+    GetPaintController().GetPaintArtifact().Replay(graphics_context,
+                                                   PropertyTreeState::Root());
   }
   return graphics_context.EndRecording();
 }
