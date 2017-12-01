@@ -71,6 +71,8 @@ class ASH_EXPORT MessageCenterView
 
   void SetIsClosing(bool is_closing);
 
+  base::string16 GetButtonBarTitle() const;
+
   // Overridden from views::FocusChangeListener
   void OnWillChangeFocus(views::View* before, views::View* now) override {}
   void OnDidChangeFocus(views::View* before, views::View* now) override;
@@ -82,7 +84,7 @@ class ASH_EXPORT MessageCenterView
 
  protected:
   // Potentially sets the reposition target, and then returns whether or not it
-  // was was set.
+  // was set.
   virtual bool SetRepositionTarget();
 
   // Overridden from views::View:
@@ -91,7 +93,6 @@ class ASH_EXPORT MessageCenterView
   int GetHeightForWidth(int width) const override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from MessageCenterObserver:
   void OnNotificationAdded(const std::string& id) override;
@@ -137,7 +138,6 @@ class ASH_EXPORT MessageCenterView
 
   void AddNotificationAt(const message_center::Notification& notification,
                          int index);
-  base::string16 GetButtonBarTitle() const;
   void Update(bool animate);
   void SetVisibilityMode(Mode mode, bool animate);
   void UpdateButtonBarStatus();
