@@ -295,8 +295,8 @@ void TabStripModelExperimental::InsertWebContentsAt(
     if (parent->type() == TabDataExperimental::Type::kSingle) {
       // Promote parent to hub-and-spoke.
       parent->set_type(TabDataExperimental::Type::kHubAndSpoke);
-      for (auto& observer : exp_observers_)
-        observer.TabChanged(parent, TabChangeType::kAll);
+      for (auto& exp_observer : exp_observers_)
+        exp_observer.TabChanged(parent, TabChangeType::kAll);
     }
 
     parent->children_.push_back(std::make_unique<TabDataExperimental>(
@@ -316,8 +316,8 @@ void TabStripModelExperimental::InsertWebContentsAt(
   // Need to do this if we start insering in the middle.
   // selection_model_.IncrementFrom(index);
 
-  for (auto& observer : exp_observers_)
-    observer.TabInserted(data, active);
+  for (auto& exp_observer : exp_observers_)
+    exp_observer.TabInserted(data, active);
   for (auto& observer : observers())
     observer.TabInsertedAt(this, contents, index, active);
 
@@ -520,8 +520,12 @@ void TabStripModelExperimental::UpdateWebContentsStateAt(
     TabChangeType change_type) {
   ViewIterator found = FindViewIndex(view_index);
   DCHECK(found != end());
-  for (auto& observer : exp_observers_)
-    observer.TabChanged(&*found, change_type);
+
+  TabDataExperimental* data = &*found;
+  for (auto& observer : observers())
+    observer.TabChangedAt(data->contents(), view_index, change_type);
+  for (auto& exp_observer : exp_observers_)
+    exp_observer.TabChanged(data, change_type);
 }
 
 void TabStripModelExperimental::SetTabNeedsAttentionAt(int index,
@@ -545,7 +549,10 @@ void TabStripModelExperimental::CloseAllTabs() {
 }
 
 bool TabStripModelExperimental::TabsAreLoading() const {
-  NOTIMPLEMENTED();
+  for (const auto& data : tabs_) {
+    if (data->contents() && data->contents()->IsLoading())
+      return true;
+  }
   return false;
 }
 
@@ -701,8 +708,8 @@ void TabStripModelExperimental::OnWillDeleteWebContents(
     uint32_t close_types) {
   TabDataExperimental* data = GetDataForWebContents(contents);
   DCHECK(data);
-  for (auto& observer : exp_observers_)
-    observer.TabClosing(data);
+  for (auto& exp_observer : exp_observers_)
+    exp_observer.TabClosing(data);
 }
 
 void TabStripModelExperimental::DetachWebContents(
@@ -738,8 +745,8 @@ void TabStripModelExperimental::DetachWebContents(
         // Erasing the last child of a hub and spoke one converts it back to
         // a single.
         parent->set_type(TabDataExperimental::Type::kSingle);
-        for (auto& observer : exp_observers_)
-          observer.TabChanged(parent, TabChangeType::kAll);
+        for (auto& exp_observer : exp_observers_)
+          exp_observer.TabChanged(parent, TabChangeType::kAll);
       } else {
         DCHECK(parent->type() == TabDataExperimental::Type::kGroup);
         // TODO(brettw) remove group. Notifications might be tricky.
@@ -751,8 +758,8 @@ void TabStripModelExperimental::DetachWebContents(
     data->set_type(TabDataExperimental::Type::kGroup);
     data->contents_ =
         nullptr;  // TODO(brettw) does this delete things properly?
-    for (auto& observer : exp_observers_)
-      observer.TabChanged(data, TabChangeType::kAll);
+    for (auto& exp_observer : exp_observers_)
+      exp_observer.TabChanged(data, TabChangeType::kAll);
   } else {
     // Just remove from tabs.
     tabs_.erase(tabs_.begin() + found.toplevel_index_);
@@ -868,8 +875,8 @@ void TabStripModelExperimental::NotifyIfActiveOrSelectionChanged(
     TabDataExperimental* old_data = GetDataForViewIndex(old_model.active());
     TabDataExperimental* new_data =
         GetDataForViewIndex(selection_model_.active());
-    for (auto& observer : exp_observers_)
-      observer.TabSelectionChanged(old_data, new_data);
+    for (auto& exp_observer : exp_observers_)
+      exp_observer.TabSelectionChanged(old_data, new_data);
 
     for (auto& observer : observers())
       observer.TabSelectionChanged(this, old_model);

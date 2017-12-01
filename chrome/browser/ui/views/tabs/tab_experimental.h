@@ -16,6 +16,7 @@
 
 class TabCloseButton;
 class TabDataExperimental;
+class TabIcon;
 class TabStripModelExperimental;
 
 namespace views {
@@ -62,6 +63,9 @@ class TabExperimental : public views::ButtonListener,
   void SetSelected(bool selected);
   void DataUpdated(TabChangeType change_type);
 
+  // Redraws the loading animation if one is visible. Otherwise, no-op.
+  void StepLoadingAnimation();
+
   // Called for group types when layout is done to set the bounds of the
   // first tab. This is used to determine some painting parameters.
   void SetGroupLayoutParams(int first_child_begin_x);
@@ -105,8 +109,9 @@ class TabExperimental : public views::ButtonListener,
   bool closing_ = false;
 
   // Non-owning child view pointers (owned by View hierarchy).
+  TabIcon* icon_;
   views::Label* title_;
-  TabCloseButton* close_button_ = nullptr;
+  TabCloseButton* close_button_;
 
   // Location of the first child tab. Negative indicates unused.
   int first_child_begin_x_ = -1;

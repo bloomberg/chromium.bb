@@ -353,7 +353,8 @@ TabAlertState TabStripExperimental::GetTabAlertState(int tab_index) const {
 }
 
 void TabStripExperimental::UpdateLoadingAnimations() {
-  // controller_->UpdateLoadingAnimations();
+  for (const auto& tab : tabs_)
+    tab.second->StepLoadingAnimation();
 }
 
 gfx::Rect TabStripExperimental::GetNewTabButtonBounds() {
