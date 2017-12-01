@@ -48,10 +48,6 @@ void AecDumpMessageFilter::AddDelegate(
   int id = delegate_id_counter_++;
   delegates_[id] = delegate;
 
-  if (override_aec3_) {
-    delegate->OnAec3Enable(*override_aec3_);
-  }
-
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AecDumpMessageFilter::RegisterAecDumpConsumer, this, id));
@@ -70,6 +66,11 @@ void AecDumpMessageFilter::RemoveDelegate(
       FROM_HERE,
       base::BindOnce(&AecDumpMessageFilter::UnregisterAecDumpConsumer, this,
                      id));
+}
+
+base::Optional<bool> AecDumpMessageFilter::GetOverrideAec3() const {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return override_aec3_;
 }
 
 void AecDumpMessageFilter::Send(IPC::Message* message) {

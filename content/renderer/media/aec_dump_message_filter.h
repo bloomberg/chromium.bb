@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_platform_file.h"
@@ -40,16 +41,23 @@ class CONTENT_EXPORT AecDumpMessageFilter : public IPC::MessageFilter {
   // Getter for the one AecDumpMessageFilter object.
   static scoped_refptr<AecDumpMessageFilter> Get();
 
-  // Adds a delegate that receives the enable and disable notifications.
+  // Adds a delegate that receives the enable and disable notifications. Must be
+  // called on the main task runner (|main_task_runner| in constructor). All
+  // calls on |delegate| are done on the main task runner.
   void AddDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
 
-  // Removes a delegate.
+  // Removes a delegate. Must be called on the main task runner
+  // (|main_task_runner| in constructor).
   void RemoveDelegate(AecDumpMessageFilter::AecDumpDelegate* delegate);
 
   // IO task runner associated with this message filter.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {
     return io_task_runner_;
   }
+
+  // Returns the AEC3 setting. Must be called on the main task runner
+  // (|main_task_runner| in constructor).
+  base::Optional<bool> GetOverrideAec3() const;
 
  protected:
   ~AecDumpMessageFilter() override;
