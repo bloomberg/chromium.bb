@@ -252,6 +252,15 @@ bool VADisplayState::Initialize() {
                       "DesktopGL (GLX).";
 #endif  // USE_X11
       break;
+    // Cannot infer platform from GL, try all available displays
+    case gl::kGLImplementationNone:
+#if defined(USE_X11)
+      va_display_ = vaGetDisplay(gfx::GetXDisplay());
+      if (vaDisplayIsValid(va_display_))
+        break;
+#endif  // USE_X11
+      va_display_ = vaGetDisplayDRM(drm_fd_.get());
+      break;
 
     default:
       LOG(WARNING) << "HW video decode acceleration not available for "
