@@ -522,7 +522,7 @@ SwReporterInvocationResult ExitCodeToInvocationResult(int exit_code) {
 // Scans and shows the Chrome Cleaner UI if the user has not already been
 // prompted in the current prompt wave.
 void MaybeScanAndPrompt(SwReporterInvocationType invocation_type,
-                        const SwReporterInvocation& reporter_invocation) {
+                        SwReporterInvocation reporter_invocation) {
   ChromeCleanerController* cleaner_controller =
       ChromeCleanerController::GetInstance();
 
@@ -561,6 +561,10 @@ void MaybeScanAndPrompt(SwReporterInvocationType invocation_type,
     g_testing_delegate_->TriggerPrompt();
     return;
   }
+
+  reporter_invocation.set_cleaner_logs_upload_enabled(
+      invocation_type ==
+      SwReporterInvocationType::kUserInitiatedWithLogsAllowed);
 
   cleaner_controller->Scan(reporter_invocation);
   DCHECK_EQ(ChromeCleanerController::State::kScanning,
@@ -1007,6 +1011,15 @@ bool SwReporterInvocation::reporter_logs_upload_enabled() const {
 void SwReporterInvocation::set_reporter_logs_upload_enabled(
     bool reporter_logs_upload_enabled) {
   reporter_logs_upload_enabled_ = reporter_logs_upload_enabled;
+}
+
+bool SwReporterInvocation::cleaner_logs_upload_enabled() const {
+  return cleaner_logs_upload_enabled_;
+}
+
+void SwReporterInvocation::set_cleaner_logs_upload_enabled(
+    bool cleaner_logs_upload_enabled) {
+  cleaner_logs_upload_enabled_ = cleaner_logs_upload_enabled;
 }
 
 SwReporterInvocationSequence::SwReporterInvocationSequence(
