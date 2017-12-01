@@ -61,6 +61,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
   }
   void Write(bool data) { Write(static_cast<uint8_t>(data)); }
 
+  // Aligns the memory to the given alignment.
+  void AlignMemory(size_t alignment);
+
  private:
   template <typename T>
   void WriteSimple(const T& val);
@@ -70,10 +73,6 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const sk_sp<SkTextBlob>& blob);
 
   static void TypefaceCataloger(SkTypeface* typeface, void* ctx);
-
-  // Attempts to align the memory to the given alignment. Returns false if there
-  // is unsufficient bytes remaining to do this padding.
-  bool AlignMemory(size_t alignment);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;
