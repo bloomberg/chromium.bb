@@ -342,9 +342,7 @@ bool GpuProcessPreSandboxHook(service_manager::BPFBasePolicy* policy,
   if (!LoadLibrariesForGpu(options))
     return false;
 
-  // TODO(tsepez): enable once we can proxy the stat(), readlink() syscalls.
-  if (!IsChromeOS() || !options.use_amd_specific_policies)
-    instance->EngageNamespaceSandbox(false /* from_zygote */);
+  // TODO(tsepez): enable namspace sandbox here once crashes are understood.
 
   errno = 0;
   return true;
