@@ -23,6 +23,9 @@ Polymer({
       value: chrome.networkingPrivate,
     },
 
+    /** @private {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    globalPolicy_: Object,
+
     /** @private */
     shareAllowEnable_: {
       type: Boolean,
@@ -73,6 +76,10 @@ Polymer({
     };
 
     this.$.networkConfig.init();
+
+    this.networkingPrivate.getGlobalPolicy(policy => {
+      this.globalPolicy_ = policy;
+    });
 
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },

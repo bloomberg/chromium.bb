@@ -1,7 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="network_shared_css.html">
 <link rel="import" href="network_config_input.html">
@@ -9,10 +11,14 @@
 
 <dom-module id="network-config">
   <template>
-    <style include="network-shared">
+    <style include="network-shared iron-flex">
       #error {
         color: red;
         font-weight: 500;
+      }
+
+      cr-network-icon {
+        -webkit-margin-end: 10px;
       }
     </style>
 
@@ -154,6 +160,17 @@
                       security_, eapProperties_.*, shareAllowEnable)]]"
             aria-label="[[i18n('networkConfigShare')]]">
         </paper-toggle-button>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[propertiesSent_]]">
+      <div class="property-box">
+        <div class="start layout horizontal center">
+          <cr-network-icon is-list-item
+              network-state="[[getIconState_(configProperties_)]]">
+          </cr-network-icon>
+          <div>[[i18n('OncConnecting')]]</div>
+        </div>
       </div>
     </template>
 
