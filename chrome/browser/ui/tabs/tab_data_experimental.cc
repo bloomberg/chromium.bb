@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/tabs/tab_data_experimental.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
 #include "content/public/browser/web_contents.h"
 
@@ -58,11 +60,43 @@ TabDataExperimental::~TabDataExperimental() = default;
 TabDataExperimental& TabDataExperimental::operator=(TabDataExperimental&&) =
     default;
 
-base::string16 TabDataExperimental::GetTitle() const {
+const GURL& TabDataExperimental::GetURL() const {
+  if (contents_)
+    return contents_->GetURL();
+  return GURL::EmptyGURL();
+}
+
+const base::string16& TabDataExperimental::GetTitle() const {
   // TODO(brettw) this will need to use TabUIHelper.
   if (contents_)
     return contents_->GetTitle();
-  return base::string16();
+  return base::EmptyString16();
+}
+
+gfx::ImageSkia TabDataExperimental::GetFavicon() const {
+  TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(contents_);
+  return tab_ui_helper->GetFavicon().AsImageSkia();
+}
+
+TabNetworkState TabDataExperimental::GetNetworkState() const {
+  if (contents_)
+    return TabNetworkStateForWebContents(contents_);
+  return TabNetworkState::kNone;
+}
+
+bool TabDataExperimental::IsCrashed() const {
+  if (!contents_)
+    return false;
+
+  auto crashed_status = contents_->GetCrashedStatus();
+  return (crashed_status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
+#if defined(OS_CHROMEOS)
+          crashed_status ==
+              base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM ||
+#endif
+          crashed_status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+          crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
+          crashed_status == base::TERMINATION_STATUS_LAUNCH_FAILED);
 }
 
 bool TabDataExperimental::CountsAsViewIndex() const {

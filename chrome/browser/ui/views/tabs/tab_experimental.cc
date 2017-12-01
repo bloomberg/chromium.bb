@@ -5,12 +5,18 @@
 #include "chrome/browser/ui/views/tabs/tab_experimental.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
+#include "chrome/browser/ui/views/tabs/tab_icon.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/grit/components_scaled_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/masked_targeter_delegate.h"
@@ -18,6 +24,7 @@
 
 namespace {
 
+constexpr int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
 constexpr int kAfterTitleSpacing = 4;
 
 // Returns the width of the tab endcap in DIP.  More precisely, this is the
@@ -43,7 +50,10 @@ TabExperimental::TabExperimental(TabStripModelExperimental* model,
       model_(model),
       data_(data),
       type_(data->type()),
+      icon_(new TabIcon),
       title_(new views::Label),
+      close_button_(
+          new TabCloseButton(this, base::BindRepeating(&OnMouseEventInTab))),
       hover_controller_(this),
       paint_(this) {
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
@@ -51,12 +61,9 @@ TabExperimental::TabExperimental(TabStripModelExperimental* model,
   title_->SetHandlesTooltips(false);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetText(CoreTabHelper::GetDefaultTitle());
-  AddChildView(title_);
 
-  // Unretained is safe here because this class outlives its close button, and
-  // the controller outlives this Tab.
-  close_button_ =
-      new TabCloseButton(this, base::BindRepeating(&OnMouseEventInTab));
+  AddChildView(icon_);
+  AddChildView(title_);
   AddChildView(close_button_);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
@@ -94,15 +101,37 @@ void TabExperimental::SetSelected(bool selected) {
 }
 
 void TabExperimental::DataUpdated(TabChangeType change_type) {
+  // Need to do network state first since the tab title depends on it.
+  // TODO(brettw) should_hide_throbber param.
+  icon_->SetNetworkState(data_->GetNetworkState(), false);
+  // TODO(brettw) icon layer painting.
   if (change_type == TabChangeType::kLoadingOnly)
-    return;  // TODO(brettw) need to add throbber support.
+    return;
 
+  // Tab title.
+  base::string16 title = data_->GetTitle();
+  if (title.empty()) {
+    title = icon_->ShowingLoadingAnimation()
+                ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
+                : CoreTabHelper::GetDefaultTitle();
+  } else {
+    Browser::FormatTitleForDisplay(&title);
+  }
   title_->SetText(data_->GetTitle());
+  // TODO(brettw) attention indicators when title not loading changes.
   if (change_type == TabChangeType::kTitleNotLoading)
     return;  // Don't need to update anything else.
 
+  icon_->SetIcon(data_->GetURL(), data_->GetFavicon());
+  icon_->SetIsCrashed(data_->IsCrashed());
   type_ = data_->type();
+
   SchedulePaint();
+}
+
+void TabExperimental::StepLoadingAnimation() {
+  icon_->StepLoadingAnimation();
+  // TODO(brettw) throbber layer for faster painting.
 }
 
 void TabExperimental::SetGroupLayoutParams(int first_child_begin_x) {
@@ -147,7 +176,14 @@ void TabExperimental::Layout() {
   constexpr int kTitleSpacing = 6;
   const gfx::Rect bounds = GetContentsBounds();
 
-  int title_left = bounds.x() + kTitleSpacing;
+  // Icon.
+  int favicon_y = bounds.y() + (bounds.height() - gfx::kFaviconSize + 1) / 2;
+  gfx::Rect favicon_bounds(
+      bounds.x() + kExtraLeftPaddingToBalanceCloseButtonPadding, favicon_y,
+      icon_->GetPreferredSize().width(), bounds.height() - favicon_y);
+  icon_->SetBoundsRect(favicon_bounds);
+
+  int title_left = favicon_bounds.right() + kTitleSpacing;
   int title_right;
   if (first_child_begin_x_ >= 0)
     title_right = first_child_begin_x_;
@@ -175,8 +211,6 @@ void TabExperimental::Layout() {
 
 void TabExperimental::OnThemeChanged() {
   OnButtonColorMaybeChanged();
-  // TODO(brettw) favicons.
-  // favicon_ = gfx::ImageSkia();
 }
 
 bool TabExperimental::OnMousePressed(const ui::MouseEvent& event) {

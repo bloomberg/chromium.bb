@@ -10,6 +10,10 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/tabs/tab_network_state.h"
+#include "ui/gfx/image/image_skia.h"
+
+class GURL;
 
 namespace content {
 class WebContents;
@@ -55,7 +59,11 @@ class TabDataExperimental {
 
   content::WebContents* contents() { return contents_; }
 
-  base::string16 GetTitle() const;
+  const GURL& GetURL() const;
+  const base::string16& GetTitle() const;
+  gfx::ImageSkia GetFavicon() const;
+  TabNetworkState GetNetworkState() const;
+  bool IsCrashed() const;
 
   // Returns true if this tab data itself is counted as a enumerable item when
   // going through the view.
