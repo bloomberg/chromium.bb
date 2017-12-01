@@ -53,6 +53,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_omnibox_text,
       const base::android::JavaParamRef<jstring>& j_current_url,
+      const base::android::JavaParamRef<jstring>& j_current_title,
       jboolean focused_from_fakebox);
   void Stop(JNIEnv* env,
             const base::android::JavaParamRef<jobject>& obj,

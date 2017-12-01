@@ -180,6 +180,7 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_omnibox_text,
     const JavaParamRef<jstring>& j_current_url,
+    const JavaParamRef<jstring>& j_current_title,
     jboolean focused_from_fakebox) {
   if (!autocomplete_controller_)
     return;
@@ -190,6 +191,7 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
     return;
 
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
+  base::string16 current_title = ConvertJavaStringToUTF16(env, j_current_title);
   const GURL current_url = GURL(url);
   base::string16 omnibox_text = ConvertJavaStringToUTF16(env, j_omnibox_text);
 
@@ -204,6 +206,7 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
                              ClassifyPage(current_url, focused_from_fakebox),
                              ChromeAutocompleteSchemeClassifier(profile_));
   input_.set_current_url(current_url);
+  input_.set_current_title(current_title);
   input_.set_from_omnibox_focus(true);
   autocomplete_controller_->Start(input_);
 }

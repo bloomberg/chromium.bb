@@ -3137,8 +3137,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-display-title-for-current-url",
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlName,
-     flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kDisplayTitleForCurrentUrl)},
+     flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kDisplayTitleForCurrentUrl)},
 
     {"force-color-profile", flag_descriptions::kForceColorProfileName,
      flag_descriptions::kForceColorProfileDescription, kOsAll,
