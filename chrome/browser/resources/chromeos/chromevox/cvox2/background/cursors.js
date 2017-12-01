@@ -666,12 +666,15 @@ cursors.Range.prototype = {
   },
 
   /**
-   * Returns true if this range covers a single node's text content or less.
+   * Returns true if this range covers less than a node.
    * @return {boolean}
    */
   isSubNode: function() {
-    return this.start.node === this.end.node && this.start.index > -1 &&
-        this.end.index > -1;
+    var startIndex = this.start.index;
+    var endIndex = this.end.index;
+    return this.start.node === this.end.node && startIndex != -1 &&
+        endIndex != -1 && startIndex != endIndex &&
+        (startIndex != 0 || endIndex != this.start.getText().length);
   },
 
   /**

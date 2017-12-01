@@ -1312,3 +1312,33 @@ TEST_F('BackgroundTest', 'BusyHeading', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'NodeVsSubnode', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <a href="#">test</a>
+  */}, function(root) {
+    var link = root.find({role: RoleType.LINK});
+    function outputLinkRange(start, end) {
+      return function() {
+        new Output().withSpeech(new cursors.Range(new cursors.Cursor(link, start),
+            new cursors.Cursor(link, end))).go();
+      };
+    }
+
+    mockFeedback.call(outputLinkRange(0, 0))
+        .expectSpeech('test', 'Link')
+        .call(outputLinkRange(0, 1))
+        .expectSpeech('t')
+        .call(outputLinkRange(1, 1))
+        .expectSpeech('test', 'Link')
+        .call(outputLinkRange(1, 2))
+        .expectSpeech('e')
+        .call(outputLinkRange(1, 3))
+        .expectNextSpeechUtteranceIsNot('Link')
+        .expectSpeech('es')
+        .call(outputLinkRange(0, 4))
+        .expectSpeech('test', 'Link')
+        .replay();
+  });
+});
