@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="1">
+  <interface name="zaura_shell" version="2">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -35,6 +35,8 @@
     <enum name="error">
       <entry name="aura_surface_exists" value="0"
 	     summary="the surface already has an aura surface object associated"/>
+      <entry name="aura_output_exists" value="1"
+	     summary="the output already has an aura output object associated"/>
     </enum>
 
     <request name="get_aura_surface">
@@ -50,9 +52,23 @@
       <arg name="surface" type="object" interface="wl_surface"
 	   summary="the surface"/>
     </request>
+
+    <!-- Version 2 additions -->
+
+    <request name="get_aura_output" since="2">
+      <description summary="extend output interface for aura shell">
+	Instantiate an interface extension for the given wl_output to
+	provide aura shell functionality.
+      </description>
+
+      <arg name="id" type="new_id" interface="zaura_output"
+	   summary="the new aura output interface id"/>
+      <arg name="output" type="object" interface="wl_output"
+	   summary="the output"/>
+    </request>
   </interface>
 
-  <interface name="zaura_surface" version="1">
+  <interface name="zaura_surface" version="2">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -73,6 +89,67 @@
       </description>
       <arg name="type" type="uint" summary="the new frame type"/>
     </request>
+
+    <!-- Version 2 additions -->
+
+    <request name="set_parent" since="2">
+      <description summary="set the parent of this surface">
+	Set the "parent" of this surface. "x" and "y" arguments specify the
+	initial position for surface relative to parent.
+      </description>
+      <arg name="parent" type="object" interface="zaura_surface" allow-null="true"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+    </request>
   </interface>
+
+  <interface name="zaura_output" version="2">
+    <description summary="aura shell interface to a wl_output">
+      An additional interface to a wl_output object, which allows the
+      client to access aura shell specific functionality for output.
+    </description>
+
+    <!-- Version 2 additions -->
+
+    <enum name="scale_property" bitfield="true">
+      <description summary="scale information">
+	These flags describe properties of an output scale.
+	They are used in the flags bitfield of the scale event.
+      </description>
+      <entry name="current" value="0x1"
+	     summary="indicates this is the current scale"/>
+      <entry name="preferred" value="0x2"
+	     summary="indicates this is the preferred scale"/>
+    </enum>
+
+    <enum name="scale_factor">
+      <entry name="0500" value="500"/>
+      <entry name="0600" value="600"/>
+      <entry name="0625" value="625"/>
+      <entry name="0750" value="750"/>
+      <entry name="0800" value="800"/>
+      <entry name="1000" value="1000"/>
+      <entry name="1125" value="1125"/>
+      <entry name="1200" value="1200"/>
+      <entry name="1250" value="1250"/>
+      <entry name="1500" value="1500"/>
+      <entry name="1600" value="1600"/>
+      <entry name="2000" value="2000"/>
+    </enum>
+
+    <event name="scale">
+      <description summary="advertise available scales for the output">
+	The scale event describes an available scale for the output.
+
+	The event is sent when binding to the output object and there
+	will always be one scale, the current scale. The event is sent
+	again if an output changes scale, for the scale that is now
+	current. In other words, the current scale is always the last
+	scale that was received with the current flag set.
+      </description>
+      <arg name="flags" type="uint" enum="scale_property" summary="bitfield of scale flags"/>
+      <arg name="scale" type="uint" enum="scale_factor" summary="output scale"/>
+    </event>
+ </interface>
 
 </protocol>

@@ -19,6 +19,7 @@ struct wl_resource;
  * @section page_ifaces_aura_shell Interfaces
  * - @subpage page_iface_zaura_shell - aura_shell
  * - @subpage page_iface_zaura_surface - aura shell interface to a wl_surface
+ * - @subpage page_iface_zaura_output - aura shell interface to a wl_output
  * @section page_copyright_aura_shell Copyright
  * <pre>
  *
@@ -44,7 +45,9 @@ struct wl_resource;
  * DEALINGS IN THE SOFTWARE.
  * </pre>
  */
+struct wl_output;
 struct wl_surface;
+struct zaura_output;
 struct zaura_shell;
 struct zaura_surface;
 
@@ -84,6 +87,22 @@ extern const struct wl_interface zaura_shell_interface;
  * client to access aura shell specific functionality for surface.
  */
 extern const struct wl_interface zaura_surface_interface;
+/**
+ * @page page_iface_zaura_output zaura_output
+ * @section page_iface_zaura_output_desc Description
+ *
+ * An additional interface to a wl_output object, which allows the
+ * client to access aura shell specific functionality for output.
+ * @section page_iface_zaura_output_api API
+ * See @ref iface_zaura_output.
+ */
+/**
+ * @defgroup iface_zaura_output The zaura_output interface
+ *
+ * An additional interface to a wl_output object, which allows the
+ * client to access aura shell specific functionality for output.
+ */
+extern const struct wl_interface zaura_output_interface;
 
 #ifndef ZAURA_SHELL_ERROR_ENUM
 #define ZAURA_SHELL_ERROR_ENUM
@@ -92,6 +111,10 @@ enum zaura_shell_error {
 	 * the surface already has an aura surface object associated
 	 */
 	ZAURA_SHELL_ERROR_AURA_SURFACE_EXISTS = 0,
+	/**
+	 * the output already has an aura output object associated
+	 */
+	ZAURA_SHELL_ERROR_AURA_OUTPUT_EXISTS = 1,
 };
 #endif /* ZAURA_SHELL_ERROR_ENUM */
 
@@ -114,6 +137,19 @@ struct zaura_shell_interface {
 				 struct wl_resource *resource,
 				 uint32_t id,
 				 struct wl_resource *surface);
+	/**
+	 * extend output interface for aura shell
+	 *
+	 * Instantiate an interface extension for the given wl_output to
+	 * provide aura shell functionality.
+	 * @param id the new aura output interface id
+	 * @param output the output
+	 * @since 2
+	 */
+	void (*get_aura_output)(struct wl_client *client,
+				struct wl_resource *resource,
+				uint32_t id,
+				struct wl_resource *output);
 };
 
 
@@ -121,6 +157,10 @@ struct zaura_shell_interface {
  * @ingroup iface_zaura_shell
  */
 #define ZAURA_SHELL_GET_AURA_SURFACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zaura_shell
+ */
+#define ZAURA_SHELL_GET_AURA_OUTPUT_SINCE_VERSION 2
 
 #ifndef ZAURA_SURFACE_FRAME_TYPE_ENUM
 #define ZAURA_SURFACE_FRAME_TYPE_ENUM
@@ -160,6 +200,18 @@ struct zaura_surface_interface {
 	void (*set_frame)(struct wl_client *client,
 			  struct wl_resource *resource,
 			  uint32_t type);
+	/**
+	 * set the parent of this surface
+	 *
+	 * Set the "parent" of this surface. "x" and "y" arguments
+	 * specify the initial position for surface relative to parent.
+	 * @since 2
+	 */
+	void (*set_parent)(struct wl_client *client,
+			   struct wl_resource *resource,
+			   struct wl_resource *parent,
+			   int32_t x,
+			   int32_t y);
 };
 
 
@@ -167,6 +219,70 @@ struct zaura_surface_interface {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_FRAME_SINCE_VERSION 1
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_PARENT_SINCE_VERSION 2
+
+#ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
+#define ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
+/**
+ * @ingroup iface_zaura_output
+ * scale information
+ *
+ * These flags describe properties of an output scale.
+ * They are used in the flags bitfield of the scale event.
+ */
+enum zaura_output_scale_property {
+	/**
+	 * indicates this is the current scale
+	 */
+	ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT = 0x1,
+	/**
+	 * indicates this is the preferred scale
+	 */
+	ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED = 0x2,
+};
+#endif /* ZAURA_OUTPUT_SCALE_PROPERTY_ENUM */
+
+#ifndef ZAURA_OUTPUT_SCALE_FACTOR_ENUM
+#define ZAURA_OUTPUT_SCALE_FACTOR_ENUM
+enum zaura_output_scale_factor {
+	ZAURA_OUTPUT_SCALE_FACTOR_0500 = 500,
+	ZAURA_OUTPUT_SCALE_FACTOR_0600 = 600,
+	ZAURA_OUTPUT_SCALE_FACTOR_0625 = 625,
+	ZAURA_OUTPUT_SCALE_FACTOR_0750 = 750,
+	ZAURA_OUTPUT_SCALE_FACTOR_0800 = 800,
+	ZAURA_OUTPUT_SCALE_FACTOR_1000 = 1000,
+	ZAURA_OUTPUT_SCALE_FACTOR_1125 = 1125,
+	ZAURA_OUTPUT_SCALE_FACTOR_1200 = 1200,
+	ZAURA_OUTPUT_SCALE_FACTOR_1250 = 1250,
+	ZAURA_OUTPUT_SCALE_FACTOR_1500 = 1500,
+	ZAURA_OUTPUT_SCALE_FACTOR_1600 = 1600,
+	ZAURA_OUTPUT_SCALE_FACTOR_2000 = 2000,
+};
+#endif /* ZAURA_OUTPUT_SCALE_FACTOR_ENUM */
+
+#define ZAURA_OUTPUT_SCALE 0
+
+/**
+ * @ingroup iface_zaura_output
+ */
+#define ZAURA_OUTPUT_SCALE_SINCE_VERSION 1
+
+
+/**
+ * @ingroup iface_zaura_output
+ * Sends an scale event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param flags bitfield of scale flags
+ * @param scale output scale
+ */
+static inline void
+zaura_output_send_scale(struct wl_resource *resource_, uint32_t flags, uint32_t scale)
+{
+	wl_resource_post_event(resource_, ZAURA_OUTPUT_SCALE, flags, scale);
+}
 
 #ifdef  __cplusplus
 }

@@ -16,6 +16,7 @@ extern "C" {
  * @section page_ifaces_aura_shell Interfaces
  * - @subpage page_iface_zaura_shell - aura_shell
  * - @subpage page_iface_zaura_surface - aura shell interface to a wl_surface
+ * - @subpage page_iface_zaura_output - aura shell interface to a wl_output
  * @section page_copyright_aura_shell Copyright
  * <pre>
  *
@@ -41,7 +42,9 @@ extern "C" {
  * DEALINGS IN THE SOFTWARE.
  * </pre>
  */
+struct wl_output;
 struct wl_surface;
+struct zaura_output;
 struct zaura_shell;
 struct zaura_surface;
 
@@ -81,6 +84,22 @@ extern const struct wl_interface zaura_shell_interface;
  * client to access aura shell specific functionality for surface.
  */
 extern const struct wl_interface zaura_surface_interface;
+/**
+ * @page page_iface_zaura_output zaura_output
+ * @section page_iface_zaura_output_desc Description
+ *
+ * An additional interface to a wl_output object, which allows the
+ * client to access aura shell specific functionality for output.
+ * @section page_iface_zaura_output_api API
+ * See @ref iface_zaura_output.
+ */
+/**
+ * @defgroup iface_zaura_output The zaura_output interface
+ *
+ * An additional interface to a wl_output object, which allows the
+ * client to access aura shell specific functionality for output.
+ */
+extern const struct wl_interface zaura_output_interface;
 
 #ifndef ZAURA_SHELL_ERROR_ENUM
 #define ZAURA_SHELL_ERROR_ENUM
@@ -89,16 +108,25 @@ enum zaura_shell_error {
 	 * the surface already has an aura surface object associated
 	 */
 	ZAURA_SHELL_ERROR_AURA_SURFACE_EXISTS = 0,
+	/**
+	 * the output already has an aura output object associated
+	 */
+	ZAURA_SHELL_ERROR_AURA_OUTPUT_EXISTS = 1,
 };
 #endif /* ZAURA_SHELL_ERROR_ENUM */
 
 #define ZAURA_SHELL_GET_AURA_SURFACE 0
+#define ZAURA_SHELL_GET_AURA_OUTPUT 1
 
 
 /**
  * @ingroup iface_zaura_shell
  */
 #define ZAURA_SHELL_GET_AURA_SURFACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zaura_shell
+ */
+#define ZAURA_SHELL_GET_AURA_OUTPUT_SINCE_VERSION 2
 
 /** @ingroup iface_zaura_shell */
 static inline void
@@ -146,6 +174,23 @@ zaura_shell_get_aura_surface(struct zaura_shell *zaura_shell, struct wl_surface 
 	return (struct zaura_surface *) id;
 }
 
+/**
+ * @ingroup iface_zaura_shell
+ *
+ * Instantiate an interface extension for the given wl_output to
+ * provide aura shell functionality.
+ */
+static inline struct zaura_output *
+zaura_shell_get_aura_output(struct zaura_shell *zaura_shell, struct wl_output *output)
+{
+	struct wl_proxy *id;
+
+	id = wl_proxy_marshal_constructor((struct wl_proxy *) zaura_shell,
+			 ZAURA_SHELL_GET_AURA_OUTPUT, &zaura_output_interface, NULL, output);
+
+	return (struct zaura_output *) id;
+}
+
 #ifndef ZAURA_SURFACE_FRAME_TYPE_ENUM
 #define ZAURA_SURFACE_FRAME_TYPE_ENUM
 /**
@@ -171,12 +216,17 @@ enum zaura_surface_frame_type {
 #endif /* ZAURA_SURFACE_FRAME_TYPE_ENUM */
 
 #define ZAURA_SURFACE_SET_FRAME 0
+#define ZAURA_SURFACE_SET_PARENT 1
 
 
 /**
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_FRAME_SINCE_VERSION 1
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_PARENT_SINCE_VERSION 2
 
 /** @ingroup iface_zaura_surface */
 static inline void
@@ -215,6 +265,126 @@ zaura_surface_set_frame(struct zaura_surface *zaura_surface, uint32_t type)
 {
 	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
 			 ZAURA_SURFACE_SET_FRAME, type);
+}
+
+/**
+ * @ingroup iface_zaura_surface
+ *
+ * Set the "parent" of this surface. "x" and "y" arguments specify the
+ * initial position for surface relative to parent.
+ */
+static inline void
+zaura_surface_set_parent(struct zaura_surface *zaura_surface, struct zaura_surface *parent, int32_t x, int32_t y)
+{
+	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
+			 ZAURA_SURFACE_SET_PARENT, parent, x, y);
+}
+
+#ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
+#define ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
+/**
+ * @ingroup iface_zaura_output
+ * scale information
+ *
+ * These flags describe properties of an output scale.
+ * They are used in the flags bitfield of the scale event.
+ */
+enum zaura_output_scale_property {
+	/**
+	 * indicates this is the current scale
+	 */
+	ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT = 0x1,
+	/**
+	 * indicates this is the preferred scale
+	 */
+	ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED = 0x2,
+};
+#endif /* ZAURA_OUTPUT_SCALE_PROPERTY_ENUM */
+
+#ifndef ZAURA_OUTPUT_SCALE_FACTOR_ENUM
+#define ZAURA_OUTPUT_SCALE_FACTOR_ENUM
+enum zaura_output_scale_factor {
+	ZAURA_OUTPUT_SCALE_FACTOR_0500 = 500,
+	ZAURA_OUTPUT_SCALE_FACTOR_0600 = 600,
+	ZAURA_OUTPUT_SCALE_FACTOR_0625 = 625,
+	ZAURA_OUTPUT_SCALE_FACTOR_0750 = 750,
+	ZAURA_OUTPUT_SCALE_FACTOR_0800 = 800,
+	ZAURA_OUTPUT_SCALE_FACTOR_1000 = 1000,
+	ZAURA_OUTPUT_SCALE_FACTOR_1125 = 1125,
+	ZAURA_OUTPUT_SCALE_FACTOR_1200 = 1200,
+	ZAURA_OUTPUT_SCALE_FACTOR_1250 = 1250,
+	ZAURA_OUTPUT_SCALE_FACTOR_1500 = 1500,
+	ZAURA_OUTPUT_SCALE_FACTOR_1600 = 1600,
+	ZAURA_OUTPUT_SCALE_FACTOR_2000 = 2000,
+};
+#endif /* ZAURA_OUTPUT_SCALE_FACTOR_ENUM */
+
+/**
+ * @ingroup iface_zaura_output
+ * @struct zaura_output_listener
+ */
+struct zaura_output_listener {
+	/**
+	 * advertise available scales for the output
+	 *
+	 * The scale event describes an available scale for the output.
+	 *
+	 * The event is sent when binding to the output object and there
+	 * will always be one scale, the current scale. The event is sent
+	 * again if an output changes scale, for the scale that is now
+	 * current. In other words, the current scale is always the last
+	 * scale that was received with the current flag set.
+	 * @param flags bitfield of scale flags
+	 * @param scale output scale
+	 */
+	void (*scale)(void *data,
+		      struct zaura_output *zaura_output,
+		      uint32_t flags,
+		      uint32_t scale);
+};
+
+/**
+ * @ingroup iface_zaura_output
+ */
+static inline int
+zaura_output_add_listener(struct zaura_output *zaura_output,
+			  const struct zaura_output_listener *listener, void *data)
+{
+	return wl_proxy_add_listener((struct wl_proxy *) zaura_output,
+				     (void (**)(void)) listener, data);
+}
+
+/**
+ * @ingroup iface_zaura_output
+ */
+#define ZAURA_OUTPUT_SCALE_SINCE_VERSION 1
+
+
+/** @ingroup iface_zaura_output */
+static inline void
+zaura_output_set_user_data(struct zaura_output *zaura_output, void *user_data)
+{
+	wl_proxy_set_user_data((struct wl_proxy *) zaura_output, user_data);
+}
+
+/** @ingroup iface_zaura_output */
+static inline void *
+zaura_output_get_user_data(struct zaura_output *zaura_output)
+{
+	return wl_proxy_get_user_data((struct wl_proxy *) zaura_output);
+}
+
+static inline uint32_t
+zaura_output_get_version(struct zaura_output *zaura_output)
+{
+	return wl_proxy_get_version((struct wl_proxy *) zaura_output);
+}
+
+/** @ingroup iface_zaura_output */
+static inline void
+zaura_output_destroy(struct zaura_output *zaura_output)
+{
+	wl_proxy_destroy((struct wl_proxy *) zaura_output);
 }
 
 #ifdef  __cplusplus

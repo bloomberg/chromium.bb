@@ -27,32 +27,52 @@
 #include <stdint.h>
 #include "wayland-util.h"
 
+extern const struct wl_interface wl_output_interface;
 extern const struct wl_interface wl_surface_interface;
+extern const struct wl_interface zaura_output_interface;
 extern const struct wl_interface zaura_surface_interface;
 
 static const struct wl_interface *types[] = {
 	NULL,
+	NULL,
 	&zaura_surface_interface,
 	&wl_surface_interface,
+	&zaura_output_interface,
+	&wl_output_interface,
+	&zaura_surface_interface,
+	NULL,
+	NULL,
 };
 
 static const struct wl_message zaura_shell_requests[] = {
-	{ "get_aura_surface", "no", types + 1 },
+	{ "get_aura_surface", "no", types + 2 },
+	{ "get_aura_output", "2no", types + 4 },
 };
 
 WL_EXPORT const struct wl_interface zaura_shell_interface = {
-	"zaura_shell", 1,
-	1, zaura_shell_requests,
+	"zaura_shell", 2,
+	2, zaura_shell_requests,
 	0, NULL,
 };
 
 static const struct wl_message zaura_surface_requests[] = {
 	{ "set_frame", "u", types + 0 },
+	{ "set_parent", "2?oii", types + 6 },
 };
 
 WL_EXPORT const struct wl_interface zaura_surface_interface = {
-	"zaura_surface", 1,
-	1, zaura_surface_requests,
+	"zaura_surface", 2,
+	2, zaura_surface_requests,
 	0, NULL,
+};
+
+static const struct wl_message zaura_output_events[] = {
+	{ "scale", "uu", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zaura_output_interface = {
+	"zaura_output", 2,
+	0, NULL,
+	1, zaura_output_events,
 };
 
