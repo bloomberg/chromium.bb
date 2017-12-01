@@ -126,3 +126,19 @@ void FullscreenModel::SetProgress(CGFloat progress) {
 void FullscreenModel::UpdateBaseOffset() {
   base_offset_ = y_content_offset_ - (1.0 - progress_) * toolbar_height_;
 }
+
+void FullscreenModel::OnContentScrollOffsetBroadcasted(CGFloat offset) {
+  SetYContentOffset(offset);
+}
+
+void FullscreenModel::OnScrollViewIsScrollingBroadcasted(bool scrolling) {
+  SetScrollViewIsScrolling(scrolling);
+}
+
+void FullscreenModel::OnScrollViewIsDraggingBroadcasted(bool dragging) {
+  SetScrollViewIsDragging(dragging);
+}
+
+void FullscreenModel::OnToolbarHeightBroadcasted(CGFloat toolbar_height) {
+  SetToolbarHeight(toolbar_height);
+}
