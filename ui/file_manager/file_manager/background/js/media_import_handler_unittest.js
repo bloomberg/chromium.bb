@@ -32,6 +32,9 @@ var duplicateFinderFactory;
 /** @type {!Promise<!DirectoryEntry>} */
 var destinationFactory;
 
+/** @type {!MockDriveSyncHandler} */
+var driveSyncHandler;
+
 // Set up string assets.
 loadTimeData.data = {
   CLOUD_IMPORT_ITEMS_REMAINING: '',
@@ -90,14 +93,12 @@ function setUp() {
   destinationFileSystem = new MockFileSystem('googleDriveFilesystem');
   destinationFactory = Promise.resolve(destinationFileSystem.root);
   duplicateFinderFactory = new importer.TestDuplicateFinder.Factory();
+  driveSyncHandler = new MockDriveSyncHandler();
 
   mediaImporter = new importer.MediaImportHandler(
-      progressCenter,
-      importHistory,
-      function(entry, destination) {
+      progressCenter, importHistory, function(entry, destination) {
         return dispositionChecker(entry, destination);
-      },
-      new TestTracker());
+      }, new TestTracker(), driveSyncHandler);
 }
 
 function testImportMedia(callback) {
@@ -167,10 +168,8 @@ function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
   mediaImporter = new importer.MediaImportHandler(
-      progressCenter,
-      importHistory,
-      dispositionChecker,
-      new TestTracker());
+      progressCenter, importHistory, dispositionChecker, new TestTracker(),
+      driveSyncHandler);
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
       scanResult,
@@ -564,7 +563,7 @@ function testImportWithErrors(callback) {
     }
   });
 
-  // Verify that the error didn't result in only 3 files being imported.
+  // Verify that the error didn't result in some files not being copied.
   reportPromise(
       whenImportDone.then(
         function() {
