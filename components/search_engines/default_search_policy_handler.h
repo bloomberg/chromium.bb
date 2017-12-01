@@ -38,6 +38,9 @@ class DefaultSearchPolicyHandler : public ConfigurationPolicyHandler {
   // Returns whether any default search policies are specified in |policies|.
   bool AnyDefaultSearchPoliciesSpecified(const PolicyMap& policies);
 
+  // Returns whether the default search provider policy has a value.
+  bool DefaultSearchProviderPolicyIsSet(const PolicyMap& policies);
+
   // Returns whether the default search provider is disabled.
   bool DefaultSearchProviderIsDisabled(const PolicyMap& policies);
 
