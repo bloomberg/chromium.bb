@@ -9,6 +9,6 @@ namespace net {
 FtpNetworkSession::FtpNetworkSession(HostResolver* host_resolver)
     : host_resolver_(host_resolver) {}
 
-FtpNetworkSession::~FtpNetworkSession() {}
+FtpNetworkSession::~FtpNetworkSession() = default;
 
 }  // namespace net

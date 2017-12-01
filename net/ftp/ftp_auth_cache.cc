@@ -18,11 +18,11 @@ FtpAuthCache::Entry::Entry(const GURL& origin,
       credentials(credentials) {
 }
 
-FtpAuthCache::Entry::~Entry() {}
+FtpAuthCache::Entry::~Entry() = default;
 
-FtpAuthCache::FtpAuthCache() {}
+FtpAuthCache::FtpAuthCache() = default;
 
-FtpAuthCache::~FtpAuthCache() {}
+FtpAuthCache::~FtpAuthCache() = default;
 
 FtpAuthCache::Entry* FtpAuthCache::Lookup(const GURL& origin) {
   for (EntryList::iterator it = entries_.begin(); it != entries_.end(); ++it) {
