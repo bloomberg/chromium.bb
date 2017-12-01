@@ -227,5 +227,26 @@ TEST_F(SeatTest, SetSelection_SourceDestroyedAfterSetSelection) {
   EXPECT_FALSE(delegate1.cancelled());
 }
 
+TEST_F(SeatTest, SetSelection_NullSource) {
+  Seat seat;
+
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  source.Offer("text/plain;charset=utf-8");
+  seat.SetSelection(&source);
+
+  RunReadingTask();
+
+  // Should clear the clipboard.
+  seat.SetSelection(nullptr);
+
+  ASSERT_TRUE(delegate.cancelled());
+
+  std::string clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard);
+  EXPECT_EQ(clipboard, "");
+}
+
 }  // namespace
 }  // namespace exo

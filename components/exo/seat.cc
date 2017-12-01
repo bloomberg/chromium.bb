@@ -62,14 +62,17 @@ Surface* Seat::GetFocusedSurface() {
 }
 
 void Seat::SetSelection(DataSource* source) {
-  DCHECK(source);
+  if (!source) {
+    ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    // selection_source_ is Cancelled() and reset() in OnClipboardDataChanged().
+    return;
+  }
 
   if (selection_source_) {
     if (selection_source_->get() == source)
       return;
     selection_source_->get()->Cancelled();
   }
-
   selection_source_ = std::make_unique<ScopedDataSource>(source, this);
 
   // Unretained is safe as Seat always outlives DataSource.
