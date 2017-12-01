@@ -869,7 +869,7 @@ wayland_output_set_windowed(struct wayland_output *output)
 			return -1;
 	}
 	output->frame = frame_create(b->theme, 100, 100,
-				     FRAME_BUTTON_CLOSE, output->title);
+	                             FRAME_BUTTON_CLOSE, output->title, NULL);
 	if (!output->frame)
 		return -1;
 

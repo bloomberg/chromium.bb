@@ -108,9 +108,9 @@ struct frame {
 };
 
 static struct frame_button *
-frame_button_create(struct frame *frame, const char *icon,
-		    enum frame_status status_effect,
-		    enum frame_button_flags flags)
+frame_button_create_from_surface(struct frame *frame, cairo_surface_t *icon,
+                                 enum frame_status status_effect,
+                                 enum frame_button_flags flags)
 {
 	struct frame_button *button;
 
@@ -118,12 +118,7 @@ frame_button_create(struct frame *frame, const char *icon,
 	if (!button)
 		return NULL;
 
-	button->icon = cairo_image_surface_create_from_png(icon);
-	if (!button->icon) {
-		free(button);
-		return NULL;
-	}
-
+	button->icon = icon;
 	button->frame = frame;
 	button->flags = flags;
 	button->status_effect = status_effect;
@@ -131,6 +126,30 @@ frame_button_create(struct frame *frame, const char *icon,
 	wl_list_insert(frame->buttons.prev, &button->link);
 
 	return button;
+}
+
+static struct frame_button *
+frame_button_create(struct frame *frame, const char *icon_name,
+                    enum frame_status status_effect,
+                    enum frame_button_flags flags)
+{
+	struct frame_button *button;
+	cairo_surface_t *icon;
+
+	icon = cairo_image_surface_create_from_png(icon_name);
+	if (cairo_surface_status(icon) != CAIRO_STATUS_SUCCESS)
+		goto error;
+
+	button = frame_button_create_from_surface(frame, icon, status_effect,
+	                                          flags);
+	if (!button)
+		goto error;
+
+	return button;
+
+error:
+	cairo_surface_destroy(icon);
+	return NULL;
 }
 
 static void
@@ -305,7 +324,7 @@ frame_destroy(struct frame *frame)
 
 struct frame *
 frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
-	     const char *title)
+             const char *title, cairo_surface_t *icon)
 {
 	struct frame *frame;
 	struct frame_button *button;
@@ -332,10 +351,17 @@ frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
 	}
 
 	if (title) {
-		button = frame_button_create(frame,
-					     DATADIR "/weston/icon_window.png",
-					     FRAME_STATUS_MENU,
-					     FRAME_BUTTON_CLICK_DOWN);
+		if (icon) {
+			button = frame_button_create_from_surface(frame,
+			                                          icon,
+			                                          FRAME_STATUS_MENU,
+			                                          FRAME_BUTTON_CLICK_DOWN);
+		} else {
+			button = frame_button_create(frame,
+			                             DATADIR "/weston/icon_window.png",
+			                             FRAME_STATUS_MENU,
+			                             FRAME_BUTTON_CLICK_DOWN);
+		}
 		if (!button)
 			goto free_frame;
 	}

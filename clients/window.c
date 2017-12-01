@@ -2546,7 +2546,7 @@ window_frame_create(struct window *window, void *data)
 
 	frame = xzalloc(sizeof *frame);
 	frame->frame = frame_create(window->display->theme, 0, 0,
-				    buttons, window->title);
+	                            buttons, window->title, NULL);
 
 	frame->widget = window_add_widget(window, frame);
 	frame->child = widget_add_widget(frame->widget, data);
@@ -5449,7 +5449,7 @@ create_menu(struct display *display,
 	menu->user_data = user_data;
 	menu->widget = window_add_widget(menu->window, menu);
 	menu->frame = frame_create(window->display->theme, 0, 0,
-				   FRAME_BUTTON_NONE, NULL);
+	                           FRAME_BUTTON_NONE, NULL, NULL);
 	fail_on_null(menu->frame, 0, __FILE__, __LINE__);
 	menu->entries = entries;
 	menu->count = count;

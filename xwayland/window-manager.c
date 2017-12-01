@@ -138,6 +138,8 @@ struct weston_wm_window {
 	xcb_window_t frame_id;
 	struct frame *frame;
 	cairo_surface_t *cairo_surface;
+	int icon;
+	cairo_surface_t *icon_surface;
 	uint32_t surface_id;
 	struct weston_surface *surface;
 	struct weston_desktop_xwayland_surface *shsurf;
@@ -473,6 +475,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		{ wm->atom.net_wm_state,       TYPE_NET_WM_STATE,          NULL },
 		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM,              F(type) },
 		{ wm->atom.net_wm_name,        XCB_ATOM_STRING,            F(name) },
+		{ wm->atom.net_wm_icon,        XCB_ATOM_CARDINAL,          F(icon) },
 		{ wm->atom.net_wm_pid,         XCB_ATOM_CARDINAL,          F(pid) },
 		{ wm->atom.motif_wm_hints,     TYPE_MOTIF_WM_HINTS,        NULL },
 		{ wm->atom.wm_client_machine,  XCB_ATOM_WM_CLIENT_MACHINE, F(machine) },
@@ -988,8 +991,9 @@ weston_wm_window_create_frame(struct weston_wm_window *window)
 		buttons |= FRAME_BUTTON_MAXIMIZE;
 
 	window->frame = frame_create(window->wm->theme,
-				     window->width, window->height,
-				     buttons, window->name);
+	                             window->width, window->height,
+	                             buttons, window->name,
+	                             window->icon_surface);
 	frame_resize_inside(window->frame, window->width, window->height);
 
 	weston_wm_window_get_frame_size(window, &width, &height);
@@ -1348,6 +1352,53 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 }
 
 static void
+weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
+{
+	xcb_get_property_reply_t *reply;
+	xcb_get_property_cookie_t cookie;
+	uint32_t length;
+	uint32_t *data, width, height;
+	cairo_surface_t *new_surface;
+
+	/* TODO: icons don’t have any specified order, we should pick the
+	 * closest one to the target dimension instead of the first one. */
+
+	cookie = xcb_get_property(wm->conn, 0, window->id,
+	                          wm->atom.net_wm_icon, XCB_ATOM_ANY, 0,
+	                          UINT32_MAX);
+	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
+	length = xcb_get_property_value_length(reply);
+
+	/* This is in 32-bit words, not in bytes. */
+	if (length < 2)
+		return;
+
+	data = xcb_get_property_value(reply);
+	width = *data++;
+	height = *data++;
+
+	/* Some checks against malformed input. */
+	if (width == 0 || height == 0 || length < 2 + width * height)
+		return;
+
+	new_surface =
+		cairo_image_surface_create_for_data((unsigned char *)data,
+		                                    CAIRO_FORMAT_ARGB32,
+		                                    width, height, width * 4);
+
+	/* Bail out in case anything wrong happened during surface creation. */
+	if (cairo_surface_status(new_surface) != CAIRO_STATUS_SUCCESS) {
+		cairo_surface_destroy(new_surface);
+		return;
+	}
+
+	if (window->icon_surface)
+		cairo_surface_destroy(window->icon_surface);
+
+	window->icon_surface = new_surface;
+}
+
+static void
 weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_property_notify_event_t *property_notify =
@@ -1366,6 +1417,16 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 	else
 		read_and_dump_property(wm, property_notify->window,
 				       property_notify->atom);
+
+	if (property_notify->atom == wm->atom.net_wm_icon) {
+		if (property_notify->state != XCB_PROPERTY_DELETE) {
+			weston_wm_handle_icon(wm, window);
+		} else {
+			cairo_surface_destroy(window->icon_surface);
+			window->icon_surface = NULL;
+		}
+		weston_wm_window_schedule_repaint(window);
+	}
 
 	if (property_notify->atom == wm->atom.net_wm_name ||
 	    property_notify->atom == XCB_ATOM_WM_NAME)

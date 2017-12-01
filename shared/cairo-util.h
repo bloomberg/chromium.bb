@@ -126,7 +126,7 @@ enum {
 
 struct frame *
 frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
-	     const char *title);
+             const char *title, cairo_surface_t *icon);
 
 void
 frame_destroy(struct frame *frame);
