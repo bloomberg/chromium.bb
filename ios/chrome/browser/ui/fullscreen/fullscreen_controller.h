@@ -5,10 +5,13 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
 
+#import <Foundation/Foundation.h>
 #include <memory>
 
 #include "base/macros.h"
 
+@class ChromeBroadcaster;
+@class ChromeBroadcastOberverBridge;
 class FullscreenControllerObserver;
 class FullscreenModel;
 class FullscreenWebStateListObserver;
@@ -19,7 +22,7 @@ class FullscreenWebStateListObserver;
 // the page's content to be visible.
 class FullscreenController {
  public:
-  explicit FullscreenController();
+  explicit FullscreenController(ChromeBroadcaster* broadcaster);
   ~FullscreenController();
 
   // Adds and removes FullscreenControllerObservers.
@@ -39,8 +42,12 @@ class FullscreenController {
   void DecrementDisabledCounter();
 
  private:
+  // The broadcaster that drives the model.
+  __strong ChromeBroadcaster* broadcaster_ = nil;
   // The model used to calculate fullscreen state.
   std::unique_ptr<FullscreenModel> model_;
+  // The bridge used to forward brodcasted UI to |model_|.
+  __strong ChromeBroadcastOberverBridge* bridge_ = nil;
   // A WebStateListObserver that updates |model_| for WebStateList changes.
   std::unique_ptr<FullscreenWebStateListObserver> web_state_list_observer_;
 

@@ -23,10 +23,6 @@ ChromeBroadcastObserverInterface::~ChromeBroadcastObserverInterface() = default;
   return self;
 }
 
-- (void)broadcastTabStripVisible:(BOOL)visible {
-  self.observer->OnTabStripVisbibleBroadcasted(visible);
-}
-
 - (void)broadcastContentScrollOffset:(CGFloat)offset {
   self.observer->OnContentScrollOffsetBroadcasted(offset);
 }

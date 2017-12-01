@@ -14,7 +14,6 @@
 class TestChromeBroadcastObserver : public ChromeBroadcastObserverInterface {
  public:
   // Received broadcast values.
-  bool tab_strip_visible() const { return tab_strip_visible_; }
   CGFloat scroll_offset() const { return scroll_offset_; }
   bool scroll_view_scrolling() const { return scroll_view_scrolling_; }
   bool scroll_view_dragging() const { return scroll_view_dragging_; }
@@ -22,9 +21,6 @@ class TestChromeBroadcastObserver : public ChromeBroadcastObserverInterface {
 
  private:
   // ChromeBroadcastObserverInterface:
-  void OnTabStripVisbibleBroadcasted(bool visible) override {
-    tab_strip_visible_ = visible;
-  }
   void OnContentScrollOffsetBroadcasted(CGFloat offset) override {
     scroll_offset_ = offset;
   }
@@ -38,7 +34,6 @@ class TestChromeBroadcastObserver : public ChromeBroadcastObserverInterface {
     toolbar_height_ = toolbar_height;
   }
 
-  bool tab_strip_visible_ = false;
   CGFloat scroll_offset_ = 0.0;
   bool scroll_view_scrolling_ = false;
   bool scroll_view_dragging_ = false;

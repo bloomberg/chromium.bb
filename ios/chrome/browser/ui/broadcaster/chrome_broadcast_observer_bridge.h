@@ -12,9 +12,6 @@ class ChromeBroadcastObserverInterface {
  public:
   virtual ~ChromeBroadcastObserverInterface();
 
-  // Invoked by |-broadcastTabStripVisible:|.
-  virtual void OnTabStripVisbibleBroadcasted(bool visible) {}
-
   // Invoked by |-broadcastContentScrollOffset:|.
   virtual void OnContentScrollOffsetBroadcasted(CGFloat offset) {}
 

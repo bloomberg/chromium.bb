@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
 
@@ -12,10 +14,32 @@
 #error "This file requires ARC support."
 #endif
 
-FullscreenController::FullscreenController()
-    : model_(base::MakeUnique<FullscreenModel>()) {}
+FullscreenController::FullscreenController(ChromeBroadcaster* broadcaster)
+    : broadcaster_(broadcaster),
+      model_(base::MakeUnique<FullscreenModel>()),
+      bridge_([[ChromeBroadcastOberverBridge alloc]
+          initWithObserver:model_.get()]) {
+  DCHECK(broadcaster_);
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastContentScrollOffset:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastScrollViewIsScrolling:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastScrollViewIsDragging:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastToolbarHeight:)];
+}
 
-FullscreenController::~FullscreenController() {}
+FullscreenController::~FullscreenController() {
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastContentScrollOffset:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsScrolling:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsDragging:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastToolbarHeight:)];
+}
 
 void FullscreenController::AddObserver(FullscreenControllerObserver* observer) {
   // TODO(crbug.com/785671): Use FullscreenControllerObserverManager to keep

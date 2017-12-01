@@ -10,14 +10,15 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
 
 class FullscreenModelObserver;
 
 // Model object used to calculate fullscreen state.
-class FullscreenModel {
+class FullscreenModel : public ChromeBroadcastObserverInterface {
  public:
   FullscreenModel();
-  virtual ~FullscreenModel();
+  ~FullscreenModel() override;
 
   // Adds and removes FullscreenModelObservers.
   void AddObserver(FullscreenModelObserver* observer) {
@@ -87,6 +88,12 @@ class FullscreenModel {
   // Updates the base offset given the current y content offset, progress, and
   // toolbar height.
   void UpdateBaseOffset();
+
+  // ChromeBroadcastObserverInterface:
+  void OnContentScrollOffsetBroadcasted(CGFloat offset) override;
+  void OnScrollViewIsScrollingBroadcasted(bool scrolling) override;
+  void OnScrollViewIsDraggingBroadcasted(bool dragging) override;
+  void OnToolbarHeightBroadcasted(CGFloat toolbar_height) override;
 
   // The observers for this model.
   base::ObserverList<FullscreenModelObserver> observers_;
