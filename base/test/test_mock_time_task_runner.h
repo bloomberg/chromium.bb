@@ -246,7 +246,7 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
   // |tasks_lock_| is held.
   size_t next_task_ordinal_ = 0;
 
-  Lock tasks_lock_;
+  mutable Lock tasks_lock_;
   ConditionVariable tasks_lock_cv_;
 
   // Members used to in TestMockTimeTaskRunners of Type::kBoundToThread to take
