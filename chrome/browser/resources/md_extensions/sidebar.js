@@ -16,15 +16,14 @@ cr.define('extensions', function() {
                                                                           0);
     },
 
-    /** @private */
-    onExtensionsTap_: function() {
-      extensions.navigation.navigateTo({page: Page.LIST});
-    },
-
-    /** @private */
-    onKeyboardShortcutsTap_: function() {
-      extensions.navigation.navigateTo({page: Page.SHORTCUTS});
-    },
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onLinkTap_: function(e) {
+      e.preventDefault();
+      extensions.navigation.navigateTo({page: e.target.dataset.path});
+    }
   });
 
   return {Sidebar: Sidebar};
