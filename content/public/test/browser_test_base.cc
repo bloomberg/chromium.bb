@@ -236,6 +236,9 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
 
+  // Disable compositor Ukm in browser tests until crbug.com/761524 is resolved.
+  command_line->AppendSwitch(switches::kDisableCompositorUkmForTests);
+
   test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;

@@ -407,8 +407,11 @@ void ProxyImpl::RenewTreePriority() {
       host_impl_->pinch_gesture_active() ||
       host_impl_->page_scale_animation_active() ||
       host_impl_->IsActivelyScrolling();
-  host_impl_->ukm_manager()->SetUserInteractionInProgress(
-      user_interaction_in_progress);
+
+  if (host_impl_->ukm_manager()) {
+    host_impl_->ukm_manager()->SetUserInteractionInProgress(
+        user_interaction_in_progress);
+  }
 
   // Schedule expiration if smoothness currently takes priority.
   if (user_interaction_in_progress)
@@ -724,7 +727,9 @@ base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
 
 void ProxyImpl::SetURLForUkm(const GURL& url) {
   DCHECK(IsImplThread());
-  DCHECK(host_impl_->ukm_manager());
+  if (!host_impl_->ukm_manager())
+    return;
+
   // The active tree might still be from content for the previous page when the
   // recorder is updated here, since new content will be pushed with the next
   // main frame. But we should only get a few impl frames wrong here in that
