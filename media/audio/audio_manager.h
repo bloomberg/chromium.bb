@@ -91,7 +91,7 @@ class MEDIA_EXPORT AudioManager {
 
   // Log callback used for sending log messages from a stream to the object
   // that manages the stream.
-  using LogCallback = base::Callback<void(const std::string&)>;
+  using LogCallback = base::RepeatingCallback<void(const std::string&)>;
 
   // Factory for all the supported stream formats. |params| defines parameters
   // of the audio stream to be created.

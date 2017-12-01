@@ -11,6 +11,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -40,6 +41,12 @@ using ::testing::Gt;
 using ::testing::NotNull;
 
 namespace media {
+
+namespace {
+
+void LogCallbackDummy(const std::string& /* message */) {}
+
+}  // namespace
 
 ACTION_P4(CheckCountAndPostQuitTask, count, limit, task_runner, quit_closure) {
   if (++*count >= limit)
@@ -207,7 +214,7 @@ class AudioInputStreamWrapper {
     params.set_frames_per_buffer(frames_per_buffer_);
     AudioInputStream* ais = audio_man_->MakeAudioInputStream(
         params, AudioDeviceDescription::kDefaultDeviceId,
-        AudioManager::LogCallback());
+        base::BindRepeating(&LogCallbackDummy));
     EXPECT_TRUE(ais);
     return ais;
   }
@@ -453,7 +460,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
 
   ScopedAudioInputStream stream(audio_manager_->MakeAudioInputStream(
       params, AudioDeviceDescription::kLoopbackInputDeviceId,
-      AudioManager::LogCallback()));
+      base::BindRepeating(&LogCallbackDummy)));
   ASSERT_TRUE(stream->Open());
   FakeAudioInputCallback sink;
   stream->Start(&sink);
