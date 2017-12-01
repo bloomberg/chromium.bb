@@ -172,7 +172,6 @@ def attribute_context(interface, attribute, interfaces):
         'on_instance': v8_utilities.on_instance(interface, attribute),
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(attribute),  # [OriginTrialEnabled]
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(attribute),  # [OriginTrialEnabled]
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': v8_utilities.measure_as(attribute, interface),  # [MeasureAs]
@@ -227,6 +226,10 @@ def runtime_call_stats_context(interface, attribute, context):
     })
 
 
+def is_origin_trial_enabled(attribute):
+    return bool(attribute['origin_trial_feature_name'])
+
+
 def is_secure_context(attribute):
     return bool(attribute['secure_context_test'])
 
@@ -236,7 +239,7 @@ def filter_accessors(attributes):
             not (attribute['exposed_test'] or
                  is_secure_context(attribute) or
                  attribute['context_enabled_feature_name'] or
-                 attribute['origin_trial_enabled_function'] or
+                 is_origin_trial_enabled(attribute) or
                  attribute['runtime_enabled_feature_name']) and
             not attribute['is_data_type_property']]
 
@@ -245,7 +248,7 @@ def is_data_attribute(attribute):
     return (not (attribute['exposed_test'] or
                  is_secure_context(attribute) or
                  attribute['context_enabled_feature_name'] or
-                 attribute['origin_trial_enabled_function'] or
+                 is_origin_trial_enabled(attribute) or
                  attribute['runtime_enabled_feature_name']) and
             attribute['is_data_type_property'])
 
@@ -277,7 +280,7 @@ def filter_conditionally_enabled(attributes):
     return [attribute for attribute in attributes if
             attribute['exposed_test'] or
             (is_secure_context(attribute) and
-             not attribute['origin_trial_feature_name'])]
+             not is_origin_trial_enabled(attribute))]
 
 
 ################################################################################

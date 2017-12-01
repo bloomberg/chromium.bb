@@ -744,22 +744,6 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     }
   }
 
-  if (OriginTrials::featureName1Enabled(executionContext)) {
-    v8::Local<v8::Value> originTrialSecondMemberValue;
-    if (!v8Object->Get(context, keys[21].Get(isolate)).ToLocal(&originTrialSecondMemberValue)) {
-      exceptionState.RethrowV8Exception(block.Exception());
-      return;
-    }
-    if (originTrialSecondMemberValue.IsEmpty() || originTrialSecondMemberValue->IsUndefined()) {
-      // Do nothing.
-    } else {
-      bool originTrialSecondMemberCppValue = NativeValueTraits<IDLBoolean>::NativeValue(isolate, originTrialSecondMemberValue, exceptionState);
-      if (exceptionState.HadException())
-        return;
-      impl.setOriginTrialSecondMember(originTrialSecondMemberCppValue);
-    }
-  }
-
   if (OriginTrials::featureNameEnabled(executionContext)) {
     v8::Local<v8::Value> originTrialMemberValue;
     if (!v8Object->Get(context, keys[20].Get(isolate)).ToLocal(&originTrialMemberValue)) {
@@ -773,6 +757,22 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
       if (exceptionState.HadException())
         return;
       impl.setOriginTrialMember(originTrialMemberCppValue);
+    }
+  }
+
+  if (OriginTrials::featureName1Enabled(executionContext)) {
+    v8::Local<v8::Value> originTrialSecondMemberValue;
+    if (!v8Object->Get(context, keys[21].Get(isolate)).ToLocal(&originTrialSecondMemberValue)) {
+      exceptionState.RethrowV8Exception(block.Exception());
+      return;
+    }
+    if (originTrialSecondMemberValue.IsEmpty() || originTrialSecondMemberValue->IsUndefined()) {
+      // Do nothing.
+    } else {
+      bool originTrialSecondMemberCppValue = NativeValueTraits<IDLBoolean>::NativeValue(isolate, originTrialSecondMemberValue, exceptionState);
+      if (exceptionState.HadException())
+        return;
+      impl.setOriginTrialSecondMember(originTrialSecondMemberCppValue);
     }
   }
 }
@@ -1307,19 +1307,6 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (OriginTrials::featureName1Enabled(executionContext)) {
-    v8::Local<v8::Value> originTrialSecondMemberValue;
-    bool originTrialSecondMemberHasValueOrDefault = false;
-    if (impl.hasOriginTrialSecondMember()) {
-      originTrialSecondMemberValue = v8::Boolean::New(isolate, impl.originTrialSecondMember());
-      originTrialSecondMemberHasValueOrDefault = true;
-    }
-    if (originTrialSecondMemberHasValueOrDefault &&
-        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[21].Get(isolate), originTrialSecondMemberValue))) {
-      return false;
-    }
-  }
-
   if (OriginTrials::featureNameEnabled(executionContext)) {
     v8::Local<v8::Value> originTrialMemberValue;
     bool originTrialMemberHasValueOrDefault = false;
@@ -1329,6 +1316,19 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     }
     if (originTrialMemberHasValueOrDefault &&
         !V8CallBoolean(dictionary->CreateDataProperty(context, keys[20].Get(isolate), originTrialMemberValue))) {
+      return false;
+    }
+  }
+
+  if (OriginTrials::featureName1Enabled(executionContext)) {
+    v8::Local<v8::Value> originTrialSecondMemberValue;
+    bool originTrialSecondMemberHasValueOrDefault = false;
+    if (impl.hasOriginTrialSecondMember()) {
+      originTrialSecondMemberValue = v8::Boolean::New(isolate, impl.originTrialSecondMember());
+      originTrialSecondMemberHasValueOrDefault = true;
+    }
+    if (originTrialSecondMemberHasValueOrDefault &&
+        !V8CallBoolean(dictionary->CreateDataProperty(context, keys[21].Get(isolate), originTrialSecondMemberValue))) {
       return false;
     }
   }

@@ -230,7 +230,6 @@ def method_context(interface, method, is_visible=True):
         'on_instance': v8_utilities.on_instance(interface, method),
         'on_interface': v8_utilities.on_interface(interface, method),
         'on_prototype': v8_utilities.on_prototype(interface, method),
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(method),  # [OriginTrialEnabled]
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(method),  # [OriginTrialEnabled]
         'property_attributes': property_attributes(interface, method),
         'returns_promise': method.returns_promise,

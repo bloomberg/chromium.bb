@@ -394,64 +394,31 @@ def measure_as(definition_or_member, interface):
 
 
 # [OriginTrialEnabled]
-def origin_trial_enabled_function_name(definition_or_member):
-    """Returns the name of the OriginTrials enabled function.
+def origin_trial_feature_name(definition_or_member):
+    """Returns the name of the feature for the OriginTrialEnabled attribute.
 
     An exception is raised if OriginTrialEnabled is used in conjunction with any
     of the following (which must be mutually exclusive with origin trials):
       - RuntimeEnabled
 
-    The returned function checks if the IDL member should be enabled.
-    Given extended attribute OriginTrialEnabled=FeatureName, return:
-        OriginTrials::{featureName}Enabled
-
     If the OriginTrialEnabled extended attribute is found, the includes are
     also updated as a side-effect.
     """
     extended_attributes = definition_or_member.extended_attributes
-    is_origin_trial_enabled = 'OriginTrialEnabled' in extended_attributes
+    feature_name = extended_attributes.get('OriginTrialEnabled')
 
-    if is_origin_trial_enabled and 'RuntimeEnabled' in extended_attributes:
+    if feature_name and 'RuntimeEnabled' in extended_attributes:
         raise Exception('[OriginTrialEnabled] and [RuntimeEnabled] must '
                         'not be specified on the same definition: %s'
                         % definition_or_member.name)
 
-    if is_origin_trial_enabled:
-        trial_name = extended_attributes['OriginTrialEnabled']
-        return 'OriginTrials::%sEnabled' % uncapitalize(trial_name)
-
-    is_feature_policy_enabled = 'FeaturePolicy' in extended_attributes
-
-    if is_feature_policy_enabled and 'RuntimeEnabled' in extended_attributes:
-        raise Exception('[FeaturePolicy] and [RuntimeEnabled] must '
-                        'not be specified on the same definition: %s'
-                        % definition_or_member.name)
-
-    if is_feature_policy_enabled and 'SecureContext' in extended_attributes:
-        raise Exception('[FeaturePolicy] and [SecureContext] must '
-                        'not be specified on the same definition '
-                        '(see https://crbug.com/695123 for workaround): %s'
-                        % definition_or_member.name)
-
-    if is_feature_policy_enabled:
-        includes.add('platform/bindings/ScriptState.h')
-        includes.add('platform/feature_policy/FeaturePolicy.h')
-
-        trial_name = extended_attributes['FeaturePolicy']
-        return 'FeaturePolicy::%sEnabled' % uncapitalize(trial_name)
-
-    return None
+    return feature_name
 
 
-def origin_trial_feature_name(definition_or_member):
-    extended_attributes = definition_or_member.extended_attributes
-    return extended_attributes.get('OriginTrialEnabled') or extended_attributes.get('FeaturePolicy')
-
-
-def origin_trial_function_call(function_name, execution_context=None):
+def origin_trial_function_call(feature_name, execution_context=None):
     """Returns a function call to determine if an origin trial is enabled."""
-    return '{function}({context})'.format(
-        function=function_name,
+    return 'OriginTrials::{feature_name}Enabled({context})'.format(
+        feature_name=uncapitalize(feature_name),
         context=execution_context if execution_context else "execution_context")
 
 

@@ -292,7 +292,7 @@ def interface_context(interface, interfaces):
         'is_typed_array_type': is_typed_array_type,
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
         'needs_runtime_enabled_installer': needs_runtime_enabled_installer,
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface),
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(interface),
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_name(interface) + '*',
         'runtime_call_stats': runtime_call_stats_context(interface),
@@ -827,7 +827,6 @@ def constant_context(constant, interface):
         'idl_type': constant.idl_type.name,
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
         'name': constant.name,
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(constant),  # [OriginTrialEnabled]
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
         'rcs_counter': 'Blink_' + v8_utilities.cpp_name(interface) + '_' + constant.name + '_ConstantGetter',
