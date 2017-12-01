@@ -20,6 +20,7 @@
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/keyboard/keyboard_layout_delegate.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/notification_manager.h"
 
 namespace aura {
 class Window;
@@ -264,6 +265,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   KeyboardControllerState state_;
 
   ContainerType enqueued_container_type_;
+
+  NotificationManager notification_manager_;
 
   static KeyboardController* instance_;
 
