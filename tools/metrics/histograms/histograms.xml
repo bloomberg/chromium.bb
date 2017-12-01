@@ -93031,7 +93031,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="VR.AssetsComponent.LoadStatus" enum="VRAssetsLoadStatus">
+<histogram name="VR.Component.Assets.DurationUntilReady.OnChromeStart"
+    units="ms">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Duration from starting Chrome until VR assets component is ready to use.
+  </summary>
+</histogram>
+
+<histogram base="true" name="VR.Component.Assets.DurationUntilReady.OnEnter"
+    units="ms">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Duration from entering a VR mode until the VR assets component is ready to
+    use.
+  </summary>
+</histogram>
+
+<histogram base="true" name="VR.Component.Assets.Status.OnEnter"
+    enum="VRAssetsComponentEnterStatus">
+  <owner>tiborg@chromium.org</owner>
+  <summary>Status of the VR assets component when entering a VR mode.</summary>
+</histogram>
+
+<histogram name="VR.Component.Assets.VersionAndStatus.OnLoad"
+    enum="VRAssetsLoadStatus">
   <owner>tiborg@chromium.org</owner>
   <summary>
     The component version and status of loading the VR assets. The value is
@@ -93041,21 +93065,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram base="true" name="VR.AssetsComponent.ReadyLatency.OnEnter"
-    units="ms">
-  <owner>tiborg@chromium.org</owner>
-  <summary>
-    Duration from entering a VR mode until VR assets component is ready to use.
-  </summary>
-</histogram>
-
-<histogram base="true" name="VR.AssetsComponent.Status.OnEnter"
-    enum="VRAssetsComponentEnterStatus">
-  <owner>tiborg@chromium.org</owner>
-  <summary>Status of the VR assets component when entering a VR mode.</summary>
-</histogram>
-
-<histogram name="VR.AssetsComponent.UpdateStatus"
+<histogram name="VR.Component.Assets.VersionAndStatus.OnUpdate"
     enum="VRAssetsComponentUpdateStatus">
   <owner>tiborg@chromium.org</owner>
   <summary>
@@ -93067,24 +93077,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="VR.Component.Assets.DurationUntilReady.OnChromeStart"
-    units="ms">
+<histogram base="true" name="VR.NetworkConnectionType.OnEnter"
+    enum="NetworkConnectionType">
+  <owner>tiborg@chromium.org</owner>
+  <summary>Network connection type when entering a VR mode.</summary>
+</histogram>
+
+<histogram name="VR.NetworkConnectionType.OnRegisterComponent"
+    enum="NetworkConnectionType">
   <owner>tiborg@chromium.org</owner>
   <summary>
-    Duration from starting Chrome until VR assets component is ready to use.
+    Network connection type when registering the VR component(s).
   </summary>
-</histogram>
-
-<histogram base="true" name="VR.DataConnection.OnEnter"
-    enum="NetworkConnectionType">
-  <owner>tiborg@chromium.org</owner>
-  <summary>Data connection when entering a VR mode.</summary>
-</histogram>
-
-<histogram name="VR.DataConnection.OnRegisterAssetsComponent"
-    enum="NetworkConnectionType">
-  <owner>tiborg@chromium.org</owner>
-  <summary>Data connection when registering the VR assets component.</summary>
 </histogram>
 
 <histogram name="VR.Session.VoiceSearch.StartedCount" units="searches">
@@ -109210,13 +109214,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="VR.Mode" separator=".">
-  <affected-histogram name="VR.AssetsComponent.ReadyLatency.OnEnter"/>
-  <suffix name="VR" label="Entered either VR Browsing or WebVR mode."/>
+  <suffix name="AllVR" label="Entered either VR Browsing or WebVR mode."/>
   <suffix name="VRBrowsing" label="Entered VR Browsing Mode."/>
-  <suffix name="WebVR"
-      label="Entered WebVR mode (also includes splash screen)."/>
-  <affected-histogram name="VR.AssetsComponent.Status.OnEnter"/>
-  <affected-histogram name="VR.DataConnection.OnEnter"/>
+  <suffix name="WebVRPresentation"
+      label="Entered WebVR presentation mode (also includes splash screen)."/>
+  <affected-histogram name="VR.Component.Assets.DurationUntilReady.OnEnter"/>
+  <affected-histogram name="VR.Component.Assets.Status.OnEnter"/>
+  <affected-histogram name="VR.NetworkConnectionType.OnEnter"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VRFreNotCompleteType" separator=".">
