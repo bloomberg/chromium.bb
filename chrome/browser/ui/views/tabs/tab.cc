@@ -314,7 +314,6 @@ void Tab::SetData(TabRendererData data) {
     icon_->SetAttention(TabIcon::AttentionType::kBlockedWebContents,
                         data_.blocked);
   }
-  icon_->SchedulePaint();
 
   base::string16 title = data_.title;
   if (title.empty()) {
