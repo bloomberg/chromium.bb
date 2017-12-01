@@ -68,12 +68,12 @@ def secure_context_if(code, secure_context_test, test_result=None):
 
 
 # [OriginTrialEnabled]
-def origin_trial_enabled_if(code, origin_trial_function_name, execution_context=None):
-    if not origin_trial_function_name:
+def origin_trial_enabled_if(code, origin_trial_feature_name, execution_context=None):
+    if not origin_trial_feature_name:
         return code
 
     function = v8_utilities.origin_trial_function_call(
-        origin_trial_function_name, execution_context)
+        origin_trial_feature_name, execution_context)
     return generate_indented_conditional(code, function)
 
 

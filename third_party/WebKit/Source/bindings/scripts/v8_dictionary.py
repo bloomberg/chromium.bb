@@ -76,7 +76,7 @@ def dictionary_context(dictionary, interfaces_info):
 
     has_origin_trial_members = False
     for member in members:
-        if member['origin_trial_enabled_function']:
+        if member['origin_trial_feature_name']:
             has_origin_trial_members = True
             includes.add('core/origin_trials/origin_trials.h')
             break
@@ -151,7 +151,7 @@ def member_context(dictionary, member):
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
         'is_required': member.is_required,
         'name': member.name,
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(member),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(member),  # [OriginTrialEnabled]
         'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(member),  # [RuntimeEnabled]
         'setter_name': setter_name_for_dictionary_member(member),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
