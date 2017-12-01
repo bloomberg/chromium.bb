@@ -156,7 +156,7 @@ namespace {
 class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
  public:
   PriorityGetter() : priority_(0) {}
-  ~PriorityGetter() override {}
+  ~PriorityGetter() override = default;
 
   SpdyPriority priority() const {
     return priority_;
@@ -238,9 +238,9 @@ base::WeakPtr<SpdyStream> CreateStreamSynchronously(
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
 }
 
-StreamReleaserCallback::StreamReleaserCallback() {}
+StreamReleaserCallback::StreamReleaserCallback() = default;
 
-StreamReleaserCallback::~StreamReleaserCallback() {}
+StreamReleaserCallback::~StreamReleaserCallback() = default;
 
 CompletionCallback StreamReleaserCallback::MakeCallback(
     SpdyStreamRequest* request) {
@@ -335,7 +335,7 @@ SpdySessionDependencies::SpdySessionDependencies(
   http2_settings[SETTINGS_INITIAL_WINDOW_SIZE] = kDefaultInitialWindowSize;
 }
 
-SpdySessionDependencies::~SpdySessionDependencies() {}
+SpdySessionDependencies::~SpdySessionDependencies() = default;
 
 // static
 std::unique_ptr<HttpNetworkSession> SpdySessionDependencies::SpdyCreateSession(
@@ -405,7 +405,7 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
 
 class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
-  AllowAnyCertCTPolicyEnforcer() {}
+  AllowAnyCertCTPolicyEnforcer() = default;
   ~AllowAnyCertCTPolicyEnforcer() override = default;
 
   ct::CTPolicyCompliance CheckCompliance(
@@ -529,7 +529,7 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
   explicit FakeSpdySessionClientSocket(int read_result)
       : MockClientSocket(NetLogWithSource()), read_result_(read_result) {}
 
-  ~FakeSpdySessionClientSocket() override {}
+  ~FakeSpdySessionClientSocket() override = default;
 
   int Read(IOBuffer* buf,
            int buf_len,
@@ -627,7 +627,7 @@ SpdyTestUtil::SpdyTestUtil()
       response_spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
       default_url_(GURL(kDefaultUrl)) {}
 
-SpdyTestUtil::~SpdyTestUtil() {}
+SpdyTestUtil::~SpdyTestUtil() = default;
 
 void SpdyTestUtil::AddUrlToHeaderBlock(SpdyStringPiece url,
                                        SpdyHeaderBlock* headers) const {

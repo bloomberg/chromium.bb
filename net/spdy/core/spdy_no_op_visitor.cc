@@ -13,7 +13,7 @@ SpdyNoOpVisitor::SpdyNoOpVisitor() {
   static_assert(std::is_abstract<SpdyNoOpVisitor>::value == false,
                 "Need to update SpdyNoOpVisitor.");
 }
-SpdyNoOpVisitor::~SpdyNoOpVisitor() {}
+SpdyNoOpVisitor::~SpdyNoOpVisitor() = default;
 
 SpdyHeadersHandlerInterface* SpdyNoOpVisitor::OnHeaderFrameStart(
     SpdyStreamId stream_id) {

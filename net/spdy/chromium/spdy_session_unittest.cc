@@ -238,9 +238,9 @@ namespace {
 // given SpdyStreamRequest.
 class StreamRequestDestroyingCallback : public TestCompletionCallbackBase {
  public:
-  StreamRequestDestroyingCallback() {}
+  StreamRequestDestroyingCallback() = default;
 
-  ~StreamRequestDestroyingCallback() override {}
+  ~StreamRequestDestroyingCallback() override = default;
 
   void SetRequestToDestroy(std::unique_ptr<SpdyStreamRequest> request) {
     request_ = std::move(request);
@@ -2481,7 +2481,7 @@ class SessionClosingDelegate : public test::StreamDelegateDoNothing {
       : StreamDelegateDoNothing(stream),
         session_to_close_(session_to_close) {}
 
-  ~SessionClosingDelegate() override {}
+  ~SessionClosingDelegate() override = default;
 
   void OnClose(int status) override {
     session_to_close_->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error");
@@ -3545,7 +3545,7 @@ class StreamCreatingDelegate : public test::StreamDelegateDoNothing {
       : StreamDelegateDoNothing(stream),
         session_(session) {}
 
-  ~StreamCreatingDelegate() override {}
+  ~StreamCreatingDelegate() override = default;
 
   void OnClose(int status) override {
     GURL url(kDefaultUrl);
@@ -4046,7 +4046,7 @@ class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
                            SpdyStringPiece data)
       : StreamDelegateSendImmediate(stream, data) {}
 
-  ~DropReceivedDataDelegate() override {}
+  ~DropReceivedDataDelegate() override = default;
 
   // Drop any received data.
   void OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) override {}
@@ -4656,7 +4656,7 @@ class StreamClosingDelegate : public test::StreamDelegateWithBody {
                         SpdyStringPiece data)
       : StreamDelegateWithBody(stream, data) {}
 
-  ~StreamClosingDelegate() override {}
+  ~StreamClosingDelegate() override = default;
 
   void set_stream_to_close(const base::WeakPtr<SpdyStream>& stream_to_close) {
     stream_to_close_ = stream_to_close;

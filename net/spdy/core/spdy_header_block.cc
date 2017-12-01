@@ -121,7 +121,7 @@ SpdyHeaderBlock::HeaderValue& SpdyHeaderBlock::HeaderValue::operator=(
   return *this;
 }
 
-SpdyHeaderBlock::HeaderValue::~HeaderValue() {}
+SpdyHeaderBlock::HeaderValue::~HeaderValue() = default;
 
 SpdyStringPiece SpdyHeaderBlock::HeaderValue::ConsolidatedValue() const {
   if (fragments_.empty()) {
@@ -146,9 +146,9 @@ SpdyHeaderBlock::HeaderValue::as_pair() const {
 
 SpdyHeaderBlock::iterator::iterator(MapType::const_iterator it) : it_(it) {}
 
-SpdyHeaderBlock::iterator::iterator(const iterator& other) : it_(other.it_) {}
+SpdyHeaderBlock::iterator::iterator(const iterator& other) = default;
 
-SpdyHeaderBlock::iterator::~iterator() {}
+SpdyHeaderBlock::iterator::~iterator() = default;
 
 SpdyHeaderBlock::ValueProxy::ValueProxy(
     SpdyHeaderBlock::MapType* block,
@@ -220,7 +220,7 @@ SpdyHeaderBlock::SpdyHeaderBlock() : block_(kInitialMapBuckets) {}
 
 SpdyHeaderBlock::SpdyHeaderBlock(SpdyHeaderBlock&& other) = default;
 
-SpdyHeaderBlock::~SpdyHeaderBlock() {}
+SpdyHeaderBlock::~SpdyHeaderBlock() = default;
 
 SpdyHeaderBlock& SpdyHeaderBlock::operator=(SpdyHeaderBlock&& other) {
   block_.swap(other.block_);

@@ -13,14 +13,14 @@
 
 namespace net {
 
-SpdyBufferProducer::SpdyBufferProducer() {}
+SpdyBufferProducer::SpdyBufferProducer() = default;
 
-SpdyBufferProducer::~SpdyBufferProducer() {}
+SpdyBufferProducer::~SpdyBufferProducer() = default;
 
 SimpleBufferProducer::SimpleBufferProducer(std::unique_ptr<SpdyBuffer> buffer)
     : buffer_(std::move(buffer)) {}
 
-SimpleBufferProducer::~SimpleBufferProducer() {}
+SimpleBufferProducer::~SimpleBufferProducer() = default;
 
 std::unique_ptr<SpdyBuffer> SimpleBufferProducer::ProduceBuffer() {
   DCHECK(buffer_);

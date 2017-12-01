@@ -290,7 +290,7 @@ SpdyFramer::SpdyFramer(CompressionOption option)
                 "Our send limit should be at most our receive limit.");
 }
 
-SpdyFramer::~SpdyFramer() {}
+SpdyFramer::~SpdyFramer() = default;
 
 void SpdyFramer::set_debug_visitor(
     SpdyFramerDebugVisitorInterface* debug_visitor) {
@@ -300,7 +300,7 @@ void SpdyFramer::set_debug_visitor(
 SpdyFramer::SpdyFrameIterator::SpdyFrameIterator(SpdyFramer* framer)
     : framer_(framer), is_first_frame_(true), has_next_frame_(true) {}
 
-SpdyFramer::SpdyFrameIterator::~SpdyFrameIterator() {}
+SpdyFramer::SpdyFrameIterator::~SpdyFrameIterator() = default;
 
 size_t SpdyFramer::SpdyFrameIterator::NextFrame(ZeroCopyOutputBuffer* output) {
   const SpdyFrameIR& frame_ir = GetIR();
@@ -352,7 +352,7 @@ SpdyFramer::SpdyHeaderFrameIterator::SpdyHeaderFrameIterator(
   SetEncoder(headers_ir_.get());
 }
 
-SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() {}
+SpdyFramer::SpdyHeaderFrameIterator::~SpdyHeaderFrameIterator() = default;
 
 const SpdyFrameIR& SpdyFramer::SpdyHeaderFrameIterator::GetIR() const {
   return *(headers_ir_.get());
@@ -376,7 +376,8 @@ SpdyFramer::SpdyPushPromiseFrameIterator::SpdyPushPromiseFrameIterator(
   SetEncoder(push_promise_ir_.get());
 }
 
-SpdyFramer::SpdyPushPromiseFrameIterator::~SpdyPushPromiseFrameIterator() {}
+SpdyFramer::SpdyPushPromiseFrameIterator::~SpdyPushPromiseFrameIterator() =
+    default;
 
 const SpdyFrameIR& SpdyFramer::SpdyPushPromiseFrameIterator::GetIR() const {
   return *(push_promise_ir_.get());
@@ -398,7 +399,7 @@ SpdyFramer::SpdyControlFrameIterator::SpdyControlFrameIterator(
     std::unique_ptr<const SpdyFrameIR> frame_ir)
     : framer_(framer), frame_ir_(std::move(frame_ir)) {}
 
-SpdyFramer::SpdyControlFrameIterator::~SpdyControlFrameIterator() {}
+SpdyFramer::SpdyControlFrameIterator::~SpdyControlFrameIterator() = default;
 
 size_t SpdyFramer::SpdyControlFrameIterator::NextFrame(
     ZeroCopyOutputBuffer* output) {
@@ -790,7 +791,7 @@ class FrameSerializationVisitor : public SpdyFrameVisitor {
  public:
   explicit FrameSerializationVisitor(SpdyFramer* framer)
       : framer_(framer), frame_() {}
-  ~FrameSerializationVisitor() override {}
+  ~FrameSerializationVisitor() override = default;
 
   SpdySerializedFrame ReleaseSerializedFrame() { return std::move(frame_); }
 
@@ -1214,7 +1215,7 @@ class FrameSerializationVisitorWithOutput : public SpdyFrameVisitor {
   explicit FrameSerializationVisitorWithOutput(SpdyFramer* framer,
                                                ZeroCopyOutputBuffer* output)
       : framer_(framer), output_(output), result_(false) {}
-  ~FrameSerializationVisitorWithOutput() override {}
+  ~FrameSerializationVisitorWithOutput() override = default;
 
   size_t Result() { return result_; }
 

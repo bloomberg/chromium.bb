@@ -32,8 +32,7 @@ BufferedSpdyFramer::BufferedSpdyFramer(uint32_t max_header_list_size,
       max_header_list_size_);
 }
 
-BufferedSpdyFramer::~BufferedSpdyFramer() {
-}
+BufferedSpdyFramer::~BufferedSpdyFramer() = default;
 
 void BufferedSpdyFramer::set_visitor(
     BufferedSpdyFramerVisitorInterface* visitor) {

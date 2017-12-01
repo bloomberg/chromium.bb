@@ -14,7 +14,7 @@ MultiplexedHttpStream::MultiplexedHttpStream(
     std::unique_ptr<MultiplexedSessionHandle> session)
     : session_(std::move(session)) {}
 
-MultiplexedHttpStream::~MultiplexedHttpStream() {}
+MultiplexedHttpStream::~MultiplexedHttpStream() = default;
 
 bool MultiplexedHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   return session_->GetRemoteEndpoint(endpoint);

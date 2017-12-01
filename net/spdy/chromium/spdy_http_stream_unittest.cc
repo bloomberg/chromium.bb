@@ -130,7 +130,7 @@ class SpdyHttpStreamTest : public testing::Test {
     session_deps_.net_log = &net_log_;
   }
 
-  ~SpdyHttpStreamTest() override {}
+  ~SpdyHttpStreamTest() override = default;
 
  protected:
   void TearDown() override {

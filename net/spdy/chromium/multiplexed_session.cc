@@ -12,7 +12,7 @@ MultiplexedSessionHandle::MultiplexedSessionHandle(
   SaveSSLInfo();
 }
 
-MultiplexedSessionHandle::~MultiplexedSessionHandle() {}
+MultiplexedSessionHandle::~MultiplexedSessionHandle() = default;
 
 bool MultiplexedSessionHandle::GetRemoteEndpoint(IPEndPoint* endpoint) {
   if (!session_)

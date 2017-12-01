@@ -35,7 +35,7 @@ bool ParsePositiveIntegerImpl(SpdyStringPiece::const_iterator c,
 
 }  // namespace
 
-SpdyAltSvcWireFormat::AlternativeService::AlternativeService() {}
+SpdyAltSvcWireFormat::AlternativeService::AlternativeService() = default;
 
 SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
     const SpdyString& protocol_id,
@@ -49,7 +49,7 @@ SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
       max_age(max_age),
       version(version) {}
 
-SpdyAltSvcWireFormat::AlternativeService::~AlternativeService() {}
+SpdyAltSvcWireFormat::AlternativeService::~AlternativeService() = default;
 
 SpdyAltSvcWireFormat::AlternativeService::AlternativeService(
     const AlternativeService& other) = default;

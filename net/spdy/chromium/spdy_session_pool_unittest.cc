@@ -80,7 +80,7 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
       : spdy_session_pool_(spdy_session_pool),
         key_(key) {}
 
-  ~SessionOpeningDelegate() override {}
+  ~SessionOpeningDelegate() override = default;
 
   void OnHeadersSent() override {}
 

@@ -12,9 +12,9 @@
 
 namespace net {
 
-HpackStaticTable::HpackStaticTable() {}
+HpackStaticTable::HpackStaticTable() = default;
 
-HpackStaticTable::~HpackStaticTable() {}
+HpackStaticTable::~HpackStaticTable() = default;
 
 void HpackStaticTable::Initialize(const HpackStaticEntry* static_entry_table,
                                   size_t static_entry_count) {

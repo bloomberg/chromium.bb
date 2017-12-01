@@ -10,7 +10,7 @@
 
 namespace net {
 
-Http2PushPromiseIndex::Http2PushPromiseIndex() {}
+Http2PushPromiseIndex::Http2PushPromiseIndex() = default;
 
 Http2PushPromiseIndex::~Http2PushPromiseIndex() {
   DCHECK(unclaimed_pushed_streams_.empty());

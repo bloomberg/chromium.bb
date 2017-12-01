@@ -79,7 +79,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
         not_expect_callback_(false),
         on_failed_called_(false) {}
 
-  ~TestDelegateBase() override {}
+  ~TestDelegateBase() override = default;
 
   void OnStreamReady(bool request_headers_sent) override {
     CHECK(!on_failed_called_);

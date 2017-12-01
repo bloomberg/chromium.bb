@@ -32,7 +32,7 @@ bool SymbolIdCompare(const HpackHuffmanSymbol& a, const HpackHuffmanSymbol& b) {
 
 HpackHuffmanTable::HpackHuffmanTable() : pad_bits_(0), failed_symbol_id_(0) {}
 
-HpackHuffmanTable::~HpackHuffmanTable() {}
+HpackHuffmanTable::~HpackHuffmanTable() = default;
 
 bool HpackHuffmanTable::Initialize(const HpackHuffmanSymbol* input_symbols,
                                    size_t symbol_count) {

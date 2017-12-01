@@ -63,7 +63,7 @@ HpackEntry& HpackEntry::operator=(const HpackEntry& other) {
   return *this;
 }
 
-HpackEntry::~HpackEntry() {}
+HpackEntry::~HpackEntry() = default;
 
 // static
 size_t HpackEntry::Size(SpdyStringPiece name, SpdyStringPiece value) {

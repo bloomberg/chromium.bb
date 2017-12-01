@@ -11,7 +11,7 @@ namespace net {
 SpdyPinnableBufferPiece::SpdyPinnableBufferPiece()
     : buffer_(nullptr), length_(0) {}
 
-SpdyPinnableBufferPiece::~SpdyPinnableBufferPiece() {}
+SpdyPinnableBufferPiece::~SpdyPinnableBufferPiece() = default;
 
 void SpdyPinnableBufferPiece::Pin() {
   if (!storage_ && buffer_ != nullptr && length_ != 0) {

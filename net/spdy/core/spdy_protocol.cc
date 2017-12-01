@@ -232,7 +232,7 @@ SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(
     SpdyHeaderBlock header_block)
     : SpdyFrameWithFinIR(stream_id), header_block_(std::move(header_block)) {}
 
-SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() {}
+SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() = default;
 
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, SpdyStringPiece data)
     : SpdyFrameWithFinIR(stream_id),
@@ -261,7 +261,7 @@ SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id)
       padded_(false),
       padding_payload_len_(0) {}
 
-SpdyDataIR::~SpdyDataIR() {}
+SpdyDataIR::~SpdyDataIR() = default;
 
 void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitData(*this);
@@ -281,7 +281,7 @@ SpdyRstStreamIR::SpdyRstStreamIR(SpdyStreamId stream_id,
   set_error_code(error_code);
 }
 
-SpdyRstStreamIR::~SpdyRstStreamIR() {}
+SpdyRstStreamIR::~SpdyRstStreamIR() = default;
 
 void SpdyRstStreamIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitRstStream(*this);
@@ -293,7 +293,7 @@ SpdyFrameType SpdyRstStreamIR::frame_type() const {
 
 SpdySettingsIR::SpdySettingsIR() : is_ack_(false) {}
 
-SpdySettingsIR::~SpdySettingsIR() {}
+SpdySettingsIR::~SpdySettingsIR() = default;
 
 void SpdySettingsIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitSettings(*this);
@@ -335,7 +335,7 @@ SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
   set_error_code(error_code);
 }
 
-SpdyGoAwayIR::~SpdyGoAwayIR() {}
+SpdyGoAwayIR::~SpdyGoAwayIR() = default;
 
 void SpdyGoAwayIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitGoAway(*this);
@@ -350,7 +350,7 @@ SpdyContinuationIR::SpdyContinuationIR(SpdyStreamId stream_id)
   encoding_ = SpdyMakeUnique<SpdyString>();
 }
 
-SpdyContinuationIR::~SpdyContinuationIR() {}
+SpdyContinuationIR::~SpdyContinuationIR() = default;
 
 void SpdyContinuationIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitContinuation(*this);
@@ -386,7 +386,7 @@ SpdyFrameType SpdyPushPromiseIR::frame_type() const {
 
 SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id) : SpdyFrameIR(stream_id) {}
 
-SpdyAltSvcIR::~SpdyAltSvcIR() {}
+SpdyAltSvcIR::~SpdyAltSvcIR() = default;
 
 void SpdyAltSvcIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitAltSvc(*this);

@@ -65,7 +65,7 @@ class SpdyStream::HeadersBufferProducer : public SpdyBufferProducer {
     DCHECK(stream_.get());
   }
 
-  ~HeadersBufferProducer() override {}
+  ~HeadersBufferProducer() override = default;
 
   std::unique_ptr<SpdyBuffer> ProduceBuffer() override {
     if (!stream_.get()) {
