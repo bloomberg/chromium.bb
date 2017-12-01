@@ -482,6 +482,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void InvalidateAllStickyConstraints();
   void InvalidateStickyConstraintsFor(PaintLayer*,
                                       bool needs_compositing_update = true);
+  void InvalidatePaintForStickyDescendants();
+  bool HasNonCompositedStickyDescendants() const;
   uint32_t GetNonCompositedMainThreadScrollingReasons() {
     return non_composited_main_thread_scrolling_reasons_;
   }
@@ -546,6 +548,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollingCoordinator* GetScrollingCoordinator() const;
 
   PaintLayerScrollableAreaRareData* RareData() { return rare_data_.get(); }
+  const PaintLayerScrollableAreaRareData* RareData() const {
+    return rare_data_.get();
+  }
 
   PaintLayerScrollableAreaRareData& EnsureRareData() {
     if (!rare_data_)

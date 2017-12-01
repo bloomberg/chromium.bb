@@ -145,6 +145,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   FloatRect ComputeStickyConstrainingRect() const;
   void UpdateStickyPositionConstraints() const;
   LayoutSize StickyPositionOffset() const;
+  bool IsSlowRepaintConstrainedObject() const;
 
   LayoutSize OffsetForInFlowPosition() const;
 

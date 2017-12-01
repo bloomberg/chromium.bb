@@ -5446,32 +5446,11 @@ int LocalFrameView::InitialViewportHeight() const {
 bool LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects() const {
   if (!ViewportConstrainedObjects())
     return false;
-
   for (const LayoutObject* layout_object : *ViewportConstrainedObjects()) {
     DCHECK(layout_object->IsBoxModelObject() && layout_object->HasLayer());
     DCHECK(layout_object->Style()->GetPosition() == EPosition::kFixed ||
            layout_object->Style()->GetPosition() == EPosition::kSticky);
-    PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
-
-    // Whether the Layer sticks to the viewport is a tree-depenent
-    // property and our viewportConstrainedObjects collection is maintained
-    // with only LayoutObject-level information.
-    if (!layer->FixedToViewport() && !layer->SticksToScroller())
-      continue;
-
-    // If the whole subtree is invisible, there's no reason to scroll on
-    // the main thread because we don't need to generate invalidations
-    // for invisible content.
-    if (layer->SubtreeIsInvisible())
-      continue;
-
-    // We're only smart enough to scroll viewport-constrainted objects
-    // in the compositor if they have their own backing or they paint
-    // into a grouped back (which necessarily all have the same viewport
-    // constraints).
-    CompositingState compositing_state = layer->GetCompositingState();
-    if (compositing_state != kPaintsIntoOwnBacking &&
-        compositing_state != kPaintsIntoGroupedBacking)
+    if (ToLayoutBoxModelObject(layout_object)->IsSlowRepaintConstrainedObject())
       return true;
   }
   return false;

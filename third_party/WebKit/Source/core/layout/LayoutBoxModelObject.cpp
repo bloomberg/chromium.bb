@@ -843,7 +843,8 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
                       .BoundingBox()
                       .Location());
   LayoutBox* scroll_ancestor =
-      Layer()->AncestorOverflowLayer()->IsRootLayer()
+      Layer()->AncestorOverflowLayer()->IsRootLayer() &&
+              !RuntimeEnabledFeatures::RootLayerScrollingEnabled()
           ? nullptr
           : &ToLayoutBox(Layer()->AncestorOverflowLayer()->GetLayoutObject());
 
@@ -1022,9 +1023,40 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   scrollable_area->GetStickyConstraintsMap().Set(Layer(), constraints);
 }
 
+bool LayoutBoxModelObject::IsSlowRepaintConstrainedObject() const {
+  if (!HasLayer() || (Style()->GetPosition() != EPosition::kFixed &&
+                      Style()->GetPosition() != EPosition::kSticky)) {
+    return false;
+  }
+
+  PaintLayer* layer = Layer();
+
+  // Whether the Layer sticks to the viewport is a tree-depenent
+  // property and our viewportConstrainedObjects collection is maintained
+  // with only LayoutObject-level information.
+  if (!layer->FixedToViewport() && !layer->SticksToScroller())
+    return false;
+
+  // If the whole subtree is invisible, there's no reason to scroll on
+  // the main thread because we don't need to generate invalidations
+  // for invisible content.
+  if (layer->SubtreeIsInvisible())
+    return false;
+
+  // We're only smart enough to scroll viewport-constrainted objects
+  // in the compositor if they have their own backing or they paint
+  // into a grouped back (which necessarily all have the same viewport
+  // constraints).
+  return (layer->GetCompositingState() == kNotComposited);
+}
+
 FloatRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {
-  if (Layer()->AncestorOverflowLayer()->IsRootLayer())
-    return View()->GetFrameView()->VisibleContentRect();
+  if (Layer()->AncestorOverflowLayer()->IsRootLayer()) {
+    return View()
+        ->GetFrameView()
+        ->LayoutViewportScrollableArea()
+        ->VisibleContentRect();
+  }
 
   LayoutBox* enclosing_clipping_box =
       Layer()->AncestorOverflowLayer()->GetLayoutBox();

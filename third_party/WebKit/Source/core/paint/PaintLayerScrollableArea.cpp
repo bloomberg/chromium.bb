@@ -548,6 +548,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
       if (!frame_view->InvalidateViewportConstrainedObjects())
         requires_paint_invalidation = true;
     }
+    InvalidatePaintForStickyDescendants();
   }
 
   if (requires_paint_invalidation)
@@ -1737,6 +1738,25 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
   }
 }
 
+bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
+  if (const PaintLayerScrollableAreaRareData* d = RareData()) {
+    for (const PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
+      if (sticky_layer->GetLayoutObject().IsSlowRepaintConstrainedObject())
+        return true;
+    }
+  }
+  return false;
+}
+
+void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
+  if (PaintLayerScrollableAreaRareData* d = RareData()) {
+    for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
+      sticky_layer->GetLayoutObject()
+          .SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+    }
+  }
+}
+
 IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
     const IntPoint& absolute_point) const {
   // Currently the resize corner is either the bottom right corner or the bottom
@@ -1981,6 +2001,8 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
     if (frame->View()->GetMainThreadScrollingReasons())
       return true;
   }
+  if (HasNonCompositedStickyDescendants())
+    return true;
   return ScrollableArea::ShouldScrollOnMainThread();
 }
 
