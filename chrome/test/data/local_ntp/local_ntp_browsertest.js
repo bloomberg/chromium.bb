@@ -23,7 +23,7 @@ test.localNtp.setUp = function() {
 
 
 // ******************************* SIMPLE TESTS *******************************
-// These are run by runSimpleTests from test_utils.js.
+// These are run by runSimpleTests above.
 // Functions from test_utils.js are automatically imported.
 
 
@@ -86,4 +86,44 @@ function initLocalNTP(isGooglePage) {
   configData.isGooglePage = isGooglePage;
   var localNTP = LocalNTP();
   localNTP.init();
+}
+
+
+// ****************************** ADVANCED TESTS ******************************
+// Advanced tests are controlled from the native side. The helpers here are
+// called from native code to set up the page and to check results.
+
+
+function setupAdvancedTest() {
+  setUpPage('local-ntp-template');
+  initLocalNTP(/*isGooglePage=*/true);
+
+  assertTrue(elementIsVisible($('fakebox')));
+
+  return true;
+}
+
+
+function getFakeboxPositionX() {
+  assertTrue(elementIsVisible($('fakebox')));
+  var rect = $('fakebox').getBoundingClientRect();
+  return rect.left;
+}
+
+
+function getFakeboxPositionY() {
+  assertTrue(elementIsVisible($('fakebox')));
+  var rect = $('fakebox').getBoundingClientRect();
+  return rect.top;
+}
+
+
+function fakeboxIsVisible() {
+  return elementIsVisible($('fakebox'));
+}
+
+
+function fakeboxIsFocused() {
+  return fakeboxIsVisible() &&
+      document.body.classList.contains('fakebox-focused');
 }

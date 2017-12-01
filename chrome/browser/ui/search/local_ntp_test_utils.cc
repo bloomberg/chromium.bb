@@ -7,22 +7,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace local_ntp_test_utils {
@@ -33,59 +26,6 @@ content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   return browser->tab_strip_model()->GetActiveWebContents();
-}
-
-void NavigateToNTPAndWaitUntilLoaded(Browser* browser) {
-  content::WebContents* active_tab =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  // Attach a message queue *before* navigating to the NTP, to make sure we
-  // don't miss the 'loaded' message due to some race condition.
-  content::DOMMessageQueue msg_queue(active_tab);
-
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
-
-  // At this point, the MV iframe may or may not have been fully loaded. Once
-  // it loads, it sends a 'loaded' postMessage to the page. Check if the page
-  // has already received that, and if not start listening for it. It's
-  // important that these two things happen in the same JS invocation, since
-  // otherwise we might miss the message.
-  bool mv_tiles_loaded = false;
-  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(active_tab,
-                                                R"js(
-      (function() {
-        if (tilesAreLoaded) {
-          return true;
-        }
-        window.addEventListener('message', function(event) {
-          if (event.data.cmd == 'loaded') {
-            domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
-          }
-        });
-        return false;
-      })()
-                                                )js",
-                                                &mv_tiles_loaded));
-
-  std::string message;
-  // Get rid of the message that the GetBoolFromJS call produces.
-  ASSERT_TRUE(msg_queue.PopMessage(&message));
-
-  if (mv_tiles_loaded) {
-    // The tiles are already loaded, i.e. we missed the 'loaded' message. All
-    // is well.
-    return;
-  }
-
-  // Not loaded yet. Wait for the "NavigateToNTPAndWaitUntilLoaded" message.
-  ASSERT_TRUE(msg_queue.WaitForMessage(&message));
-  ASSERT_EQ("\"NavigateToNTPAndWaitUntilLoaded\"", message);
-  // There shouldn't be any other messages.
-  ASSERT_FALSE(msg_queue.PopMessage(&message));
 }
 
 bool SwitchBrowserLanguageToFrench() {
