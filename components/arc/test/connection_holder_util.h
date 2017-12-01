@@ -21,8 +21,8 @@ template <typename InstanceType, typename HostType>
 class ReadinessObserver
     : public ConnectionHolder<InstanceType, HostType>::Observer {
  public:
-  explicit ReadinessObserver(ConnectionHolder<InstanceType, HostType>* holder,
-                             base::OnceClosure closure)
+  ReadinessObserver(ConnectionHolder<InstanceType, HostType>* holder,
+                    base::OnceClosure closure)
       : holder_(holder), closure_(std::move(closure)) {
     holder_->AddObserver(this);
   }
