@@ -21,7 +21,11 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
   void StartFetch(const Request* request,
                   ResultListener* result_listener) override {
     GURL url = request->GetURLRequest()->url();
-    DCHECK_EQ("GET", request->GetURLRequest()->method());
+    if (request->GetURLRequest()->method() == "POST") {
+      request->GetPostData();
+    } else {
+      DCHECK_EQ("GET", request->GetURLRequest()->method());
+    }
 
     std::string devtools_frame_id = request->GetDevToolsFrameId();
     DCHECK_NE(devtools_frame_id, "") << " For url " << url;

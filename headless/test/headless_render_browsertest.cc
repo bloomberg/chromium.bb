@@ -22,6 +22,7 @@
   HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessRenderBrowserTest##clazz)
 
 // TODO(dats): For some reason we are missing all HTTP redirects.
+// crbug.com/789298
 #define DISABLE_HTTP_REDIRECTS_CHECKS
 
 namespace headless {
@@ -145,15 +146,30 @@ const DOMNode* FindTag(const GetSnapshotResult* snapshot, const char* name) {
   EXPECT_THAT(tags, ElementsAre(NodeName(name)));
   return tags[0];
 }
+
+TestInMemoryProtocolHandler::Response HttpRedirect(
+    int code,
+    const std::string& url,
+    const std::string& status = "Moved") {
+  CHECK(code >= 300 && code < 400);
+  std::stringstream str;
+  str << "HTTP/1.1 " << code << " " << status << "\r\nLocation: " << url
+      << "\r\n\r\n";
+  return TestInMemoryProtocolHandler::Response(str.str());
+}
+
+TestInMemoryProtocolHandler::Response HttpOk(const std::string& html) {
+  return TestInMemoryProtocolHandler::Response(html, TEXT_HTML);
+}
+
 }  // namespace
 
 class HelloWorldTest : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(<!doctype html>
+    GetProtocolHandler()->InsertResponse(SOME_URL, HttpOk(R"|(<!doctype html>
 <h1>Hello headless world!</h1>
-)|",
-                                                    TEXT_HTML});
+)|"));
     return GURL(SOME_URL);
   }
 
@@ -193,7 +209,7 @@ HEADLESS_RENDER_BROWSERTEST(TimeoutTest);
 class JavaScriptOverrideTitle_JsEnabled : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+    GetProtocolHandler()->InsertResponse(SOME_URL, HttpOk(R"|(
 <html>
   <head>
     <title>JavaScript is off</title>
@@ -207,8 +223,7 @@ class JavaScriptOverrideTitle_JsEnabled : public HeadlessRenderTest {
     Hello, World!
   </body>
 </html>
-)|",
-                                                    TEXT_HTML});
+)|"));
     return GURL(SOME_URL);
   }
 
@@ -244,7 +259,7 @@ class JavaScriptConsoleErrors : public HeadlessRenderTest,
   bool log_called_ = false;
 
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+    GetProtocolHandler()->InsertResponse(SOME_URL, HttpOk(R"|(
 <html>
   <head>
     <script language="JavaScript">
@@ -267,8 +282,7 @@ class JavaScriptConsoleErrors : public HeadlessRenderTest,
     </script>
   </body>
 </html>
-)|",
-                                                    TEXT_HTML});
+)|"));
     client_ = client;
     client_->GetRuntime()->GetExperimental()->AddObserver(this);
     base::RunLoop run_loop;
@@ -310,7 +324,7 @@ class DelayedCompletion : public HeadlessRenderTest {
   base::TimeTicks start_;
 
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse(SOME_URL, {R"|(
+    GetProtocolHandler()->InsertResponse(SOME_URL, HttpOk(R"|(
 <html>
   <body>
    <script type="text/javascript">
@@ -324,8 +338,7 @@ class DelayedCompletion : public HeadlessRenderTest {
     <div id="content"/>
   </body>
 </html>
-)|",
-                                                    TEXT_HTML});
+)|"));
     start_ = base::TimeTicks::Now();
     return GURL(SOME_URL);
   }
@@ -349,8 +362,7 @@ HEADLESS_RENDER_BROWSERTEST(DelayedCompletion);
 class ClientRedirectChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/",
-                                         {R"|(
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
   <head>
     <meta http-equiv="refresh" content="0; url=http://www.example.com/1"/>
@@ -358,10 +370,8 @@ class ClientRedirectChain : public HeadlessRenderTest {
   </head>
   <body>http://www.example.com/</body>
 </html>
-)|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         {R"|(
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1", HttpOk(R"|(
 <html>
   <head>
     <title>Hello, World 1</title>
@@ -371,10 +381,8 @@ class ClientRedirectChain : public HeadlessRenderTest {
   </head>
   <body>http://www.example.com/1</body>
 </html>
-)|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         {R"|(
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2", HttpOk(R"|(
 <html>
   <head>
     <title>Hello, World 2</title>
@@ -384,10 +392,8 @@ class ClientRedirectChain : public HeadlessRenderTest {
   </head>
   <body>http://www.example.com/2</body>
 </html>
-)|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse("http://www.example.com/3",
-                                         {R"|(
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/3", HttpOk(R"|(
 <html>
   <head>
     <title>Pass</title>
@@ -397,9 +403,7 @@ class ClientRedirectChain : public HeadlessRenderTest {
     <img src="pass">
   </body>
 </html>
-)|",
-                                          TEXT_HTML});
-
+)|"));
     return GURL("http://www.example.com/");
   }
 
@@ -450,16 +454,15 @@ class ServerRedirectChain : public HeadlessRenderTest {
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/",
-        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/1\r\n\r\n"});
+        HttpRedirect(302, "http://www.example.com/1"));
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/1",
-        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/2\r\n\r\n"});
+        HttpRedirect(301, "http://www.example.com/2"));
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/2",
-        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/3\r\n\r\n"});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/3",
-        {"(HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<p>Pass</p>"});
+        HttpRedirect(302, "http://www.example.com/3"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/3",
+                                         HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -489,10 +492,10 @@ class ServerRedirectToFailure : public HeadlessRenderTest {
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/",
-        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/1\r\n\r\n"});
+        HttpRedirect(302, "http://www.example.com/1"));
     GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/1", {"(HTTP/1.1 301 Moved\r\nLocation: "
-                                     "http://www.example.com/FAIL\r\n\r\n"});
+        "http://www.example.com/1",
+        HttpRedirect(301, "http://www.example.com/FAIL"));
     return GURL("http://www.example.com/");
   }
 
@@ -510,13 +513,11 @@ class ServerRedirectRelativeChain : public HeadlessRenderTest {
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/",
-        {"(HTTP/1.1 302 Moved\r\nLocation: http://www.mysite.com/1\r\n\r\n"});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.mysite.com/1",
-        {"(HTTP/1.1 301 Moved\r\nLocation: /2\r\n\r\n"});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.mysite.com/2",
-        {"(HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<p>Pass</p>"});
+        HttpRedirect(302, "http://www.mysite.com/1"));
+    GetProtocolHandler()->InsertResponse("http://www.mysite.com/1",
+                                         HttpRedirect(301, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.mysite.com/2",
+                                         HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -534,8 +535,7 @@ HEADLESS_RENDER_BROWSERTEST(ServerRedirectRelativeChain);
 class MixedRedirectChain : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/",
-                                         {R"|(
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
  <html>
    <head>
      <meta http-equiv="refresh" content="0; url=http://www.example.com/1"/>
@@ -543,10 +543,8 @@ class MixedRedirectChain : public HeadlessRenderTest {
    </head>
    <body>http://www.example.com/</body>
  </html>
- )|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         {R"|(
+ )|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1", HttpOk(R"|(
  <html>
    <head>
      <title>Hello, World 1</title>
@@ -556,16 +554,14 @@ class MixedRedirectChain : public HeadlessRenderTest {
    </head>
    <body>http://www.example.com/1</body>
  </html>
- )|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/2",
-        {"(HTTP/1.1 302 Moved\r\nLocation: 3\r\n\r\n"});
+ )|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
+                                         HttpRedirect(302, "3"));
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/3",
-        {"(HTTP/1.1 301 Moved\r\nLocation: http://www.example.com/4\r\n\r\n"});
+        HttpRedirect(301, "http://www.example.com/4"));
     GetProtocolHandler()->InsertResponse("http://www.example.com/4",
-                                         {"<p>Pass</p>", TEXT_HTML});
+                                         HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -586,64 +582,56 @@ class FramesRedirectChain : public HeadlessRenderTest {
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     GetProtocolHandler()->InsertResponse(
         "http://www.example.com/",
-        {"HTTP/1.1 302 Moved\r\nLocation: http://www.example.com/1\r\n\r\n"});
-    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         {R"|(
+        HttpRedirect(302, "http://www.example.com/1"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1", HttpOk(R"|(
 <html>
  <frameset>
   <frame src="http://www.example.com/frameA/">
   <frame src="http://www.example.com/frameB/">
  </frameset>
 </html>
-)|",
-                                          TEXT_HTML});
+)|"));
 
     // Frame A
     GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/",
-                                         {R"|(
+                                         HttpOk(R"|(
 <html>
  <head>
   <script>document.location='http://www.example.com/frameA/1'</script>
  </head>
  <body>HELLO WORLD 1</body>
 </html>
-)|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/frameA/1",
-        {"HTTP/1.1 301 Moved\r\nLocation: /frameA/2\r\n\r\n"});
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/1",
+                                         HttpRedirect(301, "/frameA/2"));
     GetProtocolHandler()->InsertResponse("http://www.example.com/frameA/2",
-                                         {"<p>FRAME A</p>", TEXT_HTML});
+                                         HttpOk("<p>FRAME A</p>"));
 
     // Frame B
     GetProtocolHandler()->InsertResponse("http://www.example.com/frameB/",
-                                         {R"|(
+                                         HttpOk(R"|(
 <html>
  <head><title>HELLO WORLD 2</title></head>
  <body>
   <iframe src="http://www.example.com/iframe/"></iframe>
  </body>
 </html>
-)|",
-                                          TEXT_HTML});
+)|"));
     GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/",
-                                         {R"|(
+                                         HttpOk(R"|(
 <html>
  <head>
   <script>document.location='http://www.example.com/iframe/1'</script>
  </head>
  <body>HELLO WORLD 1</body>
 </html>
-)|",
-                                          TEXT_HTML});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/iframe/1",
-        {"HTTP/1.1 302 Moved\r\nLocation: /iframe/2\r\n\r\n"});
-    GetProtocolHandler()->InsertResponse(
-        "http://www.example.com/iframe/2",
-        {"HTTP/1.1 301 Moved\r\nLocation: 3\r\n\r\n"});
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/1",
+                                         HttpRedirect(302, "/iframe/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/2",
+                                         HttpRedirect(301, "3"));
     GetProtocolHandler()->InsertResponse("http://www.example.com/iframe/3",
-                                         {"<p>IFRAME B</p>", TEXT_HTML});
+                                         HttpOk("<p>IFRAME B</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -709,8 +697,7 @@ HEADLESS_RENDER_BROWSERTEST(FramesRedirectChain);
 class DoubleRedirect : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/",
-                                         {R"|(
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
   <head>
     <title>Hello, World 1</title>
@@ -721,10 +708,9 @@ class DoubleRedirect : public HeadlessRenderTest {
   </head>
   <body>http://www.example.com/1</body>
 </html>
-)|",
-                                          TEXT_HTML});
+)|"));
     GetProtocolHandler()->InsertResponse("http://www.example.com/2",
-                                         {"<p>Pass</p>", TEXT_HTML});
+                                         HttpOk("<p>Pass</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -745,18 +731,16 @@ HEADLESS_RENDER_BROWSERTEST(DoubleRedirect);
 class RedirectAfterCompletion : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
-    GetProtocolHandler()->InsertResponse("http://www.example.com/",
-                                         {R"|(
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
 <html>
  <head>
   <meta http-equiv='refresh' content='120; url=http://www.example.com/1'>
  </head>
  <body><p>Pass</p></body>
 </html>
-)|",
-                                          TEXT_HTML});
+)|"));
     GetProtocolHandler()->InsertResponse("http://www.example.com/1",
-                                         {"<p>Fail</p>", TEXT_HTML});
+                                         HttpOk("<p>Fail</p>"));
     return GURL("http://www.example.com/");
   }
 
@@ -770,5 +754,125 @@ class RedirectAfterCompletion : public HeadlessRenderTest {
   }
 };
 HEADLESS_RENDER_BROWSERTEST(RedirectAfterCompletion);
+
+class RedirectPostMethod : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html>
+ <body onload='document.forms[0].submit();'>
+  <form action='1' method='post'>
+   <input name='foo' value='bar'>
+  </form>
+ </body>
+</html>
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         HttpRedirect(307, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
+                                         HttpOk("<p>Pass</p>"));
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectPostMethod);
+
+class RedirectKeepsFragment : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/#foo",
+                                         HttpRedirect(302, "/1"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1#foo",
+                                         HttpRedirect(302, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2#foo",
+                                         HttpOk(R"|(
+<body>
+ <p id="content"></p>
+ <script>
+  document.getElementById('content').textContent = window.location.href;
+ </script>
+</body>
+)|"));
+    return GURL("http://www.example.com/#foo");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/#foo",
+                            "http://www.example.com/1#foo",
+                            "http://www.example.com/2#foo"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("http://www.example.com/2#foo"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectKeepsFragment);
+
+class RedirectReplacesFragment : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/#foo",
+                                         HttpRedirect(302, "/1#bar"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1#bar",
+                                         HttpRedirect(302, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2#bar",
+                                         HttpOk(R"|(
+<body>
+ <p id="content"></p>
+ <script>
+  document.getElementById('content').textContent = window.location.href;
+ </script>
+</body>
+)|"));
+    return GURL("http://www.example.com/#foo");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/#foo",
+                            "http://www.example.com/1#bar",
+                            "http://www.example.com/2#bar"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("http://www.example.com/2#bar"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectReplacesFragment);
+
+class RedirectNewFragment : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/",
+                                         HttpRedirect(302, "/1#foo"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1#foo",
+                                         HttpRedirect(302, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2#foo",
+                                         HttpOk(R"|(
+<body>
+ <p id="content"></p>
+ <script>
+  document.getElementById('content').textContent = window.location.href;
+ </script>
+</body>
+)|"));
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1#foo",
+                    "http://www.example.com/2#foo"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("http://www.example.com/2#foo"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectNewFragment);
 
 }  // namespace headless
