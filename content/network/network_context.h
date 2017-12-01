@@ -104,7 +104,8 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
                             mojom::NetworkConditionsPtr conditions) override;
 
  private:
-  NetworkContext();
+  // Constructor only used in tests.
+  explicit NetworkContext(mojom::NetworkContextParamsPtr params);
 
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();

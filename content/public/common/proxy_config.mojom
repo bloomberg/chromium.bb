@@ -1,0 +1,72 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "url/mojo/url.mojom";
+
+// This corresponds to the string representation of net::ProxyConfigBypassRules.
+struct ProxyBypassRules {
+  array<string> rules;
+};
+
+// A list of proxies, each in the format of a single semi-colon delimited entry
+// in the output of a PAC script (e.g., "PROXY foo.com", "DIRECT").
+struct ProxyList {
+  array<string> proxies;
+};
+
+// This corresponds to net::ProxyConfig::ProxyRules::Type.
+enum ProxyRulesType {
+  TYPE_NO_RULES,
+  TYPE_SINGLE_PROXY,
+  TYPE_PROXY_PER_SCHEME,
+};
+
+// These fields mirror those of net::ProxyConfig::ProxyRules.
+struct ProxyRules {
+  ProxyBypassRules bypass_rules;
+  bool reverse_bypass;
+  ProxyRulesType type;
+  ProxyList single_proxies;
+  ProxyList proxies_for_http;
+  ProxyList proxies_for_https;
+  ProxyList proxies_for_ftp;
+  ProxyList fallback_proxies;
+};
+
+// This mirrors net::ProxyConfigSource.
+enum ProxyConfigSource {
+  PROXY_CONFIG_SOURCE_UNKNOWN,
+  PROXY_CONFIG_SOURCE_SYSTEM,
+  PROXY_CONFIG_SOURCE_SYSTEM_FAILED,
+  PROXY_CONFIG_SOURCE_GCONF,
+  PROXY_CONFIG_SOURCE_GSETTINGS,
+  PROXY_CONFIG_SOURCE_KDE,
+  PROXY_CONFIG_SOURCE_ENV,
+  PROXY_CONFIG_SOURCE_CUSTOM,
+  PROXY_CONFIG_SOURCE_TEST
+};
+
+// These fields mirror those of net::ProxyConfig.
+struct ProxyConfig {
+  bool auto_detect;
+  url.mojom.Url pac_url;
+  bool pac_mandatory;
+  ProxyRules proxy_rules;
+  ProxyConfigSource source;
+  // TODO(mmenke): This is a historical wart. Remove it.
+  int32 id;
+};
+
+// Interface for pushing proxy configuration updates to a NetworkContext.
+interface ProxyConfigClient {
+  OnProxyConfigUpdated(ProxyConfig proxy_config);
+};
+
+// Called periodically when the current ProxyConfig is in use, as a hint that
+// it might be a good time to double-check the proxy configuration.
+interface ProxyConfigPollerClient {
+  OnLazyProxyConfigPoll();
+};

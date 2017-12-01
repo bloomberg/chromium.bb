@@ -1,0 +1,24 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//content/public/common/network_service.mojom"
+public_headers = [
+  "//net/proxy/proxy_bypass_rules.h",
+  "//net/proxy/proxy_config.h",
+  "//net/proxy/proxy_config_source.h",
+  "//net/proxy/proxy_list.h",
+]
+traits_headers = [ "//content/public/common/proxy_config_traits.h" ]
+deps = [
+  "//content:export",
+  "//net:net",
+]
+type_mappings = [
+  "content.mojom.ProxyBypassRules=net::ProxyBypassRules",
+  "content.mojom.ProxyList=net::ProxyList",
+  "content.mojom.ProxyRulesType=net::ProxyConfig::ProxyRules::Type",
+  "content.mojom.ProxyRule=net::ProxyConfig::ProxyRule",
+  "content.mojom.ProxyConfigSource=net::ProxyConfigSource",
+  "content.mojom.ProxyConfig=net::ProxyConfig",
+]
