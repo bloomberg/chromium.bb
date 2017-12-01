@@ -24,8 +24,4 @@ base::WeakPtr<ModelTypeSyncBridge> NoOpUserEventService::GetSyncBridge() {
   return base::WeakPtr<ModelTypeSyncBridge>();
 }
 
-void NoOpUserEventService::RegisterDependentFieldTrial(
-    const std::string& trial_name,
-    UserEventSpecifics::EventCase event_case) {}
-
 }  // namespace syncer

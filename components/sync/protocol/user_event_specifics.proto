@@ -31,13 +31,7 @@ message UserEventSpecifics {
 
   // Reports field trial membership for the subset of trials that have been
   // registered as important to other event types.
-  message FieldTrial {
-    message FieldTrialPair {
-      optional fixed32 name_id = 1;
-      optional fixed32 group_id = 2;
-    }
-    repeated FieldTrialPair field_trial_pairs = 1;
-  }
+  message FieldTrial { repeated fixed32 variation_ids = 1; }
 
   // Language detection output.
   message LanguageDetection {

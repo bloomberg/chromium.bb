@@ -41,6 +41,10 @@ const base::Feature kSyncClearDataOnPassphraseEncryption{
 const base::Feature kSyncUserEvents{"SyncUserEvents",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Gates emission of FieldTrial events.
+const base::Feature kSyncUserFieldTrialEvents{"SyncUserFieldTrialEvents",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Gates registration for user language detection events.
 const base::Feature kSyncUserLanguageDetectionEvents{
     "SyncUserLanguageDetectionEvents", base::FEATURE_DISABLED_BY_DEFAULT};

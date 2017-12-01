@@ -38,7 +38,7 @@
 //
 // VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial",
 //                                       "group1");
-// if (id != variations::kEmptyID) {
+// if (id != variations::EMPTY_ID) {
 //   // use |id|
 // }
 
@@ -97,7 +97,7 @@ void AssociateGoogleVariationIDForceHashes(IDCollectionKey key,
 
 // Retrieve the variations::VariationID associated with a FieldTrial group for
 // collection |key|. The group is denoted by |trial_name| and |group_name|.
-// This will return variations::kEmptyID if there is currently no associated ID
+// This will return variations::EMPTY_ID if there is currently no associated ID
 // for the named group. This API can be nicely combined with
 // FieldTrial::GetActiveFieldTrialGroups() to enumerate the variation IDs for
 // all active FieldTrial groups. Thread safe.

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
@@ -13,9 +14,8 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
+#include "components/variations/variations_associated_data.h"
 
-using base::Time;
-using base::TimeDelta;
 using fake_server::FakeServer;
 using sync_pb::UserEventSpecifics;
 using sync_pb::SyncEntity;
@@ -23,10 +23,10 @@ using sync_pb::CommitResponse;
 
 namespace {
 
-UserEventSpecifics CreateEvent(int minutes_ago) {
+UserEventSpecifics CreateEvent(int microseconds) {
   UserEventSpecifics specifics;
-  specifics.set_event_time_usec(
-      (Time::Now() - TimeDelta::FromMinutes(minutes_ago)).ToInternalValue());
+  specifics.set_event_time_usec(microseconds);
+  specifics.set_navigation_id(microseconds);
   specifics.mutable_test_event();
   return specifics;
 }
@@ -76,24 +76,22 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
       return false;
     }
 
-    // Because we have a multimap, we cannot just check counts and equality of
-    // items, but we need to make sure 2 of A and 1 of B is not the same as 1 of
-    // A and 2 of B. So to make this easy, copy the multimap and remove items.
-    std::multimap<int64_t, UserEventSpecifics> copied_expected_(
-        expected_specifics_.begin(), expected_specifics_.end());
+    // Number of events on server matches expected, exit condition is satisfied.
+    // Let's verify that content matches as well. It is safe to modify
+    // |expected_specifics_|.
     for (const SyncEntity& entity : entities) {
       UserEventSpecifics server_specifics = entity.specifics().user_event();
-      auto iter = copied_expected_.find(server_specifics.event_time_usec());
+      auto iter = expected_specifics_.find(server_specifics.event_time_usec());
       // We don't expect to encounter id matching events with different values,
       // this isn't going to recover so fail the test case now.
-      EXPECT_TRUE(copied_expected_.end() != iter);
+      EXPECT_TRUE(expected_specifics_.end() != iter);
       // TODO(skym): This may need to change if we start updating navigation_id
       // based on what sessions data is committed, and end up committing the
       // same event multiple times.
       EXPECT_EQ(iter->second.navigation_id(), server_specifics.navigation_id());
       EXPECT_EQ(iter->second.event_case(), server_specifics.event_case());
 
-      copied_expected_.erase(iter);
+      expected_specifics_.erase(iter);
     }
 
     return true;
@@ -106,6 +104,57 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
  private:
   FakeServer* fake_server_;
   std::multimap<int64_t, UserEventSpecifics> expected_specifics_;
+};
+
+// A more simplistic version of UserEventEqualityChecker that only checks the
+// case of the events. This is helpful if you do not know (or control) some of
+// the fields of the events that are created.
+class UserEventCaseChecker : public SingleClientStatusChangeChecker {
+ public:
+  UserEventCaseChecker(
+      browser_sync::ProfileSyncService* service,
+      FakeServer* fake_server,
+      std::multiset<UserEventSpecifics::EventCase> expected_cases)
+      : SingleClientStatusChangeChecker(service),
+        fake_server_(fake_server),
+        expected_cases_(expected_cases) {}
+
+  bool IsExitConditionSatisfied() override {
+    std::vector<SyncEntity> entities =
+        fake_server_->GetSyncEntitiesByModelType(syncer::USER_EVENTS);
+
+    // |entities.size()| is only going to grow, if |entities.size()| ever
+    // becomes bigger then all hope is lost of passing, stop now.
+    EXPECT_GE(expected_cases_.size(), entities.size());
+
+    if (expected_cases_.size() > entities.size()) {
+      return false;
+    }
+
+    // Number of events on server matches expected, exit condition is satisfied.
+    // Let's verify that content matches as well. It is safe to modify
+    // |expected_specifics_|.
+    for (const SyncEntity& entity : entities) {
+      UserEventSpecifics::EventCase actual =
+          entity.specifics().user_event().event_case();
+      auto iter = expected_cases_.find(actual);
+      if (iter != expected_cases_.end()) {
+        expected_cases_.erase(iter);
+      } else {
+        ADD_FAILURE() << actual;
+      }
+    }
+
+    return true;
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting server side USER_EVENTS to match expected.";
+  }
+
+ private:
+  FakeServer* fake_server_;
+  std::multiset<UserEventSpecifics::EventCase> expected_cases_;
 };
 
 class SingleClientUserEventsSyncTest : public SyncTest {
@@ -225,7 +274,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
   const UserEventSpecifics specifics1 = CreateEvent(1);
   const UserEventSpecifics specifics2 = CreateEvent(2);
-  const GURL url("http://www.one.com/");
 
   ASSERT_TRUE(SetupSync());
   syncer::UserEventService* event_service =
@@ -241,9 +289,24 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
   // something else through the system that we can wait on before checking.
   // Tab/SESSIONS data was picked fairly arbitrarily, note that we expect 2
   // entries, one for the window/header and one for the tab.
-  sessions_helper::OpenTab(0, url);
+  sessions_helper::OpenTab(0, GURL("http://www.one.com/"));
   ServerCountMatchStatusChecker(syncer::SESSIONS, 2);
   UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics1})
+      .Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, FieldTrial) {
+  const std::string trial_name = "TrialName";
+  const std::string group_name = "GroupName";
+
+  ASSERT_TRUE(SetupSync());
+  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_SERVICE,
+                                         trial_name, group_name, 123);
+  base::FieldTrialList::CreateFieldTrial(trial_name, group_name);
+  base::FieldTrialList::FindFullName(trial_name);
+
+  UserEventCaseChecker(GetSyncService(0), GetFakeServer(),
+                       {UserEventSpecifics::kFieldTrialEvent})
       .Wait();
 }
 
