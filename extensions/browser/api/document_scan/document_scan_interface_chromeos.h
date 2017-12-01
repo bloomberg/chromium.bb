@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "extensions/browser/api/document_scan/document_scan_interface.h"
 
@@ -29,11 +30,9 @@ class DocumentScanInterfaceChromeos : public DocumentScanInterface {
  private:
   void OnScannerListReceived(
       const ListScannersResultsCallback& callback,
-      bool succeeded,
-      const chromeos::LorgnetteManagerClient::ScannerTable& scanners);
+      base::Optional<chromeos::LorgnetteManagerClient::ScannerTable> scanners);
   void OnScanCompleted(const ScanResultsCallback& callback,
-                       bool succeeded,
-                       const std::string& image_data);
+                       base::Optional<std::string> image_data);
 
   DISALLOW_COPY_AND_ASSIGN(DocumentScanInterfaceChromeos);
 };

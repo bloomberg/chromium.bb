@@ -83,8 +83,8 @@ TEST_F(DocumentScanInterfaceChromeosTest, ScanFailure) {
           [](base::RunLoop* run_loop, const std::string& scanned_image,
              const std::string& mime_type, const std::string& error) {
             run_loop->Quit();
-            EXPECT_EQ("data:image/png;base64,", scanned_image);
-            EXPECT_EQ("image/png", mime_type);
+            EXPECT_EQ("", scanned_image);
+            EXPECT_EQ("", mime_type);
             EXPECT_EQ("Image scan failed", error);
           },
           &run_loop));
