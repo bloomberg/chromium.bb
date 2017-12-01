@@ -31,8 +31,8 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
-#include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -103,17 +103,13 @@ class CSSPreloadScanner {
 // @import tags before parsing.
 class CORE_EXPORT CSSPreloaderResourceClient
     : public GarbageCollectedFinalized<CSSPreloaderResourceClient>,
-      public StyleSheetResourceClient {
+      public ResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(CSSPreloaderResourceClient);
 
  public:
   CSSPreloaderResourceClient(Resource*, HTMLResourcePreloader*);
   ~CSSPreloaderResourceClient() override;
-  void SetCSSStyleSheet(const String& href,
-                        const KURL& base_url,
-                        ReferrerPolicy,
-                        const WTF::TextEncoding&,
-                        const CSSStyleSheetResource*) override;
+  void NotifyFinished(Resource*) override;
   void DataReceived(Resource*, const char*, size_t) override;
   String DebugName() const override { return "CSSPreloaderResourceClient"; }
 

@@ -27,7 +27,7 @@
 #define CSSStyleSheetResource_h
 
 #include "core/CoreExport.h"
-#include "core/loader/resource/StyleSheetResource.h"
+#include "core/loader/resource/TextResource.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -37,11 +37,10 @@ namespace blink {
 class CSSParserContext;
 class FetchParameters;
 class KURL;
-class ResourceClient;
 class ResourceFetcher;
 class StyleSheetContents;
 
-class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
+class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
  public:
   enum class MIMETypeCheck { kStrict, kLax };
 
@@ -54,11 +53,9 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
 
   const String SheetText(const CSSParserContext*,
                          MIMETypeCheck = MIMETypeCheck::kStrict) const;
-
-  void DidAddClient(ResourceClient*) override;
-
   StyleSheetContents* CreateParsedStyleSheetFromCache(const CSSParserContext*);
   void SaveParsedStyleSheet(StyleSheetContents*);
+  ReferrerPolicy GetReferrerPolicy() const;
 
  private:
   class CSSStyleSheetResourceFactory : public ResourceFactory {

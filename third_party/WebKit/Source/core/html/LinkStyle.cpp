@@ -58,12 +58,7 @@ enum StyleSheetCacheStatus {
   kStyleSheetCacheStatusCount,
 };
 
-void LinkStyle::SetCSSStyleSheet(
-    const String& href,
-    const KURL& base_url,
-    ReferrerPolicy referrer_policy,
-    const WTF::TextEncoding& charset,
-    const CSSStyleSheetResource* cached_style_sheet) {
+void LinkStyle::NotifyFinished(Resource* resource) {
   if (!owner_->isConnected()) {
     // While the stylesheet is asynchronously loading, the owner can be
     // disconnected from a document.
@@ -75,6 +70,7 @@ void LinkStyle::SetCSSStyleSheet(
     return;
   }
 
+  CSSStyleSheetResource* cached_style_sheet = ToCSSStyleSheetResource(resource);
   // See the comment in PendingScript.cpp about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if (!cached_style_sheet->ErrorOccurred() &&
@@ -96,11 +92,11 @@ void LinkStyle::SetCSSStyleSheet(
   }
 
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), base_url, referrer_policy, charset);
+      GetDocument(), cached_style_sheet->GetResponse().Url(),
+      cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding());
 
   if (StyleSheetContents* parsed_sheet =
-          const_cast<CSSStyleSheetResource*>(cached_style_sheet)
-              ->CreateParsedStyleSheetFromCache(parser_context)) {
+          cached_style_sheet->CreateParsedStyleSheetFromCache(parser_context)) {
     if (sheet_)
       ClearSheet();
     sheet_ = CSSStyleSheet::Create(parsed_sheet, *owner_);
@@ -116,7 +112,7 @@ void LinkStyle::SetCSSStyleSheet(
   }
 
   StyleSheetContents* style_sheet =
-      StyleSheetContents::Create(href, parser_context);
+      StyleSheetContents::Create(cached_style_sheet->Url(), parser_context);
 
   if (sheet_)
     ClearSheet();
@@ -410,7 +406,7 @@ void LinkStyle::OwnerRemoved() {
 void LinkStyle::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_);
   LinkResource::Trace(visitor);
-  ResourceOwner<StyleSheetResource>::Trace(visitor);
+  ResourceOwner<CSSStyleSheetResource>::Trace(visitor);
 }
 
 }  // namespace blink

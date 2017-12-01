@@ -271,12 +271,7 @@ CSSPreloaderResourceClient::CSSPreloaderResourceClient(
 
 CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}
 
-void CSSPreloaderResourceClient::SetCSSStyleSheet(
-    const String& href,
-    const KURL& base_url,
-    ReferrerPolicy referrer_policy,
-    const WTF::TextEncoding&,
-    const CSSStyleSheetResource*) {
+void CSSPreloaderResourceClient::NotifyFinished(Resource*) {
   ClearResource();
 }
 
@@ -370,7 +365,7 @@ void CSSPreloaderResourceClient::ClearResource() {
 void CSSPreloaderResourceClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(preloader_);
   visitor->Trace(resource_);
-  StyleSheetResourceClient::Trace(visitor);
+  ResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

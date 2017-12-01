@@ -65,15 +65,11 @@ void StyleRuleImport::TraceAfterDispatch(blink::Visitor* visitor) {
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
-void StyleRuleImport::SetCSSStyleSheet(
-    const String& href,
-    const KURL& base_url,
-    ReferrerPolicy referrer_policy,
-    const WTF::TextEncoding& charset,
-    const CSSStyleSheetResource* cached_style_sheet) {
+void StyleRuleImport::NotifyFinished(Resource* resource) {
   if (style_sheet_)
     style_sheet_->ClearOwnerRule();
 
+  CSSStyleSheetResource* cached_style_sheet = ToCSSStyleSheetResource(resource);
   Document* document = nullptr;
 
   // Fallback to an insecure context parser if we don't have a parent style
@@ -85,10 +81,13 @@ void StyleRuleImport::SetCSSStyleSheet(
     document = parent_style_sheet_->SingleOwnerDocument();
     context = parent_style_sheet_->ParserContext();
   }
-  context = CSSParserContext::Create(context, base_url, referrer_policy,
-                                     charset, document);
+  context =
+      CSSParserContext::Create(context, cached_style_sheet->GetResponse().Url(),
+                               cached_style_sheet->GetReferrerPolicy(),
+                               cached_style_sheet->Encoding(), document);
 
-  style_sheet_ = StyleSheetContents::Create(this, href, context);
+  style_sheet_ =
+      StyleSheetContents::Create(this, cached_style_sheet->Url(), context);
 
   style_sheet_->ParseAuthorStyleSheet(
       cached_style_sheet, document ? document->GetSecurityOrigin() : nullptr);
