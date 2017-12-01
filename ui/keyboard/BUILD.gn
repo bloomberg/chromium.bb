@@ -32,6 +32,8 @@ component("keyboard") {
     "keyboard_ui.h",
     "keyboard_util.cc",
     "keyboard_util.h",
+    "notification_manager.cc",
+    "notification_manager.h",
   ]
 
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
@@ -154,6 +156,7 @@ test("keyboard_unittests") {
     "keyboard_controller_unittest.cc",
     "keyboard_event_filter_unittest.cc",
     "keyboard_util_unittest.cc",
+    "notification_manager_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

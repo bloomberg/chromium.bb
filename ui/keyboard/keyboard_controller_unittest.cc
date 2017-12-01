@@ -717,9 +717,6 @@ TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
 
   SetFocus(&input_client);
   gfx::Rect new_bounds(0, 0, 1280, 800);
-  // TODO(blakeo): strictly speaking, the is_available_number_of_calls should
-  // not go up if the availability value is the same each time. This will
-  // eventually need to be fixed, but is currently harmless.
   ASSERT_NE(new_bounds, root_window()->bounds());
   EXPECT_EQ(1, visible_bounds_number_of_calls());
   EXPECT_EQ(1, occluding_bounds_number_of_calls());
@@ -727,11 +724,11 @@ TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   root_window()->SetBounds(new_bounds);
   EXPECT_EQ(2, visible_bounds_number_of_calls());
   EXPECT_EQ(2, occluding_bounds_number_of_calls());
-  EXPECT_EQ(2, is_available_number_of_calls());
+  EXPECT_EQ(1, is_available_number_of_calls());
   MockRotateScreen();
   EXPECT_EQ(3, visible_bounds_number_of_calls());
   EXPECT_EQ(3, occluding_bounds_number_of_calls());
-  EXPECT_EQ(3, is_available_number_of_calls());
+  EXPECT_EQ(1, is_available_number_of_calls());
 }
 
 }  // namespace keyboard
