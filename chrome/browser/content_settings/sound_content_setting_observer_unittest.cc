@@ -69,17 +69,17 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
   }
 
   bool RecordedSiteMuted() {
-    auto entries = test_ukm_recorder_->GetEntriesByName(kSiteMutedEvent);
-    return !entries.empty();
+    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(kURL1);
+    if (!source)
+      return false;
+    return test_ukm_recorder_->HasEntry(*source, kSiteMutedEvent);
   }
 
   void ExpectRecordedForReason(SoundContentSettingObserver::MuteReason reason) {
-    auto entries = test_ukm_recorder_->GetEntriesByName(kSiteMutedEvent);
-    EXPECT_EQ(1u, entries.size());
-    for (const auto* const entry : entries) {
-      test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kURL1));
-      test_ukm_recorder_->ExpectEntryMetric(entry, kSiteMutedReason, reason);
-    }
+    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(kURL1);
+    EXPECT_NE(nullptr, source);
+    test_ukm_recorder_->ExpectMetric(*source, kSiteMutedEvent, kSiteMutedReason,
+                                     reason);
   }
 
 // TabMutedReason does not exist on Android.

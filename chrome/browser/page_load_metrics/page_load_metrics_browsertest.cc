@@ -415,20 +415,18 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
 
-  const auto& entries = test_ukm_recorder_->GetMergedEntriesByName(
-      internal::kUkmPageLoadEventName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(kv.second.get(), url);
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmDomContentLoadedName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmLoadEventName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmFirstPaintName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), internal::kUkmFirstContentfulPaintName));
-  }
+  const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(url);
+  EXPECT_NE(nullptr, source);
+  EXPECT_TRUE(
+      test_ukm_recorder_->HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmDomContentLoadedName));
+  EXPECT_TRUE(test_ukm_recorder_->HasMetric(
+      *source, internal::kUkmPageLoadEventName, internal::kUkmLoadEventName));
+  EXPECT_TRUE(test_ukm_recorder_->HasMetric(
+      *source, internal::kUkmPageLoadEventName, internal::kUkmFirstPaintName));
+  EXPECT_TRUE(
+      test_ukm_recorder_->HasMetric(*source, internal::kUkmPageLoadEventName,
+                                    internal::kUkmFirstContentfulPaintName));
 
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
   // have been recorded.
