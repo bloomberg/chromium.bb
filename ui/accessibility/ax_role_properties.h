@@ -35,9 +35,6 @@ AX_EXPORT bool IsControl(ui::AXRole role);
 // Returns true if this node is a menu or related role.
 AX_EXPORT bool IsMenuRelated(ui::AXRole role);
 
-// Returns true if this node is a edit field.
-AX_EXPORT bool IsEditField(ui::AXRole role);
-
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_

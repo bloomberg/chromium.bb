@@ -144,9 +144,4 @@ bool IsMenuRelated(ui::AXRole role) {
   }
 }
 
-bool IsEditField(ui::AXRole role) {
-  return role == ui::AX_ROLE_TEXT_FIELD || role == ui::AX_ROLE_SEARCH_BOX ||
-         role == ui::AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX;
-}
-
 }  // namespace ui

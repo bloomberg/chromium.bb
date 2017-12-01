@@ -262,43 +262,20 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
          GetData().role == AX_ROLE_INLINE_TEXT_BOX;
 }
 
-bool AXPlatformNodeBase::IsNativeTextControl() const {
-  const std::string& html_tag = GetStringAttribute(AX_ATTR_HTML_TAG);
-  if (html_tag == "input") {
-    std::string input_type;
-    if (!GetData().GetHtmlAttribute("type", &input_type))
-      return true;
-    return input_type.empty() || input_type == "email" ||
-           input_type == "password" || input_type == "search" ||
-           input_type == "tel" || input_type == "text" || input_type == "url" ||
-           input_type == "number";
-  }
-  return html_tag == "textarea";
+bool AXPlatformNodeBase::IsPlainTextField() const {
+  // We need to check both the role and editable state, because some ARIA text
+  // fields may in fact not be editable, whilst some editable fields might not
+  // have the role.
+  return !GetData().HasState(AX_STATE_RICHLY_EDITABLE) &&
+         (GetData().role == AX_ROLE_TEXT_FIELD ||
+          GetData().role == AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX ||
+          GetData().role == AX_ROLE_SEARCH_BOX ||
+          GetBoolAttribute(AX_ATTR_EDITABLE_ROOT));
 }
 
-bool AXPlatformNodeBase::IsSimpleTextControl() const {
-  // Time fields, color wells and spinner buttons might also use text fields as
-  // constituent parts, but they are not considered text fields as a whole.
-  switch (GetData().role) {
-    case AX_ROLE_TEXT_FIELD_WITH_COMBO_BOX:
-    case AX_ROLE_SEARCH_BOX:
-      return true;
-    case AX_ROLE_TEXT_FIELD:
-      return !GetData().HasState(AX_STATE_RICHLY_EDITABLE);
-    default:
-      return false;
-  }
-}
-
-// Indicates if this object is at the root of a rich edit text control.
-bool AXPlatformNodeBase::IsRichTextControl() {
-  gfx::NativeViewAccessible parent_accessible = GetParent();
-  AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
-  if (!parent)
-    return false;
-
-  return GetData().HasState(AX_STATE_RICHLY_EDITABLE) &&
-         (!parent || !parent->GetData().HasState(AX_STATE_RICHLY_EDITABLE));
+bool AXPlatformNodeBase::IsRichTextField() const {
+  return GetBoolAttribute(AX_ATTR_EDITABLE_ROOT) &&
+         GetData().HasState(AX_STATE_RICHLY_EDITABLE);
 }
 
 base::string16 AXPlatformNodeBase::GetInnerText() {
@@ -466,7 +443,7 @@ int AXPlatformNodeBase::GetTableRowSpan() const {
 }
 
 bool AXPlatformNodeBase::HasCaret() {
-  if (IsSimpleTextControl() && HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
+  if (IsPlainTextField() && HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
       HasIntAttribute(ui::AX_ATTR_TEXT_SEL_END)) {
     return true;
   }
@@ -504,10 +481,7 @@ bool AXPlatformNodeBase::IsLeaf() {
   // implementation details, but we want to expose them as leaves to platform
   // accessibility APIs because screen readers might be confused if they find
   // any children.
-  // Note that if a combo box, search box or text field are not native, they
-  // might present a menu of choices using aria-owns which should not be hidden
-  // from tree.
-  if (IsNativeTextControl() || IsTextOnlyObject())
+  if (IsPlainTextField() || IsTextOnlyObject())
     return true;
 
   // Roles whose children are only presentational according to the ARIA and
@@ -556,8 +530,7 @@ base::string16 AXPlatformNodeBase::GetValue() {
   // Some screen readers like Jaws and VoiceOver require a
   // value to be set in text fields with rich content, even though the same
   // information is available on the children.
-  if (value.empty() && (IsSimpleTextControl() || IsRichTextControl()) &&
-      !IsNativeTextControl())
+  if (value.empty() && IsRichTextField())
     return GetInnerText();
 
   return value;

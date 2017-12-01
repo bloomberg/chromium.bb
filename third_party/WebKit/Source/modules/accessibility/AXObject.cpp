@@ -730,9 +730,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   cached_has_inherited_presentational_role_ =
       !!InheritsPresentationalRoleFrom();
   cached_is_ignored_ = ComputeAccessibilityIsIgnored();
-  cached_is_editable_root_ =
-      GetNode() ? IsNativeTextControl() || IsRootEditableElement(*GetNode())
-                : false;
+  cached_is_editable_root_ = ComputeIsEditableRoot();
   cached_live_region_root_ =
       IsLiveRegion()
           ? const_cast<AXObject*>(this)

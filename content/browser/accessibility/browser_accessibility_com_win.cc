@@ -1713,7 +1713,7 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
     return;
 
   std::map<int, std::vector<base::string16>> attributes_map;
-  if (owner()->PlatformIsLeaf() || owner()->IsSimpleTextControl()) {
+  if (owner()->PlatformIsLeaf() || owner()->IsPlainTextField()) {
     attributes_map[0] = ComputeTextAttributes();
     const std::map<int, std::vector<base::string16>> spelling_attributes =
         GetSpellingAttributes();
@@ -2134,7 +2134,7 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
       spelling_attributes[end_offset] = end_attributes;
     }
   }
-  if (owner()->IsSimpleTextControl()) {
+  if (owner()->IsPlainTextField()) {
     int start_offset = 0;
     for (BrowserAccessibility* static_text =
              BrowserAccessibilityManager::NextTextOnlyObject(

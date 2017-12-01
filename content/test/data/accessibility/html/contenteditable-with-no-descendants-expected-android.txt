@@ -1,5 +1,5 @@
 android.webkit.WebView focusable focused scrollable
-++android.view.View clickable focusable multiline name='label'
-++android.view.View clickable focusable multiline hint='description'
-++android.view.View clickable focusable multiline name='title'
+++android.view.View clickable editable_text focusable multiline name='label'
+++android.view.View clickable editable_text focusable multiline hint='description'
+++android.view.View clickable editable_text focusable multiline name='title'
 ++android.view.View name='description'
