@@ -29,6 +29,7 @@ UserActivityLogger::UserActivityLogger(
       session_manager_(session_manager),
       binding_(this, std::move(request)),
       idle_delay_(base::TimeDelta::FromSeconds(kIdleDelaySeconds)) {
+  DCHECK(logger_delegate_);
   DCHECK(idle_event_notifier);
   idle_event_observer_.Add(idle_event_notifier);
 
@@ -118,7 +119,6 @@ void UserActivityLogger::OnIdleEventObserved(
     const IdleEventNotifier::ActivityData& activity_data) {
   idle_event_observed_ = true;
   ExtractFeatures(activity_data);
-  // TODO(renjieliu): call get open tab url function here.
 }
 
 void UserActivityLogger::OnSessionStateChanged() {
@@ -196,6 +196,7 @@ void UserActivityLogger::ExtractFeatures(
     features_.set_on_battery(
         *external_power_ == power_manager::PowerSupplyProperties::DISCONNECTED);
   }
+  logger_delegate_->UpdateOpenTabsURLs();
 }
 
 void UserActivityLogger::MaybeLogEvent(
