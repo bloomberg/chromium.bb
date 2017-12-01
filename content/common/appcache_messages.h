@@ -16,11 +16,11 @@
 #define IPC_MESSAGE_START AppCacheMsgStart
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::AppCacheEventID,
-                          content::APPCACHE_EVENT_ID_LAST)
+                          content::AppCacheEventID::APPCACHE_OBSOLETE_EVENT)
 IPC_ENUM_TRAITS_MAX_VALUE(content::AppCacheStatus,
-                          content::APPCACHE_STATUS_LAST)
+                          content::AppCacheStatus::APPCACHE_STATUS_OBSOLETE)
 IPC_ENUM_TRAITS_MAX_VALUE(content::AppCacheErrorReason,
-    content::APPCACHE_ERROR_REASON_LAST)
+                          content::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR)
 
 IPC_STRUCT_TRAITS_BEGIN(content::AppCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(manifest_url)

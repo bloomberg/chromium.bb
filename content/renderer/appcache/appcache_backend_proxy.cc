@@ -49,7 +49,7 @@ void AppCacheBackendProxy::MarkAsForeignEntry(
 }
 
 AppCacheStatus AppCacheBackendProxy::GetStatus(int host_id) {
-  AppCacheStatus status = APPCACHE_STATUS_UNCACHED;
+  AppCacheStatus status = AppCacheStatus::APPCACHE_STATUS_UNCACHED;
   sender_->Send(new AppCacheHostMsg_GetStatus(host_id, &status));
   return status;
 }

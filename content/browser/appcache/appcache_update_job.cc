@@ -57,7 +57,7 @@ bool IsEvictableError(AppCacheUpdateJob::ResultType result,
       return true;
 
     case AppCacheUpdateJob::MANIFEST_ERROR:
-      return details.reason == APPCACHE_SIGNATURE_ERROR;
+      return details.reason == AppCacheErrorReason::APPCACHE_SIGNATURE_ERROR;
 
     default:
       NOTREACHED();
@@ -237,9 +237,9 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
   if (update_status == AppCacheGroup::CHECKING ||
       update_status == AppCacheGroup::DOWNLOADING) {
     if (host) {
-      NotifySingleHost(host, APPCACHE_CHECKING_EVENT);
+      NotifySingleHost(host, AppCacheEventID::APPCACHE_CHECKING_EVENT);
       if (update_status == AppCacheGroup::DOWNLOADING)
-        NotifySingleHost(host, APPCACHE_DOWNLOADING_EVENT);
+        NotifySingleHost(host, AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
 
       // Add to fetch list or an existing entry if already fetched.
       if (!new_master_resource.is_empty()) {
@@ -259,12 +259,12 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
     base::TimeDelta time_since_last_check =
         base::Time::Now() - group_->last_full_update_check_time();
     doing_full_update_check_ = time_since_last_check > kFullUpdateInterval;
-    NotifyAllAssociatedHosts(APPCACHE_CHECKING_EVENT);
+    NotifyAllAssociatedHosts(AppCacheEventID::APPCACHE_CHECKING_EVENT);
   } else {
     update_type_ = CACHE_ATTEMPT;
     doing_full_update_check_ = true;
     DCHECK(host);
-    NotifySingleHost(host, APPCACHE_CHECKING_EVENT);
+    NotifySingleHost(host, AppCacheEventID::APPCACHE_CHECKING_EVENT);
   }
 
   if (!new_master_resource.is_empty()) {
@@ -396,13 +396,11 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* fetcher,
     const char kFormatString[] = "Manifest fetch failed (%d) %s";
     std::string message = FormatUrlErrorMessage(
         kFormatString, manifest_url_, fetcher->result(), response_code);
-    HandleCacheFailure(AppCacheErrorDetails(message,
-                                    APPCACHE_MANIFEST_ERROR,
-                                    manifest_url_,
-                                    response_code,
-                                    false /*is_cross_origin*/),
-                       fetcher->result(),
-                       GURL());
+    HandleCacheFailure(
+        AppCacheErrorDetails(
+            message, AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+            manifest_url_, response_code, false /*is_cross_origin*/),
+        fetcher->result(), GURL());
   }
 }
 
@@ -410,26 +408,23 @@ void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
                                             bool success,
                                             int response_code) {
   DCHECK(master_entry_fetches_.empty());
-  CancelAllMasterEntryFetches(AppCacheErrorDetails(
-      "The cache has been made obsolete, "
-      "the manifest file returned 404 or 410",
-      APPCACHE_MANIFEST_ERROR,
-      GURL(),
-      response_code,
-      false /*is_cross_origin*/));
+  CancelAllMasterEntryFetches(
+      AppCacheErrorDetails("The cache has been made obsolete, "
+                           "the manifest file returned 404 or 410",
+                           AppCacheErrorReason::APPCACHE_MANIFEST_ERROR, GURL(),
+                           response_code, false /*is_cross_origin*/));
   if (success) {
     DCHECK(group->is_obsolete());
-    NotifyAllAssociatedHosts(APPCACHE_OBSOLETE_EVENT);
+    NotifyAllAssociatedHosts(AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
     internal_state_ = COMPLETED;
     MaybeCompleteUpdate();
   } else {
     // Treat failure to mark group obsolete as a cache failure.
-    HandleCacheFailure(AppCacheErrorDetails(
-                           "Failed to mark the cache as obsolete",
-                           APPCACHE_UNKNOWN_ERROR, GURL(),  0,
-                           false /*is_cross_origin*/),
-                       DB_ERROR,
-                       GURL());
+    HandleCacheFailure(
+        AppCacheErrorDetails("Failed to mark the cache as obsolete",
+                             AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                             GURL(), 0, false /*is_cross_origin*/),
+        DB_ERROR, GURL());
   }
 }
 
@@ -457,11 +452,10 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     const std::string message = base::StringPrintf(kFormatString,
         manifest_url_.spec().c_str());
     HandleCacheFailure(
-        AppCacheErrorDetails(
-            message, APPCACHE_SIGNATURE_ERROR, GURL(), 0,
-            false /*is_cross_origin*/),
-        MANIFEST_ERROR,
-        GURL());
+        AppCacheErrorDetails(message,
+                             AppCacheErrorReason::APPCACHE_SIGNATURE_ERROR,
+                             GURL(), 0, false /*is_cross_origin*/),
+        MANIFEST_ERROR, GURL());
     VLOG(1) << message;
     return;
   }
@@ -499,7 +493,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   }
 
   group_->SetUpdateAppCacheStatus(AppCacheGroup::DOWNLOADING);
-  NotifyAllAssociatedHosts(APPCACHE_DOWNLOADING_EVENT);
+  NotifyAllAssociatedHosts(AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
   FetchUrls();
   FetchMasterEntries();
   MaybeCompleteUpdate();  // if not done, continues when async fetches complete
@@ -557,26 +551,23 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
           case DISKCACHE_ERROR:
             HandleCacheFailure(
                 AppCacheErrorDetails(
-                    message, APPCACHE_UNKNOWN_ERROR, GURL(), 0,
-                    is_cross_origin),
-                result,
-                url);
+                    message, AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                    GURL(), 0, is_cross_origin),
+                result, url);
             break;
           case NETWORK_ERROR:
             HandleCacheFailure(
-                AppCacheErrorDetails(message, APPCACHE_RESOURCE_ERROR, url, 0,
-                    is_cross_origin),
-                result,
-                url);
+                AppCacheErrorDetails(
+                    message, AppCacheErrorReason::APPCACHE_RESOURCE_ERROR, url,
+                    0, is_cross_origin),
+                result, url);
             break;
           default:
-            HandleCacheFailure(AppCacheErrorDetails(message,
-                                            APPCACHE_RESOURCE_ERROR,
-                                            url,
-                                            response_code,
-                                            is_cross_origin),
-                               result,
-                               url);
+            HandleCacheFailure(
+                AppCacheErrorDetails(
+                    message, AppCacheErrorReason::APPCACHE_RESOURCE_ERROR, url,
+                    response_code, is_cross_origin),
+                result, url);
             break;
         }
         return;
@@ -665,8 +656,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
     std::string message = FormatUrlErrorMessage(
         kFormatString, request->GetURL(), fetcher->result(), response_code);
     host_notifier.SendErrorNotifications(AppCacheErrorDetails(
-        message, APPCACHE_MANIFEST_ERROR, request->GetURL(), response_code,
-        false /*is_cross_origin*/));
+        message, AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+        request->GetURL(), response_code, false /*is_cross_origin*/));
 
     // In downloading case, update result is different if all master entries
     // failed vs. only some failing.
@@ -678,9 +669,9 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
       // Section 6.9.4, step 22.3.
       if (update_type_ == CACHE_ATTEMPT && pending_master_entries_.empty()) {
         HandleCacheFailure(
-            AppCacheErrorDetails(message, APPCACHE_MANIFEST_ERROR,
-                                 request->GetURL(), response_code,
-                                 false /*is_cross_origin*/),
+            AppCacheErrorDetails(
+                message, AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+                request->GetURL(), response_code, false /*is_cross_origin*/),
             fetcher->result(), GURL());
         return;
       }
@@ -723,24 +714,20 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
             << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);
     if (response_code == 200) {
-      HandleCacheFailure(AppCacheErrorDetails("Manifest changed during update",
-                                      APPCACHE_CHANGED_ERROR,
-                                      GURL(),
-                                      0,
-                                      false /*is_cross_origin*/),
-                         MANIFEST_ERROR,
-                         GURL());
+      HandleCacheFailure(
+          AppCacheErrorDetails("Manifest changed during update",
+                               AppCacheErrorReason::APPCACHE_CHANGED_ERROR,
+                               GURL(), 0, false /*is_cross_origin*/),
+          MANIFEST_ERROR, GURL());
     } else {
       const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
       std::string message = FormatUrlErrorMessage(
           kFormatString, manifest_url_, fetcher->result(), response_code);
-      HandleCacheFailure(AppCacheErrorDetails(message,
-                                      APPCACHE_MANIFEST_ERROR,
-                                      GURL(),
-                                      response_code,
-                                      false /*is_cross_origin*/),
-                         fetcher->result(),
-                         GURL());
+      HandleCacheFailure(
+          AppCacheErrorDetails(
+              message, AppCacheErrorReason::APPCACHE_MANIFEST_ERROR, GURL(),
+              response_code, false /*is_cross_origin*/),
+          fetcher->result(), GURL());
     }
   }
 }
@@ -757,12 +744,9 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
   } else {
     HandleCacheFailure(
         AppCacheErrorDetails("Failed to write the manifest headers to storage",
-                     APPCACHE_UNKNOWN_ERROR,
-                     GURL(),
-                     0,
-                     false /*is_cross_origin*/),
-        DISKCACHE_ERROR,
-        GURL());
+                             AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                             GURL(), 0, false /*is_cross_origin*/),
+        DISKCACHE_ERROR, GURL());
   }
 }
 
@@ -777,12 +761,9 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
   } else {
     HandleCacheFailure(
         AppCacheErrorDetails("Failed to write the manifest data to storage",
-                     APPCACHE_UNKNOWN_ERROR,
-                     GURL(),
-                     0,
-                     false /*is_cross_origin*/),
-        DISKCACHE_ERROR,
-        GURL());
+                             AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                             GURL(), 0, false /*is_cross_origin*/),
+        DISKCACHE_ERROR, GURL());
   }
 }
 
@@ -823,12 +804,12 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
     inprogress_cache_ = newest_cache;
 
   ResultType result = DB_ERROR;
-  AppCacheErrorReason reason = APPCACHE_UNKNOWN_ERROR;
+  AppCacheErrorReason reason = AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR;
   std::string message("Failed to commit new cache to storage");
   if (would_exceed_quota) {
     message.append(", would exceed quota");
     result = QUOTA_ERROR;
-    reason = APPCACHE_QUOTA_ERROR;
+    reason = AppCacheErrorReason::APPCACHE_QUOTA_ERROR;
   }
   HandleCacheFailure(
       AppCacheErrorDetails(message, reason, GURL(), 0,
@@ -926,12 +907,9 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
       AppCacheServiceImpl* service = service_;
       HandleCacheFailure(
           AppCacheErrorDetails("Manifest entry not found in existing cache",
-                       APPCACHE_UNKNOWN_ERROR,
-                       GURL(),
-                       0,
-                       false /*is_cross_origin*/),
-          DB_ERROR,
-          GURL());
+                               AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                               GURL(), 0, false /*is_cross_origin*/),
+          DB_ERROR, GURL());
       AppCacheHistograms::AddMissingManifestEntrySample();
       service->DeleteAppCacheGroup(manifest_url_, net::CompletionCallback());
     }
@@ -1314,7 +1292,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       }
       group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
       // 6.9.4 steps 7.3-7.7.
-      NotifyAllAssociatedHosts(APPCACHE_NO_UPDATE_EVENT);
+      NotifyAllAssociatedHosts(AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
       DiscardDuplicateResponses();
       internal_state_ = COMPLETED;
       break;
@@ -1327,9 +1305,9 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
       NotifyAllFinalProgress();
       group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
       if (update_type_ == CACHE_ATTEMPT)
-        NotifyAllAssociatedHosts(APPCACHE_CACHED_EVENT);
+        NotifyAllAssociatedHosts(AppCacheEventID::APPCACHE_CACHED_EVENT);
       else
-        NotifyAllAssociatedHosts(APPCACHE_UPDATE_READY_EVENT);
+        NotifyAllAssociatedHosts(AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
       DiscardDuplicateResponses();
       internal_state_ = COMPLETED;
       LogHistogramStats(UPDATE_OK, GURL());

@@ -20,58 +20,6 @@ const char kHttpHEADMethod[] = "HEAD";
 const base::FilePath::CharType kAppCacheDatabaseName[] =
     FILE_PATH_LITERAL("Index");
 
-AppCacheInfo::AppCacheInfo()
-    : cache_id(kAppCacheNoCacheId),
-      group_id(0),
-      status(APPCACHE_STATUS_UNCACHED),
-      size(0),
-      is_complete(false) {
-}
-
-AppCacheInfo::AppCacheInfo(const AppCacheInfo& other) = default;
-
-AppCacheInfo::~AppCacheInfo() {
-}
-
-AppCacheResourceInfo::AppCacheResourceInfo()
-    : url(),
-      size(0),
-      is_master(false),
-      is_manifest(false),
-      is_intercept(false),
-      is_fallback(false),
-      is_foreign(false),
-      is_explicit(false),
-      response_id(kAppCacheNoResponseId) {
-}
-
-AppCacheResourceInfo::AppCacheResourceInfo(const AppCacheResourceInfo& other) =
-    default;
-
-AppCacheResourceInfo::~AppCacheResourceInfo() {
-}
-
-AppCacheErrorDetails::AppCacheErrorDetails()
-    : message(),
-      reason(APPCACHE_UNKNOWN_ERROR),
-      url(),
-      status(0),
-      is_cross_origin(false) {}
-
-AppCacheErrorDetails::AppCacheErrorDetails(
-    std::string in_message,
-    AppCacheErrorReason in_reason,
-    GURL in_url,
-    int in_status,
-    bool in_is_cross_origin)
-    : message(in_message),
-      reason(in_reason),
-      url(in_url),
-      status(in_status),
-      is_cross_origin(in_is_cross_origin) {}
-
-AppCacheErrorDetails::~AppCacheErrorDetails() {}
-
 AppCacheNamespace::AppCacheNamespace()
     : type(APPCACHE_FALLBACK_NAMESPACE), is_pattern(false) {}
 

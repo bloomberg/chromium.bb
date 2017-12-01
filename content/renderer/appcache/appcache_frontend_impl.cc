@@ -37,9 +37,11 @@ void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
 
 void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
                                          AppCacheEventID event_id) {
-  DCHECK(event_id !=
-         APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
-  DCHECK(event_id != APPCACHE_ERROR_EVENT); // See OnErrorEventRaised.
+  DCHECK_NE(
+      event_id,
+      AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK_NE(event_id,
+            AppCacheEventID::APPCACHE_ERROR_EVENT);  // See OnErrorEventRaised.
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
@@ -103,47 +105,51 @@ void AppCacheFrontendImpl::OnSetSubresourceFactory(
                 "mismatched enum: " #a)
 
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
-                   APPCACHE_STATUS_UNCACHED);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, APPCACHE_STATUS_IDLE);
+                   AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle,
+                   AppCacheStatus::APPCACHE_STATUS_IDLE);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChecking,
-                   APPCACHE_STATUS_CHECKING);
+                   AppCacheStatus::APPCACHE_STATUS_CHECKING);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloading,
-                   APPCACHE_STATUS_DOWNLOADING);
+                   AppCacheStatus::APPCACHE_STATUS_DOWNLOADING);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReady,
-                   APPCACHE_STATUS_UPDATE_READY);
+                   AppCacheStatus::APPCACHE_STATUS_UPDATE_READY);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsolete,
-                   APPCACHE_STATUS_OBSOLETE);
+                   AppCacheStatus::APPCACHE_STATUS_OBSOLETE);
 
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCheckingEvent,
-                   APPCACHE_CHECKING_EVENT);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent, APPCACHE_ERROR_EVENT);
+                   AppCacheEventID::APPCACHE_CHECKING_EVENT);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kErrorEvent,
+                   AppCacheEventID::APPCACHE_ERROR_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kNoUpdateEvent,
-                   APPCACHE_NO_UPDATE_EVENT);
+                   AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kDownloadingEvent,
-                   APPCACHE_DOWNLOADING_EVENT);
+                   AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kProgressEvent,
-                   APPCACHE_PROGRESS_EVENT);
+                   AppCacheEventID::APPCACHE_PROGRESS_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUpdateReadyEvent,
-                   APPCACHE_UPDATE_READY_EVENT);
+                   AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kCachedEvent,
-                   APPCACHE_CACHED_EVENT);
+                   AppCacheEventID::APPCACHE_CACHED_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kObsoleteEvent,
-                   APPCACHE_OBSOLETE_EVENT);
+                   AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
 
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kManifestError,
-                   APPCACHE_MANIFEST_ERROR);
+                   AppCacheErrorReason::APPCACHE_MANIFEST_ERROR);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kSignatureError,
-                   APPCACHE_SIGNATURE_ERROR);
+                   AppCacheErrorReason::APPCACHE_SIGNATURE_ERROR);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kResourceError,
-                   APPCACHE_RESOURCE_ERROR);
+                   AppCacheErrorReason::APPCACHE_RESOURCE_ERROR);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kChangedError,
-                   APPCACHE_CHANGED_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kAbortError, APPCACHE_ABORT_ERROR);
-STATIC_ASSERT_ENUM(WebApplicationCacheHost::kQuotaError, APPCACHE_QUOTA_ERROR);
+                   AppCacheErrorReason::APPCACHE_CHANGED_ERROR);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kAbortError,
+                   AppCacheErrorReason::APPCACHE_ABORT_ERROR);
+STATIC_ASSERT_ENUM(WebApplicationCacheHost::kQuotaError,
+                   AppCacheErrorReason::APPCACHE_QUOTA_ERROR);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kPolicyError,
-                   APPCACHE_POLICY_ERROR);
+                   AppCacheErrorReason::APPCACHE_POLICY_ERROR);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUnknownError,
-                   APPCACHE_UNKNOWN_ERROR);
+                   AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR);
 
 STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, APPCACHE_LOG_VERBOSE);
 STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, APPCACHE_LOG_INFO);

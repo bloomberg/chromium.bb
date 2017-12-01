@@ -136,15 +136,13 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
         !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
       FinishCacheSelection(nullptr, nullptr);
       std::vector<int> host_ids(1, host_id_);
-      frontend_->OnEventRaised(host_ids, APPCACHE_CHECKING_EVENT);
+      frontend_->OnEventRaised(host_ids,
+                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
       frontend_->OnErrorEventRaised(
-          host_ids,
-          AppCacheErrorDetails(
-              "Cache creation was blocked by the content policy",
-              APPCACHE_POLICY_ERROR,
-              GURL(),
-              0,
-              false /*is_cross_origin*/));
+          host_ids, AppCacheErrorDetails(
+                        "Cache creation was blocked by the content policy",
+                        AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(), 0,
+                        false /*is_cross_origin*/));
       frontend_->OnContentBlocked(host_id_, manifest_url);
       return true;
     }
@@ -340,22 +338,22 @@ AppCacheStatus AppCacheHost::GetStatus() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
   if (!cache)
-    return APPCACHE_STATUS_UNCACHED;
+    return AppCacheStatus::APPCACHE_STATUS_UNCACHED;
 
   // A cache without an owning group represents the cache being constructed
   // during the application cache update process.
   if (!cache->owning_group())
-    return APPCACHE_STATUS_DOWNLOADING;
+    return AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
 
   if (cache->owning_group()->is_obsolete())
-    return APPCACHE_STATUS_OBSOLETE;
+    return AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   if (cache->owning_group()->update_status() == AppCacheGroup::CHECKING)
-    return APPCACHE_STATUS_CHECKING;
+    return AppCacheStatus::APPCACHE_STATUS_CHECKING;
   if (cache->owning_group()->update_status() == AppCacheGroup::DOWNLOADING)
-    return APPCACHE_STATUS_DOWNLOADING;
+    return AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
   if (swappable_cache_.get())
-    return APPCACHE_STATUS_UPDATE_READY;
-  return APPCACHE_STATUS_IDLE;
+    return AppCacheStatus::APPCACHE_STATUS_UPDATE_READY;
+  return AppCacheStatus::APPCACHE_STATUS_IDLE;
 }
 
 void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {

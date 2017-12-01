@@ -32,12 +32,12 @@ class AppCacheHostTest : public testing::Test {
   class MockFrontend : public AppCacheFrontend {
    public:
     MockFrontend()
-        : last_host_id_(-222), last_cache_id_(-222),
-          last_status_(APPCACHE_STATUS_OBSOLETE),
-          last_status_changed_(APPCACHE_STATUS_OBSOLETE),
-          last_event_id_(APPCACHE_OBSOLETE_EVENT),
-          content_blocked_(false) {
-    }
+        : last_host_id_(-222),
+          last_cache_id_(-222),
+          last_status_(AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
+          last_status_changed_(AppCacheStatus::APPCACHE_STATUS_OBSOLETE),
+          last_event_id_(AppCacheEventID::APPCACHE_OBSOLETE_EVENT),
+          content_blocked_(false) {}
 
     void OnCacheSelected(int host_id, const AppCacheInfo& info) override {
       last_host_id_ = host_id;
@@ -57,14 +57,14 @@ class AppCacheHostTest : public testing::Test {
 
     void OnErrorEventRaised(const std::vector<int>& host_ids,
                             const AppCacheErrorDetails& details) override {
-      last_event_id_ = APPCACHE_ERROR_EVENT;
+      last_event_id_ = AppCacheEventID::APPCACHE_ERROR_EVENT;
     }
 
     void OnProgressEventRaised(const std::vector<int>& host_ids,
                                const GURL& url,
                                int num_total,
                                int num_complete) override {
-      last_event_id_ = APPCACHE_PROGRESS_EVENT;
+      last_event_id_ = AppCacheEventID::APPCACHE_PROGRESS_EVENT;
     }
 
     void OnLogMessage(int host_id,
@@ -171,10 +171,10 @@ TEST_F(AppCacheHostTest, Basic) {
 
   // See that the callbacks are delivered immediately
   // and respond as if there is no cache selected.
-  last_status_result_ = APPCACHE_STATUS_OBSOLETE;
+  last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   host.GetStatusWithCallback(std::move(get_status_callback_),
                              reinterpret_cast<void*>(1));
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, last_status_result_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 
   last_start_result_ = true;
@@ -202,7 +202,7 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   {
@@ -213,7 +213,8 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
     // We should have received an OnCacheSelected msg
     EXPECT_EQ(1, mock_frontend_.last_host_id_);
     EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-    EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
+    EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+              mock_frontend_.last_status_);
 
     // Otherwise, see that it respond as if there is no cache selected.
     EXPECT_EQ(1, host.host_id());
@@ -231,7 +232,7 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   // Precondition, a cache with an entry that is not marked as foreign.
   const int kCacheId = 22;
@@ -245,7 +246,8 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
   EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            mock_frontend_.last_status_);
 
   // See that it respond as if there is no cache selected.
   EXPECT_EQ(1, host.host_id());
@@ -262,7 +264,7 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   // Precondition, a cache with a fallback entry that is not marked as foreign.
   const int kCacheId = 22;
@@ -277,7 +279,8 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   // We should have received an OnCacheSelected msg for kAppCacheNoCacheId.
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
   EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            mock_frontend_.last_status_);
 
   // See that the fallback entry was marked as foreign.
   EXPECT_TRUE(cache->GetEntry(kFallbackURL)->IsForeign());
@@ -287,7 +290,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   AppCacheHost host(1, &mock_frontend_, &service_);
   EXPECT_FALSE(host.is_selection_pending());
@@ -300,11 +303,11 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   EXPECT_TRUE(host.is_selection_pending());
 
   // The callback should not occur until we finish cache selection.
-  last_status_result_ = APPCACHE_STATUS_OBSOLETE;
+  last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   last_callback_param_ = reinterpret_cast<void*>(-1);
   host.GetStatusWithCallback(std::move(get_status_callback_),
                              reinterpret_cast<void*>(1));
-  EXPECT_EQ(APPCACHE_STATUS_OBSOLETE, last_status_result_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load with NULL, a failure.
@@ -314,10 +317,11 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   EXPECT_FALSE(host.is_selection_pending());
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
   EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            mock_frontend_.last_status_);
 
   // Callback should have fired upon completing the cache load too.
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, last_status_result_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 }
 
@@ -332,11 +336,11 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   EXPECT_TRUE(host.is_selection_pending());
 
   // The callback should not occur until we finish cache selection.
-  last_status_result_ = APPCACHE_STATUS_OBSOLETE;
+  last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
   last_callback_param_ = reinterpret_cast<void*>(-1);
   host.GetStatusWithCallback(std::move(get_status_callback_),
                              reinterpret_cast<void*>(1));
-  EXPECT_EQ(APPCACHE_STATUS_OBSOLETE, last_status_result_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load will NULL, a failure.
@@ -346,10 +350,11 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   EXPECT_FALSE(host.is_selection_pending());
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
   EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+            mock_frontend_.last_status_);
 
   // Callback should have fired upon completing the group load.
-  EXPECT_EQ(APPCACHE_STATUS_UNCACHED, last_status_result_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
   EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 }
 
@@ -373,11 +378,11 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
 
   host.AssociateCompleteCache(cache1);
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
-  EXPECT_EQ(APPCACHE_STATUS_IDLE, host.GetStatus());
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_IDLE, host.GetStatus());
   // verify OnCacheSelected was called
   EXPECT_EQ(host.host_id(), mock_frontend_.last_host_id_);
   EXPECT_EQ(cache1->cache_id(), mock_frontend_.last_cache_id_);
-  EXPECT_EQ(APPCACHE_STATUS_IDLE, mock_frontend_.last_status_);
+  EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_IDLE, mock_frontend_.last_status_);
 
   AppCache* cache2 = new AppCache(service_.storage(), 222);
   cache2->set_complete(true);
@@ -432,8 +437,8 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = APPCACHE_STATUS_OBSOLETE;
-  mock_frontend_.last_event_id_ = APPCACHE_OBSOLETE_EVENT;
+  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_event_id_ = AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
   mock_frontend_.content_blocked_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
@@ -448,9 +453,11 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
     // have received an OnCacheSelected msg yet.
     EXPECT_EQ(-333, mock_frontend_.last_host_id_);
     EXPECT_EQ(-333, mock_frontend_.last_cache_id_);
-    EXPECT_EQ(APPCACHE_STATUS_OBSOLETE, mock_frontend_.last_status_);
+    EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
+              mock_frontend_.last_status_);
     // No error events either
-    EXPECT_EQ(APPCACHE_OBSOLETE_EVENT, mock_frontend_.last_event_id_);
+    EXPECT_EQ(AppCacheEventID::APPCACHE_OBSOLETE_EVENT,
+              mock_frontend_.last_event_id_);
     EXPECT_FALSE(mock_frontend_.content_blocked_);
 
     EXPECT_TRUE(host.is_selection_pending());
@@ -470,8 +477,8 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
   mock_frontend_.last_host_id_ = -333;
-  mock_frontend_.last_status_ = APPCACHE_STATUS_OBSOLETE;
-  mock_frontend_.last_event_id_ = APPCACHE_OBSOLETE_EVENT;
+  mock_frontend_.last_status_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
+  mock_frontend_.last_event_id_ = AppCacheEventID::APPCACHE_OBSOLETE_EVENT;
   mock_frontend_.content_blocked_ = false;
 
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
@@ -485,10 +492,12 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     // We should have received an OnCacheSelected msg
     EXPECT_EQ(1, mock_frontend_.last_host_id_);
     EXPECT_EQ(kAppCacheNoCacheId, mock_frontend_.last_cache_id_);
-    EXPECT_EQ(APPCACHE_STATUS_UNCACHED, mock_frontend_.last_status_);
+    EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED,
+              mock_frontend_.last_status_);
 
     // Also, an error event was raised
-    EXPECT_EQ(APPCACHE_ERROR_EVENT, mock_frontend_.last_event_id_);
+    EXPECT_EQ(AppCacheEventID::APPCACHE_ERROR_EVENT,
+              mock_frontend_.last_event_id_);
     EXPECT_TRUE(mock_frontend_.content_blocked_);
 
     // Otherwise, see that it respond as if there is no cache selected.
