@@ -257,6 +257,24 @@ mri::State::Status StateStatusIdlToProto(const State& state) {
   return mri::State::STATUS_UNSPECIFIED;
 }
 
+void VideoStreamParamIdlToProto(mri::VideoStreamParam* param_result,
+                                const VideoStreamParam& param) {
+  if (param_result == nullptr)
+    return;
+
+  if (param.id)
+    param_result->set_id(*param.id);
+
+  if (param.width)
+    param_result->set_width(*param.width);
+
+  if (param.height)
+    param_result->set_height(*param.height);
+
+  if (param.frame_rate)
+    param_result->set_frame_rate(*param.frame_rate);
+}
+
 }  //  namespace
 
 State StateProtoToIdl(const mri::State& state) {
@@ -276,6 +294,15 @@ mri::State StateIdlToProto(const State& state) {
   state_result.set_status(StateStatusIdlToProto(state));
   if (state.device_context)
     state_result.set_device_context(*state.device_context);
+
+  if (state.video_stream_param && state.video_stream_param.get() != nullptr) {
+    for (size_t i = 0; i < state.video_stream_param.get()->size(); ++i) {
+      mri::VideoStreamParam* video_stream_param_result =
+          state_result.add_video_stream_param();
+      VideoStreamParamIdlToProto(video_stream_param_result,
+                                 state.video_stream_param.get()->at(i));
+    }
+  }
 
   return state_result;
 }
