@@ -34,13 +34,11 @@ const int kDefaultRssiThreshold = -70;
 
 ProximityMonitorImpl::ProximityMonitorImpl(
     cryptauth::Connection* connection,
-    std::unique_ptr<base::TickClock> clock,
     ProximityAuthPrefManager* pref_manager)
     : connection_(connection),
       remote_device_is_in_proximity_(false),
       is_active_(false),
       rssi_threshold_(kDefaultRssiThreshold),
-      clock_(std::move(clock)),
       pref_manager_(pref_manager),
       polling_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {

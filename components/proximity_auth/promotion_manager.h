@@ -36,7 +36,7 @@ class PromotionManager : public ScreenlockBridge::Observer {
       NotificationController* notification_controller,
       ProximityAuthPrefManager* pref_manager,
       std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory,
-      std::unique_ptr<base::Clock> clock,
+      base::Clock* clock,
       scoped_refptr<base::TaskRunner> task_runner);
   ~PromotionManager() override;
 
@@ -96,7 +96,7 @@ class PromotionManager : public ScreenlockBridge::Observer {
   std::unique_ptr<cryptauth::CryptAuthClient> client_;
 
   // Used to determine the time.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Used to schedule delayed tasks.
   scoped_refptr<base::TaskRunner> task_runner_;

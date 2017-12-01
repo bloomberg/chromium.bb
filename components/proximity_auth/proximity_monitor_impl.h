@@ -16,10 +16,6 @@
 #include "components/proximity_auth/proximity_monitor.h"
 #include "device/bluetooth/bluetooth_device.h"
 
-namespace base {
-class TickClock;
-}
-
 namespace device {
 class BluetoothAdapter;
 }
@@ -34,7 +30,6 @@ class ProximityMonitorImpl : public ProximityMonitor {
  public:
   // The |connection| is not owned, and must outlive |this| instance.
   ProximityMonitorImpl(cryptauth::Connection* connection,
-                       std::unique_ptr<base::TickClock> clock,
                        ProximityAuthPrefManager* pref_manager);
   ~ProximityMonitorImpl() override;
 
@@ -114,9 +109,6 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // an RSSI reading, or the most recent connection info included an invalid
   // measurement.
   std::unique_ptr<double> rssi_rolling_average_;
-
-  // Used to access non-decreasing time measurements.
-  std::unique_ptr<base::TickClock> clock_;
 
   // Contains perferences that outlive the lifetime of this object and across
   // process restarts. Not owned and must outlive this instance.
