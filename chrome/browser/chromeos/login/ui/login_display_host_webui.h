@@ -129,10 +129,10 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   // Overridden from ui::InputDeviceEventObserver
   void OnTouchscreenDeviceConfigurationChanged() override;
 
-  // Overriden from views::WidgetRemovalsObserver:
+  // Overridden from views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;
 
-  // Overriden from MultiUserWindowManager::Observer:
+  // Overridden from chrome::MultiUserWindowManager::Observer:
   void OnUserSwitchAnimationFinished() override;
 
  private:

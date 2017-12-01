@@ -157,6 +157,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowEncryptionMigrationScreen();
   void ShowVoiceInteractionValuePropScreen();
   void ShowWaitForContainerReadyScreen();
+  void ShowUpdateRequiredScreen();
 
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);

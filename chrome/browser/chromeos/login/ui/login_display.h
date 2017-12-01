@@ -81,6 +81,9 @@ class LoginDisplay {
     // Called when the owner permission for kiosk app auto launch is requested.
     virtual void OnStartKioskAutolaunchScreen() = 0;
 
+    // Shows update required screen.
+    virtual void ShowUpdateRequiredScreen() = 0;
+
     // Shows wrong HWID screen.
     virtual void ShowWrongHWIDScreen() = 0;
 

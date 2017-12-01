@@ -355,6 +355,10 @@ void WebUIScreenLocker::ShowWrongHWIDScreen() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::ShowUpdateRequiredScreen() {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::ResetAutoLoginTimer() {}
 
 void WebUIScreenLocker::ResyncUserData() {

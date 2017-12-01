@@ -347,6 +347,9 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
           kAccountsPrefDeviceLocalAccountAutoLoginDelay,
           base::Bind(&ExistingUserController::ConfigureAutoLogin,
                      base::Unretained(this)));
+  minimum_version_policy_handler_ =
+      std::make_unique<policy::MinimumVersionPolicyHandler>(cros_settings_);
+  minimum_version_policy_handler_->AddObserver(this);
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
@@ -466,11 +469,28 @@ void ExistingUserController::Observe(
 void ExistingUserController::OnArcKioskAppsChanged() {
   ConfigureAutoLogin();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ExistingUserController, policy::MinimumVersionPolicyHandler::Observer
+// implementation:
+//
+
+void ExistingUserController::OnMinimumVersionStateChanged() {
+  if (is_login_in_progress_) {
+    // Too late, but there is another check in user session.
+    return;
+  }
+  if (!minimum_version_policy_handler_->RequirementsAreSatisfied()) {
+    ShowUpdateRequiredScreen();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
 
 ExistingUserController::~ExistingUserController() {
   UserSessionManager::GetInstance()->DelegateDeleted(this);
+  minimum_version_policy_handler_->RemoveObserver(this);
 
   if (current_controller_ == this) {
     current_controller_ = nullptr;
@@ -688,6 +708,10 @@ void ExistingUserController::SetDisplayAndGivenName(
 
 void ExistingUserController::ShowWrongHWIDScreen() {
   host_->StartWizard(OobeScreen::SCREEN_WRONG_HWID);
+}
+
+void ExistingUserController::ShowUpdateRequiredScreen() {
+  host_->StartWizard(OobeScreen::SCREEN_UPDATE_REQUIRED);
 }
 
 void ExistingUserController::Signout() {
@@ -1563,6 +1587,7 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     login_display_->SetUIEnabled(true);
     return;
   }
+  //  if ()
 
   chromeos::DBusThreadManager::Get()
       ->GetCryptohomeClient()

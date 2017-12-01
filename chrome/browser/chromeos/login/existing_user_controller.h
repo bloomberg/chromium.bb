@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/pre_signin_policy_fetcher.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -67,7 +68,8 @@ class ExistingUserController
       public content::NotificationObserver,
       public LoginPerformer::Delegate,
       public UserSessionManagerDelegate,
-      public ArcKioskAppManager::ArcKioskAppManagerObserver {
+      public ArcKioskAppManager::ArcKioskAppManagerObserver,
+      public policy::MinimumVersionPolicyHandler::Observer {
  public:
   // All UI initialization is deferred till Init() call.
   explicit ExistingUserController(LoginDisplayHost* host);
@@ -107,6 +109,7 @@ class ExistingUserController
   void SetDisplayAndGivenName(const std::string& display_name,
                               const std::string& given_name) override;
   void ShowWrongHWIDScreen() override;
+  void ShowUpdateRequiredScreen() override;
   void Signout() override;
   bool IsUserWhitelisted(const AccountId& account_id) override;
 
@@ -117,6 +120,9 @@ class ExistingUserController
 
   // ArcKioskAppManager::ArcKioskAppManagerObserver overrides.
   void OnArcKioskAppsChanged() override;
+
+  // policy::MinimumVersionPolicyHandler::Observer overrides.
+  void OnMinimumVersionStateChanged() override;
 
   // Set a delegate that we will pass AuthStatusConsumer events to.
   // Used for testing.
@@ -404,6 +410,8 @@ class ExistingUserController
       local_account_auto_login_id_subscription_;
   std::unique_ptr<CrosSettings::ObserverSubscription>
       local_account_auto_login_delay_subscription_;
+  std::unique_ptr<policy::MinimumVersionPolicyHandler>
+      minimum_version_policy_handler_;
 
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 

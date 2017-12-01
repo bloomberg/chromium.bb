@@ -34,6 +34,7 @@
 // <include src="screen_unrecoverable_cryptohome_error.js">
 // <include src="screen_active_directory_password_change.js">
 // <include src="screen_encryption_migration.js">
+// <include src="screen_update_required.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
 

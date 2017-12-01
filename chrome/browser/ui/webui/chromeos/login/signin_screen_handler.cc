@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
@@ -158,6 +159,12 @@ class CallOnReturn {
 
   DISALLOW_COPY_AND_ASSIGN(CallOnReturn);
 };
+
+policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetMinimumVersionPolicyHandler();
+}
 
 }  // namespace
 
@@ -1289,6 +1296,12 @@ void SigninScreenHandler::HandleAccountPickerReady() {
       !chromeos::IsMachineHWIDCorrect() &&
       !oobe_ui_) {
     delegate_->ShowWrongHWIDScreen();
+    return;
+  }
+
+  if (delegate_ && !oobe_ui_ && GetMinimumVersionPolicyHandler() &&
+      !GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied()) {
+    delegate_->ShowUpdateRequiredScreen();
     return;
   }
 

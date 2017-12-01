@@ -170,6 +170,9 @@ class SigninScreenHandlerDelegate {
   // Show wrong hwid screen.
   virtual void ShowWrongHWIDScreen() = 0;
 
+  // Show update required screen.
+  virtual void ShowUpdateRequiredScreen() = 0;
+
   // Sets the displayed email for the next login attempt. If it succeeds,
   // user's displayed email value will be updated to |email|.
   virtual void SetDisplayEmail(const std::string& email) = 0;

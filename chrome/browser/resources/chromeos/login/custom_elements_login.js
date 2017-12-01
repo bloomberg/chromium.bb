@@ -16,6 +16,7 @@
 // <include src="throbber_notice.js">
 // <include src="navigation_bar.js">
 // <include src="unrecoverable_cryptohome_error_card.js">
+// <include src="update_required_card.js">
 // <include src="offline_ad_login.js">
 // <include src="active_directory_password_change.js">
 // <include src="oobe_buttons.js">

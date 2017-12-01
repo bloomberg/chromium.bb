@@ -54,6 +54,7 @@ cr.define('cr.ui.Oobe', function() {
       login.EncryptionMigrationScreen.register();
       login.VoiceInteractionValuePropScreen.register();
       login.WaitForContainerReadyScreen.register();
+      login.UpdateRequiredScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

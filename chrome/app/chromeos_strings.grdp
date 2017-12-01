@@ -3711,6 +3711,11 @@
     Don't remind me again
   </message>
 
+  <!-- Obsolete versions Notification strings-->
+  <message name="IDS_UPDATE_REQUIRED_LOGIN_SCREEN_MESSAGE" desc="The message on login screen to inform the user that policy prevents user sign in before OS version is is updated.">
+    Your device is no longer compliant with the minimum client version specified by your admin. Please update to login.
+  </message>
+
   <!-- Genius App -->
   <message name="IDS_GENIUS_APP_NAME" desc="Name of the genius app in the app shelf">
     Get Help

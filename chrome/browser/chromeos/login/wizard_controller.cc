@@ -51,6 +51,7 @@
 #include "chrome/browser/chromeos/login/screens/network_view.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/update_required_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/voice_interaction_value_prop_screen.h"
@@ -451,8 +452,10 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY) {
     return new WaitForContainerReadyScreen(
         this, oobe_ui_->GetWaitForContainerReadyScreenView());
+  } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
+    return new UpdateRequiredScreen(this,
+                                    oobe_ui_->GetUpdateRequiredScreenView());
   }
-
   return nullptr;
 }
 
@@ -670,6 +673,10 @@ void WizardController::ShowWaitForContainerReadyScreen() {
   UpdateStatusAreaVisibilityForScreen(
       OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY));
+}
+
+void WizardController::ShowUpdateRequiredScreen() {
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_UPDATE_REQUIRED));
 }
 
 void WizardController::SkipToLoginForTesting(
@@ -1166,6 +1173,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowVoiceInteractionValuePropScreen();
   } else if (screen == OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY) {
     ShowWaitForContainerReadyScreen();
+  } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
+    ShowUpdateRequiredScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();

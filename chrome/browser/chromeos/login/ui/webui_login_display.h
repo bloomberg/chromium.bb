@@ -73,6 +73,7 @@ class WebUILoginDisplay : public LoginDisplay,
   void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
+  void ShowUpdateRequiredScreen() override;
   void ShowWrongHWIDScreen() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
   virtual void ShowSigninScreenForCreds(const std::string& username,
