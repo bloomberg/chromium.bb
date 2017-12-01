@@ -27,7 +27,7 @@ static const seconds kSleepSeconds(1);
 // kSleepSeconds + kMaxExecutionSeconds.
 // TODO(metzman): Determine if having such a short timeout causes too much
 // indeterminism.
-static const seconds kMaxExecutionSeconds(12);
+static const seconds kMaxExecutionSeconds(7);
 
 // Inspired by/copied from d8 code, this allocator will return nullptr when
 // an allocation request is made that puts currently_allocated_ over
@@ -153,10 +153,10 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Environment* env = new Environment();
+
   if (size < 1)
     return 0;
-
-  static Environment* env = new Environment();
 
   v8::Isolate::Scope isolate_scope(env->isolate);
   v8::HandleScope handle_scope(env->isolate);
