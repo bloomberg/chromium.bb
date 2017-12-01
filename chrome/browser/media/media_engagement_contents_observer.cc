@@ -6,21 +6,23 @@
 
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "chrome/browser/media/media_engagement_session.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_entry_builder.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/public/platform/media_engagement.mojom.h"
 
-namespace {
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif  // !defined(OS_ANDROID)
 
-int ConvertScoreToPercentage(double score) {
-  return round(score * 100);
-}
+namespace {
 
 void SendEngagementLevelToFrame(const url::Origin& origin,
                                 content::RenderFrameHost* render_frame_host) {
@@ -103,13 +105,11 @@ void MediaEngagementContentsObserver::PlaybackTimer::Reset() {
 }
 
 void MediaEngagementContentsObserver::WebContentsDestroyed() {
-  StashAudiblePlayers();
-
-  // Commit a visit if we have not had a playback.
-  MaybeCommitPendingData(kVisitEnd);
+  RegisterAudiblePlayersWithSession();
+  session_ = nullptr;
 
   ClearPlayerStates();
-  service_->contents_observers_.erase(this);
+  service_->contents_observers_.erase(web_contents());
   delete this;
 }
 
@@ -119,139 +119,28 @@ void MediaEngagementContentsObserver::ClearPlayerStates() {
   significant_players_.clear();
 }
 
-void MediaEngagementContentsObserver::RecordUkmMetrics(
-    int audible_players_count,
-    int significant_players_count) {
-  ukm::UkmRecorder* recorder = GetUkmRecorder();
-  if (!recorder)
+void MediaEngagementContentsObserver::RegisterAudiblePlayersWithSession() {
+  if (!session_)
     return;
 
-  MediaEngagementScore score =
-      service_->CreateEngagementScore(committed_origin_.GetURL());
-  ukm::builders::Media_Engagement_SessionFinished(ukm_source_id_)
-      .SetPlaybacks_Total(score.media_playbacks())
-      .SetVisits_Total(score.visits())
-      .SetEngagement_Score(ConvertScoreToPercentage(score.actual_score()))
-      .SetPlaybacks_Delta(significant_playback_recorded_)
-      .SetEngagement_IsHigh(score.high_score())
-      .SetPlayer_Audible_Delta(audible_players_count)
-      .SetPlayer_Audible_Total(score.audible_playbacks())
-      .SetPlayer_Significant_Delta(significant_players_count)
-      .SetPlayer_Significant_Total(score.significant_playbacks())
-      .SetPlaybacks_SecondsSinceLast(time_since_playback_for_ukm_.InSeconds())
-      .Record(recorder);
-
-  time_since_playback_for_ukm_ = base::TimeDelta();
-}
-
-MediaEngagementContentsObserver::PendingCommitState&
-MediaEngagementContentsObserver::GetPendingCommitState() {
-  if (!pending_data_to_commit_.has_value())
-    pending_data_to_commit_ = PendingCommitState();
-  return pending_data_to_commit_.value();
-}
-
-void MediaEngagementContentsObserver::RecordUkmIgnoredEvent(int length_msec) {
-  ukm::UkmRecorder* recorder = GetUkmRecorder();
-  if (!recorder)
-    return;
-
-  ukm::builders::Media_Engagement_ShortPlaybackIgnored(ukm_source_id_)
-      .SetLength(length_msec)
-      .Record(recorder);
-}
-
-ukm::UkmRecorder* MediaEngagementContentsObserver::GetUkmRecorder() {
-  GURL url = committed_origin_.GetURL();
-  if (!service_->ShouldRecordEngagement(url))
-    return nullptr;
-
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (!ukm_recorder)
-    return nullptr;
-
-  if (ukm_source_id_ == ukm::kInvalidSourceId) {
-    // TODO(beccahughes): Get from web contents.
-    ukm_source_id_ = ukm_recorder->GetNewSourceID();
-    ukm_recorder->UpdateSourceURL(ukm_source_id_, url);
-  }
-
-  return ukm_recorder;
-}
-
-void MediaEngagementContentsObserver::StashAudiblePlayers() {
-  PendingCommitState& state = GetPendingCommitState();
+  int32_t significant_players = 0;
+  int32_t audible_players = 0;
 
   for (const auto& row : audible_players_) {
     const PlayerState& player_state = GetPlayerState(row.first);
     const base::TimeDelta elapsed = player_state.playback_timer->Elapsed();
 
     if (elapsed < kMaxShortPlaybackTime && player_state.reached_end_of_stream) {
-      RecordUkmIgnoredEvent(elapsed.InMilliseconds());
+      session_->RecordShortPlaybackIgnored(elapsed.InMilliseconds());
       continue;
     }
 
-    state.significant_players += row.second.first;
-    state.audible_players++;
+    significant_players += row.second.first;
+    ++audible_players;
   }
 
+  session_->RegisterAudiblePlayers(audible_players, significant_players);
   audible_players_.clear();
-}
-
-void MediaEngagementContentsObserver::MaybeCommitPendingData(
-    CommitTrigger trigger) {
-  // If the visit is over, make sure we have stashed all audible player data.
-  DCHECK(trigger != kVisitEnd || audible_players_.empty());
-
-  // If we don't have anything to commit then we can stop.
-  if (!pending_data_to_commit_.has_value()) {
-    // If we do not have anything to commit we should still record to UKM.
-    if (trigger == kVisitEnd)
-      RecordUkmMetrics(0, 0);
-    return;
-  }
-  PendingCommitState& state = pending_data_to_commit_.value();
-
-  // If the current origin is not a valid URL then we should just silently reset
-  // any pending data.
-  if (!service_->ShouldRecordEngagement(committed_origin_.GetURL())) {
-    pending_data_to_commit_.reset();
-    audible_players_.clear();
-    return;
-  }
-
-  MediaEngagementScore score =
-      service_->CreateEngagementScore(committed_origin_.GetURL());
-
-  if (state.visit)
-    score.IncrementVisits();
-
-  if (state.media_playback) {
-    // Media playbacks trigger a commit so we should only increment media
-    // playbacks if a significant media playback has occured.
-    DCHECK_EQ(trigger, kSignificantMediaPlayback);
-    const base::Time old_time = score.last_media_playback_time();
-    score.IncrementMediaPlaybacks();
-
-    if (!old_time.is_null()) {
-      // Calculate the time since the last playback and the first significant
-      // playback this visit. If there is no last playback time then we will
-      // record 0.
-      time_since_playback_for_ukm_ =
-          score.last_media_playback_time() - old_time;
-    }
-  }
-
-  score.IncrementAudiblePlaybacks(state.audible_players);
-  score.IncrementSignificantPlaybacks(state.significant_players);
-
-  score.Commit();
-
-  pending_data_to_commit_.reset();
-
-  // If the commit trigger was the end then we should record UKM metrics.
-  if (trigger == kVisitEnd)
-    RecordUkmMetrics(state.audible_players, state.significant_players);
 }
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
@@ -262,27 +151,14 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
     return;
   }
 
-  StashAudiblePlayers();
+  RegisterAudiblePlayersWithSession();
   ClearPlayerStates();
 
   url::Origin new_origin = url::Origin::Create(navigation_handle->GetURL());
-  if (committed_origin_.IsSameOriginWith(new_origin))
+  if (session_ && session_->IsSameOriginWith(new_origin))
     return;
 
-  // Commit a visit if we have not had a playback before the new origin is
-  // updated.
-  MaybeCommitPendingData(kVisitEnd);
-
-  committed_origin_ = new_origin;
-  significant_playback_recorded_ = false;
-  ukm_source_id_ = ukm::kInvalidSourceId;
-
-  // As any pending data would have been committed above, we should have no
-  // pending data and we should create a PendingData object. A visit will be
-  // automatically recorded if the PendingData object is present when
-  // MaybeCommitPendingData is called.
-  DCHECK(!pending_data_to_commit_.has_value());
-  GetPendingCommitState().visit = true;
+  session_ = GetOrCreateSession(new_origin, GetOpener());
 }
 
 MediaEngagementContentsObserver::PlayerState::PlayerState(base::Clock* clock)
@@ -326,17 +202,18 @@ void MediaEngagementContentsObserver::MediaStartedPlaying(
 
 void MediaEngagementContentsObserver::
     RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id) {
-  GURL url = committed_origin_.GetURL();
-  if (!service_->ShouldRecordEngagement(url))
+  if (!session_)
     return;
 
   PlayerState& state = GetPlayerState(id);
   if (!state.playing.value_or(false) || state.muted.value_or(true) ||
       !state.has_audio.value_or(false) || !state.has_video.value_or(false) ||
-      state.score_recorded)
+      state.score_recorded) {
     return;
+  }
 
-  int percentage = round(service_->GetEngagementScore(url) * 100);
+  int percentage =
+      round(service_->GetEngagementScore(session_->origin().GetURL()) * 100);
   UMA_HISTOGRAM_PERCENTAGE(
       MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName,
       percentage);
@@ -434,20 +311,17 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPlayer(
 }
 
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTimeForPage() {
-  DCHECK(!significant_playback_recorded_);
+  DCHECK(session_);
+
+  if (session_->significant_playback_recorded())
+    return;
 
   // Do not record significant playback if the tab did not make
   // a sound in the last two seconds.
   if (!web_contents()->WasRecentlyAudible())
     return;
 
-  significant_playback_recorded_ = true;
-
-  // A playback always comes after a visit so the visit should always be pending
-  // to commit.
-  DCHECK(pending_data_to_commit_.has_value());
-  pending_data_to_commit_->media_playback = true;
-  MaybeCommitPendingData(kSignificantMediaPlayback);
+  session_->RecordSignificantPlayback();
 }
 
 void MediaEngagementContentsObserver::RecordInsignificantReasons(
@@ -584,7 +458,7 @@ bool MediaEngagementContentsObserver::AreConditionsMet() const {
 }
 
 void MediaEngagementContentsObserver::UpdatePageTimer() {
-  if (significant_playback_recorded_)
+  if (!session_ || session_->significant_playback_recorded())
     return;
 
   if (AreConditionsMet()) {
@@ -620,4 +494,47 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
     SendEngagementLevelToFrame(url::Origin::Create(handle->GetURL()),
                                handle->GetRenderFrameHost());
   }
+}
+
+content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
+#if !defined(OS_ANDROID)
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->profile()->IsSameProfile(service_->profile()) ||
+        browser->profile()->GetProfileType() !=
+            service_->profile()->GetProfileType()) {
+      continue;
+    }
+
+    int index =
+        browser->tab_strip_model()->GetIndexOfWebContents(web_contents());
+    if (index == TabStripModel::kNoTab)
+      continue;
+    // Whether or not the |opener| is null, this is the right tab strip.
+    return browser->tab_strip_model()->GetOpenerOfWebContentsAt(index);
+  }
+#endif  // !defined(OS_ANDROID)
+
+  return nullptr;
+}
+
+scoped_refptr<MediaEngagementSession>
+MediaEngagementContentsObserver::GetOrCreateSession(
+    const url::Origin& origin,
+    content::WebContents* opener) const {
+  GURL url = origin.GetURL();
+  if (!url.is_valid())
+    return nullptr;
+
+  if (!service_->ShouldRecordEngagement(url))
+    return nullptr;
+
+  MediaEngagementContentsObserver* opener_observer =
+      service_->GetContentsObserverFor(opener);
+
+  if (opener_observer && opener_observer->session_ &&
+      opener_observer->session_->IsSameOriginWith(origin)) {
+    return opener_observer->session_;
+  }
+
+  return new MediaEngagementSession(service_, origin);
 }

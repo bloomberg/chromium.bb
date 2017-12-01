@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_CONTENTS_OBSERVER_H_
 
 #include "content/public/browser/web_contents_observer.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace base {
 class Clock;
@@ -16,12 +15,9 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
-namespace ukm {
-class UkmRecorder;
-}  // namespace ukm
-
 class MediaEngagementContentsObserverTest;
 class MediaEngagementService;
+class MediaEngagementSession;
 
 class MediaEngagementContentsObserver : public content::WebContentsObserver {
  public:
@@ -193,50 +189,29 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
       const MediaPlayerId& id,
       MediaEngagementContentsObserver::InsignificantHistogram histogram);
 
-  // Commits any pending data to website settings. CommitTrigger is the event
-  // that is triggering the commit.
-  enum CommitTrigger {
-    // A significant media playback has occured.
-    kSignificantMediaPlayback,
-
-    // A visit has ended either by navigating off the origin or when the
-    // observer is destroyed.
-    kVisitEnd,
-  };
-  void MaybeCommitPendingData(CommitTrigger);
-
   static const char* const kHistogramSignificantNotAddedAfterFirstTimeName;
   static const char* const kHistogramSignificantNotAddedFirstTimeName;
   static const char* const kHistogramSignificantRemovedName;
   static const int kMaxInsignificantPlaybackReason;
 
-  // Record the score and change in score to UKM.
-  void RecordUkmMetrics(int audible_players_count,
-                        int significant_players_count);
-
-  // Record the length of an ignored media playback.
-  void RecordUkmIgnoredEvent(int length_msec);
-  ukm::UkmRecorder* GetUkmRecorder();
-
-  bool significant_playback_recorded_ = false;
+  static const base::TimeDelta kSignificantMediaPlaybackTime;
 
   // Records the engagement score for the current origin to a histogram so we
   // can identify whether the playback would have been blocked.
   void RecordEngagementScoreToHistogramAtPlayback(const MediaPlayerId& id);
 
-  void StashAudiblePlayers();
+  // Clears out players that are ignored because they are too short and register
+  // the result as significant/audible players with the `session_`.
+  void RegisterAudiblePlayersWithSession();
 
-  // Stores pending media engagement data that needs to be committed either
-  // after a navigation to another domain, when the observer is destroyed or
-  // when we have had a media playback.
-  struct PendingCommitState {
-    bool visit = false;
-    bool media_playback = false;
-    int audible_players = 0;
-    int significant_players = 0;
-  };
-  PendingCommitState& GetPendingCommitState();
-  base::Optional<PendingCommitState> pending_data_to_commit_;
+  // Returns the opener of the current WebContents. Null if there is none.
+  content::WebContents* GetOpener() const;
+
+  // Find the appropriate media engagement session if any or create a new one to
+  // be used. Will return nullptr if no session should be used.
+  scoped_refptr<MediaEngagementSession> GetOrCreateSession(
+      const url::Origin& origin,
+      content::WebContents* opener) const;
 
   // Stores the ids of the players that were audible. The boolean will be true
   // if the player was significant.
@@ -246,15 +221,10 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // The task runner to use when creating timers. It is used only for testing.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // The current UKM source id for |committed_origin_|.
-  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
-
-  // The time between significant playbacks to be recorded to UKM.
-  base::TimeDelta time_since_playback_for_ukm_;
-
-  url::Origin committed_origin_;
-
-  static const base::TimeDelta kSignificantMediaPlaybackTime;
+  // The MediaEngagementSession used by this MediaEngagementContentsObserver. It
+  // may be shared by other instances if they are part of the same session. It
+  // willl be null if it is not part of a session.
+  scoped_refptr<MediaEngagementSession> session_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementContentsObserver);
 };

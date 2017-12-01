@@ -102,7 +102,8 @@ void MediaEngagementService::CreateWebContentsObserver(
   if (!service)
     return;
   service->contents_observers_.insert(
-      new MediaEngagementContentsObserver(web_contents, service));
+      {web_contents,
+       new MediaEngagementContentsObserver(web_contents, service)});
 }
 
 // static
@@ -284,6 +285,16 @@ MediaEngagementScore MediaEngagementService::CreateEngagementScore(
   return MediaEngagementScore(
       clock_.get(), url,
       HostContentSettingsMapFactory::GetForProfile(profile_));
+}
+
+MediaEngagementContentsObserver* MediaEngagementService::GetContentsObserverFor(
+    content::WebContents* web_contents) const {
+  const auto& it = contents_observers_.find(web_contents);
+  return it == contents_observers_.end() ? nullptr : it->second;
+}
+
+Profile* MediaEngagementService::profile() const {
+  return profile_;
 }
 
 bool MediaEngagementService::ShouldRecordEngagement(const GURL& url) const {
