@@ -438,6 +438,19 @@ public class InstalledAppProviderTest {
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
     }
 
+    /** One related Android app; Android app is not mutually related (has no asset_statements). */
+    @Test
+    @Feature({"InstalledApp"})
+    public void testOneRelatedAppNoAssetStatementsNullMetadata() {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        FakeResources resources = new FakeResources(0x4321, null);
+        setMetaDataAndResourcesForTest(PACKAGE_NAME_1, null, resources);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
     /**
      * One related Android app; Android app is related to other origins.
      *
