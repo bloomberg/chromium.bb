@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_handle.h"
@@ -17,13 +18,13 @@ namespace content {
 
 ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+    ServiceWorkerProviderHost* provider_host,
     scoped_refptr<ServiceWorkerRegistration> registration)
     : provider_host_(provider_host),
       context_(context),
       registration_(registration),
       weak_ptr_factory_(this) {
-  DCHECK(registration_);
+  DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);
   bindings_.set_connection_error_handler(
@@ -32,16 +33,12 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
 }
 
 ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
-  if (provider_host_) {
-    provider_host_->RemoveServiceWorkerRegistrationObjectHost(
-        registration_->id());
-  }
+  DCHECK(registration_.get());
   registration_->RemoveListener(this);
 }
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
-  DCHECK(provider_host_);
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
   info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
       registration_->pattern());
@@ -103,7 +100,7 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
 
   context_->UpdateServiceWorker(
       registration_.get(), false /* force_bypass_cache */,
-      false /* skip_script_comparison */, provider_host_.get(),
+      false /* skip_script_comparison */, provider_host_,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistrationObjectHost::UpdateComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
@@ -184,13 +181,6 @@ void ServiceWorkerRegistrationObjectHost::SetNavigationPreloadHeader(
   if (!net::HttpUtil::IsValidHeaderValue(value)) {
     bindings_.ReportBadMessage(
         ServiceWorkerConsts::kBadNavigationPreloadHeaderValue);
-    // The above ReportBadMessage() has erased the current dispatch binding from
-    // |bindings_|, but does not invoke OnConnectionError(), so we have to
-    // invoke it by ourselves, because it is necessary for us to determine
-    // whether |this| should destroy (whether |bindings_| is empty).
-    // TODO(leonhsl): Once crbug.com/789816 makes ReportBadMessage() internally
-    // invoke the connection error handler, we can remove this invocation.
-    OnConnectionError();
     return;
   }
 
@@ -280,8 +270,6 @@ void ServiceWorkerRegistrationObjectHost::SetVersionAttributes(
     ServiceWorkerVersion* installing_version,
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
-  if (!provider_host_)
-    return;
   if (!changed_mask.changed())
     return;
 
@@ -306,7 +294,9 @@ void ServiceWorkerRegistrationObjectHost::OnConnectionError() {
   // If there are still bindings, |this| is still being used.
   if (!bindings_.empty())
     return;
-  delete this;
+  // Will destroy |this|.
+  provider_host_->RemoveServiceWorkerRegistrationObjectHost(
+      registration()->id());
 }
 
 template <typename CallbackType, typename... Args>
@@ -314,7 +304,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     CallbackType* callback,
     const char* error_prefix,
     Args... args) {
-  if (!provider_host_ || !context_) {
+  if (!context_) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
         std::string(error_prefix) +
@@ -338,13 +328,6 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
                             registration_->pattern()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     bindings_.ReportBadMessage(ServiceWorkerConsts::kBadMessageImproperOrigins);
-    // The above ReportBadMessage() has erased the current dispatch binding from
-    // |bindings_|, but does not invoke OnConnectionError(), so we have to
-    // invoke it by ourselves, because it is necessary for us to determine
-    // whether |this| should destroy (whether |bindings_| is empty).
-    // TODO(leonhsl): Once crbug.com/789816 makes ReportBadMessage() internally
-    // invoke the connection error handler, we can remove this invocation.
-    OnConnectionError();
     return false;
   }
 

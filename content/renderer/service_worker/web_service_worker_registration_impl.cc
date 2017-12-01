@@ -65,9 +65,10 @@ WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
   impl->host_for_global_scope_ =
       blink::mojom::ThreadSafeServiceWorkerRegistrationObjectHostAssociatedPtr::
           Create(std::move(impl->info_->host_ptr_info), io_task_runner);
-  // |impl|'s destruction happens only in OnConnectionError(), which cannot
-  // happen before BindRequest(), therefore using base::Unretained() here is
-  // safe.
+  // |impl|'s destruction needs both DetachAndMaybeDestroy() and
+  // OnConnectionError() to be called (see comments at LifecycleState enum), and
+  // OnConnectionError() cannot happen before BindRequest(), therefore using
+  // base::Unretained() here is safe.
   io_task_runner->PostTask(
       FROM_HERE, base::BindOnce(&WebServiceWorkerRegistrationImpl::BindRequest,
                                 base::Unretained(impl.get()),
@@ -190,6 +191,11 @@ void WebServiceWorkerRegistrationImpl::DetachAndMaybeDestroy() {
   host_for_client_.reset();
   host_for_global_scope_ = nullptr;
   info_ = nullptr;
+  if (state_ == LifecycleState::kUnbound) {
+    state_ = LifecycleState::kDead;
+    delete this;
+    return;
+  }
   DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
   state_ = LifecycleState::kDetached;
   // We will continue in OnConnectionError() triggered by destruction of the
@@ -222,9 +228,15 @@ void WebServiceWorkerRegistrationImpl::OnConnectionError() {
                        base::Unretained(this)));
     return;
   }
-  DCHECK_EQ(LifecycleState::kDetached, state_);
-  state_ = LifecycleState::kDead;
-  delete this;
+  if (state_ == LifecycleState::kDetached) {
+    state_ = LifecycleState::kDead;
+    delete this;
+    return;
+  }
+  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  state_ = LifecycleState::kUnbound;
+  // We will continue in DetachAndMaybeDestroy() when all references of |this|
+  // have been released by Blink.
 }
 
 blink::WebServiceWorkerRegistrationProxy*
@@ -238,7 +250,8 @@ blink::WebURL WebServiceWorkerRegistrationImpl::Scope() const {
 
 void WebServiceWorkerRegistrationImpl::Update(
     std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) {
-  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
   GetRegistrationObjectHost()->Update(
       base::BindOnce(&WebServiceWorkerRegistrationImpl::OnUpdated,
                      base::Unretained(this), std::move(callbacks)));
@@ -246,7 +259,8 @@ void WebServiceWorkerRegistrationImpl::Update(
 
 void WebServiceWorkerRegistrationImpl::Unregister(
     std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks) {
-  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
   GetRegistrationObjectHost()->Unregister(
       base::BindOnce(&WebServiceWorkerRegistrationImpl::OnUnregistered,
                      base::Unretained(this), std::move(callbacks)));
@@ -255,7 +269,8 @@ void WebServiceWorkerRegistrationImpl::Unregister(
 void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
     bool enable,
     std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) {
-  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
   GetRegistrationObjectHost()->EnableNavigationPreload(
       enable,
       base::BindOnce(
@@ -265,7 +280,8 @@ void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
 
 void WebServiceWorkerRegistrationImpl::GetNavigationPreloadState(
     std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks) {
-  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
   GetRegistrationObjectHost()->GetNavigationPreloadState(base::BindOnce(
       &WebServiceWorkerRegistrationImpl::OnDidGetNavigationPreloadState,
       base::Unretained(this), std::move(callbacks)));
@@ -274,7 +290,8 @@ void WebServiceWorkerRegistrationImpl::GetNavigationPreloadState(
 void WebServiceWorkerRegistrationImpl::SetNavigationPreloadHeader(
     const blink::WebString& value,
     std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
-  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
   GetRegistrationObjectHost()->SetNavigationPreloadHeader(
       value.Utf8(),
       base::BindOnce(
