@@ -80,7 +80,7 @@ struct PdfMetafileSkiaData {
 #endif
 };
 
-PdfMetafileSkia::~PdfMetafileSkia() {}
+PdfMetafileSkia::~PdfMetafileSkia() = default;
 
 bool PdfMetafileSkia::Init() {
   return true;

@@ -24,14 +24,9 @@ Image::Image(const Metafile& metafile)
   LoadMetafile(metafile);
 }
 
-Image::Image(const Image& image)
-    : size_(image.size_),
-      row_length_(image.row_length_),
-      data_(image.data_),
-      ignore_alpha_(image.ignore_alpha_) {
-}
+Image::Image(const Image& image) = default;
 
-Image::~Image() {}
+Image::~Image() = default;
 
 std::string Image::checksum() const {
   base::MD5Digest digest;

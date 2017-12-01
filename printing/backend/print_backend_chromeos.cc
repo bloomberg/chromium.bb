@@ -60,10 +60,10 @@ class PrintBackendChromeOS : public PrintBackend {
   bool IsValidPrinter(const std::string& printer_name) override;
 
  protected:
-  ~PrintBackendChromeOS() override {}
+  ~PrintBackendChromeOS() override = default;
 };
 
-PrintBackendChromeOS::PrintBackendChromeOS() {}
+PrintBackendChromeOS::PrintBackendChromeOS() = default;
 
 bool PrintBackendChromeOS::EnumeratePrinters(PrinterList* printer_list) {
   return true;

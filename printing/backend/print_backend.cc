@@ -19,7 +19,7 @@ PrinterBasicInfo::PrinterBasicInfo()
 
 PrinterBasicInfo::PrinterBasicInfo(const PrinterBasicInfo& other) = default;
 
-PrinterBasicInfo::~PrinterBasicInfo() {}
+PrinterBasicInfo::~PrinterBasicInfo() = default;
 
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
     : collate_capable(false),
@@ -36,16 +36,16 @@ PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
 PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults(
     const PrinterSemanticCapsAndDefaults& other) = default;
 
-PrinterSemanticCapsAndDefaults::~PrinterSemanticCapsAndDefaults() {}
+PrinterSemanticCapsAndDefaults::~PrinterSemanticCapsAndDefaults() = default;
 
-PrinterCapsAndDefaults::PrinterCapsAndDefaults() {}
+PrinterCapsAndDefaults::PrinterCapsAndDefaults() = default;
 
 PrinterCapsAndDefaults::PrinterCapsAndDefaults(
     const PrinterCapsAndDefaults& other) = default;
 
-PrinterCapsAndDefaults::~PrinterCapsAndDefaults() {}
+PrinterCapsAndDefaults::~PrinterCapsAndDefaults() = default;
 
-PrintBackend::~PrintBackend() {}
+PrintBackend::~PrintBackend() = default;
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(

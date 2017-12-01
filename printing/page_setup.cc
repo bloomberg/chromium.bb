@@ -43,7 +43,7 @@ PageSetup::PageSetup() {
 
 PageSetup::PageSetup(const PageSetup& other) = default;
 
-PageSetup::~PageSetup() {}
+PageSetup::~PageSetup() = default;
 
 void PageSetup::Clear() {
   physical_size_.SetSize(0, 0);
