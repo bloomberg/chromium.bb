@@ -11,11 +11,11 @@
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 
-// FIXME: currently we're just generating a switch statement, but we should
-//   test other variations for performance once we have more properties here.
-
 namespace blink {
 
+// TODO(crbug.com/751354): Delete this method and call property class methods
+// directly using CSSProperty::Get() once all StyleBuilderFunctions have been
+// moved to property classes.
 void StyleBuilder::ApplyProperty(const CSSProperty& property,
                                  StyleResolverState& state,
                                  const CSSValue& value,
