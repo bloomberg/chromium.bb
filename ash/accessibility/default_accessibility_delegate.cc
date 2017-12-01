@@ -15,6 +15,10 @@ DefaultAccessibilityDelegate::DefaultAccessibilityDelegate() = default;
 
 DefaultAccessibilityDelegate::~DefaultAccessibilityDelegate() = default;
 
+bool DefaultAccessibilityDelegate::IsSpokenFeedbackEnabled() const {
+  return spoken_feedback_enabled_;
+}
+
 void DefaultAccessibilityDelegate::SetMagnifierEnabled(bool enabled) {
   screen_magnifier_enabled_ = enabled;
 }
@@ -98,7 +102,7 @@ bool DefaultAccessibilityDelegate::IsSwitchAccessEnabled() const {
 bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  return controller->IsSpokenFeedbackEnabled() || screen_magnifier_enabled_ ||
+  return spoken_feedback_enabled_ || screen_magnifier_enabled_ ||
          autoclick_enabled_ || virtual_keyboard_enabled_ ||
          controller->IsMonoAudioEnabled() ||
          controller->IsLargeCursorEnabled() ||
@@ -110,6 +114,11 @@ bool DefaultAccessibilityDelegate::IsBrailleDisplayConnected() const {
 }
 
 void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {}
+
+void DefaultAccessibilityDelegate::ToggleSpokenFeedback(
+    AccessibilityNotificationVisibility notify) {
+  spoken_feedback_enabled_ = !spoken_feedback_enabled_;
+}
 
 void DefaultAccessibilityDelegate::SaveScreenMagnifierScale(double scale) {}
 

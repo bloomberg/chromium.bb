@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
-#include "ash/accessibility/accessibility_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -177,10 +176,8 @@ PrefService* GetPrefs() {
 // Simulates how UserSessionManager starts a user session by loading user
 // profile and marking session as started.
 void StartUserSession(const AccountId& account_id) {
-  Profile* profile = ProfileHelper::GetProfileByUserIdHashForTest(
+  ProfileHelper::GetProfileByUserIdHashForTest(
       user_manager::UserManager::Get()->FindUser(account_id)->username_hash());
-  ash::Shell::Get()->accessibility_controller()->SetPrefServiceForTest(
-      profile->GetPrefs());
 
   session_manager::SessionManager::Get()->SessionStarted();
 }
@@ -283,10 +280,8 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     // Sets the login-screen profile.
-    Profile* profile = ProfileHelper::GetSigninProfile();
-    AccessibilityManager::Get()->SetProfileForTest(profile);
-    ash::Shell::Get()->accessibility_controller()->SetPrefServiceForTest(
-        profile->GetPrefs());
+    AccessibilityManager::Get()->SetProfileForTest(
+        ProfileHelper::GetSigninProfile());
     default_autoclick_delay_ = GetAutoclickDelay();
   }
 

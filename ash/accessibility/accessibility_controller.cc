@@ -29,10 +29,13 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
-void NotifyAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notification_visibility) {
+void NotifyAccessibilityStatusChanged() {
   Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
-      notification_visibility);
+      A11Y_NOTIFICATION_NONE);
+}
+
+PrefService* GetActivePrefService() {
+  return Shell::Get()->session_controller()->GetActivePrefService();
 }
 
 }  // namespace
@@ -61,8 +64,6 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterBooleanPref(prefs::kAccessibilityMonoAudioEnabled, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityScreenMagnifierEnabled,
                                   false);
-    registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
-                                  false);
     return;
   }
 
@@ -73,7 +74,6 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorDipSize);
   registry->RegisterForeignPref(prefs::kAccessibilityMonoAudioEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
 }
 
 void AccessibilityController::BindRequest(
@@ -117,22 +117,6 @@ bool AccessibilityController::IsMonoAudioEnabled() const {
   return mono_audio_enabled_;
 }
 
-void AccessibilityController::SetSpokenFeedbackEnabled(
-    bool enabled,
-    AccessibilityNotificationVisibility notify) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
-    return;
-  spoken_feedback_notification_ = notify;
-  prefs->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
-  prefs->CommitPendingWrite();
-  spoken_feedback_notification_ = A11Y_NOTIFICATION_NONE;
-}
-
-bool AccessibilityController::IsSpokenFeedbackEnabled() const {
-  return spoken_feedback_enabled_;
-}
-
 void AccessibilityController::TriggerAccessibilityAlert(
     mojom::AccessibilityAlert alert) {
   if (client_)
@@ -151,11 +135,6 @@ void AccessibilityController::OnSigninScreenPrefServiceInitialized(
 
 void AccessibilityController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
-  ObservePrefs(prefs);
-}
-
-void AccessibilityController::SetPrefServiceForTest(PrefService* prefs) {
-  pref_service_for_test_ = prefs;
   ObservePrefs(prefs);
 }
 
@@ -183,22 +162,11 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
       prefs::kAccessibilityMonoAudioEnabled,
       base::Bind(&AccessibilityController::UpdateMonoAudioFromPref,
                  base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kAccessibilitySpokenFeedbackEnabled,
-      base::Bind(&AccessibilityController::UpdateSpokenFeedbackFromPref,
-                 base::Unretained(this)));
 
   // Load current state.
   UpdateHighContrastFromPref();
   UpdateLargeCursorFromPref();
   UpdateMonoAudioFromPref();
-  UpdateSpokenFeedbackFromPref();
-}
-
-PrefService* AccessibilityController::GetActivePrefService() const {
-  if (pref_service_for_test_)
-    return pref_service_for_test_;
-  return Shell::Get()->session_controller()->GetActivePrefService();
 }
 
 void AccessibilityController::UpdateHighContrastFromPref() {
@@ -211,7 +179,7 @@ void AccessibilityController::UpdateHighContrastFromPref() {
 
   high_contrast_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   // Under mash the UI service (window server) handles high contrast mode.
   if (Shell::GetAshConfig() == Config::MASH) {
@@ -243,7 +211,7 @@ void AccessibilityController::UpdateLargeCursorFromPref() {
   large_cursor_enabled_ = enabled;
   large_cursor_size_in_dip_ = size;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   ShellPort::Get()->SetCursorSize(
       large_cursor_enabled_ ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
@@ -260,24 +228,8 @@ void AccessibilityController::UpdateMonoAudioFromPref() {
 
   mono_audio_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
   chromeos::CrasAudioHandler::Get()->SetOutputMonoEnabled(enabled);
-}
-
-void AccessibilityController::UpdateSpokenFeedbackFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled);
-
-  if (spoken_feedback_enabled_ == enabled)
-    return;
-
-  spoken_feedback_enabled_ = enabled;
-
-  NotifyAccessibilityStatusChanged(spoken_feedback_notification_);
-  // TODO(warx): Chrome observes prefs change and turns on/off spoken feedback.
-  // Define a mojo call to control toggling spoken feedback (ChromeVox) once
-  // prefs ownership and registration is moved to ash.
 }
 
 }  // namespace ash
