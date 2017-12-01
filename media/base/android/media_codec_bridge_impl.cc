@@ -240,6 +240,8 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoDecoder(
     const JavaRef<jobject>& media_crypto,
     const std::vector<uint8_t>& csd0,
     const std::vector<uint8_t>& csd1,
+    const VideoColorSpace& color_space,
+    const base::Optional<HDRMetadata>& hdr_metadata,
     bool allow_adaptive_playback) {
   if (!MediaCodecUtil::IsMediaCodecAvailable())
     return nullptr;

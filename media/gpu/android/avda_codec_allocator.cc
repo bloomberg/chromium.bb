@@ -62,7 +62,8 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
       codec_config->codec, codec_type,
       codec_config->initial_expected_coded_size,
       codec_config->surface_bundle->GetJavaSurface(), media_crypto,
-      codec_config->csd0, codec_config->csd1, true));
+      codec_config->csd0, codec_config->csd1,
+      codec_config->container_color_space, codec_config->hdr_metadata, true));
 
   return codec;
 }

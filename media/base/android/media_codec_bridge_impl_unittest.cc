@@ -293,7 +293,8 @@ TEST(MediaCodecBridgeTest, CreateH264Decoder) {
 
   MediaCodecBridgeImpl::CreateVideoDecoder(
       kCodecH264, CodecType::kAny, gfx::Size(640, 480), nullptr, nullptr,
-      std::vector<uint8_t>(), std::vector<uint8_t>());
+      std::vector<uint8_t>(), std::vector<uint8_t>(), VideoColorSpace(),
+      HDRMetadata());
 }
 
 TEST(MediaCodecBridgeTest, DoNormal) {
@@ -402,7 +403,8 @@ TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
   std::unique_ptr<MediaCodecBridge> media_codec(
       MediaCodecBridgeImpl::CreateVideoDecoder(
           kCodecVP8, CodecType::kAny, gfx::Size(320, 240), nullptr, nullptr,
-          std::vector<uint8_t>(), std::vector<uint8_t>()));
+          std::vector<uint8_t>(), std::vector<uint8_t>(), VideoColorSpace(),
+          HDRMetadata()));
   ASSERT_THAT(media_codec, NotNull());
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vp8-I-frame-320x240");
   DecodeMediaFrame(media_codec.get(), buffer->data(), buffer->data_size(),
@@ -429,11 +431,11 @@ TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
   EXPECT_THAT(MediaCodecBridgeImpl::CreateAudioDecoder(
                   NewAudioConfig(kUnknownAudioCodec), nullptr),
               IsNull());
-  EXPECT_THAT(
-      MediaCodecBridgeImpl::CreateVideoDecoder(
-          kUnknownVideoCodec, CodecType::kAny, gfx::Size(320, 240), nullptr,
-          nullptr, std::vector<uint8_t>(), std::vector<uint8_t>()),
-      IsNull());
+  EXPECT_THAT(MediaCodecBridgeImpl::CreateVideoDecoder(
+                  kUnknownVideoCodec, CodecType::kAny, gfx::Size(320, 240),
+                  nullptr, nullptr, std::vector<uint8_t>(),
+                  std::vector<uint8_t>(), VideoColorSpace(), HDRMetadata()),
+              IsNull());
 }
 
 // Test MediaCodec HW H264 encoding and validate the format of encoded frames.

@@ -8,6 +8,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/test_destruction_observable.h"
+#include "media/base/hdr_metadata.h"
 #include "media/base/video_codecs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,6 +86,8 @@ class MockMediaCodecBridge : public MediaCodecBridge,
       const base::android::JavaRef<jobject>& media_crypto,
       const std::vector<uint8_t>& csd0,
       const std::vector<uint8_t>& csd1,
+      const VideoColorSpace& color_space,
+      const base::Optional<HDRMetadata>& hdr_metadata,
       bool allow_adaptive_playback);
 
  private:

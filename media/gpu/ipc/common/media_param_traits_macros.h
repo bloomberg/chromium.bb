@@ -29,6 +29,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(pps)
   IPC_STRUCT_TRAITS_MEMBER(container_color_space)
   IPC_STRUCT_TRAITS_MEMBER(target_color_space)
+  IPC_STRUCT_TRAITS_MEMBER(hdr_metadata)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::CreateVideoEncoderParams)

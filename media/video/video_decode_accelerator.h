@@ -178,6 +178,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Used as a hint to the decoder. Outputting VideoFrames in this color space
     // may avoid extra conversion steps.
     gfx::ColorSpace target_color_space;
+
+    // HDR metadata specified by the container.
+    base::Optional<HDRMetadata> hdr_metadata;
   };
 
   // Interface for collaborating with picture interface to provide memory for
