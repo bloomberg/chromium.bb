@@ -30,7 +30,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
  public:
   ReportingEndpointManagerImpl(ReportingContext* context) : context_(context) {}
 
-  ~ReportingEndpointManagerImpl() override {}
+  ~ReportingEndpointManagerImpl() override = default;
 
   bool FindEndpointForOriginAndGroup(const url::Origin& origin,
                                      const std::string& group,
@@ -109,6 +109,6 @@ std::unique_ptr<ReportingEndpointManager> ReportingEndpointManager::Create(
   return std::make_unique<ReportingEndpointManagerImpl>(context);
 }
 
-ReportingEndpointManager::~ReportingEndpointManager() {}
+ReportingEndpointManager::~ReportingEndpointManager() = default;
 
 }  // namespace net

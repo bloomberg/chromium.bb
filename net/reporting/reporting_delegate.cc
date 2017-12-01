@@ -18,7 +18,7 @@ class ReportingDelegateImpl : public ReportingDelegate {
     DCHECK(request_context);
   }
 
-  ~ReportingDelegateImpl() override {}
+  ~ReportingDelegateImpl() override = default;
 
   bool CanQueueReport(const url::Origin& origin) const override {
     return network_delegate() &&
@@ -58,6 +58,6 @@ std::unique_ptr<ReportingDelegate> ReportingDelegate::Create(
   return std::make_unique<ReportingDelegateImpl>(request_context);
 }
 
-ReportingDelegate::~ReportingDelegate() {}
+ReportingDelegate::~ReportingDelegate() = default;
 
 }  // namespace net

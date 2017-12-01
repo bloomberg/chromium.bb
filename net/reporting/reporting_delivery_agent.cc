@@ -81,7 +81,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
              const std::vector<const ReportingReport*>& reports)
         : endpoint(endpoint), reports(reports) {}
 
-    ~Delivery() {}
+    ~Delivery() = default;
 
     const GURL endpoint;
     const std::vector<const ReportingReport*> reports;
@@ -219,6 +219,6 @@ std::unique_ptr<ReportingDeliveryAgent> ReportingDeliveryAgent::Create(
   return std::make_unique<ReportingDeliveryAgentImpl>(context);
 }
 
-ReportingDeliveryAgent::~ReportingDeliveryAgent() {}
+ReportingDeliveryAgent::~ReportingDeliveryAgent() = default;
 
 }  // namespace net

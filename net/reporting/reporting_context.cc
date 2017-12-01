@@ -50,7 +50,7 @@ std::unique_ptr<ReportingContext> ReportingContext::Create(
   return std::make_unique<ReportingContextImpl>(policy, request_context);
 }
 
-ReportingContext::~ReportingContext() {}
+ReportingContext::~ReportingContext() = default;
 
 void ReportingContext::AddObserver(ReportingObserver* observer) {
   DCHECK(!observers_.HasObserver(observer));

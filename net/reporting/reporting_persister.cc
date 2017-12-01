@@ -66,7 +66,7 @@ class ReportingPersisterImpl : public ReportingPersister {
 
   // ReportingPersister implementation:
 
-  ~ReportingPersisterImpl() override {}
+  ~ReportingPersisterImpl() override = default;
 
  private:
   std::string SerializeTicks(base::TimeTicks time_ticks) {
@@ -316,6 +316,6 @@ std::unique_ptr<ReportingPersister> ReportingPersister::Create(
   return std::make_unique<ReportingPersisterImpl>(context);
 }
 
-ReportingPersister::~ReportingPersister() {}
+ReportingPersister::~ReportingPersister() = default;
 
 }  // namespace net

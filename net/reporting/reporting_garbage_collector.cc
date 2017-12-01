@@ -86,6 +86,6 @@ std::unique_ptr<ReportingGarbageCollector> ReportingGarbageCollector::Create(
   return std::make_unique<ReportingGarbageCollectorImpl>(context);
 }
 
-ReportingGarbageCollector::~ReportingGarbageCollector() {}
+ReportingGarbageCollector::~ReportingGarbageCollector() = default;
 
 }  // namespace net

@@ -464,6 +464,6 @@ std::unique_ptr<ReportingCache> ReportingCache::Create(
   return std::make_unique<ReportingCacheImpl>(context);
 }
 
-ReportingCache::~ReportingCache() {}
+ReportingCache::~ReportingCache() = default;
 
 }  // namespace net

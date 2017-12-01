@@ -23,6 +23,6 @@ ReportingClient::ReportingClient(const url::Origin& origin,
       group(group),
       expires(expires) {}
 
-ReportingClient::~ReportingClient() {}
+ReportingClient::~ReportingClient() = default;
 
 }  // namespace net
