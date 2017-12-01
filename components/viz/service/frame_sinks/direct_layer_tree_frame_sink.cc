@@ -143,12 +143,12 @@ void DirectLayerTreeFrameSink::DidPresentCompositorFrame(
     base::TimeTicks time,
     base::TimeDelta refresh,
     uint32_t flags) {
-  NOTIMPLEMENTED();
+  client_->DidPresentCompositorFrame(presentation_token, time, refresh, flags);
 }
 
 void DirectLayerTreeFrameSink::DidDiscardCompositorFrame(
     uint32_t presentation_token) {
-  NOTIMPLEMENTED();
+  client_->DidDiscardCompositorFrame(presentation_token);
 }
 
 void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
