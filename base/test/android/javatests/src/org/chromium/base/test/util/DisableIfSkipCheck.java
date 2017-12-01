@@ -24,7 +24,8 @@ public class DisableIfSkipCheck extends SkipCheck {
     @Override
     public boolean shouldSkip(FrameworkMethod method) {
         if (method == null) return true;
-        for (DisableIf.Build v : getAnnotations(method, DisableIf.Build.class)) {
+        for (DisableIf.Build v : AnnotationProcessingUtils.getAnnotations(
+                     method.getMethod(), DisableIf.Build.class)) {
             if (abi(v) && hardware(v) && product(v) && sdk(v)) {
                 if (!v.message().isEmpty()) {
                     Log.i(TAG, "%s is disabled: %s", method.getName(), v.message());
@@ -33,7 +34,8 @@ public class DisableIfSkipCheck extends SkipCheck {
             }
         }
 
-        for (DisableIf.Device d : getAnnotations(method, DisableIf.Device.class)) {
+        for (DisableIf.Device d : AnnotationProcessingUtils.getAnnotations(
+                     method.getMethod(), DisableIf.Device.class)) {
             for (String deviceType : d.type()) {
                 if (deviceTypeApplies(deviceType)) {
                     Log.i(TAG, "Test " + method.getDeclaringClass().getName() + "#"

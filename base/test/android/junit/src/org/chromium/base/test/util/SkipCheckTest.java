@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
-
 import org.robolectric.annotation.Config;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -30,7 +29,7 @@ public class SkipCheckTest {
     private static class TestableSkipCheck extends SkipCheck {
         public static <T extends Annotation> List<T> getAnnotationsForTesting(
                 AnnotatedElement element, Class<T> annotationClass) {
-            return getAnnotations(element, annotationClass);
+            return AnnotationProcessingUtils.getAnnotations(element, annotationClass);
         }
 
         @Override

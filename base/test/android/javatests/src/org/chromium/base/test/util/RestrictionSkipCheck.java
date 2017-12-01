@@ -35,7 +35,8 @@ public class RestrictionSkipCheck extends SkipCheck {
     public boolean shouldSkip(FrameworkMethod frameworkMethod) {
         if (frameworkMethod == null) return true;
 
-        for (Restriction restriction : getAnnotations(frameworkMethod, Restriction.class)) {
+        for (Restriction restriction : AnnotationProcessingUtils.getAnnotations(
+                     frameworkMethod.getMethod(), Restriction.class)) {
             for (String restrictionVal : restriction.value()) {
                 if (restrictionApplies(restrictionVal)) {
                     Log.i(TAG, "Test " + frameworkMethod.getDeclaringClass().getName() + "#"

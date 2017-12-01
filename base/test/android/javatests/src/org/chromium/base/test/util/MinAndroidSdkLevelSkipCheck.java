@@ -27,7 +27,8 @@ public class MinAndroidSdkLevelSkipCheck extends SkipCheck {
     @Override
     public boolean shouldSkip(FrameworkMethod frameworkMethod) {
         int minSdkLevel = 0;
-        for (MinAndroidSdkLevel m : getAnnotations(frameworkMethod, MinAndroidSdkLevel.class)) {
+        for (MinAndroidSdkLevel m : AnnotationProcessingUtils.getAnnotations(
+                     frameworkMethod.getMethod(), MinAndroidSdkLevel.class)) {
             minSdkLevel = Math.max(minSdkLevel, m.value());
         }
         if (Build.VERSION.SDK_INT < minSdkLevel) {
