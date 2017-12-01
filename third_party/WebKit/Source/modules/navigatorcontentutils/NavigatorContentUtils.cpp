@@ -64,8 +64,7 @@ static bool VerifyCustomHandlerURL(const Document& document,
   // the "%s" token and prepending the base url, does not resolve.
   String new_url = url;
   new_url.Remove(index, WTF_ARRAY_LENGTH(kToken) - 1);
-
-  KURL kurl = document.CompleteURL(url);
+  KURL kurl = document.CompleteURL(new_url);
 
   if (kurl.IsEmpty() || !kurl.IsValid()) {
     exception_state.ThrowDOMException(
