@@ -88,11 +88,9 @@ struct ColorScheme {
 
   UrlBarColors url_bar;
 
-  // Screen dimmer colors.
   SkColor dimmer_outer;
   SkColor dimmer_inner;
 
-  // Splash screen colors.
   SkColor splash_screen_background;
   SkColor splash_screen_text_color;
 
@@ -100,11 +98,16 @@ struct ColorScheme {
   SkColor spinner_background;
   SkColor spinner_color;
 
-  // Timeout UI colors
   SkColor timeout_message_background;
   SkColor timeout_message_foreground;
 
   SkColor speech_recognition_circle_background;
+
+  SkColor omnibox_background;
+  SkColor omnibox_icon;
+  SkColor omnibox_text;
+  SkColor omnibox_suggestion_content;
+  SkColor omnibox_suggestion_description;
 };
 
 }  // namespace vr

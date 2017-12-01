@@ -67,7 +67,6 @@ const std::set<UiElementName> kHitTestableElements = {
     kUrlBar,
     kOmniboxContainer,
     kOmniboxTextField,
-    kOmniboxSuggestions,
     kLoadingIndicator,
     kWebVrTimeoutSpinner,
     kWebVrTimeoutMessage,

@@ -17,6 +17,13 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeButtonForeground",
     "kTypeButtonHitTarget",
     "kTypeScaledDepthAdjuster",
+    "kTypeOmniboxSuggestionBackground",
+    "kTypeOmniboxSuggestionLayout",
+    "kTypeOmniboxSuggestionTextLayout",
+    "kTypeOmniboxSuggestionIconField",
+    "kTypeOmniboxSuggestionIcon",
+    "kTypeOmniboxSuggestionContentText",
+    "kTypeOmniboxSuggestionDescriptionText",
 };
 
 static_assert(

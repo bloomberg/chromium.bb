@@ -111,6 +111,11 @@ void InitializeColorSchemes() {
   normal_scheme.timeout_message_background = 0xFF444444;
   normal_scheme.timeout_message_foreground = normal_scheme.spinner_color;
   normal_scheme.speech_recognition_circle_background = 0xFF4285F4;
+  normal_scheme.omnibox_background = 0xFFEEEEEE;
+  normal_scheme.omnibox_icon = 0xA6000000;
+  normal_scheme.omnibox_text = 0xFF595959;
+  normal_scheme.omnibox_suggestion_content = 0xFF595959;
+  normal_scheme.omnibox_suggestion_description = 0xFF5595FE;
 
   g_fullscreen_scheme.Get() = normal_scheme;
   ColorScheme& fullscreen_scheme = g_fullscreen_scheme.Get();

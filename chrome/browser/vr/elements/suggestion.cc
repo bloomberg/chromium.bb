@@ -9,8 +9,7 @@
 namespace vr {
 
 Suggestion::Suggestion(base::Callback<void(GURL)> navigate_callback)
-    : LinearLayout(LinearLayout::kRight),
-      navigate_callback_(navigate_callback) {
+    : navigate_callback_(navigate_callback) {
   EventHandlers event_handlers;
   event_handlers.button_up =
       base::Bind(&Suggestion::HandleButtonClick, base::Unretained(this));
