@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#if defined(__IPHONE_10_0) && (__IPHONE_OS_VERSION_MIN_ALLOWED >= __IPHONE_10_0)
 // When a scroll event ends, the toolbar should be either completely hidden or
 // completely visible.  If a scroll ends and the toolbar is partly visible, this
 // animator will be provided to UI elements to animate its state to a hidden or
@@ -29,17 +28,8 @@
 - (instancetype)initWithDuration:(NSTimeInterval)duration
                 timingParameters:(id<UITimingCurveProvider>)parameters
     NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
-
-#else
-
-// Dummy object.
-// TODO(crbug.com/768876): Remove this class and the #if guards once iOS9
-// support is dropped.
-@interface FullscreenScrollEndAnimator : NSObject
-@end
-
-#endif  // __IPHONE_10_0
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_SCROLL_END_ANIMATOR_H_

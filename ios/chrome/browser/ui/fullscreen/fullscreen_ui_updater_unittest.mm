@@ -80,8 +80,10 @@ TEST_F(FullscreenUIUpdaterTest, EnabledDisabled) {
 // Tests that the updater sends the animator to the UI element.
 TEST_F(FullscreenUIUpdaterTest, ScrollEnd) {
   ASSERT_FALSE(element().animator);
+  // Create a test animator.  The start progress of 0.0 is a dummy value, as the
+  // animator's progress properties are unused in this test.
   FullscreenScrollEndAnimator* const kAnimator =
-      [[FullscreenScrollEndAnimator alloc] init];
+      [[FullscreenScrollEndAnimator alloc] initWithStartProgress:0.0];
   observer()->FullscreenScrollEventEnded(nullptr, kAnimator);
   EXPECT_EQ(element().animator, kAnimator);
 }
