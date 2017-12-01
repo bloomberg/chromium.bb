@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf-8
 # Copyright 2012 The LUCI Authors. All rights reserved.
 # Use of this source code is governed under the Apache License, Version 2.0
 # that can be found in the LICENSE file.
@@ -8,9 +9,6 @@ slave.
 
 It compiles and archives via 'isolate.py archive', then discard the local files.
 After, it triggers and finally collects the results.
-
-Creates 2 shards and instructs the script to produce a file in the output
-directory.
 """
 
 import os
@@ -25,46 +23,48 @@ import common
 
 
 def main():
-  options = common.parse_args(use_isolate_server=True, use_swarming=True)
+  args = common.parse_args(use_isolate_server=True, use_swarming=True)
   try:
     tempdir = tempfile.mkdtemp(prefix=u'hello_world')
     try:
-      isolated_hash = common.isolate(
-          tempdir, options.isolate_server, options.swarming_os, options.verbose)
+      isolated_hash = common.archive(
+          tempdir, args.isolate_server, args.verbose, args.which)
 
-      json_file = os.path.join(tempdir, 'task.json')
-      common.note('Running on %s' % options.swarming)
+      json_file = os.path.join(tempdir, 'task.json').encode('utf-8')
+      common.note('Running on %s' % args.swarming)
       cmd = [
         'swarming.py',
         'trigger',
-        '--swarming', options.swarming,
-        '--isolate-server', options.isolate_server,
-        '--dimension', 'os', options.swarming_os,
-        '--dimension', 'pool', 'default',
-        '--task-name', options.task_name,
+        '--swarming', args.swarming,
+        '--isolate-server', args.isolate_server,
+        '--task-name', args.task_name,
         '--dump-json', json_file,
         '--isolated', isolated_hash,
-        '--shards', '2',
+        '--raw-cmd',
       ]
-      if options.idempotent:
+      for k, v in args.dimensions:
+        cmd.extend(('--dimension', k, v))
+      if args.idempotent:
         cmd.append('--idempotent')
-      if options.priority is not None:
-        cmd.extend(('--priority', str(options.priority)))
-      if options.service_account:
-        cmd.extend(('--service-account', options.service_account))
-      cmd.extend(('--', '${ISOLATED_OUTDIR}'))
-      common.run(cmd, options.verbose)
+      if args.priority is not None:
+        cmd.extend(('--priority', str(args.priority)))
+      if args.service_account:
+        cmd.extend(('--service-account', args.service_account))
 
-      common.note('Getting results from %s' % options.swarming)
+      cmd.extend(('--', args.which + u'.py', 'Dear 💩', '${ISOLATED_OUTDIR}'))
+      common.run(cmd, args.verbose)
+
+      common.note('Getting results from %s' % args.swarming)
+      resdir = os.path.join(tempdir, 'results').encode('utf-8')
       common.run(
           [
             'swarming.py',
             'collect',
-            '--swarming', options.swarming,
+            '--swarming', args.swarming,
             '--json', json_file,
-            '--task-output-dir', 'example_result',
-          ], options.verbose)
-      for root, _, files in os.walk('example_result'):
+            '--task-output-dir', resdir,
+          ], args.verbose)
+      for root, _, files in os.walk(resdir):
         for name in files:
           p = os.path.join(root, name)
           with open(p, 'rb') as f:
