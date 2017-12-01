@@ -3,7 +3,12 @@
  * found in the LICENSE file. */
 
 oobe-dialog {
-  max-width: 768px;
+  height: 640px;
+  max-height: calc(100vh - 47px);  /* Subtracting #login-header-bar's height. */
+  max-width: 100vw;
+  min-height: 0 !important;  /* Making <oobe-dialog> shrinkable. */
+  min-width: 0 !important;  /* Making <oobe-dialog> shrinkable. */
+  width: 768px;
 }
 
 oobe-dialog div {
@@ -36,6 +41,10 @@ oobe-dialog > iron-icon.warning {
 
 .chrome-logo {
   background: url(chrome://oobe/product-logo.png) center/100% no-repeat;
+}
+
+.footer {
+  overflow: hidden;
 }
 
 .footer div {
