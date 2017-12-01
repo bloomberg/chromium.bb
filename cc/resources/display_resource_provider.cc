@@ -71,6 +71,18 @@ void DisplayResourceProvider::SendPromotionHints(
 }
 #endif
 
+void DisplayResourceProvider::WaitSyncToken(viz::ResourceId id) {
+  viz::internal::Resource* resource = GetResource(id);
+  WaitSyncTokenInternal(resource);
+#if defined(OS_ANDROID)
+  // Now that the resource is synced, we may send it a promotion hint.  We could
+  // sync all |wants_promotion_hint| resources elsewhere, and send 'no' to all
+  // resources that weren't used.  However, there's no real advantage.
+  if (resource->wants_promotion_hint)
+    wants_promotion_hints_set_.insert(id);
+#endif  // OS_ANDROID
+}
+
 DisplayResourceProvider::ScopedBatchReturnResources::ScopedBatchReturnResources(
     DisplayResourceProvider* resource_provider)
     : resource_provider_(resource_provider) {
@@ -328,8 +340,6 @@ void DisplayResourceProvider::ReceiveFromChild(
 #if defined(OS_ANDROID)
       resource->is_backed_by_surface_texture = it->is_backed_by_surface_texture;
       resource->wants_promotion_hint = it->wants_promotion_hint;
-      if (resource->wants_promotion_hint)
-        wants_promotion_hints_set_.insert(local_id);
 #endif
     }
     resource->child_id = child;

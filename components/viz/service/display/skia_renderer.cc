@@ -102,11 +102,10 @@ void SkiaRenderer::BeginDrawingFrame() {
 
   // Insert WaitSyncTokenCHROMIUM on quad resources prior to drawing the frame,
   // so that drawing can proceed without GL context switching interruptions.
-  cc::ResourceProvider* resource_provider = resource_provider_;
   for (const auto& pass : *current_frame()->render_passes_in_draw_order) {
     for (auto* quad : pass->quad_list) {
       for (ResourceId resource_id : quad->resources)
-        resource_provider->WaitSyncToken(resource_id);
+        resource_provider_->WaitSyncToken(resource_id);
     }
   }
 }

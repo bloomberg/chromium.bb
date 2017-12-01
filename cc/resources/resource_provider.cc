@@ -979,10 +979,6 @@ void ResourceProvider::CreateAndBindImage(viz::internal::Resource* resource) {
   }
 }
 
-void ResourceProvider::WaitSyncToken(viz::ResourceId id) {
-  WaitSyncTokenInternal(GetResource(id));
-}
-
 void ResourceProvider::WaitSyncTokenInternal(
     viz::internal::Resource* resource) {
   DCHECK(resource);

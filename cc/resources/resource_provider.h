@@ -319,9 +319,6 @@ class CC_EXPORT ResourceProvider
   size_t CountPromotionHintRequestsForTesting();
 #endif
 
-  // TODO(danakj): Move to DisplayResourceProvider.
-  void WaitSyncToken(viz::ResourceId id);
-
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
