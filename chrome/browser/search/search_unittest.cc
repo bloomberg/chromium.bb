@@ -40,6 +40,27 @@
 
 namespace search {
 
+bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
+
+TEST(SearchURLsTest, MatchesOriginAndPath) {
+  EXPECT_TRUE(MatchesOriginAndPath(GURL("http://example.com/path"),
+                                   GURL("http://example.com/path?param")));
+  EXPECT_FALSE(MatchesOriginAndPath(GURL("http://not.example.com/path"),
+                                    GURL("http://example.com/path")));
+  EXPECT_TRUE(MatchesOriginAndPath(GURL("http://example.com:80/path"),
+                                   GURL("http://example.com/path")));
+  EXPECT_FALSE(MatchesOriginAndPath(GURL("http://example.com:8080/path"),
+                                    GURL("http://example.com/path")));
+  EXPECT_FALSE(MatchesOriginAndPath(GURL("ftp://example.com/path"),
+                                    GURL("http://example.com/path")));
+  EXPECT_FALSE(MatchesOriginAndPath(GURL("http://example.com/path"),
+                                    GURL("https://example.com/path")));
+  EXPECT_TRUE(MatchesOriginAndPath(GURL("https://example.com/path"),
+                                   GURL("http://example.com/path")));
+  EXPECT_FALSE(MatchesOriginAndPath(GURL("http://example.com/path"),
+                                    GURL("http://example.com/another-path")));
+}
+
 class SearchTest : public BrowserWithTestWindowTest {
  protected:
   void SetUp() override {

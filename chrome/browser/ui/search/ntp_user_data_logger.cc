@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/search/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/ntp_tiles/metrics.h"
