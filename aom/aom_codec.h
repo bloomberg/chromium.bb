@@ -484,7 +484,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
 /*!\brief OBU types. */
 typedef enum ATTRIBUTE_PACKED {
   OBU_SEQUENCE_HEADER = 1,
-  OBU_TD = 2,
+  OBU_TEMPORAL_DELIMITER = 2,
   OBU_FRAME_HEADER = 3,
   OBU_TILE_GROUP = 4,
   OBU_METADATA = 5,
@@ -493,10 +493,10 @@ typedef enum ATTRIBUTE_PACKED {
 
 /*!\brief OBU metadata types. */
 typedef enum {
-  METADATA_TYPE_PRIVATE_DATA = 0,
-  METADATA_TYPE_HDR_CLL = 1,
-  METADATA_TYPE_HDR_MDCV = 2,
-} METADATA_TYPE;
+  OBU_METADATA_TYPE_PRIVATE_DATA = 0,
+  OBU_METADATA_TYPE_HDR_CLL = 1,
+  OBU_METADATA_TYPE_HDR_MDCV = 2,
+} OBU_METADATA_TYPE;
 
 /*!@} - end defgroup codec*/
 #ifdef __cplusplus

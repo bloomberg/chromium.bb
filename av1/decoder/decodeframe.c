@@ -3865,16 +3865,16 @@ static void read_metadata_hdr_mdcv(const uint8_t *data) {
 }
 
 static size_t read_metadata(const uint8_t *data, size_t sz) {
-  METADATA_TYPE metadata_type;
+  OBU_METADATA_TYPE metadata_type;
 
   assert(sz >= 2);
-  metadata_type = (METADATA_TYPE)mem_get_le16(data);
+  metadata_type = (OBU_METADATA_TYPE)mem_get_le16(data);
 
-  if (metadata_type == METADATA_TYPE_PRIVATE_DATA) {
+  if (metadata_type == OBU_METADATA_TYPE_PRIVATE_DATA) {
     read_metadata_private_data(data + 2, sz - 2);
-  } else if (metadata_type == METADATA_TYPE_HDR_CLL) {
+  } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
     read_metadata_hdr_cll(data + 2);
-  } else if (metadata_type == METADATA_TYPE_HDR_MDCV) {
+  } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
     read_metadata_hdr_mdcv(data + 2);
   }
 
@@ -3912,7 +3912,9 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     data += (PRE_OBU_SIZE_BYTES + obu_header_size);
 
     switch (obu_type) {
-      case OBU_TD: obu_payload_size = read_temporal_delimiter_obu(); break;
+      case OBU_TEMPORAL_DELIMITER:
+        obu_payload_size = read_temporal_delimiter_obu();
+        break;
       case OBU_SEQUENCE_HEADER:
         obu_payload_size = read_sequence_header_obu(pbi, &rb);
         break;

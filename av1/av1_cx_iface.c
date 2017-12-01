@@ -1331,7 +1331,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       memmove(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES + 1,
               ctx->pending_cx_data, ctx->pending_cx_data_sz);
       obu_size = write_obu_header(
-          OBU_TD, 0, (uint8_t *)(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES));
+          OBU_TEMPORAL_DELIMITER, 0,
+          (uint8_t *)(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES));
       obu_size += write_temporal_delimiter_obu();
 #if CONFIG_ADD_4BYTES_OBUSIZE
       mem_put_le32(ctx->pending_cx_data, obu_size);
