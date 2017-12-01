@@ -37,6 +37,9 @@ Polymer({
      */
     networkingPrivate: Object,
 
+    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    globalPolicy: Object,
+
     /**
      * The GUID when an existing network is being configured. This will be
      * empty when configuring a new network.
@@ -356,6 +359,13 @@ Polymer({
     this.propertiesSent_ = true;
     this.error_ = '';
     if (!this.guid || this.getSource_() == CrOnc.Source.NONE) {
+      // New network configurations default to 'AutoConnect' unless prohibited
+      // by policy.
+      CrOnc.setTypeProperty(
+          this.configProperties_, 'AutoConnect',
+          !(this.globalPolicy &&
+            this.globalPolicy.AllowOnlyPolicyNetworksToConnect));
+
       // Create the configuration, then connect to it in the callback.
       this.networkingPrivate.createNetwork(
           this.shareNetwork_, this.configProperties_,
@@ -1230,6 +1240,19 @@ Polymer({
     if (outer == CrOnc.EAPType.EAP_TTLS)
       return this.eapInnerItemsTtls_;
     return [];
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties
+   * @return {!CrOnc.NetworkStateProperties}
+   * @private
+   */
+  getIconState_: function(properties) {
+    return {
+      ConnectionState: CrOnc.ConnectionState.CONNECTING,
+      GUID: properties.GUID || '',
+      Type: this.type,
+    };
   },
 
   /**

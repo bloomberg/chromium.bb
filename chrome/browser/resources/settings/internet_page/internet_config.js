@@ -18,6 +18,9 @@ Polymer({
      */
     networkingPrivate: Object,
 
+    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
+    globalPolicy: Object,
+
     /** @private */
     shareAllowEnable_: {
       type: Boolean,
