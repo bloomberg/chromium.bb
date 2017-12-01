@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -152,13 +151,27 @@ StreamMixer::StreamMixer()
          num_output_channels_ == 1);
 
   low_sample_rate_cutoff_ =
-      chromecast::GetSwitchValueBoolean(switches::kAlsaEnableUpsampling, false)
+      GetSwitchValueBoolean(switches::kAlsaEnableUpsampling, false)
           ? kLowSampleRateCutoff
           : MixerOutputStream::kInvalidSampleRate;
 
-  // Read post-processing configuration file
-  PostProcessingPipelineParser pipeline_parser;
+  fixed_sample_rate_ = GetSwitchValueNonNegativeInt(
+      switches::kAudioOutputSampleRate, MixerOutputStream::kInvalidSampleRate);
 
+#if defined(USE_ALSA)
+  if (fixed_sample_rate_ == MixerOutputStream::kInvalidSampleRate) {
+    fixed_sample_rate_ =
+        GetSwitchValueNonNegativeInt(switches::kAlsaFixedOutputSampleRate,
+                                     MixerOutputStream::kInvalidSampleRate);
+  }
+#endif  // defined(USE_ALSA)
+
+  if (fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
+    LOG(INFO) << "Setting fixed sample rate to " << fixed_sample_rate_;
+  }
+
+  // Read post-processing configuration file.
+  PostProcessingPipelineParser pipeline_parser;
   CreatePostProcessors(&pipeline_parser);
 
   // TODO(jyw): command line flag for filter frame alignment.
@@ -166,10 +179,10 @@ StreamMixer::StreamMixer()
       << "Alignment must be a power of 2.";
 
   // --accept-resource-provider should imply a check close timeout of 0.
-  int default_close_timeout = chromecast::GetSwitchValueBoolean(
-                                  switches::kAcceptResourceProvider, false)
-                                  ? 0
-                                  : kDefaultCheckCloseTimeoutMs;
+  int default_close_timeout =
+      GetSwitchValueBoolean(switches::kAcceptResourceProvider, false)
+          ? 0
+          : kDefaultCheckCloseTimeoutMs;
   check_close_timeout_ = GetSwitchValueInt(switches::kAlsaCheckCloseTimeout,
                                            default_close_timeout);
 }
@@ -275,17 +288,20 @@ void StreamMixer::FinishFinalize() {
 bool StreamMixer::Start() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 
-  int requested_sample_rate = requested_output_samples_per_second_;
-
   if (!output_)
     output_ = MixerOutputStream::Create();
 
-  if (low_sample_rate_cutoff_ != MixerOutputStream::kInvalidSampleRate &&
-      requested_sample_rate < low_sample_rate_cutoff_) {
+  int requested_sample_rate;
+  if (fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
+    requested_sample_rate = fixed_sample_rate_;
+  } else if (low_sample_rate_cutoff_ != MixerOutputStream::kInvalidSampleRate &&
+             requested_output_samples_per_second_ < low_sample_rate_cutoff_) {
     requested_sample_rate =
         output_samples_per_second_ != MixerOutputStream::kInvalidSampleRate
             ? output_samples_per_second_
             : kLowSampleRateFallback;
+  } else {
+    requested_sample_rate = requested_output_samples_per_second_;
   }
 
   if (!output_->Start(requested_sample_rate, num_output_channels_)) {
@@ -357,7 +373,8 @@ void StreamMixer::AddInput(std::unique_ptr<InputQueue> input) {
   // If the new input is a primary one, we may need to change the output
   // sample rate to match its input sample rate.
   // We only change the output rate if it is not set to a fixed value.
-  if (input->primary() && output_ && !output_->IsFixedSampleRate()) {
+  if (input->primary() && output_ &&
+      fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
     CheckChangeOutputRate(input->input_samples_per_second());
   }
 

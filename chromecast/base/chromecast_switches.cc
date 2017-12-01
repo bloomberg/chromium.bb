@@ -69,6 +69,7 @@ const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 const char kAlsaEnableUpsampling[] = "alsa-enable-upsampling";
 
 // Optional flag to set a fixed sample rate for the alsa device.
+// Deprecated: Use --audio-output-sample-rate instead.
 const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 
 // Name of the simple mixer control element that the ALSA-based media library
@@ -95,6 +96,11 @@ const char kMaxOutputVolumeDba1m[] = "max-output-volume-dba1m";
 // specific number of channels to ALSA and generate loopback audio. Default
 // value is 2.
 const char kAudioOutputChannels[] = "audio-output-channels";
+
+// Specify fixed sample rate for audio output stream. If this flag is not
+// specified the StreamMixer will choose sample rate based on the sample rate of
+// the media stream.
+const char kAudioOutputSampleRate[] = "audio-output-sample-rate";
 
 // Some platforms typically have very little 'free' memory, but plenty is
 // available in buffers+cached.  For such platforms, configure this amount

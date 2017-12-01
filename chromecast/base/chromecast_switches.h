@@ -38,6 +38,9 @@ extern const char kPreviousApp[];
 extern const char kAcceptResourceProvider[];
 
 // ALSA-based CMA switches. (Only valid for audio products.)
+// TODO(sergeyu): kAlsaEnableUpsampling and kAlsaCheckCloseTimeout are
+// implemented in StreamMixer, which is not ALSA-specific - it's also used on
+// Fuchsia. Rename these flags.
 extern const char kAlsaOutputBufferSize[];
 extern const char kAlsaOutputPeriodSize[];
 extern const char kAlsaOutputStartThreshold[];
@@ -51,6 +54,7 @@ extern const char kAlsaMuteDeviceName[];
 extern const char kAlsaMuteElementName[];
 extern const char kMaxOutputVolumeDba1m[];
 extern const char kAudioOutputChannels[];
+extern const char kAudioOutputSampleRate[];
 
 // Memory pressure switches
 extern const char kMemPressureSystemReservedKb[];

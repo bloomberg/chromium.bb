@@ -26,9 +26,6 @@ class MixerOutputStream {
 
   virtual ~MixerOutputStream() {}
 
-  // Returns true if the sample rate is fixed.
-  virtual bool IsFixedSampleRate() = 0;
-
   // Start the stream. Caller must call GetSampleRate() to get the actual sample
   // rate selected for the stream. It may be different from
   // |requested_sample_rate|, e.g. if IsFixedSampleRate() is true, or the device
