@@ -93067,6 +93067,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VR.Component.Assets.DurationUntilReady.OnChromeStart"
+    units="ms">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Duration from starting Chrome until VR assets component is ready to use.
+  </summary>
+</histogram>
+
 <histogram base="true" name="VR.DataConnection.OnEnter"
     enum="NetworkConnectionType">
   <owner>tiborg@chromium.org</owner>
