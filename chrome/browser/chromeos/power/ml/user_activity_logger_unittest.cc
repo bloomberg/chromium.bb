@@ -38,14 +38,19 @@ class TestingUserActivityLoggerDelegate : public UserActivityLoggerDelegate {
 
   const std::vector<UserActivityEvent>& events() const { return events_; }
 
+  int num_update_open_tabs_urls_calls() const {
+    return num_update_open_tabs_urls_calls_;
+  }
+
   // UserActivityLoggerDelegate overrides:
   void LogActivity(const UserActivityEvent& event) override {
     events_.push_back(event);
   }
-  void UpdateOpenTabsURLs() override {}
+  void UpdateOpenTabsURLs() override { ++num_update_open_tabs_urls_calls_; }
 
  private:
   std::vector<UserActivityEvent> events_;
+  int num_update_open_tabs_urls_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestingUserActivityLoggerDelegate);
 };
@@ -111,20 +116,17 @@ class UserActivityLoggerTest : public testing::Test {
 
   void ReportIdleSleep() { fake_power_manager_client_.SendSuspendDone(); }
 
-  const std::vector<UserActivityEvent>& GetEvents() {
-    return delegate_.events();
-  }
-
   const scoped_refptr<base::TestMockTimeTaskRunner>& GetTaskRunner() {
     return task_runner_;
   }
+
+  TestingUserActivityLoggerDelegate delegate_;
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   const base::TestMockTimeTaskRunner::ScopedContext scoped_context_;
 
   ui::UserActivityDetector user_activity_detector_;
-  TestingUserActivityLoggerDelegate delegate_;
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   chromeos::FakePowerManagerClient fake_power_manager_client_;
   session_manager::SessionManager session_manager_;
@@ -139,7 +141,7 @@ TEST_F(UserActivityLoggerTest, LogAfterIdleEvent) {
   ReportIdleEvent({now, now});
   ReportUserActivity(nullptr);
 
-  const std::vector<UserActivityEvent>& events = GetEvents();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -155,7 +157,7 @@ TEST_F(UserActivityLoggerTest, LogBeforeIdleEvent) {
   base::Time now = base::Time::UnixEpoch();
   ReportIdleEvent({now, now});
 
-  EXPECT_EQ(0U, GetEvents().size());
+  EXPECT_EQ(0U, delegate_.events().size());
 }
 
 // Get a user event, then an idle event, then another user event,
@@ -168,7 +170,7 @@ TEST_F(UserActivityLoggerTest, LogSecondEvent) {
   // Another user event.
   ReportUserActivity(nullptr);
 
-  const std::vector<UserActivityEvent>& events = GetEvents();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -191,7 +193,7 @@ TEST_F(UserActivityLoggerTest, LogMultipleEvents) {
   // Second user event.
   ReportUserActivity(nullptr);
 
-  const std::vector<UserActivityEvent>& events = GetEvents();
+  const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(2U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -208,7 +210,7 @@ TEST_F(UserActivityLoggerTest, UserCloseLid) {
   ReportIdleEvent({now, now});
 
   ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -227,7 +229,7 @@ TEST_F(UserActivityLoggerTest, PowerChangeActivity) {
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 25.0f);
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::DISCONNECTED,
                          28.0f);
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -242,7 +244,7 @@ TEST_F(UserActivityLoggerTest, VideoActivity) {
   ReportIdleEvent({now, now});
 
   ReportVideoStart();
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -259,7 +261,7 @@ TEST_F(UserActivityLoggerTest, SystemIdle) {
   ReportScreenIdle();
   GetTaskRunner()->FastForwardUntilNoTasksRemain();
 
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -281,7 +283,7 @@ TEST_F(UserActivityLoggerTest, SystemIdleInterrupted) {
   ReportUserActivity(nullptr);
   GetTaskRunner()->FastForwardUntilNoTasksRemain();
 
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -296,7 +298,7 @@ TEST_F(UserActivityLoggerTest, ScreenLock) {
   ReportIdleEvent({now, now});
 
   ReportScreenLocked();
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -311,7 +313,7 @@ TEST_F(UserActivityLoggerTest, IdleSleep) {
   ReportIdleEvent({now, now});
 
   ReportIdleSleep();
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   UserActivityEvent::Event expected_event;
@@ -329,13 +331,23 @@ TEST_F(UserActivityLoggerTest, FeatureExtraction) {
   ReportIdleEvent({});
   ReportUserActivity(nullptr);
 
-  const auto& events = GetEvents();
+  const auto& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
 
   const UserActivityEvent::Features& features = events[0].features();
   EXPECT_EQ(UserActivityEvent::Features::CLAMSHELL, features.device_mode());
   EXPECT_EQ(23.0f, features.battery_percent());
   EXPECT_DOUBLE_EQ(false, features.on_battery());
+}
+
+TEST_F(UserActivityLoggerTest, UpdateOpenTabsURLsCalledTimes) {
+  ReportIdleEvent({});
+  ReportUserActivity(nullptr);
+  EXPECT_EQ(1, delegate_.num_update_open_tabs_urls_calls());
+
+  ReportIdleEvent({});
+  ReportUserActivity(nullptr);
+  EXPECT_EQ(2, delegate_.num_update_open_tabs_urls_calls());
 }
 
 }  // namespace ml
