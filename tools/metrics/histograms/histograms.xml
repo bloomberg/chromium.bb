@@ -8440,7 +8440,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The result of captive portal detection attempts performed in user session.
     Detection result is recorded when portal detection is completed for a
-    request which timed out or which is likely to timeout.
+    request which timed out or hadn't yet replied within eight seconds.
   </summary>
 </histogram>
 
