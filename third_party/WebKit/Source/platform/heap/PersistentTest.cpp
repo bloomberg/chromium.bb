@@ -24,8 +24,8 @@ TEST(PersistentTest, BindCancellation) {
   Receiver* receiver = new Receiver;
   int counter = 0;
   WTF::RepeatingClosure function =
-      WTF::Bind(&Receiver::Increment, WrapWeakPersistent(receiver),
-                WTF::Unretained(&counter));
+      WTF::BindRepeating(&Receiver::Increment, WrapWeakPersistent(receiver),
+                         WTF::Unretained(&counter));
 
   function.Run();
   EXPECT_EQ(1, counter);

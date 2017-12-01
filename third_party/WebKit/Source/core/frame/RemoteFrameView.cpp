@@ -181,7 +181,7 @@ void RemoteFrameView::SetupRenderThrottling() {
     return;
 
   visibility_observer_ = new ElementVisibilityObserver(
-      target_element, WTF::Bind(
+      target_element, WTF::BindRepeating(
                           [](RemoteFrameView* remote_view, bool is_visible) {
                             remote_view->UpdateRenderThrottlingStatus(
                                 !is_visible, remote_view->subtree_throttled_);

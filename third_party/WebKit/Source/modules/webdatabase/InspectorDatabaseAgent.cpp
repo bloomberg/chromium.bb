@@ -287,8 +287,9 @@ Response InspectorDatabaseAgent::enable() {
   if (DatabaseClient* client = DatabaseClient::FromPage(page_))
     client->SetInspectorAgent(this);
   DatabaseTracker::Tracker().ForEachOpenDatabaseInPage(
-      page_, WTF::Bind(&InspectorDatabaseAgent::RegisterDatabaseOnCreation,
-                       WrapPersistent(this)));
+      page_,
+      WTF::BindRepeating(&InspectorDatabaseAgent::RegisterDatabaseOnCreation,
+                         WrapPersistent(this)));
   return Response::OK();
 }
 

@@ -138,8 +138,8 @@ TEST(FunctionalTest, WeakPtr) {
   HasWeakPtrSupport obj;
   int counter = 0;
   WTF::RepeatingClosure bound =
-      WTF::Bind(&HasWeakPtrSupport::Increment, obj.CreateWeakPtr(),
-                WTF::Unretained(&counter));
+      WTF::BindRepeating(&HasWeakPtrSupport::Increment, obj.CreateWeakPtr(),
+                         WTF::Unretained(&counter));
 
   bound.Run();
   EXPECT_FALSE(bound.IsCancelled());

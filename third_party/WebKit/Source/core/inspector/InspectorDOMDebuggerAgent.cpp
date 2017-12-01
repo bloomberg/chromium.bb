@@ -165,7 +165,8 @@ void InspectorDOMDebuggerAgent::EventListenersInfoForTarget(
       depth = INT_MAX;
     HeapVector<Member<Node>> nodes;
     InspectorDOMAgent::CollectNodes(
-        node, depth, pierce, WTF::Bind(&FilterNodesWithListeners), &nodes);
+        node, depth, pierce, WTF::BindRepeating(&FilterNodesWithListeners),
+        &nodes);
     for (Node* n : nodes) {
       // We are only interested in listeners from the current context.
       CollectEventListeners(isolate, n, v8::Local<v8::Value>(), n, pierce,

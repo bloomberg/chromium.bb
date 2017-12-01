@@ -181,8 +181,8 @@ void SVGSMILElement::Condition::ConnectEventBase(
   } else {
     target = SVGURIReference::ObserveTarget(
         base_id_observer_, timed_element.GetTreeScope(), base_id_,
-        WTF::Bind(&SVGSMILElement::BuildPendingResource,
-                  WrapWeakPersistent(&timed_element)));
+        WTF::BindRepeating(&SVGSMILElement::BuildPendingResource,
+                           WrapWeakPersistent(&timed_element)));
   }
   if (!target || !target->IsSVGElement())
     return;

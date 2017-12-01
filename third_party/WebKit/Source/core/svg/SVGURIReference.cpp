@@ -35,7 +35,7 @@ class SVGElementReferenceObserver : public IdTargetObserver {
  public:
   SVGElementReferenceObserver(TreeScope& tree_scope,
                               const AtomicString& id,
-                              WTF::Closure closure)
+                              WTF::RepeatingClosure closure)
       : IdTargetObserver(tree_scope.GetIdTargetObserverRegistry(), id),
         closure_(std::move(closure)) {}
 
@@ -125,15 +125,16 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
                                         const String& href_string) {
   TreeScope& tree_scope = context_element.GetTreeScope();
   AtomicString id = FragmentIdentifierFromIRIString(href_string, tree_scope);
-  return ObserveTarget(observer, tree_scope, id,
-                       WTF::Bind(&SVGElement::BuildPendingResource,
-                                 WrapWeakPersistent(&context_element)));
+  return ObserveTarget(
+      observer, tree_scope, id,
+      WTF::BindRepeating(&SVGElement::BuildPendingResource,
+                         WrapWeakPersistent(&context_element)));
 }
 
 Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
                                         TreeScope& tree_scope,
                                         const AtomicString& id,
-                                        WTF::Closure closure) {
+                                        WTF::RepeatingClosure closure) {
   DCHECK(!observer);
   if (id.IsEmpty())
     return nullptr;

@@ -138,17 +138,17 @@ void ModulesInitializer::Initialize() {
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   // CoreInitializer::RegisterLocalFrameInitCallback([](LocalFrame& frame) {
   if (frame.IsMainFrame()) {
-    frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
   }
-  frame.GetInterfaceRegistry()->AddInterface(
-      WTF::Bind(&InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+      &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
   // TODO(dominickn): This interface should be document-scoped rather than
   // frame-scoped, as the resulting banner event is dispatched to
   // frame()->document().
-  frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &AppBannerController::BindMojoRequest, WrapWeakPersistent(&frame)));
-  frame.GetInterfaceRegistry()->AddInterface(WTF::Bind(
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &TextSuggestionBackendImpl::Create, WrapWeakPersistent(&frame)));
 }
 

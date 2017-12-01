@@ -307,8 +307,8 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       media_event_listener_(new MediaControlsMediaEventListener(this)),
       window_event_listener_(MediaControlsWindowEventListener::Create(
           this,
-          WTF::Bind(&MediaControlsImpl::HideAllMenus,
-                    WrapWeakPersistent(this)))),
+          WTF::BindRepeating(&MediaControlsImpl::HideAllMenus,
+                             WrapWeakPersistent(this)))),
       orientation_lock_delegate_(nullptr),
       rotate_to_fullscreen_delegate_(nullptr),
       hide_media_controls_timer_(

@@ -83,7 +83,7 @@ USING_LAYOUTOBJECT_FUNC(IsSVGText);
 USING_LAYOUTOBJECT_FUNC(IsLayoutEmbeddedContent);
 
 static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
-  return WTF::Bind(
+  return WTF::BindRepeating(
       [](const String& text, const LayoutObject& object) {
         if (!object.IsText())
           return false;
@@ -126,7 +126,7 @@ static bool TestLayoutObject(LayoutObject* object,
                              InvalidateOption invalidate) {
   return TestLayoutObject(
       object,
-      WTF::Bind(
+      WTF::BindRepeating(
           [](const String& text, const LayoutObject& object) {
             if (!object.IsText())
               return false;

@@ -72,9 +72,9 @@ void MediaControlsMediaEventListener::Attach() {
     if (!remote_playback_availability_callback_id_.has_value()) {
       remote_playback_availability_callback_id_ = WTF::make_optional(
           remote->WatchAvailabilityInternal(new AvailabilityCallbackWrapper(
-              WTF::Bind(&MediaControlsMediaEventListener::
-                            OnRemotePlaybackAvailabilityChanged,
-                        WrapWeakPersistent(this)))));
+              WTF::BindRepeating(&MediaControlsMediaEventListener::
+                                     OnRemotePlaybackAvailabilityChanged,
+                                 WrapWeakPersistent(this)))));
     }
   }
 }

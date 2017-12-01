@@ -270,8 +270,8 @@ void FileReaderLoaderMojo::OnCalculatedSize(uint64_t total_size,
   } else {
     handle_watcher_.Watch(
         consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-        ConvertToBaseCallback(WTF::Bind(
-            &FileReaderLoaderMojo::OnDataPipeReadable, WTF::Unretained(this))));
+        WTF::BindRepeating(&FileReaderLoaderMojo::OnDataPipeReadable,
+                           WTF::Unretained(this)));
   }
 }
 

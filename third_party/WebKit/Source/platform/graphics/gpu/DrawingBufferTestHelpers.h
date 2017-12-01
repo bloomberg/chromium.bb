@@ -50,7 +50,7 @@ class WebGraphicsContext3DProviderForTests
     return gpu_feature_info_;
   }
   viz::GLHelper* GetGLHelper() override { return nullptr; }
-  void SetLostContextCallback(const base::Closure&) override {}
+  void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) {}
   void SignalQuery(uint32_t, base::OnceClosure) override {}

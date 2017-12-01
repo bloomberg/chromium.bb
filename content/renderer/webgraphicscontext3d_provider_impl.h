@@ -45,7 +45,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   viz::GLHelper* GetGLHelper() override;
   bool IsSoftwareRendering() const override;
-  void SetLostContextCallback(const base::Closure&) override;
+  void SetLostContextCallback(base::RepeatingClosure) override;
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)>) override;
   void SignalQuery(uint32_t, base::OnceClosure) override;
@@ -61,7 +61,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
   const bool software_rendering_;
-  base::Closure context_lost_callback_;
+  base::RepeatingClosure context_lost_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGraphicsContext3DProviderImpl);
 };

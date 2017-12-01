@@ -46,9 +46,9 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
   void AddInterface(
       WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)> factory) {
     AddInterface(Interface::Name_,
-                 ConvertToBaseCallback(WTF::Bind(
+                 WTF::BindRepeating(
                      &InterfaceRegistry::ForwardToInterfaceFactory<Interface>,
-                     std::move(factory))));
+                     std::move(factory)));
   }
 
   template <typename Interface>

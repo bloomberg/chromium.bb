@@ -50,12 +50,13 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   //
   // Note that unlike the first two conditions, this callback may be invoked
   // with |MOJO_RESULT_CANCELLED| even while the SimpleWatcher is disarmed.
-  using ReadyCallback = base::Callback<void(MojoResult result)>;
+  using ReadyCallback = base::RepeatingCallback<void(MojoResult result)>;
 
   // Like above but also receives the last known handle signal state at the time
   // of the notification.
   using ReadyCallbackWithState =
-      base::Callback<void(MojoResult result, const HandleSignalsState& state)>;
+      base::RepeatingCallback<void(MojoResult result,
+                                   const HandleSignalsState& state)>;
 
   // Selects how this SimpleWatcher is to be armed.
   enum class ArmingPolicy {
