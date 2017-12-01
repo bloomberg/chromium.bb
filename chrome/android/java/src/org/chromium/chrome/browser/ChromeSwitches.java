@@ -31,6 +31,12 @@ public abstract class ChromeSwitches {
     /** Disable the First Run Experience. */
     public static final String DISABLE_FIRST_RUN_EXPERIENCE = "disable-fre";
 
+    /**
+     * Forces the First Run Experience (FRE) flow complete check to always return true.
+     */
+    public static final String FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING =
+            "force-first-run-flow-complete";
+
     /** Force the crash dump to be uploaded regardless of preferences. */
     public static final String FORCE_CRASH_DUMP_UPLOAD = "force-dump-upload";
 
