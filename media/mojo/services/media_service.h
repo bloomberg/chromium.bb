@@ -62,15 +62,20 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
       mojom::InterfaceFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
 
+  MediaLog media_log_;
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using
   // a unique_ptr here.
+  //
+  // Note: Since |*ref_factory_| is passed to |mojo_media_client_|,
+  // |mojo_media_client_| must be destructed before |ref_factory_|.
   std::unique_ptr<MojoMediaClient> mojo_media_client_;
 
+  // Note: Since |&media_log_| is passed to bindings, the bindings must be
+  // destructed first.
   mojo::StrongBindingSet<mojom::InterfaceFactory> interface_factory_bindings_;
-
-  MediaLog media_log_;
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::MediaService> bindings_;
