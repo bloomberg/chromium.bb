@@ -37,8 +37,8 @@ const int URLRequestSlowDownloadJob::kSecondDownloadSize = 1024 * 10;
 
 class URLRequestSlowDownloadJob::Interceptor : public URLRequestInterceptor {
  public:
-  Interceptor() {}
-  ~Interceptor() override {}
+  Interceptor() = default;
+  ~Interceptor() override = default;
 
   // URLRequestInterceptor implementation:
   URLRequestJob* MaybeInterceptRequest(

@@ -11,7 +11,7 @@ namespace net {
 QuicDefaultPacketWriter::QuicDefaultPacketWriter(int fd)
     : fd_(fd), write_blocked_(false) {}
 
-QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
+QuicDefaultPacketWriter::~QuicDefaultPacketWriter() = default;
 
 WriteResult QuicDefaultPacketWriter::WritePacket(
     const char* buffer,

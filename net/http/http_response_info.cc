@@ -120,56 +120,12 @@ HttpResponseInfo::HttpResponseInfo()
       unused_since_prefetch(false),
       connection_info(CONNECTION_INFO_UNKNOWN) {}
 
-HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs)
-    : was_cached(rhs.was_cached),
-      cache_entry_status(rhs.cache_entry_status),
-      server_data_unavailable(rhs.server_data_unavailable),
-      network_accessed(rhs.network_accessed),
-      was_fetched_via_spdy(rhs.was_fetched_via_spdy),
-      was_alpn_negotiated(rhs.was_alpn_negotiated),
-      was_fetched_via_proxy(rhs.was_fetched_via_proxy),
-      proxy_server(rhs.proxy_server),
-      did_use_http_auth(rhs.did_use_http_auth),
-      unused_since_prefetch(rhs.unused_since_prefetch),
-      socket_address(rhs.socket_address),
-      alpn_negotiated_protocol(rhs.alpn_negotiated_protocol),
-      connection_info(rhs.connection_info),
-      request_time(rhs.request_time),
-      response_time(rhs.response_time),
-      auth_challenge(rhs.auth_challenge),
-      cert_request_info(rhs.cert_request_info),
-      ssl_info(rhs.ssl_info),
-      headers(rhs.headers),
-      vary_data(rhs.vary_data),
-      metadata(rhs.metadata) {}
+HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs) = default;
 
-HttpResponseInfo::~HttpResponseInfo() {
-}
+HttpResponseInfo::~HttpResponseInfo() = default;
 
-HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) {
-  was_cached = rhs.was_cached;
-  cache_entry_status = rhs.cache_entry_status;
-  server_data_unavailable = rhs.server_data_unavailable;
-  network_accessed = rhs.network_accessed;
-  was_fetched_via_spdy = rhs.was_fetched_via_spdy;
-  proxy_server = rhs.proxy_server;
-  was_alpn_negotiated = rhs.was_alpn_negotiated;
-  was_fetched_via_proxy = rhs.was_fetched_via_proxy;
-  did_use_http_auth = rhs.did_use_http_auth;
-  unused_since_prefetch = rhs.unused_since_prefetch;
-  socket_address = rhs.socket_address;
-  alpn_negotiated_protocol = rhs.alpn_negotiated_protocol;
-  connection_info = rhs.connection_info;
-  request_time = rhs.request_time;
-  response_time = rhs.response_time;
-  auth_challenge = rhs.auth_challenge;
-  cert_request_info = rhs.cert_request_info;
-  ssl_info = rhs.ssl_info;
-  headers = rhs.headers;
-  vary_data = rhs.vary_data;
-  metadata = rhs.metadata;
-  return *this;
-}
+HttpResponseInfo& HttpResponseInfo::operator=(const HttpResponseInfo& rhs) =
+    default;
 
 bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
                                       bool* response_truncated) {

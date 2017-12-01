@@ -59,7 +59,7 @@ SSLSocketParams::SSLSocketParams(
          (!direct_params_ && !socks_proxy_params_ && http_proxy_params_));
 }
 
-SSLSocketParams::~SSLSocketParams() {}
+SSLSocketParams::~SSLSocketParams() = default;
 
 SSLSocketParams::ConnectionType SSLSocketParams::GetConnectionType() const {
   if (direct_params_.get()) {
@@ -138,8 +138,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
       version_interference_error_(OK),
       version_interference_details_(SSLErrorDetails::kOther) {}
 
-SSLConnectJob::~SSLConnectJob() {
-}
+SSLConnectJob::~SSLConnectJob() = default;
 
 LoadState SSLConnectJob::GetLoadState() const {
   switch (next_state_) {
@@ -564,8 +563,7 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
       base::TimeDelta::FromSeconds(kSSLHandshakeTimeoutInSeconds);
 }
 
-SSLClientSocketPool::SSLConnectJobFactory::~SSLConnectJobFactory() {
-}
+SSLClientSocketPool::SSLConnectJobFactory::~SSLConnectJobFactory() = default;
 
 SSLClientSocketPool::SSLClientSocketPool(
     int max_sockets,

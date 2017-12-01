@@ -608,7 +608,7 @@ std::unique_ptr<HttpResponse> HandleSlowServer(const HttpRequest& request) {
 // Never returns a response.
 class HungHttpResponse : public HttpResponse {
  public:
-  HungHttpResponse() {}
+  HungHttpResponse() = default;
 
   void SendResponse(const SendBytesCallback& send,
                     const SendCompleteCallback& done) override {}
@@ -626,7 +626,7 @@ std::unique_ptr<HttpResponse> HandleHungResponse(const HttpRequest& request) {
 // Return headers, then hangs.
 class HungAfterHeadersHttpResponse : public HttpResponse {
  public:
-  HungAfterHeadersHttpResponse() {}
+  HungAfterHeadersHttpResponse() = default;
 
   void SendResponse(const SendBytesCallback& send,
                     const SendCompleteCallback& done) override {

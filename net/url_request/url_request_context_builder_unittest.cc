@@ -32,7 +32,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
  public:
   MockHttpAuthHandlerFactory(std::string supported_scheme, int return_code)
       : return_code_(return_code), supported_scheme_(supported_scheme) {}
-  ~MockHttpAuthHandlerFactory() override {}
+  ~MockHttpAuthHandlerFactory() override = default;
 
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,

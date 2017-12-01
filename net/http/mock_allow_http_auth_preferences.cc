@@ -7,9 +7,9 @@
 
 namespace net {
 
-MockAllowHttpAuthPreferences::MockAllowHttpAuthPreferences() {}
+MockAllowHttpAuthPreferences::MockAllowHttpAuthPreferences() = default;
 
-MockAllowHttpAuthPreferences::~MockAllowHttpAuthPreferences() {}
+MockAllowHttpAuthPreferences::~MockAllowHttpAuthPreferences() = default;
 
 bool MockAllowHttpAuthPreferences::CanUseDefaultCredentials(
     const GURL& auth_origin) const {

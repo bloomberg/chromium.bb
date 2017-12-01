@@ -37,8 +37,8 @@ static_assert(arraysize(kFailurePhase) ==
 
 class MockJobInterceptor : public URLRequestInterceptor {
  public:
-  MockJobInterceptor() {}
-  ~MockJobInterceptor() override {}
+  MockJobInterceptor() = default;
+  ~MockJobInterceptor() override = default;
 
   // URLRequestJobFactory::ProtocolHandler implementation:
   URLRequestJob* MaybeInterceptRequest(
@@ -177,8 +177,7 @@ GURL URLRequestFailedJob::GetMockHttpsUrlForHostname(
   return GetMockUrl("https", hostname, START, net_error);
 }
 
-URLRequestFailedJob::~URLRequestFailedJob() {
-}
+URLRequestFailedJob::~URLRequestFailedJob() = default;
 
 void URLRequestFailedJob::StartAsync() {
   if (phase_ == START) {

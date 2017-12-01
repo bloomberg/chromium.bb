@@ -9,6 +9,6 @@ namespace net {
 BidirectionalStreamRequestInfo::BidirectionalStreamRequestInfo()
     : priority(LOW), end_stream_on_headers(false) {}
 
-BidirectionalStreamRequestInfo::~BidirectionalStreamRequestInfo() {}
+BidirectionalStreamRequestInfo::~BidirectionalStreamRequestInfo() = default;
 
 }  // namespace net

@@ -92,7 +92,7 @@ class MockQuicCryptoServerStream : public QuicCryptoServerStream {
             FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support,
             session,
             helper) {}
-  ~MockQuicCryptoServerStream() override {}
+  ~MockQuicCryptoServerStream() override = default;
 
   MOCK_METHOD1(SendServerConfigUpdate,
                void(const CachedNetworkParameters* cached_network_parameters));

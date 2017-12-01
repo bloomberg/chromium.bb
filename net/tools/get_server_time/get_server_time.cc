@@ -71,9 +71,9 @@ const int64_t kTimeResolutionMs = kTicksResolutionMs;
 // URLFetcher synchronous.
 class QuitDelegate : public net::URLFetcherDelegate {
  public:
-  QuitDelegate() {}
+  QuitDelegate() = default;
 
-  ~QuitDelegate() override {}
+  ~QuitDelegate() override = default;
 
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override {
@@ -101,7 +101,7 @@ class QuitDelegate : public net::URLFetcherDelegate {
 // to the logs.
 class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
  public:
-  PrintingLogObserver() {}
+  PrintingLogObserver() = default;
 
   ~PrintingLogObserver() override {
     // This is guaranteed to be safe as this program is single threaded.

@@ -34,7 +34,7 @@ ReversedEntry::ReversedEntry(std::vector<uint8_t> reversed_name,
                              const TransportSecurityStateEntry* entry)
     : reversed_name(reversed_name), entry(entry) {}
 
-ReversedEntry::~ReversedEntry() {}
+ReversedEntry::~ReversedEntry() = default;
 
 TrieWriter::TrieWriter(const HuffmanRepresentationTable& huffman_table,
                        const NameIDMap& expect_ct_report_uri_map,
@@ -47,7 +47,7 @@ TrieWriter::TrieWriter(const HuffmanRepresentationTable& huffman_table,
       pinsets_map_(pinsets_map),
       huffman_builder_(huffman_builder) {}
 
-TrieWriter::~TrieWriter() {}
+TrieWriter::~TrieWriter() = default;
 
 bool TrieWriter::WriteEntries(const TransportSecurityStateEntries& entries,
                               uint32_t* root_position) {

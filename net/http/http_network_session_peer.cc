@@ -17,7 +17,7 @@ namespace net {
 HttpNetworkSessionPeer::HttpNetworkSessionPeer(HttpNetworkSession* session)
     : session_(session) {}
 
-HttpNetworkSessionPeer::~HttpNetworkSessionPeer() {}
+HttpNetworkSessionPeer::~HttpNetworkSessionPeer() = default;
 
 void HttpNetworkSessionPeer::SetClientSocketPoolManager(
     std::unique_ptr<ClientSocketPoolManager> socket_pool_manager) {

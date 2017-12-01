@@ -184,8 +184,7 @@ void URLRequestFileJob::OnSeekComplete(int64_t result) {}
 void URLRequestFileJob::OnReadComplete(IOBuffer* buf, int result) {
 }
 
-URLRequestFileJob::~URLRequestFileJob() {
-}
+URLRequestFileJob::~URLRequestFileJob() = default;
 
 std::unique_ptr<SourceStream> URLRequestFileJob::SetUpSourceStream() {
   std::unique_ptr<SourceStream> source = URLRequestJob::SetUpSourceStream();

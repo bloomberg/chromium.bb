@@ -189,8 +189,7 @@ TestTransactionConsumer::TestTransactionConsumer(
   ++quit_counter_;
 }
 
-TestTransactionConsumer::~TestTransactionConsumer() {
-}
+TestTransactionConsumer::~TestTransactionConsumer() = default;
 
 void TestTransactionConsumer::Start(const HttpRequestInfo* request,
                                     const NetLogWithSource& net_log) {
@@ -558,7 +557,7 @@ MockNetworkLayer::MockNetworkLayer()
       clock_(nullptr) {
 }
 
-MockNetworkLayer::~MockNetworkLayer() {}
+MockNetworkLayer::~MockNetworkLayer() = default;
 
 void MockNetworkLayer::TransactionDoneReading() {
   CHECK(!done_reading_called_);

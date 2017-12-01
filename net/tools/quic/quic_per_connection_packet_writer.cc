@@ -10,7 +10,7 @@ QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
     QuicPacketWriter* shared_writer)
     : shared_writer_(shared_writer) {}
 
-QuicPerConnectionPacketWriter::~QuicPerConnectionPacketWriter() {}
+QuicPerConnectionPacketWriter::~QuicPerConnectionPacketWriter() = default;
 
 WriteResult QuicPerConnectionPacketWriter::WritePacket(
     const char* buffer,

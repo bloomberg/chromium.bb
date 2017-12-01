@@ -11,7 +11,7 @@ namespace transport_security_state {
 Pinset::Pinset(std::string name, std::string report_uri)
     : name_(name), report_uri_(report_uri) {}
 
-Pinset::~Pinset() {}
+Pinset::~Pinset() = default;
 
 void Pinset::AddStaticSPKIHash(const std::string& hash_name) {
   static_spki_hashes_.push_back(hash_name);

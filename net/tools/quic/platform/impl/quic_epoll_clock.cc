@@ -11,7 +11,7 @@ namespace net {
 QuicEpollClock::QuicEpollClock(EpollServer* epoll_server)
     : epoll_server_(epoll_server) {}
 
-QuicEpollClock::~QuicEpollClock() {}
+QuicEpollClock::~QuicEpollClock() = default;
 
 QuicTime QuicEpollClock::ApproximateNow() const {
   return QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(

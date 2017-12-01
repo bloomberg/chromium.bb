@@ -62,7 +62,7 @@ TransportSocketParams::TransportSocketParams(
     destination_.set_allow_cached_response(false);
 }
 
-TransportSocketParams::~TransportSocketParams() {}
+TransportSocketParams::~TransportSocketParams() = default;
 
 // TODO(eroman): The use of this constant needs to be re-evaluated. The time
 // needed for TCPClientSocketXXX::Connect() can be arbitrarily long, since
@@ -483,7 +483,7 @@ TransportClientSocketPool::TransportClientSocketPool(
   base_.EnableConnectBackupJobs();
 }
 
-TransportClientSocketPool::~TransportClientSocketPool() {}
+TransportClientSocketPool::~TransportClientSocketPool() = default;
 
 int TransportClientSocketPool::RequestSocket(const std::string& group_name,
                                              const void* params,

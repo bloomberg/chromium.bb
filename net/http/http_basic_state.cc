@@ -26,7 +26,7 @@ HttpBasicState::HttpBasicState(std::unique_ptr<ClientSocketHandle> connection,
       http_09_on_non_default_ports_enabled_(
           http_09_on_non_default_ports_enabled) {}
 
-HttpBasicState::~HttpBasicState() {}
+HttpBasicState::~HttpBasicState() = default;
 
 int HttpBasicState::Initialize(const HttpRequestInfo* request_info,
                                RequestPriority priority,

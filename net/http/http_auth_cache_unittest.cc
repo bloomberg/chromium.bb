@@ -53,7 +53,7 @@ class MockAuthHandler : public HttpAuthHandler {
 
 
  private:
-  ~MockAuthHandler() override {}
+  ~MockAuthHandler() override = default;
 };
 
 const char kRealm1[] = "Realm1";

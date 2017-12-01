@@ -94,7 +94,7 @@ class TestURLRequestHttpJob : public URLRequestHttpJob {
                           request->context()->http_user_agent_settings()),
         use_null_source_stream_(false) {}
 
-  ~TestURLRequestHttpJob() override {}
+  ~TestURLRequestHttpJob() override = default;
 
   // URLRequestJob implementation:
   std::unique_ptr<SourceStream> SetUpSourceStream() override {

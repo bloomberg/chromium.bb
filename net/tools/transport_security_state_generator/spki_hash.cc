@@ -15,9 +15,9 @@ namespace net {
 
 namespace transport_security_state {
 
-SPKIHash::SPKIHash() {}
+SPKIHash::SPKIHash() = default;
 
-SPKIHash::~SPKIHash() {}
+SPKIHash::~SPKIHash() = default;
 
 bool SPKIHash::FromString(base::StringPiece hash_string) {
   base::StringPiece base64_string;

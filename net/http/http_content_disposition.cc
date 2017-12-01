@@ -339,8 +339,7 @@ HttpContentDisposition::HttpContentDisposition(
   Parse(header, referrer_charset);
 }
 
-HttpContentDisposition::~HttpContentDisposition() {
-}
+HttpContentDisposition::~HttpContentDisposition() = default;
 
 std::string::const_iterator HttpContentDisposition::ConsumeDispositionType(
     std::string::const_iterator begin, std::string::const_iterator end) {

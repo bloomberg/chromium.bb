@@ -18,7 +18,7 @@ HttpServerResponseInfo::HttpServerResponseInfo(HttpStatusCode status_code)
 HttpServerResponseInfo::HttpServerResponseInfo(
     const HttpServerResponseInfo& other) = default;
 
-HttpServerResponseInfo::~HttpServerResponseInfo() {}
+HttpServerResponseInfo::~HttpServerResponseInfo() = default;
 
 // static
 HttpServerResponseInfo HttpServerResponseInfo::CreateFor404() {

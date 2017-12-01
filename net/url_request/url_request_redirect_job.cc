@@ -38,7 +38,7 @@ URLRequestRedirectJob::URLRequestRedirectJob(URLRequest* request,
   DCHECK(!redirect_reason_.empty());
 }
 
-URLRequestRedirectJob::~URLRequestRedirectJob() {}
+URLRequestRedirectJob::~URLRequestRedirectJob() = default;
 
 void URLRequestRedirectJob::GetResponseInfo(HttpResponseInfo* info) {
   // Should only be called after the URLRequest has been notified there's header

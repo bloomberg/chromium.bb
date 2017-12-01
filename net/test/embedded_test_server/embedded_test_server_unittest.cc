@@ -78,7 +78,7 @@ class TestConnectionListener
         did_read_from_socket_(false),
         task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
-  ~TestConnectionListener() override {}
+  ~TestConnectionListener() override = default;
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was accepted.
@@ -419,8 +419,8 @@ namespace {
 
 class CancelRequestDelegate : public TestDelegate {
  public:
-  CancelRequestDelegate() {}
-  ~CancelRequestDelegate() override {}
+  CancelRequestDelegate() = default;
+  ~CancelRequestDelegate() override = default;
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
     TestDelegate::OnResponseStarted(request, net_error);

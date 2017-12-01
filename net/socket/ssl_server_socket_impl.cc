@@ -691,7 +691,7 @@ SSLServerContextImpl::SSLServerContextImpl(
   }
 }
 
-SSLServerContextImpl::~SSLServerContextImpl() {}
+SSLServerContextImpl::~SSLServerContextImpl() = default;
 
 std::unique_ptr<SSLServerSocket> SSLServerContextImpl::CreateSSLServerSocket(
     std::unique_ptr<StreamSocket> socket) {

@@ -10,11 +10,9 @@
 
 namespace net {
 
-ServerSocket::ServerSocket() {
-}
+ServerSocket::ServerSocket() = default;
 
-ServerSocket::~ServerSocket() {
-}
+ServerSocket::~ServerSocket() = default;
 
 int ServerSocket::ListenWithAddressAndPort(const std::string& address_string,
                                            uint16_t port,

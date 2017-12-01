@@ -10,9 +10,9 @@
 
 namespace net {
 
-URLSecurityManagerWhitelist::URLSecurityManagerWhitelist() {}
+URLSecurityManagerWhitelist::URLSecurityManagerWhitelist() = default;
 
-URLSecurityManagerWhitelist::~URLSecurityManagerWhitelist() {}
+URLSecurityManagerWhitelist::~URLSecurityManagerWhitelist() = default;
 
 bool URLSecurityManagerWhitelist::CanUseDefaultCredentials(
     const GURL& auth_origin) const  {

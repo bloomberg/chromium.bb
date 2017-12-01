@@ -82,7 +82,7 @@ class MockServerErrorJob : public URLRequestJob {
  public:
   MockServerErrorJob(URLRequest* request, NetworkDelegate* network_delegate)
       : URLRequestJob(request, network_delegate) {}
-  ~MockServerErrorJob() override {}
+  ~MockServerErrorJob() override = default;
 
  protected:
   void GetResponseInfo(HttpResponseInfo* info) override {
@@ -99,8 +99,8 @@ class MockServerErrorJob : public URLRequestJob {
 
 class MockServerErrorJobInterceptor : public URLRequestInterceptor {
  public:
-  MockServerErrorJobInterceptor() {}
-  ~MockServerErrorJobInterceptor() override {}
+  MockServerErrorJobInterceptor() = default;
+  ~MockServerErrorJobInterceptor() override = default;
 
   URLRequestJob* MaybeInterceptRequest(
       URLRequest* request,

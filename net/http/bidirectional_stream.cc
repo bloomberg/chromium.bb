@@ -59,9 +59,9 @@ std::unique_ptr<base::Value> NetLogCallback(const GURL* url,
 
 }  // namespace
 
-BidirectionalStream::Delegate::Delegate() {}
+BidirectionalStream::Delegate::Delegate() = default;
 
-BidirectionalStream::Delegate::~Delegate() {}
+BidirectionalStream::Delegate::~Delegate() = default;
 
 BidirectionalStream::BidirectionalStream(
     std::unique_ptr<BidirectionalStreamRequestInfo> request_info,

@@ -20,8 +20,7 @@ FileNetLogObserver::FileNetLogObserver(FILE* destination)
   DCHECK(destination != NULL);
 }
 
-FileNetLogObserver::~FileNetLogObserver() {
-}
+FileNetLogObserver::~FileNetLogObserver() = default;
 
 void FileNetLogObserver::OnAddEntry(const net::NetLogEntry& entry) {
   // Only NetLogWithSources without a NetLog should have an invalid source.

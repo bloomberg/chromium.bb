@@ -91,7 +91,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   explicit MockWebSocketHandshakeStream(StreamType type) : type_(type) {}
 
-  ~MockWebSocketHandshakeStream() override {}
+  ~MockWebSocketHandshakeStream() override = default;
 
   StreamType type() const {
     return type_;
@@ -318,7 +318,7 @@ class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
 class WebSocketStreamCreateHelper
     : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  ~WebSocketStreamCreateHelper() override {}
+  ~WebSocketStreamCreateHelper() override = default;
 
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connection,
@@ -835,7 +835,7 @@ class MockQuicData {
  public:
   MockQuicData() : packet_number_(0) {}
 
-  ~MockQuicData() {}
+  ~MockQuicData() = default;
 
   void AddRead(std::unique_ptr<QuicEncryptedPacket> packet) {
     reads_.push_back(

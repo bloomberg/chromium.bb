@@ -49,14 +49,11 @@ namespace net {
 // auth-int |          | req-method:req-uri:MD5(req-entity-body)  |
 //=====================+==========================================+
 
-HttpAuthHandlerDigest::NonceGenerator::NonceGenerator() {
-}
+HttpAuthHandlerDigest::NonceGenerator::NonceGenerator() = default;
 
-HttpAuthHandlerDigest::NonceGenerator::~NonceGenerator() {
-}
+HttpAuthHandlerDigest::NonceGenerator::~NonceGenerator() = default;
 
-HttpAuthHandlerDigest::DynamicNonceGenerator::DynamicNonceGenerator() {
-}
+HttpAuthHandlerDigest::DynamicNonceGenerator::DynamicNonceGenerator() = default;
 
 std::string HttpAuthHandlerDigest::DynamicNonceGenerator::GenerateNonce()
     const {
@@ -82,8 +79,7 @@ HttpAuthHandlerDigest::Factory::Factory()
     : nonce_generator_(new DynamicNonceGenerator()) {
 }
 
-HttpAuthHandlerDigest::Factory::~Factory() {
-}
+HttpAuthHandlerDigest::Factory::~Factory() = default;
 
 void HttpAuthHandlerDigest::Factory::set_nonce_generator(
     const NonceGenerator* nonce_generator) {
@@ -169,8 +165,7 @@ HttpAuthHandlerDigest::HttpAuthHandlerDigest(
   DCHECK(nonce_generator_);
 }
 
-HttpAuthHandlerDigest::~HttpAuthHandlerDigest() {
-}
+HttpAuthHandlerDigest::~HttpAuthHandlerDigest() = default;
 
 // The digest challenge header looks like:
 //   WWW-Authenticate: Digest

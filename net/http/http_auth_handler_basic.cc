@@ -101,11 +101,9 @@ int HttpAuthHandlerBasic::GenerateAuthTokenImpl(
   return OK;
 }
 
-HttpAuthHandlerBasic::Factory::Factory() {
-}
+HttpAuthHandlerBasic::Factory::Factory() = default;
 
-HttpAuthHandlerBasic::Factory::~Factory() {
-}
+HttpAuthHandlerBasic::Factory::~Factory() = default;
 
 int HttpAuthHandlerBasic::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,

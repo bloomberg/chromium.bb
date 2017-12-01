@@ -46,7 +46,7 @@ class TokenBindingSSLConfigService : public SSLConfigService {
   void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
 
  private:
-  ~TokenBindingSSLConfigService() override {}
+  ~TokenBindingSSLConfigService() override = default;
 
   SSLConfig ssl_config_;
 };

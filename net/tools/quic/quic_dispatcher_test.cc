@@ -198,7 +198,7 @@ class QuicDispatcherTest : public QuicTest {
         .WillByDefault(Return(true));
   }
 
-  ~QuicDispatcherTest() override {}
+  ~QuicDispatcherTest() override = default;
 
   MockQuicConnection* connection1() {
     return reinterpret_cast<MockQuicConnection*>(session1_->connection());

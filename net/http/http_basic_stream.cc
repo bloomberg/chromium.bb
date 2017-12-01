@@ -21,7 +21,7 @@ HttpBasicStream::HttpBasicStream(std::unique_ptr<ClientSocketHandle> connection,
              using_proxy,
              http_09_on_non_default_ports_enabled) {}
 
-HttpBasicStream::~HttpBasicStream() {}
+HttpBasicStream::~HttpBasicStream() = default;
 
 int HttpBasicStream::InitializeStream(const HttpRequestInfo* request_info,
                                       RequestPriority priority,

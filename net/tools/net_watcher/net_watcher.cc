@@ -101,9 +101,9 @@ class NetWatcher :
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public net::ProxyConfigService::Observer {
  public:
-  NetWatcher() {}
+  NetWatcher() = default;
 
-  ~NetWatcher() override {}
+  ~NetWatcher() override = default;
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
   void OnIPAddressChanged() override { LOG(INFO) << "OnIPAddressChanged()"; }

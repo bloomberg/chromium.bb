@@ -49,7 +49,7 @@ class TransportClientSocketTest
         socket_factory_(ClientSocketFactory::GetDefaultFactory()),
         close_server_socket_on_next_send_(false) {}
 
-  virtual ~TransportClientSocketTest() {}
+  virtual ~TransportClientSocketTest() = default;
 
   // Testcase hooks
   void SetUp() override;

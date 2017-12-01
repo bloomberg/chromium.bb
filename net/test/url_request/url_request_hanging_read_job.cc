@@ -27,8 +27,8 @@ GURL GetMockUrl(const std::string& scheme, const std::string& hostname) {
 
 class MockJobInterceptor : public URLRequestInterceptor {
  public:
-  MockJobInterceptor() {}
-  ~MockJobInterceptor() override {}
+  MockJobInterceptor() = default;
+  ~MockJobInterceptor() override = default;
 
   // URLRequestInterceptor implementation
   URLRequestJob* MaybeInterceptRequest(
@@ -58,7 +58,7 @@ void URLRequestHangingReadJob::Start() {
                             weak_factory_.GetWeakPtr()));
 }
 
-URLRequestHangingReadJob::~URLRequestHangingReadJob() {}
+URLRequestHangingReadJob::~URLRequestHangingReadJob() = default;
 
 int URLRequestHangingReadJob::ReadRawData(IOBuffer* buf, int buf_size) {
   // Make read hang. It never completes.

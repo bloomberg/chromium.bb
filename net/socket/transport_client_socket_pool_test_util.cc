@@ -360,7 +360,7 @@ MockTransportClientSocketFactory::MockTransportClientSocketFactory(
       delay_(base::TimeDelta::FromMilliseconds(
           ClientSocketPool::kMaxConnectRetryIntervalMs)) {}
 
-MockTransportClientSocketFactory::~MockTransportClientSocketFactory() {}
+MockTransportClientSocketFactory::~MockTransportClientSocketFactory() = default;
 
 std::unique_ptr<DatagramClientSocket>
 MockTransportClientSocketFactory::CreateDatagramClientSocket(

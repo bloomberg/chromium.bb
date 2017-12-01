@@ -86,7 +86,7 @@ void QuicSimpleServer::Initialize() {
       crypto_config_options_));
 }
 
-QuicSimpleServer::~QuicSimpleServer() {}
+QuicSimpleServer::~QuicSimpleServer() = default;
 
 int QuicSimpleServer::Listen(const IPEndPoint& address) {
   std::unique_ptr<UDPServerSocket> socket(

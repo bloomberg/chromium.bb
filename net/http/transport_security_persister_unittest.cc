@@ -27,8 +27,7 @@ const char kReportUri[] = "http://www.example.test/report";
 
 class TransportSecurityPersisterTest : public testing::Test {
  public:
-  TransportSecurityPersisterTest() {
-  }
+  TransportSecurityPersisterTest() = default;
 
   ~TransportSecurityPersisterTest() override {
     EXPECT_TRUE(base::MessageLoopForIO::IsCurrent());

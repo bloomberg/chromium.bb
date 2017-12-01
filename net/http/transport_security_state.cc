@@ -1775,8 +1775,7 @@ TransportSecurityState::STSState::STSState()
     : upgrade_mode(MODE_DEFAULT), include_subdomains(false) {
 }
 
-TransportSecurityState::STSState::~STSState() {
-}
+TransportSecurityState::STSState::~STSState() = default;
 
 bool TransportSecurityState::STSState::ShouldUpgradeToSSL() const {
   return upgrade_mode == MODE_FORCE_HTTPS;
@@ -1788,20 +1787,18 @@ TransportSecurityState::STSStateIterator::STSStateIterator(
       end_(state.enabled_sts_hosts_.end()) {
 }
 
-TransportSecurityState::STSStateIterator::~STSStateIterator() {
-}
+TransportSecurityState::STSStateIterator::~STSStateIterator() = default;
 
 TransportSecurityState::PKPState::PKPState() : include_subdomains(false) {
 }
 
 TransportSecurityState::PKPState::PKPState(const PKPState& other) = default;
 
-TransportSecurityState::PKPState::~PKPState() {
-}
+TransportSecurityState::PKPState::~PKPState() = default;
 
 TransportSecurityState::ExpectCTState::ExpectCTState() : enforce(false) {}
 
-TransportSecurityState::ExpectCTState::~ExpectCTState() {}
+TransportSecurityState::ExpectCTState::~ExpectCTState() = default;
 
 TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
     const TransportSecurityState& state)
@@ -1810,12 +1807,13 @@ TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
   state.AssertCalledOnValidThread();
 }
 
-TransportSecurityState::ExpectCTStateIterator::~ExpectCTStateIterator() {}
+TransportSecurityState::ExpectCTStateIterator::~ExpectCTStateIterator() =
+    default;
 
 TransportSecurityState::ExpectStapleState::ExpectStapleState()
     : include_subdomains(false) {}
 
-TransportSecurityState::ExpectStapleState::~ExpectStapleState() {}
+TransportSecurityState::ExpectStapleState::~ExpectStapleState() = default;
 
 bool TransportSecurityState::PKPState::CheckPublicKeyPins(
     const HashValueVector& hashes,
@@ -1862,7 +1860,6 @@ TransportSecurityState::PKPStateIterator::PKPStateIterator(
       end_(state.enabled_pkp_hosts_.end()) {
 }
 
-TransportSecurityState::PKPStateIterator::~PKPStateIterator() {
-}
+TransportSecurityState::PKPStateIterator::~PKPStateIterator() = default;
 
 }  // namespace net

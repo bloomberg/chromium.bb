@@ -319,6 +319,6 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     ConnectionIdData&& other) = default;
 
-QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() {}
+QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() = default;
 
 }  // namespace net

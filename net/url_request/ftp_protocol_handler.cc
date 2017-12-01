@@ -29,8 +29,7 @@ std::unique_ptr<FtpProtocolHandler> FtpProtocolHandler::CreateForTesting(
       new FtpProtocolHandler(std::move(ftp_transaction_factory)));
 }
 
-FtpProtocolHandler::~FtpProtocolHandler() {
-}
+FtpProtocolHandler::~FtpProtocolHandler() = default;
 
 URLRequestJob* FtpProtocolHandler::MaybeCreateJob(
     URLRequest* request, NetworkDelegate* network_delegate) const {

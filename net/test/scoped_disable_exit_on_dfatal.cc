@@ -14,7 +14,7 @@ namespace test {
 ScopedDisableExitOnDFatal::ScopedDisableExitOnDFatal()
     : assert_handler_(base::Bind(LogAssertHandler)) {}
 
-ScopedDisableExitOnDFatal::~ScopedDisableExitOnDFatal() {}
+ScopedDisableExitOnDFatal::~ScopedDisableExitOnDFatal() = default;
 
 // static
 void ScopedDisableExitOnDFatal::LogAssertHandler(

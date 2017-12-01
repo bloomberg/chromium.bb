@@ -113,8 +113,8 @@ void MakeTestSCTAndStatus(ct::SignedCertificateTimestamp::Origin origin,
 class MockCertificateReportSender
     : public TransportSecurityState::ReportSenderInterface {
  public:
-  MockCertificateReportSender() {}
-  ~MockCertificateReportSender() override {}
+  MockCertificateReportSender() = default;
+  ~MockCertificateReportSender() override = default;
 
   void Send(const GURL& report_uri,
             base::StringPiece content_type,
@@ -148,7 +148,7 @@ class MockFailingCertificateReportSender
     : public TransportSecurityState::ReportSenderInterface {
  public:
   MockFailingCertificateReportSender() : net_error_(ERR_CONNECTION_FAILED) {}
-  ~MockFailingCertificateReportSender() override {}
+  ~MockFailingCertificateReportSender() override = default;
 
   int net_error() { return net_error_; }
 
@@ -172,7 +172,7 @@ class MockFailingCertificateReportSender
 class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  public:
   MockExpectCTReporter() : num_failures_(0) {}
-  ~MockExpectCTReporter() override {}
+  ~MockExpectCTReporter() override = default;
 
   void OnExpectCTFailed(const HostPortPair& host_port_pair,
                         const GURL& report_uri,

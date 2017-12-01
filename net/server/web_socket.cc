@@ -54,7 +54,7 @@ std::string ValidResponseString(
 WebSocket::WebSocket(HttpServer* server, HttpConnection* connection)
     : server_(server), connection_(connection), closed_(false) {}
 
-WebSocket::~WebSocket() {}
+WebSocket::~WebSocket() = default;
 
 void WebSocket::Accept(const HttpServerRequestInfo& request) {
   std::string version = request.GetHeaderValue("sec-websocket-version");

@@ -151,9 +151,8 @@ bool URLRequestJobManager::SupportsScheme(const std::string& scheme) {
   return false;
 }
 
-URLRequestJobManager::URLRequestJobManager() {
-}
+URLRequestJobManager::URLRequestJobManager() = default;
 
-URLRequestJobManager::~URLRequestJobManager() {}
+URLRequestJobManager::~URLRequestJobManager() = default;
 
 }  // namespace net

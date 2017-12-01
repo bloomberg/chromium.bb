@@ -24,9 +24,9 @@ void URLRequestContextGetter::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-URLRequestContextGetter::URLRequestContextGetter() {}
+URLRequestContextGetter::URLRequestContextGetter() = default;
 
-URLRequestContextGetter::~URLRequestContextGetter() {}
+URLRequestContextGetter::~URLRequestContextGetter() = default;
 
 void URLRequestContextGetter::OnDestruct() const {
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner =
@@ -67,7 +67,7 @@ TrivialURLRequestContextGetter::TrivialURLRequestContextGetter(
     : context_(context), main_task_runner_(main_task_runner) {
 }
 
-TrivialURLRequestContextGetter::~TrivialURLRequestContextGetter() {}
+TrivialURLRequestContextGetter::~TrivialURLRequestContextGetter() = default;
 
 URLRequestContext* TrivialURLRequestContextGetter::GetURLRequestContext() {
   return context_;

@@ -18,7 +18,7 @@ ProxyConnectRedirectHttpStream::ProxyConnectRedirectHttpStream(
     load_timing_info_ = *load_timing_info;
 }
 
-ProxyConnectRedirectHttpStream::~ProxyConnectRedirectHttpStream() {}
+ProxyConnectRedirectHttpStream::~ProxyConnectRedirectHttpStream() = default;
 
 int ProxyConnectRedirectHttpStream::InitializeStream(
     const HttpRequestInfo* request_info,

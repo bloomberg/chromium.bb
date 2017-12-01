@@ -41,13 +41,13 @@ QuicHttpResponseCache::ServerPushInfo::ServerPushInfo(
 QuicHttpResponseCache::Response::Response()
     : response_type_(REGULAR_RESPONSE) {}
 
-QuicHttpResponseCache::Response::~Response() {}
+QuicHttpResponseCache::Response::~Response() = default;
 
 QuicHttpResponseCache::ResourceFile::ResourceFile(
     const base::FilePath& file_name)
     : file_name_(file_name), file_name_string_(file_name.AsUTF8Unsafe()) {}
 
-QuicHttpResponseCache::ResourceFile::~ResourceFile() {}
+QuicHttpResponseCache::ResourceFile::~ResourceFile() = default;
 
 void QuicHttpResponseCache::ResourceFile::Read() {
   base::ReadFileToString(FilePath(file_name_), &file_contents_);
@@ -227,7 +227,7 @@ void QuicHttpResponseCache::AddSpecialResponse(
                   SpdyHeaderBlock());
 }
 
-QuicHttpResponseCache::QuicHttpResponseCache() {}
+QuicHttpResponseCache::QuicHttpResponseCache() = default;
 
 void QuicHttpResponseCache::InitializeFromDirectory(
     const string& cache_directory) {

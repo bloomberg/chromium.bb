@@ -114,11 +114,11 @@ void TestLoadTimingInfoNotConnected(const ClientSocketHandle& handle) {
 
 class TestSocketParams : public base::RefCounted<TestSocketParams> {
  public:
-  explicit TestSocketParams() {}
+  explicit TestSocketParams() = default;
 
  private:
   friend class base::RefCounted<TestSocketParams>;
-  ~TestSocketParams() {}
+  ~TestSocketParams() = default;
 };
 typedef ClientSocketPoolBase<TestSocketParams> TestClientSocketPoolBase;
 
@@ -451,7 +451,7 @@ class TestConnectJobFactory
         net_log_(net_log) {
   }
 
-  ~TestConnectJobFactory() override {}
+  ~TestConnectJobFactory() override = default;
 
   void set_job_type(TestConnectJob::JobType job_type) { job_type_ = job_type; }
 
@@ -512,7 +512,7 @@ class TestClientSocketPool : public ClientSocketPool {
               used_idle_socket_timeout,
               connect_job_factory) {}
 
-  ~TestClientSocketPool() override {}
+  ~TestClientSocketPool() override = default;
 
   int RequestSocket(const std::string& group_name,
                     const void* params,
@@ -656,7 +656,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
  public:
   TestConnectJobDelegate()
       : have_result_(false), waiting_for_result_(false), result_(OK) {}
-  ~TestConnectJobDelegate() override {}
+  ~TestConnectJobDelegate() override = default;
 
   void OnConnectJobComplete(int result, ConnectJob* job) override {
     result_ = result;
@@ -2560,7 +2560,7 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  ~TestReleasingSocketRequest() override {}
+  ~TestReleasingSocketRequest() override = default;
 
   ClientSocketHandle* handle() { return &handle_; }
 
@@ -2681,7 +2681,7 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
                              base::Unretained(this))) {
   }
 
-  ~ConnectWithinCallback() override {}
+  ~ConnectWithinCallback() override = default;
 
   int WaitForNestedResult() {
     return nested_callback_.WaitForResult();

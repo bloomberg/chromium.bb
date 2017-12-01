@@ -91,7 +91,7 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
 class FailingHostResolver : public MockHostResolverBase {
  public:
   FailingHostResolver() : MockHostResolverBase(false /*use_caching*/) {}
-  ~FailingHostResolver() override {}
+  ~FailingHostResolver() override = default;
 
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
@@ -108,7 +108,7 @@ class FailingHostResolver : public MockHostResolverBase {
 class HangingResolver : public MockHostResolverBase {
  public:
   HangingResolver() : MockHostResolverBase(false /*use_caching*/) {}
-  ~HangingResolver() override {}
+  ~HangingResolver() override = default;
 
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
@@ -123,8 +123,8 @@ class HangingResolver : public MockHostResolverBase {
 // A mock HttpServerProperties that always returns false for IsInitialized().
 class MockHttpServerProperties : public HttpServerPropertiesImpl {
  public:
-  MockHttpServerProperties() {}
-  ~MockHttpServerProperties() override {}
+  MockHttpServerProperties() = default;
+  ~MockHttpServerProperties() override = default;
   bool IsInitialized() const override { return false; }
 };
 

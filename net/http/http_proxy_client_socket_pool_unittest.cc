@@ -92,7 +92,7 @@ class HttpProxyClientSocketPoolTest
     session_ = CreateNetworkSession();
   }
 
-  virtual ~HttpProxyClientSocketPoolTest() {}
+  virtual ~HttpProxyClientSocketPoolTest() = default;
 
   // Initializes the field trial paramters for the field trial that determines
   // connection timeout based on the network quality.

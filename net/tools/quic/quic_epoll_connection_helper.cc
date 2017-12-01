@@ -19,7 +19,7 @@ QuicEpollConnectionHelper::QuicEpollConnectionHelper(EpollServer* epoll_server,
       random_generator_(QuicRandom::GetInstance()),
       allocator_type_(type) {}
 
-QuicEpollConnectionHelper::~QuicEpollConnectionHelper() {}
+QuicEpollConnectionHelper::~QuicEpollConnectionHelper() = default;
 
 const QuicClock* QuicEpollConnectionHelper::GetClock() const {
   return &clock_;

@@ -6,12 +6,12 @@
 
 namespace net {
 
-BidirectionalStreamImpl::Delegate::Delegate() {}
+BidirectionalStreamImpl::Delegate::Delegate() = default;
 
-BidirectionalStreamImpl::Delegate::~Delegate() {}
+BidirectionalStreamImpl::Delegate::~Delegate() = default;
 
-BidirectionalStreamImpl::BidirectionalStreamImpl() {}
+BidirectionalStreamImpl::BidirectionalStreamImpl() = default;
 
-BidirectionalStreamImpl::~BidirectionalStreamImpl() {}
+BidirectionalStreamImpl::~BidirectionalStreamImpl() = default;
 
 }  // namespace net

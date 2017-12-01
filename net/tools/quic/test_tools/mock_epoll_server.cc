@@ -9,7 +9,7 @@ namespace test {
 
 FakeTimeEpollServer::FakeTimeEpollServer() : now_in_usec_(0) {}
 
-FakeTimeEpollServer::~FakeTimeEpollServer() {}
+FakeTimeEpollServer::~FakeTimeEpollServer() = default;
 
 int64_t FakeTimeEpollServer::NowInUsec() const {
   return now_in_usec_;
@@ -17,7 +17,7 @@ int64_t FakeTimeEpollServer::NowInUsec() const {
 
 MockEpollServer::MockEpollServer() : until_in_usec_(-1) {}
 
-MockEpollServer::~MockEpollServer() {}
+MockEpollServer::~MockEpollServer() = default;
 
 int MockEpollServer::epoll_wait_impl(int epfd,
                                      struct epoll_event* events,

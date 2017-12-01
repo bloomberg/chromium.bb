@@ -53,7 +53,7 @@ ResolverThread::ResolverThread()
       rv_(ERR_UNEXPECTED),
       weak_factory_(this) {}
 
-ResolverThread::~ResolverThread() {}
+ResolverThread::~ResolverThread() = default;
 
 void ResolverThread::Run() {
   base::MessageLoopForIO loop;

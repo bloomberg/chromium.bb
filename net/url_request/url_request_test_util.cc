@@ -162,7 +162,7 @@ TestURLRequestContextGetter::TestURLRequestContextGetter(
   DCHECK(network_task_runner_.get());
 }
 
-TestURLRequestContextGetter::~TestURLRequestContextGetter() {}
+TestURLRequestContextGetter::~TestURLRequestContextGetter() = default;
 
 TestURLRequestContext* TestURLRequestContextGetter::GetURLRequestContext() {
   if (!context_.get())
@@ -197,7 +197,7 @@ TestDelegate::TestDelegate()
       request_status_(ERR_IO_PENDING),
       buf_(new IOBuffer(kBufferSize)) {}
 
-TestDelegate::~TestDelegate() {}
+TestDelegate::~TestDelegate() = default;
 
 void TestDelegate::ClearFullRequestHeaders() {
   full_request_headers_.Clear();
@@ -667,9 +667,9 @@ bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
   return cancel_request_with_policy_violating_referrer_;
 }
 
-TestJobInterceptor::TestJobInterceptor() {}
+TestJobInterceptor::TestJobInterceptor() = default;
 
-TestJobInterceptor::~TestJobInterceptor() {}
+TestJobInterceptor::~TestJobInterceptor() = default;
 
 URLRequestJob* TestJobInterceptor::MaybeCreateJob(
     URLRequest* request,

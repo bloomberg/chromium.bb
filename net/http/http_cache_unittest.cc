@@ -341,7 +341,7 @@ class FastTransactionServer {
   FastTransactionServer() {
     no_store = false;
   }
-  ~FastTransactionServer() {}
+  ~FastTransactionServer() = default;
 
   void set_no_store(bool value) { no_store = value; }
 
@@ -639,7 +639,7 @@ struct Context {
 class FakeWebSocketHandshakeStreamCreateHelper
     : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  ~FakeWebSocketHandshakeStreamCreateHelper() override {}
+  ~FakeWebSocketHandshakeStreamCreateHelper() override = default;
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connect,
       bool using_proxy) override {

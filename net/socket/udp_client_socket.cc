@@ -15,8 +15,7 @@ UDPClientSocket::UDPClientSocket(DatagramSocket::BindType bind_type,
     : socket_(bind_type, rand_int_cb, net_log, source),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle) {}
 
-UDPClientSocket::~UDPClientSocket() {
-}
+UDPClientSocket::~UDPClientSocket() = default;
 
 int UDPClientSocket::Connect(const IPEndPoint& address) {
   int rv = socket_.Open(address.GetFamily());

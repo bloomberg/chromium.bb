@@ -77,7 +77,7 @@ TEST(WebSocketEncoderHandshakeTest, AllExtensionsAreUnknownOrMalformed) {
 
 class WebSocketEncoderTest : public testing::Test {
  public:
-  WebSocketEncoderTest() {}
+  WebSocketEncoderTest() = default;
 
   void SetUp() override {
     std::string response_extensions;

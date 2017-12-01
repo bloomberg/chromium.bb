@@ -44,8 +44,8 @@ namespace net {
 
 // URLFetcherCore::Registry ---------------------------------------------------
 
-URLFetcherCore::Registry::Registry() {}
-URLFetcherCore::Registry::~Registry() {}
+URLFetcherCore::Registry::Registry() = default;
+URLFetcherCore::Registry::~Registry() = default;
 
 void URLFetcherCore::Registry::AddURLFetcherCore(URLFetcherCore* core) {
   DCHECK(!base::ContainsKey(fetchers_, core));

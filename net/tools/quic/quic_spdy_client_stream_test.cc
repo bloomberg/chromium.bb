@@ -39,7 +39,7 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
             &crypto_config_,
             push_promise_index),
         crypto_config_(crypto_test_utils::ProofVerifierForTesting()) {}
-  ~MockQuicSpdyClientSession() override {}
+  ~MockQuicSpdyClientSession() override = default;
 
   MOCK_METHOD1(CloseStream, void(QuicStreamId stream_id));
 

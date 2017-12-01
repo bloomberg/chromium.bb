@@ -8,8 +8,7 @@
 
 namespace net {
 
-DataProtocolHandler::DataProtocolHandler() {
-}
+DataProtocolHandler::DataProtocolHandler() = default;
 
 URLRequestJob* DataProtocolHandler::MaybeCreateJob(
     URLRequest* request, NetworkDelegate* network_delegate) const {

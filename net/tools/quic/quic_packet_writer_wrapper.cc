@@ -8,9 +8,9 @@
 
 namespace net {
 
-QuicPacketWriterWrapper::QuicPacketWriterWrapper() {}
+QuicPacketWriterWrapper::QuicPacketWriterWrapper() = default;
 
-QuicPacketWriterWrapper::~QuicPacketWriterWrapper() {}
+QuicPacketWriterWrapper::~QuicPacketWriterWrapper() = default;
 
 WriteResult QuicPacketWriterWrapper::WritePacket(
     const char* buffer,

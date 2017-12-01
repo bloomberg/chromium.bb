@@ -488,7 +488,7 @@ namespace {
 // Version of URLFetcherTest that tests bad HTTPS requests.
 class URLFetcherBadHTTPSTest : public URLFetcherTest {
  public:
-  URLFetcherBadHTTPSTest() {}
+  URLFetcherBadHTTPSTest() = default;
 
   // URLFetcherTest:
   void SetUpServer() override {
@@ -933,7 +933,7 @@ class CheckUploadProgressDelegate : public WaitingURLFetcherDelegate {
  public:
   CheckUploadProgressDelegate()
       : chunk_(1 << 16, 'a'), num_chunks_appended_(0), last_seen_progress_(0) {}
-  ~CheckUploadProgressDelegate() override {}
+  ~CheckUploadProgressDelegate() override = default;
 
   void OnURLFetchUploadProgress(const URLFetcher* source,
                                 int64_t current,
@@ -1000,7 +1000,7 @@ class CheckDownloadProgressDelegate : public WaitingURLFetcherDelegate {
  public:
   CheckDownloadProgressDelegate(int64_t file_size)
       : file_size_(file_size), last_seen_progress_(0) {}
-  ~CheckDownloadProgressDelegate() override {}
+  ~CheckDownloadProgressDelegate() override = default;
 
   void OnURLFetchDownloadProgress(const URLFetcher* source,
                                   int64_t current,
@@ -1050,8 +1050,8 @@ TEST_F(URLFetcherTest, DownloadProgress) {
 
 class CancelOnUploadProgressDelegate : public WaitingURLFetcherDelegate {
  public:
-  CancelOnUploadProgressDelegate() {}
-  ~CancelOnUploadProgressDelegate() override {}
+  CancelOnUploadProgressDelegate() = default;
+  ~CancelOnUploadProgressDelegate() override = default;
 
   void OnURLFetchUploadProgress(const URLFetcher* source,
                                 int64_t current,
@@ -1087,8 +1087,8 @@ TEST_F(URLFetcherTest, CancelInUploadProgressCallback) {
 
 class CancelOnDownloadProgressDelegate : public WaitingURLFetcherDelegate {
  public:
-  CancelOnDownloadProgressDelegate() {}
-  ~CancelOnDownloadProgressDelegate() override {}
+  CancelOnDownloadProgressDelegate() = default;
+  ~CancelOnDownloadProgressDelegate() override = default;
 
   void OnURLFetchDownloadProgress(const URLFetcher* source,
                                   int64_t current,
@@ -1402,7 +1402,7 @@ class ReuseFetcherDelegate : public WaitingURLFetcherDelegate {
       : first_request_complete_(false),
         second_request_context_getter_(second_request_context_getter) {}
 
-  ~ReuseFetcherDelegate() override {}
+  ~ReuseFetcherDelegate() override = default;
 
   void OnURLFetchComplete(const URLFetcher* source) override {
     EXPECT_EQ(fetcher(), source);

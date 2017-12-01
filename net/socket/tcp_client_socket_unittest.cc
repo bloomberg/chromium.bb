@@ -115,7 +115,7 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
 class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
  public:
   TestSocketPerformanceWatcher() : connection_changed_count_(0u) {}
-  ~TestSocketPerformanceWatcher() override {}
+  ~TestSocketPerformanceWatcher() override = default;
 
   bool ShouldNotifyUpdatedRTT() const override { return true; }
 

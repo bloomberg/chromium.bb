@@ -91,7 +91,7 @@ struct ServerPref {
 ////////////////////////////////////////////////////////////////////////////////
 //  HttpServerPropertiesManager
 
-HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() {}
+HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() = default;
 
 HttpServerPropertiesManager::HttpServerPropertiesManager(
     std::unique_ptr<PrefDelegate> pref_delegate,

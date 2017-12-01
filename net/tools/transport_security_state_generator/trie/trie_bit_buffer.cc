@@ -11,9 +11,9 @@ namespace net {
 
 namespace transport_security_state {
 
-TrieBitBuffer::TrieBitBuffer() {}
+TrieBitBuffer::TrieBitBuffer() = default;
 
-TrieBitBuffer::~TrieBitBuffer() {}
+TrieBitBuffer::~TrieBitBuffer() = default;
 
 void TrieBitBuffer::WriteBit(uint8_t bit) {
   current_byte_ |= bit << (7 - used_);

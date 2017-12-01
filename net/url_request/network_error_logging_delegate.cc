@@ -6,22 +6,15 @@
 
 namespace net {
 
-NetworkErrorLoggingDelegate::ErrorDetails::ErrorDetails() {}
+NetworkErrorLoggingDelegate::ErrorDetails::ErrorDetails() = default;
 
 NetworkErrorLoggingDelegate::ErrorDetails::ErrorDetails(
-    const ErrorDetails& other)
-    : uri(other.uri),
-      referrer(other.referrer),
-      server_ip(other.server_ip),
-      protocol(other.protocol),
-      status_code(other.status_code),
-      elapsed_time(other.elapsed_time),
-      type(other.type) {}
+    const ErrorDetails& other) = default;
 
-NetworkErrorLoggingDelegate::ErrorDetails::~ErrorDetails() {}
+NetworkErrorLoggingDelegate::ErrorDetails::~ErrorDetails() = default;
 
 const char NetworkErrorLoggingDelegate::kHeaderName[] = "NEL";
 
-NetworkErrorLoggingDelegate::~NetworkErrorLoggingDelegate() {}
+NetworkErrorLoggingDelegate::~NetworkErrorLoggingDelegate() = default;
 
 }  // namespace net

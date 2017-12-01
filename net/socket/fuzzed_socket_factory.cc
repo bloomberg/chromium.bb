@@ -26,8 +26,8 @@ namespace {
 // SSLClientSocket implementation that always fails to connect.
 class FailingSSLClientSocket : public SSLClientSocket {
  public:
-  FailingSSLClientSocket() {}
-  ~FailingSSLClientSocket() override {}
+  FailingSSLClientSocket() = default;
+  ~FailingSSLClientSocket() override = default;
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -130,7 +130,7 @@ FuzzedSocketFactory::FuzzedSocketFactory(
     base::FuzzedDataProvider* data_provider)
     : data_provider_(data_provider), fuzz_connect_result_(true) {}
 
-FuzzedSocketFactory::~FuzzedSocketFactory() {}
+FuzzedSocketFactory::~FuzzedSocketFactory() = default;
 
 std::unique_ptr<DatagramClientSocket>
 FuzzedSocketFactory::CreateDatagramClientSocket(

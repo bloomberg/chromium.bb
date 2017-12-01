@@ -9,7 +9,7 @@ namespace net {
 QuicSimpleServerSessionHelper::QuicSimpleServerSessionHelper(QuicRandom* random)
     : random_(random) {}
 
-QuicSimpleServerSessionHelper::~QuicSimpleServerSessionHelper() {}
+QuicSimpleServerSessionHelper::~QuicSimpleServerSessionHelper() = default;
 
 QuicConnectionId QuicSimpleServerSessionHelper::GenerateConnectionIdForReject(
     QuicConnectionId /*connection_id*/) const {

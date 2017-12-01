@@ -11,9 +11,9 @@
 using ::testing::_;
 
 namespace net {
-MockHttpStreamRequestDelegate::MockHttpStreamRequestDelegate() {}
+MockHttpStreamRequestDelegate::MockHttpStreamRequestDelegate() = default;
 
-MockHttpStreamRequestDelegate::~MockHttpStreamRequestDelegate() {}
+MockHttpStreamRequestDelegate::~MockHttpStreamRequestDelegate() = default;
 
 MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,
@@ -49,14 +49,14 @@ MockHttpStreamFactoryImplJob::MockHttpStreamFactoryImplJob(
   DCHECK(!is_waiting());
 }
 
-MockHttpStreamFactoryImplJob::~MockHttpStreamFactoryImplJob() {}
+MockHttpStreamFactoryImplJob::~MockHttpStreamFactoryImplJob() = default;
 
 TestJobFactory::TestJobFactory()
     : main_job_(nullptr),
       alternative_job_(nullptr),
       override_main_job_url_(false) {}
 
-TestJobFactory::~TestJobFactory() {}
+TestJobFactory::~TestJobFactory() = default;
 
 std::unique_ptr<HttpStreamFactoryImpl::Job> TestJobFactory::CreateMainJob(
     HttpStreamFactoryImpl::Job::Delegate* delegate,

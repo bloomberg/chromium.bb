@@ -44,8 +44,8 @@ namespace test {
 
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
-  FramerVisitorCapturingPublicReset() {}
-  ~FramerVisitorCapturingPublicReset() override {}
+  FramerVisitorCapturingPublicReset() = default;
+  ~FramerVisitorCapturingPublicReset() override = default;
 
   void OnPublicResetPacket(const QuicPublicResetPacket& public_reset) override {
     public_reset_packet_ = public_reset;
@@ -77,7 +77,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
         client_address_(net::test::TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
 
-  ~QuicTimeWaitListManagerTest() override {}
+  ~QuicTimeWaitListManagerTest() override = default;
 
   void SetUp() override {
     EXPECT_CALL(writer_, IsWriteBlocked())

@@ -50,8 +50,7 @@ HttpAuthHandlerMock::HttpAuthHandlerMock()
       allows_explicit_credentials_(true),
       weak_factory_(this) {}
 
-HttpAuthHandlerMock::~HttpAuthHandlerMock() {
-}
+HttpAuthHandlerMock::~HttpAuthHandlerMock() = default;
 
 void HttpAuthHandlerMock::SetResolveExpectation(Resolve resolve) {
   EXPECT_EQ(RESOLVE_INIT, resolve_);
@@ -203,8 +202,7 @@ HttpAuthHandlerMock::Factory::Factory()
   // TODO(cbentzel): Default do_init_from_challenge_ to true.
 }
 
-HttpAuthHandlerMock::Factory::~Factory() {
-}
+HttpAuthHandlerMock::Factory::~Factory() = default;
 
 void HttpAuthHandlerMock::Factory::AddMockHandler(
     HttpAuthHandler* handler, HttpAuth::Target target) {

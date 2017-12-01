@@ -229,13 +229,11 @@ MockGSSAPILibrary::SecurityContextQuery::SecurityContextQuery(
 MockGSSAPILibrary::SecurityContextQuery::SecurityContextQuery(
     const SecurityContextQuery& other) = default;
 
-MockGSSAPILibrary::SecurityContextQuery::~SecurityContextQuery() {}
+MockGSSAPILibrary::SecurityContextQuery::~SecurityContextQuery() = default;
 
-MockGSSAPILibrary::MockGSSAPILibrary() {
-}
+MockGSSAPILibrary::MockGSSAPILibrary() = default;
 
-MockGSSAPILibrary::~MockGSSAPILibrary() {
-}
+MockGSSAPILibrary::~MockGSSAPILibrary() = default;
 
 void MockGSSAPILibrary::ExpectSecurityContext(
     const std::string& expected_package,

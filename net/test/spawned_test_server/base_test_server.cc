@@ -164,12 +164,12 @@ std::string OCSPDateToString(
 
 }  // namespace
 
-BaseTestServer::SSLOptions::SSLOptions() {}
+BaseTestServer::SSLOptions::SSLOptions() = default;
 BaseTestServer::SSLOptions::SSLOptions(ServerCertificate cert)
     : server_certificate(cert) {}
 BaseTestServer::SSLOptions::SSLOptions(const SSLOptions& other) = default;
 
-BaseTestServer::SSLOptions::~SSLOptions() {}
+BaseTestServer::SSLOptions::~SSLOptions() = default;
 
 base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
   switch (server_certificate) {
@@ -257,7 +257,7 @@ BaseTestServer::BaseTestServer(Type type, const SSLOptions& ssl_options)
   Init(GetHostname(type, ssl_options));
 }
 
-BaseTestServer::~BaseTestServer() {}
+BaseTestServer::~BaseTestServer() = default;
 
 bool BaseTestServer::Start() {
   return StartInBackground() && BlockUntilStarted();

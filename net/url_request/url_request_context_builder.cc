@@ -71,8 +71,8 @@ namespace {
 
 class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
-  BasicNetworkDelegate() {}
-  ~BasicNetworkDelegate() override {}
+  BasicNetworkDelegate() = default;
+  ~BasicNetworkDelegate() override = default;
 
  private:
   int OnBeforeURLRequest(URLRequest* request,
@@ -186,7 +186,7 @@ class ContainerURLRequestContext final : public URLRequestContext {
 URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
     : type(IN_MEMORY),
       max_size(0) {}
-URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() {}
+URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 
 URLRequestContextBuilder::URLRequestContextBuilder()
     : enable_brotli_(false),
@@ -215,7 +215,7 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 #endif  // !BUILDFLAG(ENABLE_REPORTING)
 }
 
-URLRequestContextBuilder::~URLRequestContextBuilder() {}
+URLRequestContextBuilder::~URLRequestContextBuilder() = default;
 
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
     const URLRequestContext* request_context,

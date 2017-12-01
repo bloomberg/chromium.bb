@@ -43,8 +43,8 @@ void ClientSocketPool::set_used_idle_socket_timeout(base::TimeDelta timeout) {
   g_used_idle_socket_timeout_s = timeout.InSeconds();
 }
 
-ClientSocketPool::ClientSocketPool() {}
+ClientSocketPool::ClientSocketPool() = default;
 
-ClientSocketPool::~ClientSocketPool() {}
+ClientSocketPool::~ClientSocketPool() = default;
 
 }  // namespace net

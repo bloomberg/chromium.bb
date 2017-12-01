@@ -97,7 +97,7 @@ class WrappedStreamSocket : public StreamSocket {
  public:
   explicit WrappedStreamSocket(std::unique_ptr<StreamSocket> transport)
       : transport_(std::move(transport)) {}
-  ~WrappedStreamSocket() override {}
+  ~WrappedStreamSocket() override = default;
 
   // StreamSocket implementation:
   int Connect(const CompletionCallback& callback) override {
@@ -180,7 +180,7 @@ class WrappedStreamSocket : public StreamSocket {
 class ReadBufferingStreamSocket : public WrappedStreamSocket {
  public:
   explicit ReadBufferingStreamSocket(std::unique_ptr<StreamSocket> transport);
-  ~ReadBufferingStreamSocket() override {}
+  ~ReadBufferingStreamSocket() override = default;
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -338,7 +338,7 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
  public:
   explicit SynchronousErrorStreamSocket(std::unique_ptr<StreamSocket> transport)
       : WrappedStreamSocket(std::move(transport)) {}
-  ~SynchronousErrorStreamSocket() override {}
+  ~SynchronousErrorStreamSocket() override = default;
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -414,7 +414,7 @@ class FakeBlockingStreamSocket : public WrappedStreamSocket {
  public:
   explicit FakeBlockingStreamSocket(std::unique_ptr<StreamSocket> transport)
       : WrappedStreamSocket(std::move(transport)) {}
-  ~FakeBlockingStreamSocket() override {}
+  ~FakeBlockingStreamSocket() override = default;
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -702,7 +702,7 @@ class CountingStreamSocket : public WrappedStreamSocket {
       : WrappedStreamSocket(std::move(transport)),
         read_count_(0),
         write_count_(0) {}
-  ~CountingStreamSocket() override {}
+  ~CountingStreamSocket() override = default;
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -734,7 +734,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
       : socket_(socket),
         callback_(base::Bind(&DeleteSocketCallback::OnComplete,
                              base::Unretained(this))) {}
-  ~DeleteSocketCallback() override {}
+  ~DeleteSocketCallback() override = default;
 
   const CompletionCallback& callback() const { return callback_; }
 
@@ -811,7 +811,7 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
 class MockExpectCTReporter : public TransportSecurityState::ExpectCTReporter {
  public:
   MockExpectCTReporter() : num_failures_(0) {}
-  ~MockExpectCTReporter() override {}
+  ~MockExpectCTReporter() override = default;
 
   void OnExpectCTFailed(const HostPortPair& host_port_pair,
                         const GURL& report_uri,

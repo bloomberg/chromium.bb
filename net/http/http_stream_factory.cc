@@ -22,7 +22,7 @@
 
 namespace net {
 
-HttpStreamFactory::~HttpStreamFactory() {}
+HttpStreamFactory::~HttpStreamFactory() = default;
 
 void HttpStreamFactory::ProcessAlternativeServices(
     HttpNetworkSession* session,
@@ -84,7 +84,7 @@ void HttpStreamFactory::ProcessAlternativeServices(
       RewriteHost(http_server), alternative_service_info_vector);
 }
 
-HttpStreamFactory::HttpStreamFactory() {}
+HttpStreamFactory::HttpStreamFactory() = default;
 
 url::SchemeHostPort HttpStreamFactory::RewriteHost(
     const url::SchemeHostPort& server) {

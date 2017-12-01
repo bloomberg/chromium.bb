@@ -58,7 +58,7 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
     DCHECK(job_);
   }
 
-  ~URLRequestJobSourceStream() override {}
+  ~URLRequestJobSourceStream() override = default;
 
   // SourceStream implementation:
   int Read(IOBuffer* dest_buffer,

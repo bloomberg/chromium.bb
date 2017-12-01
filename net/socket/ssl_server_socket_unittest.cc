@@ -222,7 +222,7 @@ class FakeSocket : public StreamSocket {
              FakeDataChannel* outgoing_channel)
       : incoming_(incoming_channel), outgoing_(outgoing_channel) {}
 
-  ~FakeSocket() override {}
+  ~FakeSocket() override = default;
 
   int Read(IOBuffer* buf,
            int buf_len,

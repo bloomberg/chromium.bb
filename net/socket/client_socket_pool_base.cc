@@ -225,7 +225,7 @@ ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
 ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
     const CallbackResultPair& other) = default;
 
-ClientSocketPoolBaseHelper::CallbackResultPair::~CallbackResultPair() {}
+ClientSocketPoolBaseHelper::CallbackResultPair::~CallbackResultPair() = default;
 
 bool ClientSocketPoolBaseHelper::IsStalled() const {
   // If a lower layer pool is stalled, consider |this| stalled as well.

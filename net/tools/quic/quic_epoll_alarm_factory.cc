@@ -55,7 +55,7 @@ class QuicEpollAlarm : public QuicAlarm {
 QuicEpollAlarmFactory::QuicEpollAlarmFactory(EpollServer* epoll_server)
     : epoll_server_(epoll_server) {}
 
-QuicEpollAlarmFactory::~QuicEpollAlarmFactory() {}
+QuicEpollAlarmFactory::~QuicEpollAlarmFactory() = default;
 
 QuicAlarm* QuicEpollAlarmFactory::CreateAlarm(QuicAlarm::Delegate* delegate) {
   return new QuicEpollAlarm(epoll_server_,

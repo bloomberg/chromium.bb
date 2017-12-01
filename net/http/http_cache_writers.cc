@@ -50,7 +50,7 @@ HttpCache::Writers::TransactionInfo::TransactionInfo(const TransactionInfo&) =
 HttpCache::Writers::Writers(HttpCache* cache, HttpCache::ActiveEntry* entry)
     : cache_(cache), entry_(entry), weak_factory_(this) {}
 
-HttpCache::Writers::~Writers() {}
+HttpCache::Writers::~Writers() = default;
 
 int HttpCache::Writers::Read(scoped_refptr<IOBuffer> buf,
                              int buf_len,
@@ -323,7 +323,7 @@ HttpCache::Writers::WaitingForRead::WaitingForRead(
   DCHECK(!consumer_callback.is_null());
 }
 
-HttpCache::Writers::WaitingForRead::~WaitingForRead() {}
+HttpCache::Writers::WaitingForRead::~WaitingForRead() = default;
 HttpCache::Writers::WaitingForRead::WaitingForRead(const WaitingForRead&) =
     default;
 

@@ -23,7 +23,7 @@ QuicSimpleServerPacketWriter::QuicSimpleServerPacketWriter(
       write_blocked_(false),
       weak_factory_(this) {}
 
-QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() {}
+QuicSimpleServerPacketWriter::~QuicSimpleServerPacketWriter() = default;
 
 WriteResult QuicSimpleServerPacketWriter::WritePacketWithCallback(
     const char* buffer,

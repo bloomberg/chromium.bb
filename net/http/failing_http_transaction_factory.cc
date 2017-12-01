@@ -82,7 +82,7 @@ FailingHttpTransaction::FailingHttpTransaction(Error error) : error_(error) {
   DCHECK_LT(error, OK);
 }
 
-FailingHttpTransaction::~FailingHttpTransaction() {}
+FailingHttpTransaction::~FailingHttpTransaction() = default;
 
 int FailingHttpTransaction::Start(const HttpRequestInfo* request_info,
                                   const CompletionCallback& callback,
@@ -197,7 +197,7 @@ FailingHttpTransactionFactory::FailingHttpTransactionFactory(
   DCHECK_LT(error, OK);
 }
 
-FailingHttpTransactionFactory::~FailingHttpTransactionFactory() {}
+FailingHttpTransactionFactory::~FailingHttpTransactionFactory() = default;
 
 // HttpTransactionFactory:
 int FailingHttpTransactionFactory::CreateTransaction(

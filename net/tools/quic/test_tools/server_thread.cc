@@ -29,7 +29,7 @@ ServerThread::ServerThread(QuicServer* server, const QuicSocketAddress& address)
       port_(0),
       initialized_(false) {}
 
-ServerThread::~ServerThread() {}
+ServerThread::~ServerThread() = default;
 
 void ServerThread::Initialize() {
   if (initialized_) {

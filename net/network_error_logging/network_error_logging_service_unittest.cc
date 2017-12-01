@@ -29,7 +29,7 @@ namespace {
 class TestReportingService : public ReportingService {
  public:
   struct Report {
-    Report() {}
+    Report() = default;
 
     Report(Report&& other)
         : url(other.url),
@@ -43,7 +43,7 @@ class TestReportingService : public ReportingService {
            std::unique_ptr<const base::Value> body)
         : url(url), group(group), type(type), body(std::move(body)) {}
 
-    ~Report() {}
+    ~Report() = default;
 
     GURL url;
     std::string group;
@@ -54,13 +54,13 @@ class TestReportingService : public ReportingService {
     DISALLOW_COPY(Report);
   };
 
-  TestReportingService() {}
+  TestReportingService() = default;
 
   const std::vector<Report>& reports() const { return reports_; }
 
   // ReportingService implementation:
 
-  ~TestReportingService() override {}
+  ~TestReportingService() override = default;
 
   void QueueReport(const GURL& url,
                    const std::string& group,

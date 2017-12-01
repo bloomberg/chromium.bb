@@ -332,7 +332,7 @@ TestURLFetcherFactory::TestURLFetcherFactory()
       remove_fetcher_on_delete_(false) {
 }
 
-TestURLFetcherFactory::~TestURLFetcherFactory() {}
+TestURLFetcherFactory::~TestURLFetcherFactory() = default;
 
 std::unique_ptr<URLFetcher> TestURLFetcherFactory::CreateURLFetcher(
     int id,
@@ -392,7 +392,7 @@ FakeURLFetcher::FakeURLFetcher(const GURL& url,
   response_bytes_ = response_data.size();
 }
 
-FakeURLFetcher::~FakeURLFetcher() {}
+FakeURLFetcher::~FakeURLFetcher() = default;
 
 void FakeURLFetcher::Start() {
   TestURLFetcher::Start();
@@ -442,7 +442,7 @@ FakeURLFetcherFactory::DefaultFakeURLFetcherCreator(
       new FakeURLFetcher(url, delegate, response_data, response_code, status));
 }
 
-FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
+FakeURLFetcherFactory::~FakeURLFetcherFactory() = default;
 
 std::unique_ptr<URLFetcher> FakeURLFetcherFactory::CreateURLFetcher(
     int id,
@@ -485,9 +485,9 @@ void FakeURLFetcherFactory::ClearFakeResponses() {
   fake_responses_.clear();
 }
 
-URLFetcherImplFactory::URLFetcherImplFactory() {}
+URLFetcherImplFactory::URLFetcherImplFactory() = default;
 
-URLFetcherImplFactory::~URLFetcherImplFactory() {}
+URLFetcherImplFactory::~URLFetcherImplFactory() = default;
 
 std::unique_ptr<URLFetcher> URLFetcherImplFactory::CreateURLFetcher(
     int id,

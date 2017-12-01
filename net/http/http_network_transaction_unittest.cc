@@ -10183,8 +10183,8 @@ TEST_F(HttpNetworkTransactionTest, UploadUnreadableFile) {
 TEST_F(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
   class FakeUploadElementReader : public UploadElementReader {
    public:
-    FakeUploadElementReader() {}
-    ~FakeUploadElementReader() override {}
+    FakeUploadElementReader() = default;
+    ~FakeUploadElementReader() override = default;
 
     const CompletionCallback& callback() const { return callback_; }
 
@@ -11513,8 +11513,8 @@ TEST_F(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
 
 class CapturingProxyResolver : public ProxyResolver {
  public:
-  CapturingProxyResolver() {}
-  ~CapturingProxyResolver() override {}
+  CapturingProxyResolver() = default;
+  ~CapturingProxyResolver() override = default;
 
   int GetProxyForURL(const GURL& url,
                      ProxyInfo* results,
@@ -13061,7 +13061,7 @@ class UrlRecordingHttpAuthHandlerMock : public HttpAuthHandlerMock {
  public:
   explicit UrlRecordingHttpAuthHandlerMock(GURL* url) : url_(url) {}
 
-  ~UrlRecordingHttpAuthHandlerMock() override {}
+  ~UrlRecordingHttpAuthHandlerMock() override = default;
 
  protected:
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
@@ -14263,7 +14263,7 @@ class OneTimeCachingHostResolver : public MockHostResolverBase {
  public:
   explicit OneTimeCachingHostResolver(const HostPortPair& host_port)
       : MockHostResolverBase(/* use_caching = */ true), host_port_(host_port) {}
-  ~OneTimeCachingHostResolver() override {}
+  ~OneTimeCachingHostResolver() override = default;
 
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
@@ -15425,7 +15425,7 @@ class FakeStream : public HttpStream,
                    public base::SupportsWeakPtr<FakeStream> {
  public:
   explicit FakeStream(RequestPriority priority) : priority_(priority) {}
-  ~FakeStream() override {}
+  ~FakeStream() override = default;
 
   RequestPriority priority() const { return priority_; }
 
@@ -15541,7 +15541,7 @@ class FakeStreamRequest : public HttpStreamRequest,
         delegate_(delegate),
         websocket_stream_create_helper_(create_helper) {}
 
-  ~FakeStreamRequest() override {}
+  ~FakeStreamRequest() override = default;
 
   RequestPriority priority() const { return priority_; }
 
@@ -15595,8 +15595,8 @@ class FakeStreamRequest : public HttpStreamRequest,
 // Fake HttpStreamFactory that vends FakeStreamRequests.
 class FakeStreamFactory : public HttpStreamFactory {
  public:
-  FakeStreamFactory() {}
-  ~FakeStreamFactory() override {}
+  FakeStreamFactory() = default;
+  ~FakeStreamFactory() override = default;
 
   // Returns a WeakPtr<> to the last HttpStreamRequest returned by
   // RequestStream() (which may be NULL if it was destroyed already).
@@ -15798,7 +15798,7 @@ class FakeWebSocketStreamCreateHelper :
         std::move(connection), using_proxy);
   }
 
-  ~FakeWebSocketStreamCreateHelper() override {}
+  ~FakeWebSocketStreamCreateHelper() override = default;
 
   virtual std::unique_ptr<WebSocketStream> Upgrade() {
     NOTREACHED();

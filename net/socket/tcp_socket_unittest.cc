@@ -40,7 +40,7 @@ class TestSocketPerformanceWatcher : public SocketPerformanceWatcher {
       : should_notify_updated_rtt_(should_notify_updated_rtt),
         connection_changed_count_(0u),
         rtt_notification_count_(0u) {}
-  ~TestSocketPerformanceWatcher() override {}
+  ~TestSocketPerformanceWatcher() override = default;
 
   bool ShouldNotifyUpdatedRTT() const override {
     return should_notify_updated_rtt_;

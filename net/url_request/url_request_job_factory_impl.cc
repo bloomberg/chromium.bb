@@ -18,9 +18,9 @@ URLRequestInterceptor* g_interceptor_for_testing = NULL;
 
 }  // namespace
 
-URLRequestJobFactoryImpl::URLRequestJobFactoryImpl() {}
+URLRequestJobFactoryImpl::URLRequestJobFactoryImpl() = default;
 
-URLRequestJobFactoryImpl::~URLRequestJobFactoryImpl() {}
+URLRequestJobFactoryImpl::~URLRequestJobFactoryImpl() = default;
 
 bool URLRequestJobFactoryImpl::SetProtocolHandler(
     const std::string& scheme,
