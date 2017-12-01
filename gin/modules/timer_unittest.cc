@@ -37,7 +37,7 @@ class Result : public Wrappable<Result> {
   Result() : count_(0) {
   }
 
-  ~Result() override {}
+  ~Result() override = default;
 
   ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override {

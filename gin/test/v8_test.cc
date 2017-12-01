@@ -15,11 +15,9 @@ using v8::HandleScope;
 
 namespace gin {
 
-V8Test::V8Test() {
-}
+V8Test::V8Test() = default;
 
-V8Test::~V8Test() {
-}
+V8Test::~V8Test() = default;
 
 void V8Test::SetUp() {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA

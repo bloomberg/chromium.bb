@@ -9,8 +9,7 @@ namespace gin {
 Runner::Runner() : weak_factory_(this) {
 }
 
-Runner::~Runner() {
-}
+Runner::~Runner() = default;
 
 Runner::Scope::Scope(Runner* runner)
     : isolate_scope_(runner->GetContextHolder()->isolate()),
@@ -18,7 +17,6 @@ Runner::Scope::Scope(Runner* runner)
       scope_(runner->GetContextHolder()->context()) {
 }
 
-Runner::Scope::~Scope() {
-}
+Runner::Scope::~Scope() = default;
 
 }  // namespace gin

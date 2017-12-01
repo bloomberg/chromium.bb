@@ -6,9 +6,9 @@
 
 namespace gin {
 
-V8ForegroundTaskRunnerBase::V8ForegroundTaskRunnerBase() {}
+V8ForegroundTaskRunnerBase::V8ForegroundTaskRunnerBase() = default;
 
-V8ForegroundTaskRunnerBase::~V8ForegroundTaskRunnerBase() {}
+V8ForegroundTaskRunnerBase::~V8ForegroundTaskRunnerBase() = default;
 
 void V8ForegroundTaskRunnerBase::EnableIdleTasks(
     std::unique_ptr<V8IdleTaskRunner> idle_task_runner) {

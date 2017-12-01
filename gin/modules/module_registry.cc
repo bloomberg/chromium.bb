@@ -44,8 +44,7 @@ struct PendingModule {
   Persistent<Value> factory;
 };
 
-PendingModule::PendingModule() {
-}
+PendingModule::PendingModule() = default;
 
 PendingModule::~PendingModule() {
   factory.Reset();

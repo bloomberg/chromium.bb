@@ -54,8 +54,7 @@ FileModuleProvider::FileModuleProvider(
     : search_paths_(search_paths) {
 }
 
-FileModuleProvider::~FileModuleProvider() {
-}
+FileModuleProvider::~FileModuleProvider() = default;
 
 void FileModuleProvider::AttempToLoadModules(
     Runner* runner, const std::set<std::string>& ids) {

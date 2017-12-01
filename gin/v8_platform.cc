@@ -168,7 +168,7 @@ V8Platform* V8Platform::Get() { return g_v8_platform.Pointer(); }
 
 V8Platform::V8Platform() : tracing_controller_(new TracingControllerImpl) {}
 
-V8Platform::~V8Platform() {}
+V8Platform::~V8Platform() = default;
 
 void V8Platform::OnCriticalMemoryPressure() {
 #if defined(OS_WIN)

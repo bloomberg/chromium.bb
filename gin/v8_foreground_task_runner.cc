@@ -17,7 +17,7 @@ V8ForegroundTaskRunner::V8ForegroundTaskRunner(
   DCHECK(task_runner_);
 }
 
-V8ForegroundTaskRunner::~V8ForegroundTaskRunner() {}
+V8ForegroundTaskRunner::~V8ForegroundTaskRunner() = default;
 
 void V8ForegroundTaskRunner::PostTask(std::unique_ptr<v8::Task> task) {
   task_runner_->PostTask(FROM_HERE,
