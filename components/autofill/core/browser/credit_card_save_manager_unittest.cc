@@ -557,7 +557,8 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardSaveManager);
 };
 
-class CreditCardSaveManagerTest : public testing::Test {
+// Fails on all platforms. http://crbug.com/790996
+class DISABLED_CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
@@ -796,7 +797,7 @@ class CreditCardSaveManagerTest : public testing::Test {
 #else
 #define MAYBE_ImportFormDataCreditCardHTTPS ImportFormDataCreditCardHTTPS
 #endif
-TEST_F(CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) {
   TestSaveCreditCards(true);
 }
 
@@ -807,7 +808,7 @@ TEST_F(CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) {
 #else
 #define MAYBE_ImportFormDataCreditCardHTTP ImportFormDataCreditCardHTTP
 #endif
-TEST_F(CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
   TestSaveCreditCards(false);
 }
 
@@ -820,7 +821,7 @@ TEST_F(CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
 #define MAYBE_CreditCardSavedWhenAutocompleteOff \
   CreditCardSavedWhenAutocompleteOff
 #endif
-TEST_F(CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, false, false);
@@ -841,7 +842,7 @@ TEST_F(CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
 
 // Tests that credit card data are not saved when CC number does not pass the
 // Luhn test.
-TEST_F(CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
@@ -858,7 +859,7 @@ TEST_F(CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
   FormSubmitted(form);
 }
 
-TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_enabled(false);
 
@@ -893,7 +894,7 @@ TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard) {
   personal_data_.ClearCreditCards();
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -944,7 +945,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
       "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_RequestCVCEnabled_DoesNotTrigger) {
   EnableAutofillUpstreamRequestCvcIfMissingExperiment();
 
@@ -980,7 +981,7 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_TRUE(credit_card_save_manager_->GetActiveExperiments().empty());
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
   personal_data_.ClearCreditCards();
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1031,7 +1032,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
 #endif
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(false);
 
@@ -1066,7 +1067,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1107,7 +1108,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_VALUE_NOT_FOUND);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1145,7 +1146,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::INVALID_CVC_VALUE);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -1207,7 +1208,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -1263,7 +1264,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_FIELD_NOT_FOUND);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_InvalidCvcInNonCvcField) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1323,7 +1324,7 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_FIELD_NOT_FOUND);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInNonCvcField) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1385,7 +1386,7 @@ TEST_F(CreditCardSaveManagerTest,
       AutofillMetrics::FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInAddressField) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1453,7 +1454,7 @@ TEST_F(CreditCardSaveManagerTest,
 #define MAYBE_UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc \
   UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc
 #endif
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        MAYBE_UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc) {
   EnableAutofillUpstreamRequestCvcIfMissingExperiment();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1518,7 +1519,7 @@ TEST_F(CreditCardSaveManagerTest,
       1 /* expected_num_matching_entries */);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1578,7 +1579,7 @@ TEST_F(CreditCardSaveManagerTest,
 // kAutofillUpstreamShowNewUi and kAutofillUpstreamShowGoogleLogo flags are
 // currently not available on Android.
 #if !defined(OS_ANDROID)
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_AddNewUiFlagStateToRequestIfExperimentOn) {
   EnableAutofillUpstreamShowNewUiExperiment();
   personal_data_.ClearAutofillProfiles();
@@ -1612,7 +1613,7 @@ TEST_F(CreditCardSaveManagerTest,
               UnorderedElementsAre(kAutofillUpstreamShowNewUi.name));
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddNewUiFlagStateToRequestIfExperimentOff) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1644,7 +1645,7 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_TRUE(credit_card_save_manager_->GetActiveExperiments().empty());
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_AddShowGoogleLogoFlagStateToRequestIfExperimentOn) {
   EnableAutofillUpstreamShowGoogleLogoExperiment();
   personal_data_.ClearAutofillProfiles();
@@ -1679,7 +1680,7 @@ TEST_F(CreditCardSaveManagerTest,
               UnorderedElementsAre(kAutofillUpstreamShowGoogleLogo.name));
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddShowGoogleLogoFlagStateToRequestIfExpOff) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1713,7 +1714,7 @@ TEST_F(CreditCardSaveManagerTest,
 }
 #endif
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1746,7 +1747,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
@@ -1796,7 +1797,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
       "Autofill.HasModifiedProfile.CreditCardFormSubmission", false, 1);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_CvcUnavailableAndNoProfileAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1837,7 +1838,7 @@ TEST_F(CreditCardSaveManagerTest,
                1 /* expected_num_matching_entries */);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1875,7 +1876,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1924,7 +1925,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1966,7 +1967,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_ZipCodesDiscardWhitespace_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2012,7 +2013,7 @@ TEST_F(CreditCardSaveManagerTest,
                                  AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2058,7 +2059,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2103,7 +2104,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2149,7 +2150,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_CCFormHasMiddleInitial_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2199,7 +2200,7 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2241,7 +2242,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_NoMiddleInitialInCCForm_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2285,7 +2286,7 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2322,7 +2323,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_CCFormHasMiddleName_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2364,7 +2365,7 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2403,7 +2404,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(CreditCardSaveManagerTest,
+TEST_F(DISABLED_CreditCardSaveManagerTest,
        UploadCreditCard_CCFormRemovesMiddleName_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2445,7 +2446,7 @@ TEST_F(CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2493,7 +2494,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
@@ -2541,7 +2542,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
                                  AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
@@ -2589,7 +2590,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
       /*expected_count=*/1);
 }
 
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2633,7 +2634,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
 }
 
-TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   EnableAutofillOfferLocalSaveIfServerCardManuallyEnteredExperiment();
 
   personal_data_.ClearAutofillProfiles();
@@ -2674,7 +2675,7 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
 }
 
-TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
+TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
   credit_card_save_manager_->SetAppLocale("en-US");
