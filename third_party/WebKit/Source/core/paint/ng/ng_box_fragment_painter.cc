@@ -48,6 +48,9 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
           BoxStrutToLayoutRectOutsets(box.PhysicalFragment().BorderWidths()),
           LayoutRectOutsets()),
       box_fragment_(box),
+      border_edges_(
+          NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),
+                                      box.Style().GetWritingMode())),
       is_inline_(false) {
   DCHECK(box.PhysicalFragment().IsBox());
 }
@@ -321,7 +324,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
       Node* generating_node = box_fragment_.GetLayoutObject()->GeneratingNode();
       const Document& document = box_fragment_.GetLayoutObject()->GetDocument();
       PaintBorder(box_fragment_, document, generating_node, paint_info,
-                  paint_rect, style, box_decoration_data.bleed_avoidance);
+                  paint_rect, style, box_decoration_data.bleed_avoidance,
+                  border_edges_.line_left, border_edges_.line_right);
     }
   }
 
@@ -556,8 +560,8 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
     BackgroundBleedAvoidance bleed_avoidance) const {
   return BoxPainterBase::FillLayerInfo(
       box_fragment_.GetLayoutObject()->GetDocument(), box_fragment_.Style(),
-      box_fragment_.HasOverflowClip(), color, bg_layer, bleed_avoidance, true,
-      true);
+      box_fragment_.HasOverflowClip(), color, bg_layer, bleed_avoidance,
+      border_edges_.line_left, border_edges_.line_right);
 }
 
 void NGBoxFragmentPainter::PaintBackground(
