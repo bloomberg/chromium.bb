@@ -1,24 +1,16 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="extension_view_wrapper/extension_view_wrapper.html">
 <link rel="import" href="../route_controls/route_controls.html">
 <dom-module id="route-details">
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_details.css">
   <template>
     <div class="ellipsis" id="route-description" title="[[routeDescription_]]"
-        hidden$="[[!shouldShowRouteDescription_(controllerType_)]]">
+        hidden$="[[shouldShowWebUiControls_(route)]]">
       [[routeDescription_]]
     </div>
-    <template is="dom-if" if="[[shouldAttemptLoadingExtensionView_(route)]]">
-      <extension-view-wrapper id="extension-view-wrapper" route="[[route]]"
-          route-details-open-time="[[openTime_]]"
-          is-extension-view-ready="{{isExtensionViewReady}}"
-          hidden$="[[!shouldShowExtensionView_(controllerType_)]]">
-      </extension-view-wrapper>
-    </template>
-    <template is="dom-if" if="[[shouldShowWebUiControls_(controllerType_)]]">
+    <template is="dom-if" if="[[shouldShowWebUiControls_(route)]]">
       <route-controls id="route-controls"
           route-details-open-time="[[openTime_]]"
           route="[[route]]"></route-controls>

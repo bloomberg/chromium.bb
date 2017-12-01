@@ -81,17 +81,6 @@ void AddPolymerElements(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath(
       "elements/media_router_container/pseudo_sink_search_state.js",
       IDR_PSEUDO_SINK_SEARCH_STATE_JS);
-  html_source->AddResourcePath(
-      "elements/route_details/extension_view_wrapper/"
-      "extension_view_wrapper.html",
-      IDR_EXTENSION_VIEW_WRAPPER_HTML);
-  html_source->AddResourcePath(
-      "elements/route_details/extension_view_wrapper/extension_view_wrapper.js",
-      IDR_EXTENSION_VIEW_WRAPPER_JS);
-  html_source->AddResourcePath(
-      "elements/route_details/extension_view_wrapper/"
-      "extension_view_wrapper.css",
-      IDR_EXTENSION_VIEW_WRAPPER_CSS);
 }
 
 }  // namespace
