@@ -527,11 +527,13 @@ bool MimeSniffingResourceHandler::MustDownload() {
   } else if (request()->url().SchemeIsHTTPOrHTTPS() &&
              // The MHTML mime type should be same as the one we check in
              // Blink's DocumentLoader.
-             response_->head.mime_type == "multipart/related" &&
-             !host_->delegate()->AllowRenderingMhtmlOverHttp(request())) {
-    // Force to download the MHTML page from the remote server, instead of
-    // loading it.
-    must_download_ = true;
+             response_->head.mime_type == "multipart/related") {
+    // It is OK to load the saved offline copy, in MHTML format.
+    const ResourceRequestInfo* info =
+        ResourceRequestInfo::ForRequest(request());
+    must_download_ =
+        !GetContentClient()->browser()->AllowRenderingMhtmlOverHttp(
+            info->GetNavigationUIData());
   } else {
     must_download_ = false;
   }

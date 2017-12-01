@@ -538,6 +538,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
 };
 
+// TODO(https://crbug.com/790734): pass |navigation_ui_data| along with the
+// request so that it could be modified.
 NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     ResourceContext* resource_context,
     StoragePartition* storage_partition,
@@ -743,6 +745,11 @@ bool NavigationURLLoaderNetworkService::IsDownload() const {
         net::HttpContentDisposition(disposition, std::string())
             .is_attachment()) {
       return true;
+    } else if (response_->head.mime_type == "multipart/related") {
+      // TODO(https://crbug.com/790734): retrieve the new NavigationUIData from
+      // the request and and pass it to AllowRenderingMhtmlOverHttp().
+      return !GetContentClient()->browser()->AllowRenderingMhtmlOverHttp(
+          nullptr);
     }
     // TODO(qinmin): Check whether this is special-case user script that needs
     // to be downloaded.

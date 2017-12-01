@@ -589,4 +589,9 @@ bool ContentBrowserClient::ShouldOverrideUrlLoading(
 }
 #endif
 
+bool ContentBrowserClient::AllowRenderingMhtmlOverHttp(
+    NavigationUIData* navigation_ui_data) const {
+  return false;
+}
+
 }  // namespace content
