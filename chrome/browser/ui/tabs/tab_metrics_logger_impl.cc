@@ -100,6 +100,10 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
   // TODO(michaelpg): Add PluginType field if mime type matches "application/*"
   // using PluginUMAReporter.
 
+  // This checks if the tab was audible within the past two seconds, same as the
+  // audio indicator in the tab strip.
+  entry.SetWasRecentlyAudible(web_contents->WasRecentlyAudible());
+
   entry.SetIsPinned(tab_strip_model->IsTabPinned(index))
       .SetHasFormEntry(
           web_contents->GetPageImportanceSignals().had_form_interaction)

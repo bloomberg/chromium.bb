@@ -2093,6 +2093,12 @@ be describing additional metrics about the same event.
       Number of touch events that were sent to the page.
     </summary>
   </metric>
+  <metric name="WasRecentlyAudible">
+    <summary>
+      Boolean value indicating whether the tab has played audio within the last
+      two seconds.
+    </summary>
+  </metric>
 </event>
 
 </ukm-configuration>
