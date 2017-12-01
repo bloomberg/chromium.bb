@@ -67,15 +67,6 @@ ios::ChromeBrowserState* GetBrowserState(bool incognito) {
                    : browser_state;
 }
 
-// Gets the root UIViewController.
-UIViewController* GetActiveViewController() {
-  UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
-  DCHECK([main_window isKindOfClass:[ChromeOverlayWindow class]]);
-  id<ViewControllerSwapping> main_view_controller =
-      static_cast<id<ViewControllerSwapping>>([main_window rootViewController]);
-  return main_view_controller.activeViewController;
-}
-
 }  // namespace
 
 namespace chrome_test_util {
@@ -118,6 +109,14 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
   BrowserViewController* mainBVC =
       GetMainController().browserViewInformation.mainBVC;
   return mainBVC.dispatcher;
+}
+
+UIViewController* GetActiveViewController() {
+  UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
+  DCHECK([main_window isKindOfClass:[ChromeOverlayWindow class]]);
+  id<ViewControllerSwapping> main_view_controller =
+      static_cast<id<ViewControllerSwapping>>([main_window rootViewController]);
+  return main_view_controller.activeViewController;
 }
 
 id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
