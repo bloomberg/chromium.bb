@@ -87,10 +87,4 @@ bool HTMLFormControlElementWithState::IsFormControlElementWithState() const {
   return true;
 }
 
-void HTMLFormControlElementWithState::Trace(Visitor* visitor) {
-  visitor->Trace(prev_);
-  visitor->Trace(next_);
-  HTMLFormControlElement::Trace(visitor);
-}
-
 }  // namespace blink

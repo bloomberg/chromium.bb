@@ -12,7 +12,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/DoublyLinkedList.h"
 #include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
@@ -478,23 +477,6 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
   template <size_t otherCapacity>
   HeapDeque(const HeapDeque<T, otherCapacity>& other)
       : Deque<T, inlineCapacity, HeapAllocator>(other) {}
-};
-
-template <typename T>
-class HeapDoublyLinkedList : public DoublyLinkedList<T, Member<T>> {
-  IS_GARBAGE_COLLECTED_TYPE();
-  DISALLOW_NEW();
-
- public:
-  HeapDoublyLinkedList() {
-    static_assert(WTF::IsGarbageCollectedType<T>::value,
-                  "This should only be used for garbage collected types.");
-  }
-
-  void Trace(Visitor* visitor) {
-    visitor->Trace(this->head_);
-    visitor->Trace(this->tail_);
-  }
 };
 
 }  // namespace blink
