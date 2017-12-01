@@ -132,19 +132,22 @@ void Process::Close() {
 }
 
 bool Process::Terminate(int exit_code, bool wait) const {
+  constexpr DWORD kWaitMs = 60 * 1000;
+
   // exit_code cannot be implemented.
   DCHECK(IsValid());
   bool result = (::TerminateProcess(Handle(), exit_code) != FALSE);
   if (result) {
     // The process may not end immediately due to pending I/O
-    if (wait && ::WaitForSingleObject(Handle(), 60 * 1000) != WAIT_OBJECT_0)
+    if (wait && ::WaitForSingleObject(Handle(), kWaitMs) != WAIT_OBJECT_0)
       DPLOG(ERROR) << "Error waiting for process exit";
     Exited(exit_code);
   } else {
     // The process can't be terminated, perhaps because it has already
-    // exited.
+    // exited or is in the process of exiting. A non-zero timeout is necessary
+    // here for the same reasons as above.
     DPLOG(ERROR) << "Unable to terminate process";
-    if (::WaitForSingleObject(Handle(), 0) == WAIT_OBJECT_0) {
+    if (::WaitForSingleObject(Handle(), kWaitMs) == WAIT_OBJECT_0) {
       DWORD actual_exit;
       Exited(::GetExitCodeProcess(Handle(), &actual_exit) ? actual_exit
                                                           : exit_code);
