@@ -145,14 +145,28 @@ class TraceableCounter {
     return *this;
   }
 
-  const T& get() const {
+  TraceableCounter& operator +=(const T& value) {
+    value_ += value;
+    Trace();
+    return *this;
+  }
+  TraceableCounter& operator -=(const T& value) {
+    value_ -= value;
+    Trace();
+    return *this;
+  }
+
+  const T& value() const {
     return value_;
+  }
+  const T* operator ->() const {
+    return &value_;
   }
   operator T() const {
     return value_;
   }
 
-  void Trace() {
+  void Trace() const {
     TRACE_COUNTER_ID1(category, name_, object_, converter_(value_));
   }
 
@@ -164,6 +178,24 @@ class TraceableCounter {
   T value_;
   DISALLOW_COPY(TraceableCounter);
 };
+
+// Add operators when it's needed.
+
+template <typename T, const char* category>
+constexpr T operator -(const TraceableCounter<T, category>& counter) {
+  return -counter.value();
+}
+
+template <typename T, const char* category>
+constexpr T operator /(const TraceableCounter<T, category>& lhs, const T& rhs) {
+  return lhs.value() / rhs;
+}
+
+template <typename T, const char* category>
+constexpr bool operator >(
+    const TraceableCounter<T, category>& lhs, const T& rhs) {
+  return lhs.value() > rhs;
+}
 
 }  // namespace scheduler
 }  // namespace blink

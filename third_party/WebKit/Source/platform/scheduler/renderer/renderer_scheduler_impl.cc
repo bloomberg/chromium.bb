@@ -1077,13 +1077,13 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   main_thread_only().loading_task_estimated_cost =
       main_thread_only().loading_task_cost_estimator.expected_task_duration();
   bool loading_tasks_seem_expensive =
-      main_thread_only().loading_task_estimated_cost.get() >
+      main_thread_only().loading_task_estimated_cost >
       longest_jank_free_task_duration;
 
   main_thread_only().timer_task_estimated_cost =
       main_thread_only().timer_task_cost_estimator.expected_task_duration();
   bool timer_tasks_seem_expensive =
-      main_thread_only().timer_task_estimated_cost.get() >
+      main_thread_only().timer_task_estimated_cost >
       longest_jank_free_task_duration;
 
   main_thread_only().timer_tasks_seem_expensive = timer_tasks_seem_expensive;

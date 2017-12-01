@@ -10,16 +10,27 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
-#include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
+
+namespace {
+
+double TimeDeltaToMilliseconds(const base::TimeDelta& value) {
+  return value.InMillisecondsF();
+}
+
+}  // namespace
 
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
     BudgetPoolController* budget_pool_controller,
     base::TimeTicks now)
     : BudgetPool(name, budget_pool_controller),
+      current_budget_level_(base::TimeDelta(),
+                            "RendererScheduler.BackgroundBudgetMs",
+                            budget_pool_controller,
+                            TimeDeltaToMilliseconds),
       last_checkpoint_(now),
       cpu_percentage_(1) {}
 
@@ -86,7 +97,7 @@ base::Optional<base::TimeTicks> CPUTimeBudgetPool::GetTimeTasksCanRunUntil(
 
 base::TimeTicks CPUTimeBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
-  if (!is_enabled_ || current_budget_level_.InMicroseconds() >= 0) {
+  if (!is_enabled_ || current_budget_level_->InMicroseconds() >= 0) {
     return last_checkpoint_;
   } else {
     // Subtract because current_budget is negative.
@@ -107,12 +118,12 @@ void CPUTimeBudgetPool::RecordTaskRunTime(TaskQueue* queue,
     EnforceBudgetLevelRestrictions();
 
     if (!reporting_callback_.is_null() && old_budget_level.InSecondsF() > 0 &&
-        current_budget_level_.InSecondsF() < 0) {
+        current_budget_level_->InSecondsF() < 0) {
       reporting_callback_.Run(-current_budget_level_ / cpu_percentage_);
     }
   }
 
-  if (current_budget_level_.InSecondsF() < 0)
+  if (current_budget_level_->InSecondsF() < 0)
     BlockThrottledQueues(end_time);
 }
 
@@ -127,12 +138,13 @@ void CPUTimeBudgetPool::OnWakeUp(base::TimeTicks now) {}
 
 void CPUTimeBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
                                     base::TimeTicks now) const {
+  current_budget_level_.Trace();
   state->BeginDictionary(name_);
 
   state->SetString("name", name_);
   state->SetDouble("time_budget", cpu_percentage_);
   state->SetDouble("time_budget_level_in_seconds",
-                   current_budget_level_.InSecondsF());
+                   current_budget_level_->InSecondsF());
   state->SetDouble("last_checkpoint_seconds_ago",
                    (now - last_checkpoint_).InSecondsF());
   state->SetBoolean("is_enabled", is_enabled_);
@@ -157,6 +169,10 @@ void CPUTimeBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
   state->EndDictionary();
 }
 
+void CPUTimeBudgetPool::OnTraceLogEnabled() {
+  current_budget_level_.Trace();
+}
+
 void CPUTimeBudgetPool::Advance(base::TimeTicks now) {
   if (now > last_checkpoint_) {
     if (is_enabled_) {
@@ -170,12 +186,12 @@ void CPUTimeBudgetPool::Advance(base::TimeTicks now) {
 void CPUTimeBudgetPool::EnforceBudgetLevelRestrictions() {
   if (max_budget_level_) {
     current_budget_level_ =
-        std::min(current_budget_level_, max_budget_level_.value());
+        std::min(current_budget_level_.value(), max_budget_level_.value());
   }
   if (max_throttling_delay_) {
     // Current budget level may be negative.
     current_budget_level_ =
-        std::max(current_budget_level_,
+        std::max(current_budget_level_.value(),
                  -max_throttling_delay_.value() * cpu_percentage_);
   }
 }
