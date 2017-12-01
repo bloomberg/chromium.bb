@@ -40,6 +40,8 @@ PLATFORM_EXPORT bool IsDataURLMimeTypeSupported(const KURL&);
 
 PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 
+PLATFORM_EXPORT bool IsCertificateTransparencyRequiredError(int);
+
 }  // NetworkUtils
 
 }  // namespace blink

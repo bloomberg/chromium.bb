@@ -119,6 +119,10 @@ bool IsRedirectResponseCode(int response_code) {
   return net::HttpResponseHeaders::IsRedirectResponseCode(response_code);
 }
 
+bool IsCertificateTransparencyRequiredError(int error_code) {
+  return error_code == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+}
+
 }  // NetworkUtils
 
 }  // namespace blink
