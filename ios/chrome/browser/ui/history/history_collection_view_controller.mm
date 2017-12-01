@@ -43,6 +43,7 @@
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
@@ -818,9 +819,9 @@ const CGFloat kSeparatorInset = 10;
   params.menu_title.reset([menuTitle copy]);
 
   // Present sheet/popover using controller that is added to view hierarchy.
-  UIViewController* topController = [params.view window].rootViewController;
-  while (topController.presentedViewController)
-    topController = topController.presentedViewController;
+  // TODO(crbug.com/754642): Remove TopPresentedViewController().
+  UIViewController* topController =
+      top_view_controller::TopPresentedViewController();
 
   self.contextMenuCoordinator =
       [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
