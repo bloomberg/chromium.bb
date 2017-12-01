@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(falken): Revise link when this lands in the spec:
-// https://github.com/w3c/ServiceWorker/issues/920
+// https://w3c.github.io/ServiceWorker/#navigation-preload-manager
 dictionary NavigationPreloadState {
     boolean enabled = false;
     ByteString headerValue;
