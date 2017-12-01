@@ -50,7 +50,8 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
 static uint8_t add_ref_mv_candidate(
     const MODE_INFO *const candidate_mi, const MB_MODE_INFO *const candidate,
     const MV_REFERENCE_FRAME rf[2], uint8_t *refmv_count,
-    CANDIDATE_MV *ref_mv_stack, const int use_hp, int len, int block,
+    uint8_t *ref_match_count, CANDIDATE_MV *ref_mv_stack, const int use_hp,
+    int len, int block,
 #if USE_CUR_GM_REFMV
     int_mv *gm_mv_candidates, const WarpedMotionParams *gm_params,
 #endif  // USE_CUR_GM_REFMV
@@ -66,6 +67,7 @@ static uint8_t add_ref_mv_candidate(
   int index = 0, ref;
   int newmv_count = 0;
   assert(weight % 2 == 0);
+  (void)ref_match_count;
 #if !CONFIG_EXT_WARPED_MOTION
   (void)bsize;
   (void)mi_row;
@@ -148,8 +150,14 @@ static uint8_t add_ref_mv_candidate(
           ref_mv_stack[index].weight = weight * len;
           ++(*refmv_count);
 
+#if !CONFIG_OPT_REF_MV
           if (candidate->mode == NEWMV) ++newmv_count;
+#endif
         }
+#if CONFIG_OPT_REF_MV
+        if (candidate->mode == NEWMV) ++newmv_count;
+        ++*ref_match_count;
+#endif
       }
     }
   } else {
@@ -189,8 +197,14 @@ static uint8_t add_ref_mv_candidate(
         ref_mv_stack[index].weight = weight * len;
         ++(*refmv_count);
 
+#if !CONFIG_OPT_REF_MV
         if (candidate->mode == NEW_NEWMV) ++newmv_count;
+#endif
       }
+#if CONFIG_OPT_REF_MV
+      if (candidate->mode == NEW_NEWMV) ++newmv_count;
+      ++*ref_match_count;
+#endif
     }
   }
   return newmv_count;
@@ -200,6 +214,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int mi_row, int mi_col, int block,
                              const MV_REFERENCE_FRAME rf[2], int row_offset,
                              CANDIDATE_MV *ref_mv_stack, uint8_t *refmv_count,
+                             uint8_t *ref_match_count,
 #if USE_CUR_GM_REFMV
                              int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -243,7 +258,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_AMVR
     newmv_count += add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
@@ -253,7 +268,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         xd->plane[0].subsampling_y, do_warping);
 #else
     newmv_count += add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
@@ -272,6 +287,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int mi_row, int mi_col, int block,
                              const MV_REFERENCE_FRAME rf[2], int col_offset,
                              CANDIDATE_MV *ref_mv_stack, uint8_t *refmv_count,
+                             uint8_t *ref_match_count,
 #if USE_CUR_GM_REFMV
                              int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -314,7 +330,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_AMVR
     newmv_count += add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
@@ -324,7 +340,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         xd->plane[0].subsampling_y, do_warping);
 #else
     newmv_count += add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
@@ -342,6 +358,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              const int mi_row, const int mi_col, int block,
                              const MV_REFERENCE_FRAME rf[2], int row_offset,
                              int col_offset, CANDIDATE_MV *ref_mv_stack,
+                             uint8_t *ref_match_count,
 #if USE_CUR_GM_REFMV
                              int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -362,7 +379,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 #if CONFIG_AMVR
     newmv_count += add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
@@ -372,7 +389,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         do_warping);
 #else
     newmv_count += add_ref_mv_candidate(
-        candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
+        candidate_mi, candidate, rf, refmv_count, ref_match_count, ref_mv_stack,
         cm->allow_high_precision_mv, len, block,
 #if USE_CUR_GM_REFMV
         gm_mv_candidates, cm->global_motion,
@@ -655,9 +672,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               int16_t *mode_context) {
   int idx, nearest_refmv_count = 0;
   uint8_t newmv_count = 0;
+  uint8_t ref_match_count = 0, nearest_match = 0;
   CANDIDATE_MV tmp_mv;
   int len, nr_len;
-
 #if CONFIG_TMV
   const int prev_frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
   const int tmi_row = mi_row & 0xfffe;
@@ -715,7 +732,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Scan the first above row mode info. row_offset = -1;
   if (abs(max_row_offset) >= 1)
     newmv_count += scan_row_mbmi(cm, xd, mi_row, mi_col, block, rf, -1,
-                                 ref_mv_stack, refmv_count,
+                                 ref_mv_stack, refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                                  gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -723,7 +740,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Scan the first left column mode info. col_offset = -1;
   if (abs(max_col_offset) >= 1)
     newmv_count += scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, -1,
-                                 ref_mv_stack, refmv_count,
+                                 ref_mv_stack, refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                                  gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -731,12 +748,13 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Check top-right boundary
   if (has_tr)
     newmv_count += scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1,
-                                 xd->n8_w, ref_mv_stack,
+                                 xd->n8_w, ref_mv_stack, &ref_match_count,
 #if USE_CUR_GM_REFMV
                                  gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                                  refmv_count);
 
+  nearest_match = ref_match_count;
   nearest_refmv_count = *refmv_count;
 
   for (idx = 0; idx < nearest_refmv_count; ++idx)
@@ -853,6 +871,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   // Scan the second outer area.
   scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1, -1, ref_mv_stack,
+                &ref_match_count,
 #if USE_CUR_GM_REFMV
                 gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -864,7 +883,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (abs(row_offset) <= abs(max_row_offset) &&
         abs(row_offset) > processed_rows)
       scan_row_mbmi(cm, xd, mi_row, mi_col, block, rf, row_offset, ref_mv_stack,
-                    refmv_count,
+                    refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                     gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -873,7 +892,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (abs(col_offset) <= abs(max_col_offset) &&
         abs(col_offset) > processed_cols)
       scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, col_offset, ref_mv_stack,
-                    refmv_count,
+                    refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                     gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
@@ -884,15 +903,26 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (abs(col_offset) <= abs(max_col_offset) &&
       abs(col_offset) > processed_cols)
     scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, col_offset, ref_mv_stack,
-                  refmv_count,
+                  refmv_count, &ref_match_count,
 #if USE_CUR_GM_REFMV
                   gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                   max_col_offset, &processed_cols);
 
-  switch (nearest_refmv_count) {
+#if CONFIG_OPT_REF_MV
+  switch (nearest_match)
+#else
+  switch (nearest_refmv_count)
+#endif
+  {
     case 0: mode_context[ref_frame] |= 0;
-#if !CONFIG_OPT_REF_MV
+#if CONFIG_OPT_REF_MV
+      if (ref_match_count >= 1) mode_context[ref_frame] |= 1;
+      if (ref_match_count == 1)
+        mode_context[ref_frame] |= (1 << REFMV_OFFSET);
+      else if (ref_match_count >= 2)
+        mode_context[ref_frame] |= (2 << REFMV_OFFSET);
+#else
       if (*refmv_count >= 1) mode_context[ref_frame] |= 1;
       if (*refmv_count == 1)
         mode_context[ref_frame] |= (1 << REFMV_OFFSET);
@@ -902,7 +932,10 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       break;
     case 1: mode_context[ref_frame] |= (newmv_count > 0) ? 2 : 3;
 #if CONFIG_OPT_REF_MV
-      mode_context[ref_frame] |= (3 << REFMV_OFFSET);
+      if (ref_match_count == 1)
+        mode_context[ref_frame] |= (3 << REFMV_OFFSET);
+      else if (ref_match_count >= 2)
+        mode_context[ref_frame] |= (4 << REFMV_OFFSET);
 #else
       if (*refmv_count == 1)
         mode_context[ref_frame] |= (3 << REFMV_OFFSET);
@@ -967,6 +1000,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                    xd->n8_h << MI_SIZE_LOG2, xd);
     }
   }
+  (void)nearest_match;
 }
 
 // This function searches the neighbourhood of a given MB/SB
