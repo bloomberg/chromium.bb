@@ -227,10 +227,9 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   // The |manager| should have |download| in its list of downloads.
   void DeleteDownloadAndWaitForFlush(DownloadItem* download,
                                      DownloadManager* manager) {
-    scoped_refptr<content::DownloadTestFlushObserver> flush_observer(
-        new content::DownloadTestFlushObserver(manager));
+    content::DownloadTestFlushObserver flush_observer(manager);
     download->Remove();
-    flush_observer->WaitForFlush();
+    flush_observer.WaitForFlush();
   }
 
  protected:

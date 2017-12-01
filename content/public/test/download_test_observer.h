@@ -13,7 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -232,26 +232,21 @@ class DownloadTestObserverInterrupted : public DownloadTestObserver {
 //        IO threads.
 // This almost certainly means that a Download cancel has propagated through
 // the system.
-class DownloadTestFlushObserver
-    : public DownloadManager::Observer,
-      public DownloadItem::Observer,
-      public base::RefCountedThreadSafe<DownloadTestFlushObserver> {
+class DownloadTestFlushObserver : public DownloadManager::Observer,
+                                  public DownloadItem::Observer {
  public:
   explicit DownloadTestFlushObserver(DownloadManager* download_manager);
+  ~DownloadTestFlushObserver() override;
 
   void WaitForFlush();
 
   // DownloadsManager observer methods.
   void OnDownloadCreated(DownloadManager* manager, DownloadItem* item) override;
+  void ManagerGoingDown(DownloadManager* manager) override;
 
   // DownloadItem observer methods.
   void OnDownloadUpdated(DownloadItem* download) override;
   void OnDownloadDestroyed(DownloadItem* download) override;
-
- protected:
-  friend class base::RefCountedThreadSafe<DownloadTestFlushObserver>;
-
-  ~DownloadTestFlushObserver() override;
 
  private:
   typedef std::set<DownloadItem*> DownloadSet;
@@ -261,13 +256,10 @@ class DownloadTestFlushObserver
   // action.  If requested, also observes all downloads while iterating.
   void CheckDownloadsInProgress(bool observe_downloads);
 
-  void PingFileThread(int cycle);
-
-  void PingIOThread(int cycle);
-
   DownloadManager* download_manager_;
   DownloadSet downloads_observed_;
   bool waiting_for_zero_inprogress_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestFlushObserver);
 };
