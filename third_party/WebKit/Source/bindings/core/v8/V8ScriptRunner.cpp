@@ -375,20 +375,15 @@ static CompileFn SelectCompileFunction(
 
 // Select a compile function for a streaming compile.
 CompileFn SelectCompileFunction(V8CacheOptions cache_options,
-                                ScriptResource* resource,
+                                CachedMetadataHandler* cache_handler,
                                 ScriptStreamer* streamer) {
-  // We don't stream scripts which don't have a Resource.
-  DCHECK(resource);
-  // Failed resources should never get this far.
-  DCHECK(!resource->ErrorOccurred());
   DCHECK(streamer->IsFinished());
   DCHECK(!streamer->StreamingSuppressed());
 
   // Streaming compilation may involve use of code cache.
   // TODO(leszeks): Add compile timer to streaming compilation.
   return WTF::Bind(PostStreamCompile, cache_options,
-                   WrapPersistent(resource->CacheHandler()),
-                   WrapPersistent(streamer));
+                   WrapPersistent(cache_handler), WrapPersistent(streamer));
 }
 }  // namespace
 
@@ -496,7 +491,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   }
 
   CompileFn compile_fn =
-      streamer ? SelectCompileFunction(cache_options, resource, streamer)
+      streamer ? SelectCompileFunction(cache_options, cache_handler, streamer)
                : SelectCompileFunction(cache_options, cache_handler, code,
                                        no_handler_reason);
 
