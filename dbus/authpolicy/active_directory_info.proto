@@ -74,8 +74,16 @@ enum ErrorType {
   // yet. authpolicyd caches policy in this case and returns it in the next
   // RefreshDevicePolicy call. Should happen during enrollment only.
   ERROR_DEVICE_POLICY_CACHED_BUT_NOT_SENT = 29;
+  // Join failed because computer organizational unit does not exist.
+  ERROR_OU_DOES_NOT_EXIST = 30;
+  // Join failed because computer organizational unit is invalid.
+  ERROR_INVALID_OU = 31;
+  // Setting computer organizational unit failed with insufficient permissions.
+  ERROR_OU_ACCESS_DENIED = 32;
+  // Setting computer organizational unit failed with unspecified error.
+  ERROR_SETTING_OU_FAILED = 33;
   // Should be the last.
-  ERROR_COUNT = 30;
+  ERROR_COUNT = 34;
 }
 
 // Message sent to Chrome by authpolicyd as a response of a successful
@@ -158,14 +166,23 @@ message JoinDomainRequest {
   // https://technet.microsoft.com/en-us/library/cc959322.aspx
   optional string machine_name = 2;
   // Domain (realm) the machine should be joined to.
-  optional string domain = 3;
-  // Organization unit the machine should be put into. Goes from root to leaf.
-  // E.g. the OU at index 0 is the parent of OU at index 1, etc.
-  repeated string organizational_unit  = 4;
+  optional string machine_domain = 3;
+  // Organizational unit the machine should be put into. Goes from leaf to root,
+  // i.e. the OU at index 1 is the parent of OU at index 0, etc.
+  repeated string machine_ou  = 4;
 }
 
 // Message sent by Chrome to authpolicyd with AuthenticateUser call.
 message AuthenticateUserRequest {
+  // Logon name of the user (with @realm).
+  optional string user_principal_name = 1;
+  // Unique id of the user account. Taken from the objectGUID property of the
+  // Active Directory user account information.
+  optional string account_id = 2;
+}
+
+// Message sent by Chrome to authpolicyd with GetUserStatus call.
+message GetUserStatusRequest {
   // Logon name of the user (with @realm).
   optional string user_principal_name = 1;
   // Unique id of the user account. Taken from the objectGUID property of the
