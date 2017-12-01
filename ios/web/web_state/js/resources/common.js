@@ -231,35 +231,7 @@ __gCrWeb['common'] = __gCrWeb.common;
   };
 
   /**
-   * Sets the checked value of an input and dispatches an change event if
-   * |shouldSendChangeEvent|.
-   *
-   * This is a simplified version of the implementation of
-   *
-   *     void setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
-   *
-   * in chromium/src/third_party/WebKit/Source/WebKit/chromium/src/
-   * WebInputElement.cpp, which calls
-   *     void HTMLInputElement::setChecked(
-   *         bool nowChecked, TextFieldEventBehavior eventBehavior)
-   * in chromium/src/third_party/WebKit/Source/core/html/HTMLInputElement.cpp.
-   *
-   * @param {boolean} nowChecked The new checked value of the input element.
-   * @param {Element} input The input element of which the value is set.
-   * @param {boolean} shouldSendChangeEvent Whether a change event should be
-   *     dispatched.
-   */
-  __gCrWeb.common.setInputElementChecked = function(
-      nowChecked, input, shouldSendChangeEvent) {
-    var checkedChanged = input.checked !== nowChecked;
-    input.checked = nowChecked;
-    if (checkedChanged) {
-      __gCrWeb.common.notifyElementValueChanged(input);
-    }
-  };
-
-  /**
-   * Sets the value of an input and dispatches an change event if
+   * Sets the value of an input and dispatches a change event if
    * |shouldSendChangeEvent|.
    *
    * It is based on the logic in
@@ -269,24 +241,41 @@ __gCrWeb['common'] = __gCrWeb.common;
    * in chromium/src/third_party/WebKit/Source/WebKit/chromium/src/
    * WebInputElement.cpp, which calls
    *    void setValue(const String& value, TextFieldEventBehavior eventBehavior)
+   * or
+   *    void setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
    * in chromium/src/third_party/WebKit/Source/core/html/HTMLInputElement.cpp.
    *
-   * @param {string} value The value the input element will be set.
+   * @param {(string|boolean)} value The value the input element will be set.
+   *     For text input, it is the value to set in the field.
+   *     For select, it is the value of the option to select.
+   *     For checkable element, it is the checked value (true/false).
    * @param {Element} input The input element of which the value is set.
    * @param {boolean} shouldSendChangeEvent Whether a change event should be
    *     dispatched.
    */
   __gCrWeb.common.setInputElementValue = function(
       value, input, shouldSendChangeEvent) {
-    // In HTMLInputElement.cpp there is a check on canSetValue(value), which
-    // returns false only for file input. As file input is not relevant for
-    // autofill and this method is only used for autofill for now, there is no
-    // such check in this implementation.
-    var sanitizedValue = __gCrWeb.common.sanitizeValueForInputElement(
-        value, input);
-    var valueChanged = sanitizedValue !== input.value;
-    input.value = sanitizedValue;
-    if (valueChanged) {
+     if (!input) {
+       return;
+     }
+    var changed = false;
+    if (input.type === 'checkbox' || input.type === 'radio') {
+      changed = input.checked !== value;
+      input.checked = value;
+    } else if (input.type === 'select-one') {
+      changed = input.value !== value;
+      input.value = value;
+    } else {
+      // In HTMLInputElement.cpp there is a check on canSetValue(value), which
+      // returns false only for file input. As file input is not relevant for
+      // autofill and this method is only used for autofill for now, there is no
+      // such check in this implementation.
+      var sanitizedValue = __gCrWeb.common.sanitizeValueForInputElement(
+          /** @type {string} */ (value), input);
+      changed = sanitizedValue !== input.value;
+      input.value = sanitizedValue;
+    }
+    if (changed && shouldSendChangeEvent) {
       __gCrWeb.common.notifyElementValueChanged(input);
     }
   };

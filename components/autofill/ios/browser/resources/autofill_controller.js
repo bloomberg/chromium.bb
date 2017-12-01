@@ -634,13 +634,9 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
       continue;
 
     if (__gCrWeb.autofill.isTextInput(element) ||
-        __gCrWeb.autofill.isTextAreaElement(element)) {
+        __gCrWeb.autofill.isTextAreaElement(element) ||
+        __gCrWeb.autofill.isSelectElement(element)) {
       __gCrWeb.common.setInputElementValue(value, element, true);
-    } else if (__gCrWeb.autofill.isSelectElement(element)) {
-      if (element.value !== value) {
-        element.value = value;
-        __gCrWeb.common.notifyElementValueChanged(element);
-      }
     }
     // TODO(bondd): Handle __gCrWeb.autofill.isCheckableElement(element) ==
     // true. |is_checked| is not currently passed in by the caller.
@@ -690,10 +686,8 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
     } else if (__gCrWeb.autofill.isSelectElement(element)) {
       // Reset to the first index.
       // TODO(bondd): Store initial values and reset to the correct one here.
-      if (element.selectedIndex != 0) {
-        element.selectedIndex = 0;
-        __gCrWeb.common.notifyElementValueChanged(element);
-      }
+      __gCrWeb.common.setInputElementValue(element.option[0].value,
+          element, true);
     } else if (__gCrWeb.autofill.isCheckableElement(element)) {
       // TODO(bondd): Handle checkable elements. They aren't properly supported
       // by iOS Autofill yet.
@@ -1848,16 +1842,11 @@ __gCrWeb.autofill.fillFormField = function(data, field) {
 
     __gCrWeb.common.setInputElementValue(sanitizedValue, field, true);
     field.isAutofilled = true;
-  } else if (__gCrWeb.autofill.isSelectElement(field)) {
-    if (field.value !== data['value']) {
-      field.value = data['value'];
-      __gCrWeb.common.notifyElementValueChanged(field);
+    } else if (__gCrWeb.autofill.isSelectElement(field)) {
+      __gCrWeb.common.setInputElementValue(data['value'], field, true);
+    } else if (__gCrWeb.autofill.isCheckableElement(field)) {
+      __gCrWeb.common.setInputElementValue(data['is_checked'], field, true);
     }
-  } else {
-    if (__gCrWeb.autofill.isCheckableElement(field)) {
-      __gCrWeb.common.setInputElementChecked(data['is_checked'], field, true);
-    }
-  }
 };
 
 /**
