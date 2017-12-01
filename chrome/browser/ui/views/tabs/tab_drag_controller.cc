@@ -17,6 +17,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_features.h"
@@ -1535,7 +1536,11 @@ void TabDragController::MaximizeAttachedWindow() {
   if (was_source_fullscreen_) {
     // In fullscreen mode it is only possible to get here if the source
     // was in "immersive fullscreen" mode, so toggle it back on.
-    GetAttachedBrowserWidget()->SetFullscreen(true);
+    BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
+        GetAttachedBrowserWidget()->GetNativeWindow());
+    DCHECK(browser_view);
+    if (!browser_view->IsFullscreen())
+      chrome::ToggleFullscreenMode(browser_view->browser());
   }
 #endif
 }

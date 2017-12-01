@@ -1026,6 +1026,70 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(new_browser->window()->IsMaximized());
 }
 
+#if defined(OS_CHROMEOS)
+
+// This test makes sense only on Chrome OS where we have the immersive
+// fullscreen mode. The detached tab to a new browser window should remain in
+// immersive fullscreen mode.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DetachToOwnWindowWhileInImmersiveFullscreenMode) {
+  // Toggle the immersive fullscreen mode for the initial browser.
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_TRUE(BrowserView::GetBrowserViewForBrowser(browser())
+                  ->immersive_mode_controller()
+                  ->IsEnabled());
+
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStripImpl* tab_strip = GetTabStripForBrowser(browser());
+
+  // Move to the first tab and drag it enough so that it detaches.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::Bind(&DetachToOwnWindowStep2, this)));
+  if (input_source() == INPUT_SOURCE_MOUSE) {
+    ASSERT_TRUE(ReleaseMouseAsync());
+    QuitWhenNotDragging();
+  }
+
+  // Should no longer be dragging.
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+
+  // There should now be another browser.
+  ASSERT_EQ(2u, browser_list->size());
+  Browser* new_browser = browser_list->get(1);
+  ASSERT_TRUE(new_browser->window()->IsActive());
+  TabStripImpl* tab_strip2 = GetTabStripForBrowser(new_browser);
+  ASSERT_FALSE(tab_strip2->IsDragSessionActive());
+
+  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  // The bounds of the initial window should not have changed.
+  EXPECT_TRUE(browser()->window()->IsFullscreen());
+  ASSERT_TRUE(BrowserView::GetBrowserViewForBrowser(browser())
+                  ->immersive_mode_controller()
+                  ->IsEnabled());
+
+  EXPECT_FALSE(GetIsDragged(browser()));
+  EXPECT_FALSE(GetIsDragged(new_browser));
+  // After this both windows should still be manageable.
+  EXPECT_TRUE(IsWindowPositionManaged(browser()->window()->GetNativeWindow()));
+  EXPECT_TRUE(
+      IsWindowPositionManaged(new_browser->window()->GetNativeWindow()));
+
+  // The new browser should be in immersive fullscreen mode.
+  ASSERT_TRUE(BrowserView::GetBrowserViewForBrowser(new_browser)
+                  ->immersive_mode_controller()
+                  ->IsEnabled());
+  EXPECT_TRUE(new_browser->window()->IsFullscreen());
+}
+
+#endif
+
 // Deletes a tab being dragged before the user moved enough to start a drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DeleteBeforeStartedDragging) {
