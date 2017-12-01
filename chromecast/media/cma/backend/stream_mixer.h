@@ -281,6 +281,7 @@ class StreamMixer {
   int requested_output_samples_per_second_ = 0;
   int output_samples_per_second_ = 0;
   int low_sample_rate_cutoff_ = 0;
+  int fixed_sample_rate_ = 0;
 
   State state_;
 

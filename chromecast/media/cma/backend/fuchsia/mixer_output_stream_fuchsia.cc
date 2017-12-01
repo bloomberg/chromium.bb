@@ -39,10 +39,6 @@ MixerOutputStreamFuchsia::~MixerOutputStreamFuchsia() {
     fuchsia_audio_manager_free(manager_);
 }
 
-bool MixerOutputStreamFuchsia::IsFixedSampleRate() {
-  return false;
-}
-
 bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
   DCHECK(!stream_);
 

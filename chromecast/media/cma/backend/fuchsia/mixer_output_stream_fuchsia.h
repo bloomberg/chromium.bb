@@ -21,7 +21,6 @@ class MixerOutputStreamFuchsia : public MixerOutputStream {
   ~MixerOutputStreamFuchsia() override;
 
   // MixerOutputStream interface.
-  bool IsFixedSampleRate() override;
   bool Start(int requested_sample_rate, int channels) override;
   bool GetTimeUntilUnderrun(base::TimeDelta* result) override;
   int GetSampleRate() override;

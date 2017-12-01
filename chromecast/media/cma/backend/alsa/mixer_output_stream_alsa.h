@@ -27,7 +27,6 @@ class MixerOutputStreamAlsa : public MixerOutputStream {
   void SetAlsaWrapperForTest(std::unique_ptr<AlsaWrapper> alsa);
 
   // MixerOutputStream interface.
-  bool IsFixedSampleRate() override;
   bool Start(int requested_sample_rate, int channels) override;
   bool GetTimeUntilUnderrun(base::TimeDelta* result) override;
   int GetSampleRate() override;
@@ -56,9 +55,6 @@ class MixerOutputStreamAlsa : public MixerOutputStream {
   int DetermineOutputRate(int requested_rate);
 
   void UpdateRenderingDelay(int newly_pushed_frames);
-
-  // Value of --alsa-fixed-output-sample-rate flag if any.
-  int fixed_sample_rate_ = kInvalidSampleRate;
 
   std::unique_ptr<AlsaWrapper> alsa_;
 
