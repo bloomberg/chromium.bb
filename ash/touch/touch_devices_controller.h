@@ -24,10 +24,8 @@ enum class TouchscreenEnabledSource {
   GLOBAL,
 };
 
-// Controls the enabled state of touchpad and touchscreen. Also controls the
-// touch HUD, which draws a circle for each touch tap. The HUD is used for
-// demos/presentations because there is no visible cursor to show where taps
-// occur. Must be initialized after Shell and SessionController.
+// Controls the enabled state of touchpad and touchscreen. Must be initialized
+// after Shell and SessionController.
 class ASH_EXPORT TouchDevicesController : public SessionObserver {
  public:
   TouchDevicesController();
@@ -47,9 +45,6 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   // that the actual state of the touchscreen device is automatically determined
   // based on the requests of multiple sources.
   void SetTouchscreenEnabled(bool enabled, TouchscreenEnabledSource source);
-
-  bool IsTouchHudProjectionEnabled() const;
-  void SetTouchHudProjectionEnabled(bool enabled);
 
  private:
   // Overridden from SessionObserver:

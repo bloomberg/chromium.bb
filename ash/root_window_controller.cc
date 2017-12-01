@@ -32,7 +32,6 @@
 #include "ash/shell_port.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/touch/touch_devices_controller.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
@@ -351,14 +350,6 @@ void RootWindowController::InitializeShelf() {
   shelf_->shelf_widget()->PostCreateShelf();
 }
 
-void RootWindowController::SetTouchHudProjectionEnabled(bool enable) {
-  // TouchHudProjection manages its own lifetime.
-  if (enable && !touch_hud_projection_)
-    touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
-  else if (!enable && touch_hud_projection_)
-    touch_hud_projection_->Remove();
-}
-
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
   return shelf_->shelf_layout_manager();
 }
@@ -573,13 +564,14 @@ void RootWindowController::InitTouchHuds() {
   if (Shell::GetAshConfig() == Config::MASH)
     return;
 
+  // Enable touch debugging features when each display is initialized.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
     set_touch_hud_debug(new TouchHudDebug(GetRootWindow()));
 
-  // Enable projection on newly attached displays if the pref is set.
-  SetTouchHudProjectionEnabled(
-      Shell::Get()->touch_devices_controller()->IsTouchHudProjectionEnabled());
+  // TouchHudProjection manages its own lifetime.
+  if (command_line->HasSwitch(switches::kShowTaps))
+    touch_hud_projection_ = new TouchHudProjection(GetRootWindow());
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {

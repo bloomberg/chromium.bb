@@ -318,6 +318,26 @@ const char kStabilityCrashedActivityCounts[] =
 const char kInstantUIZeroSuggestUrlPrefix[] =
     "instant_ui.zero_suggest_url_prefix";
 
+#if defined(OS_CHROMEOS)
+// Deprecated 12/2017.
+const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
+#endif
+
+// Register prefs used only for migration (clearing or moving to a new key).
+void RegisterProfilePrefsForMigration(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  registry->RegisterDictionaryPref(kToolbarMigratedComponentActionStatus);
+#endif
+
+  registry->RegisterDictionaryPref(kDistroDict);
+  registry->RegisterStringPref(kInstantUIZeroSuggestUrlPrefix, std::string());
+
+#if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(kTouchHudProjectionEnabled, false);
+#endif
+}
+
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
@@ -641,15 +661,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   settings::MdSettingsUI::RegisterProfilePrefs(registry);
 #endif
 
-  // Preferences registered only for migration (clearing or moving to a new key)
-  // go here.
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  registry->RegisterDictionaryPref(kToolbarMigratedComponentActionStatus);
-#endif
-
-  registry->RegisterDictionaryPref(kDistroDict);
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflineMetricsCollectorImpl::RegisterPrefs(registry);
   offline_pages::RegisterPrefetchBackgroundTaskPrefs(registry);
@@ -659,7 +670,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   NotificationChannelsProviderAndroid::RegisterProfilePrefs(registry);
 #endif
 
-  registry->RegisterStringPref(kInstantUIZeroSuggestUrlPrefix, std::string());
+  RegisterProfilePrefsForMigration(registry);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -736,4 +747,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 11/2017.
   profile_prefs->ClearPref(kInstantUIZeroSuggestUrlPrefix);
+
+#if defined(OS_CHROMEOS)
+  // Added 12/2017.
+  profile_prefs->ClearPref(kTouchHudProjectionEnabled);
+#endif
 }

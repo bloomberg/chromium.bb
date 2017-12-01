@@ -41,9 +41,6 @@ void TouchDevicesController::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kTouchpadEnabled, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kTouchscreenEnabled,
                                 PrefRegistry::PUBLIC);
-  // Chrome doesn't use this, so it isn't marked PUBLIC. It's also not SYNCABLE
-  // so it isn't observed for changes.
-  registry->RegisterBooleanPref(prefs::kTouchHudProjectionEnabled, false);
 }
 
 TouchDevicesController::TouchDevicesController() {
@@ -88,23 +85,6 @@ void TouchDevicesController::SetTouchscreenEnabled(
   prefs->SetBoolean(prefs::kTouchscreenEnabled, enabled);
 }
 
-bool TouchDevicesController::IsTouchHudProjectionEnabled() const {
-  PrefService* prefs = GetActivePrefService();
-  // Touch HUD isn't used before login, when |prefs| would be null.
-  return prefs && prefs->GetBoolean(prefs::kTouchHudProjectionEnabled);
-}
-
-void TouchDevicesController::SetTouchHudProjectionEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  // Touch HUD isn't used before login, when |prefs| would be null.
-  if (!prefs)
-    return;
-  prefs->SetBoolean(prefs::kTouchHudProjectionEnabled, enabled);
-
-  for (RootWindowController* root : Shell::GetAllRootWindowControllers())
-    root->SetTouchHudProjectionEnabled(enabled);
-}
-
 void TouchDevicesController::OnSigninScreenPrefServiceInitialized(
     PrefService* prefs) {
   ObservePrefs(prefs);
@@ -113,7 +93,6 @@ void TouchDevicesController::OnSigninScreenPrefServiceInitialized(
 void TouchDevicesController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
   ObservePrefs(prefs);
-  SetTouchHudProjectionEnabled(IsTouchHudProjectionEnabled());
 }
 
 void TouchDevicesController::ObservePrefs(PrefService* prefs) {

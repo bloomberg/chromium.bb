@@ -144,10 +144,6 @@ const char kUserBluetoothAdapterEnabled[] =
 const char kSystemBluetoothAdapterEnabled[] =
     "ash.system.bluetooth.adapter_enabled";
 
-// Boolean pref for whether a dot is shown for each touch event. This is
-// typically used during demos/presentations to show where taps happen.
-const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
-
 // Boolean prefs for the status of the touchscreen and the touchpad.
 const char kTouchpadEnabled[] = "events.touch_pad.enabled";
 const char kTouchscreenEnabled[] = "events.touch_screen.enabled";

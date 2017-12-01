@@ -144,6 +144,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mash/public/interfaces/launchable.mojom.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -1133,6 +1134,16 @@ void Shell::Init(ui::ContextFactory* context_factory,
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
   message_center_controller_ = std::make_unique<MessageCenterController>();
+
+  // Mash implements the show taps feature with a separate mojo app.
+  // GetShellConnector() is null in unit tests.
+  if (config == Config::MASH && shell_delegate_->GetShellConnector() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowTaps)) {
+    mash::mojom::LaunchablePtr launchable;
+    shell_delegate_->GetShellConnector()->BindInterface("touch_hud",
+                                                        &launchable);
+    launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
+  }
 
   for (auto& observer : shell_observers_)
     observer.OnShellInitialized();

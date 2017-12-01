@@ -25519,6 +25519,7 @@ from previous Chrome versions.
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
+  <int value="975104092" label="show-taps"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>

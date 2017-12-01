@@ -781,9 +781,6 @@ extern const char kEnableShowSavedCopyPrimary[];
 extern const char kEnableShowSavedCopySecondary[];
 extern const char kDisableShowSavedCopy[];
 
-extern const char kShowTouchHudName[];
-extern const char kShowTouchHudDescription[];
-
 extern const char kSilentDebuggerExtensionApiName[];
 extern const char kSilentDebuggerExtensionApiDescription[];
 
@@ -1775,6 +1772,12 @@ extern const char kMaterialDesignInkDropAnimationSpeedName[];
 extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
 extern const char kMaterialDesignInkDropAnimationFast[];
 extern const char kMaterialDesignInkDropAnimationSlow[];
+
+extern const char kShowTapsName[];
+extern const char kShowTapsDescription[];
+
+extern const char kShowTouchHudName[];
+extern const char kShowTouchHudDescription[];
 
 extern const char kUiShowCompositedLayerBordersName[];
 extern const char kUiShowCompositedLayerBordersDescription[];

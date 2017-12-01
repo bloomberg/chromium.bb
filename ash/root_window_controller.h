@@ -128,9 +128,6 @@ class ASH_EXPORT RootWindowController {
   // Returns the instance of the sidebar.
   Sidebar* sidebar() { return sidebar_.get(); }
 
-  // Enables projection touch HUD.
-  void SetTouchHudProjectionEnabled(bool enable);
-
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const { return touch_hud_debug_; }
   TouchHudProjection* touch_hud_projection() const {

@@ -137,6 +137,10 @@ const char kForceClamshellPowerButton[] = "force-clamshell-power-button";
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 
+// Draws a circle at each touch point, similar to the Android OS developer
+// option "Show taps".
+const char kShowTaps[] = "show-taps";
+
 // If true, the views login screen will be shown. This will become the default
 // in the future.
 const char kShowViewsLogin[] = "show-views-login";

@@ -1274,11 +1274,6 @@ const char kEnableShowSavedCopyPrimary[] = "Enable: Primary";
 const char kEnableShowSavedCopySecondary[] = "Enable: Secondary";
 const char kDisableShowSavedCopy[] = "Disable";
 
-const char kShowTouchHudName[] = "Show HUD for touch points";
-const char kShowTouchHudDescription[] =
-    "Enables a heads-up display at the top-left corner of the screen that "
-    "lists information about the touch-points on the screen.";
-
 const char kSilentDebuggerExtensionApiName[] = "Silent Debugging";
 const char kSilentDebuggerExtensionApiDescription[] =
     "Do not show the infobar when an extension attaches to a page via "
@@ -2606,6 +2601,18 @@ const char kOfficeEditingComponentAppName[] =
     "Office Editing for Docs, Sheets & Slides";
 const char kOfficeEditingComponentAppDescription[] =
     "Office Editing for Docs, Sheets & Slides for testing purposes.";
+
+const char kShowTapsName[] = "Show taps";
+const char kShowTapsDescription[] =
+    "Draws a circle at each touch point, which makes touch points more obvious "
+    "when projecting or mirroring the display. Similar to the Android OS "
+    "developer option.";
+
+const char kShowTouchHudName[] = "Show HUD for touch points";
+const char kShowTouchHudDescription[] =
+    "Shows a trail of colored dots for the last few touch points. Pressing "
+    "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
+    "debug hardware issues that generate spurious touch events.";
 
 const char kSysInternalsName[] = "Enable Sys-Internals";
 const char kSysInternalsDescription[] =
