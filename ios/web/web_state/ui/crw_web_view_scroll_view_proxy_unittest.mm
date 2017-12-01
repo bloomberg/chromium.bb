@@ -126,6 +126,10 @@ TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewPresent) {
   [[[mockScrollView_ expect] andReturnValue:@NO] scrollsToTop];
   EXPECT_FALSE([webViewScrollViewProxy_ scrollsToTop]);
 
+  NSArray<__kindof UIView*>* subviews = [NSArray array];
+  [[[mockScrollView_ expect] andReturn:subviews] subviews];
+  EXPECT_EQ(subviews, [webViewScrollViewProxy_ subviews]);
+
   if (@available(iOS 11, *)) {
     [[[mockScrollView_ expect]
         andReturnValue:@(UIScrollViewContentInsetAdjustmentAutomatic)]
@@ -159,6 +163,7 @@ TEST_F(CRWWebViewScrollViewProxyTest, ScrollViewAbsent) {
   EXPECT_FALSE([webViewScrollViewProxy_ isDragging]);
   EXPECT_FALSE([webViewScrollViewProxy_ isTracking]);
   EXPECT_FALSE([webViewScrollViewProxy_ scrollsToTop]);
+  EXPECT_EQ((NSUInteger)0, [webViewScrollViewProxy_ subviews].count);
   if (@available(iOS 11, *)) {
     EXPECT_EQ(UIScrollViewContentInsetAdjustmentAutomatic,
               [webViewScrollViewProxy_ contentInsetAdjustmentBehavior]);

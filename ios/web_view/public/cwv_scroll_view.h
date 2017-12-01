@@ -36,6 +36,7 @@ CWV_EXPORT
     UIScrollViewContentInsetAdjustmentBehavior contentInsetAdjustmentBehavior
         API_AVAILABLE(ios(11.0));
 @property(nonatomic, readonly) UIPanGestureRecognizer* panGestureRecognizer;
+@property(nonatomic, readonly, copy) NSArray<__kindof UIView*>* subviews;
 
 // KVO compliant.
 @property(nonatomic, readonly) CGSize contentSize;

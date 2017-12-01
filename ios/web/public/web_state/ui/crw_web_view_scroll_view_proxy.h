@@ -42,6 +42,7 @@
     UIPanGestureRecognizer* panGestureRecognizer;
 // Returns the scrollview's gesture recognizers.
 @property(weak, nonatomic, readonly) NSArray* gestureRecognizers;
+@property(nonatomic, readonly, copy) NSArray<__kindof UIView*>* subviews;
 
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
 - (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
