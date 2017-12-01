@@ -14,6 +14,8 @@ static_library("renderer") {
     "form_classifier.h",
     "html_based_username_detector.cc",
     "html_based_username_detector.h",
+    "html_based_username_detector_vocabulary.cc",
+    "html_based_username_detector_vocabulary.h",
     "page_form_analyser_logger.cc",
     "page_form_analyser_logger.h",
     "page_passwords_analyser.cc",
