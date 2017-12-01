@@ -195,7 +195,7 @@ SuggestionAnswer::~SuggestionAnswer() {}
 // static
 std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
     const base::DictionaryValue* answer_json) {
-  auto result = base::WrapUnique(new SuggestionAnswer);
+  auto result = base::MakeUnique<SuggestionAnswer>();
 
   const base::ListValue* lines_json;
   if (!answer_json->GetList(kAnswerJsonLines, &lines_json) ||
