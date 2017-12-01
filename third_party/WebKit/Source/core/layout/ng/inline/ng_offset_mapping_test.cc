@@ -740,4 +740,32 @@ TEST_P(ParameterizedNGOffsetMappingTest, Table) {
   TEST_RANGE(result.GetRanges(), foo_node, 0u, 3u);
 }
 
+TEST_P(ParameterizedNGOffsetMappingTest, GetMappingForInlineBlock) {
+  SetupHtml("t",
+            "<div id=t>foo"
+            "<span style='display: inline-block' id=span> bar </span>"
+            "baz</div>");
+
+  const Element* div = GetElementById("t");
+  const Element* span = GetElementById("span");
+
+  const NGOffsetMapping* div_mapping =
+      NGOffsetMapping::GetFor(Position(div->firstChild(), 0));
+  const NGOffsetMapping* span_mapping =
+      NGOffsetMapping::GetFor(Position(span->firstChild(), 0));
+
+  // NGOffsetMapping::GetFor for Before/AfterAnchor of an inline block should
+  // return the mapping of the containing block, not of the inline block itself.
+
+  const NGOffsetMapping* span_before_mapping =
+      NGOffsetMapping::GetFor(Position::BeforeNode(*span));
+  EXPECT_EQ(div_mapping, span_before_mapping);
+  EXPECT_NE(span_mapping, span_before_mapping);
+
+  const NGOffsetMapping* span_after_mapping =
+      NGOffsetMapping::GetFor(Position::AfterNode(*span));
+  EXPECT_EQ(div_mapping, span_after_mapping);
+  EXPECT_NE(span_mapping, span_after_mapping);
+}
+
 }  // namespace blink
