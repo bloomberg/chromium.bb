@@ -34,6 +34,11 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   // modal dialog window is present.
   WindowList BuildWindowListIgnoreModal() const;
 
+  // This does the same thing as |BuildMruWindowList()| but with some
+  // exclusions. This list is used for cycling through by the keyboard via
+  // alt-tab.
+  WindowList BuildWindowForCycleList() const;
+
   // Starts or stops ignoring window activations. If no longer ignoring
   // activations the currently active window is moved to the front of the
   // MRU window list. Used by WindowCycleList to avoid adding all cycled
