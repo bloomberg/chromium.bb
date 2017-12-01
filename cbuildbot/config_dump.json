@@ -18799,7 +18799,8 @@
             "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"kench\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"sion\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"talon\",\n    \"test_suites\": []\n}",
-            "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"teemo\",\n    \"test_suites\": []\n}"
+            "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"teemo\",\n    \"test_suites\": []\n}",
+            "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"wukong\",\n    \"test_suites\": []\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -18943,7 +18944,8 @@
             "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"kench\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"sion\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"talon\",\n    \"test_suites\": []\n}",
-            "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"teemo\",\n    \"test_suites\": []\n}"
+            "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"teemo\",\n    \"test_suites\": []\n}",
+            "{\n    \"lab_board_name\": \"fizz\",\n    \"name\": \"wukong\",\n    \"test_suites\": []\n}"
         ],
         "paygen": false,
         "push_image": false,

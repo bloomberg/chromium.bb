@@ -1759,6 +1759,12 @@
           "name": "teemo",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz",
+          "name": "wukong",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         }
       ]
     },
