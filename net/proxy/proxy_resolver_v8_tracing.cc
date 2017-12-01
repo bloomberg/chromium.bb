@@ -1081,8 +1081,8 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
   DISALLOW_COPY_AND_ASSIGN(CreateJob);
 };
 
-ProxyResolverV8TracingFactoryImpl::ProxyResolverV8TracingFactoryImpl() {
-}
+ProxyResolverV8TracingFactoryImpl::ProxyResolverV8TracingFactoryImpl() =
+    default;
 
 ProxyResolverV8TracingFactoryImpl::~ProxyResolverV8TracingFactoryImpl() {
   for (auto* job : jobs_) {
