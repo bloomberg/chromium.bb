@@ -2530,6 +2530,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableBackgroundTimerThrottling,
     switches::kDisableBreakpad,
     switches::kDisableBrowserSideNavigation,
+    switches::kDisableCompositorUkmForTests,
     switches::kDisablePreferCompositingToLCDText,
     switches::kDisableDatabases,
     switches::kDisableDisplayList2dCanvas,

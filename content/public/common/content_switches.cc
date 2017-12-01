@@ -107,6 +107,10 @@ const char kDisableBackgroundTimerThrottling[] =
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
+// Disables compositor Ukm recording in browser tests.
+// TODO(khushalsagar): Remove once crbug.com/761524 is resolved.
+const char kDisableCompositorUkmForTests[] = "disable-compositor-ukm-for-tests";
+
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 
