@@ -10,7 +10,7 @@
 
 namespace media {
 
-AudioSystem::~AudioSystem() {}
+AudioSystem::~AudioSystem() = default;
 
 // static
 std::unique_ptr<AudioSystem> AudioSystem::CreateInstance() {

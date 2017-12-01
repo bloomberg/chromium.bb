@@ -25,7 +25,7 @@ SourceBufferRange::SourceBufferRange(
   DCHECK(!interbuffer_distance_cb.is_null());
 }
 
-SourceBufferRange::~SourceBufferRange() {}
+SourceBufferRange::~SourceBufferRange() = default;
 
 void SourceBufferRange::SeekToStart() {
   CHECK(!buffers_.empty());

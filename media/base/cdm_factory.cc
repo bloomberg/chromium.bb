@@ -6,10 +6,8 @@
 
 namespace media {
 
-CdmFactory::CdmFactory() {
-}
+CdmFactory::CdmFactory() = default;
 
-CdmFactory::~CdmFactory() {
-}
+CdmFactory::~CdmFactory() = default;
 
 }  // namespace media

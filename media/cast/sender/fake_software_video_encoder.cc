@@ -26,7 +26,7 @@ FakeSoftwareVideoEncoder::FakeSoftwareVideoEncoder(
   DCHECK_GT(video_config_.max_frame_rate, 0);
 }
 
-FakeSoftwareVideoEncoder::~FakeSoftwareVideoEncoder() {}
+FakeSoftwareVideoEncoder::~FakeSoftwareVideoEncoder() = default;
 
 void FakeSoftwareVideoEncoder::Initialize() {}
 

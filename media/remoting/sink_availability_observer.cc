@@ -12,7 +12,7 @@ SinkAvailabilityObserver::SinkAvailabilityObserver(
     mojom::RemoterPtr remoter)
     : binding_(this, std::move(source_request)), remoter_(std::move(remoter)) {}
 
-SinkAvailabilityObserver::~SinkAvailabilityObserver() {}
+SinkAvailabilityObserver::~SinkAvailabilityObserver() = default;
 
 bool SinkAvailabilityObserver::IsRemoteDecryptionAvailable() const {
   return std::find(std::begin(sink_metadata_.features),

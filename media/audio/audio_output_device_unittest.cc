@@ -53,8 +53,8 @@ const size_t kBitstreamDataSize = 512;
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
-  MockRenderCallback() {}
-  virtual ~MockRenderCallback() {}
+  MockRenderCallback() = default;
+  virtual ~MockRenderCallback() = default;
 
   MOCK_METHOD4(Render,
                int(base::TimeDelta delay,
@@ -76,8 +76,8 @@ void RenderAudioBus(base::TimeDelta delay,
 
 class MockAudioOutputIPC : public AudioOutputIPC {
  public:
-  MockAudioOutputIPC() {}
-  virtual ~MockAudioOutputIPC() {}
+  MockAudioOutputIPC() = default;
+  virtual ~MockAudioOutputIPC() = default;
 
   MOCK_METHOD4(RequestDeviceAuthorization,
                void(AudioOutputIPCDelegate* delegate,

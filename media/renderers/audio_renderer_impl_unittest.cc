@@ -50,8 +50,8 @@ struct OutputFrames {
 
 class MockMediaClient : public MediaClient {
  public:
-  MockMediaClient() {}
-  ~MockMediaClient() override {}
+  MockMediaClient() = default;
+  ~MockMediaClient() override = default;
 
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) override {

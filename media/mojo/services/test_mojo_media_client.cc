@@ -23,7 +23,7 @@
 
 namespace media {
 
-TestMojoMediaClient::TestMojoMediaClient() {}
+TestMojoMediaClient::TestMojoMediaClient() = default;
 
 TestMojoMediaClient::~TestMojoMediaClient() {
   DVLOG(1) << __func__;

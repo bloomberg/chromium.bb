@@ -23,7 +23,7 @@ AudioBlockFifo::AudioBlockFifo(int channels, int frames, int blocks)
   IncreaseCapacity(blocks);
 }
 
-AudioBlockFifo::~AudioBlockFifo() {}
+AudioBlockFifo::~AudioBlockFifo() = default;
 
 void AudioBlockFifo::Push(const void* source,
                           int frames,

@@ -40,7 +40,7 @@ FakeVideoDecodeAccelerator::FakeVideoDecodeAccelerator(
       flushing_(false),
       weak_this_factory_(this) {}
 
-FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() {}
+FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() = default;
 
 bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
                                             Client* client) {

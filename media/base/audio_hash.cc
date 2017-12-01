@@ -19,7 +19,7 @@ AudioHash::AudioHash()
       sample_count_(0) {
 }
 
-AudioHash::~AudioHash() {}
+AudioHash::~AudioHash() = default;
 
 void AudioHash::Update(const AudioBus* audio_bus, int frames) {
   // Use uint32_t to ensure overflow is a defined operation.

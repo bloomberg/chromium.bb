@@ -619,8 +619,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
                  status_change_cb));
 }
 
-ExternalVideoEncoder::~ExternalVideoEncoder() {
-}
+ExternalVideoEncoder::~ExternalVideoEncoder() = default;
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
@@ -722,7 +721,8 @@ SizeAdaptableExternalVideoEncoder::SizeAdaptableExternalVideoEncoder(
       create_vea_cb_(create_vea_cb),
       create_video_encode_memory_cb_(create_video_encode_memory_cb) {}
 
-SizeAdaptableExternalVideoEncoder::~SizeAdaptableExternalVideoEncoder() {}
+SizeAdaptableExternalVideoEncoder::~SizeAdaptableExternalVideoEncoder() =
+    default;
 
 std::unique_ptr<VideoEncoder>
 SizeAdaptableExternalVideoEncoder::CreateEncoder() {
@@ -732,9 +732,9 @@ SizeAdaptableExternalVideoEncoder::CreateEncoder() {
       create_video_encode_memory_cb_));
 }
 
-QuantizerEstimator::QuantizerEstimator() {}
+QuantizerEstimator::QuantizerEstimator() = default;
 
-QuantizerEstimator::~QuantizerEstimator() {}
+QuantizerEstimator::~QuantizerEstimator() = default;
 
 void QuantizerEstimator::Reset() {
   last_frame_pixel_buffer_.reset();

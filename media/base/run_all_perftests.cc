@@ -11,7 +11,7 @@
 class TestSuiteNoAtExit : public base::TestSuite {
  public:
   TestSuiteNoAtExit(int argc, char** argv) : TestSuite(argc, argv) {}
-  ~TestSuiteNoAtExit() override {}
+  ~TestSuiteNoAtExit() override = default;
 
  protected:
   void Initialize() override;

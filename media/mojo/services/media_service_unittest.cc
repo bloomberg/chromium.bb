@@ -54,8 +54,8 @@ const char kSecurityOrigin[] = "http://foo.com";
 
 class MockRendererClient : public mojom::RendererClient {
  public:
-  MockRendererClient() {}
-  ~MockRendererClient() override {}
+  MockRendererClient() = default;
+  ~MockRendererClient() override = default;
 
   // mojom::RendererClient implementation.
   MOCK_METHOD3(OnTimeUpdate,
@@ -84,7 +84,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
       : ServiceTest("media_service_unittests"),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
-  ~MediaServiceTest() override {}
+  ~MediaServiceTest() override = default;
 
   void SetUp() override {
     ServiceTest::SetUp();

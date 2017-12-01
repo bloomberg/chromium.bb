@@ -38,7 +38,7 @@ struct Decoder {
 
 MediaFileChecker::MediaFileChecker(base::File file) : file_(std::move(file)) {}
 
-MediaFileChecker::~MediaFileChecker() {}
+MediaFileChecker::~MediaFileChecker() = default;
 
 bool MediaFileChecker::Start(base::TimeDelta check_time) {
   media::FileDataSource source(std::move(file_));

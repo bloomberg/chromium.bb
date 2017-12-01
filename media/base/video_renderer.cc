@@ -6,7 +6,7 @@
 
 namespace media {
 
-VideoRenderer::VideoRenderer() {}
-VideoRenderer::~VideoRenderer() {}
+VideoRenderer::VideoRenderer() = default;
+VideoRenderer::~VideoRenderer() = default;
 
 }  // namespace media

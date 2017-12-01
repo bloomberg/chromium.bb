@@ -18,8 +18,8 @@ namespace {
 
 class SimpleCdmVideoFrame : public VideoFrameImpl {
  public:
-  SimpleCdmVideoFrame() {}
-  ~SimpleCdmVideoFrame() final {}
+  SimpleCdmVideoFrame() = default;
+  ~SimpleCdmVideoFrame() final = default;
 
   // VideoFrameImpl implementation.
   scoped_refptr<media::VideoFrame> TransformToVideoFrame(
@@ -53,9 +53,9 @@ class SimpleCdmVideoFrame : public VideoFrameImpl {
 
 }  // namespace
 
-SimpleCdmAllocator::SimpleCdmAllocator() {}
+SimpleCdmAllocator::SimpleCdmAllocator() = default;
 
-SimpleCdmAllocator::~SimpleCdmAllocator() {}
+SimpleCdmAllocator::~SimpleCdmAllocator() = default;
 
 // Creates a new SimpleCdmBuffer on every request. It does not keep track of
 // the memory allocated, so the caller is responsible for calling Destroy()

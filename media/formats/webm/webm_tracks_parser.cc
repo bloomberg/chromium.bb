@@ -53,7 +53,7 @@ WebMTracksParser::WebMTracksParser(MediaLog* media_log, bool ignore_text_tracks)
   Reset();
 }
 
-WebMTracksParser::~WebMTracksParser() {}
+WebMTracksParser::~WebMTracksParser() = default;
 
 void WebMTracksParser::Reset() {
   ResetTrackEntry();

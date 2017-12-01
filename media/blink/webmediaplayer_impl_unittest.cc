@@ -97,7 +97,7 @@ mojom::VideoDecodeStatsRecorderPtr CreateCapabilitiesRecorder() {
 
 class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
  public:
-  DummyWebMediaPlayerClient() {}
+  DummyWebMediaPlayerClient() = default;
 
   // blink::WebMediaPlayerClient implementation.
   void NetworkStateChanged() override {}

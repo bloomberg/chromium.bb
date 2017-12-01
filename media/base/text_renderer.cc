@@ -320,7 +320,6 @@ void TextRenderer::Read(
 TextRenderer::TextTrackState::TextTrackState(std::unique_ptr<TextTrack> tt)
     : read_state(kReadIdle), text_track(std::move(tt)) {}
 
-TextRenderer::TextTrackState::~TextTrackState() {
-}
+TextRenderer::TextTrackState::~TextTrackState() = default;
 
 }  // namespace media

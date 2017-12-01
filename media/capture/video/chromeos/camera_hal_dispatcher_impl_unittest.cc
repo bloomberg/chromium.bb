@@ -25,7 +25,7 @@ class MockCameraHalServer : public arc::mojom::CameraHalServer {
  public:
   MockCameraHalServer() : binding_(this) {}
 
-  ~MockCameraHalServer() {}
+  ~MockCameraHalServer() = default;
 
   void CreateChannel(
       arc::mojom::CameraModuleRequest camera_module_request) override {
@@ -51,7 +51,7 @@ class MockCameraHalClient : public arc::mojom::CameraHalClient {
  public:
   MockCameraHalClient() : binding_(this) {}
 
-  ~MockCameraHalClient() {}
+  ~MockCameraHalClient() = default;
 
   void SetUpChannel(arc::mojom::CameraModulePtr camera_module_ptr) override {
     DoSetUpChannel(camera_module_ptr);
@@ -76,9 +76,9 @@ class MockCameraHalClient : public arc::mojom::CameraHalClient {
 
 class CameraHalDispatcherImplTest : public ::testing::Test {
  public:
-  CameraHalDispatcherImplTest() {}
+  CameraHalDispatcherImplTest() = default;
 
-  ~CameraHalDispatcherImplTest() override {}
+  ~CameraHalDispatcherImplTest() override = default;
 
   void SetUp() override {
     dispatcher_ = new CameraHalDispatcherImpl();

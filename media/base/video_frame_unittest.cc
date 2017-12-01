@@ -328,7 +328,7 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
   explicit SyncTokenClientImpl(const gpu::SyncToken& sync_token)
       : sync_token_(sync_token) {}
-  ~SyncTokenClientImpl() override {}
+  ~SyncTokenClientImpl() override = default;
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
     *sync_token = sync_token_;
   }

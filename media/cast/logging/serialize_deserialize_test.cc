@@ -51,7 +51,7 @@ class SerializeDeserializeTest : public ::testing::Test {
   SerializeDeserializeTest()
       : serialized_(new char[kMaxSerializedBytes]), output_bytes_(0) {}
 
-  ~SerializeDeserializeTest() override {}
+  ~SerializeDeserializeTest() override = default;
 
   void Init() {
     metadata_.set_first_rtp_timestamp(12345678 * 90);

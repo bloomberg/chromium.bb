@@ -87,7 +87,7 @@ ClocklessAudioSink::ClocklessAudioSink(const OutputDeviceInfo& device_info)
       hashing_(false),
       is_optimized_for_hw_params_(true) {}
 
-ClocklessAudioSink::~ClocklessAudioSink() {}
+ClocklessAudioSink::~ClocklessAudioSink() = default;
 
 void ClocklessAudioSink::Initialize(const AudioParameters& params,
                                     RenderCallback* callback) {

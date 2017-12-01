@@ -46,7 +46,7 @@ AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
   thread_checker_.DetachFromThread();
 }
 
-AudioDeviceThread::Callback::~Callback() {}
+AudioDeviceThread::Callback::~Callback() = default;
 
 void AudioDeviceThread::Callback::InitializeOnAudioThread() {
   // Normally this function is called before the thread checker is used

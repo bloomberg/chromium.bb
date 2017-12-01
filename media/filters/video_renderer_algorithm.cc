@@ -25,8 +25,7 @@ VideoRendererAlgorithm::ReadyFrame::ReadyFrame(
 VideoRendererAlgorithm::ReadyFrame::ReadyFrame(const ReadyFrame& other) =
     default;
 
-VideoRendererAlgorithm::ReadyFrame::~ReadyFrame() {
-}
+VideoRendererAlgorithm::ReadyFrame::~ReadyFrame() = default;
 
 bool VideoRendererAlgorithm::ReadyFrame::operator<(
     const ReadyFrame& other) const {
@@ -46,7 +45,7 @@ VideoRendererAlgorithm::VideoRendererAlgorithm(
   Reset();
 }
 
-VideoRendererAlgorithm::~VideoRendererAlgorithm() {}
+VideoRendererAlgorithm::~VideoRendererAlgorithm() = default;
 
 scoped_refptr<VideoFrame> VideoRendererAlgorithm::Render(
     base::TimeTicks deadline_min,

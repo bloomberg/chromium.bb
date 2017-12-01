@@ -76,7 +76,7 @@ class WebAudioSourceProviderImplTest
                            ? mock_sink_.get()
                            : wasp_impl_->fallback_sink()) {}
 
-  virtual ~WebAudioSourceProviderImplTest() {}
+  virtual ~WebAudioSourceProviderImplTest() = default;
 
   void CallAllSinkMethodsAndVerify(bool verify) {
     testing::InSequence s;

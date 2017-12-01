@@ -45,7 +45,7 @@ AudioFifo::AudioFifo(int channels, int frames)
       read_pos_(0),
       write_pos_(0) {}
 
-AudioFifo::~AudioFifo() {}
+AudioFifo::~AudioFifo() = default;
 
 int AudioFifo::frames() const {
   int delta = frames_pushed_ - frames_consumed_;

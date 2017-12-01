@@ -28,7 +28,7 @@ class NewPersistentSessionCdmPromise : public NewSessionCdmPromise {
                                  std::unique_ptr<NewSessionCdmPromise> promise)
       : session_created_cb_(std::move(session_created_cb)),
         promise_(std::move(promise)) {}
-  ~NewPersistentSessionCdmPromise() override {}
+  ~NewPersistentSessionCdmPromise() override = default;
 
   // NewSessionCdmPromise implementation.
   void resolve(const std::string& session_id) override {
@@ -61,7 +61,7 @@ class FinishLoadCdmPromise : public SimpleCdmPromise {
   FinishLoadCdmPromise(const std::string& session_id,
                        std::unique_ptr<NewSessionCdmPromise> promise)
       : session_id_(session_id), promise_(std::move(promise)) {}
-  ~FinishLoadCdmPromise() override {}
+  ~FinishLoadCdmPromise() override = default;
 
   // CdmSimplePromise implementation.
   void resolve() override {

@@ -60,7 +60,7 @@ MPEGAudioStreamParserBase::MPEGAudioStreamParserBase(uint32_t start_code_mask,
       audio_codec_(audio_codec),
       codec_delay_(codec_delay) {}
 
-MPEGAudioStreamParserBase::~MPEGAudioStreamParserBase() {}
+MPEGAudioStreamParserBase::~MPEGAudioStreamParserBase() = default;
 
 void MPEGAudioStreamParserBase::Init(
     const InitCB& init_cb,

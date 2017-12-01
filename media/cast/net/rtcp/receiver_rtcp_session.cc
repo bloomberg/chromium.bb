@@ -23,7 +23,7 @@ ReceiverRtcpSession::ReceiverRtcpSession(base::TickClock* clock,
       lip_sync_ntp_timestamp_(0),
       parser_(local_ssrc, remote_ssrc) {}
 
-ReceiverRtcpSession::~ReceiverRtcpSession() {}
+ReceiverRtcpSession::~ReceiverRtcpSession() = default;
 
 bool ReceiverRtcpSession::IncomingRtcpPacket(const uint8_t* data,
                                              size_t length) {

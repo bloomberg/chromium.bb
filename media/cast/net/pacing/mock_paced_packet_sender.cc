@@ -7,9 +7,9 @@
 namespace media {
 namespace cast {
 
-MockPacedPacketSender::MockPacedPacketSender() {}
+MockPacedPacketSender::MockPacedPacketSender() = default;
 
-MockPacedPacketSender::~MockPacedPacketSender() {}
+MockPacedPacketSender::~MockPacedPacketSender() = default;
 
 }  // namespace cast
 }  // namespace media

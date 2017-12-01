@@ -11,9 +11,9 @@
 
 namespace media {
 
-MediaTracks::MediaTracks() {}
+MediaTracks::MediaTracks() = default;
 
-MediaTracks::~MediaTracks() {}
+MediaTracks::~MediaTracks() = default;
 
 MediaTrack* MediaTracks::AddAudioTrack(
     const AudioDecoderConfig& config,

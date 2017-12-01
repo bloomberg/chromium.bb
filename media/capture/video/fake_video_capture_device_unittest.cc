@@ -55,7 +55,7 @@ class StubBufferHandleProvider
   StubBufferHandleProvider(size_t mapped_size, uint8_t* data)
       : mapped_size_(mapped_size), data_(data) {}
 
-  ~StubBufferHandleProvider() override {}
+  ~StubBufferHandleProvider() override = default;
 
   mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
       bool read_only) override {
@@ -185,7 +185,7 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
 
  private:
   friend class base::RefCounted<ImageCaptureClient>;
-  virtual ~ImageCaptureClient() {}
+  virtual ~ImageCaptureClient() = default;
 
   mojom::PhotoStatePtr state_;
 };

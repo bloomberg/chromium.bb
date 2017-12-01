@@ -55,8 +55,8 @@ class AudioManagerHelper : public base::PowerObserver {
     THREAD_MAX = THREAD_RECOVERED
   };
 
-  AudioManagerHelper() {}
-  ~AudioManagerHelper() override {}
+  AudioManagerHelper() = default;
+  ~AudioManagerHelper() override = default;
 
   void StartHangTimer(
       scoped_refptr<base::SingleThreadTaskRunner> monitor_task_runner) {

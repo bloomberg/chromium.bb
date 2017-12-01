@@ -146,7 +146,7 @@ SincResampler::SincResampler(double io_sample_rate_ratio,
   InitializeKernel();
 }
 
-SincResampler::~SincResampler() {}
+SincResampler::~SincResampler() = default;
 
 void SincResampler::UpdateRegions(bool second_load) {
   // Setup various region pointers in the buffer (see diagram above).  If we're

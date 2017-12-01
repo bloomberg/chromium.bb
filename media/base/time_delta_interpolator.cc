@@ -22,8 +22,7 @@ TimeDeltaInterpolator::TimeDeltaInterpolator(base::TickClock* tick_clock)
   DCHECK(tick_clock_);
 }
 
-TimeDeltaInterpolator::~TimeDeltaInterpolator() {
-}
+TimeDeltaInterpolator::~TimeDeltaInterpolator() = default;
 
 base::TimeDelta TimeDeltaInterpolator::StartInterpolating() {
   DCHECK(!interpolating_);

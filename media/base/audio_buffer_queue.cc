@@ -12,7 +12,7 @@
 namespace media {
 
 AudioBufferQueue::AudioBufferQueue() { Clear(); }
-AudioBufferQueue::~AudioBufferQueue() {}
+AudioBufferQueue::~AudioBufferQueue() = default;
 
 void AudioBufferQueue::Clear() {
   buffers_.clear();

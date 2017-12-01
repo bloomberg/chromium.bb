@@ -61,7 +61,7 @@ static void CloseAudioController(AudioInputController* controller) {
 class MockAudioInputControllerEventHandler
     : public AudioInputController::EventHandler {
  public:
-  MockAudioInputControllerEventHandler() {}
+  MockAudioInputControllerEventHandler() = default;
 
   MOCK_METHOD1(OnCreated, void(bool initially_muted));
   MOCK_METHOD1(OnError, void(AudioInputController::ErrorCode error_code));
@@ -74,7 +74,7 @@ class MockAudioInputControllerEventHandler
 
 class MockSyncWriter : public AudioInputController::SyncWriter {
  public:
-  MockSyncWriter() {}
+  MockSyncWriter() = default;
 
   MOCK_METHOD4(Write,
                void(const AudioBus* data,
@@ -86,7 +86,7 @@ class MockSyncWriter : public AudioInputController::SyncWriter {
 
 class MockUserInputMonitor : public UserInputMonitor {
  public:
-  MockUserInputMonitor() {}
+  MockUserInputMonitor() = default;
 
   size_t GetKeyPressCount() const { return 0; }
 

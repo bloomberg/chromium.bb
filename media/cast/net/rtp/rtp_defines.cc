@@ -17,7 +17,7 @@ RtpCastHeader::RtpCastHeader()
       max_packet_id(0),
       new_playout_delay_ms(0) {}
 
-RtpPayloadFeedback::~RtpPayloadFeedback() {}
+RtpPayloadFeedback::~RtpPayloadFeedback() = default;
 
 }  // namespace cast
 }  // namespace media

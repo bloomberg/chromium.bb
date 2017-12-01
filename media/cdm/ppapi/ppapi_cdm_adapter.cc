@@ -389,7 +389,7 @@ PpapiCdmAdapter::PpapiCdmAdapter(PP_Instance instance, pp::Module* module)
   callback_factory_.Initialize(this);
 }
 
-PpapiCdmAdapter::~PpapiCdmAdapter() {}
+PpapiCdmAdapter::~PpapiCdmAdapter() = default;
 
 CdmWrapper* PpapiCdmAdapter::CreateCdmInstance(const std::string& key_system) {
   // The Pepper plugin will be staticly linked to the CDM, so pass the plugin's

@@ -15,7 +15,7 @@ ContentEncoding::ContentEncoding()
       cipher_mode_(kCipherModeInvalid) {
 }
 
-ContentEncoding::~ContentEncoding() {}
+ContentEncoding::~ContentEncoding() = default;
 
 void ContentEncoding::SetEncryptionKeyId(const uint8_t* encryption_key_id,
                                          int size) {

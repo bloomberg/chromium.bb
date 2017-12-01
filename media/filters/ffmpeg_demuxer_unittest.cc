@@ -140,7 +140,7 @@ static void EosOnReadDone(bool* got_eos_buffer,
 // FFmpeg, pipeline and filter host mocks.
 class FFmpegDemuxerTest : public testing::Test {
  protected:
-  FFmpegDemuxerTest() {}
+  FFmpegDemuxerTest() = default;
 
   virtual ~FFmpegDemuxerTest() { Shutdown(); }
 

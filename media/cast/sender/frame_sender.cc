@@ -35,7 +35,7 @@ const int kMaxFrameBurst = 5;
 FrameSender::RtcpClient::RtcpClient(base::WeakPtr<FrameSender> frame_sender)
     : frame_sender_(frame_sender) {}
 
-FrameSender::RtcpClient::~RtcpClient() {}
+FrameSender::RtcpClient::~RtcpClient() = default;
 
 void FrameSender::RtcpClient::OnReceivedCastMessage(
     const RtcpCastMessage& cast_message) {
@@ -99,8 +99,7 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
       base::MakeUnique<FrameSender::RtcpClient>(weak_factory_.GetWeakPtr()));
 }
 
-FrameSender::~FrameSender() {
-}
+FrameSender::~FrameSender() = default;
 
 void FrameSender::ScheduleNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));

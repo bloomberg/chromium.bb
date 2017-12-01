@@ -68,7 +68,7 @@ AudioParameters::AudioParameters(Format format,
         frames_per_buffer);
 }
 
-AudioParameters::~AudioParameters() {}
+AudioParameters::~AudioParameters() = default;
 
 AudioParameters::AudioParameters(const AudioParameters&) = default;
 AudioParameters& AudioParameters::operator=(const AudioParameters&) = default;

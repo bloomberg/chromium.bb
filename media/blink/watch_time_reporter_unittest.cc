@@ -73,14 +73,14 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool>,
                               public mojom::WatchTimeRecorderProvider {
  public:
   WatchTimeReporterTest() : has_video_(GetParam()) {}
-  ~WatchTimeReporterTest() override {}
+  ~WatchTimeReporterTest() override = default;
 
  protected:
   class WatchTimeInterceptor : public mojom::WatchTimeRecorder {
    public:
     WatchTimeInterceptor(WatchTimeReporterTest* parent) : parent_(parent) {}
 
-    ~WatchTimeInterceptor() override {}
+    ~WatchTimeInterceptor() override = default;
 
     // mojom::WatchTimeRecorder implementation:
     void RecordWatchTime(WatchTimeKey key, base::TimeDelta value) override {

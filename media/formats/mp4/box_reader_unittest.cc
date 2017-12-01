@@ -79,12 +79,12 @@ struct SkipBox : Box {
   ~SkipBox() override;
 };
 
-SkipBox::SkipBox() {}
-SkipBox::~SkipBox() {}
+SkipBox::SkipBox() = default;
+SkipBox::~SkipBox() = default;
 
 class BoxReaderTest : public testing::Test {
  public:
-  BoxReaderTest() {}
+  BoxReaderTest() = default;
 
  protected:
   std::vector<uint8_t> GetBuf() {

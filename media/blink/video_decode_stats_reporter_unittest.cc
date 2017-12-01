@@ -64,8 +64,8 @@ PipelineStatistics MakeStats(int frames_decoded,
 // Mock VideoDecodeStatsRecorder to verify reporter/recorder interactions.
 class RecordInterceptor : public mojom::VideoDecodeStatsRecorder {
  public:
-  RecordInterceptor() {}
-  ~RecordInterceptor() override {}
+  RecordInterceptor() = default;
+  ~RecordInterceptor() override = default;
 
   MOCK_METHOD2(SetPageInfo,
                void(const url::Origin& top_frame_origin, bool is_top_frame));
@@ -86,7 +86,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
  public:
   VideoDecodeStatsReporterTest()
       : kDefaultSize_(kDefaultWidth, kDefaultHeight) {}
-  ~VideoDecodeStatsReporterTest() override {}
+  ~VideoDecodeStatsReporterTest() override = default;
 
   void SetUp() override {
     // Do this first. Lots of pieces depend on the task runner.

@@ -43,7 +43,7 @@ FrameEvent::FrameEvent()
       encoder_cpu_utilization(-1.0),
       idealized_bitrate_utilization(-1.0) {}
 FrameEvent::FrameEvent(const FrameEvent& other) = default;
-FrameEvent::~FrameEvent() {}
+FrameEvent::~FrameEvent() = default;
 
 PacketEvent::PacketEvent()
     : max_packet_id(0),
@@ -51,7 +51,7 @@ PacketEvent::PacketEvent()
       size(0),
       type(UNKNOWN),
       media_type(UNKNOWN_EVENT) {}
-PacketEvent::~PacketEvent() {}
+PacketEvent::~PacketEvent() = default;
 
 }  // namespace cast
 }  // namespace media

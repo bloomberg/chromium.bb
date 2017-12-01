@@ -32,8 +32,8 @@ static const int kBenchmarkIterations = 100;
 
 class DemuxerHostImpl : public media::DemuxerHost {
  public:
-  DemuxerHostImpl() {}
-  ~DemuxerHostImpl() override {}
+  DemuxerHostImpl() = default;
+  ~DemuxerHostImpl() override = default;
 
   // DemuxerHost implementation.
   void OnBufferedTimeRangesChanged(
@@ -112,7 +112,7 @@ StreamReader::StreamReader(media::Demuxer* demuxer,
   }
 }
 
-StreamReader::~StreamReader() {}
+StreamReader::~StreamReader() = default;
 
 void StreamReader::Read() {
   int index = GetNextStreamIndexToRead();

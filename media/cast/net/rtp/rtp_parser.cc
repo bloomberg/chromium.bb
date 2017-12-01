@@ -27,7 +27,7 @@ RtpParser::RtpParser(uint32_t expected_sender_ssrc,
       expected_payload_type_(expected_payload_type),
       last_parsed_frame_id_(FrameId::first() - 1) {}
 
-RtpParser::~RtpParser() {}
+RtpParser::~RtpParser() = default;
 
 bool RtpParser::ParsePacket(const uint8_t* packet,
                             size_t length,

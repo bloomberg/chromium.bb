@@ -31,7 +31,7 @@ BufferedDataSourceHostImpl::BufferedDataSourceHostImpl(
       progress_cb_(std::move(progress_cb)),
       tick_clock_(tick_clock) {}
 
-BufferedDataSourceHostImpl::~BufferedDataSourceHostImpl() { }
+BufferedDataSourceHostImpl::~BufferedDataSourceHostImpl() = default;
 
 void BufferedDataSourceHostImpl::SetTotalBytes(int64_t total_bytes) {
   total_bytes_ = total_bytes;

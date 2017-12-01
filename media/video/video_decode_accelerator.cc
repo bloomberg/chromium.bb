@@ -29,7 +29,7 @@ void VideoDecodeAccelerator::Client::NotifyInitializationComplete(
   NOTREACHED() << "By default deferred initialization is not supported.";
 }
 
-VideoDecodeAccelerator::~VideoDecodeAccelerator() {}
+VideoDecodeAccelerator::~VideoDecodeAccelerator() = default;
 
 bool VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
     const base::WeakPtr<Client>& decode_client,
@@ -56,14 +56,14 @@ GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()
     : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN), encrypted_only(false) {}
 
-VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() {}
+VideoDecodeAccelerator::SupportedProfile::~SupportedProfile() = default;
 
 VideoDecodeAccelerator::Capabilities::Capabilities() : flags(NO_FLAGS) {}
 
 VideoDecodeAccelerator::Capabilities::Capabilities(const Capabilities& other) =
     default;
 
-VideoDecodeAccelerator::Capabilities::~Capabilities() {}
+VideoDecodeAccelerator::Capabilities::~Capabilities() = default;
 
 std::string VideoDecodeAccelerator::Capabilities::AsHumanReadableString()
     const {

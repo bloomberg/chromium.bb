@@ -35,7 +35,7 @@ MojoVideoDecoderService::MojoVideoDecoderService(
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
-MojoVideoDecoderService::~MojoVideoDecoderService() {}
+MojoVideoDecoderService::~MojoVideoDecoderService() = default;
 
 void MojoVideoDecoderService::Construct(
     mojom::VideoDecoderClientAssociatedPtrInfo client,

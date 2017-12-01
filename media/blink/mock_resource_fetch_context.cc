@@ -6,8 +6,8 @@
 
 namespace media {
 
-MockResourceFetchContext::MockResourceFetchContext() {}
+MockResourceFetchContext::MockResourceFetchContext() = default;
 
-MockResourceFetchContext::~MockResourceFetchContext() {}
+MockResourceFetchContext::~MockResourceFetchContext() = default;
 
 }  // namespace media

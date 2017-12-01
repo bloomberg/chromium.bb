@@ -24,8 +24,7 @@ AAC::AAC()
 
 AAC::AAC(const AAC& other) = default;
 
-AAC::~AAC() {
-}
+AAC::~AAC() = default;
 
 bool AAC::Parse(const std::vector<uint8_t>& data, MediaLog* media_log) {
 #if defined(OS_ANDROID)

@@ -16,8 +16,7 @@ TestObserver::TestObserver(const base::Closure& quit)
       num_stop_requests_(0),
       cursor_(0) {}
 
-TestObserver::~TestObserver() {
-}
+TestObserver::~TestObserver() = default;
 
 void TestObserver::OnPlay() {
   ++num_play_requests_;

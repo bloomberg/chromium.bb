@@ -54,7 +54,7 @@ class FakeTextTrack : public TextTrack {
 
 class TextRendererTest : public testing::Test {
  public:
-  TextRendererTest() {}
+  TextRendererTest() = default;
 
   void CreateTextRenderer() {
     DCHECK(!text_renderer_);

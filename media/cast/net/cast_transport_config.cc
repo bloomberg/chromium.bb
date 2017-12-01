@@ -13,13 +13,13 @@ CastTransportRtpConfig::CastTransportRtpConfig()
       feedback_ssrc(0),
       rtp_payload_type(RtpPayloadType::UNKNOWN) {}
 
-CastTransportRtpConfig::~CastTransportRtpConfig() {}
+CastTransportRtpConfig::~CastTransportRtpConfig() = default;
 
 EncodedFrame::EncodedFrame()
     : dependency(UNKNOWN_DEPENDENCY),
       new_playout_delay_ms(0) {}
 
-EncodedFrame::~EncodedFrame() {}
+EncodedFrame::~EncodedFrame() = default;
 
 void EncodedFrame::CopyMetadataTo(EncodedFrame* dest) const {
   DCHECK(dest);
@@ -36,7 +36,7 @@ RtcpSenderInfo::RtcpSenderInfo()
       ntp_fraction(0),
       send_packet_count(0),
       send_octet_count(0) {}
-RtcpSenderInfo::~RtcpSenderInfo() {}
+RtcpSenderInfo::~RtcpSenderInfo() = default;
 
 RtcpReportBlock::RtcpReportBlock()
     : remote_ssrc(0),
@@ -47,11 +47,11 @@ RtcpReportBlock::RtcpReportBlock()
       jitter(0),
       last_sr(0),
       delay_since_last_sr(0) {}
-RtcpReportBlock::~RtcpReportBlock() {}
+RtcpReportBlock::~RtcpReportBlock() = default;
 
 RtcpDlrrReportBlock::RtcpDlrrReportBlock()
     : last_rr(0), delay_since_last_rr(0) {}
-RtcpDlrrReportBlock::~RtcpDlrrReportBlock() {}
+RtcpDlrrReportBlock::~RtcpDlrrReportBlock() = default;
 
 }  // namespace cast
 }  // namespace media

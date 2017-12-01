@@ -38,7 +38,7 @@ using AudioInputStreamPtr = mojo::InterfacePtr<AudioInputStream>;
 
 class TestCancelableSyncSocket : public base::CancelableSyncSocket {
  public:
-  TestCancelableSyncSocket() {}
+  TestCancelableSyncSocket() = default;
 
   void ExpectOwnershipTransfer() { expect_ownership_transfer_ = true; }
 
@@ -58,8 +58,8 @@ class TestCancelableSyncSocket : public base::CancelableSyncSocket {
 
 class MockDelegate : public AudioInputDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() {}
+  MockDelegate() = default;
+  ~MockDelegate() = default;
 
   MOCK_METHOD0(GetStreamId, int());
   MOCK_METHOD0(OnRecordStream, void());
@@ -94,7 +94,7 @@ class MockDeleter {
 
 class MockClient : public mojom::AudioInputStreamClient {
  public:
-  MockClient() {}
+  MockClient() = default;
 
   void Initialized(mojo::ScopedSharedBufferHandle shared_buffer,
                    mojo::ScopedHandle socket_handle,

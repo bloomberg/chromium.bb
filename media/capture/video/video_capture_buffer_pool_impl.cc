@@ -25,7 +25,7 @@ VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
   DCHECK_GT(count, 0);
 }
 
-VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() {}
+VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() = default;
 
 mojo::ScopedSharedBufferHandle
 VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id,

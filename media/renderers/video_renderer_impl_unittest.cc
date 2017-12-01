@@ -111,7 +111,7 @@ class VideoRendererImplTest : public testing::Test {
                        scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
   }
 
-  virtual ~VideoRendererImplTest() {}
+  virtual ~VideoRendererImplTest() = default;
 
   void Initialize() {
     InitializeWithLowDelay(false);
@@ -795,8 +795,8 @@ TEST_F(VideoRendererImplTest, ComplexityBasedBufferingRealtimeIncapable) {
 
 class TestMemoryPressureMonitor : public base::MemoryPressureMonitor {
  public:
-  TestMemoryPressureMonitor() {}
-  ~TestMemoryPressureMonitor() override {}
+  TestMemoryPressureMonitor() = default;
+  ~TestMemoryPressureMonitor() override = default;
 
   MemoryPressureLevel GetCurrentPressureLevel() override {
     return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;

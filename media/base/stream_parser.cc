@@ -16,9 +16,9 @@ StreamParser::InitParameters::InitParameters(base::TimeDelta duration)
       detected_video_track_count(0),
       detected_text_track_count(0) {}
 
-StreamParser::StreamParser() {}
+StreamParser::StreamParser() = default;
 
-StreamParser::~StreamParser() {}
+StreamParser::~StreamParser() = default;
 
 static bool MergeBufferQueuesInternal(
     const std::vector<const StreamParser::BufferQueue*>& buffer_queues,

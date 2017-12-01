@@ -29,7 +29,7 @@ MediaResourceShim::MediaResourceShim(
   }
 }
 
-MediaResourceShim::~MediaResourceShim() {}
+MediaResourceShim::~MediaResourceShim() = default;
 
 std::vector<DemuxerStream*> MediaResourceShim::GetAllStreams() {
   DCHECK(demuxer_ready_cb_.is_null());

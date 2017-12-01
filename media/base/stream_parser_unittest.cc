@@ -63,7 +63,7 @@ static void GenerateBuffers(const int* decode_timestamps,
 
 class StreamParserTest : public testing::Test {
  protected:
-  StreamParserTest() {}
+  StreamParserTest() = default;
 
   // Returns the number of buffers in |merged_buffers_| for which |predicate|
   // returns true.

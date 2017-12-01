@@ -29,8 +29,8 @@ namespace test {
 
 const size_t kMaxPacketSize = 65536;
 
-PacketPipe::PacketPipe() {}
-PacketPipe::~PacketPipe() {}
+PacketPipe::PacketPipe() = default;
+PacketPipe::~PacketPipe() = default;
 void PacketPipe::InitOnIOThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::TickClock* clock) {
@@ -139,7 +139,7 @@ std::unique_ptr<PacketPipe> NewRandomDrop(double drop_fraction) {
 class SimpleDelayBase : public PacketPipe {
  public:
   SimpleDelayBase() : weak_factory_(this) {}
-  ~SimpleDelayBase() override {}
+  ~SimpleDelayBase() override = default;
 
   void Send(std::unique_ptr<Packet> packet) override {
     double seconds = GetDelay();
@@ -428,8 +428,7 @@ InterruptedPoissonProcess::InterruptedPoissonProcess(
   ComputeRates();
 }
 
-InterruptedPoissonProcess::~InterruptedPoissonProcess() {
-}
+InterruptedPoissonProcess::~InterruptedPoissonProcess() = default;
 
 void InterruptedPoissonProcess::InitOnIOThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,

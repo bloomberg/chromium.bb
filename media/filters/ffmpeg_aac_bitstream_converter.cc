@@ -168,8 +168,7 @@ FFmpegAACBitstreamConverter::FFmpegAACBitstreamConverter(
   CHECK(stream_codec_parameters_);
 }
 
-FFmpegAACBitstreamConverter::~FFmpegAACBitstreamConverter() {
-}
+FFmpegAACBitstreamConverter::~FFmpegAACBitstreamConverter() = default;
 
 bool FFmpegAACBitstreamConverter::ConvertPacket(AVPacket* packet) {
   if (packet == NULL || !packet->data) {

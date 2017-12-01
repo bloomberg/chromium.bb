@@ -57,7 +57,7 @@ MockMediaSource::MockMediaSource(const scoped_refptr<DecoderBuffer>& data,
   CHECK_LE(initial_append_size_, file_data_->data_size());
 }
 
-MockMediaSource::~MockMediaSource() {}
+MockMediaSource::~MockMediaSource() = default;
 
 std::unique_ptr<Demuxer> MockMediaSource::GetDemuxer() {
   return std::move(owned_chunk_demuxer_);

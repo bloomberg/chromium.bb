@@ -81,7 +81,7 @@ VideoOverlayFactory::VideoOverlayFactory(
     GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories) {}
 
-VideoOverlayFactory::~VideoOverlayFactory() {}
+VideoOverlayFactory::~VideoOverlayFactory() = default;
 
 scoped_refptr<VideoFrame> VideoOverlayFactory::CreateFrame(
     const gfx::Size& size) {

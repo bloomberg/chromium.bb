@@ -48,7 +48,7 @@ DefaultRendererFactory::DefaultRendererFactory(
       decoder_factory_(decoder_factory),
       get_gpu_factories_cb_(get_gpu_factories_cb) {}
 
-DefaultRendererFactory::~DefaultRendererFactory() {}
+DefaultRendererFactory::~DefaultRendererFactory() = default;
 
 std::vector<std::unique_ptr<AudioDecoder>>
 DefaultRendererFactory::CreateAudioDecoders(

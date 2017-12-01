@@ -231,7 +231,7 @@ SourceBufferStream<RangeClass>::SourceBufferStream(
       memory_limit_(kDemuxerStreamAudioMemoryLimit) {}
 
 template <typename RangeClass>
-SourceBufferStream<RangeClass>::~SourceBufferStream() {}
+SourceBufferStream<RangeClass>::~SourceBufferStream() = default;
 
 template <>
 void SourceBufferStream<SourceBufferRangeByDts>::OnStartOfCodedFrameGroup(

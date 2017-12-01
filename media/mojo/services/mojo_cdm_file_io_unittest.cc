@@ -22,8 +22,8 @@ namespace {
 
 class MockFileIOClient : public cdm::FileIOClient {
  public:
-  MockFileIOClient() {}
-  ~MockFileIOClient() override {}
+  MockFileIOClient() = default;
+  ~MockFileIOClient() override = default;
 
   MOCK_METHOD1(OnOpenComplete, void(Status));
   MOCK_METHOD3(OnReadComplete, void(Status, const uint8_t*, uint32_t));
@@ -32,8 +32,8 @@ class MockFileIOClient : public cdm::FileIOClient {
 
 class MockCdmStorage : public mojom::CdmStorage {
  public:
-  MockCdmStorage() {}
-  ~MockCdmStorage() override {}
+  MockCdmStorage() = default;
+  ~MockCdmStorage() override = default;
 
   bool SetUp() { return temp_directory_.CreateUniqueTempDir(); }
 
@@ -68,8 +68,8 @@ class MockCdmStorage : public mojom::CdmStorage {
 
 class MojoCdmFileIOTest : public testing::Test, public MojoCdmFileIO::Delegate {
  protected:
-  MojoCdmFileIOTest() {}
-  ~MojoCdmFileIOTest() override {}
+  MojoCdmFileIOTest() = default;
+  ~MojoCdmFileIOTest() override = default;
 
   // testing::Test implementation.
   void SetUp() override {

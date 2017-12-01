@@ -21,7 +21,7 @@ MojoDecoderFactory::MojoDecoderFactory(
   DCHECK(interface_factory_);
 }
 
-MojoDecoderFactory::~MojoDecoderFactory() {}
+MojoDecoderFactory::~MojoDecoderFactory() = default;
 
 void MojoDecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,

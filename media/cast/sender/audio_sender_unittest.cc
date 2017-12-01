@@ -39,7 +39,7 @@ void SaveOperationalStatus(OperationalStatus* out_status,
 
 class TransportClient : public CastTransport::Client {
  public:
-  TransportClient() {}
+  TransportClient() = default;
 
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
@@ -122,7 +122,7 @@ class AudioSenderTest : public ::testing::Test {
     CHECK_EQ(STATUS_INITIALIZED, operational_status);
   }
 
-  ~AudioSenderTest() override {}
+  ~AudioSenderTest() override = default;
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestPacketSender* transport_;               // Owned by CastTransport.

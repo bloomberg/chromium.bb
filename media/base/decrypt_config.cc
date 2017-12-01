@@ -22,7 +22,7 @@ DecryptConfig::DecryptConfig(const std::string& key_id,
         iv.empty());
 }
 
-DecryptConfig::~DecryptConfig() {}
+DecryptConfig::~DecryptConfig() = default;
 
 bool DecryptConfig::Matches(const DecryptConfig& config) const {
   if (key_id() != config.key_id() || iv() != config.iv() ||

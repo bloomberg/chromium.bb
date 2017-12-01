@@ -293,8 +293,7 @@ KeySystemConfigSelector::KeySystemConfigSelector(
   DCHECK(media_permission_);
 }
 
-KeySystemConfigSelector::~KeySystemConfigSelector() {
-}
+KeySystemConfigSelector::~KeySystemConfigSelector() = default;
 
 bool IsSupportedMediaFormat(const std::string& container_mime_type,
                             const std::string& codecs,

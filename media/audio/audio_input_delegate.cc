@@ -4,6 +4,6 @@
 
 #include "media/audio/audio_input_delegate.h"
 
-media::AudioInputDelegate::EventHandler::~EventHandler() {}
+media::AudioInputDelegate::EventHandler::~EventHandler() = default;
 
-media::AudioInputDelegate::~AudioInputDelegate() {}
+media::AudioInputDelegate::~AudioInputDelegate() = default;

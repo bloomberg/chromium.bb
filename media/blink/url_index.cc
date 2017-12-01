@@ -24,7 +24,7 @@ ResourceMultiBuffer::ResourceMultiBuffer(UrlData* url_data, int block_shift)
     : MultiBuffer(block_shift, url_data->url_index_->lru_),
       url_data_(url_data) {}
 
-ResourceMultiBuffer::~ResourceMultiBuffer() {}
+ResourceMultiBuffer::~ResourceMultiBuffer() = default;
 
 std::unique_ptr<MultiBuffer::DataProvider> ResourceMultiBuffer::CreateWriter(
     const MultiBufferBlockId& pos) {

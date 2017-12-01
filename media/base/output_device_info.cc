@@ -28,7 +28,7 @@ OutputDeviceInfo::OutputDeviceInfo(const OutputDeviceInfo&) = default;
 OutputDeviceInfo& OutputDeviceInfo::operator=(const OutputDeviceInfo&) =
     default;
 
-OutputDeviceInfo::~OutputDeviceInfo() {}
+OutputDeviceInfo::~OutputDeviceInfo() = default;
 
 std::string OutputDeviceInfo::AsHumanReadableString() const {
   std::ostringstream s;

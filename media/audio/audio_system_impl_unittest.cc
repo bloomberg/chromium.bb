@@ -20,9 +20,9 @@ namespace media {
 template <bool use_audio_thread>
 class AudioSystemImplTestBase : public testing::Test {
  public:
-  AudioSystemImplTestBase() {}
+  AudioSystemImplTestBase() = default;
 
-  ~AudioSystemImplTestBase() override {}
+  ~AudioSystemImplTestBase() override = default;
 
   void SetUp() override {
     audio_manager_ = std::make_unique<MockAudioManager>(

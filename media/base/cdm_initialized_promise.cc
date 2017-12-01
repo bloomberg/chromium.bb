@@ -11,8 +11,7 @@ CdmInitializedPromise::CdmInitializedPromise(
     scoped_refptr<ContentDecryptionModule> cdm)
     : cdm_created_cb_(std::move(cdm_created_cb)), cdm_(std::move(cdm)) {}
 
-CdmInitializedPromise::~CdmInitializedPromise() {
-}
+CdmInitializedPromise::~CdmInitializedPromise() = default;
 
 void CdmInitializedPromise::resolve() {
   MarkPromiseSettled();

@@ -200,7 +200,7 @@ class SetSinkIdCallback {
       : web_callback_(web_callback) {}
   SetSinkIdCallback(const SetSinkIdCallback& other)
       : web_callback_(std::move(other.web_callback_)) {}
-  ~SetSinkIdCallback() {}
+  ~SetSinkIdCallback() = default;
   friend void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
                                    OutputDeviceStatus result);
 

@@ -13,7 +13,7 @@ namespace media {
 
 Vp9RawBitsReader::Vp9RawBitsReader() : valid_(true) {}
 
-Vp9RawBitsReader::~Vp9RawBitsReader() {}
+Vp9RawBitsReader::~Vp9RawBitsReader() = default;
 
 void Vp9RawBitsReader::Initialize(const uint8_t* data, size_t size) {
   DCHECK(data);

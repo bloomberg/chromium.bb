@@ -80,7 +80,7 @@ class VideoRendererAlgorithmTest : public testing::Test {
     tick_clock_->Advance(base::TimeDelta::FromMicroseconds(10000));
     time_source_.set_tick_clock_for_testing(tick_clock_.get());
   }
-  ~VideoRendererAlgorithmTest() override {}
+  ~VideoRendererAlgorithmTest() override = default;
 
   scoped_refptr<VideoFrame> CreateFrame(base::TimeDelta timestamp) {
     const gfx::Size natural_size(8, 8);

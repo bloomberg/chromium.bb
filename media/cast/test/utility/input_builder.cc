@@ -27,7 +27,7 @@ InputBuilder::InputBuilder(const std::string& title,
       low_range_(low_range),
       high_range_(high_range) {}
 
-InputBuilder::~InputBuilder() {}
+InputBuilder::~InputBuilder() = default;
 
 std::string InputBuilder::GetStringInput() const {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kEnablePromptsSwitch))

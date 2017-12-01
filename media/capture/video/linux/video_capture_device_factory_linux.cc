@@ -194,8 +194,7 @@ VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
     : ui_task_runner_(ui_task_runner) {
 }
 
-VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() {
-}
+VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() = default;
 
 std::unique_ptr<VideoCaptureDevice>
 VideoCaptureDeviceFactoryLinux::CreateDevice(

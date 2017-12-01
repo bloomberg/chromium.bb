@@ -78,7 +78,7 @@ class RendererClientImpl final : public RendererClient {
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnDurationChange));
   }
-  ~RendererClientImpl() {}
+  ~RendererClientImpl() = default;
 
   // RendererClient implementation.
   void OnError(PipelineStatus status) override {}

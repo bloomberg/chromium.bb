@@ -6,10 +6,10 @@
 
 namespace media {
 
-DemuxerHost::~DemuxerHost() {}
+DemuxerHost::~DemuxerHost() = default;
 
-Demuxer::Demuxer() {}
+Demuxer::Demuxer() = default;
 
-Demuxer::~Demuxer() {}
+Demuxer::~Demuxer() = default;
 
 }  // namespace media

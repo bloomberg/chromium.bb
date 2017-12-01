@@ -34,7 +34,7 @@ const char kTimeToCreateCdmUMAName[] = "CreateCdmTime";
 CdmSessionAdapter::CdmSessionAdapter()
     : trace_id_(0), weak_ptr_factory_(this) {}
 
-CdmSessionAdapter::~CdmSessionAdapter() {}
+CdmSessionAdapter::~CdmSessionAdapter() = default;
 
 void CdmSessionAdapter::CreateCdm(
     CdmFactory* cdm_factory,

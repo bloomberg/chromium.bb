@@ -30,7 +30,7 @@ namespace media {
 
 class MockProtocol : public FFmpegURLProtocol {
  public:
-  MockProtocol() {}
+  MockProtocol() = default;
 
   MOCK_METHOD2(Read, int(int size, uint8_t* data));
   MOCK_METHOD1(GetPosition, bool(int64_t* position_out));
@@ -81,7 +81,7 @@ class FFmpegGlueTest : public ::testing::Test {
 
 class FFmpegGlueDestructionTest : public ::testing::Test {
  public:
-  FFmpegGlueDestructionTest() {}
+  FFmpegGlueDestructionTest() = default;
 
   void Initialize(const char* filename) {
     data_ = ReadTestDataFile(filename);
@@ -119,8 +119,8 @@ class FFmpegGlueDestructionTest : public ::testing::Test {
 // for supported containers.
 class FFmpegGlueContainerTest : public FFmpegGlueDestructionTest {
  public:
-  FFmpegGlueContainerTest() {}
-  ~FFmpegGlueContainerTest() override {}
+  FFmpegGlueContainerTest() = default;
+  ~FFmpegGlueContainerTest() override = default;
 
  protected:
   void InitializeAndOpen(const char* filename) {

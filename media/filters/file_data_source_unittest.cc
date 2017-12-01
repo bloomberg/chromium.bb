@@ -22,7 +22,7 @@ namespace media {
 
 class ReadCBHandler {
  public:
-  ReadCBHandler() {}
+  ReadCBHandler() = default;
 
   MOCK_METHOD1(ReadCB, void(int size));
 

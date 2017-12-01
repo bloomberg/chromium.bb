@@ -14,7 +14,7 @@ namespace midi {
 MidiMessageQueue::MidiMessageQueue(bool allow_running_status)
     : allow_running_status_(allow_running_status) {}
 
-MidiMessageQueue::~MidiMessageQueue() {}
+MidiMessageQueue::~MidiMessageQueue() = default;
 
 void MidiMessageQueue::Add(const std::vector<uint8_t>& data) {
   queue_.insert(queue_.end(), data.begin(), data.end());

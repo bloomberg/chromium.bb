@@ -49,7 +49,7 @@ MATCHER_P(UnsupportedAudioProfileLog, profile_string, "") {
 
 class AACTest : public testing::Test {
  public:
-  AACTest() {}
+  AACTest() = default;
 
   bool Parse(const std::vector<uint8_t>& data) {
     return aac_.Parse(data, &media_log_);

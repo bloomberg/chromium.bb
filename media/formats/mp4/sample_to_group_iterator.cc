@@ -23,7 +23,7 @@ SampleToGroupIterator::SampleToGroupIterator(
   }
 }
 
-SampleToGroupIterator::~SampleToGroupIterator() {}
+SampleToGroupIterator::~SampleToGroupIterator() = default;
 
 bool SampleToGroupIterator::Advance() {
   DCHECK(IsValid());

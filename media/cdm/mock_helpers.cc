@@ -10,7 +10,7 @@ MockCdmAuxiliaryHelper::MockCdmAuxiliaryHelper(
     std::unique_ptr<CdmAllocator> allocator)
     : allocator_(std::move(allocator)) {}
 
-MockCdmAuxiliaryHelper::~MockCdmAuxiliaryHelper() {}
+MockCdmAuxiliaryHelper::~MockCdmAuxiliaryHelper() = default;
 
 void MockCdmAuxiliaryHelper::SetFileReadCB(FileReadCB file_read_cb) {}
 

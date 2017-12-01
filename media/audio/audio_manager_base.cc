@@ -72,7 +72,7 @@ struct AudioManagerBase::DispatcherParams {
       : input_params(input),
         output_params(output),
         output_device_id(output_device_id) {}
-  ~DispatcherParams() {}
+  ~DispatcherParams() = default;
 
   const AudioParameters input_params;
   const AudioParameters output_params;

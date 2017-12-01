@@ -26,7 +26,7 @@ VideoColorSpace::MatrixID VideoColorSpace::GetMatrixID(int matrix) {
   return static_cast<MatrixID>(matrix);
 }
 
-VideoColorSpace::VideoColorSpace() {}
+VideoColorSpace::VideoColorSpace() = default;
 
 VideoColorSpace::VideoColorSpace(PrimaryID primaries,
                                  TransferID transfer,

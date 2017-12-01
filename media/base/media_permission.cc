@@ -6,10 +6,8 @@
 
 namespace media {
 
-MediaPermission::MediaPermission() {
-}
+MediaPermission::MediaPermission() = default;
 
-MediaPermission::~MediaPermission() {
-}
+MediaPermission::~MediaPermission() = default;
 
 }  // namespace media

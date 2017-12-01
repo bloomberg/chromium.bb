@@ -100,7 +100,7 @@ class RtcpTest : public ::testing::Test, public RtcpObserver {
     rtp_receiver_pacer_.set_rtcp_destination(&rtcp_at_rtp_sender_);
   }
 
-  ~RtcpTest() override {}
+  ~RtcpTest() override = default;
 
   // RtcpObserver implementation.
   void OnReceivedCastMessage(const RtcpCastMessage& cast_message) override {

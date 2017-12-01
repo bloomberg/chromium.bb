@@ -57,6 +57,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       create_bridge_callback_(create_bridge_callback),
       context_provider_(std::move(context_provider)) {}
 
-WebMediaPlayerParams::~WebMediaPlayerParams() {}
+WebMediaPlayerParams::~WebMediaPlayerParams() = default;
 
 }  // namespace media

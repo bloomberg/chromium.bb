@@ -103,7 +103,7 @@ class CastMessageBuilderTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
-  ~CastMessageBuilderTest() override {}
+  ~CastMessageBuilderTest() override = default;
 
   void SetFrameIds(FrameId frame_id, FrameId reference_frame_id) {
     rtp_header_.frame_id = frame_id;

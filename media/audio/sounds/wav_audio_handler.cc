@@ -172,7 +172,7 @@ WavAudioHandler::WavAudioHandler(base::StringPiece audio_data,
   total_frames_ = data_.size() * 8 / num_channels_ / bits_per_sample_;
 }
 
-WavAudioHandler::~WavAudioHandler() {}
+WavAudioHandler::~WavAudioHandler() = default;
 
 // static
 std::unique_ptr<WavAudioHandler> WavAudioHandler::Create(

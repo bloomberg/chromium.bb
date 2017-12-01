@@ -69,7 +69,7 @@ bool CheckColorSpace(const VideoFrame* video_frame, ColorSpace color_space) {
 class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
   explicit SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
-  ~SyncTokenClientImpl() override {}
+  ~SyncTokenClientImpl() override = default;
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
     const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
     gl_->ShallowFlushCHROMIUM();
@@ -232,7 +232,7 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
         frame_(frame) {
     DCHECK(!frame_->HasTextures());
   }
-  ~VideoImageGenerator() override {}
+  ~VideoImageGenerator() override = default;
 
   sk_sp<SkData> GetEncodedData() const override { return nullptr; }
 

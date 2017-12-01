@@ -18,10 +18,8 @@ MediaClient* GetMediaClient() {
   return g_media_client;
 }
 
-MediaClient::MediaClient() {
-}
+MediaClient::MediaClient() = default;
 
-MediaClient::~MediaClient() {
-}
+MediaClient::~MediaClient() = default;
 
 }  // namespace media

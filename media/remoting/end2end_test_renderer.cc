@@ -34,7 +34,7 @@ class TestStreamSender final : public mojom::RemotingDataStreamSender {
         type_(type),
         send_frame_to_sink_cb_(callback) {}
 
-  ~TestStreamSender() override {}
+  ~TestStreamSender() override = default;
 
   // mojom::RemotingDataStreamSender implementation.
 
@@ -78,7 +78,7 @@ class TestRemoter final : public mojom::Remoter {
         send_message_to_sink_cb_(send_message_to_sink_cb),
         send_frame_to_sink_cb_(send_frame_to_sink_cb) {}
 
-  ~TestRemoter() override {}
+  ~TestRemoter() override = default;
 
   // mojom::Remoter implementation.
 
@@ -161,7 +161,7 @@ End2EndTestRenderer::End2EndTestRenderer(std::unique_ptr<Renderer> renderer)
       base::ThreadTaskRunnerHandle::Get(), controller_->GetWeakPtr(), nullptr));
 }
 
-End2EndTestRenderer::~End2EndTestRenderer() {}
+End2EndTestRenderer::~End2EndTestRenderer() = default;
 
 void End2EndTestRenderer::Initialize(MediaResource* media_resource,
                                      RendererClient* client,

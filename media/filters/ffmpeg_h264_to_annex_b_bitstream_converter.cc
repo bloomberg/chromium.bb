@@ -19,7 +19,8 @@ FFmpegH264ToAnnexBBitstreamConverter::FFmpegH264ToAnnexBBitstreamConverter(
   CHECK(stream_codec_parameters_);
 }
 
-FFmpegH264ToAnnexBBitstreamConverter::~FFmpegH264ToAnnexBBitstreamConverter() {}
+FFmpegH264ToAnnexBBitstreamConverter::~FFmpegH264ToAnnexBBitstreamConverter() =
+    default;
 
 bool FFmpegH264ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
   std::unique_ptr<mp4::AVCDecoderConfigurationRecord> avc_config;

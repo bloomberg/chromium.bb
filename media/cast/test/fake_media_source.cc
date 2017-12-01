@@ -103,8 +103,7 @@ FakeMediaSource::FakeMediaSource(
                               kSoundFrequency, kSoundVolume));
 }
 
-FakeMediaSource::~FakeMediaSource() {
-}
+FakeMediaSource::~FakeMediaSource() = default;
 
 void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
                                     int final_fps) {

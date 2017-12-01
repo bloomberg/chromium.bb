@@ -85,7 +85,7 @@ class VideoDecoder::ImplBase
 
  protected:
   friend class base::RefCountedThreadSafe<ImplBase>;
-  virtual ~ImplBase() {}
+  virtual ~ImplBase() = default;
 
   virtual void RecoverBecauseFramesWereDropped() {}
 
@@ -196,7 +196,7 @@ class VideoDecoder::FakeImpl : public VideoDecoder::ImplBase {
   }
 
  private:
-  ~FakeImpl() final {}
+  ~FakeImpl() final = default;
 
   scoped_refptr<VideoFrame> Decode(uint8_t* data, int len) final {
     // Make sure this is a JSON string.
@@ -250,7 +250,7 @@ VideoDecoder::VideoDecoder(
   }
 }
 
-VideoDecoder::~VideoDecoder() {}
+VideoDecoder::~VideoDecoder() = default;
 
 OperationalStatus VideoDecoder::InitializationResult() const {
   if (impl_.get())

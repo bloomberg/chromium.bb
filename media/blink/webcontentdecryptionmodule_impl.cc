@@ -114,8 +114,7 @@ WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(
     : adapter_(adapter) {
 }
 
-WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() {
-}
+WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() = default;
 
 std::unique_ptr<blink::WebContentDecryptionModuleSession>
 WebContentDecryptionModuleImpl::CreateSession() {

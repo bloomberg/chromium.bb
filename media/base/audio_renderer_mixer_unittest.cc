@@ -341,7 +341,7 @@ class AudioRendererMixerTest
   }
 
  protected:
-  virtual ~AudioRendererMixerTest() {}
+  virtual ~AudioRendererMixerTest() = default;
 
   scoped_refptr<MockAudioRendererSink> sink_;
   std::unique_ptr<AudioRendererMixer> mixer_;

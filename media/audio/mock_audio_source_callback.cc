@@ -6,7 +6,7 @@
 
 namespace media {
 
-MockAudioSourceCallback::MockAudioSourceCallback() {}
-MockAudioSourceCallback::~MockAudioSourceCallback() {}
+MockAudioSourceCallback::MockAudioSourceCallback() = default;
+MockAudioSourceCallback::~MockAudioSourceCallback() = default;
 
 }  // namespace media

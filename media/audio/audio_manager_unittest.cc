@@ -581,7 +581,7 @@ class MockAudioDebugRecordingManager : public AudioDebugRecordingManager {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : AudioDebugRecordingManager(std::move(task_runner)) {}
 
-  ~MockAudioDebugRecordingManager() override {}
+  ~MockAudioDebugRecordingManager() override = default;
 
   MOCK_METHOD1(EnableDebugRecording, void(const base::FilePath&));
   MOCK_METHOD0(DisableDebugRecording, void());

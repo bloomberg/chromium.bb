@@ -6,7 +6,7 @@
 
 namespace media {
 
-CdmSessionTracker::CdmSessionTracker() {}
+CdmSessionTracker::CdmSessionTracker() = default;
 
 CdmSessionTracker::~CdmSessionTracker() {
   DCHECK(!HasRemainingSessions());

@@ -15,9 +15,9 @@
 
 namespace media {
 
-MojoMediaClient::MojoMediaClient() {}
+MojoMediaClient::MojoMediaClient() = default;
 
-MojoMediaClient::~MojoMediaClient() {}
+MojoMediaClient::~MojoMediaClient() = default;
 
 void MojoMediaClient::Initialize(
     service_manager::Connector* connector,

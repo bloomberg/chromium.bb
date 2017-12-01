@@ -36,7 +36,7 @@ AudioBufferConverter::AudioBufferConverter(const AudioParameters& output_params)
       is_flushing_(false),
       pool_(new AudioBufferMemoryPool()) {}
 
-AudioBufferConverter::~AudioBufferConverter() {}
+AudioBufferConverter::~AudioBufferConverter() = default;
 
 void AudioBufferConverter::AddInput(const scoped_refptr<AudioBuffer>& buffer) {
   // On EOS flush any remaining buffered data.

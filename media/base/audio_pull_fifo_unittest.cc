@@ -39,7 +39,7 @@ class AudioPullFifoTest
         last_frame_delay_(-1) {
     EXPECT_EQ(kMaxFramesInFifo, pull_fifo_.SizeInFrames());
   }
-  virtual ~AudioPullFifoTest() {}
+  virtual ~AudioPullFifoTest() = default;
 
   void VerifyValue(const float data[], int size, float start_value) {
     float value = start_value;

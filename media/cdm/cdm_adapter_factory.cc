@@ -17,7 +17,7 @@ CdmAdapterFactory::CdmAdapterFactory(HelperCreationCB helper_creation_cb)
   DCHECK(helper_creation_cb_);
 }
 
-CdmAdapterFactory::~CdmAdapterFactory() {}
+CdmAdapterFactory::~CdmAdapterFactory() = default;
 
 void CdmAdapterFactory::Create(
     const std::string& key_system,

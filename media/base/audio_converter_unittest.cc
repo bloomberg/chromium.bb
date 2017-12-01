@@ -168,7 +168,7 @@ class AudioConverterTest
   }
 
  protected:
-  virtual ~AudioConverterTest() {}
+  virtual ~AudioConverterTest() = default;
 
   // Converter under test.
   std::unique_ptr<AudioConverter> converter_;

@@ -6,11 +6,9 @@
 
 namespace media {
 
-AlsaWrapper::AlsaWrapper() {
-}
+AlsaWrapper::AlsaWrapper() = default;
 
-AlsaWrapper::~AlsaWrapper() {
-}
+AlsaWrapper::~AlsaWrapper() = default;
 
 int AlsaWrapper::PcmOpen(snd_pcm_t** handle, const char* name,
                          snd_pcm_stream_t stream, int mode) {

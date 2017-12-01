@@ -17,7 +17,7 @@ class WallClockTimeSourceTest : public testing::Test {
     time_source_.set_tick_clock_for_testing(tick_clock_.get());
     AdvanceTimeInSeconds(1);
   }
-  ~WallClockTimeSourceTest() override {}
+  ~WallClockTimeSourceTest() override = default;
 
   void AdvanceTimeInSeconds(int seconds) {
     tick_clock_->Advance(base::TimeDelta::FromSeconds(seconds));

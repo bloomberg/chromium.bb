@@ -26,7 +26,7 @@ CastEnvironment::CastEnvironment(
       clock_(std::move(clock)),
       logger_(this) {}
 
-CastEnvironment::~CastEnvironment() {}
+CastEnvironment::~CastEnvironment() = default;
 
 bool CastEnvironment::PostTask(ThreadId identifier,
                                const base::Location& from_here,

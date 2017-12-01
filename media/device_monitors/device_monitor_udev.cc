@@ -44,7 +44,7 @@ DeviceMonitorLinux::DeviceMonitorLinux(
       base::Bind(&DeviceMonitorLinux::Initialize, base::Unretained(this)));
 }
 
-DeviceMonitorLinux::~DeviceMonitorLinux() {}
+DeviceMonitorLinux::~DeviceMonitorLinux() = default;
 
 void DeviceMonitorLinux::Initialize() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());

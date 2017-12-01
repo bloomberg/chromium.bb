@@ -36,7 +36,7 @@ AudioTimestampValidator::AudioTimestampValidator(
   DCHECK(decoder_config.IsValidConfig());
 }
 
-AudioTimestampValidator::~AudioTimestampValidator() {}
+AudioTimestampValidator::~AudioTimestampValidator() = default;
 
 void AudioTimestampValidator::CheckForTimestampGap(
     const scoped_refptr<DecoderBuffer>& buffer) {

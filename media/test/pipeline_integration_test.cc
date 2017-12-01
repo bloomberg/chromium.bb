@@ -214,7 +214,7 @@ enum PromiseResult { RESOLVED, REJECTED };
 // Provides the test key in response to the encrypted event.
 class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
  public:
-  KeyProvidingApp() {}
+  KeyProvidingApp() = default;
 
   void OnResolveWithSession(PromiseResult expected,
                             const std::string& session_id) {

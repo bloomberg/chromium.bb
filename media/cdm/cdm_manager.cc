@@ -11,9 +11,9 @@
 
 namespace media {
 
-CdmManager::CdmManager() {}
+CdmManager::CdmManager() = default;
 
-CdmManager::~CdmManager() {}
+CdmManager::~CdmManager() = default;
 
 // static
 CdmManager* CdmManager::GetInstance() {

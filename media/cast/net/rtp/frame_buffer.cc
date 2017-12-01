@@ -18,7 +18,7 @@ FrameBuffer::FrameBuffer()
       total_data_size_(0),
       packets_() {}
 
-FrameBuffer::~FrameBuffer() {}
+FrameBuffer::~FrameBuffer() = default;
 
 bool FrameBuffer::InsertPacket(const uint8_t* payload_data,
                                size_t payload_size,

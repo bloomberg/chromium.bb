@@ -17,7 +17,7 @@ namespace media {
 
 class JSONWebKeyTest : public testing::Test {
  public:
-  JSONWebKeyTest() {}
+  JSONWebKeyTest() = default;
 
  protected:
   void ExtractJWKKeysAndExpect(const std::string& jwk,

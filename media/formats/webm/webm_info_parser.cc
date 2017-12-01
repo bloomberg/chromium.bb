@@ -18,7 +18,7 @@ WebMInfoParser::WebMInfoParser()
       duration_(-1) {
 }
 
-WebMInfoParser::~WebMInfoParser() {}
+WebMInfoParser::~WebMInfoParser() = default;
 
 int WebMInfoParser::Parse(const uint8_t* buf, int size) {
   timecode_scale_ = -1;

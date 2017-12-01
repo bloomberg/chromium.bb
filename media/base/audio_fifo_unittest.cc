@@ -14,8 +14,8 @@ namespace media {
 
 class AudioFifoTest : public testing::Test {
  public:
-  AudioFifoTest() {}
-  ~AudioFifoTest() override {}
+  AudioFifoTest() = default;
+  ~AudioFifoTest() override = default;
 
   void VerifyValue(const float data[], int size, float value) {
     for (int i = 0; i < size; ++i)

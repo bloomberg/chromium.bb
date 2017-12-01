@@ -21,8 +21,7 @@ AudioPowerMonitor::AudioPowerMonitor(
   Reset();
 }
 
-AudioPowerMonitor::~AudioPowerMonitor() {
-}
+AudioPowerMonitor::~AudioPowerMonitor() = default;
 
 void AudioPowerMonitor::Reset() {
   // These are only read/written by Scan(), but Scan() should not be running

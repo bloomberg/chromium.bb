@@ -14,8 +14,8 @@ namespace media {
 
 class AudioBlockFifoTest : public testing::Test {
  public:
-  AudioBlockFifoTest() {}
-  ~AudioBlockFifoTest() override {}
+  AudioBlockFifoTest() = default;
+  ~AudioBlockFifoTest() override = default;
 
   void PushAndVerify(AudioBlockFifo* fifo,
                      int frames_to_push,

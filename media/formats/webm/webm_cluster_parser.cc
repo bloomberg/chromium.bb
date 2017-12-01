@@ -66,7 +66,7 @@ WebMClusterParser::WebMClusterParser(
   }
 }
 
-WebMClusterParser::~WebMClusterParser() {}
+WebMClusterParser::~WebMClusterParser() = default;
 
 void WebMClusterParser::Reset() {
   last_block_timecode_ = -1;
@@ -630,7 +630,7 @@ WebMClusterParser::Track::Track(int track_num,
 
 WebMClusterParser::Track::Track(const Track& other) = default;
 
-WebMClusterParser::Track::~Track() {}
+WebMClusterParser::Track::~Track() = default;
 
 DecodeTimestamp WebMClusterParser::Track::GetReadyUpperBound() {
   DCHECK(ready_buffers_.empty());

@@ -111,8 +111,7 @@ SineWaveAudioSource::SineWaveAudioSource(int channels,
       errors_(0) {
 }
 
-SineWaveAudioSource::~SineWaveAudioSource() {
-}
+SineWaveAudioSource::~SineWaveAudioSource() = default;
 
 // The implementation could be more efficient if a lookup table is constructed
 // but it is efficient enough for our simple needs.
@@ -162,8 +161,7 @@ FileSource::FileSource(const AudioParameters& params,
       load_failed_(false),
       looping_(loop) {}
 
-FileSource::~FileSource() {
-}
+FileSource::~FileSource() = default;
 
 void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
   // Don't try again if we already failed.
@@ -257,8 +255,7 @@ BeepingSource::BeepingSource(const AudioParameters& params)
       beep_generated_in_buffers_(0),
       beep_period_in_frames_(params.sample_rate() / kBeepFrequency) {}
 
-BeepingSource::~BeepingSource() {
-}
+BeepingSource::~BeepingSource() = default;
 
 int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
                               base::TimeTicks /* delay_timestamp */,

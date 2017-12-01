@@ -15,7 +15,7 @@ FFmpegDecodingLoop::FFmpegDecodingLoop(AVCodecContext* context,
       context_(context),
       frame_(av_frame_alloc()) {}
 
-FFmpegDecodingLoop::~FFmpegDecodingLoop() {}
+FFmpegDecodingLoop::~FFmpegDecodingLoop() = default;
 
 FFmpegDecodingLoop::DecodeStatus FFmpegDecodingLoop::DecodePacket(
     const AVPacket* packet,

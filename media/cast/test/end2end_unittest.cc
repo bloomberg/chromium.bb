@@ -150,7 +150,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
   explicit LoopBackPacketPipe(const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
-  ~LoopBackPacketPipe() final {}
+  ~LoopBackPacketPipe() final = default;
 
   // PacketPipe implementations.
   void Send(std::unique_ptr<Packet> packet) final {
@@ -303,8 +303,7 @@ class TestReceiverAudioCallback
   int number_times_called() const { return num_called_; }
 
  protected:
-  virtual ~TestReceiverAudioCallback() {
-  }
+  virtual ~TestReceiverAudioCallback() = default;
 
  private:
   friend class base::RefCountedThreadSafe<TestReceiverAudioCallback>;
@@ -382,7 +381,7 @@ class TestReceiverVideoCallback
   int number_times_called() const { return num_called_; }
 
  protected:
-  virtual ~TestReceiverVideoCallback() {}
+  virtual ~TestReceiverVideoCallback() = default;
 
  private:
   friend class base::RefCountedThreadSafe<TestReceiverVideoCallback>;

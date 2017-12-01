@@ -131,7 +131,7 @@ class PeerVideoSender : public VideoSender {
 
 class TransportClient : public CastTransport::Client {
  public:
-  TransportClient() {}
+  TransportClient() = default;
 
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
@@ -167,7 +167,7 @@ class VideoSenderTest : public ::testing::Test {
         base::WrapUnique(transport_), task_runner_));
   }
 
-  ~VideoSenderTest() override {}
+  ~VideoSenderTest() override = default;
 
   void TearDown() final {
     video_sender_.reset();

@@ -211,8 +211,8 @@ bool SanitizeResponse(const std::string& key_system,
 // something back to blink).
 class IgnoreResponsePromise : public SimpleCdmPromise {
  public:
-  IgnoreResponsePromise() {}
-  ~IgnoreResponsePromise() override {}
+  IgnoreResponsePromise() = default;
+  ~IgnoreResponsePromise() override = default;
 
   // SimpleCdmPromise implementation.
   void resolve() final { MarkPromiseSettled(); }

@@ -35,8 +35,7 @@ CdmKeyInformation::CdmKeyInformation(const uint8_t* key_id_data,
 
 CdmKeyInformation::CdmKeyInformation(const CdmKeyInformation& other) = default;
 
-CdmKeyInformation::~CdmKeyInformation() {
-}
+CdmKeyInformation::~CdmKeyInformation() = default;
 
 // static
 std::string CdmKeyInformation::KeyStatusToString(KeyStatus key_status) {

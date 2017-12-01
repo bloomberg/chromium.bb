@@ -215,7 +215,7 @@ H264Parser::H264Parser() {
   Reset();
 }
 
-H264Parser::~H264Parser() {}
+H264Parser::~H264Parser() = default;
 
 void H264Parser::Reset() {
   stream_ = NULL;

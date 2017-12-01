@@ -16,7 +16,7 @@ FakeSingleThreadTaskRunner::FakeSingleThreadTaskRunner(
     base::SimpleTestTickClock* clock)
     : clock_(clock), fail_on_next_task_(false) {}
 
-FakeSingleThreadTaskRunner::~FakeSingleThreadTaskRunner() {}
+FakeSingleThreadTaskRunner::~FakeSingleThreadTaskRunner() = default;
 
 bool FakeSingleThreadTaskRunner::PostDelayedTask(
     const base::Location& from_here,

@@ -11,10 +11,9 @@
 
 namespace media {
 
-MojoCdmServiceContext::MojoCdmServiceContext() {}
+MojoCdmServiceContext::MojoCdmServiceContext() = default;
 
-MojoCdmServiceContext::~MojoCdmServiceContext() {
-}
+MojoCdmServiceContext::~MojoCdmServiceContext() = default;
 
 void MojoCdmServiceContext::RegisterCdm(int cdm_id,
                                         MojoCdmService* cdm_service) {

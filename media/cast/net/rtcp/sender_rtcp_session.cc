@@ -82,7 +82,7 @@ SenderRtcpSession::SenderRtcpSession(base::TickClock* clock,
           std::numeric_limits<int64_t>::min())),
       parser_(local_ssrc, remote_ssrc) {}
 
-SenderRtcpSession::~SenderRtcpSession() {}
+SenderRtcpSession::~SenderRtcpSession() = default;
 
 void SenderRtcpSession::WillSendFrame(FrameId frame_id) {
   if (parser_.max_valid_frame_id().is_null() ||

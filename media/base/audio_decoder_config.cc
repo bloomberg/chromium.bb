@@ -60,7 +60,7 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
   should_discard_decoder_delay_ = true;
 }
 
-AudioDecoderConfig::~AudioDecoderConfig() {}
+AudioDecoderConfig::~AudioDecoderConfig() = default;
 
 bool AudioDecoderConfig::IsValidConfig() const {
   return codec_ != kUnknownAudioCodec &&

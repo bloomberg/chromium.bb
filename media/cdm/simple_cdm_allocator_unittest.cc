@@ -36,7 +36,7 @@ class TestCdmBuffer : public cdm::Buffer {
     // Verify that Destroy() is called on this object.
     EXPECT_CALL(*this, DestroyCalled());
   }
-  ~TestCdmBuffer() final {}
+  ~TestCdmBuffer() final = default;
 
   MOCK_METHOD0(DestroyCalled, void());
 
@@ -48,8 +48,8 @@ class TestCdmBuffer : public cdm::Buffer {
 
 class SimpleCdmAllocatorTest : public testing::Test {
  public:
-  SimpleCdmAllocatorTest() {}
-  ~SimpleCdmAllocatorTest() override {}
+  SimpleCdmAllocatorTest() = default;
+  ~SimpleCdmAllocatorTest() override = default;
 
  protected:
   SimpleCdmAllocator allocator_;

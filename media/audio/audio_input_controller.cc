@@ -112,7 +112,7 @@ class AudioInputController::AudioCallback
   explicit AudioCallback(AudioInputController* controller)
       : controller_(controller),
         weak_controller_(controller->weak_ptr_factory_.GetWeakPtr()) {}
-  ~AudioCallback() override {}
+  ~AudioCallback() override = default;
 
   bool received_callback() const { return received_callback_; }
   bool error_during_callback() const { return error_during_callback_; }

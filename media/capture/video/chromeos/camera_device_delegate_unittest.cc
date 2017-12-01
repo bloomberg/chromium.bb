@@ -37,9 +37,9 @@ namespace {
 
 class MockCameraDevice : public arc::mojom::Camera3DeviceOps {
  public:
-  MockCameraDevice() {}
+  MockCameraDevice() = default;
 
-  ~MockCameraDevice() {}
+  ~MockCameraDevice() = default;
 
   void Initialize(arc::mojom::Camera3CallbackOpsPtr callback_ops,
                   InitializeCallback callback) override {

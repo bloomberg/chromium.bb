@@ -41,7 +41,7 @@ class AudioTimestampValidatorTest
     : public testing::Test,
       public ::testing::WithParamInterface<ValidatorTestParams> {
  public:
-  AudioTimestampValidatorTest() {}
+  AudioTimestampValidatorTest() = default;
 
  protected:
   void SetUp() override {

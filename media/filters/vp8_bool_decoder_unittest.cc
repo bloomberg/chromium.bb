@@ -37,7 +37,7 @@ const uint8_t kDataParitiesAndIncreasingProbabilities[] = {
 
 class Vp8BoolDecoderTest : public ::testing::Test {
  public:
-  Vp8BoolDecoderTest() {}
+  Vp8BoolDecoderTest() = default;
 
  protected:
   // Fixture member, the bool decoder to be tested.

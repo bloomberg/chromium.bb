@@ -39,9 +39,9 @@ static void RunOnTaskRunner(
   task_runner->PostTask(FROM_HERE, base::Bind(status_cb, last_status));
 }
 
-SerialRunner::Queue::Queue() {}
+SerialRunner::Queue::Queue() = default;
 SerialRunner::Queue::Queue(const Queue& other) = default;
-SerialRunner::Queue::~Queue() {}
+SerialRunner::Queue::~Queue() = default;
 
 void SerialRunner::Queue::Push(const base::Closure& closure) {
   bound_fns_.push(base::Bind(&RunClosure, closure));
@@ -86,7 +86,7 @@ SerialRunner::SerialRunner(const Queue& bound_fns,
   RunNextInSeries(PIPELINE_OK);
 }
 
-SerialRunner::~SerialRunner() {}
+SerialRunner::~SerialRunner() = default;
 
 std::unique_ptr<SerialRunner> SerialRunner::Run(
     const Queue& bound_fns,

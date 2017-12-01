@@ -39,7 +39,7 @@ class RtpParserTest : public ::testing::Test {
     cast_header_.marker = true;
   }
 
-  ~RtpParserTest() override {}
+  ~RtpParserTest() override = default;
 
   void ExpectParsesPacket() {
     RtpCastHeader parsed_header;

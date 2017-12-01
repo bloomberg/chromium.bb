@@ -28,7 +28,7 @@ SourceBufferRangeByPts::SourceBufferRangeByPts(
   AppendBuffersToEnd(new_buffers, range_start_pts_);
 }
 
-SourceBufferRangeByPts::~SourceBufferRangeByPts() {}
+SourceBufferRangeByPts::~SourceBufferRangeByPts() = default;
 
 void SourceBufferRangeByPts::DeleteAll(BufferQueue* deleted_buffers) {
   DVLOG(1) << __func__;

@@ -126,8 +126,7 @@ VideoSender::VideoSender(
   }
 }
 
-VideoSender::~VideoSender() {
-}
+VideoSender::~VideoSender() = default;
 
 void VideoSender::InsertRawVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,

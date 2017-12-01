@@ -44,7 +44,7 @@ class MockAudioDebugFileWriter : public AudioDebugFileWriter {
  public:
   MockAudioDebugFileWriter(const AudioParameters& params)
       : AudioDebugFileWriter(params), reference_data_(nullptr) {}
-  ~MockAudioDebugFileWriter() override {}
+  ~MockAudioDebugFileWriter() override = default;
 
   MOCK_METHOD1(Start, void(const base::FilePath&));
   MOCK_METHOD0(Stop, void());
@@ -93,7 +93,7 @@ class AudioDebugRecordingHelperUnderTest : public AudioDebugRecordingHelper {
       : AudioDebugRecordingHelper(params,
                                   std::move(task_runner),
                                   std::move(on_destruction_closure)) {}
-  ~AudioDebugRecordingHelperUnderTest() override {}
+  ~AudioDebugRecordingHelperUnderTest() override = default;
 
  private:
   // Creates the mock writer. After the mock writer is returned, we always
@@ -117,7 +117,7 @@ class AudioDebugRecordingHelperTest : public ::testing::Test {
  public:
   AudioDebugRecordingHelperTest() : file_path_(kBaseFilePath) {}
 
-  ~AudioDebugRecordingHelperTest() override {}
+  ~AudioDebugRecordingHelperTest() override = default;
 
   // Helper function that creates a recording helper.
   std::unique_ptr<AudioDebugRecordingHelper> CreateRecordingHelper(

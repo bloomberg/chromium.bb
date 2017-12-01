@@ -53,7 +53,7 @@ PictureBuffer::PictureBuffer(int32_t id,
 
 PictureBuffer::PictureBuffer(const PictureBuffer& other) = default;
 
-PictureBuffer::~PictureBuffer() {}
+PictureBuffer::~PictureBuffer() = default;
 
 gpu::Mailbox PictureBuffer::texture_mailbox(size_t plane) const {
   if (plane >= texture_mailboxes_.size()) {

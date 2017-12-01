@@ -21,7 +21,7 @@ MediaGpuChannelManager::MediaGpuChannelManager(
     gpu::GpuChannelManager* channel_manager)
     : channel_manager_(channel_manager) {}
 
-MediaGpuChannelManager::~MediaGpuChannelManager() {}
+MediaGpuChannelManager::~MediaGpuChannelManager() = default;
 
 void MediaGpuChannelManager::AddChannel(int32_t client_id) {
   gpu::GpuChannel* gpu_channel = channel_manager_->LookupChannel(client_id);

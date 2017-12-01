@@ -42,7 +42,7 @@ FrameId GetFirstTestFrameId() {
 class FakeFrameClient {
  public:
   FakeFrameClient() : num_called_(0) {}
-  virtual ~FakeFrameClient() {}
+  virtual ~FakeFrameClient() = default;
 
   void AddExpectedResult(FrameId expected_frame_id,
                          const base::TimeTicks& expected_playout_time) {
@@ -84,7 +84,7 @@ class FrameReceiverTest : public ::testing::Test {
                             task_runner_, task_runner_, task_runner_);
   }
 
-  ~FrameReceiverTest() override {}
+  ~FrameReceiverTest() override = default;
 
   void SetUp() final {
     payload_.assign(kPacketSize, 0);

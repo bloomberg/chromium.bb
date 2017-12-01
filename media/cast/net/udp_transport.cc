@@ -84,7 +84,7 @@ UdpTransport::UdpTransport(
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
 }
 
-UdpTransport::~UdpTransport() {}
+UdpTransport::~UdpTransport() = default;
 
 void UdpTransport::StartReceiving(
     const PacketReceiverCallbackWithStatus& packet_receiver) {

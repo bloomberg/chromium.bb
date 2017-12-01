@@ -29,7 +29,7 @@ TestAudioBusFactory::TestAudioBusFactory(int num_channels,
   CHECK_LE(volume_, 1.0f);
 }
 
-TestAudioBusFactory::~TestAudioBusFactory() {}
+TestAudioBusFactory::~TestAudioBusFactory() = default;
 
 std::unique_ptr<AudioBus> TestAudioBusFactory::NextAudioBus(
     const base::TimeDelta& duration) {

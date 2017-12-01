@@ -8,9 +8,9 @@
 
 namespace media {
 
-DecoderFactory::DecoderFactory() {}
+DecoderFactory::DecoderFactory() = default;
 
-DecoderFactory::~DecoderFactory() {}
+DecoderFactory::~DecoderFactory() = default;
 
 void DecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,

@@ -14,8 +14,7 @@ WebMContentEncodingsClient::WebMContentEncodingsClient(MediaLog* media_log)
       content_encryption_encountered_(false),
       content_encodings_ready_(false) {}
 
-WebMContentEncodingsClient::~WebMContentEncodingsClient() {
-}
+WebMContentEncodingsClient::~WebMContentEncodingsClient() = default;
 
 const ContentEncodings& WebMContentEncodingsClient::content_encodings() const {
   DCHECK(content_encodings_ready_);

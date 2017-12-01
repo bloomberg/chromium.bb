@@ -88,7 +88,7 @@ MediaGpuChannel::MediaGpuChannel(
   channel_->AddFilter(filter_.get());
 }
 
-MediaGpuChannel::~MediaGpuChannel() {}
+MediaGpuChannel::~MediaGpuChannel() = default;
 
 bool MediaGpuChannel::Send(IPC::Message* msg) {
   return channel_->Send(msg);

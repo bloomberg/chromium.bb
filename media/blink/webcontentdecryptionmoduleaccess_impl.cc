@@ -58,8 +58,8 @@ WebContentDecryptionModuleAccessImpl::WebContentDecryptionModuleAccessImpl(
       client_(client) {
 }
 
-WebContentDecryptionModuleAccessImpl::~WebContentDecryptionModuleAccessImpl() {
-}
+WebContentDecryptionModuleAccessImpl::~WebContentDecryptionModuleAccessImpl() =
+    default;
 
 blink::WebMediaKeySystemConfiguration
 WebContentDecryptionModuleAccessImpl::GetConfiguration() {

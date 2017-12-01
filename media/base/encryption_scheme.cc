@@ -6,13 +6,13 @@
 
 namespace media {
 
-EncryptionScheme::Pattern::Pattern() {}
+EncryptionScheme::Pattern::Pattern() = default;
 
 EncryptionScheme::Pattern::Pattern(uint32_t encrypt_blocks,
                                    uint32_t skip_blocks)
     : encrypt_blocks_(encrypt_blocks), skip_blocks_(skip_blocks) {}
 
-EncryptionScheme::Pattern::~Pattern() {}
+EncryptionScheme::Pattern::~Pattern() = default;
 
 uint32_t EncryptionScheme::Pattern::encrypt_blocks() const {
   return encrypt_blocks_;
@@ -31,12 +31,12 @@ bool EncryptionScheme::Pattern::IsInEffect() const {
   return encrypt_blocks_ != 0 && skip_blocks_ != 0;
 }
 
-EncryptionScheme::EncryptionScheme() {}
+EncryptionScheme::EncryptionScheme() = default;
 
 EncryptionScheme::EncryptionScheme(CipherMode mode, const Pattern& pattern)
     : mode_(mode), pattern_(pattern) {}
 
-EncryptionScheme::~EncryptionScheme() {}
+EncryptionScheme::~EncryptionScheme() = default;
 
 bool EncryptionScheme::is_encrypted() const {
   return mode_ != CIPHER_MODE_UNENCRYPTED;

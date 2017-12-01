@@ -22,8 +22,7 @@ SeekableBuffer::SeekableBuffer(int backward_capacity, int forward_capacity)
   current_buffer_ = buffers_.begin();
 }
 
-SeekableBuffer::~SeekableBuffer() {
-}
+SeekableBuffer::~SeekableBuffer() = default;
 
 void SeekableBuffer::Clear() {
   buffers_.clear();

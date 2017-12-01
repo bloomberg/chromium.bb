@@ -14,8 +14,8 @@
 
 class NullMediaLog : public media::MediaLog {
  public:
-  NullMediaLog() {}
-  ~NullMediaLog() override {}
+  NullMediaLog() = default;
+  ~NullMediaLog() override = default;
 
   void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override {}
 

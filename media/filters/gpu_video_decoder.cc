@@ -68,7 +68,7 @@ GpuVideoDecoder::BufferData::BufferData(int32_t bbid,
       visible_rect(vr),
       natural_size(ns) {}
 
-GpuVideoDecoder::BufferData::~BufferData() {}
+GpuVideoDecoder::BufferData::~BufferData() = default;
 
 GpuVideoDecoder::GpuVideoDecoder(
     GpuVideoAcceleratorFactories* factories,

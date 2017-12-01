@@ -123,7 +123,7 @@ class AudioRendererMixerInputTest : public testing::Test,
   AudioRendererMixer* GetInputMixer() { return mixer_input_->mixer_; }
 
  protected:
-  virtual ~AudioRendererMixerInputTest() {}
+  virtual ~AudioRendererMixerInputTest() = default;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   AudioParameters audio_parameters_;

@@ -35,7 +35,7 @@ RtpSender::RtpSender(
   config_.sequence_number = base::RandInt(0, 65535);
 }
 
-RtpSender::~RtpSender() {}
+RtpSender::~RtpSender() = default;
 
 bool RtpSender::Initialize(const CastTransportRtpConfig& config) {
   config_.ssrc = config.ssrc;

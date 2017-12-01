@@ -16,7 +16,7 @@ namespace media {
 
 class MemoryDataSourceTest : public ::testing::Test {
  public:
-  MemoryDataSourceTest() {}
+  MemoryDataSourceTest() = default;
 
  protected:
   void Initialize(size_t size) {

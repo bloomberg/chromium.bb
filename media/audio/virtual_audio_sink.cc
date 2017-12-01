@@ -40,7 +40,7 @@ VirtualAudioSink::VirtualAudioSink(const AudioParameters& param,
   target_->AddInputProvider(this, params_);
 }
 
-VirtualAudioSink::~VirtualAudioSink() {}
+VirtualAudioSink::~VirtualAudioSink() = default;
 
 void VirtualAudioSink::Close() {
   target_->RemoveInputProvider(this, params_);

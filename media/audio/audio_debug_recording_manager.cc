@@ -39,7 +39,7 @@ AudioDebugRecordingManager::AudioDebugRecordingManager(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(std::move(task_runner)), weak_factory_(this) {}
 
-AudioDebugRecordingManager::~AudioDebugRecordingManager() {}
+AudioDebugRecordingManager::~AudioDebugRecordingManager() = default;
 
 void AudioDebugRecordingManager::EnableDebugRecording(
     const base::FilePath& base_file_name) {

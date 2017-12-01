@@ -6,8 +6,8 @@
 
 namespace media {
 
-MockDemuxerHost::MockDemuxerHost() {}
+MockDemuxerHost::MockDemuxerHost() = default;
 
-MockDemuxerHost::~MockDemuxerHost() {}
+MockDemuxerHost::~MockDemuxerHost() = default;
 
 }  // namespace media

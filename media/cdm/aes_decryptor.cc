@@ -81,8 +81,8 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
       std::list<std::pair<std::string, std::unique_ptr<DecryptionKey>>>;
 
  public:
-  SessionIdDecryptionKeyMap() {}
-  ~SessionIdDecryptionKeyMap() {}
+  SessionIdDecryptionKeyMap() = default;
+  ~SessionIdDecryptionKeyMap() = default;
 
   // Replaces value if |session_id| is already present, or adds it if not.
   // This |decryption_key| becomes the latest until another insertion or
@@ -771,7 +771,7 @@ AesDecryptor::DecryptionKey::DecryptionKey(const std::string& secret)
     : secret_(secret) {
 }
 
-AesDecryptor::DecryptionKey::~DecryptionKey() {}
+AesDecryptor::DecryptionKey::~DecryptionKey() = default;
 
 bool AesDecryptor::DecryptionKey::Init() {
   CHECK(!secret_.empty());

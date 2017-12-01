@@ -16,7 +16,7 @@ AudioPullFifo::AudioPullFifo(int channels, int frames, const ReadCB& read_cb)
       fifo_(AudioBus::Create(channels, frames)),
       fifo_index_(frames) {}
 
-AudioPullFifo::~AudioPullFifo() {}
+AudioPullFifo::~AudioPullFifo() = default;
 
 void AudioPullFifo::Consume(AudioBus* destination, int frames_to_consume) {
   DCHECK_LE(frames_to_consume, destination->frames());

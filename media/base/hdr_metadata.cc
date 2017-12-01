@@ -6,10 +6,10 @@
 
 namespace media {
 
-MasteringMetadata::MasteringMetadata() {}
+MasteringMetadata::MasteringMetadata() = default;
 MasteringMetadata::MasteringMetadata(const MasteringMetadata& rhs) = default;
 
-HDRMetadata::HDRMetadata() {}
+HDRMetadata::HDRMetadata() = default;
 HDRMetadata::HDRMetadata(const HDRMetadata& rhs) = default;
 
 }  // namespace media

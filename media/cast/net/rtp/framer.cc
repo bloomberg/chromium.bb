@@ -28,7 +28,7 @@ Framer::Framer(base::TickClock* clock,
   DCHECK(incoming_payload_feedback) << "Invalid argument";
 }
 
-Framer::~Framer() {}
+Framer::~Framer() = default;
 
 bool Framer::InsertPacket(const uint8_t* payload_data,
                           size_t payload_size,

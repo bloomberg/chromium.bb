@@ -47,7 +47,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
                              base::Bind(&PipelineControllerTest::OnError,
                                         base::Unretained(this))) {}
 
-  ~PipelineControllerTest() override {}
+  ~PipelineControllerTest() override = default;
 
   PipelineStatusCB StartPipeline(bool is_streaming, bool is_static) {
     EXPECT_FALSE(pipeline_controller_.IsStable());

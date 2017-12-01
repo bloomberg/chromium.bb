@@ -55,7 +55,7 @@ class NackStringBuilder {
         packet_count_(0),
         last_packet_id_(-1),
         contiguous_sequence_(false) {}
-  ~NackStringBuilder() {}
+  ~NackStringBuilder() = default;
 
   bool Empty() const { return frame_count_ == 0; }
 
@@ -116,7 +116,7 @@ class NackStringBuilder {
 RtcpBuilder::RtcpBuilder(uint32_t sending_ssrc)
     : writer_(NULL, 0), local_ssrc_(sending_ssrc), ptr_of_length_(NULL) {}
 
-RtcpBuilder::~RtcpBuilder() {}
+RtcpBuilder::~RtcpBuilder() = default;
 
 void RtcpBuilder::PatchLengthField() {
   if (ptr_of_length_) {

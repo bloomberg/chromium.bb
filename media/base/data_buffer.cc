@@ -35,7 +35,7 @@ DataBuffer::DataBuffer(const uint8_t* data, int data_size)
   memcpy(data_.get(), data, data_size_);
 }
 
-DataBuffer::~DataBuffer() {}
+DataBuffer::~DataBuffer() = default;
 
 // static
 scoped_refptr<DataBuffer> DataBuffer::CopyFrom(const uint8_t* data, int size) {

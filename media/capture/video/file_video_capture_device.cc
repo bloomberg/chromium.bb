@@ -164,12 +164,12 @@ VideoFileParser::VideoFileParser(const base::FilePath& file_path)
       current_byte_index_(0),
       first_frame_byte_index_(0) {}
 
-VideoFileParser::~VideoFileParser() {}
+VideoFileParser::~VideoFileParser() = default;
 
 Y4mFileParser::Y4mFileParser(const base::FilePath& file_path)
     : VideoFileParser(file_path) {}
 
-Y4mFileParser::~Y4mFileParser() {}
+Y4mFileParser::~Y4mFileParser() = default;
 
 bool Y4mFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
   file_.reset(new base::File(file_path_,
@@ -218,7 +218,7 @@ const uint8_t* Y4mFileParser::GetNextFrame(int* frame_size) {
 MjpegFileParser::MjpegFileParser(const base::FilePath& file_path)
     : VideoFileParser(file_path) {}
 
-MjpegFileParser::~MjpegFileParser() {}
+MjpegFileParser::~MjpegFileParser() = default;
 
 bool MjpegFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
   mapped_file_.reset(new base::MemoryMappedFile());

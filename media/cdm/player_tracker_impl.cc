@@ -18,13 +18,12 @@ PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
 PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
     const PlayerCallbacks& other) = default;
 
-PlayerTrackerImpl::PlayerCallbacks::~PlayerCallbacks() {
-}
+PlayerTrackerImpl::PlayerCallbacks::~PlayerCallbacks() = default;
 
 PlayerTrackerImpl::PlayerTrackerImpl() : next_registration_id_(1) {
 }
 
-PlayerTrackerImpl::~PlayerTrackerImpl() {}
+PlayerTrackerImpl::~PlayerTrackerImpl() = default;
 
 int PlayerTrackerImpl::RegisterPlayer(const base::Closure& new_key_cb,
                                       const base::Closure& cdm_unset_cb) {

@@ -11,8 +11,8 @@
 
 namespace media {
 
-MockWebAssociatedURLLoader::MockWebAssociatedURLLoader() {}
+MockWebAssociatedURLLoader::MockWebAssociatedURLLoader() = default;
 
-MockWebAssociatedURLLoader::~MockWebAssociatedURLLoader() {}
+MockWebAssociatedURLLoader::~MockWebAssociatedURLLoader() = default;
 
 }  // namespace media

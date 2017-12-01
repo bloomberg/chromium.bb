@@ -31,7 +31,7 @@ class FakeAudioWorkerTest : public testing::Test {
         static_cast<float>(params_.sample_rate()));
   }
 
-  ~FakeAudioWorkerTest() override {}
+  ~FakeAudioWorkerTest() override = default;
 
   void CalledByFakeWorker() { seen_callbacks_++; }
 

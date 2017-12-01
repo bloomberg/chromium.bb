@@ -11,7 +11,7 @@ namespace media {
 
 KeyboardEventCounter::KeyboardEventCounter() : total_key_presses_(0) {}
 
-KeyboardEventCounter::~KeyboardEventCounter() {}
+KeyboardEventCounter::~KeyboardEventCounter() = default;
 
 void KeyboardEventCounter::OnKeyboardEvent(ui::EventType event,
                                            ui::KeyboardCode key_code) {

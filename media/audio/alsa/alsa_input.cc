@@ -50,7 +50,7 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
       weak_factory_(this) {
 }
 
-AlsaPcmInputStream::~AlsaPcmInputStream() {}
+AlsaPcmInputStream::~AlsaPcmInputStream() = default;
 
 bool AlsaPcmInputStream::Open() {
   if (device_handle_)

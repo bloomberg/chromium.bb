@@ -277,6 +277,6 @@ GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
       get_gles2_decoder_cb_(get_gles2_decoder_cb),
       overlay_factory_cb_(overlay_factory_cb) {}
 
-GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() {}
+GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() = default;
 
 }  // namespace media

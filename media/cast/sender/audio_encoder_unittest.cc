@@ -34,7 +34,7 @@ namespace {
 class TestEncodedAudioFrameReceiver {
  public:
   TestEncodedAudioFrameReceiver() : frames_received_(0) {}
-  virtual ~TestEncodedAudioFrameReceiver() {}
+  virtual ~TestEncodedAudioFrameReceiver() = default;
 
   int frames_received() const { return frames_received_; }
 
@@ -116,7 +116,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
                             task_runner_, task_runner_, task_runner_);
   }
 
-  virtual ~AudioEncoderTest() {}
+  virtual ~AudioEncoderTest() = default;
 
   void RunTestForCodec(Codec codec) {
     const TestScenario& scenario = GetParam();

@@ -30,7 +30,7 @@ static const double kDefaultTimecodeScaleInUs = 1000.0;  // 1 ms resolution
 
 class WebMTracksParserTest : public testing::Test {
  public:
-  WebMTracksParserTest() {}
+  WebMTracksParserTest() = default;
 
  protected:
   void VerifyTextTrackInfo(const uint8_t* buffer,

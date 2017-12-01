@@ -20,7 +20,7 @@ RtpPacketizerConfig::RtpPacketizerConfig()
       sequence_number(0),
       ssrc(0) {}
 
-RtpPacketizerConfig::~RtpPacketizerConfig() {}
+RtpPacketizerConfig::~RtpPacketizerConfig() = default;
 
 RtpPacketizer::RtpPacketizer(PacedSender* const transport,
                              PacketStorage* packet_storage,
@@ -34,7 +34,7 @@ RtpPacketizer::RtpPacketizer(PacedSender* const transport,
   DCHECK(transport) << "Invalid argument";
 }
 
-RtpPacketizer::~RtpPacketizer() {}
+RtpPacketizer::~RtpPacketizer() = default;
 
 uint16_t RtpPacketizer::NextSequenceNumber() {
   ++sequence_number_;

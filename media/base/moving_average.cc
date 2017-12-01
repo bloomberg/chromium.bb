@@ -10,7 +10,7 @@ namespace media {
 
 MovingAverage::MovingAverage(size_t depth) : depth_(depth), samples_(depth_) {}
 
-MovingAverage::~MovingAverage() {}
+MovingAverage::~MovingAverage() = default;
 
 void MovingAverage::AddSample(base::TimeDelta sample) {
   // |samples_| is zero-initialized, so |oldest| is also zero before |count_|

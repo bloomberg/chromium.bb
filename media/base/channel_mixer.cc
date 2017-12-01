@@ -39,7 +39,7 @@ void ChannelMixer::Initialize(
   remapping_ = matrix_builder.CreateTransformationMatrix(&matrix_);
 }
 
-ChannelMixer::~ChannelMixer() {}
+ChannelMixer::~ChannelMixer() = default;
 
 void ChannelMixer::Transform(const AudioBus* input, AudioBus* output) {
   CHECK_EQ(matrix_.size(), static_cast<size_t>(output->channels()));

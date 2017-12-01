@@ -44,7 +44,7 @@ H264Picture::H264Picture()
   memset(&ref_pic_marking, 0, sizeof(ref_pic_marking));
 }
 
-H264Picture::~H264Picture() {}
+H264Picture::~H264Picture() = default;
 
 V4L2H264Picture* H264Picture::AsV4L2H264Picture() {
   return nullptr;
@@ -55,7 +55,7 @@ VaapiH264Picture* H264Picture::AsVaapiH264Picture() {
 }
 
 H264DPB::H264DPB() : max_num_pics_(0) {}
-H264DPB::~H264DPB() {}
+H264DPB::~H264DPB() = default;
 
 void H264DPB::Clear() {
   pics_.clear();

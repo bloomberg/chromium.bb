@@ -11,13 +11,13 @@ using ::testing::Return;
 namespace media {
 namespace unittest_internal {
 
-MockGpuMemoryBuffer::MockGpuMemoryBuffer() {}
+MockGpuMemoryBuffer::MockGpuMemoryBuffer() = default;
 
-MockGpuMemoryBuffer::~MockGpuMemoryBuffer() {}
+MockGpuMemoryBuffer::~MockGpuMemoryBuffer() = default;
 
-MockGpuMemoryBufferManager::MockGpuMemoryBufferManager() {}
+MockGpuMemoryBufferManager::MockGpuMemoryBufferManager() = default;
 
-MockGpuMemoryBufferManager::~MockGpuMemoryBufferManager() {}
+MockGpuMemoryBufferManager::~MockGpuMemoryBufferManager() = default;
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
 MockGpuMemoryBufferManager::ReturnValidBuffer(

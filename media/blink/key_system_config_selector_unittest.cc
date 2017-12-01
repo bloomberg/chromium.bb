@@ -81,8 +81,7 @@ blink::WebMediaKeySystemConfiguration UsableConfiguration() {
 
 class FakeKeySystems : public KeySystems {
  public:
-  ~FakeKeySystems() override {
-  }
+  ~FakeKeySystems() override = default;
 
   bool IsSupportedKeySystem(const std::string& key_system) const override {
     // Based on EME spec, Clear Key key system is always supported.

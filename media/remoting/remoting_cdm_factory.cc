@@ -27,7 +27,7 @@ RemotingCdmFactory::RemotingCdmFactory(
   DCHECK(sink_observer_);
 }
 
-RemotingCdmFactory::~RemotingCdmFactory() {}
+RemotingCdmFactory::~RemotingCdmFactory() = default;
 
 std::unique_ptr<RemotingCdmController>
 RemotingCdmFactory::CreateRemotingCdmController() {

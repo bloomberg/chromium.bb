@@ -53,7 +53,7 @@ class WebEncryptedMediaClientImpl::Reporter {
       : uma_name_(kKeySystemSupportUMAPrefix + key_system_for_uma),
         is_request_reported_(false),
         is_support_reported_(false) {}
-  ~Reporter() {}
+  ~Reporter() = default;
 
   void ReportRequested() {
     if (is_request_reported_)
@@ -96,8 +96,7 @@ WebEncryptedMediaClientImpl::WebEncryptedMediaClientImpl(
   DCHECK(cdm_factory_);
 }
 
-WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() {
-}
+WebEncryptedMediaClientImpl::~WebEncryptedMediaClientImpl() = default;
 
 void WebEncryptedMediaClientImpl::RequestMediaKeySystemAccess(
     blink::WebEncryptedMediaRequest request) {

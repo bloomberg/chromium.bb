@@ -219,7 +219,7 @@ PaintCanvasVideoRendererTest::PaintCanvasVideoRendererTest()
                    cropped_frame()->stride(VideoFrame::kVPlane), 16, 16);
 }
 
-PaintCanvasVideoRendererTest::~PaintCanvasVideoRendererTest() {}
+PaintCanvasVideoRendererTest::~PaintCanvasVideoRendererTest() = default;
 
 void PaintCanvasVideoRendererTest::PaintWithoutFrame(cc::PaintCanvas* canvas) {
   cc::PaintFlags flags;

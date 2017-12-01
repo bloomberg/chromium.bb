@@ -59,8 +59,8 @@ class RendererImplTest : public ::testing::Test {
   // also lets us test for missing callbacks.
   class CallbackHelper : public MockRendererClient {
    public:
-    CallbackHelper() {}
-    virtual ~CallbackHelper() {}
+    CallbackHelper() = default;
+    virtual ~CallbackHelper() = default;
 
     // Completion callbacks.
     MOCK_METHOD1(OnInitialize, void(PipelineStatus));

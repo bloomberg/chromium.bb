@@ -880,7 +880,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
   }
 }
 
-GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool() {}
+GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool() = default;
 
 GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,

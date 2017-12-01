@@ -164,7 +164,7 @@ std::string MediaLog::BufferingStateToString(BufferingState state) {
 
 MediaLog::MediaLog() : id_(g_media_log_count.GetNext()) {}
 
-MediaLog::~MediaLog() {}
+MediaLog::~MediaLog() = default;
 
 void MediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {}
 

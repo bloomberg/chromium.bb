@@ -95,7 +95,7 @@ void CdmModule::ResetInstanceForTesting() {
   g_cdm_module = nullptr;
 }
 
-CdmModule::CdmModule() {}
+CdmModule::CdmModule() = default;
 
 CdmModule::~CdmModule() {
   if (deinitialize_cdm_module_func_)

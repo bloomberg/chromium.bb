@@ -8,7 +8,7 @@
 
 namespace media {
 
-VideoEncodeAccelerator::~VideoEncodeAccelerator() {}
+VideoEncodeAccelerator::~VideoEncodeAccelerator() = default;
 
 VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
     : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN),
@@ -16,8 +16,7 @@ VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
       max_framerate_denominator(0) {
 }
 
-VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() {
-}
+VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() = default;
 
 bool VideoEncodeAccelerator::TryToSetupEncodeOnSeparateThread(
     const base::WeakPtr<Client>& encode_client,

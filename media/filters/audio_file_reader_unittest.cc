@@ -24,7 +24,7 @@ namespace media {
 class AudioFileReaderTest : public testing::Test {
  public:
   AudioFileReaderTest() : packet_verification_disabled_(false) {}
-  ~AudioFileReaderTest() override {}
+  ~AudioFileReaderTest() override = default;
 
   void Initialize(const char* filename) {
     data_ = ReadTestDataFile(filename);

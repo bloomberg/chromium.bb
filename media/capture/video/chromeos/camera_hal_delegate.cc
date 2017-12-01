@@ -57,7 +57,7 @@ CameraHalDelegate::CameraHalDelegate(
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-CameraHalDelegate::~CameraHalDelegate() {}
+CameraHalDelegate::~CameraHalDelegate() = default;
 
 void CameraHalDelegate::RegisterCameraClient() {
   CameraHalDispatcherImpl::GetInstance()->AddClientObserver(

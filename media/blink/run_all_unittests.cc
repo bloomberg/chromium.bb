@@ -68,7 +68,7 @@ BlinkMediaTestSuite::BlinkMediaTestSuite(int argc, char** argv)
       blink_platform_support_(new TestBlinkPlatformSupport()) {
 }
 
-BlinkMediaTestSuite::~BlinkMediaTestSuite() {}
+BlinkMediaTestSuite::~BlinkMediaTestSuite() = default;
 
 void BlinkMediaTestSuite::Initialize() {
   // Run TestSuite::Initialize first so that logging is initialized.

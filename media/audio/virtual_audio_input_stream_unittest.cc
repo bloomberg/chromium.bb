@@ -42,7 +42,7 @@ class MockInputCallback : public AudioInputStream::AudioInputCallback {
             InvokeWithoutArgs(&data_pushed_, &base::WaitableEvent::Signal));
   }
 
-  virtual ~MockInputCallback() {}
+  virtual ~MockInputCallback() = default;
 
   MOCK_METHOD3(OnData,
                void(const AudioBus* source,
@@ -71,7 +71,7 @@ class TestAudioSource : public SineWaveAudioSource {
         data_pulled_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-  ~TestAudioSource() override {}
+  ~TestAudioSource() override = default;
 
   int OnMoreData(base::TimeDelta delay,
                  base::TimeTicks delay_timestamp,

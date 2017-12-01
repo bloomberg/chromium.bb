@@ -11,6 +11,6 @@ namespace media {
 // object files for this destructor if it's defined in the header file and that
 // breaks linking. Consider removing this file when the compiler+linker is able
 // to generate symbols across linking units.
-VideoCapturerSource::~VideoCapturerSource() {}
+VideoCapturerSource::~VideoCapturerSource() = default;
 
 }  // namespace media

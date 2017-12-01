@@ -80,8 +80,7 @@ VideoCadenceEstimator::VideoCadenceEstimator(
   Reset();
 }
 
-VideoCadenceEstimator::~VideoCadenceEstimator() {
-}
+VideoCadenceEstimator::~VideoCadenceEstimator() = default;
 
 void VideoCadenceEstimator::Reset() {
   cadence_.clear();

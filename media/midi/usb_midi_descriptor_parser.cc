@@ -78,7 +78,7 @@ UsbMidiDescriptorParser::UsbMidiDescriptorParser()
       current_endpoint_address_(0),
       current_cable_number_(0) {}
 
-UsbMidiDescriptorParser::~UsbMidiDescriptorParser() {}
+UsbMidiDescriptorParser::~UsbMidiDescriptorParser() = default;
 
 bool UsbMidiDescriptorParser::Parse(UsbMidiDevice* device,
                                     const uint8_t* data,

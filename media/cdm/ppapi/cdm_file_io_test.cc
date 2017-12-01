@@ -523,7 +523,7 @@ FileIOTest::FileIOTest(const CreateFileIOCB& create_file_io_cb,
     : create_file_io_cb_(create_file_io_cb),
       test_name_(test_name) {}
 
-FileIOTest::~FileIOTest() {}
+FileIOTest::~FileIOTest() = default;
 
 void FileIOTest::AddTestStep(StepType type,
                              Status status,

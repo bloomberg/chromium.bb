@@ -59,7 +59,7 @@ Vp9Prob InvRemapProb(uint8_t delta_prob, uint8_t prob) {
 
 }  // namespace
 
-Vp9CompressedHeaderParser::Vp9CompressedHeaderParser() {}
+Vp9CompressedHeaderParser::Vp9CompressedHeaderParser() = default;
 
 // 6.3.1 Tx mode syntax
 void Vp9CompressedHeaderParser::ReadTxMode(Vp9FrameHeader* fhdr) {

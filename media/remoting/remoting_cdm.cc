@@ -27,7 +27,7 @@ RemotingCdm::RemotingCdm(
   // TODO(xjz): Not implemented. Need to merge with erickung's implementation.
 }
 
-RemotingCdm::~RemotingCdm() {}
+RemotingCdm::~RemotingCdm() = default;
 
 void RemotingCdm::SetServerCertificate(
     const std::vector<uint8_t>& certificate,

@@ -78,7 +78,7 @@ class GpuVideoEncodeAccelerator::MessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  ~MessageFilter() override {}
+  ~MessageFilter() override = default;
 
  private:
   GpuVideoEncodeAccelerator* const owner_;

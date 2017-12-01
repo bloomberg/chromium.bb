@@ -95,7 +95,7 @@ WebmMuxer::VideoParameters::VideoParameters(
                                              &frame_rate));
 }
 
-WebmMuxer::VideoParameters::~VideoParameters() {}
+WebmMuxer::VideoParameters::~VideoParameters() = default;
 
 WebmMuxer::WebmMuxer(VideoCodec video_codec,
                      AudioCodec audio_codec,
@@ -392,6 +392,6 @@ WebmMuxer::EncodedVideoFrame::EncodedVideoFrame(
       timestamp(timestamp),
       is_keyframe(is_keyframe) {}
 
-WebmMuxer::EncodedVideoFrame::~EncodedVideoFrame() {}
+WebmMuxer::EncodedVideoFrame::~EncodedVideoFrame() = default;
 
 }  // namespace media

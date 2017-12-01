@@ -152,7 +152,7 @@ TracksBuilder::TracksBuilder(bool allow_invalid_values)
     : allow_invalid_values_(allow_invalid_values) {}
 TracksBuilder::TracksBuilder()
     : allow_invalid_values_(false) {}
-TracksBuilder::~TracksBuilder() {}
+TracksBuilder::~TracksBuilder() = default;
 
 void TracksBuilder::AddVideoTrack(int track_num,
                                   uint64_t track_uid,

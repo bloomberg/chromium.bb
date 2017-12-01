@@ -24,7 +24,7 @@ MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
       stream_(stream),
       weak_factory_(this) {}
 
-MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {}
+MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() = default;
 
 // This is called when our DemuxerStreamClient has connected itself and is
 // ready to receive messages.  Send an initial config and notify it that

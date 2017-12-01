@@ -37,7 +37,7 @@ RtcpParser::RtcpParser(uint32_t local_ssrc, uint32_t remote_ssrc)
       has_receiver_reference_time_report_(false),
       has_picture_loss_indicator_(false) {}
 
-RtcpParser::~RtcpParser() {}
+RtcpParser::~RtcpParser() = default;
 
 void RtcpParser::SetMaxValidFrameId(FrameId frame_id) {
   max_valid_frame_id_ = frame_id;

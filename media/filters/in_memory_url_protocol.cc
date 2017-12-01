@@ -16,7 +16,7 @@ InMemoryUrlProtocol::InMemoryUrlProtocol(const uint8_t* data,
       position_(0),
       streaming_(streaming) {}
 
-InMemoryUrlProtocol::~InMemoryUrlProtocol() {}
+InMemoryUrlProtocol::~InMemoryUrlProtocol() = default;
 
 int InMemoryUrlProtocol::Read(int size, uint8_t* data) {
   if (size < 0)
