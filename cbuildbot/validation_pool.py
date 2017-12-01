@@ -1014,7 +1014,9 @@ class ValidationPool(object):
   # Basically all code from this point forward.
   def _SubmitChangeWithDeps(self, patches, change, errors, limit_to,
                             reason=None):
-    """Submit |change| and its dependencies.
+    """Submit |change| and its dependencies via Gerrit Submit API.
+
+    This method is only used for non-manifest changes.
 
     If you call this function multiple times with the same PatchSeries, each
     CL will only be submitted once.
