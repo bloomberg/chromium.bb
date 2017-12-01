@@ -4586,6 +4586,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   // Hashing is performed only for square TX sizes larger than TX_4X4
   if (max_square_tx_size < TX_8X8 || bw != bh) return 0;
 
+  const int bw_mi = mi_size_wide[bsize];
   const int diff_stride = bw;
   const struct macroblock_plane *const p = &x->plane[0];
   const int16_t *diff = &p->src_diff[0];
@@ -4596,13 +4597,12 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   const int mi_col_in_sb = (mi_col % MAX_MIB_SIZE) << MI_SIZE_LOG2;
   int cur_rd_info_idx = 0;
   int cur_tx_depth = 0;
-  uint8_t parent_idx_buf[MAX_SB_SQUARE] = { 0 };
+  uint8_t parent_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
 
   int cur_tx_size = max_txsize_rect_lookup[1][bsize];
   while (cur_tx_depth <= MAX_VARTX_DEPTH) {
-    const BLOCK_SIZE cur_tx_bsize = txsize_to_bsize[cur_tx_size];
-    const int cur_tx_bw = block_size_wide[cur_tx_bsize];
-    const int cur_tx_bh = block_size_high[cur_tx_bsize];
+    const int cur_tx_bw = tx_size_wide[cur_tx_size];
+    const int cur_tx_bh = tx_size_high[cur_tx_size];
     if (cur_tx_bw < 8 || cur_tx_bh < 8) break;
 
     for (int row = 0; row < bh; row += cur_tx_bh) {
@@ -4640,15 +4640,22 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
 
         // Update the output quadtree RD info structure.
         av1_zero(dst_rd_info[cur_rd_info_idx].children);
+        const int block_mi_row = row / MI_SIZE;
+        const int block_mi_col = col / MI_SIZE;
         if (cur_tx_depth > 0) {
           const int y_odd = (row / cur_tx_bh) % 2;
           const int x_odd = (col / cur_tx_bw) % 2;
           const int child_idx = y_odd ? (x_odd ? 3 : 2) : (x_odd ? 1 : 0);
-          dst_rd_info[parent_idx_buf[row * bw + col]].children[child_idx] =
+          const int mi_index = block_mi_row * bw_mi + block_mi_col;
+          dst_rd_info[parent_idx_buf[mi_index]].children[child_idx] =
               &dst_rd_info[cur_rd_info_idx];
         }
-        for (int i = row; i < row + cur_tx_bh; ++i)
-          memset(parent_idx_buf + i * bw + col, cur_rd_info_idx, cur_tx_bw);
+        const int tx_bh_mi = cur_tx_bh / MI_SIZE;
+        const int tx_bw_mi = cur_tx_bw / MI_SIZE;
+        for (int i = block_mi_row; i < block_mi_row + tx_bh_mi; ++i) {
+          memset(parent_idx_buf + i * bw_mi + block_mi_col, cur_rd_info_idx,
+                 tx_bw_mi);
+        }
         ++cur_rd_info_idx;
       }
     }
