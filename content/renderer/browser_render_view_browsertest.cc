@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -195,7 +196,15 @@ class RenderViewBrowserTest : public ContentBrowserTest {
   TestShellContentRendererClient* renderer_client_;
 };
 
-IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
+// https://crbug.com/788788
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_ConfirmCacheInformationPlumbed \
+  DISABLED_ConfirmCacheInformationPlumbed
+#else
+#define MAYBE_ConfirmCacheInformationPlumbed ConfirmCacheInformationPlumbed
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
+                       MAYBE_ConfirmCacheInformationPlumbed) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load URL with "nocache" set, to create stale cache.
