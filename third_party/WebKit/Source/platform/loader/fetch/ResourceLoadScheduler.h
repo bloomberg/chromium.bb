@@ -187,6 +187,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     kStopped,
   };
   ThrottlingHistory throttling_history_ = ThrottlingHistory::kInitial;
+  WebFrameScheduler::ThrottlingState frame_scheduler_throttling_state_ =
+      WebFrameScheduler::ThrottlingState::kNotThrottled;
 
   // Holds clients that haven't been granted, and are waiting for a grant.
   HeapHashMap<ClientId, Member<ClientWithPriority>> pending_request_map_;
