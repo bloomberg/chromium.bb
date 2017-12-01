@@ -122,6 +122,18 @@ void TestDataReductionProxyConfig::SetShouldAddDefaultProxyBypassRules(
   add_default_proxy_bypass_rules_ = add_default_proxy_bypass_rules;
 }
 
+std::string TestDataReductionProxyConfig::GetCurrentNetworkID() const {
+  if (current_network_id_) {
+    return current_network_id_.value();
+  }
+  return DataReductionProxyConfig::GetCurrentNetworkID();
+}
+
+void TestDataReductionProxyConfig::SetCurrentNetworkID(
+    const std::string& network_id) {
+  current_network_id_ = network_id;
+}
+
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,

@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/previews/core/previews_experiments.h"
@@ -48,6 +47,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
+class NetworkPropertiesManager;
 class SecureProxyChecker;
 class WarmupURLFetcher;
 struct DataReductionProxyTypeInfo;
@@ -84,8 +84,7 @@ enum SecureProxyCheckFetchResult {
 // This object lives on the IO thread and all of its methods are expected to be
 // called from there.
 class DataReductionProxyConfig
-    : public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // The caller must ensure that all parameters remain alive for the lifetime
   // of the |DataReductionProxyConfig| instance, with the exception of
@@ -110,7 +109,8 @@ class DataReductionProxyConfig
   void InitializeOnIOThread(const scoped_refptr<net::URLRequestContextGetter>&
                                 basic_url_request_context_getter,
                             const scoped_refptr<net::URLRequestContextGetter>&
-                                url_request_context_getter);
+                                url_request_context_getter,
+                            NetworkPropertiesManager* manager);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
   // the value of |enabled|. If |restricted| is true, only enable the fallback
@@ -200,6 +200,8 @@ class DataReductionProxyConfig
   // Called when a new client config has been fetched.
   void OnNewClientConfigFetched();
 
+  void SetNetworkPropertiesManagerForTesting(NetworkPropertiesManager* manager);
+
  protected:
   // Should be called when there is a change in the status of the availability
   // of the insecure data saver proxies triggered due to warmup URL.
@@ -215,6 +217,9 @@ class DataReductionProxyConfig
   // Returns true if the default bypass rules should be added. Virtualized for
   // testing.
   virtual bool ShouldAddDefaultProxyBypassRules() const;
+
+  // Returns the ID of the current network by calling the platform APIs.
+  virtual std::string GetCurrentNetworkID() const;
 
  private:
   friend class MockDataReductionProxyConfig;
@@ -242,9 +247,6 @@ class DataReductionProxyConfig
   // the Data Reduction Proxy configuration from |config_values_| and apply to
   // |configurator_|. Used by the Data Reduction Proxy config service client.
   void ReloadConfig();
-
-  // NetworkChangeNotifier::IPAddressObserver implementation:
-  void OnIPAddressChanged() override;
 
   // NetworkChangeNotifier::NetworkChangeObserver implementation:
   void OnNetworkChanged(
@@ -336,7 +338,9 @@ class DataReductionProxyConfig
   // The current connection type.
   net::NetworkChangeNotifier::ConnectionType connection_type_;
 
-  NetworkPropertiesManager network_properties_manager_;
+  // Should be accessed only on the IO thread. Guaranteed to be non-null during
+  // the lifetime of |this| if accessed on the IO thread.
+  NetworkPropertiesManager* network_properties_manager_;
 
   base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_;
 

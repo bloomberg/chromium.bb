@@ -195,6 +195,7 @@ class MockDataReductionProxyService : public DataReductionProxyService {
 class TestDataReductionProxyIOData : public DataReductionProxyIOData {
  public:
   TestDataReductionProxyIOData(
+      PrefService* prefs,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::unique_ptr<DataReductionProxyConfig> config,
       std::unique_ptr<DataReductionProxyEventCreator> event_creator,

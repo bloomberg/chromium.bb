@@ -52,6 +52,7 @@ extern const char kDataReductionProxySavingsClearedNegativeSystemClock[];
 extern const char kHttpOriginalContentLength[];
 extern const char kHttpReceivedContentLength[];
 extern const char kDataReductionProxyLastConfigRetrievalTime[];
+extern const char kNetworkProperties[];
 
 }  // namespace prefs
 }  // namespace data_reduction_proxy

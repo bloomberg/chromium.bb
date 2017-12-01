@@ -90,6 +90,7 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                               0L);
+  registry->RegisterDictionaryPref(prefs::kNetworkProperties);
 }
 
 void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
@@ -170,6 +171,7 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
   registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
                               0L);
+  registry->RegisterDictionaryPref(prefs::kNetworkProperties);
 }
 
 }  // namespace data_reduction_proxy

@@ -35,6 +35,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
@@ -162,7 +163,8 @@ class DataReductionProxyConfigTest : public testing::Test {
     int http_response_code;
   };
 
-  void CheckSecureProxyCheckOnIPChange(
+  void CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::ConnectionType connection_type,
       const std::string& response,
       bool is_captive_portal,
       int response_code,
@@ -170,6 +172,8 @@ class DataReductionProxyConfigTest : public testing::Test {
       SecureProxyCheckFetchResult expected_fetch_result,
       const std::vector<net::ProxyServer>& expected_proxies_for_http) {
     base::HistogramTester histogram_tester;
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        connection_type);
 
     TestResponder responder;
     responder.response = response;
@@ -180,7 +184,6 @@ class DataReductionProxyConfigTest : public testing::Test {
         .WillRepeatedly(testing::WithArgs<0>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
     mock_config()->SetIsCaptivePortal(is_captive_portal);
-    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
 
@@ -240,13 +243,15 @@ class DataReductionProxyConfigTest : public testing::Test {
     return test_context_->GetConfiguredProxiesForHttp();
   }
 
+  base::MessageLoopForIO message_loop_;
+
+  std::unique_ptr<DataReductionProxyTestContext> test_context_;
+
  private:
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  bool mock_config_used_;
-
-  base::MessageLoopForIO message_loop_;
-  std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<TestDataReductionProxyParams> expected_params_;
+
+  bool mock_config_used_;
 };
 
 TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
@@ -316,7 +321,53 @@ TEST_F(DataReductionProxyConfigTest,
             GetConfiguredProxiesForHttp());
 }
 
-TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
+TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
+  base::FieldTrialList field_trial_list(nullptr);
+
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+
+  ResetSettings();
+  test_config()->SetProxyConfig(true, true);
+
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+
+  test_config()->SetCurrentNetworkID("wifi,test");
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  base::RunLoop().RunUntilIdle();
+  test_config()->UpdateConfigForTesting(true /* enabled */,
+                                        false /* secure_proxies_allowed */,
+                                        true /* insecure_proxies_allowed */);
+  test_config()->OnNewClientConfigFetched();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+  base::RunLoop().RunUntilIdle();
+
+  test_config()->SetCurrentNetworkID("cell,test");
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_2G);
+  base::RunLoop().RunUntilIdle();
+  test_config()->UpdateConfigForTesting(true /* enabled */,
+                                        false /* secure_proxies_allowed */,
+                                        false /* insecure_proxies_allowed */);
+  test_config()->OnNewClientConfigFetched();
+  EXPECT_EQ(std::vector<net::ProxyServer>({}), GetConfiguredProxiesForHttp());
+
+  // On network change, persisted config should be read, and config reloaded.
+  test_config()->SetCurrentNetworkID("wifi,test");
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
+            GetConfiguredProxiesForHttp());
+}
+
+TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
   RecreateContextWithMockConfig();
   const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
@@ -331,70 +382,77 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   mock_config()->UpdateConfigForTesting(true, true, true);
   mock_config()->OnNewClientConfigFetched();
 
-  // IP address change triggers a secure proxy check that succeeds. Proxy
+  // Connection change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", false, net::HTTP_OK, kSuccess,
-                                  SUCCEEDED_PROXY_ALREADY_ENABLED,
-                                  {kHttpsProxy, kHttpProxy});
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "OK", false, net::HTTP_OK,
+      kSuccess, SUCCEEDED_PROXY_ALREADY_ENABLED, {kHttpsProxy, kHttpProxy});
 
-  // IP address change triggers a secure proxy check that succeeds but captive
+  // Connection change triggers a secure proxy check that succeeds but captive
   // portal fails. Proxy is restricted.
-  CheckSecureProxyCheckOnIPChange("OK", true, net::HTTP_OK, kSuccess,
-                                  SUCCEEDED_PROXY_ALREADY_ENABLED,
-                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "OK", true, net::HTTP_OK,
+      kSuccess, SUCCEEDED_PROXY_ALREADY_ENABLED,
+      std::vector<net::ProxyServer>(1, kHttpProxy));
 
-  // IP address change triggers a secure proxy check that fails. Proxy is
+  // Connection change triggers a secure proxy check that fails. Proxy is
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", false, net::HTTP_OK, kSuccess,
-                                  FAILED_PROXY_DISABLED,
-                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "Bad", false, net::HTTP_OK,
+      kSuccess, FAILED_PROXY_DISABLED,
+      std::vector<net::ProxyServer>(1, kHttpProxy));
 
-  // IP address change triggers a secure proxy check that succeeds. Proxies
+  // Connection change triggers a secure proxy check that succeeds. Proxies
   // are unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", false, net::HTTP_OK, kSuccess,
-                                  SUCCEEDED_PROXY_ENABLED,
-                                  {kHttpsProxy, kHttpProxy});
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "OK", false, net::HTTP_OK,
+      kSuccess, SUCCEEDED_PROXY_ENABLED, {kHttpsProxy, kHttpProxy});
 
-  // IP address change triggers a secure proxy check that fails. Proxy is
+  // Connection change triggers a secure proxy check that fails. Proxy is
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", true, net::HTTP_OK, kSuccess,
-                                  FAILED_PROXY_DISABLED,
-                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "Bad", true, net::HTTP_OK,
+      kSuccess, FAILED_PROXY_DISABLED,
+      std::vector<net::ProxyServer>(1, kHttpProxy));
 
-  // IP address change triggers a secure proxy check that fails due to the
+  // Connection change triggers a secure proxy check that fails due to the
   // network changing again. This should be ignored, so the proxy should remain
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange(
-      std::string(), false, net::URLFetcher::RESPONSE_CODE_INVALID,
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, std::string(), false,
+      net::URLFetcher::RESPONSE_CODE_INVALID,
       net::URLRequestStatus(net::URLRequestStatus::FAILED,
                             net::ERR_INTERNET_DISCONNECTED),
       INTERNET_DISCONNECTED, std::vector<net::ProxyServer>(1, kHttpProxy));
 
-  // IP address change triggers a secure proxy check that fails. Proxy remains
+  // Connection change triggers a secure proxy check that fails. Proxy remains
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", false, net::HTTP_OK, kSuccess,
-                                  FAILED_PROXY_ALREADY_DISABLED,
-                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "Bad", false, net::HTTP_OK,
+      kSuccess, FAILED_PROXY_ALREADY_DISABLED,
+      std::vector<net::ProxyServer>(1, kHttpProxy));
 
-  // IP address change triggers a secure proxy check that succeeds. Proxy is
+  // Connection change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", false, net::HTTP_OK, kSuccess,
-                                  SUCCEEDED_PROXY_ENABLED,
-                                  {kHttpsProxy, kHttpProxy});
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "OK", false, net::HTTP_OK,
+      kSuccess, SUCCEEDED_PROXY_ENABLED, {kHttpsProxy, kHttpProxy});
 
-  // IP address change triggers a secure proxy check that fails due to the
+  // Connection change triggers a secure proxy check that fails due to the
   // network changing again. This should be ignored, so the proxy should remain
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange(
-      std::string(), false, net::URLFetcher::RESPONSE_CODE_INVALID,
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, std::string(), false,
+      net::URLFetcher::RESPONSE_CODE_INVALID,
       net::URLRequestStatus(net::URLRequestStatus::FAILED,
                             net::ERR_INTERNET_DISCONNECTED),
       INTERNET_DISCONNECTED, {kHttpsProxy, kHttpProxy});
 
-  // IP address change triggers a secure proxy check that fails because of a
+  // Connection change triggers a secure proxy check that fails because of a
   // redirect response, e.g. by a captive portal. Proxy is restricted.
-  CheckSecureProxyCheckOnIPChange(
-      "Bad", false, net::HTTP_FOUND,
+  CheckSecureProxyCheckOnNetworkChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI, "Bad", false,
+      net::HTTP_FOUND,
       net::URLRequestStatus(net::URLRequestStatus::CANCELED, net::ERR_ABORTED),
       FAILED_PROXY_DISABLED, std::vector<net::ProxyServer>(1, kHttpProxy));
 }
@@ -449,8 +507,12 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     scoped_refptr<net::URLRequestContextGetter> request_context_getter_ =
         new net::TestURLRequestContextGetter(task_runner());
+
+    NetworkPropertiesManager network_properties_manager(
+        test_context_->pref_service(), test_context_->task_runner());
     config.InitializeOnIOThread(request_context_getter_.get(),
-                                request_context_getter_.get());
+                                request_context_getter_.get(),
+                                &network_properties_manager);
     RunUntilIdle();
 
     {

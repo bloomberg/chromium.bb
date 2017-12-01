@@ -106,7 +106,7 @@ class DataReductionProxyIODataTest : public testing::Test {
 TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   std::unique_ptr<DataReductionProxyIOData> io_data(
       new DataReductionProxyIOData(
-          Client::UNKNOWN, net_log(),
+          Client::UNKNOWN, prefs(), net_log(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           scoped_task_environment_.GetMainThreadTaskRunner(),
           false /* enabled */, std::string() /* user_agent */,
