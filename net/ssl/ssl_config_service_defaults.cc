@@ -6,14 +6,12 @@
 
 namespace net {
 
-SSLConfigServiceDefaults::SSLConfigServiceDefaults() {
-}
+SSLConfigServiceDefaults::SSLConfigServiceDefaults() = default;
 
 void SSLConfigServiceDefaults::GetSSLConfig(SSLConfig* config) {
   *config = default_config_;
 }
 
-SSLConfigServiceDefaults::~SSLConfigServiceDefaults() {
-}
+SSLConfigServiceDefaults::~SSLConfigServiceDefaults() = default;
 
 }  // namespace net

@@ -28,7 +28,7 @@ class SSLPlatformKeyTaskRunner {
     worker_thread_.StartWithOptions(options);
   }
 
-  ~SSLPlatformKeyTaskRunner() {}
+  ~SSLPlatformKeyTaskRunner() = default;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return worker_thread_.task_runner();

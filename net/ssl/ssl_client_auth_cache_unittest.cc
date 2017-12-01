@@ -16,7 +16,7 @@ namespace net {
 
 class MockSSLPrivateKey : public SSLPrivateKey {
  public:
-  MockSSLPrivateKey() {}
+  MockSSLPrivateKey() = default;
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     NOTIMPLEMENTED();
@@ -30,7 +30,7 @@ class MockSSLPrivateKey : public SSLPrivateKey {
   }
 
  private:
-  ~MockSSLPrivateKey() override {}
+  ~MockSSLPrivateKey() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(MockSSLPrivateKey);
 };

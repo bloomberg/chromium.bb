@@ -158,7 +158,7 @@ void SSLClientSessionCache::DumpMemoryStats(
                         undeduped_cert_count);
 }
 
-SSLClientSessionCache::Entry::Entry() {}
+SSLClientSessionCache::Entry::Entry() = default;
 SSLClientSessionCache::Entry::Entry(Entry&&) = default;
 SSLClientSessionCache::Entry::~Entry() = default;
 

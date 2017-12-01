@@ -72,8 +72,7 @@ void SSLConfigService::NotifySSLConfigChange() {
     observer.OnSSLConfigChanged();
 }
 
-SSLConfigService::~SSLConfigService() {
-}
+SSLConfigService::~SSLConfigService() = default;
 
 void SSLConfigService::ProcessConfigUpdate(const SSLConfig& old_config,
                                            const SSLConfig& new_config) {

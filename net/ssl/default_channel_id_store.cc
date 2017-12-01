@@ -36,8 +36,7 @@ class DefaultChannelIDStore::Task {
   void InvokeCallback(base::Closure callback) const;
 };
 
-DefaultChannelIDStore::Task::~Task() {
-}
+DefaultChannelIDStore::Task::~Task() = default;
 
 void DefaultChannelIDStore::Task::InvokeCallback(
     base::Closure callback) const {
@@ -67,8 +66,7 @@ DefaultChannelIDStore::GetChannelIDTask::GetChannelIDTask(
       callback_(callback) {
 }
 
-DefaultChannelIDStore::GetChannelIDTask::~GetChannelIDTask() {
-}
+DefaultChannelIDStore::GetChannelIDTask::~GetChannelIDTask() = default;
 
 void DefaultChannelIDStore::GetChannelIDTask::Run(
     DefaultChannelIDStore* store) {
@@ -98,8 +96,7 @@ DefaultChannelIDStore::SetChannelIDTask::SetChannelIDTask(
     std::unique_ptr<ChannelID> channel_id)
     : channel_id_(std::move(channel_id)) {}
 
-DefaultChannelIDStore::SetChannelIDTask::~SetChannelIDTask() {
-}
+DefaultChannelIDStore::SetChannelIDTask::~SetChannelIDTask() = default;
 
 void DefaultChannelIDStore::SetChannelIDTask::Run(
     DefaultChannelIDStore* store) {
@@ -129,9 +126,7 @@ DefaultChannelIDStore::DeleteChannelIDTask::
           callback_(callback) {
 }
 
-DefaultChannelIDStore::DeleteChannelIDTask::
-    ~DeleteChannelIDTask() {
-}
+DefaultChannelIDStore::DeleteChannelIDTask::~DeleteChannelIDTask() = default;
 
 void DefaultChannelIDStore::DeleteChannelIDTask::Run(
     DefaultChannelIDStore* store) {
@@ -172,7 +167,7 @@ DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::
       callback_(callback) {}
 
 DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::
-    ~DeleteForDomainsCreatedBetweenTask() {}
+    ~DeleteForDomainsCreatedBetweenTask() = default;
 
 void DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::Run(
     DefaultChannelIDStore* store) {
@@ -201,9 +196,7 @@ DefaultChannelIDStore::GetAllChannelIDsTask::
         : callback_(callback) {
 }
 
-DefaultChannelIDStore::GetAllChannelIDsTask::
-    ~GetAllChannelIDsTask() {
-}
+DefaultChannelIDStore::GetAllChannelIDsTask::~GetAllChannelIDsTask() = default;
 
 void DefaultChannelIDStore::GetAllChannelIDsTask::Run(
     DefaultChannelIDStore* store) {
@@ -439,8 +432,8 @@ bool DefaultChannelIDStore::IsEphemeral() {
   return !store_;
 }
 
-DefaultChannelIDStore::PersistentStore::PersistentStore() {}
+DefaultChannelIDStore::PersistentStore::PersistentStore() = default;
 
-DefaultChannelIDStore::PersistentStore::~PersistentStore() {}
+DefaultChannelIDStore::PersistentStore::~PersistentStore() = default;
 
 }  // namespace net

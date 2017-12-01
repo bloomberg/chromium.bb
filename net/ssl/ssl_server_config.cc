@@ -18,6 +18,6 @@ SSLServerConfig::SSLServerConfig()
 
 SSLServerConfig::SSLServerConfig(const SSLServerConfig& other) = default;
 
-SSLServerConfig::~SSLServerConfig() {}
+SSLServerConfig::~SSLServerConfig() = default;
 
 }  // namespace net

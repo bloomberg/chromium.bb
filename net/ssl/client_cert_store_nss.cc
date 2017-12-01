@@ -69,7 +69,7 @@ ClientCertStoreNSS::ClientCertStoreNSS(
     const PasswordDelegateFactory& password_delegate_factory)
     : password_delegate_factory_(password_delegate_factory) {}
 
-ClientCertStoreNSS::~ClientCertStoreNSS() {}
+ClientCertStoreNSS::~ClientCertStoreNSS() = default;
 
 void ClientCertStoreNSS::GetClientCerts(
     const SSLCertRequestInfo& request,
