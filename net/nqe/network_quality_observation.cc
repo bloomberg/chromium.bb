@@ -34,7 +34,7 @@ Observation::Observation(const Observation& other) = default;
 
 Observation& Observation::operator=(const Observation& other) = default;
 
-Observation::~Observation() {}
+Observation::~Observation() = default;
 
 ObservationCategory Observation::GetObservationCategory() const {
   switch (source_) {

@@ -39,7 +39,7 @@ ObservationBuffer::ObservationBuffer(
   DCHECK(tick_clock_);
 }
 
-ObservationBuffer::~ObservationBuffer() {}
+ObservationBuffer::~ObservationBuffer() = default;
 
 void ObservationBuffer::AddObservation(const Observation& observation) {
   DCHECK_LE(observations_.size(), params_->observation_buffer_size());

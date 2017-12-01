@@ -33,9 +33,9 @@ NetworkID::NetworkID(NetworkChangeNotifier::ConnectionType type,
                      const std::string& id)
     : type(type), id(id) {}
 
-NetworkID::NetworkID(const NetworkID& other) : type(other.type), id(other.id) {}
+NetworkID::NetworkID(const NetworkID& other) = default;
 
-NetworkID::~NetworkID() {}
+NetworkID::~NetworkID() = default;
 
 bool NetworkID::operator==(const NetworkID& other) const {
   return type == other.type && id == other.id;
@@ -45,11 +45,7 @@ bool NetworkID::operator!=(const NetworkID& other) const {
   return !operator==(other);
 }
 
-NetworkID& NetworkID::operator=(const NetworkID& other) {
-  type = other.type;
-  id = other.id;
-  return *this;
-}
+NetworkID& NetworkID::operator=(const NetworkID& other) = default;
 
 // Overloaded to support ordered collections.
 bool NetworkID::operator<(const NetworkID& other) const {

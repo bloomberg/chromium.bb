@@ -29,7 +29,7 @@ NetworkQuality::NetworkQuality(const NetworkQuality& other)
                      other.transport_rtt_,
                      other.downstream_throughput_kbps_) {}
 
-NetworkQuality::~NetworkQuality() {}
+NetworkQuality::~NetworkQuality() = default;
 
 NetworkQuality& NetworkQuality::operator=(const NetworkQuality& other) {
   http_rtt_ = other.http_rtt_;

@@ -1358,7 +1358,7 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
 class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
  public:
   InvalidExternalEstimateProvider() : update_count_(0) {}
-  ~InvalidExternalEstimateProvider() override {}
+  ~InvalidExternalEstimateProvider() override = default;
 
   void SetUpdatedEstimateDelegate(UpdatedEstimateDelegate* delegate) override {}
 
@@ -1420,7 +1420,7 @@ class TestExternalEstimateProvider : public ExternalEstimateProvider {
         downstream_throughput_kbps_(downstream_throughput_kbps),
         update_count_(0),
         cached_estimate_cleared_(false) {}
-  ~TestExternalEstimateProvider() override {}
+  ~TestExternalEstimateProvider() override = default;
 
   void SetUpdatedEstimateDelegate(UpdatedEstimateDelegate* delegate) override {
     delegate_ = delegate;
@@ -2872,7 +2872,7 @@ class TestNetworkQualitiesCacheObserver
       : network_id_(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
                     std::string()),
         notification_received_(0) {}
-  ~TestNetworkQualitiesCacheObserver() override {}
+  ~TestNetworkQualitiesCacheObserver() override = default;
 
   void OnChangeInCachedNetworkQuality(
       const nqe::internal::NetworkID& network_id,

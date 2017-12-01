@@ -77,7 +77,7 @@ SocketWatcher::SocketWatcher(
   DCHECK(last_rtt_notification_.is_null());
 }
 
-SocketWatcher::~SocketWatcher() {}
+SocketWatcher::~SocketWatcher() = default;
 
 bool SocketWatcher::ShouldNotifyUpdatedRTT() const {
   DCHECK(thread_checker_.CalledOnValidThread());

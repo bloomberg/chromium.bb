@@ -30,7 +30,7 @@ CachedNetworkQuality::CachedNetworkQuality(
 CachedNetworkQuality::CachedNetworkQuality(const CachedNetworkQuality& other) =
     default;
 
-CachedNetworkQuality::~CachedNetworkQuality() {}
+CachedNetworkQuality::~CachedNetworkQuality() = default;
 
 CachedNetworkQuality& CachedNetworkQuality::operator=(
     const CachedNetworkQuality& other) = default;

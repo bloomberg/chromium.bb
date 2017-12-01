@@ -74,7 +74,7 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
         throughput_observations_received_(0),
         bits_received_(0) {}
 
-  ~TestThroughputAnalyzer() override {}
+  ~TestThroughputAnalyzer() override = default;
 
   int32_t throughput_observations_received() const {
     return throughput_observations_received_;

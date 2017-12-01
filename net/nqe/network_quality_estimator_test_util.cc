@@ -100,7 +100,7 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
   EXPECT_TRUE(embedded_test_server_.Start());
 }
 
-TestNetworkQualityEstimator::~TestNetworkQualityEstimator() {}
+TestNetworkQualityEstimator::~TestNetworkQualityEstimator() = default;
 
 void TestNetworkQualityEstimator::RunOneRequest() {
   TestDelegate test_delegate;
