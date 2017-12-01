@@ -16,58 +16,41 @@ async_test(function(t) {
     assert_equals(video.volume, 1);
     assert_equals(video.currentTime, 0);
 
-    video.oncanplaythrough = t.step_func_done(function() {
-      // Focus the video.
-      video.focus();
+    // Focus the video.
+    video.focus();
 
+    video.addEventListener('canplaythrough', t.step_func(() => {
+      video.addEventListener('play', t.step_func(() => {
+        assert_false(video.paused);
+        video.addEventListener('pause', t.step_func(() => {
+          assert_true(video.paused);
+          var cur = video.currentTime;
+          video.addEventListener('seeked', t.step_func(() => {
+            assert_greater_than(video.currentTime, cur);
+            video.addEventListener('seeked', t.step_func(() => {
+              assert_equals(video.currentTime, video.duration);
+              video.addEventListener('seeked', t.step_func(() => {
+                assert_less_than(video.currentTime, video.duration);
+                video.addEventListener('seeked', t.step_func_done(() => {
+                  assert_equals(video.currentTime, 0);
+                }), { once: true });
+                // 'Home' sets the timeline to 0.
+                eventSender.keyDown("Home");
+              }), { once: true });
+              // 'Left' scrubs the timeline back.
+              eventSender.keyDown("ArrowLeft");
+            }), { once: true });
+            // 'End' sets the timeline to end.
+            eventSender.keyDown("End");
+          }), { once: true });
+          // 'Right' scrubs the timeline forward.
+          eventSender.keyDown("ArrowRight");
+        }), { once: true });
+        // 'Enter' again pauses the video.
+        eventSender.keyDown("Enter");
+      }), { once: true });
       // 'Enter' plays the video.
       eventSender.keyDown("Enter");
-      assert_false(video.paused);
-
-      // 'Down' reduces volume by .05.
-      eventSender.keyDown("ArrowDown");
-      assert_equals(video.volume, .95);
-
-      eventSender.keyDown("ArrowDown");
-      assert_equals(video.volume, .9);
-
-      // 'Up' increases volume by .05
-      eventSender.keyDown("ArrowUp");
-      assert_equals(video.volume, .95);
-
-      eventSender.keyDown("ArrowUp");
-      assert_equals(video.volume, 1);
-
-      // 'Enter' again pauses the video.
-      eventSender.keyDown("Enter");
-      assert_true(video.paused);
-
-      // 'Space' also pauses/plays the video.
-      eventSender.keyDown(" ");
-      assert_false(video.paused);
-
-      eventSender.keyDown(" ");
-      assert_true(video.paused);
-
-      var cur = video.currentTime;
-
-      // 'Right' scrubs the timeline forward.
-      // Used to move the timeline off the first frame which is neccessary to
-      // test 'Home', otherwise 'Home' is a no-op.
-      eventSender.keyDown("ArrowRight");
-      assert_greater_than(video.currentTime, cur);
-
-      // 'Home' sets the timeline to 0.
-      eventSender.keyDown("Home");
-      assert_equals(video.currentTime, 0);
-
-      // 'End' sets the timeline to end.
-      eventSender.keyDown("End");
-      assert_equals(video.currentTime, video.duration);
-
-      // 'Left' scrubs the timeline back.
-      eventSender.keyDown("ArrowLeft");
-      assert_less_than(video.currentTime, video.duration);
-    });
+    }), { once: true });
 });
 </script>
