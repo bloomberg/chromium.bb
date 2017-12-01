@@ -38,6 +38,7 @@
 #include "chrome/common/insecure_content_renderer.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -1588,6 +1589,88 @@ void ContentSettingDownloadsBubbleModel::OnManageButtonClicked() {
         CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
 }
 
+// ContentSettingFramebustBlockBubbleModel -------------------------------------
+
+ContentSettingFramebustBlockBubbleModel::
+    ContentSettingFramebustBlockBubbleModel(Delegate* delegate,
+                                            WebContents* web_contents,
+                                            Profile* profile)
+    : ContentSettingBubbleModel(delegate, web_contents, profile) {
+  if (!web_contents)
+    return;
+
+  set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
+  set_show_learn_more(false);
+  set_title(l10n_util::GetStringUTF16(IDS_REDIRECT_BLOCKED_MESSAGE));
+  set_done_button_text(l10n_util::GetStringUTF16(IDS_OK));
+
+  auto* helper = FramebustBlockTabHelper::FromWebContents(web_contents);
+
+  // Build the blocked urls list.
+  for (const auto& blocked_url : helper->blocked_urls())
+    AddListItem(CreateListItem(blocked_url));
+
+  helper->SetObserver(this);
+}
+
+ContentSettingFramebustBlockBubbleModel::
+    ~ContentSettingFramebustBlockBubbleModel() {
+  if (web_contents())
+    FramebustBlockTabHelper::FromWebContents(web_contents())->ClearObserver();
+}
+
+void ContentSettingFramebustBlockBubbleModel::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  // The order is important because ContentSettingBubbleModel::Observer() clears
+  // the value of |web_contents()|.
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
+    FramebustBlockTabHelper::FromWebContents(web_contents())->ClearObserver();
+  ContentSettingBubbleModel::Observe(type, source, details);
+}
+
+void ContentSettingFramebustBlockBubbleModel::OnListItemClicked(
+    int index,
+    int event_flags) {
+  if (!web_contents())
+    return;
+
+  FramebustBlockTabHelper::FromWebContents(web_contents())
+      ->OnBlockedUrlClicked(index);
+}
+
+ContentSettingFramebustBlockBubbleModel*
+ContentSettingFramebustBlockBubbleModel::AsFramebustBlockBubbleModel() {
+  return this;
+}
+
+void ContentSettingFramebustBlockBubbleModel::OnBlockedUrlAdded(
+    const GURL& blocked_url) {
+  AddListItem(CreateListItem(blocked_url));
+}
+
+ContentSettingBubbleModel::ListItem
+ContentSettingFramebustBlockBubbleModel::CreateListItem(const GURL& url) {
+  // Skip empty URLS.
+  base::string16 title = !url.spec().empty()
+                             ? base::UTF8ToUTF16(url.spec())
+                             : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+
+  const bool use_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
+  if (use_md) {
+    // Format the title to include the unicode single dot bullet code-point
+    // \u2022 and two spaces.
+    title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
+  }
+
+  gfx::Image image =
+      use_md ? gfx::Image()
+             : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                   IDR_DEFAULT_FAVICON);
+  return ListItem(image, title, true, 0);
+}
+
 // ContentSettingBubbleModel ---------------------------------------------------
 
 // static
@@ -1713,6 +1796,11 @@ ContentSettingBubbleModel::AsSubresourceFilterBubbleModel() {
 
 ContentSettingDownloadsBubbleModel*
 ContentSettingBubbleModel::AsDownloadsBubbleModel() {
+  return nullptr;
+}
+
+ContentSettingFramebustBlockBubbleModel*
+ContentSettingBubbleModel::AsFramebustBlockBubbleModel() {
   return nullptr;
 }
 

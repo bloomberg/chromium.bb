@@ -89,6 +89,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
+#include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
@@ -1397,6 +1398,14 @@ void Browser::OnAudioStateChanged(content::WebContents* web_contents,
       SoundContentSettingObserver::FromWebContents(web_contents);
   if (sound_content_setting_observer)
     sound_content_setting_observer->OnAudioStateChanged(is_audible);
+}
+
+void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
+                                  const GURL& url) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  DCHECK(content_settings);
+  content_settings->OnFramebustBlocked(url);
 }
 
 bool Browser::IsMouseLocked() const {

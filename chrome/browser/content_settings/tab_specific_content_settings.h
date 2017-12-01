@@ -203,6 +203,9 @@ class TabSpecificContentSettings
   // Called when audio has been blocked on the page.
   void OnAudioBlocked();
 
+  // Updates the blocked framebust icon in the location bar.
+  void OnFramebustBlocked(const GURL& blocked_url);
+
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;

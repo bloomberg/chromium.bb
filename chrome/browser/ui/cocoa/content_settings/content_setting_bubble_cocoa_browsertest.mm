@@ -105,6 +105,12 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (const auto& model : models) {
     ContentSettingBubbleModel* bubble =
         model->CreateBubbleModel(nullptr, web_contents(), profile());
+
+    // Skip this test for the ContentSettingFramebustBlockBubbleModel, which
+    // doesn't have a Cocoa version.
+    if (bubble->AsFramebustBlockBubbleModel())
+      continue;
+
     ContentSettingBubbleController* controller = CreateBubbleController(bubble);
     // No bubble except the one for media should have media menus.
     if (!bubble->AsMediaStreamBubbleModel())

@@ -140,4 +140,22 @@ class ContentSettingSubresourceFilterImageModel
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSubresourceFilterImageModel);
 };
 
+class ContentSettingFramebustBlockImageModel : public ContentSettingImageModel {
+ public:
+  ContentSettingFramebustBlockImageModel();
+
+  void UpdateFromWebContents(content::WebContents* web_contents) override;
+
+  ContentSettingBubbleModel* CreateBubbleModel(
+      ContentSettingBubbleModel::Delegate* delegate,
+      content::WebContents* web_contents,
+      Profile* profile) override;
+
+  bool ShouldRunAnimation(content::WebContents* web_contents) override;
+  void SetAnimationHasRun(content::WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingFramebustBlockImageModel);
+};
+
 #endif  // CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
