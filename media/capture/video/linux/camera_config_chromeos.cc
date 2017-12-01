@@ -48,7 +48,7 @@ CameraConfigChromeOS::CameraConfigChromeOS(
   InitializeDeviceInfo(config_file_path);
 }
 
-CameraConfigChromeOS::~CameraConfigChromeOS() {}
+CameraConfigChromeOS::~CameraConfigChromeOS() = default;
 
 VideoFacingMode CameraConfigChromeOS::GetCameraFacing(
     const std::string& device_id,

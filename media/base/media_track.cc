@@ -17,7 +17,7 @@ MediaTrack::MediaTrack(Type type,
       label_(label),
       language_(lang) {}
 
-MediaTrack::~MediaTrack() {}
+MediaTrack::~MediaTrack() = default;
 
 const char* TrackTypeToStr(MediaTrack::Type type) {
   switch (type) {

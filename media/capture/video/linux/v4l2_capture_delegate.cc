@@ -753,7 +753,7 @@ base::WeakPtr<V4L2CaptureDelegate> V4L2CaptureDelegate::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-V4L2CaptureDelegate::~V4L2CaptureDelegate() {}
+V4L2CaptureDelegate::~V4L2CaptureDelegate() = default;
 
 bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
   v4l2_buffer buffer;
@@ -874,7 +874,7 @@ void V4L2CaptureDelegate::SetErrorState(const base::Location& from_here,
   client_->OnError(from_here, reason);
 }
 
-V4L2CaptureDelegate::BufferTracker::BufferTracker() {}
+V4L2CaptureDelegate::BufferTracker::BufferTracker() = default;
 
 V4L2CaptureDelegate::BufferTracker::~BufferTracker() {
   if (start_ == nullptr)

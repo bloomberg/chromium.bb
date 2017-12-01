@@ -58,7 +58,7 @@ MojoDecryptorService::MojoDecryptorService(
   binding_.set_connection_error_handler(error_handler);
 }
 
-MojoDecryptorService::~MojoDecryptorService() {}
+MojoDecryptorService::~MojoDecryptorService() = default;
 
 void MojoDecryptorService::Initialize(
     mojo::ScopedDataPipeConsumerHandle receive_pipe,

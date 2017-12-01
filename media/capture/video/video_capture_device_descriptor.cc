@@ -38,7 +38,7 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
       capture_api(capture_api),
       transport_type(transport_type) {}
 
-VideoCaptureDeviceDescriptor::~VideoCaptureDeviceDescriptor() {}
+VideoCaptureDeviceDescriptor::~VideoCaptureDeviceDescriptor() = default;
 
 VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const VideoCaptureDeviceDescriptor& other) = default;

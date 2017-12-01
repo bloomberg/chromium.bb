@@ -38,8 +38,8 @@ static void RecordRebuffersCount(base::StringPiece key, int underflow_count) {
 
 class WatchTimeRecorderProvider : public mojom::WatchTimeRecorderProvider {
  public:
-  WatchTimeRecorderProvider() {}
-  ~WatchTimeRecorderProvider() override {}
+  WatchTimeRecorderProvider() = default;
+  ~WatchTimeRecorderProvider() override = default;
 
  private:
   // mojom::WatchTimeRecorderProvider implementation:

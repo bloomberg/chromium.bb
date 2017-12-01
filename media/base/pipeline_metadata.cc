@@ -8,7 +8,7 @@ namespace media {
 
 PipelineMetadata::PipelineMetadata() : has_audio(false), has_video(false) {}
 
-PipelineMetadata::~PipelineMetadata() {}
+PipelineMetadata::~PipelineMetadata() = default;
 
 PipelineMetadata::PipelineMetadata(const PipelineMetadata&) = default;
 

@@ -23,7 +23,7 @@ class LoopBackPacketPipe : public test::PacketPipe {
       const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
-  ~LoopBackPacketPipe() final {}
+  ~LoopBackPacketPipe() final = default;
 
   // PacketPipe implementations.
   void Send(std::unique_ptr<Packet> packet) final {
@@ -44,8 +44,7 @@ LoopBackTransport::LoopBackTransport(
       bytes_sent_(0) {
 }
 
-LoopBackTransport::~LoopBackTransport() {
-}
+LoopBackTransport::~LoopBackTransport() = default;
 
 bool LoopBackTransport::SendPacket(PacketRef packet,
                                    const base::Closure& cb) {

@@ -27,8 +27,7 @@ WebMStreamParser::WebMStreamParser()
       unknown_segment_size_(false) {
 }
 
-WebMStreamParser::~WebMStreamParser() {
-}
+WebMStreamParser::~WebMStreamParser() = default;
 
 void WebMStreamParser::Init(
     const InitCB& init_cb,

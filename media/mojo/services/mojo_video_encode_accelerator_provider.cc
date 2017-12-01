@@ -33,7 +33,8 @@ MojoVideoEncodeAcceleratorProvider::MojoVideoEncodeAcceleratorProvider(
     : create_vea_callback_(create_vea_callback),
       gpu_preferences_(gpu_preferences) {}
 
-MojoVideoEncodeAcceleratorProvider::~MojoVideoEncodeAcceleratorProvider() {}
+MojoVideoEncodeAcceleratorProvider::~MojoVideoEncodeAcceleratorProvider() =
+    default;
 
 void MojoVideoEncodeAcceleratorProvider::CreateVideoEncodeAccelerator(
     mojom::VideoEncodeAcceleratorRequest request) {

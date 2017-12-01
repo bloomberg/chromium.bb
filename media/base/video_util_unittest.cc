@@ -151,7 +151,7 @@ class VideoUtilTest : public testing::Test {
         v_stride_(0) {
   }
 
-  ~VideoUtilTest() override {}
+  ~VideoUtilTest() override = default;
 
   void CreateSourceFrame(int width, int height,
                          int y_stride, int u_stride, int v_stride) {
@@ -359,7 +359,7 @@ class VideoUtilRotationTest
     dest_.reset(new uint8_t[GetParam().width * GetParam().height]);
   }
 
-  virtual ~VideoUtilRotationTest() {}
+  virtual ~VideoUtilRotationTest() = default;
 
   uint8_t* dest_plane() { return dest_.get(); }
 

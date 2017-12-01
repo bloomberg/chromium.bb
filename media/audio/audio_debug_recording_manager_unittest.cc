@@ -90,7 +90,7 @@ class AudioDebugRecordingManagerUnderTest : public AudioDebugRecordingManager {
   AudioDebugRecordingManagerUnderTest(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : AudioDebugRecordingManager(std::move(task_runner)) {}
-  ~AudioDebugRecordingManagerUnderTest() override {}
+  ~AudioDebugRecordingManagerUnderTest() override = default;
 
  private:
   std::unique_ptr<AudioDebugRecordingHelper> CreateAudioDebugRecordingHelper(
@@ -111,7 +111,7 @@ class AudioDebugRecordingManagerTest : public ::testing::Test {
       : manager_(message_loop_.task_runner()),
         base_file_path_(base::FilePath::FromUTF8Unsafe("base_path")) {}
 
-  ~AudioDebugRecordingManagerTest() override {}
+  ~AudioDebugRecordingManagerTest() override = default;
 
   // Registers a source and increases counter for the expected next source id.
   std::unique_ptr<AudioDebugRecorder> RegisterDebugRecordingSource(

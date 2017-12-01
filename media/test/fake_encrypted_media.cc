@@ -34,7 +34,7 @@ FakeEncryptedMedia::FakeEncryptedMedia(AppBase* app)
       cdm_context_(decryptor_.get()),
       app_(app) {}
 
-FakeEncryptedMedia::~FakeEncryptedMedia() {}
+FakeEncryptedMedia::~FakeEncryptedMedia() = default;
 
 CdmContext* FakeEncryptedMedia::GetCdmContext() {
   return &cdm_context_;

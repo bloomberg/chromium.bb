@@ -84,7 +84,7 @@ AudioRendererAlgorithm::AudioRendererAlgorithm()
       initial_capacity_(0),
       max_capacity_(0) {}
 
-AudioRendererAlgorithm::~AudioRendererAlgorithm() {}
+AudioRendererAlgorithm::~AudioRendererAlgorithm() = default;
 
 void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
                                         bool is_encrypted) {

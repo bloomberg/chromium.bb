@@ -6,10 +6,8 @@
 
 namespace media {
 
-PlayerTracker::PlayerTracker() {
-}
+PlayerTracker::PlayerTracker() = default;
 
-PlayerTracker::~PlayerTracker() {
-}
+PlayerTracker::~PlayerTracker() = default;
 
 }  // namespace media

@@ -42,7 +42,7 @@ const std::string kHighFrame3 = "bear-320x192-high-frame-3.h264";
 
 class MockH264Accelerator : public H264Decoder::H264Accelerator {
  public:
-  MockH264Accelerator() {}
+  MockH264Accelerator() = default;
 
   MOCK_METHOD0(CreateH264Picture, scoped_refptr<H264Picture>());
   MOCK_METHOD1(SubmitDecode, bool(const scoped_refptr<H264Picture>& pic));

@@ -59,8 +59,7 @@ ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
                                     constraints.fixed_aspect_ratio);
 }
 
-ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {
-}
+ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() = default;
 
 bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     VideoCaptureOracle::Event event,

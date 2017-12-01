@@ -381,8 +381,7 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
       frames_since_last_got_data_callback_(0),
       got_data_callback_(std::move(got_data_callback_)) {}
 
-AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() {
-}
+AudioInputDevice::AudioThreadCallback::~AudioThreadCallback() = default;
 
 void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   shared_memory_.Map(memory_length_);

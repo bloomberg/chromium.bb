@@ -19,7 +19,7 @@ void* const kClassIdentifier = const_cast<void**>(&kClassIdentifier);
 RemotingCdmContext::RemotingCdmContext(RemotingCdm* remoting_cdm)
     : remoting_cdm_(remoting_cdm) {}
 
-RemotingCdmContext::~RemotingCdmContext() {}
+RemotingCdmContext::~RemotingCdmContext() = default;
 
 RemotingCdmContext* RemotingCdmContext::From(CdmContext* cdm_context) {
   if (cdm_context && cdm_context->GetClassIdentifier() == kClassIdentifier)

@@ -44,7 +44,7 @@ MultiChannelResampler::MultiChannelResampler(int channels,
   }
 }
 
-MultiChannelResampler::~MultiChannelResampler() {}
+MultiChannelResampler::~MultiChannelResampler() = default;
 
 void MultiChannelResampler::Resample(int frames, AudioBus* audio_bus) {
   DCHECK_EQ(static_cast<size_t>(audio_bus->channels()), resamplers_.size());

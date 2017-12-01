@@ -42,7 +42,7 @@ ESDescriptor::ESDescriptor()
     : object_type_(kForbidden) {
 }
 
-ESDescriptor::~ESDescriptor() {}
+ESDescriptor::~ESDescriptor() = default;
 
 bool ESDescriptor::Parse(const std::vector<uint8_t>& data) {
   BitReader reader(&data[0], data.size());

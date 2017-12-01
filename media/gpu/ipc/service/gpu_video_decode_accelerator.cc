@@ -134,7 +134,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   }
 
  protected:
-  ~MessageFilter() override {}
+  ~MessageFilter() override = default;
 
  private:
   GpuVideoDecodeAccelerator* const owner_;

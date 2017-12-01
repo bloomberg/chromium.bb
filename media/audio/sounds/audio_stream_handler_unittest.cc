@@ -27,8 +27,8 @@ namespace media {
 
 class AudioStreamHandlerTest : public testing::Test {
  public:
-  AudioStreamHandlerTest() {}
-  ~AudioStreamHandlerTest() override {}
+  AudioStreamHandlerTest() = default;
+  ~AudioStreamHandlerTest() override = default;
 
   void SetUp() override {
     audio_manager_ =

@@ -15,7 +15,7 @@ AudioPushFifo::AudioPushFifo(const OutputCallback& callback)
   DCHECK(!callback_.is_null());
 }
 
-AudioPushFifo::~AudioPushFifo() {}
+AudioPushFifo::~AudioPushFifo() = default;
 
 void AudioPushFifo::Reset(int frames_per_buffer) {
   DCHECK_GT(frames_per_buffer, 0);

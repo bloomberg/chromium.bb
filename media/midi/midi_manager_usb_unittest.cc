@@ -33,8 +33,8 @@ std::vector<T> ToVector(const T (&array)[N]) {
 
 class Logger {
  public:
-  Logger() {}
-  ~Logger() {}
+  Logger() = default;
+  ~Logger() = default;
 
   void AddLog(const std::string& message) { log_ += message; }
   std::string TakeLog() {
@@ -52,7 +52,7 @@ class Logger {
 class FakeUsbMidiDevice : public UsbMidiDevice {
  public:
   explicit FakeUsbMidiDevice(Logger* logger) : logger_(logger) {}
-  ~FakeUsbMidiDevice() override {}
+  ~FakeUsbMidiDevice() override = default;
 
   std::vector<uint8_t> GetDescriptors() override {
     logger_->AddLog("UsbMidiDevice::GetDescriptors\n");
@@ -101,7 +101,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
       : complete_start_session_(false),
         result_(Result::NOT_SUPPORTED),
         logger_(logger) {}
-  ~FakeMidiManagerClient() override {}
+  ~FakeMidiManagerClient() override = default;
 
   void AddInputPort(const MidiPortInfo& info) override {
     input_ports_.push_back(info);
@@ -154,8 +154,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
 
 class TestUsbMidiDeviceFactory : public UsbMidiDevice::Factory {
  public:
-  TestUsbMidiDeviceFactory() {}
-  ~TestUsbMidiDeviceFactory() override {}
+  TestUsbMidiDeviceFactory() = default;
+  ~TestUsbMidiDeviceFactory() override = default;
   void EnumerateDevices(UsbMidiDeviceDelegate* device,
                         Callback callback) override {
     callback_ = std::move(callback);
@@ -173,7 +173,7 @@ class MidiManagerUsbForTesting : public MidiManagerUsb {
       std::unique_ptr<UsbMidiDevice::Factory> device_factory,
       MidiService* service)
       : MidiManagerUsb(service, std::move(device_factory)) {}
-  ~MidiManagerUsbForTesting() override {}
+  ~MidiManagerUsbForTesting() override = default;
 
   void CallCompleteInitialization(Result result) {
     CompleteInitialization(result);

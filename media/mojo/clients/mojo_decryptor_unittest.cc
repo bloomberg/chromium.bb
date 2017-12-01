@@ -45,7 +45,7 @@ class MojoDecryptorTest : public ::testing::Test {
     mojo_decryptor_.reset(new MojoDecryptor(std::move(remote_decryptor)));
   }
 
-  ~MojoDecryptorTest() override {}
+  ~MojoDecryptorTest() override = default;
 
   void DestroyClient() {
     EXPECT_CALL(*this, OnConnectionClosed());

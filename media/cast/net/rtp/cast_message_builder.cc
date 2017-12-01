@@ -45,7 +45,7 @@ CastMessageBuilder::CastMessageBuilder(
   cast_msg_.ack_frame_id = FrameId::first() - 1;
 }
 
-CastMessageBuilder::~CastMessageBuilder() {}
+CastMessageBuilder::~CastMessageBuilder() = default;
 
 void CastMessageBuilder::CompleteFrameReceived(FrameId frame_id) {
   DCHECK_GE(frame_id, last_acked_frame_id());

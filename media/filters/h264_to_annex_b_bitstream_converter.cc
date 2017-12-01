@@ -36,7 +36,7 @@ H264ToAnnexBBitstreamConverter::H264ToAnnexBBitstreamConverter()
       nal_unit_length_field_width_(0) {
 }
 
-H264ToAnnexBBitstreamConverter::~H264ToAnnexBBitstreamConverter() {}
+H264ToAnnexBBitstreamConverter::~H264ToAnnexBBitstreamConverter() = default;
 
 bool H264ToAnnexBBitstreamConverter::ParseConfiguration(
     const uint8_t* configuration_record,

@@ -23,8 +23,7 @@ AudioClock::AudioClock(base::TimeDelta start_timestamp, int sample_rate)
       front_timestamp_micros_(start_timestamp.InMicroseconds()),
       back_timestamp_micros_(start_timestamp.InMicroseconds()) {}
 
-AudioClock::~AudioClock() {
-}
+AudioClock::~AudioClock() = default;
 
 void AudioClock::WroteAudio(int frames_written,
                             int frames_requested,

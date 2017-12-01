@@ -6,8 +6,8 @@
 
 namespace media {
 
-AudioInputIPCDelegate::~AudioInputIPCDelegate() {}
+AudioInputIPCDelegate::~AudioInputIPCDelegate() = default;
 
-AudioInputIPC::~AudioInputIPC() {}
+AudioInputIPC::~AudioInputIPC() = default;
 
 }  // namespace media

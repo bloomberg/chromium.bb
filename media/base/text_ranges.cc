@@ -12,8 +12,7 @@ TextRanges::TextRanges() {
   Reset();
 }
 
-TextRanges::~TextRanges() {
-}
+TextRanges::~TextRanges() = default;
 
 void TextRanges::Reset() {
   curr_range_itr_ = range_map_.end();

@@ -12,27 +12,27 @@ namespace cast {
 RtcpCastMessage::RtcpCastMessage(uint32_t ssrc)
     : remote_ssrc(ssrc), target_delay_ms(0) {}
 RtcpCastMessage::RtcpCastMessage() : RtcpCastMessage(0) {}
-RtcpCastMessage::~RtcpCastMessage() {}
+RtcpCastMessage::~RtcpCastMessage() = default;
 
 RtcpPliMessage::RtcpPliMessage(uint32_t ssrc) : remote_ssrc(ssrc) {}
 RtcpPliMessage::RtcpPliMessage() : remote_ssrc(0) {}
 
 RtcpReceiverEventLogMessage::RtcpReceiverEventLogMessage()
     : type(UNKNOWN), packet_id(0u) {}
-RtcpReceiverEventLogMessage::~RtcpReceiverEventLogMessage() {}
+RtcpReceiverEventLogMessage::~RtcpReceiverEventLogMessage() = default;
 
 RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(RtpTimeTicks timestamp)
     : rtp_timestamp_(timestamp) {}
 RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(
     const RtcpReceiverFrameLogMessage& other) = default;
-RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() {}
+RtcpReceiverFrameLogMessage::~RtcpReceiverFrameLogMessage() = default;
 
 RtcpReceiverReferenceTimeReport::RtcpReceiverReferenceTimeReport()
     : remote_ssrc(0u), ntp_seconds(0u), ntp_fraction(0u) {}
-RtcpReceiverReferenceTimeReport::~RtcpReceiverReferenceTimeReport() {}
+RtcpReceiverReferenceTimeReport::~RtcpReceiverReferenceTimeReport() = default;
 
 RtcpEvent::RtcpEvent() : type(UNKNOWN), packet_id(0u) {}
-RtcpEvent::~RtcpEvent() {}
+RtcpEvent::~RtcpEvent() = default;
 
 RtpReceiverStatistics::RtpReceiverStatistics() :
     fraction_lost(0),
@@ -44,7 +44,7 @@ SendRtcpFromRtpReceiver_Params::SendRtcpFromRtpReceiver_Params()
     : ssrc(0),
       sender_ssrc(0) {}
 
-SendRtcpFromRtpReceiver_Params::~SendRtcpFromRtpReceiver_Params() {}
+SendRtcpFromRtpReceiver_Params::~SendRtcpFromRtpReceiver_Params() = default;
 
 }  // namespace cast
 }  // namespace media

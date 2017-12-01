@@ -17,8 +17,8 @@ static const int kBenchmarkIterations = 200000;
 // InputCallback that zero's out the provided AudioBus.
 class NullInputProvider : public AudioConverter::InputCallback {
  public:
-  NullInputProvider() {}
-  ~NullInputProvider() override {}
+  NullInputProvider() = default;
+  ~NullInputProvider() override = default;
 
   double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override {
     audio_bus->Zero();

@@ -45,8 +45,7 @@ StatsEventSubscriber::SimpleHistogram::SimpleHistogram(int64_t min,
   CHECK_EQ(0, (max_ - min_) % width_);
 }
 
-StatsEventSubscriber::SimpleHistogram::~SimpleHistogram() {
-}
+StatsEventSubscriber::SimpleHistogram::~SimpleHistogram() = default;
 
 void StatsEventSubscriber::SimpleHistogram::Add(int64_t sample) {
   if (sample < min_) {
@@ -742,16 +741,15 @@ void StatsEventSubscriber::PopulatePacketBitrateStat(
 
 StatsEventSubscriber::FrameLogStats::FrameLogStats()
     : event_counter(0), sum_size(0) {}
-StatsEventSubscriber::FrameLogStats::~FrameLogStats() {}
+StatsEventSubscriber::FrameLogStats::~FrameLogStats() = default;
 
 StatsEventSubscriber::PacketLogStats::PacketLogStats()
     : event_counter(0), sum_size(0) {}
-StatsEventSubscriber::PacketLogStats::~PacketLogStats() {}
+StatsEventSubscriber::PacketLogStats::~PacketLogStats() = default;
 
 StatsEventSubscriber::FrameInfo::FrameInfo() : encoded(false) {
 }
-StatsEventSubscriber::FrameInfo::~FrameInfo() {
-}
+StatsEventSubscriber::FrameInfo::~FrameInfo() = default;
 
 }  // namespace cast
 }  // namespace media

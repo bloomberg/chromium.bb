@@ -6,8 +6,8 @@
 
 namespace media {
 
-CdmAllocator::CdmAllocator() {}
+CdmAllocator::CdmAllocator() = default;
 
-CdmAllocator::~CdmAllocator() {}
+CdmAllocator::~CdmAllocator() = default;
 
 }  // namespace media

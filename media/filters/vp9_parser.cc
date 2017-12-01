@@ -235,7 +235,7 @@ bool Vp9FrameContext::IsValid() const {
 Vp9Parser::Context::Vp9FrameContextManager::Vp9FrameContextManager()
     : weak_ptr_factory_(this) {}
 
-Vp9Parser::Context::Vp9FrameContextManager::~Vp9FrameContextManager() {}
+Vp9Parser::Context::Vp9FrameContextManager::~Vp9FrameContextManager() = default;
 
 const Vp9FrameContext&
 Vp9Parser::Context::Vp9FrameContextManager::frame_context() const {
@@ -333,7 +333,7 @@ Vp9Parser::Vp9Parser(bool parsing_compressed_header)
   Reset();
 }
 
-Vp9Parser::~Vp9Parser() {}
+Vp9Parser::~Vp9Parser() = default;
 
 void Vp9Parser::SetStream(const uint8_t* stream, off_t stream_size) {
   DCHECK(stream);

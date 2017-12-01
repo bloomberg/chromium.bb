@@ -90,7 +90,7 @@ GpuMojoMediaClient::GpuMojoMediaClient(
       media_gpu_channel_manager_(std::move(media_gpu_channel_manager)),
       android_overlay_factory_cb_(std::move(android_overlay_factory_cb)) {}
 
-GpuMojoMediaClient::~GpuMojoMediaClient() {}
+GpuMojoMediaClient::~GpuMojoMediaClient() = default;
 
 void GpuMojoMediaClient::Initialize(
     service_manager::Connector* connector,

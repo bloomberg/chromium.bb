@@ -130,7 +130,7 @@ class TestUrlData : public UrlData {
   }
 
  protected:
-  ~TestUrlData() override {}
+  ~TestUrlData() override = default;
   const int block_shift_;
 
   std::unique_ptr<TestResourceMultiBuffer> test_multibuffer_;
@@ -158,8 +158,8 @@ class TestUrlIndex : public UrlIndex {
 
 class MockBufferedDataSourceHost : public BufferedDataSourceHost {
  public:
-  MockBufferedDataSourceHost() {}
-  virtual ~MockBufferedDataSourceHost() {}
+  MockBufferedDataSourceHost() = default;
+  virtual ~MockBufferedDataSourceHost() = default;
 
   MOCK_METHOD1(SetTotalBytes, void(int64_t total_bytes));
   MOCK_METHOD2(AddBufferedByteRange, void(int64_t start, int64_t end));

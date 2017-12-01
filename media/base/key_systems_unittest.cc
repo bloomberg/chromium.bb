@@ -247,8 +247,7 @@ TestMediaClient::TestMediaClient()
     : is_update_needed_(true), supports_external_key_system_(true) {
 }
 
-TestMediaClient::~TestMediaClient() {
-}
+TestMediaClient::~TestMediaClient() = default;
 
 bool TestMediaClient::IsKeySystemsUpdateNeeded() {
   return is_update_needed_;

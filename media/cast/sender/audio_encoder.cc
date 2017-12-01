@@ -183,7 +183,7 @@ class AudioEncoder::ImplBase
 
  protected:
   friend class base::RefCountedThreadSafe<ImplBase>;
-  virtual ~ImplBase() {}
+  virtual ~ImplBase() = default;
 
   virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                          int source_offset,
@@ -276,7 +276,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
   }
 
  private:
-  ~OpusImpl() final {}
+  ~OpusImpl() final = default;
 
   void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                  int source_offset,
@@ -727,7 +727,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
   }
 
  private:
-  ~Pcm16Impl() final {}
+  ~Pcm16Impl() final = default;
 
   void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                  int source_offset,
@@ -797,7 +797,7 @@ AudioEncoder::AudioEncoder(
   }
 }
 
-AudioEncoder::~AudioEncoder() {}
+AudioEncoder::~AudioEncoder() = default;
 
 OperationalStatus AudioEncoder::InitializationResult() const {
   DCHECK(insert_thread_checker_.CalledOnValidThread());

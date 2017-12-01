@@ -37,7 +37,8 @@ class RendererFactorySelectorTest : public testing::Test {
     FactoryType type_;
   };
 
-  RendererFactorySelectorTest(){};
+  RendererFactorySelectorTest() = default;
+  ;
 
   void AddFactory(FactoryType type) {
     selector_.AddFactory(type, base::MakeUnique<FakeFactory>(type));

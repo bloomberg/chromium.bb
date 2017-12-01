@@ -81,7 +81,7 @@ class MojoCdmTest : public ::testing::Test {
                                              &cdm_factory_)),
         cdm_binding_(mojo_cdm_service_.get()) {}
 
-  virtual ~MojoCdmTest() {}
+  virtual ~MojoCdmTest() = default;
 
   void Initialize(ExpectedResult expected_result) {
     // TODO(xhwang): Add pending init support.

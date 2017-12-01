@@ -21,7 +21,7 @@ class TestRendererFactory final : public PipelineTestRendererFactory {
   explicit TestRendererFactory(
       std::unique_ptr<PipelineTestRendererFactory> renderer_factory)
       : default_renderer_factory_(std::move(renderer_factory)) {}
-  ~TestRendererFactory() override {}
+  ~TestRendererFactory() override = default;
 
   // PipelineTestRendererFactory implementation.
   std::unique_ptr<Renderer> CreateRenderer(

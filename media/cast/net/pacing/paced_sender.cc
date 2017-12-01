@@ -37,7 +37,7 @@ PacketKey::PacketKey(base::TimeTicks capture_time,
 
 PacketKey::PacketKey(const PacketKey& other) = default;
 
-PacketKey::~PacketKey() {}
+PacketKey::~PacketKey() = default;
 
 struct PacedSender::PacketSendRecord {
   PacketSendRecord()
@@ -54,7 +54,7 @@ struct PacedSender::PacketSendRecord {
 struct PacedSender::RtpSession {
   explicit RtpSession(bool is_audio_stream)
       : last_byte_sent(0), is_audio(is_audio_stream) {}
-  RtpSession() {}
+  RtpSession() = default;
 
   // Tracks recently-logged RTP timestamps so that it can expand the truncated
   // values found in packets.
@@ -84,7 +84,7 @@ PacedSender::PacedSender(
       state_(State_Unblocked),
       weak_factory_(this) {}
 
-PacedSender::~PacedSender() {}
+PacedSender::~PacedSender() = default;
 
 void PacedSender::RegisterSsrc(uint32_t ssrc, bool is_audio) {
   if (sessions_.find(ssrc) != sessions_.end())

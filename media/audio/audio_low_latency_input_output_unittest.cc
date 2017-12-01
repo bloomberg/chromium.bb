@@ -298,7 +298,7 @@ class StreamWrapper {
     samples_per_packet_ = params.frames_per_buffer();
   }
 
-  virtual ~StreamWrapper() {}
+  virtual ~StreamWrapper() = default;
 
   // Creates an Audio[Input|Output]Stream stream object using default
   // parameters.

@@ -6,8 +6,8 @@
 
 namespace media {
 
-Renderer::Renderer() {}
+Renderer::Renderer() = default;
 
-Renderer::~Renderer() {}
+Renderer::~Renderer() = default;
 
 }  // namespace media

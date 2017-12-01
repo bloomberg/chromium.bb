@@ -85,7 +85,7 @@ class AudioDecoder::ImplBase
 
  protected:
   friend class base::RefCountedThreadSafe<ImplBase>;
-  virtual ~ImplBase() {}
+  virtual ~ImplBase() = default;
 
   virtual void RecoverBecauseFramesWereDropped() {}
 
@@ -130,7 +130,7 @@ class AudioDecoder::OpusImpl : public AudioDecoder::ImplBase {
   }
 
  private:
-  ~OpusImpl() final {}
+  ~OpusImpl() final = default;
 
   void RecoverBecauseFramesWereDropped() final {
     // Passing NULL for the input data notifies the decoder of frame loss.
@@ -189,7 +189,7 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
   }
 
  private:
-  ~Pcm16Impl() final {}
+  ~Pcm16Impl() final = default;
 
   std::unique_ptr<AudioBus> Decode(uint8_t* data, int len) final {
     std::unique_ptr<AudioBus> audio_bus;
@@ -231,7 +231,7 @@ AudioDecoder::AudioDecoder(
   }
 }
 
-AudioDecoder::~AudioDecoder() {}
+AudioDecoder::~AudioDecoder() = default;
 
 OperationalStatus AudioDecoder::InitializationResult() const {
   if (impl_.get())

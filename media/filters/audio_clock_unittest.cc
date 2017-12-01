@@ -16,7 +16,7 @@ class AudioClockTest : public testing::Test {
  public:
   AudioClockTest() { SetupClock(base::TimeDelta(), 10); }
 
-  ~AudioClockTest() override {}
+  ~AudioClockTest() override = default;
 
   void WroteAudio(int frames_written,
                   int frames_requested,

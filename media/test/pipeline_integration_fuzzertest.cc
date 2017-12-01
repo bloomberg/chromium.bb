@@ -133,7 +133,8 @@ class ProgressivePipelineIntegrationFuzzerTest
         BindToCurrentLoop(base::BindRepeating(&OnAudioPlayDelay, this)));
   }
 
-  ~ProgressivePipelineIntegrationFuzzerTest() override{};
+  ~ProgressivePipelineIntegrationFuzzerTest() override = default;
+  ;
 
   void RunTest(const uint8_t* data, size_t size) {
     if (PIPELINE_OK != Start(data, size, kUnreliableDuration))
@@ -157,7 +158,8 @@ class MediaSourcePipelineIntegrationFuzzerTest
         BindToCurrentLoop(base::BindRepeating(&OnAudioPlayDelay, this)));
   }
 
-  ~MediaSourcePipelineIntegrationFuzzerTest() override{};
+  ~MediaSourcePipelineIntegrationFuzzerTest() override = default;
+  ;
 
   void RunTest(const uint8_t* data, size_t size, const std::string& mimetype) {
     if (size == 0)

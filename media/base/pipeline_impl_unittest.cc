@@ -88,8 +88,8 @@ class PipelineImplTest : public ::testing::Test {
   // also lets us test for missing callbacks.
   class CallbackHelper : public MockPipelineClient {
    public:
-    CallbackHelper() {}
-    virtual ~CallbackHelper() {}
+    CallbackHelper() = default;
+    virtual ~CallbackHelper() = default;
 
     MOCK_METHOD1(OnStart, void(PipelineStatus));
     MOCK_METHOD1(OnSeek, void(PipelineStatus));
@@ -888,8 +888,8 @@ class PipelineTeardownTest : public PipelineImplTest {
     kErrorAndStop,
   };
 
-  PipelineTeardownTest() {}
-  ~PipelineTeardownTest() override {}
+  PipelineTeardownTest() = default;
+  ~PipelineTeardownTest() override = default;
 
   void RunTest(TeardownState state, StopOrError stop_or_error) {
     switch (state) {

@@ -74,7 +74,7 @@ MojoRendererService::MojoRendererService(
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
-MojoRendererService::~MojoRendererService() {}
+MojoRendererService::~MojoRendererService() = default;
 
 void MojoRendererService::Initialize(
     mojom::RendererClientAssociatedPtrInfo client,

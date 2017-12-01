@@ -97,7 +97,7 @@ void FakeDemuxerStream::CreateFakeFrame(size_t size,
 FakeMediaResource::FakeMediaResource()
     : demuxer_stream_(new FakeDemuxerStream(true)) {}
 
-FakeMediaResource::~FakeMediaResource() {}
+FakeMediaResource::~FakeMediaResource() = default;
 
 std::vector<DemuxerStream*> FakeMediaResource::GetAllStreams() {
   std::vector<DemuxerStream*> streams;

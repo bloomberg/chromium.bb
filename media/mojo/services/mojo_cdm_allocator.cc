@@ -119,7 +119,7 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
   explicit MojoCdmVideoFrame(
       const MojoSharedBufferDoneCB& mojo_shared_buffer_done_cb)
       : mojo_shared_buffer_done_cb_(mojo_shared_buffer_done_cb) {}
-  ~MojoCdmVideoFrame() final {}
+  ~MojoCdmVideoFrame() final = default;
 
   // VideoFrameImpl implementation.
   scoped_refptr<media::VideoFrame> TransformToVideoFrame(
@@ -162,7 +162,7 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
 
 MojoCdmAllocator::MojoCdmAllocator() : weak_ptr_factory_(this) {}
 
-MojoCdmAllocator::~MojoCdmAllocator() {}
+MojoCdmAllocator::~MojoCdmAllocator() = default;
 
 // Creates a cdm::Buffer, reusing an existing buffer if one is available.
 // If not, a new buffer is created using AllocateNewBuffer(). The caller is

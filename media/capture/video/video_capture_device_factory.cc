@@ -49,7 +49,7 @@ VideoCaptureDeviceFactory::VideoCaptureDeviceFactory() {
   thread_checker_.DetachFromThread();
 }
 
-VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() {}
+VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() = default;
 
 #if !defined(OS_MACOSX) && !defined(OS_LINUX) && !defined(OS_ANDROID) && \
     !defined(OS_WIN)

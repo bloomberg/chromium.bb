@@ -15,7 +15,7 @@ H264BitReader::H264BitReader()
       prev_two_bytes_(0),
       emulation_prevention_bytes_(0) {}
 
-H264BitReader::~H264BitReader() {}
+H264BitReader::~H264BitReader() = default;
 
 bool H264BitReader::Initialize(const uint8_t* data, off_t size) {
   DCHECK(data);

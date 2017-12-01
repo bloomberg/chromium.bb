@@ -13,7 +13,7 @@ namespace media {
 MemoryDataSource::MemoryDataSource(const uint8_t* data, size_t size)
     : data_(data), size_(size) {}
 
-MemoryDataSource::~MemoryDataSource() {}
+MemoryDataSource::~MemoryDataSource() = default;
 
 void MemoryDataSource::Read(int64_t position,
                             int size,

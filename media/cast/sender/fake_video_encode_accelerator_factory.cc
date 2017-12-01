@@ -21,7 +21,8 @@ FakeVideoEncodeAcceleratorFactory::FakeVideoEncodeAcceleratorFactory(
       last_response_vea_(nullptr),
       last_response_shm_(nullptr) {}
 
-FakeVideoEncodeAcceleratorFactory::~FakeVideoEncodeAcceleratorFactory() {}
+FakeVideoEncodeAcceleratorFactory::~FakeVideoEncodeAcceleratorFactory() =
+    default;
 
 void FakeVideoEncodeAcceleratorFactory::SetInitializationWillSucceed(
     bool will_init_succeed) {

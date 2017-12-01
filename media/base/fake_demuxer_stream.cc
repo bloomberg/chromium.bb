@@ -52,7 +52,7 @@ FakeDemuxerStream::FakeDemuxerStream(int num_configs,
   UpdateVideoDecoderConfig();
 }
 
-FakeDemuxerStream::~FakeDemuxerStream() {}
+FakeDemuxerStream::~FakeDemuxerStream() = default;
 
 void FakeDemuxerStream::Initialize() {
   DCHECK_EQ(-1, read_to_hold_);
@@ -212,7 +212,7 @@ FakeMediaResource::FakeMediaResource(int num_video_configs,
                          num_video_buffers_in_one_config,
                          is_video_encrypted) {}
 
-FakeMediaResource::~FakeMediaResource() {}
+FakeMediaResource::~FakeMediaResource() = default;
 
 std::vector<DemuxerStream*> FakeMediaResource::GetAllStreams() {
   std::vector<DemuxerStream*> result;

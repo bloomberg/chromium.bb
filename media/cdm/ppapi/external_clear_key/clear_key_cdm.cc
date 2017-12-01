@@ -364,7 +364,7 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
-ClearKeyCdm::~ClearKeyCdm() {}
+ClearKeyCdm::~ClearKeyCdm() = default;
 
 void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
                              bool allow_persistent_state) {

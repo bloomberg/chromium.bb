@@ -22,9 +22,9 @@ inline std::string ToInternalKey(VideoFrameMetadata::Key key) {
 
 }  // namespace
 
-VideoFrameMetadata::VideoFrameMetadata() {}
+VideoFrameMetadata::VideoFrameMetadata() = default;
 
-VideoFrameMetadata::~VideoFrameMetadata() {}
+VideoFrameMetadata::~VideoFrameMetadata() = default;
 
 bool VideoFrameMetadata::HasKey(Key key) const {
   return dictionary_.HasKey(ToInternalKey(key));

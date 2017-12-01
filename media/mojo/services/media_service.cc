@@ -30,7 +30,7 @@ MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client)
       base::Bind(&MediaService::Create, base::Unretained(this)));
 }
 
-MediaService::~MediaService() {}
+MediaService::~MediaService() = default;
 
 void MediaService::OnStart() {
   DVLOG(1) << __func__;

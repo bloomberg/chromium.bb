@@ -7,7 +7,7 @@
 
 namespace media {
 
-AudioDeviceName::AudioDeviceName() {}
+AudioDeviceName::AudioDeviceName() = default;
 
 AudioDeviceName::AudioDeviceName(const std::string& device_name,
                                  const std::string& unique_id)

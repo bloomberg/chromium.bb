@@ -132,7 +132,7 @@ MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
   InitializeMimeTypeMaps();
 }
 
-MimeUtil::~MimeUtil() {}
+MimeUtil::~MimeUtil() = default;
 
 AudioCodec MimeUtilToAudioCodec(MimeUtil::Codec codec) {
   switch (codec) {

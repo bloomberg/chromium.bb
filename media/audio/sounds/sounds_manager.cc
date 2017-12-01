@@ -22,7 +22,7 @@ bool g_initialized_for_testing = false;
 
 class SoundsManagerImpl : public SoundsManager {
  public:
-  SoundsManagerImpl() {}
+  SoundsManagerImpl() = default;
   ~SoundsManagerImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -94,7 +94,7 @@ AudioStreamHandler* SoundsManagerImpl::GetHandler(SoundKey key) {
 
 }  // namespace
 
-SoundsManager::SoundsManager() {}
+SoundsManager::SoundsManager() = default;
 
 SoundsManager::~SoundsManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

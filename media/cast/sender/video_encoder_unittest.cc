@@ -49,7 +49,7 @@ class VideoEncoderTest
     first_frame_time_ = testing_clock_->NowTicks();
   }
 
-  ~VideoEncoderTest() override {}
+  ~VideoEncoderTest() override = default;
 
   void SetUp() final {
     video_config_.codec = GetParam().first;

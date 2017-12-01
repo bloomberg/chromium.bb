@@ -8,9 +8,9 @@
 
 namespace media {
 
-ContentDecryptionModule::ContentDecryptionModule() {}
+ContentDecryptionModule::ContentDecryptionModule() = default;
 
-ContentDecryptionModule::~ContentDecryptionModule() {}
+ContentDecryptionModule::~ContentDecryptionModule() = default;
 
 // By default a CDM does not support this method.
 void ContentDecryptionModule::GetStatusForPolicy(

@@ -19,8 +19,8 @@ static base::TimeDelta CalculateDuration(int frames, double sample_rate) {
       frames * base::Time::kMicrosecondsPerSecond / sample_rate);
 }
 
-AudioBufferMemoryPool::AudioBufferMemoryPool() {}
-AudioBufferMemoryPool::~AudioBufferMemoryPool() {}
+AudioBufferMemoryPool::AudioBufferMemoryPool() = default;
+AudioBufferMemoryPool::~AudioBufferMemoryPool() = default;
 
 AudioBufferMemoryPool::AudioMemory AudioBufferMemoryPool::CreateBuffer(
     size_t size) {

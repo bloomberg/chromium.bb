@@ -26,7 +26,7 @@ class AudioRendererMixer::UMAMaxValueTracker {
   UMAMaxValueTracker(const UmaLogCallback& log_callback)
       : log_callback_(log_callback), count_(0), max_count_(0) {}
 
-  ~UMAMaxValueTracker() {}
+  ~UMAMaxValueTracker() = default;
 
   // Increments the counter, updates the maximum.
   void Increment() {

@@ -68,7 +68,7 @@ TrackRunInfo::TrackRunInfo()
       aux_info_default_size(-1),
       aux_info_total_size(-1) {
 }
-TrackRunInfo::~TrackRunInfo() {}
+TrackRunInfo::~TrackRunInfo() = default;
 
 base::TimeDelta TimeDeltaFromRational(int64_t numer, int64_t denom) {
   // TODO(sandersd): Change all callers to pass a |denom| as a uint32_t. This is
@@ -118,7 +118,7 @@ TrackRunIterator::TrackRunIterator(const Movie* moov, MediaLog* media_log)
   CHECK(moov);
 }
 
-TrackRunIterator::~TrackRunIterator() {}
+TrackRunIterator::~TrackRunIterator() = default;
 
 static std::string HexFlags(uint32_t flags) {
   std::stringstream stream;

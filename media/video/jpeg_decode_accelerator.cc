@@ -6,7 +6,6 @@
 
 namespace media {
 
-JpegDecodeAccelerator::~JpegDecodeAccelerator() {
-}
+JpegDecodeAccelerator::~JpegDecodeAccelerator() = default;
 
 }  // namespace media

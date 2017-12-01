@@ -33,7 +33,7 @@ class SilentSinkSuspenderTest : public testing::Test {
                    params_,
                    mock_sink_,
                    test_loop_.task_runner()) {}
-  ~SilentSinkSuspenderTest() override {}
+  ~SilentSinkSuspenderTest() override = default;
 
  protected:
   base::TestMessageLoop test_loop_;

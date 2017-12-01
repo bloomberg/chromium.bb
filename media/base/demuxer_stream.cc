@@ -6,7 +6,7 @@
 
 namespace media {
 
-DemuxerStream::~DemuxerStream() {}
+DemuxerStream::~DemuxerStream() = default;
 
 // Most DemuxerStream implementations don't specify liveness. Returns unknown
 // liveness by default.

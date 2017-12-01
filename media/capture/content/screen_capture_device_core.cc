@@ -26,11 +26,9 @@ void DeleteCaptureMachine(
 
 }  // namespace
 
-VideoCaptureMachine::VideoCaptureMachine() {
-}
+VideoCaptureMachine::VideoCaptureMachine() = default;
 
-VideoCaptureMachine::~VideoCaptureMachine() {
-}
+VideoCaptureMachine::~VideoCaptureMachine() = default;
 
 bool VideoCaptureMachine::IsAutoThrottlingEnabled() const {
   return false;

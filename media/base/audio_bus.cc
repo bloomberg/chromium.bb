@@ -109,7 +109,7 @@ AudioBus::AudioBus(int channels)
     channel_data_[i] = NULL;
 }
 
-AudioBus::~AudioBus() {}
+AudioBus::~AudioBus() = default;
 
 std::unique_ptr<AudioBus> AudioBus::Create(int channels, int frames) {
   return base::WrapUnique(new AudioBus(channels, frames));

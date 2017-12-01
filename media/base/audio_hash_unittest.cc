@@ -42,7 +42,7 @@ class AudioHashTest : public testing::Test {
     }
   }
 
-  ~AudioHashTest() override {}
+  ~AudioHashTest() override = default;
 
  protected:
   std::unique_ptr<AudioBus> bus_one_;

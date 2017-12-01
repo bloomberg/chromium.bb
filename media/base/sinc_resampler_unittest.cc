@@ -211,7 +211,7 @@ class SinusoidalLinearChirpSource {
     k_ = (max_frequency_ - kMinFrequency) / duration;
   }
 
-  virtual ~SinusoidalLinearChirpSource() {}
+  virtual ~SinusoidalLinearChirpSource() = default;
 
   void ProvideInput(int frames, float* destination) {
     for (int i = 0; i < frames; ++i, ++current_index_) {
@@ -259,7 +259,7 @@ class SincResamplerTest
         low_freq_error_(std::tr1::get<3>(GetParam())) {
   }
 
-  virtual ~SincResamplerTest() {}
+  virtual ~SincResamplerTest() = default;
 
  protected:
   int input_rate_;

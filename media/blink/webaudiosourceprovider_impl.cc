@@ -61,7 +61,7 @@ class WebAudioSourceProviderImpl::TeeFilter
     : public AudioRendererSink::RenderCallback {
  public:
   TeeFilter() : renderer_(nullptr), channels_(0), sample_rate_(0) {}
-  ~TeeFilter() override {}
+  ~TeeFilter() override = default;
 
   void Initialize(AudioRendererSink::RenderCallback* renderer,
                   int channels,
@@ -109,8 +109,7 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
       media_log_(media_log),
       weak_factory_(this) {}
 
-WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {
-}
+WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() = default;
 
 void WebAudioSourceProviderImpl::SetClient(
     blink::WebAudioSourceProviderClient* client) {

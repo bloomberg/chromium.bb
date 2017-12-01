@@ -15,8 +15,7 @@ namespace media {
 MockAudioManager::MockAudioManager(std::unique_ptr<AudioThread> audio_thread)
     : AudioManager(std::move(audio_thread)) {}
 
-MockAudioManager::~MockAudioManager() {
-}
+MockAudioManager::~MockAudioManager() = default;
 
 void MockAudioManager::ShutdownOnAudioThread() {}
 

@@ -9,7 +9,7 @@
 namespace media {
 namespace cast {
 
-SimpleEventSubscriber::SimpleEventSubscriber() {}
+SimpleEventSubscriber::SimpleEventSubscriber() = default;
 
 SimpleEventSubscriber::~SimpleEventSubscriber() {
   DCHECK(thread_checker_.CalledOnValidThread());

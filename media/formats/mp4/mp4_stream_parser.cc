@@ -92,7 +92,7 @@ MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
   DCHECK(!has_flac || base::FeatureList::IsEnabled(kMseFlacInIsobmff));
 }
 
-MP4StreamParser::~MP4StreamParser() {}
+MP4StreamParser::~MP4StreamParser() = default;
 
 void MP4StreamParser::Init(
     const InitCB& init_cb,

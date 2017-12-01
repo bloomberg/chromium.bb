@@ -16,7 +16,7 @@ VideoCodecParams::VideoCodecParams()
 
 VideoCodecParams::VideoCodecParams(const VideoCodecParams& other) = default;
 
-VideoCodecParams::~VideoCodecParams() {}
+VideoCodecParams::~VideoCodecParams() = default;
 
 // TODO(miu): Provide IsValidConfig() functions?
 
@@ -40,7 +40,7 @@ FrameSenderConfig::FrameSenderConfig()
 
 FrameSenderConfig::FrameSenderConfig(const FrameSenderConfig& other) = default;
 
-FrameSenderConfig::~FrameSenderConfig() {}
+FrameSenderConfig::~FrameSenderConfig() = default;
 
 FrameReceiverConfig::FrameReceiverConfig()
     : receiver_ssrc(0),
@@ -55,7 +55,7 @@ FrameReceiverConfig::FrameReceiverConfig()
 FrameReceiverConfig::FrameReceiverConfig(const FrameReceiverConfig& other) =
     default;
 
-FrameReceiverConfig::~FrameReceiverConfig() {}
+FrameReceiverConfig::~FrameReceiverConfig() = default;
 
 }  // namespace cast
 }  // namespace media

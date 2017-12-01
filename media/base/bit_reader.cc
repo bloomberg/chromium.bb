@@ -15,7 +15,7 @@ BitReader::BitReader(const uint8_t* data, int size)
   DCHECK_GE(size, 0);
 }
 
-BitReader::~BitReader() {}
+BitReader::~BitReader() = default;
 
 bool BitReader::ReadString(int num_bits, std::string* str) {
   DCHECK_EQ(num_bits % 8, 0);

@@ -76,7 +76,7 @@ StreamParserBuffer::StreamParserBuffer(const uint8_t* data,
     set_is_key_frame(true);
 }
 
-StreamParserBuffer::~StreamParserBuffer() {}
+StreamParserBuffer::~StreamParserBuffer() = default;
 
 int StreamParserBuffer::GetConfigId() const {
   return config_id_;

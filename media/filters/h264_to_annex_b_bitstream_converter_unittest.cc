@@ -16,9 +16,9 @@ namespace media {
 
 class H264ToAnnexBBitstreamConverterTest : public testing::Test {
  protected:
-  H264ToAnnexBBitstreamConverterTest() {}
+  H264ToAnnexBBitstreamConverterTest() = default;
 
-  ~H264ToAnnexBBitstreamConverterTest() override {}
+  ~H264ToAnnexBBitstreamConverterTest() override = default;
 
  protected:
   mp4::AVCDecoderConfigurationRecord avc_config_;

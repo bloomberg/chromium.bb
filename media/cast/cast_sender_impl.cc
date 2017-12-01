@@ -49,7 +49,7 @@ class LocalVideoFrameInput : public VideoFrameInput {
   }
 
  protected:
-  ~LocalVideoFrameInput() final {}
+  ~LocalVideoFrameInput() final = default;
 
  private:
   friend class base::RefCountedThreadSafe<LocalVideoFrameInput>;
@@ -80,7 +80,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
   }
 
  protected:
-  ~LocalAudioFrameInput() final {}
+  ~LocalAudioFrameInput() final = default;
 
  private:
   friend class base::RefCountedThreadSafe<LocalAudioFrameInput>;

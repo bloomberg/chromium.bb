@@ -14,6 +14,6 @@ CreateVideoEncoderParams::CreateVideoEncoderParams()
       initial_bitrate(0),
       encoder_route_id(MSG_ROUTING_NONE) {}
 
-CreateVideoEncoderParams::~CreateVideoEncoderParams() {}
+CreateVideoEncoderParams::~CreateVideoEncoderParams() = default;
 
 }  // namespace media

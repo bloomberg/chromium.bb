@@ -32,7 +32,7 @@ static void DecodeCue(const Cue& cue,
 
 class WebMWebVTTParserTest : public testing::Test {
  public:
-  WebMWebVTTParserTest() {}
+  WebMWebVTTParserTest() = default;
 };
 
 TEST_F(WebMWebVTTParserTest, Blank) {

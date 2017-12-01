@@ -44,7 +44,7 @@ DecoderBuffer::DecoderBuffer(const uint8_t* data,
   memcpy(side_data_.get(), side_data, side_data_size_);
 }
 
-DecoderBuffer::~DecoderBuffer() {}
+DecoderBuffer::~DecoderBuffer() = default;
 
 void DecoderBuffer::Initialize() {
   data_.reset(AllocateFFmpegSafeBlock(size_));

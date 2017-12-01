@@ -297,8 +297,7 @@ KeySystemsImpl::KeySystemsImpl()
   UpdateSupportedKeySystems();
 }
 
-KeySystemsImpl::~KeySystemsImpl() {
-}
+KeySystemsImpl::~KeySystemsImpl() = default;
 
 SupportedCodecs KeySystemsImpl::GetCodecMaskForMimeType(
     const std::string& container_mime_type) const {

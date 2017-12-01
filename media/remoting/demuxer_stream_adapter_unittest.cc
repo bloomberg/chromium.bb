@@ -110,7 +110,7 @@ class MockDemuxerStreamAdapter {
 
 class DemuxerStreamAdapterTest : public ::testing::Test {
  public:
-  DemuxerStreamAdapterTest() {}
+  DemuxerStreamAdapterTest() = default;
   ~DemuxerStreamAdapterTest() override = default;
 
   void SetUpDataPipe() {

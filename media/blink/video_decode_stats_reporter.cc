@@ -36,7 +36,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
       &VideoDecodeStatsReporter::OnIpcConnectionError, base::Unretained(this)));
 }
 
-VideoDecodeStatsReporter::~VideoDecodeStatsReporter() {}
+VideoDecodeStatsReporter::~VideoDecodeStatsReporter() = default;
 
 void VideoDecodeStatsReporter::OnPlaying() {
   DVLOG(2) << __func__;

@@ -8,7 +8,7 @@ namespace midi {
 
 using mojom::PortState;
 
-MidiPortInfo::MidiPortInfo() {}
+MidiPortInfo::MidiPortInfo() = default;
 
 MidiPortInfo::MidiPortInfo(const std::string& in_id,
                            const std::string& in_manufacturer,
@@ -21,13 +21,8 @@ MidiPortInfo::MidiPortInfo(const std::string& in_id,
       version(in_version),
       state(in_state) {}
 
-MidiPortInfo::~MidiPortInfo() {}
+MidiPortInfo::~MidiPortInfo() = default;
 
-MidiPortInfo::MidiPortInfo(const MidiPortInfo& info)
-    : id(info.id),
-      manufacturer(info.manufacturer),
-      name(info.name),
-      version(info.version),
-      state(info.state) {}
+MidiPortInfo::MidiPortInfo(const MidiPortInfo& info) = default;
 
 }  // namespace midi

@@ -18,11 +18,9 @@
 
 namespace media {
 
-DefaultCdmFactory::DefaultCdmFactory() {
-}
+DefaultCdmFactory::DefaultCdmFactory() = default;
 
-DefaultCdmFactory::~DefaultCdmFactory() {
-}
+DefaultCdmFactory::~DefaultCdmFactory() = default;
 
 static bool ShouldCreateAesDecryptor(const std::string& key_system) {
   if (CanUseAesDecryptor(key_system))

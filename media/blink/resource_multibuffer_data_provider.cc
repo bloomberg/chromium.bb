@@ -65,7 +65,7 @@ ResourceMultiBufferDataProvider::ResourceMultiBufferDataProvider(
   DCHECK_GE(pos, 0);
 }
 
-ResourceMultiBufferDataProvider::~ResourceMultiBufferDataProvider() {}
+ResourceMultiBufferDataProvider::~ResourceMultiBufferDataProvider() = default;
 
 void ResourceMultiBufferDataProvider::Start() {
   DVLOG(1) << __func__ << " @ " << byte_pos();

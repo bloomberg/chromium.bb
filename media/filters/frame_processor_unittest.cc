@@ -65,8 +65,8 @@ typedef StreamParser::TrackId TrackId;
 // test for missing or extra callbacks.
 class FrameProcessorTestCallbackHelper {
  public:
-  FrameProcessorTestCallbackHelper() {}
-  virtual ~FrameProcessorTestCallbackHelper() {}
+  FrameProcessorTestCallbackHelper() = default;
+  virtual ~FrameProcessorTestCallbackHelper() = default;
 
   MOCK_METHOD1(OnParseWarning, void(const SourceBufferParseWarning));
   MOCK_METHOD1(PossibleDurationIncrease, void(base::TimeDelta new_duration));

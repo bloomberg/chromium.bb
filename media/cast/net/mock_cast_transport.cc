@@ -7,9 +7,9 @@
 namespace media {
 namespace cast {
 
-MockCastTransport::MockCastTransport() {}
+MockCastTransport::MockCastTransport() = default;
 
-MockCastTransport::~MockCastTransport() {}
+MockCastTransport::~MockCastTransport() = default;
 
 }  // namespace cast
 }  // namespace media

@@ -6,9 +6,9 @@
 
 namespace media {
 
-RendererFactory::RendererFactory() {}
+RendererFactory::RendererFactory() = default;
 
-RendererFactory::~RendererFactory() {}
+RendererFactory::~RendererFactory() = default;
 
 MediaResource::Type RendererFactory::GetRequiredMediaResourceType() {
   return MediaResource::Type::STREAM;

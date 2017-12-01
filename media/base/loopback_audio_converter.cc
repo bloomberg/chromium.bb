@@ -12,7 +12,7 @@ LoopbackAudioConverter::LoopbackAudioConverter(
     bool disable_fifo)
     : audio_converter_(input_params, output_params, disable_fifo) {}
 
-LoopbackAudioConverter::~LoopbackAudioConverter() {}
+LoopbackAudioConverter::~LoopbackAudioConverter() = default;
 
 double LoopbackAudioConverter::ProvideInput(AudioBus* audio_bus,
                                             uint32_t frames_delayed) {

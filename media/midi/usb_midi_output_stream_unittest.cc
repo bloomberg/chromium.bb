@@ -27,8 +27,8 @@ std::vector<T> ToVector(const T((&array)[N])) {
 
 class MockUsbMidiDevice : public UsbMidiDevice {
  public:
-  MockUsbMidiDevice() {}
-  ~MockUsbMidiDevice() override {}
+  MockUsbMidiDevice() = default;
+  ~MockUsbMidiDevice() override = default;
 
   std::vector<uint8_t> GetDescriptors() override {
     return std::vector<uint8_t>();

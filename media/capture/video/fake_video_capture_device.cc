@@ -106,7 +106,7 @@ class FrameDeliverer {
  public:
   FrameDeliverer(std::unique_ptr<PacmanFramePainter> frame_painter)
       : frame_painter_(std::move(frame_painter)) {}
-  virtual ~FrameDeliverer() {}
+  virtual ~FrameDeliverer() = default;
   virtual void Initialize(VideoPixelFormat pixel_format,
                           std::unique_ptr<VideoCaptureDevice::Client> client,
                           const FakeDeviceState* device_state) {

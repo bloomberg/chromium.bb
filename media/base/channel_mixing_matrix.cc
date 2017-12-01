@@ -72,8 +72,7 @@ ChannelMixingMatrix::ChannelMixingMatrix(ChannelLayout input_layout,
   }
 }
 
-ChannelMixingMatrix::~ChannelMixingMatrix() {
-}
+ChannelMixingMatrix::~ChannelMixingMatrix() = default;
 
 bool ChannelMixingMatrix::CreateTransformationMatrix(
     std::vector<std::vector<float>>* matrix) {

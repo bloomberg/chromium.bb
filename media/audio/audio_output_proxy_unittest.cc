@@ -81,7 +81,7 @@ class MockAudioOutputStream : public AudioOutputStream {
     fake_output_stream_->Stop();
   }
 
-  ~MockAudioOutputStream() {}
+  ~MockAudioOutputStream() = default;
 
   bool start_called() { return start_called_; }
   bool stop_called() { return stop_called_; }

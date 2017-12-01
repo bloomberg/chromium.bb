@@ -19,8 +19,8 @@ namespace {
 
 class AudioPushFifoTest : public testing::TestWithParam<int> {
  public:
-  AudioPushFifoTest() {}
-  ~AudioPushFifoTest() override {}
+  AudioPushFifoTest() = default;
+  ~AudioPushFifoTest() override = default;
 
   int output_chunk_size() const { return GetParam(); }
 

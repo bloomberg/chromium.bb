@@ -23,8 +23,7 @@ AudioOutputStreamSink::AudioOutputStreamSink()
       audio_task_runner_(AudioManager::Get()->GetTaskRunner()),
       stream_(NULL) {}
 
-AudioOutputStreamSink::~AudioOutputStreamSink() {
-}
+AudioOutputStreamSink::~AudioOutputStreamSink() = default;
 
 void AudioOutputStreamSink::Initialize(const AudioParameters& params,
                                        RenderCallback* callback) {

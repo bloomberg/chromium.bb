@@ -20,7 +20,7 @@ SkewedSingleThreadTaskRunner::SkewedSingleThreadTaskRunner(
     task_runner_(task_runner) {
 }
 
-SkewedSingleThreadTaskRunner::~SkewedSingleThreadTaskRunner() {}
+SkewedSingleThreadTaskRunner::~SkewedSingleThreadTaskRunner() = default;
 
 void SkewedSingleThreadTaskRunner::SetSkew(double skew) {
   skew_ = skew;

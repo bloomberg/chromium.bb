@@ -20,9 +20,9 @@
 
 namespace media {
 
-StreamCaptureInterface::Plane::Plane() {}
+StreamCaptureInterface::Plane::Plane() = default;
 
-StreamCaptureInterface::Plane::~Plane() {}
+StreamCaptureInterface::Plane::~Plane() = default;
 
 class CameraDeviceDelegate::StreamCaptureInterfaceImpl final
     : public StreamCaptureInterface {
@@ -68,7 +68,7 @@ CameraDeviceDelegate::CameraDeviceDelegate(
       ipc_task_runner_(std::move(ipc_task_runner)),
       weak_ptr_factory_(this) {}
 
-CameraDeviceDelegate::~CameraDeviceDelegate() {}
+CameraDeviceDelegate::~CameraDeviceDelegate() = default;
 
 void CameraDeviceDelegate::AllocateAndStart(
     const VideoCaptureParams& params,

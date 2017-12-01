@@ -37,7 +37,7 @@ bool UsbMidiInputStream::JackUniqueKey::operator<(
 UsbMidiInputStream::UsbMidiInputStream(Delegate* delegate)
     : delegate_(delegate) {}
 
-UsbMidiInputStream::~UsbMidiInputStream() {}
+UsbMidiInputStream::~UsbMidiInputStream() = default;
 
 void UsbMidiInputStream::Add(const UsbMidiJack& jack) {
   JackUniqueKey key(jack.device,

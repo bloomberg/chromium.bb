@@ -25,8 +25,8 @@ namespace {
 
 class TestUsbMidiDevice : public UsbMidiDevice {
  public:
-  TestUsbMidiDevice() {}
-  ~TestUsbMidiDevice() override {}
+  TestUsbMidiDevice() = default;
+  ~TestUsbMidiDevice() override = default;
   std::vector<uint8_t> GetDescriptors() override {
     return std::vector<uint8_t>();
   }
@@ -41,8 +41,8 @@ class TestUsbMidiDevice : public UsbMidiDevice {
 
 class MockDelegate : public UsbMidiInputStream::Delegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
   void OnReceivedData(size_t jack_index,
                       const uint8_t* data,
                       size_t size,

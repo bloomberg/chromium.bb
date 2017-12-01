@@ -19,8 +19,8 @@ namespace media {
 
 class MojoCdmAllocatorTest : public testing::Test {
  public:
-  MojoCdmAllocatorTest() {}
-  ~MojoCdmAllocatorTest() override {}
+  MojoCdmAllocatorTest() = default;
+  ~MojoCdmAllocatorTest() override = default;
 
  protected:
   cdm::Buffer* CreateCdmBuffer(size_t capacity) {

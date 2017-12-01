@@ -319,8 +319,7 @@ AVCBitstreamConverter::AVCBitstreamConverter(
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 }
 
-AVCBitstreamConverter::~AVCBitstreamConverter() {
-}
+AVCBitstreamConverter::~AVCBitstreamConverter() = default;
 
 bool AVCBitstreamConverter::ConvertFrame(
     std::vector<uint8_t>* frame_buf,

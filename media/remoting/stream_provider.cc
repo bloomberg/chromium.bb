@@ -392,7 +392,7 @@ StreamProvider::StreamProvider(RpcBroker* rpc_broker,
       error_callback_(error_callback),
       weak_factory_(this) {}
 
-StreamProvider::~StreamProvider() {}
+StreamProvider::~StreamProvider() = default;
 
 void StreamProvider::Initialize(int remote_audio_handle,
                                 int remote_video_handle,

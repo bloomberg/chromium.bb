@@ -23,7 +23,7 @@ SimpleCdmBuffer* SimpleCdmBuffer::Create(size_t capacity) {
 SimpleCdmBuffer::SimpleCdmBuffer(uint32_t capacity)
     : buffer_(capacity), size_(0) {}
 
-SimpleCdmBuffer::~SimpleCdmBuffer() {}
+SimpleCdmBuffer::~SimpleCdmBuffer() = default;
 
 void SimpleCdmBuffer::Destroy() {
   delete this;

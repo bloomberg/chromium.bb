@@ -45,7 +45,7 @@ H264POC::H264POC() {
   Reset();
 }
 
-H264POC::~H264POC() {}
+H264POC::~H264POC() = default;
 
 void H264POC::Reset() {
   // It shouldn't be necessary to reset these values, but doing so will improve

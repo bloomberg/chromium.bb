@@ -23,8 +23,8 @@ namespace media {
 
 class SoundsManagerTest : public testing::Test {
  public:
-  SoundsManagerTest() {}
-  ~SoundsManagerTest() override {}
+  SoundsManagerTest() = default;
+  ~SoundsManagerTest() override = default;
 
   void SetUp() override {
     audio_manager_ =

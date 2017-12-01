@@ -12,8 +12,8 @@ namespace media {
 
 class FakeAudioLogImpl : public AudioLog {
  public:
-  FakeAudioLogImpl() {}
-  ~FakeAudioLogImpl() override {}
+  FakeAudioLogImpl() = default;
+  ~FakeAudioLogImpl() override = default;
   void OnCreated(int component_id,
                  const media::AudioParameters& params,
                  const std::string& device_id) override {}
@@ -27,8 +27,8 @@ class FakeAudioLogImpl : public AudioLog {
   void OnLogMessage(int component_id, const std::string& message) override {}
 };
 
-FakeAudioLogFactory::FakeAudioLogFactory() {}
-FakeAudioLogFactory::~FakeAudioLogFactory() {}
+FakeAudioLogFactory::FakeAudioLogFactory() = default;
+FakeAudioLogFactory::~FakeAudioLogFactory() = default;
 
 std::unique_ptr<AudioLog> FakeAudioLogFactory::CreateAudioLog(
     AudioComponent component) {

@@ -6,7 +6,7 @@
 
 namespace media {
 
-AudioRenderer::AudioRenderer() {}
-AudioRenderer::~AudioRenderer() {}
+AudioRenderer::AudioRenderer() = default;
+AudioRenderer::~AudioRenderer() = default;
 
 }  // namespace media

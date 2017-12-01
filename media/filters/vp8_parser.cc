@@ -51,8 +51,7 @@ Vp8FrameHeader::Vp8FrameHeader() {
 Vp8Parser::Vp8Parser() : stream_(nullptr), bytes_left_(0) {
 }
 
-Vp8Parser::~Vp8Parser() {
-}
+Vp8Parser::~Vp8Parser() = default;
 
 bool Vp8Parser::ParseFrame(const uint8_t* ptr,
                            size_t frame_size,

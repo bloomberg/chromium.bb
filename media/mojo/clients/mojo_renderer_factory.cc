@@ -33,7 +33,7 @@ MojoRendererFactory::MojoRendererFactory(
   DCHECK(!interface_factory_);
 }
 
-MojoRendererFactory::~MojoRendererFactory() {}
+MojoRendererFactory::~MojoRendererFactory() = default;
 
 std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,

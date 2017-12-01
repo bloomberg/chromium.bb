@@ -35,8 +35,7 @@ AudioDiscardHelper::AudioDiscardHelper(int sample_rate,
   DCHECK_GT(sample_rate_, 0);
 }
 
-AudioDiscardHelper::~AudioDiscardHelper() {
-}
+AudioDiscardHelper::~AudioDiscardHelper() = default;
 
 size_t AudioDiscardHelper::TimeDeltaToFrames(base::TimeDelta duration) const {
   DCHECK(duration >= base::TimeDelta());

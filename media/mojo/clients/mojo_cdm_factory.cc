@@ -25,7 +25,7 @@ MojoCdmFactory::MojoCdmFactory(
   DCHECK(interface_factory_);
 }
 
-MojoCdmFactory::~MojoCdmFactory() {}
+MojoCdmFactory::~MojoCdmFactory() = default;
 
 void MojoCdmFactory::Create(
     const std::string& key_system,

@@ -7,8 +7,7 @@
 namespace media {
 namespace mp4 {
 
-BitstreamConverter::~BitstreamConverter() {
-}
+BitstreamConverter::~BitstreamConverter() = default;
 
 }  // namespace mp4
 }  // namespace media

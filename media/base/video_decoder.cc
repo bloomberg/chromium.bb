@@ -8,13 +8,13 @@
 
 namespace media {
 
-VideoDecoder::VideoDecoder() {}
+VideoDecoder::VideoDecoder() = default;
 
 void VideoDecoder::Destroy() {
   delete this;
 }
 
-VideoDecoder::~VideoDecoder() {}
+VideoDecoder::~VideoDecoder() = default;
 
 bool VideoDecoder::NeedsBitstreamConversion() const {
   return false;

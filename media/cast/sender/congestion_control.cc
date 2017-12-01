@@ -105,7 +105,7 @@ class AdaptiveCongestionControl : public CongestionControl {
 class FixedCongestionControl : public CongestionControl {
  public:
   explicit FixedCongestionControl(int bitrate) : bitrate_(bitrate) {}
-  ~FixedCongestionControl() final {}
+  ~FixedCongestionControl() final = default;
 
   // CongestionControl implementation.
   void UpdateRtt(base::TimeDelta rtt) final {}
@@ -181,8 +181,8 @@ AdaptiveCongestionControl::AdaptiveCongestionControl(base::TickClock* clock,
   DCHECK(!frame_stats_[0].ack_time.is_null());
 }
 
-CongestionControl::~CongestionControl() {}
-AdaptiveCongestionControl::~AdaptiveCongestionControl() {}
+CongestionControl::~CongestionControl() = default;
+AdaptiveCongestionControl::~AdaptiveCongestionControl() = default;
 
 void AdaptiveCongestionControl::UpdateRtt(base::TimeDelta rtt) {
   rtt_ = (7 * rtt_ + rtt) / 8;

@@ -16,9 +16,9 @@
 
 namespace media {
 
-H264Decoder::H264Accelerator::H264Accelerator() {}
+H264Decoder::H264Accelerator::H264Accelerator() = default;
 
-H264Decoder::H264Accelerator::~H264Accelerator() {}
+H264Decoder::H264Accelerator::~H264Accelerator() = default;
 
 H264Decoder::H264Decoder(H264Accelerator* accelerator)
     : state_(kNeedStreamMetadata),
@@ -31,7 +31,7 @@ H264Decoder::H264Decoder(H264Accelerator* accelerator)
   Reset();
 }
 
-H264Decoder::~H264Decoder() {}
+H264Decoder::~H264Decoder() = default;
 
 void H264Decoder::Reset() {
   curr_pic_ = nullptr;

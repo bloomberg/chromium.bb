@@ -247,8 +247,8 @@ bool DeserializeEvents(const char* data,
   }
 }
 
-DeserializedLog::DeserializedLog() {}
-DeserializedLog::~DeserializedLog() {}
+DeserializedLog::DeserializedLog() = default;
+DeserializedLog::~DeserializedLog() = default;
 
 }  // namespace cast
 }  // namespace media

@@ -23,7 +23,7 @@ namespace media {
 
 class WebMStreamParserTest : public testing::Test {
  public:
-  WebMStreamParserTest() {}
+  WebMStreamParserTest() = default;
 
  protected:
   void ParseWebMFile(const std::string& filename,

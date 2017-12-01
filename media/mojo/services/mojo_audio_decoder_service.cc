@@ -25,7 +25,7 @@ MojoAudioDecoderService::MojoAudioDecoderService(
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
-MojoAudioDecoderService::~MojoAudioDecoderService() {}
+MojoAudioDecoderService::~MojoAudioDecoderService() = default;
 
 void MojoAudioDecoderService::Construct(
     mojom::AudioDecoderClientAssociatedPtrInfo client) {

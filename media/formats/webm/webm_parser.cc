@@ -697,8 +697,8 @@ static int ParseNonListElement(ElementType type,
   return result;
 }
 
-WebMParserClient::WebMParserClient() {}
-WebMParserClient::~WebMParserClient() {}
+WebMParserClient::WebMParserClient() = default;
+WebMParserClient::~WebMParserClient() = default;
 
 WebMParserClient* WebMParserClient::OnListStart(int id) {
   DVLOG(1) << "Unexpected list element start with ID " << std::hex << id;
@@ -739,7 +739,7 @@ WebMListParser::WebMListParser(int id, WebMParserClient* client)
   DCHECK(client);
 }
 
-WebMListParser::~WebMListParser() {}
+WebMListParser::~WebMListParser() = default;
 
 void WebMListParser::Reset() {
   ChangeState(NEED_LIST_HEADER);

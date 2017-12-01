@@ -21,7 +21,7 @@ CourierRendererFactory::CourierRendererFactory(
     std::unique_ptr<RendererController> controller)
     : controller_(std::move(controller)) {}
 
-CourierRendererFactory::~CourierRendererFactory() {}
+CourierRendererFactory::~CourierRendererFactory() = default;
 
 std::unique_ptr<Renderer> CourierRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,

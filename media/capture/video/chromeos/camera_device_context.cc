@@ -13,7 +13,7 @@ CameraDeviceContext::CameraDeviceContext(
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-CameraDeviceContext::~CameraDeviceContext() {}
+CameraDeviceContext::~CameraDeviceContext() = default;
 
 void CameraDeviceContext::SetState(State state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -114,8 +114,7 @@ VideoCaptureOracle::VideoCaptureOracle(bool enable_auto_throttling)
           << (auto_throttling_enabled_ ? "enabled." : "disabled.");
 }
 
-VideoCaptureOracle::~VideoCaptureOracle() {
-}
+VideoCaptureOracle::~VideoCaptureOracle() = default;
 
 void VideoCaptureOracle::SetMinCapturePeriod(base::TimeDelta period) {
   DCHECK_GT(period, base::TimeDelta());

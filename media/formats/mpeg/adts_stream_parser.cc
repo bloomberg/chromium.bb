@@ -18,7 +18,7 @@ static const uint32_t kADTSStartCodeMask = 0xfff00000;
 ADTSStreamParser::ADTSStreamParser()
     : MPEGAudioStreamParserBase(kADTSStartCodeMask, kCodecAAC, 0) {}
 
-ADTSStreamParser::~ADTSStreamParser() {}
+ADTSStreamParser::~ADTSStreamParser() = default;
 
 int ADTSStreamParser::ParseFrameHeader(const uint8_t* data,
                                        int size,

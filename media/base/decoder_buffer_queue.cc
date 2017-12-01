@@ -13,7 +13,7 @@ namespace media {
 DecoderBufferQueue::DecoderBufferQueue()
     : earliest_valid_timestamp_(kNoTimestamp), data_size_(0) {}
 
-DecoderBufferQueue::~DecoderBufferQueue() {}
+DecoderBufferQueue::~DecoderBufferQueue() = default;
 
 void DecoderBufferQueue::Push(const scoped_refptr<DecoderBuffer>& buffer) {
   CHECK(!buffer->end_of_stream());

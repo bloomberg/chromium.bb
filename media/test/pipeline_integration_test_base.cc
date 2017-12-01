@@ -103,7 +103,7 @@ class RendererFactoryImpl final : public PipelineTestRendererFactory {
  public:
   explicit RendererFactoryImpl(PipelineIntegrationTestBase* integration_test)
       : integration_test_(integration_test) {}
-  ~RendererFactoryImpl() override {}
+  ~RendererFactoryImpl() override = default;
 
   // PipelineTestRendererFactory implementation.
   std::unique_ptr<Renderer> CreateRenderer(

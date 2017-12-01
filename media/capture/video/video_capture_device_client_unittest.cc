@@ -55,7 +55,7 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
         std::move(controller), buffer_pool,
         base::Bind(&ReturnNullPtrAsJpecDecoder));
   }
-  ~VideoCaptureDeviceClientTest() override {}
+  ~VideoCaptureDeviceClientTest() override = default;
 
  protected:
   MockVideoFrameReceiver* receiver_;

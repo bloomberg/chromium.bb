@@ -39,7 +39,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_)) {}
 
-  ~ReceiverRtcpEventSubscriberTest() override {}
+  ~ReceiverRtcpEventSubscriberTest() override = default;
 
   void TearDown() final {
     if (event_subscriber_) {

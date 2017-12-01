@@ -8,8 +8,8 @@
 
 namespace media {
 
-DataSource::DataSource() {}
+DataSource::DataSource() = default;
 
-DataSource::~DataSource() {}
+DataSource::~DataSource() = default;
 
 }  // namespace media

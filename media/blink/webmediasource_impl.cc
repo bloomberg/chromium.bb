@@ -29,7 +29,7 @@ WebMediaSourceImpl::WebMediaSourceImpl(ChunkDemuxer* demuxer)
   DCHECK(demuxer_);
 }
 
-WebMediaSourceImpl::~WebMediaSourceImpl() {}
+WebMediaSourceImpl::~WebMediaSourceImpl() = default;
 
 WebMediaSource::AddStatus WebMediaSourceImpl::AddSourceBuffer(
     const blink::WebString& type,

@@ -8,9 +8,9 @@
 
 namespace media {
 
-RendererFactorySelector::RendererFactorySelector() {}
+RendererFactorySelector::RendererFactorySelector() = default;
 
-RendererFactorySelector::~RendererFactorySelector() {}
+RendererFactorySelector::~RendererFactorySelector() = default;
 
 void RendererFactorySelector::AddFactory(
     FactoryType type,

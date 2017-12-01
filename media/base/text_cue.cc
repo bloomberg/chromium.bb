@@ -18,6 +18,6 @@ TextCue::TextCue(const base::TimeDelta& timestamp,
       text_(text) {
 }
 
-TextCue::~TextCue() {}
+TextCue::~TextCue() = default;
 
 }  // namespace media

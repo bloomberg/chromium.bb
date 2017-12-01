@@ -14,8 +14,7 @@ WebMAudioClient::WebMAudioClient(MediaLog* media_log) : media_log_(media_log) {
   Reset();
 }
 
-WebMAudioClient::~WebMAudioClient() {
-}
+WebMAudioClient::~WebMAudioClient() = default;
 
 void WebMAudioClient::Reset() {
   channels_ = -1;

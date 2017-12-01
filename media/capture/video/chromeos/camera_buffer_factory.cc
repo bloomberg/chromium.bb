@@ -8,9 +8,9 @@
 
 namespace media {
 
-CameraBufferFactory::CameraBufferFactory() {}
+CameraBufferFactory::CameraBufferFactory() = default;
 
-CameraBufferFactory::~CameraBufferFactory() {}
+CameraBufferFactory::~CameraBufferFactory() = default;
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
 CameraBufferFactory::CreateGpuMemoryBuffer(const gfx::Size& size,

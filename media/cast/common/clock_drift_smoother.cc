@@ -17,7 +17,7 @@ ClockDriftSmoother::ClockDriftSmoother(base::TimeDelta time_constant)
   DCHECK(time_constant_ > base::TimeDelta());
 }
 
-ClockDriftSmoother::~ClockDriftSmoother() {}
+ClockDriftSmoother::~ClockDriftSmoother() = default;
 
 base::TimeDelta ClockDriftSmoother::Current() const {
   DCHECK(!last_update_time_.is_null());

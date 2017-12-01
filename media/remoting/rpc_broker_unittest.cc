@@ -33,7 +33,7 @@ class FakeMessageSender {
         has_sent_message_(false),
         send_count_(0),
         weak_factory_(this) {}
-  ~FakeMessageSender() {}
+  ~FakeMessageSender() = default;
 
   void OnSendMessageAndQuit(std::unique_ptr<std::vector<uint8_t>> message) {
     EXPECT_TRUE(
@@ -63,7 +63,7 @@ class FakeMessageSender {
 class FakeMessageReceiver {
  public:
   FakeMessageReceiver() : has_received_message_(false), weak_factory_(this) {}
-  ~FakeMessageReceiver() {}
+  ~FakeMessageReceiver() = default;
 
   // RpcBroker::MessageReceiver implementation.
   void OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {

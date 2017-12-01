@@ -88,7 +88,7 @@ class MojoCameraClientObserver : public CameraClientObserver {
 
 }  // namespace
 
-CameraClientObserver::~CameraClientObserver() {}
+CameraClientObserver::~CameraClientObserver() = default;
 
 // static
 CameraHalDispatcherImpl* CameraHalDispatcherImpl::GetInstance() {

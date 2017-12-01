@@ -80,7 +80,7 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
   }
 }
 
-AudioConverter::~AudioConverter() {}
+AudioConverter::~AudioConverter() = default;
 
 void AudioConverter::AddInput(InputCallback* input) {
   DCHECK(std::find(transform_inputs_.begin(), transform_inputs_.end(), input) ==

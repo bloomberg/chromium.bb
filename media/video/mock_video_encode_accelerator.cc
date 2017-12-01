@@ -14,7 +14,7 @@ MockVideoEncodeAccelerator::MockVideoEncodeAccelerator() {
       .WillByDefault(Invoke(this, &MockVideoEncodeAccelerator::DeleteThis));
 }
 
-MockVideoEncodeAccelerator::~MockVideoEncodeAccelerator() {}
+MockVideoEncodeAccelerator::~MockVideoEncodeAccelerator() = default;
 
 void MockVideoEncodeAccelerator::DeleteThis() {
   delete this;

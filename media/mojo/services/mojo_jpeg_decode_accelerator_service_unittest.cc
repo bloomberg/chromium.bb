@@ -22,8 +22,8 @@ static const int32_t kArbitraryBitstreamBufferId = 123;
 // simulate the actual decoding without the need for special hardware.
 class MojoJpegDecodeAcceleratorServiceTest : public ::testing::Test {
  public:
-  MojoJpegDecodeAcceleratorServiceTest() {}
-  ~MojoJpegDecodeAcceleratorServiceTest() override {}
+ MojoJpegDecodeAcceleratorServiceTest() = default;
+  ~MojoJpegDecodeAcceleratorServiceTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(

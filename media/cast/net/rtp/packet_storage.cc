@@ -12,8 +12,7 @@ namespace cast {
 
 PacketStorage::PacketStorage() : zombie_count_(0) {}
 
-PacketStorage::~PacketStorage() {
-}
+PacketStorage::~PacketStorage() = default;
 
 size_t PacketStorage::GetNumberOfStoredFrames() const {
   return frames_.size() - zombie_count_;

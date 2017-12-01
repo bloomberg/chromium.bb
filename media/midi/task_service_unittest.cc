@@ -124,7 +124,7 @@ class TaskServiceClient {
 
 class MidiTaskServiceTest : public ::testing::Test {
  public:
-  MidiTaskServiceTest() {}
+  MidiTaskServiceTest() = default;
 
  protected:
   TaskService* task_service() { return &task_service_; }

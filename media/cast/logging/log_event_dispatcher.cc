@@ -21,7 +21,7 @@ LogEventDispatcher::LogEventDispatcher(CastEnvironment* env)
   DCHECK(env_);
 }
 
-LogEventDispatcher::~LogEventDispatcher() {}
+LogEventDispatcher::~LogEventDispatcher() = default;
 
 void LogEventDispatcher::DispatchFrameEvent(
     std::unique_ptr<FrameEvent> event) const {
@@ -94,7 +94,7 @@ void LogEventDispatcher::Unsubscribe(RawEventSubscriber* subscriber) {
   }
 }
 
-LogEventDispatcher::Impl::Impl() {}
+LogEventDispatcher::Impl::Impl() = default;
 
 LogEventDispatcher::Impl::~Impl() {
   DCHECK(subscribers_.empty());

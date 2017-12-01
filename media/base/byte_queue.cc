@@ -17,7 +17,7 @@ ByteQueue::ByteQueue()
       offset_(0),
       used_(0) {}
 
-ByteQueue::~ByteQueue() {}
+ByteQueue::~ByteQueue() = default;
 
 void ByteQueue::Reset() {
   offset_ = 0;

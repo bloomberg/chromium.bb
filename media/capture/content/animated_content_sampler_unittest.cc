@@ -33,8 +33,8 @@ base::TimeDelta FpsAsPeriod(int frame_rate) {
 
 class AnimatedContentSamplerTest : public ::testing::Test {
  public:
-  AnimatedContentSamplerTest() {}
-  ~AnimatedContentSamplerTest() override {}
+  AnimatedContentSamplerTest() = default;
+  ~AnimatedContentSamplerTest() override = default;
 
   void SetUp() override {
     rand_seed_ = static_cast<int>(
@@ -256,7 +256,7 @@ class AnimatedContentSamplerParameterizedTest
  public:
   AnimatedContentSamplerParameterizedTest()
       : count_dropped_frames_(0), count_sampled_frames_(0) {}
-  virtual ~AnimatedContentSamplerParameterizedTest() {}
+  virtual ~AnimatedContentSamplerParameterizedTest() = default;
 
   void SetUp() override {
     AnimatedContentSamplerTest::SetUp();

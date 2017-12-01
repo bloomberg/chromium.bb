@@ -9,7 +9,7 @@
 namespace media {
 
 OffsetByteQueue::OffsetByteQueue() : buf_(NULL), size_(0), head_(0) {}
-OffsetByteQueue::~OffsetByteQueue() {}
+OffsetByteQueue::~OffsetByteQueue() = default;
 
 void OffsetByteQueue::Reset() {
   queue_.Reset();

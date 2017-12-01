@@ -79,7 +79,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 
 class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
  public:
-  GpuMemoryBufferVideoFramePoolTest() {}
+  GpuMemoryBufferVideoFramePoolTest() = default;
   void SetUp() override {
     // Seed test clock with some dummy non-zero value to avoid confusion with
     // empty base::TimeTicks values.

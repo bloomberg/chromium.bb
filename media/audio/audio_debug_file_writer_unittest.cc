@@ -62,7 +62,7 @@ class AudioDebugFileWriterTest
   }
 
  protected:
-  virtual ~AudioDebugFileWriterTest() {}
+  virtual ~AudioDebugFileWriterTest() = default;
 
   static void InitSourceInterleaved(int16_t* source_interleaved,
                                     int source_samples) {

@@ -120,7 +120,7 @@ FakeRemoter::FakeRemoter(mojom::RemotingSourcePtr source, bool start_will_fail)
       start_will_fail_(start_will_fail),
       weak_factory_(this) {}
 
-FakeRemoter::~FakeRemoter() {}
+FakeRemoter::~FakeRemoter() = default;
 
 void FakeRemoter::Start() {
   if (start_will_fail_) {
@@ -180,7 +180,7 @@ void FakeRemoter::Stopped(mojom::RemotingStopReason reason) {
 FakeRemoterFactory::FakeRemoterFactory(bool start_will_fail)
     : start_will_fail_(start_will_fail) {}
 
-FakeRemoterFactory::~FakeRemoterFactory() {}
+FakeRemoterFactory::~FakeRemoterFactory() = default;
 
 void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
                                 mojom::RemoterRequest request) {

@@ -20,7 +20,7 @@ NullAudioSink::NullAudioSink(
       callback_(NULL),
       task_runner_(task_runner) {}
 
-NullAudioSink::~NullAudioSink() {}
+NullAudioSink::~NullAudioSink() = default;
 
 void NullAudioSink::Initialize(const AudioParameters& params,
                                RenderCallback* callback) {

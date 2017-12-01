@@ -20,7 +20,7 @@ class FrameBufferTest : public ::testing::Test {
     rtp_header_.reference_frame_id = FrameId::first();
   }
 
-  ~FrameBufferTest() override {}
+  ~FrameBufferTest() override = default;
 
   FrameBuffer buffer_;
   std::vector<uint8_t> payload_;

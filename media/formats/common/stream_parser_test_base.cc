@@ -47,7 +47,7 @@ StreamParserTestBase::StreamParserTestBase(
       &media_log_);
 }
 
-StreamParserTestBase::~StreamParserTestBase() {}
+StreamParserTestBase::~StreamParserTestBase() = default;
 
 std::string StreamParserTestBase::ParseFile(const std::string& filename,
                                             int append_bytes) {

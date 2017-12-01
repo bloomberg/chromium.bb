@@ -6,9 +6,9 @@
 
 namespace media {
 
-CdmContext::CdmContext() {}
+CdmContext::CdmContext() = default;
 
-CdmContext::~CdmContext() {}
+CdmContext::~CdmContext() = default;
 
 void IgnoreCdmAttached(bool /* success */) {}
 

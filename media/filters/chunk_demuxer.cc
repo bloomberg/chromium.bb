@@ -384,7 +384,7 @@ void ChunkDemuxerStream::ChangeState_Locked(State state) {
   state_ = state;
 }
 
-ChunkDemuxerStream::~ChunkDemuxerStream() {}
+ChunkDemuxerStream::~ChunkDemuxerStream() = default;
 
 void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
   lock_.AssertAcquired();

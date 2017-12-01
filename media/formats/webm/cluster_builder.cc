@@ -64,10 +64,10 @@ enum {
 
 Cluster::Cluster(std::unique_ptr<uint8_t[]> data, int size)
     : data_(std::move(data)), size_(size) {}
-Cluster::~Cluster() {}
+Cluster::~Cluster() = default;
 
 ClusterBuilder::ClusterBuilder() { Reset(); }
-ClusterBuilder::~ClusterBuilder() {}
+ClusterBuilder::~ClusterBuilder() = default;
 
 void ClusterBuilder::SetClusterTimecode(int64_t cluster_timecode) {
   DCHECK_EQ(cluster_timecode_, -1);

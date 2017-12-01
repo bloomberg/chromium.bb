@@ -82,7 +82,7 @@ MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories(
     gpu::gles2::GLES2Interface* gles2)
     : gles2_(gles2) {}
 
-MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() {}
+MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() = default;
 
 bool MockGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
   return true;

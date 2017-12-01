@@ -32,7 +32,7 @@ const uint32_t kAudioSsrc = 2;
 
 class StubRtcpObserver : public RtcpObserver {
  public:
-  StubRtcpObserver() {}
+  StubRtcpObserver() = default;
 
   void OnReceivedCastMessage(const RtcpCastMessage& cast_message) final {}
   void OnReceivedRtt(base::TimeDelta round_trip_time) final {}
@@ -96,7 +96,7 @@ class CastTransportImplTest : public ::testing::Test {
     task_runner_ = new FakeSingleThreadTaskRunner(&testing_clock_);
   }
 
-  ~CastTransportImplTest() override {}
+  ~CastTransportImplTest() override = default;
 
   void InitWithoutLogging();
   void InitWithOptions();

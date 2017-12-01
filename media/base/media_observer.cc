@@ -6,8 +6,8 @@
 
 namespace media {
 
-MediaObserver::MediaObserver() {}
+MediaObserver::MediaObserver() = default;
 
-MediaObserver::~MediaObserver() {}
+MediaObserver::~MediaObserver() = default;
 
 }  // namespace media

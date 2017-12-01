@@ -254,11 +254,11 @@ enum class Primaries : std::uint64_t {
 
 // ---- End copy/paste from libwebm/webm_parser/include/webm/dom_types.h ----
 
-WebMColorMetadata::WebMColorMetadata() {}
+WebMColorMetadata::WebMColorMetadata() = default;
 WebMColorMetadata::WebMColorMetadata(const WebMColorMetadata& rhs) = default;
 
-WebMMasteringMetadataParser::WebMMasteringMetadataParser() {}
-WebMMasteringMetadataParser::~WebMMasteringMetadataParser() {}
+WebMMasteringMetadataParser::WebMMasteringMetadataParser() = default;
+WebMMasteringMetadataParser::~WebMMasteringMetadataParser() = default;
 
 bool WebMMasteringMetadataParser::OnFloat(int id, double val) {
   switch (id) {
@@ -303,7 +303,7 @@ WebMColourParser::WebMColourParser() {
   Reset();
 }
 
-WebMColourParser::~WebMColourParser() {}
+WebMColourParser::~WebMColourParser() = default;
 
 void WebMColourParser::Reset() {
   matrix_coefficients_ = -1;

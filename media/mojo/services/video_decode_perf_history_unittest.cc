@@ -34,7 +34,7 @@ namespace media {
 class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
  public:
   FakeVideoDecodeStatsDB() = default;
-  ~FakeVideoDecodeStatsDB() override {}
+  ~FakeVideoDecodeStatsDB() override = default;
 
   // Call CompleteInitialize(...) to run |init_cb| callback.
   void Initialize(base::OnceCallback<void(bool)> init_cb) override {

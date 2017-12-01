@@ -36,7 +36,7 @@ AudioSystemHelper::AudioSystemHelper(AudioManager* audio_manager)
   DCHECK(audio_manager_);
 }
 
-AudioSystemHelper::~AudioSystemHelper() {}
+AudioSystemHelper::~AudioSystemHelper() = default;
 
 void AudioSystemHelper::GetInputStreamParameters(
     const std::string& device_id,

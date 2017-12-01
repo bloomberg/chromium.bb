@@ -24,7 +24,7 @@ class Vp8BitReader {
       : encoded_data_(data), encoded_data_end_(data + size) {
     Vp8DecoderReadBytes();
   }
-  ~Vp8BitReader() {}
+  ~Vp8BitReader() = default;
 
   // Decode one bit. The output is 0 or 1.
   unsigned int DecodeBit();

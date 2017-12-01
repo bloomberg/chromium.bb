@@ -70,8 +70,8 @@ constexpr base::TimeDelta kDelayedStartDuration =
 class RendererControllerTest : public ::testing::Test,
                                public MediaObserverClient {
  public:
-  RendererControllerTest() {}
-  ~RendererControllerTest() override {}
+  RendererControllerTest() = default;
+  ~RendererControllerTest() override = default;
 
   void TearDown() final { RunUntilIdle(); }
 

@@ -17,7 +17,7 @@ MojoCdmHelper::MojoCdmHelper(
     service_manager::mojom::InterfaceProvider* interface_provider)
     : interface_provider_(interface_provider), weak_factory_(this) {}
 
-MojoCdmHelper::~MojoCdmHelper() {}
+MojoCdmHelper::~MojoCdmHelper() = default;
 
 void MojoCdmHelper::SetFileReadCB(FileReadCB file_read_cb) {
   file_read_cb_ = std::move(file_read_cb);

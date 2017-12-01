@@ -27,8 +27,8 @@ const double kVolume = 0.3456;
 
 class MockStream : public AudioInputStream {
  public:
-  MockStream() {}
-  ~MockStream() {}
+  MockStream() = default;
+  ~MockStream() = default;
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD1(Start, void(AudioInputStream::AudioInputCallback*));
   MOCK_METHOD0(Stop, void());
@@ -43,15 +43,15 @@ class MockStream : public AudioInputStream {
 
 class MockDebugRecorder : public AudioDebugRecorder {
  public:
-  MockDebugRecorder() {}
-  ~MockDebugRecorder() {}
+  MockDebugRecorder() = default;
+  ~MockDebugRecorder() = default;
   MOCK_METHOD1(OnData, void(const AudioBus* source));
 };
 
 class MockCallback : public AudioInputStream::AudioInputCallback {
  public:
-  MockCallback() {}
-  ~MockCallback() {}
+  MockCallback() = default;
+  ~MockCallback() = default;
 
   MOCK_METHOD3(OnData, void(const AudioBus*, base::TimeTicks, double));
   MOCK_METHOD0(OnError, void());
@@ -59,7 +59,7 @@ class MockCallback : public AudioInputStream::AudioInputCallback {
 
 class MockDebugRecorderFactory {
  public:
-  MockDebugRecorderFactory() {}
+  MockDebugRecorderFactory() = default;
   ~MockDebugRecorderFactory() { DCHECK(!prepared_recorder_); }
 
   std::unique_ptr<AudioDebugRecorder> CreateDebugRecorder() {

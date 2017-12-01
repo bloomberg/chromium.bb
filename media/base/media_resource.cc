@@ -6,9 +6,9 @@
 
 namespace media {
 
-MediaResource::MediaResource() {}
+MediaResource::MediaResource() = default;
 
-MediaResource::~MediaResource() {}
+MediaResource::~MediaResource() = default;
 
 MediaUrlParams MediaResource::GetMediaUrlParams() const {
   NOTREACHED();

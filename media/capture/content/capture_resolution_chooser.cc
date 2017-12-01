@@ -64,8 +64,7 @@ CaptureResolutionChooser::CaptureResolutionChooser()
       capture_size_(kDefaultCaptureSize),
       snapped_sizes_({kDefaultCaptureSize}) {}
 
-CaptureResolutionChooser::~CaptureResolutionChooser() {
-}
+CaptureResolutionChooser::~CaptureResolutionChooser() = default;
 
 void CaptureResolutionChooser::SetConstraints(const gfx::Size& min_frame_size,
                                               const gfx::Size& max_frame_size,

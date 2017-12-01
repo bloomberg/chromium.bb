@@ -8,8 +8,8 @@
 
 namespace media {
 
-CdmAuxiliaryHelper::CdmAuxiliaryHelper() {}
-CdmAuxiliaryHelper::~CdmAuxiliaryHelper() {}
+CdmAuxiliaryHelper::CdmAuxiliaryHelper() = default;
+CdmAuxiliaryHelper::~CdmAuxiliaryHelper() = default;
 
 void CdmAuxiliaryHelper::SetFileReadCB(FileReadCB file_read_cb) {}
 

@@ -29,7 +29,7 @@ BlockingUrlProtocol::BlockingUrlProtocol(DataSource* data_source,
       last_read_bytes_(0),
       read_position_(0) {}
 
-BlockingUrlProtocol::~BlockingUrlProtocol() {}
+BlockingUrlProtocol::~BlockingUrlProtocol() = default;
 
 void BlockingUrlProtocol::Abort() {
   aborted_.Signal();

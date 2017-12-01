@@ -37,7 +37,7 @@ SourceBufferRangeByDts::SourceBufferRangeByDts(
   AppendBuffersToEnd(new_buffers, range_start_decode_time_);
 }
 
-SourceBufferRangeByDts::~SourceBufferRangeByDts() {}
+SourceBufferRangeByDts::~SourceBufferRangeByDts() = default;
 
 void SourceBufferRangeByDts::AppendRangeToEnd(
     const SourceBufferRangeByDts& range,

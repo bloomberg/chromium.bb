@@ -29,8 +29,8 @@ const size_t kMemorySegmentCount = 10u;
 
 class MockAudioInputIPC : public AudioInputIPC {
  public:
-  MockAudioInputIPC() {}
-  ~MockAudioInputIPC() override {}
+  MockAudioInputIPC() = default;
+  ~MockAudioInputIPC() override = default;
 
   MOCK_METHOD5(CreateStream,
                void(AudioInputIPCDelegate* delegate,
@@ -45,8 +45,8 @@ class MockAudioInputIPC : public AudioInputIPC {
 
 class MockCaptureCallback : public AudioCapturerSource::CaptureCallback {
  public:
-  MockCaptureCallback() {}
-  ~MockCaptureCallback() override {}
+  MockCaptureCallback() = default;
+  ~MockCaptureCallback() override = default;
 
   MOCK_METHOD0(OnCaptureStarted, void());
   MOCK_METHOD4(Capture,

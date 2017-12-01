@@ -22,7 +22,7 @@ BitstreamBuffer::BitstreamBuffer(int32_t id,
 
 BitstreamBuffer::BitstreamBuffer(const BitstreamBuffer& other) = default;
 
-BitstreamBuffer::~BitstreamBuffer() {}
+BitstreamBuffer::~BitstreamBuffer() = default;
 
 void BitstreamBuffer::SetDecryptConfig(const DecryptConfig& decrypt_config) {
   key_id_ = decrypt_config.key_id();

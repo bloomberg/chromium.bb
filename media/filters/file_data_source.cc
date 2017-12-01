@@ -69,6 +69,6 @@ bool FileDataSource::IsStreaming() {
 
 void FileDataSource::SetBitrate(int bitrate) {}
 
-FileDataSource::~FileDataSource() {}
+FileDataSource::~FileDataSource() = default;
 
 }  // namespace media

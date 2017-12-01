@@ -19,7 +19,7 @@ FakeAudioRenderCallback::FakeAudioRenderCallback(double step, int sample_rate)
   reset();
 }
 
-FakeAudioRenderCallback::~FakeAudioRenderCallback() {}
+FakeAudioRenderCallback::~FakeAudioRenderCallback() = default;
 
 int FakeAudioRenderCallback::Render(base::TimeDelta delay,
                                     base::TimeTicks delay_timestamp,

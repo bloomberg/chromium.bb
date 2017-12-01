@@ -51,7 +51,7 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
       audio_config.rtp_timebase / audio_encoder_->GetSamplesPerFrame();
 }
 
-AudioSender::~AudioSender() {}
+AudioSender::~AudioSender() = default;
 
 void AudioSender::InsertAudio(std::unique_ptr<AudioBus> audio_bus,
                               const base::TimeTicks& recorded_time) {

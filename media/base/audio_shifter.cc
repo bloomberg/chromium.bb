@@ -85,7 +85,7 @@ AudioShifter::AudioQueueEntry::AudioQueueEntry(
 AudioShifter::AudioQueueEntry::AudioQueueEntry(const AudioQueueEntry& other) =
     default;
 
-AudioShifter::AudioQueueEntry::~AudioQueueEntry() {}
+AudioShifter::AudioQueueEntry::~AudioQueueEntry() = default;
 
 AudioShifter::AudioShifter(base::TimeDelta max_buffer_size,
                            base::TimeDelta clock_accuracy,
@@ -109,7 +109,7 @@ AudioShifter::AudioShifter(base::TimeDelta max_buffer_size,
           base::Bind(&AudioShifter::ResamplerCallback, base::Unretained(this))),
       current_ratio_(1.0) {}
 
-AudioShifter::~AudioShifter() {}
+AudioShifter::~AudioShifter() = default;
 
 void AudioShifter::Push(std::unique_ptr<AudioBus> input,
                         base::TimeTicks playout_time) {

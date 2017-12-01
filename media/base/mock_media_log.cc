@@ -6,8 +6,8 @@
 
 namespace media {
 
-MockMediaLog::MockMediaLog() {}
+MockMediaLog::MockMediaLog() = default;
 
-MockMediaLog::~MockMediaLog() {}
+MockMediaLog::~MockMediaLog() = default;
 
 }  // namespace media

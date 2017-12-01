@@ -33,7 +33,7 @@ class FakeMidiManager : public MidiManager {
       : MidiManager(service),
         start_initialization_is_called_(false),
         finalize_is_called_(false) {}
-  ~FakeMidiManager() override {}
+  ~FakeMidiManager() override = default;
 
   // MidiManager implementation.
   void StartInitialization() override {
@@ -94,7 +94,7 @@ class FakeMidiManagerClient : public MidiManagerClient {
  public:
   FakeMidiManagerClient()
       : result_(Result::NOT_SUPPORTED), wait_for_result_(true) {}
-  ~FakeMidiManagerClient() override {}
+  ~FakeMidiManagerClient() override = default;
 
   // MidiManagerClient implementation.
   void AddInputPort(const MidiPortInfo& info) override {}

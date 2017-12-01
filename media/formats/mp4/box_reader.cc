@@ -15,7 +15,7 @@
 namespace media {
 namespace mp4 {
 
-Box::~Box() {}
+Box::~Box() = default;
 
 bool BufferReader::Read1(uint8_t* v) {
   RCHECK(HasBytes(1));

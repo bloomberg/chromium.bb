@@ -6,8 +6,8 @@
 
 namespace media {
 
-Decryptor::Decryptor() {}
+Decryptor::Decryptor() = default;
 
-Decryptor::~Decryptor() {}
+Decryptor::~Decryptor() = default;
 
 }  // namespace media

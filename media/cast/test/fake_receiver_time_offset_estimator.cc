@@ -12,7 +12,7 @@ FakeReceiverTimeOffsetEstimator::FakeReceiverTimeOffsetEstimator(
     base::TimeDelta offset)
     : offset_(offset) {}
 
-FakeReceiverTimeOffsetEstimator::~FakeReceiverTimeOffsetEstimator() {}
+FakeReceiverTimeOffsetEstimator::~FakeReceiverTimeOffsetEstimator() = default;
 
 void FakeReceiverTimeOffsetEstimator::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {

@@ -26,8 +26,8 @@ namespace {
 
 class MockFileIOClient : public cdm::FileIOClient {
  public:
-  MockFileIOClient() {}
-  ~MockFileIOClient() override {}
+  MockFileIOClient() = default;
+  ~MockFileIOClient() override = default;
 
   MOCK_METHOD1(OnOpenComplete, void(Status));
   MOCK_METHOD3(OnReadComplete, void(Status, const uint8_t*, uint32_t));
@@ -37,7 +37,7 @@ class MockFileIOClient : public cdm::FileIOClient {
 class MockCdmStorage : public mojom::CdmStorage {
  public:
   MockCdmStorage() { CHECK(temp_directory_.CreateUniqueTempDir()); }
-  ~MockCdmStorage() override {}
+  ~MockCdmStorage() override = default;
 
   // MojoCdmFileIO calls CdmStorage::Open() to actually open the file.
   // Simulate this by creating a file in the temp directory and returning it.
@@ -65,7 +65,7 @@ class TestInterfaceProvider : public service_manager::mojom::InterfaceProvider {
   TestInterfaceProvider() {
     registry_.AddInterface(base::Bind(&CreateCdmStorage));
   }
-  ~TestInterfaceProvider() override {}
+  ~TestInterfaceProvider() override = default;
 
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle handle) override {
@@ -81,7 +81,7 @@ class TestInterfaceProvider : public service_manager::mojom::InterfaceProvider {
 class MojoCdmHelperTest : public testing::Test {
  protected:
   MojoCdmHelperTest() : helper_(&test_interface_provider_) {}
-  ~MojoCdmHelperTest() override {}
+  ~MojoCdmHelperTest() override = default;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestInterfaceProvider test_interface_provider_;

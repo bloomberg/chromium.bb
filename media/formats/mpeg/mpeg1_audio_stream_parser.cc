@@ -220,7 +220,7 @@ bool MPEG1AudioStreamParser::ParseHeader(MediaLog* media_log,
 MPEG1AudioStreamParser::MPEG1AudioStreamParser()
     : MPEGAudioStreamParserBase(kMPEG1StartCodeMask, kCodecMP3, kCodecDelay) {}
 
-MPEG1AudioStreamParser::~MPEG1AudioStreamParser() {}
+MPEG1AudioStreamParser::~MPEG1AudioStreamParser() = default;
 
 int MPEG1AudioStreamParser::ParseFrameHeader(
     const uint8_t* data,

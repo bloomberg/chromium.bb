@@ -28,7 +28,7 @@ class ReceiverStatsTest : public ::testing::Test {
     start_time_ = testing_clock_.NowTicks();
     delta_increments_ = base::TimeDelta::FromMilliseconds(kStdTimeIncrementMs);
   }
-  ~ReceiverStatsTest() override {}
+  ~ReceiverStatsTest() override = default;
 
   uint32_t ExpectedJitter(uint32_t const_interval, int num_packets) {
     float jitter = 0;

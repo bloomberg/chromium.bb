@@ -42,7 +42,7 @@ class MultiChannelResamplerTest
   MultiChannelResamplerTest()
       : last_frame_delay_(-1) {
   }
-  virtual ~MultiChannelResamplerTest() {}
+  virtual ~MultiChannelResamplerTest() = default;
 
   void InitializeAudioData(int channels, int frames) {
     frames_ = frames;

@@ -54,12 +54,12 @@ const int kAttachedImageSizeLimit = 4 * 1024 * 1024;
 
 }  // namespace
 
-AudioVideoMetadataExtractor::StreamInfo::StreamInfo() {}
+AudioVideoMetadataExtractor::StreamInfo::StreamInfo() = default;
 
 AudioVideoMetadataExtractor::StreamInfo::StreamInfo(const StreamInfo& other) =
     default;
 
-AudioVideoMetadataExtractor::StreamInfo::~StreamInfo() {}
+AudioVideoMetadataExtractor::StreamInfo::~StreamInfo() = default;
 
 AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
     : extracted_(false),
@@ -71,7 +71,7 @@ AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
       rotation_(-1),
       track_(-1) {}
 
-AudioVideoMetadataExtractor::~AudioVideoMetadataExtractor() {}
+AudioVideoMetadataExtractor::~AudioVideoMetadataExtractor() = default;
 
 bool AudioVideoMetadataExtractor::Extract(DataSource* source,
                                           bool extract_attached_images) {

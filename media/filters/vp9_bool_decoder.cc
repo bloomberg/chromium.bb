@@ -35,9 +35,9 @@ const int kCountToShiftTo128[256] = {
 };
 }  // namespace
 
-Vp9BoolDecoder::Vp9BoolDecoder() {}
+Vp9BoolDecoder::Vp9BoolDecoder() = default;
 
-Vp9BoolDecoder::~Vp9BoolDecoder() {}
+Vp9BoolDecoder::~Vp9BoolDecoder() = default;
 
 // 9.2.1 Initialization process for Boolean decoder
 bool Vp9BoolDecoder::Initialize(const uint8_t* data, size_t size) {
