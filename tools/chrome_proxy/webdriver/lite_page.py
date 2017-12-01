@@ -60,6 +60,10 @@ class LitePage(IntegrationTest):
       # Verify that a Lite Page response for the main frame was seen.
       self.assertEqual(1, lite_page_responses)
 
+      # Verify previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LitePage', 5)
+      self.assertEqual(1, histogram['count'])
+
   # Checks that a Lite Page is served and the force_lite_page experiment
   # directive is provided when always-on.
   # Note: this test is only on M-60+ which supports exp=force_lite_page
@@ -289,6 +293,14 @@ class LitePage(IntegrationTest):
 
       self.assertTrue(lite_page_responses == 1 or page_policies_responses == 1)
 
+      # Verify a previews info bar recorded
+      if (lite_page_responses == 1):
+        histogram = test_driver.GetHistogram(
+            'Previews.InfoBarAction.LitePage', 5)
+      else:
+        histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(1, histogram['count'])
+
   # Checks that the server does not provide a preview (neither Lite Page nor
   # fallback to LoFi) for a fast connection.
   # Note: this test is for the CPAT protocol change in M-61.
@@ -324,6 +336,12 @@ class LitePage(IntegrationTest):
           # No subresources should accept transforms.
           self.assertNotIn('chrome-proxy-accept-transform',
             response.request_headers)
+
+      # Verify no previews info bar recorded
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LitePage', 5)
+      self.assertEqual(histogram, {})
+      histogram = test_driver.GetHistogram('Previews.InfoBarAction.LoFi', 5)
+      self.assertEqual(histogram, {})
 
   # Checks that the server provides a preview (either Lite Page or fallback
   # to LoFi) for a "heavy" page over a 3G connection.
