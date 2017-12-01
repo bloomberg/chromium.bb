@@ -36,9 +36,6 @@ public abstract class ContentSwitches {
     // How much of the browser controls need to be hidden before they will auto hide.
     public static final String TOP_CONTROLS_HIDE_THRESHOLD = "top-controls-hide-threshold";
 
-    // Native switch - shell_switches::kRunLayoutTest
-    public static final String RUN_LAYOUT_TEST = "run-layout-test";
-
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
