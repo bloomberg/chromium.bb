@@ -1050,7 +1050,7 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   // TODO(beng): It'd be great to build this from the manifest, however there's
   //             a bit of a chicken-and-egg problem.
   InterfaceProviderSpec spec;
-  spec.provides["app"].insert("filesystem::mojom::Directory");
+  spec.provides["directory"].insert("filesystem::mojom::Directory");
   spec.provides["catalog:catalog"].insert("catalog::mojom::Catalog");
   spec.provides["control"].insert("catalog::mojom::CatalogControl");
   InterfaceProviderSpecMap specs;
