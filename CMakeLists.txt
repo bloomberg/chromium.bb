@@ -498,6 +498,8 @@ if (HAVE_PTHREAD_H AND CONFIG_MULTITHREAD)
 endif ()
 
 if (XCODE)
+  # TODO(tomfinegan): Make sure target has no C++ files before doing this as
+  # it's not necessary in that case.
   if (CONFIG_LIBYUV OR CONFIG_WEBM_IO)
     # The Xcode generator does not obey LINKER_LANGUAGE. Because of the issue
     # what looks like a C++ file needs to be in any target that Xcode will link

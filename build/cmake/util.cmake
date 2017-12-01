@@ -15,7 +15,7 @@ set(AOM_BUILD_CMAKE_UTIL_CMAKE_ 1)
 # returns the full path to the dummy source file via the $out_file_path
 # parameter.
 function (create_dummy_source_file basename extension out_file_path)
-  set(dummy_source_file "${AOM_CONFIG_DIR}/${basename}.${extension}")
+  set(dummy_source_file "${AOM_CONFIG_DIR}/${basename}_dummy.${extension}")
   file(WRITE "${dummy_source_file}"
        "// Generated file. DO NOT EDIT!\n"
        "// ${target_name} needs a ${extension} file to force link language, \n"
