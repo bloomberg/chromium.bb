@@ -6,11 +6,62 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class LayoutInlineTest : public RenderingTest {};
+
+// Helper class to run the same test code with and without LayoutNG
+class ParameterizedLayoutInlineTest
+    : public ::testing::WithParamInterface<bool>,
+      private ScopedLayoutNGForTest,
+      private ScopedLayoutNGPaintFragmentsForTest,
+      public LayoutInlineTest {
+ public:
+  ParameterizedLayoutInlineTest()
+      : ScopedLayoutNGForTest(GetParam()),
+        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+
+ protected:
+  bool LayoutNGEnabled() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_CASE_P(All, ParameterizedLayoutInlineTest, ::testing::Bool());
+
+TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
+  LoadAhem();
+  SetBodyInnerHTML(
+      "<style>"
+      "* { font-family: Ahem; font-size: 13px; }"
+      ".vertical { writing-mode: vertical-rl; }"
+      "</style>"
+      "<p><span id=ltr1>abc<br>xyz</span></p>"
+      "<p><span id=ltr2>12 345 6789</span></p>"
+      "<p dir=rtl><span id=rtl1>abc<br>xyz</span></p>"
+      "<p dir=rtl><span id=rtl2>12 345 6789</span></p>"
+      "<p class=vertical><span id=vertical>abc<br>xyz</span></p>");
+  EXPECT_EQ(
+      LayoutRect(LayoutPoint(0, 0), LayoutSize(39, 26)),
+      ToLayoutInline(GetLayoutObjectByElementId("ltr1"))->LinesBoundingBox());
+  EXPECT_EQ(
+      LayoutRect(LayoutPoint(0, 0), LayoutSize(143, 13)),
+      ToLayoutInline(GetLayoutObjectByElementId("ltr2"))->LinesBoundingBox());
+  EXPECT_EQ(
+      LayoutRect(LayoutPoint(745, 0), LayoutSize(39, 26)),
+      ToLayoutInline(GetLayoutObjectByElementId("rtl1"))->LinesBoundingBox());
+  // TODO(layout-dev): LayoutNG should have same LayoutRect of legacy.
+  // See http://crbug.com/785687
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(LayoutPoint(745, 0), LayoutSize(65, 13))
+                        : LayoutRect(LayoutPoint(641, 0), LayoutSize(143, 13)),
+      ToLayoutInline(GetLayoutObjectByElementId("rtl2"))->LinesBoundingBox());
+  EXPECT_EQ(LayoutRect(LayoutPoint(0, 0), LayoutSize(26, 39)),
+            ToLayoutInline(GetLayoutObjectByElementId("vertical"))
+                ->LinesBoundingBox());
+}
 
 TEST_F(LayoutInlineTest, SimpleContinuation) {
   SetBodyInnerHTML(

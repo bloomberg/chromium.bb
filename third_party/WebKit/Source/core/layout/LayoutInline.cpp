@@ -34,6 +34,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlinePainter.h"
@@ -44,6 +45,19 @@
 #include "platform/geometry/TransformState.h"
 
 namespace blink {
+
+namespace {
+
+// TODO(layout-dev): Once we generate fragment for all inline element, we should
+// use |LayoutObject::EnclosingBlockFlowFragment()|.
+const NGPhysicalBoxFragment* EnclosingBlockFlowFragmentOf(
+    const LayoutInline& node) {
+  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+    return nullptr;
+  return node.EnclosingBlockFlowFragment();
+}
+
+}  // anonymous namespace
 
 struct SameSizeAsLayoutInline : public LayoutBoxModelObject {
   ~SameSizeAsLayoutInline() override {}
@@ -953,6 +967,19 @@ class LinesBoundingBoxGeneratorContext {
 }  // unnamed namespace
 
 LayoutRect LayoutInline::LinesBoundingBox() const {
+  if (const NGPhysicalBoxFragment* box_fragment =
+          EnclosingBlockFlowFragmentOf(*this)) {
+    LayoutRect result;
+    NGInlineFragmentIterator children(*box_fragment, this);
+    for (const auto& child : children) {
+      NGPhysicalOffset left_top =
+          child.fragment->Offset() + child.offset_to_container_box;
+      result.Unite(LayoutRect(LayoutPoint(left_top.left, left_top.top),
+                              child.fragment->Size().ToLayoutSize()));
+    }
+    return result;
+  }
+
   if (!AlwaysCreateLineBoxes()) {
     DCHECK(!FirstLineBox());
     FloatRect float_result;
