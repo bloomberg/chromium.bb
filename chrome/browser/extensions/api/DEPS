@@ -15,10 +15,4 @@ specific_include_rules = {
     "+chrome/browser/ui/views/frame",
     "+components/captive_portal",
   ],
-
-  # TODO(eladalon): Remove along with webrtc_event_log_apitest.cc.
-  # https://crbug.com/775415
-   "webrtc_event_log_apitest.cc": [
-    "+content/browser/webrtc",
-  ],
 }

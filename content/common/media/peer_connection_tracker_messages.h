@@ -41,18 +41,13 @@ IPC_MESSAGE_CONTROL5(PeerConnectionTrackerHost_GetUserMedia,
                      // not be parsed by the browser for security reasons.
                      std::string /* audio_constraints */,
                      std::string /* video_constraints */)
-IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_WebRtcEventLogWrite,
-                     int /* lid */,
-                     std::string /* output */)
 
 // Messages sent to PeerConnectionTracker.
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetAllStats)
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_OnSuspend)
-IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLogFile,
+IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLog,
                      int /* peer_connection_local_id */,
                      IPC::PlatformFileForTransit /* file */)
-IPC_MESSAGE_CONTROL1(PeerConnectionTracker_StartEventLogOutput,
-                     int /* peer_connection_local_id */)
 IPC_MESSAGE_CONTROL1(PeerConnectionTracker_StopEventLog,
                      int /* peer_connection_local_id */)
 
