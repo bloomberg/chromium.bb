@@ -245,13 +245,20 @@ TEST_F(DefaultSearchPolicyHandlerTest, FullyDefined) {
 
 // Checks that disabling default search is properly reflected the dictionary
 // pref.
-TEST_F(DefaultSearchPolicyHandlerTest, Disabled) {
+TEST_F(DefaultSearchPolicyHandlerTest, DisabledByPolicy) {
   PolicyMap policy;
   policy.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
              base::WrapUnique(new base::Value(false)), nullptr);
+  policy.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::Value("http://a/?{searchTerms}")),
+             nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* temp = nullptr;
+  // Ignore any other search provider related policy in this case.
+  EXPECT_FALSE(store_->GetValue(DefaultSearchManager::kURL, &temp));
+
   const base::DictionaryValue* dictionary;
   EXPECT_TRUE(store_->GetValue(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName, &temp));
@@ -260,6 +267,21 @@ TEST_F(DefaultSearchPolicyHandlerTest, Disabled) {
   EXPECT_TRUE(dictionary->GetBoolean(DefaultSearchManager::kDisabledByPolicy,
                                      &disabled));
   EXPECT_TRUE(disabled);
+}
+
+// Check that when the default search enabled policy is not set, all other
+// default search-related policies are ignored.
+TEST_F(DefaultSearchPolicyHandlerTest, DisabledByPolicyNotSet) {
+  PolicyMap policy;
+  policy.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::Value("http://a/?{searchTerms}")),
+             nullptr);
+  UpdateProviderPolicy(policy);
+  const base::Value* temp = nullptr;
+  EXPECT_FALSE(store_->GetValue(
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName, &temp));
+  EXPECT_FALSE(store_->GetValue(DefaultSearchManager::kURL, &temp));
 }
 
 // Checks that if the policy for default search is valid, i.e. there's a

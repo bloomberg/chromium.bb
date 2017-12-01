@@ -1059,7 +1059,12 @@
 
   "DefaultSearchProviderName": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderName": "google.com" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderName": "google.com"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1067,7 +1072,11 @@
 
   "DefaultSearchProviderKeyword": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1075,7 +1084,11 @@
 
   "DefaultSearchProviderSearchURL": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data",
         "indicator_selector": "[setting=search-engine]",
@@ -1088,7 +1101,12 @@
 
   "DefaultSearchProviderSuggestURL": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSuggestURL": "http://www.google.com/suggest?q={searchTerms}" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderSuggestURL": "http://www.google.com/suggest?q={searchTerms}"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1096,7 +1114,12 @@
 
   "DefaultSearchProviderInstantURL": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderInstantURL": "http://www.google.com/instant?q={searchTerms}" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderInstantURL": "http://www.google.com/instant?q={searchTerms}"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1104,7 +1127,12 @@
 
   "DefaultSearchProviderNewTabURL": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderNewTabURL": "http://www.google.com/newtab" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderNewTabURL": "http://www.google.com/newtab"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1112,7 +1140,12 @@
 
   "DefaultSearchProviderIconURL": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderIconURL": "http://www.google.com/favicon.ico" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderIconURL": "http://www.google.com/favicon.ico"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1120,7 +1153,12 @@
 
   "DefaultSearchProviderEncodings": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderEncodings": ["UTF-8"] },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderEncodings": ["UTF-8"]
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1128,7 +1166,12 @@
 
   "DefaultSearchProviderAlternateURLs": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderAlternateURLs": ["http://www.google.com/#q={searchTerms}", "http://www.google.com/search#q={searchTerms}"] },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderAlternateURLs": ["http://www.google.com/#q={searchTerms}", "http://www.google.com/search#q={searchTerms}"]
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1136,7 +1179,12 @@
 
   "DefaultSearchProviderSearchTermsReplacementKey": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSearchTermsReplacementKey": "espv" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderSearchTermsReplacementKey": "espv"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1144,7 +1192,12 @@
 
   "DefaultSearchProviderImageURL": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderImageURL": "http://www.google.com/searchbyimage/upload" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderImageURL": "http://www.google.com/searchbyimage/upload"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1152,7 +1205,12 @@
 
   "DefaultSearchProviderSearchURLPostParams": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSearchURLPostParams": "" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderSearchURLPostParams": ""
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1160,7 +1218,12 @@
 
   "DefaultSearchProviderSuggestURLPostParams": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderSuggestURLPostParams": "" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderSuggestURLPostParams": ""
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1168,7 +1231,12 @@
 
   "DefaultSearchProviderInstantURLPostParams": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderInstantURLPostParams": "" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderInstantURLPostParams": ""
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
@@ -1176,7 +1244,12 @@
 
   "DefaultSearchProviderImageURLPostParams": {
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderKeyword": "google", "DefaultSearchProviderImageURLPostParams": "image_content={imageThumbnail},image_url={imageURL},sbisrc={imageSearchSource}" },
+    "test_policy": {
+      "DefaultSearchProviderEnabled": true,
+      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
+      "DefaultSearchProviderKeyword": "google",
+      "DefaultSearchProviderImageURLPostParams": "image_content={imageThumbnail},image_url={imageURL},sbisrc={imageSearchSource}"
+    },
     "pref_mappings": [
       { "pref": "default_search_provider_data.template_url_data" }
     ]
