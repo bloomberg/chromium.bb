@@ -1385,10 +1385,11 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public void startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
+        public boolean startIncognitoIntent(Intent intent, String referrerUrl, String fallbackUrl,
                 Tab tab, boolean needsToCloseTab, boolean proxy) {
             startActivityIntent = intent;
             startIncognitoIntentCalled = true;
+            return true;
         }
 
         @Override
