@@ -8,6 +8,7 @@
 
 #include "base/task_runner_util.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
+#include "content/browser/renderer_host/media/audio_output_stream_observer_impl.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/base/audio_parameters.h"
@@ -116,6 +117,10 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
     return;
   }
 
+  int stream_id = next_stream_id_++;
+  std::unique_ptr<media::mojom::AudioOutputStreamObserver> observer =
+      base::MakeUnique<AudioOutputStreamObserverImpl>(
+          context_->GetRenderProcessId(), render_frame_id_, stream_id);
   // Since |context_| outlives |this| and |this| outlives |stream_providers_|,
   // unretained is safe.
   stream_providers_.insert(
@@ -123,9 +128,11 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
           std::move(request),
           base::BindOnce(
               &RendererAudioOutputStreamFactoryContext::CreateDelegate,
-              base::Unretained(context_), raw_device_id, render_frame_id_),
+              base::Unretained(context_), raw_device_id, render_frame_id_,
+              stream_id),
           base::BindOnce(&RenderFrameAudioOutputStreamFactory::RemoveStream,
-                         base::Unretained(this))));
+                         base::Unretained(this)),
+          std::move(observer)));
 
   std::move(callback).Run(media::OutputDeviceStatus(status), params,
                           device_id_for_renderer);

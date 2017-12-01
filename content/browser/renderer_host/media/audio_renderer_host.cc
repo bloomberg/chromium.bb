@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
+#include "content/browser/renderer_host/media/audio_output_stream_observer_impl.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
@@ -28,6 +29,8 @@
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
+#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 using media::AudioBus;
 using media::AudioManager;
@@ -275,10 +278,15 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   audio_log->OnCreated(stream_id, params, device_unique_id);
   media_internals->SetWebContentsTitleForAudioLogEntry(
       stream_id, render_process_id_, render_frame_id, audio_log.get());
+
+  media::mojom::AudioOutputStreamObserverPtr observer_ptr;
+  mojo::MakeStrongBinding(std::make_unique<AudioOutputStreamObserverImpl>(
+                              render_process_id_, render_frame_id, stream_id),
+                          mojo::MakeRequest(&observer_ptr));
   auto delegate = AudioOutputDelegateImpl::Create(
       this, audio_manager_, std::move(audio_log), mirroring_manager_,
       media_observer, stream_id, render_frame_id, render_process_id_, params,
-      device_unique_id);
+      std::move(observer_ptr), device_unique_id);
   if (delegate)
     delegates_.push_back(std::move(delegate));
   else

@@ -27,16 +27,16 @@ namespace content {
 
 class WebContents;
 
-// Repeatedly polls audio streams for their power levels, and "debounces" the
-// information into a simple, binary "was recently audible" result for the audio
-// indicators in the tab UI.  The debouncing logic is to: 1) Turn on immediately
-// when sound is audible; and 2) Hold on for X amount of time after sound has
-// gone silent, then turn off.  Said another way, we don't want tab indicators
-// to turn on/off repeatedly and annoy the user.  AudioStreamMonitor sends UI
+// Keeps track of the audible state of audio output streams and uses it to
+// maintain a "was recently audible" binary state for the audio indicators in
+// the tab UI.  The logic is to: 1) Turn on immediately when sound is audible;
+// and 2) Hold on for X amount of time after sound has gone silent, then turn
+// off if no longer audible.  Said another way, we don't want tab indicators to
+// turn on/off repeatedly and annoy the user.  AudioStreamMonitor sends UI
 // update notifications only when needed, but may be queried at any time.
 //
-// When power level monitoring is not available, audibility is approximated
-// with having active audio streams.
+// When monitoring is not available, audibility is approximated with having
+// active audio streams.
 //
 // Each WebContentsImpl owns an AudioStreamMonitor.
 class CONTENT_EXPORT AudioStreamMonitor {
@@ -59,24 +59,23 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // any outstanding poll callbacks.
   void RenderProcessGone(int render_process_id);
 
-  // Starts or stops audio level monitoring respectively for the stream owned by
-  // the specified renderer.  Safe to call from any thread.
-  //
-  // The callback returns the current power level (in dBFS units) and the clip
-  // status (true if any part of the audio signal has clipped since the last
-  // callback run).  |stream_id| must be unique within a |render_process_id|.
-  typedef base::Callback<std::pair<float, bool>()> ReadPowerAndClipCallback;
-  static void StartMonitoringStream(
-      int render_process_id,
-      int render_frame_id,
-      int stream_id,
-      const ReadPowerAndClipCallback& read_power_callback);
+  // Starts or stops monitoring respectively for the stream owned by the
+  // specified renderer.  Safe to call from any thread.
+  static void StartMonitoringStream(int render_process_id,
+                                    int render_frame_id,
+                                    int stream_id);
   static void StopMonitoringStream(int render_process_id,
                                    int render_frame_id,
                                    int stream_id);
+  // Updates the audible state for the given stream. Safe to call from any
+  // thread.
+  static void UpdateStreamAudibleState(int render_process_id,
+                                       int render_frame_id,
+                                       int stream_id,
+                                       bool is_audible);
 
   void set_was_recently_audible_for_testing(bool value) {
-    was_recently_audible_ = value;
+    indicator_is_on_ = value;
   }
 
   void set_is_currently_audible_for_testing(bool value) { is_audible_ = value; }
@@ -85,58 +84,35 @@ class CONTENT_EXPORT AudioStreamMonitor {
   friend class AudioStreamMonitorTest;
 
   enum {
-    // Desired polling frequency.  Note: If this is set too low, short-duration
-    // "blip" sounds won't be detected.  http://crbug.com/339133#c4
-    kPowerMeasurementsPerSecond = 15,
-
-    // Amount of time to hold a tab indicator on after its last blurt.
+    // Minimum amount of time to hold a tab indicator on after it becomes
+    // silent.
     kHoldOnMilliseconds = 2000
   };
 
-  // Indicates if monitoring of audio stream power level is available.
-  // It's only available if AudioOutputController can and will monitor
-  // output power levels.
-  static bool power_level_monitoring_available() {
-    return media::AudioOutputController::will_monitor_audio_levels();
-  }
+  struct CONTENT_EXPORT StreamID {
+    int render_process_id;
+    int render_frame_id;
+    int stream_id;
+    bool operator<(const StreamID& other) const;
+    bool operator==(const StreamID& other) const;
+  };
 
-  // Helper methods for starting and stopping monitoring which lookup the
-  // identified renderer and forward calls to the correct AudioStreamMonitor.
-  static void StartMonitoringHelper(
-      int render_process_id,
-      int render_frame_id,
-      int stream_id,
-      const ReadPowerAndClipCallback& read_power_callback);
-  static void StopMonitoringHelper(int render_process_id,
-                                   int render_frame_id,
-                                   int stream_id);
+  // Starts monitoring the audible state for the given stream.
+  void StartMonitoringStreamOnUIThread(const StreamID& sid);
 
-  // Starts polling the stream for audio stream power levels using |callback|.
-  void StartMonitoringStreamOnUIThread(
-      int render_process_id,
-      int render_frame_id,
-      int stream_id,
-      const ReadPowerAndClipCallback& callback);
+  // Stops monitoring the audible state for the given stream.
+  void StopMonitoringStreamOnUIThread(const StreamID& sid);
 
-  // Stops polling the stream, discarding the internal copy of the |callback|
-  // provided in the call to StartMonitoringStream().
-  void StopMonitoringStreamOnUIThread(int render_process_id,
-                                      int render_frame_id,
-                                      int stream_id);
-
-  // Called by |poll_timer_| to sample the power levels from each of the streams
-  // playing in the tab.
-  void Poll();
+  // Updates the audible state for the given stream.
+  void UpdateStreamAudibleStateOnUIThread(const StreamID& sid, bool is_audible);
 
   // Compares last known indicator state with what it should be, and triggers UI
   // updates through |web_contents_| if needed.  When the indicator is turned
   // on, |off_timer_| is started to re-invoke this method in the future.
   void MaybeToggle();
+  void UpdateStreams();
 
-  // Helper functions to track number of active streams when power level
-  // monitoring is not available.
-  void OnStreamAdded();
-  void OnStreamRemoved();
+  // void OnStreamRemoved();
 
   // The WebContents instance to receive indicator toggle notifications.  This
   // pointer should be valid for the lifetime of AudioStreamMonitor.
@@ -149,31 +125,19 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // Confirms single-threaded access in debug builds.
   base::ThreadChecker thread_checker_;
 
-  // The callbacks to read power levels for each stream.  Only playing (i.e.,
-  // not paused) streams will have an entry in this map.
-  struct CONTENT_EXPORT StreamID {
-    int render_process_id;
-    int render_frame_id;
-    int stream_id;
-    bool operator<(const StreamID& other) const;
-    bool operator==(const StreamID& other) const;
-  };
-  using StreamPollCallbackMap =
-      base::flat_map<StreamID, ReadPowerAndClipCallback>;
-  StreamPollCallbackMap poll_callbacks_;
+  // The audible state for each stream.  Only playing (i.e., not paused)
+  // streams will have an entry in this map.
+  base::flat_map<StreamID, bool> streams_;
 
-  // Records the last time at which sound was audible from any stream.
-  base::TimeTicks last_blurt_time_;
+  // Records the last time at which all streams became silent.
+  base::TimeTicks last_became_silent_time_;
 
   // Set to true if the last call to MaybeToggle() determined the indicator
   // should be turned on.
-  bool was_recently_audible_;
+  bool indicator_is_on_;
 
   // Whether the WebContents is currently audible.
   bool is_audible_;
-
-  // Calls Poll() at regular intervals while |poll_callbacks_| is non-empty.
-  base::RepeatingTimer poll_timer_;
 
   // Started only when an indicator is toggled on, to turn it off again in the
   // future.

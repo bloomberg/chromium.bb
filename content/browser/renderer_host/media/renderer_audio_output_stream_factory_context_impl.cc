@@ -56,10 +56,11 @@ std::unique_ptr<media::AudioOutputDelegate>
 RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
     const std::string& unique_device_id,
     int render_frame_id,
+    int stream_id,
     const media::AudioParameters& params,
+    media::mojom::AudioOutputStreamObserverPtr stream_observer,
     media::AudioOutputDelegate::EventHandler* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int stream_id = next_stream_id_++;
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
 
@@ -73,7 +74,8 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
   return AudioOutputDelegateImpl::Create(
       handler, audio_manager_, std::move(audio_log),
       AudioMirroringManager::GetInstance(), media_observer, stream_id,
-      render_frame_id, render_process_id_, params, unique_device_id);
+      render_frame_id, render_process_id_, params, std::move(stream_observer),
+      unique_device_id);
 }
 
 // static
