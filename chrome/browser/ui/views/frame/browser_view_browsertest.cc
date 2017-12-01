@@ -272,16 +272,15 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
           base::FilePath(FILE_PATH_LITERAL("title2.html"))),
       0, WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
-  EXPECT_EQ(TabRendererData::NETWORK_STATE_WAITING,
+  EXPECT_EQ(TabNetworkState::kWaiting,
             tab_strip->tab_at(0)->data().network_state);
   EXPECT_EQ(test_title, title_watcher.WaitAndGetTitle());
   EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
-  EXPECT_EQ(TabRendererData::NETWORK_STATE_LOADING,
+  EXPECT_EQ(TabNetworkState::kLoading,
             tab_strip->tab_at(0)->data().network_state);
 
   // Now block for the navigation to complete.
   navigation_watcher.Wait();
   EXPECT_FALSE(browser()->tab_strip_model()->TabsAreLoading());
-  EXPECT_EQ(TabRendererData::NETWORK_STATE_NONE,
-            tab_strip->tab_at(0)->data().network_state);
+  EXPECT_EQ(TabNetworkState::kNone, tab_strip->tab_at(0)->data().network_state);
 }

@@ -61,12 +61,14 @@ class GFX_EXPORT Rect {
 #endif
 
   constexpr int x() const { return origin_.x(); }
+  // Sets the X position while preserving the width.
   void set_x(int x) {
     origin_.set_x(x);
     size_.set_width(GetClampedValue(x, width()));
   }
 
   constexpr int y() const { return origin_.y(); }
+  // Sets the Y position while preserving the height.
   void set_y(int y) {
     origin_.set_y(y);
     size_.set_height(GetClampedValue(y, height()));

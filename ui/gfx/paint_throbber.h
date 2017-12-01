@@ -22,8 +22,10 @@ class Rect;
 struct GFX_EXPORT ThrobberWaitingState {
   // The amount of time that was spent in the waiting state.
   base::TimeDelta elapsed_time;
+
   // The color of the arc in the waiting state.
-  SkColor color;
+  SkColor color = SK_ColorTRANSPARENT;
+
   // An opaque value used to cache calculations made by
   // PaintThrobberSpinningAfterWaiting.
   base::TimeDelta arc_time_offset;

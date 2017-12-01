@@ -13,7 +13,11 @@ enum class TabChangeType {
   // Only the loading state changed.
   kLoadingOnly,
 
-  // Only the title changed and page isn't loading.
+  // Only the title changed and page isn't loading. This is used to set the
+  // attention state for background pinned tabs. This has to be one
+  // notification since the title changed and loading state updates are
+  // normally broadcast asynchronously, making it hard to tell if the page was
+  // definitely done loading when the title changed.
   kTitleNotLoading
 };
 

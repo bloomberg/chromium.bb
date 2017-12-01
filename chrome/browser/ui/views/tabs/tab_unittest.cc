@@ -13,9 +13,11 @@
 #include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
@@ -99,15 +101,7 @@ class TabTest : public views::ViewsTestBase {
     return tab.close_button_;
   }
 
-  static views::View* GetThrobberView(const Tab& tab) {
-    // Reinterpret to keep the definition encapsulated (which works so long as
-    // multiple inheritance isn't involved).
-    return reinterpret_cast<views::View*>(tab.throbber_);
-  }
-
-  static gfx::Rect GetFaviconBounds(const Tab& tab) {
-    return tab.favicon_bounds_;
-  }
+  static TabIcon* GetTabIcon(const Tab& tab) { return tab.icon_; }
 
   static int GetTitleWidth(const Tab& tab) {
     return tab.title_->bounds().width();
@@ -187,14 +181,21 @@ class TabTest : public views::ViewsTestBase {
     // are fully within the contents bounds.
     const gfx::Rect contents_bounds = tab.GetContentsBounds();
     if (tab.ShouldShowIcon()) {
-      EXPECT_LE(contents_bounds.x(), tab.favicon_bounds_.x());
+      EXPECT_LE(contents_bounds.x(), tab.icon_->x());
       if (tab.title_->visible())
-        EXPECT_LE(tab.favicon_bounds_.right(), tab.title_->x());
-      EXPECT_LE(contents_bounds.y(), tab.favicon_bounds_.y());
-      EXPECT_LE(tab.favicon_bounds_.bottom(), contents_bounds.bottom());
+        EXPECT_LE(tab.icon_->bounds().right(), tab.title_->x());
+      EXPECT_LE(contents_bounds.y(), tab.icon_->y());
+      EXPECT_LE(tab.icon_->bounds().bottom(), contents_bounds.bottom());
     }
-    if (tab.ShouldShowIcon() && tab.ShouldShowAlertIndicator())
-      EXPECT_LE(tab.favicon_bounds_.right(), GetAlertIndicatorBounds(tab).x());
+
+    if (tab.ShouldShowIcon() && tab.ShouldShowAlertIndicator()) {
+      // When checking for overlap, other views should not overlap the main
+      // favicon (covered by kFaviconSize) but can overlap the extra space
+      // reserved for the attention indicator.
+      int icon_visual_right = tab.icon_->bounds().x() + gfx::kFaviconSize;
+      EXPECT_LE(icon_visual_right, GetAlertIndicatorBounds(tab).x());
+    }
+
     if (tab.ShouldShowAlertIndicator()) {
       if (tab.title_->visible()) {
         EXPECT_LE(tab.title_->bounds().right(),
@@ -440,94 +441,93 @@ TEST_F(TabTest, LayeredThrobber) {
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
 
-  views::View* throbber = GetThrobberView(tab);
+  TabIcon* icon = GetTabIcon(tab);
   TabRendererData data;
   data.url = GURL("http://example.com");
-  EXPECT_FALSE(throbber->visible());
-  EXPECT_EQ(TabRendererData::NETWORK_STATE_NONE, tab.data().network_state);
-  EXPECT_EQ(throbber->bounds(), GetFaviconBounds(tab));
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
+  EXPECT_EQ(TabNetworkState::kNone, tab.data().network_state);
 
   // Simulate a "normal" tab load: should paint to a layer.
-  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  data.network_state = TabNetworkState::kWaiting;
   tab.SetData(data);
   EXPECT_TRUE(tab_controller.CanPaintThrobberToLayer());
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_TRUE(throbber->layer());
-  data.network_state = TabRendererData::NETWORK_STATE_LOADING;
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_TRUE(icon->layer());
+  data.network_state = TabNetworkState::kLoading;
   tab.SetData(data);
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_TRUE(throbber->layer());
-  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_TRUE(icon->layer());
+  data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
-  // Simulate a tab that should hide throbber. It should never paint.
+  // Simulate a tab that should hide throbber.
   data.should_hide_throbber = true;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
-  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
+  data.network_state = TabNetworkState::kWaiting;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
-  data.network_state = TabRendererData::NETWORK_STATE_LOADING;
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
+  data.network_state = TabNetworkState::kLoading;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
-  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
+  data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
-  // Simulate a tab that should not hide throbber. It should paint.
+  // Simulate a tab that should not hide throbber.
   data.should_hide_throbber = false;
-  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  data.network_state = TabNetworkState::kWaiting;
   tab.SetData(data);
   EXPECT_TRUE(tab_controller.CanPaintThrobberToLayer());
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_TRUE(throbber->layer());
-  data.network_state = TabRendererData::NETWORK_STATE_LOADING;
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_TRUE(icon->layer());
+  data.network_state = TabNetworkState::kLoading;
   tab.SetData(data);
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_TRUE(throbber->layer());
-  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_TRUE(icon->layer());
+  data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // After loading is done, simulate another resource starting to load.
-  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  data.network_state = TabNetworkState::kWaiting;
   tab.SetData(data);
-  EXPECT_TRUE(throbber->visible());
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
 
   // Reset.
-  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a drag started and stopped during a load: layer painting stops
   // temporarily.
-  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  data.network_state = TabNetworkState::kWaiting;
   tab.SetData(data);
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_TRUE(throbber->layer());
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_TRUE(icon->layer());
   tab_controller.set_paint_throbber_to_layer(false);
   tab.StepLoadingAnimation();
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_FALSE(throbber->layer());
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_FALSE(icon->layer());
   tab_controller.set_paint_throbber_to_layer(true);
   tab.StepLoadingAnimation();
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_TRUE(throbber->layer());
-  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_TRUE(icon->layer());
+  data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab load starting and stopping during tab dragging (or with
   // stacked tabs): no layer painting.
   tab_controller.set_paint_throbber_to_layer(false);
-  data.network_state = TabRendererData::NETWORK_STATE_WAITING;
+  data.network_state = TabNetworkState::kWaiting;
   tab.SetData(data);
-  EXPECT_TRUE(throbber->visible());
-  EXPECT_FALSE(throbber->layer());
-  data.network_state = TabRendererData::NETWORK_STATE_NONE;
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  EXPECT_FALSE(icon->layer());
+  data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  EXPECT_FALSE(throbber->visible());
+  EXPECT_FALSE(icon->ShowingLoadingAnimation());
 }
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {

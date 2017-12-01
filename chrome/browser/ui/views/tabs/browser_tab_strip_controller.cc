@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
+#include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -63,23 +64,6 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {
-
-TabRendererData::NetworkState TabContentsNetworkState(
-    WebContents* contents) {
-  DCHECK(contents);
-
-  if (!contents->IsLoadingToDifferentDocument()) {
-    content::NavigationEntry* entry =
-        contents->GetController().GetLastCommittedEntry();
-    if (entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR))
-      return TabRendererData::NETWORK_STATE_ERROR;
-    return TabRendererData::NETWORK_STATE_NONE;
-  }
-
-  if (contents->IsWaitingForResponse())
-    return TabRendererData::NETWORK_STATE_WAITING;
-  return TabRendererData::NETWORK_STATE_LOADING;
-}
 
 bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   *adjust_layout = false;
@@ -321,11 +305,6 @@ void BrowserTabStripController::ShowContextMenuForTab(
   context_menu_contents_->RunMenuAt(p, source_type);
 }
 
-void BrowserTabStripController::UpdateLoadingAnimations() {
-  for (int i = 0, tab_count = tabstrip_->tab_count(); i < tab_count; ++i)
-    tabstrip_->tab_at(i)->StepLoadingAnimation();
-}
-
 int BrowserTabStripController::HasAvailableDragActions() const {
   return model_->delegate()->GetDragActions();
 }
@@ -537,7 +516,7 @@ TabRendererData BrowserTabStripController::TabRendererDataFromModel(
   TabRendererData data;
   TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(contents);
   data.favicon = tab_ui_helper->GetFavicon().AsImageSkia();
-  data.network_state = TabContentsNetworkState(contents);
+  data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.url = contents->GetURL();
   data.crashed_status = contents->GetCrashedStatus();
