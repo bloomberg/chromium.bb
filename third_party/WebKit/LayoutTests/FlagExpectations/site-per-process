@@ -151,6 +151,16 @@ crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
 # https://crbug.com/778372: Unique name conflict with old entries?
 crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
 
+# https://crbug.com/788390: Autoplay feature policy tests failing on the Windows FYI bot.
+crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Timeout ]
+crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
+crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
+crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
+crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Timeout ]
+crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
+crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
+crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
+
 # The tests below are inherently incompatible with isolating same-site, cross-origin
 # frames into separate processes (which is how Site Isolation bots treat
 # www1.web-platform.test, www2.web-platform.test, etc).
