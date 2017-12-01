@@ -17,7 +17,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "catalog": [ "app" ],
+        "catalog": [ "directory" ],
         "service_manager": [ "service_manager:all_users" ],
         "ui": [ "ozone" ]
       }

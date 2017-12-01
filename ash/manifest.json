@@ -45,6 +45,7 @@
       "requires": {
         "*": [ "accessibility", "app" ],
         "ash_pref_connector": [ "pref_connector" ],
+        "catalog": [ "directory" ],
         "local_state": [ "pref_client" ],
         "ui": [ "display_dev", "window_manager", "video_detector" ],
         "touch_hud": [ "mash:launchable" ]

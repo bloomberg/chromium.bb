@@ -7,7 +7,10 @@
       "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
       "requires": {
         "*": [ "app", "mash:launchable" ],
-        "catalog": [ "catalog:catalog" ]
+        "catalog": [
+          "catalog:catalog",
+          "directory"
+        ]
       }
     }
   }
