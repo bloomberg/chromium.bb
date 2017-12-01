@@ -21,6 +21,7 @@
 #include "extensions/renderer/bindings/api_binding_bridge.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 #include "extensions/renderer/bindings/api_binding_js_util.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/chrome_setting.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/content_setting.h"
@@ -137,7 +138,7 @@ v8::Local<v8::Object> GetOrCreateChrome(v8::Local<v8::Context> context) {
 BindingsSystemPerContextData* GetBindingsDataFromContext(
     v8::Local<v8::Context> context) {
   gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  if (!per_context_data)
+  if (!per_context_data || !binding::IsContextValid(context))
     return nullptr;  // Context is shutting down.
 
   auto* data = static_cast<BindingsSystemPerContextData*>(
