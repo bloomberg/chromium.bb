@@ -57,6 +57,7 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter,
                       bool video,
                       const std::string& audio_constraints,
                       const std::string& video_constraints);
+  void OnWebRtcEventLogWrite(int lid, const std::string& output);
   void SendOnSuspendOnUIThread();
 
   int render_process_id_;

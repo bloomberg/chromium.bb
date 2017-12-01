@@ -167,6 +167,10 @@ class CONTENT_EXPORT PeerConnectionTracker
   virtual void TrackGetUserMedia(
       const blink::WebUserMediaRequest& user_media_request);
 
+  // Sends a new fragment on an RtcEventLog.
+  virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,
+                                     const std::string& output);
+
   // For testing: Override the class that gets posted messages.
   void OverrideSendTargetForTesting(RenderThread* target);
 
@@ -186,9 +190,15 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Called when the browser process reports a suspend event from the OS.
   void OnSuspend();
 
-  // IPC Message handler for starting event log.
-  void OnStartEventLog(int peer_connection_id,
-                       IPC::PlatformFileForTransit file);
+  // TODO(eladalon): Remove OnStartEventLogFile() and then rename
+  // OnStartEventLogOutput() to OnStartEventLog(). https://crbug.com/775415
+
+  // IPC Message handler for starting event log (file).
+  void OnStartEventLogFile(int peer_connection_id,
+                           IPC::PlatformFileForTransit file);
+
+  // IPC Message handler for starting event log (output).
+  void OnStartEventLogOutput(int peer_connection_id);
 
   // IPC Message handler for stopping event log.
   void OnStopEventLog(int peer_connection_id);
