@@ -24,7 +24,10 @@ HttpBasicState::HttpBasicState(std::unique_ptr<ClientSocketHandle> connection,
       connection_(std::move(connection)),
       using_proxy_(using_proxy),
       http_09_on_non_default_ports_enabled_(
-          http_09_on_non_default_ports_enabled) {}
+          http_09_on_non_default_ports_enabled) {
+  CHECK(connection_) << "ClientSocketHandle passed to HttpBasicState must "
+                        "not be NULL. See crbug.com/790776";
+}
 
 HttpBasicState::~HttpBasicState() = default;
 
