@@ -242,6 +242,13 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
       context, *world_, global_object, v8::Local<v8::Object>(),
       v8::Local<v8::Function>(), global_interface_template);
 
+  if (!disable_eval_pending_.IsEmpty()) {
+    script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
+    script_state_->GetContext()->SetErrorMessageForCodeGenerationFromStrings(
+        V8String(isolate_, disable_eval_pending_));
+    disable_eval_pending_ = String();
+  }
+
   return true;
 }
 
@@ -259,13 +266,6 @@ ScriptValue WorkerOrWorkletScriptController::Evaluate(
     return ScriptValue();
 
   ScriptState::Scope scope(script_state_.get());
-
-  if (!disable_eval_pending_.IsEmpty()) {
-    script_state_->GetContext()->AllowCodeGenerationFromStrings(false);
-    script_state_->GetContext()->SetErrorMessageForCodeGenerationFromStrings(
-        V8String(isolate_, disable_eval_pending_));
-    disable_eval_pending_ = String();
-  }
 
   v8::TryCatch block(isolate_);
 
