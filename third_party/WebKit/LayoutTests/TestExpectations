@@ -3791,6 +3791,7 @@ crbug.com/700624 http/tests/devtools/console/console-tests.js [ NeedsManualRebas
 crbug.com/700624 virtual/mojo-loading/http/tests/devtools/console/console-tests.js [ NeedsManualRebaseline ]
 crbug.com/727514 http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
 crbug.com/727514 virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
+crbug.com/727514 virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]

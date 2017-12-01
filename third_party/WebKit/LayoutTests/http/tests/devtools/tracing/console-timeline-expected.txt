@@ -9,21 +9,15 @@ Timeline 'one'
 timestamp 2
 
 Running: testStartStopMultiple
-error: Event Timeline 'one' has already been started
-error: Event Timeline 'two' has already been started
 timestamp 0
 Timeline 'one'
 timestamp 1
-Timeline 'one'
-Timeline 'two'
 Timeline 'two'
 Timeline 'two'
 timestamp 2
 Timeline 'one'
 timestamp 3
-Timeline 'two'
 timestamp 4
-Timeline 'one'
 timestamp 5
 
 Running: testStartMultipleStopInsideEvals
@@ -43,7 +37,6 @@ Running: testStopUnknown
 timestamp 0
 Timeline 'one'
 timestamp 1
-Timeline 'two'
 timestamp 2
 Timeline 'one'
 timestamp 3
