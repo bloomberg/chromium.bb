@@ -32,73 +32,72 @@ TEST(JavaScriptDialogManagerTest, GetTitle) {
        "An embedded page at bar.com says", "An embedded page at bar.com says"},
 
       // file:
-      // -main frame:
+      // - main frame:
       {"file:///path/to/page.html", "file:///path/to/page.html",
        "This Page Says", "This page says", "This page says"},
-      // -subframe:
+      // - subframe:
       {"http://foo.com/", "file:///path/to/page.html",
        "An Embedded Page on This Page Says",
        "An embedded page on this page says",
        "An embedded page on this page says"},
 
       // ftp:
-      // -main frame:
+      // - main frame:
       {"ftp://foo.com/path/to/page.html", "ftp://foo.com/path/to/page.html",
        "foo.com Says", "foo.com says", "ftp://foo.com says"},
-      // -subframe:
+      // - subframe:
       {"http://foo.com/", "ftp://foo.com/path/to/page.html",
        "An Embedded Page at foo.com Says", "An embedded page at foo.com says",
        "An embedded page at ftp://foo.com says"},
 
       // data:
-      // -main frame:
+      // - main frame:
       {"data:blahblah", "data:blahblah", "This Page Says", "This page says",
        "This page says"},
-      // -subframe:
+      // - subframe:
       {"http://foo.com/", "data:blahblah", "An Embedded Page on This Page Says",
        "An embedded page on this page says",
        "An embedded page on this page says"},
 
       // javascript:
-      // -main frame:
+      // - main frame:
       {"javascript:abc", "javascript:abc", "This Page Says", "This page says",
        "This page says"},
-      // -subframe:
+      // - subframe:
       {"http://foo.com/", "javascript:abc",
        "An Embedded Page on This Page Says",
        "An embedded page on this page says",
        "An embedded page on this page says"},
 
       // about:
-      // -main frame:
+      // - main frame:
       {"about:blank", "about:blank", "This Page Says", "This page says",
        "This page says"},
-      // -subframe:
+      // - subframe:
       {"http://foo.com/", "about:blank", "An Embedded Page on This Page Says",
        "An embedded page on this page says",
        "An embedded page on this page says"},
 
       // blob:
-      // -main frame:
+      // - main frame:
       {"blob:http://foo.com/66666666-6666-6666-6666-666666666666",
        "blob:http://foo.com/66666666-6666-6666-6666-666666666666",
-       "This Page Says", "This page says", "This page says"},
-      // -subframe:
-      {"http://foo.com/",
+       "foo.com Says", "foo.com says", "foo.com says"},
+      // - subframe:
+      {"http://bar.com/",
        "blob:http://foo.com/66666666-6666-6666-6666-666666666666",
-       "An Embedded Page on This Page Says",
-       "An embedded page on this page says",
-       "An embedded page on this page says"},
+       "An Embedded Page at foo.com Says", "An embedded page at foo.com says",
+       "An embedded page at foo.com says"},
 
       // filesystem:
-      // -main frame:
-      {"filesystem:http://foo.com/", "filesystem:http://foo.com/",
-       "This Page Says", "This page says", "This page says"},
-      // -subframe:
-      {"http://foo.com/", "filesystem:http://foo.com/",
-       "An Embedded Page on This Page Says",
-       "An embedded page on this page says",
-       "An embedded page on this page says"},
+      // - main frame:
+      {"filesystem:http://foo.com/bar.html",
+       "filesystem:http://foo.com/bar.html", "foo.com Says", "foo.com says",
+       "foo.com says"},
+      // - subframe:
+      {"http://bar.com/", "filesystem:http://foo.com/bar.html",
+       "An Embedded Page at foo.com Says", "An embedded page at foo.com says",
+       "An embedded page at foo.com says"},
   };
 
   for (const auto& test_case : cases) {

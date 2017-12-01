@@ -105,20 +105,49 @@ base::string16 JavaScriptDialogManager::GetTitle(
   return GetTitleImpl(web_contents->GetURL(), alerting_frame_url);
 }
 
+namespace {
+
+// Unwraps an URL to get to an embedded URL.
+GURL UnwrapURL(const GURL& url) {
+  // GURL will unwrap filesystem:// URLs so ask it to do so.
+  const GURL* unwrapped_url = url.inner_url();
+  if (unwrapped_url)
+    return *unwrapped_url;
+
+  // GURL::inner_url() should unwrap blob: URLs but doesn't do so
+  // (https://crbug.com/690091). Therefore, do it manually.
+  //
+  // https://url.spec.whatwg.org/#origin defines the origin of a blob:// URL as
+  // the origin of the URL which results from parsing the "path", which boils
+  // down to everything after the scheme. GURL's 'GetContent()' gives us exactly
+  // that. See url::Origin()'s constructor.
+  if (url.SchemeIsBlob())
+    return GURL(url.GetContent());
+
+  return url;
+}
+
+}  // namespace
+
 // static
 base::string16 JavaScriptDialogManager::GetTitleImpl(
     const GURL& parent_frame_url,
     const GURL& alerting_frame_url) {
+  GURL unwrapped_parent_frame_url = UnwrapURL(parent_frame_url);
+  GURL unwrapped_alerting_frame_url = UnwrapURL(alerting_frame_url);
+
   bool is_same_origin_as_main_frame =
-      (parent_frame_url.GetOrigin() == alerting_frame_url.GetOrigin());
-  if (alerting_frame_url.IsStandard() && !alerting_frame_url.SchemeIsFile() &&
-      !alerting_frame_url.SchemeIsFileSystem()) {
+      (unwrapped_parent_frame_url.GetOrigin() ==
+       unwrapped_alerting_frame_url.GetOrigin());
+  if (unwrapped_alerting_frame_url.IsStandard() &&
+      !unwrapped_alerting_frame_url.SchemeIsFile()) {
 #if defined(OS_ANDROID)
     base::string16 url_string = url_formatter::FormatUrlForSecurityDisplay(
-        alerting_frame_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+        unwrapped_alerting_frame_url,
+        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 #else
     base::string16 url_string = url_formatter::ElideHost(
-        alerting_frame_url, gfx::FontList(), kUrlElideWidth);
+        unwrapped_alerting_frame_url, gfx::FontList(), kUrlElideWidth);
 #endif
     return l10n_util::GetStringFUTF16(
         is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE
