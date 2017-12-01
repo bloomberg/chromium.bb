@@ -40,14 +40,14 @@ PromotionManager::PromotionManager(
     NotificationController* notification_controller,
     ProximityAuthPrefManager* pref_manager,
     std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory,
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     scoped_refptr<base::TaskRunner> task_runner)
     : check_eligibility_probability_(kCheckEligibilityProbability),
       local_device_data_provider_(provider),
       notification_controller_(notification_controller),
       pref_manager_(pref_manager),
       client_factory_(std::move(client_factory)),
-      clock_(std::move(clock)),
+      clock_(clock),
       task_runner_(task_runner),
       weak_ptr_factory_(this) {}
 

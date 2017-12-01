@@ -216,8 +216,7 @@ void EasyUnlockServiceRegular::StartPromotionManager() {
   promotion_manager_.reset(new proximity_auth::PromotionManager(
       local_device_data_provider_.get(), notification_controller_.get(),
       pref_manager_.get(), service->CreateCryptAuthClientFactory(),
-      base::MakeUnique<base::DefaultClock>(),
-      base::ThreadTaskRunnerHandle::Get()));
+      base::DefaultClock::GetInstance(), base::ThreadTaskRunnerHandle::Get()));
   promotion_manager_->Start();
 }
 

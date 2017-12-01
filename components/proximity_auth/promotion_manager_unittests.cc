@@ -79,7 +79,6 @@ class ProximityAuthPromotionManagerTest
       : local_device_data_provider_(
             new cryptauth::MockLocalDeviceDataProvider()),
         notification_controller_(new StrictMock<MockNotificationController>()),
-        clock_(new base::SimpleTestClock()),
         expect_eligible_unlock_devices_request_(false),
         client_factory_(new cryptauth::MockCryptAuthClientFactory(
             cryptauth::MockCryptAuthClientFactory::MockType::
@@ -91,7 +90,7 @@ class ProximityAuthPromotionManagerTest
                                  notification_controller_.get(),
                                  pref_manager_.get(),
                                  base::WrapUnique(client_factory_),
-                                 base::WrapUnique(clock_),
+                                 &clock_,
                                  task_runner_)) {
     client_factory_->AddObserver(this);
     local_device_data_provider_->SetPublicKey(
@@ -140,7 +139,7 @@ class ProximityAuthPromotionManagerTest
     EXPECT_CALL(*pref_manager_, GetLastPromotionCheckTimestampMs())
         .WillOnce(Return(kPreviousCheckTimestampMs));
     const int64_t now = kPreviousCheckTimestampMs + kFreshnessPeriodMs + 1;
-    clock_->SetNow(base::Time::FromJavaTime(now));
+    clock_.SetNow(base::Time::FromJavaTime(now));
     EXPECT_CALL(*pref_manager_, SetLastPromotionCheckTimestampMs(now));
   }
 
@@ -148,7 +147,7 @@ class ProximityAuthPromotionManagerTest
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       local_device_data_provider_;
   std::unique_ptr<MockNotificationController> notification_controller_;
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
   bool expect_eligible_unlock_devices_request_;
   cryptauth::MockCryptAuthClientFactory* client_factory_;
   std::unique_ptr<MockProximityAuthPrefManager> pref_manager_;
@@ -205,7 +204,7 @@ TEST_F(ProximityAuthPromotionManagerTest,
   EXPECT_CALL(*pref_manager_, GetLastPromotionCheckTimestampMs())
       .WillOnce(Return(kPreviousCheckTimestampMs));
   const int64_t now = kPreviousCheckTimestampMs + 1;
-  clock_->SetNow(base::Time::FromJavaTime(now));
+  clock_.SetNow(base::Time::FromJavaTime(now));
   UnlockScreen();
 }
 
