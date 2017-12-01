@@ -242,6 +242,10 @@ component("printing") {
       "pdf_transform.h",
     ]
   }
+
+  if (is_fuchsia) {
+    sources += [ "image_fuchsia.cc" ]
+  }
 }
 
 static_library("test_support") {
