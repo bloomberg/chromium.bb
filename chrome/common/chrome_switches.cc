@@ -372,10 +372,6 @@ const char kEnableSiteSettings[] = "enable-site-settings";
 // Enables user control over muting tab audio from the tab strip.
 const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 
-// If the WebRTC logging private API is active, enables WebRTC event logging.
-const char kEnableWebRtcEventLoggingFromExtension[] =
-    "enable-webrtc-event-logging-from-extension";
-
 // Name of the command line flag to force content verification to be on in one
 // of various modes.
 const char kExtensionContentVerification[] = "extension-content-verification";
