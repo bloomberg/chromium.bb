@@ -105,10 +105,13 @@ KioskExternalUpdater::~KioskExternalUpdater() {
     disks::DiskMountManager::GetInstance()->RemoveObserver(this);
 }
 
-void KioskExternalUpdater::OnDiskEvent(
+void KioskExternalUpdater::OnAutoMountableDiskEvent(
     disks::DiskMountManager::DiskEvent event,
-    const disks::DiskMountManager::Disk* disk) {
-}
+    const disks::DiskMountManager::Disk& disk) {}
+
+void KioskExternalUpdater::OnBootDeviceDiskEvent(
+    disks::DiskMountManager::DiskEvent event,
+    const disks::DiskMountManager::Disk& disk) {}
 
 void KioskExternalUpdater::OnDeviceEvent(
     disks::DiskMountManager::DeviceEvent event,

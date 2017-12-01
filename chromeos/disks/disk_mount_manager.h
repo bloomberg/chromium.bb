@@ -54,7 +54,8 @@ class CHROMEOS_EXPORT DiskMountManager {
 
   enum RenameEvent { RENAME_STARTED, RENAME_COMPLETED };
 
-  // Used to house an instance of each found mount device.
+  // Used to house an instance of each found mount device. Created from
+  // non-virtual mount devices only - see IsAutoMountable().
   class Disk {
    public:
     Disk(const std::string& device_path,
@@ -182,6 +183,8 @@ class CHROMEOS_EXPORT DiskMountManager {
 
     void SetMountPath(const std::string& mount_path);
 
+    bool IsAutoMountable() const;
+
    private:
     std::string device_path_;
     std::string mount_path_;
@@ -245,12 +248,17 @@ class CHROMEOS_EXPORT DiskMountManager {
   typedef base::Callback<void(bool success)> EnsureMountInfoRefreshedCallback;
 
   // Implement this interface to be notified about disk/mount related events.
+  // TODO(agawronska): Make observer methods non-pure virtual, because
+  // subclasses only use small subset of them.
   class Observer {
    public:
     virtual ~Observer() {}
 
-    // Called when disk mount status is changed.
-    virtual void OnDiskEvent(DiskEvent event, const Disk* disk) = 0;
+    // Called when auto-mountable disk mount status is changed.
+    virtual void OnAutoMountableDiskEvent(DiskEvent event,
+                                          const Disk& disk) = 0;
+    // Called when fixed storage disk status is changed.
+    virtual void OnBootDeviceDiskEvent(DiskEvent event, const Disk& disk) = 0;
     // Called when device status is changed.
     virtual void OnDeviceEvent(DeviceEvent event,
                                const std::string& device_path) = 0;

@@ -162,6 +162,15 @@ class CHROMEOS_EXPORT DiskInfo {
   // Is the disk on a removable device.
   bool on_removable_device() const { return on_removable_device_; }
 
+  // Is the device read-only.
+  bool is_read_only() const { return is_read_only_; }
+
+  // Returns true if the device should be hidden from the file browser.
+  bool is_hidden() const { return is_hidden_; }
+
+  // Is the disk virtual.
+  bool is_virtual() const { return is_virtual_; }
+
   // Disk file path (e.g. /dev/sdb).
   const std::string& file_path() const { return file_path_; }
 
@@ -189,12 +198,6 @@ class CHROMEOS_EXPORT DiskInfo {
   // Total size of the disk in bytes.
   uint64_t total_size_in_bytes() const { return total_size_in_bytes_; }
 
-  // Is the device read-only.
-  bool is_read_only() const { return is_read_only_; }
-
-  // Returns true if the device should be hidden from the file browser.
-  bool is_hidden() const { return is_hidden_; }
-
   // Returns file system uuid.
   const std::string& uuid() const { return uuid_; }
 
@@ -211,6 +214,9 @@ class CHROMEOS_EXPORT DiskInfo {
   bool has_media_;
   bool on_boot_device_;
   bool on_removable_device_;
+  bool is_read_only_;
+  bool is_hidden_;
+  bool is_virtual_;
 
   std::string file_path_;
   std::string label_;
@@ -221,8 +227,6 @@ class CHROMEOS_EXPORT DiskInfo {
   std::string drive_model_;
   DeviceType device_type_;
   uint64_t total_size_in_bytes_;
-  bool is_read_only_;
-  bool is_hidden_;
   std::string uuid_;
   std::string file_system_type_;
 };
@@ -261,10 +265,10 @@ struct CHROMEOS_EXPORT MountEntry {
 // by callbacks.
 class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
  public:
-  // A callback to handle the result of EnumerateAutoMountableDevices.
-  // The argument is the enumerated device paths.
+  // A callback to handle the result of EnumerateAutoMountableDevices and
+  // EnumerateDevices. The argument is the enumerated device paths.
   typedef base::Callback<void(const std::vector<std::string>& device_paths)>
-      EnumerateAutoMountableDevicesCallback;
+      EnumerateDevicesCallback;
 
   // A callback to handle the result of EnumerateMountEntries.
   // The argument is the enumerated mount entries.
@@ -329,8 +333,13 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   // Calls EnumerateAutoMountableDevices method.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
   virtual void EnumerateAutoMountableDevices(
-      const EnumerateAutoMountableDevicesCallback& callback,
+      const EnumerateDevicesCallback& callback,
       const base::Closure& error_callback) = 0;
+
+  // Calls EnumerateDevices method.  |callback| is called after the
+  // method call succeeds, otherwise, |error_callback| is called.
+  virtual void EnumerateDevices(const EnumerateDevicesCallback& callback,
+                                const base::Closure& error_callback) = 0;
 
   // Calls EnumerateMountEntries.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.

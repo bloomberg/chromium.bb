@@ -530,30 +530,30 @@ void VolumeManager::OnFileSystemBeingUnmounted() {
   DoUnmountEvent(chromeos::MOUNT_ERROR_NONE, *Volume::CreateForDrive(profile_));
 }
 
-void VolumeManager::OnDiskEvent(
+void VolumeManager::OnAutoMountableDiskEvent(
     chromeos::disks::DiskMountManager::DiskEvent event,
-    const chromeos::disks::DiskMountManager::Disk* disk) {
+    const chromeos::disks::DiskMountManager::Disk& disk) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Disregard hidden devices.
-  if (disk->is_hidden())
+  if (disk.is_hidden())
     return;
 
   switch (event) {
     case chromeos::disks::DiskMountManager::DISK_ADDED:
     case chromeos::disks::DiskMountManager::DISK_CHANGED: {
-      if (disk->device_path().empty()) {
-        DVLOG(1) << "Empty system path for " << disk->device_path();
+      if (disk.device_path().empty()) {
+        DVLOG(1) << "Empty system path for " << disk.device_path();
         return;
       }
 
       bool mounting = false;
-      if (disk->mount_path().empty() && disk->has_media() &&
+      if (disk.mount_path().empty() && disk.has_media() &&
           !profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
         // TODO(crbug.com/774890): Remove |mount_label| when the issue gets
         // resolved. Currently we suggest a mount point name, because in case
         // when disk's name contains '#', content will not load in Files App.
-        std::string mount_label = disk->device_label();
+        std::string mount_label = disk.device_label();
         std::replace(mount_label.begin(), mount_label.end(), '#', '_');
 
         // If disk is not mounted yet and it has media and there is no policy
@@ -561,7 +561,7 @@ void VolumeManager::OnDiskEvent(
         // Initiate disk mount operation. MountPath auto-detects the filesystem
         // format if the second argument is empty. The third argument (mount
         // label) is not used in a disk mount operation.
-        disk_mount_manager_->MountPath(disk->device_path(), std::string(),
+        disk_mount_manager_->MountPath(disk.device_path(), std::string(),
                                        mount_label, chromeos::MOUNT_TYPE_DEVICE,
                                        GetExternalStorageAccessMode(profile_));
         mounting = true;
@@ -569,26 +569,29 @@ void VolumeManager::OnDiskEvent(
 
       // Notify to observers.
       for (auto& observer : observers_)
-        observer.OnDiskAdded(*disk, mounting);
+        observer.OnDiskAdded(disk, mounting);
       return;
     }
 
     case chromeos::disks::DiskMountManager::DISK_REMOVED:
       // If the disk is already mounted, unmount it.
-      if (!disk->mount_path().empty()) {
+      if (!disk.mount_path().empty()) {
         disk_mount_manager_->UnmountPath(
-            disk->mount_path(),
-            chromeos::UNMOUNT_OPTIONS_LAZY,
+            disk.mount_path(), chromeos::UNMOUNT_OPTIONS_LAZY,
             chromeos::disks::DiskMountManager::UnmountPathCallback());
       }
 
       // Notify to observers.
       for (auto& observer : observers_)
-        observer.OnDiskRemoved(*disk);
+        observer.OnDiskRemoved(disk);
       return;
   }
   NOTREACHED();
 }
+
+void VolumeManager::OnBootDeviceDiskEvent(
+    chromeos::disks::DiskMountManager::DiskEvent event,
+    const chromeos::disks::DiskMountManager::Disk& disk) {}
 
 void VolumeManager::OnDeviceEvent(
     chromeos::disks::DiskMountManager::DeviceEvent event,

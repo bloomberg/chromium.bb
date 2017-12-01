@@ -153,8 +153,10 @@ bool FakeDiskMountManager::AddMountPointForTest(
 void FakeDiskMountManager::InvokeDiskEventForTest(
     chromeos::disks::DiskMountManager::DiskEvent event,
     const chromeos::disks::DiskMountManager::Disk* disk) {
-  for (auto& observer : observers_)
-    observer.OnDiskEvent(event, disk);
+  for (auto& observer : observers_) {
+    disk->IsAutoMountable() ? observer.OnAutoMountableDiskEvent(event, *disk)
+                            : observer.OnBootDeviceDiskEvent(event, *disk);
+  }
 }
 
 }  // namespace file_manager

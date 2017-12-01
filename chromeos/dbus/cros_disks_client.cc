@@ -141,15 +141,24 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   void EnumerateAutoMountableDevices(
-      const EnumerateAutoMountableDevicesCallback& callback,
+      const EnumerateDevicesCallback& callback,
       const base::Closure& error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateAutoMountableDevices);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&CrosDisksClientImpl::OnEnumerateAutoMountableDevices,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
-                       error_callback));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&CrosDisksClientImpl::OnEnumerateDevices,
+                                      weak_ptr_factory_.GetWeakPtr(), callback,
+                                      error_callback));
+  }
+
+  void EnumerateDevices(const EnumerateDevicesCallback& callback,
+                        const base::Closure& error_callback) override {
+    dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
+                                 cros_disks::kEnumerateDevices);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&CrosDisksClientImpl::OnEnumerateDevices,
+                                      weak_ptr_factory_.GetWeakPtr(), callback,
+                                      error_callback));
   }
 
   // CrosDisksClient override.
@@ -331,12 +340,11 @@ class CrosDisksClientImpl : public CrosDisksClient {
     callback.Run();
   }
 
-  // Handles the result of EnumerateAutoMountableDevices and calls |callback| or
-  // |error_callback|.
-  void OnEnumerateAutoMountableDevices(
-      const EnumerateAutoMountableDevicesCallback& callback,
-      const base::Closure& error_callback,
-      dbus::Response* response) {
+  // Handles the result of EnumerateDevices and EnumarateAutoMountableDevices.
+  // Calls |callback| or |error_callback|.
+  void OnEnumerateDevices(const EnumerateDevicesCallback& callback,
+                          const base::Closure& error_callback,
+                          dbus::Response* response) {
     if (!response) {
       error_callback.Run();
       return;
@@ -497,10 +505,11 @@ DiskInfo::DiskInfo(const std::string& device_path, dbus::Response* response)
       has_media_(false),
       on_boot_device_(false),
       on_removable_device_(false),
-      device_type_(DEVICE_TYPE_UNKNOWN),
-      total_size_in_bytes_(0),
       is_read_only_(false),
-      is_hidden_(true) {
+      is_hidden_(true),
+      is_virtual_(false),
+      device_type_(DEVICE_TYPE_UNKNOWN),
+      total_size_in_bytes_(0) {
   InitializeFromResponse(response);
 }
 
@@ -627,6 +636,8 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
       cros_disks::kDeviceIsOnBootDevice, &on_boot_device_);
   properties->GetBooleanWithoutPathExpansion(
       cros_disks::kDeviceIsOnRemovableDevice, &on_removable_device_);
+  properties->GetBooleanWithoutPathExpansion(cros_disks::kDeviceIsVirtual,
+                                             &is_virtual_);
   properties->GetStringWithoutPathExpansion(
       cros_disks::kNativePath, &system_path_);
   properties->GetStringWithoutPathExpansion(
