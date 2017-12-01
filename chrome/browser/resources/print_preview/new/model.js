@@ -49,6 +49,7 @@ Polymer({
      *   headerFooter: !print_preview_new.Setting,
      *   rasterize: !print_preview_new.Setting,
      *   vendorItems: !print_preview_new.Setting,
+     *   otherOptions: !print_preview_new.Setting,
      * }}
      */
     settings: {
@@ -150,6 +151,14 @@ Polymer({
         },
         vendorItems: {
           value: {},
+          valid: true,
+          available: true,
+          updatesPreview: false,
+        },
+        // This does not represent a real setting value, and is used only to
+        // expose the availability of the other options settings section.
+        otherOptions: {
+          value: null,
           valid: true,
           available: true,
           updatesPreview: false,
@@ -301,7 +310,16 @@ Polymer({
         'settings.selectionOnly.available',
         this.documentInfo.isModifiable && this.documentInfo.hasSelection);
     this.set('settings.headerFooter.available', this.documentInfo.isModifiable);
-    this.set('settings.rasterize.available', !this.documentInfo.isModifiable);
+    this.set(
+        'settings.rasterize.available',
+        !this.documentInfo.isModifiable && !cr.isWindows && !cr.isMac);
+    this.set(
+        'settings.otherOptions.available',
+        this.settings.duplex.available ||
+            this.settings.cssBackground.available ||
+            this.settings.selectionOnly.available ||
+            this.settings.headerFooter.available ||
+            this.settings.rasterize.available);
   },
 
   /** @param {?print_preview.CddCapabilities} caps The printer capabilities. */

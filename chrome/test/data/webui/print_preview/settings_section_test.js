@@ -12,6 +12,7 @@ cr.define('settings_sections_tests', function() {
     Margins: 'margins',
     Dpi: 'dpi',
     Scaling: 'scaling',
+    Other: 'other',
   };
 
   const suiteName = 'SettingsSectionsTests';
@@ -260,6 +261,62 @@ cr.define('settings_sections_tests', function() {
       // PDF to PDF destination -> section disappears.
       setPdfDestination();
       expectEquals(true, scalingElement.hidden);
+    });
+
+    test(assert(TestNames.Other), function() {
+      const optionsElement = page.$$('print-preview-other-options-settings');
+      const headerFooter = optionsElement.$$('#header-footer-container');
+      const duplex = optionsElement.$$('#duplex-container');
+      const cssBackground = optionsElement.$$('#css-background-container');
+      const rasterize = optionsElement.$$('#rasterize-container');
+      const selectionOnly = optionsElement.$$('#selection-only-container');
+
+      // Start with HTML + duplex capability.
+      setPdfDocument(false);
+      let capabilities = getCdd();
+      page.set('destination.capabilities', capabilities);
+      expectEquals(false, optionsElement.hidden);
+      expectEquals(false, headerFooter.hidden);
+      expectEquals(false, duplex.hidden);
+      expectEquals(false, cssBackground.hidden);
+      expectEquals(true, rasterize.hidden);
+      expectEquals(true, selectionOnly.hidden);
+
+      // Add a selection.
+      let info = new print_preview.DocumentInfo();
+      info.init(true, 'title', true);
+      page.set('documentInfo', info);
+      expectEquals(false, optionsElement.hidden);
+      expectEquals(false, selectionOnly.hidden);
+
+      // Remove duplex capability.
+      capabilities = getCdd();
+      delete capabilities.printer.duplex;
+      page.set('destination.capabilities', capabilities);
+      expectEquals(false, optionsElement.hidden);
+      expectEquals(true, duplex.hidden);
+
+      // PDF
+      setPdfDocument(true);
+      expectEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
+      expectEquals(true, headerFooter.hidden);
+      expectEquals(true, duplex.hidden);
+      expectEquals(true, cssBackground.hidden);
+      expectEquals(cr.isWindows || cr.isMac, rasterize.hidden);
+      expectEquals(true, selectionOnly.hidden);
+
+      // Add a selection - should do nothing for PDFs.
+      info = new print_preview.DocumentInfo();
+      info.init(false, 'title', true);
+      page.set('documentInfo', info);
+      expectEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
+      expectEquals(true, selectionOnly.hidden);
+
+      // Add duplex.
+      capabilities = getCdd();
+      page.set('destination.capabilities', capabilities);
+      expectEquals(false, optionsElement.hidden);
+      expectEquals(false, duplex.hidden);
     });
   });
 
