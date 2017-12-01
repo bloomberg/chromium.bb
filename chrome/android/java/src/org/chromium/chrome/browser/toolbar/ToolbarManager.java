@@ -312,7 +312,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 if (mToolbarModel.getTab() == null) return;
 
                 assert tab == mToolbarModel.getTab();
-                mLocationBar.updateSecurityIcon(tab.getSecurityLevel());
+                mLocationBar.updateSecurityIcon();
             }
 
             @Override
@@ -401,7 +401,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
                 if (!didStartLoad) return;
                 mLocationBar.setUrlToPageUrl();
-                mLocationBar.updateSecurityIcon(tab.getSecurityLevel());
+                mLocationBar.updateSecurityIcon();
                 if (didFinishLoad) {
                     mLoadProgressSimulator.start();
                 }

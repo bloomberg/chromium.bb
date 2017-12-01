@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
+
 import android.annotation.SuppressLint;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -16,6 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
@@ -26,12 +31,16 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.ui.test.util.UiRestriction;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests for {@link LocationBarLayout} UI component in the home sheet.
@@ -78,12 +87,15 @@ public class BottomSheetLocationBarTest {
     }
 
     /**
-     * Test whether the color of the Location bar is correct for HTTPS scheme.
+     * Test whether the contents of the location bar are correct for HTTPS scheme.
      */
     @Test
     @SmallTest
     @SkipCommandLineParameterization
-    public void testHttpsLocationBarColor() throws Exception {
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN})
+    public void testHttpsLocationBar() throws Exception {
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+
         final String testHttpsUrl = mTestServer.getURL(THEME_COLOR_TEST_PAGE);
 
         mBottomSheetTestRule.loadUrl(testHttpsUrl);
@@ -96,11 +108,53 @@ public class BottomSheetLocationBarTest {
         ImageButton securityButton =
                 (ImageButton) mBottomSheetTestRule.getActivity().findViewById(R.id.security_button);
 
-        boolean securityIcon = locationBarLayout.isSecurityButtonShown();
-        Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
+        Assert.assertTrue(
+                "Omnibox should have a security icon", isSecurityButtonShown(locationBarLayout));
         Assert.assertEquals("security_button with wrong resource-id", R.id.security_button,
                 securityButton.getId());
 
-        Assert.assertTrue(locationBarLayout.shouldEmphasizeHttpsScheme());
+        Assert.assertTrue(shouldEmphasizeHttpsScheme(locationBarLayout));
+
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_HALF, false);
+
+        Assert.assertFalse("Omnibox should not have a security icon",
+                isSecurityButtonShown(locationBarLayout));
+        Assert.assertThat("Url bar text should be empty.", getLocationBarText(locationBarLayout),
+                isEmptyString());
+
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
+
+        Assert.assertTrue(
+                "Omnibox should have a security icon", isSecurityButtonShown(locationBarLayout));
+        Assert.assertThat("Url bar text should not be empty.",
+                getLocationBarText(locationBarLayout), is(not(isEmptyString())));
+    }
+
+    private boolean isSecurityButtonShown(LocationBarLayout locationBar) throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return locationBar.isSecurityButtonShown();
+            }
+        });
+    }
+
+    private String getLocationBarText(LocationBarLayout locationBar) throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return locationBar.mUrlBar.getText().toString();
+            }
+        });
+    }
+
+    private boolean shouldEmphasizeHttpsScheme(LocationBarLayout locationBar)
+            throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return locationBar.shouldEmphasizeHttpsScheme();
+            }
+        });
     }
 }

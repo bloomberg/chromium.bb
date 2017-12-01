@@ -146,7 +146,7 @@ public interface LocationBar extends UrlBarDelegate {
     /**
      * Updates the security icon displayed in the LocationBar.
      */
-    void updateSecurityIcon(int securityLevel);
+    void updateSecurityIcon();
 
     /**
      * @return The {@link ViewGroup} that this container holds.
