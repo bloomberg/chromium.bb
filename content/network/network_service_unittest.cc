@@ -15,6 +15,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "net/proxy/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
@@ -26,6 +27,14 @@
 namespace content {
 
 namespace {
+
+mojom::NetworkContextParamsPtr CreateContextParams() {
+  mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
+  // Use a fixed proxy config, to avoid dependencies on local network
+  // configuration.
+  params->initial_proxy_config = net::ProxyConfig::CreateDirect();
+  return params;
+}
 
 class NetworkServiceTest : public testing::Test {
  public:
@@ -48,11 +57,8 @@ class NetworkServiceTest : public testing::Test {
 // NetworkService.
 TEST_F(NetworkServiceTest, CreateAndDestroyContext) {
   mojom::NetworkContextPtr network_context;
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
-
   service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                  std::move(context_params));
+                                  CreateContextParams());
   network_context.reset();
   // Make sure the NetworkContext is destroyed.
   base::RunLoop().RunUntilIdle();
@@ -63,11 +69,8 @@ TEST_F(NetworkServiceTest, CreateAndDestroyContext) {
 // itself.
 TEST_F(NetworkServiceTest, DestroyingServiceDestroysContext) {
   mojom::NetworkContextPtr network_context;
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
-
   service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
-                                  std::move(context_params));
+                                  CreateContextParams());
   base::RunLoop run_loop;
   network_context.set_connection_error_handler(run_loop.QuitClosure());
   DestroyService();

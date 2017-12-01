@@ -49,6 +49,8 @@ source_set("network_sources") {
     "network_service_impl.h",
     "network_service_url_loader_factory.cc",
     "network_service_url_loader_factory.h",
+    "proxy_config_service_mojo.cc",
+    "proxy_config_service_mojo.h",
     "proxy_resolver_factory_mojo.cc",
     "proxy_resolver_factory_mojo.h",
     "proxy_service_mojo.cc",

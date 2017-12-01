@@ -6,6 +6,7 @@ module content.mojom;
 
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
+import "proxy_config.mojom";
 import "resource_type.mojom";
 import "url_loader.mojom";
 import "url_loader_factory.mojom";
@@ -61,6 +62,29 @@ struct NetworkContextParams {
 
   // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
   bool http_09_on_non_default_ports_enabled = false;
+
+  // Proxy configuration. If |intial_proxy_config| is set, it's the initial
+  // proxy configuration. Updated proxy configuration can be passed in via
+  // |proxy_config_client_request|. If |initial_proxy_config| is not set,
+  // proxy lookups will be deferred until a configuration is received via
+  // |proxy_config_client_request|.
+  //
+  // If both are null, the NetworkContext will attempt to automatically
+  // detect the system proxy configuration (Which defaults to no proxy on
+  // Linux and Android).
+  //
+  // TODO(mmenke): Use direct connections by default instead.
+  ProxyConfig? initial_proxy_config;
+  ProxyConfigClient&? proxy_config_client_request;
+
+  // If |proxy_config_client_request| is non-null, this is called during
+  // periods of network activity, and can be used as a signal for polling-based
+  // logic to determine the proxy config.
+  //
+  // TODO(mmenke): Can the consumer piggy back on other network events through
+  // other channels (navigation, issuing requests, etc)? Or can
+  // ProxyConfigServices be modified not to need this notification?
+  ProxyConfigPollerClient? proxy_config_poller_client;
 };
 
 struct NetworkConditions {

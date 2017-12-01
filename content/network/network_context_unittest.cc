@@ -25,6 +25,7 @@
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/common/network_service.mojom.h"
+#include "content/public/common/proxy_config.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -37,6 +38,10 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/log/net_log_with_source.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -48,6 +53,14 @@
 namespace content {
 
 namespace {
+
+mojom::NetworkContextParamsPtr CreateContextParams() {
+  mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
+  // Use a fixed proxy config, to avoid dependencies on local network
+  // configuration.
+  params->initial_proxy_config = net::ProxyConfig::CreateDirect();
+  return params;
+}
 
 class NetworkContextTest : public testing::Test {
  public:
@@ -103,7 +116,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableQuic);
 
   std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(CreateContextParams());
   // By default, QUIC should be enabled for new NetworkContexts when the command
   // line indicates it should be.
   EXPECT_TRUE(network_context->url_request_context()
@@ -122,7 +135,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
 
   // Disabling QUIC should disable it new NetworkContexts.
   std::unique_ptr<NetworkContext> network_context2 =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(CreateContextParams());
   EXPECT_FALSE(network_context2->url_request_context()
                    ->http_transaction_factory()
                    ->GetSession()
@@ -132,7 +145,7 @@ TEST_F(NetworkContextTest, DisableQuic) {
   // Disabling QUIC again should be harmless.
   network_service()->DisableQuic();
   std::unique_ptr<NetworkContext> network_context3 =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(CreateContextParams());
   EXPECT_FALSE(network_context3->url_request_context()
                    ->http_transaction_factory()
                    ->GetSession()
@@ -164,8 +177,7 @@ TEST_F(NetworkContextTest, ContextName) {
 
 TEST_F(NetworkContextTest, QuicUserAgentId) {
   const char kQuicUserAgentId[] = "007";
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->quic_user_agent_id = kQuicUserAgentId;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -177,8 +189,7 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
 }
 
 TEST_F(NetworkContextTest, DisableDataUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->enable_data_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -188,8 +199,7 @@ TEST_F(NetworkContextTest, DisableDataUrlSupport) {
 }
 
 TEST_F(NetworkContextTest, EnableDataUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->enable_data_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -199,8 +209,7 @@ TEST_F(NetworkContextTest, EnableDataUrlSupport) {
 }
 
 TEST_F(NetworkContextTest, DisableFileUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->enable_file_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -211,8 +220,7 @@ TEST_F(NetworkContextTest, DisableFileUrlSupport) {
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
 TEST_F(NetworkContextTest, EnableFileUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->enable_file_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -223,8 +231,7 @@ TEST_F(NetworkContextTest, EnableFileUrlSupport) {
 #endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
 
 TEST_F(NetworkContextTest, DisableFtpUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->enable_ftp_url_support = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -235,8 +242,7 @@ TEST_F(NetworkContextTest, DisableFtpUrlSupport) {
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
 TEST_F(NetworkContextTest, EnableFtpUrlSupport) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->enable_ftp_url_support = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -247,8 +253,7 @@ TEST_F(NetworkContextTest, EnableFtpUrlSupport) {
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 TEST_F(NetworkContextTest, Http09Disabled) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_09_on_non_default_ports_enabled = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -260,8 +265,7 @@ TEST_F(NetworkContextTest, Http09Disabled) {
 }
 
 TEST_F(NetworkContextTest, Http09Enabled) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_09_on_non_default_ports_enabled = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -274,7 +278,7 @@ TEST_F(NetworkContextTest, Http09Enabled) {
 
 TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
   std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(CreateContextParams());
 
   const net::HttpNetworkSession::Params& params =
       network_context->url_request_context()
@@ -300,7 +304,7 @@ TEST_F(NetworkContextTest, FixedHttpPort) {
       switches::kTestingFixedHttpsPort, "801");
 
   std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(mojom::NetworkContextParams::New());
+      CreateContextWithParams(CreateContextParams());
 
   const net::HttpNetworkSession::Params& params =
       network_context->url_request_context()
@@ -313,8 +317,7 @@ TEST_F(NetworkContextTest, FixedHttpPort) {
 }
 
 TEST_F(NetworkContextTest, NoCache) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = false;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -324,8 +327,7 @@ TEST_F(NetworkContextTest, NoCache) {
 }
 
 TEST_F(NetworkContextTest, MemoryCache) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
@@ -344,8 +346,7 @@ TEST_F(NetworkContextTest, MemoryCache) {
 }
 
 TEST_F(NetworkContextTest, DiskCache) {
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = true;
 
   base::ScopedTempDir temp_dir;
@@ -376,8 +377,7 @@ TEST_F(NetworkContextTest, DiskCache) {
 TEST_F(NetworkContextTest, SimpleCache) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kUseSimpleCacheBackend, "on");
-  mojom::NetworkContextParamsPtr context_params =
-      mojom::NetworkContextParams::New();
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = true;
 
   base::ScopedTempDir temp_dir;
@@ -537,6 +537,134 @@ TEST_F(NetworkContextTest, CookieManager) {
   EXPECT_EQ("TestCookie", cookies[0].Name());
 }
 
-}  // namespace
+TEST_F(NetworkContextTest, ProxyConfig) {
+  // Create a bunch of proxy rules to switch between. All that matters is that
+  // they're all different. It's important that none of these configs require
+  // fetching a PAC scripts, as this test checks ProxyService::config(), which
+  // is only updated after fetching PAC scripts (if applicable).
+  net::ProxyConfig proxy_configs[3];
+  proxy_configs[0].proxy_rules().ParseFromString("http=foopy:80");
+  proxy_configs[1].proxy_rules().ParseFromString("http=foopy:80;ftp=foopy2");
+  proxy_configs[2] = net::ProxyConfig::CreateDirect();
 
+  // Sanity check.
+  EXPECT_FALSE(proxy_configs[0].Equals(proxy_configs[1]));
+  EXPECT_FALSE(proxy_configs[0].Equals(proxy_configs[2]));
+  EXPECT_FALSE(proxy_configs[1].Equals(proxy_configs[2]));
+
+  // Try each proxy config as the initial config, to make sure setting the
+  // initial config works.
+  for (const auto& initial_proxy_config : proxy_configs) {
+    mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+    context_params->initial_proxy_config = initial_proxy_config;
+    mojom::ProxyConfigClientPtr config_client;
+    context_params->proxy_config_client_request =
+        mojo::MakeRequest(&config_client);
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(context_params));
+
+    net::ProxyService* proxy_service =
+        network_context->url_request_context()->proxy_service();
+    // Kick the ProxyService into action, as it doesn't start updating its
+    // config until it's first used.
+    proxy_service->ForceReloadProxyConfig();
+    EXPECT_TRUE(proxy_service->config().is_valid());
+    EXPECT_TRUE(proxy_service->config().Equals(initial_proxy_config));
+
+    // Always go through the other configs in the same order. This has the
+    // advantage of testing the case where there's no change, for
+    // proxy_config[0].
+    for (const auto& proxy_config : proxy_configs) {
+      config_client->OnProxyConfigUpdated(proxy_config);
+      scoped_task_environment_.RunUntilIdle();
+      EXPECT_TRUE(proxy_service->config().is_valid());
+      EXPECT_TRUE(proxy_service->config().Equals(proxy_config));
+    }
+  }
+}
+
+// Verify that a proxy config works without a ProxyConfigClientRequest.
+TEST_F(NetworkContextTest, StaticProxyConfig) {
+  net::ProxyConfig proxy_config;
+  proxy_config.proxy_rules().ParseFromString("http=foopy:80;ftp=foopy2");
+
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->initial_proxy_config = proxy_config;
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  net::ProxyService* proxy_service =
+      network_context->url_request_context()->proxy_service();
+  // Kick the ProxyService into action, as it doesn't start updating its
+  // config until it's first used.
+  proxy_service->ForceReloadProxyConfig();
+  EXPECT_TRUE(proxy_service->config().is_valid());
+  EXPECT_TRUE(proxy_service->config().Equals(proxy_config));
+}
+
+TEST_F(NetworkContextTest, NoInitialProxyConfig) {
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->initial_proxy_config.reset();
+  mojom::ProxyConfigClientPtr config_client;
+  context_params->proxy_config_client_request =
+      mojo::MakeRequest(&config_client);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+
+  net::ProxyService* proxy_service =
+      network_context->url_request_context()->proxy_service();
+  EXPECT_FALSE(proxy_service->config().is_valid());
+  EXPECT_FALSE(proxy_service->fetched_config().is_valid());
+
+  // Before there's a proxy configuration, proxy requests should hang.
+  net::ProxyInfo proxy_info;
+  net::TestCompletionCallback test_callback;
+  net::ProxyService::PacRequest* pac_request = nullptr;
+  ASSERT_EQ(net::ERR_IO_PENDING,
+            proxy_service->ResolveProxy(GURL("http://bar/"), "GET", &proxy_info,
+                                        test_callback.callback(), &pac_request,
+                                        nullptr, net::NetLogWithSource()));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(proxy_service->config().is_valid());
+  EXPECT_FALSE(proxy_service->fetched_config().is_valid());
+  ASSERT_FALSE(test_callback.have_result());
+
+  net::ProxyConfig proxy_config;
+  proxy_config.proxy_rules().ParseFromString("http=foopy:80");
+  config_client->OnProxyConfigUpdated(proxy_config);
+  ASSERT_EQ(net::OK, test_callback.WaitForResult());
+
+  EXPECT_TRUE(proxy_info.is_http());
+  EXPECT_EQ("foopy", proxy_info.proxy_server().host_port_pair().host());
+}
+
+class TestProxyConfigLazyPoller : public mojom::ProxyConfigPollerClient {
+ public:
+  TestProxyConfigLazyPoller() : binding_(this) {}
+  ~TestProxyConfigLazyPoller() override {}
+
+  void OnLazyProxyConfigPoll() override { ++times_polled_; }
+
+  mojom::ProxyConfigPollerClientPtr BindInterface() {
+    mojom::ProxyConfigPollerClientPtr interface;
+    binding_.Bind(MakeRequest(&interface));
+    return interface;
+  }
+
+  int GetAndClearTimesPolled() {
+    int out = times_polled_;
+    times_polled_ = 0;
+    return out;
+  }
+
+ private:
+  int times_polled_ = 0;
+  mojo::Binding<ProxyConfigPollerClient> binding_;
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProxyConfigLazyPoller);
+};
+
+}  // namespace
 }  // namespace content
