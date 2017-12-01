@@ -17,6 +17,7 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/NetworkStateNotifier.h"
+#include "platform/network/NetworkUtils.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
@@ -318,6 +319,9 @@ void WorkerFetchContext::DispatchDidFail(unsigned long identifier,
                                          int64_t encoded_data_length,
                                          bool is_internal_request) {
   probe::didFailLoading(global_scope_, identifier, nullptr, error);
+  if (NetworkUtils::IsCertificateTransparencyRequiredError(error.ErrorCode())) {
+    CountUsage(WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad);
+  }
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {

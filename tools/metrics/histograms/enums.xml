@@ -17109,6 +17109,7 @@ Called by update_net_error_codes.py.-->
   <int value="2256" label="LocalCSSFile"/>
   <int value="2257" label="LocalCSSFileExtensionRejected"/>
   <int value="2258" label="UserMediaDisableHardwareNoiseSuppression"/>
+  <int value="2259" label="CertificateTransparencyRequiredErrorOnResourceLoad"/>
 </enum>
 
 <enum name="FeedbackSource">

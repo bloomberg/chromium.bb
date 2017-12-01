@@ -1777,6 +1777,7 @@ enum WebFeature {
   kLocalCSSFile = 2256,
   kLocalCSSFileExtensionRejected = 2257,
   kUserMediaDisableHardwareNoiseSuppression = 2258,
+  kCertificateTransparencyRequiredErrorOnResourceLoad = 2259,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
