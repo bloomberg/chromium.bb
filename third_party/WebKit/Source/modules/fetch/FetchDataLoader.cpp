@@ -499,8 +499,8 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
     DCHECK(!consumer_);
     data_pipe_watcher_.Watch(
         out_data_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        ConvertToBaseCallback(WTF::Bind(&FetchDataLoaderAsDataPipe::OnWritable,
-                                        WrapWeakPersistent(this))));
+        WTF::BindRepeating(&FetchDataLoaderAsDataPipe::OnWritable,
+                           WrapWeakPersistent(this)));
     data_pipe_watcher_.ArmOrNotify();
     client_ = client;
     consumer_ = consumer;

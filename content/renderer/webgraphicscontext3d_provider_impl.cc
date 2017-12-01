@@ -62,8 +62,8 @@ bool WebGraphicsContext3DProviderImpl::IsSoftwareRendering() const {
 }
 
 void WebGraphicsContext3DProviderImpl::SetLostContextCallback(
-    const base::Closure& c) {
-  context_lost_callback_ = c;
+    base::RepeatingClosure c) {
+  context_lost_callback_ = std::move(c);
 }
 
 void WebGraphicsContext3DProviderImpl::SetErrorMessageCallback(

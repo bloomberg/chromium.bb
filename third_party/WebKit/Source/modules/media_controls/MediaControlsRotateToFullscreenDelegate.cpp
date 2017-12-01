@@ -125,8 +125,9 @@ void MediaControlsRotateToFullscreenDelegate::OnStateChange() {
   if (needs_visibility_observer && !visibility_observer_) {
     visibility_observer_ = new ElementVisibilityObserver(
         video_element_,
-        WTF::Bind(&MediaControlsRotateToFullscreenDelegate::OnVisibilityChange,
-                  WrapWeakPersistent(this)));
+        WTF::BindRepeating(
+            &MediaControlsRotateToFullscreenDelegate::OnVisibilityChange,
+            WrapWeakPersistent(this)));
     visibility_observer_->Start(kVisibilityThreshold);
   } else if (!needs_visibility_observer && visibility_observer_) {
     visibility_observer_->Stop();

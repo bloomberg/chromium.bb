@@ -27,8 +27,8 @@ void ElementVisibilityObserver::Start(float threshold) {
 
   intersection_observer_ = IntersectionObserver::Create(
       {} /* root_margin */, {threshold}, &document,
-      WTF::Bind(&ElementVisibilityObserver::OnVisibilityChanged,
-                WrapWeakPersistent(this)));
+      WTF::BindRepeating(&ElementVisibilityObserver::OnVisibilityChanged,
+                         WrapWeakPersistent(this)));
   DCHECK(intersection_observer_);
 
   intersection_observer_->observe(element_.Release());

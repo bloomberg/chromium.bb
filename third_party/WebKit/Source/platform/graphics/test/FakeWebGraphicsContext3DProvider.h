@@ -44,7 +44,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
 
   bool BindToCurrentThread() override { return false; }
-  void SetLostContextCallback(const base::Closure&) override {}
+  void SetLostContextCallback(base::Closure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) {}
   void SignalQuery(uint32_t, base::OnceClosure) override {}

@@ -58,9 +58,8 @@ class ScreenWakeLockTest : public ::testing::Test {
     service_manager::InterfaceProvider::TestApi test_api(
         test_web_frame_client_.GetInterfaceProvider());
     test_api.SetBinderForName(
-        WakeLock::Name_,
-        ConvertToBaseCallback(
-            WTF::Bind(&MockWakeLock::Bind, WTF::Unretained(&mock_wake_lock_))));
+        WakeLock::Name_, WTF::BindRepeating(&MockWakeLock::Bind,
+                                            WTF::Unretained(&mock_wake_lock_)));
 
     web_view_helper_.Initialize(&test_web_frame_client_);
     URLTestHelpers::RegisterMockedURLLoadFromBase(

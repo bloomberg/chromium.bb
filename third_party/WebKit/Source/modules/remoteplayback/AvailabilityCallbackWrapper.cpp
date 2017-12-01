@@ -13,7 +13,8 @@ AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(
     V8RemotePlaybackAvailabilityCallback* callback)
     : bindings_cb_(callback) {}
 
-AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(WTF::Closure callback)
+AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(
+    WTF::RepeatingClosure callback)
     : internal_cb_(std::move(callback)) {}
 
 void AvailabilityCallbackWrapper::Run(RemotePlayback* remote_playback,

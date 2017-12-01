@@ -264,18 +264,18 @@ class WebCryptoResultAdapter : public ScriptFunction {
   WTF::RepeatingFunction<void(T)> function_;
   template <typename U>
   friend WebCryptoResult ToWebCryptoResult(ScriptState*,
-                                           WTF::Function<void(U)>);
+                                           WTF::RepeatingFunction<void(U)>);
 };
 
 template <typename T>
 WebCryptoResult ToWebCryptoResult(ScriptState* script_state,
-                                  WTF::Function<void(T)> function) {
+                                  WTF::RepeatingFunction<void(T)> function) {
   CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   result->Promise().Then(
       (new WebCryptoResultAdapter<T>(script_state, std::move(function)))
           ->BindToV8Function(),
       (new WebCryptoResultAdapter<DOMException*>(
-           script_state, WTF::Bind([](DOMException* exception) {
+           script_state, WTF::BindRepeating([](DOMException* exception) {
              CHECK(false) << "crypto operation failed";
            })))
           ->BindToV8Function());
@@ -287,7 +287,7 @@ T SubtleCryptoSync(ScriptState* script_state, PMF func, Args&&... args) {
   T result;
   (Platform::Current()->Crypto()->*func)(
       std::forward<Args>(args)...,
-      ToWebCryptoResult(script_state, WTF::Bind(
+      ToWebCryptoResult(script_state, WTF::BindRepeating(
                                           [](T* out, T result) {
                                             *out = result;
                                             testing::ExitRunLoop();

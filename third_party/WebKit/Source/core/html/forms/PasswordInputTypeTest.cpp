@@ -24,8 +24,8 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
         &frame.GetInterfaceProvider());
     test_api.SetBinderForName(
         mojom::blink::InsecureInputService::Name_,
-        ConvertToBaseCallback(WTF::Bind(&MockInsecureInputService::BindRequest,
-                                        WTF::Unretained(this))));
+        WTF::BindRepeating(&MockInsecureInputService::BindRequest,
+                           WTF::Unretained(this)));
   }
 
   ~MockInsecureInputService() override {}

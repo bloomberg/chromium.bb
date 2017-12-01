@@ -42,7 +42,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
 
   class TestApi {
    public:
-    using Binder = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+    using Binder = base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
     explicit TestApi(Connector* connector) : connector_(connector) {}
     ~TestApi() { connector_->ResetStartServiceCallback(); }
 

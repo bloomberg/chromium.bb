@@ -71,7 +71,7 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementInRemoteFrame) {
 
   Persistent<HTMLElement> element = HTMLDivElement::Create(GetDocument());
   ElementVisibilityObserver* observer =
-      new ElementVisibilityObserver(element, WTF::Bind([](bool) {}));
+      new ElementVisibilityObserver(element, WTF::BindRepeating([](bool) {}));
   observer->Start();
   observer->DeliverObservationsForTesting();
   observer->Stop();

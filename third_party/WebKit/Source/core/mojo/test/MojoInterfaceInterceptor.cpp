@@ -73,9 +73,8 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
     started_ = true;
     test_api.OverrideBinderForTesting(
         browser_service, interface_name,
-        ConvertToBaseCallback(
-            WTF::Bind(&MojoInterfaceInterceptor::OnInterfaceRequest,
-                      WrapWeakPersistent(this))));
+        WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                           WrapWeakPersistent(this)));
     return;
   }
 
@@ -89,10 +88,10 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   }
 
   started_ = true;
-  test_api.SetBinderForName(interface_name,
-                            ConvertToBaseCallback(WTF::Bind(
-                                &MojoInterfaceInterceptor::OnInterfaceRequest,
-                                WrapWeakPersistent(this))));
+  test_api.SetBinderForName(
+      interface_name,
+      WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                         WrapWeakPersistent(this)));
 }
 
 void MojoInterfaceInterceptor::stop() {

@@ -44,8 +44,9 @@ namespace {
 
 class TaskOrderObserver {
  public:
-  WTF::Closure CreateTask(int id) {
-    return WTF::Bind(&TaskOrderObserver::RunTask, WTF::Unretained(this), id);
+  WTF::RepeatingClosure CreateTask(int id) {
+    return WTF::BindRepeating(&TaskOrderObserver::RunTask,
+                              WTF::Unretained(this), id);
   }
   const Vector<int>& Order() const { return order_; }
 

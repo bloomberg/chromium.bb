@@ -27,7 +27,7 @@ class AvailabilityCallbackWrapper final
 
  public:
   explicit AvailabilityCallbackWrapper(V8RemotePlaybackAvailabilityCallback*);
-  explicit AvailabilityCallbackWrapper(WTF::Closure);
+  explicit AvailabilityCallbackWrapper(WTF::RepeatingClosure);
   ~AvailabilityCallbackWrapper() = default;
 
   void Run(RemotePlayback*, bool new_availability);

@@ -26,8 +26,8 @@ class BlobBytesStreamer {
         pipe_(std::move(pipe)),
         watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                   ConvertToBaseCallback(WTF::Bind(
-                       &BlobBytesStreamer::OnWritable, WTF::Unretained(this))));
+                   WTF::BindRepeating(&BlobBytesStreamer::OnWritable,
+                                      WTF::Unretained(this)));
   }
 
   void OnWritable(MojoResult result) {

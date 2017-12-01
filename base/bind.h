@@ -239,8 +239,8 @@ BindRepeating(Functor&& functor, Args&&... args) {
 template <typename Functor, typename... Args>
 inline Callback<MakeUnboundRunType<Functor, Args...>>
 Bind(Functor&& functor, Args&&... args) {
-  return BindRepeating(std::forward<Functor>(functor),
-                       std::forward<Args>(args)...);
+  return base::BindRepeating(std::forward<Functor>(functor),
+                             std::forward<Args>(args)...);
 }
 
 // Special cases for binding to a base::Callback without extra bound arguments.

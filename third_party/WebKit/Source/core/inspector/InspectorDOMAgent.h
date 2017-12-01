@@ -254,7 +254,7 @@ class CORE_EXPORT InspectorDOMAgent final
   static void CollectNodes(Node* root,
                            int depth,
                            bool pierce,
-                           const Function<bool(Node*)>&,
+                           const WTF::RepeatingFunction<bool(Node*)>&,
                            HeapVector<Member<Node>>* result);
 
   protocol::Response AssertNode(int node_id, Node*&);
