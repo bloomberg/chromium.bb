@@ -87,3 +87,7 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Dpi', function() {
 TEST_F('PrintPreviewSettingsSectionsTest', 'Scaling', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Scaling);
 });
+
+TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.Other);
+});

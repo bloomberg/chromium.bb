@@ -11,31 +11,35 @@
     <print-preview-settings-section class="multirow-controls">
       <span slot="title" id="options-label">$i18n{optionsLabel}</span>
       <div slot="controls" class="checkbox">
-        <div id="header-footer-container">
+        <div id="header-footer-container"
+            hidden$="[[!settings.headerFooter.available]]">
           <label aria-live="polite">
             <input type="checkbox">
             <span>$i18n{optionHeaderFooter}</span>
           </label>
         </div>
-        <div id="duplex-container">
+        <div id="duplex-container" hidden$="[[!settings.duplex.available]]">
           <label aria-live="polite">
             <input type="checkbox" checked="{{duplexValue_::change}}">
             <span>$i18n{optionTwoSided}</span>
           </label>
         </div>
-        <div id="css-background-container">
+        <div id="css-background-container"
+            hidden$="[[!settings.cssBackground.available]]">
           <label aria-live="polite">
             <input type="checkbox">
             <span>$i18n{optionBackgroundColorsAndImages}</span>
           </label>
         </div>
-        <div id="rasterize-container">
+        <div id="rasterize-container"
+            hidden$="[[!settings.rasterize.available]]">
           <label aria-live="polite">
             <input type="checkbox">
             <span>$i18n{optionRasterize}</span>
           </label>
         </div>
-        <div id="selection-only-container">
+        <div id="selection-only-container"
+            hidden$="[[!settings.selectionOnly.available]]">
           <label aria-live="polite">
             <input type="checkbox">
             <span>$i18n{optionSelectionOnly}</span>
