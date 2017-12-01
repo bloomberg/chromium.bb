@@ -35,7 +35,7 @@ TEST(SuggestionAnswerTest, CopiesAreEqual) {
   SuggestionAnswer answer1;
   EXPECT_TRUE(answer1.Equals(SuggestionAnswer(answer1)));
 
-  auto answer2 = base::WrapUnique(new SuggestionAnswer);
+  auto answer2 = base::MakeUnique<SuggestionAnswer>();
   answer2->set_type(832345);
   EXPECT_TRUE(answer2->Equals(SuggestionAnswer(*answer2)));
 
