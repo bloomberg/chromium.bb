@@ -8,7 +8,6 @@
 
 #include "base/optional.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
-#include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
@@ -214,7 +213,7 @@ void ServiceWorkerURLLoaderJob::DidPrepareFetchEvent(
 
 void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,
-    ServiceWorkerFetchEventResult fetch_result,
+    ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
@@ -232,13 +231,15 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     return;
   }
 
-  if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
+  if (fetch_result ==
+      ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback) {
     // TODO(kinuko): Check if this needs to fallback to the renderer.
     FallbackToNetwork();
     return;
   }
 
-  DCHECK_EQ(fetch_result, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
+  DCHECK_EQ(fetch_result,
+            ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse);
 
   // A response with status code 0 is Blink telling us to respond with
   // network error.

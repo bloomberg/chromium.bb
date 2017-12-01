@@ -273,12 +273,13 @@ std::unique_ptr<base::Value> NetLogServiceWorkerStatusCallback(
 
 std::unique_ptr<base::Value> NetLogFetchEventCallback(
     ServiceWorkerStatusCode status,
-    ServiceWorkerFetchEventResult result,
+    ServiceWorkerFetchDispatcher::FetchEventResult result,
     net::NetLogCaptureMode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("status", ServiceWorkerStatusToString(status));
-  dict->SetBoolean("has_response",
-                   result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
+  dict->SetBoolean(
+      "has_response",
+      result == ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse);
   return std::move(dict);
 }
 
@@ -360,24 +361,21 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
                   base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
                    nullptr /* body_as_stream */, nullptr /* body_as_blob */,
-                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-                   dispatch_event_time);
+                   FetchEventResult::kGotResponse, dispatch_event_time);
   }
   void OnResponseBlob(const ServiceWorkerResponse& response,
                       blink::mojom::BlobPtr body_as_blob,
                       base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
                    nullptr /* body_as_stream */, std::move(body_as_blob),
-                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-                   dispatch_event_time);
+                   FetchEventResult::kGotResponse, dispatch_event_time);
   }
   void OnResponseLegacyBlob(const ServiceWorkerResponse& response,
                             base::Time dispatch_event_time,
                             OnResponseLegacyBlobCallback callback) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
                    nullptr /* body_as_stream */, nullptr /* body_as_blob */,
-                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-                   dispatch_event_time);
+                   FetchEventResult::kGotResponse, dispatch_event_time);
     std::move(callback).Run();
   }
   void OnResponseStream(
@@ -386,14 +384,13 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       base::Time dispatch_event_time) override {
     HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
                    std::move(body_as_stream), nullptr /* body_as_blob */,
-                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-                   dispatch_event_time);
+                   FetchEventResult::kGotResponse, dispatch_event_time);
   }
   void OnFallback(base::Time dispatch_event_time) override {
-    HandleResponse(
-        fetch_dispatcher_, version_, fetch_event_id_, ServiceWorkerResponse(),
-        nullptr /* body_as_stream */, nullptr /* body_as_blob */,
-        SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, dispatch_event_time);
+    HandleResponse(fetch_dispatcher_, version_, fetch_event_id_,
+                   ServiceWorkerResponse(), nullptr /* body_as_stream */,
+                   nullptr /* body_as_blob */,
+                   FetchEventResult::kShouldFallback, dispatch_event_time);
   }
 
  private:
@@ -406,12 +403,11 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       blink::mojom::BlobPtr body_as_blob,
-      ServiceWorkerFetchEventResult fetch_result,
+      FetchEventResult fetch_result,
       base::Time dispatch_event_time) {
-    if (!version->FinishRequest(
-            fetch_event_id.value(),
-            fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-            dispatch_event_time))
+    if (!version->FinishRequest(fetch_event_id.value(),
+                                fetch_result == FetchEventResult::kGotResponse,
+                                dispatch_event_time))
       NOTREACHED() << "Should only receive one reply per event";
     // |fetch_dispatcher| is null if the URLRequest was killed.
     if (!fetch_dispatcher)
@@ -656,14 +652,13 @@ void ServiceWorkerFetchDispatcher::DidFailToDispatch(
 
 void ServiceWorkerFetchDispatcher::DidFail(ServiceWorkerStatusCode status) {
   DCHECK_NE(SERVICE_WORKER_OK, status);
-  Complete(status, SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-           ServiceWorkerResponse(), nullptr /* body_as_stream */,
-           nullptr /* body_as_blob */);
+  Complete(status, FetchEventResult::kShouldFallback, ServiceWorkerResponse(),
+           nullptr /* body_as_stream */, nullptr /* body_as_blob */);
 }
 
 void ServiceWorkerFetchDispatcher::DidFinish(
     int request_id,
-    ServiceWorkerFetchEventResult fetch_result,
+    FetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob) {
@@ -674,7 +669,7 @@ void ServiceWorkerFetchDispatcher::DidFinish(
 
 void ServiceWorkerFetchDispatcher::Complete(
     ServiceWorkerStatusCode status,
-    ServiceWorkerFetchEventResult fetch_result,
+    FetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob) {
