@@ -30,16 +30,21 @@ void ActivateAffiliationBasedMatching(
     PasswordStore* password_store,
     net::URLRequestContextGetter* request_context_getter,
     const base::FilePath& db_path) {
-  // The PasswordStore is so far the only consumer of the AffiliationService,
-  // therefore the service is owned by the AffiliatedMatchHelper, which in
-  // turn is owned by the PasswordStore.
+  // Subsequent instances of the AffiliationService must use the same sequenced
+  // task runner for their backends. This guarantees that the backend of the
+  // first instance will have closed the affiliation database before the second
+  // instance attempts to open it again. See: https://crbug.com/786157.
+  //
   // Task priority is USER_VISIBLE, because AffiliationService-related tasks
-  // block obtaining credentials from PasswordStore, which matches the
-  // USER_VISIBLE example: "Loading data that might be shown in the UI after a
-  // future user interaction."
+  // block obtaining credentials from PasswordStore, hence password autofill.
+  static auto backend_task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+
+  // The PasswordStore is so far the only consumer of the AffiliationService,
+  // therefore the service is owned by the AffiliatedMatchHelper, which in turn
+  // is owned by the PasswordStore.
   std::unique_ptr<AffiliationService> affiliation_service(
-      new AffiliationService(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})));
+      new AffiliationService(backend_task_runner));
   affiliation_service->Initialize(request_context_getter, db_path);
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper(
       new AffiliatedMatchHelper(password_store,
