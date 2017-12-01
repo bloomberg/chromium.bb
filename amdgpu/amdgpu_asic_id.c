@@ -45,63 +45,50 @@ static int parse_one_line(const char *line, struct amdgpu_asic_id *id)
 	char *s_rid;
 	char *s_name;
 	char *endptr;
-	int r = 0;
+	int r = -EINVAL;
+
+	/* ignore empty line and commented line */
+	if (strlen(line) == 0 || line[0] == '#')
+		return -EAGAIN;
 
 	buf = strdup(line);
 	if (!buf)
 		return -ENOMEM;
 
-	/* ignore empty line and commented line */
-	if (strlen(line) == 0 || line[0] == '#') {
-		r = -EAGAIN;
-		goto out;
-	}
-
 	/* device id */
 	s_did = strtok_r(buf, ",", &saveptr);
-	if (!s_did) {
-		r = -EINVAL;
+	if (!s_did)
 		goto out;
-	}
 
 	id->did = strtol(s_did, &endptr, 16);
-	if (*endptr) {
-		r = -EINVAL;
+	if (*endptr)
 		goto out;
-	}
 
 	/* revision id */
 	s_rid = strtok_r(NULL, ",", &saveptr);
-	if (!s_rid) {
-		r = -EINVAL;
+	if (!s_rid)
 		goto out;
-	}
 
 	id->rid = strtol(s_rid, &endptr, 16);
-	if (*endptr) {
-		r = -EINVAL;
+	if (*endptr)
 		goto out;
-	}
 
 	/* marketing name */
 	s_name = strtok_r(NULL, ",", &saveptr);
-	if (!s_name) {
-		r = -EINVAL;
+	if (!s_name)
 		goto out;
-	}
+
 	/* trim leading whitespaces or tabs */
 	while (isblank(*s_name))
 		s_name++;
-	if (strlen(s_name) == 0) {
-		r = -EINVAL;
+	if (strlen(s_name) == 0)
 		goto out;
-	}
 
 	id->marketing_name = strdup(s_name);
-	if (id->marketing_name == NULL) {
-		r = -EINVAL;
-		goto out;
-	}
+	if (id->marketing_name)
+		r = 0;
+	else
+		r = -ENOMEM;
 
 out:
 	free(buf);
