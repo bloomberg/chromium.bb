@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -58,7 +59,11 @@ WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
     base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer)
     : main_task_runner_(main_task_runner),
       state_(kUninitialized),
-      video_channel_state_observer_(video_channel_state_observer) {}
+      video_channel_state_observer_(video_channel_state_observer) {
+  // Initialize randomly to avoid replay attacks.
+  base::RandBytes(&picture_id_, sizeof(picture_id_));
+  picture_id_ &= 0x7fff;
+}
 
 WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() = default;
 
@@ -163,7 +168,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     vp8_info->simulcastIdx = 0;
     vp8_info->temporalIdx = webrtc::kNoTemporalIdx;
     vp8_info->tl0PicIdx = webrtc::kNoTl0PicIdx;
-    vp8_info->pictureId = webrtc::kNoPictureId;
+    vp8_info->pictureId = picture_id_;
+    picture_id_ = (picture_id_ + 1) & 0x7fff;
   } else if (frame.codec == webrtc::kVideoCodecVP9) {
     webrtc::CodecSpecificInfoVP9* vp9_info =
         &codec_specific_info.codecSpecific.VP9;
@@ -179,7 +185,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     vp9_info->temporal_idx = webrtc::kNoTemporalIdx;
     vp9_info->spatial_idx = webrtc::kNoSpatialIdx;
     vp9_info->tl0_pic_idx = webrtc::kNoTl0PicIdx;
-    vp9_info->picture_id = webrtc::kNoPictureId;
+    vp9_info->picture_id = picture_id_;
+    picture_id_ = (picture_id_ + 1) & 0x7fff;
   } else if (frame.codec == webrtc::kVideoCodecH264) {
 #if defined(USE_H264_ENCODER)
     webrtc::CodecSpecificInfoH264* h264_info =
