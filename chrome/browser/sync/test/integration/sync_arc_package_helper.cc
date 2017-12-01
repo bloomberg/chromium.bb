@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/connection_holder.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 
 namespace arc {
@@ -130,6 +131,7 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile) {
   arc_app_list_prefs->app_connection_holder()->SetInstance(nullptr);
   arc_app_list_prefs->app_connection_holder()->SetInstance(
       instance_map_[profile].get());
+  WaitForInstanceReady(arc_app_list_prefs->app_connection_holder());
   // OnPackageListRefreshed will be called when AppInstance is ready.
   // For fakeAppInstance we use SendRefreshPackageList to make sure that
   // OnPackageListRefreshed will be called.

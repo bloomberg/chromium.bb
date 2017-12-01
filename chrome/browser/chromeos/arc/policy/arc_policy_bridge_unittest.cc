@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_policy_instance.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
@@ -126,9 +127,6 @@ class ArcPolicyBridgeTest : public testing::Test {
     EXPECT_CALL(policy_service_, AddObserver(policy::POLICY_DOMAIN_CHROME, _))
         .Times(1);
 
-    policy_instance_ = std::make_unique<FakePolicyInstance>();
-    bridge_service_->policy()->SetInstance(policy_instance_.get());
-
     // Setting up user profile for ReportCompliance() tests.
     chromeos::FakeChromeUserManager* const fake_user_manager =
         new chromeos::FakeChromeUserManager();
@@ -148,6 +146,15 @@ class ArcPolicyBridgeTest : public testing::Test {
     policy_bridge_ = std::make_unique<ArcPolicyBridge>(
         profile_, bridge_service_.get(), &policy_service_);
     policy_bridge_->OverrideIsManagedForTesting(true);
+
+    policy_instance_ = std::make_unique<FakePolicyInstance>();
+    bridge_service_->policy()->SetInstance(policy_instance_.get());
+    WaitForInstanceReady(bridge_service_->policy());
+  }
+
+  void TearDown() override {
+    bridge_service_->policy()->SetInstance(nullptr, 0);
+    policy_instance_.reset();
   }
 
  protected:

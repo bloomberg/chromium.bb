@@ -21,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/app.mojom.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/test_utils.h"
 
@@ -62,6 +63,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
     app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
     arc_app_list_pref_->app_connection_holder()->SetInstance(
         app_instance_.get());
+    WaitForInstanceReady(arc_app_list_pref_->app_connection_holder());
 
     // In this setup, we have one app and one shortcut which share one package.
     mojom::AppInfo app;
@@ -88,6 +90,8 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
+    arc_app_list_pref_->app_connection_holder()->SetInstance(nullptr);
+    app_instance_.reset();
     ArcSessionManager::Get()->Shutdown();
   }
 

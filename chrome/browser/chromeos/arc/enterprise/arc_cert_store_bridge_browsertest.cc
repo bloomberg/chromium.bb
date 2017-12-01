@@ -31,6 +31,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/cert_store.mojom.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
@@ -134,11 +135,12 @@ class ArcCertStoreBridgeTest : public InProcessBrowserTest {
     instance_ = std::make_unique<FakeArcCertStoreInstance>();
     ASSERT_TRUE(arc_bridge());
     arc_bridge()->cert_store()->SetInstance(instance_.get());
+    WaitForInstanceReady(arc_bridge()->cert_store());
   }
 
   void TearDownOnMainThread() override {
     ASSERT_TRUE(arc_bridge());
-    arc_bridge()->cert_store()->SetInstance(nullptr);
+    arc_bridge()->cert_store()->SetInstance(nullptr, 0);
     instance_.reset();
 
     // Since ArcServiceLauncher is (re-)set up with profile() in

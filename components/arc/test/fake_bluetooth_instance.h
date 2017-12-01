@@ -149,6 +149,10 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
   std::vector<std::unique_ptr<LEDeviceFoundData>> le_device_found_data_;
   std::vector<std::unique_ptr<GattDBResult>> gatt_db_result_;
 
+  // Keeps the binding alive so that calls to this class can be correctly
+  // routed.
+  mojom::BluetoothHostPtr host_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothInstance);
 };
 

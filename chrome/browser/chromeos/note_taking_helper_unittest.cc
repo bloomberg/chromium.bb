@@ -37,6 +37,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -218,6 +219,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
   void TearDown() override {
     if (initialized_) {
+      arc::ArcServiceManager::Get()
+          ->arc_bridge_service()
+          ->intent_helper()
+          ->SetInstance(nullptr);
       NoteTakingHelper::Shutdown();
       intent_helper_bridge_.reset();
       arc_test_.TearDown();
@@ -279,6 +284,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
         ->arc_bridge_service()
         ->intent_helper()
         ->SetInstance(&intent_helper_);
+    WaitForInstanceReady(
+        arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper());
 
     if (flags & ENABLE_PALETTE) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(

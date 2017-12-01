@@ -15,6 +15,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "components/arc/common/bluetooth.mojom.h"
+#include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_bluetooth_instance.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
@@ -90,17 +91,24 @@ class ArcBluetoothBridgeTest : public testing::Test {
         std::make_unique<bluez::FakeBluetoothGattDescriptorClient>());
 
     arc_bridge_service_ = std::make_unique<ArcBridgeService>();
-    fake_bluetooth_instance_ = std::make_unique<FakeBluetoothInstance>();
-    arc_bridge_service_->bluetooth()->SetInstance(
-        fake_bluetooth_instance_.get(), 2);
     // TODO(hidehiko): Use Singleton instance tied to BrowserContext.
     arc_bluetooth_bridge_ = std::make_unique<ArcBluetoothBridge>(
         nullptr, arc_bridge_service_.get());
+    fake_bluetooth_instance_ = std::make_unique<FakeBluetoothInstance>();
+    arc_bridge_service_->bluetooth()->SetInstance(
+        fake_bluetooth_instance_.get(), 2);
+    WaitForInstanceReady(arc_bridge_service_->bluetooth());
 
     device::BluetoothAdapterFactory::GetAdapter(base::Bind(
         &ArcBluetoothBridgeTest::OnAdapterInitialized, base::Unretained(this)));
     // We will quit the loop once we get the adapter.
     get_adapter_run_loop_.Run();
+  }
+
+  void TearDown() override {
+    arc_bridge_service_->bluetooth()->SetInstance(nullptr, 0);
+    arc_bluetooth_bridge_.reset();
+    arc_bridge_service_.reset();
   }
 
   // Helper methods for multi advertisement tests.
