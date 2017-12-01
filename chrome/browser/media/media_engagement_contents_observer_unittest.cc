@@ -14,6 +14,7 @@
 #include "chrome/browser/media/media_engagement_score.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
+#include "chrome/browser/media/media_engagement_session.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -36,16 +37,28 @@ class MediaEngagementContentsObserverTest
                                              std::string());
 
     ChromeRenderViewHostTestHarness::SetUp();
+
     SetContents(content::WebContentsTester::CreateTestWebContents(
         browser_context(), nullptr));
 
     service_ = base::WrapUnique(
         new MediaEngagementService(profile(), base::WrapUnique(test_clock_)));
-    contents_observer_ =
-        new MediaEngagementContentsObserver(web_contents(), service_.get());
+    contents_observer_ = CreateContentsObserverFor(web_contents());
+
+    // Navigate to an initial URL to setup the |session|.
+    content::WebContentsTester::For(web_contents())
+        ->NavigateAndCommit(GURL("https://first.example.com"));
 
     contents_observer_->SetTaskRunnerForTest(task_runner_);
     SimulateInaudible();
+  }
+
+  MediaEngagementContentsObserver* CreateContentsObserverFor(
+      content::WebContents* web_contents) {
+    MediaEngagementContentsObserver* contents_observer =
+        new MediaEngagementContentsObserver(web_contents, service_.get());
+    service_->contents_observers_.insert({web_contents, contents_observer});
+    return contents_observer;
   }
 
   bool IsTimerRunning() const {
@@ -60,8 +73,10 @@ class MediaEngagementContentsObserverTest
            audible_row->second.second;
   }
 
+  bool HasSession() const { return !!contents_observer_->session_; }
+
   bool WasSignificantPlaybackRecorded() const {
-    return contents_observer_->significant_playback_recorded_;
+    return contents_observer_->session_->significant_playback_recorded();
   }
 
   size_t GetSignificantActivePlayersCount() const {
@@ -137,7 +152,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateSignificantPlaybackRecorded() {
-    contents_observer_->significant_playback_recorded_ = true;
+    contents_observer_->session_->RecordSignificantPlayback();
   }
 
   void SimulateSignificantPlaybackTimeForPage() {
@@ -194,7 +209,17 @@ class MediaEngagementContentsObserverTest
         content::NavigationHandle::CreateNavigationHandleForTesting(
             GURL(url), main_rfh(), true /** committed */);
     contents_observer_->DidFinishNavigation(test_handle.get());
-    contents_observer_->committed_origin_ = url::Origin::Create(url);
+  }
+
+  scoped_refptr<MediaEngagementSession> GetOrCreateSession(
+      const url::Origin& origin,
+      content::WebContents* opener) {
+    return contents_observer_->GetOrCreateSession(origin, opener);
+  }
+
+  scoped_refptr<MediaEngagementSession> GetSessionFor(
+      MediaEngagementContentsObserver* contents_observer) {
+    return contents_observer->session_;
   }
 
   void SimulateAudible() {
@@ -220,28 +245,36 @@ class MediaEngagementContentsObserverTest
                       int seconds_since_playback) {
     using Entry = ukm::builders::Media_Engagement_SessionFinished;
 
-    std::vector<std::pair<const char*, int64_t>> metrics = {
-        {Entry::kPlaybacks_TotalName, playbacks_total},
-        {Entry::kVisits_TotalName, visits_total},
-        {Entry::kEngagement_ScoreName, score},
-        {Entry::kPlaybacks_DeltaName, playbacks_delta},
-        {Entry::kEngagement_IsHighName, high_score},
-        {Entry::kPlayer_Audible_DeltaName, audible_players_delta},
-        {Entry::kPlayer_Audible_TotalName, audible_players_total},
-        {Entry::kPlayer_Significant_DeltaName, significant_players_delta},
-        {Entry::kPlayer_Significant_TotalName, significant_players_total},
-        {Entry::kPlaybacks_SecondsSinceLastName, seconds_since_playback},
-    };
+    auto ukm_entries = test_ukm_recorder_.GetEntriesByName(Entry::kEntryName);
+    ASSERT_NE(0u, ukm_entries.size());
 
-    auto entries = test_ukm_recorder_.GetEntriesByName(Entry::kEntryName);
-    EXPECT_EQ(1u, entries.size());
-    for (const auto* const entry : entries) {
-      test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
-      for (const auto& metric : metrics) {
-        test_ukm_recorder_.ExpectEntryMetric(entry, metric.first,
-                                             metric.second);
-      }
-    }
+    auto* ukm_entry = ukm_entries.back();
+    test_ukm_recorder_.ExpectEntrySourceHasUrl(ukm_entry, url);
+    EXPECT_EQ(playbacks_total, *test_ukm_recorder_.GetEntryMetric(
+                                   ukm_entry, Entry::kPlaybacks_TotalName));
+    EXPECT_EQ(visits_total, *test_ukm_recorder_.GetEntryMetric(
+                                ukm_entry, Entry::kVisits_TotalName));
+    EXPECT_EQ(score, *test_ukm_recorder_.GetEntryMetric(
+                         ukm_entry, Entry::kEngagement_ScoreName));
+    EXPECT_EQ(playbacks_delta, *test_ukm_recorder_.GetEntryMetric(
+                                   ukm_entry, Entry::kPlaybacks_DeltaName));
+    EXPECT_EQ(high_score, !!*test_ukm_recorder_.GetEntryMetric(
+                              ukm_entry, Entry::kEngagement_IsHighName));
+    EXPECT_EQ(audible_players_delta,
+              *test_ukm_recorder_.GetEntryMetric(
+                  ukm_entry, Entry::kPlayer_Audible_DeltaName));
+    EXPECT_EQ(audible_players_total,
+              *test_ukm_recorder_.GetEntryMetric(
+                  ukm_entry, Entry::kPlayer_Audible_TotalName));
+    EXPECT_EQ(significant_players_delta,
+              *test_ukm_recorder_.GetEntryMetric(
+                  ukm_entry, Entry::kPlayer_Significant_DeltaName));
+    EXPECT_EQ(significant_players_total,
+              *test_ukm_recorder_.GetEntryMetric(
+                  ukm_entry, Entry::kPlayer_Significant_TotalName));
+    EXPECT_EQ(seconds_since_playback,
+              *test_ukm_recorder_.GetEntryMetric(
+                  ukm_entry, Entry::kPlaybacks_SecondsSinceLastName));
   }
 
   void ExpectUkmIgnoredEntries(GURL url, std::vector<int64_t> entries) {
@@ -338,6 +371,10 @@ class MediaEngagementContentsObserverTest
 
   void Advance15Minutes() {
     test_clock_->Advance(base::TimeDelta::FromMinutes(15));
+  }
+
+  ukm::TestAutoSetUkmRecorder& test_ukm_recorder() {
+    return test_ukm_recorder_;
   }
 
  private:
@@ -740,18 +777,6 @@ TEST_F(MediaEngagementContentsObserverTest,
       MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
 }
 
-TEST_F(MediaEngagementContentsObserverTest,
-       DoNotRecordScoreOnPlayback_InternalUrl) {
-  GURL url("chrome://about");
-  SetScores(url, 6, 5);
-
-  base::HistogramTester tester;
-  Navigate(url);
-  SimulateAudioVideoPlaybackStarted(0);
-  tester.ExpectTotalCount(
-      MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
-}
-
 TEST_F(MediaEngagementContentsObserverTest, VisibilityNotRequired) {
   EXPECT_FALSE(IsTimerRunning());
 
@@ -849,16 +874,20 @@ TEST_F(MediaEngagementContentsObserverTest,
   ExpectUkmEntry(url, 6, 7, 86, 1, true, 2, 5, 2, 3, 900);
 }
 
-TEST_F(MediaEngagementContentsObserverTest, DoNotRecordMetricsOnInternalUrl) {
+TEST_F(MediaEngagementContentsObserverTest, DoNotCreateSessionOnInternalUrl) {
   Navigate(GURL("chrome://about"));
 
-  EXPECT_FALSE(WasSignificantPlaybackRecorded());
-  SimulateSignificantVideoPlayer(0);
-  SimulateSignificantPlaybackTimeForPage();
-  EXPECT_TRUE(WasSignificantPlaybackRecorded());
+  // Delete recorded UKM related to the previous navigation to not have to rely
+  // on how the SetUp() is made.
+  test_ukm_recorder().Purge();
+
+  EXPECT_FALSE(HasSession());
 
   SimulateDestroy();
-  ExpectNoUkmEntry();
+
+  // SessionFinished UKM isn't recorded for internal URLs.
+  using Entry = ukm::builders::Media_Engagement_SessionFinished;
+  EXPECT_EQ(0u, test_ukm_recorder().GetEntriesByName(Entry::kEntryName).size());
 }
 
 TEST_F(MediaEngagementContentsObserverTest, RecordAudiblePlayers_OnDestroy) {
@@ -1052,4 +1081,45 @@ TEST_F(MediaEngagementContentsObserverTest, OnlyIgnoreFinishedMedia) {
   SimulateDestroy();
   ExpectScores(url, 0, 1, 0, 1, 0);
   ExpectNoUkmIgnoreEntry(url);
+}
+
+TEST_F(MediaEngagementContentsObserverTest, GetOrCreateSession_SpecialURLs) {
+  std::vector<GURL> urls = {
+      // chrome:// and about: URLs don't use MEI.
+      GURL("about:blank"), GURL("chrome://settings"),
+      // Only http/https URLs use MEI, ignoring other protocals.
+      GURL("file:///tmp/"), GURL("foobar://"),
+  };
+
+  for (const GURL& url : urls)
+    EXPECT_EQ(nullptr, GetOrCreateSession(url::Origin::Create(url), nullptr));
+}
+
+TEST_F(MediaEngagementContentsObserverTest, GetOrCreateSession_NoOpener) {
+  // Regular URLs with no |opener| have a new session (non-null).
+  EXPECT_NE(nullptr,
+            GetOrCreateSession(url::Origin::Create(GURL("https://example.com")),
+                               nullptr));
+}
+
+TEST_F(MediaEngagementContentsObserverTest, GetOrCreateSession_WithOpener) {
+  const GURL& url = GURL("https://example.com");
+  const GURL& cross_origin_url = GURL("https://second.example.com");
+
+  // Regular URLs with an |opener| from a different origin have a new session.
+  std::unique_ptr<content::WebContents> opener(
+      content::WebContentsTester::CreateTestWebContents(browser_context(),
+                                                        nullptr));
+  MediaEngagementContentsObserver* other_observer =
+      CreateContentsObserverFor(opener.get());
+  content::WebContentsTester::For(opener.get())
+      ->NavigateAndCommit(cross_origin_url);
+  EXPECT_NE(GetSessionFor(other_observer),
+            GetOrCreateSession(url::Origin::Create(url), opener.get()));
+
+  // Same origin gets the session from the opener.
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+  content::WebContentsTester::For(opener.get())->NavigateAndCommit(url);
+  EXPECT_EQ(GetSessionFor(other_observer),
+            GetOrCreateSession(url::Origin::Create(url), opener.get()));
 }
