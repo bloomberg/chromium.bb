@@ -72,6 +72,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/win/hwnd_util.h"
@@ -725,7 +726,7 @@ SkAlpha TabStripImpl::GetInactiveAlpha(bool for_new_tab_button) const {
 #else
   static const SkAlpha kInactiveTabAlphaGlass = 200;
   static const SkAlpha kInactiveTabAlphaOpaque = 255;
-  const SkAlpha base_alpha = GetWidget()->ShouldWindowContentsBeTransparent()
+  const SkAlpha base_alpha = TitlebarBackgroundIsTransparent()
                                  ? kInactiveTabAlphaGlass
                                  : kInactiveTabAlphaOpaque;
 #endif  // OS_CHROMEOS
@@ -1020,7 +1021,7 @@ base::string16 TabStripImpl::GetAccessibleTabName(const Tab* tab) const {
 int TabStripImpl::GetBackgroundResourceId(bool* custom_image) const {
   const ui::ThemeProvider* tp = GetThemeProvider();
 
-  if (GetWidget()->ShouldWindowContentsBeTransparent()) {
+  if (TitlebarBackgroundIsTransparent()) {
     const int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
     *custom_image = tp->HasCustomImage(kBackgroundIdGlass);
     return kBackgroundIdGlass;
@@ -1409,6 +1410,16 @@ void TabStripImpl::AnimateToIdealBounds() {
 
 bool TabStripImpl::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
+}
+
+bool TabStripImpl::TitlebarBackgroundIsTransparent() const {
+#if defined(OS_WIN)
+  // Windows 8+ uses transparent window contents (because the titlebar area is
+  // drawn by the system and not Chrome), but the actual titlebar is opaque.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return false;
+#endif
+  return GetWidget()->ShouldWindowContentsBeTransparent();
 }
 
 void TabStripImpl::DoLayout() {
