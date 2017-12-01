@@ -1214,11 +1214,9 @@ ServiceWorkerProviderHost::CreateServiceWorkerRegistrationObjectInfo(
   if (existing_host != registration_object_hosts_.end()) {
     return existing_host->second->CreateObjectInfo();
   }
-  // The newly created ServiceWorkerRegistrationObjectHost instance will destroy
-  // itself once it loses all its Mojo bindings.
   registration_object_hosts_[registration_id] =
-      new ServiceWorkerRegistrationObjectHost(context_, AsWeakPtr(),
-                                              std::move(registration));
+      std::make_unique<ServiceWorkerRegistrationObjectHost>(
+          context_, this, std::move(registration));
   return registration_object_hosts_[registration_id]->CreateObjectInfo();
 }
 

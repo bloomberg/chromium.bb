@@ -269,9 +269,9 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
           helper_->mock_render_process_id(), 1 /* dummy provider_id */,
           context()->AsWeakPtr(), 1 /* route_id */, dispatcher_host.get(),
           &remote_endpoint);
-  // |registration_object_host| will destroy by itself.
-  auto* registration_object_host = new ServiceWorkerRegistrationObjectHost(
-      context()->AsWeakPtr(), provider_host->AsWeakPtr(), registration);
+  auto registration_object_host =
+      std::make_unique<ServiceWorkerRegistrationObjectHost>(
+          context()->AsWeakPtr(), provider_host.get(), registration);
   // To enable the caller end point
   // |registration_object_host->remote_registration_| to make calls safely with
   // no need to pass |object_info_->request| through a message pipe endpoint.

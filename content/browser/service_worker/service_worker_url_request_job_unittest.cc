@@ -18,7 +18,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -422,6 +421,7 @@ class ServiceWorkerURLRequestJobTest
   // ---------------------------------------------------------------------------
 
   TestBrowserThreadBundle thread_bundle_;
+  base::SimpleTestTickClock tick_clock_;
 
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -711,14 +711,12 @@ TEST_F(ServiceWorkerURLRequestJobTest, CustomTimeout) {
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   // Set mock clock on version_ to check timeout behavior.
-  base::SimpleTestTickClock tick_clock;
-  tick_clock.SetNowTicks(base::TimeTicks::Now());
-  version_->SetTickClockForTesting(&tick_clock);
+  tick_clock_.SetNowTicks(base::TimeTicks::Now());
+  version_->SetTickClockForTesting(&tick_clock_);
 
   protocol_handler_->set_custom_timeout(base::TimeDelta::FromSeconds(5));
   TestRequest(200, "OK", std::string(), true /* expect_valid_ssl */);
   EXPECT_EQ(base::TimeDelta::FromSeconds(5), version_->remaining_timeout());
-  version_->SetTickClockForTesting(base::DefaultTickClock::GetInstance());
 }
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {

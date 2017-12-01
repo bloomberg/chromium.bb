@@ -509,7 +509,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the service worker registration JavaScript objects for the hosted execution
   // context (service worker global scope or service worker client) in the
   // renderer process.
-  std::map<int64_t /* registration_id */, ServiceWorkerRegistrationObjectHost*>
+  std::map<int64_t /* registration_id */,
+           std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
       registration_object_hosts_;
 
   // The ready() promise is only allowed to be created once.
