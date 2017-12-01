@@ -173,6 +173,7 @@ class VM(object):
 
     qemu_args += [
         '-m', '2G', '-smp', '4', '-vga', 'virtio', '-daemonize',
+        '-usbdevice', 'tablet',
         '-pidfile', self.pidfile,
         '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
         '-serial', 'file:%s' % self.kvm_serial,
