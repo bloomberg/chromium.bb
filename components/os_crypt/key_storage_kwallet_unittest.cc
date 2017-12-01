@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
+#include "base/test/test_simple_task_runner.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -95,7 +96,9 @@ class MockKWalletDBus : public KWalletDBus {
 
 class KeyStorageKWalletTest : public testing::Test {
  public:
-  KeyStorageKWalletTest() : key_storage_kwallet_(kDesktopEnv, "test-app") {}
+  KeyStorageKWalletTest()
+      : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
+        key_storage_kwallet_(kDesktopEnv, "test-app", task_runner_) {}
 
   void SetUp() override {
     kwallet_dbus_mock_ = new StrictMock<MockKWalletDBus>();
@@ -120,6 +123,7 @@ class KeyStorageKWalletTest : public testing::Test {
 
  protected:
   StrictMock<MockKWalletDBus>* kwallet_dbus_mock_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   KeyStorageKWallet key_storage_kwallet_;
   const std::string wallet_name_ = "mollet";
 
@@ -230,7 +234,8 @@ class KeyStorageKWalletFailuresTest
     : public testing::TestWithParam<KWalletDBus::Error> {
  public:
   KeyStorageKWalletFailuresTest()
-      : key_storage_kwallet_(kDesktopEnv, "test-app") {}
+      : task_runner_(new base::TestSimpleTaskRunner()),
+        key_storage_kwallet_(kDesktopEnv, "test-app", task_runner_) {}
 
   void SetUp() override {
     // |key_storage_kwallet_| will take ownership of |kwallet_dbus_mock_|.
@@ -255,6 +260,7 @@ class KeyStorageKWalletFailuresTest
 
  protected:
   StrictMock<MockKWalletDBus>* kwallet_dbus_mock_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   KeyStorageKWallet key_storage_kwallet_;
   const std::string wallet_name_ = "mollet";
 

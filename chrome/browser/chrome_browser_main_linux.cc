@@ -26,6 +26,7 @@
 #if !defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "base/linux_util.h"
+#include "chrome/browser/dbus/dbus_thread_linux.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/key_storage_config_linux.h"
@@ -70,9 +71,10 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
       parsed_command_line().GetSwitchValueASCII(switches::kPasswordStore);
   // Forward the product name
   config->product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
-  // OSCrypt may target keyring, which requires calls from the main thread.
+  // OSCrypt may target backends, which require calls from specific threads.
   config->main_thread_runner = content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::UI);
+  config->dbus_task_runner = chrome::GetDBusTaskRunner();
   // OSCrypt can be disabled in a special settings file.
   config->should_use_preference =
       parsed_command_line().HasSwitch(switches::kEnableEncryptionSelection);
