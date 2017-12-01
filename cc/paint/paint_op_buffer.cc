@@ -347,6 +347,7 @@ size_t DrawImageOp::Serialize(const PaintOp* base_op,
     serialized_flags = &op->flags;
   helper.Write(*serialized_flags);
   helper.Write(op->image, options.image_provider);
+  helper.AlignMemory(alignof(SkScalar));
   helper.Write(op->left);
   helper.Write(op->top);
   return helper.size();
@@ -393,6 +394,7 @@ size_t DrawLineOp::Serialize(const PaintOp* base_op,
   if (!serialized_flags)
     serialized_flags = &op->flags;
   helper.Write(*serialized_flags);
+  helper.AlignMemory(alignof(SkScalar));
   helper.Write(op->x0);
   helper.Write(op->y0);
   helper.Write(op->x1);
@@ -476,6 +478,7 @@ size_t DrawTextBlobOp::Serialize(const PaintOp* base_op,
   if (!serialized_flags)
     serialized_flags = &op->flags;
   helper.Write(*serialized_flags);
+  helper.AlignMemory(alignof(SkScalar));
   helper.Write(op->x);
   helper.Write(op->y);
   helper.Write(op->blob);
@@ -694,6 +697,7 @@ PaintOp* DrawImageOp::Deserialize(const volatile void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->image);
+  helper.AlignMemory(alignof(SkScalar));
   helper.Read(&op->left);
   helper.Read(&op->top);
   if (!helper.valid() || !op->IsValid()) {
@@ -755,6 +759,7 @@ PaintOp* DrawLineOp::Deserialize(const volatile void* input,
 
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
+  helper.AlignMemory(alignof(SkScalar));
   helper.Read(&op->x0);
   helper.Read(&op->y0);
   helper.Read(&op->x1);
@@ -863,6 +868,7 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
 
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
+  helper.AlignMemory(alignof(SkScalar));
   helper.Read(&op->x);
   helper.Read(&op->y);
   helper.Read(&op->blob);
@@ -1669,8 +1675,8 @@ size_t PaintOp::Serialize(void* memory,
   if (written < 4)
     return 0u;
 
-  size_t aligned_written =
-      MathUtil::UncheckedRoundUp(written, PaintOpBuffer::PaintOpAlign);
+  size_t aligned_written = ((written + PaintOpBuffer::PaintOpAlign - 1) &
+                            ~(PaintOpBuffer::PaintOpAlign - 1));
   if (aligned_written >= kMaxSkip)
     return 0u;
   if (aligned_written > size)
