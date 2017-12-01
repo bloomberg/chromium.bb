@@ -76,7 +76,7 @@ class IncludeNodeUnittest(unittest.TestCase):
                    compress="gzip" type="BINDATA"/>
         </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
     inc, = root.GetChildrenOfType(include.IncludeNode)
-    throwaway, compressed = inc.GetDataPackPair(lang='en', encoding=1)
+    compressed = inc.GetDataPackValue(lang='en', encoding=1)
 
     decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
     self.assertEqual(util.ReadFile(util.PathFromRoot('grit/testdata')

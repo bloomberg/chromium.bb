@@ -12,7 +12,6 @@ from grit import exception
 from grit import util
 import grit.format.html_inline
 import grit.format.rc
-import grit.format.rc_header
 from grit.format import minifier
 from grit.node import base
 
@@ -77,15 +76,8 @@ class IncludeNode(base.Node):
 
     return self.ToRealPath(input_path)
 
-  def GetDataPackPair(self, lang, encoding):
-    """Returns a (id, string) pair that represents the resource id and raw
-    bytes of the data.  This is used to generate the data pack data file.
-    """
-    # TODO(benrg/joi): Move this and other implementations of GetDataPackPair
-    # to grit.format.data_pack?
-    from grit.format import rc_header
-    id_map = rc_header.GetIds(self.GetRoot())
-    id = id_map[self.GetTextualIds()[0]]
+  def GetDataPackValue(self, lang, encoding):
+    '''Returns a str represenation for a data_pack entry.'''
     filename = self.ToRealPath(self.GetInputPath())
     if self.attrs['flattenhtml'] == 'true':
       allow_external_script = self.attrs['allowexternalscript'] == 'true'
@@ -98,7 +90,7 @@ class IncludeNode(base.Node):
 
     # Include does not care about the encoding, because it only returns binary
     # data.
-    return id, self.CompressDataIfNeeded(data)
+    return self.CompressDataIfNeeded(data)
 
   def Process(self, output_dir):
     """Rewrite file references to be base64 encoded data URLs.  The new file

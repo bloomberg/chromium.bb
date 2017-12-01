@@ -387,6 +387,10 @@ are exported to translation interchange files (e.g. XMB files), etc.
       self.res.SetFallbackToDefaultLayout(output.GetFallbackToDefaultLayout())
       self.res.SetDefines(self.defines)
 
+      # Assign IDs only once to ensure that all outputs use the same IDs.
+      if self.res.GetIdMap() is None:
+        self.res.InitializeIds()
+
       # Make the output directory if it doesn't exist.
       self.MakeDirectoriesTo(output.GetOutputFilename())
 

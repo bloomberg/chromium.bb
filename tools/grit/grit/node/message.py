@@ -223,17 +223,10 @@ class MessageNode(base.ContentNode):
     '''We always expand variables on Messages.'''
     return True
 
-  def GetDataPackPair(self, lang, encoding):
-    '''Returns a (id, string) pair that represents the string id and the string
-    in the specified encoding, where |encoding| is one of the encoding values
-    accepted by util.Encode.  This is used to generate the data pack data file.
-    '''
-    from grit.format import rc_header
-    id_map = rc_header.GetIds(self.GetRoot())
-    id = id_map[self.GetTextualIds()[0]]
-
+  def GetDataPackValue(self, lang, encoding):
+    '''Returns a str represenation for a data_pack entry.'''
     message = self.ws_at_start + self.Translate(lang) + self.ws_at_end
-    return id, util.Encode(message, encoding)
+    return util.Encode(message, encoding)
 
   def IsResourceMapSource(self):
     return True

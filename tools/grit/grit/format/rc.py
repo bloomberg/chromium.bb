@@ -12,7 +12,6 @@ import re
 from functools import partial
 
 from grit import util
-from grit.format import rc_header
 from grit.node import misc
 
 
@@ -442,7 +441,7 @@ def FormatInclude(item, lang, output_dir, type=None, process_html=False):
     return ''
 
   name = item.attrs['name']
-  item_id = rc_header.GetIds(item.GetRoot())[name]
+  item_id = item.GetRoot().GetIdMap()[name]
   return '// ID: %d\n%-18s %-18s "%s"\n' % (item_id, name, type, filename)
 
 

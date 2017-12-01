@@ -73,17 +73,19 @@ class DataPackContents(object):
 
 def Format(root, lang='en', output_dir='.'):
   """Writes out the data pack file format (platform agnostic resource file)."""
+  id_map = root.GetIdMap()
   data = {}
   root.info = []
   for node in root.ActiveDescendants():
     with node:
       if isinstance(node, (include.IncludeNode, message.MessageNode,
                            structure.StructureNode)):
-        id, value = node.GetDataPackPair(lang, UTF8)
+        value = node.GetDataPackValue(lang, UTF8)
         if value is not None:
-          data[id] = value
-          root.info.append(
-              '{},{},{}'.format(node.attrs.get('name'), id, node.source))
+          resource_id = id_map[node.GetTextualIds()[0]]
+          data[resource_id] = value
+          root.info.append('{},{},{}'.format(
+              node.attrs.get('name'), resource_id, node.source))
   return WriteDataPackToString(data, UTF8)
 
 

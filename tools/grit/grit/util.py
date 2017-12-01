@@ -319,7 +319,8 @@ def PathFromRoot(path):
   return os.path.normpath(os.path.join(_root_dir, path))
 
 
-def ParseGrdForUnittest(body, base_dir=None):
+def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
+                        run_gatherers=False, output_all_resource_defines=True):
   '''Parse a skeleton .grd file and return it, for use in unit tests.
 
   Args:
@@ -332,15 +333,26 @@ def ParseGrdForUnittest(body, base_dir=None):
     body = body.encode('utf-8')
   if base_dir is None:
     base_dir = PathFromRoot('.')
-  body = '''<?xml version="1.0" encoding="UTF-8"?>
-<grit latest_public_release="2" current_release="3" source_lang_id="en" base_dir="%s">
-  <outputs>
-  </outputs>
-  <release seq="3">
-    %s
-  </release>
-</grit>''' % (base_dir, body)
-  return grd_reader.Parse(StringIO.StringIO(body), dir=".")
+  lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+  lines.append(('<grit latest_public_release="2" current_release="3" '
+                'source_lang_id="en" base_dir="{}" '
+                'output_all_resource_defines="{}">').format(
+                base_dir, str(output_all_resource_defines).lower()))
+  if '<outputs>' in body:
+    lines.append(body)
+  else:
+    lines.append('  <outputs></outputs>')
+    lines.append('  <release seq="3">')
+    lines.append(body)
+    lines.append('  </release>')
+  lines.append('</grit>')
+  ret = grd_reader.Parse(StringIO.StringIO('\n'.join(lines)), dir=".")
+  ret.SetOutputLanguage('en')
+  if run_gatherers:
+    ret.RunGatherers()
+  ret.SetPredeterminedIdsFile(predetermined_ids_file)
+  ret.InitializeIds()
+  return ret
 
 
 def StripBlankLinesAndComments(text):
