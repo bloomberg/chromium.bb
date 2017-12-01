@@ -77,23 +77,23 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
     return;
   if (!audio_handler_->IsOutputMuted() &&
       audio_handler_->GetOutputVolumePercent() != 100) {
-    Shell::Get()->accessibility_controller()->PlayEarcon(
+    Shell::Get()->accessibility_delegate()->PlayEarcon(
         chromeos::SOUND_VOLUME_ADJUST);
   }
 }
 
 void AshTouchExplorationManager::PlayPassthroughEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_PASSTHROUGH);
 }
 
 void AshTouchExplorationManager::PlayExitScreenEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_EXIT_SCREEN);
 }
 
 void AshTouchExplorationManager::PlayEnterScreenEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_ENTER_SCREEN);
 }
 
@@ -130,7 +130,7 @@ void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
 }
 
 void AshTouchExplorationManager::PlayTouchTypeEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
+  Shell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_TOUCH_TYPE);
 }
 

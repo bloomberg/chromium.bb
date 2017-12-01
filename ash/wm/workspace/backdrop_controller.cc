@@ -48,7 +48,7 @@ class BackdropEventHandler : public ui::EventHandler {
         case ui::ET_GESTURE_BEGIN:
         case ui::ET_SCROLL:
         case ui::ET_SCROLL_FLING_START:
-          Shell::Get()->accessibility_controller()->PlayEarcon(
+          Shell::Get()->accessibility_delegate()->PlayEarcon(
               chromeos::SOUND_VOLUME_ADJUST);
           break;
         default:

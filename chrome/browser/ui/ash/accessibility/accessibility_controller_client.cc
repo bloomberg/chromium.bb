@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/grit/generated_resources.h"
@@ -14,6 +13,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+AccessibilityControllerClient* g_instance = nullptr;
 
 void SetAutomationManagerEnabled(content::BrowserContext* context,
                                  bool enabled) {
@@ -28,9 +29,20 @@ void SetAutomationManagerEnabled(content::BrowserContext* context,
 }  // namespace
 
 AccessibilityControllerClient::AccessibilityControllerClient()
-    : binding_(this) {}
+    : binding_(this) {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-AccessibilityControllerClient::~AccessibilityControllerClient() = default;
+AccessibilityControllerClient::~AccessibilityControllerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+AccessibilityControllerClient* AccessibilityControllerClient::Get() {
+  return g_instance;
+}
 
 void AccessibilityControllerClient::Init() {
   content::ServiceManagerConnection::GetForProcess()
@@ -47,6 +59,8 @@ void AccessibilityControllerClient::InitForTesting(
 
 void AccessibilityControllerClient::TriggerAccessibilityAlert(
     ash::mojom::AccessibilityAlert alert) {
+  last_a11y_alert_for_test_ = alert;
+
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
     return;
@@ -99,18 +113,6 @@ void AccessibilityControllerClient::TriggerAccessibilityAlert(
     if (alert == ash::mojom::AccessibilityAlert::SCREEN_OFF)
       SetAutomationManagerEnabled(profile, false);
   }
-}
-
-void AccessibilityControllerClient::PlayEarcon(int32_t sound_key) {
-  chromeos::AccessibilityManager::Get()->PlayEarcon(
-      sound_key, chromeos::PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
-}
-
-void AccessibilityControllerClient::PlayShutdownSound(
-    PlayShutdownSoundCallback callback) {
-  base::TimeDelta sound_duration =
-      chromeos::AccessibilityManager::Get()->PlayShutdownSound();
-  std::move(callback).Run(sound_duration);
 }
 
 void AccessibilityControllerClient::FlushForTesting() {
