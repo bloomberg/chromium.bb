@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -26,12 +25,10 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/history_quick_provider.h"
-#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
-#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/default_search_manager.h"
-#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -171,38 +168,6 @@ struct TestURLInfo {
     {"https://www.wytih/file", "What you typed in history www file", 7, 7, 80},
 };
 
-class AnonFakeAutocompleteProviderClient
-    : public MockAutocompleteProviderClient {
- public:
-  explicit AnonFakeAutocompleteProviderClient(bool create_history_db) {
-    set_template_url_service(base::MakeUnique<TemplateURLService>(nullptr, 0));
-    if (history_dir_.CreateUniqueTempDir()) {
-      history_service_ = history::CreateHistoryService(history_dir_.GetPath(),
-                                                       create_history_db);
-    }
-  }
-
-  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
-    return scheme_classifier_;
-  }
-
-  const SearchTermsData& GetSearchTermsData() const override {
-    return search_terms_data_;
-  }
-
-  history::HistoryService* GetHistoryService() override {
-    return history_service_.get();
-  }
-
- private:
-  TestSchemeClassifier scheme_classifier_;
-  SearchTermsData search_terms_data_;
-  base::ScopedTempDir history_dir_;
-  std::unique_ptr<history::HistoryService> history_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnonFakeAutocompleteProviderClient);
-};
-
 }  // namespace
 
 class HistoryURLProviderTest : public testing::Test,
@@ -267,7 +232,7 @@ class HistoryURLProviderTest : public testing::Test,
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ACMatches matches_;
-  std::unique_ptr<AnonFakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
   // Should the matches be sorted and duplicates removed?
   bool sort_matches_;
@@ -300,17 +265,18 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
 }
 
 bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
-  client_ =
-      std::make_unique<AnonFakeAutocompleteProviderClient>(create_history_db);
+  client_ = std::make_unique<FakeAutocompleteProviderClient>(create_history_db);
   if (!client_->GetHistoryService())
     return false;
-  autocomplete_ = new HistoryURLProvider(client_.get(), this);
+  autocomplete_ = base::MakeRefCounted<HistoryURLProvider>(client_.get(), this);
   FillData();
   return true;
 }
 
 void HistoryURLProviderTest::TearDown() {
   autocomplete_ = nullptr;
+  client_.reset();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void HistoryURLProviderTest::FillData() {
@@ -366,7 +332,7 @@ void HistoryURLProviderTest::RunTest(
     std::sort(matches_.begin(), matches_.end(),
               &AutocompleteMatch::MoreRelevant);
   }
-  SCOPED_TRACE(base::ASCIIToUTF16("input = ") + text);
+  SCOPED_TRACE(ASCIIToUTF16("input = ") + text);
   ASSERT_EQ(num_results, matches_.size()) << "Input text: " << text
                                           << "\nTLD: \"" << desired_tld << "\"";
   for (size_t i = 0; i < num_results; ++i) {
@@ -386,7 +352,7 @@ void HistoryURLProviderTest::ExpectFormattedFullMatch(
   ASSERT_FALSE(expected_match_contents_string.empty());
 
   SCOPED_TRACE("input = " + input_text);
-  SCOPED_TRACE(base::ASCIIToUTF16("expected_match_contents = ") +
+  SCOPED_TRACE(ASCIIToUTF16("expected_match_contents = ") +
                expected_match_contents_string);
 
   AutocompleteInput input(ASCIIToUTF16(input_text),
@@ -586,8 +552,8 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   redirects_to_a.push_back(GURL(test_cases[2].url));
   redirects_to_a.push_back(GURL(test_cases[0].url));
   client_->GetHistoryService()->AddPage(
-      GURL(test_cases[0].url), base::Time::Now(), nullptr, 0, GURL(),
-      redirects_to_a, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, true);
+      GURL(test_cases[0].url), Time::Now(), nullptr, 0, GURL(), redirects_to_a,
+      ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, true);
 
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default

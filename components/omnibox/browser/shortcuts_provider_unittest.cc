@@ -23,18 +23,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
-#include "components/history/core/test/history_service_test_util.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
-#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/browser/shortcuts_provider_test_util.h"
-#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -179,43 +176,6 @@ struct TestShortcutData shortcut_test_db[] = {
     AutocompleteMatchType::HISTORY_URL, "", 1, 100 },
 };
 
-class AnonFakeAutocompleteProviderClient
-    : public testing::NiceMock<MockAutocompleteProviderClient> {
- public:
-  AnonFakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
-    set_template_url_service(base::MakeUnique<TemplateURLService>(nullptr, 0));
-    if (history_dir_.CreateUniqueTempDir()) {
-      history_service_ =
-          history::CreateHistoryService(history_dir_.GetPath(), true);
-    }
-
-    shortcuts_backend_ = new ShortcutsBackend(
-        GetTemplateURLService(), base::MakeUnique<SearchTermsData>(),
-        history_service_.get(), base::FilePath(), true);
-    shortcuts_backend_->Init();
-  }
-
-  history::HistoryService* GetHistoryService() override {
-    return history_service_.get();
-  }
-
-  scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override {
-    return shortcuts_backend_;
-  }
-
-  scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override {
-    return shortcuts_backend_;
-  }
-
- private:
-  base::SequencedWorkerPoolOwner pool_owner_;
-  base::ScopedTempDir history_dir_;
-  std::unique_ptr<history::HistoryService> history_service_;
-  scoped_refptr<ShortcutsBackend> shortcuts_backend_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnonFakeAutocompleteProviderClient);
-};
-
 }  // namespace
 
 // ClassifyTest ---------------------------------------------------------------
@@ -266,17 +226,17 @@ class ShortcutsProviderTest : public testing::Test {
                      int max_relevance);
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<AnonFakeAutocompleteProviderClient> client_;
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ShortcutsProvider> provider_;
 };
 
 ShortcutsProviderTest::ShortcutsProviderTest() {}
 
 void ShortcutsProviderTest::SetUp() {
-  client_ = std::make_unique<AnonFakeAutocompleteProviderClient>();
+  client_ = std::make_unique<FakeAutocompleteProviderClient>();
 
   ASSERT_TRUE(client_->GetShortcutsBackend());
-  provider_ = new ShortcutsProvider(client_.get());
+  provider_ = base::MakeRefCounted<ShortcutsProvider>(client_.get());
   PopulateShortcutsBackendWithTestData(client_->GetShortcutsBackend(),
                                        shortcut_test_db,
                                        arraysize(shortcut_test_db));
@@ -284,6 +244,8 @@ void ShortcutsProviderTest::SetUp() {
 
 void ShortcutsProviderTest::TearDown() {
   provider_ = nullptr;
+  client_.reset();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 int ShortcutsProviderTest::CalculateScore(
