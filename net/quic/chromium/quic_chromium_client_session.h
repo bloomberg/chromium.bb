@@ -316,6 +316,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool require_confirmation,
       bool migrate_sesion_early,
       bool migrate_session_on_network_change,
+      bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
       int yield_after_packets,
       QuicTime::Delta yield_after_duration,
@@ -649,6 +650,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool require_confirmation_;
   bool migrate_session_early_;
   bool migrate_session_on_network_change_;
+  bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
   QuicClock* clock_;  // Unowned.
   int yield_after_packets_;
