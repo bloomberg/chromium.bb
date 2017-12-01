@@ -20,8 +20,7 @@
 #include "url/gurl.h"
 
 namespace blink {
-
-namespace {
+namespace trial_token_validator_unittest {
 
 // This is a sample public key for testing the API. The corresponding private
 // key (use this to generate new samples for this test file) is:
@@ -150,8 +149,6 @@ class TestOriginTrialPolicy : public TrialPolicy {
   std::set<std::string> disabled_features_;
   std::set<std::string> disabled_tokens_;
 };
-
-}  // namespace
 
 class TrialTokenValidatorTest : public testing::Test {
  public:
@@ -324,4 +321,5 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaderValues) {
       kAppropriateFeatureName, Now()));
 }
 
+}  // namespace trial_token_validator_unittest
 }  // namespace blink
