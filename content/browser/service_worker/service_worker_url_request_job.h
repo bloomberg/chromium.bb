@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
@@ -53,7 +54,6 @@ class ResourceContext;
 class ResourceRequestBody;
 class ServiceWorkerBlobReader;
 class ServiceWorkerDataPipeReader;
-class ServiceWorkerFetchDispatcher;
 class ServiceWorkerVersion;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
@@ -175,7 +175,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version);
   void DidDispatchFetchEvent(
       ServiceWorkerStatusCode status,
-      ServiceWorkerFetchEventResult fetch_result,
+      ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       blink::mojom::BlobPtr body_as_blob,

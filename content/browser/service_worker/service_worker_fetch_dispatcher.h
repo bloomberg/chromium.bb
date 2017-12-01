@@ -38,9 +38,17 @@ class URLLoaderFactoryGetter;
 // A helper class to dispatch fetch event to a service worker.
 class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
  public:
+  // Indicates how the service worker handled a fetch event.
+  enum class FetchEventResult {
+    // Browser should fallback to native fetch.
+    kShouldFallback,
+    // Service worker provided a ServiceWorkerResponse.
+    kGotResponse
+  };
+
   using FetchCallback =
       base::OnceCallback<void(ServiceWorkerStatusCode,
-                              ServiceWorkerFetchEventResult,
+                              FetchEventResult,
                               const ServiceWorkerResponse&,
                               blink::mojom::ServiceWorkerStreamHandlePtr,
                               blink::mojom::BlobPtr,
@@ -95,12 +103,12 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                          ServiceWorkerStatusCode status);
   void DidFail(ServiceWorkerStatusCode status);
   void DidFinish(int request_id,
-                 ServiceWorkerFetchEventResult fetch_result,
+                 FetchEventResult fetch_result,
                  const ServiceWorkerResponse& response,
                  blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                  blink::mojom::BlobPtr body_as_blob);
   void Complete(ServiceWorkerStatusCode status,
-                ServiceWorkerFetchEventResult fetch_result,
+                FetchEventResult fetch_result,
                 const ServiceWorkerResponse& response,
                 blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                 blink::mojom::BlobPtr body_as_blob);

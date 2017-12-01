@@ -27,7 +27,6 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_blob_reader.h"
 #include "content/browser/service_worker/service_worker_data_pipe_reader.h"
-#include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -681,7 +680,7 @@ void ServiceWorkerURLRequestJob::DidPrepareFetchEvent(
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,
-    ServiceWorkerFetchEventResult fetch_result,
+    ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
@@ -715,7 +714,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     return;
   }
 
-  if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
+  if (fetch_result ==
+      ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback) {
     ServiceWorkerMetrics::RecordFallbackedRequestMode(request_mode_);
     if (IsFallbackToRendererNeeded()) {
       FinalizeFallbackToRenderer();
@@ -726,7 +726,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   }
 
   // We should have a response now.
-  DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
+  DCHECK_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            fetch_result);
 
   // A response with status code 0 is Blink telling us to respond with network
   // error.

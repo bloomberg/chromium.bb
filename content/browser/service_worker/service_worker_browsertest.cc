@@ -101,7 +101,7 @@ const int kV8CacheTimeStampDataSize = sizeof(unsigned) + sizeof(double);
 
 struct FetchResult {
   ServiceWorkerStatusCode status;
-  ServiceWorkerFetchEventResult result;
+  ServiceWorkerFetchDispatcher::FetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
@@ -626,7 +626,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void FetchOnRegisteredWorker(
-      ServiceWorkerFetchEventResult* result,
+      ServiceWorkerFetchDispatcher::FetchEventResult* result,
       ServiceWorkerResponse* response,
       std::unique_ptr<storage::BlobDataHandle>* blob_data_handle) {
     blob_context_ = ChromeBlobStorageContext::GetFor(
@@ -904,7 +904,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       ChromeBlobStorageContext* blob_context,
       FetchResult* out_result,
       ServiceWorkerStatusCode actual_status,
-      ServiceWorkerFetchEventResult actual_result,
+      ServiceWorkerFetchDispatcher::FetchEventResult actual_result,
       const ServiceWorkerResponse& actual_response,
       blink::mojom::ServiceWorkerStreamHandlePtr /* stream */,
       blink::mojom::BlobPtr /* blob */,
@@ -1242,14 +1242,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutWorkerInEvent) {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   StartServerAndNavigateToSetup();
-  ServiceWorkerFetchEventResult result;
+  ServiceWorkerFetchDispatcher::FetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   InstallTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
   ActivateTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
 
   FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
-  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            result);
   EXPECT_EQ(301, response.status_code);
   EXPECT_EQ("Moved Permanently", response.status_text);
   ServiceWorkerHeaderMap expected_headers;
@@ -1267,7 +1268,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        FetchEvent_ResponseViaCache) {
   StartServerAndNavigateToSetup();
-  ServiceWorkerFetchEventResult result;
+  ServiceWorkerFetchDispatcher::FetchEventResult result;
   ServiceWorkerResponse response1;
   ServiceWorkerResponse response2;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
@@ -1278,7 +1279,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                      SERVICE_WORKER_OK);
 
   FetchOnRegisteredWorker(&result, &response1, &blob_data_handle);
-  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            result);
   EXPECT_EQ(200, response1.status_code);
   EXPECT_EQ("OK", response1.status_text);
   EXPECT_TRUE(response1.response_time >= start_time);
@@ -1286,7 +1288,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ(std::string(), response2.cache_storage_cache_name);
 
   FetchOnRegisteredWorker(&result, &response2, &blob_data_handle);
-  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            result);
   EXPECT_EQ(200, response2.status_code);
   EXPECT_EQ("OK", response2.status_text);
   EXPECT_EQ(response1.response_time, response2.response_time);
@@ -1297,7 +1300,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        FetchEvent_respondWithRejection) {
   StartServerAndNavigateToSetup();
-  ServiceWorkerFetchEventResult result;
+  ServiceWorkerFetchDispatcher::FetchEventResult result;
   ServiceWorkerResponse response;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   InstallTestHelper("/service_worker/fetch_event_rejected.js",
@@ -1323,7 +1326,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                            base::Unretained(version_->embedded_worker()),
                            &console_listener));
 
-  ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
+  ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            result);
   EXPECT_EQ(0, response.status_code);
 
   ASSERT_FALSE(blob_data_handle);

@@ -59,15 +59,6 @@ static const int kInvalidEmbeddedWorkerThreadId = -1;
 static constexpr base::TimeDelta kServiceWorkerScriptMaxCacheAge =
     base::TimeDelta::FromHours(24);
 
-// Indicates how the service worker handled a fetch event.
-enum ServiceWorkerFetchEventResult {
-  // Browser should fallback to native fetch.
-  SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-  // Service worker provided a ServiceWorkerResponse.
-  SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-  SERVICE_WORKER_FETCH_EVENT_LAST = SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE
-};
-
 struct ServiceWorkerCaseInsensitiveCompare {
   bool operator()(const std::string& lhs, const std::string& rhs) const {
     return base::CompareCaseInsensitiveASCII(lhs, rhs) < 0;
