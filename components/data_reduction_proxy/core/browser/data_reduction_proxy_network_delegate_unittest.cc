@@ -981,7 +981,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableLoFi(
+      lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableServerPreviews(
           *fake_request.get(), test_previews_decider));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
@@ -989,8 +989,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
-          config()->ShouldEnableLoFi(*fake_request.get(),
-                                     test_previews_decider));
+          config()->ShouldEnableServerPreviews(*fake_request.get(),
+                                               test_previews_decider));
     }
 
     {
@@ -1064,14 +1064,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableLoFi(
+      lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableServerPreviews(
           *fake_request.get(), test_previews_decider));
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyDataReductionProxyData(
           *fake_request, tests[i].is_data_reduction_proxy,
-          config()->ShouldEnableLoFi(*fake_request.get(),
-                                     test_previews_decider));
+          config()->ShouldEnableServerPreviews(*fake_request.get(),
+                                               test_previews_decider));
     }
   }
 }
@@ -1361,8 +1361,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
 
     // Needed as a parameter, but functionality is not tested.
     TestPreviewsDecider test_previews_decider;
-    lofi_decider()->SetIsUsingLoFi(
-        config()->ShouldEnableLoFi(*fake_request.get(), test_previews_decider));
+    lofi_decider()->SetIsUsingLoFi(config()->ShouldEnableServerPreviews(
+        *fake_request.get(), test_previews_decider));
 
     fake_request = (FetchURLRequest(GURL(kTestURL), nullptr, response_headers,
                                     kResponseContentLength, 0));

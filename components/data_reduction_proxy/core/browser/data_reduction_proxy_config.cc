@@ -542,17 +542,7 @@ void DataReductionProxyConfig::FetchWarmupURL() {
   warmup_url_fetcher_->FetchWarmupURL();
 }
 
-bool DataReductionProxyConfig::ShouldEnableLoFi(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  DCHECK(!request.url().SchemeIsCryptographic());
-
-  return ShouldAcceptServerPreview(request, previews_decider);
-}
-
-bool DataReductionProxyConfig::ShouldEnableLitePages(
+bool DataReductionProxyConfig::ShouldEnableServerPreviews(
     const net::URLRequest& request,
     const previews::PreviewsDecider& previews_decider) {
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -286,7 +286,7 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
-bool DataReductionProxyIOData::ShouldEnableLoFi(
+bool DataReductionProxyIOData::ShouldEnableServerPreviews(
     const net::URLRequest& request,
     previews::PreviewsDecider* previews_decider) {
   DCHECK(previews_decider);
@@ -295,19 +295,7 @@ bool DataReductionProxyIOData::ShouldEnableLoFi(
                       request, configurator_->GetProxyConfig()))) {
     return false;
   }
-  return config_->ShouldEnableLoFi(request, *previews_decider);
-}
-
-bool DataReductionProxyIOData::ShouldEnableLitePages(
-    const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(previews_decider);
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  if (!config_ || (config_->IsBypassedByDataReductionProxyLocalRules(
-                      request, configurator_->GetProxyConfig()))) {
-    return false;
-  }
-  return config_->ShouldEnableLitePages(request, *previews_decider);
+  return config_->ShouldEnableServerPreviews(request, *previews_decider);
 }
 
 void DataReductionProxyIOData::UpdateDataUseForHost(int64_t network_bytes,

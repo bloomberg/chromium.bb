@@ -101,21 +101,12 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // Applies a serialized Data Reduction Proxy configuration.
   void SetDataReductionProxyConfiguration(const std::string& serialized_config);
 
-  // Returns true when Lo-Fi Previews should be activated. When Lo-Fi is
-  // active, URL requests are modified to request low fidelity versions of the
-  // resources, except when the user is in the Lo-Fi control group.
-  // |previews_decider| is a non-null object that determines eligibility of
-  // showing the preview based on past opt outs.
-  bool ShouldEnableLoFi(const net::URLRequest& request,
-                        previews::PreviewsDecider* previews_decider);
-
-  // Returns true when Lite Page Previews should be activated. When Lite Pages
-  // are active, a low fidelity transcoded page is requested on the main frame
-  // resource, except when the user is in the control group. |previews_decider|
-  // is a non-null object that determines eligibility of showing the preview
-  // based on past opt outs.
-  bool ShouldEnableLitePages(const net::URLRequest& request,
-                             previews::PreviewsDecider* previews_decider);
+  // Returns true when server previews should be activated. When server previews
+  // are active, URL requests are modified to request low fidelity versions of
+  // the resources.|previews_decider| is a non-null object that determines
+  // eligibility of showing the preview based on past opt outs.
+  bool ShouldEnableServerPreviews(const net::URLRequest& request,
+                                  previews::PreviewsDecider* previews_decider);
 
   // Bridge methods to safely call to the UI thread objects.
   void UpdateDataUseForHost(int64_t network_bytes,
