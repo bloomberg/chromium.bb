@@ -3869,12 +3869,6 @@ crbug.com/765685 [ Android ] external/wpt/mediacapture-streams/MediaStream-idl.h
 # Sheriff failure 2017-09-18
 crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
 
-# controls-video-keynav.html issues
-crbug.com/749965 [ Mac ] media/controls/controls-video-keynav.html [ Failure Pass ]
-crbug.com/749965 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure Pass ]
-crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure ]
-crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
-
 #Layout test corrupted after Skia rect tessellation change due to apparent SwiftShader bug.
 #This was previously skipped on Windows in the section for crbug.com/757165
 crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
