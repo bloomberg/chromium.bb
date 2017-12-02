@@ -107,8 +107,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   // are active, URL requests are modified to request low fidelity versions of
   // the resources.|previews_decider| is a non-null object that determines
   // eligibility of showing the preview based on past opt outs.
-  bool ShouldEnableServerPreviews(const net::URLRequest& request,
-                                  previews::PreviewsDecider* previews_decider);
+  bool ShouldAcceptServerPreview(const net::URLRequest& request,
+                                 previews::PreviewsDecider* previews_decider);
 
   // Bridge methods to safely call to the UI thread objects.
   void UpdateDataUseForHost(int64_t network_bytes,

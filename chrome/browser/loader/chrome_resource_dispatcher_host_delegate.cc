@@ -926,7 +926,7 @@ ChromeResourceDispatcherHostDelegate::DeterminePreviewsState(
   if (data_reduction_proxy_io_data && previews_io_data) {
     previews::PreviewsUserData::Create(url_request,
                                        previews_io_data->GeneratePageId());
-    if (data_reduction_proxy_io_data->ShouldEnableServerPreviews(
+    if (data_reduction_proxy_io_data->ShouldAcceptServerPreview(
             *url_request, previews_io_data)) {
       previews_state |= content::SERVER_LOFI_ON;
       previews_state |= content::SERVER_LITE_PAGE_ON;

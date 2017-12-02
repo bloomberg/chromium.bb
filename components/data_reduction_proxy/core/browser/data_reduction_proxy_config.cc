@@ -552,16 +552,6 @@ void DataReductionProxyConfig::FetchWarmupURL() {
   warmup_url_fetcher_->FetchWarmupURL();
 }
 
-bool DataReductionProxyConfig::ShouldEnableServerPreviews(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  DCHECK(!request.url().SchemeIsCryptographic());
-
-  return ShouldAcceptServerPreview(request, previews_decider);
-}
-
 bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return enabled_by_user_ && !unreachable_;
@@ -584,6 +574,8 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
     const net::URLRequest& request,
     const previews::PreviewsDecider& previews_decider) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
+  DCHECK(!request.url().SchemeIsCryptographic());
 
   if (!base::FeatureList::IsEnabled(
           features::kDataReductionProxyDecidesTransform)) {

@@ -1011,11 +1011,11 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableServerPreviews) {
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
       base::MakeUnique<TestPreviewsDecider>(true);
-  EXPECT_TRUE(test_config()->ShouldEnableServerPreviews(
+  EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 
   previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
-  EXPECT_FALSE(test_config()->ShouldEnableServerPreviews(
+  EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 }
 

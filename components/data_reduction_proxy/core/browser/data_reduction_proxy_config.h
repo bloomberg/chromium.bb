@@ -173,13 +173,14 @@ class DataReductionProxyConfig
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules) const;
 
-  // Returns true when server previews should be activated. Records metrics for
-  // previews state changes. |request| is used to get the network quality
-  // estimator from the URLRequestContext. |previews_decider| is used to check
-  // if |request| is locally blacklisted.
-  bool ShouldEnableServerPreviews(
+  // Returns whether the client should report to the data reduction proxy that
+  // it is willing to accept server previews for |request|.
+  // |previews_decider| is used to check if |request| is locally blacklisted.
+  // Should only be used if the kDataReductionProxyDecidesTransform feature is
+  // enabled.
+  bool ShouldAcceptServerPreview(
       const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider);
+      const previews::PreviewsDecider& previews_decider) const;
 
   // Returns true if the data saver has been enabled by the user, and the data
   // saver proxy is reachable.
@@ -282,15 +283,6 @@ class DataReductionProxyConfig
       const net::URLRequest& request,
       const previews::PreviewsDecider& previews_decider,
       previews::PreviewsType previews_type) const;
-
-  // Returns whether the client should report to the data reduction proxy that
-  // it is willing to accept server previews for |request|.
-  // |previews_decider| is used to check if |request| is locally blacklisted.
-  // Should only be used if the kDataReductionProxyDecidesTransform feature is
-  // enabled.
-  bool ShouldAcceptServerPreview(
-      const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider) const;
 
   // Checks if the current network has captive portal, and handles the result.
   // If the captive portal probe was blocked on the current network, disables
