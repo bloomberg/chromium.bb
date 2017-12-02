@@ -1484,11 +1484,23 @@ static const aom_cdf_prob default_filter_intra_mode_cdf[2][CDF_SIZE(
                              { AOM_CDF5(32768, 32768, 32768, 32768) } };
 
 static const aom_cdf_prob default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)] =
-    { { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(16645) },
-      { AOM_CDF2(27378) }, { AOM_CDF2(10985) }, { AOM_CDF2(10985) },
-      { AOM_CDF2(15723) }, { AOM_CDF2(12373) }, { AOM_CDF2(27199) },
-      { AOM_CDF2(24217) }, { AOM_CDF2(32767) }, { AOM_CDF2(32767) },
-      { AOM_CDF2(32767) }, { AOM_CDF2(32767) } };
+    {
+      { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(16645) },
+      { AOM_CDF2(27378) },
+#if CONFIG_TX64X64
+      { AOM_CDF2(30378) },
+#endif  // CONFIG_TX64X64
+      { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(15723) },
+      { AOM_CDF2(12373) }, { AOM_CDF2(27199) }, { AOM_CDF2(24217) },
+#if CONFIG_TX64X64
+      { AOM_CDF2(27378) }, { AOM_CDF2(27378) },
+#endif  // CONFIG_TX64X64
+      { AOM_CDF2(16767) }, { AOM_CDF2(16767) }, { AOM_CDF2(27767) },
+      { AOM_CDF2(27767) },
+#if CONFIG_TX64X64
+      { AOM_CDF2(27378) }, { AOM_CDF2(27378) },
+#endif  // CONFIG_TX64X64
+    };
 #endif  // CONFIG_FILTER_INTRA
 
 // FIXME(someone) need real defaults here

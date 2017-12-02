@@ -2044,7 +2044,11 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       4 - 1,   // TX_4X16
       16 - 1,  // TX_16X4
       8 - 1,   // TX_8X32
-      32 - 1   // TX_32X8
+      32 - 1,  // TX_32X8
+#if CONFIG_TX64X64
+      16 - 1,  // TX_16X64
+      64 - 1,  // TX_64X16
+#endif         // CONFIG_TX64X64
   },
   {
       4 - 1,   // TX_4X4
@@ -2067,7 +2071,11 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       16 - 1,  // TX_4X16
       4 - 1,   // TX_16X4
       32 - 1,  // TX_8X32
-      8 - 1    // TX_32X8
+      8 - 1,   // TX_32X8
+#if CONFIG_TX64X64
+      64 - 1,  // TX_16X64
+      16 - 1,  // TX_64X16
+#endif         // CONFIG_TX64X64
   }
 };
 

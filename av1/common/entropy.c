@@ -102,6 +102,9 @@ const uint16_t band_count_table[TX_SIZES_ALL][8] = {
 #endif  // CONFIG_TX64X64
   { 1, 2, 3, 4, 11, 64 - 21, 0 },   { 1, 2, 3, 4, 11, 64 - 21, 0 },
   { 1, 2, 3, 4, 11, 256 - 21, 0 },  { 1, 2, 3, 4, 11, 256 - 21, 0 },
+#if CONFIG_TX64X64
+  { 1, 2, 3, 4, 11, 1024 - 21, 0 }, { 1, 2, 3, 4, 11, 1024 - 21, 0 },
+#endif  // CONFIG_TX64X64
 };
 
 const uint16_t band_cum_count_table[TX_SIZES_ALL][8] = {
@@ -118,6 +121,9 @@ const uint16_t band_cum_count_table[TX_SIZES_ALL][8] = {
 #endif  // CONFIG_TX64X64
   { 0, 1, 3, 6, 10, 21, 64, 0 },   { 0, 1, 3, 6, 10, 21, 64, 0 },
   { 0, 1, 3, 6, 10, 21, 256, 0 },  { 0, 1, 3, 6, 10, 21, 256, 0 },
+#if CONFIG_TX64X64
+  { 0, 1, 3, 6, 10, 21, 1024, 0 }, { 0, 1, 3, 6, 10, 21, 1024, 0 },
+#endif  // CONFIG_TX64X64
 };
 
 const uint8_t av1_coefband_trans_8x8plus[MAX_TX_SQUARE] = {

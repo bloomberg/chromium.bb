@@ -349,6 +349,16 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       above_ec = !!*(const uint64_t *)a;
       left_ec = !!*(const uint16_t *)l;
       break;
+#if CONFIG_TX64X64
+    case TX_16X64:
+      above_ec = !!*(const uint32_t *)a;
+      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
+      break;
+    case TX_64X16:
+      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
+      left_ec = !!*(const uint32_t *)l;
+      break;
+#endif  // CONFIG_TX64X64
     default: assert(0 && "Invalid transform size."); break;
   }
   return combine_entropy_contexts(above_ec, left_ec);

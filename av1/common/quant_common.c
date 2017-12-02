@@ -494,6 +494,9 @@ void aom_qm_init(AV1_COMMON *cm) {
           cm->gqmatrix[q][c][t] = cm->gqmatrix[q][c][TX_32X32];
           cm->giqmatrix[q][c][t] = cm->giqmatrix[q][c][TX_32X32];
         } else {
+#if CONFIG_TX64X64
+          if (t == TX_16X64 || t == TX_64X16) continue;
+#endif  // CONFIG_TX64X64
           assert(current + size <= QM_TOTAL_SIZE);
           cm->gqmatrix[q][c][t] = &wt_matrix_ref[q][c >= 1][current];
           cm->giqmatrix[q][c][t] = &iwt_matrix_ref[q][c >= 1][current];
