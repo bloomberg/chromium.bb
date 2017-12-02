@@ -980,11 +980,11 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
           base::MakeUnique<chromeos::ClientCertFilterChromeOS>(
               use_system_key_slot_, username_hash_),
           base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                     chrome::kCryptoModulePasswordClientAuth)));
+                     kCryptoModulePasswordClientAuth)));
 #elif defined(USE_NSS_CERTS)
   return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
       base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                 chrome::kCryptoModulePasswordClientAuth)));
+                 kCryptoModulePasswordClientAuth)));
 #elif defined(OS_WIN)
   return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
 #elif defined(OS_MACOSX)

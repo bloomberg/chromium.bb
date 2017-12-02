@@ -22,7 +22,7 @@ class ChromeNSSCryptoModuleDelegate
   // Create a ChromeNSSCryptoModuleDelegate. |reason| is used to select what
   // string to show the user, |server| is displayed to indicate which connection
   // is causing the dialog to appear. |slot| can be NULL.
-  ChromeNSSCryptoModuleDelegate(chrome::CryptoModulePasswordReason reason,
+  ChromeNSSCryptoModuleDelegate(CryptoModulePasswordReason reason,
                                 const net::HostPortPair& server);
 
   // crypto::CryptoModuleBlockingPasswordDelegate implementation.
@@ -40,7 +40,7 @@ class ChromeNSSCryptoModuleDelegate
   void GotPassword(const std::string& password);
 
   // Parameters displayed in the dialog.
-  const chrome::CryptoModulePasswordReason reason_;
+  const CryptoModulePasswordReason reason_;
   net::HostPortPair server_;
 
   // Event to block worker thread while waiting for dialog on UI thread.
@@ -55,8 +55,7 @@ class ChromeNSSCryptoModuleDelegate
 
 // Create a delegate which only handles unlocking slots.
 crypto::CryptoModuleBlockingPasswordDelegate*
-    CreateCryptoModuleBlockingPasswordDelegate(
-        chrome::CryptoModulePasswordReason reason,
-        const net::HostPortPair& server);
+CreateCryptoModuleBlockingPasswordDelegate(CryptoModulePasswordReason reason,
+                                           const net::HostPortPair& server);
 
 #endif  // CHROME_BROWSER_UI_CRYPTO_MODULE_DELEGATE_NSS_H_

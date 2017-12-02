@@ -14,8 +14,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
-namespace chrome {
-
 class CryptoModulePasswordDialogViewTest : public views::ViewsTestBase {
  public:
   CryptoModulePasswordDialogViewTest() {}
@@ -56,5 +54,3 @@ TEST_F(CryptoModulePasswordDialogViewTest, TestAccept) {
   const base::string16 empty;
   EXPECT_EQ(empty, dialog_->password_entry_->text());
 }
-
-}  // namespace chrome
