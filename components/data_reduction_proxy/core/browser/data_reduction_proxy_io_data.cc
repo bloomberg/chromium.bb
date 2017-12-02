@@ -309,7 +309,7 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
-bool DataReductionProxyIOData::ShouldEnableServerPreviews(
+bool DataReductionProxyIOData::ShouldAcceptServerPreview(
     const net::URLRequest& request,
     previews::PreviewsDecider* previews_decider) {
   DCHECK(previews_decider);
@@ -318,7 +318,7 @@ bool DataReductionProxyIOData::ShouldEnableServerPreviews(
                       request, configurator_->GetProxyConfig()))) {
     return false;
   }
-  return config_->ShouldEnableServerPreviews(request, *previews_decider);
+  return config_->ShouldAcceptServerPreview(request, *previews_decider);
 }
 
 void DataReductionProxyIOData::UpdateDataUseForHost(int64_t network_bytes,
