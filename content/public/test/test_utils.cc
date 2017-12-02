@@ -408,4 +408,13 @@ void WebContentsDestroyedWatcher::WebContentsDestroyed() {
   run_loop_.Quit();
 }
 
+GURL EffectiveURLContentBrowserClient::GetEffectiveURL(
+    BrowserContext* browser_context,
+    const GURL& url,
+    bool is_isolated_origin) {
+  if (url == url_to_modify_)
+    return url_to_return_;
+  return url;
+}
+
 }  // namespace content

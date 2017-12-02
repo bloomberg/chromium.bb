@@ -649,26 +649,6 @@ TEST_F(RenderProcessHostUnitTest,
   EXPECT_EQ(speculative_process_host_id, site_instance->GetProcess()->GetID());
 }
 
-class EffectiveURLContentBrowserClient : public ContentBrowserClient {
- public:
-  EffectiveURLContentBrowserClient(const GURL& url_to_modify,
-                                   const GURL& url_to_return)
-      : url_to_modify_(url_to_modify), url_to_return_(url_to_return) {}
-  ~EffectiveURLContentBrowserClient() override {}
-
- private:
-  GURL GetEffectiveURL(BrowserContext* browser_context,
-                       const GURL& url,
-                       bool is_isolated_origin) override {
-    if (url == url_to_modify_)
-      return url_to_return_;
-    return url;
-  }
-
-  GURL url_to_modify_;
-  GURL url_to_return_;
-};
-
 // Tests that RenderProcessHost reuse works correctly even if the site URL of a
 // URL changes.
 TEST_F(RenderProcessHostUnitTest, ReuseSiteURLChanges) {

@@ -551,8 +551,12 @@ class CONTENT_EXPORT RenderFrameHostManager
     // Set with an existing SiteInstance to be reused.
     content::SiteInstance* existing_site_instance;
 
-    // In case |existing_site_instance| is null, specify a new site URL.
-    GURL new_site_url;
+    // In case |existing_site_instance| is null, specify a destination URL.
+    GURL dest_url;
+
+    // In case |existing_site_instance| is null, specify a BrowsingContext, to
+    // be used with |dest_url| to resolve the site URL.
+    BrowserContext* browser_context;
 
     // In case |existing_site_instance| is null, specify how the new site is
     // related to the current BrowsingInstance.

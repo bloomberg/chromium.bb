@@ -1146,4 +1146,50 @@ TEST_F(SiteInstanceTest, MultipleIsolatedOriginsWithCommonSite) {
   policy->RemoveIsolatedOriginForTesting(url::Origin::Create(baz_bar_foo_url));
 }
 
+// Check that new SiteInstances correctly preserve the full URL that was used
+// to initialize their site URL.
+TEST_F(SiteInstanceTest, OriginalURL) {
+  GURL original_url("https://foo.com/");
+  GURL app_url("https://app.com/");
+  EffectiveURLContentBrowserClient modified_client(original_url, app_url);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+  std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
+
+  // New SiteInstance in a new BrowsingInstance with a predetermined URL.
+  {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::CreateForURL(browser_context.get(), original_url);
+    EXPECT_EQ(app_url, site_instance->GetSiteURL());
+    EXPECT_EQ(original_url, site_instance->original_url());
+  }
+
+  // New related SiteInstance from an existing SiteInstance with a
+  // predetermined URL.
+  {
+    scoped_refptr<SiteInstanceImpl> bar_site_instance =
+        SiteInstanceImpl::CreateForURL(browser_context.get(),
+                                       GURL("https://bar.com/"));
+    scoped_refptr<SiteInstance> site_instance =
+        bar_site_instance->GetRelatedSiteInstance(original_url);
+    EXPECT_EQ(app_url, site_instance->GetSiteURL());
+    EXPECT_EQ(
+        original_url,
+        static_cast<SiteInstanceImpl*>(site_instance.get())->original_url());
+  }
+
+  // New SiteInstance with a lazily assigned site URL.
+  {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::Create(browser_context.get());
+    EXPECT_FALSE(site_instance->HasSite());
+    EXPECT_TRUE(site_instance->original_url().is_empty());
+    site_instance->SetSite(original_url);
+    EXPECT_EQ(app_url, site_instance->GetSiteURL());
+    EXPECT_EQ(original_url, site_instance->original_url());
+  }
+
+  SetBrowserClientForTesting(regular_client);
+}
+
 }  // namespace content

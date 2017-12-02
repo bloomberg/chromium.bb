@@ -976,9 +976,10 @@ RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
     BrowserContext* browser_context,
     GURL dest_url,
     SiteInstanceRelation relation_to_current)
-    : existing_site_instance(nullptr), relation(relation_to_current) {
-  new_site_url = SiteInstance::GetSiteForURL(browser_context, dest_url);
-}
+    : existing_site_instance(nullptr),
+      dest_url(dest_url),
+      browser_context(browser_context),
+      relation(relation_to_current) {}
 
 void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
   GetRenderFrameProxyHost(instance)->set_render_frame_proxy_created(false);
@@ -1424,22 +1425,31 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   if (IsCurrentlySameSite(render_frame_host_.get(), dest_url))
     return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
 
-  if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled()) {
-    // TODO(nick): Looking at the main frame and openers is required for TDI
-    // mode, but should be safe to enable unconditionally.
-    if (!frame_tree_node_->IsMainFrame()) {
-      RenderFrameHostImpl* main_frame =
-          frame_tree_node_->frame_tree()->root()->current_frame_host();
-      if (IsCurrentlySameSite(main_frame, dest_url))
-        return SiteInstanceDescriptor(main_frame->GetSiteInstance());
-    }
-
-    if (frame_tree_node_->opener()) {
-      RenderFrameHostImpl* opener_frame =
-          frame_tree_node_->opener()->current_frame_host();
-      if (IsCurrentlySameSite(opener_frame, dest_url))
-        return SiteInstanceDescriptor(opener_frame->GetSiteInstance());
-    }
+  // Shortcut some common cases for reusing an existing frame's SiteInstance.
+  // Looking at the main frame and openers is required for TDI mode. It also
+  // helps with hosted apps, allowing same-site, non-app subframes to be kept
+  // inside the hosted app process.
+  //
+  // TODO(alexmos): Normally, we'd find these SiteInstances later, as part of
+  // creating a new related SiteInstance from
+  // BrowsingInstance::GetSiteInstanceForURL(), but the lookup there does not
+  // properly deal with hosted apps.  Once that's refactored to skip effective
+  // URLs when necessary, this can be removed.  See https://crbug.com/718516.
+  if (!frame_tree_node_->IsMainFrame()) {
+    RenderFrameHostImpl* main_frame =
+        frame_tree_node_->frame_tree()->root()->current_frame_host();
+    if (IsCurrentlySameSite(main_frame, dest_url))
+      return SiteInstanceDescriptor(main_frame->GetSiteInstance());
+    RenderFrameHostImpl* parent =
+        frame_tree_node_->parent()->current_frame_host();
+    if (IsCurrentlySameSite(parent, dest_url))
+      return SiteInstanceDescriptor(parent->GetSiteInstance());
+  }
+  if (frame_tree_node_->opener()) {
+    RenderFrameHostImpl* opener_frame =
+        frame_tree_node_->opener()->current_frame_host();
+    if (IsCurrentlySameSite(opener_frame, dest_url))
+      return SiteInstanceDescriptor(opener_frame->GetSiteInstance());
   }
 
   if (!frame_tree_node_->IsMainFrame() &&
@@ -1547,7 +1557,7 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
   // Note: If the |candidate_instance| matches the descriptor,
   // GetRelatedSiteInstance will return it.
   if (descriptor.relation == SiteInstanceRelation::RELATED)
-    return current_instance->GetRelatedSiteInstance(descriptor.new_site_url);
+    return current_instance->GetRelatedSiteInstance(descriptor.dest_url);
 
   if (descriptor.relation == SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME)
     return current_instance->GetDefaultSubframeSiteInstance();
@@ -1556,14 +1566,16 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
   // check if the candidate matches.
   if (candidate_instance &&
       !current_instance->IsRelatedSiteInstance(candidate_instance) &&
-      candidate_instance->GetSiteURL() == descriptor.new_site_url) {
+      candidate_instance->GetSiteURL() ==
+          SiteInstance::GetSiteForURL(descriptor.browser_context,
+                                      descriptor.dest_url)) {
     return candidate_instance;
   }
 
   // Otherwise return a newly created one.
   return SiteInstance::CreateForURL(
       delegate_->GetControllerForRenderManager().GetBrowserContext(),
-      descriptor.new_site_url);
+      descriptor.dest_url);
 }
 
 bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
@@ -1571,29 +1583,49 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
 
+  // Don't compare effective URLs for subframe navigations, since we don't want
+  // to create OOPIFs based on that mechanism (e.g., for hosted apps).
+  // See https://crbug.com/718516.
+  // TODO(creis): This should eventually call out to embedder to help decide,
+  // if we can find a way to make decisions about popups based on their opener.
+  bool should_compare_effective_urls = frame_tree_node_->IsMainFrame();
+
   // If the process type is incorrect, reject the candidate even if |dest_url|
   // is same-site.  (The URL may have been installed as an app since
   // the last time we visited it.)
-  if (candidate->GetSiteInstance()->HasWrongProcessForURL(dest_url))
+  //
+  // This check must be skipped to keep same-site subframe navigations from a
+  // hosted app to non-hosted app, and vice versa, in the same process.
+  // Otherwise, this would return false due to a process privilege level
+  // mismatch.
+  bool src_or_dest_has_effective_url =
+      (SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url) ||
+       SiteInstanceImpl::HasEffectiveURL(
+           browser_context, candidate->GetSiteInstance()->original_url()));
+  bool should_check_for_wrong_process =
+      should_compare_effective_urls || !src_or_dest_has_effective_url;
+  if (should_check_for_wrong_process &&
+      candidate->GetSiteInstance()->HasWrongProcessForURL(dest_url))
     return false;
 
   // If we don't have a last successful URL, we can't trust the origin or URL
-  // stored on the frame, so we fall back to GetSiteURL(). This case occurs
-  // after commits of net errors, since net errors do not currently swap
-  // processes for transfer navigations. Note: browser-initiated net errors do
-  // swap processes, but the frame's last successful URL will still be empty in
-  // that case.
+  // stored on the frame, so we fall back to the SiteInstance URL.  This case
+  // matters for newly created frames which haven't committed a navigation yet,
+  // as well as for net errors. Note that we use the SiteInstance's
+  // original_url() and not the site URL, so that we can do this comparison
+  // without the effective URL resolution if needed.
   if (candidate->last_successful_url().is_empty()) {
-    // TODO(creis): GetSiteURL() is not 100% accurate. Eliminate this fallback.
-    return SiteInstance::IsSameWebSite(
-        browser_context, candidate->GetSiteInstance()->GetSiteURL(), dest_url);
+    return SiteInstanceImpl::IsSameWebSite(
+        browser_context, candidate->GetSiteInstance()->original_url(), dest_url,
+        should_compare_effective_urls);
   }
 
   // In the common case, we use the RenderFrameHost's last successful URL. Thus,
   // we compare against the last successful commit when deciding whether to swap
   // this time.
-  if (SiteInstance::IsSameWebSite(browser_context,
-                                  candidate->last_successful_url(), dest_url)) {
+  if (SiteInstanceImpl::IsSameWebSite(
+          browser_context, candidate->last_successful_url(), dest_url,
+          should_compare_effective_urls)) {
     return true;
   }
 
@@ -1601,9 +1633,10 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // example, "about:blank"). If so, examine the replicated origin to determine
   // the site.
   if (!candidate->GetLastCommittedOrigin().unique() &&
-      SiteInstance::IsSameWebSite(
+      SiteInstanceImpl::IsSameWebSite(
           browser_context,
-          GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url)) {
+          GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url,
+          should_compare_effective_urls)) {
     return true;
   }
 

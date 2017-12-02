@@ -165,6 +165,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   has_site_ = true;
   BrowserContext* browser_context = browsing_instance_->browser_context();
   site_ = GetSiteForURL(browser_context, url);
+  original_url_ = url;
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -316,10 +317,22 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
 bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
                                  const GURL& real_src_url,
                                  const GURL& real_dest_url) {
-  GURL src_url = SiteInstanceImpl::GetEffectiveURL(browser_context,
-                                                   real_src_url);
-  GURL dest_url = SiteInstanceImpl::GetEffectiveURL(browser_context,
-                                                    real_dest_url);
+  return SiteInstanceImpl::IsSameWebSite(browser_context, real_src_url,
+                                         real_dest_url, true);
+}
+
+bool SiteInstanceImpl::IsSameWebSite(BrowserContext* browser_context,
+                                     const GURL& real_src_url,
+                                     const GURL& real_dest_url,
+                                     bool should_compare_effective_urls) {
+  GURL src_url =
+      should_compare_effective_urls
+          ? SiteInstanceImpl::GetEffectiveURL(browser_context, real_src_url)
+          : real_src_url;
+  GURL dest_url =
+      should_compare_effective_urls
+          ? SiteInstanceImpl::GetEffectiveURL(browser_context, real_dest_url)
+          : real_dest_url;
 
   // We infer web site boundaries based on the registered domain name of the
   // top-level page and the scheme.  We do not pay attention to the port if
@@ -425,6 +438,12 @@ GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
   bool is_isolated_origin = policy->IsIsolatedOrigin(url::Origin::Create(url));
   return GetContentClient()->browser()->GetEffectiveURL(browser_context, url,
                                                         is_isolated_origin);
+}
+
+// static
+bool SiteInstanceImpl::HasEffectiveURL(BrowserContext* browser_context,
+                                       const GURL& url) {
+  return GetEffectiveURL(browser_context, url) != url;
 }
 
 // static

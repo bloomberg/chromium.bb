@@ -39,6 +39,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const GURL& url);
   static bool ShouldAssignSiteForURL(const GURL& url);
 
+  // See SiteInstance::IsSameWebSite.
+  // This version allows comparing URLs without converting them to effective
+  // URLs first, which is useful for avoiding OOPIFs when otherwise same-site
+  // URLs may look cross-site via their effective URLs.
+  static bool IsSameWebSite(content::BrowserContext* browser_context,
+                            const GURL& src_url,
+                            const GURL& dest_url,
+                            bool should_compare_effective_urls);
+
   // SiteInstance interface overrides.
   int32_t GetId() override;
   bool HasProcess() const override;
@@ -96,6 +105,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // another SiteInstance from the same site.
   void set_is_for_service_worker() { is_for_service_worker_ = true; }
   bool is_for_service_worker() const { return is_for_service_worker_; }
+
+  // Returns the URL which was used to set the |site_| for this SiteInstance.
+  // May be empty if this SiteInstance does not have a |site_|.
+  const GURL& original_url() { return original_url_; }
+
+  // True if |url| resolves to an effective URL that is different from |url|.
+  // See GetEffectiveURL().  This will be true for hosted apps as well as NTP
+  // URLs.
+  static bool HasEffectiveURL(BrowserContext* browser_context, const GURL& url);
 
   // Returns the SiteInstance, related to this one, that should be used
   // for subframes when an oopif is required, but a dedicated process is not.
@@ -228,6 +246,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Whether SetSite has been called.
   bool has_site_;
+
+  // The URL which was used to set the |site_| for this SiteInstance.
+  GURL original_url_;
 
   // The ProcessReusePolicy to use when creating a RenderProcessHost for this
   // SiteInstance.
