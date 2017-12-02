@@ -32,9 +32,9 @@
 #define AcceleratedImageBufferSurface_h
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -66,7 +66,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
                    int y) override;
 
  private:
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   sk_sp<SkSurface> surface_;
   std::unique_ptr<PaintCanvas> canvas_;
 };

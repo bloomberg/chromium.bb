@@ -17,7 +17,8 @@ namespace blink {
 
 scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper) {
   if (image->isTextureBacked()) {
     CHECK(context_provider_wrapper);
     return AcceleratedStaticBitmapImage::CreateFromSkImage(

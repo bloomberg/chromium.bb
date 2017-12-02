@@ -47,7 +47,7 @@ class CanvasResourceTest : public Test {
 
  protected:
   MockGLES2InterfaceWithMailboxSupport gl_;
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
 };
 
 TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {

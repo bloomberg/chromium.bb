@@ -17,7 +17,8 @@ namespace blink {
 
 SkiaTextureHolder::SkiaTextureHolder(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper)
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper)
     : TextureHolder(std::move(context_provider_wrapper)),
       image_(std::move(image)) {}
 

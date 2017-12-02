@@ -5,6 +5,7 @@
 #ifndef UnacceleratedStaticBitmapImage_h
 #define UnacceleratedStaticBitmapImage_h
 
+#include "base/memory/weak_ptr.h"
 #include "platform/graphics/StaticBitmapImage.h"
 
 namespace blink {
@@ -20,7 +21,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
   IntSize Size() const override;
   bool IsPremultiplied() const override;
   scoped_refptr<StaticBitmapImage> MakeAccelerated(
-      WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) override;
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper)
+      override;
 
   void Draw(PaintCanvas*,
             const PaintFlags&,

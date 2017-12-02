@@ -6,10 +6,10 @@
 #define OffscreenCanvasFrameDispatcher_h
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -34,8 +34,8 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
 
   virtual void Reshape(int width, int height) = 0;
 
-  WeakPtr<OffscreenCanvasFrameDispatcher> CreateWeakPtr() {
-    return weak_ptr_factory_.CreateWeakPtr();
+  base::WeakPtr<OffscreenCanvasFrameDispatcher> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
   OffscreenCanvasFrameDispatcherClient* Client() { return client_; }
@@ -45,7 +45,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
       : weak_ptr_factory_(this), client_(client) {}
 
  private:
-  WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<OffscreenCanvasFrameDispatcher> weak_ptr_factory_;
   OffscreenCanvasFrameDispatcherClient* client_;
 };
 

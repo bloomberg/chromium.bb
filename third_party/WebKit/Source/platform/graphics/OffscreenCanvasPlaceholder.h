@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -20,10 +20,11 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
  public:
   ~OffscreenCanvasPlaceholder();
 
-  virtual void SetPlaceholderFrame(scoped_refptr<StaticBitmapImage>,
-                                   WeakPtr<OffscreenCanvasFrameDispatcher>,
-                                   scoped_refptr<WebTaskRunner>,
-                                   unsigned resource_id);
+  virtual void SetPlaceholderFrame(
+      scoped_refptr<StaticBitmapImage>,
+      base::WeakPtr<OffscreenCanvasFrameDispatcher>,
+      scoped_refptr<WebTaskRunner>,
+      unsigned resource_id);
   void ReleasePlaceholderFrame();
 
   void SetSuspendOffscreenCanvasAnimation(bool);
@@ -45,7 +46,7 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
   bool PostSetSuspendAnimationToOffscreenCanvasThread(bool suspend);
 
   scoped_refptr<StaticBitmapImage> placeholder_frame_;
-  WeakPtr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
+  base::WeakPtr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
   scoped_refptr<WebTaskRunner> frame_dispatcher_task_runner_;
   unsigned placeholder_frame_resource_id_ = 0;
 

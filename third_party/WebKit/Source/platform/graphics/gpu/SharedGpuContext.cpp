@@ -36,14 +36,14 @@ bool SharedGpuContext::IsGpuCompositingEnabled() {
   return !this_ptr->is_gpu_compositing_disabled_;
 }
 
-WeakPtr<WebGraphicsContext3DProviderWrapper>
+base::WeakPtr<WebGraphicsContext3DProviderWrapper>
 SharedGpuContext::ContextProviderWrapper() {
   SharedGpuContext* this_ptr = GetInstanceForCurrentThread();
   bool only_if_gpu_compositing = false;
   this_ptr->CreateContextProviderIfNeeded(only_if_gpu_compositing);
   if (!this_ptr->context_provider_wrapper_)
     return nullptr;
-  return this_ptr->context_provider_wrapper_->CreateWeakPtr();
+  return this_ptr->context_provider_wrapper_->GetWeakPtr();
 }
 
 static void CreateContextProviderOnMainThread(

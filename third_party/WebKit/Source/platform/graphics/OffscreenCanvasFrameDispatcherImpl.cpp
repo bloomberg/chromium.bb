@@ -69,11 +69,12 @@ OffscreenCanvasFrameDispatcherImpl::~OffscreenCanvasFrameDispatcherImpl() {
 
 namespace {
 
-void UpdatePlaceholderImage(WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
-                            scoped_refptr<WebTaskRunner> task_runner,
-                            int placeholder_canvas_id,
-                            scoped_refptr<blink::StaticBitmapImage> image,
-                            unsigned resource_id) {
+void UpdatePlaceholderImage(
+    base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
+    scoped_refptr<WebTaskRunner> task_runner,
+    int placeholder_canvas_id,
+    scoped_refptr<blink::StaticBitmapImage> image,
+    unsigned resource_id) {
   DCHECK(IsMainThread());
   OffscreenCanvasPlaceholder* placeholder_canvas =
       OffscreenCanvasPlaceholder::GetPlaceholderById(placeholder_canvas_id);
@@ -125,7 +126,7 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
       ->Scheduler()
       ->CompositorTaskRunner()
       ->PostTask(BLINK_FROM_HERE,
-                 CrossThreadBind(UpdatePlaceholderImage, this->CreateWeakPtr(),
+                 CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
                                  WTF::Passed(std::move(dispatcher_task_runner)),
                                  placeholder_canvas_id_, std::move(image),
                                  resource_id));

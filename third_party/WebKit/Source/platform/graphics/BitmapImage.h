@@ -29,6 +29,7 @@
 #define BitmapImage_h
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
@@ -237,7 +238,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   // during catch-up.
   Optional<size_t> last_num_frames_skipped_ = 0u;
 
-  WTF::WeakPtrFactory<BitmapImage> weak_factory_;
+  base::WeakPtrFactory<BitmapImage> weak_factory_;
 };
 
 DEFINE_IMAGE_TYPE_CASTS(BitmapImage);

@@ -21,7 +21,7 @@ PlaceholderIdMap& placeholderRegistry() {
 }
 
 void releaseFrameToDispatcher(
-    WeakPtr<blink::OffscreenCanvasFrameDispatcher> dispatcher,
+    base::WeakPtr<blink::OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<blink::Image> oldImage,
     unsigned resourceId) {
   oldImage = nullptr;  // Needed to unref'ed on the right thread
@@ -31,7 +31,7 @@ void releaseFrameToDispatcher(
 }
 
 void SetSuspendAnimation(
-    WeakPtr<blink::OffscreenCanvasFrameDispatcher> dispatcher,
+    base::WeakPtr<blink::OffscreenCanvasFrameDispatcher> dispatcher,
     bool suspend) {
   if (dispatcher) {
     dispatcher->SetSuspendAnimation(suspend);
@@ -71,7 +71,7 @@ void OffscreenCanvasPlaceholder::UnregisterPlaceholder() {
 
 void OffscreenCanvasPlaceholder::SetPlaceholderFrame(
     scoped_refptr<StaticBitmapImage> new_frame,
-    WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
+    base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<WebTaskRunner> task_runner,
     unsigned resource_id) {
   DCHECK(IsPlaceholderRegistered());

@@ -27,12 +27,13 @@
 
 #include <memory>
 #include <utility>
+
+#include "base/memory/weak_ptr.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread.h"
 #include "platform/wtf/LeakAnnotations.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/WTFTestHelper.h"
-#include "platform/wtf/WeakPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
@@ -51,16 +52,16 @@ class HasWeakPtrSupport {
  public:
   HasWeakPtrSupport() : weak_ptr_factory_(this) {}
 
-  WTF::WeakPtr<HasWeakPtrSupport> CreateWeakPtr() {
-    return weak_ptr_factory_.CreateWeakPtr();
+  base::WeakPtr<HasWeakPtrSupport> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void RevokeAll() { weak_ptr_factory_.RevokeAll(); }
+  void RevokeAll() { weak_ptr_factory_.InvalidateWeakPtrs(); }
 
   void Increment(int* counter) { ++*counter; }
 
  private:
-  WTF::WeakPtrFactory<HasWeakPtrSupport> weak_ptr_factory_;
+  base::WeakPtrFactory<HasWeakPtrSupport> weak_ptr_factory_;
 };
 
 }  // namespace WTF
@@ -138,7 +139,7 @@ TEST(FunctionalTest, WeakPtr) {
   HasWeakPtrSupport obj;
   int counter = 0;
   WTF::RepeatingClosure bound =
-      WTF::BindRepeating(&HasWeakPtrSupport::Increment, obj.CreateWeakPtr(),
+      WTF::BindRepeating(&HasWeakPtrSupport::Increment, obj.GetWeakPtr(),
                          WTF::Unretained(&counter));
 
   bound.Run();

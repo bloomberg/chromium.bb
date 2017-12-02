@@ -49,7 +49,7 @@ bool UnacceleratedStaticBitmapImage::IsPremultiplied() const {
 
 scoped_refptr<StaticBitmapImage>
 UnacceleratedStaticBitmapImage::MakeAccelerated(
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) {
   if (!context_wrapper)
     return nullptr;  // Can happen if the context is lost.
 

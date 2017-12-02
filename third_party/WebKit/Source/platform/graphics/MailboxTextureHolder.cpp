@@ -21,7 +21,7 @@ void ReleaseTexture(
     bool is_converted_from_skia_texture,
     unsigned texture_id,
     std::unique_ptr<gpu::Mailbox> mailbox,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
     std::unique_ptr<gpu::SyncToken> sync_token) {
   if (!is_converted_from_skia_texture && texture_id && context_provider) {
     context_provider->ContextProvider()->ContextGL()->WaitSyncTokenCHROMIUM(
@@ -37,7 +37,8 @@ MailboxTextureHolder::MailboxTextureHolder(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     unsigned texture_id_to_delete_after_mailbox_consumed,
-    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper,
     IntSize mailbox_size)
     : TextureHolder(std::move(context_provider_wrapper)),
       mailbox_(mailbox),

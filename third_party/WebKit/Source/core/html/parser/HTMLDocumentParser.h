@@ -28,6 +28,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -48,7 +49,6 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/WeakPtr.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
@@ -259,8 +259,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // Using WeakPtr for GarbageCollected is discouraged. But in this case this is
   // ok because HTMLDocumentParser guarantees to revoke all WeakPtrs in the pre
   // finalizer.
-  WeakPtrFactory<HTMLDocumentParser> weak_factory_;
-  WeakPtr<BackgroundHTMLParser> background_parser_;
+  base::WeakPtrFactory<HTMLDocumentParser> weak_factory_;
+  base::WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
   scoped_refptr<TokenizedChunkQueue> tokenized_chunk_queue_;

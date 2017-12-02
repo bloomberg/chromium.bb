@@ -5,6 +5,7 @@
 #ifndef VideoFrameSubmitter_h
 #define VideoFrameSubmitter_h
 
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
