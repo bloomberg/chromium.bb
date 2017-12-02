@@ -251,7 +251,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       base::string16() /* display_source */, GURL(),
       NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),
       RichNotificationData(),
-      new HandleNotificationClickedDelegate(click_callback), gfx::kNoneIcon,
+      new HandleNotificationClickDelegate(click_callback), gfx::kNoneIcon,
       SystemNotificationWarningLevel::CRITICAL_WARNING);
   notification->set_clickable(true);
   notification->SetSystemPriority();

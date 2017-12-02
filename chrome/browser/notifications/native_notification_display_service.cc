@@ -54,8 +54,7 @@ NativeNotificationDisplayService::~NativeNotificationDisplayService() = default;
 void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
     bool success) {
   UMA_HISTOGRAM_BOOLEAN("Notifications.UsingNativeNotificationCenter", success);
-  if (success)
-    notification_bridge_ready_ = true;
+  notification_bridge_ready_ = success;
 
   // TODO(estade): this shouldn't be necessary in the succesful case, but some
   // notification bridges can't handle TRANSIENT notifications and still have to

@@ -442,7 +442,7 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kSystemNotifierId),
       notification_data,
-      new message_center::HandleNotificationButtonClickDelegate(
+      new message_center::HandleNotificationClickDelegate(
           base::Bind(&ExtensionStorageMonitor::OnNotificationButtonClick,
                      weak_ptr_factory_.GetWeakPtr(), extension_id))));
   notification->SetSystemPriority();
@@ -453,8 +453,12 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
 }
 
 void ExtensionStorageMonitor::OnNotificationButtonClick(
-    const std::string& extension_id, int button_index) {
-  switch (button_index) {
+    const std::string& extension_id,
+    base::Optional<int> button_index) {
+  if (!button_index)
+    return;
+
+  switch (*button_index) {
     case BUTTON_DISABLE_NOTIFICATION: {
       DisableStorageMonitoring(extension_id);
       break;

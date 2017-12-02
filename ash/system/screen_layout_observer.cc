@@ -69,7 +69,9 @@ base::string16 GetDisplaySize(int64_t display_id) {
 }
 
 // Callback to handle a user selecting the notification view.
-void OpenSettingsFromNotification() {
+void OpenSettingsFromNotification(base::Optional<int> button_index) {
+  DCHECK(!button_index);
+
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SELECTED);
   // Settings may be blocked, e.g. at the lock screen.
@@ -358,7 +360,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierDisplay),
           message_center::RichNotificationData(),
-          new message_center::HandleNotificationClickedDelegate(
+          new message_center::HandleNotificationClickDelegate(
               base::Bind(&OpenSettingsFromNotification)),
           kNotificationScreenIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/message_center/message_center_export.h"
 
@@ -55,45 +56,33 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
   friend class base::RefCountedThreadSafe<NotificationDelegate>;
 };
 
-// A simple notification delegate which invokes the passed closure when clicked.
-class MESSAGE_CENTER_EXPORT HandleNotificationClickedDelegate
+// A simple notification delegate which invokes the passed closure when the body
+// or a button is clicked.
+class MESSAGE_CENTER_EXPORT HandleNotificationClickDelegate
     : public NotificationDelegate {
  public:
-  explicit HandleNotificationClickedDelegate(const base::Closure& closure);
+  // The parameter is the index of the button that was clicked, or nullopt if
+  // the body was clicked.
+  using ButtonClickCallback = base::Callback<void(base::Optional<int>)>;
+
+  // Creates a delegate that handles clicks on a button or on the body.
+  explicit HandleNotificationClickDelegate(const ButtonClickCallback& callback);
+
+  // Creates a delegate that only handles clicks on the body of the
+  // notification.
+  explicit HandleNotificationClickDelegate(const base::Closure& closure);
 
   // message_center::NotificationDelegate overrides:
   void Click() override;
-
- protected:
-  ~HandleNotificationClickedDelegate() override;
-
- private:
-  std::string id_;
-  base::Closure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandleNotificationClickedDelegate);
-};
-
-// A notification delegate which invokes a callback when a notification button
-// has been clicked.
-class MESSAGE_CENTER_EXPORT HandleNotificationButtonClickDelegate
-    : public NotificationDelegate {
- public:
-  typedef base::Callback<void(int)> ButtonClickCallback;
-
-  explicit HandleNotificationButtonClickDelegate(
-      const ButtonClickCallback& button_callback);
-
-  // message_center::NotificationDelegate overrides:
   void ButtonClick(int button_index) override;
 
  protected:
-  ~HandleNotificationButtonClickDelegate() override;
+  ~HandleNotificationClickDelegate() override;
 
  private:
-  ButtonClickCallback button_callback_;
+  ButtonClickCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(HandleNotificationButtonClickDelegate);
+  DISALLOW_COPY_AND_ASSIGN(HandleNotificationClickDelegate);
 };
 
 }  //  namespace message_center
