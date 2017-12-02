@@ -482,6 +482,8 @@ std::unique_ptr<JSONObject> ObjectForSkPaint(const SkPaint& paint) {
   paint_item->SetString("textEncoding",
                         TextEncodingName(paint.getTextEncoding()));
   paint_item->SetString("hinting", HintingName(paint.getHinting()));
+  if (paint.getBlendMode() != SkBlendMode::kSrcOver)
+    paint_item->SetString("blendMode", SkBlendMode_Name(paint.getBlendMode()));
   return paint_item;
 }
 

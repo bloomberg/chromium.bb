@@ -248,7 +248,8 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 
   bool all_mask_images_loaded = true;
 
-  if (!mask_blending_applied_by_compositor) {
+  if (!mask_blending_applied_by_compositor &&
+      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     push_transparency_layer = true;
     StyleImage* mask_box_image = layout_box_.Style()->MaskBoxImage().GetImage();
     const FillLayer& mask_layers = layout_box_.Style()->MaskLayers();
