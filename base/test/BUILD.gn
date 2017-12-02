@@ -28,6 +28,7 @@ static_library("test_support") {
     "../trace_event/trace_config_memory_test_util.h",
     "android/java_handler_thread_helpers.cc",
     "android/java_handler_thread_helpers.h",
+    "bind_test_util.h",
     "copy_only_int.h",
     "fuzzed_data_provider.cc",
     "fuzzed_data_provider.h",
