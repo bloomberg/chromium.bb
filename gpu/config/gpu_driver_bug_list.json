@@ -1897,6 +1897,10 @@
       "os": {
         "type": "win"
       },
+      "driver_version": {
+        "op": "<",
+        "value": "21.21.13.7576"
+      },
       "vendor_id": "0x10de",
       "features": [
         "disable_dxgi_zero_copy_video"
