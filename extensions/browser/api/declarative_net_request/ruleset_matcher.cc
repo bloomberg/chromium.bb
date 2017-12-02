@@ -46,10 +46,6 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
   if (!base::PathExists(indexed_ruleset_path))
     return kLoadErrorInvalidPath;
 
-  scoped_refptr<base::SequencedTaskRunner> deleter_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
-
   // TODO(crbug.com/774271): Revisit mmap-ing the file.
   auto ruleset = std::make_unique<base::MemoryMappedFile>();
   if (!ruleset->Initialize(indexed_ruleset_path,
