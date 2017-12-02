@@ -84,6 +84,11 @@ void PageOverlay::Update() {
     } else {
       frame_impl_->FrameWidget()->RootGraphicsLayer()->AddChild(layer_.get());
     }
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
+                            IntPoint());
+    }
   }
 
   FloatSize size(frame->GetPage()->GetVisualViewport().Size());

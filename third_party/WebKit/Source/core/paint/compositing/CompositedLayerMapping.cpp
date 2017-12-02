@@ -874,10 +874,13 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
       layer_config_changed = true;
   }
 
-  // Changes to either the internal hierarchy or the mask layer have an impact
-  // on painting phases, so we need to update when either are updated.
-  if (layer_config_changed || mask_layer_changed)
+  if (layer_config_changed || mask_layer_changed) {
+    // Changes to either the internal hierarchy or the mask layer have an impact
+    // on painting phases, so we need to update when either are updated.
     UpdatePaintingPhases();
+    // Need to update paint property states of the changed GraphicsLayers.
+    layout_object.SetNeedsPaintPropertyUpdate();
+  }
 
   UpdateElementId();
 
