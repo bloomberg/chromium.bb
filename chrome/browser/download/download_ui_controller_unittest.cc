@@ -330,7 +330,10 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
 
   EXPECT_CALL(*item, GetOriginalMimeType());
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
-  EXPECT_CALL(*manager(), PostInitialization());
+  EXPECT_CALL(
+      *manager(),
+      PostInitialization(content::DownloadManager::
+                             DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB));
 
   {
     testing::InSequence s;

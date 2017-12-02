@@ -173,8 +173,17 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
-  // Called when download manager has loaded all the data.
-  virtual void PostInitialization() = 0;
+  // Enum to describe which dependency was initialized in PostInitialization.
+  enum DownloadInitializationDependency {
+    DOWNLOAD_INITIALIZATION_DEPENDENCY_NONE,
+    DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB,
+    DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE,
+  };
+
+  // Called when download manager has loaded all the data, once when the history
+  // db is initialized and once when the in-progress cache is initialized.
+  virtual void PostInitialization(
+      DownloadInitializationDependency dependency) = 0;
 
   // Returns if the manager has been initialized and loaded all the data.
   virtual bool IsManagerInitialized() const = 0;

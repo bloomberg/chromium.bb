@@ -2287,10 +2287,12 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   if (manager_delegate) {
     download::InProgressCache* in_progress_cache =
         manager_delegate->GetInProgressCache();
-    download::DownloadEntry* entry =
-        in_progress_cache->RetrieveEntry(GetGuid());
-    if (entry)
-      download_params->set_request_origin(entry->request_origin);
+    if (in_progress_cache) {
+      base::Optional<download::DownloadEntry> entry =
+          in_progress_cache->RetrieveEntry(GetGuid());
+      if (entry)
+        download_params->set_request_origin(entry.value().request_origin);
+    }
   }
 
   // Note that resumed downloads disallow redirects. Hence the referrer URL
