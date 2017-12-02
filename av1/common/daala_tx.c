@@ -382,6 +382,90 @@
   } \
   while (0)
 
+#define OD_FDST_4_FLAT(q0, q1, q2, q3) \
+  /* Embedded 4-point orthonormal Type-IV fDST with flattened rotations. */ \
+  do { \
+    int t_; \
+    int u_; \
+    t_ = q0 - q3; \
+    /* 13623/16384 ~= (Sin[7*Pi/16] + Cos[7*Pi/16])/Sqrt[2] ~=
+        0.8314696123025451 */ \
+    u_ = (13623*q3 + 8192) >> 14; \
+    /* 18205/16384 ~= (Sin[7*Pi/16] - Cos[7*Pi/16])*Sqrt[2] ~=
+        1.1111404660392046 */ \
+    q3 = (18205*q0 + 8192) >> 14; \
+    /* 9041/32768 ~= Cos[7*Pi/16]*Sqrt[2] ~= 0.275899379282943 */ \
+    t_ = (9041*t_ + 16384) >> 15; \
+    q0 = u_ + OD_RSHIFT1(t_); \
+    q3 += t_; \
+    t_ = q1 + q2; \
+    /* 16069/16384 ~= (Sin[5*Pi/16] + Cos[5*Pi/16])/Sqrt[2] ~=
+        0.9807852804032304 */ \
+    u_ = (16069*q1 + 8192) >> 14; \
+    /* 12785/32768 ~= (Sin[5*Pi/16] - Cos[5*Pi/16])*Sqrt[2] ~=
+        0.3901806440322566 */ \
+    q1 = (12785*q2 + 16384) >> 15; \
+    /* 12873/16384 ~= Cos[5*Pi/16]*Sqrt[2] ~= 0.7856949583871021 */ \
+    t_ = (12873*t_ + 8192) >> 14; \
+    q2 = u_ - OD_RSHIFT1(t_); \
+    q1 += t_; \
+    q2 += OD_RSHIFT1(q3); \
+    q3 -= q2; \
+    q0 += OD_RSHIFT1(q1); \
+    q1 -= q0; \
+    t_ = (q2 - q1 + 1) >> 1; \
+    /* 11585/8192 ~= 2*Sin[Pi/4] ~= 1.4142135623730951 */ \
+    q2 = (11585*q1 + 4096) >> 13; \
+    /* 11585/8192 ~= 2*Cos[Pi/4] ~= 1.4142135623730951 */ \
+    q1 = (11585*t_ + 4096) >> 13; \
+    q2 += q1; \
+  } \
+  while (0)
+
+#define OD_IDST_4_FLAT(q0, q1, q2, q3) \
+  /* Embedded 4-point orthonormal Type-IV fDST with flattened rotations. */ \
+  do { \
+    int t_; \
+    int u_; \
+    int q2h; \
+    int q3h; \
+    t_ = (q1 + q2 + 1) >> 1; \
+    /* 11585/8192 ~= 2*Sin[Pi/4] ~= 1.4142135623730951 */ \
+    q2 = (11585*q1 + 4096) >> 13; \
+    /* 11585/8192 ~= 2*Cos[Pi/4] ~= 1.4142135623730951 */ \
+    q1 = (11585*t_ + 4096) >> 13; \
+    q2 -= q1; \
+    q2 += q0; \
+    q2h = OD_RSHIFT1(q2); \
+    q0 -= q2h; \
+    q3 += q1; \
+    q3h = OD_RSHIFT1(q3); \
+    q1 -= q3h; \
+    t_ = q1 + q2h; \
+    /* 16069/16384 ~= (Sin[5*Pi/16] + Cos[5*Pi/16])/Sqrt[2] ~=
+        0.9807852804032304 */ \
+    u_ = (16069*q2 + 8192) >> 14; \
+    /* 12785/32768 ~= (Sin[5*Pi/16] - Cos[5*Pi/16])*Sqrt[2] ~=
+        0.3901806440322566 */ \
+    q2 = (12785*q1 + 16384) >> 15; \
+    /* 12873/16384 ~= Cos[5*Pi/16]*Sqrt[2] ~= 0.7856949583871021 */ \
+    t_ = (12873*t_ + 8192) >> 14; \
+    q1 = u_ - t_; \
+    q2 += t_; \
+    t_ = q0 - q3h; \
+    /* 13623/16384 ~= (Sin[7*Pi/16] + Cos[7*Pi/16])/Sqrt[2] ~=
+        0.8314696123025451 */ \
+    u_ = (13623*q3 + 8192) >> 14; \
+    /* 18205/16384 ~= (Sin[7*Pi/16] - Cos[7*Pi/16])*Sqrt[2] ~=
+        1.1111404660392046 */ \
+    q3 = (18205*q0 + 8192) >> 14; \
+    /* 9041/32768 ~= Cos[7*Pi/16]*Sqrt[2] = 0.275899379282943 */ \
+    t_ = (9041*t_ + 16384) >> 15; \
+    q0 = u_ + t_; \
+    q3 += t_; \
+  } \
+  while (0)
+
 #define OD_FDST_4_ASYM_PR(t0, t0h, t2, t1, t3) \
   /* Embedded 4-point asymmetric Type-IV fDST. */ \
   do { \
@@ -643,6 +727,42 @@
     r3 += r4; \
     r3h = OD_RSHIFT1(r3); \
     r4 = r3h - r4; \
+  } \
+  while (0)
+
+#define OD_FDCT_8_ASYM_FLAT(r0, r1, r1h, r2, r3, r3h, r4, r5, r5h, r6, r7, r7h) \
+  /* Embedded 8-point asymmetric Type-II fDCT. */ \
+  do { \
+    r0 += r7h; \
+    r7 = r0 - r7; \
+    r4 -= r3h; \
+    r3 += r4; \
+    r2 += r5h; \
+    r5 = r2 - r5; \
+    r6 -= r1h; \
+    r1 += r6; \
+    OD_FDCT_4_FLAT(r0, r1, r2, r3); \
+    OD_FDST_4_FLAT(r7, r6, r5, r4); \
+  } \
+  while (0)
+
+#define OD_IDCT_8_ASYM_FLAT(r0, r4, r2, r6, r1, r1h, r5, r5h, r3, r3h, r7, r7h) \
+  /* Embedded 8-point asymmetric Type-II iDCT with flattened rotations. */ \
+  do { \
+    OD_IDST_4_FLAT(r7, r5, r6, r4); \
+    OD_IDCT_4_FLAT(r0, r2, r1, r3); \
+    r7 = r0 - r7; \
+    r7h = OD_RSHIFT1(r7); \
+    r0 -= r7h; \
+    r1 -= r6; \
+    r1h = OD_RSHIFT1(r1); \
+    r6 += r1h; \
+    r5 = r2 - r5; \
+    r5h = OD_RSHIFT1(r5); \
+    r2 -= r5h; \
+    r3 -= r4; \
+    r3h = OD_RSHIFT1(r3); \
+    r4 += r3h; \
   } \
   while (0)
 
@@ -981,6 +1101,205 @@
   } \
   while (0)
 
+#define OD_FDST_8_ASYM_FLAT(r0, r0h, r1, r2, r2h, r3, \
+  r4, r4h, r5, r6, r6h, r7) \
+  /* Embedded 8-point asymmetric Type-IV fDST with flattened rotations. */ \
+  do { \
+    int t_; \
+    int u_; \
+    int r5h; \
+    int r7h; \
+    t_ = r3 - r4h; \
+    /* 16305/16384 ~= (Sin[9*Pi/32] + Cos[9*Pi/32])/Sqrt[2] ~=
+        0.9951847266721969 */ \
+    u_ = (16305*r4 + 8192) >> 14; \
+    /* 803/4096 ~= (Sin[9*Pi/32] - Cos[9*Pi/32])*Sqrt[2] ~=
+        0.1960342806591213 */ \
+    r4 = (803*r3 + 2048) >> 12; \
+    /* 14699/16384 ~= Cos[9*Pi/32]*Sqrt[2] ~= 0.8971675863426364 */ \
+    t_ = (14699*t_ + 8192) >> 14; \
+    r3 = u_ + t_; \
+    r4 += t_; \
+    t_ = r2h + r5; \
+    /* 31357/32768 ~= (Sin[11*Pi/32] + Cos[11*Pi/32])/Sqrt[2]
+        ~= 0.9569403357322087 */ \
+    u_ = (31357*r2 + 16384) >> 15; \
+    /* 1189/2048 ~= (Sin[11*Pi/32] - Cos[11*Pi/32])*Sqrt[2] ~=
+        0.5805693545089248 */ \
+    r2 = (1189*r5 + 1024) >> 11; \
+    /* 21845/32768 ~= Cos[11*Pi/32] ~= 0.6666556584777465 */ \
+    t_ = (21845*t_ + 16384) >> 15; \
+    r2 += t_; \
+    r5 = u_ - t_; \
+    t_ = r1 - r6h; \
+    /* 28899/32768 ~= (Sin[13*Pi/32] + Cos[13*Pi/32])/Sqrt[2] ~=
+        0.8819212643483548 */ \
+    u_ = (28899*r6 + 16384) >> 15; \
+    /* 30893/32768 ~= (Sin[13*Pi/32] - Cos[13*Pi/32])*Sqrt[2] ~=
+        0.942793473651995297112775 */ \
+    r6 = (30893*r1 + 16384) >> 15; \
+    /* 3363/8192 ~= Cos[13*Pi/32]*Sqrt[2] ~= 0.41052452752235735 */ \
+    t_ = (3363*t_ + 4096) >> 13; \
+    r1 = u_ + t_; \
+    r6 += t_; \
+    t_ = r0h + r7; \
+    /* 12665/16384 ~= (Sin[15*Pi/32] + Cos[15*Pi/32])/Sqrt[2] ~=
+        0.773010453362737 */ \
+    u_ = (12665*r0 + 8192) >> 14; \
+    /* 5197/4096 ~= (Sin[15*Pi/32] - Cos[15*Pi/32])*Sqrt[2] ~=
+        1.268786568327291 */ \
+    r0 = (5197*r7 + 2048) >> 12; \
+    /* 2271/16384 ~= Cos[15*Pi/32]*Sqrt[2] ~= 0.13861716919909148 */ \
+    t_ = (2271*t_ + 8192) >> 14; \
+    r0 += t_; \
+    r7 = u_ - t_; \
+    r2 -= r1; \
+    r2h = OD_RSHIFT1(r2); \
+    r1 += r2h; \
+    r5 += r6; \
+    r5h = OD_RSHIFT1(r5); \
+    r6 -= r5h; \
+    r0 += r3; \
+    r0h = OD_RSHIFT1(r0); \
+    r3 -= r0h; \
+    r7 -= r4; \
+    r7h = OD_RSHIFT1(r7); \
+    r4 += r7h; \
+    r3 += r5h; \
+    r5 -= r3; \
+    r1 -= r0h; \
+    r0 += r1; \
+    r4 += r2h; \
+    r2 -= r4; \
+    r6 += r7h; \
+    r7 -= r6; \
+    t_ = (r4 - r3 + 1) >> 1; \
+    /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */ \
+    u_ = (21407*r3 + 8192) >> 14; \
+    /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.5411961001461969 */ \
+    r3 = (8867*r4 + 8192) >> 14; \
+    /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */ \
+    t_ = (3135*t_ + 2048) >> 12; \
+    r3 += t_; \
+    r4 = u_ + t_; \
+    t_ = (r2 - r5 + 1) >> 1; \
+    /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */ \
+    u_ = (21407*r2 + 8192) >> 14; \
+    /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.5411961001461969 */ \
+    r2 = (8867*r5 + 8192) >> 14; \
+    /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */ \
+    t_ = (3135*t_ + 2048) >> 12; \
+    r5 = t_ - u_; \
+    r2 -= t_; \
+    t_ = (r6 - r1 + 1) >> 1; \
+    /* 11585/8192 ~= 2*Sin[Pi/4] ~= 1.4142135623730951 */ \
+    r6 = (11585*r1 + 4096) >> 13; \
+    /* 11585/8192 ~= 2*Cos[Pi/4] ~= 1.4142135623730951 */ \
+    r1 = (11585*t_ + 4096) >> 13; \
+    r6 += r1; \
+  } \
+  while (0)
+
+#define OD_IDST_8_ASYM_FLAT(r0, r4, r2, r6, r1, r5, r3, r7) \
+  /* Embedded 8-point asymmetric Type-IV iDST with flattened rotations. */ \
+  do { \
+    int t_; \
+    int u_; \
+    int r0h; \
+    int r2h; \
+    int r5h; \
+    int r7h; \
+    t_ = (r1 + r6 + 1) >> 1; \
+    /* 11585/8192 ~= 2*Sin[Pi/4] ~= 1.4142135623730951 */ \
+    r1 = (11585*r6 + 4096) >> 13; \
+    /* 11585/8192 ~= 2*Cos[Pi/4] ~= 1.4142135623730951 */ \
+    r6 = (11585*t_ + 4096) >> 13; \
+    r1 -= r6; \
+    t_ = (r5 - r2 + 1) >> 1; \
+    /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */ \
+    u_ = (21407*r5 + 8192) >> 14; \
+    /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.5411961001461969 */ \
+    r5 = (8867*r2 + 8192) >> 14; \
+    /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */ \
+    t_ = (3135*t_ + 2048) >> 12; \
+    r5 -= t_; \
+    r2 = t_ - u_; \
+    t_ = (r3 + r4 + 1) >> 1; \
+    /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */ \
+    u_ = (21407*r4 + 8192) >> 14; \
+    /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.5411961001461969 */ \
+    r4 = (8867*r3 + 8192) >> 14; \
+    /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */ \
+    t_ = (3135*t_ + 2048) >> 12; \
+    r3 = u_ - t_; \
+    r4 += t_; \
+    r7 += r6; \
+    r7h = OD_RSHIFT1(r7); \
+    r6 -= r7h; \
+    r2 += r4; \
+    r2h = OD_RSHIFT1(r2); \
+    r4 -= r2h; \
+    r0 -= r1; \
+    r0h = OD_RSHIFT1(r0); \
+    r1 += r0h; \
+    r5 += r3; \
+    r5h = OD_RSHIFT1(r5); \
+    r3 -= r5h; \
+    r4 -= r7h; \
+    r7 += r4; \
+    r6 += r5h; \
+    r5 -= r6; \
+    r3 += r0h; \
+    r0 -= r3; \
+    r1 -= r2h; \
+    r2 += r1; \
+    t_ = r0 + r7; \
+    /* 12665/16384 ~= (Sin[15*Pi/32] + Cos[15*Pi/32])/Sqrt[2] ~=
+        0.773010453362737 */ \
+    u_ = (12665*r0 + 8192) >> 14; \
+    /* 5197/4096 ~= (Sin[15*Pi/32] - Cos[15*Pi/32])*Sqrt[2] ~=
+        1.268786568327291 */ \
+    r0 = (5197*r7 + 2048) >> 12; \
+    /* 2271/16384 ~= Cos[15*Pi/32]*Sqrt[2] ~= 0.13861716919909148 */ \
+    t_ = (2271*t_ + 8192) >> 14; \
+    r7 = u_ - OD_RSHIFT1(t_); \
+    r0 += t_; \
+    t_ = r1 - r6; \
+    /* 28899/32768 ~= (Sin[13*Pi/32] + Cos[13*Pi/32])/Sqrt[2] ~=
+        0.8819212643483548 */ \
+    u_ = (28899*r6 + 16384) >> 15; \
+    /* 30893/32768 ~= (Sin[13*Pi/32] - Cos[13*Pi/32])*Sqrt[2] ~=
+        0.942793473651995297112775 */ \
+    r6 = (30893*r1 + 16384) >> 15; \
+    /* 3363/8192 ~= Cos[13*Pi/32]*Sqrt[2] ~= 0.41052452752235735 */ \
+    t_ = (3363*t_ + 4096) >> 13; \
+    r1 = u_ + OD_RSHIFT1(t_); \
+    r6 += t_; \
+    t_ = r2 + r5; \
+    /* 31357/32768 ~= (Sin[11*Pi/32] + Cos[11*Pi/32])/Sqrt[2]
+        ~= 0.9569403357322087 */ \
+    u_ = (31357*r2 + 16384) >> 15; \
+    /* 1189/2048 ~= (Sin[11*Pi/32] - Cos[11*Pi/32])*Sqrt[2] ~=
+        0.5805693545089248 */ \
+    r2 = (1189*r5 + 1024) >> 11; \
+    /* 21845/32768 ~= Cos[11*Pi/32] ~= 0.6666556584777465 */ \
+    t_ = (21845*t_ + 16384) >> 15; \
+    r5 = u_ - OD_RSHIFT1(t_); \
+    r2 += t_; \
+    t_ = r3 - r4; \
+    /* 16305/16384 ~= (Sin[9*Pi/32] + Cos[9*Pi/32])/Sqrt[2] ~=
+        0.9951847266721969 */ \
+    u_ = (16305*r4 + 8192) >> 14; \
+    /* 803/4096 ~= (Sin[9*Pi/32] - Cos[9*Pi/32])*Sqrt[2] ~=
+        0.1960342806591213 */ \
+    r4 = (803*r3 + 2048) >> 12; \
+    /* 14699/16384 ~= Cos[9*Pi/32]*Sqrt[2] ~= 0.8971675863426364 */ \
+    t_ = (14699*t_ + 8192) >> 14; \
+    r3 = u_ + OD_RSHIFT1(t_); \
+    r4 += t_; \
+  } \
+  while (0)
+
 #define OD_FDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, \
   s1, s9, s5, sd, s3, sb, s7, sf) \
   /* Embedded 16-point orthonormal Type-II fDCT. */ \
@@ -1044,6 +1363,76 @@
     s9 = s6 - s9; \
     s8 = s7h - s8; \
     s7 -= s8; \
+  } \
+  while (0)
+
+#define OD_FDCT_16_FLAT(s0, s1, s2, s3, s4, s5, s6, s7, \
+ s8, s9, sa, sb, sc, sd, se, sf) \
+  /* Embedded 16-point orthonormal Type-II fDCT with flattened rotations. */ \
+  do { \
+    int s1h; \
+    int s3h; \
+    int s5h; \
+    int s7h; \
+    int s9h; \
+    int sbh; \
+    int sdh; \
+    int sfh; \
+    sf = s0 - sf; \
+    sfh = OD_RSHIFT1(sf); \
+    s0 -= sfh; \
+    s1 += se; \
+    s1h = OD_RSHIFT1(s1); \
+    se -= s1h; \
+    sd = s2 - sd; \
+    sdh = OD_RSHIFT1(sd); \
+    s2 -= sdh; \
+    s3 += sc; \
+    s3h = OD_RSHIFT1(s3); \
+    sc -= s3h; \
+    sb = s4 - sb; \
+    sbh = OD_RSHIFT1(sb); \
+    s4 -= sbh; \
+    s5 += sa; \
+    s5h = OD_RSHIFT1(s5); \
+    sa -= s5h; \
+    s9 = s6 - s9; \
+    s9h = OD_RSHIFT1(s9); \
+    s6 -= s9h; \
+    s7 += s8; \
+    s7h = OD_RSHIFT1(s7); \
+    s8 -= s7h; \
+    OD_FDCT_8_ASYM_FLAT(s0, s1, s1h, s2, s3, s3h, s4, s5, s5h, s6, s7, s7h); \
+    OD_FDST_8_ASYM_FLAT(sf, sfh, se, sd, sdh, sc, sb, sbh, sa, s9, s9h, s8); \
+  } \
+  while (0)
+
+#define OD_IDCT_16_FLAT(s0, s8, s4, sc, s2, sa, s6, se, \
+ s1, s9, s5, sd, s3, sb, s7, sf) \
+  /* Embedded 16-point orthonormal Type-II iDCT with flattened rotations. */ \
+  do { \
+    int s1h; \
+    int s3h; \
+    int s5h; \
+    int s7h; \
+    OD_IDST_8_ASYM_FLAT(sf, sb, sd, s9, se, sa, sc, s8); \
+    OD_IDCT_8_ASYM_FLAT(s0, s4, s2, s6, s1, s1h, s5, s5h, s3, s3h, s7, s7h); \
+    s8 += s7h; \
+    s7 -= s8; \
+    s6 += OD_RSHIFT1(s9); \
+    s9 = s6 - s9; \
+    sa += s5h; \
+    s5 -= sa; \
+    s4 += OD_RSHIFT1(sb); \
+    sb = s4 - sb; \
+    sc += s3h; \
+    s3 -= sc; \
+    s2 += OD_RSHIFT1(sd); \
+    sd = s2 - sd; \
+    se += s1h; \
+    s1 -= se; \
+    s0 += OD_RSHIFT1(sf); \
+    sf = s0 - sf; \
   } \
   while (0)
 
@@ -4397,37 +4786,38 @@ void od_bin_fdct16(od_coeff y[16], const od_coeff *x, int xstride) {
   int se;
   int sf;
   s0 = x[0*xstride];
-  s8 = x[1*xstride];
-  s4 = x[2*xstride];
-  sc = x[3*xstride];
-  s2 = x[4*xstride];
-  sa = x[5*xstride];
+  s1 = x[1*xstride];
+  s2 = x[2*xstride];
+  s3 = x[3*xstride];
+  s4 = x[4*xstride];
+  s5 = x[5*xstride];
   s6 = x[6*xstride];
-  se = x[7*xstride];
-  s1 = x[8*xstride];
+  s7 = x[7*xstride];
+  s8 = x[8*xstride];
   s9 = x[9*xstride];
-  s5 = x[10*xstride];
-  sd = x[11*xstride];
-  s3 = x[12*xstride];
-  sb = x[13*xstride];
-  s7 = x[14*xstride];
+  sa = x[10*xstride];
+  sb = x[11*xstride];
+  sc = x[12*xstride];
+  sd = x[13*xstride];
+  se = x[14*xstride];
   sf = x[15*xstride];
-  OD_FDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
+  OD_FDCT_16_FLAT(s0, s1, s2, s3, s4, s5, s6, s7,
+    s8, s9, sa, sb, sc, sd, se, sf);
   y[0] = (od_coeff)s0;
-  y[1] = (od_coeff)s1;
-  y[2] = (od_coeff)s2;
-  y[3] = (od_coeff)s3;
-  y[4] = (od_coeff)s4;
-  y[5] = (od_coeff)s5;
+  y[1] = (od_coeff)s8;
+  y[2] = (od_coeff)s4;
+  y[3] = (od_coeff)sc;
+  y[4] = (od_coeff)s2;
+  y[5] = (od_coeff)sa;
   y[6] = (od_coeff)s6;
-  y[7] = (od_coeff)s7;
-  y[8] = (od_coeff)s8;
+  y[7] = (od_coeff)se;
+  y[8] = (od_coeff)s1;
   y[9] = (od_coeff)s9;
-  y[10] = (od_coeff)sa;
-  y[11] = (od_coeff)sb;
-  y[12] = (od_coeff)sc;
-  y[13] = (od_coeff)sd;
-  y[14] = (od_coeff)se;
+  y[10] = (od_coeff)s5;
+  y[11] = (od_coeff)sd;
+  y[12] = (od_coeff)s3;
+  y[13] = (od_coeff)sb;
+  y[14] = (od_coeff)s7;
   y[15] = (od_coeff)sf;
 }
 
@@ -4464,7 +4854,8 @@ void od_bin_idct16(od_coeff *x, int xstride, const od_coeff y[16]) {
   sb = y[13];
   s7 = y[14];
   sf = y[15];
-  OD_IDCT_16_PR(s0, s8, s4, sc, s2, sa, s6, se, s1, s9, s5, sd, s3, sb, s7, sf);
+  OD_IDCT_16_FLAT(s0, s8, s4, sc, s2, sa, s6, se,
+    s1, s9, s5, sd, s3, sb, s7, sf);
   x[0*xstride] = (od_coeff)s0;
   x[1*xstride] = (od_coeff)s1;
   x[2*xstride] = (od_coeff)s2;
