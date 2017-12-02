@@ -24,8 +24,9 @@ namespace vr {
 class Rect;
 class VectorIcon;
 
-// Button has rounded rect as background and a vector icon as the foregroud.
+// Button has a circle as the background and a vector icon as the foreground.
 // When hovered, background and foreground both move forward on Z axis.
+// This matches the Daydream disk-style button.
 class Button : public UiElement {
  public:
   Button(base::Callback<void()> click_handler, const gfx::VectorIcon& icon);
