@@ -265,7 +265,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   SyntheticFieldTrialRegistrationCallback register_synthetic_field_trial_;
 
   // Should not be null.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   base::ThreadChecker thread_checker_;
 

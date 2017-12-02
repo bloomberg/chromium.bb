@@ -157,15 +157,12 @@ class PreviewsBlackListTest : public testing::Test {
                                                          "Enabled"));
       params_.clear();
     }
-    std::unique_ptr<base::SimpleTestClock> test_clock =
-        base::MakeUnique<base::SimpleTestClock>();
-    test_clock_ = test_clock.get();
     std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
         null_opt_out ? nullptr : base::MakeUnique<TestPreviewsOptOutStore>();
     opt_out_store_ = opt_out_store.get();
     black_list_ = base::MakeUnique<PreviewsBlackList>(
-        std::move(opt_out_store), std::move(test_clock), &blacklist_delegate_);
-    start_ = test_clock_->Now();
+        std::move(opt_out_store), &test_clock_, &blacklist_delegate_);
+    start_ = test_clock_.Now();
   }
 
   void SetHostHistoryParam(size_t host_history) {
@@ -216,13 +213,13 @@ class PreviewsBlackListTest : public testing::Test {
 
     StartTest(false /* null_opt_out */);
     if (!short_time)
-      test_clock_->Advance(
+      test_clock_.Advance(
           base::TimeDelta::FromSeconds(single_opt_out_duration));
 
     black_list_->AddPreviewNavigation(url, true /* opt_out */,
                                       PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
-    black_list_->ClearBlackList(start_, test_clock_->Now());
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+    black_list_->ClearBlackList(start_, test_clock_.Now());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -232,8 +229,7 @@ class PreviewsBlackListTest : public testing::Test {
   // Observer to |black_list_|.
   TestPreviewsBlacklistDelegate blacklist_delegate_;
 
-  // Unowned raw pointers tied to the lifetime of |black_list_|.
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   TestPreviewsOptOutStore* opt_out_store_;
   base::Time start_;
   std::map<std::string, std::string> params_;
@@ -263,7 +259,7 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListNoStore) {
 
   StartTest(true /* null_opt_out */);
 
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
@@ -271,9 +267,9 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListNoStore) {
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
             black_list_->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
@@ -281,9 +277,9 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListNoStore) {
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
             black_list_->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
@@ -291,18 +287,18 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListNoStore) {
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
             black_list_->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
-  black_list_->ClearBlackList(start_, test_clock_->Now());
+  black_list_->ClearBlackList(start_, test_clock_.Now());
 
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
@@ -329,7 +325,7 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListWithStore) {
 
   StartTest(false /* null_opt_out */);
 
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
             black_list_->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
@@ -348,9 +344,9 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListWithStore) {
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(url_a1, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_a1, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
             black_list_->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
@@ -360,9 +356,9 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListWithStore) {
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
             black_list_->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
@@ -372,11 +368,11 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListWithStore) {
             black_list_->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
             black_list_->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
@@ -427,7 +423,7 @@ TEST_F(PreviewsBlackListTest, HostIndifferentBlackList) {
   SetSingleOptOutDurationParam(0);
 
   StartTest(true /* null_opt_out */);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
@@ -443,7 +439,7 @@ TEST_F(PreviewsBlackListTest, HostIndifferentBlackList) {
     EXPECT_EQ(i != 3 ? PreviewsEligibilityReason::ALLOWED
                      : PreviewsEligibilityReason::USER_BLACKLISTED,
               black_list_->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   }
 
   EXPECT_EQ(PreviewsEligibilityReason::USER_BLACKLISTED,
@@ -456,7 +452,7 @@ TEST_F(PreviewsBlackListTest, HostIndifferentBlackList) {
             black_list_->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
 
   black_list_->AddPreviewNavigation(urls[3], false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
   // New non-opt-out entry will cause these to be allowed now.
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
@@ -493,9 +489,9 @@ TEST_F(PreviewsBlackListTest, QueueBehavior) {
     EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
               black_list_->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
     black_list_->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     black_list_->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
               black_list_->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
     base::RunLoop().RunUntilIdle();
@@ -503,17 +499,17 @@ TEST_F(PreviewsBlackListTest, QueueBehavior) {
                       : PreviewsEligibilityReason::ALLOWED,
               black_list_->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
     black_list_->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     black_list_->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     EXPECT_EQ(0, opt_out_store_->clear_blacklist_count());
     black_list_->ClearBlackList(
-        start_, test_clock_->Now() + base::TimeDelta::FromSeconds(1));
+        start_, test_clock_.Now() + base::TimeDelta::FromSeconds(1));
     EXPECT_EQ(1, opt_out_store_->clear_blacklist_count());
     black_list_->AddPreviewNavigation(url2, opt_out, PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     black_list_->AddPreviewNavigation(url2, opt_out, PreviewsType::OFFLINE);
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(1, opt_out_store_->clear_blacklist_count());
 
@@ -550,9 +546,9 @@ TEST_F(PreviewsBlackListTest, MaxHosts) {
   StartTest(true /* null_opt_out */);
 
   black_list_->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_c, false, PreviewsType::OFFLINE);
   // url_a should stay in the map, since it has an opt out time.
   EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
@@ -562,9 +558,9 @@ TEST_F(PreviewsBlackListTest, MaxHosts) {
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_d, true, PreviewsType::OFFLINE);
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_e, true, PreviewsType::OFFLINE);
   // url_d and url_e should remain in the map, but url_a should be evicted.
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
@@ -602,7 +598,7 @@ TEST_F(PreviewsBlackListTest, SingleOptOut) {
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
-  test_clock_->Advance(
+  test_clock_.Advance(
       base::TimeDelta::FromSeconds(single_opt_out_duration + 1));
 
   black_list_->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
@@ -611,7 +607,7 @@ TEST_F(PreviewsBlackListTest, SingleOptOut) {
   EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
             black_list_->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
-  test_clock_->Advance(
+  test_clock_.Advance(
       base::TimeDelta::FromSeconds(single_opt_out_duration - 1));
 
   EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -619,7 +615,7 @@ TEST_F(PreviewsBlackListTest, SingleOptOut) {
   EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
             black_list_->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
-  test_clock_->Advance(
+  test_clock_.Advance(
       base::TimeDelta::FromSeconds(single_opt_out_duration + 1));
 
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
@@ -686,22 +682,22 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnHostBlacklisted) {
             black_list_->IsLoadedAndAllowed(url_, PreviewsType::OFFLINE));
 
   // Observer is not notified as blacklisted when the threshold does not met.
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_, true, PreviewsType::OFFLINE);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(0));
 
   // Observer is notified as blacklisted when the threshold is met.
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_, true, PreviewsType::OFFLINE);
   base::RunLoop().RunUntilIdle();
-  const base::Time blacklisted_time = test_clock_->Now();
+  const base::Time blacklisted_time = test_clock_.Now();
   EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));
   EXPECT_EQ(blacklisted_time,
             blacklist_delegate_.blacklisted_hosts().find(url_.host())->second);
 
   // Observer is not notified when the host is already blacklisted.
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(url_, true, PreviewsType::OFFLINE);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));
@@ -711,12 +707,12 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnHostBlacklisted) {
   // Observer is notified when blacklist is cleared.
   EXPECT_FALSE(blacklist_delegate_.blacklist_cleared());
 
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
-  black_list_->ClearBlackList(start_, test_clock_->Now());
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  black_list_->ClearBlackList(start_, test_clock_.Now());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(blacklist_delegate_.blacklist_cleared());
-  EXPECT_EQ(test_clock_->Now(), blacklist_delegate_.blacklist_cleared_time());
+  EXPECT_EQ(test_clock_.Now(), blacklist_delegate_.blacklist_cleared_time());
 }
 
 TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnUserBlacklisted) {
@@ -745,7 +741,7 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnUserBlacklisted) {
   EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
 
   for (size_t i = 0; i < host_indifferent_threshold; ++i) {
-    test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1));
     black_list_->AddPreviewNavigation(urls[i], true, PreviewsType::OFFLINE);
     base::RunLoop().RunUntilIdle();
 
@@ -757,7 +753,7 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOnUserBlacklisted) {
   }
 
   // Observer is notified when the user is no longer blacklisted.
-  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   black_list_->AddPreviewNavigation(urls[3], false, PreviewsType::OFFLINE);
   base::RunLoop().RunUntilIdle();
 
@@ -784,12 +780,11 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedWhenLoadBlacklistDone) {
 
   std::unique_ptr<PreviewsBlackListItem> host_indifferent_item =
       PreviewsBlackList::CreateHostIndifferentBlackListItem();
-  std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock test_clock;
 
   for (size_t i = 0; i < host_indifferent_threshold; ++i) {
-    test_clock->Advance(base::TimeDelta::FromSeconds(1));
-    host_indifferent_item->AddPreviewNavigation(true, test_clock->Now());
+    test_clock.Advance(base::TimeDelta::FromSeconds(1));
+    host_indifferent_item->AddPreviewNavigation(true, test_clock.Now());
   }
 
   std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
@@ -799,7 +794,7 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedWhenLoadBlacklistDone) {
 
   EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
   auto black_list = base::MakeUnique<PreviewsBlackList>(
-      std::move(opt_out_store), std::move(test_clock), &blacklist_delegate_);
+      std::move(opt_out_store), &test_clock, &blacklist_delegate_);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(blacklist_delegate_.user_blacklisted());
 }
@@ -822,8 +817,7 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
 
   StartTest(false /* null_opt_out */);
 
-  std::unique_ptr<base::SimpleTestClock> test_clock =
-      base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock test_clock;
 
   PreviewsBlackListItem* item_a = new PreviewsBlackListItem(
       params::MaxStoredHistoryLengthForPerHostBlackList(),
@@ -835,18 +829,18 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
       params::PerHostBlackListDuration());
 
   // Host |url_a| is blacklisted.
-  test_clock->Advance(base::TimeDelta::FromSeconds(1));
-  item_a->AddPreviewNavigation(true, test_clock->Now());
-  test_clock->Advance(base::TimeDelta::FromSeconds(1));
-  item_a->AddPreviewNavigation(true, test_clock->Now());
-  base::Time blacklisted_time = test_clock->Now();
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  item_a->AddPreviewNavigation(true, test_clock.Now());
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  item_a->AddPreviewNavigation(true, test_clock.Now());
+  base::Time blacklisted_time = test_clock.Now();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(item_a->IsBlackListed(test_clock->Now()));
+  EXPECT_TRUE(item_a->IsBlackListed(test_clock.Now()));
 
   // Host |url_b| is not blacklisted.
-  test_clock->Advance(base::TimeDelta::FromSeconds(1));
-  item_b->AddPreviewNavigation(true, test_clock->Now());
+  test_clock.Advance(base::TimeDelta::FromSeconds(1));
+  item_b->AddPreviewNavigation(true, test_clock.Now());
 
   std::unique_ptr<BlackListItemMap> item_map =
       base::MakeUnique<BlackListItemMap>();
@@ -858,7 +852,7 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
   opt_out_store->SetBlacklistItemMap(std::move(item_map));
 
   auto black_list = base::MakeUnique<PreviewsBlackList>(
-      std::move(opt_out_store), std::move(test_clock), &blacklist_delegate_);
+      std::move(opt_out_store), &test_clock, &blacklist_delegate_);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));

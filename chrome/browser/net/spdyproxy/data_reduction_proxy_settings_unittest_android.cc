@@ -70,7 +70,7 @@ class TestDataReductionProxySettingsAndroid
 
 template <class C>
 void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
-    std::unique_ptr<base::Clock> clock) {
+    base::Clock* clock) {
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
   settings->config_ = test_context_->config();
@@ -86,9 +86,8 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
       test_context_->CreateDataReductionProxyService(settings_.get());
 }
 
-template void
-data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings<
-    DataReductionProxyChromeSettings>(std::unique_ptr<base::Clock> clock);
+template void data_reduction_proxy::DataReductionProxySettingsTestBase::
+    ResetSettings<DataReductionProxyChromeSettings>(base::Clock* clock);
 
 namespace {
 

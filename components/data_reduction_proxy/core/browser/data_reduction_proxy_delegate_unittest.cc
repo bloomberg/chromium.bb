@@ -838,10 +838,8 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
 }
 
 TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
-  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
-      new base::SimpleTestTickClock());
-  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
-  proxy_delegate()->SetTickClockForTesting(std::move(tick_clock));
+  base::SimpleTestTickClock tick_clock;
+  proxy_delegate()->SetTickClockForTesting(&tick_clock);
 
   const char kResponseHeaders[] =
       "HTTP/1.1 200 OK\r\n"
@@ -852,7 +850,7 @@ TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
   {
     base::HistogramTester histogram_tester;
     base::TimeDelta advance_time(base::TimeDelta::FromSeconds(1));
-    tick_clock_ptr->Advance(advance_time);
+    tick_clock.Advance(advance_time);
 
     FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
                     10);
@@ -874,7 +872,7 @@ TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
     net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::RunLoop().RunUntilIdle();
 
-    tick_clock_ptr->Advance(advance_time);
+    tick_clock.Advance(advance_time);
     FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
                     10);
     histogram_tester.ExpectUniqueSample(

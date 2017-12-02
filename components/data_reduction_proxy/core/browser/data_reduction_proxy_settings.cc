@@ -54,7 +54,7 @@ DataReductionProxySettings::DataReductionProxySettings()
       data_reduction_proxy_enabled_pref_name_(),
       prefs_(nullptr),
       config_(nullptr),
-      clock_(new base::DefaultClock()) {}
+      clock_(base::DefaultClock::GetInstance()) {}
 
 DataReductionProxySettings::~DataReductionProxySettings() {
   spdy_proxy_auth_enabled_.Destroy();

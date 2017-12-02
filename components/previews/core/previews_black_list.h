@@ -82,7 +82,7 @@ class PreviewsBlackList {
   // |blacklist_delegate| is a single object listening for blacklist events, and
   // it is guaranteed to overlive the life time of |this|.
   PreviewsBlackList(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
-                    std::unique_ptr<base::Clock> clock,
+                    base::Clock* clock,
                     PreviewsBlacklistDelegate* blacklist_delegate);
   virtual ~PreviewsBlackList();
 
@@ -165,7 +165,7 @@ class PreviewsBlackList {
   // completed.
   base::queue<base::Closure> pending_callbacks_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // The delegate listening to this blacklist. |blacklist_delegate_| lifetime is
   // guaranteed to overlive |this|.

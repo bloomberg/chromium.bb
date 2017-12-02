@@ -385,12 +385,11 @@ TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
 // enables the data reduction proxy.
 TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
   const char kUMAEnabledState[] = "DataReductionProxy.DaysSinceEnabled";
-  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
-  base::SimpleTestClock* clock_ptr = clock.get();
-  clock_ptr->Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(std::move(clock));
+  base::SimpleTestClock clock;
+  clock.Advance(base::TimeDelta::FromDays(1));
+  ResetSettings(&clock);
 
-  base::Time last_enabled_time = clock_ptr->Now();
+  base::Time last_enabled_time = clock.Now();
 
   InitPrefMembers();
   {
@@ -405,7 +404,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
     settings_->SetDataReductionProxyEnabled(true /* enabled */);
     test_context_->RunUntilIdle();
 
-    last_enabled_time = clock_ptr->Now();
+    last_enabled_time = clock.Now();
 
     EXPECT_EQ(
         last_enabled_time,
@@ -418,9 +417,9 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
     // Simulate turning off and on of data reduction proxy while Chromium is
     // running.
     settings_->SetDataReductionProxyEnabled(false /* enabled */);
-    clock_ptr->Advance(base::TimeDelta::FromDays(1));
+    clock.Advance(base::TimeDelta::FromDays(1));
     base::HistogramTester histogram_tester;
-    last_enabled_time = clock_ptr->Now();
+    last_enabled_time = clock.Now();
 
     settings_->spdy_proxy_auth_enabled_.SetValue(true);
     settings_->MaybeActivateDataReductionProxy(false);
@@ -435,7 +434,7 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
   {
     // Advance clock by a random number of days.
     int advance_clock_days = 42;
-    clock_ptr->Advance(base::TimeDelta::FromDays(advance_clock_days));
+    clock.Advance(base::TimeDelta::FromDays(advance_clock_days));
     base::HistogramTester histogram_tester;
     // Simulate Chromium start up. Data reduction proxy was enabled
     // |advance_clock_days| ago.
@@ -469,22 +468,21 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledExistingUser) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
-  std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock());
-  base::SimpleTestClock* clock_ptr = clock.get();
-  clock_ptr->Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(std::move(clock));
+  base::SimpleTestClock clock;
+  clock.Advance(base::TimeDelta::FromDays(1));
+  ResetSettings(&clock);
 
   InitPrefMembers();
   base::HistogramTester histogram_tester;
   test_context_->pref_service()->SetInt64(
       prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
-      clock_ptr->Now().ToInternalValue());
+      clock.Now().ToInternalValue());
 
   settings_->data_reduction_proxy_service_->SetIOData(
       test_context_->io_data()->GetWeakPtr());
   test_context_->RunUntilIdle();
 
-  clock_ptr->Advance(base::TimeDelta::FromDays(100));
+  clock.Advance(base::TimeDelta::FromDays(100));
 
   // Simulate Chromium startup with data reduction proxy already enabled.
   settings_->spdy_proxy_auth_enabled_.SetValue(true);

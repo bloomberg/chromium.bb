@@ -43,7 +43,7 @@ DataReductionProxyDelegate::DataReductionProxyDelegate(
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
       alternative_proxies_broken_(false),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       first_data_saver_request_recorded_(false),
       io_data_(nullptr),
       net_log_(net_log) {
@@ -154,8 +154,8 @@ void DataReductionProxyDelegate::OnTunnelHeadersReceived(
 }
 
 void DataReductionProxyDelegate::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
+    base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
   // Update |last_network_change_time_| to the provided tick clock's current
   // time for testing.
   last_network_change_time_ = tick_clock_->NowTicks();
