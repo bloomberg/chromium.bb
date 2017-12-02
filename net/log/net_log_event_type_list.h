@@ -2005,7 +2005,11 @@ EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS)
 // ------------------------------------------------------------------------
 // QuicConnectionMigration
 // ------------------------------------------------------------------------
-
+// Records the QUIC connection migration mode.
+//  {
+//     "connection_migration_mode": <The connection migration mode>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_MODE)
 // Records that QUIC connection migration has been triggered.
 //  {
 //     "trigger": <The reason for the migration attempt>

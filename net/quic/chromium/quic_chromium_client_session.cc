@@ -891,6 +891,25 @@ void QuicChromiumClientSession::RemoveHandle(Handle* handle) {
   handles_.erase(handle);
 }
 
+// TODO(zhongyi): replace migration_session_* booleans with
+// ConnectionMigrationMode.
+ConnectionMigrationMode QuicChromiumClientSession::connection_migration_mode()
+    const {
+  if (migrate_session_early_v2_)
+    return ConnectionMigrationMode::FULL_MIGRATION_V2;
+
+  if (migrate_session_on_network_change_v2_)
+    return ConnectionMigrationMode::NO_MIGRATION_ON_PATH_DEGRADING_V2;
+
+  if (migrate_session_early_)
+    return ConnectionMigrationMode::FULL_MIGRATION_V1;
+
+  if (migrate_session_on_network_change_)
+    return ConnectionMigrationMode::NO_MIGRATION_ON_PATH_DEGRADING_V1;
+
+  return ConnectionMigrationMode::NO_MIGRATION;
+}
+
 int QuicChromiumClientSession::WaitForHandshakeConfirmation(
     const CompletionCallback& callback) {
   if (!connection()->connected())

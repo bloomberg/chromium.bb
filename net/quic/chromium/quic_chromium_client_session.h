@@ -69,6 +69,15 @@ enum class MigrationResult {
   FAILURE          // Migration failed for other reasons.
 };
 
+// Mode of connection migration.
+enum class ConnectionMigrationMode {
+  NO_MIGRATION,
+  NO_MIGRATION_ON_PATH_DEGRADING_V1,
+  FULL_MIGRATION_V1,
+  NO_MIGRATION_ON_PATH_DEGRADING_V2,
+  FULL_MIGRATION_V2
+};
+
 // Result of a connectivity probing attempt.
 enum class ProbingResult {
   PENDING,                          // Probing started, pending result.
@@ -171,6 +180,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // Returns the session's net log.
     const NetLogWithSource& net_log() const { return net_log_; }
+
+    // Returns the session's connection migration mode.
+    ConnectionMigrationMode connection_migration_mode() const {
+      return session_->connection_migration_mode();
+    }
 
     // QuicClientPushPromiseIndex::Delegate implementation
     bool CheckVary(const SpdyHeaderBlock& client_request,
@@ -337,6 +351,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   void AddHandle(Handle* handle);
   void RemoveHandle(Handle* handle);
+
+  // Returns the session's connection migration mode.
+  ConnectionMigrationMode connection_migration_mode() const;
 
   // Waits for the handshake to be confirmed and invokes |callback| when
   // that happens. If the handshake has already been confirmed, returns OK.
