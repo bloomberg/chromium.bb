@@ -4,7 +4,8 @@
 
 #include "cc/tiles/gpu_image_decode_cache.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/test/fake_paint_image_generator.h"
@@ -171,8 +172,8 @@ class DiscardableTextureMockContextProvider : public TestContextProvider {
   static scoped_refptr<DiscardableTextureMockContextProvider> Create(
       FakeDiscardableManager* discardable_manager) {
     return new DiscardableTextureMockContextProvider(
-        base::MakeUnique<FakeDiscardableGLES2Interface>(discardable_manager),
-        base::MakeUnique<FakeDiscardableGLES2Interface>(discardable_manager),
+        std::make_unique<FakeDiscardableGLES2Interface>(discardable_manager),
+        std::make_unique<FakeDiscardableGLES2Interface>(discardable_manager),
         TestWebGraphicsContext3D::Create());
   }
 

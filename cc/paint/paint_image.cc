@@ -4,9 +4,10 @@
 
 #include "cc/paint/paint_image.h"
 
+#include <memory>
+
 #include "base/atomic_sequence_num.h"
 #include "base/hash.h"
-#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/skia_paint_image_generator.h"
@@ -120,7 +121,7 @@ void PaintImage::CreateSkImage() {
         nullptr, nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
   } else if (paint_image_generator_) {
     cached_sk_image_ =
-        SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
+        SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
             paint_image_generator_, frame_index_));
   }
 
@@ -274,7 +275,7 @@ sk_sp<SkImage> PaintImage::GetSkImageForFrame(size_t index) const {
     return GetSkImage();
 
   sk_sp<SkImage> image = SkImage::MakeFromGenerator(
-      base::MakeUnique<SkiaPaintImageGenerator>(paint_image_generator_, index));
+      std::make_unique<SkiaPaintImageGenerator>(paint_image_generator_, index));
   if (!subset_rect_.IsEmpty())
     image = image->makeSubset(gfx::RectToSkIRect(subset_rect_));
   return image;

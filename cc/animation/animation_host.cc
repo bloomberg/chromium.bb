@@ -5,10 +5,10 @@
 #include "cc/animation/animation_host.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_delegate.h"
@@ -336,7 +336,7 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
     const ScrollTree& scroll_tree) {
   TRACE_EVENT0("cc", "AnimationHost::CollectAnimatorsState");
   std::unique_ptr<MutatorInputState> result =
-      base::MakeUnique<MutatorInputState>();
+      std::make_unique<MutatorInputState>();
 
   for (auto& player : ticking_players_) {
     if (!player->IsWorkletAnimationPlayer())
