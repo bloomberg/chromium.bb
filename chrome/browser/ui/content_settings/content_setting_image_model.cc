@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
+#include <string>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -65,30 +68,14 @@ class ContentSettingGeolocationImageModel
   DISALLOW_COPY_AND_ASSIGN(ContentSettingGeolocationImageModel);
 };
 
-// Image model for displaying media icons in the location bar.
-class ContentSettingMediaImageModel : public ContentSettingImageModel {
- public:
-  ContentSettingMediaImageModel();
-
-  void UpdateFromWebContents(WebContents* web_contents) override;
-
-  ContentSettingBubbleModel* CreateBubbleModel(
-      ContentSettingBubbleModel::Delegate* delegate,
-      WebContents* web_contents,
-      Profile* profile) override;
-
-  bool ShouldRunAnimation(WebContents* web_contents) override;
-  void SetAnimationHasRun(WebContents* web_contents) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
-};
-
 class ContentSettingRPHImageModel : public ContentSettingSimpleImageModel {
  public:
   ContentSettingRPHImageModel();
 
   void UpdateFromWebContents(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingRPHImageModel);
 };
 
 class ContentSettingMIDISysExImageModel
@@ -110,6 +97,25 @@ class ContentSettingDownloadsImageModel
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingDownloadsImageModel);
+};
+
+// Image model for displaying media icons in the location bar.
+class ContentSettingMediaImageModel : public ContentSettingImageModel {
+ public:
+  ContentSettingMediaImageModel();
+
+  void UpdateFromWebContents(WebContents* web_contents) override;
+
+  ContentSettingBubbleModel* CreateBubbleModel(
+      ContentSettingBubbleModel::Delegate* delegate,
+      WebContents* web_contents,
+      Profile* profile) override;
+
+  bool ShouldRunAnimation(WebContents* web_contents) override;
+  void SetAnimationHasRun(WebContents* web_contents) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaImageModel);
 };
 
 namespace {
@@ -335,6 +341,101 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
                                             : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
 
+// Protocol handlers -----------------------------------------------------------
+
+ContentSettingRPHImageModel::ContentSettingRPHImageModel()
+    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
+  set_icon(vector_icons::kProtocolHandlerIcon, gfx::kNoneIcon);
+  set_tooltip(l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
+}
+
+void ContentSettingRPHImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+  if (!web_contents)
+    return;
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return;
+  if (content_settings->pending_protocol_handler().IsEmpty())
+    return;
+
+  set_visible(true);
+}
+
+// MIDI SysEx ------------------------------------------------------------------
+
+ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
+    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {}
+
+void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+  if (!web_contents)
+    return;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return;
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->midi_usages_state();
+  if (usages_state.state_map().empty())
+    return;
+  set_visible(true);
+
+  // If any embedded site has access the allowed icon takes priority over the
+  // blocked icon.
+  unsigned int state_flags = 0;
+  usages_state.GetDetailedInfo(nullptr, &state_flags);
+  bool allowed =
+      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
+  set_icon(vector_icons::kMidiIcon,
+           allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
+  set_tooltip(l10n_util::GetStringUTF16(allowed
+                                            ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
+                                            : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
+}
+
+// Automatic downloads ---------------------------------------------------------
+
+ContentSettingDownloadsImageModel::ContentSettingDownloadsImageModel()
+    : ContentSettingSimpleImageModel(
+          CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {}
+
+void ContentSettingDownloadsImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+  if (!web_contents)
+    return;
+
+  DownloadRequestLimiter* download_request_limiter =
+      g_browser_process->download_request_limiter();
+
+  // DownloadRequestLimiter can be absent in unit_tests.
+  if (!download_request_limiter)
+    return;
+
+  switch (download_request_limiter->GetDownloadUiStatus(web_contents)) {
+    case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
+      set_visible(true);
+      set_icon(kFileDownloadIcon, gfx::kNoneIcon);
+      set_explanatory_string_id(0);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
+      return;
+    case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
+      set_visible(true);
+      set_icon(kFileDownloadIcon, kBlockedBadgeIcon);
+      set_explanatory_string_id(IDS_BLOCKED_DOWNLOADS_EXPLANATION);
+      set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
+      return;
+    case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
+      // No need to show icon otherwise.
+      return;
+  }
+}
+
 // Media -----------------------------------------------------------------------
 
 ContentSettingMediaImageModel::ContentSettingMediaImageModel()
@@ -474,7 +575,6 @@ void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
 }
 
 // Blocked Framebust -----------------------------------------------------------
-
 ContentSettingFramebustBlockImageModel::ContentSettingFramebustBlockImageModel()
     : ContentSettingImageModel() {}
 
@@ -516,102 +616,6 @@ void ContentSettingFramebustBlockImageModel::SetAnimationHasRun(
     return;
   FramebustBlockTabHelper::FromWebContents(web_contents)
       ->set_animation_has_run();
-}
-
-// Protocol handlers -----------------------------------------------------------
-
-ContentSettingRPHImageModel::ContentSettingRPHImageModel()
-    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-  set_icon(vector_icons::kProtocolHandlerIcon, gfx::kNoneIcon);
-  set_tooltip(l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
-}
-
-void ContentSettingRPHImageModel::UpdateFromWebContents(
-    WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
-
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings)
-    return;
-  if (content_settings->pending_protocol_handler().IsEmpty())
-    return;
-
-  set_visible(true);
-}
-
-// MIDI SysEx ------------------------------------------------------------------
-
-ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
-    : ContentSettingSimpleImageModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-}
-
-void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
-    WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings)
-    return;
-  const ContentSettingsUsagesState& usages_state =
-      content_settings->midi_usages_state();
-  if (usages_state.state_map().empty())
-    return;
-  set_visible(true);
-
-  // If any embedded site has access the allowed icon takes priority over the
-  // blocked icon.
-  unsigned int state_flags = 0;
-  usages_state.GetDetailedInfo(nullptr, &state_flags);
-  bool allowed =
-      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
-  set_icon(vector_icons::kMidiIcon,
-           allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
-  set_tooltip(l10n_util::GetStringUTF16(allowed
-                                            ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
-                                            : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
-}
-
-// Automatic downloads ---------------------------------------------------------
-
-ContentSettingDownloadsImageModel::ContentSettingDownloadsImageModel()
-    : ContentSettingSimpleImageModel(
-          CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS) {}
-
-void ContentSettingDownloadsImageModel::UpdateFromWebContents(
-    WebContents* web_contents) {
-  set_visible(false);
-  if (!web_contents)
-    return;
-
-  DownloadRequestLimiter* download_request_limiter =
-      g_browser_process->download_request_limiter();
-
-  // DownloadRequestLimiter can be absent in unit_tests.
-  if (!download_request_limiter)
-    return;
-
-  switch (download_request_limiter->GetDownloadUiStatus(web_contents)) {
-    case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
-      set_visible(true);
-      set_icon(kFileDownloadIcon, gfx::kNoneIcon);
-      set_explanatory_string_id(0);
-      set_tooltip(l10n_util::GetStringUTF16(IDS_ALLOWED_DOWNLOAD_TITLE));
-      return;
-    case DownloadRequestLimiter::DOWNLOAD_UI_BLOCKED:
-      set_visible(true);
-      set_icon(kFileDownloadIcon, kBlockedBadgeIcon);
-      set_explanatory_string_id(IDS_BLOCKED_DOWNLOADS_EXPLANATION);
-      set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_DOWNLOAD_TITLE));
-      return;
-    case DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT:
-      // No need to show icon otherwise.
-      return;
-  }
 }
 
 // Base class ------------------------------------------------------------------
