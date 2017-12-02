@@ -57,7 +57,7 @@
 -AutomationManagerAuraBrowserTest.*
 
 # profile_destroyer.cc(57) Check failed: hosts.empty() || profile->IsOffTheRecord() || profile->HasOffTheRecordProfile() || content::RenderProcessHost::run_renderer_in_process(). Profile still has 1 hosts
--BluetoothPairingUITest.*
+-BluetoothPairingDialogTest.*
 -DemoAppLauncherTest.*
 -LoginWebDialogTest.*
 
@@ -127,12 +127,8 @@
 # TODO: Very slow (>25 seconds) and occasional timeouts.
 -ExecuteScriptApiTest/DestructiveScriptTest.*
 
-# WindowPortMus check failed in fullscreen test:
-# window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM || window_mus_type() == WindowMusType::EMBED_IN_OWNER.
-# http://crbug.com/786544
--ExtensionInstallUIBrowserTest.*
--ImmersiveModeBrowserViewTest.*
--WebstoreInlineInstallerTest.*
+# Fails: immersive_controller->IsRevealed() returns false.
+# http://crbug.com/791148
 -ZoomBubbleBrowserTest.*
 
 # ozone_platform.cc(61) Check failed: instance_. OzonePlatform is not initialized
