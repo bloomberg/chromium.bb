@@ -13,9 +13,19 @@
 
 /**
  * @typedef {{
+ *   challengeHash: Array<number>,
+ *   appIdHash: Array<number>,
+ *   keyHandle: Array<number>,
+ *   version: (string|undefined)
+ * }}
+ */
+var DecodedSignHelperChallenge;
+
+/**
+ * @typedef {{
  *   code: number,
  *   gnubby: (Gnubby|undefined),
- *   challenge: (SignHelperChallenge|undefined),
+ *   challenge: (DecodedSignHelperChallenge|undefined),
  *   info: (ArrayBuffer|undefined)
  * }}
  */
@@ -65,14 +75,14 @@ function SingleGnubbySigner(
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
-  /** @private {!Array<!SignHelperChallenge>} */
+  /** @private {!Array<!DecodedSignHelperChallenge>} */
   this.challenges_ = [];
   /** @private {number} */
   this.challengeIndex_ = 0;
   /** @private {boolean} */
   this.challengesSet_ = false;
 
-  /** @private {!Object<string, number>} */
+  /** @private {!Object<Array<number>, number>} */
   this.cachedError_ = [];
 
   /** @private {(function()|undefined)} */
@@ -132,7 +142,7 @@ SingleGnubbySigner.prototype.closed_ = function() {
 
 /**
  * Begins signing the given challenges.
- * @param {Array<SignHelperChallenge>} challenges The challenges to sign.
+ * @param {Array<DecodedSignHelperChallenge>} challenges The challenges to sign.
  * @return {boolean} Whether the challenges were accepted.
  */
 SingleGnubbySigner.prototype.doSign = function(challenges) {
@@ -481,7 +491,7 @@ SingleGnubbySigner.prototype.goToError_ = function(code, opt_warn) {
 /**
  * Switches to the success state, and notifies caller.
  * @param {number} code Status code
- * @param {SignHelperChallenge=} opt_challenge The challenge signed
+ * @param {DecodedSignHelperChallenge=} opt_challenge The challenge signed
  * @param {ArrayBuffer=} opt_info Optional result data
  * @private
  */

@@ -66,10 +66,10 @@ Gnubby.prototype.cancelOpen = function() {
 /**
  * Opens the gnubby with the given index, or the first found gnubby if no
  * index is specified.
- * @param {GnubbyDeviceId} which The device to open. If null, the first
+ * @param {?GnubbyDeviceId} which The device to open. If null, the first
  *     gnubby found is opened.
  * @param {GnubbyEnumerationTypes=} opt_type Which type of device to enumerate.
- * @param {function(number)|undefined} opt_cb Called with result of opening the
+ * @param {function(number)=} opt_cb Called with result of opening the
  *     gnubby.
  * @param {string=} opt_caller Identifier for the caller.
  */
@@ -113,22 +113,23 @@ Gnubby.prototype.open = function(which, opt_type, opt_cb, opt_caller) {
       if (self.closeHook_) {
         self.dev.setDestroyHook(self.closeHook_);
       }
-      cb(rc);
+      cb.call(self, rc);
     });
   }
 
   if (which) {
     setCid(which);
     self.which = which;
-    Gnubby.gnubbies_.addClient(which, self, function(rc, device) {
-      if (!rc) {
-        self.dev = device;
-        if (self.closeHook_) {
-          self.dev.setDestroyHook(self.closeHook_);
-        }
-      }
-      cb(rc);
-    });
+    Gnubby.gnubbies_.addClient(
+        /** @type {GnubbyDeviceId} */ (which), self, function(rc, device) {
+          if (!rc) {
+            self.dev = device;
+            if (self.closeHook_) {
+              self.dev.setDestroyHook(self.closeHook_);
+            }
+          }
+          cb.call(self, rc);
+        });
   } else {
     Gnubby.gnubbies_.enumerate(enumerated, opt_type);
   }
@@ -139,7 +140,7 @@ Gnubby.prototype.open = function(which, opt_type, opt_cb, opt_caller) {
  * collide within this application, but may when others simultaneously access
  * the device.
  * @param {number} gnubbyInstance An instance identifier for a gnubby.
- * @param {GnubbyDeviceId} which The device identifer for the gnubby device.
+ * @param {GnubbyDeviceId} which The device identifier for the gnubby device.
  * @return {number} The channel id.
  * @private
  */
@@ -497,9 +498,8 @@ Gnubby.prototype.write_ = function(cmd, data) {
  * @param {ArrayBuffer|Uint8Array} data Command data
  * @param {number} timeout Timeout in seconds.
  * @param {function(number, ArrayBuffer=)} cb Callback
- * @private
  */
-Gnubby.prototype.exchange_ = function(cmd, data, timeout, cb) {
+Gnubby.prototype.exchange = function(cmd, data, timeout, cb) {
   var busyWait = new CountdownTimer(Gnubby.SYS_TIMER_, this.busyMillis);
   var self = this;
 
@@ -742,7 +742,7 @@ Gnubby.prototype.blink = function(data, cb) {
     var d = new Uint8Array([data]);
     data = d.buffer;
   }
-  this.exchange_(GnubbyDevice.CMD_PROMPT, data, Gnubby.NORMAL_TIMEOUT, cb);
+  this.exchange(GnubbyDevice.CMD_PROMPT, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Lock the gnubby
@@ -756,7 +756,7 @@ Gnubby.prototype.lock = function(data, cb) {
     var d = new Uint8Array([data]);
     data = d.buffer;
   }
-  this.exchange_(GnubbyDevice.CMD_LOCK, data, Gnubby.NORMAL_TIMEOUT, cb);
+  this.exchange(GnubbyDevice.CMD_LOCK, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Unlock the gnubby
@@ -766,7 +766,7 @@ Gnubby.prototype.unlock = function(cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
   var data = new Uint8Array([0]);
-  this.exchange_(GnubbyDevice.CMD_LOCK, data.buffer, Gnubby.NORMAL_TIMEOUT, cb);
+  this.exchange(GnubbyDevice.CMD_LOCK, data.buffer, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Request system information data.
@@ -775,7 +775,7 @@ Gnubby.prototype.unlock = function(cb) {
 Gnubby.prototype.sysinfo = function(cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
-  this.exchange_(
+  this.exchange(
       GnubbyDevice.CMD_SYSINFO, new ArrayBuffer(0), Gnubby.NORMAL_TIMEOUT, cb);
 };
 
@@ -785,7 +785,7 @@ Gnubby.prototype.sysinfo = function(cb) {
 Gnubby.prototype.wink = function(cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
-  this.exchange_(
+  this.exchange(
       GnubbyDevice.CMD_WINK, new ArrayBuffer(0), Gnubby.NORMAL_TIMEOUT, cb);
 };
 
@@ -796,7 +796,7 @@ Gnubby.prototype.wink = function(cb) {
 Gnubby.prototype.dfu = function(data, cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
-  this.exchange_(GnubbyDevice.CMD_DFU, data, Gnubby.NORMAL_TIMEOUT, cb);
+  this.exchange(GnubbyDevice.CMD_DFU, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Ping the gnubby
@@ -811,7 +811,7 @@ Gnubby.prototype.ping = function(data, cb) {
     window.crypto.getRandomValues(d);
     data = d.buffer;
   }
-  this.exchange_(GnubbyDevice.CMD_PING, data, Gnubby.NORMAL_TIMEOUT, cb);
+  this.exchange(GnubbyDevice.CMD_PING, data, Gnubby.NORMAL_TIMEOUT, cb);
 };
 
 /** Send a raw APDU command
@@ -821,7 +821,7 @@ Gnubby.prototype.ping = function(data, cb) {
 Gnubby.prototype.apdu = function(data, cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
-  this.exchange_(GnubbyDevice.CMD_APDU, data, Gnubby.MAX_TIMEOUT, cb);
+  this.exchange(GnubbyDevice.CMD_APDU, data, Gnubby.MAX_TIMEOUT, cb);
 };
 
 /** Reset gnubby
@@ -830,7 +830,7 @@ Gnubby.prototype.apdu = function(data, cb) {
 Gnubby.prototype.reset = function(cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
-  this.exchange_(
+  this.exchange(
       GnubbyDevice.CMD_ATR, new ArrayBuffer(0), Gnubby.MAX_TIMEOUT, cb);
 };
 
@@ -845,7 +845,7 @@ Gnubby.prototype.usb_test = function(args, cb) {
   if (!cb)
     cb = Gnubby.defaultCallback;
   var u8 = new Uint8Array(args);
-  this.exchange_(
+  this.exchange(
       GnubbyDevice.CMD_USB_TEST, u8.buffer, Gnubby.NORMAL_TIMEOUT, cb);
 };
 

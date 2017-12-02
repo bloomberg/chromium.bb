@@ -45,6 +45,12 @@ DeviceStatusCodes.INVALID_DATA_STATUS = 0x6984;
 DeviceStatusCodes.WRONG_DATA_STATUS = 0x6a80;
 
 /**
+ * Device operation file not found status.
+ * @const
+ */
+DeviceStatusCodes.FILE_NOT_FOUND_STATUS = 0x6a82;
+
+/**
  * Device operation timeout status.
  * @const
  */

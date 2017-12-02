@@ -170,7 +170,7 @@ Gnubbies.prototype.enumerate = function(cb, opt_type) {
     }
 
     console.log(UTIL_fmt('Enumerated ' + devs.length + ' gnubbies'));
-    console.log(devs);
+    console.log(UTIL_fmt(JSON.stringify(devs)));
 
     var presentDevs = {};
     var deviceIds = [];

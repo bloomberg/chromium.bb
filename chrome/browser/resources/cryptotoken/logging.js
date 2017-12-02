@@ -11,7 +11,7 @@
  * @param {string=} opt_logMsgUrl the url to post log messages to.
  */
 function logMessage(logMsg, opt_logMsgUrl) {
-  console.log(UTIL_fmt('logMessage("' + logMsg + '")'));
+  console.warn(UTIL_fmt('logMessage("' + logMsg + '")'));
 
   if (!opt_logMsgUrl) {
     return;

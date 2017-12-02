@@ -539,7 +539,7 @@ Enroller.prototype.notifyError_ = function(error) {
  * Notifies the caller of success with the provided response data.
  * @param {string} u2fVersion Protocol version
  * @param {string} info Response data
- * @param {string|undefined} opt_browserData Browser data used
+ * @param {string=} opt_browserData Browser data used
  * @private
  */
 Enroller.prototype.notifySuccess_ = function(
@@ -562,6 +562,12 @@ Enroller.prototype.helperComplete_ = function(reply) {
     console.log(UTIL_fmt(
         'helper reported ' + reply.code.toString(16) + ', returning ' +
         reportedError.errorCode));
+    // Log non-expected reply codes if we have url to send them.
+    if (reportedError.errorCode == ErrorCodes.OTHER_ERROR) {
+      var logMsg = 'log=u2fenroll&rc=' + reply.code.toString(16);
+      if (this.logMsgUrl_)
+        logMessage(logMsg, this.logMsgUrl_);
+    }
     this.notifyError_(reportedError);
   } else {
     console.log(UTIL_fmt('Gnubby enrollment succeeded!!!!!'));
