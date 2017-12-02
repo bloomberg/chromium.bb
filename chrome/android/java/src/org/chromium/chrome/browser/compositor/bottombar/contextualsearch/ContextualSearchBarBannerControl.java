@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.view.ViewGroup;
 
@@ -29,6 +31,11 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
      * Whether the Bar Banner is visible.
      */
     private boolean mIsVisible;
+
+    /**
+     * Whether the Bar Banner is in the process of hiding.
+     */
+    private boolean mIsHiding;
 
     /**
      * The height of the Bar Banner, in pixels.
@@ -111,15 +118,18 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
     void hide() {
         if (!mIsVisible) return;
 
-        mIsVisible = false;
-        mHeightPx = 0.f;
+        if (mHeightPx == 0.f) {
+            mIsVisible = false;
+        } else {
+            animateDisappearance();
+        }
     }
 
     /**
      * @return The height of the Bar Banner when the Panel is the peeked state.
      */
     float getHeightPeekingPx() {
-        return mIsVisible ? getPaddedHeightPx() : 0.f;
+        return (!isVisible() || mIsHiding) ? 0.f : getPaddedHeightPx();
     }
 
     /** Calculates the padded height of the bar banner if it has not been calculated before.
@@ -204,7 +214,7 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
      * @param percentage The completion percentage.
      */
     public void onUpdateFromCloseToPeek(float percentage) {
-        if (!isVisible()) return;
+        if (!isVisible() || mIsHiding) return;
 
         mHeightPx = Math.round(getPaddedHeightPx());
     }
@@ -215,7 +225,7 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
      * @param percentage The completion percentage.
      */
     public void onUpdateFromPeekToExpand(float percentage) {
-        if (!isVisible()) return;
+        if (!isVisible() || mIsHiding) return;
 
         mHeightPx = Math.round(MathUtils.interpolate(getPaddedHeightPx(), 0.f, percentage));
         mTextOpacity = MathUtils.interpolate(1.f, 0.f, percentage);
@@ -227,7 +237,7 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
      * @param percentage The completion percentage.
      */
     public void onUpdateFromExpandToMaximize(float percentage) {
-        if (!isVisible()) return;
+        if (!isVisible() || mIsHiding) return;
 
         mHeightPx = 0.f;
         mTextOpacity = 0.f;
@@ -261,5 +271,33 @@ public class ContextualSearchBarBannerControl extends OverlayPanelInflater {
                 CompositorAnimator.ofFloat(mOverlayPanel.getAnimationHandler(), 0.f, 1.f,
                         OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, listener);
         appearance.start();
+    }
+
+    /**
+     * Animates the Bar Banner disappearance.
+     */
+    private void animateDisappearance() {
+        mIsHiding = true;
+        CompositorAnimator disappearance =
+                CompositorAnimator.ofFloat(mOverlayPanel.getAnimationHandler(), 1.f, 0.f,
+                        OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
+        disappearance.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(CompositorAnimator animator) {
+                if (isVisible()) {
+                    float percentage = animator.getAnimatedFraction();
+                    mHeightPx = MathUtils.interpolate(getPaddedHeightPx(), 0.f, percentage);
+                }
+            }
+        });
+        disappearance.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mHeightPx = 0.f;
+                mIsHiding = false;
+                hide();
+            }
+        });
+        disappearance.start();
     }
 }
