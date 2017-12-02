@@ -290,8 +290,9 @@ static const int16_t ac_qlookup_12_Q3[QINDEX_RANGE] = {
 // 64x32 and 64x64 transforms return Q1 coefficients.  However, the
 // quantizers are de-scaled down on-the-fly by the same amount
 // (av1_tx_get_scale()) during quantization, and as such the
-// quantized/coded coefficients, even for large TX blocks, are always
-// effectively Q3.
+// dequantized/decoded coefficients, even for large TX blocks, are always
+// effectively Q3. Meanwhile, quantized/coded coefficients are Q0
+// because Qn quantizers are applied to Qn tx coefficients.
 
 // Note that encoder decision making (which uses the quantizer to
 // generate several bespoke lamdas for RDO and other heuristics)
