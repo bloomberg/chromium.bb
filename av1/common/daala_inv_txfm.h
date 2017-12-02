@@ -18,8 +18,8 @@
 extern "C" {
 #endif
 
-void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
-                        int output_stride, TxfmParam *txfm_param);
+void daala_inv_txfm_add_c(const tran_low_t *input_coeffs, void *output_pixels,
+                          int output_stride, TxfmParam *txfm_param);
 
 #ifdef __cplusplus
 }  // extern "C"

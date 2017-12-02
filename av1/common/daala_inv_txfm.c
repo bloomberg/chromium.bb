@@ -46,8 +46,8 @@ static int tx_flip(TX_TYPE_1D t) { return t == FLIPADST_1D; }
 // intended for both low and high bitdepth cases with a tran_low_t of
 // 32 bits (matching od_coeff), and a passed-in pixel buffer of either
 // bytes (hbd=0) or shorts (hbd=1).
-void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
-                        int output_stride, TxfmParam *txfm_param) {
+void daala_inv_txfm_add_c(const tran_low_t *input_coeffs, void *output_pixels,
+                          int output_stride, TxfmParam *txfm_param) {
   const TX_SIZE tx_size = txfm_param->tx_size;
   const TX_TYPE tx_type = txfm_param->tx_type;
   const int px_depth = txfm_param->bd;

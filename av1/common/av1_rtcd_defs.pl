@@ -18,6 +18,10 @@ print <<EOF
 #include "av1/common/restoration.h"
 #endif
 
+#if CONFIG_DAALA_TX
+#include "av1/common/daala_inv_txfm.h"
+#endif
+
 struct macroblockd;
 
 /* Encoder forward decls */
@@ -622,6 +626,12 @@ if (aom_config("CONFIG_INTRA_EDGE") eq "yes") {
     add_proto qw/void av1_upsample_intra_edge_high/, "uint16_t *p, int sz, int bd";
     specialize qw/av1_upsample_intra_edge_high sse4_1/;
   }
+}
+
+# DAALA_TX functions
+if (aom_config("CONFIG_DAALA_TX") eq "yes") {
+  add_proto qw/void daala_inv_txfm_add/, "const tran_low_t *input_coeffs, void *output_pixels, int output_stride, TxfmParam *txfm_param";
+  specialize qw/daala_inv_txfm_add avx2/;
 }
 
 1;
