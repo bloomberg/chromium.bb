@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "chrome/browser/vr/elements/textured_element.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
+#include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/text_input_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
@@ -21,17 +23,27 @@ class TextInputTexture;
 // the keyboard and omnibox.
 class TextInput : public TexturedElement {
  public:
+  // Called when this element recieves focus.
+  typedef base::RepeatingCallback<void(bool)> OnFocusChangedCallback;
+  // Called when the user enters text while this element is focused.
+  typedef base::RepeatingCallback<void(const TextInputInfo&)>
+      OnInputEditedCallback;
   TextInput(int maximum_width_pixels,
             float font_height_meters,
-            float text_width_meters);
+            float text_width_meters,
+            OnFocusChangedCallback focus_changed_callback,
+            OnInputEditedCallback input_edit_callback);
   ~TextInput() override;
 
-  void SetText(const base::string16& text);
-  void SetCursorPosition(int position);
-  void SetColor(SkColor color);
+  bool IsEditable() override;
+  void OnButtonUp(const gfx::PointF& position) override;
+  void OnFocusChanged(bool focused) override;
+  void OnInputEdited(const TextInputInfo& info) override;
+  void OnInputCommitted(const TextInputInfo& info) override;
 
-  typedef base::Callback<void(const base::string16& text)> TextInputCallback;
-  void SetTextChangedCallback(const TextInputCallback& callback);
+  void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
+  void SetColor(SkColor color);
+  void UpdateInput(const TextInputInfo& info);
 
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Vector3dF& look_at) override;
@@ -40,8 +52,11 @@ class TextInput : public TexturedElement {
   UiTexture* GetTexture() const override;
 
   std::unique_ptr<TextInputTexture> texture_;
-  TextInputCallback text_changed_callback_;
-  base::string16 text_;
+  OnFocusChangedCallback focus_changed_callback_;
+  OnInputEditedCallback input_edit_callback_;
+  TextInputDelegate* delegate_ = nullptr;
+  TextInputInfo text_info_;
+  bool focused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TextInput);
 };

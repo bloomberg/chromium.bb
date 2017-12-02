@@ -39,6 +39,12 @@ void GetMinimalFov(const gfx::Transform& view_matrix,
                    float z_near,
                    gvr::Rectf* out_fov);
 
+// Transforms the given gfx::Transform to gvr::Mat4f.
+void TransformToGvrMat(const gfx::Transform& in, gvr::Mat4f* out);
+
+// Transforms the given vr::Mat4f to gfx::Transform.
+void GvrMatToTransform(const gvr::Mat4f& in, gfx::Transform* out);
+
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_GVR_UTIL_H_

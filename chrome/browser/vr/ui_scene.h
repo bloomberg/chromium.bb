@@ -13,6 +13,7 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
+#include "chrome/browser/vr/keyboard_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -58,6 +59,7 @@ class UiScene {
   Elements GetVisibleSplashScreenElements() const;
   Elements GetVisibleWebVrOverlayForegroundElements() const;
   Elements GetVisibleControllerElements() const;
+  Elements GetVisibleKeyboardElements() const;
   Elements GetPotentiallyVisibleElements() const;
 
   float background_distance() const { return background_distance_; }
@@ -74,6 +76,8 @@ class UiScene {
   void OnGlInitialized(SkiaSurfaceProvider* provider);
 
  private:
+  void InitializeElement(UiElement* element);
+
   std::unique_ptr<UiElement> root_element_;
 
   float background_distance_ = 10.0f;

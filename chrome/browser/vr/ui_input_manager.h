@@ -24,6 +24,7 @@ class UiScene;
 class UiElement;
 struct ControllerModel;
 struct ReticleModel;
+struct TextInputInfo;
 
 using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
@@ -54,6 +55,12 @@ class UiInputManager {
                    const ControllerModel& controller_model,
                    ReticleModel* reticle_model,
                    GestureList* gesture_list);
+
+  // Text input related.
+  void RequestFocus(int element_id);
+  void OnInputEdited(const TextInputInfo& info);
+  void OnInputCommitted(const TextInputInfo& info);
+  void OnKeyboardHidden();
 
   bool controller_quiescent() const { return controller_quiescent_; }
 
@@ -86,6 +93,8 @@ class UiInputManager {
   void UpdateQuiescenceState(base::TimeTicks current_time,
                              const ControllerModel& controller_model);
 
+  void UnfocusFocusedElement();
+
   UiScene* scene_;
   int hover_target_id_ = 0;
   // TODO(mthiesse): We shouldn't have a fling target. Elements should fling
@@ -95,8 +104,10 @@ class UiInputManager {
   int input_locked_element_id_ = 0;
   bool in_click_ = false;
   bool in_scroll_ = false;
+  int focused_element_id_ = 0;
 
   HitTestStrategy hit_test_strategy_ = HitTestStrategy::PROJECT_TO_WORLD_ORIGIN;
+
   ButtonState previous_button_state_ = ButtonState::UP;
 
   base::TimeTicks last_significant_controller_update_time_;

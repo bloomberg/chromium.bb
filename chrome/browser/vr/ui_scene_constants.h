@@ -212,6 +212,9 @@ static constexpr int kSpeechRecognitionOpacityAnimationDurationMs = 200;
 
 static constexpr float kModalPromptFadeOpacity = 0.5f;
 
+static constexpr float kKeyboardDistance = 1.0f;
+static constexpr float kKeyboardVerticalOffset = -0.45f * kKeyboardDistance;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_

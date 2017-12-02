@@ -83,39 +83,72 @@ class TextInputTexture : public UiTexture {
 
 TextInput::TextInput(int maximum_width_pixels,
                      float font_height_meters,
-                     float text_width_meters)
+                     float text_width_meters,
+                     OnFocusChangedCallback focus_changed_callback,
+                     OnInputEditedCallback input_edit_callback)
     : TexturedElement(maximum_width_pixels),
       texture_(base::MakeUnique<TextInputTexture>(font_height_meters,
-                                                  text_width_meters)) {
+                                                  text_width_meters)),
+      focus_changed_callback_(focus_changed_callback),
+      input_edit_callback_(input_edit_callback) {
   SetSize(text_width_meters, font_height_meters);
 }
+
 TextInput::~TextInput() {}
 
-void TextInput::SetText(const base::string16& text) {
-  if (text_ == text)
+void TextInput::SetTextInputDelegate(TextInputDelegate* text_input_delegate) {
+  delegate_ = text_input_delegate;
+}
+
+bool TextInput::IsEditable() {
+  return true;
+}
+
+void TextInput::OnButtonUp(const gfx::PointF& position) {
+  if (!delegate_)
     return;
-  text_ = text;
-  texture_->SetText(text);
-  if (text_changed_callback_)
-    text_changed_callback_.Run(text);
+
+  delegate_->RequestFocus(id());
 }
 
-void TextInput::SetCursorPosition(int position) {
-  texture_->SetCursorPosition(position);
+void TextInput::OnFocusChanged(bool focused) {
+  focused_ = focused;
+  texture_->SetCursorVisible(focused);
+  // Update the keyboard with the current text.
+  if (delegate_ && focused)
+    delegate_->UpdateInput(text_info_);
+
+  focus_changed_callback_.Run(focused);
 }
 
-void TextInput::SetTextChangedCallback(const TextInputCallback& callback) {
-  text_changed_callback_ = callback;
+void TextInput::OnInputEdited(const TextInputInfo& info) {
+  input_edit_callback_.Run(info);
 }
+
+void TextInput::OnInputCommitted(const TextInputInfo& info) {}
 
 void TextInput::SetColor(SkColor color) {
   texture_->SetColor(color);
 }
 
+void TextInput::UpdateInput(const TextInputInfo& info) {
+  if (text_info_ == info)
+    return;
+
+  text_info_ = info;
+  texture_->SetText(info.text);
+  texture_->SetCursorPosition(info.selection_end);
+
+  if (delegate_ && focused_)
+    delegate_->UpdateInput(info);
+}
+
 bool TextInput::OnBeginFrame(const base::TimeTicks& time,
                              const gfx::Vector3dF& look_at) {
   base::TimeDelta delta = time - base::TimeTicks();
-  texture_->SetCursorVisible(delta.InMilliseconds() / 500 % 2);
+  if (focused_)
+    texture_->SetCursorVisible(delta.InMilliseconds() / 500 % 2);
+
   return false;
 }
 

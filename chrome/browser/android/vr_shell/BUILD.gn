@@ -20,6 +20,8 @@ static_library("vr_android") {
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
     "gl_browser_interface.h",
+    "gvr_keyboard_delegate.cc",
+    "gvr_keyboard_delegate.h",
     "gvr_keyboard_shim.cc",
     "gvr_util.cc",
     "gvr_util.h",

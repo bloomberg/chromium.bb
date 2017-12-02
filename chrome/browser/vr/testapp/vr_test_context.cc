@@ -64,7 +64,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   base::i18n::InitializeICU();
 
-  ui_ = base::MakeUnique<Ui>(this, nullptr, UiInitialState());
+  ui_ = base::MakeUnique<Ui>(this, nullptr, nullptr, nullptr, UiInitialState());
   model_ = ui_->model_for_test();
 
   ToolbarState state(GURL("https://dangerous.com/dir/file.html"),

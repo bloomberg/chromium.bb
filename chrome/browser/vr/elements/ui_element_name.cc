@@ -27,6 +27,7 @@ static const char* g_ui_element_name_strings[] = {
     "kLaser",
     "kController",
     "kReticle",
+    "kKeyboard",
     "kBackplane",
     "kCeiling",
     "kFloor",

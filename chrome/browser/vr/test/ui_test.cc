@@ -248,9 +248,9 @@ void UiTest::CreateSceneInternal(InCct in_cct,
   ui_initial_state.in_cct = in_cct;
   ui_initial_state.in_web_vr = in_web_vr;
   ui_initial_state.web_vr_autopresentation_expected = web_vr_autopresented;
-  ui_ =
-      base::MakeUnique<Ui>(std::move(browser_.get()),
-                           std::move(content_input_delegate), ui_initial_state);
+  ui_ = base::MakeUnique<Ui>(std::move(browser_.get()),
+                             std::move(content_input_delegate), nullptr,
+                             nullptr, ui_initial_state);
   scene_ = ui_->scene();
   model_ = ui_->model_for_test();
 

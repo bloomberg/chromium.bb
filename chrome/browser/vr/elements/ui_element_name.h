@@ -26,6 +26,7 @@ enum UiElementName {
   kLaser,
   kController,
   kReticle,
+  kKeyboard,
   kBackplane,
   kCeiling,
   kFloor,

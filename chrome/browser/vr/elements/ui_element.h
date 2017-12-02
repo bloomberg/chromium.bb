@@ -43,6 +43,7 @@ class Animation;
 class SkiaSurfaceProvider;
 class UiElementRenderer;
 struct CameraModel;
+struct TextInputInfo;
 
 enum LayoutAlignment {
   NONE = 0,
@@ -139,6 +140,10 @@ class UiElement : public cc::AnimationTarget {
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
 
+  // Indicates whether the element is an editable element. Editable elements
+  // such as the input field should override this.
+  virtual bool IsEditable();
+
   virtual void Render(UiElementRenderer* renderer,
                       const CameraModel& model) const;
 
@@ -172,7 +177,8 @@ class UiElement : public cc::AnimationTarget {
 
   // Performs a hit test for the ray supplied in the request and populates the
   // result. The ray is in the world coordinate space.
-  void HitTest(const HitTestRequest& request, HitTestResult* result) const;
+  virtual void HitTest(const HitTestRequest& request,
+                       HitTestResult* result) const;
 
   int id() const { return id_; }
 
@@ -204,6 +210,11 @@ class UiElement : public cc::AnimationTarget {
   void set_event_handlers(const EventHandlers& event_handlers) {
     event_handlers_ = event_handlers;
   }
+
+  // Editable elements should override these functions.
+  virtual void OnFocusChanged(bool focused);
+  virtual void OnInputEdited(const TextInputInfo& info);
+  virtual void OnInputCommitted(const TextInputInfo& info);
 
   gfx::SizeF size() const;
   void SetSize(float width, float hight);

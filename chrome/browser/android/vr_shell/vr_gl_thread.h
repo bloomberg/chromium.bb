@@ -12,8 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
+#include "chrome/browser/android/vr_shell/gvr_keyboard_delegate.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -101,6 +103,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
 
   // Created on GL thread.
   std::unique_ptr<VrShellGl> vr_shell_gl_;
+  std::unique_ptr<GvrKeyboardDelegate> keyboard_delegate_;
+  std::unique_ptr<vr::TextInputDelegate> text_input_delegate_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<vr::BrowserUiInterface> browser_ui_;
