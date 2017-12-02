@@ -9,6 +9,8 @@
  */
 settings.ChromeCleanupIdleReason = {
   INITIAL: 'initial',
+  REPORTER_FOUND_NOTHING: 'reporter_found_nothing',
+  REPORTER_FAILED: 'reporter_failed',
   SCANNING_FOUND_NOTHING: 'scanning_found_nothing',
   SCANNING_FAILED: 'scanning_failed',
   CONNECTION_LOST: 'connection_lost',

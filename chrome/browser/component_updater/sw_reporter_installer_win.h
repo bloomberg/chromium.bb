@@ -55,11 +55,9 @@ using SwReporterRunner = base::Callback<void(
 
 class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
  public:
-  // Note: |on_sequence_done| will be invoked on the UI thread.
   SwReporterInstallerPolicy(
       const SwReporterRunner& reporter_runner,
-      safe_browsing::SwReporterInvocationType invocation_type,
-      safe_browsing::OnReporterSequenceDone on_sequence_done);
+      safe_browsing::SwReporterInvocationType invocation_type);
   ~SwReporterInstallerPolicy() override;
 
   // ComponentInstallerPolicy implementation.
@@ -87,21 +85,14 @@ class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
 
   const safe_browsing::SwReporterInvocationType invocation_type_;
 
-  // The action to be called on the first time the invocation sequence
-  // runs.
-  safe_browsing::OnReporterSequenceDone on_sequence_done_;
-
   DISALLOW_COPY_AND_ASSIGN(SwReporterInstallerPolicy);
 };
 
 // Installs the SwReporter component and runs the reporter once it's available.
 // Once ready, this may trigger either a periodic or a user-initiated run of
-// the reporter, depending on |invocation_type|. Once the last invocation
-// finishes, |on_sequence_done| is called with a boolean variable indicating if
-// the run succeeded.
+// the reporter, depending on |invocation_type|.
 void RegisterSwReporterComponentWithParams(
     safe_browsing::SwReporterInvocationType invocation_type,
-    safe_browsing::OnReporterSequenceDone on_sequence_done,
     ComponentUpdateService* cus);
 
 // Call once during startup to make the component update service aware of the

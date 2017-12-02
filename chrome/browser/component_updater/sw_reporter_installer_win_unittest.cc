@@ -37,7 +37,6 @@ constexpr char kErrorHistogramName[] = "SoftwareReporter.ExperimentErrors";
 constexpr char kExperimentTag[] = "experiment_tag";
 constexpr char kMissingTag[] = "missing_tag";
 
-using safe_browsing::OnReporterSequenceDone;
 using safe_browsing::SwReporterInvocation;
 using safe_browsing::SwReporterInvocationResult;
 using safe_browsing::SwReporterInvocationSequence;
@@ -239,8 +238,7 @@ INSTANTIATE_TEST_CASE_P(
         SwReporterInvocationType::kUserInitiatedWithLogsAllowed));
 
 TEST_P(SwReporterInstallerTest, MissingManifest) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
   ExpectEmptyAttributes(policy);
   policy.ComponentReady(default_version_, default_path_,
                         std::make_unique<base::DictionaryValue>());
@@ -248,8 +246,7 @@ TEST_P(SwReporterInstallerTest, MissingManifest) {
 }
 
 TEST_P(SwReporterInstallerTest, MissingTag) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
   CreateFeatureWithoutTag();
   ExpectAttributesWithTag(policy, kMissingTag);
   histograms_.ExpectUniqueSample(kErrorHistogramName,
@@ -257,8 +254,7 @@ TEST_P(SwReporterInstallerTest, MissingTag) {
 }
 
 TEST_P(SwReporterInstallerTest, InvalidTag) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
   CreateFeatureWithTag("tag with invalid whitespace chars");
   ExpectAttributesWithTag(policy, kMissingTag);
   histograms_.ExpectUniqueSample(kErrorHistogramName,
@@ -266,8 +262,7 @@ TEST_P(SwReporterInstallerTest, InvalidTag) {
 }
 
 TEST_P(SwReporterInstallerTest, TagTooLong) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
   std::string tag_too_long(500, 'x');
   CreateFeatureWithTag(tag_too_long);
   ExpectAttributesWithTag(policy, kMissingTag);
@@ -276,8 +271,7 @@ TEST_P(SwReporterInstallerTest, TagTooLong) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptyTag) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
   CreateFeatureWithTag("");
   ExpectAttributesWithTag(policy, kMissingTag);
   histograms_.ExpectUniqueSample(kErrorHistogramName,
@@ -285,15 +279,13 @@ TEST_P(SwReporterInstallerTest, EmptyTag) {
 }
 
 TEST_P(SwReporterInstallerTest, ValidTag) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
   CreateFeatureWithTag(kExperimentTag);
   ExpectAttributesWithTag(policy, kExperimentTag);
 }
 
 TEST_P(SwReporterInstallerTest, SingleInvocation) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -331,8 +323,7 @@ TEST_P(SwReporterInstallerTest, SingleInvocation) {
 }
 
 TEST_P(SwReporterInstallerTest, MultipleInvocations) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -392,8 +383,7 @@ TEST_P(SwReporterInstallerTest, MultipleInvocations) {
 }
 
 TEST_P(SwReporterInstallerTest, MissingSuffix) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -409,8 +399,7 @@ TEST_P(SwReporterInstallerTest, MissingSuffix) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptySuffix) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -427,8 +416,7 @@ TEST_P(SwReporterInstallerTest, EmptySuffix) {
 }
 
 TEST_P(SwReporterInstallerTest, MissingSuffixAndArgs) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -443,8 +431,7 @@ TEST_P(SwReporterInstallerTest, MissingSuffixAndArgs) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptySuffixAndArgs) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -461,8 +448,7 @@ TEST_P(SwReporterInstallerTest, EmptySuffixAndArgs) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptySuffixAndArgsWithEmptyString) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -479,8 +465,7 @@ TEST_P(SwReporterInstallerTest, EmptySuffixAndArgsWithEmptyString) {
 }
 
 TEST_P(SwReporterInstallerTest, MissingArguments) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -496,8 +481,7 @@ TEST_P(SwReporterInstallerTest, MissingArguments) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptyArguments) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -514,8 +498,7 @@ TEST_P(SwReporterInstallerTest, EmptyArguments) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptyArgumentsWithEmptyString) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -532,8 +515,7 @@ TEST_P(SwReporterInstallerTest, EmptyArgumentsWithEmptyString) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptyManifest) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] = "{}";
   policy.ComponentReady(
@@ -543,8 +525,7 @@ TEST_P(SwReporterInstallerTest, EmptyManifest) {
 }
 
 TEST_P(SwReporterInstallerTest, EmptyLaunchParams) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] = "{\"launch_params\": []}";
   policy.ComponentReady(
@@ -554,8 +535,7 @@ TEST_P(SwReporterInstallerTest, EmptyLaunchParams) {
 }
 
 TEST_P(SwReporterInstallerTest, BadSuffix) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -575,8 +555,7 @@ TEST_P(SwReporterInstallerTest, BadSuffix) {
 }
 
 TEST_P(SwReporterInstallerTest, SuffixTooLong) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] =
       "{\"launch_params\": ["
@@ -599,8 +578,7 @@ TEST_P(SwReporterInstallerTest, SuffixTooLong) {
 }
 
 TEST_P(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   // This has a string instead of a list for "arguments".
   static constexpr char kTestManifest[] =
@@ -621,8 +599,7 @@ TEST_P(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
 }
 
 TEST_P(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   // This has the invocation parameters as direct children of "launch_params",
   // instead of using a list.
@@ -644,8 +621,7 @@ TEST_P(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
 }
 
 TEST_P(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   // This has a list for suffix as well as for arguments.
   static constexpr char kTestManifest[] =
@@ -666,8 +642,7 @@ TEST_P(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
 }
 
 TEST_P(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   // This has an int instead of a bool for prompt.
   static constexpr char kTestManifest[] =
@@ -689,8 +664,7 @@ TEST_P(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
 }
 
 TEST_P(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] = "{\"launch_params\": 0}";
   policy.ComponentReady(
@@ -704,8 +678,7 @@ TEST_P(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
 }
 
 TEST_P(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
-  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_,
-                                   OnReporterSequenceDone());
+  SwReporterInstallerPolicy policy(launched_callback_, invocation_type_);
 
   static constexpr char kTestManifest[] = "{\"launch_params\": {}}";
   policy.ComponentReady(

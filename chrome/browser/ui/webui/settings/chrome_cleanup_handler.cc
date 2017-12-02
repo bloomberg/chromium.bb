@@ -46,6 +46,10 @@ std::string IdleReasonToString(
   switch (idle_reason) {
     case ChromeCleanerController::IdleReason::kInitial:
       return "initial";
+    case ChromeCleanerController::IdleReason::kReporterFoundNothing:
+      return "reporter_found_nothing";
+    case ChromeCleanerController::IdleReason::kReporterFailed:
+      return "reporter_failed";
     case ChromeCleanerController::IdleReason::kScanningFoundNothing:
       return "scanning_found_nothing";
     case ChromeCleanerController::IdleReason::kScanningFailed:
