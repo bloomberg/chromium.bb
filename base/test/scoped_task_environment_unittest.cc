@@ -137,7 +137,7 @@ TEST_P(ScopedTaskEnvironmentTest,
 
 TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::ASYNC);
+      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
 
   subtle::Atomic32 counter = 0;
 
@@ -190,6 +190,11 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
                             subtle::NoBarrier_AtomicIncrement(counter, 2);
                           },
                           Unretained(&counter)));
+
+  // Verify that tasks are not being processed asynchronously. Since scheduling
+  // is non-deterministic, we pause the main thread momentarily, to increase
+  // the likelihood of the preceding PostTask() being run.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
 
   int expected_value = 0;
   EXPECT_EQ(expected_value, counter);
