@@ -314,13 +314,20 @@ std::unique_ptr<base::Value> ReadDumpFile(const base::FilePath& path) {
   return base::JSONReader::Read(dump_string);
 }
 
+void QuitRunLoopAndCheckSecondParameter(base::RunLoop* run_loop, bool result) {
+  ASSERT_TRUE(result);
+  run_loop->Quit();
+}
+
 void DumpProcess(base::ProcessId pid, const base::FilePath& dumpfile_path) {
   profiling::ProfilingProcessHost* pph =
       profiling::ProfilingProcessHost::GetInstance();
   base::RunLoop run_loop;
-  pph->RequestProcessDump(
-      pid, dumpfile_path,
-      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+  pph->SaveTraceWithHeapDumpToFile(
+      dumpfile_path,
+      base::BindOnce(&QuitRunLoopAndCheckSecondParameter,
+                     base::Unretained(&run_loop)),
+      true);
   run_loop.Run();
 }
 
@@ -365,10 +372,7 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
         GetParam() == switches::kMemlogModeBrowser ||
         GetParam() == switches::kMemlogModeMinimal) {
       ASSERT_TRUE(dump_json);
-      EXPECT_EQ(0, NumProcessesWithName(dump_json.get(), "Renderer"));
       ValidateBrowserAllocations(dump_json.get());
-    } else {
-      ASSERT_FALSE(dump_json) << "Browser process unexpectedly profiled.";
     }
   }
 
@@ -390,9 +394,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
         GetParam() == switches::kMemlogModeRendererSampling) {
       ASSERT_TRUE(dump_json);
       ValidateRendererAllocations(dump_json.get());
-      EXPECT_EQ(0, NumProcessesWithName(dump_json.get(), "Browser"));
-    } else {
-      ASSERT_FALSE(dump_json) << "Renderer process unexpectedly profiled.";
     }
   }
 

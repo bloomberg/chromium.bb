@@ -47,6 +47,11 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "third_party/zlib/zlib.h"
+
+#if defined(OS_WIN)
+#include <io.h>
+#endif
 
 namespace {
 
@@ -99,8 +104,6 @@ const char kOOPHeapProfilingFeatureMode[] = "mode";
 bool ProfilingProcessHost::has_started_ = false;
 
 namespace {
-
-constexpr char kNoTriggerName[] = "";
 
 // This helper class cleans up initialization boilerplate for the callers who
 // need to create ProfilingClients bound to various different things.
@@ -440,20 +443,38 @@ void ProfilingProcessHost::ConfigureBackgroundProfilingTriggers() {
   background_triggers_.StartTimer();
 }
 
-void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
-                                              base::FilePath dest,
-                                              base::OnceClosure done) {
-  if (!connector_) {
+void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
+    base::FilePath dest,
+    SaveTraceFinishedCallback done,
+    bool stop_immediately_after_heap_dump_for_tests) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!profiling_service_.is_bound()) {
     DLOG(ERROR)
-        << "Requesting process dump when profiling process hasn't started.";
+        << "Requesting heap dump when profiling process hasn't started.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(done), false));
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
-                     base::Unretained(this), pid, std::move(dest),
-                     kNoTriggerName, std::move(done)));
+  auto finish_trace_callback = base::BindOnce(
+      [](base::FilePath dest, SaveTraceFinishedCallback done, bool success,
+         std::string trace) {
+        if (!success) {
+          content::BrowserThread::GetTaskRunnerForThread(
+              content::BrowserThread::UI)
+              ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
+          return;
+        }
+        base::PostTaskWithTraits(
+            FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+            base::BindOnce(
+                &ProfilingProcessHost::SaveTraceToFileOnBlockingThread,
+                base::Unretained(ProfilingProcessHost::GetInstance()),
+                std::move(dest), std::move(trace), std::move(done)));
+      },
+      std::move(dest), std::move(done));
+  RequestTraceWithHeapDump(std::move(finish_trace_callback),
+                           stop_immediately_after_heap_dump_for_tests);
 }
 
 void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
@@ -569,72 +590,39 @@ void ProfilingProcessHost::LaunchAsService() {
   }
 }
 
-void ProfilingProcessHost::GetOutputFileOnBlockingThread(
-    base::ProcessId pid,
+void ProfilingProcessHost::SaveTraceToFileOnBlockingThread(
     base::FilePath dest,
-    std::string trigger_name,
-    base::OnceClosure done) {
-  base::ScopedClosureRunner done_runner(std::move(done));
+    std::string trace,
+    SaveTraceFinishedCallback done) {
   base::File file(dest,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ProfilingProcessHost::HandleDumpProcessOnIOThread,
-                     base::Unretained(this), pid, std::move(dest),
-                     std::move(file), std::move(trigger_name),
-                     done_runner.Release()));
-}
 
-void ProfilingProcessHost::HandleDumpProcessOnIOThread(base::ProcessId pid,
-                                                       base::FilePath file_path,
-                                                       base::File file,
-                                                       std::string trigger_name,
-                                                       base::OnceClosure done) {
-  mojo::ScopedHandle handle = mojo::WrapPlatformFile(file.TakePlatformFile());
-  profiling_service_->DumpProcess(
-      pid, std::move(handle), GetMetadataJSONForTrace(),
-      base::BindOnce(&ProfilingProcessHost::OnProcessDumpComplete,
-                     base::Unretained(this), std::move(file_path),
-                     std::move(trigger_name), std::move(done)));
-}
-
-void ProfilingProcessHost::OnProcessDumpComplete(base::FilePath file_path,
-                                                 std::string trigger_name,
-                                                 base::OnceClosure done,
-                                                 bool success) {
-  base::ScopedClosureRunner done_runner(std::move(done));
-  if (!success) {
-    DLOG(ERROR) << "Cannot dump process.";
-    // On any errors, the requested trace output file is deleted.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
-                       false));
+  // Pass ownership of the underlying fd/HANDLE to zlib.
+  base::PlatformFile platform_file = file.TakePlatformFile();
+#if defined(OS_WIN)
+  // The underlying handle |platform_file| is also closed when |fd| is closed.
+  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(platform_file), 0);
+#else
+  int fd = platform_file;
+#endif
+  gzFile gz_file = gzdopen(fd, "w");
+  if (!gz_file) {
+    DLOG(ERROR) << "Cannot compress trace file";
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
     return;
   }
+
+  size_t written_bytes = gzwrite(gz_file, trace.c_str(), trace.size());
+  gzclose(gz_file);
+
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE, base::BindOnce(std::move(done),
+                                           written_bytes == trace.size()));
 }
 
 void ProfilingProcessHost::SetMode(Mode mode) {
   mode_ = mode;
-}
-
-std::unique_ptr<base::DictionaryValue>
-ProfilingProcessHost::GetMetadataJSONForTrace() {
-  std::unique_ptr<base::DictionaryValue> metadata_dict(
-      new base::DictionaryValue);
-  metadata_dict->SetKey(
-      "product-version",
-      base::Value(version_info::GetProductNameAndVersionForUserAgent()));
-  metadata_dict->SetKey("user-agent", base::Value(GetUserAgent()));
-  metadata_dict->SetKey("os-name",
-                        base::Value(base::SysInfo::OperatingSystemName()));
-  metadata_dict->SetKey(
-      "command_line",
-      base::Value(
-          base::CommandLine::ForCurrentProcess()->GetCommandLineString()));
-  metadata_dict->SetKey(
-      "os-arch", base::Value(base::SysInfo::OperatingSystemArchitecture()));
-  return metadata_dict;
 }
 
 void ProfilingProcessHost::ReportMetrics() {

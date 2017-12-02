@@ -43,14 +43,6 @@ struct ExportParams {
   bool is_argument_filtering_enabled = false;
 };
 
-// Creates a JSON-encoded string that is similar in form to traces created by
-// TracingControllerImpl. Metadata can be null.
-void ExportAllocationEventSetToJSON(
-    int pid,
-    const ExportParams& params,
-    std::unique_ptr<base::DictionaryValue> metadata,
-    std::ostream& out);
-
 // Creates a JSON string representing a JSON dictionary that contains memory
 // maps and v2 format stack traces.
 void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,

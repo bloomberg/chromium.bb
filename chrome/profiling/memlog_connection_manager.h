@@ -60,31 +60,9 @@ class MemlogConnectionManager {
     DISALLOW_COPY_AND_ASSIGN(DumpArgs);
   };
 
-  // Parameters to DumpProcess().
-  struct DumpProcessArgs : public DumpArgs {
-    DumpProcessArgs();
-    DumpProcessArgs(DumpProcessArgs&&) noexcept;
-    ~DumpProcessArgs();
-
-    // Process ID to dump.
-    base::ProcessId pid;
-
-    // The memory map for the given process for the dumped process must be
-    // provided here since that is not tracked as part of the normal allocation
-    // process.
-    std::vector<memory_instrumentation::mojom::VmRegionPtr> maps;
-
-    std::unique_ptr<base::DictionaryValue> metadata;
-
-    // File to dump the output to.
-    base::File file;
-    mojom::ProfilingService::DumpProcessCallback callback;
-  };
-
   // Dumping is asynchronous so will not be complete when this function
   // returns. The dump is complete when the callback provided in the args is
   // fired.
-  void DumpProcess(DumpProcessArgs args);
   void DumpProcessesForTracing(
       mojom::ProfilingService::DumpProcessesForTracingCallback callback,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
@@ -99,12 +77,6 @@ class MemlogConnectionManager {
   struct Connection;
   struct DumpProcessesForTracingTracking;
 
-  // Actually does the dump assuming the given process has been synchronized.
-  void DoDumpProcess(DumpProcessArgs args,
-                     mojom::ProcessType process_type,
-                     bool success,
-                     AllocationCountMap counts,
-                     AllocationTracker::ContextMap context);
   void DoDumpOneProcessForTracing(
       scoped_refptr<DumpProcessesForTracingTracking> tracking,
       base::ProcessId pid,
