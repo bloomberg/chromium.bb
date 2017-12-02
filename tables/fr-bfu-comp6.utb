@@ -102,7 +102,7 @@ comp6 0 3456
 include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
-math + 235  # plus
+noback math + 235  # plus
 math * 35   # astérisque
 math / 34   # barre oblique
 math = 2356 # égal
@@ -294,4 +294,16 @@ decpoint , 2
 repeated ... 256-256-256		#	points de suspension
 repeated --- 36-36-36
 repeated ___ 456-456-456
+
+word = 6-2356
+word + 6-235
+begword + 6-235
+begword = 6-2356
+midword + 6-235
+midword = 6-2356
+endword + 6-235
+endword = 6-2356
+
+nofor pass2 [@6-235]$d @6-235-6
+nofor pass2 [@6-2356]$d @6-2356-6
 

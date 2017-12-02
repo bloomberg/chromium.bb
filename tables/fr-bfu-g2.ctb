@@ -2227,12 +2227,8 @@ word " 56-2356
 word \x00ab 56-2356
 word \x00bb 56-2356
 
-word = 6-2356
-word + 6-235
 word / 6-34
 word * 6-35
-begword + 6-235
-begword = 6-2356
 noback always -\s 56-36-0
 noback always --\s 36-36-0
 word ? 56-26
@@ -2273,5 +2269,6 @@ compbrl .wav
 compbrl .tar
 compbrl .zip
 
-nofor pass2 [@6-235]$d @6-235-6
-nofor pass2 [@6-2356]$d @6-2356-6
+nofor pass2 $a[]$d@56 @6
+nofor pass3 $a$d[@56] @0-56-346-0-1-356-25-0-56
+nofor correct "\só\sa):\s" ?

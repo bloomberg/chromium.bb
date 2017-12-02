@@ -1,6 +1,10 @@
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: forward}
 tests:
+    - ["+", "⠠⠖"]
+    - ["=", "⠠⠶"]
+    - ["1er", "⠠⠡⠰⠑⠗"]
+    - ["4me", "⠠⠹⠰⠍⠑"]
     - ["- Item 1", "⠰⠤ ⠨⠊⠞⠑⠍ ⠠⠡"]
   # ⠡ -> fr, ation (terminaison)
     - ["fruit", "⠡⠆⠞"]
@@ -1071,6 +1075,8 @@ tests:
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: backward}
 tests:
+    - ["⠠⠡⠰⠑⠗", "1er"]
+    - ["⠠⠹⠰⠍⠑", "4me"]
     - ["⠰⠤ ⠨⠊⠞⠑⠍ ⠠⠡", "- Item 1"]
     - ["⠙⠗⠹⠇⠑", "drôle"]
     - ["⠋⠗⠹⠇⠑", "frôle"]
