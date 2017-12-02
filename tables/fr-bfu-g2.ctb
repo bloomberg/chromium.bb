@@ -192,12 +192,13 @@ noback endword es 156
 nofor after conabr after voyabr endword es 156
 word eu 15-136
 always eu 5
+nofor before voyabr before voyabr2 always eugl 5-345
 nofor before voyabr before voyabr2 always eur 5-1235
 nofor always eut 5-2345
 noback before con always eur 46
 nofor before conabr midword eur 46
-#nofor endword always eur 46
 endword eur 46
+nofor before punctuation always eur 46
 noback before con always ex 1346
 nofor before conabr always ex 1346
 endword ez 1356
@@ -1880,6 +1881,8 @@ word rêveurs		1235-126-46-234
 word rêveuse		1235-126-234-15
 word rêveuses		1235-126-234-156
 word rêveusement	1235-126-234-134
+noback word riz 56-1235-24-1356
+noback word riez 1235-24-1356
 word rôle		1235-1456
 word rôles		1235-1456-234
 prfword route		1235-1256
@@ -2196,6 +2199,8 @@ nofor word € 45-15
 #Ponctuations suivies d'un signe
 nofor postpunc ." 256-2356
 nofor postpunc .) 256-356
+nofor postpunc .] 256-356-12
+nofor postpunc .} 256-356-3-3
 nofor postpunc ;" 23-2356
 nofor postpunc ;) 23-356
 nofor postpunc ;] 23-356-12
