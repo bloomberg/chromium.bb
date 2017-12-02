@@ -59,8 +59,8 @@ class LockDebugView : public views::View, public views::ButtonListener {
   views::View* debug_row_ = nullptr;
   views::MdTextButton* toggle_blur_ = nullptr;
   views::MdTextButton* toggle_note_action_ = nullptr;
-  views::MdTextButton* toggle_dev_channel_info_ = nullptr;
   views::MdTextButton* toggle_caps_lock_ = nullptr;
+  views::MdTextButton* add_dev_channel_info_ = nullptr;
   views::MdTextButton* add_user_ = nullptr;
   views::MdTextButton* remove_user_ = nullptr;
   views::MdTextButton* toggle_auth_ = nullptr;
@@ -68,6 +68,7 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // Debug dispatcher and cached data for the UI.
   std::unique_ptr<DebugDataDispatcherTransformer> const debug_data_dispatcher_;
   size_t num_users_ = 1u;
+  size_t num_dev_channel_info_clicks_ = 0u;
   LoginScreenController::ForceFailAuth force_fail_auth_ =
       LoginScreenController::ForceFailAuth::kOff;
 
