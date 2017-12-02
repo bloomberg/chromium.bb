@@ -56,19 +56,19 @@ class SearchResultTileItemListViewTest
     textfield_ = std::make_unique<views::Textfield>();
     view_ = std::make_unique<SearchResultTileItemListView>(
         nullptr, textfield_.get(), &view_delegate_);
-    view_->SetResults(view_delegate_.GetModel()->results());
+    view_->SetResults(view_delegate_.GetSearchModel()->results());
   }
 
   bool IsPlayStoreAppSearchEnabled() const { return GetParam(); }
 
   SearchResultTileItemListView* view() { return view_.get(); }
 
-  AppListModel::SearchResults* GetResults() {
-    return view_delegate_.GetModel()->results();
+  SearchModel::SearchResults* GetResults() {
+    return view_delegate_.GetSearchModel()->results();
   }
 
   void SetUpSearchResults() {
-    AppListModel::SearchResults* results = GetResults();
+    SearchModel::SearchResults* results = GetResults();
 
     // Populate results for installed applications.
     for (int i = 0; i < kInstalledApps; ++i) {

@@ -12,11 +12,13 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/search/search_model.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
+#include "ui/app_list/test/app_list_test_model.h"
 
 namespace app_list {
 namespace test {
@@ -52,6 +54,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
+  SearchModel* GetSearchModel() override;
   SpeechUIModel* GetSpeechUI() override;
   void StartSearch() override {}
   void OpenSearchResult(SearchResult* result,
@@ -85,12 +88,13 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   AppListTestModel* GetTestModel() { return model_.get(); }
 
  private:
-  int dismiss_count_;
-  int stop_speech_recognition_count_;
-  int open_search_result_count_;
-  int next_profile_app_count_;
+  int dismiss_count_ = 0;
+  int stop_speech_recognition_count_ = 0;
+  int open_search_result_count_ = 0;
+  int next_profile_app_count_ = 0;
   std::map<size_t, int> open_search_result_counts_;
   std::unique_ptr<AppListTestModel> model_;
+  std::unique_ptr<SearchModel> search_model_;
   SpeechUIModel speech_ui_;
   std::vector<SkColor> wallpaper_prominent_colors_;
   base::TimeDelta auto_launch_timeout_;

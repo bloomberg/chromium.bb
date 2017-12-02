@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_RESULT_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_WEBSTORE_WEBSTORE_RESULT_H_
 
+#include <memory>
 #include <string>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"

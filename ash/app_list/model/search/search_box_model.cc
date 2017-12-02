@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search/search_box_model.h"
 
 #include <utility>
 
-#include "ash/app_list/model/search_box_model_observer.h"
+#include "ash/app_list/model/search/search_box_model_observer.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace app_list {

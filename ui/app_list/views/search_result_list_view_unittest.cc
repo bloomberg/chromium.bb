@@ -8,8 +8,9 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
-#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -37,7 +38,7 @@ class SearchResultListViewTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
     view_.reset(new SearchResultListView(nullptr, &view_delegate_));
-    view_->SetResults(view_delegate_.GetModel()->results());
+    view_->SetResults(view_delegate_.GetSearchModel()->results());
   }
 
  protected:
@@ -47,8 +48,8 @@ class SearchResultListViewTest : public views::ViewsTestBase {
     return view_->GetResultViewAt(index);
   }
 
-  AppListModel::SearchResults* GetResults() {
-    return view_delegate_.GetModel()->results();
+  SearchModel::SearchResults* GetResults() {
+    return view_delegate_.GetSearchModel()->results();
   }
 
   void SetLongAutoLaunchTimeout() {
@@ -61,7 +62,7 @@ class SearchResultListViewTest : public views::ViewsTestBase {
   }
 
   void SetUpSearchResults() {
-    AppListModel::SearchResults* results = GetResults();
+    SearchModel::SearchResults* results = GetResults();
     for (int i = 0; i < kDefaultSearchItems; ++i) {
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
@@ -109,7 +110,7 @@ class SearchResultListViewTest : public views::ViewsTestBase {
     // Adding results will schedule Update().
     RunPendingMessages();
 
-    AppListModel::SearchResults* results = GetResults();
+    SearchModel::SearchResults* results = GetResults();
     for (size_t i = 0; i < results->item_count(); ++i) {
       EXPECT_EQ(results->GetItemAt(i), GetResultViewAt(i)->result());
     }

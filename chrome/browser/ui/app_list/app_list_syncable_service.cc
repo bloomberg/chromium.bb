@@ -11,6 +11,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -335,6 +336,7 @@ AppListSyncableService::AppListSyncableService(
     : profile_(profile),
       extension_system_(extension_system),
       model_(new AppListModel),
+      search_model_(new SearchModel),
       model_updater_(new ModelUpdater(model_.get())),
       initial_sync_data_processed_(false),
       first_app_list_sync_(true),
@@ -514,6 +516,11 @@ void AppListSyncableService::SetOemFolderName(const std::string& name) {
 AppListModel* AppListSyncableService::GetModel() {
   DCHECK(IsInitialized());
   return model_.get();
+}
+
+SearchModel* AppListSyncableService::GetSearchModel() {
+  DCHECK(IsInitialized());
+  return search_model_.get();
 }
 
 void AppListSyncableService::HandleUpdateStarted() {

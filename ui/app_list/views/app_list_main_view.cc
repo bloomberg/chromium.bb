@@ -9,7 +9,7 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search/search_box_model.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -45,6 +45,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                  AppListView* app_list_view)
     : delegate_(delegate),
       model_(delegate->GetModel()),
+      search_model_(delegate->GetSearchModel()),
       search_box_view_(nullptr),
       contents_view_(nullptr),
       app_list_view_(app_list_view) {
@@ -104,6 +105,7 @@ void AppListMainView::ModelChanged() {
   model_->RemoveObserver(this);
   model_ = delegate_->GetModel();
   model_->AddObserver(this);
+  search_model_ = delegate_->GetSearchModel();
   search_box_view_->ModelChanged();
   delete contents_view_;
   contents_view_ = nullptr;
@@ -164,7 +166,8 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {
   base::string16 query;
-  base::TrimWhitespace(model_->search_box()->text(), base::TRIM_ALL, &query);
+  base::TrimWhitespace(search_model_->search_box()->text(), base::TRIM_ALL,
+                       &query);
   bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
 

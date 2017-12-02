@@ -23,6 +23,7 @@ namespace app_list {
 
 class AppListModel;
 class AppListViewDelegateObserver;
+class SearchModel;
 class SearchResult;
 class SpeechUIModel;
 
@@ -32,6 +33,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Gets the model associated with the view delegate. The model may be owned
   // by the delegate, or owned elsewhere (e.g. a profile keyed service).
   virtual AppListModel* GetModel() = 0;
+
+  // Gets the search model associated with the view delegate. The model may be
+  // owned by the delegate, or owned elsewhere (e.g. a profile keyed service).
+  virtual SearchModel* GetSearchModel() = 0;
 
   // Gets the SpeechUIModel for the app list. Owned by the AppListViewDelegate.
   virtual SpeechUIModel* GetSpeechUI() = 0;

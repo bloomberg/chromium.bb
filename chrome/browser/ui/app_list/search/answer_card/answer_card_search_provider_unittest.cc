@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -116,7 +116,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     EXPECT_EQ(base::UTF8ToUTF16(title), result->title());
   }
 
-  AppListModel* model() const { return model_.get(); }
+  SearchModel* search_model() const { return search_model_.get(); }
 
   const SearchProvider::Results& results() { return provider()->results(); }
 
@@ -132,8 +132,8 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   void SetUp() override {
     AppListTestBase::SetUp();
 
-    model_ = base::MakeUnique<app_list::AppListModel>();
-    model_->SetSearchEngineIsGoogle(true);
+    search_model_ = std::make_unique<app_list::SearchModel>();
+    search_model_->SetSearchEngineIsGoogle(true);
 
     controller_ = base::MakeUnique<::test::TestAppListControllerDelegate>();
 
@@ -158,8 +158,8 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), CreateTemplateURLService);
     // Provider will own the MockAnswerCardContents instance.
-    provider_ = base::MakeUnique<AnswerCardSearchProvider>(
-        profile_.get(), model_.get(), nullptr, std::move(contents0),
+    provider_ = std::make_unique<AnswerCardSearchProvider>(
+        profile_.get(), search_model_.get(), nullptr, std::move(contents0),
         std::move(contents1));
 
     ON_CALL(*contents0_, GetView()).WillByDefault(Return(view0()));
@@ -167,7 +167,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   }
 
  private:
-  std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::SearchModel> search_model_;
   std::unique_ptr<AnswerCardSearchProvider> provider_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   MockAnswerCardContents* contents0_ = nullptr;  // Unowned.
@@ -204,7 +204,7 @@ TEST_F(AnswerCardSearchProviderTest, VoiceQuery) {
 
 // Queries to non-Google search engines are ignored.
 TEST_F(AnswerCardSearchProviderTest, NotGoogle) {
-  model()->SetSearchEngineIsGoogle(false);
+  search_model()->SetSearchEngineIsGoogle(false);
   EXPECT_CALL(*contents1(), LoadURL(_)).Times(0);
   provider()->Start(false, base::UTF8ToUTF16(kCatQuery));
 }

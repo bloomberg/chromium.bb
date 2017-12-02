@@ -25,7 +25,7 @@ SearchResultContainerView::~SearchResultContainerView() {
 }
 
 void SearchResultContainerView::SetResults(
-    AppListModel::SearchResults* results) {
+    SearchModel::SearchResults* results) {
   if (results_)
     results_->RemoveObserver(this);
 

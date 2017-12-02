@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_H_
 #define UI_APP_LIST_VIEWS_SEARCH_RESULT_ACTIONS_VIEW_H_
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"

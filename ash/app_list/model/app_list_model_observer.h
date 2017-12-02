@@ -17,10 +17,6 @@ class APP_LIST_MODEL_EXPORT AppListModelObserver {
   // Triggered after AppListModel's status has changed.
   virtual void OnAppListModelStatusChanged() {}
 
-  // Triggered after AppListModel's state has changed.
-  virtual void OnAppListModelStateChanged(AppListModel::State old_state,
-                                          AppListModel::State new_state) {}
-
   // Triggered after |item| has been added to the model.
   virtual void OnAppListItemAdded(AppListItem* item) {}
 

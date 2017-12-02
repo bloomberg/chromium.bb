@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/model/search_box_model.h"
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_box_model.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -23,7 +23,7 @@
 namespace app_list {
 
 SearchController::SearchController(SearchBoxModel* search_box,
-                                   AppListModel::SearchResults* results,
+                                   SearchModel::SearchResults* results,
                                    History* history)
     : search_box_(search_box), mixer_(new Mixer(results)), history_(history) {}
 

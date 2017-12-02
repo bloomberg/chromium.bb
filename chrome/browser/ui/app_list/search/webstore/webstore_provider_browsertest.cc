@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"

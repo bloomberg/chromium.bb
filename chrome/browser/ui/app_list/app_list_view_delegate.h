@@ -65,6 +65,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Overridden from app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
+  app_list::SearchModel* GetSearchModel() override;
   app_list::SpeechUIModel* GetSpeechUI() override;
   void StartSearch() override;
   void OpenSearchResult(app_list::SearchResult* result,
@@ -120,9 +121,10 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // Unowned pointer to the associated profile. May change if SetProfileByPath
   // is called.
   Profile* profile_;
-  // Unowned pointer to the model owned by AppListSyncableService. Will change
+  // Unowned pointer to the models owned by AppListSyncableService. Will change
   // if |profile_| changes.
   app_list::AppListModel* model_;
+  app_list::SearchModel* search_model_;
 
   // Note: order ensures |search_resource_manager_| is destroyed before
   // |speech_ui_|.

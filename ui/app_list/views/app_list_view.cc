@@ -245,6 +245,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       model_(delegate->GetModel()),
+      search_model_(delegate->GetSearchModel()),
       short_animations_for_testing_(false),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
@@ -1141,7 +1142,7 @@ void AppListView::OnKeyEvent(ui::KeyEvent* event) {
 void AppListView::OnTabletModeChanged(bool started) {
   is_tablet_mode_ = started;
   search_box_view_->OnTabletModeChanged(started);
-  model_->SetTabletMode(started);
+  search_model_->SetTabletMode(started);
   if (is_tablet_mode_ && !is_fullscreen()) {
     // Set |app_list_state_| to a tablet mode friendly state.
     SetState(app_list_state_ == AppListViewState::PEEKING

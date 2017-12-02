@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_H_
-#define ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_H_
+#ifndef ASH_APP_LIST_MODEL_SEARCH_SEARCH_BOX_MODEL_H_
+#define ASH_APP_LIST_MODEL_SEARCH_SEARCH_BOX_MODEL_H_
 
 #include <memory>
 
@@ -99,4 +99,4 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_MODEL_SEARCH_BOX_MODEL_H_
+#endif  // ASH_APP_LIST_MODEL_SEARCH_SEARCH_BOX_MODEL_H_

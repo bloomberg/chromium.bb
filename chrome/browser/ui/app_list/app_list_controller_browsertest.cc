@@ -4,10 +4,10 @@
 
 #include <stddef.h>
 
-#include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search_box_model.h"
-#include "ash/app_list/model/search_result.h"
-#include "ash/app_list/model/search_result_observer.h"
+#include "ash/app_list/model/search/search_box_model.h"
+#include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/model/search/search_result.h"
+#include "ash/app_list/model/search/search_result_observer.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -63,7 +63,7 @@ class AppListControllerSearchResultsBrowserTest
         observed_results_list_(NULL) {}
 
   void WatchResultsLookingForItem(
-      app_list::AppListModel::SearchResults* search_results,
+      app_list::SearchModel::SearchResults* search_results,
       const std::string& extension_name) {
     EXPECT_FALSE(observed_results_list_);
     observed_results_list_ = search_results;
@@ -117,7 +117,7 @@ class AppListControllerSearchResultsBrowserTest
 
  private:
   base::string16 item_to_observe_;
-  app_list::AppListModel::SearchResults* observed_results_list_;
+  app_list::SearchModel::SearchResults* observed_results_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerSearchResultsBrowserTest);
 };
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   ASSERT_TRUE(service);
   service->ShowForProfile(browser()->profile());
 
-  app_list::AppListModel* model = test::GetAppListModel(service);
+  app_list::SearchModel* model = test::GetSearchModel(service);
   ASSERT_TRUE(model);
   WatchResultsLookingForItem(model->results(), extension->name());
 

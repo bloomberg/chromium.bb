@@ -10,21 +10,11 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model_observer.h"
-#include "ash/app_list/model/search_box_model.h"
 
 namespace app_list {
 
 AppListModel::AppListModel()
-    : top_level_item_list_(new AppListItemList),
-      search_box_(new SearchBoxModel),
-      results_(new SearchResults),
-      status_(STATUS_NORMAL),
-      state_(INVALID_STATE),
-      state_fullscreen_(AppListViewState::CLOSED),
-      folders_enabled_(false),
-      custom_launcher_page_enabled_(true),
-      search_engine_is_google_(false),
-      is_tablet_mode_(false) {
+    : top_level_item_list_(std::make_unique<AppListItemList>()) {
   top_level_item_list_->AddObserver(this);
 }
 
@@ -50,24 +40,11 @@ void AppListModel::SetStatus(Status status) {
 }
 
 void AppListModel::SetState(State state) {
-  if (state_ == state)
-    return;
-
-  State old_state = state_;
-
   state_ = state;
-
-  for (auto& observer : observers_)
-    observer.OnAppListModelStateChanged(old_state, state_);
 }
 
 void AppListModel::SetStateFullscreen(AppListViewState state) {
   state_fullscreen_ = state;
-}
-
-void AppListModel::SetTabletMode(bool started) {
-  is_tablet_mode_ = started;
-  search_box_->SetTabletMode(started);
 }
 
 AppListItem* AppListModel::FindItem(const std::string& id) {
@@ -334,22 +311,6 @@ void AppListModel::SetCustomLauncherPageEnabled(bool enabled) {
     observer.OnCustomLauncherPageEnabledStateChanged(enabled);
 }
 
-std::vector<SearchResult*> AppListModel::FilterSearchResultsByDisplayType(
-    SearchResults* results,
-    SearchResult::DisplayType display_type,
-    size_t max_results) {
-  std::vector<SearchResult*> matches;
-  for (size_t i = 0; i < results->item_count(); ++i) {
-    SearchResult* item = results->GetItemAt(i);
-    if (item->display_type() == display_type) {
-      matches.push_back(item);
-      if (matches.size() == max_results)
-        break;
-    }
-  }
-  return matches;
-}
-
 void AppListModel::PushCustomLauncherPageSubpage() {
   custom_launcher_page_subpage_depth_++;
 }
@@ -364,10 +325,6 @@ bool AppListModel::PopCustomLauncherPageSubpage() {
 
 void AppListModel::ClearCustomLauncherPageSubpages() {
   custom_launcher_page_subpage_depth_ = 0;
-}
-
-void AppListModel::SetSearchEngineIsGoogle(bool is_google) {
-  search_engine_is_google_ = is_google;
 }
 
 // Private methods

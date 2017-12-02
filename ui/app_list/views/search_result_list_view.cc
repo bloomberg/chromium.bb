@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -183,7 +183,7 @@ views::View* SearchResultListView::SetFirstResultSelected(bool selected) {
 
 int SearchResultListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
-      AppListModel::FilterSearchResultsByDisplayType(
+      SearchModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_LIST,
           results_container_->child_count());
 

@@ -6,9 +6,11 @@
 #define UI_APP_LIST_VIEWS_SEARCH_BOX_VIEW_H_
 
 #include <string>
+#include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search_box_model_observer.h"
+#include "ash/app_list/model/search/search_box_model_observer.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
@@ -226,7 +228,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
 
   SearchBoxViewDelegate* delegate_;     // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
-  AppListModel* model_ = nullptr;       // Owned by the profile-keyed service.
+  SearchModel* search_model_ = nullptr;  // Owned by the profile-keyed service.
 
   // Owned by views hierarchy.
   views::View* content_container_;

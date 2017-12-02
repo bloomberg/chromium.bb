@@ -10,8 +10,9 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search_box_model.h"
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_box_model.h"
+#include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
@@ -198,9 +199,11 @@ class ExampleSearchResult : public app_list::SearchResult {
 
 class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
  public:
-  ExampleAppListViewDelegate() : model_(new app_list::AppListModel) {
+  ExampleAppListViewDelegate()
+      : model_(std::make_unique<app_list::AppListModel>()),
+        search_model_(std::make_unique<app_list::SearchModel>()) {
     PopulateApps();
-    DecorateSearchBox(model_->search_box());
+    DecorateSearchBox(search_model_->search_box());
   }
 
  private:
@@ -221,6 +224,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   // Overridden from app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override { return model_.get(); }
+
+  app_list::SearchModel* GetSearchModel() override {
+    return search_model_.get();
+  }
 
   app_list::SpeechUIModel* GetSpeechUI() override { return &speech_ui_; }
 
@@ -244,10 +251,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   void StartSearch() override {
     base::string16 query;
-    base::TrimWhitespace(model_->search_box()->text(), base::TRIM_ALL, &query);
+    base::TrimWhitespace(search_model_->search_box()->text(), base::TRIM_ALL,
+                         &query);
     query = base::i18n::ToLower(query);
 
-    model_->results()->DeleteAll();
+    search_model_->results()->DeleteAll();
     if (query.empty())
       return;
 
@@ -259,7 +267,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
           base::UTF8ToUTF16(WindowTypeShelfItem::GetTitle(type));
       if (base::i18n::StringSearchIgnoringCaseAndAccents(query, title, NULL,
                                                          NULL)) {
-        model_->results()->Add(
+        search_model_->results()->Add(
             std::make_unique<ExampleSearchResult>(type, query));
       }
     }
@@ -310,6 +318,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   std::unique_ptr<app_list::AppListModel> model_;
+  std::unique_ptr<app_list::SearchModel> search_model_;
   app_list::SpeechUIModel speech_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);

@@ -15,10 +15,8 @@
 #include "ash/app_list/model/app_list_item_list_observer.h"
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/app_list/model/app_list_view_state.h"
-#include "ash/app_list/model/search_result.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ui/base/models/list_model.h"
 
 namespace app_list {
 
@@ -26,12 +24,9 @@ class AppListFolderItem;
 class AppListItem;
 class AppListItemList;
 class AppListModelObserver;
-class SearchBoxModel;
 
-// Master model of app list that consists of three sub models: AppListItemList,
-// SearchBoxModel and SearchResults. The AppListItemList sub model owns a list
-// of AppListItems and is displayed in the grid view. SearchBoxModel is
-// the model for SearchBoxView. SearchResults owns a list of SearchResult.
+// Master model of app list that holds AppListItemList, which owns a list
+// of AppListItems and is displayed in the grid view.
 // NOTE: Currently this class observes |top_level_item_list_|. The View code may
 // move entries in the item list directly (but can not add or remove them) and
 // the model needs to notify its observers when this occurs.
@@ -54,8 +49,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
     STATE_LAST = INVALID_STATE,
   };
 
-  typedef ui::ListModel<SearchResult> SearchResults;
-
   AppListModel();
   ~AppListModel() override;
 
@@ -70,10 +63,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   // The current state of the AppListView. Controlled by AppListView.
   void SetStateFullscreen(AppListViewState state);
   AppListViewState state_fullscreen() const { return state_fullscreen_; }
-
-  // Whether tablet mode is active. Controlled by AppListView.
-  void SetTabletMode(bool started);
-  bool tablet_mode() const { return is_tablet_mode_; }
 
   // Finds the item matching |id|.
   AppListItem* FindItem(const std::string& id);
@@ -175,20 +164,8 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
     return custom_launcher_page_subpage_depth_;
   }
 
-  void SetSearchEngineIsGoogle(bool is_google);
-  bool search_engine_is_google() const { return search_engine_is_google_; }
-
-  // Filters the given |results| by |display_type|. The returned list is
-  // truncated to |max_results|.
-  static std::vector<SearchResult*> FilterSearchResultsByDisplayType(
-      SearchResults* results,
-      SearchResult::DisplayType display_type,
-      size_t max_results);
-
   AppListItemList* top_level_item_list() { return top_level_item_list_.get(); }
 
-  SearchBoxModel* search_box() { return search_box_.get(); }
-  SearchResults* results() { return results_.get(); }
   Status status() const { return status_; }
   bool folders_enabled() const { return folders_enabled_; }
 
@@ -227,20 +204,14 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
 
   std::unique_ptr<AppListItemList> top_level_item_list_;
 
-  std::unique_ptr<SearchBoxModel> search_box_;
-  std::unique_ptr<SearchResults> results_;
-
-  Status status_;
-  State state_;
+  Status status_ = STATUS_NORMAL;
+  State state_ = INVALID_STATE;
   // The AppListView state. Controlled by the AppListView.
-  AppListViewState state_fullscreen_;
+  AppListViewState state_fullscreen_ = AppListViewState::CLOSED;
   base::ObserverList<AppListModelObserver, true> observers_;
-  bool folders_enabled_;
-  bool custom_launcher_page_enabled_;
+  bool folders_enabled_ = false;
+  bool custom_launcher_page_enabled_ = true;
   std::string custom_launcher_page_name_;
-  bool search_engine_is_google_;
-  // Whether tablet mode is active. Controlled by the AppListView.
-  bool is_tablet_mode_;
 
   // The current number of subpages the custom launcher page has pushed.
   int custom_launcher_page_subpage_depth_;

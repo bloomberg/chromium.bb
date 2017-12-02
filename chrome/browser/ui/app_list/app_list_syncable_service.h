@@ -47,6 +47,7 @@ namespace app_list {
 
 class AppListItem;
 class AppListModel;
+class SearchModel;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
@@ -120,6 +121,9 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Gets the app list model.
   AppListModel* GetModel();
+
+  // Gets the search model.
+  SearchModel* GetSearchModel();
 
   // Returns true if this service was initialized.
   bool IsInitialized() const;
@@ -267,6 +271,7 @@ class AppListSyncableService : public syncer::SyncableService,
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<AppListModel> model_;
+  std::unique_ptr<SearchModel> search_model_;
   std::unique_ptr<ModelUpdater> model_updater_;
   std::unique_ptr<ModelObserver> model_observer_;
   std::unique_ptr<ExtensionAppModelBuilder> apps_builder_;

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"
@@ -33,8 +34,8 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Sets the search results to listen to.
-  void SetResults(AppListModel::SearchResults* results);
-  AppListModel::SearchResults* results() { return results_; }
+  void SetResults(SearchModel::SearchResults* results);
+  SearchModel::SearchResults* results() { return results_; }
 
   // Sets the index of the selected search result within this container. This
   // must be a valid index.
@@ -110,7 +111,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   double container_score_;
 
-  AppListModel::SearchResults* results_;  // Owned by AppListModel.
+  SearchModel::SearchResults* results_;  // Owned by SearchModel.
 
   // The factory that consolidates multiple Update calls into one.
   base::WeakPtrFactory<SearchResultContainerView> update_factory_;

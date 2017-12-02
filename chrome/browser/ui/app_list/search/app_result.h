@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 

@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_APP_LIST_UTIL_H_
 #define UI_APP_LIST_APP_LIST_UTIL_H_
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/events/event.h"
 

@@ -7,10 +7,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search/search_box_model.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -132,7 +134,7 @@ class AppListViewTest : public views::ViewsTestBase {
                 (contents_view->GetPageView(i)->GetPageBoundsForState(state) ==
                  contents_view->GetPageView(i)->bounds());
     }
-    return success && state == delegate_->GetTestModel()->state();
+    return success && state == delegate_->GetModel()->state();
   }
 
   // Checks the search box widget is at |expected| in the contents view's
@@ -201,8 +203,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     const int kItemNumInFolder = 8;
     const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
     AppListTestModel* model = delegate_->GetTestModel();
-    for (size_t i = 0; i < kSuggestionAppNum; i++)
-      model->results()->Add(std::make_unique<TestStartPageSearchResult>());
+    SearchModel* search_model = delegate_->GetSearchModel();
+    for (size_t i = 0; i < kSuggestionAppNum; i++) {
+      search_model->results()->Add(
+          std::make_unique<TestStartPageSearchResult>());
+    }
     AppListFolderItem* folder_item =
         model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
     model->PopulateApps(kAppListItemNum);
@@ -254,7 +259,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     result_types.push_back(
         std::make_pair(SearchResult::DISPLAY_LIST, list_results_num));
 
-    AppListModel::SearchResults* results = delegate_->GetTestModel()->results();
+    SearchModel::SearchResults* results =
+        delegate_->GetSearchModel()->results();
     results->DeleteAll();
     double relevance = result_types.size();
     for (const auto& data : result_types) {
@@ -1488,7 +1494,7 @@ TEST_F(AppListViewTest, DisplayTest) {
 
   AppListModel::State expected = AppListModel::STATE_START;
   EXPECT_TRUE(main_view->contents_view()->IsStateActive(expected));
-  EXPECT_EQ(expected, delegate_->GetTestModel()->state());
+  EXPECT_EQ(expected, delegate_->GetModel()->state());
 }
 
 // Tests that the start page view operates correctly.
@@ -1614,7 +1620,7 @@ TEST_F(AppListViewTest, SearchResultsTest) {
   main_view->search_box_view()->search_box()->SetText(base::string16());
   main_view->search_box_view()->search_box()->InsertText(search_text);
   // Check that the current search is using |search_text|.
-  EXPECT_EQ(search_text, delegate_->GetTestModel()->search_box()->text());
+  EXPECT_EQ(search_text, delegate_->GetSearchModel()->search_box()->text());
   EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
   contents_view->Layout();
   EXPECT_TRUE(contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
@@ -1630,7 +1636,7 @@ TEST_F(AppListViewTest, SearchResultsTest) {
   main_view->search_box_view()->search_box()->SetText(base::string16());
   main_view->search_box_view()->search_box()->InsertText(new_search_text);
   // Check that the current search is using |new_search_text|.
-  EXPECT_EQ(new_search_text, delegate_->GetTestModel()->search_box()->text());
+  EXPECT_EQ(new_search_text, delegate_->GetSearchModel()->search_box()->text());
   EXPECT_EQ(new_search_text,
             main_view->search_box_view()->search_box()->text());
   contents_view->Layout();
