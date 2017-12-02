@@ -116,19 +116,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   bool migrate_sessions_on_network_change = false;
   bool migrate_sessions_early = false;
   bool migrate_sessions_early_v2 = false;
+  bool migrate_sessions_on_network_change_v2 = false;
 
-  bool migrate_sessions_on_network_change_v2 = data_provider.ConsumeBool();
-
-  if (migrate_sessions_on_network_change_v2) {
-    migrate_sessions_early_v2 = data_provider.ConsumeBool();
-  } else {
-    migrate_sessions_on_network_change = data_provider.ConsumeBool();
-    if (migrate_sessions_on_network_change)
-      migrate_sessions_early = data_provider.ConsumeBool();
+  if (!close_sessions_on_ip_change) {
+    migrate_sessions_on_network_change_v2 = data_provider.ConsumeBool();
+    if (migrate_sessions_on_network_change_v2) {
+      migrate_sessions_early_v2 = data_provider.ConsumeBool();
+    } else {
+      migrate_sessions_on_network_change = data_provider.ConsumeBool();
+      if (migrate_sessions_on_network_change)
+        migrate_sessions_early = data_provider.ConsumeBool();
+    }
   }
-
-  if (migrate_sessions_on_network_change)
-    close_sessions_on_ip_change = false;
 
   std::unique_ptr<QuicStreamFactory> factory =
       std::make_unique<QuicStreamFactory>(
