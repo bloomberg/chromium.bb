@@ -29,7 +29,7 @@ public class ContextualSearchIPH {
     private boolean mIsShowing;
 
     /**
-     * Constructs the helper class and initializes string ids according to featureName.
+     * Constructs the helper class.
      */
     ContextualSearchIPH() {}
 
@@ -55,7 +55,13 @@ public class ContextualSearchIPH {
      */
     void beforePanelShown(boolean wasActivatedByTap, boolean isTapSupported, Profile profile) {
         if (!wasActivatedByTap && isTapSupported) {
-            maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE, profile);
+            if (mIsShowing
+                    && mFeatureName.equals(
+                               FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE)) {
+                dismiss(profile);
+            } else {
+                maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE, profile);
+            }
         }
     }
 
