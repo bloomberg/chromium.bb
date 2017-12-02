@@ -75,9 +75,9 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int16_t *const dequant =
       xd->plane[plane].seg_dequant_QTX[mbmi->segment_id];
   const int shift = av1_get_tx_scale(tx_size);
-  const int bwl = tx_size_wide_log2[tx_size];
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
+  const int bwl = get_txb_bwl(tx_size);
+  const int width = get_txb_wide(tx_size);
+  const int height = get_txb_high(tx_size);
   int cul_level = 0;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);

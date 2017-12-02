@@ -329,9 +329,9 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int16_t *scan = scan_order->scan;
   const int seg_eob = av1_get_max_eob(tx_size);
   int c;
-  const int bwl = tx_size_wide_log2[tx_size];
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
+  const int bwl = get_txb_bwl(tx_size);
+  const int width = get_txb_wide(tx_size);
+  const int height = get_txb_high(tx_size);
   int update_eob = -1;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   uint8_t levels_buf[TX_PAD_2D];
@@ -673,9 +673,9 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   int c, cost;
   int txb_skip_ctx = txb_ctx->txb_skip_ctx;
 
-  const int bwl = tx_size_wide_log2[tx_size];
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
+  const int bwl = get_txb_bwl(tx_size);
+  const int width = get_txb_wide(tx_size);
+  const int height = get_txb_high(tx_size);
 
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
@@ -2125,9 +2125,9 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   const tran_low_t *tcoeff = BLOCK_OFFSET(p->coeff, block);
   const int16_t *dequant = p->dequant_QTX;
   const int seg_eob = av1_get_max_eob(tx_size);
-  const int bwl = tx_size_wide_log2[tx_size];
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
+  const int bwl = get_txb_bwl(tx_size);
+  const int width = get_txb_wide(tx_size);
+  const int height = get_txb_high(tx_size);
   const int is_inter = is_inter_block(mbmi);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const LV_MAP_COEFF_COST txb_costs = x->coeff_costs[txs_ctx][plane_type];
@@ -2221,9 +2221,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + blk_col,
               pd->left_context + blk_row, &txb_ctx);
-  const int bwl = tx_size_wide_log2[tx_size];
-  const int width = tx_size_wide[tx_size];
-  const int height = tx_size_high[tx_size];
+  const int bwl = get_txb_bwl(tx_size);
+  const int width = get_txb_wide(tx_size);
+  const int height = get_txb_high(tx_size);
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
