@@ -5,8 +5,7 @@
 #ifndef NET_SPDY_CHROMIUM_HTTP2_PUSH_PROMISE_INDEX_H_
 #define NET_SPDY_CHROMIUM_HTTP2_PUSH_PROMISE_INDEX_H_
 
-#include <map>
-#include <vector>
+#include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -26,31 +25,53 @@ class SpdySession;
 // Only pushed streams with cryptographic schemes (for example, https) are
 // allowed to be shared across connections.  Non-cryptographic scheme pushes
 // (for example, http) are fully managed within each SpdySession.
+// TODO(bnc): Move unclaimed pushed stream management out of SpdySession,
+// regardless of scheme, to avoid redundant bookkeeping and complicated
+// interactions between SpdySession::UnclaimedPushedStreamContainer and
+// Http2PushPromiseIndex.  https://crbug.com/791054.
 class NET_EXPORT Http2PushPromiseIndex {
  public:
+  // Interface for validating pushed streams, signaling when a pushed stream is
+  // claimed, and generating weak pointer.
+  class NET_EXPORT Delegate {
+   public:
+    Delegate() {}
+    virtual ~Delegate() {}
+
+    // Return true if the pushed stream can be used for a request with |key|.
+    virtual bool ValidatePushedStream(const SpdySessionKey& key) const = 0;
+
+    // Called when a pushed stream is claimed.
+    virtual void OnPushedStreamClaimed(const GURL& url) = 0;
+
+    // Generate weak pointer.
+    virtual base::WeakPtr<SpdySession> GetWeakPtrToSession() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
   Http2PushPromiseIndex();
   ~Http2PushPromiseIndex();
 
   // Returns a session with |key| that has an unclaimed push stream for |url| if
-  // such exists.  Returns nullptr otherwise.
+  // such exists.  Makes no guarantee on which one it returns if there are
+  // multiple.  Returns nullptr if no such session exists.
   base::WeakPtr<SpdySession> Find(const SpdySessionKey& key,
                                   const GURL& url) const;
 
-  // (Un)registers a SpdySession with an unclaimed pushed stream for |url|.
-  void RegisterUnclaimedPushedStream(const GURL& url,
-                                     base::WeakPtr<SpdySession> spdy_session);
-  void UnregisterUnclaimedPushedStream(const GURL& url,
-                                       SpdySession* spdy_session);
+  // (Un)registers a Delegate with an unclaimed pushed stream for |url|.
+  // Caller must make sure |delegate| stays valid by unregistering the exact
+  // same entry before |delegate| is destroyed.
+  void RegisterUnclaimedPushedStream(const GURL& url, Delegate* delegate);
+  void UnregisterUnclaimedPushedStream(const GURL& url, Delegate* delegate);
 
  private:
-  typedef std::vector<base::WeakPtr<SpdySession>> WeakSessionList;
-  typedef std::map<GURL, WeakSessionList> UnclaimedPushedStreamMap;
+  using UnclaimedPushedStreamMap = std::set<std::pair<GURL, Delegate*>>;
 
-  // A multimap of all SpdySessions that have an unclaimed pushed stream for a
-  // GURL.  SpdySession must unregister its streams before destruction,
-  // therefore all weak pointers must be valid.  A single SpdySession can only
-  // have at most one pushed stream for each GURL, but it is possible that
-  // multiple SpdySessions have pushed streams for the same GURL.
+  // A collection of all unclaimed pushed streams.  Delegate must unregister its
+  // streams before destruction, so that all pointers remain valid.  It is
+  // possible that multiple Delegates have pushed streams for the same GURL.
   UnclaimedPushedStreamMap unclaimed_pushed_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(Http2PushPromiseIndex);

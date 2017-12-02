@@ -73,12 +73,12 @@ TEST_F(Http2PushPromiseIndexTest, FindMultipleSessionsWithDifferentUrl) {
   EXPECT_FALSE(index_.Find(key1_, url1_));
   EXPECT_FALSE(index_.Find(key2_, url2_));
 
-  index_.RegisterUnclaimedPushedStream(url1_, spdy_session1);
+  index_.RegisterUnclaimedPushedStream(url1_, spdy_session1.get());
 
   EXPECT_EQ(spdy_session1.get(), index_.Find(key1_, url1_).get());
   EXPECT_FALSE(index_.Find(key2_, url2_));
 
-  index_.RegisterUnclaimedPushedStream(url2_, spdy_session2);
+  index_.RegisterUnclaimedPushedStream(url2_, spdy_session2.get());
 
   EXPECT_EQ(spdy_session1.get(), index_.Find(key1_, url1_).get());
   EXPECT_EQ(spdy_session2.get(), index_.Find(key2_, url2_).get());
@@ -131,7 +131,7 @@ TEST_F(Http2PushPromiseIndexTest, MultipleSessionsForSingleUrl) {
   EXPECT_FALSE(index_.Find(key1_, url2_));
   EXPECT_FALSE(index_.Find(key2_, url2_));
 
-  index_.RegisterUnclaimedPushedStream(url1_, spdy_session1);
+  index_.RegisterUnclaimedPushedStream(url1_, spdy_session1.get());
 
   // Note that Find() only uses its SpdySessionKey argument to verify proxy and
   // privacy mode.  Cross-origin pooling is supported, therefore HostPortPair of
@@ -141,11 +141,14 @@ TEST_F(Http2PushPromiseIndexTest, MultipleSessionsForSingleUrl) {
   EXPECT_FALSE(index_.Find(key1_, url2_));
   EXPECT_FALSE(index_.Find(key2_, url2_));
 
-  index_.RegisterUnclaimedPushedStream(url1_, spdy_session2);
+  index_.RegisterUnclaimedPushedStream(url1_, spdy_session2.get());
 
-  // Find returns the first SpdySession if there are multiple for the same URL.
-  EXPECT_EQ(spdy_session1.get(), index_.Find(key1_, url1_).get());
-  EXPECT_EQ(spdy_session1.get(), index_.Find(key2_, url1_).get());
+  // Find() makes no guarantee about which SpdySession it returns if there are
+  // multiple for the same URL.
+  SpdySession* result = index_.Find(key1_, url1_).get();
+  EXPECT_TRUE(result == spdy_session1.get() || result == spdy_session2.get());
+  result = index_.Find(key2_, url1_).get();
+  EXPECT_TRUE(result == spdy_session1.get() || result == spdy_session2.get());
   EXPECT_FALSE(index_.Find(key1_, url2_));
   EXPECT_FALSE(index_.Find(key2_, url2_));
 
