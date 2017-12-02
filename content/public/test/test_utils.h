@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -315,6 +316,26 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
+};
+
+// A custom ContentBrowserClient that simulates GetEffectiveURL() translation
+// for a single URL.
+class EffectiveURLContentBrowserClient : public ContentBrowserClient {
+ public:
+  EffectiveURLContentBrowserClient(const GURL& url_to_modify,
+                                   const GURL& url_to_return)
+      : url_to_modify_(url_to_modify), url_to_return_(url_to_return) {}
+  ~EffectiveURLContentBrowserClient() override {}
+
+ private:
+  GURL GetEffectiveURL(BrowserContext* browser_context,
+                       const GURL& url,
+                       bool is_isolated_origin) override;
+
+  GURL url_to_modify_;
+  GURL url_to_return_;
+
+  DISALLOW_COPY_AND_ASSIGN(EffectiveURLContentBrowserClient);
 };
 
 }  // namespace content

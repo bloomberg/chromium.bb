@@ -3236,4 +3236,36 @@ TEST_F(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
             main_test_rfh()->frame_tree_node()->active_sandbox_flags());
 }
 
+// Check that after a navigation, the final SiteInstance has the correct
+// original URL that was used to determine its site URL.
+TEST_F(RenderFrameHostManagerTest,
+       SiteInstanceOriginalURLIsPreservedAfterNavigation) {
+  const GURL kFooUrl("https://foo.com");
+  const GURL kOriginalUrl("https://original.com");
+  const GURL kTranslatedUrl("https://translated.com");
+  EffectiveURLContentBrowserClient modified_client(kOriginalUrl,
+                                                   kTranslatedUrl);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kFooUrl);
+  scoped_refptr<SiteInstanceImpl> initial_instance =
+      main_test_rfh()->GetSiteInstance();
+  EXPECT_EQ(kFooUrl, initial_instance->original_url());
+  EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
+
+  // Simulate a browser-initiated navigation to an app URL, which should swap
+  // processes and create a new related SiteInstance in the same
+  // BrowsingInstance.  This new SiteInstance should have correct site URL and
+  // |original_url()|.
+  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kOriginalUrl);
+  EXPECT_NE(initial_instance.get(), main_test_rfh()->GetSiteInstance());
+  EXPECT_TRUE(initial_instance->IsRelatedSiteInstance(
+      main_test_rfh()->GetSiteInstance()));
+  EXPECT_EQ(kOriginalUrl, main_test_rfh()->GetSiteInstance()->original_url());
+  EXPECT_EQ(kTranslatedUrl, main_test_rfh()->GetSiteInstance()->GetSiteURL());
+
+  SetBrowserClientForTesting(regular_client);
+}
+
 }  // namespace content

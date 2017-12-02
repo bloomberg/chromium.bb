@@ -617,42 +617,6 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcessWithJavaScript) {
       process_map->Contains(contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
-// Tests that if we have a non-app process (path3/container.html) that has an
-// iframe with  a URL in the app's extent (path1/iframe.html), then opening a
-// link from that iframe to a new window to a URL in the app's extent (path1/
-// empty.html) results in the new window being in an app process. See
-// http://crbug.com/89272 for more details.
-IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
-  extensions::ProcessMap* process_map =
-      extensions::ProcessMap::Get(browser()->profile());
-
-  GURL base_url = GetTestBaseURL("app_process");
-
-  // Load app and start URL (not in the app).
-  const Extension* app =
-      LoadExtension(test_data_dir_.AppendASCII("app_process"));
-  ASSERT_TRUE(app);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               base_url.Resolve("path3/container.html"));
-  EXPECT_FALSE(process_map->Contains(browser()
-                                         ->tab_strip_model()
-                                         ->GetWebContentsAt(0)
-                                         ->GetMainFrame()
-                                         ->GetProcess()
-                                         ->GetID()));
-
-  const BrowserList* active_browser_list = BrowserList::GetInstance();
-  EXPECT_EQ(2U, active_browser_list->size());
-  content::WebContents* popup_contents =
-      active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(popup_contents);
-
-  // Popup window should be in the app's process.
-  RenderViewHost* popup_host = popup_contents->GetRenderViewHost();
-  EXPECT_TRUE(process_map->Contains(popup_host->GetProcess()->GetID()));
-}
-
 // Similar to the previous test, but ensure that popup blocking bypass
 // isn't granted to the iframe.  See crbug.com/117446.
 #if defined(OS_CHROMEOS)
