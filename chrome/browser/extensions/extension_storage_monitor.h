@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -86,7 +87,7 @@ class ExtensionStorageMonitor : public KeyedService,
                      int64_t current_usage,
                      const gfx::Image& image);
   void OnNotificationButtonClick(const std::string& extension_id,
-                                 int button_index);
+                                 base::Optional<int> button_index);
 
   void DisableStorageMonitoring(const std::string& extension_id);
   void StartMonitoringStorage(const Extension* extension);

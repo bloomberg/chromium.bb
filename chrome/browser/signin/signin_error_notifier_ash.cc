@@ -10,11 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -37,34 +37,7 @@ namespace {
 
 const char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 
-// A notification delegate for the sign-out button.
-// TODO(estade): should this use a generic notification delegate?
-class SigninNotificationDelegate : public message_center::NotificationDelegate {
- public:
-  SigninNotificationDelegate();
-
-  // NotificationDelegate:
-  void Click() override;
-  void ButtonClick(int button_index) override;
-
- protected:
-  ~SigninNotificationDelegate() override;
-
- private:
-  // Unique id of the notification.
-  const std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SigninNotificationDelegate);
-};
-
-SigninNotificationDelegate::SigninNotificationDelegate() = default;
-SigninNotificationDelegate::~SigninNotificationDelegate() = default;
-
-void SigninNotificationDelegate::Click() {
-  chrome::AttemptUserExit();
-}
-
-void SigninNotificationDelegate::ButtonClick(int button_index) {
+void HandleNotificationClick(base::Optional<int> button_index) {
   chrome::AttemptUserExit();
 }
 
@@ -93,16 +66,9 @@ void SigninErrorNotifier::Shutdown() {
 }
 
 void SigninErrorNotifier::OnErrorChanged() {
-  NotificationUIManager* notification_ui_manager =
-      g_browser_process->notification_ui_manager();
-
-  // notification_ui_manager() may return NULL when shutting down.
-  if (!notification_ui_manager)
-    return;
-
   if (!error_controller_->HasError()) {
-    g_browser_process->notification_ui_manager()->CancelById(
-        notification_id_, NotificationUIManager::GetProfileID(profile_));
+    NotificationDisplayService::GetForProfile(profile_)->Close(
+        NotificationHandler::Type::TRANSIENT, notification_id_);
     return;
   }
 
@@ -122,7 +88,6 @@ void SigninErrorNotifier::OnErrorChanged() {
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL)));
 
-
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
@@ -141,7 +106,8 @@ void SigninErrorNotifier::OnErrorChanged() {
                 IDR_NOTIFICATION_ALERT),
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id_), notifier_id, data,
-      new SigninNotificationDelegate());
+      new message_center::HandleNotificationClickDelegate(
+          base::Bind(&HandleNotificationClick)));
   if (message_center::IsNewStyleNotificationEnabled()) {
     notification.set_accent_color(
         message_center::kSystemNotificationColorWarning);
@@ -153,7 +119,8 @@ void SigninErrorNotifier::OnErrorChanged() {
   notification.SetSystemPriority();
 
   // Update or add the notification.
-  notification_ui_manager->Add(notification, profile_);
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::TRANSIENT, notification);
 }
 
 base::string16 SigninErrorNotifier::GetMessageBody() const {

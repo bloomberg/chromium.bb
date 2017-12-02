@@ -4,6 +4,7 @@
 
 #include "ui/message_center/notification_delegate.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 
 namespace message_center {
@@ -27,33 +28,36 @@ void NotificationDelegate::SettingsClick() {}
 
 void NotificationDelegate::DisableNotification() {}
 
-// HandleNotificationClickedDelegate:
+// HandleNotificationClickDelegate:
 
-HandleNotificationClickedDelegate::HandleNotificationClickedDelegate(
-    const base::Closure& closure)
-    : closure_(closure) {
+HandleNotificationClickDelegate::HandleNotificationClickDelegate(
+    const base::Closure& callback) {
+  if (!callback.is_null()) {
+    // Create a callback that consumes and ignores the button index parameter,
+    // and just runs the provided closure.
+    callback_ = base::Bind(
+        [](const base::Closure& closure, base::Optional<int> button_index) {
+          DCHECK(!button_index);
+          closure.Run();
+        },
+        callback);
+  }
 }
 
-HandleNotificationClickedDelegate::~HandleNotificationClickedDelegate() {}
+HandleNotificationClickDelegate::HandleNotificationClickDelegate(
+    const ButtonClickCallback& callback)
+    : callback_(callback) {}
 
-void HandleNotificationClickedDelegate::Click() {
-  if (!closure_.is_null())
-    closure_.Run();
+HandleNotificationClickDelegate::~HandleNotificationClickDelegate() {}
+
+void HandleNotificationClickDelegate::Click() {
+  if (!callback_.is_null())
+    callback_.Run(base::nullopt);
 }
 
-// HandleNotificationButtonClickDelegate:
-
-HandleNotificationButtonClickDelegate::HandleNotificationButtonClickDelegate(
-    const ButtonClickCallback& button_callback)
-    : button_callback_(button_callback) {
-}
-
-HandleNotificationButtonClickDelegate::
-    ~HandleNotificationButtonClickDelegate() {}
-
-void HandleNotificationButtonClickDelegate::ButtonClick(int button_index) {
-  if (!button_callback_.is_null())
-    button_callback_.Run(button_index);
+void HandleNotificationClickDelegate::ButtonClick(int button_index) {
+  if (!callback_.is_null())
+    callback_.Run(button_index);
 }
 
 }  // namespace message_center

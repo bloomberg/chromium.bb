@@ -277,7 +277,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
               message_center::NotifierId::SYSTEM_COMPONENT,
               ash::system_notifier::kNotifierNetwork),
           message_center::RichNotificationData(),
-          new message_center::HandleNotificationClickedDelegate(base::Bind(
+          new message_center::HandleNotificationClickDelegate(base::Bind(
               &NotificationClicked, default_network->guid(), info_url)),
           kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
@@ -324,7 +324,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
               message_center::NotifierId::SYSTEM_COMPONENT,
               ash::system_notifier::kNotifierNetwork),
           message_center::RichNotificationData(),
-          new message_center::HandleNotificationClickedDelegate(
+          new message_center::HandleNotificationClickDelegate(
               base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),
           kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

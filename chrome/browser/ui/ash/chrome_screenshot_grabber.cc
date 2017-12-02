@@ -29,7 +29,7 @@
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -560,8 +560,8 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
   const std::string notification_id(kNotificationId);
   // We cancel a previous screenshot notification, if any, to ensure we get
   // a fresh notification pop-up.
-  g_browser_process->notification_ui_manager()->CancelById(
-      notification_id, NotificationUIManager::GetProfileID(GetProfile()));
+  NotificationDisplayService::GetForProfile(GetProfile())
+      ->Close(NotificationHandler::Type::TRANSIENT, notification_id);
 
   const bool success =
       (result == ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS);
@@ -618,7 +618,8 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
     notification.set_vector_small_image(kNotificationImageIcon);
   }
 
-  g_browser_process->notification_ui_manager()->Add(notification, GetProfile());
+  NotificationDisplayService::GetForProfile(GetProfile())
+      ->Display(NotificationHandler::Type::TRANSIENT, notification);
 }
 
 Profile* ChromeScreenshotGrabber::GetProfile() {

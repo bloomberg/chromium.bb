@@ -94,7 +94,7 @@ void ShowErrorNotification(const std::string& service_path,
         message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                    ash::system_notifier::kNotifierNetworkError),
         message_center::RichNotificationData(),
-        new message_center::HandleNotificationClickedDelegate(callback),
+        new message_center::HandleNotificationClickDelegate(callback),
         GetErrorNotificationVectorIcon(network_type),
         message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   } else {

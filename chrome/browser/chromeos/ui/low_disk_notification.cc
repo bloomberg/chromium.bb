@@ -113,15 +113,18 @@ LowDiskNotification::CreateNotification(Severity severity, Profile* profile) {
       ash::system_notifier::kNotifierDisk);
 
   auto on_click = base::Bind(
-      [](Profile* profile, int button_index) {
-        chrome::ShowSettingsSubPageForProfile(profile, kStoragePage);
+      [](Profile* profile, base::Optional<int> button_index) {
+        if (button_index) {
+          DCHECK_EQ(0, *button_index);
+          chrome::ShowSettingsSubPageForProfile(profile, kStoragePage);
+        }
       },
       profile);
   std::unique_ptr<message_center::Notification> notification =
       ash::system_notifier::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskId, title, message,
           icon, base::string16(), GURL(), notifier_id, optional_fields,
-          new message_center::HandleNotificationButtonClickDelegate(on_click),
+          new message_center::HandleNotificationClickDelegate(on_click),
           kNotificationStorageFullIcon, warning_level);
 
   return notification;

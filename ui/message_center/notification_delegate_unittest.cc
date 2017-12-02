@@ -14,56 +14,53 @@ namespace message_center {
 
 class NotificationDelegateTest : public testing::Test {
  public:
-  NotificationDelegateTest();
-  ~NotificationDelegateTest() override;
+  NotificationDelegateTest() = default;
+  ~NotificationDelegateTest() override = default;
 
-  void ClickCallback();
+  void BodyClickCallback() { ++callback_count_; }
 
-  int GetClickedCallbackAndReset();
+  void ButtonClickCallback(base::Optional<int> button_index) {
+    ++callback_count_;
+    last_button_index_ = button_index;
+  }
+
+ protected:
+  int callback_count_ = 0;
+  base::Optional<int> last_button_index_;
 
  private:
-  int callback_count_;
-
   DISALLOW_COPY_AND_ASSIGN(NotificationDelegateTest);
 };
 
-NotificationDelegateTest::NotificationDelegateTest() : callback_count_(0) {}
-
-NotificationDelegateTest::~NotificationDelegateTest() {}
-
-void NotificationDelegateTest::ClickCallback() {
-  ++callback_count_;
-}
-
-int NotificationDelegateTest::GetClickedCallbackAndReset() {
-  int result = callback_count_;
-  callback_count_ = 0;
-  return result;
-}
-
-TEST_F(NotificationDelegateTest, ClickedDelegate) {
-  scoped_refptr<HandleNotificationClickedDelegate> delegate(
-      new HandleNotificationClickedDelegate(
-          base::Bind(&NotificationDelegateTest::ClickCallback,
-                     base::Unretained(this))));
+TEST_F(NotificationDelegateTest, ClickDelegate) {
+  auto delegate = base::MakeRefCounted<HandleNotificationClickDelegate>(
+      base::Bind(&NotificationDelegateTest::BodyClickCallback,
+                 base::Unretained(this)));
 
   delegate->Click();
-  EXPECT_EQ(1, GetClickedCallbackAndReset());
-
-  // ButtonClick doesn't call the callback.
-  delegate->ButtonClick(0);
-  EXPECT_EQ(0, GetClickedCallbackAndReset());
+  EXPECT_EQ(1, callback_count_);
 }
 
-TEST_F(NotificationDelegateTest, NullClickedDelegate) {
-  scoped_refptr<HandleNotificationClickedDelegate> delegate(
-      new HandleNotificationClickedDelegate(base::Closure()));
+TEST_F(NotificationDelegateTest, NullClickDelegate) {
+  auto delegate =
+      base::MakeRefCounted<HandleNotificationClickDelegate>(base::Closure());
 
   delegate->Click();
-  EXPECT_EQ(0, GetClickedCallbackAndReset());
+  EXPECT_EQ(0, callback_count_);
+}
 
-  delegate->ButtonClick(0);
-  EXPECT_EQ(0, GetClickedCallbackAndReset());
+TEST_F(NotificationDelegateTest, ButtonClickDelegate) {
+  auto delegate = base::MakeRefCounted<HandleNotificationClickDelegate>(
+      base::Bind(&NotificationDelegateTest::ButtonClickCallback,
+                 base::Unretained(this)));
+
+  delegate->Click();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(base::nullopt, last_button_index_);
+
+  delegate->ButtonClick(3);
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_EQ(3, *last_button_index_);
 }
 
 }  // namespace message_center
