@@ -159,12 +159,13 @@ Polymer({
   getActiveStateCallback_: function(id, state) {
     if (chrome.runtime.lastError) {
       var message = chrome.runtime.lastError.message;
-      if (message != 'Error.NetworkUnavailable') {
+      if (message != 'Error.NetworkUnavailable' &&
+          message != 'Error.InvalidNetworkGuid') {
         console.error(
             'Unexpected networkingPrivate.getState error: ' + message +
             ' For: ' + id);
+        return;
       }
-      return;
     }
     // Async call, ensure id still exists.
     if (!this.activeNetworkIds_.has(id))
@@ -174,14 +175,12 @@ Polymer({
       return;
     }
     // Find the active state for the type and update it.
-    for (var i = 0; i < this.activeNetworkStates_.length; ++i) {
-      if (this.activeNetworkStates_[i].type == state.type) {
-        this.activeNetworkStates_[i] = state;
-        return;
-      }
+    var idx = this.activeNetworkStates_.findIndex((s) => s.Type == state.Type);
+    if (idx == -1) {
+      console.error('Active state not found: ' + state.Name);
+      return;
     }
-    // Not found
-    console.error('Active state not found: ' + state.Name);
+    this.set(['activeNetworkStates_', idx], state);
   },
 
   /**
