@@ -71,16 +71,50 @@ void NetworkQualityStore::Add(
 
 bool NetworkQualityStore::GetById(
     const nqe::internal::NetworkID& network_id,
-    nqe::internal::CachedNetworkQuality* cached_network_quality) {
+    nqe::internal::CachedNetworkQuality* cached_network_quality) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  CachedNetworkQualities::const_iterator it =
-      cached_network_qualities_.find(network_id);
+  // |matching_it| points to the entry that has the same connection type and
+  // id as |network_id|, and has the signal strength closest to the signal
+  // stength of |network_id|.
+  CachedNetworkQualities::const_iterator matching_it =
+      cached_network_qualities_.end();
+  int matching_it_diff_signal_strength = INT32_MAX;
 
-  if (it == cached_network_qualities_.end())
+  for (CachedNetworkQualities::const_iterator it =
+           cached_network_qualities_.begin();
+       it != cached_network_qualities_.end(); ++it) {
+    if (network_id.type != it->first.type || network_id.id != it->first.id) {
+      // The |type| and |id| must match.
+      continue;
+    }
+
+    if (network_id.signal_strength == INT32_MIN) {
+      // Current network does not have a valid signal strength value. Return the
+      // entry without searching for the entry with the closest signal strength.
+      matching_it = it;
+      break;
+    }
+
+    // Determine if the signal strength of |network_id| is closer to the
+    // signal strength of the network at |it| then that of the network at
+    // |matching_it|.
+    int diff_signal_strength =
+        std::abs(network_id.signal_strength - it->first.signal_strength);
+    if (it->first.signal_strength == INT32_MIN)
+      diff_signal_strength = INT32_MAX;
+
+    if (matching_it == cached_network_qualities_.end() ||
+        diff_signal_strength < matching_it_diff_signal_strength) {
+      matching_it = it;
+      matching_it_diff_signal_strength = diff_signal_strength;
+    }
+  }
+
+  if (matching_it == cached_network_qualities_.end())
     return false;
 
-  *cached_network_quality = it->second;
+  *cached_network_quality = matching_it->second;
   return true;
 }
 

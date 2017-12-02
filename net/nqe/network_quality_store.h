@@ -56,8 +56,9 @@ class NET_EXPORT_PRIVATE NetworkQualityStore {
   // Returns true if the network quality estimate was successfully read
   // for a network with ID |network_id|, and sets |cached_network_quality| to
   // the estimate read.
-  bool GetById(const nqe::internal::NetworkID& network_id,
-               nqe::internal::CachedNetworkQuality* cached_network_quality);
+  bool GetById(
+      const nqe::internal::NetworkID& network_id,
+      nqe::internal::CachedNetworkQuality* cached_network_quality) const;
 
   // Adds and removes |observer| from the list of cache observers. The
   // observers are notified on the same thread on which it was added. Addition

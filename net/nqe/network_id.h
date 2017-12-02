@@ -23,7 +23,9 @@ namespace internal {
 struct NET_EXPORT_PRIVATE NetworkID {
   static NetworkID FromString(const std::string& network_id);
 
-  NetworkID(NetworkChangeNotifier::ConnectionType type, const std::string& id);
+  NetworkID(NetworkChangeNotifier::ConnectionType type,
+            const std::string& id,
+            int32_t signal_strength);
   NetworkID(const NetworkID& other);
   ~NetworkID();
 
@@ -50,6 +52,14 @@ struct NET_EXPORT_PRIVATE NetworkID {
   // - An empty string in all other cases or if the network name is not
   //   exposed by platform APIs.
   std::string id;
+
+  // Signal strength of the network. Set to INT32_MIN when the value is
+  // unavailable. Otherwise, must be between 0 and 4 (both inclusive). This may
+  // take into account many different radio technology inputs. 0 represents very
+  // poor signal strength while 4 represents a very strong signal strength. The
+  // range is capped between 0 and 4 to ensure that a change in the value
+  // indicates a non-negligible change in the signal quality.
+  int32_t signal_strength;
 };
 
 }  // namespace internal

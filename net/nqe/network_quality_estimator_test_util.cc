@@ -340,7 +340,8 @@ const NetworkQualityEstimatorParams* TestNetworkQualityEstimator::params()
 
 nqe::internal::NetworkID TestNetworkQualityEstimator::GetCurrentNetworkID()
     const {
-  return nqe::internal::NetworkID(current_network_type_, current_network_id_);
+  return nqe::internal::NetworkID(current_network_type_, current_network_id_,
+                                  INT32_MIN);
 }
 
 TestNetworkQualityEstimator::LocalHttpTestServer::LocalHttpTestServer(
