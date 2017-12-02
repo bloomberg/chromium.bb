@@ -58,7 +58,7 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
   InitializeDecoderConfig();
 
   if (!cdm_context->GetDecryptor()) {
-    MEDIA_LOG(DEBUG, media_log_) << GetDisplayName() << ": no decryptor";
+    DVLOG(2) << __func__ << ": no decryptor";
     state_ = kUninitialized;
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
     return;

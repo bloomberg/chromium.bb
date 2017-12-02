@@ -313,7 +313,6 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_CdmWithoutDecryptor) {
   AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
                                   CHANNEL_LAYOUT_STEREO, 44100,
                                   EmptyExtraData(), AesCtrEncryptionScheme());
-  EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: no decryptor"));
   InitializeAudioAndExpectStatus(input_config, DECODER_ERROR_NOT_SUPPORTED);
 }
 
