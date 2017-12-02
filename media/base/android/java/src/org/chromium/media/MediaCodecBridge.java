@@ -22,6 +22,7 @@ import org.chromium.media.MediaCodecUtil.BitrateAdjustmentTypes;
 import org.chromium.media.MediaCodecUtil.MimeTypes;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * A MediaCodec wrapper for adapting the API and catching exceptions.
@@ -51,6 +52,8 @@ class MediaCodecBridge {
 
     private static final int BITRATE_ADJUSTMENT_FPS = 30;
     private static final int MAXIMUM_INITIAL_FPS = 30;
+
+    private static final int MAX_CHROMATICITY = 50000; // Defined in CTA-861.3.
 
     protected MediaCodec mMediaCodec;
 
@@ -660,6 +663,98 @@ class MediaCodecBridge {
         if (name != null) {
             format.setByteBuffer(name, ByteBuffer.wrap(bytes));
         }
+    }
+
+    // TODO(sandv): Use color space matrix when android has support for it.
+    @TargetApi(Build.VERSION_CODES.N)
+    @CalledByNative
+    private static void setColorSpace(MediaFormat format, final int primaries, final int transfer,
+            final int matrix, final int range) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            Log.e(TAG, "HDR is not support before Android N");
+            return;
+        }
+
+        // media/base/video_color_space.h
+
+        int colorStandard = -1;
+        switch (primaries) {
+            case 1:
+                colorStandard = MediaFormat.COLOR_STANDARD_BT709;
+                break;
+            case 4: // BT.470M.
+            case 5: // BT.470BG.
+            case 6: // SMPTE 170M.
+            case 7: // SMPTE 240M.
+                colorStandard = MediaFormat.COLOR_STANDARD_BT601_NTSC;
+                break;
+            case 9:
+                colorStandard = MediaFormat.COLOR_STANDARD_BT2020;
+                break;
+        }
+        if (colorStandard != -1) format.setInteger(MediaFormat.KEY_COLOR_STANDARD, colorStandard);
+
+        int colorTransfer = -1;
+        switch (transfer) {
+            case 1: // BT.709.
+            case 6: // SMPTE 170M.
+            case 7: // SMPTE 240M.
+                colorTransfer = MediaFormat.COLOR_TRANSFER_SDR_VIDEO;
+                break;
+            case 8:
+                colorTransfer = MediaFormat.COLOR_TRANSFER_LINEAR;
+                break;
+            case 16:
+                colorTransfer = MediaFormat.COLOR_TRANSFER_ST2084;
+                break;
+            case 18:
+                colorTransfer = MediaFormat.COLOR_TRANSFER_HLG;
+                break;
+        }
+        if (colorTransfer != -1) format.setInteger(MediaFormat.KEY_COLOR_TRANSFER, colorTransfer);
+
+        int colorRange = -1;
+        switch (range) {
+            case 1:
+                colorRange = MediaFormat.COLOR_RANGE_LIMITED;
+                break;
+            case 2:
+                colorRange = MediaFormat.COLOR_RANGE_FULL;
+                break;
+        }
+        if (colorRange != -1) format.setInteger(MediaFormat.KEY_COLOR_RANGE, colorRange);
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
+    @CalledByNative
+    private static void setHdrMatadata(MediaFormat format, float primaryRChromaticityX,
+            float primaryRChromaticityY, float primaryGChromaticityX, float primaryGChromaticityY,
+            float primaryBChromaticityX, float primaryBChromaticityY, float whitePointChromaticityX,
+            float whitePointChromaticityY, float maxMasteringLuminance, float minMasteringLuminance,
+            int maxContentLuminance, int maxFrameAverageLuminance) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            Log.e(TAG, "HDR not support before Android N");
+            return;
+        }
+
+        ByteBuffer hdrStaticInfo = ByteBuffer.wrap(new byte[25]);
+        hdrStaticInfo.order(ByteOrder.LITTLE_ENDIAN);
+        hdrStaticInfo.put((byte) 0); // Type.
+        hdrStaticInfo.putShort((short) ((primaryRChromaticityX * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((primaryRChromaticityY * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((primaryGChromaticityX * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((primaryGChromaticityY * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((primaryBChromaticityX * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((primaryBChromaticityY * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((whitePointChromaticityX * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) ((whitePointChromaticityY * MAX_CHROMATICITY) + 0.5f));
+        hdrStaticInfo.putShort((short) (maxMasteringLuminance + 0.5f));
+        hdrStaticInfo.putShort((short) (minMasteringLuminance + 0.5f));
+        hdrStaticInfo.putShort((short) maxContentLuminance);
+        hdrStaticInfo.putShort((short) maxFrameAverageLuminance);
+
+        hdrStaticInfo.rewind();
+        format.setByteBuffer(MediaFormat.KEY_HDR_STATIC_INFO, hdrStaticInfo);
     }
 
     @TargetApi(Build.VERSION_CODES.M)

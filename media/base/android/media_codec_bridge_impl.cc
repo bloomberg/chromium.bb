@@ -274,6 +274,26 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoDecoder(
     Java_MediaCodecBridge_setCodecSpecificData(env, j_format, 1, j_csd1);
   }
 
+  if (hdr_metadata && hdr_metadata.has_value()) {
+    Java_MediaCodecBridge_setColorSpace(env, j_format,
+                                        static_cast<int>(color_space.primaries),
+                                        static_cast<int>(color_space.transfer),
+                                        static_cast<int>(color_space.matrix),
+                                        static_cast<int>(color_space.range));
+
+    const ::media::HDRMetadata& metadata = hdr_metadata.value();
+    const ::media::MasteringMetadata& mastering_metadata =
+        metadata.mastering_metadata;
+    Java_MediaCodecBridge_setHdrMatadata(
+        env, j_format, mastering_metadata.primary_r.x(),
+        mastering_metadata.primary_r.y(), mastering_metadata.primary_g.x(),
+        mastering_metadata.primary_g.y(), mastering_metadata.primary_b.x(),
+        mastering_metadata.primary_b.y(), mastering_metadata.white_point.x(),
+        mastering_metadata.white_point.y(), mastering_metadata.luminance_max,
+        mastering_metadata.luminance_min, metadata.max_content_light_level,
+        metadata.max_frame_average_light_level);
+  }
+
   if (!Java_MediaCodecBridge_configureVideo(env, bridge->j_bridge_, j_format,
                                             surface, media_crypto, 0,
                                             allow_adaptive_playback)) {
