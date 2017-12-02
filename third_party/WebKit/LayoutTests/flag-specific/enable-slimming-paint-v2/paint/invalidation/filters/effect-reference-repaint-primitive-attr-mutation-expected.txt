@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='box before'",
-          "rect": [198, 198, 110, 110],
+          "object": "LayoutBlockFlow DIV class='target'",
+          "rect": [8, 8, 100, 100],
           "reason": "paint property change"
         }
       ]
@@ -16,8 +16,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV class='box'",
-      "reason": "style change"
+      "object": "LayoutBlockFlow DIV class='target'",
+      "reason": "full"
     }
   ]
 }

@@ -955,7 +955,6 @@ Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failur
 Bug(none) paint/invalidation/overflow/opacity-change-on-overflow-float.html [ Failure ]
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 Bug(none) paint/invalidation/repaint-across-writing-mode-boundary.html [ Failure ]
-Bug(none) paint/invalidation/reflection/scroll-absolute-layer-with-reflection.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-fixed-layer-with-transformed-parent-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scrolled-iframe-scrollbar-change.html [ Failure ]
 Bug(none) paint/invalidation/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ Failure ]
@@ -1061,7 +1060,6 @@ crbug.com/757977 paint/invalidation/compositing/tricky-element-removal-crash.htm
 crbug.com/757977 paint/invalidation/invalidate-descendants-when-receiving-paint-layer.html [ Failure ]
 
 # Less layers or other different layer trees.
-Bug(none) paint/invalidation/filters/filter-invalidation-with-composited-container-change.html [ Failure ]
 Bug(none) paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
 Bug(none) paint/invalidation/compositing/fixed-pos-inside-composited-intermediate-layer.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendants-on-overflow-change.html [ Failure ]
@@ -1072,7 +1070,6 @@ Bug(none) paint/invalidation/compositing/composited-float-under-composited-inlin
 Bug(none) paint/invalidation/compositing/iframe-inside-squashed-layer.html [ Failure ]
 Bug(none) paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
-Bug(none) paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Failure ]
 Bug(none) paint/invalidation/video-paint-invalidation.html [ Failure ]
 
 # Raster invalidation for background on scrolling contents layer.
@@ -1782,8 +1779,6 @@ Bug(none) fast/multicol/overflow-content.html [ Failure ]
 Bug(none) fast/multicol/scale-transform-text.html [ Failure ]
 
 Bug(none) compositing/rendering-contexts.html [ Failure ]
-
-Bug(none) paint/invalidation/filters/effect-reference-repaint-primitive-attr-mutation.html [ Failure ]
 Bug(none) compositing/overflow-trumps-transform-style.html [ Failure ]
 
 Bug(none) css3/blending/mix-blend-mode-simple.html [ Pass Timeout ]

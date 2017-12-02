@@ -47,6 +47,9 @@ class PLATFORM_EXPORT CompositorFilterOperations {
 
   bool HasFilterThatMovesPixels() const;
 
+  void SetReferenceBox(const FloatRect& r) { reference_box_ = r; }
+  FloatRect ReferenceBox() const { return reference_box_; }
+
   // For reference filters, this equality operator compares pointers of the
   // image_filter fields instead of their values.
   bool operator==(const CompositorFilterOperations&) const;
@@ -60,6 +63,7 @@ class PLATFORM_EXPORT CompositorFilterOperations {
 
  private:
   cc::FilterOperations filter_operations_;
+  FloatRect reference_box_;
 };
 
 }  // namespace blink

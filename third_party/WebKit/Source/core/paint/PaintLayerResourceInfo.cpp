@@ -54,6 +54,7 @@ void PaintLayerResourceInfo::ResourceContentChanged() {
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
   layout_object.SetNeedsPaintPropertyUpdate();
+  layer_->SetFilterOnEffectNodeDirty();
   const ComputedStyle& style = layout_object.StyleRef();
   if (style.HasFilter() && style.Filter().HasReferenceFilter())
     InvalidateFilterChain();
@@ -66,6 +67,7 @@ void PaintLayerResourceInfo::ResourceElementChanged() {
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
   layout_object.SetNeedsPaintPropertyUpdate();
+  layer_->SetFilterOnEffectNodeDirty();
   const ComputedStyle& style = layout_object.StyleRef();
   if (style.HasFilter() && style.Filter().HasReferenceFilter())
     InvalidateFilterChain();
