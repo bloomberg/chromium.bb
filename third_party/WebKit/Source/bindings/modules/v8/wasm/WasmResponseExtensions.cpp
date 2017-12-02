@@ -135,54 +135,37 @@ void CompileFromResponseCallback(
     return;
   }
 
-  if (args.Length() < 1 || !args[0]->IsObject() ||
-      !V8Response::hasInstance(args[0], args.GetIsolate())) {
-    V8SetReturnValue(
-        args,
-        ScriptPromise::Reject(
-            script_state, V8ThrowException::CreateTypeError(
-                              script_state->GetIsolate(),
-                              "An argument must be provided, which must be a "
-                              "Response or Promise<Response> object"))
-            .V8Value());
+  Response* response =
+      V8Response::ToImplWithTypeCheck(args.GetIsolate(), args[0]);
+  if (!response) {
+    exception_state.ThrowTypeError(
+        "An argument must be provided, which must be a "
+        "Response or Promise<Response> object");
     return;
   }
 
-  Response* response = V8Response::ToImpl(v8::Local<v8::Object>::Cast(args[0]));
   if (response->MimeType() != "application/wasm") {
-    V8SetReturnValue(
-        args,
-        ScriptPromise::Reject(
-            script_state,
-            V8ThrowException::CreateTypeError(
-                script_state->GetIsolate(),
-                "Incorrect response MIME type. Expected 'application/wasm'."))
-            .V8Value());
+    exception_state.ThrowTypeError(
+        "Incorrect response MIME type. Expected 'application/wasm'.");
     return;
   }
-  v8::Local<v8::Value> promise;
-  if (response->IsBodyLocked() || response->bodyUsed()) {
-    promise = ScriptPromise::Reject(script_state,
-                                    V8ThrowException::CreateTypeError(
-                                        script_state->GetIsolate(),
-                                        "Cannot compile WebAssembly.Module "
-                                        "from an already read Response"))
-                  .V8Value();
-  } else {
-    if (response->BodyBuffer()) {
-      FetchDataLoaderAsWasmModule* loader =
-          new FetchDataLoaderAsWasmModule(script_state);
 
-      promise = loader->GetPromise();
-      response->BodyBuffer()->StartLoading(loader, new WasmDataLoaderClient());
-    } else {
-      promise = ScriptPromise::Reject(script_state,
-                                      V8ThrowException::CreateTypeError(
-                                          script_state->GetIsolate(),
-                                          "Response object has a null body."))
-                    .V8Value();
-    }
+  if (response->IsBodyLocked() || response->bodyUsed()) {
+    exception_state.ThrowTypeError(
+        "Cannot compile WebAssembly.Module from an already read Response");
+    return;
   }
+
+  if (!response->BodyBuffer()) {
+    exception_state.ThrowTypeError("Response object has a null body.");
+    return;
+  }
+
+  FetchDataLoaderAsWasmModule* loader =
+      new FetchDataLoaderAsWasmModule(script_state);
+  v8::Local<v8::Value> promise = loader->GetPromise();
+  response->BodyBuffer()->StartLoading(loader, new WasmDataLoaderClient());
+
   V8SetReturnValue(args, promise);
 }
 
@@ -191,6 +174,8 @@ void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Isolate* isolate = args.GetIsolate();
   ScriptState* script_state = ScriptState::ForCurrentRealm(args);
 
+  // TODO(yukishiino): The following code creates a new v8::FunctionTemplate
+  // for every call, and leaks it.  Should reuse the same v8::FunctionTemplate.
   v8::Local<v8::Function> compile_callback =
       v8::Function::New(isolate, CompileFromResponseCallback);
 
@@ -203,7 +188,6 @@ void WasmCompileStreamingImpl(const v8::FunctionCallbackInfo<v8::Value>& args) {
   V8SetReturnValue(args, ScriptPromise::Cast(script_state, args[0])
                              .Then(compile_callback)
                              .V8Value());
-
 }
 
 }  // namespace
