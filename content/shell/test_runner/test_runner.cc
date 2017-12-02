@@ -1992,10 +1992,6 @@ midi::mojom::Result TestRunner::midiAccessorResult() {
   return midi_accessor_result_;
 }
 
-void TestRunner::ClearDevToolsLocalStorage() {
-  delegate_->ClearDevToolsLocalStorage();
-}
-
 void TestRunner::SetV8CacheDisabled(bool disabled) {
   if (!main_view_) {
     disable_v8_cache_ = disabled;

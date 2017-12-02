@@ -407,10 +407,6 @@ void BlinkTestRunner::DisableAutoResizeMode(const WebSize& new_size) {
     ForceResizeRenderView(render_view(), new_size);
 }
 
-void BlinkTestRunner::ClearDevToolsLocalStorage() {
-  Send(new ShellViewHostMsg_ClearDevToolsLocalStorage(routing_id()));
-}
-
 void BlinkTestRunner::ShowDevTools(const std::string& settings,
                                    const std::string& frontend_url) {
   Send(new ShellViewHostMsg_ShowDevTools(
