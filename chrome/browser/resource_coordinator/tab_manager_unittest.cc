@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
@@ -1260,6 +1261,8 @@ TEST_F(TabManagerTest, EnablePageAlmostIdleSignal) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kPageAlmostIdle));
 
   TabManager* tab_manager = g_browser_process->GetTabManager();
+  tab_manager->resource_coordinator_signal_observer_.reset(
+      new TabManager::ResourceCoordinatorSignalObserver());
   tab_manager->ResetMemoryPressureListenerForTest();
 
   EXPECT_EQ(TabManager::BackgroundTabLoadingMode::kStaggered,
@@ -1291,7 +1294,8 @@ TEST_F(TabManagerTest, EnablePageAlmostIdleSignal) {
   // Simulate tab 1 has finished loading by receiving idle signal from resource
   // coordinator. Since the page idle signal feature is enabled, this should
   // start next loading.
-  tab_manager->GetWebContentsData(contents1_.get())->NotifyTabIsLoaded();
+  tab_manager->resource_coordinator_signal_observer_->OnPageAlmostIdle(
+      contents1_.get());
 
   // Tab 2 should start loading right away.
   EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents2_.get()));
@@ -1303,9 +1307,19 @@ TEST_F(TabManagerTest, EnablePageAlmostIdleSignal) {
 
   // Simulate tab 2 has finished loading by receiving idle signal from resource
   // coordinator.
-  tab_manager->GetWebContentsData(contents2_.get())->NotifyTabIsLoaded();
+  tab_manager->resource_coordinator_signal_observer_->OnPageAlmostIdle(
+      contents2_.get());
 
   // Tab 3 should start loading now in staggered loading mode.
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  // |ignored_web_contents| is not managed by TabManager, thus will be ignored
+  // and shouldn't cause any crash or side effect.
+  WebContents* ignored_web_contents =
+      WebContentsTester::CreateTestWebContents(browser_context(), nullptr);
+  tab_manager->resource_coordinator_signal_observer_->OnPageAlmostIdle(
+      ignored_web_contents);
   EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_.get()));
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
 }
