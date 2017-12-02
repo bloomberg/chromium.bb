@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
           "rect": [250, 280, 100, 100],
-          "reason": "paint property change"
+          "reason": "style change"
         }
       ],
       "transform": 1

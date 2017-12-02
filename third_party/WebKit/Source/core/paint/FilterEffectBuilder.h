@@ -48,12 +48,12 @@ class CORE_EXPORT FilterEffectBuilder final {
   STACK_ALLOCATED();
 
  public:
-  FilterEffectBuilder(const FloatRect& zoomed_reference_box,
+  FilterEffectBuilder(const FloatRect& reference_box,
                       float zoom,
                       const PaintFlags* fill_flags = nullptr,
                       const PaintFlags* stroke_flags = nullptr);
   FilterEffectBuilder(Node*,
-                      const FloatRect& zoomed_reference_box,
+                      const FloatRect& reference_box,
                       float zoom,
                       const PaintFlags* fill_flags = nullptr,
                       const PaintFlags* stroke_flags = nullptr);

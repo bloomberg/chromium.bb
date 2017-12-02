@@ -268,8 +268,8 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
   UpdateHitTestableWithoutDrawsContent(true);
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
-  UpdateFilters(GetLayoutObject().StyleRef());
-  UpdateBackdropFilters(GetLayoutObject().StyleRef());
+  UpdateFilters();
+  UpdateBackdropFilters();
   UpdateLayerBlendMode(GetLayoutObject().StyleRef());
   UpdateIsRootForIsolatedGroup();
 }
@@ -317,14 +317,15 @@ void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
   graphics_layer_->SetTransform(t);
 }
 
-void CompositedLayerMapping::UpdateFilters(const ComputedStyle& style) {
-  graphics_layer_->SetFilters(
-      OwningLayer().CreateCompositorFilterOperationsForFilter(style));
+void CompositedLayerMapping::UpdateFilters() {
+  CompositorFilterOperations operations;
+  OwningLayer().UpdateCompositorFilterOperationsForFilter(operations);
+  graphics_layer_->SetFilters(std::move(operations));
 }
 
-void CompositedLayerMapping::UpdateBackdropFilters(const ComputedStyle& style) {
+void CompositedLayerMapping::UpdateBackdropFilters() {
   graphics_layer_->SetBackdropFilters(
-      OwningLayer().CreateCompositorFilterOperationsForBackdropFilter(style));
+      OwningLayer().CreateCompositorFilterOperationsForBackdropFilter());
 }
 
 void CompositedLayerMapping::UpdateStickyConstraints(
@@ -1135,12 +1136,12 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     UpdateOpacity(GetLayoutObject().StyleRef());
 
   if (!GetLayoutObject().Style()->IsRunningFilterAnimationOnCompositor())
-    UpdateFilters(GetLayoutObject().StyleRef());
+    UpdateFilters();
 
   if (!GetLayoutObject()
            .Style()
            ->IsRunningBackdropFilterAnimationOnCompositor())
-    UpdateBackdropFilters(GetLayoutObject().StyleRef());
+    UpdateBackdropFilters();
 
   // We compute everything relative to the enclosing compositing layer.
   IntRect ancestor_compositing_bounds;

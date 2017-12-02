@@ -12,11 +12,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 200, 10000],
-          "reason": "paint property change"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 110, 100, 100],
           "reason": "paint property change"

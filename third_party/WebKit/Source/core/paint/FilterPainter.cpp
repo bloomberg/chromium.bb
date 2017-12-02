@@ -57,9 +57,9 @@ FilterPainter::FilterPainter(PaintLayer& layer,
   }
 
   if (!context.GetPaintController().DisplayItemConstructionIsDisabled()) {
-    CompositorFilterOperations compositor_filter_operations =
-        layer.CreateCompositorFilterOperationsForFilter(
-            layout_object_.StyleRef());
+    CompositorFilterOperations compositor_filter_operations;
+    layer.UpdateCompositorFilterOperationsForFilter(
+        compositor_filter_operations);
     // FIXME: It's possible to have empty CompositorFilterOperations here even
     // though the PaintFilter produced above is non-null, since the
     // layer's FilterEffectBuilder can have a stale representation of

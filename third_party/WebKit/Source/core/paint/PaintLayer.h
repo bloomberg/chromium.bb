@@ -444,8 +444,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       CalculateBoundsOptions = kMaybeIncludeTransformForAncestorLayer) const;
   LayoutRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
-  FloatRect BoxForFilterOrMask() const;
-
   LayoutRect BoundingBoxForCompositingOverlapTest() const;
   LayoutRect BoundingBoxForCompositing() const;
 
@@ -618,10 +616,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     contains_dirty_overlay_scrollbars_ = dirty_scrollbars;
   }
 
-  CompositorFilterOperations CreateCompositorFilterOperationsForFilter(
-      const ComputedStyle&);
-  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter(
-      const ComputedStyle&);
+  // If the input CompositorFilterOperation is not empty, it will be populated
+  // only if |filter_on_effect_node_dirty_| is true or the reference box has
+  // changed. Otherwise it will be populated unconditionally.
+  void UpdateCompositorFilterOperationsForFilter(
+      CompositorFilterOperations&) const;
+  void SetFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = true; }
+  void ClearFilterOnEffectNodeDirty() { filter_on_effect_node_dirty_ = false; }
+
+  CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
+      const;
+
   bool PaintsWithFilters() const;
   bool PaintsWithBackdropFilters() const;
   FilterEffect* LastFilterEffect() const;
@@ -1144,7 +1149,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool RequiresStackingNode() const { return true; }
   void UpdateStackingNode();
 
-  FilterOperations AddReflectionToFilterOperations(const ComputedStyle&) const;
+  FilterOperations FilterOperationsIncludingReflection() const;
 
   bool RequiresScrollableArea() const;
   void UpdateScrollableArea();
@@ -1188,6 +1193,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PaintLayer& composited_layer,
       const PaintLayer* stacking_parent,
       CalculateBoundsOptions) const;
+
+  FloatRect FilterReferenceBox(const FilterOperations&, float zoom) const;
 
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip
@@ -1258,6 +1265,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned has_ancestor_with_clip_path_ : 1;
 
   unsigned self_painting_status_changed_ : 1;
+
+  // It's set to true when filter style or filter resource changes, indicating
+  // that we need to update the filter field of the effect paint property node.
+  // It's cleared when the effect paint property node is updated.
+  unsigned filter_on_effect_node_dirty_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 

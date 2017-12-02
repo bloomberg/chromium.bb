@@ -161,6 +161,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       has_non_isolated_descendant_with_blend_mode_(false),
       has_ancestor_with_clip_path_(false),
       self_painting_status_changed_(false),
+      filter_on_effect_node_dirty_(false),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -2468,10 +2469,17 @@ PaintLayer* PaintLayer::HitTestChildren(
   return result_layer;
 }
 
-FloatRect PaintLayer::BoxForFilterOrMask() const {
-  return FloatRect(PhysicalBoundingBoxIncludingStackingChildren(
+FloatRect PaintLayer::FilterReferenceBox(const FilterOperations& filter,
+                                         float zoom) const {
+  if (!filter.HasReferenceFilter())
+    return FloatRect();
+
+  FloatRect reference_box(PhysicalBoundingBoxIncludingStackingChildren(
       LayoutPoint(), PaintLayer::CalculateBoundsOptions::
                          kIncludeTransformsAndCompositedChildLayers));
+  if (zoom != 1)
+    reference_box.Scale(1 / zoom);
+  return reference_box;
 }
 
 bool PaintLayer::HitTestClippedOutByClipPath(
@@ -3057,9 +3065,17 @@ bool PaintLayer::HasVisibleBoxDecorations() const {
 
 void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
                                const ComputedStyle& new_style) {
+  if (!filter_on_effect_node_dirty_) {
+    filter_on_effect_node_dirty_ =
+        old_style ? !old_style->FilterDataEquivalent(new_style) ||
+                        !old_style->ReflectionDataEquivalent(new_style)
+                  : new_style.HasFilterInducingProperty();
+  }
+
   if (!new_style.HasFilterInducingProperty() &&
       (!old_style || !old_style->HasFilterInducingProperty()))
     return;
+
   const bool had_resource_info = ResourceInfo();
   if (new_style.HasFilterInducingProperty())
     new_style.Filter().AddClient(&EnsureResourceInfo());
@@ -3193,8 +3209,8 @@ bool PaintLayer::ScrollsOverflow() const {
   return false;
 }
 
-FilterOperations PaintLayer::AddReflectionToFilterOperations(
-    const ComputedStyle& style) const {
+FilterOperations PaintLayer::FilterOperationsIncludingReflection() const {
+  const auto& style = GetLayoutObject().StyleRef();
   FilterOperations filter_operations = style.Filter();
   if (GetLayoutObject().HasReflection() && GetLayoutObject().IsBox()) {
     BoxReflection reflection = BoxReflectionForPaintLayer(*this, style);
@@ -3204,26 +3220,27 @@ FilterOperations PaintLayer::AddReflectionToFilterOperations(
   return filter_operations;
 }
 
-CompositorFilterOperations
-PaintLayer::CreateCompositorFilterOperationsForFilter(
-    const ComputedStyle& style) {
-  FloatRect zoomed_reference_box;
-  if (style.Filter().HasReferenceFilter())
-    zoomed_reference_box = BoxForFilterOrMask();
-  FilterEffectBuilder builder(EnclosingNode(), zoomed_reference_box,
-                              style.EffectiveZoom());
-  return builder.BuildFilterOperations(AddReflectionToFilterOperations(style));
+void PaintLayer::UpdateCompositorFilterOperationsForFilter(
+    CompositorFilterOperations& operations) const {
+  const auto& style = GetLayoutObject().StyleRef();
+  float zoom = style.EffectiveZoom();
+  FloatRect reference_box = FilterReferenceBox(style.Filter(), zoom);
+  if (!operations.IsEmpty() && !filter_on_effect_node_dirty_ &&
+      reference_box == operations.ReferenceBox())
+    return;
+
+  operations =
+      FilterEffectBuilder(EnclosingNode(), reference_box, zoom)
+          .BuildFilterOperations(FilterOperationsIncludingReflection());
 }
 
 CompositorFilterOperations
-PaintLayer::CreateCompositorFilterOperationsForBackdropFilter(
-    const ComputedStyle& style) {
-  FloatRect zoomed_reference_box;
-  if (style.BackdropFilter().HasReferenceFilter())
-    zoomed_reference_box = BoxForFilterOrMask();
-  FilterEffectBuilder builder(EnclosingNode(), zoomed_reference_box,
-                              style.EffectiveZoom());
-  return builder.BuildFilterOperations(style.BackdropFilter());
+PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
+  const auto& style = GetLayoutObject().StyleRef();
+  float zoom = style.EffectiveZoom();
+  FloatRect reference_box = FilterReferenceBox(style.BackdropFilter(), zoom);
+  return FilterEffectBuilder(EnclosingNode(), reference_box, zoom)
+      .BuildFilterOperations(style.BackdropFilter());
 }
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {
@@ -3275,14 +3292,12 @@ FilterEffect* PaintLayer::LastFilterEffect() const {
   if (resource_info->LastEffect())
     return resource_info->LastEffect();
 
-  const ComputedStyle& style = GetLayoutObject().StyleRef();
-  FloatRect zoomed_reference_box;
-  if (style.Filter().HasReferenceFilter())
-    zoomed_reference_box = BoxForFilterOrMask();
-  FilterEffectBuilder builder(EnclosingNode(), zoomed_reference_box,
-                              style.EffectiveZoom());
+  const auto& style = GetLayoutObject().StyleRef();
+  float zoom = style.EffectiveZoom();
+  FilterEffectBuilder builder(EnclosingNode(),
+                              FilterReferenceBox(style.Filter(), zoom), zoom);
   resource_info->SetLastEffect(
-      builder.BuildFilterEffect(AddReflectionToFilterOperations(style)));
+      builder.BuildFilterEffect(FilterOperationsIncludingReflection()));
   return resource_info->LastEffect();
 }
 
@@ -3294,9 +3309,7 @@ FloatRect PaintLayer::MapRectForFilter(const FloatRect& rect) const {
   // TODO(fs): Avoid having this side-effect inducing call.
   LastFilterEffect();
 
-  FilterOperations filter_operations =
-      AddReflectionToFilterOperations(GetLayoutObject().StyleRef());
-  return filter_operations.MapRect(rect);
+  return FilterOperationsIncludingReflection().MapRect(rect);
 }
 
 LayoutRect PaintLayer::MapLayoutRectForFilter(const LayoutRect& rect) const {

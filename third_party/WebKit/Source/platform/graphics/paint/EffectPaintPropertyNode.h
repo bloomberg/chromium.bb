@@ -119,8 +119,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return Parent() == o.Parent() &&
            local_transform_space_ == o.local_transform_space_ &&
            output_clip_ == o.output_clip_ && color_filter_ == o.color_filter_ &&
-           filter_.EqualsIgnoringReferenceFilters(o.filter_) &&
-           opacity_ == o.opacity_ && blend_mode_ == o.blend_mode_ &&
+           filter_ == o.filter_ && opacity_ == o.opacity_ &&
+           blend_mode_ == o.blend_mode_ &&
            direct_compositing_reasons_ == o.direct_compositing_reasons_ &&
            compositor_element_id_ == o.compositor_element_id_ &&
            paint_offset_ == o.paint_offset_;

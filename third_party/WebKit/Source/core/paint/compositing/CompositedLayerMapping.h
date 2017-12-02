@@ -251,8 +251,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // position.
   GraphicsLayer* DetachLayerForOverflowControls();
 
-  void UpdateFilters(const ComputedStyle&);
-  void UpdateBackdropFilters(const ComputedStyle&);
+  void UpdateFilters();
+  void UpdateBackdropFilters();
 
   void SetBlendMode(WebBlendMode);
 

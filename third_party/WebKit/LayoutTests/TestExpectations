@@ -118,16 +118,12 @@ crbug.com/771643 virtual/spv175/paint/invalidation/repaint-across-writing-mode-b
 crbug.com/771643 virtual/spv175/paint/invalidation/compositing/newly-composited-repaint-rect.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/compositing/resize-squashing-layer-that-needs-full-repaint.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
-# Seems to pass with DCHECK.
-crbug.com/771643 virtual/spv175/paint/invalidation/filters/filter-on-html-element-with-fixed-position-child.html [ Failure Pass ]
 crbug.com/771643 virtual/spv175/paint/invalidation/forms/select-option-background-color.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/multicol/multicol-with-overflowing-block-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/overflow/composited-overflow-with-negative-offset-outline.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/overflow/paged-with-overflowing-block-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/position/position-change-keeping-geometry.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/reflection/reflection-repaint-test.html [ Failure ]
-# Seems to pass with DCHECK.
-crbug.com/771643 virtual/spv175/paint/invalidation/reflection/reflection-redraw.html [ Failure Pass ]
 crbug.com/771643 virtual/spv175/paint/invalidation/scroll/repaint-during-scroll-with-zoom.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/scroll/resize-scrollable-iframe.html [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/scroll/scroll-descendant-with-cached-cliprects.html [ Failure ]
