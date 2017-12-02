@@ -29,20 +29,6 @@ DOMException* CreateNoImplementationException() {
                               "No CacheStorage implementation provided.");
 }
 
-bool CommonChecks(ScriptState* script_state, ExceptionState& exception_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  // FIXME: May be null due to worker termination: http://crbug.com/413518.
-  if (!execution_context)
-    return false;
-
-  String error_message;
-  if (!execution_context->IsSecureContext(error_message)) {
-    exception_state.ThrowSecurityError(error_message);
-    return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 // FIXME: Consider using CallbackPromiseAdapter.
@@ -238,11 +224,7 @@ CacheStorage* CacheStorage::Create(
 }
 
 ScriptPromise CacheStorage::open(ScriptState* script_state,
-                                 const String& cache_name,
-                                 ExceptionState& exception_state) {
-  if (!CommonChecks(script_state, exception_state))
-    return ScriptPromise();
-
+                                 const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
@@ -258,11 +240,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
 }
 
 ScriptPromise CacheStorage::has(ScriptState* script_state,
-                                const String& cache_name,
-                                ExceptionState& exception_state) {
-  if (!CommonChecks(script_state, exception_state))
-    return ScriptPromise();
-
+                                const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
@@ -277,11 +255,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
 }
 
 ScriptPromise CacheStorage::Delete(ScriptState* script_state,
-                                   const String& cache_name,
-                                   ExceptionState& exception_state) {
-  if (!CommonChecks(script_state, exception_state))
-    return ScriptPromise();
-
+                                   const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
@@ -296,11 +270,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise CacheStorage::keys(ScriptState* script_state,
-                                 ExceptionState& exception_state) {
-  if (!CommonChecks(script_state, exception_state))
-    return ScriptPromise();
-
+ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
@@ -317,8 +287,6 @@ ScriptPromise CacheStorage::match(ScriptState* script_state,
                                   const CacheQueryOptions& options,
                                   ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
-  if (!CommonChecks(script_state, exception_state))
-    return ScriptPromise();
 
   if (request.IsRequest())
     return MatchImpl(script_state, request.GetAsRequest(), options);

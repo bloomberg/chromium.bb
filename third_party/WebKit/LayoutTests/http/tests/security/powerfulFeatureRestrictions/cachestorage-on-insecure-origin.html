@@ -10,54 +10,8 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     if (window.testRunner)
         testRunner.overridePreference("WebKitStrictPowerfulFeatureRestrictions", true);
 
-    promise_test(function(test) {
-        return window.caches.match('http://example.com/resource.html')
-            .then(
-                test.unreached_func('promise should not be fulfilled'),
-                function(reason) {
-                    assert_equals(reason.name, 'SecurityError',
-                        'match should reject with SecurityError');
-                });
-    }, 'CacheStorage match() on insecure origin');
-
-    promise_test(function(test) {
-        return window.caches.has('name')
-            .then(
-                test.unreached_func('promise should not be fulfilled'),
-                function(reason) {
-                    assert_equals(reason.name, 'SecurityError',
-                        'match should reject with SecurityError');
-                });
-    }, 'CacheStorage has() on insecure origin');
-
-    promise_test(function(test) {
-        return window.caches.open('name')
-            .then(
-                test.unreached_func('promise should not be fulfilled'),
-                function(reason) {
-                    assert_equals(reason.name, 'SecurityError',
-                        'match should reject with SecurityError');
-                });
-    }, 'CacheStorage open() on insecure origin');
-
-    promise_test(function(test) {
-        return window.caches.delete('name')
-            .then(
-                test.unreached_func('promise should not be fulfilled'),
-                function(reason) {
-                    assert_equals(reason.name, 'SecurityError',
-                        'match should reject with SecurityError');
-                });
-    }, 'CacheStorage delete() on insecure origin');
-
-    promise_test(function(test) {
-        return window.caches.keys()
-            .then(
-                test.unreached_func('promise should not be fulfilled'),
-                function(reason) {
-                    assert_equals(reason.name, 'SecurityError',
-                        'match should reject with SecurityError');
-                });
-    }, 'CacheStorage keys() on insecure origin');
-}
+    test(t => {
+        assert_false('caches' in window, 'window.caches should not be present');
+    }, 'window.caches requires a secure context');
+  }
 </script>
