@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_MODEL_SEARCH_RESULT_H_
-#define ASH_APP_LIST_MODEL_SEARCH_RESULT_H_
+#ifndef ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_H_
+#define ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_H_
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -260,4 +261,4 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_MODEL_SEARCH_RESULT_H_
+#endif  // ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_H_

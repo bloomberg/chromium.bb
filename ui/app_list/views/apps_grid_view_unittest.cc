@@ -134,10 +134,13 @@ class AppsGridViewTest : public views::ViewsTestBase,
     app_list_view_->GetWidget()->Show();
 
     model_ = delegate_->GetTestModel();
+    search_model_ = delegate_->GetSearchModel();
     suggestions_container_ = apps_grid_view_->suggestions_container_for_test();
     expand_arrow_view_ = apps_grid_view_->expand_arrow_view_for_test();
-    for (size_t i = 0; i < kNumOfSuggestedApps; ++i)
-      model_->results()->Add(std::make_unique<TestSuggestedSearchResult>());
+    for (size_t i = 0; i < kNumOfSuggestedApps; ++i) {
+      search_model_->results()->Add(
+          std::make_unique<TestSuggestedSearchResult>());
+    }
     // Needed to update suggestions from |model_|.
     apps_grid_view_->ResetForShowApps();
     app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
@@ -244,6 +247,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by |apps_grid_view_|.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   AppListTestModel* model_ = nullptr;  // Owned by |delegate_|.
+  SearchModel* search_model_ = nullptr;  // Owned by |delegate_|.
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
   base::test::ScopedFeatureList scoped_feature_list_;

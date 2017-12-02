@@ -5,7 +5,9 @@
 #ifndef UI_APP_LIST_TEST_TEST_SEARCH_RESULT_H_
 #define UI_APP_LIST_TEST_TEST_SEARCH_RESULT_H_
 
-#include "ash/app_list/model/search_result.h"
+#include <memory>
+
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 
 namespace app_list {

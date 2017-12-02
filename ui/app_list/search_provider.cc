@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 
 namespace app_list {
 

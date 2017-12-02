@@ -18,7 +18,7 @@ class Profile;
 class TemplateURLService;
 
 namespace app_list {
-class AppListModel;
+class SearchModel;
 }
 
 namespace app_list {
@@ -28,7 +28,7 @@ class AnswerCardSearchProvider : public SearchProvider,
                                  public AnswerCardContents::Delegate {
  public:
   AnswerCardSearchProvider(Profile* profile,
-                           app_list::AppListModel* model,
+                           app_list::SearchModel* search_model,
                            AppListControllerDelegate* list_controller,
                            std::unique_ptr<AnswerCardContents> contents0,
                            std::unique_ptr<AnswerCardContents> contents1);
@@ -91,8 +91,8 @@ class AnswerCardSearchProvider : public SearchProvider,
   // Unowned pointer to the associated profile.
   Profile* const profile_;
 
-  // Unowned pointer to app list model.
-  app_list::AppListModel* const model_;
+  // Unowned pointer to app list search model.
+  app_list::SearchModel* const search_model_;
 
   // Unowned pointer to app list controller.
   AppListControllerDelegate* const list_controller_;

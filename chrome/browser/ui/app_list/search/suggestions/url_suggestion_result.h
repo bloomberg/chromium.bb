@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/suggestions/proto/suggestions.pb.h"

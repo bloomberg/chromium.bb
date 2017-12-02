@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -121,7 +121,7 @@ class MixerTest : public testing::Test {
 
   // testing::Test overrides:
   void SetUp() override {
-    results_.reset(new AppListModel::SearchResults);
+    results_.reset(new SearchModel::SearchResults);
 
     providers_.push_back(std::make_unique<TestSearchProvider>("app"));
     providers_.push_back(std::make_unique<TestSearchProvider>("omnibox"));
@@ -180,7 +180,7 @@ class MixerTest : public testing::Test {
 
  private:
   std::unique_ptr<Mixer> mixer_;
-  std::unique_ptr<AppListModel::SearchResults> results_;
+  std::unique_ptr<SearchModel::SearchResults> results_;
   KnownResults known_results_;
 
   bool is_voice_query_;
@@ -340,7 +340,7 @@ TEST_F(MixerTest, Publish) {
   std::unique_ptr<SearchResult> result4(new TestSearchResult("app4", 0));
   std::unique_ptr<SearchResult> result5(new TestSearchResult("app5", 0));
 
-  AppListModel::SearchResults ui_results;
+  SearchModel::SearchResults ui_results;
 
   // Publish the first three results to |ui_results|.
   Mixer::SortedResults new_results;

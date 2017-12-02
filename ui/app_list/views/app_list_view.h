@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/app_list/model/app_list_view_state.h"
 #include "base/callback.h"
@@ -45,6 +46,7 @@ class AppsGridView;
 class HideViewAnimationObserver;
 class PaginationModel;
 class SearchBoxView;
+class SearchModel;
 class SpeechView;
 
 namespace test {
@@ -327,6 +329,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
   AppListModel* const model_;      // Not Owned.
+  SearchModel* const search_model_;  // Not Owned.
 
   AppListMainView* app_list_main_view_ = nullptr;
   SpeechView* speech_view_ = nullptr;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_MODEL_SEARCH_RESULT_OBSERVER_H_
-#define ASH_APP_LIST_MODEL_SEARCH_RESULT_OBSERVER_H_
+#ifndef ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_OBSERVER_H_
+#define ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_OBSERVER_H_
 
 #include "ash/app_list/model/app_list_model_export.h"
 
@@ -44,4 +44,4 @@ class APP_LIST_MODEL_EXPORT SearchResultObserver {
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_MODEL_SEARCH_RESULT_OBSERVER_H_
+#endif  // ASH_APP_LIST_MODEL_SEARCH_SEARCH_RESULT_OBSERVER_H_

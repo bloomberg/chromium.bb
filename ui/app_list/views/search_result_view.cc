@@ -5,8 +5,9 @@
 #include "ui/app_list/views/search_result_view.h"
 
 #include <algorithm>
+#include <utility>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"

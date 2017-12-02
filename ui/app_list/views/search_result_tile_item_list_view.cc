@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
@@ -113,7 +113,7 @@ views::View* SearchResultTileItemListView::SetFirstResultSelected(
 
 int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
-      AppListModel::FilterSearchResultsByDisplayType(
+      SearchModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_TILE, kMaxNumSearchResultTiles);
 
   SearchResult::ResultType previous_type = SearchResult::RESULT_UNKNOWN;

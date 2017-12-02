@@ -7,6 +7,7 @@
 
 namespace app_list {
 class AppListModel;
+class SearchModel;
 }
 
 class AppListService;
@@ -17,6 +18,10 @@ namespace test {
 
 // Gets the model keyed to the profile currently associated with |service|.
 app_list::AppListModel* GetAppListModel(AppListService* service);
+
+// Gets the search model keyed to the profile currently associated with
+// |service|.
+app_list::SearchModel* GetSearchModel(AppListService* service);
 
 AppListServiceImpl* GetAppListServiceImpl();
 

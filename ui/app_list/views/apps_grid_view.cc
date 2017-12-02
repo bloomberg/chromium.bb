@@ -5,8 +5,10 @@
 #include "ui/app_list/views/apps_grid_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
@@ -1162,7 +1164,7 @@ void AppsGridView::UpdateSuggestions() {
     return;
   suggestions_container_->SetResults(contents_view_->app_list_main_view()
                                          ->view_delegate()
-                                         ->GetModel()
+                                         ->GetSearchModel()
                                          ->results());
 }
 

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/app_list/model/app_list_model.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -72,10 +71,11 @@ bool IsSuggestionsSearchProviderEnabled() {
 std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModel* model,
+    SearchModel* search_model,
     AppListControllerDelegate* list_controller) {
   std::unique_ptr<SearchController> controller =
       base::MakeUnique<SearchController>(
-          model->search_box(), model->results(),
+          search_model->search_box(), search_model->results(),
           HistoryFactory::GetForBrowserContext(profile));
 
   // Add mixer groups. There are four main groups: answer card, apps, webstore
@@ -109,7 +109,7 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(
         answer_card_group_id,
         base::MakeUnique<AnswerCardSearchProvider>(
-            profile, model, list_controller,
+            profile, search_model, list_controller,
             base::MakeUnique<AnswerCardWebContents>(profile),
             base::MakeUnique<AnswerCardWebContents>(profile)));
   }

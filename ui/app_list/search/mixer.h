@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_export.h"
@@ -31,7 +32,7 @@ class SearchResult;
 // different number of results and priority boost.
 class APP_LIST_EXPORT Mixer {
  public:
-  explicit Mixer(AppListModel::SearchResults* ui_results);
+  explicit Mixer(SearchModel::SearchResults* ui_results);
   ~Mixer();
 
   // Adds a new mixer group. A "soft" maximum of |max_results| results will be
@@ -72,7 +73,7 @@ class APP_LIST_EXPORT Mixer {
   // results that are not in |new_results|. Results that already exist in
   // |ui_results| are reused to avoid flickering caused by icon reload.
   static void Publish(const SortedResults& results,
-                      AppListModel::SearchResults* ui_results);
+                      SearchModel::SearchResults* ui_results);
 
   // Removes entries from |results| with duplicate IDs. When two or more results
   // have the same ID, the earliest one in the |results| list is kept.
@@ -82,7 +83,7 @@ class APP_LIST_EXPORT Mixer {
 
   void FetchResults(bool is_voice_query, const KnownResults& known_results);
 
-  AppListModel::SearchResults* ui_results_;  // Not owned.
+  SearchModel::SearchResults* ui_results_;  // Not owned.
   Groups groups_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);

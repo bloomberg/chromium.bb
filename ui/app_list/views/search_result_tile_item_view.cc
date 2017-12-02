@@ -4,7 +4,7 @@
 
 #include "ui/app_list/views/search_result_tile_item_view.h"
 
-#include "ash/app_list/model/search_result.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"

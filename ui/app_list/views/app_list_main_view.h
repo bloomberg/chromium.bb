@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/app_list/model/app_list_model_observer.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -54,6 +55,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   ContentsView* contents_view() const { return contents_view_; }
   AppListModel* model() { return model_; }
+  SearchModel* search_model() { return search_model_; }
   AppListViewDelegate* view_delegate() { return delegate_; }
 
   // Called when the search box's visibility is changed.
@@ -88,6 +90,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;  // Unowned; ownership is handled by |delegate_|.
+  SearchModel* search_model_;  // Unowned; ownership is handled by |delegate_|.
 
   // Created by AppListView. Owned by views hierarchy.
   SearchBoxView* search_box_view_;

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_model.h"
 
 class AppListControllerDelegate;
 class Profile;
@@ -20,6 +21,7 @@ class SearchController;
 std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModel* model,
+    SearchModel* search_model,
     AppListControllerDelegate* list_controller);
 
 }  // namespace app_list

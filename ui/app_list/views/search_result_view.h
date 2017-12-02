@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/model/search_result_observer.h"
+#include "ash/app_list/model/search/search_result_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -115,7 +115,7 @@ class APP_LIST_EXPORT SearchResultView
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
 
-  SearchResult* result_ = nullptr;  // Owned by AppListModel::SearchResults.
+  SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
 
   bool is_last_result_ = false;
 

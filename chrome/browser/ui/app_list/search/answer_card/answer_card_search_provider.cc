@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_model.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -60,12 +60,12 @@ void AnswerCardSearchProvider::NavigationContext::Clear() {
 
 AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
-    app_list::AppListModel* model,
+    app_list::SearchModel* search_model,
     AppListControllerDelegate* list_controller,
     std::unique_ptr<AnswerCardContents> contents0,
     std::unique_ptr<AnswerCardContents> contents1)
     : profile_(profile),
-      model_(model),
+      search_model_(search_model),
       list_controller_(list_controller),
       answer_server_url_(features::AnswerServerUrl()),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
@@ -84,7 +84,8 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
   current_request_url_ = GURL();
   server_request_start_time_ = answer_loaded_time_ = base::TimeTicks();
 
-  if (query.empty() || is_voice_query || !model_->search_engine_is_google()) {
+  if (query.empty() || is_voice_query ||
+      !search_model_->search_engine_is_google()) {
     DeleteCurrentResult();
     return;
   }

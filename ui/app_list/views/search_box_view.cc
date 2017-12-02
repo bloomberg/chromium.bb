@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/app_list/model/search_box_model.h"
+#include "ash/app_list/model/search/search_box_model.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -293,18 +293,18 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 
 SearchBoxView::~SearchBoxView() {
   view_delegate_->GetSpeechUI()->RemoveObserver(this);
-  model_->search_box()->RemoveObserver(this);
+  search_model_->search_box()->RemoveObserver(this);
   view_delegate_->RemoveObserver(this);
 }
 
 void SearchBoxView::ModelChanged() {
-  if (model_)
-    model_->search_box()->RemoveObserver(this);
+  if (search_model_)
+    search_model_->search_box()->RemoveObserver(this);
 
-  model_ = view_delegate_->GetModel();
-  DCHECK(model_);
+  search_model_ = view_delegate_->GetSearchModel();
+  DCHECK(search_model_);
   UpdateSearchIcon();
-  model_->search_box()->AddObserver(this);
+  search_model_->search_box()->AddObserver(this);
 
   SpeechRecognitionButtonPropChanged();
   HintTextChanged();
@@ -734,10 +734,11 @@ void SearchBoxView::SetSelected(bool selected) {
 
 void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
-  model_->search_box()->RemoveObserver(this);
-  model_->search_box()->Update(search_box_->text(), false);
-  model_->search_box()->SetSelectionModel(search_box_->GetSelectionModel());
-  model_->search_box()->AddObserver(this);
+  search_model_->search_box()->RemoveObserver(this);
+  search_model_->search_box()->Update(search_box_->text(), false);
+  search_model_->search_box()->SetSelectionModel(
+      search_box_->GetSelectionModel());
+  search_model_->search_box()->AddObserver(this);
 }
 
 void SearchBoxView::NotifyQueryChanged() {
@@ -869,7 +870,7 @@ bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
 
 void SearchBoxView::SpeechRecognitionButtonPropChanged() {
   const SearchBoxModel::SpeechButtonProperty* speech_button_prop =
-      model_->search_box()->speech_button();
+      search_model_->search_box()->speech_button();
   if (speech_button_prop) {
     if (!speech_button_) {
       speech_button_ = new SearchBoxImageButton(this);
@@ -895,17 +896,18 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
 }
 
 void SearchBoxView::HintTextChanged() {
-  const app_list::SearchBoxModel* search_box = model_->search_box();
+  const app_list::SearchBoxModel* search_box = search_model_->search_box();
   search_box_->set_placeholder_text(search_box->hint_text());
   search_box_->SetAccessibleName(search_box->accessible_name());
 }
 
 void SearchBoxView::SelectionModelChanged() {
-  search_box_->SelectSelectionModel(model_->search_box()->selection_model());
+  search_box_->SelectSelectionModel(
+      search_model_->search_box()->selection_model());
 }
 
 void SearchBoxView::Update() {
-  search_box_->SetText(model_->search_box()->text());
+  search_box_->SetText(search_model_->search_box()->text());
   UpdateCloseButtonVisisbility();
   NotifyQueryChanged();
 }
@@ -946,7 +948,7 @@ void SearchBoxView::OnSpeechRecognitionStateChanged(
 void SearchBoxView::UpdateSearchIcon() {
   const gfx::VectorIcon& google_icon =
       is_search_box_active() ? kIcGoogleColorIcon : kIcGoogleBlackIcon;
-  const gfx::VectorIcon& icon = model_->search_engine_is_google()
+  const gfx::VectorIcon& icon = search_model_->search_engine_is_google()
                                     ? google_icon
                                     : kIcSearchEngineNotGoogleIcon;
   search_icon_->SetImage(

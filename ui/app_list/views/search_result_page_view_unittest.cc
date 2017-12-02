@@ -95,14 +95,14 @@ class SearchResultPageViewTest
   }
   SearchResultListView* list_view() const { return list_view_; }
 
-  AppListModel::SearchResults* GetResults() const {
-    return delegate_->GetModel()->results();
+  SearchModel::SearchResults* GetResults() const {
+    return delegate_->GetSearchModel()->results();
   }
 
   void SetUpSearchResults(
       const std::vector<std::pair<SearchResult::DisplayType, int>>&
           result_types) {
-    AppListModel::SearchResults* results = GetResults();
+    SearchModel::SearchResults* results = GetResults();
     results->DeleteAll();
     double relevance = result_types.size();
     for (const auto& data : result_types) {
@@ -226,7 +226,7 @@ TEST_P(SearchResultPageViewTest, DISABLED_TabMovement) {
 }
 
 TEST_P(SearchResultPageViewTest, ResultsSorted) {
-  AppListModel::SearchResults* results = GetResults();
+  SearchModel::SearchResults* results = GetResults();
 
   // Add 3 results and expect the tile list view to be the first result
   // container view.

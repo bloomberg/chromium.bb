@@ -74,7 +74,8 @@ void ContentsView::Init(AppListModel* model) {
   search_results_page_view_ = new SearchResultPageView();
 
   // Search result containers.
-  AppListModel::SearchResults* results = view_delegate->GetModel()->results();
+  SearchModel::SearchResults* results =
+      view_delegate->GetSearchModel()->results();
 
   if (features::IsAnswerCardEnabled()) {
     search_result_answer_card_view_ =

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
 #include "base/macros.h"
@@ -28,7 +29,7 @@ class SearchResult;
 class APP_LIST_EXPORT SearchController {
  public:
   SearchController(SearchBoxModel* search_box,
-                   AppListModel::SearchResults* results,
+                   SearchModel::SearchResults* results,
                    History* history);
   virtual ~SearchController();
 

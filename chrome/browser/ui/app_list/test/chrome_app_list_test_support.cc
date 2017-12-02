@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -55,6 +57,12 @@ class CreateProfileHelper {
 app_list::AppListModel* GetAppListModel(AppListService* service) {
   return app_list::AppListSyncableServiceFactory::GetForProfile(
              service->GetCurrentAppListProfile())->GetModel();
+}
+
+app_list::SearchModel* GetSearchModel(AppListService* service) {
+  return app_list::AppListSyncableServiceFactory::GetForProfile(
+             service->GetCurrentAppListProfile())
+      ->GetSearchModel();
 }
 
 AppListServiceImpl* GetAppListServiceImpl() {

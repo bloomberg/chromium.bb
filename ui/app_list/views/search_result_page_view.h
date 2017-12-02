@@ -29,7 +29,7 @@ class APP_LIST_EXPORT SearchResultPageView
   void SetSelection(bool select);  // Set or unset result selection.
 
   void AddSearchResultContainerView(
-      AppListModel::SearchResults* result_model,
+      SearchModel::SearchResults* result_model,
       SearchResultContainerView* result_container);
 
   const std::vector<SearchResultContainerView*>& result_container_views() {
