@@ -333,6 +333,10 @@ void UiSceneCreator::CreateWebVRExitWarning() {
   exit_warning->AddBinding(VR_BIND_FUNC(bool, Model, model_, exiting_vr,
                                         UiElement, exit_warning.get(),
                                         SetVisible));
+  BindColor(model_, exit_warning.get(), &ColorScheme::exit_warning_background,
+            &TexturedElement::SetBackgroundColor);
+  BindColor(model_, exit_warning.get(), &ColorScheme::exit_warning_foreground,
+            &TexturedElement::SetForegroundColor);
   scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(exit_warning));
 }
 

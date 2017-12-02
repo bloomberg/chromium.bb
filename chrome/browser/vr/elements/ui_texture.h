@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -110,14 +111,13 @@ class UiTexture {
   static void SetForceFontFallbackFailureForTesting(bool force);
 
   void set_dirty() { dirty_ = true; }
-
-  SkColor foreground_color() const { return foreground_color_; }
-  SkColor background_color() const { return background_color_; }
+  SkColor foreground_color() const;
+  SkColor background_color() const;
 
  private:
   bool dirty_ = true;
-  SkColor foreground_color_;
-  SkColor background_color_;
+  base::Optional<SkColor> foreground_color_;
+  base::Optional<SkColor> background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(UiTexture);
 };
