@@ -112,6 +112,8 @@ TestUrlBarTexture::TestUrlBarTexture()
                                base::Unretained(this))) {
   gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
   SetColors(ColorScheme::GetColorScheme(ColorScheme::kModeNormal).url_bar);
+  SetBackgroundColor(SK_ColorBLACK);
+  SetForegroundColor(SK_ColorWHITE);
 }
 
 class MockRenderText : public RenderTextWrapper {
