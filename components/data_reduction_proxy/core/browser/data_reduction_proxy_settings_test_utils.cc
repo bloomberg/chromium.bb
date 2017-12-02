@@ -72,8 +72,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
 }
 
 template <class C>
-void DataReductionProxySettingsTestBase::ResetSettings(
-    std::unique_ptr<base::Clock> clock) {
+void DataReductionProxySettingsTestBase::ResetSettings(base::Clock* clock) {
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
   settings->config_ = test_context_->config();
@@ -81,7 +80,7 @@ void DataReductionProxySettingsTestBase::ResetSettings(
   settings->data_reduction_proxy_service_ =
       test_context_->CreateDataReductionProxyService(settings);
   if (clock)
-    settings->clock_ = std::move(clock);
+    settings->clock_ = clock;
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
       .Times(AnyNumber())
       .WillRepeatedly(Return(test_context_->pref_service()));
@@ -93,7 +92,7 @@ void DataReductionProxySettingsTestBase::ResetSettings(
 
 // Explicitly generate required instantiations.
 template void DataReductionProxySettingsTestBase::ResetSettings<
-    DataReductionProxySettings>(std::unique_ptr<base::Clock> clock);
+    DataReductionProxySettings>(base::Clock* clock);
 
 void DataReductionProxySettingsTestBase::ExpectSetProxyPrefs(
     bool expected_enabled,

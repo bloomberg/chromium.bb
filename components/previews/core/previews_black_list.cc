@@ -54,11 +54,11 @@ PreviewsBlackListItem* GetBlackListItemFromMap(
 
 PreviewsBlackList::PreviewsBlackList(
     std::unique_ptr<PreviewsOptOutStore> opt_out_store,
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     PreviewsBlacklistDelegate* blacklist_delegate)
     : loaded_(false),
       opt_out_store_(std::move(opt_out_store)),
-      clock_(std::move(clock)),
+      clock_(clock),
       blacklist_delegate_(blacklist_delegate),
       weak_factory_(this) {
   DCHECK(blacklist_delegate_);

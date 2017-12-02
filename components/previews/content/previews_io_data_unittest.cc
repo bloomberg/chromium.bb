@@ -77,7 +77,7 @@ class TestPreviewsBlackList : public PreviewsBlackList {
   TestPreviewsBlackList(PreviewsEligibilityReason status,
                         PreviewsBlacklistDelegate* blacklist_delegate)
       : PreviewsBlackList(nullptr,
-                          base::MakeUnique<base::DefaultClock>(),
+                          base::DefaultClock::GetInstance(),
                           blacklist_delegate),
         status_(status) {}
   ~TestPreviewsBlackList() override {}

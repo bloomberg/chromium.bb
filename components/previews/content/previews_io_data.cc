@@ -133,7 +133,7 @@ void PreviewsIOData::InitializeOnIOThread(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   previews_black_list_.reset(
       new PreviewsBlackList(std::move(previews_opt_out_store),
-                            base::MakeUnique<base::DefaultClock>(), this));
+                            base::DefaultClock::GetInstance(), this));
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsUIService::SetIOData, previews_ui_service_,
                             weak_factory_.GetWeakPtr()));

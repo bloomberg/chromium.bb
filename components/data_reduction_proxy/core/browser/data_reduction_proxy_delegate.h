@@ -70,7 +70,7 @@ class DataReductionProxyDelegate
       const net::HostPortPair& proxy_server,
       const net::HttpResponseHeaders& response_headers) override;
 
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
  protected:
   // Protected so that these methods are accessible for testing.
@@ -112,7 +112,7 @@ class DataReductionProxyDelegate
   bool alternative_proxies_broken_;
 
   // Tick clock used for obtaining the current time.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // True if the metrics related to the first request whose resolved proxy was a
   // data saver proxy has been recorded. |first_data_saver_request_recorded_| is
