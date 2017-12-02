@@ -18,7 +18,6 @@ class WindowTreeClient;
 
 namespace ash {
 
-class AcceleratorControllerDelegateClassic;
 class DisplaySynchronizer;
 class PointerWatcherAdapterClassic;
 class RootWindowController;
@@ -35,10 +34,6 @@ class ShellPortMus : public ShellPort {
   static ShellPortMus* Get();
 
   ash::RootWindowController* GetRootWindowControllerWithDisplayId(int64_t id);
-
-  AcceleratorControllerDelegateClassic* accelerator_controller_delegate() {
-    return accelerator_controller_delegate_.get();
-  }
 
   aura::WindowTreeClient* window_tree_client();
 
@@ -90,8 +85,6 @@ class ShellPortMus : public ShellPort {
 
  private:
   std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter_;
-  std::unique_ptr<AcceleratorControllerDelegateClassic>
-      accelerator_controller_delegate_;
 
   std::unique_ptr<DisplaySynchronizer> display_synchronizer_;
 

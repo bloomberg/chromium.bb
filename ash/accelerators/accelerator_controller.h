@@ -31,7 +31,6 @@ class AcceleratorManagerDelegate;
 namespace ash {
 
 struct AcceleratorData;
-class AcceleratorControllerDelegate;
 class ExitWarningHandler;
 
 // Identifier for the high contrast toggle accelerator notification.
@@ -43,8 +42,8 @@ ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
 class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
                                          public mojom::AcceleratorController {
  public:
-  AcceleratorController(AcceleratorControllerDelegate* delegate,
-                        ui::AcceleratorManagerDelegate* manager_delegate);
+  explicit AcceleratorController(
+      ui::AcceleratorManagerDelegate* manager_delegate);
   ~AcceleratorController() override;
 
   // A list of possible ways in which an accelerator should be restricted before
@@ -177,8 +176,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   AcceleratorProcessingStatus MaybeDeprecatedAcceleratorPressed(
       AcceleratorAction action,
       const ui::Accelerator& accelerator) const;
-
-  AcceleratorControllerDelegate* delegate_;
 
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 

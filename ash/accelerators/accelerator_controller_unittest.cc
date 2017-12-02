@@ -551,7 +551,7 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
                        ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   display::Display::Rotation new_rotation =
       GetActiveDisplayRotation(display.id());
-  // |new_rotation| is determined by the AcceleratorControllerDelegate.
+  // |new_rotation| is determined by the AcceleratorController.
   EXPECT_NE(initial_rotation, new_rotation);
 }
 

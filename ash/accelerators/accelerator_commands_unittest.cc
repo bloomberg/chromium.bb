@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_commands_classic.h"
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -60,7 +60,7 @@ TEST_F(AcceleratorCommandsTest, Unpin) {
   wm::PinWindow(window1.get(), /* trusted */ false);
   EXPECT_TRUE(window_state1->IsPinned());
 
-  Unpin();
+  UnpinWindow();
   EXPECT_FALSE(window_state1->IsPinned());
 }
 
