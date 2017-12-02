@@ -617,10 +617,12 @@ void RootInlineBox::AscentAndDescentForBox(
            ->LineHeight()
            .IsNegative() &&
        include_leading)) {
-    used_fonts->push_back(box->GetLineLayoutItem()
-                              .Style(IsFirstLineStyle())
-                              ->GetFont()
-                              .PrimaryFont());
+    const SimpleFontData* primary_font = box->GetLineLayoutItem()
+                                             .Style(IsFirstLineStyle())
+                                             ->GetFont()
+                                             .PrimaryFont();
+    if (primary_font)
+      used_fonts->push_back(primary_font);
     for (size_t i = 0; i < used_fonts->size(); ++i) {
       const FontMetrics& font_metrics = used_fonts->at(i)->GetFontMetrics();
       LayoutUnit used_font_ascent(font_metrics.Ascent(BaselineType()));
