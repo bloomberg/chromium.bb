@@ -12,8 +12,9 @@ static_library("in_progress") {
     "download_entry.cc",
     "download_entry.h",
     "download_source.h",
-    "in_progress_cache.cc",
     "in_progress_cache.h",
+    "in_progress_cache_impl.cc",
+    "in_progress_cache_impl.h",
     "in_progress_conversions.cc",
     "in_progress_conversions.h",
   ]
@@ -28,6 +29,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "in_progress_cache_impl_unittest.cc",
     "in_progress_conversions_unittest.cc",
   ]
 
@@ -35,6 +37,7 @@ source_set("unit_tests") {
     ":in_progress",
     "//base/test:test_support",
     "//components/download/downloader/in_progress/proto",
+    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -23,7 +23,7 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "components/download/downloader/in_progress/download_entry.h"
-#include "components/download/downloader/in_progress/in_progress_cache.h"
+#include "components/download/downloader/in_progress/in_progress_cache_impl.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_create_info.h"
@@ -343,6 +343,9 @@ InProgressDownloadObserver::~InProgressDownloadObserver() = default;
 void InProgressDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
   // TODO(crbug.com/778425): Properly handle fail/resume/retry for downloads
   // that are in the INTERRUPTED state for a long time.
+  if (!in_progress_cache_)
+    return;
+
   switch (download->GetState()) {
     case DownloadItem::DownloadState::COMPLETE:
     case DownloadItem::DownloadState::CANCELLED:
@@ -359,6 +362,9 @@ void InProgressDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
 }
 
 void InProgressDownloadObserver::OnDownloadRemoved(DownloadItem* download) {
+  if (!in_progress_cache_)
+    return;
+
   in_progress_cache_->RemoveEntry(download->GetGuid());
 }
 
@@ -367,6 +373,8 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       file_factory_(new DownloadFileFactory()),
       shutdown_needed_(true),
       initialized_(false),
+      history_db_initialized_(false),
+      in_progress_cache_initialized_(false),
       browser_context_(browser_context),
       delegate_(nullptr),
       weak_factory_(this) {
@@ -446,6 +454,27 @@ bool DownloadManagerImpl::ShouldOpenDownload(
 
 void DownloadManagerImpl::SetDelegate(DownloadManagerDelegate* delegate) {
   delegate_ = delegate;
+
+  // If initialization has not occurred and there's a delegate and cache,
+  // initialize and indicate initialization is complete. Else, just indicate it
+  // is ok to continue.
+  if (initialized_ || in_progress_cache_initialized_)
+    return;
+
+  base::RepeatingClosure post_init_callback = base::BindRepeating(
+      &DownloadManagerImpl::PostInitialization, weak_factory_.GetWeakPtr(),
+      DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE);
+
+  if (delegate_) {
+    download::InProgressCache* in_progress_cache =
+        delegate_->GetInProgressCache();
+    if (in_progress_cache) {
+      in_progress_cache->Initialize(post_init_callback);
+      return;
+    }
+  }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, post_init_callback);
 }
 
 DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
@@ -885,11 +914,33 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   return item;
 }
 
-void DownloadManagerImpl::PostInitialization() {
-  DCHECK(!initialized_);
-  initialized_ = true;
-  for (auto& observer : observers_)
-    observer.OnManagerInitialized();
+void DownloadManagerImpl::PostInitialization(
+    DownloadInitializationDependency dependency) {
+  // If initialization has occurred (ie. in tests), skip post init steps.
+  if (initialized_)
+    return;
+
+  switch (dependency) {
+    case DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB:
+      history_db_initialized_ = true;
+      break;
+    case DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE:
+      in_progress_cache_initialized_ = true;
+      break;
+    case DOWNLOAD_INITIALIZATION_DEPENDENCY_NONE:
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // Download manager is only initialized if both history db and in progress
+  // cache are initialized.
+  initialized_ = history_db_initialized_ && in_progress_cache_initialized_;
+
+  if (initialized_) {
+    for (auto& observer : observers_)
+      observer.OnManagerInitialized();
+  }
 }
 
 bool DownloadManagerImpl::IsManagerInitialized() const {

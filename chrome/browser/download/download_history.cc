@@ -315,7 +315,10 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
     ++history_size_;
   }
   notifier_.GetManager()->CheckForHistoryFilesRemoval();
-  notifier_.GetManager()->PostInitialization();
+
+  // Indicate that the history db is initialized.
+  notifier_.GetManager()->PostInitialization(
+      content::DownloadManager::DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB);
 
   initial_history_query_complete_ = true;
   for (Observer& observer : observers_)

@@ -105,7 +105,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       base::Time last_access_time,
       bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
-  void PostInitialization() override;
+  void PostInitialization(DownloadInitializationDependency dependency) override;
   bool IsManagerInitialized() const override;
   int InProgressCount() const override;
   int NonMaliciousInProgressCount() const override;
@@ -252,6 +252,10 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // True if the download manager has been initialized and loaded all the data.
   bool initialized_;
+
+  // Whether the history db and/or in progress cache are initialized.
+  bool history_db_initialized_;
+  bool in_progress_cache_initialized_;
 
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer> observers_;
