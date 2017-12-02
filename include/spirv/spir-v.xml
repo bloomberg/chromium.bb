@@ -102,6 +102,7 @@
     <ids type="opcode" start="5248" end="5503" vendor="NVIDIA"/>
     <ids type="opcode" start="5504" end="5567" vendor="Imagination"/>
     <ids type="opcode" start="5568" end="5631" vendor="Intel" comment="Contact ben.ashbaugh@intel.com"/>
+    <ids type="opcode" start="5632" end="5695" vendor="Google" comment="Contact dneto@google.com"/>
     <!-- Opcodes & enumerants reservable for future use. To get a block, allocate
          multiples of 64 starting at the lowest available point in this
          block and add a corresponding <ids> tag immediately above. Make
@@ -110,6 +111,6 @@
 
     <!-- Example new block: <ids type="opcode" start="XXXX" end="XXXX+64n-1" vendor="Add vendor" comment="Contact TBD"/> -->
 
-    <ids type="opcode" start="5632" end="4294967295" comment="Opcode range reservable for future use by vendors"/>
+    <ids type="opcode" start="5696" end="4294967295" comment="Opcode range reservable for future use by vendors"/>
 
 </registry>
