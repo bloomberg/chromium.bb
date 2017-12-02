@@ -4,7 +4,8 @@
 
 #include "cc/trees/image_animation_controller.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -76,7 +77,7 @@ class ImageAnimationControllerTest : public testing::Test {
     base::Closure invalidation_callback =
         base::Bind(&ImageAnimationControllerTest::RequestInvalidation,
                    base::Unretained(this));
-    controller_ = base::MakeUnique<ImageAnimationController>(
+    controller_ = std::make_unique<ImageAnimationController>(
         task_runner_.get(), invalidation_callback);
     now_ += base::TimeDelta::FromSeconds(10);
   }

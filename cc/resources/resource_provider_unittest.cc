@@ -10,13 +10,13 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -3159,7 +3159,7 @@ TEST_P(ResourceProviderTest, TextureStorageAllocation) {
     return;
 
   auto context_owned =
-      base::MakeUnique<StrictMock<AllocationTrackingContext3D>>();
+      std::make_unique<StrictMock<AllocationTrackingContext3D>>();
   auto* context = context_owned.get();
   context->set_support_texture_storage(true);
   context->set_support_texture_usage(true);
