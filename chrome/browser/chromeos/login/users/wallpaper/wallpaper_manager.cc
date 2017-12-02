@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_decoder.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -256,6 +257,40 @@ bool SaveWallpaperInternal(const base::FilePath& path,
                            int size) {
   int written_bytes = base::WriteFile(path, data, size);
   return written_bytes == size;
+}
+
+// If |data_is_ready| is true, start decoding the image, which will run
+// |callback| upon completion; if it's false, run |callback| immediately with
+// an empty image.
+// TODO(crbug.com/776464): Mash and some unit tests can't use this decoder
+// because it depends on the Shell instance. Make it work after all the decoding
+// code is moved to //ash.
+void DecodeWallpaperIfApplicable(user_image_loader::LoadedCallback callback,
+                                 std::unique_ptr<std::string> data,
+                                 bool data_is_ready) {
+  if (!data_is_ready) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            base::Passed(std::make_unique<user_manager::UserImage>())));
+    return;
+  }
+  ash::DecodeWallpaper(std::move(data), std::move(callback));
+}
+
+// Reads image from |file_path| on disk, and calls |DecodeWallpaperIfApplicable|
+// with the result of |ReadFileToString|.
+void ReadAndDecodeWallpaper(
+    user_image_loader::LoadedCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::FilePath& file_path) {
+  std::string* data = new std::string;
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE,
+      base::Bind(&base::ReadFileToString, file_path, data),
+      base::Bind(&DecodeWallpaperIfApplicable, std::move(callback),
+                 base::Passed(base::WrapUnique(data))));
 }
 
 }  // namespace
@@ -1029,11 +1064,18 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
   if (!data)
     return;
 
-  user_image_loader::StartWithData(
-      task_runner_, std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
-      0,  // Do not crop.
-      base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
-                 weak_factory_.GetWeakPtr(), account_id));
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    user_image_loader::StartWithData(
+        task_runner_, std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
+        0,  // Do not crop.
+        base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
+                   weak_factory_.GetWeakPtr(), account_id));
+  } else {
+    DecodeWallpaperIfApplicable(
+        base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
+                   weak_factory_.GetWeakPtr(), account_id),
+        std::move(data), true /* data_is_ready */);
+  }
 }
 
 size_t WallpaperManager::GetPendingListSizeForTesting() const {
@@ -1749,12 +1791,21 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
     (*GetWallpaperCacheMap())[account_id] =
         ash::CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
   }
-  user_image_loader::StartWithFilePath(
-      task_runner_, wallpaper_path, ImageDecoder::ROBUST_JPEG_CODEC,
-      0,  // Do not crop.
-      base::Bind(&WallpaperManager::OnWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), account_id, info, update_wallpaper,
-                 base::Passed(std::move(on_finish))));
+
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    user_image_loader::StartWithFilePath(
+        task_runner_, wallpaper_path, ImageDecoder::ROBUST_JPEG_CODEC,
+        0,  // Do not crop.
+        base::Bind(&WallpaperManager::OnWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), account_id, info,
+                   update_wallpaper, base::Passed(std::move(on_finish))));
+  } else {
+    ReadAndDecodeWallpaper(
+        base::Bind(&WallpaperManager::OnWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), account_id, info,
+                   update_wallpaper, base::Passed(std::move(on_finish))),
+        task_runner_, wallpaper_path);
+  }
 }
 
 void WallpaperManager::SaveLastLoadTime(const base::TimeDelta elapsed) {
@@ -1811,13 +1862,21 @@ void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
     DCHECK(rescaled_files->downloaded_exists());
 
     // Either resized images do not exist or cached version is incorrect.
-    // Need to start resize again.
-    user_image_loader::StartWithFilePath(
-        task_runner_, file_path, ImageDecoder::ROBUST_JPEG_CODEC,
-        0,  // Do not crop.
-        base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(), wallpaper_url,
-                   base::Passed(std::move(rescaled_files))));
+    // Need to start decoding again.
+    if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+      user_image_loader::StartWithFilePath(
+          task_runner_, file_path, ImageDecoder::ROBUST_JPEG_CODEC,
+          0,  // Do not crop.
+          base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
+                     weak_factory_.GetWeakPtr(), wallpaper_url,
+                     base::Passed(std::move(rescaled_files))));
+    } else {
+      ReadAndDecodeWallpaper(
+          base::Bind(&WallpaperManager::OnCustomizedDefaultWallpaperDecoded,
+                     weak_factory_.GetWeakPtr(), wallpaper_url,
+                     base::Passed(std::move(rescaled_files))),
+          task_runner_, file_path);
+    }
   } else {
     SetDefaultWallpaperPath(rescaled_files->path_rescaled_small(),
                             std::unique_ptr<gfx::ImageSkia>(),
@@ -1918,6 +1977,11 @@ void WallpaperManager::OnDefaultWallpaperDecoded(
   }
 
   *result_out = std::move(user_image);
+  // Make sure the file path is updated.
+  // TODO(crbug.com/776464): Use |ImageSkia| and |FilePath| directly to cache
+  // the decoded image and file path. Nothing else in |UserImage| is relevant.
+  (*result_out)->set_file_path(path);
+
   if (update_wallpaper) {
     WallpaperInfo info(path.value(), layout, wallpaper::DEFAULT,
                        base::Time::Now().LocalMidnight());
@@ -1931,13 +1995,22 @@ void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
     std::unique_ptr<user_manager::UserImage>* result_out) {
-  user_image_loader::StartWithFilePath(
-      task_runner_, path, ImageDecoder::ROBUST_JPEG_CODEC,
-      0,  // Do not crop.
-      base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), path, layout, update_wallpaper,
-                 base::Unretained(result_out),
-                 base::Passed(std::move(on_finish))));
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    user_image_loader::StartWithFilePath(
+        task_runner_, path, ImageDecoder::ROBUST_JPEG_CODEC,
+        0,  // Do not crop.
+        base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), path, layout, update_wallpaper,
+                   base::Unretained(result_out),
+                   base::Passed(std::move(on_finish))));
+  } else {
+    ReadAndDecodeWallpaper(
+        base::Bind(&WallpaperManager::OnDefaultWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), path, layout, update_wallpaper,
+                   base::Unretained(result_out),
+                   base::Passed(std::move(on_finish))),
+        task_runner_, path);
+  }
 }
 
 void WallpaperManager::RecordWallpaperAppType() {
@@ -2122,12 +2195,20 @@ void WallpaperManager::OnCheckDeviceWallpaperMatchHash(
     return;
   }
 
-  user_image_loader::StartWithFilePath(
-      task_runner_, GetDeviceWallpaperFilePath(),
-      ImageDecoder::ROBUST_JPEG_CODEC,
-      0,  // Do not crop.
-      base::Bind(&WallpaperManager::OnDeviceWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), account_id));
+  const base::FilePath file_path = GetDeviceWallpaperFilePath();
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    user_image_loader::StartWithFilePath(
+        task_runner_, GetDeviceWallpaperFilePath(),
+        ImageDecoder::ROBUST_JPEG_CODEC,
+        0,  // Do not crop.
+        base::Bind(&WallpaperManager::OnDeviceWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), account_id));
+  } else {
+    ReadAndDecodeWallpaper(
+        base::Bind(&WallpaperManager::OnDeviceWallpaperDecoded,
+                   weak_factory_.GetWeakPtr(), account_id),
+        task_runner_, file_path);
+  }
 }
 
 void WallpaperManager::OnDeviceWallpaperDecoded(
