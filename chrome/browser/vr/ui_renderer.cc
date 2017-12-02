@@ -23,7 +23,7 @@ UiRenderer::~UiRenderer() = default;
 void UiRenderer::Draw(const RenderInfo& render_info) {
   Draw2dBrowsing(render_info);
   DrawSplashScreen(render_info);
-  DrawController(render_info);
+  DrawInputModalElements(render_info);
 }
 
 void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info) {
@@ -66,13 +66,16 @@ void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
   // another buffer that is size optimized.
 }
 
-void UiRenderer::DrawController(const RenderInfo& render_info) {
+void UiRenderer::DrawInputModalElements(const RenderInfo& render_info) {
+  const auto& keyboard_elements = scene_->GetVisibleKeyboardElements();
   const auto& controller_elements = scene_->GetVisibleControllerElements();
-  if (controller_elements.empty())
-    return;
-
-  glEnable(GL_CULL_FACE);
-  DrawUiView(render_info, controller_elements);
+  if (!keyboard_elements.empty()) {
+    DrawUiView(render_info, keyboard_elements);
+  }
+  if (!controller_elements.empty()) {
+    glEnable(GL_CULL_FACE);
+    DrawUiView(render_info, controller_elements);
+  }
 }
 
 void UiRenderer::DrawWebVrOverlayForeground(const RenderInfo& render_info) {

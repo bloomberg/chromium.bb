@@ -112,4 +112,20 @@ void GetMinimalFov(const gfx::Transform& view_matrix,
       gvr::Rectf{left_degrees, right_degrees, bottom_degrees, top_degrees};
 }
 
+void TransformToGvrMat(const gfx::Transform& in, gvr::Mat4f* out) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      out->m[i][j] = in.matrix().get(i, j);
+    }
+  }
+}
+
+void GvrMatToTransform(const gvr::Mat4f& in, gfx::Transform* out) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      out->matrix().set(i, j, in.m[i][j]);
+    }
+  }
+}
+
 }  // namespace vr_shell

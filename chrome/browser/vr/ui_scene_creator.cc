@@ -19,6 +19,7 @@
 #include "chrome/browser/vr/elements/full_screen_rect.h"
 #include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/invisible_hit_target.h"
+#include "chrome/browser/vr/elements/keyboard.h"
 #include "chrome/browser/vr/elements/laser.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/rect.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/vr/elements/vector_icon.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/elements/webvr_url_toast.h"
+#include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/target_property.h"
@@ -204,10 +206,14 @@ std::unique_ptr<T> Create(UiElementName name, DrawPhase phase, Args&&... args) {
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
                                UiScene* scene,
                                ContentInputDelegate* content_input_delegate,
+                               KeyboardDelegate* keyboard_delegate,
+                               TextInputDelegate* text_input_delegate,
                                Model* model)
     : browser_(browser),
       scene_(scene),
       content_input_delegate_(content_input_delegate),
+      keyboard_delegate_(keyboard_delegate),
+      text_input_delegate_(text_input_delegate),
       model_(model) {}
 
 UiSceneCreator::~UiSceneCreator() {}
@@ -232,6 +238,7 @@ void UiSceneCreator::CreateScene() {
   CreateUnderDevelopmentNotice();
   CreateVoiceSearchUiGroup();
   CreateController();
+  CreateKeyboard();
 }
 
 void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
@@ -971,6 +978,47 @@ void UiSceneCreator::CreateController() {
   scene_->AddUiElement(kControllerGroup, std::move(reticle));
 }
 
+std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
+    int maximum_width_pixels,
+    float font_height_meters,
+    float text_width_meters,
+    Model* model,
+    TextInputInfo* text_input_model,
+    TextInputDelegate* text_input_delegate) {
+  auto text_input = base::MakeUnique<TextInput>(
+      maximum_width_pixels, font_height_meters, text_width_meters,
+      base::BindRepeating(
+          [](Model* model, bool focused) { model->editing_input = focused; },
+          base::Unretained(model)),
+      base::BindRepeating(
+          [](TextInputInfo* model, const TextInputInfo& text_input_info) {
+            *model = text_input_info;
+          },
+          base::Unretained(text_input_model)));
+  text_input->set_draw_phase(kPhaseForeground);
+  text_input->SetTextInputDelegate(text_input_delegate);
+  text_input->set_hit_testable(true);
+  text_input->AddBinding(base::MakeUnique<Binding<TextInputInfo>>(
+      base::BindRepeating([](TextInputInfo* info) { return *info; },
+                          base::Unretained(text_input_model)),
+      base::BindRepeating(
+          [](TextInput* e, const TextInputInfo& value) {
+            e->UpdateInput(value);
+          },
+          base::Unretained(text_input.get()))));
+  return text_input;
+}
+
+void UiSceneCreator::CreateKeyboard() {
+  auto keyboard = base::MakeUnique<Keyboard>();
+  keyboard->SetKeyboardDelegate(keyboard_delegate_);
+  keyboard->set_draw_phase(kPhaseForeground);
+  keyboard->SetTranslate(0.0, kKeyboardVerticalOffset, -kKeyboardDistance);
+  keyboard->AddBinding(VR_BIND_FUNC(bool, Model, model_, editing_input,
+                                    UiElement, keyboard.get(), SetVisible));
+  scene_->AddUiElement(kRoot, std::move(keyboard));
+}
+
 void UiSceneCreator::CreateUrlBar() {
   auto url_bar = base::MakeUnique<UrlBar>(
       512,
@@ -1067,16 +1115,16 @@ void UiSceneCreator::CreateOmnibox() {
 
   float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
   auto omnibox_text_field =
-      base::MakeUnique<TextInput>(1024, kOmniboxTextHeightDMM, width);
+      CreateTextInput(1024, kOmniboxTextHeightDMM, width, model_,
+                      &model_->omnibox_text_field_info, text_input_delegate_);
+  omnibox_text_field->AddBinding(
+      VR_BIND(TextInputInfo, Model, model_, omnibox_text_field_info,
+              UiBrowserInterface, browser_, StartAutocomplete(value.text)));
   omnibox_text_field->SetSize(width, 0);
   omnibox_text_field->set_name(kOmniboxTextField);
-  omnibox_text_field->set_draw_phase(kPhaseForeground);
   omnibox_text_field->set_x_anchoring(LEFT);
   omnibox_text_field->set_x_centering(LEFT);
   omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
-
-  omnibox_text_field->SetTextChangedCallback(base::Bind(
-      &UiBrowserInterface::StartAutocomplete, base::Unretained(browser_)));
   scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
 
   auto close_button = Create<Button>(

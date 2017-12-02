@@ -14,6 +14,7 @@
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
+#include "chrome/common/chrome_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace vr_shell {
@@ -42,10 +43,31 @@ base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
 }
 
 void VrGLThread::Init() {
-  auto ui = base::MakeUnique<vr::Ui>(this, this, ui_initial_state_);
+  bool keyboard_enabled =
+      base::FeatureList::IsEnabled(features::kVrBrowserKeyboard);
+  if (keyboard_enabled) {
+    keyboard_delegate_ = GvrKeyboardDelegate::Create();
+    text_input_delegate_ = base::MakeUnique<vr::TextInputDelegate>();
+  }
+  auto* keyboard_delegate =
+      !keyboard_delegate_ ? nullptr : keyboard_delegate_.get();
+  auto ui =
+      base::MakeUnique<vr::Ui>(this, this, keyboard_delegate,
+                               text_input_delegate_.get(), ui_initial_state_);
+  if (keyboard_enabled) {
+    text_input_delegate_->SetRequestFocusCallback(
+        base::BindRepeating(&vr::Ui::RequestFocus, base::Unretained(ui.get())));
+    if (keyboard_delegate) {
+      keyboard_delegate_->SetUiInterface(ui.get());
+      text_input_delegate_->SetUpdateInputCallback(
+          base::BindRepeating(&GvrKeyboardDelegate::UpdateInput,
+                              base::Unretained(keyboard_delegate_.get())));
+    }
+  }
+
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(
       this, std::move(ui), gvr_api_, reprojected_rendering_, daydream_support_,
-      ui_initial_state_.in_web_vr);
+      ui_initial_state_.in_web_vr, keyboard_delegate_.get());
 
   browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
 

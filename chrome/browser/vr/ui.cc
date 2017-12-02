@@ -12,7 +12,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/cpu_surface_provider.h"
+#include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
+#include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/speech_recognizer.h"
@@ -28,13 +30,19 @@ namespace vr {
 
 Ui::Ui(UiBrowserInterface* browser,
        ContentInputForwarder* content_input_forwarder,
+       vr::KeyboardDelegate* keyboard_delegate,
+       vr::TextInputDelegate* text_input_delegate,
        const UiInitialState& ui_initial_state)
     : Ui(browser,
          base::MakeUnique<ContentInputDelegate>(content_input_forwarder),
+         keyboard_delegate,
+         text_input_delegate,
          ui_initial_state) {}
 
 Ui::Ui(UiBrowserInterface* browser,
        std::unique_ptr<ContentInputDelegate> content_input_delegate,
+       vr::KeyboardDelegate* keyboard_delegate,
+       vr::TextInputDelegate* text_input_delegate,
        const UiInitialState& ui_initial_state)
     : browser_(browser),
       scene_(base::MakeUnique<UiScene>()),
@@ -44,7 +52,7 @@ Ui::Ui(UiBrowserInterface* browser,
       weak_ptr_factory_(this) {
   InitializeModel(ui_initial_state);
   UiSceneCreator(browser, scene_.get(), content_input_delegate_.get(),
-                 model_.get())
+                 keyboard_delegate, text_input_delegate, model_.get())
       .CreateScene();
 }
 
@@ -183,6 +191,22 @@ void Ui::OnGlInitialized(unsigned int content_texture_id,
   scene_->OnGlInitialized(provider_.get());
   model_->content_texture_id = content_texture_id;
   model_->content_location = content_location;
+}
+
+void Ui::RequestFocus(int element_id) {
+  input_manager_->RequestFocus(element_id);
+}
+
+void Ui::OnInputEdited(const TextInputInfo& info) {
+  input_manager_->OnInputEdited(info);
+}
+
+void Ui::OnInputCommitted(const TextInputInfo& info) {
+  input_manager_->OnInputCommitted(info);
+}
+
+void Ui::OnKeyboardHidden() {
+  input_manager_->OnKeyboardHidden();
 }
 
 void Ui::OnAppButtonClicked() {

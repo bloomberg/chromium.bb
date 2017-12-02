@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/content_input_delegate.h"
@@ -51,6 +52,24 @@ class MockRect : public Rect {
   DISALLOW_COPY_AND_ASSIGN(MockRect);
 };
 
+class MockTextInput : public TextInput {
+ public:
+  MockTextInput()
+      : TextInput(512,
+                  1,
+                  1,
+                  base::RepeatingCallback<void(bool)>(),
+                  base::RepeatingCallback<void(const TextInputInfo&)>()) {}
+  ~MockTextInput() override = default;
+
+  MOCK_METHOD1(OnFocusChanged, void(bool));
+  MOCK_METHOD1(OnInputEdited, void(const TextInputInfo&));
+  MOCK_METHOD1(OnInputCommitted, void(const TextInputInfo&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTextInput);
+};
+
 class UiInputManagerTest : public testing::Test {
  public:
   void SetUp() override {
@@ -61,6 +80,16 @@ class UiInputManagerTest : public testing::Test {
   StrictMock<MockRect>* CreateMockElement(float z_position) {
     auto element = base::MakeUnique<StrictMock<MockRect>>();
     StrictMock<MockRect>* p_element = element.get();
+    element->SetTranslate(0, 0, z_position);
+    element->SetVisible(true);
+    scene_->AddUiElement(kRoot, std::move(element));
+    scene_->OnBeginFrame(base::TimeTicks(), kForwardVector);
+    return p_element;
+  }
+
+  StrictMock<MockTextInput>* CreateMockInputElement(float z_position) {
+    auto element = base::MakeUnique<StrictMock<MockTextInput>>();
+    StrictMock<MockTextInput>* p_element = element.get();
     element->SetTranslate(0, 0, z_position);
     element->SetVisible(true);
     scene_->AddUiElement(kRoot, std::move(element));
@@ -103,6 +132,30 @@ class UiInputManagerContentTest : public UiTest {
  protected:
   UiInputManager* input_manager_;
 };
+
+TEST_F(UiInputManagerTest, FocusedElement) {
+  StrictMock<MockTextInput>* p_element1 = CreateMockInputElement(-5.f);
+  StrictMock<MockTextInput>* p_element2 = CreateMockInputElement(-5.f);
+  TextInputInfo edit(base::ASCIIToUTF16("asdfg"));
+
+  // Focus request triggers OnFocusChanged.
+  testing::Sequence s;
+  EXPECT_CALL(*p_element1, OnFocusChanged(true)).InSequence(s);
+  input_manager_->RequestFocus(p_element1->id());
+
+  // Edit goes to focused element.
+  EXPECT_CALL(*p_element1, OnInputEdited(edit)).InSequence(s);
+  input_manager_->OnInputEdited(edit);
+
+  // Commit goes to focused element.
+  EXPECT_CALL(*p_element1, OnInputCommitted(edit)).InSequence(s);
+  input_manager_->OnInputCommitted(edit);
+
+  // Focus on a different element triggers OnFocusChanged.
+  EXPECT_CALL(*p_element1, OnFocusChanged(false)).InSequence(s);
+  EXPECT_CALL(*p_element2, OnFocusChanged(true)).InSequence(s);
+  input_manager_->RequestFocus(p_element2->id());
+}
 
 TEST_F(UiInputManagerTest, ReticleRenderTarget) {
   auto element = base::MakeUnique<Rect>();

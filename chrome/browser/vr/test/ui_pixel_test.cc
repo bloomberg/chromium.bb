@@ -56,7 +56,8 @@ void UiPixelTest::TearDown() {
 
 void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
                          const ToolbarState& toolbar_state) {
-  ui_ = base::MakeUnique<Ui>(browser_.get(), nullptr, ui_initial_state);
+  ui_ = base::MakeUnique<Ui>(browser_.get(), nullptr, nullptr, nullptr,
+                             ui_initial_state);
   ui_->OnGlInitialized(content_texture_,
                        vr::UiElementRenderer::kTextureLocationLocal, true);
   ui_->GetBrowserUiWeakPtr()->SetToolbarState(toolbar_state);

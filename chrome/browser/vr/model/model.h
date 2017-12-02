@@ -12,6 +12,7 @@
 #include "chrome/browser/vr/model/permissions_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/speech_recognition_model.h"
+#include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/model/web_vr_timeout_state.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
@@ -59,6 +60,10 @@ struct Model {
     return web_vr_mode && web_vr_timeout_state == kWebVrNoTimeoutPending;
   }
   WebVrTimeoutState web_vr_timeout_state = kWebVrNoTimeoutPending;
+
+  // Focused text state.
+  bool editing_input = false;
+  TextInputInfo omnibox_text_field_info;
 
   // Controller state.
   ControllerModel controller;
