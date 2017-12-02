@@ -106,6 +106,7 @@ void Button::SetTooltipText(const base::string16& tooltip_text) {
 
 void Button::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
+  NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
 }
 
 void Button::SetState(ButtonState state) {
