@@ -272,8 +272,9 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             } else {
                 mIconView.setBackgroundColor(mIconBackgroundColorSelected);
             }
-            mIconView.setImageResource(R.drawable.ic_check_googblue_24dp);
+            mIconView.setImageDrawable(mCheckDrawable);
             mIconView.setTint(mCheckedIconForegroundColorList);
+            mCheckDrawable.start();
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);
