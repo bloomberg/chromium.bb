@@ -34,10 +34,27 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
   for (h = 0; h < y_mis; h++) {
     MV_REF *mv = frame_mvs;
     for (w = 0; w < x_mis; w++) {
+#if CONFIG_MFMV
+      mv->ref_frame[0] = NONE_FRAME;
+      mv->ref_frame[1] = NONE_FRAME;
+      mv->mv[0].as_int = 0;
+      mv->mv[1].as_int = 0;
+
+      for (int idx = 0; idx < 2; ++idx) {
+        MV_REFERENCE_FRAME ref_frame = mi->mbmi.ref_frame[idx];
+        if (ref_frame > INTRA_FRAME) {
+          int8_t ref_idx = cm->ref_frame_side[ref_frame];
+          if (ref_idx < 0) continue;
+          mv->ref_frame[ref_idx] = ref_frame;
+          mv->mv[ref_idx].as_int = mi->mbmi.mv[idx].as_int;
+        }
+      }
+#else
       mv->ref_frame[0] = mi->mbmi.ref_frame[0];
       mv->ref_frame[1] = mi->mbmi.ref_frame[1];
       mv->mv[0].as_int = mi->mbmi.mv[0].as_int;
       mv->mv[1].as_int = mi->mbmi.mv[1].as_int;
+#endif
       // (TODO:yunqing) The following 2 lines won't be used and can be removed.
       mv->pred_mv[0].as_int = mi->mbmi.pred_mv[0].as_int;
       mv->pred_mv[1].as_int = mi->mbmi.pred_mv[1].as_int;
@@ -1688,6 +1705,19 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   if (alt2_buf_idx >= 0)
     alt2_frame_index =
         cm->buffer_pool->frame_bufs[alt2_buf_idx].cur_frame_offset;
+
+  memset(cm->ref_frame_side, 0, sizeof(cm->ref_frame_side));
+  for (int ref_frame = LAST_FRAME; ref_frame < INTER_REFS_PER_FRAME;
+       ++ref_frame) {
+    int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
+    int frame_index = -1;
+    if (buf_idx >= 0)
+      frame_index = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+    if (frame_index > cur_frame_index)
+      cm->ref_frame_side[ref_frame] = 1;
+    else if (frame_index == cur_frame_index)
+      cm->ref_frame_side[ref_frame] = -1;
+  }
 
   if (alt_frame_index < cur_frame_index) return;
 
