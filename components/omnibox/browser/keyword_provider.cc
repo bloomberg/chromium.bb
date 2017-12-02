@@ -343,9 +343,13 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     // When creating an exact match (either for the keyword itself, no
     // remaining query or an extension keyword, possibly with remaining
     // input), allow the match to be the default match when appropriate.
+    // For exactly-typed non-substituting keywords, it's always appropriate.
     matches_.push_back(CreateAutocompleteMatch(
         template_url, meaningful_keyword_length, input, keyword.length(),
-        remaining_input, input.allow_exact_keyword_match(), -1, false));
+        remaining_input,
+        input.allow_exact_keyword_match() ||
+            !template_url->SupportsReplacement(model_->search_terms_data()),
+        -1, false));
 
     // Having extension-provided suggestions appear outside keyword mode can
     // be surprising, so only query for suggestions when in keyword mode.
