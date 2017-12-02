@@ -51,6 +51,40 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // be scheduled within the call.
   enum class ReleaseOption { kReleaseOnly, kReleaseAndSchedule };
 
+  // A class to pass traffic report hints on calling Release().
+  class TrafficReportHints {
+   public:
+    // |encoded_data_length| is payload size in bytes sent over the network.
+    // |decoded_body_length| is received resource data size in bytes.
+    TrafficReportHints(int64_t encoded_data_length, int64_t decoded_body_length)
+        : valid_(true),
+          encoded_data_length_(encoded_data_length),
+          decoded_body_length_(decoded_body_length) {}
+
+    // Takes a shared instance to represent an invalid instance that will be
+    // used when a caller don't want to report traffic, i.e. on a failure.
+    static TrafficReportHints& InvalidInstance();
+
+    bool IsValid() const { return valid_; }
+
+    int64_t encoded_data_length() const {
+      DCHECK(valid_);
+      return encoded_data_length_;
+    }
+    int64_t decoded_body_length() const {
+      DCHECK(valid_);
+      return decoded_body_length_;
+    }
+
+   private:
+    // Default constructor makes an invalid instance that won't be recorded.
+    TrafficReportHints() = default;
+
+    bool valid_ = false;
+    int64_t encoded_data_length_ = 0;
+    int64_t decoded_body_length_ = 0;
+  };
+
   // Returned on Request(). Caller should need to return it via Release().
   using ClientId = uint64_t;
 
@@ -63,7 +97,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     return new ResourceLoadScheduler(context ? context
                                              : &FetchContext::NullInstance());
   }
-  ~ResourceLoadScheduler() {}
+  ~ResourceLoadScheduler();
   void Trace(blink::Visitor*);
 
   // Stops all operations including observing throttling signals.
@@ -88,7 +122,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // ResourceLoadSchedulerClient should call this method when the loading is
   // finished, or canceled. This method can be called in a pre-finalization
   // step, bug the ReleaseOption must be kReleaseOnly in such a case.
-  bool Release(ClientId, ReleaseOption);
+  // TrafficReportHints is for reporting histograms.
+  // TrafficReportHints::InvalidInstance() can be used to omit reporting.
+  bool Release(ClientId, ReleaseOption, const TrafficReportHints&);
 
   // Sets outstanding limit for testing.
   void SetOutstandingLimitForTesting(size_t limit);
@@ -103,6 +139,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   void OnThrottlingStateChanged(WebFrameScheduler::ThrottlingState) override;
 
  private:
+  class TrafficMonitor;
+
   class ClientIdWithPriority {
    public:
     struct Compare {
@@ -195,6 +233,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // We use std::set here because WTF doesn't have its counterpart.
   std::set<ClientIdWithPriority, ClientIdWithPriority::Compare>
       pending_requests_;
+
+  // Holds an internal class instance to monitor and report traffic.
+  std::unique_ptr<TrafficMonitor> traffic_monitor_;
 
   // Holds FetchContext reference to contact WebFrameScheduler.
   Member<FetchContext> context_;
