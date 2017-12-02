@@ -266,14 +266,18 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['win10', ('nvidia', 0x1cb3)], bug=728670)
 
+    # Win7 / NVIDIA D3D9 failures
+    self.Flaky('conformance/canvas/canvas-test.html',
+        ['win7', 'nvidia', 'd3d9'], bug=690248)
+
+    # Win / Intel
+    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
+        ['win', 'intel', 'd3d11'], bug=782317)
+
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
               ['win7', 'intel', 'no_passthrough'])
-
-    # Win7 / NVIDIA D3D9 failures
-    self.Flaky('conformance/canvas/canvas-test.html',
-        ['win7', 'nvidia', 'd3d9'], bug=690248)
 
     # Win AMD failures
     # This test is probably flaky on all AMD, but only visible on the
@@ -447,6 +451,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # been made more robust.
     # self.Fail('conformance/rendering/texture-switch-performance.html',
     #     ['mac', 'amd', 'release'], bug=735483)
+
+    # Mac Intel
+    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
+        ['mac', 'intel'], bug=782317)
 
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
