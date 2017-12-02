@@ -567,7 +567,7 @@ void HttpStreamFactoryImpl::JobController::ResumeMainJobLater(
 }
 
 void HttpStreamFactoryImpl::JobController::ResumeMainJob() {
-  if (main_job_is_resumed_)
+  if (main_job_is_resumed_ || !main_job_)
     return;
 
   main_job_is_resumed_ = true;
