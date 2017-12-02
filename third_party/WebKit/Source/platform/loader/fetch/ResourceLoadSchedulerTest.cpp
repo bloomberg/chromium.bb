@@ -106,22 +106,27 @@ TEST_F(ResourceLoadSchedulerTest, Bypass) {
 
   // Call Release() with different options just in case.
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 
   // Should not succeed to call with the same ID twice.
   EXPECT_FALSE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 
   // Should not succeed to call with the invalid ID or unused ID.
-  EXPECT_FALSE(
-      scheduler()->Release(ResourceLoadScheduler::kInvalidClientId,
-                           ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+  EXPECT_FALSE(scheduler()->Release(
+      ResourceLoadScheduler::kInvalidClientId,
+      ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 
-  EXPECT_FALSE(
-      scheduler()->Release(static_cast<ResourceLoadScheduler::ClientId>(774),
-                           ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+  EXPECT_FALSE(scheduler()->Release(
+      static_cast<ResourceLoadScheduler::ClientId>(774),
+      ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 }
 
 TEST_F(ResourceLoadSchedulerTest, Throttled) {
@@ -162,20 +167,23 @@ TEST_F(ResourceLoadSchedulerTest, Throttled) {
 
   // Call Release() to run the second request.
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(client2->WasRan());
 
   // Call Release() with kReleaseOnly should not run the third and the fourth
   // requests.
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_FALSE(client3->WasRan());
   EXPECT_FALSE(client4->WasRan());
 
   // Should be able to call Release() for a client that hasn't run yet. This
   // should run another scheduling to run the fourth request.
   EXPECT_TRUE(scheduler()->Release(
-      id3, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule));
+      id3, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(client4->WasRan());
 }
 
@@ -212,11 +220,14 @@ TEST_F(ResourceLoadSchedulerTest, Unthrottle) {
 
   // Release all.
   EXPECT_TRUE(scheduler()->Release(
-      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 }
 
 TEST_F(ResourceLoadSchedulerTest, Stopped) {
@@ -253,15 +264,18 @@ TEST_F(ResourceLoadSchedulerTest, Stopped) {
 
   // Calling Release() still does not run the second request.
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_FALSE(client2->WasRan());
   EXPECT_FALSE(client3->WasRan());
 
   // Release all.
   EXPECT_TRUE(scheduler()->Release(
-      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 }
 
 TEST_F(ResourceLoadSchedulerTest, PriotrityIsNotConsidered) {
@@ -308,11 +322,14 @@ TEST_F(ResourceLoadSchedulerTest, PriotrityIsNotConsidered) {
 
   // Release all.
   EXPECT_TRUE(scheduler()->Release(
-      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 }
 
 TEST_F(RendererSideResourceSchedulerTest, PriotrityIsConsidered) {
@@ -369,13 +386,17 @@ TEST_F(RendererSideResourceSchedulerTest, PriotrityIsConsidered) {
 
   // Release all.
   EXPECT_TRUE(scheduler()->Release(
-      id4, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id4, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 }
 
 TEST_F(RendererSideResourceSchedulerTest, IsThrottablePriority) {
@@ -439,11 +460,14 @@ TEST_F(RendererSideResourceSchedulerTest, SetPriority) {
 
   // Release all.
   EXPECT_TRUE(scheduler()->Release(
-      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id3, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id2, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
   EXPECT_TRUE(scheduler()->Release(
-      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly));
+      id1, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+      ResourceLoadScheduler::TrafficReportHints::InvalidInstance()));
 }
 
 }  // namespace
