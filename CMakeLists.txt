@@ -425,10 +425,24 @@ if (ENABLE_EXAMPLES)
 endif ()
 
 if (ENABLE_TOOLS)
+  if (CONFIG_OBU AND CONFIG_ADD_4BYTES_OBUSIZE)
+    require_cxx_flag_nomsvc("-std=c++11" YES)
+    add_executable(dump_obu
+                   "${AOM_CONFIG_DIR}/usage_exit.c"
+                   "${AOM_ROOT}/tools/dump_obu.cc"
+                   "${AOM_ROOT}/tools/obu_parser.cc"
+                   "${AOM_ROOT}/tools/obu_parser.h"
+                   $<TARGET_OBJECTS:aom_common_app_util>
+                   $<TARGET_OBJECTS:aom_decoder_app_util>)
+    list(APPEND AOM_TOOL_TARGETS dump_obu)
+    list(APPEND AOM_APP_TARGETS dump_obu)
+  endif ()
+
   # Maintain a separate variable listing only the examples to facilitate
   # installation of example programs into an tools sub directory of
   # $AOM_DIST_DIR/bin when building the dist target.
-  set(AOM_TOOL_TARGETS ${AOM_DECODER_TOOL_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
+  list(APPEND AOM_TOOL_TARGETS
+       ${AOM_DECODER_TOOL_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
 endif ()
 
 if (ENABLE_EXAMPLES AND CONFIG_AV1_DECODER AND CONFIG_AV1_ENCODER)
