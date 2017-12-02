@@ -630,15 +630,16 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
 }
 
 void UiSceneCreator::CreateUnderDevelopmentNotice() {
-  auto text = base::MakeUnique<Text>(512, kUnderDevelopmentNoticeFontHeightM);
+  auto text = base::MakeUnique<Text>(512, kUnderDevelopmentNoticeFontHeightDMM);
   BindColor(model_, text.get(), &ColorScheme::world_background_text,
             &Text::SetColor);
   text->SetText(l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
   text->set_name(kUnderDevelopmentNotice);
   text->set_draw_phase(kPhaseForeground);
   text->set_hit_testable(false);
-  text->SetSize(kUnderDevelopmentNoticeWidthM, kUnderDevelopmentNoticeHeightM);
-  text->SetTranslate(0, -kUnderDevelopmentNoticeVerticalOffsetM, 0);
+  text->SetSize(kUnderDevelopmentNoticeWidthDMM,
+                kUnderDevelopmentNoticeHeightDMM);
+  text->SetTranslate(0, -kUnderDevelopmentNoticeVerticalOffsetDMM, 0);
   text->SetRotate(1, 0, 0, kUnderDevelopmentNoticeRotationRad);
   text->SetVisible(true);
   text->set_y_anchoring(BOTTOM);
@@ -733,12 +734,12 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
                      base::Bind(&UiBrowserInterface::SetVoiceSearchActive,
                                 base::Unretained(browser_), true),
                      vector_icons::kMicrophoneIcon);
-  voice_search_button->SetSize(kVoiceSearchButtonWidth,
-                               kVoiceSearchButtonHeight);
-  voice_search_button->set_hover_offset(kButtonZOffsetHoverDMM *
-                                        kUrlBarDistance);
-  voice_search_button->SetTranslate(0.f, -kVoiceSearchButtonYOffset, 0.f);
+  voice_search_button->SetSize(kVoiceSearchButtonDiameterDMM,
+                               kVoiceSearchButtonDiameterDMM);
+  voice_search_button->set_hover_offset(kButtonZOffsetHoverDMM);
+  voice_search_button->SetTranslate(0.f, -kVoiceSearchButtonYOffsetDMM, 0.f);
   voice_search_button->set_y_anchoring(BOTTOM);
+  voice_search_button->set_y_centering(TOP);
   voice_search_button->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m) {
@@ -1020,6 +1021,10 @@ void UiSceneCreator::CreateKeyboard() {
 }
 
 void UiSceneCreator::CreateUrlBar() {
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kUrlBarDistance);
+  scaler->set_name(kUrlBarDmmRoot);
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(scaler));
+
   auto url_bar = base::MakeUnique<UrlBar>(
       512,
       base::Bind(&UiBrowserInterface::NavigateBack, base::Unretained(browser_)),
@@ -1027,9 +1032,9 @@ void UiSceneCreator::CreateUrlBar() {
                  base::Unretained(browser_)));
   url_bar->set_name(kUrlBar);
   url_bar->set_draw_phase(kPhaseForeground);
-  url_bar->SetTranslate(0, kUrlBarVerticalOffset, -kUrlBarDistance);
+  url_bar->SetTranslate(0, kUrlBarVerticalOffsetDMM, 0);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
-  url_bar->SetSize(kUrlBarWidth, kUrlBarHeight);
+  url_bar->SetSize(kUrlBarWidthDMM, kUrlBarHeightDMM);
   url_bar->AddBinding(VR_BIND_FUNC(bool, Model, model_, fullscreen == false,
                                    UiElement, url_bar.get(), SetVisible));
   url_bar->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model_, toolbar_state,
@@ -1042,17 +1047,16 @@ void UiSceneCreator::CreateUrlBar() {
                                    SetHistoryButtonsEnabled));
   BindColor(model_, url_bar.get(), &ColorScheme::element_background,
             &TexturedElement::SetBackgroundColor);
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(url_bar));
+  scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
 
   auto indicator_bg = base::MakeUnique<Rect>();
   indicator_bg->set_name(kLoadingIndicator);
   indicator_bg->set_draw_phase(kPhaseForeground);
-  indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffset,
-                             kLoadingIndicatorDepthOffset);
-  indicator_bg->SetSize(kLoadingIndicatorWidth, kLoadingIndicatorHeight);
+  indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffsetDMM, 0);
+  indicator_bg->SetSize(kLoadingIndicatorWidthDMM, kLoadingIndicatorHeightDMM);
   indicator_bg->set_y_anchoring(TOP);
   indicator_bg->SetTransitionedProperties({OPACITY});
-  indicator_bg->set_corner_radius(kLoadingIndicatorHeight * 0.5f);
+  indicator_bg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
   indicator_bg->AddBinding(VR_BIND_FUNC(bool, Model, model_, loading, Rect,
                                         indicator_bg.get(), SetVisible));
   BindColor(model_, indicator_bg.get(),
@@ -1064,7 +1068,7 @@ void UiSceneCreator::CreateUrlBar() {
   indicator_fg->set_draw_phase(kPhaseForeground);
   indicator_fg->set_name(kLoadingIndicatorForeground);
   indicator_fg->set_x_anchoring(LEFT);
-  indicator_fg->set_corner_radius(kLoadingIndicatorHeight * 0.5f);
+  indicator_fg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
   indicator_fg->set_hit_testable(false);
   BindColor(model_, indicator_fg.get(),
             &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
@@ -1073,8 +1077,9 @@ void UiSceneCreator::CreateUrlBar() {
                  base::Unretained(model_)),
       base::Bind(
           [](Rect* r, const float& value) {
-            r->SetSize(kLoadingIndicatorWidth * value, kLoadingIndicatorHeight);
-            r->SetTranslate(kLoadingIndicatorWidth * value * 0.5f, 0.0f,
+            r->SetSize(kLoadingIndicatorWidthDMM * value,
+                       kLoadingIndicatorHeightDMM);
+            r->SetTranslate(kLoadingIndicatorWidthDMM * value * 0.5f, 0.0f,
                             0.001f);
           },
           base::Unretained(indicator_fg.get()))));
@@ -1082,6 +1087,10 @@ void UiSceneCreator::CreateUrlBar() {
 }
 
 void UiSceneCreator::CreateOmnibox() {
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kUrlBarDistance);
+  scaler->set_name(kOmniboxDmmRoot);
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(scaler));
+
   auto omnibox_root = base::MakeUnique<UiElement>();
   omnibox_root->set_name(kOmniboxRoot);
   omnibox_root->set_draw_phase(kPhaseNone);
@@ -1091,10 +1100,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_root->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                         omnibox_input_active, UiElement,
                                         omnibox_root.get(), SetVisible));
-
-  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kUrlBarDistance);
-  scaler->AddChild(std::move(omnibox_root));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(scaler));
+  scene_->AddUiElement(kOmniboxDmmRoot, std::move(omnibox_root));
 
   auto omnibox_container = base::MakeUnique<Rect>();
   omnibox_container->set_name(kOmniboxContainer);
