@@ -1,3 +1,4 @@
 include_rules = [
   "+components/wallpaper",
+  "+services/data_decoder/public",
 ]

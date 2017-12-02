@@ -749,6 +749,8 @@ component("ash") {
     "wallpaper/wallpaper_controller.cc",
     "wallpaper/wallpaper_controller.h",
     "wallpaper/wallpaper_controller_observer.h",
+    "wallpaper/wallpaper_decoder.cc",
+    "wallpaper/wallpaper_decoder.h",
     "wallpaper/wallpaper_delegate.h",
     "wallpaper/wallpaper_delegate_mus.cc",
     "wallpaper/wallpaper_delegate_mus.h",
