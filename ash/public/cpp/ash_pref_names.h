@@ -50,6 +50,7 @@ ASH_PUBLIC_EXPORT extern const char kShelfPreferences[];
 ASH_PUBLIC_EXPORT extern const char kShowLogoutButtonInTray[];
 ASH_PUBLIC_EXPORT extern const char kLogoutDialogDurationMs[];
 
+ASH_PUBLIC_EXPORT extern const char kUserWallpaperInfo[];
 ASH_PUBLIC_EXPORT extern const char kWallpaperColors[];
 
 ASH_PUBLIC_EXPORT extern const char kUserBluetoothAdapterEnabled[];

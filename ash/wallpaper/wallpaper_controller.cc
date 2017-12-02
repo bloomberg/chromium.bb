@@ -25,6 +25,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -43,10 +44,17 @@ using color_utils::ColorProfile;
 using color_utils::LumaRange;
 using color_utils::SaturationRange;
 using wallpaper::ColorProfileType;
+using wallpaper::WallpaperInfo;
 
 namespace ash {
 
 namespace {
+
+// Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
+const char kNewWallpaperDateNodeName[] = "date";
+const char kNewWallpaperLayoutNodeName[] = "layout";
+const char kNewWallpaperLocationNodeName[] = "file";
+const char kNewWallpaperTypeNodeName[] = "type";
 
 // How long to wait reloading the wallpaper after the display size has changed.
 constexpr int kWallpaperReloadDelayMs = 100;
@@ -57,10 +65,9 @@ constexpr int kCompositorLockTimeoutMs = 750;
 // Caches color calculation results in local state pref service.
 void CacheProminentColors(const std::vector<SkColor>& colors,
                           const std::string& current_location) {
-  // Local state can be null during startup.
-  if (!Shell::Get()->GetLocalStatePrefService()) {
+  // Local state can be null in tests.
+  if (!Shell::Get()->GetLocalStatePrefService())
     return;
-  }
   DictionaryPrefUpdate wallpaper_colors_update(
       Shell::Get()->GetLocalStatePrefService(), prefs::kWallpaperColors);
   auto wallpaper_colors = std::make_unique<base::ListValue>();
@@ -76,7 +83,7 @@ base::Optional<std::vector<SkColor>> GetCachedColors(
     const std::string& current_location) {
   base::Optional<std::vector<SkColor>> cached_colors_out;
   const base::ListValue* prominent_colors = nullptr;
-  // Local state can be null during startup.
+  // Local state can be null in tests.
   if (!Shell::Get()->GetLocalStatePrefService() ||
       !Shell::Get()
            ->GetLocalStatePrefService()
@@ -185,7 +192,8 @@ WallpaperController::~WallpaperController() {
 // static
 void WallpaperController::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterForeignPref(prefs::kWallpaperColors);
+  registry->RegisterDictionaryPref(prefs::kUserWallpaperInfo);
+  registry->RegisterDictionaryPref(prefs::kWallpaperColors);
 }
 
 void WallpaperController::BindRequest(
@@ -226,9 +234,8 @@ wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
   return wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 }
 
-void WallpaperController::SetWallpaperImage(
-    const gfx::ImageSkia& image,
-    const wallpaper::WallpaperInfo& info) {
+void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
+                                            const WallpaperInfo& info) {
   wallpaper::WallpaperLayout layout = info.layout;
   VLOG(1) << "SetWallpaper: image_id="
           << wallpaper::WallpaperResizer::GetImageId(image)
@@ -254,6 +261,7 @@ void WallpaperController::SetWallpaperImage(
     observer.OnWallpaperDataChanged();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
+  wallpaper_count_for_testing_++;
 }
 
 void WallpaperController::CreateEmptyWallpaper() {
@@ -297,7 +305,7 @@ void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
 
 void WallpaperController::OnLocalStatePrefServiceInitialized(
     PrefService* pref_service) {
-  CalculateWallpaperColors();
+  Shell::Get()->wallpaper_delegate()->InitializeWallpaper();
 }
 
 void WallpaperController::OnSessionStateChanged(
@@ -387,6 +395,134 @@ bool WallpaperController::ShouldApplyBlur() const {
              switches::kAshDisableLoginDimAndBlur);
 }
 
+void WallpaperController::SetUserWallpaperInfo(const AccountId& account_id,
+                                               const WallpaperInfo& info,
+                                               bool is_persistent) {
+  current_user_wallpaper_info_ = info;
+  if (!is_persistent)
+    return;
+
+  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
+  // Local state can be null in tests.
+  if (!local_state)
+    return;
+  WallpaperInfo old_info;
+  if (GetUserWallpaperInfo(account_id, &old_info, is_persistent)) {
+    // Remove the color cache of the previous wallpaper if it exists.
+    DictionaryPrefUpdate wallpaper_colors_update(local_state,
+                                                 prefs::kWallpaperColors);
+    wallpaper_colors_update->RemoveWithoutPathExpansion(old_info.location,
+                                                        nullptr);
+  }
+  DictionaryPrefUpdate wallpaper_update(local_state, prefs::kUserWallpaperInfo);
+
+  auto wallpaper_info_dict = std::make_unique<base::DictionaryValue>();
+  wallpaper_info_dict->SetString(
+      kNewWallpaperDateNodeName,
+      base::Int64ToString(info.date.ToInternalValue()));
+  wallpaper_info_dict->SetString(kNewWallpaperLocationNodeName, info.location);
+  wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
+  wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);
+  wallpaper_update->SetWithoutPathExpansion(account_id.GetUserEmail(),
+                                            std::move(wallpaper_info_dict));
+}
+
+bool WallpaperController::GetUserWallpaperInfo(const AccountId& account_id,
+                                               WallpaperInfo* info,
+                                               bool is_persistent) {
+  if (!is_persistent) {
+    // Default to the values cached in memory.
+    *info = current_user_wallpaper_info_;
+
+    // Ephemeral users do not save anything to local state. But we have got
+    // wallpaper info from memory. Returns true.
+    return true;
+  }
+
+  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
+  // Local state can be null in tests.
+  if (!local_state)
+    return false;
+  const base::DictionaryValue* info_dict;
+  if (!local_state->GetDictionary(prefs::kUserWallpaperInfo)
+           ->GetDictionaryWithoutPathExpansion(account_id.GetUserEmail(),
+                                               &info_dict)) {
+    return false;
+  }
+
+  // Use temporary variables to keep |info| untouched in the error case.
+  std::string location;
+  if (!info_dict->GetString(kNewWallpaperLocationNodeName, &location))
+    return false;
+  int layout;
+  if (!info_dict->GetInteger(kNewWallpaperLayoutNodeName, &layout))
+    return false;
+  int type;
+  if (!info_dict->GetInteger(kNewWallpaperTypeNodeName, &type))
+    return false;
+  std::string date_string;
+  if (!info_dict->GetString(kNewWallpaperDateNodeName, &date_string))
+    return false;
+  int64_t date_val;
+  if (!base::StringToInt64(date_string, &date_val))
+    return false;
+
+  info->location = location;
+  info->layout = static_cast<wallpaper::WallpaperLayout>(layout);
+  info->type = static_cast<wallpaper::WallpaperType>(type);
+  info->date = base::Time::FromInternalValue(date_val);
+  return true;
+}
+
+void WallpaperController::RemoveUserWallpaperInfo(const AccountId& account_id,
+                                                  bool is_persistent) {
+  if (wallpaper_cache_map_.find(account_id) != wallpaper_cache_map_.end())
+    wallpaper_cache_map_.erase(account_id);
+
+  PrefService* local_state = Shell::Get()->GetLocalStatePrefService();
+  // Local state can be null in tests.
+  if (!local_state)
+    return;
+  WallpaperInfo info;
+  GetUserWallpaperInfo(account_id, &info, is_persistent);
+  DictionaryPrefUpdate prefs_wallpapers_info_update(local_state,
+                                                    prefs::kUserWallpaperInfo);
+  prefs_wallpapers_info_update->RemoveWithoutPathExpansion(
+      account_id.GetUserEmail(), nullptr);
+  // Remove the color cache of the previous wallpaper if it exists.
+  DictionaryPrefUpdate wallpaper_colors_update(local_state,
+                                               prefs::kWallpaperColors);
+  wallpaper_colors_update->RemoveWithoutPathExpansion(info.location, nullptr);
+}
+
+bool WallpaperController::GetWallpaperFromCache(const AccountId& account_id,
+                                                gfx::ImageSkia* image) {
+  CustomWallpaperMap::const_iterator it = wallpaper_cache_map_.find(account_id);
+  if (it != wallpaper_cache_map_.end() && !it->second.second.isNull()) {
+    *image = it->second.second;
+    return true;
+  }
+  return false;
+}
+
+bool WallpaperController::GetPathFromCache(const AccountId& account_id,
+                                           base::FilePath* path) {
+  CustomWallpaperMap::const_iterator it = wallpaper_cache_map_.find(account_id);
+  if (it != wallpaper_cache_map_.end()) {
+    *path = (*it).second.first;
+    return true;
+  }
+  return false;
+}
+
+wallpaper::WallpaperInfo* WallpaperController::GetCurrentUserWallpaperInfo() {
+  return &current_user_wallpaper_info_;
+}
+
+CustomWallpaperMap* WallpaperController::GetWallpaperCacheMap() {
+  return &wallpaper_cache_map_;
+}
+
 void WallpaperController::SetClient(
     mojom::WallpaperControllerClientPtr client) {
   wallpaper_controller_client_ = std::move(client);
@@ -409,7 +545,28 @@ void WallpaperController::SetOnlineWallpaper(
     const std::string& url,
     wallpaper::WallpaperLayout layout,
     bool show_wallpaper) {
-  NOTIMPLEMENTED();
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+
+  // There is no visible wallpaper in kiosk mode.
+  base::Optional<user_manager::UserType> user_type =
+      Shell::Get()->session_controller()->GetUserType();
+  if (!user_type || *user_type == user_manager::USER_TYPE_KIOSK_APP)
+    return;
+
+  WallpaperInfo info = {url, layout, wallpaper::ONLINE,
+                        base::Time::Now().LocalMidnight()};
+  SetUserWallpaperInfo(user_info->account_id, info, !user_info->is_ephemeral);
+
+  if (show_wallpaper) {
+    // TODO(crbug.com/776464): This should ideally go through PendingWallpaper.
+    SetWallpaper(image, info);
+  }
+
+  // Leave the file path empty, because in most cases the file path is not used
+  // when fetching cache, but in case it needs to be checked, we should avoid
+  // confusing the URL with a real file path.
+  wallpaper_cache_map_[user_info->account_id] = CustomWallpaperElement(
+      base::FilePath(), gfx::ImageSkia::CreateFrom1xBitmap(image));
 }
 
 void WallpaperController::SetDefaultWallpaper(
@@ -440,7 +597,7 @@ void WallpaperController::RemoveUserWallpaper(
 }
 
 void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
-                                       const wallpaper::WallpaperInfo& info) {
+                                       const WallpaperInfo& info) {
   if (wallpaper.isNull())
     return;
   SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), info);
@@ -467,6 +624,8 @@ void WallpaperController::OnWallpaperResized() {
 void WallpaperController::OnColorCalculationComplete() {
   const std::vector<SkColor> colors = color_calculator_->prominent_colors();
   color_calculator_.reset();
+  // TODO(crbug.com/787134): The prominent colors of wallpapers with empty
+  // location should be cached as well.
   if (!current_location_.empty())
     CacheProminentColors(colors, current_location_);
   SetProminentColors(colors);

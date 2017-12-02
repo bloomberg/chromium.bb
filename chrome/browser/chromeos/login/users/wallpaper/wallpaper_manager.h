@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -36,8 +37,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
-
-class PrefRegistrySimple;
 
 namespace base {
 class CommandLine;
@@ -90,9 +89,6 @@ extern const int kLargeWallpaperMaxHeight;
 // The width and height of wallpaper thumbnails.
 extern const int kWallpaperThumbnailWidth;
 extern const int kWallpaperThumbnailHeight;
-
-// A dictionary pref that maps usernames to wallpaper info.
-extern const char kUsersWallpaperInfo[];
 
 class WallpaperManager : public content::NotificationObserver,
                          public user_manager::UserManager::Observer,
@@ -212,9 +208,6 @@ class WallpaperManager : public content::NotificationObserver,
   // Returns custom wallpaper directory by appending corresponding |sub_dir|.
   static base::FilePath GetCustomWallpaperDir(const char* sub_dir);
 
-  // Registers wallpaper manager preferences.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Resizes |image| to a resolution which is nearest to |preferred_width| and
   // |preferred_height| while respecting the |layout| choice. |output_skia| is
   // optional (may be NULL). Returns true on success.
@@ -261,21 +254,6 @@ class WallpaperManager : public content::NotificationObserver,
                           const gfx::ImageSkia& image,
                           bool show_wallpaper);
 
-  // Sets wallpaper from the wallpaper picker selection, i.e., the wallpaper
-  // type is ONLINE.
-  // |account_id|: The user's account id.
-  // |image|: The wallpaper image.
-  // |url|: The url corresponding to this wallpaper. Used as a placeholder for
-  //        the location in WallpaperInfo.
-  // |layout|: The layout of the wallpaper, used for wallpaper resizing.
-  // |show_wallpaper|: If false, don't show the new wallpaper now but only
-  //                   update cache.
-  void SetOnlineWallpaper(const AccountId& account_id,
-                          const gfx::ImageSkia& image,
-                          const std::string& url,
-                          wallpaper::WallpaperLayout layout,
-                          bool show_wallpaper);
-
   // Sets |account_id|'s wallpaper to be the default wallpaper. Note: different
   // user types may have different default wallpapers. If |show_wallpaper| is
   // false, don't show the default wallpaper now.
@@ -307,10 +285,7 @@ class WallpaperManager : public content::NotificationObserver,
   // Removes all of |account_id|'s saved wallpapers and related info.
   void RemoveUserWallpaper(const AccountId& account_id);
 
-  // TODO(crbug.com/776464): Make this private. WallpaperInfo should be an
-  // internal concept.
-  // Sets wallpaper info for |account_id| and saves it to local state if
-  // |is_persistent| is true.
+  // A wrapper of |WallpaperController::SetUserWallpaperInfo|.
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
                             bool is_persistent);
@@ -402,12 +377,6 @@ class WallpaperManager : public content::NotificationObserver,
 
   WallpaperManager();
 
-  // The |CustomWallpaperElement| contains |first| the path of the image which
-  // is currently being loaded and or in progress of being loaded and |second|
-  // the image itself.
-  typedef std::pair<base::FilePath, gfx::ImageSkia> CustomWallpaperElement;
-  typedef std::map<AccountId, CustomWallpaperElement> CustomWallpaperMap;
-
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
   static void SaveCustomWallpaper(
@@ -452,11 +421,11 @@ class WallpaperManager : public content::NotificationObserver,
   // set the device wallpaper as the login screen wallpaper.
   bool SetDeviceWallpaperIfApplicable(const AccountId& account_id);
 
-  // Gets encoded wallpaper from cache. Returns true if success.
+  // A wrapper of |WallpaperController::GetWallpaperFromCache|.
   bool GetWallpaperFromCache(const AccountId& account_id,
                              gfx::ImageSkia* image);
 
-  // Gets path of encoded wallpaper from cache. Returns true if success.
+  // A wrapper of |WallpaperController::GetPathFromCache|.
   bool GetPathFromCache(const AccountId& account_id, base::FilePath* path);
 
   // The number of wallpapers have loaded. For test only.
@@ -510,9 +479,7 @@ class WallpaperManager : public content::NotificationObserver,
   // wallpaper_files_id is ready.
   void MoveLoggedInUserCustomWallpaper();
 
-  // Gets wallpaper information of |account_id| from Local State or memory.
-  // Returns
-  // false if wallpaper information is not found.
+  // A wrapper of |WallpaperController::GetUserWallpaperInfo|.
   bool GetUserWallpaperInfo(const AccountId& account_id,
                             wallpaper::WallpaperInfo* info) const;
 
@@ -671,6 +638,13 @@ class WallpaperManager : public content::NotificationObserver,
       const base::FilePath& customized_default_wallpaper_file_large,
       std::unique_ptr<gfx::ImageSkia> large_wallpaper_image);
 
+  // Returns the cached logged-in user wallpaper info, or a dummy value under
+  // mash.
+  wallpaper::WallpaperInfo* GetCachedWallpaperInfo();
+
+  // Returns the wallpaper cache map, or a dummy value under mash.
+  ash::CustomWallpaperMap* GetWallpaperCacheMap();
+
   std::unique_ptr<CrosSettings::ObserverSubscription>
       show_user_name_on_signin_subscription_;
 
@@ -687,14 +661,14 @@ class WallpaperManager : public content::NotificationObserver,
   // Wallpaper sequenced task runner.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Logged-in user wallpaper information.
-  wallpaper::WallpaperInfo current_user_wallpaper_info_;
-
   // If non-NULL, used in place of the real command line.
   base::CommandLine* command_line_for_testing_ = nullptr;
 
-  // Caches wallpapers of users. Accessed only on UI thread.
-  CustomWallpaperMap wallpaper_cache_;
+  // A placeholder for |current_user_wallpaper_info_| under mash.
+  wallpaper::WallpaperInfo dummy_current_user_wallpaper_info_;
+
+  // A placeholder for |wallpaper_cache_map_| under mash.
+  ash::CustomWallpaperMap dummy_wallpaper_cache_map_;
 
   // The last selected user on user pod row.
   AccountId last_selected_user_ = EmptyAccountId();

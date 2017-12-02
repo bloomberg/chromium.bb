@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -333,16 +334,14 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
   // Set unsafe_wallpaper_decoder_ to null since the decoding already finished.
   unsafe_wallpaper_decoder_ = NULL;
 
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
       account_id_ ==
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  wallpaper_manager->SetOnlineWallpaper(account_id_, image, params->url, layout,
-                                        update_wallpaper);
+  WallpaperControllerClient::Get()->SetOnlineWallpaper(
+      account_id_, image, params->url, layout, update_wallpaper);
   SetResult(base::MakeUnique<base::Value>(true));
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
@@ -432,17 +431,14 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
 
 void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
     std::unique_ptr<gfx::ImageSkia> image) {
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
 
   bool update_wallpaper =
       account_id_ ==
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  wallpaper_manager->SetOnlineWallpaper(account_id_, *image.get(), params->url,
-                                        layout, update_wallpaper);
+  WallpaperControllerClient::Get()->SetOnlineWallpaper(
+      account_id_, *image.get(), params->url, layout, update_wallpaper);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
