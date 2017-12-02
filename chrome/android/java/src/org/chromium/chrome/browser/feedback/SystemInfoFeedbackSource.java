@@ -12,6 +12,7 @@ import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.io.File;
@@ -96,7 +97,8 @@ public class SystemInfoFeedbackSource implements AsyncFeedbackSource {
                         "Available Memory (MB)", Integer.toString(nativeGetAvailableMemoryMB())),
                 Pair.create("Total Memory (MB)", Integer.toString(nativeGetTotalMemoryMB())),
                 Pair.create("GPU Vendor", nativeGetGpuVendor()),
-                Pair.create("GPU Model", nativeGetGpuModel()));
+                Pair.create("GPU Model", nativeGetGpuModel()),
+                Pair.create("UI Locale", LocaleUtils.getDefaultLocaleString()));
 
         if (isReady()) {
             Long availSpace = mStorageTask.getAvailableSpaceMB();
