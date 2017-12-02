@@ -135,7 +135,7 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
   if (exception_state.HadException())
     return;
 
-  v8::Local<v8::Value> array = v8::Local<v8::Value>::Cast(info[2]);
+  v8::Local<v8::Value> array = info[2];
   if (!array->IsArray())
     return;
   ContextMenu menu;
@@ -144,13 +144,8 @@ void V8DevToolsHost::showContextMenuAtPointMethodCustom(
     return;
 
   Document* document = nullptr;
-  if (info.Length() >= 4 && v8::Local<v8::Value>::Cast(info[3])->IsObject()) {
-    v8::Local<v8::Object> document_wrapper =
-        v8::Local<v8::Object>::Cast(info[3]);
-    if (!V8HTMLDocument::wrapperTypeInfo.Equals(
-            ToWrapperTypeInfo(document_wrapper)))
-      return;
-    document = V8HTMLDocument::ToImpl(document_wrapper);
+  if (info.Length() >= 4 && info[3]->IsObject()) {
+    document = V8HTMLDocument::ToImplWithTypeCheck(isolate, info[3]);
   } else {
     v8::Local<v8::Object> window_wrapper =
         V8Window::findInstanceInPrototypeChain(
