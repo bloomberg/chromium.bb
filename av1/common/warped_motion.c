@@ -1028,7 +1028,8 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #define LEAST_SQUARES_ORDER 2
 
 #define LS_MV_MAX 256  // max mv in 1/8-pel
-#define LS_STEP 2
+// Use LS_STEP = 8 so that 2 less bits needed for A, Bx, By.
+#define LS_STEP 8
 
 // Assuming LS_MV_MAX is < MAX_SB_SIZE * 8,
 // the precision needed is:
@@ -1049,13 +1050,17 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #define LS_MAT_MIN (-(1 << (LS_MAT_BITS - 1)))
 #define LS_MAT_MAX ((1 << (LS_MAT_BITS - 1)) - 1)
 
-#define LS_SUM(a) ((a)*4 + LS_STEP * 2)
-#define LS_SQUARE(a) \
-  (((a) * (a)*4 + (a)*4 * LS_STEP + LS_STEP * LS_STEP * 2) >> 2)
-#define LS_PRODUCT1(a, b) \
-  (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP) >> 2)
-#define LS_PRODUCT2(a, b) \
-  (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2) >> 2)
+// By setting LS_STEP = 8, the least 2 bits of every elements in A, Bx, By are
+// 0. So, we can reduce LS_MAT_RANGE_BITS(2) bits here.
+#define LS_SQUARE(a)                                          \
+  (((a) * (a)*4 + (a)*4 * LS_STEP + LS_STEP * LS_STEP * 2) >> \
+   (2 + LS_MAT_DOWN_BITS))
+#define LS_PRODUCT1(a, b)                                           \
+  (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP) >> \
+   (2 + LS_MAT_DOWN_BITS))
+#define LS_PRODUCT2(a, b)                                               \
+  (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2) >> \
+   (2 + LS_MAT_DOWN_BITS))
 
 #define USE_LIMITED_PREC_MULT 0
 
@@ -1140,7 +1145,7 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   int32_t A[2][2] = { { 0, 0 }, { 0, 0 } };
   int32_t Bx[2] = { 0, 0 };
   int32_t By[2] = { 0, 0 };
-  int i, n = 0;
+  int i;
 
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
@@ -1175,11 +1180,14 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
   // We need to just compute inv(A).Bx and inv(A).By for the solutions.
   int sx, sy, dx, dy;
   // Contribution from neighbor block
-  for (i = 0; i < np && n < LEAST_SQUARES_SAMPLES_MAX; i++) {
+  for (i = 0; i < np; i++) {
     dx = pts2[i * 2] - dux;
     dy = pts2[i * 2 + 1] - duy;
     sx = pts1[i * 2] - sux;
     sy = pts1[i * 2 + 1] - suy;
+    // (TODO)yunqing: This comparison wouldn't be necessary if the sample
+    // selection is done in find_samples(). Also, global offset can be removed
+    // while collecting samples.
     if (abs(sx - dx) < LS_MV_MAX && abs(sy - dy) < LS_MV_MAX) {
       A[0][0] += LS_SQUARE(sx);
       A[0][1] += LS_PRODUCT1(sx, sy);
@@ -1188,32 +1196,17 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
       Bx[1] += LS_PRODUCT1(sy, dx);
       By[0] += LS_PRODUCT1(sx, dy);
       By[1] += LS_PRODUCT2(sy, dy);
-      n++;
     }
   }
-  int downshift;
-  if (n >= 4)
-    downshift = LS_MAT_DOWN_BITS;
-  else if (n >= 2)
-    downshift = LS_MAT_DOWN_BITS - 1;
-  else
-    downshift = LS_MAT_DOWN_BITS - 2;
 
-  // Reduce precision by downshift bits
-  A[0][0] = clamp(ROUND_POWER_OF_TWO_SIGNED(A[0][0], downshift), LS_MAT_MIN,
-                  LS_MAT_MAX);
-  A[0][1] = clamp(ROUND_POWER_OF_TWO_SIGNED(A[0][1], downshift), LS_MAT_MIN,
-                  LS_MAT_MAX);
-  A[1][1] = clamp(ROUND_POWER_OF_TWO_SIGNED(A[1][1], downshift), LS_MAT_MIN,
-                  LS_MAT_MAX);
-  Bx[0] = clamp(ROUND_POWER_OF_TWO_SIGNED(Bx[0], downshift), LS_MAT_MIN,
-                LS_MAT_MAX);
-  Bx[1] = clamp(ROUND_POWER_OF_TWO_SIGNED(Bx[1], downshift), LS_MAT_MIN,
-                LS_MAT_MAX);
-  By[0] = clamp(ROUND_POWER_OF_TWO_SIGNED(By[0], downshift), LS_MAT_MIN,
-                LS_MAT_MAX);
-  By[1] = clamp(ROUND_POWER_OF_TWO_SIGNED(By[1], downshift), LS_MAT_MIN,
-                LS_MAT_MAX);
+  // Just for debugging, and can be removed later.
+  assert(A[0][0] >= LS_MAT_MIN && A[0][0] <= LS_MAT_MAX);
+  assert(A[0][1] >= LS_MAT_MIN && A[0][1] <= LS_MAT_MAX);
+  assert(A[1][1] >= LS_MAT_MIN && A[1][1] <= LS_MAT_MAX);
+  assert(Bx[0] >= LS_MAT_MIN && Bx[0] <= LS_MAT_MAX);
+  assert(Bx[1] >= LS_MAT_MIN && Bx[1] <= LS_MAT_MAX);
+  assert(By[0] >= LS_MAT_MIN && By[0] <= LS_MAT_MAX);
+  assert(By[1] >= LS_MAT_MIN && By[1] <= LS_MAT_MAX);
 
   int64_t Px[2], Py[2], Det;
   int16_t iDet, shift;
