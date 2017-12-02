@@ -102,19 +102,13 @@ GpuInit::~GpuInit() {
 bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                         const GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
-#if defined(OS_ANDROID)
-  // Android doesn't have PCI vendor/device IDs, so collecting GL strings early
-  // is necessary.
-  CollectGraphicsInfo(&gpu_info_);
-  if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
-    return false;
-#else
+  gpu_info_.in_process_gpu = false;
+#if !defined(OS_ANDROID)
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   // TODO(zmo): Collect basic GPU info (without a context) here instead of
   // passing from browser process.
   GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
-#endif  // OS_ANDROID
 
   // Set keys for crash logging based on preliminary gpu info, in case we
   // crash during feature collection.
@@ -125,7 +119,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
     return false;
 #endif
-  gpu_info_.in_process_gpu = false;
 
   // Compute blacklist and driver bug workaround decisions based on basic GPU
   // info.
@@ -139,6 +132,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
           .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
     gpu_preferences_.disable_accelerated_video_decode = true;
   }
+#endif  // OS_ANDROID
 
   // In addition to disabling the watchdog if the command line switch is
   // present, disable the watchdog on valgrind because the code is expected
@@ -222,10 +216,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // multiple seconds to finish, which in turn cause the GPU process to crash.
   // By skipping the following code on Mac, we don't really lose anything,
   // because the basic GPU information is passed down from the host process.
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX)
   CollectGraphicsInfo(&gpu_info_);
   if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
     return false;
+  gpu::SetKeysForCrashLogging(gpu_info_);
   gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
   if (kGpuFeatureStatusEnabled !=
       gpu_feature_info_
@@ -290,13 +285,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     gpu_info_ = *gpu_info;
     gpu_feature_info_ = *gpu_feature_info;
   } else {
-#if defined(OS_ANDROID)
-    gpu::CollectContextGraphicsInfo(&gpu_info_);
-#else
+#if !defined(OS_ANDROID)
     // TODO(zmo): Collect basic GPU info here instead.
     gpu::GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
-#endif
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+#endif
   }
   if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
     gpu::InitializeSwitchableGPUs(
@@ -308,10 +301,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     return;
   }
 
-#if !defined(OS_ANDROID)
   gpu::CollectContextGraphicsInfo(&gpu_info_);
   gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
-#endif
   if (!gpu_feature_info_.disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(
         gpu_feature_info_.disabled_extensions);
