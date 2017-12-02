@@ -9268,7 +9268,8 @@ TEST_P(WebFrameSwapTest, SetTimeoutAfterSwap) {
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
   WebFrame* target_frame = MainFrame()->FirstChild();
   target_frame->Swap(remote_frame);
-  remote_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+  remote_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
 
   // Invoking setTimeout should throw a security error.
   {
@@ -9349,7 +9350,8 @@ TEST_P(WebFrameSwapTest, RemoteWindowNamedAccess) {
   // accessing a named property doesn't crash.
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote();
   LastChild(MainFrame())->Swap(remote_frame);
-  remote_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+  remote_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
   v8::Local<v8::Value> remote_window_property =
       MainFrame()->ExecuteScriptAndReturnValue(
           WebScriptSource("window[2].foo"));
@@ -9376,7 +9378,8 @@ TEST_P(WebFrameSwapTest, FramesOfRemoteParentAreIndexable) {
 
   WebRemoteFrame* remote_parent_frame = FrameTestHelpers::CreateRemote();
   MainFrame()->Swap(remote_parent_frame);
-  remote_parent_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+  remote_parent_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
 
   WebLocalFrame* child_frame =
       FrameTestHelpers::CreateLocalChild(*remote_parent_frame);
@@ -9403,7 +9406,8 @@ TEST_P(WebFrameSwapTest, FrameElementInFramesWithRemoteParent) {
 
   WebRemoteFrame* remote_parent_frame = FrameTestHelpers::CreateRemote();
   MainFrame()->Swap(remote_parent_frame);
-  remote_parent_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+  remote_parent_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
 
   WebLocalFrame* child_frame =
       FrameTestHelpers::CreateLocalChild(*remote_parent_frame);
@@ -9514,7 +9518,7 @@ TEST_P(WebFrameSwapTest, NavigateRemoteFrameViaLocation) {
   ASSERT_EQ(MainFrame()->FirstChild(), remote_frame);
 
   remote_frame->SetReplicatedOrigin(
-      WebSecurityOrigin::CreateFromString("http://127.0.0.1"));
+      WebSecurityOrigin::CreateFromString("http://127.0.0.1"), false);
   MainFrame()->ExecuteScript(
       WebScriptSource("document.getElementsByTagName('iframe')[0]."
                       "contentWindow.location = 'data:text/html,hi'"));
@@ -9530,7 +9534,8 @@ TEST_P(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   RemoteNavigationClient remote_client;
   WebRemoteFrame* remote_frame = FrameTestHelpers::CreateRemote(&remote_client);
   MainFrame()->FirstChild()->Swap(remote_frame);
-  remote_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+  remote_frame->SetReplicatedOrigin(
+      WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
 
   ASSERT_TRUE(MainFrame()->FirstChild()->IsWebRemoteFrame());
   LocalDOMWindow* main_window =

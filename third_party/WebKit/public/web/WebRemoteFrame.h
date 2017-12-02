@@ -62,7 +62,9 @@ class WebRemoteFrame : public WebFrame {
   virtual void SetWebLayer(WebLayer*) = 0;
 
   // Set security origin replicated from another process.
-  virtual void SetReplicatedOrigin(const WebSecurityOrigin&) = 0;
+  virtual void SetReplicatedOrigin(
+      const WebSecurityOrigin&,
+      bool is_potentially_trustworthy_unique_origin) = 0;
 
   // Set sandbox flags replicated from another process.
   virtual void SetReplicatedSandboxFlags(WebSandboxFlags) = 0;
@@ -85,10 +87,6 @@ class WebRemoteFrame : public WebFrame {
   // Set frame enforcement of insecure request policy replicated from another
   // process.
   virtual void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
-
-  // Set the frame to a unique origin that is potentially trustworthy,
-  // replicated from another process.
-  virtual void SetReplicatedPotentiallyTrustworthyUniqueOrigin(bool) = 0;
 
   virtual void DispatchLoadEventOnFrameOwner() = 0;
 

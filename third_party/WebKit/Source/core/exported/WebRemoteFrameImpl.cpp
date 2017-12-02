@@ -213,9 +213,14 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::FromFrame(RemoteFrame& frame) {
   return client->GetWebFrame();
 }
 
-void WebRemoteFrameImpl::SetReplicatedOrigin(const WebSecurityOrigin& origin) {
+void WebRemoteFrameImpl::SetReplicatedOrigin(
+    const WebSecurityOrigin& origin,
+    bool is_potentially_trustworthy_unique_origin) {
   DCHECK(GetFrame());
-  GetFrame()->GetSecurityContext()->SetReplicatedOrigin(origin);
+  scoped_refptr<SecurityOrigin> security_origin = origin.Get()->IsolatedCopy();
+  security_origin->SetUniqueOriginIsPotentiallyTrustworthy(
+      is_potentially_trustworthy_unique_origin);
+  GetFrame()->GetSecurityContext()->SetReplicatedOrigin(security_origin);
 
   // If the origin of a remote frame changed, the accessibility object for the
   // owner element now points to a different child.
@@ -281,20 +286,6 @@ void WebRemoteFrameImpl::SetReplicatedInsecureRequestPolicy(
     WebInsecureRequestPolicy policy) {
   DCHECK(GetFrame());
   GetFrame()->GetSecurityContext()->SetInsecureRequestPolicy(policy);
-}
-
-void WebRemoteFrameImpl::SetReplicatedPotentiallyTrustworthyUniqueOrigin(
-    bool is_unique_origin_potentially_trustworthy) {
-  DCHECK(GetFrame());
-  // If |isUniqueOriginPotentiallyTrustworthy| is true, then the origin must be
-  // unique.
-  DCHECK(!is_unique_origin_potentially_trustworthy ||
-         GetFrame()->GetSecurityContext()->GetSecurityOrigin()->IsUnique());
-  GetFrame()
-      ->GetSecurityContext()
-      ->GetSecurityOrigin()
-      ->SetUniqueOriginIsPotentiallyTrustworthy(
-          is_unique_origin_potentially_trustworthy);
 }
 
 void WebRemoteFrameImpl::DispatchLoadEventOnFrameOwner() {

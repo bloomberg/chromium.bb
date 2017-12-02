@@ -149,4 +149,10 @@ WebSecurityOrigin::operator url::Origin() const {
   return Get()->ToUrlOrigin();
 }
 
+#if DCHECK_IS_ON()
+bool WebSecurityOrigin::operator==(const WebSecurityOrigin& other) const {
+  return Get() == other.Get();
+}
+#endif
+
 }  // namespace blink

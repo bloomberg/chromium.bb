@@ -119,6 +119,10 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT WebSecurityOrigin(const url::Origin&);
   BLINK_PLATFORM_EXPORT operator url::Origin() const;
 
+#if DCHECK_IS_ON()
+  BLINK_PLATFORM_EXPORT bool operator==(const WebSecurityOrigin&) const;
+#endif
+
  private:
   // Present only to facilitate conversion from 'url::Origin'; this constructor
   // shouldn't be used anywhere else.
