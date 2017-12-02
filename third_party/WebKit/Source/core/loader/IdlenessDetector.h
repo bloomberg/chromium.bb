@@ -5,11 +5,11 @@
 #ifndef IdlenessDetector_h
 #define IdlenessDetector_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/base/task_time_observer.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -24,8 +24,6 @@ class ResourceFetcher;
 class CORE_EXPORT IdlenessDetector
     : public GarbageCollectedFinalized<IdlenessDetector>,
       public scheduler::TaskTimeObserver {
-  WTF_MAKE_NONCOPYABLE(IdlenessDetector);
-
  public:
   explicit IdlenessDetector(LocalFrame*);
 
@@ -67,6 +65,8 @@ class CORE_EXPORT IdlenessDetector
   double network_0_quiet_start_time_ = 0;
   double network_2_quiet_start_time_ = 0;
   TaskRunnerTimer<IdlenessDetector> network_quiet_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(IdlenessDetector);
 };
 
 }  // namespace blink

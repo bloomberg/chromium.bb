@@ -27,6 +27,8 @@
 #define ProgressTracker_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "platform/heap/Handle.h"
@@ -34,7 +36,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -48,8 +49,6 @@ struct ProgressItem;
 // We should find a better way for Android to get this data and remove this!
 class CORE_EXPORT ProgressTracker final
     : public GarbageCollectedFinalized<ProgressTracker> {
-  WTF_MAKE_NONCOPYABLE(ProgressTracker);
-
  public:
   static ProgressTracker* Create(LocalFrame*);
 
@@ -89,6 +88,8 @@ class CORE_EXPORT ProgressTracker final
   double progress_value_;
 
   HashMap<unsigned long, std::unique_ptr<ProgressItem>> progress_items_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProgressTracker);
 };
 
 }  // namespace blink

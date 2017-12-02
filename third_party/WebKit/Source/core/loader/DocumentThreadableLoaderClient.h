@@ -31,6 +31,7 @@
 #ifndef DocumentThreadableLoaderClient_h
 #define DocumentThreadableLoaderClient_h
 
+#include "base/macros.h"
 #include "core/loader/ThreadableLoaderClient.h"
 
 namespace blink {
@@ -39,7 +40,6 @@ class KURL;
 class ResourceResponse;
 
 class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
-  WTF_MAKE_NONCOPYABLE(DocumentThreadableLoaderClient);
   USING_FAST_MALLOC(DocumentThreadableLoaderClient);
 
  public:
@@ -51,7 +51,9 @@ class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
   }
 
  protected:
-  DocumentThreadableLoaderClient() {}
+  DocumentThreadableLoaderClient() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentThreadableLoaderClient);
 };
 
 }  // namespace blink

@@ -32,6 +32,7 @@
 #define MixedContentChecker_h
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -61,7 +62,6 @@ class WebWorkerFetchContext;
 // Current mixed content W3C draft that drives this implementation:
 // https://w3c.github.io/webappsec-mixed-content/
 class CORE_EXPORT MixedContentChecker final {
-  WTF_MAKE_NONCOPYABLE(MixedContentChecker);
   DISALLOW_NEW();
 
  public:
@@ -138,6 +138,8 @@ class CORE_EXPORT MixedContentChecker final {
                                          const KURL&,
                                          bool allowed);
   static void Count(Frame*, WebURLRequest::RequestContext, const LocalFrame*);
+
+  DISALLOW_COPY_AND_ASSIGN(MixedContentChecker);
 };
 
 }  // namespace blink

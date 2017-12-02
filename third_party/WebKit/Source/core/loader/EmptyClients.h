@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrameClient.h"
@@ -229,11 +230,9 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 };
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
-  WTF_MAKE_NONCOPYABLE(EmptyLocalFrameClient);
-
  public:
   static EmptyLocalFrameClient* Create() { return new EmptyLocalFrameClient; }
-  ~EmptyLocalFrameClient() override {}
+  ~EmptyLocalFrameClient() override = default;
 
   bool HasWebView() const override { return true; }  // mainly for assertions
 
@@ -373,14 +372,15 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   String GetInstrumentationToken() override { return g_empty_string; };
 
  protected:
-  EmptyLocalFrameClient() {}
+  EmptyLocalFrameClient() = default;
 
   ContentSettingsClient content_settings_client_;
   service_manager::InterfaceProvider interface_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmptyLocalFrameClient);
 };
 
 class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {
-  WTF_MAKE_NONCOPYABLE(EmptySpellCheckPanelHostClient);
   USING_FAST_MALLOC(EmptySpellCheckPanelHostClient);
 
  public:
@@ -389,10 +389,11 @@ class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {
   void ShowSpellingUI(bool) override {}
   bool IsShowingSpellingUI() override { return false; }
   void UpdateSpellingUIWithMisspelledWord(const WebString&) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(EmptySpellCheckPanelHostClient);
 };
 
 class EmptyEditorClient final : public EditorClient {
-  WTF_MAKE_NONCOPYABLE(EmptyEditorClient);
   USING_FAST_MALLOC(EmptyEditorClient);
 
  public:
@@ -410,10 +411,11 @@ class EmptyEditorClient final : public EditorClient {
   }
 
   bool HandleKeyboardEvent(LocalFrame*) override { return false; }
+
+  DISALLOW_COPY_AND_ASSIGN(EmptyEditorClient);
 };
 
 class EmptyContextMenuClient final : public ContextMenuClient {
-  WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient);
   USING_FAST_MALLOC(EmptyContextMenuClient);
 
  public:
@@ -421,11 +423,11 @@ class EmptyContextMenuClient final : public ContextMenuClient {
   ~EmptyContextMenuClient() override {}
   bool ShowContextMenu(const ContextMenu*, WebMenuSourceType) override;
   void ClearContextMenu() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(EmptyContextMenuClient);
 };
 
 class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
-  WTF_MAKE_NONCOPYABLE(EmptyRemoteFrameClient);
-
  public:
   EmptyRemoteFrameClient();
 
@@ -457,6 +459,8 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   Frame* NextSibling() const override { return nullptr; }
   Frame* FirstChild() const override { return nullptr; }
   void FrameFocused() const override {}
+
+  DISALLOW_COPY_AND_ASSIGN(EmptyRemoteFrameClient);
 };
 
 CORE_EXPORT void FillWithEmptyClients(Page::PageClients&);

@@ -32,12 +32,13 @@
 #define ThreadableLoader_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/CrossThreadCopier.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -92,8 +93,6 @@ struct CrossThreadCopier<ThreadableLoaderOptions> {
 //   redirect happens.
 class CORE_EXPORT ThreadableLoader
     : public GarbageCollectedFinalized<ThreadableLoader> {
-  WTF_MAKE_NONCOPYABLE(ThreadableLoader);
-
  public:
   static void LoadResourceSynchronously(ExecutionContext&,
                                         const ResourceRequest&,
@@ -157,12 +156,14 @@ class CORE_EXPORT ThreadableLoader
   // will be processed.
   virtual void Detach() = 0;
 
-  virtual ~ThreadableLoader() {}
+  virtual ~ThreadableLoader() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
-  ThreadableLoader() {}
+  ThreadableLoader() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadableLoader);
 };
 
 }  // namespace blink

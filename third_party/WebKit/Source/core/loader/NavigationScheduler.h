@@ -33,6 +33,8 @@
 #define NavigationScheduler_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
@@ -41,7 +43,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
@@ -53,8 +54,6 @@ class ScheduledNavigation;
 
 class CORE_EXPORT NavigationScheduler final
     : public GarbageCollectedFinalized<NavigationScheduler> {
-  WTF_MAKE_NONCOPYABLE(NavigationScheduler);
-
  public:
   static NavigationScheduler* Create(LocalFrame* frame) {
     return new NavigationScheduler(frame);
@@ -95,10 +94,12 @@ class CORE_EXPORT NavigationScheduler final
 
   // Exists because we can't deref m_frame in destructor.
   scheduler::RendererScheduler::NavigatingFrameType frame_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationScheduler);
 };
 
 class NavigationDisablerForBeforeUnload {
-  WTF_MAKE_NONCOPYABLE(NavigationDisablerForBeforeUnload);
+  DISALLOW_COPY_AND_ASSIGN(NavigationDisablerForBeforeUnload);
   STACK_ALLOCATED();
 
  public:
