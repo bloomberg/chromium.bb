@@ -282,11 +282,18 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
 namespace gpu {
 
 CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
-  /// TODO(tobiasjs) Check if CollectGraphicsInfo in gpu_main.cc
-  /// really only needs basic graphics info on all platforms, and if
-  /// so switch it to using that and make this the NOP that it really
-  /// should be, to avoid potential double collection of info.
-  return CollectBasicGraphicsInfo(gpu_info);
+  // When command buffer is compiled as a standalone library, the process might
+  // not have a Java environment.
+  if (base::android::IsVMInitialized()) {
+    gpu_info->machine_model_name =
+        base::android::BuildInfo::GetInstance()->model();
+  }
+
+  // At this point GL bindings have been initialized already.
+  CollectInfoResult result = CollectGraphicsInfoGL(gpu_info);
+  gpu_info->basic_info_state = result;
+  gpu_info->context_info_state = result;
+  return result;
 }
 
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {

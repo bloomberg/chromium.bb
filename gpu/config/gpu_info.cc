@@ -100,7 +100,7 @@ const GPUInfo::GPUDevice& GPUInfo::active_gpu() const {
     if (secondary_gpu.active)
       return secondary_gpu;
   }
-  DLOG(ERROR) << "No active GPU found, returning primary GPU.";
+  DLOG(WARNING) << "No active GPU found, returning primary GPU.";
   return gpu;
 }
 

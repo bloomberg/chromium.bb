@@ -27,6 +27,10 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gl/gl_surface_egl.h"
+#endif  // OS_ANDROID
+
 #if defined(USE_X11)
 #include "ui/gl/gl_visual_picker_glx.h"
 #endif
@@ -159,6 +163,13 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->max_msaa_samples = base::IntToString(max_samples);
   UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.MaxMSAASampleCount", max_samples);
 
+#if defined(OS_ANDROID)
+  gpu_info->can_support_threaded_texture_mailbox =
+      gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_fence_sync") &&
+      gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_image_base") &&
+      gl::GLSurfaceEGL::HasEGLExtension("EGL_KHR_gl_texture_2D_image") &&
+      gl::HasExtension(extension_set, "GL_OES_EGL_image");
+#else
   gl::GLWindowSystemBindingInfo window_system_binding_info;
   if (gl::init::GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
     gpu_info->gl_ws_vendor = window_system_binding_info.vendor;
@@ -166,6 +177,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
     gpu_info->gl_ws_extensions = window_system_binding_info.extensions;
     gpu_info->direct_rendering = window_system_binding_info.direct_rendering;
   }
+#endif  // OS_ANDROID
 
   bool supports_robustness =
       gl::HasExtension(extension_set, "GL_EXT_robustness") ||
