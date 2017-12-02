@@ -284,8 +284,16 @@ UsbEnrollHandler.prototype.enrollCallback_ = function(
       break;
 
     case DeviceStatusCodes.OK_STATUS:
-      var info = B64_encode(new Uint8Array(infoArray || []));
-      this.notifySuccess_(version, info);
+      var appIdHash = this.request_.enrollChallenges[0].appIdHash;
+      DEVICE_FACTORY_REGISTRY.getGnubbyFactory().postEnrollAction(
+          gnubby, appIdHash, (rc) => {
+            if (rc == DeviceStatusCodes.OK_STATUS) {
+              var info = B64_encode(new Uint8Array(infoArray || []));
+              this.notifySuccess_(version, info);
+            } else {
+              this.notifyError_(rc);
+            }
+          });
       break;
 
     default:

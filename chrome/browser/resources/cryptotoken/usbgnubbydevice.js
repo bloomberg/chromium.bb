@@ -198,7 +198,7 @@ UsbGnubbyDevice.prototype.readOneReply_ = function() {
       }, 0);
     } else {
       console.log(UTIL_fmt('no x.data!'));
-      console.log(x);
+      console.log(UTIL_fmt(JSON.stringify(x)));
       window.setTimeout(function() {
         self.destroy();
       }, 0);

@@ -65,3 +65,15 @@ UsbGnubbyFactory.prototype.notEnrolledPrerequisiteCheck = function(
     gnubby, appIdHash, cb) {
   cb(DeviceStatusCodes.OK_STATUS, gnubby);
 };
+
+/**
+ * No-op post enroll action.
+ * @param {Gnubby} gnubby The just-enrolled gnubby.
+ * @param {string} appIdHash The base64-encoded hash of the app id for which
+ *     the gnubby was enrolled.
+ * @param {FactoryOpenCallback} cb Called with the result of the action.
+ *     (A non-zero status indicates failure.)
+ */
+UsbGnubbyFactory.prototype.postEnrollAction = function(gnubby, appIdHash, cb) {
+  cb(DeviceStatusCodes.OK_STATUS, gnubby);
+};

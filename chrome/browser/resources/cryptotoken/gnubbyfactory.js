@@ -50,3 +50,13 @@ GnubbyFactory.prototype.openGnubby = function(
  */
 GnubbyFactory.prototype.notEnrolledPrerequisiteCheck = function(
     gnubby, appIdHash, cb) {};
+
+/**
+ * Called immediately after enrolling the gnubby to perform necessary actions.
+ * @param {Gnubby} gnubby The just-enrolled gnubby.
+ * @param {string} appIdHash The base64-encoded hash of the app id for which
+ *     the gnubby was enrolled.
+ * @param {FactoryOpenCallback} cb Called with the result of the action.
+ *     (A non-zero status indicates failure.)
+ */
+GnubbyFactory.prototype.postEnrollAction = function(gnubby, appIdHash, cb) {};

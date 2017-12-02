@@ -52,7 +52,7 @@ function MultipleGnubbySigner(
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
-  /** @private {Array<SignHelperChallenge>} */
+  /** @private {Array<DecodedSignHelperChallenge>} */
   this.challenges_ = [];
   /** @private {boolean} */
   this.challengesSet_ = false;
@@ -107,12 +107,12 @@ MultipleGnubbySigner.prototype.doSign = function(challenges) {
 
   if (challenges) {
     for (var i = 0; i < challenges.length; i++) {
-      var decodedChallenge = {};
       var challenge = challenges[i];
-      decodedChallenge['challengeHash'] =
-          B64_decode(challenge['challengeHash']);
-      decodedChallenge['appIdHash'] = B64_decode(challenge['appIdHash']);
-      decodedChallenge['keyHandle'] = B64_decode(challenge['keyHandle']);
+      var decodedChallenge = {
+        challengeHash: B64_decode(challenge['challengeHash']),
+        appIdHash: B64_decode(challenge['appIdHash']),
+        keyHandle: B64_decode(challenge['keyHandle'])
+      };
       if (challenge['version']) {
         decodedChallenge['version'] = challenge['version'];
       }
