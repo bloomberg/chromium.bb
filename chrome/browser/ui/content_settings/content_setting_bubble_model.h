@@ -41,8 +41,7 @@ class RapporServiceImpl;
 
 // The hierarchy of bubble models:
 //
-// ContentSettingsBubbleModel                  - base class
-//   ContentSettingMediaStreamBubbleModel        - media (camera and mic)
+// ContentSettingBubbleModel                  - base class
 //   ContentSettingSimpleBubbleModel             - single content setting
 //     ContentSettingMixedScriptBubbleModel        - mixed script
 //     ContentSettingRPHBubbleModel                - protocol handlers
@@ -52,13 +51,14 @@ class RapporServiceImpl;
 //     ContentSettingSingleRadioGroup              - radio group
 //       ContentSettingCookiesBubbleModel            - cookies
 //       ContentSettingPopupBubbleModel              - popups
+//   ContentSettingMediaStreamBubbleModel        - media (camera and mic)
 //   ContentSettingSubresourceFilterBubbleModel  - filtered subresources
 //   ContentSettingDownloadsBubbleModel          - automatic downloads
 //   ContentSettingFramebustBlockBubbleModel     - blocked framebusts
 
 // Forward declaration necessary for downcasts.
-class ContentSettingMediaStreamBubbleModel;
 class ContentSettingSimpleBubbleModel;
+class ContentSettingMediaStreamBubbleModel;
 class ContentSettingSubresourceFilterBubbleModel;
 class ContentSettingDownloadsBubbleModel;
 class ContentSettingFramebustBlockBubbleModel;
@@ -155,6 +155,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     DISALLOW_COPY_AND_ASSIGN(BubbleContent);
   };
 
+  static const int kAllowButtonIndex;
+
   // Creates a bubble model for a particular |content_type|. Note that not all
   // bubbles fit this description.
   // TODO(msramek): Move this to ContentSettingSimpleBubbleModel or remove
@@ -216,8 +218,6 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
       rappor::RapporServiceImpl* rappor_service) {
     rappor_service_ = rappor_service;
   }
-
-  static const int kAllowButtonIndex;
 
  protected:
   ContentSettingBubbleModel(
@@ -340,33 +340,6 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingRPHBubbleModel);
 };
 
-// The model for the deceptive content bubble.
-class ContentSettingSubresourceFilterBubbleModel
-    : public ContentSettingBubbleModel {
- public:
-  ContentSettingSubresourceFilterBubbleModel(Delegate* delegate,
-                                             content::WebContents* web_contents,
-                                             Profile* profile);
-
-  ~ContentSettingSubresourceFilterBubbleModel() override;
-
- private:
-  void SetMessage();
-  void SetTitle();
-  void SetManageText();
-
-  // ContentSettingBubbleModel:
-  void OnManageCheckboxChecked(bool is_checked) override;
-  ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
-      override;
-  void OnLearnMoreClicked() override;
-  void OnDoneClicked() override;
-
-  bool is_checked_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingSubresourceFilterBubbleModel);
-};
-
 // The model of the content settings bubble for media settings.
 class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
  public:
@@ -424,6 +397,33 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   TabSpecificContentSettings::MicrophoneCameraState state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingMediaStreamBubbleModel);
+};
+
+// The model for the deceptive content bubble.
+class ContentSettingSubresourceFilterBubbleModel
+    : public ContentSettingBubbleModel {
+ public:
+  ContentSettingSubresourceFilterBubbleModel(Delegate* delegate,
+                                             content::WebContents* web_contents,
+                                             Profile* profile);
+
+  ~ContentSettingSubresourceFilterBubbleModel() override;
+
+ private:
+  void SetMessage();
+  void SetTitle();
+  void SetManageText();
+
+  // ContentSettingBubbleModel:
+  void OnManageCheckboxChecked(bool is_checked) override;
+  ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
+      override;
+  void OnLearnMoreClicked() override;
+  void OnDoneClicked() override;
+
+  bool is_checked_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingSubresourceFilterBubbleModel);
 };
 
 // The model for automatic downloads setting.

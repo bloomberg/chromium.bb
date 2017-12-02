@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
 #define CHROME_BROWSER_UI_CONTENT_SETTINGS_CONTENT_SETTING_IMAGE_MODEL_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
