@@ -976,7 +976,8 @@ void VideoRendererImpl::UpdateMaxBufferedFrames() {
     MEDIA_LOG(INFO, media_log_)
         << "Updating max buffered frames to " << max_buffered_frames
         << ", average frame duration: " << frame_duration.InMillisecondsF()
-        << "ms, average read duration: " << read_durations_.Average()
+        << "ms, average read duration: "
+        << read_durations_.Average().InMillisecondsF()
         << "ms, max read duration: " << read_durations_.max().InMillisecondsF()
         << "ms. [" << min_buffered_frames_ << ", " << max_buffered_frames_
         << "]";
