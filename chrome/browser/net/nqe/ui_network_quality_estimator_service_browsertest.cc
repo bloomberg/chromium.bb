@@ -173,7 +173,8 @@ class UINetworkQualityEstimatorServiceBrowserTest
           net::NetworkChangeNotifier::CONNECTION_ETHERNET) {
         // Verify that the network ID was written correctly.
         net::nqe::internal::NetworkID ethernet_network_id(
-            net::NetworkChangeNotifier::CONNECTION_ETHERNET, std::string());
+            net::NetworkChangeNotifier::CONNECTION_ETHERNET, std::string(),
+            INT32_MIN);
         EXPECT_EQ(ethernet_network_id, read_prefs.begin()->first);
       }
     }

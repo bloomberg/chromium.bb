@@ -2870,7 +2870,8 @@ class TestNetworkQualitiesCacheObserver
  public:
   TestNetworkQualitiesCacheObserver()
       : network_id_(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                    std::string()),
+                    std::string(),
+                    INT32_MIN),
         notification_received_(0) {}
   ~TestNetworkQualitiesCacheObserver() override = default;
 
@@ -3080,13 +3081,13 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
   std::map<nqe::internal::NetworkID, nqe::internal::CachedNetworkQuality>
       read_prefs;
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
-                                      "test_ect_2g")] =
+                                      "test_ect_2g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_2G);
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
-                                      "test_ect_slow_2g")] =
+                                      "test_ect_slow_2g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_4G,
-                                      "test_ect_4g")] =
+                                      "test_ect_4g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_4G);
 
   std::map<std::string, std::string> variation_params;
@@ -3143,7 +3144,8 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
   // Compare the ECT stored in prefs with the observer's last entry.
   EXPECT_EQ(
       read_prefs[nqe::internal::NetworkID(
-                     NetworkChangeNotifier::CONNECTION_WIFI, network_name)]
+                     NetworkChangeNotifier::CONNECTION_WIFI, network_name,
+                     INT32_MIN)]
           .effective_connection_type(),
       effective_connection_type_observer.effective_connection_types().back());
 
@@ -3170,7 +3172,8 @@ TEST(NetworkQualityEstimatorTest, OnPrefsRead) {
   // Compare with the last entry.
   EXPECT_EQ(
       read_prefs[nqe::internal::NetworkID(
-                     NetworkChangeNotifier::CONNECTION_WIFI, network_name)]
+                     NetworkChangeNotifier::CONNECTION_WIFI, network_name,
+                     INT32_MIN)]
           .effective_connection_type(),
       effective_connection_type_observer.effective_connection_types().back());
 
@@ -3191,13 +3194,13 @@ TEST(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
   std::map<nqe::internal::NetworkID, nqe::internal::CachedNetworkQuality>
       read_prefs;
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
-                                      "test_ect_2g")] =
+                                      "test_ect_2g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_2G);
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
-                                      "test_ect_slow_2g")] =
+                                      "test_ect_slow_2g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_4G,
-                                      "test_ect_4g")] =
+                                      "test_ect_4g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_4G);
 
   std::map<std::string, std::string> variation_params;
@@ -3241,7 +3244,7 @@ TEST(NetworkQualityEstimatorTest, OnPrefsReadWithReadingDisabled) {
   nqe::internal::CachedNetworkQuality cached_network_quality;
   EXPECT_TRUE(estimator.network_quality_store_->GetById(
       nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
-                               "test_ect_2g"),
+                               "test_ect_2g", INT32_MIN),
       &cached_network_quality));
   EXPECT_EQ(EFFECTIVE_CONNECTION_TYPE_2G,
             cached_network_quality.effective_connection_type());
@@ -3409,7 +3412,7 @@ TEST(NetworkQualityEstimatorTest,
   std::map<nqe::internal::NetworkID, nqe::internal::CachedNetworkQuality>
       read_prefs;
   read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
-                                      "test_2g")] =
+                                      "test_2g", INT32_MIN)] =
       nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_2G);
 
   std::map<std::string, std::string> variation_params;
