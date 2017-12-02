@@ -6,5 +6,5 @@
 [
     ImplementedAs=GlobalCacheStorage
 ] partial interface WorkerGlobalScope {
-    [MeasureAs=GlobalCacheStorage, RaisesException] readonly attribute CacheStorage caches;
+    [SecureContext, MeasureAs=GlobalCacheStorage, RaisesException] readonly attribute CacheStorage caches;
 };

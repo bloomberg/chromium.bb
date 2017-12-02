@@ -32,10 +32,10 @@ class CacheStorage final : public ScriptWrappable {
   ~CacheStorage();
   void Dispose();
 
-  ScriptPromise open(ScriptState*, const String& cache_name, ExceptionState&);
-  ScriptPromise has(ScriptState*, const String& cache_name, ExceptionState&);
-  ScriptPromise Delete(ScriptState*, const String& cache_name, ExceptionState&);
-  ScriptPromise keys(ScriptState*, ExceptionState&);
+  ScriptPromise open(ScriptState*, const String& cache_name);
+  ScriptPromise has(ScriptState*, const String& cache_name);
+  ScriptPromise Delete(ScriptState*, const String& cache_name);
+  ScriptPromise keys(ScriptState*);
   ScriptPromise match(ScriptState*,
                       const RequestInfo&,
                       const CacheQueryOptions&,
