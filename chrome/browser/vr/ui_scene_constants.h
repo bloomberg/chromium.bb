@@ -22,9 +22,13 @@ static constexpr float kExitWarningHeight = 0.160f;
 static constexpr float kExitWarningWidth = 0.512f;
 
 static constexpr float kContentDistance = 2.5;
-static constexpr float kContentWidth = 0.96f * kContentDistance;
-static constexpr float kContentHeight = 0.64f * kContentDistance;
-static constexpr float kContentVerticalOffset = -0.1f * kContentDistance;
+static constexpr float kContentWidthDMM = 0.96f;
+static constexpr float kContentHeightDMM = 0.64f;
+static constexpr float kContentWidth = kContentWidthDMM * kContentDistance;
+static constexpr float kContentHeight = kContentHeightDMM * kContentDistance;
+static constexpr float kContentVerticalOffsetDMM = -0.1f;
+static constexpr float kContentVerticalOffset =
+    kContentVerticalOffsetDMM * kContentDistance;
 static constexpr float kContentCornerRadius = 0.005f * kContentWidth;
 static constexpr float kBackplaneSize = 1000.0;
 static constexpr float kBackgroundDistanceMultiplier = 1.414f;
@@ -42,13 +46,10 @@ static constexpr float kExitPromptHeight = 0.2f * kContentDistance;
 static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
 static constexpr float kPromptBackplaneSize = 1000.0;
 
-// Distance-independent milimeter size of the URL bar.
+static constexpr float kUrlBarDistance = 2.4f;
 static constexpr float kUrlBarWidthDMM = 0.672f;
 static constexpr float kUrlBarHeightDMM = 0.088f;
-static constexpr float kUrlBarDistance = 2.4f;
-static constexpr float kUrlBarWidth = kUrlBarWidthDMM * kUrlBarDistance;
-static constexpr float kUrlBarHeight = kUrlBarHeightDMM * kUrlBarDistance;
-static constexpr float kUrlBarVerticalOffset = -0.516f * kUrlBarDistance;
+static constexpr float kUrlBarVerticalOffsetDMM = -0.516f;
 static constexpr float kUrlBarRotationRad = -0.175f;
 
 static constexpr float kOverlayPlaneDistance = 2.3f;
@@ -92,28 +93,30 @@ static constexpr float kSplashScreenTextHeightM =
 static constexpr float kSplashScreenTextVerticalOffset = -0.18f;
 static constexpr float kSplashScreenMinDurationSeconds = 3;
 
+static constexpr float kButtonDiameterDMM = 0.088f;
 static constexpr float kButtonZOffsetHoverDMM = 0.048;
 
 static constexpr float kCloseButtonDistance = 2.4f;
 static constexpr float kCloseButtonVerticalOffset =
     kFullscreenVerticalOffset - (kFullscreenHeight * 0.5f) - 0.35f;
+static constexpr float kCloseButtonHeightDMM = kButtonDiameterDMM;
 static constexpr float kCloseButtonHeight =
-    kUrlBarHeightDMM * kCloseButtonDistance;
+    kCloseButtonHeightDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonWidth =
-    kUrlBarHeightDMM * kCloseButtonDistance;
+    kCloseButtonHeightDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonFullscreenDistance = 2.9f;
 static constexpr float kCloseButtonFullscreenVerticalOffset =
     kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35f;
 static constexpr float kCloseButtonFullscreenHeight =
-    kUrlBarHeightDMM * kCloseButtonFullscreenDistance;
+    kCloseButtonHeightDMM * kCloseButtonFullscreenDistance;
 static constexpr float kCloseButtonFullscreenWidth =
-    kUrlBarHeightDMM * kCloseButtonFullscreenDistance;
+    kCloseButtonHeightDMM * kCloseButtonFullscreenDistance;
 
-static constexpr float kLoadingIndicatorWidth = 0.24f * kUrlBarDistance;
-static constexpr float kLoadingIndicatorHeight = 0.008f * kUrlBarDistance;
-static constexpr float kLoadingIndicatorVerticalOffset =
-    (-kUrlBarVerticalOffset + kContentVerticalOffset - kContentHeight / 2 -
-     kUrlBarHeight / 2) /
+static constexpr float kLoadingIndicatorWidthDMM = 0.24f;
+static constexpr float kLoadingIndicatorHeightDMM = 0.008f;
+static constexpr float kLoadingIndicatorVerticalOffsetDMM =
+    (-kUrlBarVerticalOffsetDMM + kContentVerticalOffsetDMM -
+     kContentHeightDMM / 2 - kUrlBarHeightDMM / 2) /
     2;
 static constexpr float kLoadingIndicatorDepthOffset =
     (kUrlBarDistance - kContentDistance) / 2;
@@ -123,11 +126,9 @@ static constexpr float kSceneHeight = 4.0;
 static constexpr int kFloorGridlineCount = 40;
 
 static constexpr float kVoiceSearchUIGroupButtonDMM = 0.096f;
-static constexpr float kVoiceSearchButtonWidth =
-    kVoiceSearchUIGroupButtonDMM * kUrlBarDistance;
-static constexpr float kVoiceSearchButtonHeight = kVoiceSearchButtonWidth;
-static constexpr float kVoiceSearchButtonYOffset =
-    (0.5f * kUrlBarHeightDMM + 0.032f) * kUrlBarDistance;
+static constexpr float kVoiceSearchButtonDiameterDMM =
+    kVoiceSearchUIGroupButtonDMM;
+static constexpr float kVoiceSearchButtonYOffsetDMM = 0.032f;
 static constexpr float kVoiceSearchCloseButtonWidth =
     kVoiceSearchUIGroupButtonDMM * kContentDistance;
 static constexpr float kVoiceSearchCloseButtonHeight =
@@ -139,13 +140,11 @@ static constexpr float kVoiceSearchRecognitionResultTextHeight =
 static constexpr float kVoiceSearchRecognitionResultTextWidth =
     0.4f * kContentDistance;
 
-static constexpr float kUnderDevelopmentNoticeFontHeightM =
-    0.02f * kUrlBarDistance;
-static constexpr float kUnderDevelopmentNoticeHeightM = 0.1f * kUrlBarDistance;
-static constexpr float kUnderDevelopmentNoticeWidthM = 0.44f * kUrlBarDistance;
-static constexpr float kUnderDevelopmentNoticeVerticalOffsetM =
-    kVoiceSearchButtonYOffset + kVoiceSearchButtonHeight +
-    0.04f * kUrlBarDistance;
+static constexpr float kUnderDevelopmentNoticeFontHeightDMM = 0.02f;
+static constexpr float kUnderDevelopmentNoticeHeightDMM = 0.1f;
+static constexpr float kUnderDevelopmentNoticeWidthDMM = 0.44f;
+static constexpr float kUnderDevelopmentNoticeVerticalOffsetDMM =
+    kVoiceSearchButtonYOffsetDMM + kVoiceSearchButtonDiameterDMM * 1.5f + 0.04f;
 static constexpr float kUnderDevelopmentNoticeRotationRad = -0.78f;
 
 static constexpr float kSpinnerWidth = kCloseButtonWidth;
@@ -165,7 +164,8 @@ static constexpr float kTimeoutMessageTextFontHeightDMM = 0.022f;
 static constexpr float kTimeoutMessageTextHeightDMM = 0.056f;
 static constexpr float kTimeoutMessageTextWidthDMM = 0.4f;
 
-static constexpr float kTimeoutButtonVerticalOffset = kUrlBarVerticalOffset;
+static constexpr float kTimeoutButtonVerticalOffset =
+    kUrlBarVerticalOffsetDMM * kUrlBarDistance;
 static constexpr float kTimeoutButtonDistance = kUrlBarDistance;
 static constexpr float kTimeoutButtonDepthOffset = -0.1f;
 static constexpr float kTimeoutButtonRotationRad = kUrlBarRotationRad;
