@@ -268,13 +268,9 @@ source_set("material_components_ios") {
     ":material_collection_cells_bundle",
     ":material_collections_bundle",
     ":material_component_ic_arrow_back_bundle",
-    "//ios/third_party/material_internationalization_ios:material_internationalization_ios+link",
+    "//ios/third_party/material_internationalization_ios",
     "//ios/third_party/material_text_accessibility_ios",
   ]
-
-  if (current_toolchain == default_toolchain) {
-    deps += [ "//ios/third_party/material_internationalization_ios:material_internationalization_ios+bundle" ]
-  }
 
   foreach(icon_name, _icon_names) {
     deps += [ ":material_component_${icon_name}_bundle" ]
