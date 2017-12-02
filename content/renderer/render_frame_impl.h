@@ -571,8 +571,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeName(const blink::WebString& name) override;
   void DidEnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;
-  void DidUpdateToUniqueOrigin(
-      bool is_potentially_trustworthy_unique_origin) override;
   void DidChangeFramePolicy(
       blink::WebFrame* child_frame,
       blink::WebSandboxFlags flags,

@@ -259,15 +259,6 @@ class BLINK_EXPORT WebFrameClient {
   // This frame has set an insecure request policy.
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
-  // This frame has been updated to a unique origin, which should be
-  // considered potentially trustworthy if
-  // |isPotentiallyTrustworthyUniqueOrigin| is true. TODO(estark):
-  // this method only exists to support dynamic sandboxing via a CSP
-  // delivered in a <meta> tag. This is not supposed to be allowed per
-  // the CSP spec and should be ripped out. https://crbug.com/594645
-  virtual void DidUpdateToUniqueOrigin(
-      bool is_potentially_trustworthy_unique_origin) {}
-
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.
   virtual void DidChangeFramePolicy(

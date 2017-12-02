@@ -927,14 +927,6 @@ void LocalFrameClientImpl::DidEnforceInsecureRequestPolicy(
   web_frame_->Client()->DidEnforceInsecureRequestPolicy(policy);
 }
 
-void LocalFrameClientImpl::DidUpdateToUniqueOrigin() {
-  if (!web_frame_->Client())
-    return;
-  DCHECK(web_frame_->GetSecurityOrigin().IsUnique());
-  web_frame_->Client()->DidUpdateToUniqueOrigin(
-      web_frame_->GetSecurityOrigin().IsPotentiallyTrustworthy());
-}
-
 void LocalFrameClientImpl::DidChangeFramePolicy(
     Frame* child_frame,
     SandboxFlags flags,
