@@ -139,8 +139,7 @@ class PLATFORM_EXPORT ResourceLoader final
 
   void StartWith(const ResourceRequest&);
 
-  void Release(ResourceLoadScheduler::ReleaseOption,
-               const ResourceLoadScheduler::TrafficReportHints&);
+  void Release(ResourceLoadScheduler::ReleaseOption);
 
   // This method is currently only used for service worker fallback request and
   // cache-aware loading, other users should be careful not to break
