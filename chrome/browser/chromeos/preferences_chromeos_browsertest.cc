@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -134,15 +133,6 @@ class PreferencesTest : public LoginManagerTest {
               prefs->GetBoolean(prefs::kPrimaryMouseButtonRight));
   }
 
-  void DisableAnimations() {
-    // Disable animations for user transitions.
-    MultiUserWindowManagerChromeOS* manager =
-        static_cast<MultiUserWindowManagerChromeOS*>(
-            MultiUserWindowManager::GetInstance());
-    manager->SetAnimationSpeedForTest(
-        MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
-  }
-
   std::vector<AccountId> test_users_;
 
  private:
@@ -213,8 +203,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-// This test is flaking both with and without mash. http://crbug.com/787050
-IN_PROC_BROWSER_TEST_F(PreferencesTest, DISABLED_MultiProfiles) {
+IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Add first user and init its preferences. Check that corresponding
@@ -230,7 +219,6 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, DISABLED_MultiProfiles) {
   // Add second user and init its prefs with different values.
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  DisableAnimations();
   AddUser(test_users_[1].GetUserEmail());
   content::RunAllPendingInMessageLoop();
   const user_manager::User* user2 = user_manager->FindUser(test_users_[1]);
