@@ -114,6 +114,11 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   stream_net_log.AddEvent(
       NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
       quic_session()->net_log().source().ToEventParametersCallback());
+  stream_net_log.AddEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_MODE,
+      NetLog::IntCallback(
+          "connection_migration_mode",
+          static_cast<int>(quic_session()->connection_migration_mode())));
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
