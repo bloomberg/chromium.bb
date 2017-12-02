@@ -8,6 +8,10 @@ TestWallpaperController::TestWallpaperController() : binding_(this) {}
 
 TestWallpaperController::~TestWallpaperController() = default;
 
+void TestWallpaperController::ClearCounts() {
+  remove_user_wallpaper_count_ = 0;
+}
+
 ash::mojom::WallpaperControllerPtr
 TestWallpaperController::CreateInterfacePtr() {
   ash::mojom::WallpaperControllerPtr ptr;
@@ -15,8 +19,11 @@ TestWallpaperController::CreateInterfacePtr() {
   return ptr;
 }
 
-void TestWallpaperController::SetClient(
-    ash::mojom::WallpaperControllerClientPtr client) {
+void TestWallpaperController::SetClientAndPaths(
+    ash::mojom::WallpaperControllerClientPtr client,
+    const base::FilePath& user_data_path,
+    const base::FilePath& chromeos_wallpapers_path,
+    const base::FilePath& chromeos_custom_wallpapers_path) {
   was_client_set_ = true;
 }
 
@@ -63,8 +70,9 @@ void TestWallpaperController::ShowSigninWallpaper() {
 }
 
 void TestWallpaperController::RemoveUserWallpaper(
-    ash::mojom::WallpaperUserInfoPtr user_info) {
-  NOTIMPLEMENTED();
+    ash::mojom::WallpaperUserInfoPtr user_info,
+    const std::string& wallpaper_files_id) {
+  remove_user_wallpaper_count_++;
 }
 
 void TestWallpaperController::SetWallpaper(

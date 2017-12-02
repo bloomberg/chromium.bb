@@ -142,7 +142,8 @@ TEST_F(ShelfContextMenuModelTest, Invocation) {
   submenu = menu3.GetSubmenuModelAt(1);
   EXPECT_TRUE(submenu->IsItemCheckedAt(0));
   TestWallpaperControllerClient client;
-  Shell::Get()->wallpaper_controller()->SetClient(client.CreateInterfacePtr());
+  Shell::Get()->wallpaper_controller()->SetClientForTesting(
+      client.CreateInterfacePtr());
   EXPECT_EQ(0u, client.open_count());
   menu3.ActivatedAt(2);
   Shell::Get()->wallpaper_controller()->FlushForTesting();

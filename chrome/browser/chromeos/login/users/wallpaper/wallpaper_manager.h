@@ -71,12 +71,6 @@ extern const char kWallpaperSequenceTokenName[];
 extern const char kSmallWallpaperSuffix[];
 extern const char kLargeWallpaperSuffix[];
 
-// Directory names of custom wallpapers.
-extern const char kSmallWallpaperSubDir[];
-extern const char kLargeWallpaperSubDir[];
-extern const char kOriginalWallpaperSubDir[];
-extern const char kThumbnailWallpaperSubDir[];
-
 // The width and height of small/large resolution wallpaper. When screen size is
 // smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|, the
 // small resolution wallpaper should be used. Otherwise, use the large
@@ -200,13 +194,8 @@ class WallpaperManager : public content::NotificationObserver,
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
 
-  // Set path IDs for used directories
-  static void SetPathIds(int dir_user_data_enum,
-                         int dir_chromeos_wallpapers_enum,
-                         int dir_chromeos_custom_wallpapers_enum);
-
-  // Returns custom wallpaper directory by appending corresponding |sub_dir|.
-  static base::FilePath GetCustomWallpaperDir(const char* sub_dir);
+  // A wrapper of |WallpaperController::GetCustomWallpaperDir|.
+  static base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
 
   // Resizes |image| to a resolution which is nearest to |preferred_width| and
   // |preferred_height| while respecting the |layout| choice. |output_skia| is
@@ -232,7 +221,7 @@ class WallpaperManager : public content::NotificationObserver,
   // Returns custom wallpaper path. Append |sub_dir|, |wallpaper_files_id| and
   // |file_name| to custom wallpaper directory.
   static base::FilePath GetCustomWallpaperPath(
-      const char* sub_dir,
+      const std::string& sub_dir,
       const wallpaper::WallpaperFilesId& wallpaper_files_id,
       const std::string& file_name);
 
@@ -282,9 +271,6 @@ class WallpaperManager : public content::NotificationObserver,
   // device policy wallpaper or the default wallpaper.
   void ShowSigninWallpaper();
 
-  // Removes all of |account_id|'s saved wallpapers and related info.
-  void RemoveUserWallpaper(const AccountId& account_id);
-
   // A wrapper of |WallpaperController::SetUserWallpaperInfo|.
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
@@ -327,9 +313,6 @@ class WallpaperManager : public content::NotificationObserver,
 
   // Returns queue size.
   size_t GetPendingListSizeForTesting() const;
-
-  // Ruturns files identifier for the |account_id|.
-  wallpaper::WallpaperFilesId GetFilesId(const AccountId& account_id) const;
 
   // Returns whether a wallpaper policy is enforced for |account_id|.
   bool IsPolicyControlled(const AccountId& account_id) const;
@@ -449,9 +432,6 @@ class WallpaperManager : public content::NotificationObserver,
   // Clears disposable ONLINE and CUSTOM wallpaper cache. At multi profile
   // world, logged in users' wallpaper cache is not disposable.
   void ClearDisposableWallpaperCache();
-
-  // Deletes all |account_id| related custom wallpapers and directories.
-  void DeleteUserWallpapers(const AccountId& account_id);
 
   // Gets the CommandLine representing the current process's command line.
   base::CommandLine* GetCommandLine();
@@ -573,9 +553,6 @@ class WallpaperManager : public content::NotificationObserver,
 
   // Record the Wallpaper App that the user is using right now on Chrome OS.
   void RecordWallpaperAppType();
-
-  // Returns true if wallpaper files id can be returned successfully.
-  bool CanGetWallpaperFilesId() const;
 
   // Returns wallpaper subdirectory name for current resolution.
   const char* GetCustomWallpaperSubdirForCurrentResolution();

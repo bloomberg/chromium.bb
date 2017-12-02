@@ -18,13 +18,21 @@ class TestWallpaperController : ash::mojom::WallpaperController {
 
   ~TestWallpaperController() override;
 
+  void ClearCounts();
+
   bool was_client_set() const { return was_client_set_; }
+
+  int remove_user_wallpaper_count() { return remove_user_wallpaper_count_; }
 
   // Returns a mojo interface pointer bound to this object.
   ash::mojom::WallpaperControllerPtr CreateInterfacePtr();
 
   // ash::mojom::WallpaperController:
-  void SetClient(ash::mojom::WallpaperControllerClientPtr client) override;
+  void SetClientAndPaths(
+      ash::mojom::WallpaperControllerClientPtr client,
+      const base::FilePath& user_data_path,
+      const base::FilePath& chromeos_wallpapers_path,
+      const base::FilePath& chromeos_custom_wallpapers_path) override;
   void SetCustomWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
@@ -45,7 +53,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
       const base::FilePath& resized_directory) override;
   void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
-  void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
+  void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
+                           const std::string& wallpaper_files_id) override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(
@@ -56,6 +65,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   mojo::Binding<ash::mojom::WallpaperController> binding_;
 
   bool was_client_set_ = false;
+
+  int remove_user_wallpaper_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperController);
 };

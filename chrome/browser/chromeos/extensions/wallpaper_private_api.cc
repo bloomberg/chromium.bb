@@ -489,9 +489,8 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunAsync() {
   // Gets account id from the caller, ensuring multiprofile compatibility.
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  wallpaper_files_id_ = wallpaper_manager->GetFilesId(account_id_);
+  wallpaper_files_id_ =
+      WallpaperControllerClient::Get()->GetFilesId(account_id_);
 
   StartDecode(params->wallpaper);
 
@@ -503,7 +502,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir, wallpaper_files_id_,
+      ash::WallpaperController::kThumbnailWallpaperSubDir, wallpaper_files_id_,
       params->file_name);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
