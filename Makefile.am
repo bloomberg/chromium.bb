@@ -21,6 +21,7 @@ unstable_protocols =								\
 stable_protocols =								\
 	stable/presentation-time/presentation-time.xml				\
 	stable/viewporter/viewporter.xml					\
+	stable/xdg-shell/xdg-shell.xml						\
 	$(NULL)
 
 nobase_dist_pkgdata_DATA =							\
