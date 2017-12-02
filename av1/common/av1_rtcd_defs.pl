@@ -147,6 +147,8 @@ if (aom_config("CONFIG_DAALA_TX") ne "yes") {
     add_proto qw/void av1_iht64x64_4096_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
     add_proto qw/void av1_iht32x64_2048_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
     add_proto qw/void av1_iht64x32_2048_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
+    add_proto qw/void av1_iht16x64_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
+    add_proto qw/void av1_iht64x16_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
   }
 }
 
@@ -267,8 +269,10 @@ if (aom_config("CONFIG_DAALA_TX32") ne "yes") {
 }
 if (aom_config("CONFIG_TX64X64") eq "yes") {
   add_proto qw/void av1_inv_txfm2d_add_64x64/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
-  add_proto qw/void av1_inv_txfm2d_add_64x32/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
   add_proto qw/void av1_inv_txfm2d_add_32x64/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_64x32/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_16x64/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
+  add_proto qw/void av1_inv_txfm2d_add_64x16/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
 }
 add_proto qw/void av1_inv_txfm2d_add_4x16/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
 add_proto qw/void av1_inv_txfm2d_add_16x4/, "const int32_t *input, uint16_t *output, int stride, TX_TYPE tx_type, int bd";
@@ -342,8 +346,10 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   if (aom_config("CONFIG_TX64X64") eq "yes") {
     add_proto qw/void av1_fht64x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    add_proto qw/void av1_fht64x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
     add_proto qw/void av1_fht32x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
+    add_proto qw/void av1_fht64x32/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
+    add_proto qw/void av1_fht16x64/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
+    add_proto qw/void av1_fht64x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
   }
 
   add_proto qw/void av1_fht4x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
@@ -404,9 +410,11 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   }
 
   if (aom_config("CONFIG_TX64X64") eq "yes") {
+    add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
     add_proto qw/void av1_fwd_txfm2d_32x64/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
     add_proto qw/void av1_fwd_txfm2d_64x32/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
-    add_proto qw/void av1_fwd_txfm2d_64x64/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
+    add_proto qw/void av1_fwd_txfm2d_16x64/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
+    add_proto qw/void av1_fwd_txfm2d_64x16/, "const int16_t *input, int32_t *output, int stride, TX_TYPE tx_type, int bd";
   }
   #
   # Motion search

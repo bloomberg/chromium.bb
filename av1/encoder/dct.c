@@ -2616,6 +2616,106 @@ void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
   memset(output + n * n, 0, n * n * sizeof(*output));
   // Note: no repacking needed here.
 }
+
+void av1_fht16x64_c(const int16_t *input, tran_low_t *output, int stride,
+                    TxfmParam *txfm_param) {
+  const TX_TYPE tx_type = txfm_param->tx_type;
+#if CONFIG_DCT_ONLY
+  assert(tx_type == DCT_DCT);
+#endif
+  static const transform_2d FHT[] = {
+    { fdct64_col, fdct16 },     // DCT_DCT
+    { fhalfright64, fdct16 },   // ADST_DCT
+    { fdct64_col, fadst16 },    // DCT_ADST
+    { fhalfright64, fadst16 },  // ADST_ADST
+    { fhalfright64, fdct16 },   // FLIPADST_DCT
+    { fdct64_col, fadst16 },    // DCT_FLIPADST
+    { fhalfright64, fadst16 },  // FLIPADST_FLIPADST
+    { fhalfright64, fadst16 },  // ADST_FLIPADST
+    { fhalfright64, fadst16 },  // FLIPADST_ADST
+    { fidtx64, fidtx16 },       // IDTX
+    { fdct64_col, fidtx16 },    // V_DCT
+    { fidtx64, fdct16 },        // H_DCT
+    { fhalfright64, fidtx16 },  // V_ADST
+    { fidtx64, fadst16 },       // H_ADST
+    { fhalfright64, fidtx16 },  // V_FLIPADST
+    { fidtx64, fadst16 },       // H_FLIPADST
+  };
+  const transform_2d ht = FHT[tx_type];
+  const int n = 16;
+  const int n4 = 64;
+  tran_low_t out[64 * 16];
+  tran_low_t temp_in[64], temp_out[64];
+  int i, j;
+  int16_t flipped_input[64 * 16];
+  maybe_flip_input(&input, &stride, n4, n, flipped_input, tx_type);
+
+  // Rows
+  for (i = 0; i < n4; ++i) {
+    for (j = 0; j < n; ++j) temp_in[j] = input[i * stride + j];
+    ht.rows(temp_in, temp_out);
+    for (j = 0; j < n; ++j) out[j * n4 + i] = temp_out[j];
+  }
+
+  // Columns
+  for (i = 0; i < n; ++i) {
+    for (j = 0; j < n4; ++j) temp_in[j] = out[j + i * n4];
+    ht.cols(temp_in, temp_out);
+    for (j = 0; j < n4; ++j)
+      output[i + j * n] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+  }
+  // Note: overall scale factor of transform is 4 times unitary
+}
+
+void av1_fht64x16_c(const int16_t *input, tran_low_t *output, int stride,
+                    TxfmParam *txfm_param) {
+  const TX_TYPE tx_type = txfm_param->tx_type;
+#if CONFIG_DCT_ONLY
+  assert(tx_type == DCT_DCT);
+#endif
+  static const transform_2d FHT[] = {
+    { fdct16, fdct64_row },     // DCT_DCT
+    { fadst16, fdct64_row },    // ADST_DCT
+    { fdct16, fhalfright64 },   // DCT_ADST
+    { fadst16, fhalfright64 },  // ADST_ADST
+    { fadst16, fdct64_row },    // FLIPADST_DCT
+    { fdct16, fhalfright64 },   // DCT_FLIPADST
+    { fadst16, fhalfright64 },  // FLIPADST_FLIPADST
+    { fadst16, fhalfright64 },  // ADST_FLIPADST
+    { fadst16, fhalfright64 },  // FLIPADST_ADST
+    { fidtx16, fidtx64 },       // IDTX
+    { fdct16, fidtx64 },        // V_DCT
+    { fidtx16, fdct64_row },    // H_DCT
+    { fadst16, fidtx64 },       // V_ADST
+    { fidtx16, fhalfright64 },  // H_ADST
+    { fadst16, fidtx64 },       // V_FLIPADST
+    { fidtx16, fhalfright64 },  // H_FLIPADST
+  };
+  const transform_2d ht = FHT[tx_type];
+  const int n = 16;
+  const int n4 = 64;
+  tran_low_t out[64 * 16];
+  tran_low_t temp_in[64], temp_out[64];
+  int i, j;
+  int16_t flipped_input[64 * 16];
+  maybe_flip_input(&input, &stride, n, n4, flipped_input, tx_type);
+
+  // Columns
+  for (i = 0; i < n4; ++i) {
+    for (j = 0; j < n; ++j) temp_in[j] = input[j * stride + i];
+    ht.cols(temp_in, temp_out);
+    for (j = 0; j < n; ++j) out[j * n4 + i] = temp_out[j];
+  }
+
+  // Rows
+  for (i = 0; i < n; ++i) {
+    for (j = 0; j < n4; ++j) temp_in[j] = out[j + i * n4];
+    ht.rows(temp_in, temp_out);
+    for (j = 0; j < n4; ++j)
+      output[j + i * n4] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+  }
+  // Note: overall scale factor of transform is 4 times unitary
+}
 #endif  // CONFIG_TX64X64
 
 // Forward identity transform.

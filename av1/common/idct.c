@@ -1620,6 +1620,117 @@ void av1_iht32x64_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
+void av1_iht16x64_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+                             const TxfmParam *txfm_param) {
+  const TX_TYPE tx_type = txfm_param->tx_type;
+#if CONFIG_DCT_ONLY
+  assert(tx_type == DCT_DCT);
+#endif
+  static const transform_2d IHT_16x64[] = {
+    { idct64_col_c, aom_idct16_c },     // DCT_DCT
+    { ihalfright64_c, aom_idct16_c },   // ADST_DCT
+    { idct64_col_c, aom_iadst16_c },    // DCT_ADST
+    { ihalfright64_c, aom_iadst16_c },  // ADST_ADST
+    { ihalfright64_c, aom_idct16_c },   // FLIPADST_DCT
+    { idct64_col_c, aom_iadst16_c },    // DCT_FLIPADST
+    { ihalfright64_c, aom_iadst16_c },  // FLIPADST_FLIPADST
+    { ihalfright64_c, aom_iadst16_c },  // ADST_FLIPADST
+    { ihalfright64_c, aom_iadst16_c },  // FLIPADST_ADST
+    { iidtx64_c, iidtx16_c },           // IDTX
+    { idct64_col_c, iidtx16_c },        // V_DCT
+    { iidtx64_c, aom_idct16_c },        // H_DCT
+    { ihalfright64_c, iidtx16_c },      // V_ADST
+    { iidtx64_c, aom_iadst16_c },       // H_ADST
+    { ihalfright64_c, iidtx16_c },      // V_FLIPADST
+    { iidtx64_c, aom_iadst16_c },       // H_FLIPADST
+  };
+
+  const int n = 16;
+  const int n4 = 64;
+
+  tran_low_t out[16][64], tmp[16][64], outtmp[16];
+  tran_low_t *outp = &out[0][0];
+  int outstride = n4;
+
+  // inverse transform row vectors and transpose
+  for (int i = 0; i < n4; ++i) {
+    IHT_16x64[tx_type].rows(input, outtmp);
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+    input += n;
+  }
+
+  // inverse transform column vectors
+  for (int i = 0; i < n; ++i) {
+    IHT_16x64[tx_type].cols(tmp[i], out[i]);
+  }
+
+  maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n4, n);
+
+  // Sum with the destination
+  for (int i = 0; i < n4; ++i) {
+    for (int j = 0; j < n; ++j) {
+      int d = i * stride + j;
+      int s = j * outstride + i;
+      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
+    }
+  }
+}
+
+void av1_iht64x16_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+                             const TxfmParam *txfm_param) {
+  const TX_TYPE tx_type = txfm_param->tx_type;
+#if CONFIG_DCT_ONLY
+  assert(tx_type == DCT_DCT);
+#endif
+  static const transform_2d IHT_64x16[] = {
+    { aom_idct16_c, idct64_row_c },     // DCT_DCT
+    { aom_iadst16_c, idct64_row_c },    // ADST_DCT
+    { aom_idct16_c, ihalfright64_c },   // DCT_ADST
+    { aom_iadst16_c, ihalfright64_c },  // ADST_ADST
+    { aom_iadst16_c, idct64_row_c },    // FLIPADST_DCT
+    { aom_idct16_c, ihalfright64_c },   // DCT_FLIPADST
+    { aom_iadst16_c, ihalfright64_c },  // FLIPADST_FLIPADST
+    { aom_iadst16_c, ihalfright64_c },  // ADST_FLIPADST
+    { aom_iadst16_c, ihalfright64_c },  // FLIPADST_ADST
+    { iidtx16_c, iidtx64_c },           // IDTX
+    { aom_idct16_c, iidtx64_c },        // V_DCT
+    { iidtx16_c, idct64_row_c },        // H_DCT
+    { aom_iadst16_c, iidtx64_c },       // V_ADST
+    { iidtx16_c, ihalfright64_c },      // H_ADST
+    { aom_iadst16_c, iidtx64_c },       // V_FLIPADST
+    { iidtx16_c, ihalfright64_c },      // H_FLIPADST
+  };
+
+  const int n = 16;
+  const int n4 = 64;
+
+  tran_low_t out[64][16], tmp[64][16], outtmp[64];
+  tran_low_t *outp = &out[0][0];
+  int outstride = n;
+
+  // inverse transform row vectors and transpose
+  for (int i = 0; i < n; ++i) {
+    IHT_64x16[tx_type].rows(input, outtmp);
+    for (int j = 0; j < n4; ++j) tmp[j][i] = outtmp[j];
+    input += n4;
+  }
+
+  // inverse transform column vectors
+  for (int i = 0; i < n4; ++i) {
+    IHT_64x16[tx_type].cols(tmp[i], out[i]);
+  }
+
+  maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n4);
+
+  // Sum with the destination
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n4; ++j) {
+      int d = i * stride + j;
+      int s = j * outstride + i;
+      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
+    }
+  }
+}
 #endif  // CONFIG_TX64X64
 
 // idct
@@ -1861,6 +1972,16 @@ static void inv_txfm_add_64x32(const tran_low_t *input, uint8_t *dest,
 #else
   av1_iht64x32_2048_add(input, dest, stride, txfm_param);
 #endif
+}
+
+static void inv_txfm_add_16x64(const tran_low_t *input, uint8_t *dest,
+                               int stride, const TxfmParam *txfm_param) {
+  av1_iht16x64_1024_add(input, dest, stride, txfm_param);
+}
+
+static void inv_txfm_add_64x16(const tran_low_t *input, uint8_t *dest,
+                               int stride, const TxfmParam *txfm_param) {
+  av1_iht64x16_1024_add(input, dest, stride, txfm_param);
 }
 #endif  // CONFIG_TX64X64
 
@@ -2137,6 +2258,20 @@ static void highbd_inv_txfm_add_64x32(const tran_low_t *input, uint8_t *dest,
   av1_inv_txfm2d_add_64x32_c(src, CONVERT_TO_SHORTPTR(dest), stride,
                              txfm_param->tx_type, txfm_param->bd);
 }
+
+static void highbd_inv_txfm_add_16x64(const tran_low_t *input, uint8_t *dest,
+                                      int stride, const TxfmParam *txfm_param) {
+  const int32_t *src = cast_to_int32(input);
+  av1_inv_txfm2d_add_16x64_c(src, CONVERT_TO_SHORTPTR(dest), stride,
+                             txfm_param->tx_type, txfm_param->bd);
+}
+
+static void highbd_inv_txfm_add_64x16(const tran_low_t *input, uint8_t *dest,
+                                      int stride, const TxfmParam *txfm_param) {
+  const int32_t *src = cast_to_int32(input);
+  av1_inv_txfm2d_add_64x16_c(src, CONVERT_TO_SHORTPTR(dest), stride,
+                             txfm_param->tx_type, txfm_param->bd);
+}
 #endif  // CONFIG_TX64X64
 
 static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
@@ -2299,9 +2434,6 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
 #else
   const TX_SIZE tx_size = txfm_param->tx_size;
   switch (tx_size) {
-#if CONFIG_TX64X64
-    case TX_64X64: inv_txfm_add_64x64(input, dest, stride, txfm_param); break;
-#endif  // CONFIG_TX64X64
     case TX_32X32: inv_txfm_add_32x32(input, dest, stride, txfm_param); break;
     case TX_16X16: inv_txfm_add_16x16(input, dest, stride, txfm_param); break;
     case TX_8X8: inv_txfm_add_8x8(input, dest, stride, txfm_param); break;
@@ -2312,8 +2444,11 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
     case TX_16X32: inv_txfm_add_16x32(input, dest, stride, txfm_param); break;
     case TX_32X16: inv_txfm_add_32x16(input, dest, stride, txfm_param); break;
 #if CONFIG_TX64X64
-    case TX_64X32: inv_txfm_add_64x32(input, dest, stride, txfm_param); break;
+    case TX_64X64: inv_txfm_add_64x64(input, dest, stride, txfm_param); break;
     case TX_32X64: inv_txfm_add_32x64(input, dest, stride, txfm_param); break;
+    case TX_64X32: inv_txfm_add_64x32(input, dest, stride, txfm_param); break;
+    case TX_16X64: inv_txfm_add_16x64(input, dest, stride, txfm_param); break;
+    case TX_64X16: inv_txfm_add_64x16(input, dest, stride, txfm_param); break;
 #endif  // CONFIG_TX64X64
     case TX_4X4:
       // this is like av1_short_idct4x4 but has a special case around eob<=1
@@ -2413,11 +2548,6 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
 #else
   const TX_SIZE tx_size = txfm_param->tx_size;
   switch (tx_size) {
-#if CONFIG_TX64X64
-    case TX_64X64:
-      highbd_inv_txfm_add_64x64(input, dest, stride, txfm_param);
-      break;
-#endif  // CONFIG_TX64X64
     case TX_32X32:
       highbd_inv_txfm_add_32x32(input, dest, stride, txfm_param);
       break;
@@ -2446,11 +2576,20 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       highbd_inv_txfm_add_32x16(input, dest, stride, txfm_param);
       break;
 #if CONFIG_TX64X64
-    case TX_64X32:
-      highbd_inv_txfm_add_64x32(input, dest, stride, txfm_param);
+    case TX_64X64:
+      highbd_inv_txfm_add_64x64(input, dest, stride, txfm_param);
       break;
     case TX_32X64:
       highbd_inv_txfm_add_32x64(input, dest, stride, txfm_param);
+      break;
+    case TX_64X32:
+      highbd_inv_txfm_add_64x32(input, dest, stride, txfm_param);
+      break;
+    case TX_16X64:
+      highbd_inv_txfm_add_16x64(input, dest, stride, txfm_param);
+      break;
+    case TX_64X16:
+      highbd_inv_txfm_add_64x16(input, dest, stride, txfm_param);
       break;
 #endif  // CONFIG_TX64X64
     case TX_4X4:
