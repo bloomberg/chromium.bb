@@ -12,7 +12,7 @@
 using content::BrowserThread;
 
 ChromeNSSCryptoModuleDelegate::ChromeNSSCryptoModuleDelegate(
-    chrome::CryptoModulePasswordReason reason,
+    CryptoModulePasswordReason reason,
     const net::HostPortPair& server)
     : reason_(reason),
       server_(server),
@@ -66,8 +66,7 @@ void ChromeNSSCryptoModuleDelegate::GotPassword(const std::string& password) {
 }
 
 crypto::CryptoModuleBlockingPasswordDelegate*
-CreateCryptoModuleBlockingPasswordDelegate(
-    chrome::CryptoModulePasswordReason reason,
-    const net::HostPortPair& server) {
+CreateCryptoModuleBlockingPasswordDelegate(CryptoModulePasswordReason reason,
+                                           const net::HostPortPair& server) {
   return new ChromeNSSCryptoModuleDelegate(reason, server);
 }

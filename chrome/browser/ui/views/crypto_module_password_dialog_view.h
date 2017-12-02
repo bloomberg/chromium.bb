@@ -18,8 +18,6 @@ class Label;
 class Textfield;
 }
 
-namespace chrome {
-
 class CryptoModulePasswordDialogView : public views::DialogDelegateView,
                                        public views::TextfieldController {
  public:
@@ -62,7 +60,5 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
 
   DISALLOW_COPY_AND_ASSIGN(CryptoModulePasswordDialogView);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CRYPTO_MODULE_PASSWORD_DIALOG_VIEW_H_

@@ -26,7 +26,7 @@ bool ShouldShowDialog(PK11SlotInfo* slot) {
 class SlotUnlocker {
  public:
   SlotUnlocker(std::vector<crypto::ScopedPK11Slot> modules,
-               chrome::CryptoModulePasswordReason reason,
+               CryptoModulePasswordReason reason,
                const net::HostPortPair& server,
                gfx::NativeWindow parent,
                const base::Closure& callback);
@@ -39,7 +39,7 @@ class SlotUnlocker {
 
   size_t current_;
   std::vector<crypto::ScopedPK11Slot> modules_;
-  chrome::CryptoModulePasswordReason reason_;
+  CryptoModulePasswordReason reason_;
   net::HostPortPair server_;
   gfx::NativeWindow parent_;
   base::Closure callback_;
@@ -47,7 +47,7 @@ class SlotUnlocker {
 };
 
 SlotUnlocker::SlotUnlocker(std::vector<crypto::ScopedPK11Slot> modules,
-                           chrome::CryptoModulePasswordReason reason,
+                           CryptoModulePasswordReason reason,
                            const net::HostPortPair& server,
                            gfx::NativeWindow parent,
                            const base::Closure& callback)
@@ -118,7 +118,7 @@ void SlotUnlocker::Done() {
 namespace chrome {
 
 void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
-                            chrome::CryptoModulePasswordReason reason,
+                            CryptoModulePasswordReason reason,
                             const net::HostPortPair& server,
                             gfx::NativeWindow parent,
                             const base::Closure& callback) {
@@ -134,7 +134,7 @@ void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
 }
 
 void UnlockCertSlotIfNecessary(CERTCertificate* cert,
-                               chrome::CryptoModulePasswordReason reason,
+                               CryptoModulePasswordReason reason,
                                const net::HostPortPair& server,
                                gfx::NativeWindow parent,
                                const base::Closure& callback) {

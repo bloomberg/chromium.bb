@@ -582,7 +582,7 @@ void CertificatesHandler::HandleExportPersonalPasswordSelected(
 
   // TODO(mattm): do something smarter about non-extractable keys
   chrome::UnlockCertSlotIfNecessary(
-      selected_cert_list_[0].get(), chrome::kCryptoModulePasswordCertExport,
+      selected_cert_list_[0].get(), kCryptoModulePasswordCertExport,
       net::HostPortPair(),  // unused.
       GetParentWindow(),
       base::Bind(&CertificatesHandler::ExportPersonalSlotsUnlocked,
@@ -719,7 +719,7 @@ void CertificatesHandler::HandleImportPersonalPasswordSelected(
   std::vector<crypto::ScopedPK11Slot> modules;
   modules.push_back(crypto::ScopedPK11Slot(PK11_ReferenceSlot(slot_.get())));
   chrome::UnlockSlotsIfNecessary(
-      std::move(modules), chrome::kCryptoModulePasswordCertImport,
+      std::move(modules), kCryptoModulePasswordCertImport,
       net::HostPortPair(),  // unused.
       GetParentWindow(),
       base::Bind(&CertificatesHandler::ImportPersonalSlotUnlocked,

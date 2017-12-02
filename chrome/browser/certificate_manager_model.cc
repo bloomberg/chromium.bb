@@ -121,7 +121,7 @@ void CertificateManagerModel::Refresh() {
   cert_db_->ListModules(&modules, false);
   DVLOG(1) << "refresh waiting for unlocking...";
   chrome::UnlockSlotsIfNecessary(
-      std::move(modules), chrome::kCryptoModulePasswordListCerts,
+      std::move(modules), kCryptoModulePasswordListCerts,
       net::HostPortPair(),  // unused.
       NULL,                 // TODO(mattm): supply parent window.
       base::Bind(&CertificateManagerModel::RefreshSlotsUnlocked,
