@@ -9,8 +9,6 @@ crbug.com/417782 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure ]
 crbug.com/417782 fast/dom/scroll-reveal-left-overflow.html [ Failure ]
 crbug.com/417782 fast/dom/scroll-reveal-top-overflow.html [ Failure ]
 crbug.com/417782 fast/events/clientXY-in-zoom-and-scroll.html [ Failure ]
-crbug.com/417782 fast/events/drag-and-drop-autoscroll-frameset.html [ Timeout ]
-crbug.com/417782 fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout ]
 crbug.com/417782 fast/events/pointerevents/pointer-event-mouse-coords-in-zoom-and-scroll.html [ Failure ]
 crbug.com/417782 fast/events/scale-and-scroll-iframe-window.html [ Failure ]
 crbug.com/417782 fast/events/touch/gesture/gesture-tap-frame-scrolled.html [ Failure ]
@@ -90,9 +88,6 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
 
 # Tests known to be flaky
-crbug.com/417782 virtual/mouseevent_fractional/fast/events/drag-and-drop-autoscroll-frameset.html [ Timeout Failure ]
-crbug.com/417782 virtual/mouseevent_fractional/fast/events/drag-and-drop-autoscroll-inner-frame.html [ Timeout Failure ]
-crbug.com/417782 virtual/mouseevent_fractional/fast/events/drag-and-drop-autoscroll-mainframe.html [ Timeout Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/mouse-coords-in-zoom-and-scroll.html [ Failure Timeout ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Failure Timeout ]
 crbug.com/417782 fast/events/pointerevents/pointer-event-pen-coords-in-zoom-and-scroll.html [ Failure Timeout ]
