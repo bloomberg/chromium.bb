@@ -137,11 +137,11 @@ void Button::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                       cc::Animation* animation) {
   if (target_property_id == BOUNDS) {
     background_->SetSize(size.width(), size.height());
-    background_->set_corner_radius(size.width() * 0.5f);
+    background_->set_corner_radius(size.width() * 0.5f);  // Creates a circle.
     foreground_->SetSize(size.width() * kIconScaleFactor,
                          size.height() * kIconScaleFactor);
     hit_plane_->SetSize(size.width(), size.height());
-    hit_plane_->set_corner_radius(size.width() * 0.5f);
+    hit_plane_->set_corner_radius(size.width() * 0.5f);  // Creates a circle.
   }
   UiElement::NotifyClientSizeAnimated(size, target_property_id, animation);
 }
