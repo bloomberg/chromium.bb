@@ -3578,12 +3578,6 @@ void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
   Send(new FrameHostMsg_EnforceInsecureRequestPolicy(routing_id_, policy));
 }
 
-void RenderFrameImpl::DidUpdateToUniqueOrigin(
-    bool is_potentially_trustworthy_unique_origin) {
-  Send(new FrameHostMsg_UpdateToUniqueOrigin(
-      routing_id_, is_potentially_trustworthy_unique_origin));
-}
-
 void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebFrame* child_frame,
     blink::WebSandboxFlags flags,

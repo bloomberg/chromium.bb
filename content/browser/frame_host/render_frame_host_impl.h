@@ -807,7 +807,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<ContentSecurityPolicy>& policies);
 
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
-  void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
                               const blink::FramePolicy& frame_policy);
   void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,

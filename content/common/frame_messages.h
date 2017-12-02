@@ -1189,13 +1189,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAddContentSecurityPolicies,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_EnforceInsecureRequestPolicy,
                     blink::WebInsecureRequestPolicy)
 
-// Sent when the frame is set to a unique origin. TODO(estark): this IPC
-// only exists to support dynamic sandboxing via a CSP delivered in a
-// <meta> tag. This is not supposed to be allowed per the CSP spec and
-// should be ripped out. https://crbug.com/594645
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateToUniqueOrigin,
-                    bool /* is potentially trustworthy unique origin */)
-
 // Sent when the renderer changed the progress of a load.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,
                     double /* load_progress */)

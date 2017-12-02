@@ -916,8 +916,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
-                        OnUpdateToUniqueOrigin)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
                         OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
@@ -2270,17 +2268,6 @@ void RenderFrameHostImpl::OnDidAddContentSecurityPolicies(
 void RenderFrameHostImpl::OnEnforceInsecureRequestPolicy(
     blink::WebInsecureRequestPolicy policy) {
   frame_tree_node()->SetInsecureRequestPolicy(policy);
-}
-
-void RenderFrameHostImpl::OnUpdateToUniqueOrigin(
-    bool is_potentially_trustworthy_unique_origin) {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnUpdateToUniqueOrigin",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-
-  url::Origin origin;
-  DCHECK(origin.unique());
-  frame_tree_node()->SetCurrentOrigin(origin,
-                                      is_potentially_trustworthy_unique_origin);
 }
 
 FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
