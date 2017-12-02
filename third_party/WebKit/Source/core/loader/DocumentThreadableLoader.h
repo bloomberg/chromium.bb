@@ -57,8 +57,9 @@ class ThreadableLoadingContext;
 
 // TODO(horo): We are using this class not only in documents, but also in
 // workers. We should change the name to ThreadableLoaderImpl.
-class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
-                                                   private RawResourceClient {
+class CORE_EXPORT DocumentThreadableLoader final
+    : public ThreadableLoader,
+      private ResourceOwner<RawResource> {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
 
  public:
@@ -202,32 +203,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // class performs it by itself.
   void LoadRequest(ResourceRequest&, ResourceLoaderOptions);
   bool IsAllowedRedirect(network::mojom::FetchRequestMode, const KURL&) const;
-
-  // TODO(hiroshige): After crbug.com/633696 is fixed,
-  // - Remove RawResourceClientStateChecker logic,
-  // - Make DocumentThreadableLoader to be a ResourceOwner and remove this
-  //   re-implementation of ResourceOwner, and
-  // - Consider re-applying RawResourceClientStateChecker in a more
-  //   general fashion (crbug.com/640291).
-  RawResource* GetResource() const { return resource_.Get(); }
-  void ClearResource() { SetResource(nullptr); }
-  void SetResource(RawResource* new_resource) {
-    if (new_resource == resource_)
-      return;
-
-    if (RawResource* old_resource = resource_.Release()) {
-      checker_.WillRemoveClient();
-      old_resource->RemoveClient(this);
-    }
-
-    if (new_resource) {
-      resource_ = new_resource;
-      checker_.WillAddClient();
-      resource_->AddClient(this);
-    }
-  }
-  Member<RawResource> resource_;
-  // End of ResourceOwner re-implementation, see above.
 
   SecurityOrigin* GetSecurityOrigin() const;
 
