@@ -71,6 +71,10 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
   }
 };
 
+/* Define this to verify the SIMD against the C versions of the transforms.
+   This is intended to be replaced by real unit tests in the future. */
+#undef DAALA_TX_VERIFY_SIMD
+
 void daala_inv_txfm_add_avx2(const tran_low_t *input_coeffs,
                              void *output_pixels, int output_stride,
                              TxfmParam *txfm_param) {
@@ -106,10 +110,74 @@ void daala_inv_txfm_add_avx2(const tran_low_t *input_coeffs,
     } else {
       const int cols = tx_size_wide[tx_size];
       const int rows = tx_size_high[tx_size];
+#if defined(DAALA_TX_VERIFY_SIMD)
+      unsigned char out_check_buf8[MAX_TX_SQUARE];
+      int16_t out_check_buf16[MAX_TX_SQUARE];
+      unsigned char *out_check_buf;
+      {
+        if (txfm_param->is_hbd) {
+          uint16_t *output_pixels16;
+          int r;
+          output_pixels16 = CONVERT_TO_SHORTPTR(output_pixels);
+          for (r = 0; r < rows; r++) {
+            memcpy(out_check_buf16 + r * cols,
+                   output_pixels16 + r * output_stride,
+                   cols * sizeof(*out_check_buf16));
+          }
+          out_check_buf = CONVERT_TO_BYTEPTR(out_check_buf16);
+        } else {
+          unsigned char *output_pixels8;
+          int r;
+          output_pixels8 = (unsigned char *)output_pixels;
+          for (r = 0; r < rows; r++) {
+            memcpy(out_check_buf8 + r * cols,
+                   output_pixels8 + r * output_stride,
+                   cols * sizeof(*out_check_buf8));
+          }
+          out_check_buf = out_check_buf8;
+        }
+      }
+      daala_inv_txfm_add_c(input_coeffs, out_check_buf, cols, txfm_param);
+#endif
       // Inverse-transform rows
       row_tx(tmpsq, rows, input_coeffs);
       // Inverse-transform columns and sum with destination
       col_tx(output_pixels, output_stride, cols, tmpsq, txfm_param->bd);
+#if defined(DAALA_TX_VERIFY_SIMD)
+      {
+        if (txfm_param->is_hbd) {
+          uint16_t *output_pixels16;
+          int r;
+          output_pixels16 = CONVERT_TO_SHORTPTR(output_pixels);
+          for (r = 0; r < rows; r++) {
+            if (memcmp(out_check_buf16 + r * cols,
+                       output_pixels16 + r * output_stride,
+                       cols * sizeof(*out_check_buf16))) {
+              fprintf(stderr, "%s(%i): Inverse %ix%i %i_%i TX SIMD mismatch.\n",
+                      __FILE__, __LINE__, rows, cols, vtx_tab[tx_type],
+                      htx_tab[tx_type]);
+              assert(0);
+              exit(EXIT_FAILURE);
+            }
+          }
+        } else {
+          unsigned char *output_pixels8;
+          int r;
+          output_pixels8 = (unsigned char *)output_pixels;
+          for (r = 0; r < rows; r++) {
+            if (memcmp(out_check_buf8 + r * cols,
+                       output_pixels8 + r * output_stride,
+                       cols * sizeof(*out_check_buf8))) {
+              fprintf(stderr, "%s(%i): Inverse %ix%i %i_%i TX SIMD mismatch.\n",
+                      __FILE__, __LINE__, rows, cols, vtx_tab[tx_type],
+                      htx_tab[tx_type]);
+              assert(0);
+              exit(EXIT_FAILURE);
+            }
+          }
+        }
+      }
+#endif
     }
   }
 }
