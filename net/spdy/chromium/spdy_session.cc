@@ -912,7 +912,7 @@ void SpdySession::InitializeWithSocket(
                  READ_STATE_DO_READ, OK));
 }
 
-bool SpdySession::VerifyDomainAuthentication(const SpdyString& domain) {
+bool SpdySession::VerifyDomainAuthentication(const SpdyString& domain) const {
   if (availability_state_ == STATE_DRAINING)
     return false;
 
@@ -1352,6 +1352,28 @@ bool SpdySession::CloseOneIdleConnection() {
   return false;
 }
 
+bool SpdySession::ValidatePushedStream(const SpdySessionKey& key) const {
+  return key.proxy_server() == spdy_session_key_.proxy_server() &&
+         key.privacy_mode() == spdy_session_key_.privacy_mode() &&
+         VerifyDomainAuthentication(key.host_port_pair().host());
+}
+
+void SpdySession::OnPushedStreamClaimed(const GURL& url) {
+  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
+      unclaimed_pushed_streams_.find(url);
+  // This is only possible in tests.
+  // TODO(bnc): Change to DCHECK once Http2PushPromiseIndexTest stops using
+  // actual SpdySession instances.  https://crbug.com/791055.
+  if (unclaimed_it == unclaimed_pushed_streams_.end())
+    return;
+
+  LogPushStreamClaimed(url, unclaimed_it->second);
+}
+
+base::WeakPtr<SpdySession> SpdySession::GetWeakPtrToSession() {
+  return GetWeakPtr();
+}
+
 size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
                                     bool* is_session_active) const {
   // TODO(xunjieli): Include |pending_create_stream_queues_| when WeakPtr is
@@ -1415,7 +1437,7 @@ bool SpdySession::UnclaimedPushedStreamContainer::insert(
   // Only allow cross-origin push for https resources.
   if (url.SchemeIsCryptographic()) {
     spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
-        url, spdy_session_->GetWeakPtr());
+        url, spdy_session_);
   }
   return true;
 }
@@ -2432,11 +2454,9 @@ SpdyStream* SpdySession::GetActivePushStream(const GURL& url) {
     return nullptr;
   }
 
-  SpdyStream* stream = active_it->second;
-  net_log_.AddEvent(
-      NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
-      base::Bind(&NetLogSpdyAdoptedPushStreamCallback, stream_id, &url));
-  return stream;
+  LogPushStreamClaimed(url, stream_id);
+
+  return active_it->second;
 }
 
 void SpdySession::RecordPingRTTHistogram(base::TimeDelta duration) {
@@ -2551,6 +2571,13 @@ void SpdySession::LogAbandonedStream(SpdyStream* stream, Error status) {
   // stream isn't active (i.e., it hasn't written anything to the wire
   // yet) then it's as if it never existed. If it is active, then
   // LogAbandonedActiveStream() will increment the counters.
+}
+
+void SpdySession::LogPushStreamClaimed(const GURL& url,
+                                       SpdyStreamId stream_id) {
+  net_log_.AddEvent(
+      NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
+      base::Bind(&NetLogSpdyAdoptedPushStreamCallback, stream_id, &url));
 }
 
 void SpdySession::LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,

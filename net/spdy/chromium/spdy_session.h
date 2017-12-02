@@ -234,7 +234,8 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                                public SpdyFramerDebugVisitorInterface,
                                public MultiplexedSession,
-                               public HigherLayeredPool {
+                               public HigherLayeredPool,
+                               public Http2PushPromiseIndex::Delegate {
  public:
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
@@ -316,7 +317,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // TODO(wtc): rename this function and the Net.SpdyIPPoolDomainMatch
   // histogram because this function does more than verifying domain
   // authentication now.
-  bool VerifyDomainAuthentication(const SpdyString& domain);
+  bool VerifyDomainAuthentication(const SpdyString& domain) const;
 
   // Pushes the given producer into the write queue for
   // |stream|. |stream| is guaranteed to be activated before the
@@ -493,11 +494,16 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // standards for TLS.
   bool HasAcceptableTransportSecurity() const;
 
-  // Must be used only by |pool_|.
+  // Must be used only by |pool_| (including |pool_.push_promise_index_|).
   base::WeakPtr<SpdySession> GetWeakPtr();
 
   // HigherLayeredPool implementation:
   bool CloseOneIdleConnection() override;
+
+  // Http2PushPromiseIndex::Delegate implementation:
+  bool ValidatePushedStream(const SpdySessionKey& key) const override;
+  void OnPushedStreamClaimed(const GURL& url) override;
+  base::WeakPtr<SpdySession> GetWeakPtrToSession() override;
 
   // Dumps memory allocation stats to |stats|. Sets |*is_session_active| to
   // indicate whether session is active.
@@ -821,6 +827,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Called right before closing a (possibly-inactive) stream for a
   // reason other than being requested to by the stream.
   void LogAbandonedStream(SpdyStream* stream, Error status);
+
+  // Called when a pushed stream is claimed by a request.
+  void LogPushStreamClaimed(const GURL& url, SpdyStreamId stream_id);
 
   // Called right before closing an active stream for a reason other
   // than being requested to by the stream.
