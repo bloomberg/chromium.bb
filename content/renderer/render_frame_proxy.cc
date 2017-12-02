@@ -268,12 +268,32 @@ void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
-  web_frame_->SetReplicatedOrigin(state.origin);
+
+  web_frame_->SetReplicatedOrigin(
+      state.origin, state.has_potentially_trustworthy_unique_origin);
+
+#if DCHECK_IS_ON()
+  blink::WebSecurityOrigin security_origin_before_sandbox_flags =
+      web_frame_->GetSecurityOrigin();
+#endif
+
   web_frame_->SetReplicatedSandboxFlags(state.active_sandbox_flags);
+
+#if DCHECK_IS_ON()
+  // If |state.has_potentially_trustworthy_unique_origin| is set,
+  // - |state.origin| should be unique (this is checked in
+  //   blink::SecurityOrigin::SetUniqueOriginIsPotentiallyTrustworthy() in
+  //   SetReplicatedOrigin()), and thus
+  // - The security origin is not updated by SetReplicatedSandboxFlags() and
+  //   thus we don't have to apply |has_potentially_trustworthy_unique_origin|
+  //   flag after SetReplicatedSandboxFlags().
+  if (state.has_potentially_trustworthy_unique_origin)
+    DCHECK(security_origin_before_sandbox_flags ==
+           web_frame_->GetSecurityOrigin());
+#endif
+
   web_frame_->SetReplicatedName(blink::WebString::FromUTF8(state.name));
   web_frame_->SetReplicatedInsecureRequestPolicy(state.insecure_request_policy);
-  web_frame_->SetReplicatedPotentiallyTrustworthyUniqueOrigin(
-      state.has_potentially_trustworthy_unique_origin);
   web_frame_->SetReplicatedFeaturePolicyHeader(state.feature_policy_header);
   if (state.has_received_user_gesture)
     web_frame_->SetHasReceivedUserGesture();
@@ -464,9 +484,8 @@ void RenderFrameProxy::OnSetFrameOwnerProperties(
 void RenderFrameProxy::OnDidUpdateOrigin(
     const url::Origin& origin,
     bool is_potentially_trustworthy_unique_origin) {
-  web_frame_->SetReplicatedOrigin(origin);
-  web_frame_->SetReplicatedPotentiallyTrustworthyUniqueOrigin(
-      is_potentially_trustworthy_unique_origin);
+  web_frame_->SetReplicatedOrigin(origin,
+                                  is_potentially_trustworthy_unique_origin);
 }
 
 void RenderFrameProxy::OnSetPageFocus(bool is_focused) {

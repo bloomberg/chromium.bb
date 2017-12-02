@@ -785,7 +785,8 @@ TEST_P(RootScrollerTest, RemoteMainFrame) {
   {
     WebRemoteFrameImpl* remote_main_frame = FrameTestHelpers::CreateRemote();
     helper_.LocalMainFrame()->Swap(remote_main_frame);
-    remote_main_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+    remote_main_frame->SetReplicatedOrigin(
+        WebSecurityOrigin(SecurityOrigin::CreateUnique()), false);
     local_frame = FrameTestHelpers::CreateLocalChild(*remote_main_frame);
 
     FrameTestHelpers::LoadFrame(local_frame,
