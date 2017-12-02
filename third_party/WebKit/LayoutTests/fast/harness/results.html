@@ -211,13 +211,7 @@ p, h2, h3, h4 {
   <pre>fast/forms/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/forms/validation-bubble-appearance-rtl-ui.html?q=validation-bubble-appearance-rtl-ui.html&dr">validation-bubble-appearance-rtl-ui.html</a></pre>
   <p>Plain text shows the test path.</p>
 
-  <h4>2. Plain text wrapped</h4>
-  All test paths are placed in the same line. This is useful to copy a list of tests to a command line.
-  For example, by pasting the wrapped paint text into a command line starting with
-  <pre>run-webkit-tests --reset-results ...</pre>
-  we can rebaseline the selected list of tests.
-
-  <h4>3. TestExpectations</a></h4>
+  <h4>2. TestExpectations</a></h4>
 <pre><a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]</pre>
   <p>TestExpectationsshow lines as they'd appear in <a
     href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> file.</p>
@@ -237,12 +231,12 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   <p>If you are doing a lot of TestExpectation edits, the hope is that this will make
   your job as easy as copy and paste.</p>
 
-  <h4>4. Crash site</h4>
+  <h4>3. Crash site</h4>
   <pre>
 ### Crash site: Internals.cpp(3455)
   editing/pasteboard/<a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/editing/pasteboard/copy-paste-white-space.html?q=copy-paste-white-space.html&dr">copy-paste-white-space.html</a></pre>
   <p>Crash site groups "Crash" tests with similar stack traces together. For best results, use it while filtering only crashes.</p>
-  <h4>5. Text mismatch</h4>
+  <h4>4. Text mismatch</h4>
   <pre>
 ### Text mismatch failure: general text mismatch
   accessibility/dimensions-include-descendants.html
@@ -323,11 +317,18 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   in format:
     <select id="report_format" onchange="Query.generateReport()">
       <option value="plain" selected>Plain text</option>
-      <option value="plainwrapped">Plain text wrapped</option>
       <option value="expectation">TestExpectations</option>
       <option value="crashsite">Crash site</option>
       <option value="textmismatch">Text mismatch</option>
     </select>
+  &nbsp;
+  <span style="margin-left: 20px">
+    <button id="copy_report" title="Copy the shown tests to clipboard in the current format"
+        onclick="GUI.copyReport()" disabled>Copy report</button>
+    <button id="copy_single_line" title="Copy the shown tests to clipboard in a single line for use in command lines."
+        onclick="GUI.copySingleLine()" disabled>Copy single line</button>
+    <span id="copied" class="hidden">Copied.</span>
+  </span>
 </div>
 
 <hr id="progress" align="left">
@@ -469,8 +470,6 @@ const Report = {
         return {print: Report.printCrashSite, render: Report.renderGroupCrashSite};
       case "textmismatch":
         return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
-      case "plainwrapped":
-        return {print: Report.printPlainTestWrapped, render: Report.renderResultList}
       case "plain":
       default:
         return {print: Report.printPlainTest, render: Report.renderResultList};
@@ -488,12 +487,6 @@ const Report = {
       <div class='details'></div>${Report.printFlag(test)}
      ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
     </div>`;
-    traversal.html.push(html);
-  },
-
-  printPlainTestWrapped: (test, path, traversal) => {
-    let pathParser = new PathParser(path);
-    let html = ` ${pathParser.dir}/${pathParser.file}`;
     traversal.html.push(html);
   },
 
@@ -815,6 +808,8 @@ const Query = {
     document.querySelector("#report").innerHTML = "";
     document.querySelector("#report_title").innerHTML = name;
     document.querySelector("#progress").style.width = "1%";
+    document.querySelector("#copy_report").disabled = true;
+    document.querySelector("#copy_single_line").disabled = true;
     let traversal = new Traversal(globalResults.tests);
     let chunkSize = 1000;
     let index = 0;
@@ -824,12 +819,16 @@ const Query = {
       report.render(html);
       index += chunkSize;
       document.querySelector("#progress").style.width = Math.min((index / traversal.html.length * 100), 100) + "%";
-      if (index < traversal.html.length)
+      if (index < traversal.html.length) {
         this.currentRAF = window.requestAnimationFrame(callback);
+      } else {
+        document.querySelector("#report_count").innerText = traversal.filteredCount;
+        document.querySelector("#copy_report").disabled = traversal.html.length == 0;
+        document.querySelector("#copy_single_line").disabled = traversal.html.length == 0;
+      }
     };
     window.setTimeout( _ => {
       traversal.traverse(filter, report.print);
-      document.querySelector("#report_count").innerText = traversal.html.length;
       this.completeReportPromise(traversal);
       this.currentRAF = window.requestAnimationFrame(callback);
     }, 0);
@@ -1124,6 +1123,37 @@ const GUI = {
     let selection = document.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
+  },
+
+  copyText: function(el) {
+    GUI.selectText(el);
+    document.execCommand("Copy");
+    document.getSelection().removeAllRanges();
+    document.querySelector("#copied").classList.remove("hidden");
+    if (GUI.endCopyTextTimer)
+      window.clearTimeout(GUI.endCopyTextTimer);
+    GUI.endCopyTextTimer = window.setTimeout(_ => {
+      document.querySelector("#copied").classList.add("hidden");
+      GUI.endCopyTextTimer = null;
+    }, 2000);
+  },
+
+  copyReport: function() {
+    GUI.copyText(document.querySelector("#report"));
+  },
+
+  copySingleLine: function() {
+    let singleLine = "";
+    new Traversal(globalResults.tests).traverse(Query.lastReport.filter, (_, path) => {
+      let pathParser = new PathParser(path);
+      singleLine += pathParser.dir + "/" + pathParser.file + " ";
+    });
+    let pre = document.createElement("pre");
+    pre.setAttribute("style", "overflow: hidden; color: white; height: 1px");
+    pre.textContent = singleLine;
+    document.body.appendChild(pre);
+    GUI.copyText(pre);
+    document.body.removeChild(pre);
   },
 
   printSummary: function (fullResults) {
