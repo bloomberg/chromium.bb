@@ -698,6 +698,9 @@ const IDNTestCase idn_cases[] = {
      true},
     // Can start with a RTL and end with AN
     {"xn--mgbjq0r.eg", L"\x062c\x0627\x0631\x0662.eg", true},
+    // At one point the skeleton of 'w' was 'vv', ensure that
+    // that it's treated as 'w'.
+    {"xn--wnderlist-58a.com", L"w\x00fanderlist.com", false},
 };
 
 struct AdjustOffsetCase {
