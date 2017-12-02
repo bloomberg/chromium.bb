@@ -54,7 +54,7 @@ vars = {
   'checkout_telemetry_dependencies': False,
 
   # libaom provides support for AV1 but the bitstream is not frozen.
-  'checkout_libaom': False,
+  'checkout_libaom': True,
 
   # TODO(dpranke): change to != "small" once != is supported.
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
