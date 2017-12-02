@@ -175,6 +175,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-r16f-red-float.html',
         ['win', 'nvidia', 'opengl'], bug=786716)
+    self.Fail('conformance2/rendering/instanced-rendering-bug.html',
+        ['win', 'nvidia', 'opengl'], bug=791289)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
