@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_controller_delegate_mash.h"
 #include "ash/accelerators/accelerator_controller_registrar.h"
 #include "ash/keyboard/keyboard_ui_mash.h"
 #include "ash/public/cpp/config.h"
@@ -152,8 +151,6 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
 
 std::unique_ptr<AcceleratorController>
 ShellPortMash::CreateAcceleratorController() {
-  DCHECK(!accelerator_controller_delegate_);
-
   uint16_t accelerator_namespace_id = 0u;
   const bool add_result =
       window_manager_->GetNextAcceleratorNamespaceId(&accelerator_namespace_id);
@@ -161,13 +158,10 @@ ShellPortMash::CreateAcceleratorController() {
   // should always succeed.
   DCHECK(add_result);
 
-  accelerator_controller_delegate_ =
-      std::make_unique<AcceleratorControllerDelegateMash>();
   accelerator_controller_registrar_ =
       std::make_unique<AcceleratorControllerRegistrar>(
           window_manager_, accelerator_namespace_id);
   return std::make_unique<AcceleratorController>(
-      accelerator_controller_delegate_.get(),
       accelerator_controller_registrar_.get());
 }
 

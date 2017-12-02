@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/keyboard/keyboard_ui.h"
@@ -165,11 +164,7 @@ ShellPortClassic::CreateNativeDisplayDelegate() {
 
 std::unique_ptr<AcceleratorController>
 ShellPortClassic::CreateAcceleratorController() {
-  DCHECK(!accelerator_controller_delegate_);
-  accelerator_controller_delegate_ =
-      std::make_unique<AcceleratorControllerDelegateClassic>();
-  return std::make_unique<AcceleratorController>(
-      accelerator_controller_delegate_.get(), nullptr);
+  return std::make_unique<AcceleratorController>(nullptr);
 }
 
 void ShellPortClassic::AddVideoDetectorObserver(

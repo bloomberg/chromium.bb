@@ -14,7 +14,6 @@
 
 namespace ash {
 
-class AcceleratorControllerDelegateClassic;
 class PointerWatcherAdapterClassic;
 
 // Implementation of ShellPort for classic ash/aura. See ash/README.md for more
@@ -25,10 +24,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
   ~ShellPortClassic() override;
 
   static ShellPortClassic* Get();
-
-  AcceleratorControllerDelegateClassic* accelerator_controller_delegate() {
-    return accelerator_controller_delegate_.get();
-  }
 
   // ShellPort:
   void Shutdown() override;
@@ -73,9 +68,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
 
  private:
   std::unique_ptr<PointerWatcherAdapterClassic> pointer_watcher_adapter_;
-
-  std::unique_ptr<AcceleratorControllerDelegateClassic>
-      accelerator_controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellPortClassic);
 };

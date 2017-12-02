@@ -4,7 +4,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
-#include "ash/accelerators/accelerator_commands_classic.h"
+#include "ash/accelerators/accelerator_commands.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"

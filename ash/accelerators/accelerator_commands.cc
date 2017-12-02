@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -71,6 +72,21 @@ void ToggleFullscreen() {
     return;
   const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   wm::GetWindowState(active_window)->OnWMEvent(&event);
+}
+
+bool CanUnpinWindow() {
+  // WindowStateType::TRUSTED_PINNED does not allow the user to press a key to
+  // exit pinned mode.
+  wm::WindowState* window_state = wm::GetActiveWindowState();
+  return window_state &&
+         window_state->GetStateType() == mojom::WindowStateType::PINNED;
+}
+
+void UnpinWindow() {
+  aura::Window* pinned_window =
+      Shell::Get()->screen_pinning_controller()->pinned_window();
+  if (pinned_window)
+    wm::GetWindowState(pinned_window)->Restore();
 }
 
 }  // namespace accelerators
