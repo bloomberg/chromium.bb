@@ -73,6 +73,12 @@ class BookmarkItemsAdapter
         public void bookmarkNodeRemoved(BookmarkItem parent, int oldIndex, BookmarkItem node,
                 boolean isDoingExtensiveChanges) {
             assert mDelegate != null;
+
+            if (mDelegate.getCurrentState() == BookmarkUIState.STATE_SEARCHING
+                    && TextUtils.equals(mSearchText, EMPTY_QUERY)) {
+                mDelegate.closeSearchUI();
+            }
+
             if (node.isFolder()) {
                 mDelegate.notifyStateChange(BookmarkItemsAdapter.this);
             } else {
