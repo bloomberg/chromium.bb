@@ -190,6 +190,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/multisample.html',
         ['win', ('amd', 0x6613)], bug=687374)
 
+    # Win / Intel
+    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
+        ['win', 'intel', 'd3d11'], bug=782317)
+
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel', 'd3d11'], bug=617449)
     # Seems to cause the harness to fail immediately afterward
@@ -294,10 +298,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
-
-    # Win / Intel
-    self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
-        ['win', 'intel', 'd3d11'], bug=782317)
 
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
