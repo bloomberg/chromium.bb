@@ -298,10 +298,16 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
   if (image_type == "old") {
     // Previous image (from camera or manually uploaded) re-selected.
     DCHECK(!previous_image_.isNull());
-    std::unique_ptr<user_manager::UserImage> user_image =
-        base::MakeUnique<user_manager::UserImage>(
-            previous_image_, previous_image_bytes_, previous_image_format_);
-    user_image->MarkAsSafe();
+    std::unique_ptr<user_manager::UserImage> user_image;
+    if (previous_image_format_ == user_manager::UserImage::FORMAT_PNG &&
+        previous_image_bytes_) {
+      user_image = base::MakeUnique<user_manager::UserImage>(
+          previous_image_, previous_image_bytes_, previous_image_format_);
+      user_image->MarkAsSafe();
+    } else {
+      user_image = user_manager::UserImage::CreateAndEncode(
+          previous_image_, user_manager::UserImage::FORMAT_JPEG);
+    }
     user_image_manager->SaveUserImage(std::move(user_image));
 
     UMA_HISTOGRAM_EXACT_LINEAR("UserImage.ChangeChoice",
