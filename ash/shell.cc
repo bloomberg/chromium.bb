@@ -1103,11 +1103,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
   if (config != Config::MASH)
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
-  // Initialize the wallpaper after the RootWindowController has been created,
-  // otherwise the widget will not paint when restoring after a browser crash.
-  // Also, initialize after display initialization to ensure correct sizing.
-  wallpaper_delegate_->InitializeWallpaper();
-
   if (cursor_manager_) {
     if (initially_hide_cursor_)
       cursor_manager_->HideCursor();

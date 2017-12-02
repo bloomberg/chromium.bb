@@ -63,7 +63,7 @@ struct WALLPAPER_EXPORT WallpaperInfo {
 
   ~WallpaperInfo() {}
 
-  bool operator==(const WallpaperInfo& other) {
+  bool operator==(const WallpaperInfo& other) const {
     return (location == other.location) && (layout == other.layout) &&
            (type == other.type);
   }

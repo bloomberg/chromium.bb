@@ -32,6 +32,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
+using wallpaper::WallpaperLayout;
 using wallpaper::WALLPAPER_LAYOUT_CENTER;
 using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 using wallpaper::WALLPAPER_LAYOUT_STRETCH;
@@ -240,14 +241,35 @@ class WallpaperControllerTest : public AshTestBase {
 
   // Helper function to create a |WallpaperInfo| struct with dummy values
   // given the desired layout.
-  wallpaper::WallpaperInfo CreateWallpaperInfo(
-      wallpaper::WallpaperLayout layout) {
+  wallpaper::WallpaperInfo CreateWallpaperInfo(WallpaperLayout layout) {
     return wallpaper::WallpaperInfo("", layout, wallpaper::DEFAULT,
                                     base::Time::Now().LocalMidnight());
   }
 
+  // Helper function to create a new |mojom::WallpaperUserInfoPtr| instance with
+  // default values. In addition, remove the previous wallpaper info (if any)
+  // and clear the wallpaper count. May be called multiple times for the
+  // same |account_id|.
+  mojom::WallpaperUserInfoPtr InitializeUser(const AccountId& account_id) {
+    mojom::WallpaperUserInfoPtr wallpaper_user_info =
+        mojom::WallpaperUserInfo::New();
+    wallpaper_user_info->account_id = account_id;
+    wallpaper_user_info->type = user_manager::USER_TYPE_REGULAR;
+    wallpaper_user_info->is_ephemeral = false;
+    wallpaper_user_info->has_gaia_account = true;
+
+    controller_->RemoveUserWallpaperInfo(account_id,
+                                         !wallpaper_user_info->is_ephemeral);
+    controller_->current_user_wallpaper_info_ = wallpaper::WallpaperInfo();
+    controller_->wallpaper_count_for_testing_ = 0;
+
+    return wallpaper_user_info;
+  }
+
   // Wrapper for private ShouldCalculateColors()
   bool ShouldCalculateColors() { return controller_->ShouldCalculateColors(); }
+
+  int GetWallpaperCount() { return controller_->wallpaper_count_for_testing_; }
 
   WallpaperController* controller_;  // Not owned.
 
@@ -590,6 +612,101 @@ TEST_F(WallpaperControllerTest, MojoWallpaperObserverTest) {
   // Mojo methods are called after color calculation finishes.
   controller_->FlushForTesting();
   EXPECT_EQ(2, observer.wallpaper_colors_changed_count());
+}
+
+TEST_F(WallpaperControllerTest, SetOnlineWallpaper) {
+  gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
+  const std::string url = "dummy_url";
+  const std::string user_email = "user@test.com";
+  const AccountId account_id = AccountId::FromUserEmail(user_email);
+  WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER;
+
+  SimulateUserLogin(user_email);
+
+  // Verify the wallpaper is set successfully and wallpaper info is updated.
+  mojom::WallpaperUserInfoPtr wallpaper_user_info = InitializeUser(account_id);
+  controller_->SetOnlineWallpaper(std::move(wallpaper_user_info),
+                                  *image.bitmap(), url, layout,
+                                  true /* show_wallpaper */);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  wallpaper::WallpaperInfo wallpaper_info;
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id, &wallpaper_info,
+                                                true /* is_persistent */));
+  wallpaper::WallpaperInfo expected_wallpaper_info(
+      url, layout, wallpaper::ONLINE, base::Time::Now().LocalMidnight());
+  EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
+
+  // Verify that the wallpaper is not set when |show_wallpaper| is false, but
+  // wallpaper info is updated properly.
+  wallpaper_user_info = InitializeUser(account_id);
+  controller_->SetOnlineWallpaper(std::move(wallpaper_user_info),
+                                  *image.bitmap(), url, layout,
+                                  false /* show_wallpaper */);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(account_id, &wallpaper_info,
+                                                true /* is_persistent */));
+  EXPECT_EQ(wallpaper_info, expected_wallpaper_info);
+}
+
+TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
+  gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
+  const std::string kiosk_app = "kiosk";
+  const AccountId account_id = AccountId::FromUserEmail("user@test.com");
+
+  // Simulate kiosk login.
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->AddUserSession(kiosk_app, user_manager::USER_TYPE_KIOSK_APP);
+  session->SwitchActiveUser(AccountId::FromUserEmail(kiosk_app));
+  session->SetSessionState(SessionState::ACTIVE);
+
+  // Verify that the wallpaper request is ignored in kiosk mode, and
+  // |account_id|'s wallpaper info is not updated.
+  controller_->SetOnlineWallpaper(InitializeUser(account_id), *image.bitmap(),
+                                  "dummy_url", WALLPAPER_LAYOUT_CENTER,
+                                  true /* show_wallpaper */);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  wallpaper::WallpaperInfo wallpaper_info;
+  EXPECT_FALSE(controller_->GetUserWallpaperInfo(account_id, &wallpaper_info,
+                                                 true /* is_persistent */));
+}
+
+TEST_F(WallpaperControllerTest, VerifyWallpaperCache) {
+  gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
+  const std::string user1 = "user1@test.com";
+
+  SimulateUserLogin(user1);
+
+  // |user1| doesn't have wallpaper cache in the beginning.
+  gfx::ImageSkia cached_wallpaper;
+  EXPECT_FALSE(controller_->GetWallpaperFromCache(
+      AccountId::FromUserEmail(user1), &cached_wallpaper));
+  base::FilePath path;
+  EXPECT_FALSE(
+      controller_->GetPathFromCache(AccountId::FromUserEmail(user1), &path));
+
+  // Verify |SetOnlineWallpaper| updates wallpaper cache for |user1|.
+  mojom::WallpaperUserInfoPtr wallpaper_user_info =
+      InitializeUser(AccountId::FromUserEmail(user1));
+  controller_->SetOnlineWallpaper(
+      std::move(wallpaper_user_info), *image.bitmap(), "dummy_file_location",
+      WALLPAPER_LAYOUT_CENTER, true /* show_wallpaper */);
+  RunAllTasksUntilIdle();
+  EXPECT_TRUE(controller_->GetWallpaperFromCache(
+      AccountId::FromUserEmail(user1), &cached_wallpaper));
+  EXPECT_TRUE(
+      controller_->GetPathFromCache(AccountId::FromUserEmail(user1), &path));
+
+  // After |user2| is logged in, |user1|'s wallpaper cache should still be kept
+  // (crbug.com/339576). Note the active user is still |user1|.
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->AddUserSession("user2@test.com");
+  EXPECT_TRUE(controller_->GetWallpaperFromCache(
+      AccountId::FromUserEmail(user1), &cached_wallpaper));
+  EXPECT_TRUE(
+      controller_->GetPathFromCache(AccountId::FromUserEmail(user1), &path));
 }
 
 }  // namespace ash

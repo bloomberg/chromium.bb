@@ -74,18 +74,9 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     // Prefs
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
     pref_service_.registry()->RegisterDictionaryPref(
-        ash::prefs::kWallpaperColors);
+        ash::prefs::kUserWallpaperInfo);
     pref_service_.registry()->RegisterDictionaryPref(
-        chromeos::kUsersWallpaperInfo);
-
-    // Ash prefs
-    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-    ash::Shell::RegisterLocalStatePrefs(pref_service->registry());
-    pref_service->registry()->SetDefaultForeignPrefValue(
-        ash::prefs::kWallpaperColors, std::make_unique<base::DictionaryValue>(),
-        0);
-    ash::ShellTestApi().OnLocalStatePrefServiceInitialized(
-        std::move(pref_service));
+        ash::prefs::kWallpaperColors);
 
     // User
     user_manager_->AddUser(user_manager::StubAccountId());

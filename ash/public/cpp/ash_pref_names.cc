@@ -133,6 +133,9 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // a confirmation dialog.
 const char kLogoutDialogDurationMs[] = "logout_dialog_duration_ms";
 
+// A dictionary pref that maps usernames to wallpaper info.
+const char kUserWallpaperInfo[] = "user_wallpaper_info";
+
 // A dictionary pref that maps wallpaper file paths to their prominent colors.
 const char kWallpaperColors[] = "ash.wallpaper.prominent_colors";
 

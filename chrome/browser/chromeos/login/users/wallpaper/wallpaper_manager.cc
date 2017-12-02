@@ -12,7 +12,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -51,9 +50,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -88,12 +85,6 @@ WallpaperManager* wallpaper_manager = nullptr;
 const int kMoveCustomWallpaperDelaySeconds = 30;
 
 const int kCacheWallpaperDelayMs = 500;
-
-// Names of nodes with wallpaper info in |kUserWallpapersInfo| dictionary.
-const char kNewWallpaperDateNodeName[] = "date";
-const char kNewWallpaperLayoutNodeName[] = "layout";
-const char kNewWallpaperLocationNodeName[] = "file";
-const char kNewWallpaperTypeNodeName[] = "type";
 
 // Known user keys.
 const char kWallpaperFilesId[] = "wallpaper-files-id";
@@ -353,8 +344,6 @@ const int kLargeWallpaperMaxHeight = 1700;
 const int kWallpaperThumbnailWidth = 108;
 const int kWallpaperThumbnailHeight = 68;
 
-const char kUsersWallpaperInfo[] = "user_wallpaper_info";
-
 // This is "wallpaper either scheduled to load, or loading right now".
 //
 // While enqueued, it defines moment in the future, when it will be loaded.
@@ -603,8 +592,8 @@ void WallpaperManager::TestApi::SetWallpaperCache(const AccountId& account_id,
                                                   const base::FilePath& path,
                                                   const gfx::ImageSkia& image) {
   DCHECK(!image.isNull());
-  wallpaper_manager_->wallpaper_cache_[account_id] =
-      CustomWallpaperElement(path, image);
+  (*wallpaper_manager_->GetWallpaperCacheMap())[account_id] =
+      ash::CustomWallpaperElement(path, image);
 }
 
 void WallpaperManager::TestApi::ClearDisposableWallpaperCache() {
@@ -658,11 +647,6 @@ base::FilePath WallpaperManager::GetCustomWallpaperDir(const char* sub_dir) {
   CHECK(PathService::Get(dir_chromeos_custom_wallpapers_path_id,
                          &custom_wallpaper_dir));
   return custom_wallpaper_dir.Append(sub_dir);
-}
-
-// static
-void WallpaperManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kUsersWallpaperInfo);
 }
 
 // static
@@ -812,34 +796,8 @@ void WallpaperManager::SetCustomWallpaper(
   if (show_wallpaper)
     GetPendingWallpaper()->SetWallpaperFromImage(account_id, image, info);
 
-  wallpaper_cache_[account_id] = CustomWallpaperElement(wallpaper_path, image);
-}
-
-void WallpaperManager::SetOnlineWallpaper(const AccountId& account_id,
-                                          const gfx::ImageSkia& image,
-                                          const std::string& url,
-                                          wallpaper::WallpaperLayout layout,
-                                          bool show_wallpaper) {
-  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
-
-  // There is no visible wallpaper in kiosk mode.
-  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
-    return;
-
-  WallpaperInfo info = {url, layout, wallpaper::ONLINE,
-                        base::Time::Now().LocalMidnight()};
-  bool is_persistent = !user_manager::UserManager::Get()
-                            ->IsCurrentUserNonCryptohomeDataEphemeral();
-  SetUserWallpaperInfo(account_id, info, is_persistent);
-
-  if (show_wallpaper)
-    GetPendingWallpaper()->SetWallpaperFromImage(account_id, image, info);
-
-  // Leave the file path empty, because in most cases the file path is not used
-  // when fetching cache, but in case it needs to be checked, we should avoid
-  // confusing the URL with a real file path.
-  wallpaper_cache_[account_id] =
-      CustomWallpaperElement(base::FilePath(), image);
+  (*GetWallpaperCacheMap())[account_id] =
+      ash::CustomWallpaperElement(wallpaper_path, image);
 }
 
 void WallpaperManager::SetDefaultWallpaper(const AccountId& account_id,
@@ -930,7 +888,7 @@ void WallpaperManager::ShowUserWallpaper(const AccountId& account_id) {
   }
 
   gfx::ImageSkia user_wallpaper;
-  current_user_wallpaper_info_ = info;
+  *GetCachedWallpaperInfo() = info;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
     GetPendingWallpaper()->SetWallpaperFromImage(account_id, user_wallpaper,
                                                  info);
@@ -959,16 +917,19 @@ void WallpaperManager::ShowUserWallpaper(const AccountId& account_id) {
         wallpaper_path = GetDeviceWallpaperFilePath();
       }
 
-      CustomWallpaperMap::iterator it = wallpaper_cache_.find(account_id);
+      ash::CustomWallpaperMap* wallpaper_cache_map = GetWallpaperCacheMap();
+      ash::CustomWallpaperMap::iterator it =
+          wallpaper_cache_map->find(account_id);
       // Do not try to load the wallpaper if the path is the same. Since loading
       // could still be in progress, we ignore the existence of the image.
-      if (it != wallpaper_cache_.end() && it->second.first == wallpaper_path)
+      if (it != wallpaper_cache_map->end() &&
+          it->second.first == wallpaper_path)
         return;
 
       // Set the new path and reset the existing image - the image will be
       // added once it becomes available.
-      wallpaper_cache_[account_id] =
-          CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
+      (*wallpaper_cache_map)[account_id] =
+          ash::CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
       loaded_wallpapers_for_test_++;
 
       GetPendingWallpaper()->SetWallpaperFromPath(account_id, info,
@@ -990,22 +951,16 @@ void WallpaperManager::ShowSigninWallpaper() {
 }
 
 void WallpaperManager::RemoveUserWallpaper(const AccountId& account_id) {
-  if (wallpaper_cache_.find(account_id) != wallpaper_cache_.end())
-    wallpaper_cache_.erase(account_id);
-
-  PrefService* prefs = g_browser_process->local_state();
-  // PrefService could be NULL in tests.
-  if (!prefs)
-    return;
-  WallpaperInfo info;
-  GetUserWallpaperInfo(account_id, &info);
-  DictionaryPrefUpdate prefs_wallpapers_info_update(prefs, kUsersWallpaperInfo);
-  prefs_wallpapers_info_update->RemoveWithoutPathExpansion(
-      account_id.GetUserEmail(), NULL);
-  // Remove the color cache of the previous wallpaper if it exists.
-  DictionaryPrefUpdate wallpaper_colors_update(prefs,
-                                               ash::prefs::kWallpaperColors);
-  wallpaper_colors_update->RemoveWithoutPathExpansion(info.location, nullptr);
+  if (ash::Shell::HasInstance() && !ash_util::IsRunningInMash()) {
+    // Some unit tests come here without a Shell instance.
+    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
+    // work again after WallpaperManager is removed.
+    bool is_persistent =
+        !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+            account_id);
+    ash::Shell::Get()->wallpaper_controller()->RemoveUserWallpaperInfo(
+        account_id, is_persistent);
+  }
   DeleteUserWallpapers(account_id);
 }
 
@@ -1013,30 +968,14 @@ void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
                                             const WallpaperInfo& info,
                                             bool is_persistent) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  current_user_wallpaper_info_ = info;
-  if (!is_persistent)
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    // Some unit tests come here without a Shell instance.
+    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
+    // work again after WallpaperManager is removed.
     return;
-
-  PrefService* local_state = g_browser_process->local_state();
-  // Remove the color cache of the previous wallpaper if it exists.
-  WallpaperInfo old_info;
-  if (GetUserWallpaperInfo(account_id, &old_info)) {
-    DictionaryPrefUpdate wallpaper_colors_update(local_state,
-                                                 ash::prefs::kWallpaperColors);
-    wallpaper_colors_update->RemoveWithoutPathExpansion(old_info.location,
-                                                        nullptr);
   }
-  DictionaryPrefUpdate wallpaper_update(local_state, kUsersWallpaperInfo);
-
-  auto wallpaper_info_dict = base::MakeUnique<base::DictionaryValue>();
-  wallpaper_info_dict->SetString(
-      kNewWallpaperDateNodeName,
-      base::Int64ToString(info.date.ToInternalValue()));
-  wallpaper_info_dict->SetString(kNewWallpaperLocationNodeName, info.location);
-  wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
-  wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);
-  wallpaper_update->SetWithoutPathExpansion(account_id.GetUserEmail(),
-                                            std::move(wallpaper_info_dict));
+  ash::Shell::Get()->wallpaper_controller()->SetUserWallpaperInfo(
+      account_id, info, is_persistent);
 }
 
 void WallpaperManager::InitializeWallpaper() {
@@ -1096,7 +1035,7 @@ void WallpaperManager::UpdateWallpaper(bool clear_cache) {
   for (auto& observer : observers_)
     observer.OnUpdateWallpaperForTesting();
   if (clear_cache)
-    wallpaper_cache_.clear();
+    GetWallpaperCacheMap()->clear();
   if (!device_wallpaper_set)
     ShowUserWallpaper(last_selected_user_);
 }
@@ -1124,12 +1063,11 @@ bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (user_manager::UserManager::Get()->IsLoggedInAsStub()) {
-    info->location = current_user_wallpaper_info_.location = "";
-    info->layout = current_user_wallpaper_info_.layout =
-        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
-    info->type = current_user_wallpaper_info_.type = wallpaper::DEFAULT;
-    info->date = current_user_wallpaper_info_.date =
-        base::Time::Now().LocalMidnight();
+    info->location = "";
+    info->layout = wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
+    info->type = wallpaper::DEFAULT;
+    info->date = base::Time::Now().LocalMidnight();
+    *GetCachedWallpaperInfo() = *info;
     return true;
   }
 
@@ -1162,7 +1100,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
     UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
                               wallpaper::WALLPAPER_TYPE_COUNT);
     RecordWallpaperAppType();
-    if (info == current_user_wallpaper_info_)
+    if (info == *GetCachedWallpaperInfo())
       return;
   }
   ShowUserWallpaper(
@@ -1506,23 +1444,27 @@ bool WallpaperManager::SetDeviceWallpaperIfApplicable(
 bool WallpaperManager::GetWallpaperFromCache(const AccountId& account_id,
                                              gfx::ImageSkia* image) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(account_id);
-  if (it != wallpaper_cache_.end() && !(*it).second.second.isNull()) {
-    *image = (*it).second.second;
-    return true;
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    // Some unit tests come here without a Shell instance.
+    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
+    // work again after WallpaperManager is removed.
+    return false;
   }
-  return false;
+  return ash::Shell::Get()->wallpaper_controller()->GetWallpaperFromCache(
+      account_id, image);
 }
 
 bool WallpaperManager::GetPathFromCache(const AccountId& account_id,
                                         base::FilePath* path) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CustomWallpaperMap::const_iterator it = wallpaper_cache_.find(account_id);
-  if (it != wallpaper_cache_.end()) {
-    *path = (*it).second.first;
-    return true;
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    // Some unit tests come here without a Shell instance.
+    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
+    // work again after WallpaperManager is removed.
+    return false;
   }
-  return false;
+  return ash::Shell::Get()->wallpaper_controller()->GetPathFromCache(account_id,
+                                                                     path);
 }
 
 int WallpaperManager::loaded_wallpapers_for_test() const {
@@ -1547,8 +1489,9 @@ void WallpaperManager::CacheUsersWallpapers() {
 
 void WallpaperManager::CacheUserWallpaper(const AccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CustomWallpaperMap::iterator it = wallpaper_cache_.find(account_id);
-  if (it != wallpaper_cache_.end() && !it->second.second.isNull())
+  ash::CustomWallpaperMap* wallpaper_cache_map = GetWallpaperCacheMap();
+  ash::CustomWallpaperMap::iterator it = wallpaper_cache_map->find(account_id);
+  if (it != wallpaper_cache_map->end() && !it->second.second.isNull())
     return;
   WallpaperInfo info;
   if (GetUserWallpaperInfo(account_id, &info)) {
@@ -1567,8 +1510,8 @@ void WallpaperManager::CacheUserWallpaper(const AccountId& account_id) {
         wallpaper_path = GetCustomWallpaperDir(sub_dir).Append(info.location);
       }
       // Set the path to the cache.
-      wallpaper_cache_[account_id] =
-          CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
+      (*wallpaper_cache_map)[account_id] =
+          ash::CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&WallpaperManager::GetCustomWallpaperInternal, account_id,
@@ -1595,15 +1538,16 @@ void WallpaperManager::ClearDisposableWallpaperCache() {
     logged_in_user_account_ids.insert((*it)->GetAccountId());
   }
 
-  CustomWallpaperMap logged_in_users_cache;
-  for (CustomWallpaperMap::iterator it = wallpaper_cache_.begin();
-       it != wallpaper_cache_.end(); ++it) {
+  ash::CustomWallpaperMap logged_in_users_cache;
+  ash::CustomWallpaperMap* wallpaper_cache_map = GetWallpaperCacheMap();
+  for (ash::CustomWallpaperMap::iterator it = wallpaper_cache_map->begin();
+       it != wallpaper_cache_map->end(); ++it) {
     if (logged_in_user_account_ids.find(it->first) !=
         logged_in_user_account_ids.end()) {
       logged_in_users_cache.insert(*it);
     }
   }
-  wallpaper_cache_ = logged_in_users_cache;
+  *wallpaper_cache_map = logged_in_users_cache;
 }
 
 void WallpaperManager::DeleteUserWallpapers(const AccountId& account_id) {
@@ -1719,9 +1663,11 @@ void WallpaperManager::LoadWallpaper(const AccountId& account_id,
 
     // If the wallpaper exists and it contains already the correct image we can
     // return immediately.
-    CustomWallpaperMap::iterator it = wallpaper_cache_.find(account_id);
-    if (it != wallpaper_cache_.end() && it->second.first == wallpaper_path &&
-        !it->second.second.isNull())
+    ash::CustomWallpaperMap* wallpaper_cache_map = GetWallpaperCacheMap();
+    ash::CustomWallpaperMap::iterator it =
+        wallpaper_cache_map->find(account_id);
+    if (it != wallpaper_cache_map->end() &&
+        it->second.first == wallpaper_path && !it->second.second.isNull())
       return;
 
     loaded_wallpapers_for_test_++;
@@ -1781,47 +1727,17 @@ void WallpaperManager::MoveLoggedInUserCustomWallpaper() {
 bool WallpaperManager::GetUserWallpaperInfo(const AccountId& account_id,
                                             WallpaperInfo* info) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          account_id)) {
-    // Default to the values cached in memory.
-    *info = current_user_wallpaper_info_;
-
-    // Ephemeral users do not save anything to local state. But we have got
-    // wallpaper info from memory. Returns true.
-    return true;
-  }
-
-  const base::DictionaryValue* info_dict;
-  if (!g_browser_process->local_state()
-           ->GetDictionary(kUsersWallpaperInfo)
-           ->GetDictionaryWithoutPathExpansion(account_id.GetUserEmail(),
-                                               &info_dict)) {
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
+    // Some unit tests come here without a Shell instance.
+    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
+    // work again after WallpaperManager is removed.
     return false;
   }
-
-  // Use temporary variables to keep |info| untouched in the error case.
-  std::string location;
-  if (!info_dict->GetString(kNewWallpaperLocationNodeName, &location))
-    return false;
-  int layout;
-  if (!info_dict->GetInteger(kNewWallpaperLayoutNodeName, &layout))
-    return false;
-  int type;
-  if (!info_dict->GetInteger(kNewWallpaperTypeNodeName, &type))
-    return false;
-  std::string date_string;
-  if (!info_dict->GetString(kNewWallpaperDateNodeName, &date_string))
-    return false;
-  int64_t date_val;
-  if (!base::StringToInt64(date_string, &date_val))
-    return false;
-
-  info->location = location;
-  info->layout = static_cast<wallpaper::WallpaperLayout>(layout);
-  info->type = static_cast<wallpaper::WallpaperType>(type);
-  info->date = base::Time::FromInternalValue(date_val);
-  return true;
+  bool is_persistent =
+      !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
+          account_id);
+  return ash::Shell::Get()->wallpaper_controller()->GetUserWallpaperInfo(
+      account_id, info, is_persistent);
 }
 
 bool WallpaperManager::ShouldSetDeviceWallpaper(const AccountId& account_id,
@@ -1883,7 +1799,7 @@ void WallpaperManager::OnWallpaperDecoded(
   }
 
   // Update the image, but keep the path which was set earlier.
-  wallpaper_cache_[account_id].second = user_image->image();
+  (*GetWallpaperCacheMap())[account_id].second = user_image->image();
 
   if (update_wallpaper)
     SetWallpaper(user_image->image(), info);
@@ -1896,7 +1812,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
   // There is no visible wallpaper in kiosk mode.
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
     return;
-  wallpaper_cache_.erase(account_id);
+  GetWallpaperCacheMap()->erase(account_id);
 
   WallpaperResolution resolution = GetAppropriateResolution();
   const bool use_small = (resolution == WALLPAPER_RESOLUTION_SMALL);
@@ -1957,8 +1873,8 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
   if (update_wallpaper) {
     // We are now about to change the wallpaper, so update the path and remove
     // the existing image.
-    wallpaper_cache_[account_id] =
-        CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
+    (*GetWallpaperCacheMap())[account_id] =
+        ash::CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());
   }
   user_image_loader::StartWithFilePath(
       task_runner_, wallpaper_path, ImageDecoder::ROBUST_JPEG_CODEC,
@@ -2398,6 +2314,20 @@ void WallpaperManager::SetDefaultWallpaperPath(
 
   DoSetDefaultWallpaper(EmptyAccountId(), need_update_screen,
                         MovableOnDestroyCallbackHolder());
+}
+
+wallpaper::WallpaperInfo* WallpaperManager::GetCachedWallpaperInfo() {
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash())
+    return &dummy_current_user_wallpaper_info_;
+  return ash::Shell::Get()
+      ->wallpaper_controller()
+      ->GetCurrentUserWallpaperInfo();
+}
+
+ash::CustomWallpaperMap* WallpaperManager::GetWallpaperCacheMap() {
+  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash())
+    return &dummy_wallpaper_cache_map_;
+  return ash::Shell::Get()->wallpaper_controller()->GetWallpaperCacheMap();
 }
 
 }  // namespace chromeos

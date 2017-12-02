@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -21,6 +22,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/compositor/compositor_lock.h"
+#include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
 
@@ -40,6 +42,12 @@ class WallpaperResizer;
 namespace ash {
 
 class WallpaperControllerObserver;
+
+// The |CustomWallpaperElement| contains |first| the path of the image which
+// is currently being loaded and or in progress of being loaded and |second|
+// the image itself.
+using CustomWallpaperElement = std::pair<base::FilePath, gfx::ImageSkia>;
+using CustomWallpaperMap = std::map<AccountId, CustomWallpaperElement>;
 
 // Controls the desktop background wallpaper:
 //   - Sets a wallpaper image and layout;
@@ -136,6 +144,39 @@ class ASH_EXPORT WallpaperController
 
   // Returns whether the current wallpaper is blurred.
   bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
+
+  // TODO(crbug.com/776464): Make this private. WallpaperInfo should be an
+  // internal concept. In addition, change |is_persistent| to |is_ephemeral| to
+  // be consistent with |mojom::WallpaperUserInfo|.
+  // Sets wallpaper info for |account_id| and saves it to local state if
+  // |is_persistent| is true.
+  void SetUserWallpaperInfo(const AccountId& account_id,
+                            const wallpaper::WallpaperInfo& info,
+                            bool is_persistent);
+
+  // Gets wallpaper info of |account_id| from local state, or memory if
+  // |is_persistent| is false. Returns false if wallpaper info is not found.
+  bool GetUserWallpaperInfo(const AccountId& account_id,
+                            wallpaper::WallpaperInfo* info,
+                            bool is_persistent);
+
+  // Removes |account_id|'s wallpaper info and color cache if it exists.
+  void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_persistent);
+
+  // Gets encoded wallpaper from cache. Returns true if success.
+  bool GetWallpaperFromCache(const AccountId& account_id,
+                             gfx::ImageSkia* image);
+
+  // Gets path of encoded wallpaper from cache. Returns true if success.
+  bool GetPathFromCache(const AccountId& account_id, base::FilePath* path);
+
+  // TODO(crbug.com/776464): Remove this after WallpaperManager is removed.
+  // Returns the pointer of |current_user_wallpaper_info_|.
+  wallpaper::WallpaperInfo* GetCurrentUserWallpaperInfo();
+
+  // TODO(crbug.com/776464): Remove this after WallpaperManager is removed.
+  // Returns the pointer of |wallpaper_cache_map_|.
+  CustomWallpaperMap* GetWallpaperCacheMap();
 
   // mojom::WallpaperController overrides:
   void SetClient(mojom::WallpaperControllerClientPtr client) override;
@@ -254,6 +295,12 @@ class ASH_EXPORT WallpaperController
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;
 
+  // Cached logged-in user wallpaper info.
+  wallpaper::WallpaperInfo current_user_wallpaper_info_;
+
+  // Cached wallpapers of users.
+  CustomWallpaperMap wallpaper_cache_map_;
+
   // Location (see WallpaperInfo::location) used by the current wallpaper.
   // Used as a key for storing |prominent_colors_| in the
   // wallpaper::kWallpaperColors pref. An empty string disables color caching.
@@ -272,6 +319,9 @@ class ASH_EXPORT WallpaperController
   ScopedSessionObserver scoped_session_observer_;
 
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
+
+  // Tracks how many wallpapers have been set, for testing purpose.
+  int wallpaper_count_for_testing_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperController);
 };
