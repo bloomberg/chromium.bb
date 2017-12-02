@@ -90,55 +90,6 @@ const char* StringForAllocatorType(uint32_t type) {
   }
 }
 
-std::string ProcessNameFromProcessType(mojom::ProcessType process_type) {
-  switch (process_type) {
-    case mojom::ProcessType::BROWSER:
-      return "Browser";
-    case mojom::ProcessType::RENDERER:
-      return "Renderer";
-    case mojom::ProcessType::GPU:
-      return "Gpu";
-    case mojom::ProcessType::OTHER:
-      return "Other";
-  }
-  return "Unknown";
-}
-
-std::string ProcessMainThreadNameFromProcessType(
-    mojom::ProcessType process_type) {
-  switch (process_type) {
-    case mojom::ProcessType::BROWSER:
-      return "CrBrowserMain";
-    case mojom::ProcessType::RENDERER:
-      return "CrRendererMain";
-    case mojom::ProcessType::GPU:
-      return "CrGpuMain";
-    case mojom::ProcessType::OTHER:
-      return "CrOtherMain";
-  }
-  return "CrUnknownMain";
-}
-
-// Writes a dummy process name entry given a PID. When we have more information
-// on a process it can be filled in here. But for now the tracing tools expect
-// this entry since everything is associated with a PID.
-void WriteProcessName(int pid, const ExportParams& params, std::ostream& out) {
-  out << "{ \"pid\":" << pid << ", \"ph\":\"M\", \"name\":\"process_name\", "
-      << "\"args\":{\"name\":\""
-      << ProcessNameFromProcessType(params.process_type) << "\"}},";
-
-  // Catapult needs a thread named "CrBrowserMain" to recognize Chrome browser.
-  out << "{ \"pid\":" << pid << ", \"ph\":\"M\", \"name\":\"thread_name\", "
-      << "\"tid\": 1,"
-      << "\"args\":{\"name\":\""
-      << ProcessMainThreadNameFromProcessType(params.process_type) << "\"}},";
-
-  // At least, one event must be present on the thread to avoid being pruned.
-  out << "{ \"name\": \"MemlogTraceEvent\", \"cat\": \"memlog\", "
-      << "\"ph\": \"B\", \"ts\": 1, \"pid\": " << pid << ", "
-      << "\"tid\": 1, \"args\": {}}";
-}
-
 // Writes the top-level allocators section. This section is used by the tracing
 // UI to show a small summary for each allocator. It's necessary as a
 // placeholder to allow the stack-viewing UI to be shown.
@@ -195,21 +146,6 @@ void WriteAllocatorsSummary(size_t total_size[],
     out << "\n";
   }
   out << "},\n";
-}
-
-// Writes the dictionary keys to preceed a "dumps" trace argument.
-void WriteDumpsHeader(int pid, std::ostream& out) {
-  out << "{ \"pid\":" << pid << ",";
-  out << "\"ph\":\"v\",";
-  out << "\"name\":\"periodic_interval\",";
-  out << "\"ts\": 1,";
-  out << "\"id\": \"1\",";
-  out << "\"args\":{";
-  out << "\"dumps\":";
-}
-
-void WriteDumpsFooter(std::ostream& out) {
-  out << "}}";  // args, event
 }
 
 // Writes the dictionary keys to preceed a "heaps_v2" trace argument inside a
@@ -432,29 +368,6 @@ void WriteAllocatorNodes(const UniqueAllocationMap& allocations,
 
 ExportParams::ExportParams() = default;
 ExportParams::~ExportParams() = default;
-
-void ExportAllocationEventSetToJSON(
-    int pid,
-    const ExportParams& params,
-    std::unique_ptr<base::DictionaryValue> metadata_dict,
-    std::ostream& out) {
-  out << "{ \"traceEvents\": [";
-  WriteProcessName(pid, params, out);
-  out << ",\n";
-  WriteDumpsHeader(pid, out);
-  ExportMemoryMapsAndV2StackTraceToJSON(params, out);
-  WriteDumpsFooter(out);
-  out << "]";
-
-  // Append metadata.
-  if (metadata_dict) {
-    std::string metadata;
-    base::JSONWriter::Write(*metadata_dict, &metadata);
-    out << ",\"metadata\": " << metadata;
-  }
-
-  out << "}\n";
-}
 
 void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
                                            std::ostream& out) {

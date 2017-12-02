@@ -69,31 +69,6 @@ void ProfilingService::AddProfilingClient(
       std::move(memlog_pipe_receiver), process_type);
 }
 
-void ProfilingService::DumpProcess(
-    base::ProcessId pid,
-    mojo::ScopedHandle output_file,
-    std::unique_ptr<base::DictionaryValue> metadata,
-    DumpProcessCallback callback) {
-  base::PlatformFile platform_file;
-  MojoResult result =
-      UnwrapPlatformFile(std::move(output_file), &platform_file);
-  if (result != MOJO_RESULT_OK) {
-    DLOG(ERROR) << "Failed to unwrap output file " << result;
-    std::move(callback).Run(false);
-    return;
-  }
-  base::File file(platform_file);
-
-  // Need a memory map to make sense of the dump. The dump will be triggered
-  // in the memory map global dump callback.
-  // TODO(brettw) this should be a OnceCallback to avoid base::Passed.
-  memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->GetVmRegionsForHeapProfiler(
-          base::Bind(&ProfilingService::OnGetVmRegionsCompleteForDumpProcess,
-                     weak_factory_.GetWeakPtr(), pid, base::Passed(&metadata),
-                     base::Passed(&file), base::Passed(&callback)));
-}
-
 void ProfilingService::DumpProcessesForTracing(
     DumpProcessesForTracingCallback callback) {
   // Need a memory map to make sense of the dump. The dump will be triggered
@@ -103,44 +78,6 @@ void ProfilingService::DumpProcessesForTracing(
       ->GetVmRegionsForHeapProfiler(base::Bind(
           &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
           weak_factory_.GetWeakPtr(), base::Passed(&callback)));
-}
-
-void ProfilingService::OnGetVmRegionsCompleteForDumpProcess(
-    base::ProcessId pid,
-    std::unique_ptr<base::DictionaryValue> metadata,
-    base::File file,
-    DumpProcessCallback callback,
-    bool success,
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
-  if (!success) {
-    DLOG(ERROR) << "Global dump failed";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  // Find the process's memory dump we want.
-  // TODO(bug 752621) we should be asking and getting the memory map of only
-  // the process we want rather than querying all processes and filtering.
-  memory_instrumentation::mojom::ProcessMemoryDump* process_dump = nullptr;
-  for (const auto& proc : dump->process_dumps) {
-    if (proc->pid == pid) {
-      process_dump = &*proc;
-      break;
-    }
-  }
-  if (!process_dump) {
-    DLOG(ERROR) << "Don't have a memory dump for PID " << pid;
-    std::move(callback).Run(false);
-    return;
-  }
-
-  MemlogConnectionManager::DumpProcessArgs args;
-  args.pid = pid;
-  args.metadata = std::move(metadata);
-  args.maps = std::move(process_dump->os_dump->memory_maps_for_heap_profiler);
-  args.file = std::move(file);
-  args.callback = std::move(callback);
-  connection_manager_.DumpProcess(std::move(args));
 }
 
 void ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(

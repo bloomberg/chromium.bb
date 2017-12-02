@@ -8,8 +8,8 @@ function requestProcessList() {
   chrome.send('requestProcessList');
 }
 
-function dumpProcess(pid) {
-  chrome.send('dumpProcess', [pid]);
+function saveDump() {
+  chrome.send('saveDump');
 }
 
 function reportProcess(pid) {
@@ -29,6 +29,10 @@ function addListRow(table, celltype, cols) {
   table.appendChild(tr);
 }
 
+function setSaveDumpMessage(data) {
+  $('save_dump_text').innerText = data;
+}
+
 function returnProcessList(data) {
   $('message').innerText = data['message'];
 
@@ -39,29 +43,33 @@ function returnProcessList(data) {
   if (processes.length == 0)
     return;  // No processes to dump, don't make the table and refresh button.
 
-  // Add the refresh button.
-  let refreshDiv = document.createElement('div');
-  refreshDiv.className = 'refresh';
+  // Add the refresh and save-dump buttons.
+  let commandsDiv = document.createElement('div');
+  commandsDiv.className = 'commands';
+
   let refreshButton = document.createElement('button');
   refreshButton.innerText = '\u21ba Refresh process list';
   refreshButton.onclick = () => requestProcessList();
-  refreshDiv.appendChild(refreshButton);
-  proclist.appendChild(refreshDiv);
+  commandsDiv.appendChild(refreshButton);
+  let saveDumpButton = document.createElement('button');
+  saveDumpButton.innerText = '\u21e9 Save dump';
+  saveDumpButton.onclick = () => saveDump();
+  commandsDiv.appendChild(saveDumpButton);
+  let saveDumpText = document.createElement('div');
+  saveDumpText.id = 'save_dump_text';
+  commandsDiv.appendChild(saveDumpText);
+
+  proclist.appendChild(commandsDiv);
 
   let table = document.createElement('table');
 
   // Heading.
   addListRow(table, 'th', [
-    null, null, document.createTextNode('Process ID'),
-    document.createTextNode('Name')
+    null, document.createTextNode('Process ID'), document.createTextNode('Name')
   ]);
 
   for (let proc of processes) {
     let procId = proc[0];
-
-    let saveButton = document.createElement('button');
-    saveButton.innerText = '\u21e9 Save dump';
-    saveButton.onclick = () => dumpProcess(procId);
 
     let reportButton = document.createElement('button');
     reportButton.innerText = '\uD83D\uDC1E Report';
@@ -70,8 +78,7 @@ function returnProcessList(data) {
     let procIdText = document.createTextNode(procId.toString());
     let description = document.createTextNode(proc[1]);
 
-    addListRow(
-        table, 'td', [saveButton, reportButton, procIdText, description]);
+    addListRow(table, 'td', [reportButton, procIdText, description]);
   }
 
   proclist.appendChild(table);

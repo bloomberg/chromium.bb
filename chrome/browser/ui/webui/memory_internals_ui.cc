@@ -125,8 +125,8 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
   // Callback for the "requestProcessList" message.
   void HandleRequestProcessList(const base::ListValue* args);
 
-  // Callback for the "dumpProcess" message.
-  void HandleDumpProcess(const base::ListValue* args);
+  // Callback for the "saveDump" message.
+  void HandleSaveDump(const base::ListValue* args);
 
   // Callback for the "reportProcess" message.
   void HandleReportProcess(const base::ListValue* args);
@@ -143,6 +143,8 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
                     int index,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
+
+  void SaveTraceFinished(bool success);
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   content::WebUI* web_ui_;  // The WebUI that owns us.
@@ -168,8 +170,8 @@ void MemoryInternalsDOMHandler::RegisterMessages() {
       base::Bind(&MemoryInternalsDOMHandler::HandleRequestProcessList,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "dumpProcess",
-      base::BindRepeating(&MemoryInternalsDOMHandler::HandleDumpProcess,
+      "saveDump",
+      base::BindRepeating(&MemoryInternalsDOMHandler::HandleSaveDump,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "reportProcess",
@@ -187,26 +189,27 @@ void MemoryInternalsDOMHandler::HandleRequestProcessList(
                  weak_factory_.GetWeakPtr()));
 }
 
-void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
-  if (!args->is_list() || args->GetList().size() != 1)
-    return;
-  const base::Value& pid_value = args->GetList()[0];
-  if (!pid_value.is_int())
-    return;
-
-  int pid = pid_value.GetInt();
+void MemoryInternalsDOMHandler::HandleSaveDump(const base::ListValue* args) {
   base::FilePath default_file = base::FilePath().AppendASCII(
-      base::StringPrintf("memlog_%d.json.gz", pid));
+      base::StringPrintf("trace_with_heap_dump.json.gz"));
 
 #if defined(OS_ANDROID)
+  base::Value result("Saving...");
+  AllowJavascript();
+  CallJavascriptFunction("setSaveDumpMessage", result);
+
   // On Android write to the user data dir.
   // TODO(bug 757115) Does it make sense to show the Android file picker here
   // instead? Need to test what that looks like.
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath output_path = user_data_dir.Append(default_file);
-  ProfilingProcessHost::GetInstance()->RequestProcessDump(
-      pid, std::move(output_path), base::OnceClosure());
+  ProfilingProcessHost::GetInstance()->SaveTraceWithHeapDumpToFile(
+      std::move(output_path),
+      base::BindOnce(&MemoryInternalsDOMHandler::SaveTraceFinished,
+                     weak_factory_.GetWeakPtr()),
+      false);
+
   (void)web_ui_;  // Avoid warning about not using private web_ui_ member.
 #else
   if (select_file_dialog_)
@@ -215,12 +218,10 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
       this,
       std::make_unique<ChromeSelectFilePolicy>(web_ui_->GetWebContents()));
 
-  // Pass the PID to dump via the "params" for the callback to use.
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), default_file,
       nullptr, 0, FILE_PATH_LITERAL(".json.gz"),
-      web_ui_->GetWebContents()->GetTopLevelNativeWindow(),
-      reinterpret_cast<void*>(pid));
+      web_ui_->GetWebContents()->GetTopLevelNativeWindow(), nullptr);
 #endif
 }
 
@@ -301,21 +302,31 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
 
   AllowJavascript();
   CallJavascriptFunction("returnProcessList", result);
-  DisallowJavascript();
 }
 
 void MemoryInternalsDOMHandler::FileSelected(const base::FilePath& path,
                                              int index,
                                              void* params) {
-  // The PID to dump was stashed in the params.
-  int pid = reinterpret_cast<intptr_t>(params);
-  ProfilingProcessHost::GetInstance()->RequestProcessDump(pid, path,
-                                                          base::OnceClosure());
+  base::Value result("Saving...");
+  AllowJavascript();
+  CallJavascriptFunction("setSaveDumpMessage", result);
+
+  ProfilingProcessHost::GetInstance()->SaveTraceWithHeapDumpToFile(
+      path,
+      base::BindOnce(&MemoryInternalsDOMHandler::SaveTraceFinished,
+                     weak_factory_.GetWeakPtr()),
+      false);
   select_file_dialog_ = nullptr;
 }
 
 void MemoryInternalsDOMHandler::FileSelectionCanceled(void* params) {
   select_file_dialog_ = nullptr;
+}
+
+void MemoryInternalsDOMHandler::SaveTraceFinished(bool success) {
+  base::Value result(success ? "Save successful." : "Save failure.");
+  AllowJavascript();
+  CallJavascriptFunction("setSaveDumpMessage", result);
 }
 
 }  // namespace

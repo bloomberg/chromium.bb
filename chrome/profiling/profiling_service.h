@@ -46,10 +46,6 @@ class ProfilingService : public service_manager::Service,
                           mojo::ScopedHandle memlog_pipe_sender,
                           mojo::ScopedHandle memlog_pipe_receiver,
                           mojom::ProcessType process_type) override;
-  void DumpProcess(base::ProcessId pid,
-                   mojo::ScopedHandle output_file,
-                   std::unique_ptr<base::DictionaryValue> metadata,
-                   DumpProcessCallback callback) override;
   void DumpProcessesForTracing(
       DumpProcessesForTracingCallback callback) override;
 
@@ -63,13 +59,6 @@ class ProfilingService : public service_manager::Service,
       service_manager::ServiceContextRefFactory* ref_factory,
       mojom::ProfilingServiceRequest request);
 
-  void OnGetVmRegionsCompleteForDumpProcess(
-      base::ProcessId pid,
-      std::unique_ptr<base::DictionaryValue> metadata,
-      base::File file,
-      DumpProcessCallback callback,
-      bool success,
-      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
   void OnGetVmRegionsCompleteForDumpProcessesForTracing(
       mojom::ProfilingService::DumpProcessesForTracingCallback callback,
       bool success,

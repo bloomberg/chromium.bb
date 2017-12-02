@@ -105,11 +105,16 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   void ConfigureBackgroundProfilingTriggers();
 
-  // Sends a message to the profiling process to dump the given process'
-  // memory data to the given file.
-  void RequestProcessDump(base::ProcessId pid,
-                          base::FilePath dest,
-                          base::OnceClosure done);
+  // Create a trace with a heap dump at the given path.
+  // This is equivalent to navigating to chrome://tracing, taking a trace with
+  // only the memory-infra category selected, waiting 10 seconds, and saving the
+  // result to |dest|.
+  // |done| will be called on the UI thread.
+  using SaveTraceFinishedCallback = base::OnceCallback<void(bool success)>;
+  void SaveTraceWithHeapDumpToFile(
+      base::FilePath dest,
+      SaveTraceFinishedCallback done,
+      bool stop_immediately_after_heap_dump_for_tests);
 
   // Sends a message to the profiling process to report all profiled processes
   // memory data to the crash server (slow-report).
@@ -181,23 +186,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                                    base::ProcessId pid,
                                    profiling::mojom::ProcessType process_type);
 
-  void GetOutputFileOnBlockingThread(base::ProcessId pid,
-                                     base::FilePath dest,
-                                     std::string trigger_name,
-                                     base::OnceClosure done);
-  void HandleDumpProcessOnIOThread(base::ProcessId pid,
-                                   base::FilePath file_path,
-                                   base::File file,
-                                   std::string trigger_name,
-                                   base::OnceClosure done);
-  void OnProcessDumpComplete(base::FilePath file_path,
-                             std::string trigger_name,
-                             base::OnceClosure done,
-                             bool success);
-
-  // Returns the metadata for the trace. This is the minimum amount of metadata
-  // needed to symbolize the trace.
-  std::unique_ptr<base::DictionaryValue> GetMetadataJSONForTrace();
+  void SaveTraceToFileOnBlockingThread(base::FilePath dest,
+                                       std::string trace,
+                                       SaveTraceFinishedCallback done);
 
   // Reports the profiling mode.
   void ReportMetrics();

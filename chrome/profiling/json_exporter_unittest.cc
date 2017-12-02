@@ -30,46 +30,11 @@ using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 
 static constexpr int kNoParent = -1;
 
-// Finds the first trace event in the given JSON trace with name |name|.
-// Returns null on failure.
-const base::Value* FindEventWithName(const base::Value& root,
-                                     const char* name) {
-  const base::Value* found_trace_events =
-      root.FindKeyOfType("traceEvents", base::Value::Type::LIST);
-  if (!found_trace_events)
-    return nullptr;
-
-  for (const base::Value& cur : found_trace_events->GetList()) {
-    const base::Value* found_name =
-        cur.FindKeyOfType("name", base::Value::Type::STRING);
-    if (!found_name)
-      return nullptr;
-    if (found_name->GetString() == name)
-      return &cur;
-  }
-  return nullptr;
-}
-
-// Finds the first period_interval trace event in the given JSON trace.
-// Returns null on failure.
-const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
-  return FindEventWithName(root, "periodic_interval");
-}
-
 // Finds the first vm region in the given periodic interval. Returns null on
 // failure.
-const base::Value* FindFirstRegionWithAnyName(
-    const base::Value* periodic_interval) {
-  const base::Value* found_args =
-      periodic_interval->FindKeyOfType("args", base::Value::Type::DICTIONARY);
-  if (!found_args)
-    return nullptr;
-  const base::Value* found_dumps =
-      found_args->FindKeyOfType("dumps", base::Value::Type::DICTIONARY);
-  if (!found_dumps)
-    return nullptr;
-  const base::Value* found_mmaps = found_dumps->FindKeyOfType(
-      "process_mmaps", base::Value::Type::DICTIONARY);
+const base::Value* FindFirstRegionWithAnyName(const base::Value* root) {
+  const base::Value* found_mmaps =
+      root->FindKeyOfType("process_mmaps", base::Value::Type::DICTIONARY);
   if (!found_mmaps)
     return nullptr;
   const base::Value* found_regions =
@@ -163,110 +128,6 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 
 }  // namespace
 
-TEST(ProfilingJsonExporterTest, TraceHeader) {
-  BacktraceStorage backtrace_storage;
-  std::ostringstream stream;
-
-  ExportParams params;
-  params.process_type = mojom::ProcessType::BROWSER;
-  params.min_size_threshold = kNoSizeThreshold;
-  params.min_count_threshold = kNoCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
-  std::string json = stream.str();
-
-  // JSON should parse.
-  base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
-  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-      << reader.GetErrorMessage() << "\n"
-      << stream.str();
-  ASSERT_TRUE(root);
-
-  const base::Value* process_name = FindEventWithName(*root, "process_name");
-  ASSERT_TRUE(process_name);
-  const base::Value* process_pid =
-      process_name->FindKeyOfType("pid", base::Value::Type::INTEGER);
-  ASSERT_TRUE(process_pid);
-
-  const base::Value* process_args_name =
-      process_name->FindPathOfType({"args", "name"}, base::Value::Type::STRING);
-  ASSERT_TRUE(process_args_name);
-  EXPECT_EQ("Browser", process_args_name->GetString());
-
-  const base::Value* thread_name = FindEventWithName(*root, "thread_name");
-  ASSERT_TRUE(thread_name);
-  const base::Value* thread_pid =
-      thread_name->FindKeyOfType("pid", base::Value::Type::INTEGER);
-  const base::Value* thread_tid =
-      thread_name->FindKeyOfType("tid", base::Value::Type::INTEGER);
-  ASSERT_TRUE(thread_pid);
-  ASSERT_TRUE(thread_tid);
-
-  const base::Value* thread_args_name =
-      thread_name->FindPathOfType({"args", "name"}, base::Value::Type::STRING);
-  ASSERT_TRUE(thread_args_name);
-  EXPECT_EQ("CrBrowserMain", thread_args_name->GetString());
-
-  const base::Value* memlog_event =
-      FindEventWithName(*root, "MemlogTraceEvent");
-  ASSERT_TRUE(memlog_event);
-  const base::Value* memlog_pid =
-      memlog_event->FindKeyOfType("pid", base::Value::Type::INTEGER);
-  const base::Value* memlog_tid =
-      memlog_event->FindKeyOfType("tid", base::Value::Type::INTEGER);
-  ASSERT_TRUE(memlog_pid);
-  ASSERT_TRUE(memlog_tid);
-
-  EXPECT_EQ(process_pid->GetInt(), thread_pid->GetInt());
-  EXPECT_EQ(process_pid->GetInt(), memlog_pid->GetInt());
-  EXPECT_EQ(thread_tid->GetInt(), memlog_tid->GetInt());
-}
-
-TEST(ProfilingJsonExporterTest, DumpsHeader) {
-  BacktraceStorage backtrace_storage;
-  AllocationEventSet events;
-  std::ostringstream stream;
-
-  ExportParams params;
-  params.allocs = AllocationEventSetToCountMap(events);
-  params.min_size_threshold = kNoSizeThreshold;
-  params.min_count_threshold = kNoCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
-  std::string json = stream.str();
-
-  // JSON should parse.
-  base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
-  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-      << reader.GetErrorMessage();
-  ASSERT_TRUE(root);
-
-  // Find the periodic_interval event.
-  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
-
-  // The following fields are mandatory to make a trace viewable in
-  // chrome://tracing UI.
-  const base::Value* pid =
-      periodic_interval->FindKeyOfType("pid", base::Value::Type::INTEGER);
-  ASSERT_TRUE(pid);
-  EXPECT_NE(0, pid->GetInt());
-
-  const base::Value* ts =
-      periodic_interval->FindKeyOfType("ts", base::Value::Type::INTEGER);
-  ASSERT_TRUE(ts);
-  EXPECT_NE(0, ts->GetInt());
-
-  const base::Value* id =
-      periodic_interval->FindKeyOfType("id", base::Value::Type::STRING);
-  ASSERT_TRUE(id);
-  EXPECT_NE("", id->GetString());
-
-  const base::Value* args =
-      periodic_interval->FindKeyOfType("args", base::Value::Type::DICTIONARY);
-  ASSERT_TRUE(args);
-}
-
 TEST(ProfilingJsonExporterTest, Simple) {
   BacktraceStorage backtrace_storage;
 
@@ -299,7 +160,7 @@ TEST(ProfilingJsonExporterTest, Simple) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -309,14 +170,8 @@ TEST(ProfilingJsonExporterTest, Simple) {
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
 
-  // The trace array contains two items, a process_name one and a
-  // periodic_interval one. Find the latter.
-  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
-
   // Validate the allocators summary.
-  const base::Value* malloc_summary =
-      periodic_interval->FindPath({"args", "dumps", "allocators", "malloc"});
+  const base::Value* malloc_summary = root->FindPath({"allocators", "malloc"});
   ASSERT_TRUE(malloc_summary);
   const base::Value* malloc_size =
       malloc_summary->FindPath({"attrs", "size", "value"});
@@ -327,8 +182,8 @@ TEST(ProfilingJsonExporterTest, Simple) {
   ASSERT_TRUE(malloc_virtual_size);
   EXPECT_EQ("54", malloc_virtual_size->GetString());
 
-  const base::Value* partition_alloc_summary = periodic_interval->FindPath(
-      {"args", "dumps", "allocators", "partition_alloc"});
+  const base::Value* partition_alloc_summary =
+      root->FindPath({"allocators", "partition_alloc"});
   ASSERT_TRUE(partition_alloc_summary);
   const base::Value* partition_alloc_size =
       partition_alloc_summary->FindPath({"attrs", "size", "value"});
@@ -339,8 +194,7 @@ TEST(ProfilingJsonExporterTest, Simple) {
   ASSERT_TRUE(partition_alloc_virtual_size);
   EXPECT_EQ("14", partition_alloc_virtual_size->GetString());
 
-  const base::Value* heaps_v2 =
-      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+  const base::Value* heaps_v2 = root->FindKey("heaps_v2");
   ASSERT_TRUE(heaps_v2);
 
   // Retrieve maps and validate their structure.
@@ -473,7 +327,7 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kSizeThreshold;
   params.min_count_threshold = kCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -483,12 +337,7 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
 
-  // The trace array contains two items, a process_name one and a
-  // periodic_interval one. Find the latter.
-  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
-  const base::Value* heaps_v2 =
-      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+  const base::Value* heaps_v2 = root->FindKey("heaps_v2");
   ASSERT_TRUE(heaps_v2);
   const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
   const base::Value* strings = heaps_v2->FindPath({"maps", "strings"});
@@ -545,7 +394,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -555,9 +404,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
 
-  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
-  const base::Value* region = FindFirstRegionWithAnyName(periodic_interval);
+  const base::Value* region = FindFirstRegionWithAnyName(root.get());
   ASSERT_TRUE(region) << "Array contains no named vm regions";
 
   const base::Value* start_address =
@@ -571,48 +418,6 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   ASSERT_TRUE(size);
   EXPECT_NE(size->GetString(), "");
   EXPECT_NE(size->GetString(), "0");
-}
-
-TEST(ProfilingJsonExporterTest, Metadata) {
-  BacktraceStorage backtrace_storage;
-
-  std::vector<Address> stack1;
-  stack1.push_back(Address(1234));
-  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
-
-  AllocationEventSet events;
-  events.insert(
-      AllocationEvent(AllocatorType::kMalloc, Address(0x1), 16, bt1, 0));
-
-  // Generate metadata to pass in.
-  std::unique_ptr<base::DictionaryValue> metadata_dict(
-      new base::DictionaryValue);
-  metadata_dict->SetKey("product-version", base::Value("asdf1"));
-  metadata_dict->SetKey("user-agent", base::Value("\"\"\"9283hfa--+,/asdf2"));
-  base::Value metadata_dict_copy = metadata_dict->Clone();
-
-  std::ostringstream stream;
-
-  ExportParams params;
-  params.allocs = AllocationEventSetToCountMap(events);
-  params.min_size_threshold = kNoSizeThreshold;
-  params.min_count_threshold = kNoCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, std::move(metadata_dict),
-                                 stream);
-  std::string json = stream.str();
-
-  // JSON should parse.
-  base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
-  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-      << reader.GetErrorMessage();
-  ASSERT_TRUE(root);
-
-  base::Value* found_metadatas =
-      root->FindKeyOfType("metadata", base::Value::Type::DICTIONARY);
-  ASSERT_TRUE(found_metadatas) << "Array contains no metadata";
-
-  EXPECT_EQ(metadata_dict_copy, *found_metadatas);
 }
 
 TEST(ProfilingJsonExporterTest, Context) {
@@ -648,7 +453,7 @@ TEST(ProfilingJsonExporterTest, Context) {
   params.allocs = AllocationEventSetToCountMap(events);
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
-  ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
+  ExportMemoryMapsAndV2StackTraceToJSON(params, stream);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -659,10 +464,7 @@ TEST(ProfilingJsonExporterTest, Context) {
   ASSERT_TRUE(root);
 
   // Retrieve the allocations.
-  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-  ASSERT_TRUE(periodic_interval);
-  const base::Value* heaps_v2 =
-      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+  const base::Value* heaps_v2 = root->FindKey("heaps_v2");
   ASSERT_TRUE(heaps_v2);
 
   const base::Value* counts =

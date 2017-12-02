@@ -36,17 +36,6 @@ MemlogConnectionManager::DumpArgs::DumpArgs(DumpArgs&& other) noexcept
     : backtrace_storage_lock(std::move(other.backtrace_storage_lock)) {}
 MemlogConnectionManager::DumpArgs::~DumpArgs() = default;
 
-MemlogConnectionManager::DumpProcessArgs::DumpProcessArgs() = default;
-MemlogConnectionManager::DumpProcessArgs::DumpProcessArgs(
-    DumpProcessArgs&& other) noexcept
-    : DumpArgs(std::move(other)),
-      pid(other.pid),
-      maps(std::move(other.maps)),
-      metadata(std::move(other.metadata)),
-      file(std::move(other.file)),
-      callback(std::move(other.callback)) {}
-MemlogConnectionManager::DumpProcessArgs::~DumpProcessArgs() = default;
-
 // Tracking information for DumpProcessForTracing(). This struct is
 // refcounted since there will be many background thread calls (one for each
 // AllocationTracker) and the callback is only issued when each has
@@ -189,41 +178,6 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
                                 connection_manager, pid));
 }
 
-void MemlogConnectionManager::DumpProcess(DumpProcessArgs args) {
-  // Schedules the given callback to execute after the given process ID has
-  // been synchronized. If the process ID isn't found, the callback will be
-  // asynchronously run with "false" as the success parameter.
-  args.backtrace_storage_lock = BacktraceStorage::Lock(&backtrace_storage_);
-
-  base::AutoLock lock(connections_lock_);
-  auto task_runner = base::MessageLoop::current()->task_runner();
-  auto it = connections_.find(args.pid);
-
-  if (it == connections_.end()) {
-    DLOG(ERROR) << "No connections found for memory dump for pid:" << args.pid;
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MemlogConnectionManager::DoDumpProcess,
-                       weak_factory_.GetWeakPtr(), std::move(args),
-                       mojom::ProcessType::OTHER, false, AllocationCountMap(),
-                       AllocationTracker::ContextMap()));
-    return;
-  }
-
-  int barrier_id = next_barrier_id_++;
-
-  // Register for callback before requesting the dump so we don't race for the
-  // signal. The callback will be issued on the allocation tracker thread so
-  // need to thunk back to the I/O thread.
-  Connection* connection = it->second.get();
-  auto callback = base::BindOnce(&MemlogConnectionManager::DoDumpProcess,
-                                 weak_factory_.GetWeakPtr(), std::move(args),
-                                 connection->process_type);
-  connection->tracker.SnapshotOnBarrier(barrier_id, std::move(task_runner),
-                                        std::move(callback));
-  connection->client->FlushMemlogPipe(barrier_id);
-}
-
 void MemlogConnectionManager::DumpProcessesForTracing(
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
@@ -262,51 +216,6 @@ void MemlogConnectionManager::DumpProcessesForTracing(
                        connection->process_type));
     connection->client->FlushMemlogPipe(barrier_id);
   }
-}
-
-void MemlogConnectionManager::DoDumpProcess(
-    DumpProcessArgs args,
-    mojom::ProcessType process_type,
-    bool success,
-    AllocationCountMap counts,
-    AllocationTracker::ContextMap context) {
-  if (!success) {
-    std::move(args.callback).Run(false);
-    return;
-  }
-
-  CHECK(args.backtrace_storage_lock.IsLocked());
-  std::ostringstream oss;
-  ExportParams params;
-  params.allocs = std::move(counts);
-  params.context_map = std::move(context);
-  params.maps = std::move(args.maps);
-  params.process_type = process_type;
-  params.min_size_threshold = kMinSizeThreshold;
-  params.min_count_threshold = kMinCountThreshold;
-  ExportAllocationEventSetToJSON(args.pid, params, std::move(args.metadata),
-                                 oss);
-  std::string reply = oss.str();
-
-  // Pass ownership of the underlying fd/HANDLE to zlib.
-  base::PlatformFile platform_file = args.file.TakePlatformFile();
-#if defined(OS_WIN)
-  // The underlying handle |platform_file| is also closed when |fd| is closed.
-  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(platform_file), 0);
-#else
-  int fd = platform_file;
-#endif
-  gzFile gz_file = gzdopen(fd, "w");
-  if (!gz_file) {
-    DLOG(ERROR) << "Cannot compress trace file";
-    std::move(args.callback).Run(false);
-    return;
-  }
-
-  size_t written_bytes = gzwrite(gz_file, reply.c_str(), reply.size());
-  gzclose(gz_file);
-
-  std::move(args.callback).Run(written_bytes == reply.size());
 }
 
 void MemlogConnectionManager::DoDumpOneProcessForTracing(
