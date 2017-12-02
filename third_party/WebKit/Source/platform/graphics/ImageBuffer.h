@@ -30,6 +30,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
@@ -148,7 +149,7 @@ class PLATFORM_EXPORT ImageBuffer {
   // have reference to Canvas2DLayerBridge. See crbug.com/776806.
   void OnCanvasDisposed();
 
-  WeakPtrFactory<ImageBuffer> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageBuffer> weak_ptr_factory_;
 
  protected:
   ImageBuffer(std::unique_ptr<ImageBufferSurface>);

@@ -13,7 +13,7 @@ CanvasDrawListener::~CanvasDrawListener() {}
 
 void CanvasDrawListener::SendNewFrame(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
   handler_->SendNewFrame(
       image, context_provider ? context_provider->ContextProvider() : nullptr);
 }

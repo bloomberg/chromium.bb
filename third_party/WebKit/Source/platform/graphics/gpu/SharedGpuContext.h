@@ -5,6 +5,7 @@
 #ifndef SharedGpuContext_h
 #define SharedGpuContext_h
 
+#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/wtf/Functional.h"
@@ -30,7 +31,8 @@ class PLATFORM_EXPORT SharedGpuContext {
   // instead.
   static bool IsGpuCompositingEnabled();
   // May re-create context if context was lost
-  static WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper();
+  static base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+  ContextProviderWrapper();
   static bool AllowSoftwareToAcceleratedCanvasUpgrade();
   static bool IsValidWithoutRestoring();
 

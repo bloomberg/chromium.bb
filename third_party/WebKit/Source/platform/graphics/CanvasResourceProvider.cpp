@@ -35,7 +35,8 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
       const IntSize& size,
       unsigned msaa_sample_count,
       const CanvasColorParams color_params,
-      WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper)
       : CanvasResourceProvider(size,
                                color_params,
                                std::move(context_provider_wrapper)),
@@ -151,7 +152,8 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
       const IntSize& size,
       unsigned msaa_sample_count,
       const CanvasColorParams color_params,
-      WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper)
       : CanvasResourceProvider_Texture(size,
                                        msaa_sample_count,
                                        color_params,
@@ -277,7 +279,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     unsigned msaa_sample_count,
     const CanvasColorParams& colorParams,
     ResourceUsage usage,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper) {
   const ResourceType* resource_type_fallback_list = nullptr;
   size_t list_length = 0;
 
@@ -343,7 +346,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
 CanvasResourceProvider::CanvasResourceProvider(
     const IntSize& size,
     const CanvasColorParams& color_params,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
     : weak_ptr_factory_(this),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       size_(size),
@@ -408,7 +411,7 @@ void CanvasResourceProvider::FlushSkia() const {
 }
 
 static void ReleaseFrameResources(
-    WeakPtr<CanvasResourceProvider> resource_provider,
+    base::WeakPtr<CanvasResourceProvider> resource_provider,
     scoped_refptr<CanvasResource> resource,
     const gpu::SyncToken& sync_token,
     bool lost_resource) {
@@ -454,9 +457,8 @@ bool CanvasResourceProvider::PrepareTransferableResource(
       DoPrepareTransferableResource(out_resource);
   if (!resource)
     return false;
-  auto func =
-      WTF::Bind(&ReleaseFrameResources, weak_ptr_factory_.CreateWeakPtr(),
-                WTF::Passed(std::move(resource)));
+  auto func = WTF::Bind(&ReleaseFrameResources, weak_ptr_factory_.GetWeakPtr(),
+                        WTF::Passed(std::move(resource)));
   *out_callback = viz::SingleReleaseCallback::Create(
       ConvertToBaseCallback(std::move(func)));
   return true;

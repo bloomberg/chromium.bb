@@ -128,7 +128,7 @@ bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
                  hint == kPreferAccelerationAfterVisibilityChange;
   }
 
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
   if (accelerate && (!context_provider_wrapper ||
                      context_provider_wrapper->ContextProvider()
@@ -155,7 +155,7 @@ bool Canvas2DLayerBridge::IsAccelerated() const {
   return ShouldAccelerate(kPreferAcceleration);
 }
 
-static void HibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge,
+static void HibernateWrapper(base::WeakPtr<Canvas2DLayerBridge> bridge,
                              double /*idleDeadline*/) {
   if (bridge) {
     bridge->Hibernate();
@@ -167,7 +167,8 @@ static void HibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge,
   }
 }
 
-static void HibernateWrapperForTesting(WeakPtr<Canvas2DLayerBridge> bridge) {
+static void HibernateWrapperForTesting(
+    base::WeakPtr<Canvas2DLayerBridge> bridge) {
   HibernateWrapper(bridge, 0);
 }
 
@@ -428,11 +429,11 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
     if (dont_use_idle_scheduling_for_testing_) {
       Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE, WTF::Bind(&HibernateWrapperForTesting,
-                                     weak_ptr_factory_.CreateWeakPtr()));
+                                     weak_ptr_factory_.GetWeakPtr()));
     } else {
       Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
           BLINK_FROM_HERE,
-          WTF::Bind(&HibernateWrapper, weak_ptr_factory_.CreateWeakPtr()));
+          WTF::Bind(&HibernateWrapper, weak_ptr_factory_.GetWeakPtr()));
     }
   }
   if (!IsHidden() && software_rendering_while_hidden_) {
@@ -584,7 +585,7 @@ bool Canvas2DLayerBridge::Restore() {
 
   gpu::gles2::GLES2Interface* shared_gl = nullptr;
   layer_->ClearTexture();
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
   if (context_provider_wrapper)
     shared_gl = context_provider_wrapper->ContextProvider()->ContextGL();

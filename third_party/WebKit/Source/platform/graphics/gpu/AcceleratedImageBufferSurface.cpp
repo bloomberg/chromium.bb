@@ -84,7 +84,7 @@ AcceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint,
     return nullptr;
   // Must make a copy of the WeakPtr because CreateFromSkImage only takes
   // r-value references.
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       context_provider_wrapper_;
   scoped_refptr<AcceleratedStaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromSkImage(

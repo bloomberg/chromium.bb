@@ -1017,7 +1017,7 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
 
   // Avoid creating |contextProvider| until we're sure we want to try use it,
   // since it costs us GPU memory.
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
   if (!context_provider_wrapper) {
     CanvasMetrics::CountCanvasContextUsage(
@@ -1442,7 +1442,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
 
 void HTMLCanvasElement::SetPlaceholderFrame(
     scoped_refptr<StaticBitmapImage> image,
-    WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
+    base::WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
     scoped_refptr<WebTaskRunner> task_runner,
     unsigned resource_id) {
   OffscreenCanvasPlaceholder::SetPlaceholderFrame(

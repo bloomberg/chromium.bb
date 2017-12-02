@@ -5,9 +5,9 @@
 #ifndef WebGraphicsContext3DProviderWrapper_h
 #define WebGraphicsContext3DProviderWrapper_h
 
+#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/gpu/GraphicsContext3DUtils.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 
 namespace blink {
@@ -18,10 +18,10 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
       std::unique_ptr<WebGraphicsContext3DProvider> provider)
       : context_provider_(std::move(provider)), weak_ptr_factory_(this) {
     DCHECK(context_provider_);
-    utils_ = WTF::WrapUnique(new GraphicsContext3DUtils(CreateWeakPtr()));
+    utils_ = WTF::WrapUnique(new GraphicsContext3DUtils(GetWeakPtr()));
   }
-  WeakPtr<WebGraphicsContext3DProviderWrapper> CreateWeakPtr() {
-    return weak_ptr_factory_.CreateWeakPtr();
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
   WebGraphicsContext3DProvider* ContextProvider() {
     return context_provider_.get();
@@ -32,7 +32,7 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
  private:
   std::unique_ptr<GraphicsContext3DUtils> utils_;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
-  WeakPtrFactory<WebGraphicsContext3DProviderWrapper> weak_ptr_factory_;
+  base::WeakPtrFactory<WebGraphicsContext3DProviderWrapper> weak_ptr_factory_;
 };
 
 }  // namespace blink

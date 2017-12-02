@@ -626,7 +626,7 @@ Optional<size_t> BitmapImage::StartAnimationInternal(TimeTicks time) {
   task_runner_->PostTask(
       BLINK_FROM_HERE,
       WTF::Bind(&BitmapImage::NotifyObserversOfAnimationAdvance,
-                weak_factory_.CreateWeakPtr(), nullptr));
+                weak_factory_.GetWeakPtr(), nullptr));
 
   // Reset the |desired_frame_start_time_| to the time for starting the
   // |current_frame_index_|. Whenever StartAnimationInternal decides to schedule

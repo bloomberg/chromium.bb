@@ -29,6 +29,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
 #include "platform/PlatformExport.h"
@@ -40,7 +41,6 @@
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -173,7 +173,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   std::unique_ptr<WebExternalTextureLayer> layer_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
   std::unique_ptr<Logger> logger_;
-  WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
   ImageBuffer* image_buffer_;
   int msaa_sample_count_;
   int frames_since_last_commit_ = 0;

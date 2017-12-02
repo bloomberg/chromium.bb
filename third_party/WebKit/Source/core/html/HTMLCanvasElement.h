@@ -30,6 +30,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/v8_blob_callback.h"
 #include "core/CoreExport.h"
@@ -218,7 +219,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // OffscreenCanvasPlaceholder implementation.
   void SetPlaceholderFrame(scoped_refptr<StaticBitmapImage>,
-                           WeakPtr<OffscreenCanvasFrameDispatcher>,
+                           base::WeakPtr<OffscreenCanvasFrameDispatcher>,
                            scoped_refptr<WebTaskRunner>,
                            unsigned resource_id) override;
   virtual void Trace(blink::Visitor*);

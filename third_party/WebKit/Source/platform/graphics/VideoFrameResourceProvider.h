@@ -5,6 +5,7 @@
 #ifndef VideoFrameResourceProvider_h
 #define VideoFrameResourceProvider_h
 
+#include "base/memory/weak_ptr.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "cc/trees/layer_tree_settings.h"

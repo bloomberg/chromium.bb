@@ -14,7 +14,8 @@ namespace {
 
 struct GrTextureMailboxReleaseProcData {
   GrTexture* gr_texture_;
-  WeakPtr<blink::WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+      context_provider_wrapper_;
 };
 
 void GrTextureMailboxReleaseProc(void* data) {

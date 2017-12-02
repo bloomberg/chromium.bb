@@ -28,6 +28,7 @@
 #define Image_h
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
@@ -41,7 +42,6 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/Time.h"
-#include "platform/wtf/WeakPtr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
@@ -224,8 +224,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual WebGraphicsContext3DProvider* ContextProvider() const {
     return nullptr;
   }
-  virtual WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
-      const {
+  virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+  ContextProviderWrapper() const {
     return nullptr;
   }
 

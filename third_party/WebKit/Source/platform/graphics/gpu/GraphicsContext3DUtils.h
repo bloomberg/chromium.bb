@@ -5,11 +5,11 @@
 #ifndef GraphicsContext3DUtils_h
 #define GraphicsContext3DUtils_h
 
+#include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/WeakPtr.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 
@@ -21,8 +21,8 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
  public:
   // The constructor takes a weak ref to the wrapper because it internally
   // it generates callbacks that may outlive the wrapper.
-  GraphicsContext3DUtils(
-      WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper)
+  GraphicsContext3DUtils(base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+                             context_provider_wrapper)
       : context_provider_wrapper_(std::move(context_provider_wrapper)) {}
 
   // Use this service to create a new mailbox or possibly obtain a pre-existing
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT GraphicsContext3DUtils {
   void RemoveCachedMailbox(GrTexture*);
 
  private:
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   WTF::HashMap<GrTexture*, gpu::Mailbox> cached_mailboxes_;
 };
 

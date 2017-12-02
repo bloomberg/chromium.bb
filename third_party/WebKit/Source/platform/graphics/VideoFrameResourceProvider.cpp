@@ -14,7 +14,6 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "media/base/video_frame.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace cc {
 class VideoFrameExternalResources;

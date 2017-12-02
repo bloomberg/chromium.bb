@@ -5,10 +5,10 @@
 #ifndef AcceleratedStaticBitmapImage_h
 #define AcceleratedStaticBitmapImage_h
 
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/TextureHolder.h"
-#include "platform/wtf/WeakPtr.h"
 
 #include <memory>
 
@@ -25,22 +25,24 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // SkImage with a texture backing.
   static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromSkImage(
       sk_sp<SkImage>,
-      WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
   // Can specify the GrContext that created the texture backing. Ideally all
   // callers would use this option. The |mailbox| is a name for the texture
   // backing, allowing other contexts to use the same backing.
   static scoped_refptr<AcceleratedStaticBitmapImage>
-  CreateFromWebGLContextImage(const gpu::Mailbox&,
-                              const gpu::SyncToken&,
-                              unsigned texture_id,
-                              WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-                              IntSize mailbox_size);
+  CreateFromWebGLContextImage(
+      const gpu::Mailbox&,
+      const gpu::SyncToken&,
+      unsigned texture_id,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
+      IntSize mailbox_size);
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize Size() const override;
   bool IsTextureBacked() const override { return true; }
   scoped_refptr<StaticBitmapImage> MakeAccelerated(
-      WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) override {
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper)
+      override {
     NOTREACHED();  // IsTextureBacked() is already true.
     return nullptr;
   }
@@ -55,7 +57,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
 
   bool IsValid() const final;
   WebGraphicsContext3DProvider* ContextProvider() const final;
-  WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const final;
   scoped_refptr<StaticBitmapImage> MakeUnaccelerated() final;
 
@@ -89,13 +91,15 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   void Abandon() final;
 
  private:
-  AcceleratedStaticBitmapImage(sk_sp<SkImage>,
-                               WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
-  AcceleratedStaticBitmapImage(const gpu::Mailbox&,
-                               const gpu::SyncToken&,
-                               unsigned texture_id,
-                               WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-                               IntSize mailbox_size);
+  AcceleratedStaticBitmapImage(
+      sk_sp<SkImage>,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
+  AcceleratedStaticBitmapImage(
+      const gpu::Mailbox&,
+      const gpu::SyncToken&,
+      unsigned texture_id,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
+      IntSize mailbox_size);
 
   void CreateImageFromMailboxIfNeeded();
   void CheckThread();
@@ -110,7 +114,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   sk_sp<SkImage> original_skia_image_;
   scoped_refptr<WebTaskRunner> original_skia_image_task_runner_;
   PlatformThreadId original_skia_image_thread_id_;
-  WeakPtr<WebGraphicsContext3DProviderWrapper>
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       original_skia_image_context_provider_wrapper_;
 };
 

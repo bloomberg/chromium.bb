@@ -137,7 +137,6 @@ jumbo_component("wtf") {
     "WTFExport.h",
     "WTFThreadData.cpp",
     "WTFThreadData.h",
-    "WeakPtr.h",
     "allocator/PartitionAllocator.cpp",
     "allocator/PartitionAllocator.h",
     "allocator/Partitions.cpp",

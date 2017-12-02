@@ -5,11 +5,11 @@
 #ifndef StaticBitmapImage_h
 #define StaticBitmapImage_h
 
+#include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Image.h"
-#include "platform/wtf/WeakPtr.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -26,18 +26,18 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // associated.
   static scoped_refptr<StaticBitmapImage> Create(
       sk_sp<SkImage>,
-      WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
   static scoped_refptr<StaticBitmapImage> Create(PaintImage);
 
   bool IsStaticBitmapImage() const override { return true; }
 
   // Methods overridden by all sub-classes
-  virtual ~StaticBitmapImage() {}
+  virtual ~StaticBitmapImage() = default;
   // Creates a gpu copy of the image using the given ContextProvider. Should
   // not be called if IsTextureBacked() is already true. May return null if the
   // conversion failed (for instance if the context had an error).
   virtual scoped_refptr<StaticBitmapImage> MakeAccelerated(
-      WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) = 0;
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) = 0;
 
   // Methods have common implementation for all sub-classes
   bool CurrentFrameIsComplete() override { return true; }

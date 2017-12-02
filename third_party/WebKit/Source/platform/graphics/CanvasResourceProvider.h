@@ -6,12 +6,12 @@
 #define CanvasResourceProvider_h
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasColorParams.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
-#include "platform/wtf/WeakPtr.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 class GrContext;
@@ -75,7 +75,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
       unsigned msaa_sample_count,
       const CanvasColorParams&,
       ResourceUsage,
-      WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
 
   cc::PaintCanvas* Canvas();
   void FlushSkia() const;
@@ -100,7 +100,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
   GrContext* GetGrContext() const;
-  WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
     return context_provider_wrapper_;
   }
   GLenum GetGLFilter() const;
@@ -114,7 +114,7 @@ class PLATFORM_EXPORT CanvasResourceProvider {
 
   CanvasResourceProvider(const IntSize&,
                          const CanvasColorParams&,
-                         WeakPtr<WebGraphicsContext3DProviderWrapper>);
+                         base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
 
  private:
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
@@ -122,8 +122,8 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   virtual scoped_refptr<CanvasResource> DoPrepareTransferableResource(
       viz::TransferableResource* out_resource) = 0;
 
-  WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   IntSize size_;
   CanvasColorParams color_params_;
   std::unique_ptr<cc::PaintCanvas> canvas_;

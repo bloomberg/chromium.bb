@@ -14,7 +14,7 @@
 namespace blink {
 
 CanvasResource::CanvasResource(
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
     : context_provider_wrapper_(std::move(context_provider_wrapper)) {}
 
 CanvasResource::~CanvasResource() {
@@ -61,13 +61,14 @@ void CanvasResource::WaitSyncTokenBeforeRelease() {
 
 CanvasResource_Skia::CanvasResource_Skia(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
     : CanvasResource(std::move(context_provider_wrapper)),
       image_(std::move(image)) {}
 
 scoped_refptr<CanvasResource_Skia> CanvasResource_Skia::Create(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper) {
   scoped_refptr<CanvasResource_Skia> resource =
       AdoptRef(new CanvasResource_Skia(std::move(image),
                                        std::move(context_provider_wrapper)));
@@ -109,7 +110,7 @@ GLuint CanvasResource_Skia::TextureId() const {
 CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
     const IntSize& size,
     const CanvasColorParams& color_params,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
     : CanvasResource(std::move(context_provider_wrapper)),
       color_params_(color_params) {
   if (!context_provider_wrapper_)
@@ -153,7 +154,8 @@ scoped_refptr<CanvasResource_GpuMemoryBuffer>
 CanvasResource_GpuMemoryBuffer::Create(
     const IntSize& size,
     const CanvasColorParams& color_params,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper) {
   scoped_refptr<CanvasResource_GpuMemoryBuffer> resource =
       AdoptRef(new CanvasResource_GpuMemoryBuffer(size, color_params,
                                                   context_provider_wrapper));

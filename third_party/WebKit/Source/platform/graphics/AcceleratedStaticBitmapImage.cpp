@@ -26,7 +26,8 @@ namespace blink {
 scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromSkImage(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper) {
   DCHECK(image->isTextureBacked());
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       std::move(image), std::move(context_provider_wrapper)));
@@ -37,7 +38,8 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     unsigned texture_id,
-    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper,
     IntSize mailbox_size) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
@@ -46,7 +48,8 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper) {
   texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(
       std::move(image), std::move(context_provider_wrapper)));
   thread_checker_.DetachFromThread();
@@ -56,7 +59,8 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     unsigned texture_id,
-    WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+        context_provider_wrapper,
     IntSize mailbox_size) {
   texture_holder_ = WTF::WrapUnique(new MailboxTextureHolder(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
@@ -68,7 +72,7 @@ namespace {
 
 void DestroySkImageOnOriginalThread(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     std::unique_ptr<gpu::SyncToken> sync_token) {
   if (context_provider_wrapper &&
       image->isValid(
@@ -214,7 +218,7 @@ WebGraphicsContext3DProvider* AcceleratedStaticBitmapImage::ContextProvider()
   return texture_holder_->ContextProvider();
 }
 
-WeakPtr<WebGraphicsContext3DProviderWrapper>
+base::WeakPtr<WebGraphicsContext3DProviderWrapper>
 AcceleratedStaticBitmapImage::ContextProviderWrapper() const {
   if (!IsValid())
     return nullptr;
