@@ -39,104 +39,6 @@ BLACKLIST_LINT_FILTERS = [
 
 ### Description checks
 
-# TODO(myjang): Remove this once all presubmit scripts use the other
-def CheckChangedConfigs(input_api, output_api):
-  return CheckChangedLUCIConfigs(input_api, output_api)
-
-
-def CheckChangedLUCIConfigs(input_api, output_api):
-  import collections
-  import base64
-  import json
-  import urllib2
-
-  import auth
-  import git_cl
-
-  LUCI_CONFIG_HOST_NAME = 'luci-config.appspot.com'
-
-  cl = git_cl.Changelist()
-  remote, remote_branch = cl.GetRemoteBranch()
-  if remote_branch.startswith('refs/remotes/%s/' % remote):
-    remote_branch = remote_branch.replace(
-        'refs/remotes/%s/' % remote, 'refs/heads/', 1)
-  if remote_branch.startswith('refs/remotes/branch-heads/'):
-    remote_branch = remote_branch.replace(
-        'refs/remotes/branch-heads/', 'refs/branch-heads/', 1)
-
-  remote_host_url = cl.GetRemoteUrl()
-  if not remote_host_url:
-    return [output_api.PresubmitError(
-        'Remote host url for git has not been defined')]
-  remote_host_url = remote_host_url.rstrip('/')
-  if remote_host_url.endswith('.git'):
-    remote_host_url = remote_host_url[:-len('.git')]
-
-  # authentication
-  try:
-    authenticator = auth.get_authenticator_for_host(
-        LUCI_CONFIG_HOST_NAME, auth.make_auth_config())
-    acc_tkn = authenticator.get_access_token()
-  except auth.AuthenticationError as e:
-    return [output_api.PresubmitError(
-        'Error in authenticating user.', long_text=str(e))]
-
-  def request(endpoint, body=None):
-    api_url = ('https://%s/_ah/api/config/v1/%s'
-               % (LUCI_CONFIG_HOST_NAME, endpoint))
-    req = urllib2.Request(api_url)
-    req.add_header('Authorization', 'Bearer %s' % acc_tkn.token)
-    if body is not None:
-      req.add_header('Content-Type', 'application/json')
-      req.add_data(json.dumps(body))
-    return json.load(urllib2.urlopen(req))
-
-  try:
-    config_sets = request('config-sets').get('config_sets')
-  except urllib2.HTTPError as e:
-    return [output_api.PresubmitError(
-        'Config set request to luci-config failed', long_text=str(e))]
-  if not config_sets:
-    return [output_api.PresubmitWarning('No config_sets were returned')]
-  loc_pref = '%s/+/%s/' % (remote_host_url, remote_branch)
-  dir_to_config_set = {
-    '%s/' % cs['location'][len(loc_pref):].rstrip('/'): cs['config_set']
-    for cs in config_sets
-    if cs['location'].startswith(loc_pref) or
-    ('%s/' % cs['location']) == loc_pref
-  }
-  cs_to_files = collections.defaultdict(list)
-  for f in input_api.AffectedFiles():
-    # windows
-    file_path = f.LocalPath().replace(_os.sep, '/')
-    for dr, cs in dir_to_config_set.iteritems():
-      if dr == '/' or file_path.startswith(dr):
-        cs_to_files[cs].append({
-          'path': file_path[len(dr):] if dr != '/' else file_path,
-          'content': base64.b64encode(
-              '\n'.join(f.NewContents()).encode('utf-8'))
-        })
-  outputs = []
-  for cs, f in cs_to_files.iteritems():
-    try:
-      # TODO(myjang): parallelize
-      res = request(
-          'validate-config', body={'config_set': cs, 'files': f})
-    except urllib2.HTTPError as e:
-      return [output_api.PresubmitError(
-          'Validation request to luci-config failed', long_text=str(e))]
-    for msg in res.get('messages', []):
-      sev = msg['severity']
-      if sev == 'WARNING':
-        out_f = output_api.PresubmitPromptWarning
-      elif sev == 'ERROR' or sev == 'CRITICAL':
-        out_f = output_api.PresubmitError
-      else:
-        out_f = output_api.PresubmitNotifyResult
-      outputs.append(out_f('Config validation: %s' % msg['text']))
-  return outputs
-
-
 def CheckChangeHasBugField(input_api, output_api):
   """Requires that the changelist have a Bug: field."""
   if input_api.change.BugsFromDescription():
@@ -1320,3 +1222,97 @@ def CheckVPythonSpec(input_api, output_api, file_filter=None):
       output_api.PresubmitError))
 
   return commands
+
+
+def CheckChangedLUCIConfigs(input_api, output_api):
+  import collections
+  import base64
+  import json
+  import urllib2
+
+  import auth
+  import git_cl
+
+  LUCI_CONFIG_HOST_NAME = 'luci-config.appspot.com'
+
+  cl = git_cl.Changelist()
+  remote, remote_branch = cl.GetRemoteBranch()
+  if remote_branch.startswith('refs/remotes/%s/' % remote):
+    remote_branch = remote_branch.replace(
+        'refs/remotes/%s/' % remote, 'refs/heads/', 1)
+  if remote_branch.startswith('refs/remotes/branch-heads/'):
+    remote_branch = remote_branch.replace(
+        'refs/remotes/branch-heads/', 'refs/branch-heads/', 1)
+
+  remote_host_url = cl.GetRemoteUrl()
+  if not remote_host_url:
+    return [output_api.PresubmitError(
+        'Remote host url for git has not been defined')]
+  remote_host_url = remote_host_url.rstrip('/')
+  if remote_host_url.endswith('.git'):
+    remote_host_url = remote_host_url[:-len('.git')]
+
+  # authentication
+  try:
+    authenticator = auth.get_authenticator_for_host(
+        LUCI_CONFIG_HOST_NAME, auth.make_auth_config())
+    acc_tkn = authenticator.get_access_token()
+  except auth.AuthenticationError as e:
+    return [output_api.PresubmitError(
+        'Error in authenticating user.', long_text=str(e))]
+
+  def request(endpoint, body=None):
+    api_url = ('https://%s/_ah/api/config/v1/%s'
+               % (LUCI_CONFIG_HOST_NAME, endpoint))
+    req = urllib2.Request(api_url)
+    req.add_header('Authorization', 'Bearer %s' % acc_tkn.token)
+    if body is not None:
+      req.add_header('Content-Type', 'application/json')
+      req.add_data(json.dumps(body))
+    return json.load(urllib2.urlopen(req))
+
+  try:
+    config_sets = request('config-sets').get('config_sets')
+  except urllib2.HTTPError as e:
+    return [output_api.PresubmitError(
+        'Config set request to luci-config failed', long_text=str(e))]
+  if not config_sets:
+    return [output_api.PresubmitWarning('No config_sets were returned')]
+  loc_pref = '%s/+/%s/' % (remote_host_url, remote_branch)
+  dir_to_config_set = {
+    '%s/' % cs['location'][len(loc_pref):].rstrip('/'): cs['config_set']
+    for cs in config_sets
+    if cs['location'].startswith(loc_pref) or
+    ('%s/' % cs['location']) == loc_pref
+  }
+  cs_to_files = collections.defaultdict(list)
+  for f in input_api.AffectedFiles():
+    # windows
+    file_path = f.LocalPath().replace(_os.sep, '/')
+    for dr, cs in dir_to_config_set.iteritems():
+      if dr == '/' or file_path.startswith(dr):
+        cs_to_files[cs].append({
+          'path': file_path[len(dr):] if dr != '/' else file_path,
+          'content': base64.b64encode(
+              '\n'.join(f.NewContents()).encode('utf-8'))
+        })
+  outputs = []
+  for cs, f in cs_to_files.iteritems():
+    try:
+      # TODO(myjang): parallelize
+      res = request(
+          'validate-config', body={'config_set': cs, 'files': f})
+    except urllib2.HTTPError as e:
+      return [output_api.PresubmitError(
+          'Validation request to luci-config failed', long_text=str(e))]
+    for msg in res.get('messages', []):
+      sev = msg['severity']
+      if sev == 'WARNING':
+        out_f = output_api.PresubmitPromptWarning
+      elif sev == 'ERROR' or sev == 'CRITICAL':
+        out_f = output_api.PresubmitError
+      else:
+        out_f = output_api.PresubmitNotifyResult
+      outputs.append(out_f('Config validation: %s' % msg['text']))
+  return outputs
+
