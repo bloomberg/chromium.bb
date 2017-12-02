@@ -31,6 +31,7 @@
 #ifndef FormSubmission_h
 #define FormSubmission_h
 
+#include "base/macros.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -51,7 +52,6 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
 
   class Attributes {
     DISALLOW_NEW();
-    WTF_MAKE_NONCOPYABLE(Attributes);
 
    public:
     Attributes()
@@ -88,6 +88,8 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
     AtomicString target_;
     AtomicString encoding_type_;
     String accept_charset_;
+
+    DISALLOW_COPY_AND_ASSIGN(Attributes);
   };
 
   static FormSubmission* Create(HTMLFormElement*,

@@ -5,6 +5,7 @@
 #ifndef ModuleScriptLoader_h
 #define ModuleScriptLoader_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/loader/modulescript/ModuleScriptCreationParams.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
@@ -32,7 +33,6 @@ class CORE_EXPORT ModuleScriptLoader final
     : public GarbageCollectedFinalized<ModuleScriptLoader>,
       public ModuleScriptFetcher::Client {
   USING_GARBAGE_COLLECTED_MIXIN(ModuleScriptLoader);
-  WTF_MAKE_NONCOPYABLE(ModuleScriptLoader);
 
   enum class State {
     kInitial,
@@ -87,6 +87,8 @@ class CORE_EXPORT ModuleScriptLoader final
 #if DCHECK_IS_ON()
   KURL url_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(ModuleScriptLoader);
 };
 
 }  // namespace blink

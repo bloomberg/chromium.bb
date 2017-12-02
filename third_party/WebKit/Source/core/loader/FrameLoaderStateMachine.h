@@ -30,9 +30,9 @@
 #ifndef FrameLoaderStateMachine_h
 #define FrameLoaderStateMachine_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -42,7 +42,6 @@ namespace blink {
 // is executing.
 class CORE_EXPORT FrameLoaderStateMachine {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(FrameLoaderStateMachine);
 
  public:
   FrameLoaderStateMachine();
@@ -67,6 +66,8 @@ class CORE_EXPORT FrameLoaderStateMachine {
 
  private:
   State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameLoaderStateMachine);
 };
 
 }  // namespace blink

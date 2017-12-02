@@ -33,6 +33,7 @@
 #ifndef FrameLoader_h
 #define FrameLoader_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/SandboxFlags.h"
@@ -71,7 +72,6 @@ CORE_EXPORT bool IsBackForwardLoadType(FrameLoadType);
 CORE_EXPORT bool IsReloadLoadType(FrameLoadType);
 
 class CORE_EXPORT FrameLoader final {
-  WTF_MAKE_NONCOPYABLE(FrameLoader);
   DISALLOW_NEW();
 
  public:
@@ -299,6 +299,8 @@ class CORE_EXPORT FrameLoader final {
   bool dispatching_did_clear_window_object_in_main_world_;
   bool protect_provisional_loader_;
   bool detached_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameLoader);
 };
 
 }  // namespace blink

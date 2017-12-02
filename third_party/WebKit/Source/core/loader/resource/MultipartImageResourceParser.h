@@ -41,6 +41,7 @@
 #ifndef MultipartImageResourceParser_h
 #define MultipartImageResourceParser_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceResponse.h"
@@ -51,8 +52,6 @@ namespace blink {
 // A parser parsing mlutipart/x-mixed-replace resource.
 class CORE_EXPORT MultipartImageResourceParser final
     : public GarbageCollectedFinalized<MultipartImageResourceParser> {
-  WTF_MAKE_NONCOPYABLE(MultipartImageResourceParser);
-
  public:
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
@@ -95,6 +94,8 @@ class CORE_EXPORT MultipartImageResourceParser final
   bool is_parsing_headers_ = false;
   bool saw_last_boundary_ = false;
   bool is_cancelled_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(MultipartImageResourceParser);
 };
 
 }  // namespace blink

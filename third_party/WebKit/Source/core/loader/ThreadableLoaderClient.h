@@ -32,9 +32,10 @@
 #define ThreadableLoaderClient_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {
@@ -45,8 +46,6 @@ class ResourceResponse;
 class ResourceTimingInfo;
 
 class CORE_EXPORT ThreadableLoaderClient {
-  WTF_MAKE_NONCOPYABLE(ThreadableLoaderClient);
-
  public:
   virtual void DidSendData(unsigned long long /*bytesSent*/,
                            unsigned long long /*totalBytesToBeSent*/) {}
@@ -69,7 +68,9 @@ class CORE_EXPORT ThreadableLoaderClient {
   virtual ~ThreadableLoaderClient() {}
 
  protected:
-  ThreadableLoaderClient() {}
+  ThreadableLoaderClient() = default;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadableLoaderClient);
 };
 
 }  // namespace blink

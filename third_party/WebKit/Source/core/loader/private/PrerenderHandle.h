@@ -31,11 +31,11 @@
 #ifndef PrerenderHandle_h
 #define PrerenderHandle_h
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -46,7 +46,6 @@ class PrerenderClient;
 class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
                               public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
-  WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 
  public:
   static PrerenderHandle* Create(Document&,
@@ -71,6 +70,8 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
   void Detach();
 
   Member<Prerender> prerender_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrerenderHandle);
 };
 
 }  // namespace blink
