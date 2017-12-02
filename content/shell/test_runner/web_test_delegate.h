@@ -128,9 +128,6 @@ class WebTestDelegate {
                                     const blink::WebSize& max_size) = 0;
   virtual void DisableAutoResizeMode(const blink::WebSize& new_size) = 0;
 
-  // Clears DevTools' localStorage when an inspector test is started.
-  virtual void ClearDevToolsLocalStorage() = 0;
-
   // Opens and closes the inspector.
   virtual void ShowDevTools(const std::string& settings,
                             const std::string& frontend_url) = 0;

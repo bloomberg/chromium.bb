@@ -119,9 +119,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   if (!initial_configuration)
     return;
 
-  if (is_devtools_test)
-    test_runner_->ClearDevToolsLocalStorage();
-
   bool is_legacy_devtools_test =
       is_devtools_test &&
       spec.find("integration_test_runner.html") == std::string::npos;

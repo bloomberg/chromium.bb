@@ -111,7 +111,6 @@ class TestRunner : public WebTestRunner {
   std::string customDumpText() const;
   void ShowDevTools(const std::string& settings,
                     const std::string& frontend_url);
-  void ClearDevToolsLocalStorage();
   void SetV8CacheDisabled(bool);
   void setShouldDumpAsText(bool);
   void setShouldDumpAsMarkup(bool);
