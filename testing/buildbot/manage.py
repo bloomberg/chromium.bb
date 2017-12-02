@@ -42,13 +42,8 @@ SKIP = {
   # OS dimensions go into the recipe, they're set in the json file, and
   # jelly bean devices are in the pool.  For now, just blacklist.
   'Jelly Bean Tester',
-  'KitKat Tablet Tester',
   'Lollipop Consumer Tester',
   'Lollipop Low-end Tester',
-  'Lollipop Phone Tester',
-  'Lollipop Tablet Tester',
-  'Marshmallow 64 bit Tester',
-  'Marshmallow Tablet Tester',
 
   # Android bots need custom dimension_sets entries for swarming, and capacity
   # is not there yet -- so don't let manage.py add swarming automatically there.
