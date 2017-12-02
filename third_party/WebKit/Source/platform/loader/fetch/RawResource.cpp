@@ -31,7 +31,6 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/network/http_names.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
@@ -294,11 +293,6 @@ void RawResource::NotifyFinished() {
   if (data_pipe_writer_)
     data_pipe_writer_->Finish();
   Resource::NotifyFinished();
-}
-
-void RawResource::SetDefersLoading(bool defers) {
-  if (Loader())
-    Loader()->SetDefersLoading(defers);
 }
 
 static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
