@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1228,17 +1229,17 @@ TEST_F(BindTest, ArgumentCopiesAndMoves) {
 }
 
 TEST_F(BindTest, CapturelessLambda) {
-  EXPECT_FALSE(internal::IsConvertibleToRunType<void>::value);
-  EXPECT_FALSE(internal::IsConvertibleToRunType<int>::value);
-  EXPECT_FALSE(internal::IsConvertibleToRunType<void(*)()>::value);
-  EXPECT_FALSE(internal::IsConvertibleToRunType<void(NoRef::*)()>::value);
+  EXPECT_FALSE(internal::IsCallableObject<void>::value);
+  EXPECT_FALSE(internal::IsCallableObject<int>::value);
+  EXPECT_FALSE(internal::IsCallableObject<void (*)()>::value);
+  EXPECT_FALSE(internal::IsCallableObject<void (NoRef::*)()>::value);
 
   auto f = []() {};
-  EXPECT_TRUE(internal::IsConvertibleToRunType<decltype(f)>::value);
+  EXPECT_TRUE(internal::IsCallableObject<decltype(f)>::value);
 
   int i = 0;
   auto g = [i]() { (void)i; };
-  EXPECT_FALSE(internal::IsConvertibleToRunType<decltype(g)>::value);
+  EXPECT_TRUE(internal::IsCallableObject<decltype(g)>::value);
 
   auto h = [](int, double) { return 'k'; };
   EXPECT_TRUE((std::is_same<
@@ -1255,6 +1256,36 @@ TEST_F(BindTest, CapturelessLambda) {
   EXPECT_EQ(6, x);
   cb.Run(7);
   EXPECT_EQ(42, x);
+}
+
+TEST_F(BindTest, EmptyFunctor) {
+  struct NonEmptyFunctor {
+    int operator()() const { return x; }
+    int x = 42;
+  };
+
+  struct EmptyFunctor {
+    int operator()() { return 42; }
+  };
+
+  struct EmptyFunctorConst {
+    int operator()() const { return 42; }
+  };
+
+  EXPECT_TRUE(internal::IsCallableObject<NonEmptyFunctor>::value);
+  EXPECT_TRUE(internal::IsCallableObject<EmptyFunctor>::value);
+  EXPECT_TRUE(internal::IsCallableObject<EmptyFunctorConst>::value);
+  EXPECT_EQ(42, BindOnce(EmptyFunctor()).Run());
+  EXPECT_EQ(42, BindOnce(EmptyFunctorConst()).Run());
+  EXPECT_EQ(42, BindRepeating(EmptyFunctorConst()).Run());
+}
+
+TEST_F(BindTest, CapturingLambdaForTesting) {
+  int x = 42;
+  EXPECT_EQ(42, BindLambdaForTesting([=] { return x; }).Run());
+
+  auto f = [x] { return x; };
+  EXPECT_EQ(42, BindLambdaForTesting(f).Run());
 }
 
 TEST_F(BindTest, Cancellation) {

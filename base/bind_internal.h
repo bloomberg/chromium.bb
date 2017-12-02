@@ -50,7 +50,12 @@ template <typename Callable,
 struct ExtractCallableRunTypeImpl;
 
 template <typename Callable, typename R, typename... Args>
-struct ExtractCallableRunTypeImpl<Callable, R(Callable::*)(Args...) const> {
+struct ExtractCallableRunTypeImpl<Callable, R (Callable::*)(Args...)> {
+  using Type = R(Args...);
+};
+
+template <typename Callable, typename R, typename... Args>
+struct ExtractCallableRunTypeImpl<Callable, R (Callable::*)(Args...) const> {
   using Type = R(Args...);
 };
 
@@ -64,27 +69,23 @@ template <typename Callable>
 using ExtractCallableRunType =
     typename ExtractCallableRunTypeImpl<Callable>::Type;
 
-// IsConvertibleToRunType<Functor> is std::true_type if |Functor| has operator()
-// and convertible to the corresponding function pointer. Otherwise, it's
-// std::false_type.
+// IsCallableObject<Functor> is std::true_type if |Functor| has operator().
+// Otherwise, it's std::false_type.
 // Example:
-//   IsConvertibleToRunType<void(*)()>::value is false.
+//   IsCallableObject<void(*)()>::value is false.
 //
 //   struct Foo {};
-//   IsConvertibleToRunType<void(Foo::*)()>::value is false.
-//
-//   auto f = []() {};
-//   IsConvertibleToRunType<decltype(f)>::value is true.
+//   IsCallableObject<void(Foo::*)()>::value is false.
 //
 //   int i = 0;
-//   auto g = [i]() {};
-//   IsConvertibleToRunType<decltype(g)>::value is false.
+//   auto f = [i]() {};
+//   IsCallableObject<decltype(f)>::value is false.
 template <typename Functor, typename SFINAE = void>
-struct IsConvertibleToRunType : std::false_type {};
+struct IsCallableObject : std::false_type {};
 
 template <typename Callable>
-struct IsConvertibleToRunType<Callable, void_t<decltype(&Callable::operator())>>
-    : std::is_convertible<Callable, ExtractCallableRunType<Callable>*> {};
+struct IsCallableObject<Callable, void_t<decltype(&Callable::operator())>>
+    : std::true_type {};
 
 // HasRefCountedTypeAsRawPtr selects true_type when any of the |Args| is a raw
 // pointer to a RefCounted type.
@@ -119,21 +120,37 @@ struct ForceVoidReturn<R(Args...)> {
 template <typename Functor, typename SFINAE>
 struct FunctorTraits;
 
-// For a callable type that is convertible to the corresponding function type.
+// For empty callable types.
 // This specialization is intended to allow binding captureless lambdas by
-// base::Bind(), based on the fact that captureless lambdas can be convertible
-// to the function type while capturing lambdas can't.
+// base::Bind(), based on the fact that captureless lambdas are empty while
+// capturing lambdas are not. This also allows any functors as far as it's an
+// empty class.
+// Example:
+//
+//   // Captureless lambdas are allowed.
+//   []() {return 42;};
+//
+//   // Capturing lambdas are *not* allowed.
+//   int x;
+//   [x]() {return x;};
+//
+//   // Any empty class with operator() is allowed.
+//   struct Foo {
+//     void operator()() const {}
+//     // No non-static member variable and no virtual functions.
+//   };
 template <typename Functor>
 struct FunctorTraits<Functor,
-                     std::enable_if_t<IsConvertibleToRunType<Functor>::value>> {
+                     std::enable_if_t<IsCallableObject<Functor>::value &&
+                                      std::is_empty<Functor>::value>> {
   using RunType = ExtractCallableRunType<Functor>;
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = false;
 
-  template <typename... RunArgs>
-  static ExtractReturnType<RunType>
-  Invoke(const Functor& functor, RunArgs&&... args) {
-    return functor(std::forward<RunArgs>(args)...);
+  template <typename RunFunctor, typename... RunArgs>
+  static ExtractReturnType<RunType> Invoke(RunFunctor&& functor,
+                                           RunArgs&&... args) {
+    return std::forward<RunFunctor>(functor)(std::forward<RunArgs>(args)...);
   }
 };
 
@@ -437,8 +454,7 @@ struct BindState final : BindStateBase {
       : BindState(IsCancellable{},
                   invoke_func,
                   std::forward<ForwardFunctor>(functor),
-                  std::forward<ForwardBoundArgs>(bound_args)...) {
-  }
+                  std::forward<ForwardBoundArgs>(bound_args)...) {}
 
   Functor functor_;
   std::tuple<BoundArgs...> bound_args_;
