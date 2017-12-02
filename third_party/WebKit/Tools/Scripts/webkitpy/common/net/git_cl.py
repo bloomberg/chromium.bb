@@ -184,9 +184,7 @@ class GitCL(object):
         for result in raw_results:
             if builder_names and result['builder_name'] not in builder_names:
                 continue
-            is_swarming_task = result['url'] and (
-                '/task/' in result['url'] or
-                '//ci.chromium.org' in result['url'])
+            is_swarming_task = result['url'] and '/task/' in result['url']
             if is_swarming_task and not include_swarming_tasks:
                 continue
             build_to_status[self._build(result)] = self._try_job_status(result)
@@ -214,7 +212,7 @@ class GitCL(object):
         url = result_dict['url']
         if url is None:
             return Build(builder_name, None)
-        match = re.match(r'.*/builds/(\d+)/?$', url)
+        match = re.match(r'.*/(\d+)/?$', url)
         if match:
             build_number = match.group(1)
             return Build(builder_name, int(build_number))
