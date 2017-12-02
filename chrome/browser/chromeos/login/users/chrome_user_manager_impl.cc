@@ -61,6 +61,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/supervised_user/chromeos/manager_password_service_factory.h"
 #include "chrome/browser/supervised_user/chromeos/supervised_user_password_service_factory.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -997,7 +998,7 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
     const AccountId& account_id) {
   ChromeUserManager::RemoveNonCryptohomeData(account_id);
 
-  WallpaperManager::Get()->RemoveUserWallpaper(account_id);
+  WallpaperControllerClient::Get()->RemoveUserWallpaper(account_id);
   GetUserImageManager(account_id)->DeleteUserImage();
 
   supervised_user_manager_->RemoveNonCryptohomeData(account_id.GetUserEmail());

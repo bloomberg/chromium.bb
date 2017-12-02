@@ -676,37 +676,42 @@ TEST_F(WallpaperControllerTest, IgnoreWallpaperRequestInKioskMode) {
 TEST_F(WallpaperControllerTest, VerifyWallpaperCache) {
   gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
   const std::string user1 = "user1@test.com";
+  const AccountId account_id1 = AccountId::FromUserEmail(user1);
 
   SimulateUserLogin(user1);
 
   // |user1| doesn't have wallpaper cache in the beginning.
   gfx::ImageSkia cached_wallpaper;
-  EXPECT_FALSE(controller_->GetWallpaperFromCache(
-      AccountId::FromUserEmail(user1), &cached_wallpaper));
-  base::FilePath path;
   EXPECT_FALSE(
-      controller_->GetPathFromCache(AccountId::FromUserEmail(user1), &path));
+      controller_->GetWallpaperFromCache(account_id1, &cached_wallpaper));
+  base::FilePath path;
+  EXPECT_FALSE(controller_->GetPathFromCache(account_id1, &path));
 
   // Verify |SetOnlineWallpaper| updates wallpaper cache for |user1|.
-  mojom::WallpaperUserInfoPtr wallpaper_user_info =
-      InitializeUser(AccountId::FromUserEmail(user1));
+  mojom::WallpaperUserInfoPtr wallpaper_user_info = InitializeUser(account_id1);
   controller_->SetOnlineWallpaper(
       std::move(wallpaper_user_info), *image.bitmap(), "dummy_file_location",
       WALLPAPER_LAYOUT_CENTER, true /* show_wallpaper */);
   RunAllTasksUntilIdle();
-  EXPECT_TRUE(controller_->GetWallpaperFromCache(
-      AccountId::FromUserEmail(user1), &cached_wallpaper));
   EXPECT_TRUE(
-      controller_->GetPathFromCache(AccountId::FromUserEmail(user1), &path));
+      controller_->GetWallpaperFromCache(account_id1, &cached_wallpaper));
+  EXPECT_TRUE(controller_->GetPathFromCache(account_id1, &path));
 
   // After |user2| is logged in, |user1|'s wallpaper cache should still be kept
   // (crbug.com/339576). Note the active user is still |user1|.
   TestSessionControllerClient* session = GetSessionControllerClient();
   session->AddUserSession("user2@test.com");
-  EXPECT_TRUE(controller_->GetWallpaperFromCache(
-      AccountId::FromUserEmail(user1), &cached_wallpaper));
   EXPECT_TRUE(
-      controller_->GetPathFromCache(AccountId::FromUserEmail(user1), &path));
+      controller_->GetWallpaperFromCache(account_id1, &cached_wallpaper));
+  EXPECT_TRUE(controller_->GetPathFromCache(account_id1, &path));
+
+  // Verify |RemoveUserWallpaper| clears wallpaper cache.
+  wallpaper_user_info = InitializeUser(account_id1);
+  controller_->RemoveUserWallpaper(std::move(wallpaper_user_info),
+                                   std::string() /* wallpaper_files_id */);
+  EXPECT_FALSE(
+      controller_->GetWallpaperFromCache(account_id1, &cached_wallpaper));
+  EXPECT_FALSE(controller_->GetPathFromCache(account_id1, &path));
 }
 
 }  // namespace ash

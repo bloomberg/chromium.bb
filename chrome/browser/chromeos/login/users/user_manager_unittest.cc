@@ -17,6 +17,8 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -78,11 +80,18 @@ class UserManagerTest : public testing::Test {
 
     ResetUserManager();
     WallpaperManager::Initialize();
+
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
   }
 
   void TearDown() override {
     // Unregister the in-memory local settings instance.
     local_state_.reset();
+
+    wallpaper_controller_client_.reset();
 
     // Shut down the DeviceSettingsService.
     DeviceSettingsService::Get()->UnsetSessionManager();
@@ -148,6 +157,9 @@ class UserManagerTest : public testing::Test {
       AccountId::FromUserEmail("user1@invalid.domain");
 
  protected:
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  TestWallpaperController test_wallpaper_controller_;
+
   content::TestBrowserThreadBundle thread_bundle_;
 
   ScopedCrosSettingsTestHelper settings_helper_;
@@ -190,6 +202,7 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   EXPECT_EQ((*users)[1]->GetAccountId(), account_id0_at_invalid_domain_);
   EXPECT_EQ((*users)[2]->GetAccountId(), owner_account_id_at_invalid_domain_);
 
+  test_wallpaper_controller_.ClearCounts();
   SetDeviceSettings(true, owner_account_id_at_invalid_domain_.GetUserEmail(),
                     false);
   RetrieveTrustedDevicePolicies();
@@ -197,6 +210,9 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   users = &user_manager::UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->GetAccountId(), owner_account_id_at_invalid_domain_);
+  // Verify that the wallpaper is removed when user is removed.
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(2, test_wallpaper_controller_.remove_user_wallpaper_count());
 }
 
 TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {

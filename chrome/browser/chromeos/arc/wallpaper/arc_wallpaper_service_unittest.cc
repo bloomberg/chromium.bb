@@ -14,11 +14,15 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -36,6 +40,26 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+// TODO(crbug.com/776464): Remove this after |SetCustomWallpaper| is migrated
+// to |WallpaperController|.
+void InitializeWallpaperPaths() {
+  base::FilePath user_data_path;
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_path));
+  ash::WallpaperController::dir_user_data_path_ = user_data_path;
+
+  base::FilePath chromeos_wallpapers_path;
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
+                         &chromeos_wallpapers_path));
+  ash::WallpaperController::dir_chrome_os_wallpapers_path_ =
+      chromeos_wallpapers_path;
+
+  base::FilePath chromeos_custom_wallpapers_path;
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS,
+                         &chromeos_custom_wallpapers_path));
+  ash::WallpaperController::dir_chrome_os_custom_wallpapers_path_ =
+      chromeos_custom_wallpapers_path;
+}
 
 class SuccessDecodeRequestSender
     : public arc::ArcWallpaperService::DecodeRequestSender {
@@ -83,8 +107,12 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     user_manager_->LoginUser(user_manager::StubAccountId());
     ASSERT_TRUE(user_manager_->GetPrimaryUser());
 
-    // Wallpaper maanger
+    // Wallpaper manager
     chromeos::WallpaperManager::Initialize();
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
 
     // Arc services
     arc_service_manager_.set_browser_context(&testing_profile_);
@@ -107,6 +135,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
         nullptr);
     wallpaper_instance_.reset();
 
+    wallpaper_controller_client_.reset();
     chromeos::WallpaperManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     AshTestBase::TearDown();
@@ -117,6 +146,8 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
   std::unique_ptr<arc::FakeWallpaperInstance> wallpaper_instance_ = nullptr;
 
  private:
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  TestWallpaperController test_wallpaper_controller_;
   chromeos::FakeChromeUserManager* const user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
   arc::ArcServiceManager arc_service_manager_;
@@ -139,6 +170,10 @@ TEST_F(ArcWallpaperServiceTest, SetDefaultWallpaper) {
 }
 
 TEST_F(ArcWallpaperServiceTest, SetAndGetWallpaper) {
+  // TODO(crbug.com/776464): This test is supposed to call the mock method, but
+  // currently it's still calling the real method which relies on the paths.
+  InitializeWallpaperPaths();
+
   service_->SetDecodeRequestSenderForTesting(
       std::make_unique<SuccessDecodeRequestSender>());
   std::vector<uint8_t> bytes;

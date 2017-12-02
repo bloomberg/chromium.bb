@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -130,7 +131,7 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
         chromeos::WallpaperManager::Get();
     const PrimaryAccount& account = GetPrimaryAccount();
     wallpaper::WallpaperFilesId wallpaper_files_id =
-        wallpaper_manager->GetFilesId(account.id);
+        WallpaperControllerClient::Get()->GetFilesId(account.id);
     // TODO(crbug.com/618922): Allow specifying layout.
     wallpaper_manager->SetCustomWallpaper(
         account.id, wallpaper_files_id, kAndroidWallpaperFilename,

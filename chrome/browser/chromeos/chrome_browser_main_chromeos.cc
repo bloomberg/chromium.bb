@@ -814,10 +814,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // TODO(crbug.com/776464): Remove WallpaperManager after everything is
   // migrated to WallpaperController.
-  WallpaperManager::SetPathIds(chrome::DIR_USER_DATA,
-                               chrome::DIR_CHROMEOS_WALLPAPERS,
-                               chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
-
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.
   WallpaperManager::Initialize();

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -124,9 +125,8 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
   // Gets account id from the caller, ensuring multiprofile compatibility.
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  wallpaper_files_id_ = wallpaper_manager->GetFilesId(account_id_);
+  wallpaper_files_id_ =
+      WallpaperControllerClient::Get()->GetFilesId(account_id_);
 
   if (params_->details.data) {
     StartDecode(*params_->details.data);
@@ -152,7 +152,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir, wallpaper_files_id_,
+      ash::WallpaperController::kThumbnailWallpaperSubDir, wallpaper_files_id_,
       params_->details.filename);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(

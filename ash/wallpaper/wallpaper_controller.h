@@ -71,10 +71,30 @@ class ASH_EXPORT WallpaperController
   // command line, lock/login screens).
   static const SkColor kInvalidColor;
 
+  // The paths of wallpaper directories.
+  // TODO(crbug.com/776464): Make these private and remove the static qualifier
+  // after |WallpaperManager::LoadWallpaper| and
+  // |WallpaperManager::GetDeviceWallpaperDir| are migrated.
+  static base::FilePath dir_user_data_path_;
+  static base::FilePath dir_chrome_os_wallpapers_path_;
+  static base::FilePath dir_chrome_os_custom_wallpapers_path_;
+
+  // Directory names of custom wallpapers.
+  static const char kSmallWallpaperSubDir[];
+  static const char kLargeWallpaperSubDir[];
+  static const char kOriginalWallpaperSubDir[];
+  static const char kThumbnailWallpaperSubDir[];
+
   WallpaperController();
   ~WallpaperController() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Returns the maximum size of all displays combined in native
+  // resolutions.  Note that this isn't the bounds of the display who
+  // has maximum resolutions. Instead, this returns the size of the
+  // maximum width of all displays, and the maximum height of all displays.
+  static gfx::Size GetMaxDisplaySizeInNative();
 
   // Binds the mojom::WallpaperController interface request to this object.
   void BindRequest(mojom::WallpaperControllerRequest request);
@@ -105,6 +125,9 @@ class ASH_EXPORT WallpaperController
   // crashes. An example test is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
+  // Returns custom wallpaper directory by appending corresponding |sub_dir|.
+  base::FilePath GetCustomWallpaperDir(const std::string& sub_dir);
+
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
@@ -114,12 +137,6 @@ class ASH_EXPORT WallpaperController
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
-
-  // Returns the maximum size of all displays combined in native
-  // resolutions.  Note that this isn't the bounds of the display who
-  // has maximum resolutions. Instead, this returns the size of the
-  // maximum width of all displays, and the maximum height of all displays.
-  static gfx::Size GetMaxDisplaySizeInNative();
 
   // Returns true if the specified wallpaper is already stored
   // in |current_wallpaper_|.
@@ -160,9 +177,6 @@ class ASH_EXPORT WallpaperController
                             wallpaper::WallpaperInfo* info,
                             bool is_persistent);
 
-  // Removes |account_id|'s wallpaper info and color cache if it exists.
-  void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_persistent);
-
   // Gets encoded wallpaper from cache. Returns true if success.
   bool GetWallpaperFromCache(const AccountId& account_id,
                              gfx::ImageSkia* image);
@@ -179,7 +193,11 @@ class ASH_EXPORT WallpaperController
   CustomWallpaperMap* GetWallpaperCacheMap();
 
   // mojom::WallpaperController overrides:
-  void SetClient(mojom::WallpaperControllerClientPtr client) override;
+  void SetClientAndPaths(
+      mojom::WallpaperControllerClientPtr client,
+      const base::FilePath& user_data_path,
+      const base::FilePath& chromeos_wallpapers_path,
+      const base::FilePath& chromeos_custom_wallpapers_path) override;
   void SetCustomWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
@@ -200,7 +218,8 @@ class ASH_EXPORT WallpaperController
       const base::FilePath& resized_directory) override;
   void ShowUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
-  void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
+  void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info,
+                           const std::string& wallpaper_files_id) override;
   void SetWallpaper(const SkBitmap& wallpaper,
                     const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
@@ -211,6 +230,9 @@ class ASH_EXPORT WallpaperController
 
   // WallpaperColorCalculatorObserver:
   void OnColorCalculationComplete() override;
+
+  // Sets a test client interface with empty file paths.
+  void SetClientForTesting(mojom::WallpaperControllerClientPtr client);
 
   // Flushes the mojo message pipe to chrome.
   void FlushForTesting();
@@ -237,6 +259,14 @@ class ASH_EXPORT WallpaperController
   // Reload the wallpaper. |clear_cache| specifies whether to clear the
   // wallpaper cahce or not.
   void UpdateWallpaper(bool clear_cache);
+
+  // Removes |account_id|'s wallpaper info and color cache if it exists.
+  void RemoveUserWallpaperInfo(const AccountId& account_id, bool is_persistent);
+
+  // Implementation of |RemoveUserWallpaper|, which deletes |account_id|'s
+  // custom wallpapers and directories.
+  void RemoveUserWallpaperImpl(const AccountId& account_id,
+                               const std::string& wallpaper_files_id);
 
   // Sets |prominent_colors_| and notifies the observers if there is a change.
   void SetProminentColors(const std::vector<SkColor>& prominent_colors);
