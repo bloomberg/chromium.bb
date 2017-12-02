@@ -410,15 +410,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
 
     @Override
     public void closeSearchUI() {
-        mSelectableListLayout.onEndSearch();
-
-        // Pop the search state off the stack.
-        mStateStack.pop();
-
-        // Set the state back to the folder that was previously being viewed. Listeners, including
-        // the BookmarkItemsAdapter, will be notified of the change and the list of bookmarks will
-        // be updated.
-        setState(mStateStack.pop());
+        mToolbar.hideSearchView();
     }
 
     @Override
@@ -456,7 +448,15 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
 
     @Override
     public void onEndSearch() {
-        closeSearchUI();
+        mSelectableListLayout.onEndSearch();
+
+        // Pop the search state off the stack.
+        mStateStack.pop();
+
+        // Set the state back to the folder that was previously being viewed. Listeners, including
+        // the BookmarkItemsAdapter, will be notified of the change and the list of bookmarks will
+        // be updated.
+        setState(mStateStack.pop());
     }
 
     // Testing methods
@@ -464,6 +464,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     @VisibleForTesting
     public BookmarkActionBar getToolbarForTests() {
         return mToolbar;
+    }
+
+    @VisibleForTesting
+    public BookmarkUndoController getUndoControllerForTests() {
+        return mUndoController;
     }
 
     /**

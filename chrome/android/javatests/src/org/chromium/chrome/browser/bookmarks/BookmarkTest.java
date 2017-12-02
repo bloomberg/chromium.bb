@@ -319,6 +319,62 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    public void testSearchBookmarks_Delete() throws Exception {
+        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
+        BookmarkId testFolder = addFolder(TEST_FOLDER_TITLE);
+        BookmarkId testBookmark = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
+        addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        openBookmarkManager();
+
+        BookmarkItemsAdapter adapter = ((BookmarkItemsAdapter) mItemsContainer.getAdapter());
+        BookmarkManager manager = (BookmarkManager) adapter.getDelegateForTesting();
+
+        Assert.assertEquals(BookmarkUIState.STATE_FOLDER, manager.getCurrentState());
+        assertBookmarkItems("Wrong number of items before starting search.", 3, adapter, manager);
+
+        // Start searching without entering a query.
+        ThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
+        Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, manager.getCurrentState());
+
+        // Select the folder and delete it.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> manager.getSelectionDelegate().toggleSelectionForItem(adapter.getItem(0)));
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> manager.getToolbarForTests().onMenuItemClick(
+                                manager.getToolbarForTests().getMenu().findItem(
+                                        R.id.selection_mode_delete_menu_id)));
+
+        // Search should be exited and the folder should be gone.
+        Assert.assertEquals(BookmarkUIState.STATE_FOLDER, manager.getCurrentState());
+        assertBookmarkItems("Wrong number of items before starting search.", 2, adapter, manager);
+
+        // Start searching, enter a query.
+        ThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
+        Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, manager.getCurrentState());
+        searchBookmarks("Google");
+        assertBookmarkItems(
+                "Wrong number of items after searching.", 1, mItemsContainer.getAdapter(), manager);
+
+        // Remove the bookmark.
+        removeBookmark(testBookmark);
+
+        // The user should still be searching, and the bookmark should be gone.
+        Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, manager.getCurrentState());
+        assertBookmarkItems(
+                "Wrong number of items after searching.", 0, mItemsContainer.getAdapter(), manager);
+
+        // Undo the deletion.
+        ThreadUtils.runOnUiThreadBlocking(() -> manager.getUndoControllerForTests().onAction(null));
+
+        // The user should still be searching, and the bookmark should reappear.
+        Assert.assertEquals(BookmarkUIState.STATE_SEARCHING, manager.getCurrentState());
+        assertBookmarkItems(
+                "Wrong number of items after searching.", 1, mItemsContainer.getAdapter(), manager);
+    }
+
+    @Test
+    @MediumTest
     @Feature({"RenderTest"})
     public void testBookmarkFolderIcon() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
