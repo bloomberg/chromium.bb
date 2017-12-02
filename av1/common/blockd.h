@@ -1021,12 +1021,18 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] >= TX_32X32) {
     tx_type = DCT_DCT;
   } else {
-    if (plane_type == PLANE_TYPE_Y)
-      tx_type = mbmi->txk_type[(blk_row << 4) + blk_col];
-    else if (is_inter_block(mbmi))
-      tx_type = mbmi->txk_type[(blk_row << 5) + (blk_col << 1)];
-    else
+    if (plane_type == PLANE_TYPE_Y) {
+      tx_type = mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+    } else if (is_inter_block(mbmi)) {
+      // scale back to y plane's coordinate
+      blk_row <<= pd->subsampling_y;
+      blk_col <<= pd->subsampling_x;
+      tx_type = mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col];
+    } else {
+      // In intra mode, uv planes don't share the same prediction mode as y
+      // plane, so the tx_type should not be shared
       tx_type = intra_mode_to_tx_type_context[mbmi->uv_mode];
+    }
   }
   assert(tx_type >= DCT_DCT && tx_type < TX_TYPES);
   if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][tx_type])

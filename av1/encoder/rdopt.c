@@ -2695,7 +2695,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       ref_best_rd = AOMMIN(rd, ref_best_rd);
       if (rd < best_rd) {
 #if CONFIG_TXK_SEL
-        memcpy(best_txk_type, mbmi->txk_type, sizeof(best_txk_type[0]) * 256);
+        memcpy(best_txk_type, mbmi->txk_type,
+               sizeof(best_txk_type[0]) * MAX_SB_SQUARE /
+                   (TX_SIZE_W_MIN * TX_SIZE_H_MIN));
 #endif
         best_tx_type = tx_type;
         best_tx_size = n;
@@ -2711,7 +2713,9 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   mbmi->tx_size = best_tx_size;
   mbmi->tx_type = best_tx_type;
 #if CONFIG_TXK_SEL
-  memcpy(mbmi->txk_type, best_txk_type, sizeof(best_txk_type[0]) * 256);
+  memcpy(mbmi->txk_type, best_txk_type,
+         sizeof(best_txk_type[0]) * MAX_SB_SQUARE /
+             (TX_SIZE_W_MIN * TX_SIZE_H_MIN));
 #endif
 
   mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
@@ -3857,7 +3861,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   RD_STATS sum_rd_stats;
 #if CONFIG_TXK_SEL
   TX_TYPE best_tx_type = TX_TYPES;
-  int txk_idx = (blk_row << 4) + blk_col;
+  int txk_idx = (blk_row << MAX_MIB_SIZE_LOG2) + blk_col;
 #endif
 
   av1_init_rd_stats(&sum_rd_stats);

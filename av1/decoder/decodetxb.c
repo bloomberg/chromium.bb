@@ -95,7 +95,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   if (all_zero) {
     *max_scan_line = 0;
 #if CONFIG_TXK_SEL
-    if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = DCT_DCT;
+    if (plane == 0)
+      mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = DCT_DCT;
 #endif
     return 0;
   }

@@ -2514,7 +2514,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   av1_invalid_rd_stats(&best_rd_stats);
 
   for (tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
-    if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = tx_type;
+    if (plane == 0)
+      mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = tx_type;
     TX_TYPE ref_tx_type = av1_get_tx_type(get_plane_type(plane), xd, blk_row,
                                           blk_col, block, tx_size);
     if (tx_type != ref_tx_type) {
@@ -2555,7 +2556,8 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   if (best_eob == 0 && is_inter_block(mbmi)) best_tx_type = DCT_DCT;
 
-  if (plane == 0) mbmi->txk_type[(blk_row << 4) + blk_col] = best_tx_type;
+  if (plane == 0)
+    mbmi->txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] = best_tx_type;
   x->plane[plane].txb_entropy_ctx[block] = best_eob;
 
   if (!is_inter_block(mbmi)) {
