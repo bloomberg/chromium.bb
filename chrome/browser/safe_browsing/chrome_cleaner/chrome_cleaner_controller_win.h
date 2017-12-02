@@ -47,6 +47,9 @@ class ChromeCleanerController {
     // cleaning attempts. This is also the state the controller will end up in
     // if any errors occur during execution of the Chrome Cleaner process.
     kIdle,
+    // The Software Reporter tool is currently running and there is no pending
+    // action corresponding to a cleaner execution.
+    kReporterRunning,
     // All steps up to and including scanning the machine occur in this
     // state. The steps include downloading the Chrome Cleaner binary, setting
     // up an IPC between Chrome and the Cleaner process, and the actual
@@ -67,6 +70,8 @@ class ChromeCleanerController {
 
   enum class IdleReason {
     kInitial,
+    kReporterFoundNothing,
+    kReporterFailed,
     kScanningFoundNothing,
     kScanningFailed,
     kConnectionLost,
@@ -91,6 +96,7 @@ class ChromeCleanerController {
   class Observer {
    public:
     virtual void OnIdle(IdleReason idle_reason) {}
+    virtual void OnReporterRunning() {}
     virtual void OnScanning() {}
     virtual void OnInfected(
         const ChromeCleanerScannerResults& scanner_results) {}
@@ -130,6 +136,18 @@ class ChromeCleanerController {
   // by calling the corresponding |On*()| function.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Invoked by the reporter runner, notifies the controller that a reporter
+  // sequence started. If there is no pending cleaner action (currently on the
+  // kIdle state), then it will transition to the kReporterRunning state.
+  virtual void OnReporterSequenceStarted() = 0;
+
+  // Invoked by the reporter runner, notifies the controller that a reporter
+  // sequence completed (or has not been scheduled). If there is no pending
+  // cleaner action (currently on kIdle or kReporterRunning state), then it will
+  // transition to either kScanning, if the reporter found removable UwS, or
+  // kIdle otherwise.
+  virtual void OnReporterSequenceDone(SwReporterInvocationResult result) = 0;
 
   // Downloads the Chrome Cleaner binary, executes it and waits for the Cleaner
   // to communicate with Chrome about harmful software found on the

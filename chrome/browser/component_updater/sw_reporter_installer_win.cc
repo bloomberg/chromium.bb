@@ -185,8 +185,7 @@ void RunSwReporters(const base::FilePath& exe_path,
                     const base::Version& version,
                     std::unique_ptr<base::DictionaryValue> manifest,
                     const SwReporterRunner& reporter_runner,
-                    SwReporterInvocationType invocation_type,
-                    OnReporterSequenceDone on_sequence_done) {
+                    SwReporterInvocationType invocation_type) {
   const base::ListValue* parameter_list = nullptr;
 
   // Allow an empty or missing launch_params list, but log an error if
@@ -212,14 +211,12 @@ void RunSwReporters(const base::FilePath& exe_path,
              .WithSupportedBehaviours(
                  SwReporterInvocation::BEHAVIOURS_ENABLED_BY_DEFAULT)});
     reporter_runner.Run(invocation_type,
-                        SwReporterInvocationSequence(
-                            version, invocations, std::move(on_sequence_done)));
+                        SwReporterInvocationSequence(version, invocations));
     return;
   }
 
   safe_browsing::SwReporterInvocationSequence invocations(
-      version, SwReporterInvocationSequence::Queue(),
-      std::move(on_sequence_done));
+      version, SwReporterInvocationSequence::Queue());
   for (const auto& iter : *parameter_list) {
     const base::DictionaryValue* invocation_params = nullptr;
     if (!iter.GetAsDictionary(&invocation_params)) {
@@ -293,11 +290,8 @@ void RunSwReporters(const base::FilePath& exe_path,
 
 SwReporterInstallerPolicy::SwReporterInstallerPolicy(
     const SwReporterRunner& reporter_runner,
-    SwReporterInvocationType invocation_type,
-    OnReporterSequenceDone on_sequence_done)
-    : reporter_runner_(reporter_runner),
-      invocation_type_(invocation_type),
-      on_sequence_done_(std::move(on_sequence_done)) {}
+    SwReporterInvocationType invocation_type)
+    : reporter_runner_(reporter_runner), invocation_type_(invocation_type) {}
 
 SwReporterInstallerPolicy::~SwReporterInstallerPolicy() {}
 
@@ -331,7 +325,7 @@ void SwReporterInstallerPolicy::ComponentReady(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::FilePath exe_path(install_dir.Append(kSwReporterExeName));
   RunSwReporters(exe_path, version, std::move(manifest), reporter_runner_,
-                 invocation_type_, std::move(on_sequence_done_));
+                 invocation_type_);
 }
 
 base::FilePath SwReporterInstallerPolicy::GetRelativeInstallDir() const {
@@ -379,7 +373,6 @@ std::vector<std::string> SwReporterInstallerPolicy::GetMimeTypes() const {
 
 void RegisterSwReporterComponentWithParams(
     safe_browsing::SwReporterInvocationType invocation_type,
-    OnReporterSequenceDone on_sequence_done,
     ComponentUpdateService* cus) {
   // Check if we have information from Cleaner and record UMA statistics.
   base::string16 cleaner_key_name(
@@ -457,17 +450,13 @@ void RegisterSwReporterComponentWithParams(
   // Install the component.
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<SwReporterInstallerPolicy>(
-          base::Bind(&RunSwReportersAfterStartup), invocation_type,
-          std::move(on_sequence_done)));
+          base::BindRepeating(&RunSwReportersAfterStartup), invocation_type));
   installer->Register(cus, base::OnceClosure());
 }
 
 void RegisterSwReporterComponent(ComponentUpdateService* cus) {
-  // This is called during start-up and there is no pending action to be
-  // performed once done. Because of that, the on sequence done callback
-  // is defined as a no-op.
   RegisterSwReporterComponentWithParams(SwReporterInvocationType::kPeriodicRun,
-                                        OnReporterSequenceDone(), cus);
+                                        cus);
 }
 
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {

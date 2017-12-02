@@ -186,6 +186,10 @@ void ChromeCleanerControllerDelegate::StartRebootPromptFlow(
   ChromeCleanerRebootDialogControllerImpl::Create(controller);
 }
 
+bool ChromeCleanerControllerDelegate::UserInitiatedCleanupsFeatureEnabled() {
+  return UserInitiatedCleanupsEnabled();
+}
+
 // static
 ChromeCleanerControllerImpl* ChromeCleanerControllerImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -272,6 +276,12 @@ void ChromeCleanerControllerImpl::SetDelegateForTesting(
   DCHECK(delegate_);
 }
 
+void ChromeCleanerControllerImpl::SetStateForTesting(State state) {
+  state_ = state;
+  if (state_ == State::kIdle)
+    idle_reason_ = IdleReason::kInitial;
+}
+
 // static
 void ChromeCleanerControllerImpl::ResetInstanceForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -291,6 +301,72 @@ void ChromeCleanerControllerImpl::AddObserver(Observer* observer) {
 void ChromeCleanerControllerImpl::RemoveObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   observer_list_.RemoveObserver(observer);
+}
+
+void ChromeCleanerControllerImpl::OnReporterSequenceStarted() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!delegate_->UserInitiatedCleanupsFeatureEnabled())
+    return;
+
+  if (state() == State::kIdle)
+    SetStateAndNotifyObservers(State::kReporterRunning);
+}
+
+void ChromeCleanerControllerImpl::OnReporterSequenceDone(
+    SwReporterInvocationResult result) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_NE(SwReporterInvocationResult::kUnspecified, result);
+
+  if (!delegate_->UserInitiatedCleanupsFeatureEnabled())
+    return;
+
+  // Ignore if any interaction with cleaner runs is ongoing. This can happen
+  // in two situations:
+  //  - The controller is currently handling the cleanup flow (states: infected,
+  //    cleaning, reboot required);
+  //  - The controller was handling the cleanup flow when the reporter sequence
+  //    started, and we didn't transition to the reporter running state.
+  //
+  // That situation can happen, for example, if a new version of the reporter
+  // component becomes available while the controller is handling the cleanup
+  // flow. The UI should block any attempt of starting a new user-initiated scan
+  // if the controller is not on an idle state, which includes when a reporter
+  // sequence is currently running.
+  if (state() != State::kReporterRunning)
+    return;
+
+  switch (result) {
+    case SwReporterInvocationResult::kNotScheduled:
+      // This can happen if a new periodic reporter run tried to start (for
+      // example, because a new reporter component version became available) and
+      // there is another reporter sequence currently running.
+      // Ignore and wait until the other sequence completes to update state.
+      return;
+
+    case SwReporterInvocationResult::kTimedOut:
+    case SwReporterInvocationResult::kProcessFailedToLaunch:
+    case SwReporterInvocationResult::kGeneralFailure:
+      idle_reason_ = IdleReason::kReporterFailed;
+      break;
+
+    case SwReporterInvocationResult::kNothingFound:
+      idle_reason_ = IdleReason::kReporterFoundNothing;
+      break;
+
+    case SwReporterInvocationResult::kCleanupNotOffered:
+      idle_reason_ = IdleReason::kReporterFoundNothing;
+      break;
+
+    case SwReporterInvocationResult::kCleanupToBeOffered:
+      // A request to scan will immediately follow this message, so no state
+      // transition will be needed.
+      return;
+
+    default:
+      NOTREACHED();
+  }
+
+  SetStateAndNotifyObservers(State::kIdle);
 }
 
 void ChromeCleanerControllerImpl::Scan(
@@ -386,6 +462,9 @@ void ChromeCleanerControllerImpl::NotifyObserver(Observer* observer) const {
   switch (state_) {
     case State::kIdle:
       observer->OnIdle(idle_reason_);
+      break;
+    case State::kReporterRunning:
+      observer->OnReporterRunning();
       break;
     case State::kScanning:
       observer->OnScanning();

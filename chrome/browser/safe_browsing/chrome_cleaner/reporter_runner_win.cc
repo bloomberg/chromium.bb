@@ -474,6 +474,11 @@ void RecordReporterStepHistogram(SwReporterUmaValue value) {
   uma.RecordReporterStep(value);
 }
 
+ChromeCleanerController* GetCleanerController() {
+  return g_testing_delegate_ ? g_testing_delegate_->GetCleanerController()
+                             : ChromeCleanerController::GetInstance();
+}
+
 // This function is called from a worker thread to launch the SwReporter and
 // wait for termination to collect its exit code. This task could be
 // interrupted by a shutdown at any time, so it shouldn't depend on anything
@@ -501,10 +506,13 @@ int LaunchAndWaitForExitOnBackgroundThread(
 SwReporterInvocationResult ExitCodeToInvocationResult(int exit_code) {
   switch (exit_code) {
     case chrome_cleaner::kSwReporterCleanupNeeded:
+      // This should only be used if a cleanup will not be offered. If a
+      // cleanup is offered, the controller will get notified with a
+      // kCleanupToBeOffered signal, and this one will be ignored.
       // Do not accept reboot required or post-reboot exit codes, since they
       // should not be sent out by the reporter, and should be treated as
       // errors.
-      return SwReporterInvocationResult::kCleanupNeeded;
+      return SwReporterInvocationResult::kCleanupNotOffered;
 
     case chrome_cleaner::kSwReporterNothingFound:
     case chrome_cleaner::kSwReporterNonRemovableOnly:
@@ -519,22 +527,23 @@ SwReporterInvocationResult ExitCodeToInvocationResult(int exit_code) {
   return SwReporterInvocationResult::kGeneralFailure;
 }
 
-// Scans and shows the Chrome Cleaner UI if the user has not already been
-// prompted in the current prompt wave.
-void MaybeScanAndPrompt(SwReporterInvocationType invocation_type,
-                        SwReporterInvocation reporter_invocation) {
-  ChromeCleanerController* cleaner_controller =
-      ChromeCleanerController::GetInstance();
-
-  if (cleaner_controller->state() != ChromeCleanerController::State::kIdle) {
-    RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOT_ON_IDLE_STATE);
+void CreateChromeCleanerDialogController() {
+  if (g_testing_delegate_) {
+    g_testing_delegate_->CreateChromeCleanerDialogController();
     return;
   }
 
+  // The dialog controller manages its own lifetime. If the controller enters
+  // the kInfected state, the dialog controller will show the chrome cleaner
+  // dialog to the user.
+  new ChromeCleanerDialogControllerImpl(GetCleanerController());
+}
+
+bool ShouldShowPromptForPeriodicRun() {
   Browser* browser = chrome::FindLastActive();
   if (!browser) {
     RecordReporterStepHistogram(SW_REPORTER_NO_BROWSER);
-    return;
+    return false;
   }
 
   Profile* profile = browser->profile();
@@ -550,35 +559,10 @@ void MaybeScanAndPrompt(SwReporterInvocationType invocation_type,
   if (!incoming_seed.empty() && incoming_seed == old_seed) {
     RecordReporterStepHistogram(SW_REPORTER_ALREADY_PROMPTED);
     RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_ALREADY_PROMPTED);
-    return;
+    return false;
   }
 
-  // This approach makes it harder to define proper tests for calls to Scan(),
-  // prompt not shown for user-initiated runs, and cleaner logs uploading.
-  // TODO(crbug.com/776538): Define a delegate with default behaviour that is
-  //                         overriden (instead of defined) by tests.
-  if (g_testing_delegate_) {
-    g_testing_delegate_->TriggerPrompt();
-    return;
-  }
-
-  reporter_invocation.set_cleaner_logs_upload_enabled(
-      invocation_type ==
-      SwReporterInvocationType::kUserInitiatedWithLogsAllowed);
-
-  cleaner_controller->Scan(reporter_invocation);
-  DCHECK_EQ(ChromeCleanerController::State::kScanning,
-            cleaner_controller->state());
-
-  // If this is a periodic reporter run, then create the dialog controller, so
-  // that the user may eventually be prompted. Otherwise, all interaction
-  // should be driven from the Settings page.
-  if (invocation_type == SwReporterInvocationType::kPeriodicRun) {
-    // The dialog controller manages its own lifetime. If the controller enters
-    // the kInfected state, the dialog controller will show the chrome cleaner
-    // dialog to the user.
-    new ChromeCleanerDialogControllerImpl(cleaner_controller);
-  }
+  return true;
 }
 
 base::Time Now() {
@@ -628,6 +612,7 @@ class ReporterRunner {
     // itself once all invocations finish.
     instance_ = new ReporterRunner(invocation_type, std::move(invocations),
                                    std::move(time_info));
+    GetCleanerController()->OnReporterSequenceStarted();
     instance_->PostNextInvocation();
 
     // The reporter sequence has been scheduled to run, so don't notify that
@@ -733,7 +718,7 @@ class ReporterRunner {
   // has completed. This is run as a task posted from an interruptible worker
   // thread so should be resilient to unexpected shutdown.
   void ReporterDone(const base::Time& reporter_start_time,
-                    const SwReporterInvocation& finished_invocation,
+                    SwReporterInvocation finished_invocation,
                     int exit_code) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_EQ(instance_, this);
@@ -741,9 +726,9 @@ class ReporterRunner {
     // Ensures finalization if there are no further invocations to run. This
     // scoped runner may be released later on if there are other invocations to
     // start.
-    base::ScopedClosureRunner scoped_runner(
-        base::BindOnce(&ReporterRunner::SendResultAndDeleteSelf,
-                       base::Unretained(this), exit_code));
+    base::ScopedClosureRunner scoped_runner(base::BindOnce(
+        &ReporterRunner::SendResultAndDeleteSelf, base::Unretained(this),
+        ExitCodeToInvocationResult(exit_code)));
 
     // Don't continue the current queue of reporters if one failed to launch.
     // If the reporter failed to launch, do not process the results. (The exit
@@ -813,7 +798,40 @@ class ReporterRunner {
       return;
     }
 
-    MaybeScanAndPrompt(invocation_type_, finished_invocation);
+    ChromeCleanerController* cleaner_controller = GetCleanerController();
+
+    // The most common state for the controller at this moment is
+    // kReporterRunning, set before this invocation sequence started. However,
+    // it's possible that the reporter starts running again during the prompt
+    // routine (for example, a new reporter version became available while the
+    // cleaner prompt is presented to the user). In that case, only prompt if
+    // the controller has returned to the idle state.
+    if (cleaner_controller->state() != ChromeCleanerController::State::kIdle &&
+        cleaner_controller->state() !=
+            ChromeCleanerController::State::kReporterRunning) {
+      RecordPromptNotShownWithReasonHistogram(
+          NO_PROMPT_REASON_NOT_ON_IDLE_STATE);
+      return;
+    }
+
+    if (!IsUserInitiated(invocation_type_) &&
+        !ShouldShowPromptForPeriodicRun()) {
+      return;
+    }
+
+    finished_invocation.set_cleaner_logs_upload_enabled(
+        invocation_type_ ==
+        SwReporterInvocationType::kUserInitiatedWithLogsAllowed);
+
+    invocations_.NotifySequenceDone(
+        SwReporterInvocationResult::kCleanupToBeOffered);
+    cleaner_controller->Scan(finished_invocation);
+
+    // If this is a periodic reporter run, then create the dialog controller, so
+    // that the user may eventually be prompted. Otherwise, all interaction
+    // should be driven from the Settings page.
+    if (!IsUserInitiated(invocation_type_))
+      CreateChromeCleanerDialogController();
   }
 
   // Returns true if the experiment to send reporter logs is enabled, the user
@@ -901,11 +919,11 @@ class ReporterRunner {
         base::IntToString16(ChannelAsInt()));
   }
 
-  void SendResultAndDeleteSelf(int exit_code) {
+  void SendResultAndDeleteSelf(SwReporterInvocationResult result) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK_EQ(instance_, this);
 
-    invocations_.NotifySequenceDone(ExitCodeToInvocationResult(exit_code));
+    invocations_.NotifySequenceDone(result);
 
     delete this;
   }
@@ -954,13 +972,15 @@ SwReporterInvocation::SwReporterInvocation(const SwReporterInvocation& other)
     : command_line_(other.command_line_),
       supported_behaviours_(other.supported_behaviours_),
       suffix_(other.suffix_),
-      reporter_logs_upload_enabled_(other.reporter_logs_upload_enabled_) {}
+      reporter_logs_upload_enabled_(other.reporter_logs_upload_enabled_),
+      cleaner_logs_upload_enabled_(other.cleaner_logs_upload_enabled_) {}
 
 void SwReporterInvocation::operator=(const SwReporterInvocation& invocation) {
   command_line_ = invocation.command_line_;
   supported_behaviours_ = invocation.supported_behaviours_;
   suffix_ = invocation.suffix_;
   reporter_logs_upload_enabled_ = invocation.reporter_logs_upload_enabled_;
+  cleaner_logs_upload_enabled_ = invocation.cleaner_logs_upload_enabled_;
 }
 
 SwReporterInvocation& SwReporterInvocation::WithSuffix(
@@ -979,7 +999,8 @@ bool SwReporterInvocation::operator==(const SwReporterInvocation& other) const {
   return command_line_.argv() == other.command_line_.argv() &&
          supported_behaviours_ == other.supported_behaviours_ &&
          suffix_ == other.suffix_ &&
-         reporter_logs_upload_enabled_ == other.reporter_logs_upload_enabled_;
+         reporter_logs_upload_enabled_ == other.reporter_logs_upload_enabled_ &&
+         cleaner_logs_upload_enabled_ == other.cleaner_logs_upload_enabled_;
 }
 
 const base::CommandLine& SwReporterInvocation::command_line() const {
@@ -1024,11 +1045,15 @@ void SwReporterInvocation::set_cleaner_logs_upload_enabled(
 
 SwReporterInvocationSequence::SwReporterInvocationSequence(
     const base::Version& version,
-    const Queue& container,
-    OnReporterSequenceDone on_sequence_done)
-    : version_(version),
-      container_(container),
-      on_sequence_done_(std::move(on_sequence_done)) {}
+    const Queue& container)
+    : version_(version), container_(container) {
+  // Notify the cleaner controller once this sequence completes. Don't retain
+  // a reference to the controller object, since it's guaranteed to outlive the
+  // sequence.
+  on_sequence_done_ =
+      base::BindOnce(&ChromeCleanerController::OnReporterSequenceDone,
+                     base::Unretained(GetCleanerController()));
+}
 
 SwReporterInvocationSequence::SwReporterInvocationSequence(
     SwReporterInvocationSequence&& invocations_sequence)
@@ -1068,8 +1093,8 @@ SwReporterInvocationSequence::mutable_container() {
 void RunSwReporters(SwReporterInvocationType invocation_type,
                     SwReporterInvocationSequence&& invocations) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   DCHECK(!invocations.container().empty());
+
   ReporterRunner::MaybeStartInvocations(invocation_type,
                                         std::move(invocations));
 }

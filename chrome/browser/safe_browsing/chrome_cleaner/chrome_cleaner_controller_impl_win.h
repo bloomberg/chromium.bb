@@ -43,6 +43,9 @@ class ChromeCleanerControllerDelegate {
 
   // Starts the reboot prompt flow if a cleanup requires a machine restart.
   virtual void StartRebootPromptFlow(ChromeCleanerController* controller);
+
+  // Returns true if the UserInitiatedCleanups feature is enabled.
+  virtual bool UserInitiatedCleanupsFeatureEnabled();
 };
 
 class ChromeCleanerControllerImpl : public ChromeCleanerController {
@@ -60,6 +63,8 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   void ResetIdleState() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  void OnReporterSequenceStarted() override;
+  void OnReporterSequenceDone(SwReporterInvocationResult result) override;
   void Scan(const SwReporterInvocation& reporter_invocation) override;
   void ReplyWithUserResponse(Profile* profile,
                              UserResponse user_response) override;
@@ -69,6 +74,10 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   // Passing in a nullptr as |delegate| resets the delegate to a default
   // production version.
   void SetDelegateForTesting(ChromeCleanerControllerDelegate* delegate);
+
+  // Force the current controller's state for tests that check the effect of
+  // starting and completing reporter runs.
+  void SetStateForTesting(State state);
 
  private:
   ChromeCleanerControllerImpl();
