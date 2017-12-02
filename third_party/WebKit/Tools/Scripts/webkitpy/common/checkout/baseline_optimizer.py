@@ -31,8 +31,11 @@ import logging
 
 from webkitpy.common.memoized import memoized
 from webkitpy.layout_tests.controllers.test_result_writer import baseline_name as get_baseline_name
+from webkitpy.layout_tests.models.testharness_results import is_all_pass_testharness_result
 
 _log = logging.getLogger(__name__)
+
+ALL_PASS = '<PASS> testharness.js'
 
 
 class BaselineOptimizer(object):
@@ -79,6 +82,7 @@ class BaselineOptimizer(object):
 
         _log.debug('Optimizing non-virtual fallback path.')
         succeeded &= self._optimize_subtree(non_virtual_baseline_name)
+        self._remove_all_pass_testharness_result_at_root(non_virtual_baseline_name)
 
         if not succeeded:
             _log.error('Heuristics failed to optimize %s', baseline_name)
@@ -93,7 +97,7 @@ class BaselineOptimizer(object):
         """Reads the baselines with the given file name in all directories.
 
         Returns:
-            A dict from directory names to file content SHA1.
+            A dict from directory names to the digest of file content.
         """
         results_by_directory = {}
         directories = set()
@@ -103,7 +107,7 @@ class BaselineOptimizer(object):
         for directory in directories:
             path = self._join_directory(directory, baseline_name)
             if self._filesystem.exists(path):
-                results_by_directory[directory] = self._filesystem.sha1(path)
+                results_by_directory[directory] = self._digest_result(path)
         return results_by_directory
 
     def _optimize_subtree(self, baseline_name):
@@ -121,6 +125,7 @@ class BaselineOptimizer(object):
             self.new_results_by_directory.append(results_by_directory)
             return True
 
+        # Check if the results before and after optimization are equivalent.
         if (self._results_by_port_name(results_by_directory) !=
                 self._results_by_port_name(new_results_by_directory)):
             # This really should never happen. Just a sanity check to make
@@ -204,8 +209,8 @@ class BaselineOptimizer(object):
 
         For each immediate predecessor, we call
             worker_func(virtual_baseline, non_virtual_fallback)
-        where the two arguments are the paths to the virtual platform baseline
-        and the non-virtual fallback respectively.
+        where the two arguments are the absolute paths to the virtual platform
+        baseline and the non-virtual fallback respectively.
         """
         actual_test_name = self._virtual_base(test_name)
         assert actual_test_name, '%s is not a virtual test.' % test_name
@@ -257,18 +262,17 @@ class BaselineOptimizer(object):
         # See if all the successors of the virtual root (i.e. all non-virtual
         # platforms) have the same baseline as the virtual root. If so, the
         # virtual root is redundant and can be safely removed.
-        root_sha1 = self._filesystem.sha1(virtual_root_baseline_path)
+        virtual_root_digest = self._digest_result(virtual_root_baseline_path)
 
         # Read the base (non-virtual) results.
         results_by_directory = self.read_results_by_directory(self._virtual_base(baseline_name))
+        # Since implicit_all_pass defaults to True, we can also optimize away
+        # redundant all-PASS testharness.js results at the virtual root.
         results_by_port_name = self._results_by_port_name(results_by_directory)
 
         for port_name in self._ports.keys():
-            if port_name not in results_by_port_name:
-                # No baseline is found for this port. Conservatively abort as it
-                # may be an implicit all-PASS for a testharness.js test.
-                return
-            if results_by_port_name[port_name] != root_sha1:
+            assert port_name in results_by_port_name
+            if results_by_port_name[port_name] != virtual_root_digest:
                 return
 
         _log.debug('Deleting redundant virtual root baseline.')
@@ -281,7 +285,7 @@ class BaselineOptimizer(object):
         # of the work done in _patch_virtual_subtree.
         def unpatcher(virtual_baseline, non_virtual_fallback):
             if self._filesystem.exists(virtual_baseline) and \
-                    self._filesystem.sha1(virtual_baseline) == self._filesystem.sha1(non_virtual_fallback):
+                    self._digest_result(virtual_baseline) == self._digest_result(non_virtual_fallback):
                 _log.debug('    Deleting (file system): %s (redundant with %s).', virtual_baseline, non_virtual_fallback)
                 self._filesystem.remove(virtual_baseline)
         self._walk_immediate_predecessors_of_virtual_root(test_name, suffix, baseline_name, unpatcher)
@@ -318,14 +322,30 @@ class BaselineOptimizer(object):
         """Returns the absolute path to the baseline in the given directory."""
         return self._filesystem.join(self._parent_of_tests, directory, baseline_name)
 
-    def _results_by_port_name(self, results_by_directory):
-        """Transforms a by-directory result dict to by-port-name."""
+    def _results_by_port_name(self, results_by_directory, implicit_all_pass=True):
+        """Transforms a by-directory result dict to by-port-name.
+
+        The method mimicks the baseline search behaviour, i.e. results[port] is
+        the first baseline found on the baseline search path of the port.
+
+        Args:
+            results_by_directory: A dictionary returned by read_results_by_directory().
+            implicit_all_pass: If True, ports with no baselines found will have
+                all-PASS testharness.js results, which matches the real-world
+                behaviour of run-webkit-tests for testharness.js tests.
+                Otherwise, such ports will not be found in the dict.
+
+        Returns:
+            A dictionary mapping port names to their baselines.
+        """
         results_by_port_name = {}
         for port_name, port in self._ports.items():
             for directory in self._relative_baseline_search_path(port):
                 if directory in results_by_directory:
                     results_by_port_name[port_name] = results_by_directory[directory]
                     break
+            if port_name not in results_by_port_name and implicit_all_pass:
+                results_by_port_name[port_name] = ALL_PASS
         return results_by_port_name
 
     @memoized
@@ -378,7 +398,9 @@ class BaselineOptimizer(object):
 
     def _find_optimal_result_placement(self, baseline_name):
         results_by_directory = self.read_results_by_directory(baseline_name)
-        results_by_port_name = self._results_by_port_name(results_by_directory)
+        # Set implicit_all_pass=False so that we won't get non-existent all-PASS
+        # testharness.js results, which would break _find_in_search_path.
+        results_by_port_name = self._results_by_port_name(results_by_directory, implicit_all_pass=False)
 
         new_results_by_directory = self._remove_redundant_results(
             results_by_directory, results_by_port_name)
@@ -401,6 +423,7 @@ class BaselineOptimizer(object):
 
             search_path = self._relative_baseline_search_path(port)
             current_index, current_directory = self._find_in_search_path(search_path, current_result, new_results_by_directory)
+            found_different_result = False
             for index in range(current_index + 1, len(search_path)):
                 new_directory = search_path[index]
                 if new_directory not in new_results_by_directory:
@@ -415,7 +438,18 @@ class BaselineOptimizer(object):
                         current_directory = new_directory
                 else:
                     # A different result is found, so stop.
+                    found_different_result = True
                     break
+
+            # If we did not find a different fallback and current_result is an
+            # all-PASS testharness.js result, we can safely remove it, as it is
+            # the implicit result.
+            # Note that we do not remove the generic all-PASS result here.
+            # Roots (virtual and non-virtual) are treated specially later.
+            if (not found_different_result and current_result == ALL_PASS
+                    and current_directory != self._baseline_root()
+                    and current_directory in new_results_by_directory):
+                del new_results_by_directory[current_directory]
 
         return new_results_by_directory
 
@@ -425,3 +459,36 @@ class BaselineOptimizer(object):
             if directory in results_by_directory and (results_by_directory[directory] == current_result):
                 return index, directory
         assert False, 'result %s not found in search path %s, %s' % (current_result, search_path, results_by_directory)
+
+    def _remove_all_pass_testharness_result_at_root(self, baseline_name):
+        """Removes the all-PASS testharness.js result at the non-virtual root."""
+        assert not self._virtual_base(baseline_name), 'A virtual baseline is passed in.'
+        path = self._join_directory(self._baseline_root(), baseline_name)
+        if self._filesystem.exists(path) and self._is_all_pass_testharness_result(path):
+            _log.debug('Deleting redundant all-PASS root baseline.')
+            _log.debug('    Deleting (file system): ' + path)
+            self._filesystem.remove(path)
+
+    def _digest_result(self, path):
+        """Digests a result file into a string suitable for comparison.
+
+        Args:
+            An absolute path.
+
+        Returns:
+            In most cases, the SHA1 sum of the content is returned, but if the
+            file is an all-PASS testharness.js result, ALL_PASS is returned.
+        """
+        # Unfortunately, we may read the file twice, once in text mode and once
+        # in binary mode.
+        if self._is_all_pass_testharness_result(path):
+            return ALL_PASS
+        return self._filesystem.sha1(path)
+
+    def _is_all_pass_testharness_result(self, path):
+        """Checks if a baseline is an all-PASS testharness.js result."""
+        # TODO(robertma): Find an appropriate constant for this (or make one).
+        if not path.endswith('-expected.txt'):
+            return False
+        content = self._filesystem.read_text_file(path)
+        return is_all_pass_testharness_result(content)

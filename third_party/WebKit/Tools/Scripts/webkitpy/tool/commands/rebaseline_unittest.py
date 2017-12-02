@@ -126,30 +126,6 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
             '/test.checkout/LayoutTests/passes/text-expected.wav',
         ])
 
-    def test_remove_all_pass_testharness_generic_baselines(self):
-        self.tool.filesystem.write_text_file(
-            '/test.checkout/LayoutTests/passes/text-expected.txt',
-            ('This is a testharness.js-based test.\n'
-             'PASS: foo\n'
-             'Harness: the test ran to completion.\n'))
-        test_baseline_set = TestBaselineSet(self.tool)
-        test_baseline_set.add('passes/text.html', Build('MOCK Win7'))
-        self.command._remove_all_pass_testharness_baselines(test_baseline_set)
-        self.assertFalse(self.tool.filesystem.exists(
-            '/test.checkout/LayoutTests/passes/text-expected.txt'))
-
-    def test_keep_all_pass_testharness_platform_baselines(self):
-        self.tool.filesystem.write_text_file(
-            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt',
-            ('This is a testharness.js-based test.\n'
-             'PASS: foo\n'
-             'Harness: the test ran to completion.\n'))
-        test_baseline_set = TestBaselineSet(self.tool)
-        test_baseline_set.add('passes/text.html', Build('MOCK Win7'))
-        self.command._remove_all_pass_testharness_baselines(test_baseline_set)
-        self.assertTrue(self.tool.filesystem.exists(
-            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt'))
-
 
 class TestRebaseline(BaseTestCase):
     """Tests for the rebaseline method which is used by multiple rebaseline commands."""

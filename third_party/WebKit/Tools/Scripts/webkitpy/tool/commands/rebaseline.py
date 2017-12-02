@@ -35,7 +35,6 @@ import re
 from webkitpy.common.net.buildbot import Build
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
-from webkitpy.layout_tests.models.testharness_results import is_all_pass_testharness_result
 from webkitpy.layout_tests.port import factory
 from webkitpy.tool.commands.command import Command
 
@@ -415,8 +414,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         if options.optimize:
             self._run_in_parallel(self._optimize_baselines(test_baseline_set, options.verbose))
 
-        self._remove_all_pass_testharness_baselines(test_baseline_set)
-
         self._tool.git().add_list(self.unstaged_baselines())
 
     def unstaged_baselines(self):
@@ -424,26 +421,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         baseline_re = re.compile(r'.*[\\/]LayoutTests[\\/].*-expected\.(txt|png|wav)$')
         unstaged_changes = self._tool.git().unstaged_changes()
         return sorted(self._tool.git().absolute_path(path) for path in unstaged_changes if re.match(baseline_re, path))
-
-    def _remove_all_pass_testharness_baselines(self, test_baseline_set):
-        """Removes all of the generic all-PASS baselines for the given tests.
-
-        For testharness.js tests, the absence of a baseline indicates that the
-        test is expected to pass. When rebaselining, new all-PASS baselines may
-        be downloaded to platform directories. After optimization, some of them
-        may be pushed to the root layout test directory and become generic
-        baselines, which can be safely removed. Non-generic all-PASS baselines
-        need to be preserved; otherwise the fallback may be wrong.
-        """
-        filesystem = self._tool.filesystem
-        baseline_paths = self._generic_baseline_paths(test_baseline_set)
-        for path in baseline_paths:
-            if not (filesystem.exists(path) and filesystem.splitext(path)[1] == '.txt'):
-                continue
-            contents = filesystem.read_text_file(path)
-            if is_all_pass_testharness_result(contents):
-                _log.info('Removing all-PASS testharness baseline: %s', path)
-                filesystem.remove(path)
 
     def _generic_baseline_paths(self, test_baseline_set):
         """Returns absolute paths for generic baselines for the given tests.

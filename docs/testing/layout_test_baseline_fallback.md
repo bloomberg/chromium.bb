@@ -115,6 +115,12 @@ the non-virtual fallbacks to the ones that do not (we cannot copy the generic
 baseline to the virtual root because virtual platforms may have different
 results).
 
+In addition, the optimizer also removes redundant all-PASS testharness.js
+results. Such baselines are redundant when there are no other fallbacks later
+on the search path (including if the all-PASS baselines are at root), because
+`run-webkit-tests` assumes all-PASS testharness.js results when baselines can
+not be found for a platform.
+
 ### Rebaseline
 
 The fallback mechanism also affects the rebaseline tool (`webkit-patch
