@@ -4760,6 +4760,63 @@ void od_bin_idct8(od_coeff *x, int xstride, const od_coeff y[8]) {
   x[7*xstride] = (od_coeff)r7;
 }
 
+#if 1
+void od_bin_fdst8(od_coeff y[8], const od_coeff *x, int xstride) {
+  int r0;
+  int r1;
+  int r2;
+  int r3;
+  int r4;
+  int r5;
+  int r6;
+  int r7;
+  r0 = x[0*xstride];
+  r1 = x[1*xstride];
+  r2 = x[2*xstride];
+  r3 = x[3*xstride];
+  r4 = x[4*xstride];
+  r5 = x[5*xstride];
+  r6 = x[6*xstride];
+  r7 = x[7*xstride];
+  OD_FDST_8_FLAT(r0, r1, r2, r3, r4, r5, r6, r7);
+  y[0] = (od_coeff)r0;
+  y[1] = (od_coeff)r4;
+  y[2] = (od_coeff)r2;
+  y[3] = (od_coeff)r6;
+  y[4] = (od_coeff)r1;
+  y[5] = (od_coeff)r5;
+  y[6] = (od_coeff)r3;
+  y[7] = (od_coeff)r7;
+}
+
+void od_bin_idst8(od_coeff *x, int xstride, const od_coeff y[8]) {
+  int r0;
+  int r1;
+  int r2;
+  int r3;
+  int r4;
+  int r5;
+  int r6;
+  int r7;
+  r0 = y[0];
+  r4 = y[1];
+  r2 = y[2];
+  r6 = y[3];
+  r1 = y[4];
+  r5 = y[5];
+  r3 = y[6];
+  r7 = y[7];
+  OD_IDST_8_FLAT(r0, r4, r2, r6, r1, r5, r3, r7);
+  x[0*xstride] = (od_coeff)r0;
+  x[1*xstride] = (od_coeff)r1;
+  x[2*xstride] = (od_coeff)r2;
+  x[3*xstride] = (od_coeff)r3;
+  x[4*xstride] = (od_coeff)r4;
+  x[5*xstride] = (od_coeff)r5;
+  x[6*xstride] = (od_coeff)r6;
+  x[7*xstride] = (od_coeff)r7;
+}
+#else
 const int OD_DST_8_PERM[8] = { 0, 7, 1, 6, 2, 5, 3, 4 };
 
 /* Computes the Polynomial Product Y(z) ≡ X(z)*H(z) modulo (z^8 + 1) using
@@ -4962,7 +5019,7 @@ void od_bin_idst8(od_coeff *x, int xstride, const od_coeff y[8]) {
   od_poly_prod_8(xp, yp);
   for (i = 0; i < 8; i++) x[i*xstride] = xp[i];
 }
-
+#endif
 void od_bin_fdct16(od_coeff y[16], const od_coeff *x, int xstride) {
   int s0;
   int s1;
