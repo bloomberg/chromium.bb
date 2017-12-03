@@ -36147,6 +36147,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="HasContentEncoding"/>
 </enum>
 
+<enum name="ResourceLoadSchedulerCircumstance">
+  <int value="0" label="Main frame, throttled"/>
+  <int value="1" label="Main frame, not throttled"/>
+  <int value="2" label="Sub frame, throttled"/>
+  <int value="3" label="Sub frame, not throttled"/>
+</enum>
+
 <enum name="ResourcePrefetchPredictorMainFrameRequestStats">
   <int value="0" label="MAIN_FRAME_REQUEST_STATS_TOTAL_REQUESTS"/>
   <int value="1" label="MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS"/>
