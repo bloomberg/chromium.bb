@@ -190,9 +190,6 @@ size_t RegisterChromeCrashKeys() {
     // TODO(sunnyps): Remove after fixing crbug.com/724999.
     {"gl-context-set-current-stack-trace", kMediumSize},
 
-    // TODO(asvitkine): Remove after fixing https://crbug.com/736675
-    {"bad_histogram", kMediumSize},
-
     // Accessibility keys. Temporary for http://crbug.com/765490.
     {"ax_tree_error", kSmallSize},
     {"ax_tree_update", kMediumSize},
