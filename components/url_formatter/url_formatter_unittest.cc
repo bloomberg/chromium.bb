@@ -153,12 +153,10 @@ const IDNTestCase idn_cases[] = {
 
     // Script mixing tests
     // The following script combinations are allowed.
-    // MODERATELY_RESTRICTIVE with Latin limited to ASCII-Latin.
+    // HIGHLY_RESTRICTIVE with Latin limited to ASCII-Latin.
     // ASCII-Latin + Japn (Kana + Han)
     // ASCII-Latin + Kore (Hangul + Han)
     // ASCII-Latin + Han + Bopomofo
-    // ASCII-Latin + any allowed script other than Cyrillic, Greek, Cherokee
-    // and Unified Canadian Syllabary
     // "payp<alpha>l.com"
     {"www.xn--paypl-g9d.com", L"payp\x03b1l.com", false},
     // google.gr with Greek omicron and epsilon
@@ -701,6 +699,26 @@ const IDNTestCase idn_cases[] = {
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
     {"xn--wnderlist-58a.com", L"w\x00fanderlist.com", false},
+
+    // Extremely rare Latin letters
+    // Latin Ext B - Pinyin: ǔnion.com
+    {"xn--nion-unb.com", L"\x01d4nion.com", false},
+    // Latin Ext C: ⱴase.com
+    {"xn--ase-7z0b.com", L"\x2c74" L"ase.com", false},
+    // Latin Ext D: ꝴode.com
+    {"xn--ode-ut3l.com", L"\xa774ode.com", false},
+    // Latin Ext Additional: ḷily.com
+    {"xn--ily-n3y.com", L"\x1e37ily.com", false},
+    // Latin Ext E: ꬺove.com
+    {"xn--ove-8y6l.com", L"\xab3aove.com", false},
+    // Greek Ext: ᾳβγ.com
+    {"xn--nxac616s.com", L"\x1fb3\x03b2\x03b3.com", false},
+    // Cyrillic Ext A
+    {"xn--lrj.com", L"\x2def.com", false},
+    // Cyrillic Ext B: ꙡ.com
+    {"xn--kx8a.com", L"\xa661.com", false},
+    // Cyrillic Ext C: ᲂ.com (Narrow o)
+    {"xn--43f.com", L"\x1c82.com", false},
 };
 
 struct AdjustOffsetCase {
