@@ -157,7 +157,7 @@ class BASE_EXPORT RunLoop {
   // via RunLoop::RegisterDelegateForCurrentThread() before RunLoop instances
   // and RunLoop static methods can be used on it.
   class BASE_EXPORT Delegate {
-   protected:
+   public:
     Delegate();
     ~Delegate();
 
@@ -183,11 +183,6 @@ class BASE_EXPORT RunLoop {
       Delegate* outer_;
     };
 
-   private:
-    // While the state is owned by the Delegate subclass, only RunLoop can use
-    // it.
-    friend class RunLoop;
-
     // Used by RunLoop to inform its Delegate to Run/Quit. Implementations are
     // expected to keep on running synchronously from the Run() call until the
     // eventual matching Quit() call. Upon receiving a Quit() call it should
@@ -211,6 +206,11 @@ class BASE_EXPORT RunLoop {
     // process application tasks when nested, otherwise they'll only wait for
     // system messages.
     virtual void EnsureWorkScheduled() = 0;
+
+   private:
+    // While the state is owned by the Delegate subclass, only RunLoop can use
+    // it.
+    friend class RunLoop;
 
     // A vector-based stack is more memory efficient than the default
     // deque-based stack as the active RunLoop stack isn't expected to ever
