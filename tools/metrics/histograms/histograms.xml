@@ -1155,6 +1155,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.MainActivity.UndispatchedExplicitMainViewIntentSource"
+    enum="ClientAppId">
+  <owner>dskiba@chromium.org</owner>
+  <summary>
+    Sources (ExternalAppId) of undispatched VIEW intents sent explicitly to
+    .Main activity alias.
+  </summary>
+</histogram>
+
 <histogram name="Android.ManageSpace.ActionTaken"
     enum="AndroidManageSpaceButton">
   <owner>dmurph@chromium.org</owner>

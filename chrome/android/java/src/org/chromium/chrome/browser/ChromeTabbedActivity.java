@@ -46,6 +46,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -236,6 +237,10 @@ public class ChromeTabbedActivity
     private static final BooleanHistogramSample sExplicitMainViewIntentDispatchedOnNewIntent =
             new BooleanHistogramSample(
                     "Android.MainActivity.ExplicitMainViewIntentDispatched.OnNewIntent");
+    private static final EnumeratedHistogramSample sUndispatchedExplicitMainViewIntentSource =
+            new EnumeratedHistogramSample(
+                    "Android.MainActivity.UndispatchedExplicitMainViewIntentSource",
+                    IntentHandler.ExternalAppId.INDEX_BOUNDARY.ordinal());
 
     private final ActivityStopMetrics mActivityStopMetrics;
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
@@ -435,6 +440,12 @@ public class ChromeTabbedActivity
             @LaunchIntentDispatcher.Action
             int action = LaunchIntentDispatcher.dispatchToCustomTabActivity(this, intent);
             dispatchedHistogram.record(action != LaunchIntentDispatcher.Action.CONTINUE);
+            if (action == LaunchIntentDispatcher.Action.CONTINUE) {
+                // Intent was not dispatched, record its source.
+                IntentHandler.ExternalAppId externalId =
+                        IntentHandler.determineExternalIntentSource(getPackageName(), intent);
+                sUndispatchedExplicitMainViewIntentSource.record(externalId.ordinal());
+            }
             return action;
         }
         return LaunchIntentDispatcher.Action.CONTINUE;
