@@ -1002,6 +1002,16 @@ static void od_col_flip_idst8_add_hbd_avx2(unsigned char *output_pixels,
                           od_flip_idst8_kernel8_epi16);
 }
 
+static void od_row_iidtx8_avx2(int16_t *out, int rows, const tran_low_t *in) {
+  od_row_iidtx_avx2(out, rows * 8, in);
+}
+
+static void od_col_iidtx8_add_hbd_avx2(unsigned char *output_pixels,
+                                       int output_stride, int cols,
+                                       const int16_t *in, int bd) {
+  od_col_iidtx_add_hbd_avx2(output_pixels, output_stride, 8, cols, in, bd);
+}
+
 typedef void (*daala_row_itx)(int16_t *out, int rows, const tran_low_t *in);
 typedef void (*daala_col_itx_add)(unsigned char *output_pixels,
                                   int output_stride, int cols,
@@ -1012,7 +1022,8 @@ static const daala_row_itx TX_ROW_MAP[TX_SIZES][TX_TYPES] = {
   { od_row_idct4_avx2, od_row_idst4_avx2, od_row_flip_idst4_avx2,
     od_row_iidtx4_avx2 },
   // 8-point transforms
-  { od_row_idct8_avx2, od_row_idst8_avx2, od_row_flip_idst8_avx2, NULL },
+  { od_row_idct8_avx2, od_row_idst8_avx2, od_row_flip_idst8_avx2,
+    od_row_iidtx8_avx2 },
   // 16-point transforms
   { NULL, NULL, NULL, NULL },
   // 32-point transforms
@@ -1046,7 +1057,7 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
         od_col_flip_idst4_add_hbd_avx2, od_col_iidtx4_add_hbd_avx2 },
       // 8-point transforms
       { od_col_idct8_add_hbd_avx2, od_col_idst8_add_hbd_avx2,
-        od_col_flip_idst8_add_hbd_avx2, NULL },
+        od_col_flip_idst8_add_hbd_avx2, od_col_iidtx8_add_hbd_avx2 },
       // 16-point transforms
       { NULL, NULL, NULL, NULL },
       // 32-point transforms
