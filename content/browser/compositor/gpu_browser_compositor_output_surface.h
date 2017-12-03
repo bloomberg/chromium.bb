@@ -23,7 +23,7 @@ struct PresentationFeedback;
 
 namespace gpu {
 class CommandBufferProxyImpl;
-struct GpuProcessHostedCALayerTreeParamsMac;
+struct SwapBuffersCompleteParams;
 }
 
 namespace ui {
@@ -50,13 +50,8 @@ class GpuBrowserCompositorOutputSurface
   ~GpuBrowserCompositorOutputSurface() override;
 
   // Called when a swap completion is sent from the GPU process.
-  // The argument |params_mac| is used to communicate parameters needed on Mac
-  // to display the CALayer for the swap in the browser process.
-  // TODO(ccameron): Remove |params_mac| when the CALayer tree is hosted in the
-  // browser process.
   virtual void OnGpuSwapBuffersCompleted(
-      const gfx::SwapResponse& response,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
+      const gpu::SwapBuffersCompleteParams& params);
 
   // BrowserCompositorOutputSurface implementation.
   void OnReflectorChanged() override;

@@ -14,6 +14,7 @@
 #include "content/browser/compositor/reflector_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
@@ -111,20 +112,19 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-    const gfx::SwapResponse& response,
-    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  gfx::SwapResponse modified_response(response);
+    const gpu::SwapBuffersCompleteParams& params) {
+  gpu::SwapBuffersCompleteParams modified_params(params);
   bool force_swap = false;
-  if (response.result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+  if (params.swap_response.result ==
+      gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
-    modified_response.result = gfx::SwapResult::SWAP_ACK;
+    modified_params.swap_response.result = gfx::SwapResult::SWAP_ACK;
     buffer_queue_->RecreateBuffers();
     force_swap = true;
   }
   buffer_queue_->PageFlipComplete();
-  GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-      modified_response, params_mac);
+  GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(modified_params);
   if (force_swap)
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }

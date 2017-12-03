@@ -26,6 +26,7 @@ typedef void* GLeglImageOES;
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
@@ -219,21 +220,22 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
                          "GLImpl", static_cast<int>(gl::GetGLImplementation()),
                          "width", pixel_size_.width());
     if (use_remote_layer_api_) {
-      params.ca_context_id = [ca_context_ contextId];
+      params.ca_layer_params.ca_context_id = [ca_context_ contextId];
     } else {
       IOSurfaceRef io_surface =
           ca_layer_tree_coordinator_->GetIOSurfaceForDisplay();
       if (io_surface) {
-        params.io_surface.reset(IOSurfaceCreateMachPort(io_surface));
+        params.ca_layer_params.io_surface_mach_port.reset(
+            IOSurfaceCreateMachPort(io_surface));
       }
     }
-    params.pixel_size = pixel_size_;
-    params.scale_factor = scale_factor_;
-    params.response.swap_id = swap_id_++;
-    params.response.result = gfx::SwapResult::SWAP_ACK;
+    params.ca_layer_params.pixel_size = pixel_size_;
+    params.ca_layer_params.scale_factor = scale_factor_;
+    params.swap_response.swap_id = swap_id_++;
+    params.swap_response.result = gfx::SwapResult::SWAP_ACK;
     // TODO(brianderson): Tie swap_start to before_flush_time.
-    params.response.swap_start = after_flush_before_commit_time;
-    params.response.swap_end = after_flush_before_commit_time;
+    params.swap_response.swap_start = after_flush_before_commit_time;
+    params.swap_response.swap_end = after_flush_before_commit_time;
     for (auto& query : ca_layer_in_use_queries_) {
       gpu::TextureInUseResponse response;
       response.texture = query.texture;
@@ -245,7 +247,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
                  IOSurfaceIsInUse(io_surface_image->io_surface());
       }
       response.in_use = in_use;
-      params.in_use_responses.push_back(std::move(response));
+      params.texture_in_use_responses.push_back(std::move(response));
     }
     ca_layer_in_use_queries_.clear();
   }

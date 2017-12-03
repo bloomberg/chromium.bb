@@ -61,7 +61,7 @@ class ServiceDiscardableManager;
 class SyncPointClientState;
 class SyncPointOrderData;
 class SyncPointManager;
-struct GpuProcessHostedCALayerTreeParamsMac;
+struct SwapBuffersCompleteParams;
 
 namespace gles2 {
 struct ContextCreationAttribHelper;
@@ -176,9 +176,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Upstream this function to GpuControl if needs arise.
   const GpuFeatureInfo& GetGpuFeatureInfo() const;
 
-  using SwapBuffersCompletionCallback = base::Callback<void(
-      const gfx::SwapResponse& response,
-      const GpuProcessHostedCALayerTreeParamsMac* params_mac)>;
+  using SwapBuffersCompletionCallback =
+      base::RepeatingCallback<void(const SwapBuffersCompleteParams& params)>;
   void SetSwapBuffersCompletionCallback(
       const SwapBuffersCompletionCallback& callback);
 

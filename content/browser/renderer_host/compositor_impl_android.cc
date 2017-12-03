@@ -61,6 +61,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -73,12 +74,9 @@
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/ca_layer_params.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
-
-namespace gpu {
-struct GpuProcessHostedCALayerTreeParamsMac;
-}
 
 namespace content {
 
@@ -349,12 +347,10 @@ class AndroidOutputSurface
     return command_buffer_proxy;
   }
 
-  void OnSwapBuffersCompleted(
-      const gfx::SwapResponse& response,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-    client_->DidReceiveSwapBuffersAck(response.swap_id);
+  void OnSwapBuffersCompleted(const gpu::SwapBuffersCompleteParams& params) {
+    client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
     swap_buffers_callback_.Run();
-    latency_info_cache_.OnSwapBuffersCompleted(response);
+    latency_info_cache_.OnSwapBuffersCompleted(params.swap_response);
   }
 
  private:

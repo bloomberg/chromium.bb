@@ -8,7 +8,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
@@ -67,9 +67,9 @@ void GpuOutputSurfaceMac::SwapBuffers(viz::OutputSurfaceFrame frame) {
 }
 
 void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
-    const gfx::SwapResponse& response,
-    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  remote_layers_->UpdateLayers(params_mac->ca_context_id);
+    const gpu::SwapBuffersCompleteParams& params) {
+  const gfx::CALayerParams& ca_layer_params = params.ca_layer_params;
+  remote_layers_->UpdateLayers(ca_layer_params.ca_context_id);
   if (should_show_frames_state_ == SHOULD_SHOW_FRAMES) {
     ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(widget_);
     if (widget) {
@@ -77,17 +77,21 @@ void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
         widget->GotCALayerFrame(
             base::scoped_nsobject<CALayer>(remote_layers_->content_layer.get(),
                                            base::scoped_policy::RETAIN),
-            params_mac->pixel_size, params_mac->scale_factor);
+            ca_layer_params.pixel_size, ca_layer_params.scale_factor);
       } else {
-        widget->GotIOSurfaceFrame(params_mac->io_surface,
-                                  params_mac->pixel_size,
-                                  params_mac->scale_factor);
+        base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+            IOSurfaceLookupFromMachPort(ca_layer_params.io_surface_mach_port));
+        if (!io_surface) {
+          LOG(ERROR) << "Unable to open IOSurface for frame.";
+        }
+        widget->GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
+                                  ca_layer_params.scale_factor);
       }
     }
   }
-  client_->DidReceiveTextureInUseResponses(params_mac->responses);
+  client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-      response, params_mac);
+      params);
 }
 
 void GpuOutputSurfaceMac::SetSurfaceSuspendedForRecycle(bool suspended) {

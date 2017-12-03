@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/gl/gl_utils.h"
@@ -58,10 +59,9 @@ void GpuBrowserCompositorOutputSurface::SetNeedsVSync(bool needs_vsync) {
 }
 
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
-    const gfx::SwapResponse& response,
-    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  client_->DidReceiveSwapBuffersAck(response.swap_id);
-  latency_info_cache_.OnSwapBuffersCompleted(response);
+    const gpu::SwapBuffersCompleteParams& params) {
+  client_->DidReceiveSwapBuffersAck(params.swap_response.swap_id);
+  latency_info_cache_.OnSwapBuffersCompleted(params.swap_response);
 }
 
 void GpuBrowserCompositorOutputSurface::LatencyInfoCompleted(

@@ -57,6 +57,8 @@ source_set("common_sources") {
     "mailbox_holder.h",
     "scheduling_priority.cc",
     "scheduling_priority.h",
+    "swap_buffers_complete_params.cc",
+    "swap_buffers_complete_params.h",
     "sync_token.cc",
     "sync_token.h",
     "texture_in_use_response.h",
