@@ -357,8 +357,7 @@ class HistoryObserver : public DownloadHistory::Observer {
   explicit HistoryObserver(Profile* profile)
       : profile_(profile),
         waiting_(false),
-        seen_stored_(false),
-        minimum_received_bytes_(kNoMinimumReceivedBytes) {
+        seen_stored_(false) {
     DownloadCoreServiceFactory::GetForBrowserContext(profile_)
         ->GetDownloadHistory()
         ->AddObserver(this);
@@ -371,10 +370,6 @@ class HistoryObserver : public DownloadHistory::Observer {
       service->GetDownloadHistory()->RemoveObserver(this);
   }
 
-  void set_minimum_received_bytes(int64_t minimum_received_bytes) {
-    minimum_received_bytes_ = minimum_received_bytes;
-  }
-
   void SetFilterCallback(const FilterCallback& callback) {
     callback_ = callback;
   }
@@ -383,11 +378,6 @@ class HistoryObserver : public DownloadHistory::Observer {
                         const history::DownloadRow& info) override {
     if (!callback_.is_null() && (!callback_.Run(info)))
         return;
-
-    if (minimum_received_bytes_ != kNoMinimumReceivedBytes &&
-        info.received_bytes < minimum_received_bytes_) {
-      return;
-    }
 
     seen_stored_ = true;
     if (waiting_)
@@ -409,11 +399,9 @@ class HistoryObserver : public DownloadHistory::Observer {
   }
 
  private:
-  static const int64_t kNoMinimumReceivedBytes = -1;
   Profile* profile_;
   bool waiting_;
   bool seen_stored_;
-  int64_t minimum_received_bytes_;
   FilterCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryObserver);
@@ -1855,7 +1843,13 @@ ServerRedirectRequestHandler(const net::test_server::HttpRequest& request) {
   return std::move(response);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
+#if defined(OS_WIN)
+// https://crbug.com/788160
+#define MAYBE_DownloadHistoryCheck DISABLED_DownloadHistoryCheck
+#else
+#define MAYBE_DownloadHistoryCheck DownloadHistoryCheck
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   // Rediret to the actual download URL.
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&ServerRedirectRequestHandler));
@@ -1890,8 +1884,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   base::Time start(base::Time::Now());
   HistoryObserver observer(browser()->profile());
   observer.SetFilterCallback(base::Bind(&HasDataAndName));
-  observer.set_minimum_received_bytes(
-      content::SlowDownloadHttpResponse::kFirstDownloadSize);
   ui_test_utils::NavigateToURL(browser(), redirect_url);
   observer.WaitForStored();
 
