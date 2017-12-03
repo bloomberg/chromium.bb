@@ -1075,6 +1075,7 @@ tests:
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 flags: {testmode: backward}
 tests:
+    - ["⠪⠕ ⠁⠝ ⠊⠞⠑⠍⠲", "• an item."]
     - ["⠇⠄⠅⠞⠨⠲⠴", "l'auteur.)"]
     - ["⠇⠄⠅⠞⠨⠲⠴⠃", "l'auteur.]"]
     - ["⠇⠄⠅⠞⠨⠢⠴⠃", "l'auteur?]"]

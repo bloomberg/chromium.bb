@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-11-28
+#-updated: 2017-12-03
 
 # liblouis: Unified French Grade 2 Table
 
@@ -198,7 +198,7 @@ nofor always eut 5-2345
 noback before con always eur 46
 nofor before conabr midword eur 46
 endword eur 46
-nofor before punctuation always eur 46
+nofor before punctuation midendword eur 46
 noback before con always ex 1346
 nofor before conabr always ex 1346
 endword ez 1356

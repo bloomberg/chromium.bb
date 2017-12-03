@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-11-28
+#-updated: 2017-12-03
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -64,7 +64,8 @@ space \x000D 0    # cr
 space \x00A0 a    # no-break space
 space \x007f 0
 
-include text_nabcc.dis
+#include text_nabcc.dis
+#include fr-brl6.dis
 include latinLetterDef6Dots.uti
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
@@ -273,9 +274,13 @@ include fr-bfu-comp68.cti
 # Braille indicators
 numsign 6             # number sign, just a dots operand
 numericmodechars ^,:.+-*/()=
+numericmodechars .,
 numericnocontchars âêîôûëïüœ
 capsletter 46
 begcapsword 46-46
+endcapsword 46
+begcaps 46-46
+endcaps 46
 emphclass italic
 emphclass underline
 emphclass bold
