@@ -1259,7 +1259,8 @@ motion_mode_allowed(int block, const WarpedMotionParams *gm_params,
       is_inter_mode(mbmi->mode) && mbmi->ref_frame[1] != INTRA_FRAME &&
       is_motion_variation_allowed_compound(mbmi)) {
     if (!check_num_overlappable_neighbors(mbmi)) return SIMPLE_TRANSLATION;
-    if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 1 &&
+    assert(!has_second_ref(mbmi));
+    if (mbmi->num_proj_ref[0] >= 1 &&
         !av1_is_scaled(&(xd->block_refs[0]->sf))) {
 #if CONFIG_AMVR
       if (xd->cur_frame_force_integer_mv) {
