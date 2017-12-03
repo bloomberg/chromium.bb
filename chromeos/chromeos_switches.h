@@ -99,6 +99,8 @@ CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableFileManagerTouchMode[];
 CHROMEOS_EXPORT extern const char kDisableFileManagerTouchMode[];
 CHROMEOS_EXPORT extern const char kDisableFineGrainedTimeZoneDetection[];
+CHROMEOS_EXPORT extern const char kDisableSigninFrameClientCerts[];
+CHROMEOS_EXPORT extern const char kDisableSigninFrameClientCertUserSelection[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];
 CHROMEOS_EXPORT extern const char kEnableVoiceInteraction[];
 CHROMEOS_EXPORT extern const char kEnableZipArchiverPacker[];
@@ -179,6 +181,14 @@ CHROMEOS_EXPORT bool IsVoiceInteractionEnabled();
 
 // Returns true if Zip Archiver is enabled for unpacking files.
 CHROMEOS_EXPORT bool IsZipArchiverUnpackerEnabled();
+
+// Returns true if client certificate authentication for the sign-in frame on
+// the Chrome OS sign-in screen is enabled.
+CHROMEOS_EXPORT bool IsSigninFrameClientCertsEnabled();
+
+// Returns true if user selection of certificates is enabled for the sign-in
+// frame on the Chrome OS sign-in screen.
+CHROMEOS_EXPORT bool IsSigninFrameClientCertUserSelectionEnabled();
 
 }  // namespace switches
 }  // namespace chromeos

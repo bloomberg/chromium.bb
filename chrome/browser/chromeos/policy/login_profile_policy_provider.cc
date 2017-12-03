@@ -79,6 +79,17 @@ void ApplyValueAsMandatoryPolicy(const base::Value* value,
   }
 }
 
+// Applies the value of |device_policy| in |device_policy_map| as the
+// mandatory value of |user_policy| in |user_policy_map|. If the value of
+// |device_policy| is unset, does nothing.
+void ApplyDevicePolicyAsMandatoryPolicy(const std::string& device_policy,
+                                        const std::string& user_policy,
+                                        const PolicyMap& device_policy_map,
+                                        PolicyMap* user_policy_map) {
+  const base::Value* value = device_policy_map.GetValue(device_policy);
+  ApplyValueAsMandatoryPolicy(value, user_policy, user_policy_map);
+}
+
 }  // namespace
 
 LoginProfilePolicyProvider::LoginProfilePolicyProvider(
@@ -161,6 +172,10 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
       key::kDeviceLoginScreenDefaultVirtualKeyboardEnabled,
       key::kVirtualKeyboardEnabled,
       device_policy_map, &user_policy_map);
+
+  ApplyDevicePolicyAsMandatoryPolicy(
+      key::kDeviceLoginScreenAutoSelectCertificateForUrls,
+      key::kAutoSelectCertificateForUrls, device_policy_map, &user_policy_map);
 
   const base::Value* value =
       device_policy_map.GetValue(key::kDeviceLoginScreenPowerManagement);

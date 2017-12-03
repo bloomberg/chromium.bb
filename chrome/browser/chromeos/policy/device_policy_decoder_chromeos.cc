@@ -377,11 +377,25 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::LoginScreenInputMethodsProto& login_screen_input_methods(
         policy.login_screen_input_methods());
     for (const auto& input_method :
-         login_screen_input_methods.login_screen_input_methods())
+         login_screen_input_methods.login_screen_input_methods()) {
       input_methods->AppendString(input_method);
+    }
     policies->Set(key::kDeviceLoginScreenInputMethods, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(input_methods), nullptr);
+  }
+
+  if (policy.has_device_login_screen_auto_select_certificate_for_urls()) {
+    std::unique_ptr<base::ListValue> rules(new base::ListValue);
+    const em::DeviceLoginScreenAutoSelectCertificateForUrls& proto_rules(
+        policy.device_login_screen_auto_select_certificate_for_urls());
+    for (const auto& rule :
+         proto_rules.login_screen_auto_select_certificate_rules()) {
+      rules->AppendString(rule);
+    }
+    policies->Set(key::kDeviceLoginScreenAutoSelectCertificateForUrls,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_CLOUD, std::move(rules), nullptr);
   }
 }
 

@@ -54,11 +54,15 @@ class SigninPartitionManager : public KeyedService {
   // that is between StartSigninSession and CloseCurrentSigninSession calls.
   const std::string& GetCurrentStoragePartitionName() const;
 
-  // Returns the current StoragePartition. May only be called after
-  // StartSigninSession has been called. May only be called when a sign-in
+  // Returns the current StoragePartition. May only be called when a sign-in
   // session is active, that is between StartSigninSession and
   // CloseCurrentSigninSession calls.
   content::StoragePartition* GetCurrentStoragePartition();
+
+  // Returns true if |storage_partition| is the partition in use by the current
+  // sign-in session. Returns false if no sign-in session is active.
+  bool IsCurrentSigninStoragePartition(
+      const content::StoragePartition* storage_partition) const;
 
   void SetClearStoragePartitionTaskForTesting(
       ClearStoragePartitionTask clear_storage_partition_task);
