@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-03
+#-updated: 2017-11-28
 
 # liblouis: Unified French Grade 2 Table
 
@@ -48,7 +48,6 @@
 # --------------------------------
 
 include fr-bfu-comp6.utb
-
 class con bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ
 class voy aeiouyéàèùâêîôûëïüAEIOUYÉÀÈÙÂÊËïüœŒ
 class bmp bmpBMP
@@ -59,13 +58,14 @@ class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ;àî:ô"ï¸ë!)
 class bmpabr bmnpBMNP;!6
 
 #For backtranslation, we need a class that contains vowels + contractions that begin by a vowel, excluding those which have similar dot patterns to digits.
-class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨xz⠠0ùw
+class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨z⠠0ùw
 class voyabr2 0âêîôûëïüœ./,●
 
 #punctuation ' 56		so the line below compiles
 letsign 56
 noletsignafter '.\X2019\X0092
 hyphen - 36
+
 
 ###
 ### 1. Assemblages de lettres représentés par un seul symbole,
@@ -96,7 +96,6 @@ endword ations 16-234
 noback always au 13
 nofor after conabr before conabr always au 13
 nofor always eau 15-13
-nofor always iau 24-13
 nofor always yau 13456-13
 nofor before conabr always au 13
 
@@ -172,9 +171,11 @@ nofor before voyabr always embr 345-23
 nofor begword œn 246-1345
 noback before con always en 26
 nofor begmidword en 26
+nofor midendword en- 26-36
 noback endword en 26
 endword ent 126
 endword ents 126-234
+nofor endword éen 123456-26
 noback before con midword er 236
 noback endword er 236
 nofor midendword er 236
@@ -201,6 +202,7 @@ endword eur 46
 nofor before punctuation midendword eur 46
 noback before con always ex 1346
 nofor before conabr always ex 1346
+nofor midendword xau 1346-13
 endword ez 1356
 
 noback before voy always fl 126
@@ -221,6 +223,7 @@ nofor before voyabr2 midword fl 126
 nofor always frou 16-1256
 nofor always frêl 16-126-123
 nofor always frô 16-1456
+nofor endword fres 16-156
 
 noback before voy always gl 345
 nofor before voyabr before voyabr2 begmidword gl 345
@@ -240,9 +243,11 @@ nofor always grâc 12456-16-14
 nofor always grê 12456-126
 
 noback midword ien 256
-nofor before con midword ien 256
+nofor after con before con midword ien 256
 nofor before voyabr before voyabr2 midword iendr 256-1456
 endword ien 24-26
+nofor midendword aïen 1-12456-26
+nofor midword oïè 135-12456-2346
 noback midendword ieu 6
 nofor endword ieu 6
 nofor before punctuation always ieu 6
@@ -272,6 +277,8 @@ nofor midendword llation 456-16
 nofor midendword llant 456-1456
 nofor endword lles 456-156
 nofor midendword llou 456-1256
+
+nofor endword men 134-26
 
 partword oi 23456
 noback before con always om 2456
@@ -331,12 +338,13 @@ before con begword rem 1235-345
 
 noback before voy after voy always ss 2346
 nofor after voyabr after voyabr2 before voyabr before voyabr2 midword ss 2346
-nofor after voyabr always ssion 2346-3456
-nofor after voyabr always ssable 2346-45
+nofor after voyabr after voyabr2 always ssion 2346-3456
+nofor after voyabr after voyabr2 always ssable 2346-45
 nofor after voyabr always ssablement 2346-45-134
-
+nofor midendword sselle 2346-456
 noback before voy always tr 356
 nofor before voyabr before voyabr2 always tr 356
+nofor midendword trable 356-45 
 nofor before conabr always tran 356-2
 nofor begmidword trui 356-23
 
@@ -348,6 +356,7 @@ nofor before voyabr begword transpl 356-1246
 
 noback before voy after voy always tt 2456
 nofor after voyabr after voyabr2 before voyabr before voyabr2 midword tt 2456
+nofor midendword ttable 2456-45
 
 noback before con always ui 23
 nofor after conabr midword ui 23
@@ -355,6 +364,7 @@ nofor before voyabr before voyabr2 always uiss 23-2346
 nofor before voyabr before voyabr2 always uitt 23-2456
 endword uin 136-35
 endword uins 136-35-234
+nofor endword yen 13456-26
 nofor endword zz 1356-1356
 nofor midword wee 2456-15-15
 
@@ -437,6 +447,7 @@ word au 13
 word aux 13-1346
 word bien 12
 word biens 12-234
+word boy 12-135-13456
 word ce 14
 word celui 36
 word cet 146
@@ -510,11 +521,14 @@ begword t' 2345-3
 
 always -t- 36-2345-36 -
 word absolu		1-12
+contraction ab 1-12
 word absolus		1-12-234
 contraction abs		1-12-234
 word absolue		1-12-15
 word absolues		1-12-156
 word absolument		1-12-134
+contraction abm 1-12-134
+contraction a.c. 1-256-14-256
 prfword action		1-3456
 prfword actions		1-3456-234
 prfword actionnaire	1-3456-1235
@@ -578,6 +592,7 @@ word avantageuses	1-1236-1245-234-156
 word avantageusement	1-1236-1245-234-134
 word avantageux		1-1236-1245-1346
 word avec		1-14
+contraction ac 1-14
 word avoir		1-1235
 word avoirs		1-1235-234
 contraction avs 1-1236-234
@@ -664,8 +679,10 @@ word celui-ci		36-36-14-24
 word celui-là		36-36-123-12356
 word cependant		14-1234
 contraction cp	14-1234
-prfword certain		14-35
-prfword certains		14-35-234
+word certain		14-35
+word certains		14-35-234
+word incertain		35-14-35
+word incertains		35-14-35-234
 prfword certaine		14-1345
 prfword certaines		14-1345-234
 prfword certainement	14-1345-134
@@ -816,8 +833,12 @@ word consciencieusement	25-234-14-234-134
 word consciencieux	25-234-14-1346
 prfword conscient		25-234
 prfword conscients		25-234-234
-prfword consciente		25-234-15
-prfword conscientes	25-234-156
+word consciente		25-234-15
+word inconsciente		35-25-234-15
+word subconsciente		234-136-12-25-234-15
+word conscientes	25-234-156
+word inconscientes	35-25-234-156
+word subconscientes	234-136-12-25-234-156
 word conséquemment	14-12345-134
 prfword conséquence	14-12345-14
 prfword conséquences	14-12345-14-234
@@ -2040,6 +2061,9 @@ word typique		2345-13456-12345
 word typiques		2345-13456-12345-234
 word typiquement	2345-13456-12345-134
 
+word ufo 136-124-135
+word ufr 136-124-1235
+word uht 136-125-2345
 word une		136-1345
 word unes		136-1345-234
 word unique		136-12345
@@ -2050,6 +2074,7 @@ word unitaires		136-1345-2345-1235-234
 word unité		136-1345-2345
 word unités		136-1345-2345-234
 word univers		136-1236
+contraction uv 136-1236
 word universalité	136-1236-123-2345
 word universalités	136-1236-123-2345-234
 word universel		136-1236-123
@@ -2061,21 +2086,31 @@ word universitaire	136-1236-2345-1235
 word universitaires	136-1236-2345-1235-234
 word université		136-1236-2345
 word universités	136-1236-2345-234
+contraction url 136-1235-123
+contraction us 136-234
 word usage		136-1245
 word usages		136-1245-234
-prfword utile		136-123
-prfword utiles		136-123-234
-prfword utilement		136-123-134
+word usb 136-234-12
+word utile		136-123
+word utiles		136-123-234
+word utilement		136-123-134
+word inutile		35-136-123
+word inutiles		35-136-123-234
+word inutilement		35-136-123-134
+contraction ulm 136-123-134
 prfword utilisable		136-123-45
 prfword utilisables	136-123-45-234
 word utilisateur	136-123-46
 word utilisateurs	136-123-46-234
-prfword utilisation	136-123-16
-prfword utilisations	136-123-16-234
+word utilisation	136-123-16
+word utilisations	136-123-16-234
+word inutilisation	35-136-123-16
+word inutilisations	35-136-123-16-234
 word utilitaire		136-123-2345-1235
 word utilitaires	136-123-2345-1235-234
 prfword utilité		136-123-2345
 prfword utilités		136-123-2345-234
+contraction utm 136-2345-134
 
 word valeur		1236-46
 word valeurs		1236-46-234
@@ -2191,6 +2226,8 @@ nofor before conabr begword gnosti 2356-135-234-2345-24	gnosticisme
 
 
 nofor always kh 13-125
+nofor after voyabr before voyabr always k 13
+nofor after voyabr after voyabr2 always kr 13-1235
 nofor begword klax 13-123-1-1346
 nofor word çà 12346-12356
 nofor begword wh 2456-125
@@ -2277,3 +2314,4 @@ compbrl .zip
 nofor pass2 $a[]$d@56 @6
 nofor pass3 $a$d[@56] @0-56-346-0-1-356-25-0-56
 nofor correct "\só\sa):\s" ?
+
