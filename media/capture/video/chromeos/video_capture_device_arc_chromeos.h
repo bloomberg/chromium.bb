@@ -12,7 +12,6 @@
 #include "base/threading/thread.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "media/capture/video/chromeos/display_rotation_observer.h"
-#include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"

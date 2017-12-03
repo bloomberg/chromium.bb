@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/video/chromeos/mojo/arc_camera3_metadata.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera_metadata.mojom.h"
 
 namespace media {
 

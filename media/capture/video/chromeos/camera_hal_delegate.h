@@ -13,7 +13,8 @@
 #include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera3.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -113,6 +114,8 @@ class CAPTURE_EXPORT CameraHalDelegate final
   void CameraDeviceStatusChange(
       int32_t camera_id,
       arc::mojom::CameraDeviceStatus new_status) final;
+  void TorchModeStatusChange(int32_t camera_id,
+                             arc::mojom::TorchModeStatus new_status) final;
 
   base::WaitableEvent camera_module_has_been_set_;
 
