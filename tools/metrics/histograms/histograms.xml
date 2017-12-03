@@ -6861,6 +6861,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Blink.ResourceLoadScheduler.DecodedBytes"
+    units="bytes">
+<!-- Name completed by histogram_suffixes name="ResourceLoadScheduler.FrameType" -->
+
+  <owner>toyoshim@chromium.org</owner>
+  <summary>Count received data size in bytes for each resource.</summary>
+</histogram>
+
 <histogram base="true" name="Blink.ResourceLoadScheduler.PeakRequests"
     units="requests">
 <!-- Name completed by histogram_suffixes name="ResourceLoadScheduler.FrameType" -->
@@ -6869,6 +6877,60 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The largest number of outstanding resource requests issued by a frame until
     the network 2-quiet (no more than 2 active network requests for 1 seconds).
+  </summary>
+</histogram>
+
+<histogram name="Blink.ResourceLoadScheduler.RequestCounts"
+    enum="ResourceLoadSchedulerCircumstance">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    Count resource request circumstance, e.g. from the main frame vs sub-frames,
+    or in throttled state vs in not-throttled state, on each resource load
+    completion.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Blink.ResourceLoadScheduler.TotalDecodedBytes"
+    units="bytes">
+<!-- Name completed by histogram_suffixes name="ResourceLoadScheduler.FrameType" -->
+
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    Total received data size in bytes to load resources from the frame creation
+    until network activity quiets.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Blink.ResourceLoadScheduler.TotalRequestCount"
+    units="requests">
+<!-- Name completed by histogram_suffixes name="ResourceLoadScheduler.FrameType" -->
+
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    Total number of resource requests completed from the frame creation until
+    network activity quiets.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Blink.ResourceLoadScheduler.TotalTrafficBytes"
+    units="bytes">
+<!-- Name completed by histogram_suffixes name="ResourceLoadScheduler.FrameType" -->
+
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    Total traffic data in bytes transferred over networks to load resources from
+    the frame creation until network activity quiets.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Blink.ResourceLoadScheduler.TrafficBytes"
+    units="bytes">
+<!-- Name completed by histogram_suffixes name="ResourceLoadScheduler.FrameType" -->
+
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    Count traffic data size in bytes transferred over networks to load each
+    resource.
   </summary>
 </histogram>
 
@@ -107502,7 +107564,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="SubframeNotThrottled" label="Sub frame, not throttled"/>
   <suffix name="SubframePartiallyThrottled"
       label="Sub frame, partially throttled"/>
+  <affected-histogram name="Blink.ResourceLoadScheduler.DecodedBytes"/>
   <affected-histogram name="Blink.ResourceLoadScheduler.PeakRequests"/>
+  <affected-histogram name="Blink.ResourceLoadScheduler.TotalDecodedBytes"/>
+  <affected-histogram name="Blink.ResourceLoadScheduler.TotalRequestCount"/>
+  <affected-histogram name="Blink.ResourceLoadScheduler.TotalTrafficBytes"/>
+  <affected-histogram name="Blink.ResourceLoadScheduler.TrafficBytes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourcePrefetchPredictorNetworkTypePrefetch"

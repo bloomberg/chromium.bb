@@ -150,9 +150,11 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
     loader_->LoadAsynchronously(WrappedResourceRequest(request), this);
 }
 
-void ResourceLoader::Release(ResourceLoadScheduler::ReleaseOption option) {
+void ResourceLoader::Release(
+    ResourceLoadScheduler::ReleaseOption option,
+    const ResourceLoadScheduler::TrafficReportHints& hints) {
   DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
-  bool released = scheduler_->Release(scheduler_client_id_, option);
+  bool released = scheduler_->Release(scheduler_client_id_, option, hints);
   DCHECK(released);
   scheduler_client_id_ = ResourceLoadScheduler::kInvalidClientId;
 }
@@ -626,7 +628,9 @@ void ResourceLoader::DidFinishLoading(double finish_time,
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
 
-  Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule);
+  Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
+          ResourceLoadScheduler::TrafficReportHints(encoded_data_length,
+                                                    decoded_body_length));
   loader_.reset();
 
   network_instrumentation::EndResourceLoad(
@@ -656,7 +660,8 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     return;
   }
 
-  Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule);
+  Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
+          ResourceLoadScheduler::TrafficReportHints::InvalidInstance());
   loader_.reset();
 
   network_instrumentation::EndResourceLoad(
@@ -719,8 +724,10 @@ void ResourceLoader::Dispose() {
   // DidFinishLoading() or DidFail(), but when a timer to call Cancel() is
   // ignored due to GC, this case happens. We just release here because we can
   // not schedule another request safely. See crbug.com/675947.
-  if (scheduler_client_id_ != ResourceLoadScheduler::kInvalidClientId)
-    Release(ResourceLoadScheduler::ReleaseOption::kReleaseOnly);
+  if (scheduler_client_id_ != ResourceLoadScheduler::kInvalidClientId) {
+    Release(ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
+            ResourceLoadScheduler::TrafficReportHints::InvalidInstance());
+  }
 }
 
 void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
