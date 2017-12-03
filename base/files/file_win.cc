@@ -312,6 +312,8 @@ File::Error File::OSErrorToFileError(DWORD last_error) {
     default:
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Windows",
                                   last_error);
+      // This function should only be called for errors.
+      DCHECK_NE(static_cast<DWORD>(ERROR_SUCCESS), last_error);
       return FILE_ERROR_FAILED;
   }
 }
