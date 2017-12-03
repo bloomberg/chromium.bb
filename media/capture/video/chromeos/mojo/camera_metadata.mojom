@@ -4,7 +4,7 @@
 
 module arc.mojom;
 
-import "camera_metadata_tags.mojom";
+import "media/capture/video/chromeos/mojo/camera_metadata_tags.mojom";
 
 enum EntryType {
   TYPE_BYTE = 0,

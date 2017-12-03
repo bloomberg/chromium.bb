@@ -9,7 +9,8 @@
 #include <stdint.h>
 
 #include "base/threading/thread.h"
-#include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera3.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -44,6 +45,17 @@ class MockCameraModule : public arc::mojom::CameraModule {
   MOCK_METHOD2(DoSetCallbacks,
                void(arc::mojom::CameraModuleCallbacksPtr& callbacks,
                     SetCallbacksCallback& callback));
+
+  void Init(InitCallback callback) override;
+  MOCK_METHOD1(DoInit, void(InitCallback& callback));
+
+  void SetTorchMode(int32_t camera_id,
+                    bool enabled,
+                    SetTorchModeCallback callback) override;
+  MOCK_METHOD3(DoSetTorchMode,
+               void(int32_t camera_id,
+                    bool enabled,
+                    SetTorchModeCallback& callback));
 
   arc::mojom::CameraModulePtrInfo GetInterfacePtrInfo();
 

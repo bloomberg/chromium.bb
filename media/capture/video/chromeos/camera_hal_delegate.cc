@@ -349,4 +349,11 @@ void CameraHalDelegate::CameraDeviceStatusChange(
   NOTIMPLEMENTED() << "CameraDeviceStatusChange is not implemented";
 }
 
+void CameraHalDelegate::TorchModeStatusChange(
+    int32_t camera_id,
+    arc::mojom::TorchModeStatus new_status) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  // Do nothing here as we don't care about torch mode status.
+}
+
 }  // namespace media

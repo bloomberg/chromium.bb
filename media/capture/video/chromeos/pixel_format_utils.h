@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera3.mojom.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/buffer_types.h"
 

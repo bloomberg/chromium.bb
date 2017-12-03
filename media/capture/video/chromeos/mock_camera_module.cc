@@ -46,6 +46,18 @@ void MockCameraModule::SetCallbacks(
   std::move(callback).Run(0);
 }
 
+void MockCameraModule::Init(InitCallback callback) {
+  DoInit(callback);
+  std::move(callback).Run(0);
+}
+
+void MockCameraModule::SetTorchMode(int32_t camera_id,
+                                    bool enabled,
+                                    SetTorchModeCallback callback) {
+  DoSetTorchMode(camera_id, enabled, callback);
+  std::move(callback).Run(0);
+}
+
 arc::mojom::CameraModulePtrInfo MockCameraModule::GetInterfacePtrInfo() {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
