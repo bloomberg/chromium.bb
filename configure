@@ -249,6 +249,7 @@ EXPERIMENT_LIST="
     fp_mb_stats
     cdef_singlepass
     rect_tx_ext
+    rect_tx_ext_intra
     tpl_mv
     short_filter
     dual_filter
