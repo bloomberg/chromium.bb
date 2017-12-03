@@ -19,7 +19,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -575,9 +574,6 @@ bool Histogram::ValidateHistogramContents(bool crash_if_invalid,
   // Abort if a problem is found (except "flags", which could legally be zero).
   std::string debug_string = base::StringPrintf(
       "%s/%" PRIu32 "#%d", histogram_name(), bad_fields, identifier);
-#if !defined(OS_NACL)
-  base::debug::ScopedCrashKey crash_key("bad_histogram", debug_string);
-#endif
   CHECK(false) << debug_string;
   debug::Alias(&bad_fields);
   return false;
