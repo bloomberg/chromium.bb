@@ -270,8 +270,10 @@
 #include "chrome/browser/chromeos/fileapi/mtp_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_navigation_throttle.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
+#include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -2373,8 +2375,40 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       << "Invalid URL string: https://"
       << cert_request_info->host_and_port.ToString();
 
+  bool may_show_cert_selection = true;
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
+    // TODO(pmarko): crbug.com/723849: Set |may_show_cert_selection| to false
+    // and remove the command-line flag after prototype phase when the
+    // DeviceLoginScreenAutoSelectCertificateForUrls policy is live.
+    may_show_cert_selection =
+        chromeos::switches::IsSigninFrameClientCertUserSelectionEnabled();
+
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetStoragePartition(
+            profile, web_contents->GetSiteInstance());
+    chromeos::login::SigninPartitionManager* signin_partition_manager =
+        chromeos::login::SigninPartitionManager::Factory::GetForBrowserContext(
+            profile);
+
+    // On the sign-in profile, only allow client certs in the context of the
+    // sign-in frame.
+    if (!signin_partition_manager->IsCurrentSigninStoragePartition(
+            storage_partition)) {
+      LOG(WARNING)
+          << "Client cert requested in sign-in profile in wrong context.";
+      // Continue without client certificate. We do this to mimic the case of no
+      // client certificate being present in the profile's certificate store.
+      delegate->ContinueWithCertificate(nullptr, nullptr);
+      return;
+    }
+    VLOG(1) << "Client cert requested in sign-in profile.";
+  }
+#endif  // defined(OS_CHROMEOS)
+
   std::unique_ptr<base::Value> filter =
       HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
           requesting_url, requesting_url,
@@ -2404,6 +2438,15 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     } else {
       NOTREACHED();
     }
+  }
+
+  if (!may_show_cert_selection) {
+    LOG(WARNING) << "No client cert matched by policy and user selection is "
+                    "not allowed.";
+    // Continue without client certificate. We do this to mimic the case of no
+    // client certificate being present in the profile's certificate store.
+    delegate->ContinueWithCertificate(nullptr, nullptr);
+    return;
   }
 
   chrome::ShowSSLClientCertificateSelector(web_contents, cert_request_info,

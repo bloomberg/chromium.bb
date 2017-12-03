@@ -259,6 +259,20 @@ class ProfileIOData {
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore();
 
  protected:
+#if defined(OS_CHROMEOS)
+  // Defines possible ways in which a profile may use the Chrome OS system
+  // token.
+  enum class SystemKeySlotUseType {
+    // This profile does not use the system key slot.
+    kNone,
+    // This profile only uses the system key slot for client certiticates.
+    kUseForClientAuth,
+    // This profile uses the system key slot for client certificates and for
+    // certificate management.
+    kUseForClientAuthAndCertManagement
+  };
+#endif
+
   // A URLRequestContext for media that owns its HTTP factory, to ensure
   // it is deleted.
   class MediaRequestContext : public net::URLRequestContext {
@@ -343,7 +357,7 @@ class ProfileIOData {
 #if defined(OS_CHROMEOS)
     std::unique_ptr<policy::PolicyCertVerifier> policy_cert_verifier;
     std::string username_hash;
-    bool use_system_key_slot;
+    SystemKeySlotUseType system_key_slot_use_type;
     std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
 #endif
 
@@ -583,7 +597,7 @@ class ProfileIOData {
   mutable std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
 #if defined(OS_CHROMEOS)
   mutable std::string username_hash_;
-  mutable bool use_system_key_slot_;
+  mutable SystemKeySlotUseType system_key_slot_use_type_;
   mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 

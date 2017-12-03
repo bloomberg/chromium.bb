@@ -532,6 +532,22 @@ const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 const char kDisableFineGrainedTimeZoneDetection[] =
     "disable-fine-grained-time-zone-detection";
 
+// Disables client certificate authentication on the sign-in frame on the Chrome
+// OS sign-in profile.
+// TODO(pmarko): Remove this flag in M-66 if no issues are found
+// (crbug.com/723849).
+const char kDisableSigninFrameClientCerts[] =
+    "disable-signin-frame-client-certs";
+
+// Disables user selection of client certificate on the sign-in frame on the
+// Chrome OS sign-in profile.
+// TODO(pmarko): Remove this flag in M-65 when the
+// DeviceLoginScreenAutoSelectCertificateForUrls policy is enabled on the server
+// side (crbug.com/723849) and completely disable user selection of certificates
+// on the sign-in frame.
+const char kDisableSigninFrameClientCertUserSelection[] =
+    "disable-signin-frame-client-cert-user-selection";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
@@ -628,6 +644,16 @@ bool IsZipArchiverUnpackerEnabled() {
   // Disabled by default.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableZipArchiverUnpacker);
+}
+
+bool IsSigninFrameClientCertsEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableSigninFrameClientCerts);
+}
+
+bool IsSigninFrameClientCertUserSelectionEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableSigninFrameClientCertUserSelection);
 }
 
 }  // namespace switches
