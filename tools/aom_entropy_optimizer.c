@@ -750,6 +750,18 @@ int main(int argc, const char **argv) {
                      "[CDF_SIZE(2)]");
 #endif
 
+#if CONFIG_EXT_SKIP
+  /* Skip mode flag */
+  cts_each_dim[0] = SKIP_MODE_CONTEXTS;
+  cts_each_dim[1] = 2;
+  optimize_entropy_table(
+      &fc.skip_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
+      "static const aom_prob default_skip_mode_probs[SKIP_MODE_CONTEXTS]");
+  optimize_cdf_table(&fc.skip_mode[0][0], probsfile, 2, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(2)]");
+#endif  // CONFIG_EXT_SKIP
+
   fclose(statsfile);
   fclose(logfile);
   fclose(probsfile);
