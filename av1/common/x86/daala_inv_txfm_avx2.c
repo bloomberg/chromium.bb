@@ -35,6 +35,22 @@ static INLINE __m128i od_avg_epi16(__m128i a, __m128i b) {
       sign_bit);
 }
 
+/*Like the above, but does (a - b + 1) >> 1 instead.*/
+static INLINE __m128i od_hrsub_epi16(__m128i a, __m128i b) {
+  __m128i sign_bit;
+  sign_bit = _mm_set1_epi16(0x8000);
+  return _mm_xor_si128(
+      _mm_avg_epu16(_mm_xor_si128(a, sign_bit), _mm_sub_epi16(sign_bit, b)),
+      sign_bit);
+}
+
+static INLINE void od_swap_epi16(__m128i *q0, __m128i *q1) {
+  __m128i t;
+  t = *q0;
+  *q0 = *q1;
+  *q1 = t;
+}
+
 static INLINE __m128i od_mulhrs_epi16(__m128i a, int16_t b) {
   return _mm_mulhrs_epi16(a, _mm_set1_epi16(b));
 }
@@ -323,7 +339,52 @@ static INLINE void od_idct4_kernel8_epi16(__m128i *q0, __m128i *q2, __m128i *q1,
   *q3 = _mm_sub_epi16(*q0, *q3);
 }
 
-static void od_row_idct4_avx2(int16_t *out, int rows, const tran_low_t *in) {
+static INLINE void od_idst4_kernel8_epi16(__m128i *q0, __m128i *q1, __m128i *q2,
+                                          __m128i *q3) {
+  __m128i t0;
+  __m128i t1;
+  __m128i t2;
+  __m128i t3;
+  __m128i t3h;
+  __m128i t4;
+  __m128i u4;
+  t0 = _mm_sub_epi16(*q0, *q3);
+  t1 = _mm_add_epi16(*q0, *q2);
+  t2 = _mm_add_epi16(*q3, od_hrsub_epi16(t0, *q2));
+  t3 = *q1;
+  t4 = _mm_add_epi16(*q2, *q3);
+  /* 467/2048 ~= 2*Sin[1*Pi/9]/3 ~= 0.228013428883779 */
+  t0 = od_mulhrs_epi16(t0, 467 << 4);
+  /* 7021/16384 ~= 2*Sin[2*Pi/9]/3 ~= 0.428525073124360 */
+  t1 = od_mulhrs_epi16(t1, 7021 << 1);
+  /* 37837/32768 ~= 4*Sin[3*Pi/9]/3 ~= 1.154700538379252 */
+  t2 = _mm_add_epi16(t2, od_mulhrs_epi16(t2, 37837 - 32768));
+  /* 37837/32768 ~= 4*Sin[3*Pi/9]/3 ~= 1.154700538379252 */
+  t3 = _mm_add_epi16(t3, od_mulhrs_epi16(t3, 37837 - 32768));
+  /* 21513/32768 ~= 2*Sin[4*Pi/9]/3 ~= 0.656538502008139 */
+  t4 = od_mulhrs_epi16(t4, 21513);
+  t3h = od_unbiased_rshift1_epi16(t3);
+  u4 = _mm_add_epi16(t4, t3h);
+  *q0 = _mm_add_epi16(t0, u4);
+  /* We swap q1 and q2 to correct for the bitreverse reordering that
+     od_row_tx4_avx2() does. */
+  *q2 = _mm_add_epi16(t1, _mm_sub_epi16(t3, u4));
+  *q1 = t2;
+  *q3 = _mm_add_epi16(t0, _mm_sub_epi16(t1, t3h));
+}
+
+static INLINE void od_flip_idst4_kernel8_epi16(__m128i *q0, __m128i *q1,
+                                               __m128i *q2, __m128i *q3) {
+  od_idst4_kernel8_epi16(q0, q1, q2, q3);
+  od_swap_epi16(q0, q3);
+  od_swap_epi16(q1, q2);
+}
+
+typedef void (*od_tx4_kernel8_epi16)(__m128i *q0, __m128i *q2, __m128i *q1,
+                                     __m128i *q3);
+
+static void od_row_tx4_avx2(int16_t *out, int rows, const tran_low_t *in,
+                            od_tx4_kernel8_epi16 kernel8) {
   __m128i q0;
   __m128i q1;
   __m128i q2;
@@ -332,7 +393,7 @@ static void od_row_idct4_avx2(int16_t *out, int rows, const tran_low_t *in) {
     od_load_buffer_4x4_epi32(&q0, &q1, &q2, &q3, in);
     /*TODO(any): Merge this transpose with coefficient scanning.*/
     od_transpose_pack4x4(&q0, &q1, &q2, &q3);
-    od_idct4_kernel8_epi16(&q0, &q1, &q2, &q3);
+    kernel8(&q0, &q1, &q2, &q3);
     od_transpose4x4(&q0, q2, &q1, q3);
     od_store_buffer_4x4_epi16(out, q0, q1);
   } else {
@@ -348,34 +409,69 @@ static void od_row_idct4_avx2(int16_t *out, int rows, const tran_low_t *in) {
       od_load_buffer_4x4_epi32(&q4, &q5, &q6, &q7, in + 4 * r + 16);
       /*TODO(any): Merge this transpose with coefficient scanning.*/
       od_transpose_pack4x8(&q0, &q1, &q2, &q3, q4, q5, q6, q7);
-      od_idct4_kernel8_epi16(&q0, &q1, &q2, &q3);
+      kernel8(&q0, &q1, &q2, &q3);
       od_transpose8x4(&q0, &q2, &q1, &q3);
       od_store_buffer_4x8_epi16(out + 4 * r, q0, q2, q1, q3);
     }
   }
 }
 
-static void od_col_idct4_add_hbd_avx2(unsigned char *output_pixels,
-                                      int output_stride, int cols,
-                                      const int16_t *in, int bd) {
+static void od_col_tx4_add_hbd_avx2(unsigned char *output_pixels,
+                                    int output_stride, int cols,
+                                    const int16_t *in, int bd,
+                                    od_tx4_kernel8_epi16 kernel8) {
   __m128i q0;
   __m128i q1;
   __m128i q2;
   __m128i q3;
   if (cols <= 4) {
     od_load_buffer_4x4_epi16(&q0, &q1, &q2, &q3, in);
-    od_idct4_kernel8_epi16(&q0, &q1, &q2, &q3);
+    kernel8(&q0, &q1, &q2, &q3);
     od_add_store_buffer_hbd_4x4_epi16(output_pixels, output_stride, q0, q2, q1,
                                       q3, bd);
   } else {
     int c;
     for (c = 0; c < cols; c += 8) {
       od_load_buffer_8x4_epi16(&q0, &q1, &q2, &q3, in + c, cols);
-      od_idct4_kernel8_epi16(&q0, &q1, &q2, &q3);
+      kernel8(&q0, &q1, &q2, &q3);
       od_add_store_buffer_hbd_8x4_epi16(output_pixels + c, output_stride, q0,
                                         q2, q1, q3, bd);
     }
   }
+}
+
+static void od_row_idct4_avx2(int16_t *out, int rows, const tran_low_t *in) {
+  od_row_tx4_avx2(out, rows, in, od_idct4_kernel8_epi16);
+}
+
+static void od_col_idct4_add_hbd_avx2(unsigned char *output_pixels,
+                                      int output_stride, int cols,
+                                      const int16_t *in, int bd) {
+  od_col_tx4_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                          od_idct4_kernel8_epi16);
+}
+
+static void od_row_idst4_avx2(int16_t *out, int rows, const tran_low_t *in) {
+  od_row_tx4_avx2(out, rows, in, od_idst4_kernel8_epi16);
+}
+
+static void od_col_idst4_add_hbd_avx2(unsigned char *output_pixels,
+                                      int output_stride, int cols,
+                                      const int16_t *in, int bd) {
+  od_col_tx4_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                          od_idst4_kernel8_epi16);
+}
+
+static void od_row_flip_idst4_avx2(int16_t *out, int rows,
+                                   const tran_low_t *in) {
+  od_row_tx4_avx2(out, rows, in, od_flip_idst4_kernel8_epi16);
+}
+
+static void od_col_flip_idst4_add_hbd_avx2(unsigned char *output_pixels,
+                                           int output_stride, int cols,
+                                           const int16_t *in, int bd) {
+  od_col_tx4_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                          od_flip_idst4_kernel8_epi16);
 }
 
 typedef void (*daala_row_itx)(int16_t *out, int rows, const tran_low_t *in);
@@ -385,7 +481,7 @@ typedef void (*daala_col_itx_add)(unsigned char *output_pixels,
 
 static const daala_row_itx TX_ROW_MAP[TX_SIZES][TX_TYPES] = {
   // 4-point transforms
-  { od_row_idct4_avx2, NULL, NULL, NULL },
+  { od_row_idct4_avx2, od_row_idst4_avx2, od_row_flip_idst4_avx2, NULL },
   // 8-point transforms
   { NULL, NULL, NULL, NULL },
   // 16-point transforms
@@ -417,7 +513,8 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
   // High bit depth output
   {
       // 4-point transforms
-      { od_col_idct4_add_hbd_avx2, NULL, NULL, NULL },
+      { od_col_idct4_add_hbd_avx2, od_col_idst4_add_hbd_avx2,
+        od_col_flip_idst4_add_hbd_avx2, NULL },
       // 8-point transforms
       { NULL, NULL, NULL, NULL },
       // 16-point transforms
