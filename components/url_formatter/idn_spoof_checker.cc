@@ -368,6 +368,15 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   allowed_set.remove(0x0F8Fu);
 #endif
 
+  // Disallow extremely rarely used LGC character blocks.
+  // Cyllic Ext A is not in the allowed set. Neither are Latin Ext-{C,E}.
+  allowed_set.remove(0x01CDu, 0x01DCu);  // Latin Ext B; Pinyin
+  allowed_set.remove(0x1C80u, 0x1C8Fu);  // Cyrillic Extended-C
+  allowed_set.remove(0x1E00u, 0x1E9Bu);  // Latin Extended Additional
+  allowed_set.remove(0x1F00u, 0x1FFFu);  // Greek Extended
+  allowed_set.remove(0xA640u, 0xA69Fu);  // Cyrillic Extended-B
+  allowed_set.remove(0xA720u, 0xA7FFu);  // Latin Extended-D
+
   uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
 }
 
