@@ -87,7 +87,7 @@ class SimpleSingleThreadTaskRunner : public SingleThreadTaskRunner {
     return origin_thread_checker_.CalledOnValidThread();
   }
 
-  bool ProcessTask() {
+  bool ProcessSingleTask() {
     OnceClosure task;
     {
       AutoLock auto_lock(tasks_lock_);
@@ -97,9 +97,16 @@ class SimpleSingleThreadTaskRunner : public SingleThreadTaskRunner {
       pending_tasks_.pop();
     }
     // It's important to Run() after pop() and outside the lock as |task| may
-    // run a nested loop which will re-enter ProcessTask().
+    // run a nested loop which will re-enter ProcessSingleTask().
     std::move(task).Run();
     return true;
+  }
+
+  base::queue<OnceClosure> TakePendingTasks() {
+    AutoLock auto_lock(tasks_lock_);
+    base::queue<OnceClosure> pending_tasks;
+    std::swap(pending_tasks, pending_tasks_);
+    return pending_tasks;
   }
 
  private:
@@ -116,49 +123,66 @@ class SimpleSingleThreadTaskRunner : public SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(SimpleSingleThreadTaskRunner);
 };
 
-// A simple test RunLoop::Delegate to exercise Runloop logic independent of any
-// other base constructs.
-class TestDelegate final : public RunLoop::Delegate {
+// The basis of all TestDelegates, allows safely injecting a OnceClosure to be
+// run in the next idle phase of this delegate's Run() implementation. This can
+// be used to have code run on a thread that is otherwise livelocked in an idle
+// phase (sometimes a simple PostTask() won't do it -- e.g. when processing
+// application tasks is disallowed).
+class InjectableTestDelegate : public RunLoop::Delegate {
  public:
-  TestDelegate() = default;
+  void InjectClosureOnDelegate(OnceClosure closure) {
+    AutoLock auto_lock(closure_lock_);
+    closure_ = std::move(closure);
+  }
 
+  bool RunInjectedClosure() {
+    AutoLock auto_lock(closure_lock_);
+    if (closure_.is_null())
+      return false;
+    std::move(closure_).Run();
+    return true;
+  }
+
+ private:
+  Lock closure_lock_;
+  OnceClosure closure_;
+};
+
+// A simple test RunLoop::Delegate to exercise Runloop logic independent of any
+// other base constructs. BindToCurrentThread() must be called before this
+// TestBoundDelegate is operational.
+class TestBoundDelegate final : public InjectableTestDelegate {
+ public:
+  TestBoundDelegate() = default;
+
+  // Makes this TestBoundDelegate become the RunLoop::Delegate and
+  // ThreadTaskRunnerHandle for this thread.
   void BindToCurrentThread() {
+    DCHECK(!run_loop_client_);
     thread_task_runner_handle_ =
         std::make_unique<ThreadTaskRunnerHandle>(simple_task_runner_);
     run_loop_client_ = RunLoop::RegisterDelegateForCurrentThread(this);
   }
 
-  // Runs |closure| on the TestDelegate thread as part of Run(). Useful to
-  // inject code in an otherwise livelocked Run() state.
-  void RunClosureOnDelegate(OnceClosure closure) {
-    AutoLock auto_lock(closure_lock_);
-    closure_ = std::move(closure);
-  }
-
  private:
   void Run(bool application_tasks_allowed) override {
     if (nested_run_allowing_tasks_incoming_) {
-      EXPECT_TRUE(run_loop_client_->IsNested());
+      EXPECT_TRUE(RunLoop::IsNestedOnCurrentThread());
       EXPECT_TRUE(application_tasks_allowed);
-    } else if (run_loop_client_->IsNested()) {
+    } else if (RunLoop::IsNestedOnCurrentThread()) {
       EXPECT_FALSE(application_tasks_allowed);
     }
     nested_run_allowing_tasks_incoming_ = false;
 
     while (!should_quit_) {
-      if (application_tasks_allowed && simple_task_runner_->ProcessTask())
+      if (application_tasks_allowed && simple_task_runner_->ProcessSingleTask())
         continue;
 
       if (run_loop_client_->ShouldQuitWhenIdle())
         break;
 
-      {
-        AutoLock auto_lock(closure_lock_);
-        if (!closure_.is_null()) {
-          std::move(closure_).Run();
-          continue;
-        }
-      }
+      if (RunInjectedClosure())
+        continue;
 
       PlatformThread::YieldCurrentThread();
     }
@@ -177,12 +201,83 @@ class TestDelegate final : public RunLoop::Delegate {
 
   scoped_refptr<SimpleSingleThreadTaskRunner> simple_task_runner_ =
       MakeRefCounted<SimpleSingleThreadTaskRunner>();
+
   std::unique_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
   bool should_quit_ = false;
 
-  Lock closure_lock_;
-  OnceClosure closure_;
+  RunLoop::Delegate::Client* run_loop_client_ = nullptr;
+};
+
+// A test RunLoop::Delegate meant to override an existing RunLoop::Delegate.
+// TakeOverCurrentThread() must be called before this TestBoundDelegate is
+// operational.
+class TestOverridingDelegate final : public InjectableTestDelegate {
+ public:
+  TestOverridingDelegate() = default;
+
+  // Overrides the existing RunLoop::Delegate and ThreadTaskRunnerHandles on
+  // this thread with this TestOverridingDelegate's.
+  void TakeOverCurrentThread() {
+    DCHECK(!run_loop_client_);
+
+    overriden_task_runner_ = ThreadTaskRunnerHandle::Get();
+    DCHECK(overriden_task_runner_);
+    thread_task_runner_handle_override_scope_ =
+        ThreadTaskRunnerHandle::OverrideForTesting(
+            simple_task_runner_,
+            ThreadTaskRunnerHandle::OverrideType::kTakeOverThread);
+
+    auto delegate_override_pair =
+        RunLoop::OverrideDelegateForCurrentThreadForTesting(this);
+    run_loop_client_ = delegate_override_pair.first;
+    overriden_delegate_ = delegate_override_pair.second;
+    DCHECK(overriden_delegate_);
+  }
+
+ private:
+  void Run(bool application_tasks_allowed) override {
+    while (!should_quit_) {
+      auto pending_tasks = simple_task_runner_->TakePendingTasks();
+      if (!pending_tasks.empty()) {
+        while (!pending_tasks.empty()) {
+          overriden_task_runner_->PostTask(FROM_HERE,
+                                           std::move(pending_tasks.front()));
+          pending_tasks.pop();
+        }
+        overriden_delegate_->Run(application_tasks_allowed);
+        continue;
+      }
+
+      if (run_loop_client_->ShouldQuitWhenIdle())
+        break;
+
+      if (RunInjectedClosure())
+        continue;
+
+      PlatformThread::YieldCurrentThread();
+    }
+    should_quit_ = false;
+  }
+
+  void Quit() override {
+    should_quit_ = true;
+    overriden_delegate_->Quit();
+  }
+
+  void EnsureWorkScheduled() override {
+    overriden_delegate_->EnsureWorkScheduled();
+  }
+
+  scoped_refptr<SimpleSingleThreadTaskRunner> simple_task_runner_ =
+      MakeRefCounted<SimpleSingleThreadTaskRunner>();
+
+  ScopedClosureRunner thread_task_runner_handle_override_scope_;
+
+  scoped_refptr<SingleThreadTaskRunner> overriden_task_runner_;
+  RunLoop::Delegate* overriden_delegate_;
+
+  bool should_quit_ = false;
 
   RunLoop::Delegate::Client* run_loop_client_ = nullptr;
 };
@@ -195,6 +290,10 @@ enum class RunLoopTestType {
   // Runs all RunLoopTests under a test RunLoop::Delegate to make sure the
   // delegate interface fully works standalone.
   kTestDelegate,
+
+  // Runs all RunLoopTests through a RunLoop::Delegate which overrides a
+  // kRealEnvironment's registered RunLoop::Delegate.
+  kOverridingTestDelegate,
 };
 
 // The task environment for the RunLoopTest of a given type. A separate class
@@ -203,20 +302,31 @@ class RunLoopTestEnvironment {
  public:
   RunLoopTestEnvironment(RunLoopTestType type) {
     switch (type) {
-      case RunLoopTestType::kRealEnvironment:
+      case RunLoopTestType::kRealEnvironment: {
         task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
         break;
-      case RunLoopTestType::kTestDelegate:
-        test_delegate_ = std::make_unique<TestDelegate>();
-        test_delegate_->BindToCurrentThread();
+      }
+      case RunLoopTestType::kTestDelegate: {
+        auto test_delegate = std::make_unique<TestBoundDelegate>();
+        test_delegate->BindToCurrentThread();
+        test_delegate_ = std::move(test_delegate);
         break;
+      }
+      case RunLoopTestType::kOverridingTestDelegate: {
+        task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
+        auto test_delegate = std::make_unique<TestOverridingDelegate>();
+        test_delegate->TakeOverCurrentThread();
+        test_delegate_ = std::move(test_delegate);
+        break;
+      }
     }
   }
 
  private:
-  // Instantiates one or the other based on the RunLoopTestType.
+  // Instantiates one or the other based on the RunLoopTestType (or both in the
+  // kOverridingTestDelegate case).
   std::unique_ptr<test::ScopedTaskEnvironment> task_environment_;
-  std::unique_ptr<TestDelegate> test_delegate_;
+  std::unique_ptr<InjectableTestDelegate> test_delegate_;
 };
 
 class RunLoopTest : public testing::TestWithParam<RunLoopTestType> {
@@ -539,15 +649,19 @@ INSTANTIATE_TEST_CASE_P(Real,
 INSTANTIATE_TEST_CASE_P(Mock,
                         RunLoopTest,
                         testing::Values(RunLoopTestType::kTestDelegate));
+INSTANTIATE_TEST_CASE_P(
+    OverridingMock,
+    RunLoopTest,
+    testing::Values(RunLoopTestType::kOverridingTestDelegate));
 
 TEST(RunLoopDeathTest, MustRegisterBeforeInstantiating) {
-  TestDelegate unbound_test_delegate_;
+  TestBoundDelegate unbound_test_delegate_;
   // Exercise the DCHECK in RunLoop::RunLoop().
   EXPECT_DCHECK_DEATH({ RunLoop(); });
 }
 
 TEST(RunLoopDelegateTest, NestableTasksDontRunInDefaultNestedLoops) {
-  TestDelegate test_delegate;
+  TestBoundDelegate test_delegate;
   test_delegate.BindToCurrentThread();
 
   base::Thread other_thread("test");
@@ -599,8 +713,8 @@ TEST(RunLoopDelegateTest, NestableTasksDontRunInDefaultNestedLoops) {
   other_thread.task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(
-          [](TestDelegate* test_delegate, OnceClosure injected_closure) {
-            test_delegate->RunClosureOnDelegate(std::move(injected_closure));
+          [](TestBoundDelegate* test_delegate, OnceClosure injected_closure) {
+            test_delegate->InjectClosureOnDelegate(std::move(injected_closure));
           },
           Unretained(&test_delegate), nested_run_loop.QuitWhenIdleClosure()),
       TestTimeouts::tiny_timeout());

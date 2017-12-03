@@ -334,7 +334,7 @@ void MessageLoop::Run(bool application_tasks_allowed) {
   DCHECK_EQ(this, current());
   if (application_tasks_allowed && !task_execution_allowed_) {
     // Allow nested task execution as explicitly requested.
-    DCHECK(run_loop_client_->IsNested());
+    DCHECK(RunLoop::IsNestedOnCurrentThread());
     task_execution_allowed_ = true;
     pump_->Run(this);
     task_execution_allowed_ = false;
@@ -363,7 +363,7 @@ void MessageLoop::SetThreadTaskRunnerHandle() {
 }
 
 bool MessageLoop::ProcessNextDelayedNonNestableTask() {
-  if (run_loop_client_->IsNested())
+  if (RunLoop::IsNestedOnCurrentThread())
     return false;
 
   while (incoming_task_queue_->deferred_tasks().HasTasks()) {
@@ -399,7 +399,7 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
 
 bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
   if (pending_task.nestable == Nestable::kNestable ||
-      !run_loop_client_->IsNested()) {
+      !RunLoop::IsNestedOnCurrentThread()) {
     RunTask(&pending_task);
     // Show that we ran a task (Note: a new one might arrive as a
     // consequence!).

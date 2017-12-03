@@ -39,7 +39,8 @@ bool ThreadTaskRunnerHandle::IsSet() {
 
 // static
 ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
-    scoped_refptr<SingleThreadTaskRunner> overriding_task_runner) {
+    scoped_refptr<SingleThreadTaskRunner> overriding_task_runner,
+    ThreadTaskRunnerHandle::OverrideType type) {
   // OverrideForTesting() is not compatible with a SequencedTaskRunnerHandle
   // being set (but SequencedTaskRunnerHandle::IsSet() includes
   // ThreadTaskRunnerHandle::IsSet() so that's discounted as the only valid
@@ -67,7 +68,9 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
   ttrh->task_runner_.swap(overriding_task_runner);
 
   auto no_running_during_override =
-      std::make_unique<RunLoop::ScopedDisallowRunningForTesting>();
+      type == OverrideType::kTakeOverThread
+          ? nullptr
+          : std::make_unique<RunLoop::ScopedDisallowRunningForTesting>();
 
   return ScopedClosureRunner(base::Bind(
       [](scoped_refptr<SingleThreadTaskRunner> task_runner_to_restore,
