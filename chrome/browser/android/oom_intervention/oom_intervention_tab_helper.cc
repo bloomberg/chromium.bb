@@ -29,17 +29,17 @@ void SetLastVisibleWebContents(content::WebContents* web_contents) {
 
 // These enums are associated with UMA. Values must be kept in sync with
 // enums.xml and must not be renumbered/reused.
-enum class NearOomMonitoringEndReason {
+enum class NearOomDetectionEndReason {
   OOM_PROTECTED_CRASH = 0,
   RENDERER_GONE = 1,
   NAVIGATION = 2,
   COUNT,
 };
 
-void RecordNearOomMonitoringEndReason(NearOomMonitoringEndReason reason) {
+void RecordNearOomDetectionEndReason(NearOomDetectionEndReason reason) {
   UMA_HISTOGRAM_ENUMERATION(
-      "Memory.Experimental.OomIntervention.NearOomMonitoringEndReason", reason,
-      NearOomMonitoringEndReason::COUNT);
+      "Memory.Experimental.OomIntervention.NearOomDetectionEndReason", reason,
+      NearOomDetectionEndReason::COUNT);
 }
 
 void RecordInterventionUserDecision(bool accepted) {
@@ -114,7 +114,7 @@ void OomInterventionTabHelper::RenderProcessGone(
         elapsed_time);
     ResetInterventionState();
   } else {
-    RecordNearOomMonitoringEndReason(NearOomMonitoringEndReason::RENDERER_GONE);
+    RecordNearOomDetectionEndReason(NearOomDetectionEndReason::RENDERER_GONE);
   }
 }
 
@@ -149,12 +149,12 @@ void OomInterventionTabHelper::DidStartNavigation(
         base::TimeTicks::Now() - near_oom_detected_time_.value();
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Memory.Experimental.OomIntervention."
-        "NavigatedAfterDetectionTime",
+        "NavigationAfterDetectionTime",
         elapsed_time);
     ResetInterventionState();
   } else {
     // Monitoring but near-OOM hasn't been detected.
-    RecordNearOomMonitoringEndReason(NearOomMonitoringEndReason::NAVIGATION);
+    RecordNearOomDetectionEndReason(NearOomDetectionEndReason::NAVIGATION);
   }
 }
 
@@ -192,8 +192,8 @@ void OomInterventionTabHelper::OnForegroundOOMDetected(
     }
     ResetInterventionState();
   } else {
-    RecordNearOomMonitoringEndReason(
-        NearOomMonitoringEndReason::OOM_PROTECTED_CRASH);
+    RecordNearOomDetectionEndReason(
+        NearOomDetectionEndReason::OOM_PROTECTED_CRASH);
   }
 }
 
