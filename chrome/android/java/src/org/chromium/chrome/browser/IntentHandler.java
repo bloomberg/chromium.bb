@@ -204,6 +204,7 @@ public class IntentHandler {
 
     /**
      * Represents popular external applications that can load a page in Chrome via intent.
+     * DO NOT reorder items in this enum, because it's mirrored to UMA (as ClientAppId).
      */
     public static enum ExternalAppId {
         OTHER,
@@ -219,6 +220,7 @@ public class IntentHandler {
         WHATSAPP,
         GSA,
         WEBAPK,
+        // Update ClientAppId in enums.xml when adding new items.
         INDEX_BOUNDARY
     }
 
