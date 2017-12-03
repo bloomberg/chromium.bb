@@ -424,6 +424,8 @@ File::Error File::OSErrorToFileError(int saved_errno) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("PlatformFile.UnknownErrors.Posix",
                                   saved_errno);
 #endif
+      // This function should only be called for errors.
+      DCHECK_NE(0, saved_errno);
       return FILE_ERROR_FAILED;
   }
 }
