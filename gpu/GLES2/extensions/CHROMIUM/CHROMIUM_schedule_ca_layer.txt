@@ -93,9 +93,9 @@ New Procedures and Functions
     texture is backed by an IOSurface, then the query checks to see whether the
     IOSurface is in use by the Window Server. Otherwise, the query returns
     false. All the results will be returned with the swap ACK in
-    GpuCommandBufferMsg_SwapBuffersCompleted_Params. Clients should not destroy
-    any textures while they are being queried, as the swap ACK will use the
-    original texture id to identify the queried textures.
+    SwapBuffersCompleteParams. Clients should not destroy any textures while
+    they are being queried, as the swap ACK will use the original texture id to
+    identify the queried textures.
 
 Errors
 

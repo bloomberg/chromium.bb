@@ -49,7 +49,6 @@ target(link_target_type, "ipc_service_sources") {
     "gpu_watchdog_thread.cc",
     "gpu_watchdog_thread.h",
     "image_transport_surface.h",
-    "image_transport_surface_delegate.cc",
     "image_transport_surface_delegate.h",
     "pass_through_image_transport_surface.cc",
     "pass_through_image_transport_surface.h",

@@ -22,7 +22,6 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
@@ -70,22 +69,6 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
   IPC_STRUCT_MEMBER(uint32_t, internal_format)
   IPC_STRUCT_MEMBER(uint64_t, image_release_count)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuCommandBufferMsg_SwapBuffersCompleted_Params)
-#if defined(OS_MACOSX)
-  // Mac-specific parameters used to present CALayers hosted in the GPU process.
-  // TODO(ccameron): Remove these parameters once the CALayer tree is hosted in
-  // the browser process.
-  // https://crbug.com/604052
-  // Only one of ca_context_id or io_surface may be non-0.
-  IPC_STRUCT_MEMBER(CAContextID, ca_context_id)
-  IPC_STRUCT_MEMBER(gfx::ScopedRefCountedIOSurfaceMachPort, io_surface)
-  IPC_STRUCT_MEMBER(gfx::Size, pixel_size)
-  IPC_STRUCT_MEMBER(float, scale_factor)
-  IPC_STRUCT_MEMBER(gpu::TextureInUseResponses, in_use_responses)
-#endif
-  IPC_STRUCT_MEMBER(gfx::SwapResponse, response)
 IPC_STRUCT_END()
 
 //------------------------------------------------------------------------------
@@ -200,9 +183,8 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_Destroyed,
                     gpu::error::Error /* error */)
 
 // Tells the browser that SwapBuffers returned.
-IPC_MESSAGE_ROUTED1(
-    GpuCommandBufferMsg_SwapBuffersCompleted,
-    GpuCommandBufferMsg_SwapBuffersCompleted_Params /* params */)
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SwapBuffersCompleted,
+                    gpu::SwapBuffersCompleteParams /* params */)
 
 // Tells the browser about updated parameters for vsync alignment.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,

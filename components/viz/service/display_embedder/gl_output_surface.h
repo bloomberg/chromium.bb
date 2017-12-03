@@ -58,9 +58,7 @@ class GLOutputSurface : public OutputSurface,
 
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
-  void OnGpuSwapBuffersCompleted(
-      const gfx::SwapResponse& response,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac);
+  void OnGpuSwapBuffersCompleted(const gpu::SwapBuffersCompleteParams& params);
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
                                 base::TimeDelta interval);
   void OnPresentation(uint64_t swap_id,

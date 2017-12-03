@@ -51,8 +51,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
 
   // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(
-      const gfx::SwapResponse& response,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
+      const gpu::SwapBuffersCompleteParams& params) override;
 
  private:
   gfx::Size reshape_size_;

@@ -30,8 +30,7 @@ class GpuOutputSurfaceMac
 
   // BrowserCompositorOutputSurface implementation.
   void OnGpuSwapBuffersCompleted(
-      const gfx::SwapResponse& response,
-      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
+      const gpu::SwapBuffersCompleteParams& params) override;
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
 
  private:

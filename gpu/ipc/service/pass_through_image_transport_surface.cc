@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
@@ -251,7 +252,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
 
   if (delegate_) {
     SwapBuffersCompleteParams params;
-    params.response = std::move(response);
+    params.swap_response = std::move(response);
     delegate_->DidSwapBuffersComplete(std::move(params));
   }
 }
