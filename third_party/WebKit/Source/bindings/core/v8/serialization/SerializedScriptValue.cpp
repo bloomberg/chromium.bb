@@ -298,19 +298,6 @@ String SerializedScriptValue::ToWireString() const {
   return wire_string;
 }
 
-void SerializedScriptValue::ToWireBytes(Vector<char>& result) const {
-  DCHECK(result.IsEmpty());
-
-  size_t result_size = (data_buffer_size_ + 1) & ~1;
-  result.resize(result_size);
-  memcpy(result.data(), data_buffer_.get(), data_buffer_size_);
-
-  if (result_size > data_buffer_size_) {
-    DCHECK_EQ(result_size, data_buffer_size_ + 1);
-    result[data_buffer_size_] = 0;
-  }
-}
-
 SerializedScriptValue::ImageBitmapContentsArray
 SerializedScriptValue::TransferImageBitmapContents(
     v8::Isolate* isolate,

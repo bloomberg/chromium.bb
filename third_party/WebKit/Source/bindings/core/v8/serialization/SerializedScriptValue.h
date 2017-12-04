@@ -146,7 +146,6 @@ class CORE_EXPORT SerializedScriptValue
   static scoped_refptr<SerializedScriptValue> NullValue();
 
   String ToWireString() const;
-  void ToWireBytes(Vector<char>&) const;
 
   StringView GetWireData() const {
     return StringView(data_buffer_.get(), data_buffer_size_);

@@ -37,6 +37,7 @@
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/V8PerIsolateData.h"
+#include "platform/wtf/text/StringView.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebString.h"
@@ -147,7 +148,10 @@ void SerializeV8Value(v8::Local<v8::Value> value,
   scoped_refptr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Serialize(isolate, value, options,
                                        non_throwable_exception_state);
-  serialized_value->ToWireBytes(*wire_bytes);
+  StringView ssv_wire_data = serialized_value->GetWireData();
+  DCHECK(ssv_wire_data.Is8Bit());
+  DCHECK(wire_bytes->IsEmpty());
+  wire_bytes->Append(ssv_wire_data.Characters8(), ssv_wire_data.length());
 
   // Sanity check that the serialization header has not changed, as the tests
   // that use this method rely on the header format.
