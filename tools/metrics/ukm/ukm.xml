@@ -1543,6 +1543,11 @@ be describing additional metrics about the same event.
       Set to 1 when a user is shown a lite page in page load.
     </summary>
   </metric>
+  <metric name="noscript">
+    <summary>
+      Set to 1 when a user is shown a NoScript preview on a page load.
+    </summary>
+  </metric>
   <metric name="opt_out">
     <summary>
       Set to 1 when a user clicks &quot;Show Original&quot; on a preview page
