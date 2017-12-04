@@ -14,6 +14,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/dns/mock_host_resolver.h"
@@ -39,6 +40,7 @@
 #include "net/quic/test_tools/mock_random.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
+#include "net/test/net_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,6 +151,10 @@ class HttpStreamFactoryImplJobPeer {
   static const SpdySessionKey GetSpdySessionKey(
       const HttpStreamFactoryImpl::Job* job) {
     return job->spdy_session_key_;
+  }
+
+  static void SetShouldReconsiderProxy(HttpStreamFactoryImpl::Job* job) {
+    job->should_reconsider_proxy_ = true;
   }
 };
 
@@ -1425,6 +1431,82 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
   EXPECT_EQ(1u, test_task_runner->GetPendingTaskCount());
   test_task_runner->FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(job_controller_->alternative_job());
+}
+
+// Regression test for crbug.com/789560.
+TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobLaterCanceled) {
+  NetTestSuite::SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  std::unique_ptr<ProxyService> proxy_service = ProxyService::CreateDirect();
+  ProxyService* proxy_service_raw = proxy_service.get();
+  session_deps_.proxy_service = std::move(proxy_service);
+
+  // Using hanging resolver will cause the alternative job to hang indefinitely.
+  session_deps_.host_resolver = std::make_unique<HangingResolver>();
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info);
+
+  // Enable delayed TCP and set time delay for waiting job.
+  QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
+  quic_stream_factory->set_require_confirmation(false);
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  session_->http_server_properties()->SetServerNetworkStats(
+      url::SchemeHostPort(GURL("https://www.google.com")), stats1);
+
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  SetAlternativeService(request_info, alternative_service);
+
+  request_ =
+      job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
+                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+  EXPECT_TRUE(job_controller_->main_job()->is_waiting());
+
+  base::RunLoop run_loop;
+  // The main job should be resumed without delay when alt job fails.
+  EXPECT_CALL(*job_factory_.main_job(), Resume())
+      .Times(1)
+      .WillOnce(Invoke([&run_loop]() { run_loop.Quit(); }));
+  job_controller_->OnStreamFailed(job_factory_.alternative_job(),
+                                  ERR_QUIC_PROTOCOL_ERROR, SSLConfig());
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(0));
+  run_loop.Run();
+  EXPECT_FALSE(job_controller_->alternative_job());
+
+  // Calling ForceReloadProxyConfig will cause the proxy configuration to
+  // change. It will still be the direct connection but the configuration
+  // version will be bumped. That is enough for the job controller to restart
+  // the jobs.
+  proxy_service_raw->ForceReloadProxyConfig();
+  HttpStreamFactoryImplJobPeer::SetShouldReconsiderProxy(
+      job_factory_.main_job());
+  // Now the alt service is marked as broken (e.g. through a different request),
+  // so only non-alt job is restarted.
+  session_->http_server_properties()->MarkAlternativeServiceBroken(
+      alternative_service);
+
+  job_controller_->OnStreamFailed(job_factory_.main_job(), ERR_FAILED,
+                                  SSLConfig());
+  // Jobs are restarted.
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_FALSE(job_controller_->alternative_job());
+
+  // There shouldn't be any ResumeMainJobLater() delayed tasks.
+  // This EXPECT_CALL will fail before crbug.com/789560 fix.
+  EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
+  NetTestSuite::GetScopedTaskEnvironment()->FastForwardBy(
+      base::TimeDelta::FromMicroseconds(15));
+
+  EXPECT_TRUE(job_controller_->main_job());
+  request_.reset();
 }
 
 // Test that main job is blocked for kMaxDelayTimeForMainJob(3s) if
