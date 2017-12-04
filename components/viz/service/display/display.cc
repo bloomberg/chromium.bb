@@ -520,7 +520,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     return;
 
   const SharedQuadState* last_sqs = nullptr;
-  cc::SimpleEnclosedRegion occlusion_region;
+  cc::SimpleEnclosedRegion occlusion_in_target_space;
   bool current_sqs_intersects_occlusion = false;
   for (const auto& pass : frame->render_pass_list) {
     // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
@@ -533,8 +533,9 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
     if (pass != frame->render_pass_list.back())
       continue;
 
-    auto last_quad = pass->quad_list.end();
-    for (auto quad = pass->quad_list.begin(); quad != last_quad;) {
+    auto quad_list_end = pass->quad_list.end();
+    gfx::Rect occlusion_in_quad_content_space;
+    for (auto quad = pass->quad_list.begin(); quad != quad_list_end;) {
       // RenderPassDrawQuad is a special type of DrawQuad where the visible_rect
       // of shared quad state is not entirely covered by draw quads in it.
       if (quad->material == ContentDrawQuadBase::Material::RENDER_PASS) {
@@ -560,15 +561,43 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
           if (last_sqs->is_clipped)
             sqs_rect_in_target.Intersect(last_sqs->clip_rect);
 
-          occlusion_region.Union(sqs_rect_in_target);
+          occlusion_in_target_space.Union(sqs_rect_in_target);
         }
         // If the visible_rect of the current shared quad state does not
         // intersect with the occlusion rect, we can skip draw occlusion checks
         // for quads in the current SharedQuadState.
         last_sqs = quad->shared_quad_state;
-        current_sqs_intersects_occlusion =
-            occlusion_region.Intersects(cc::MathUtil::MapEnclosingClippedRect(
+        current_sqs_intersects_occlusion = occlusion_in_target_space.Intersects(
+            cc::MathUtil::MapEnclosingClippedRect(
                 transform, last_sqs->visible_quad_layer_rect));
+
+        // Compute the occlusion region in the quad content space for scale and
+        // translation transforms. Note that 0 scale transform will fail the
+        // positive scale check.
+        if (current_sqs_intersects_occlusion &&
+            transform.IsPositiveScaleOrTranslation()) {
+          gfx::Transform reverse_transform;
+          bool is_invertible = transform.GetInverse(&reverse_transform);
+          // Scale transform can be inverted by multiplying 1/scale (given
+          // scale > 0) and translation transform can be inverted by applying
+          // the reversed directional translation. Therefore, |transform| is
+          // always invertible.
+          DCHECK(is_invertible);
+
+          // TODO(yiyix): Make |occlusion_coordinate_space| to work with
+          // occlusion region consists multiple rect.
+          DCHECK_EQ(occlusion_in_target_space.GetRegionComplexity(), 1u);
+
+          // Since transform can only be a scale or a translation matrix, it is
+          // safe to use function MapEnclosedRectWith2dAxisAlignedTransform to
+          // define occluded region in the quad content space with inverted
+          // transform.
+          occlusion_in_quad_content_space =
+              cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+                  reverse_transform, occlusion_in_target_space.bounds());
+        } else {
+          occlusion_in_quad_content_space = gfx::Rect();
+        }
       }
 
       if (!current_sqs_intersects_occlusion) {
@@ -576,13 +605,23 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         continue;
       }
 
-      // TODO(yiyix): Using profile tools to analyze bottleneck of this
-      // algorithm.
-      if (occlusion_region.Contains(cc::MathUtil::MapEnclosingClippedRect(
-              transform, quad->visible_rect)))
+      // If the |quad| is not shown on the screen, i.e., covered by the occluded
+      // region, then remove |quad| from the compositor frame.
+      if (occlusion_in_quad_content_space.Contains(quad->visible_rect)) {
+        // Case 1: for simple transforms (scale or translation), the occlusion
+        // region is defined in the quad content space.
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
-      else
+
+      } else if (occlusion_in_quad_content_space.IsEmpty() &&
+                 occlusion_in_target_space.Contains(
+                     cc::MathUtil::MapEnclosingClippedRect(
+                         transform, quad->visible_rect))) {
+        // Case 2: for non-simple transforms, the occlusion region is defined in
+        // the target space.
+        quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
+      } else {
         ++quad;
+      }
     }
   }
 }
