@@ -295,9 +295,9 @@ void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
 
   std::string configure_url = chrome::kChromeUIExtensionsURL;
   configure_url += chrome::kExtensionConfigureCommandsSubPage;
-  chrome::NavigateParams params(
-      chrome::GetSingletonTabNavigateParams(browser(), GURL(configure_url)));
-  chrome::Navigate(&params);
+  NavigateParams params(
+      GetSingletonTabNavigateParams(browser(), GURL(configure_url)));
+  Navigate(&params);
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
 }
 

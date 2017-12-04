@@ -102,10 +102,9 @@ void OpenAppsPage(Profile* fallback_profile) {
     return;
   }
 
-  chrome::NavigateParams params(app_list_profile,
-                                GURL(chrome::kChromeUIAppsURL),
-                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  chrome::Navigate(&params);
+  NavigateParams params(app_list_profile, GURL(chrome::kChromeUIAppsURL),
+                        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  Navigate(&params);
 }
 #endif
 

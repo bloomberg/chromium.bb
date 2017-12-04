@@ -38,9 +38,7 @@ class SimpleTestTickClock;
 class TickClock;
 }
 
-namespace chrome {
 struct NavigateParams;
-}
 
 namespace chrome_browser_net {
 enum class NetworkPredictionStatus;
@@ -161,8 +159,7 @@ class PrerenderManager : public content::NotificationObserver,
   // to swap it and merge browsing histories. Returns |true| and updates
   // |params->target_contents| if a prerendered page is swapped in, |false|
   // otherwise.
-  bool MaybeUsePrerenderedPage(const GURL& url,
-                               chrome::NavigateParams* params);
+  bool MaybeUsePrerenderedPage(const GURL& url, NavigateParams* params);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.

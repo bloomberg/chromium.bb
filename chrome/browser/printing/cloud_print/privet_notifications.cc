@@ -375,10 +375,9 @@ void PrivetNotificationDelegate::ButtonClick(int button_index) {
 }
 
 void PrivetNotificationDelegate::OpenTab(const GURL& url) {
-  chrome::NavigateParams params(profile_, url,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  NavigateParams params(profile_, url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 void PrivetNotificationDelegate::DisableNotifications() {

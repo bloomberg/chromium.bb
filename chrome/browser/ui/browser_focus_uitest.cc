@@ -645,10 +645,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   GURL url2("http://maps.google.com/");
 
   // Navigate to url.
-  chrome::NavigateParams p(browser(), url, ui::PAGE_TRANSITION_LINK);
-  p.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  NavigateParams p(browser(), url, ui::PAGE_TRANSITION_LINK);
+  p.window_action = NavigateParams::SHOW_WINDOW;
   p.disposition = WindowOpenDisposition::CURRENT_TAB;
-  chrome::Navigate(&p);
+  Navigate(&p);
 
   // Focus the omnibox.
   chrome::FocusLocationBar(browser());

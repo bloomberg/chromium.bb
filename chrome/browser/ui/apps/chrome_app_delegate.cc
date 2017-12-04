@@ -65,17 +65,17 @@ content::WebContents* OpenURLFromTabInternal(
     const content::OpenURLParams& params) {
   // Force all links to open in a new tab, even if they were trying to open a
   // window.
-  chrome::NavigateParams new_tab_params(
-      static_cast<Browser*>(NULL), params.url, params.transition);
+  NavigateParams new_tab_params(static_cast<Browser*>(NULL), params.url,
+                                params.transition);
   if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     new_tab_params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
   } else {
     new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-    new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    new_tab_params.window_action = NavigateParams::SHOW_WINDOW;
   }
 
   new_tab_params.initiating_profile = Profile::FromBrowserContext(context);
-  chrome::Navigate(&new_tab_params);
+  Navigate(&new_tab_params);
 
   return new_tab_params.target_contents;
 }

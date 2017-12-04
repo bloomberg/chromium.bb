@@ -100,7 +100,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
   // the renderer process to be created or foregrounded, returning the process
   // handle.
   base::Process ShowSingletonTab(const GURL& page) {
-    chrome::ShowSingletonTab(browser(), page);
+    ::ShowSingletonTab(browser(), page);
     WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
     CHECK(wc->GetURL() == page);
 
@@ -174,7 +174,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
 
     ui_test_utils::WindowedTabAddedNotificationObserver observer1(
         content::NotificationService::AllSources());
-    chrome::ShowSingletonTab(browser(), page1);
+    ::ShowSingletonTab(browser(), page1);
     observer1.Wait();
 
     tab_count++;
@@ -190,7 +190,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     GURL page2("data:text/html,hello world2");
     ui_test_utils::WindowedTabAddedNotificationObserver observer2(
         content::NotificationService::AllSources());
-    chrome::ShowSingletonTab(browser(), page2);
+    ::ShowSingletonTab(browser(), page2);
     observer2.Wait();
     tab_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -206,7 +206,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     GURL history(chrome::kChromeUIHistoryURL);
     ui_test_utils::WindowedTabAddedNotificationObserver observer3(
         content::NotificationService::AllSources());
-    chrome::ShowSingletonTab(browser(), history);
+    ::ShowSingletonTab(browser(), history);
     observer3.Wait();
     tab_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -219,7 +219,7 @@ class ChromeRenderProcessHostTest : public ExtensionBrowserTest {
     GURL extension_url("chrome-extension://" + extension->id());
     ui_test_utils::WindowedTabAddedNotificationObserver observer4(
         content::NotificationService::AllSources());
-    chrome::ShowSingletonTab(browser(), extension_url);
+    ::ShowSingletonTab(browser(), extension_url);
 
     observer4.Wait();
     tab_count++;
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   GURL page1("data:text/html,hello world1");
   ui_test_utils::WindowedTabAddedNotificationObserver observer1(
       content::NotificationService::AllSources());
-  chrome::ShowSingletonTab(browser(), page1);
+  ::ShowSingletonTab(browser(), page1);
   observer1.Wait();
   tab_count++;
   host_count++;
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
   GURL page2("data:text/html,hello world2");
   ui_test_utils::WindowedTabAddedNotificationObserver observer2(
       content::NotificationService::AllSources());
-  chrome::ShowSingletonTab(browser(), page2);
+  ::ShowSingletonTab(browser(), page2);
   observer2.Wait();
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -455,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   GURL page1("data:text/html,hello world1");
   ui_test_utils::WindowedTabAddedNotificationObserver observer1(
       content::NotificationService::AllSources());
-  chrome::ShowSingletonTab(browser(), page1);
+  ::ShowSingletonTab(browser(), page1);
   observer1.Wait();
   tab_count++;
   host_count++;
@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   GURL page1("data:text/html,hello world1");
   ui_test_utils::WindowedTabAddedNotificationObserver observer1(
       content::NotificationService::AllSources());
-  chrome::ShowSingletonTab(browser(), page1);
+  ::ShowSingletonTab(browser(), page1);
   observer1.Wait();
   tab_count++;
   host_count++;

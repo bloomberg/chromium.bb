@@ -17,9 +17,7 @@
 class TabModel;
 class TabModelListObserver;
 
-namespace chrome {
 struct NavigateParams;
-}
 
 namespace content {
 class WebContents;
@@ -32,7 +30,7 @@ class TabModelList {
   typedef TabModelVector::iterator iterator;
   typedef TabModelVector::const_iterator const_iterator;
 
-  static void HandlePopupNavigation(chrome::NavigateParams* params);
+  static void HandlePopupNavigation(NavigateParams* params);
   static void AddTabModel(TabModel* tab_model);
   static void RemoveTabModel(TabModel* tab_model);
 

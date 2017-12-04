@@ -157,12 +157,11 @@ void PlatformVerificationDialog::StyledLabelLinkClicked(
   if (!browser) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    chrome::NavigateParams params(
-        profile, learn_more_url, ui::PAGE_TRANSITION_LINK);
+    NavigateParams params(profile, learn_more_url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-    chrome::Navigate(&params);
+    Navigate(&params);
   } else {
-    chrome::ShowSingletonTab(browser, learn_more_url);
+    ShowSingletonTab(browser, learn_more_url);
   }
 }
 

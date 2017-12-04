@@ -267,7 +267,7 @@ void PlatformAppNavigationRedirectorBrowserTest::TestNavigationInBrowser(
 
   ExtensionTestMessageListener handler_listener(handler_start_message, false);
 
-  chrome::NavigateParams params(
+  NavigateParams params(
       browser(),
       embedded_test_server()->GetURL(base::StringPrintf(
           "/extensions/platform_apps/%s", matching_target_page)),
@@ -293,7 +293,7 @@ void PlatformAppNavigationRedirectorBrowserTest::
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TitleWatcher title_watcher(tab, success_title);
 
-  chrome::NavigateParams params(
+  NavigateParams params(
       browser(),
       embedded_test_server()->GetURL(base::StringPrintf(
           "/extensions/platform_apps/%s", matching_target_page)),

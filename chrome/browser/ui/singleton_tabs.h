@@ -13,8 +13,6 @@ class GURL;
 // Methods for opening "singleton tabs". Tabs are guaranteed unique by varying
 // metrics within a particular Browser window.
 
-namespace chrome {
-
 // Core singleton tab API:
 
 // Show a given a URL. If a tab with the same URL (ignoring the ref) is
@@ -36,7 +34,5 @@ NavigateParams GetSingletonTabNavigateParams(Browser* browser, const GURL& url);
 // If the given navigational URL is a Singleton, return the tab index for it.
 // Otherwise, returns -1.
 int GetIndexOfSingletonTab(NavigateParams* params);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_SINGLETON_TABS_H_

@@ -541,8 +541,8 @@ void CreditCardEditorViewController::StyledLabelLinkClicked(
   // The only thing that can trigger this is the user clicking on the "edit"
   // link for a server card.
   chrome::ScopedTabbedBrowserDisplayer displayer(dialog()->GetProfile());
-  chrome::ShowSingletonTab(displayer.browser(),
-                           autofill::payments::GetManageAddressesUrl(0));
+  ShowSingletonTab(displayer.browser(),
+                   autofill::payments::GetManageAddressesUrl(0));
 }
 
 void CreditCardEditorViewController::SelectBasicCardNetworkIcon(

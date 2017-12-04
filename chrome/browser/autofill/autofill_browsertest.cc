@@ -177,8 +177,7 @@ class AutofillTest : public InProcessBrowserTest {
                                     bool simulate_click,
                                     bool expect_personal_data_change) {
     GURL url = embedded_test_server()->GetURL("/autofill/" + filename);
-    chrome::NavigateParams params(browser(), url,
-                                  ui::PAGE_TRANSITION_LINK);
+    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
 

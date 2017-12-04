@@ -170,10 +170,10 @@ void ChromeDevToolsManagerDelegate::SessionDestroyed(
 
 scoped_refptr<DevToolsAgentHost>
 ChromeDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
-  chrome::NavigateParams params(ProfileManager::GetLastUsedProfile(),
-      url, ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  NavigateParams params(ProfileManager::GetLastUsedProfile(), url,
+                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
   if (!params.target_contents)
     return nullptr;
   return DevToolsAgentHost::GetOrCreateFor(params.target_contents);

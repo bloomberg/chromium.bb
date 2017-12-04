@@ -17,11 +17,11 @@ OneClickSigninLinksDelegateImpl::OneClickSigninLinksDelegateImpl(
 OneClickSigninLinksDelegateImpl::~OneClickSigninLinksDelegateImpl() {}
 
 void OneClickSigninLinksDelegateImpl::OnLearnMoreLinkClicked(bool is_dialog) {
-  chrome::NavigateParams params(browser_, GURL(chrome::kChromeSyncLearnMoreURL),
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser_, GURL(chrome::kChromeSyncLearnMoreURL),
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = is_dialog ? WindowOpenDisposition::NEW_WINDOW
                                  : WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 void OneClickSigninLinksDelegateImpl::OnAdvancedLinkClicked() {

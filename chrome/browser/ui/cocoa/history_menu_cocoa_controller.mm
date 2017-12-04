@@ -55,10 +55,10 @@ using content::Referrer;
     DCHECK(node->url.is_valid());
     WindowOpenDisposition disposition =
         ui::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-    chrome::NavigateParams params(bridge_->profile(), node->url,
-        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    NavigateParams params(bridge_->profile(), node->url,
+                          ui::PAGE_TRANSITION_AUTO_BOOKMARK);
     params.disposition = disposition;
-    chrome::Navigate(&params);
+    Navigate(&params);
   }
 }
 

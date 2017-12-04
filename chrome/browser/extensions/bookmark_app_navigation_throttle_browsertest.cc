@@ -242,14 +242,14 @@ void SubmitFormAndWait(content::WebContents* web_contents,
 }
 
 // Uses |params| to navigate to a URL. Blocks until the URL is loaded.
-void NavigateToURLAndWait(chrome::NavigateParams* params) {
+void NavigateToURLAndWait(NavigateParams* params) {
   auto observer = GetTestNavigationObserver(params->url);
   ui_test_utils::NavigateToURL(params);
   observer->WaitForNavigationFinished();
 }
 
 // Wrapper so that we can use base::Bind with NavigateToURL.
-void NavigateToURLWrapper(chrome::NavigateParams* params) {
+void NavigateToURLWrapper(NavigateParams* params) {
   ui_test_utils::NavigateToURL(params);
 }
 
@@ -581,7 +581,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleTransitionBrowserTest,
   GURL target_url =
       embedded_test_server()->GetURL(kAppUrlHost, std::get<0>(GetParam()));
   ui::PageTransition transition = std::get<1>(GetParam());
-  chrome::NavigateParams params(browser(), target_url, transition);
+  NavigateParams params(browser(), target_url, transition);
 
   if (!ui::PageTransitionIsMainFrame(transition)) {
     // Subframe navigations require a different setup. See
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   content::RenderFrameHost* iframe = GetIFrame(initial_tab);
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
 
-  chrome::NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_LINK);
   params.frame_tree_node_id = iframe->GetFrameTreeNodeId();
   content::TestFrameNavigationObserver observer(iframe);
   TestIFrameActionDoesNotOpenAppWindow(
@@ -643,8 +643,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
     // Navigate the iframe once, so that the next navigation is a
     // MANUAL_SUBFRAME navigation.
     content::RenderFrameHost* iframe = GetIFrame(initial_tab);
-    chrome::NavigateParams params(browser(), GetLaunchingPageURL(),
-                                  ui::PAGE_TRANSITION_LINK);
+    NavigateParams params(browser(), GetLaunchingPageURL(),
+                          ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = iframe->GetFrameTreeNodeId();
     ASSERT_TRUE(TestIFrameActionDoesNotOpenAppWindow(
         GetLaunchingPageURL(), base::Bind(&NavigateToURLWrapper, &params)));
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   content::RenderFrameHost* iframe = GetIFrame(initial_tab);
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
 
-  chrome::NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_LINK);
   params.frame_tree_node_id = iframe->GetFrameTreeNodeId();
   content::TestFrameNavigationObserver observer(iframe);
   TestIFrameActionDoesNotOpenAppWindow(
@@ -674,7 +674,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   // Fake a navigation with a TRANSITION_LINK core type and a
   // TRANSITION_FROM_ADDRESS_BAR qualifier. This matches the transition that
   // results from pasting a URL into the address and navigating to it.
-  chrome::NavigateParams params(
+  NavigateParams params(
       browser(), app_url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
@@ -691,8 +691,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   {
     const GURL app_url =
         embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
-    chrome::NavigateParams params(browser(), app_url,
-                                  ui::PAGE_TRANSITION_TYPED);
+    NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_TYPED);
     ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
         app_url, base::Bind(&NavigateToURLWrapper, &params)));
   }
@@ -712,8 +711,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   {
     const GURL out_of_scope_url =
         embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
-    chrome::NavigateParams params(browser(), out_of_scope_url,
-                                  ui::PAGE_TRANSITION_TYPED);
+    NavigateParams params(browser(), out_of_scope_url,
+                          ui::PAGE_TRANSITION_TYPED);
     ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
         out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
   }
@@ -996,8 +995,8 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleFormSubmissionBrowserTest,
     else
       start_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
 
-    chrome::NavigateParams params(current_browser, start_url,
-                                  ui::PAGE_TRANSITION_TYPED);
+    NavigateParams params(current_browser, start_url,
+                          ui::PAGE_TRANSITION_TYPED);
     ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
         start_url, base::Bind(&NavigateToURLWrapper, &params)));
   } else if (start_url_path == kLaunchingPagePath) {
@@ -1206,8 +1205,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   // Navigate to out-of-scope URL. Shouldn't open a new window.
   const GURL out_of_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
-  chrome::NavigateParams params(browser(), out_of_scope_url,
-                                ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser(), out_of_scope_url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
 
@@ -1230,8 +1228,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   // Navigate to out-of-scope URL. Shouldn't open a new window.
   const GURL out_of_scope_url =
       embedded_test_server()->GetURL(kAppUrlHost, kOutOfScopeUrlPath);
-  chrome::NavigateParams params(browser(), out_of_scope_url,
-                                ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser(), out_of_scope_url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       out_of_scope_url, base::Bind(&NavigateToURLWrapper, &params)));
 
@@ -1252,7 +1249,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
 
   // Navigate to app's page. Shouldn't open a new window.
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlHost, kAppUrlPath);
-  chrome::NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_TRUE(TestTabActionDoesNotOpenAppWindow(
       app_url, base::Bind(&NavigateToURLWrapper, &params)));
 

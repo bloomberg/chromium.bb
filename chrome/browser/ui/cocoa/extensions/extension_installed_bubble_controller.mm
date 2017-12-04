@@ -475,9 +475,9 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   DCHECK(didClose);
   std::string configure_url = chrome::kChromeUIExtensionsURL;
   configure_url += chrome::kExtensionConfigureCommandsSubPage;
-  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
-      browser_, GURL(configure_url)));
-  chrome::Navigate(&params);
+  NavigateParams params(
+      GetSingletonTabNavigateParams(browser_, GURL(configure_url)));
+  Navigate(&params);
 }
 
 - (IBAction)onAppShortcutClicked:(id)sender {

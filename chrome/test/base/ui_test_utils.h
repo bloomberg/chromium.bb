@@ -40,9 +40,7 @@ namespace base {
 class FilePath;
 }
 
-namespace chrome {
 struct NavigateParams;
-}
 
 namespace content {
 class WebContents;
@@ -78,7 +76,7 @@ bool GetCurrentTabTitle(const Browser* browser, base::string16* title);
 // Performs the provided navigation process, blocking until the navigation
 // finishes. May change the params in some cases (i.e. if the navigation
 // opens a new browser window). Uses chrome::Navigate.
-void NavigateToURL(chrome::NavigateParams* params);
+void NavigateToURL(NavigateParams* params);
 
 // Navigates the selected tab of |browser| to |url|, blocking until the
 // navigation finishes. Simulates a POST and uses chrome::Navigate.

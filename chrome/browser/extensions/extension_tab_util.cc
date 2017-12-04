@@ -251,14 +251,13 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   if (pinned)
     add_types |= TabStripModel::ADD_PINNED;
-  chrome::NavigateParams navigate_params(
-      browser, url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams navigate_params(browser, url, ui::PAGE_TRANSITION_LINK);
   navigate_params.disposition = active
                                     ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                     : WindowOpenDisposition::NEW_BACKGROUND_TAB;
   navigate_params.tabstrip_index = index;
   navigate_params.tabstrip_add_types = add_types;
-  chrome::Navigate(&navigate_params);
+  Navigate(&navigate_params);
 
   // The tab may have been created in a different window, so make sure we look
   // at the right tab strip.
@@ -619,7 +618,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
     Browser::CreateParams params = Browser::CreateParams(profile, user_gesture);
     browser = new Browser(params);
   }
-  chrome::NavigateParams params(browser, web_contents);
+  NavigateParams params(browser, web_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser
   // which causes the Browser to return true for is_app().  This affects
@@ -631,11 +630,11 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
 
   params.disposition = disposition;
   params.window_bounds = initial_rect;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
-  chrome::Navigate(&params);
+  Navigate(&params);
 
-  // Close the browser if chrome::Navigate created a new one.
+  // Close the browser if Navigate created a new one.
   if (browser_created && (browser != params.browser))
     browser->window()->Close();
 }
@@ -707,18 +706,17 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
     url_to_navigate = url_to_navigate.ReplaceComponents(replacements);
   }
 
-  chrome::NavigateParams params(
-      chrome::GetSingletonTabNavigateParams(browser, url_to_navigate));
+  NavigateParams params(
+      GetSingletonTabNavigateParams(browser, url_to_navigate));
   // We need to respect path differences because we don't want opening the
   // options page to close a page that might be open to extension content.
   // However, if the options page opens inside the chrome://extensions page, we
   // can override an existing page.
   // Note: default ref behavior is IGNORE_REF, which is correct.
-  params.path_behavior = open_in_tab
-                             ? chrome::NavigateParams::RESPECT
-                             : chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.path_behavior = open_in_tab ? NavigateParams::RESPECT
+                                     : NavigateParams::IGNORE_AND_NAVIGATE;
   params.url = url_to_navigate;
-  chrome::ShowSingletonTabOverwritingNTP(browser, params);
+  ShowSingletonTabOverwritingNTP(browser, params);
   return true;
 }
 

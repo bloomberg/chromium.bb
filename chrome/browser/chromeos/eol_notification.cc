@@ -55,12 +55,11 @@ class EolNotificationDelegate : public message_center::NotificationDelegate {
     switch (button_index) {
       case BUTTON_MORE_INFO: {
         // show eol link
-        chrome::NavigateParams params(profile_,
-                                      GURL(chrome::kEolNotificationURL),
-                                      ui::PAGE_TRANSITION_LINK);
+        NavigateParams params(profile_, GURL(chrome::kEolNotificationURL),
+                              ui::PAGE_TRANSITION_LINK);
         params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-        params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-        chrome::Navigate(&params);
+        params.window_action = NavigateParams::SHOW_WINDOW;
+        Navigate(&params);
         break;
       }
       case BUTTON_DISMISS:

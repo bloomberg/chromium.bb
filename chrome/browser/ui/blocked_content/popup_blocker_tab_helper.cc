@@ -41,11 +41,11 @@ const size_t kMaximumNumberOfPopups = 25;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupBlockerTabHelper);
 
 struct PopupBlockerTabHelper::BlockedRequest {
-  BlockedRequest(const chrome::NavigateParams& params,
+  BlockedRequest(const NavigateParams& params,
                  const blink::mojom::WindowFeatures& window_features)
       : params(params), window_features(window_features) {}
 
-  chrome::NavigateParams params;
+  NavigateParams params;
   blink::mojom::WindowFeatures window_features;
 };
 
@@ -104,7 +104,7 @@ void PopupBlockerTabHelper::PopupNotificationVisibilityChanged(
 bool PopupBlockerTabHelper::MaybeBlockPopup(
     content::WebContents* web_contents,
     const base::Optional<GURL>& opener_url,
-    const chrome::NavigateParams& params,
+    const NavigateParams& params,
     const content::OpenURLParams* open_url_params,
     const blink::mojom::WindowFeatures& window_features) {
   DCHECK(!open_url_params ||
@@ -158,7 +158,7 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
 }
 
 void PopupBlockerTabHelper::AddBlockedPopup(
-    const chrome::NavigateParams& params,
+    const NavigateParams& params,
     const blink::mojom::WindowFeatures& window_features) {
   LogAction(Action::kBlocked);
   if (blocked_popups_.size() >= kMaximumNumberOfPopups)
@@ -194,7 +194,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
 #if defined(OS_ANDROID)
   TabModelList::HandlePopupNavigation(&popup->params);
 #else
-  chrome::Navigate(&popup->params);
+  Navigate(&popup->params);
 #endif
   if (popup->params.target_contents) {
     PopupTracker::CreateForWebContents(popup->params.target_contents,

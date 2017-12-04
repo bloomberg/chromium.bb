@@ -1974,9 +1974,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::NavigateParams navigate_params(browser(), url_dangerous,
-                                           ui::PAGE_TRANSITION_TYPED);
-    chrome::Navigate(&navigate_params);
+    NavigateParams navigate_params(browser(), url_dangerous,
+                                   ui::PAGE_TRANSITION_TYPED);
+    Navigate(&navigate_params);
     observer.Wait();
   }
 
@@ -2306,14 +2306,14 @@ IN_PROC_BROWSER_TEST_P(SSLUITestTransientAndCommitted,
       embedded_test_server()->host_port_pair(), &replacement_path);
 
   GURL url = https_server_.GetURL(replacement_path);
-  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.tabstrip_index = 0;
   params.source_contents = tab1;
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::Navigate(&params);
+  Navigate(&params);
   WebContents* tab2 = params.target_contents;
   observer.Wait();
 
@@ -2350,13 +2350,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITestTransientAndCommitted,
   // disposition won't usually stay in the same process, but this works
   // because we are using process-per-site in SetUpCommandLine.
   GURL url = https_server_.GetURL(replacement_path);
-  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.source_contents = tab1;
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  chrome::Navigate(&params);
+  Navigate(&params);
   WebContents* tab2 = params.target_contents;
   observer.Wait();
 

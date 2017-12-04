@@ -35,9 +35,7 @@ namespace cc {
 class Layer;
 }
 
-namespace chrome {
 struct NavigateParams;
-}
 
 namespace android {
 class TabWebContentsDelegateAndroid;
@@ -119,7 +117,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   void SetWindowSessionID(SessionID::id_type window_id);
   void SetSyncId(int sync_id);
 
-  void HandlePopupNavigation(chrome::NavigateParams* params);
+  void HandlePopupNavigation(NavigateParams* params);
 
   bool HasPrerenderedUrl(GURL gurl);
 

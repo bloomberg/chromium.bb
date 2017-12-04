@@ -223,11 +223,10 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   WebUIJsInjectionReadyObserver injection_observer(
       web_contents, this, preload_test_fixture_, preload_test_name_);
   content::TestNavigationObserver navigation_observer(web_contents);
-  chrome::NavigateParams params(
-      browser(), GURL(browse_to), ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser(), GURL(browse_to), ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
 
-  chrome::Navigate(&params);
+  Navigate(&params);
   navigation_observer.Wait();
 }
 

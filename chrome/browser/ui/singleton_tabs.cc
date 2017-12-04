@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/web_contents.h"
 
-namespace chrome {
 namespace {
 
 // Returns true if two URLs are equal after taking |replacements| into account.
@@ -50,7 +49,8 @@ void ShowSingletonTabOverwritingNTP(Browser* browser,
       browser->tab_strip_model()->GetActiveWebContents();
   if (contents) {
     const GURL& contents_url = contents->GetURL();
-    if ((contents_url == kChromeUINewTabURL || search::IsInstantNTP(contents) ||
+    if ((contents_url == chrome::kChromeUINewTabURL ||
+         search::IsInstantNTP(contents) ||
          contents_url == url::kAboutBlankURL) &&
         GetIndexOfSingletonTab(&local_params) < 0) {
       local_params.disposition = WindowOpenDisposition::CURRENT_TAB;
@@ -128,5 +128,3 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
 
   return -1;
 }
-
-}  // namespace chrome

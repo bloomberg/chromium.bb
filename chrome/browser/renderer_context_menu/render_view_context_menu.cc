@@ -494,12 +494,11 @@ void OnProfileCreated(const GURL& link_url,
                       Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     Browser* browser = chrome::FindLastActiveWithProfile(profile);
-    chrome::NavigateParams nav_params(browser, link_url,
-                                      ui::PAGE_TRANSITION_LINK);
+    NavigateParams nav_params(browser, link_url, ui::PAGE_TRANSITION_LINK);
     nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     nav_params.referrer = referrer;
-    nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-    chrome::Navigate(&nav_params);
+    nav_params.window_action = NavigateParams::SHOW_WINDOW;
+    Navigate(&nav_params);
   }
 }
 
@@ -2256,7 +2255,7 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
   if (browser_context_->IsOffTheRecord() || !params_.link_url.is_valid())
     return false;
 
-  if (!chrome::IsURLAllowedInIncognito(params_.link_url, browser_context_))
+  if (!IsURLAllowedInIncognito(params_.link_url, browser_context_))
     return false;
 
   IncognitoModePrefs::Availability incognito_avail =

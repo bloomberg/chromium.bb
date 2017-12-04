@@ -291,7 +291,7 @@ void PrerenderManager::CancelAllPrerenders() {
 }
 
 bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
-                                               chrome::NavigateParams* params) {
+                                               NavigateParams* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = params->target_contents;

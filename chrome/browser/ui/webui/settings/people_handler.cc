@@ -314,7 +314,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
   }
 
   if (url.is_valid())
-    chrome::ShowSingletonTab(browser, url);
+    ShowSingletonTab(browser, url);
 }
 #endif
 

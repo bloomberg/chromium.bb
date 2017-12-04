@@ -147,7 +147,7 @@ void SigninViewController::ShowDiceSigninTab(
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
     active_contents->OpenURL(params);
   } else {
-    chrome::ShowSingletonTab(browser, signin_url);
+    ShowSingletonTab(browser, signin_url);
     active_contents = browser->tab_strip_model()->GetActiveWebContents();
   }
   DCHECK(active_contents);
