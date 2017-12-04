@@ -258,6 +258,7 @@
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
       'MD Top Chrome Linux material': 'debug_bot',
+      'Leak Detection Linux': 'release_bot',
       'Libfuzzer Upload Linux ASan': 'release_libfuzzer_asan',
       'Libfuzzer Upload Linux ASan Debug': 'debug_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'release_libfuzzer_msan',
