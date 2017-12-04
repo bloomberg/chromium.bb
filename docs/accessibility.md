@@ -3,6 +3,10 @@
 * [Accessibility Overview](accessibility/overview.md)
 * [Accessibility Tests](accessibility/tests.md)
 
+## Cross-Platform
+
+* [Offscreen, Invisible and Size](accessibility/offscreen.md)
+
 ## Chrome OS
 
 * [ChromeVox for Developers](accessibility/chromevox.md)
