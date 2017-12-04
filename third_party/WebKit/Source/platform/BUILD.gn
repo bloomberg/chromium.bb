@@ -223,6 +223,7 @@ jumbo_component("platform") {
   visibility = []  # Allow re-assignment of list.
   visibility = [
     "//components/pdf/common:interfaces_blink",
+    "//services/device/public/interfaces:interfaces_blink",
     "//third_party/WebKit/*",
     "//url/mojo:url_mojom_origin_blink",
     "//url/mojo:url_mojom_gurl_blink",
