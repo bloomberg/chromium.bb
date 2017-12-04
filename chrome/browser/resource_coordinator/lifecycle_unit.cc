@@ -19,4 +19,13 @@ bool LifecycleUnit::SortKey::operator>(const SortKey& other) const {
   return last_focused_time > other.last_focused_time;
 }
 
+LifecycleUnit::LifecycleUnit() = default;
+LifecycleUnit::~LifecycleUnit() = default;
+
+uint32_t LifecycleUnit::GetID() const {
+  return id_;
+}
+
+uint32_t LifecycleUnit::next_id_ = 0;
+
 }  // namespace resource_coordinator
