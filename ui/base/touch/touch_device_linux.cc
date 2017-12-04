@@ -15,7 +15,7 @@ bool IsTouchDevicePresent() {
   return !InputDeviceManager::GetInstance()->GetTouchscreenDevices().empty();
 }
 
-bool isMouseOrTouchpadPresent() {
+bool IsMouseOrTouchpadPresent() {
   InputDeviceManager* input_manager = InputDeviceManager::GetInstance();
   for (const ui::InputDevice& device : input_manager->GetTouchpadDevices()) {
     if (device.enabled)
@@ -33,7 +33,7 @@ bool isMouseOrTouchpadPresent() {
 
 int GetAvailablePointerTypes() {
   int available_pointer_types = 0;
-  if (isMouseOrTouchpadPresent())
+  if (IsMouseOrTouchpadPresent())
     available_pointer_types |= POINTER_TYPE_FINE;
 
   if (IsTouchDevicePresent())
@@ -47,10 +47,10 @@ int GetAvailablePointerTypes() {
 }
 
 int GetAvailableHoverTypes() {
-  int available_hover_types = HOVER_TYPE_NONE;
-  if (isMouseOrTouchpadPresent())
-    available_hover_types |= HOVER_TYPE_HOVER;
-  return available_hover_types;
+  if (IsMouseOrTouchpadPresent())
+    return HOVER_TYPE_HOVER;
+
+  return HOVER_TYPE_NONE;
 }
 
 TouchScreensAvailability GetTouchScreensAvailability() {
