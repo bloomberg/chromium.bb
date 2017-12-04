@@ -186,7 +186,7 @@ void HTMLObjectElement::ParametersForPlugin(Vector<String>& param_names,
 
   // Turn the attributes of the <object> element into arrays, but don't override
   // <param> values.
-  AttributeCollection attributes = this->Attributes();
+  AttributeCollection attributes = Attributes();
   for (const Attribute& attribute : attributes) {
     const AtomicString& name = attribute.GetName().LocalName();
     if (!unique_param_names.Contains(name.Impl())) {

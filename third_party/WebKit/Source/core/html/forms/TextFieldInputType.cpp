@@ -194,7 +194,7 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
 void TextFieldInputType::HandleKeydownEvent(KeyboardEvent* event) {
   if (!GetElement().IsFocused())
     return;
-  if (ChromeClient* chrome_client = this->GetChromeClient()) {
+  if (ChromeClient* chrome_client = GetChromeClient()) {
     chrome_client->HandleKeyboardEventOnTextField(GetElement(), *event);
     return;
   }
@@ -280,7 +280,7 @@ void TextFieldInputType::CreateShadowSubtree() {
   DCHECK(!shadow_root->HasChildren());
 
   Document& document = GetElement().GetDocument();
-  bool should_have_spin_button = this->ShouldHaveSpinButton();
+  bool should_have_spin_button = ShouldHaveSpinButton();
   bool should_have_data_list_indicator = GetElement().HasValidDataListOptions();
   bool creates_container = should_have_spin_button ||
                            should_have_data_list_indicator || NeedsContainer();
@@ -325,7 +325,7 @@ void TextFieldInputType::DestroyShadowSubtree() {
 }
 
 void TextFieldInputType::ListAttributeTargetChanged() {
-  if (ChromeClient* chrome_client = this->GetChromeClient())
+  if (ChromeClient* chrome_client = GetChromeClient())
     chrome_client->TextFieldDataListChanged(GetElement());
   Element* picker = GetElement().UserAgentShadowRoot()->getElementById(
       ShadowElementNames::PickerIndicator());
@@ -430,10 +430,10 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
   // Selected characters will be removed by the next text event.
   unsigned base_length = old_length - selection_length;
   unsigned max_length;
-  if (this->MaxLength() < 0)
+  if (MaxLength() < 0)
     max_length = std::numeric_limits<int>::max();
   else
-    max_length = static_cast<unsigned>(this->MaxLength());
+    max_length = static_cast<unsigned>(MaxLength());
   unsigned appendable_length =
       max_length > base_length ? max_length - base_length : 0;
 
@@ -511,7 +511,7 @@ void TextFieldInputType::SubtreeHasChanged() {
 void TextFieldInputType::DidSetValueByUserEdit() {
   if (!GetElement().IsFocused())
     return;
-  if (ChromeClient* chrome_client = this->GetChromeClient())
+  if (ChromeClient* chrome_client = GetChromeClient())
     chrome_client->DidChangeValueInTextField(GetElement());
 }
 

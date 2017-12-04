@@ -112,7 +112,7 @@ bool HTMLOptionElement::MatchesEnabledPseudoClass() const {
 }
 
 String HTMLOptionElement::DisplayLabel() const {
-  Document& document = this->GetDocument();
+  Document& document = GetDocument();
   String text;
 
   // WinIE does not use the label attribute, so as a quirk, we ignore it.

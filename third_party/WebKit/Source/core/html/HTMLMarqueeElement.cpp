@@ -279,8 +279,8 @@ void HTMLMarqueeElement::ContinueAnimation() {
   }
 
   AnimationParameters parameters = GetAnimationParameters();
-  int scroll_delay = this->scrollDelay();
-  int scroll_amount = this->scrollAmount();
+  int scroll_delay = scrollDelay();
+  int scroll_amount = scrollAmount();
 
   if (scroll_delay < kMinimumScrollDelayMS &&
       !FastHasAttribute(HTMLNames::truespeedAttr))

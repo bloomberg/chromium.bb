@@ -753,7 +753,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
   CanvasColorParams dst_color_params =
       CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque);
 
-  void* src_data = this->BufferBase()->Data();
+  void* src_data = BufferBase()->Data();
   sk_sp<SkColorSpace> src_color_space =
       GetCanvasColorParams().GetSkColorSpaceForSkSurfaces();
   sk_sp<SkColorSpace> dst_color_space =

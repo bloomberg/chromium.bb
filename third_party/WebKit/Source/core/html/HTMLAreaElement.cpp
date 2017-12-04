@@ -210,7 +210,7 @@ void HTMLAreaElement::SetFocused(bool should_be_focused,
 
   HTMLAnchorElement::SetFocused(should_be_focused, focus_type);
 
-  HTMLImageElement* image_element = this->ImageElement();
+  HTMLImageElement* image_element = ImageElement();
   if (!image_element)
     return;
 
@@ -228,7 +228,7 @@ void HTMLAreaElement::UpdateFocusAppearanceWithOptions(
   if (!IsFocusable())
     return;
 
-  if (HTMLImageElement* image_element = this->ImageElement()) {
+  if (HTMLImageElement* image_element = ImageElement()) {
     image_element->UpdateFocusAppearanceWithOptions(selection_behavior,
                                                     options);
   }

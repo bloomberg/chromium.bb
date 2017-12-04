@@ -135,7 +135,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   bool MatchesReadWritePseudoClass() const override;
   void CopyNonAttributePropertiesFromElement(const Element&) final;
 
-  // If the String* argument is 0, apply this->value().
+  // If the String* argument is 0, apply value().
   bool ValueMissing(const String*) const;
   bool TooLong(const String*, NeedsToCheckDirtyFlag) const;
   bool TooShort(const String*, NeedsToCheckDirtyFlag) const;

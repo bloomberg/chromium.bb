@@ -345,7 +345,7 @@ void RangeInputType::ListAttributeTargetChanged() {
     GetElement()
         .GetLayoutObject()
         ->SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-  Element* slider_track_element = this->SliderTrackElement();
+  Element* slider_track_element = SliderTrackElement();
   if (slider_track_element->GetLayoutObject())
     slider_track_element->GetLayoutObject()->SetNeedsLayout(
         LayoutInvalidationReason::kAttributeChanged);
@@ -370,7 +370,7 @@ void RangeInputType::UpdateTickMarkValues() {
     String option_value = option_element->value();
     if (option_element->IsDisabledFormControl() || option_value.IsEmpty())
       continue;
-    if (!this->GetElement().IsValidValue(option_value))
+    if (!GetElement().IsValidValue(option_value))
       continue;
     tick_mark_values_.push_back(ParseToNumber(option_value, Decimal::Nan()));
   }

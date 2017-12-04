@@ -1599,7 +1599,7 @@ HTMLDataListElement* HTMLInputElement::DataList() const {
 }
 
 bool HTMLInputElement::HasValidDataListOptions() const {
-  HTMLDataListElement* data_list = this->DataList();
+  HTMLDataListElement* data_list = DataList();
   if (!data_list)
     return false;
   HTMLDataListOptionsCollection* options = data_list->options();
@@ -1614,7 +1614,7 @@ bool HTMLInputElement::HasValidDataListOptions() const {
 HeapVector<Member<HTMLOptionElement>>
 HTMLInputElement::FilteredDataListOptions() const {
   HeapVector<Member<HTMLOptionElement>> filtered;
-  HTMLDataListElement* data_list = this->DataList();
+  HTMLDataListElement* data_list = DataList();
   if (!data_list)
     return filtered;
 
@@ -1868,7 +1868,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
   parameters.double_value = input_type_->ValueAsDouble();
   parameters.is_anchor_element_rtl =
       input_type_view_->ComputedTextDirection() == TextDirection::kRtl;
-  if (HTMLDataListElement* data_list = this->DataList()) {
+  if (HTMLDataListElement* data_list = DataList()) {
     HTMLDataListOptionsCollection* options = data_list->options();
     for (unsigned i = 0; HTMLOptionElement* option = options->Item(i); ++i) {
       if (option->value().IsEmpty() || option->IsDisabledFormControl() ||

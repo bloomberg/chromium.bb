@@ -273,7 +273,7 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     return;
   }
 
-  DateTimeEditElement* edit = this->GetDateTimeEditElement();
+  DateTimeEditElement* edit = GetDateTimeEditElement();
   if (!edit)
     return;
   EventQueueScope scope;

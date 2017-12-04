@@ -151,7 +151,7 @@ void ColorInputType::HandleDOMActivateEvent(Event* event) {
   if (!Frame::HasTransientUserActivation(GetElement().GetDocument().GetFrame()))
     return;
 
-  ChromeClient* chrome_client = this->GetChromeClient();
+  ChromeClient* chrome_client = GetChromeClient();
   if (chrome_client && !chooser_)
     chooser_ = chrome_client->OpenColorChooser(
         GetElement().GetDocument().GetFrame(), this, ValueAsColor());

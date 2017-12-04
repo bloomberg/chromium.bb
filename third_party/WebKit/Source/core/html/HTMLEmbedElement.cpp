@@ -134,7 +134,7 @@ void HTMLEmbedElement::ParseAttribute(
 
 void HTMLEmbedElement::ParametersForPlugin(Vector<String>& param_names,
                                            Vector<String>& param_values) {
-  AttributeCollection attributes = this->Attributes();
+  AttributeCollection attributes = Attributes();
   for (const Attribute& attribute : attributes) {
     param_names.push_back(attribute.LocalName().GetString());
     param_values.push_back(attribute.Value().GetString());

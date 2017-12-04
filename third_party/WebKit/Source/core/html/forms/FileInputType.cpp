@@ -149,7 +149,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
   if (!Frame::HasTransientUserActivation(GetElement().GetDocument().GetFrame()))
     return;
 
-  if (ChromeClient* chrome_client = this->GetChromeClient()) {
+  if (ChromeClient* chrome_client = GetChromeClient()) {
     WebFileChooserParams params;
     HTMLInputElement& input = GetElement();
     bool is_directory = input.FastHasAttribute(webkitdirectoryAttr);
@@ -343,7 +343,7 @@ void FileInputType::FilesChosen(const Vector<FileChooserFileInfo>& files) {
 }
 
 void FileInputType::SetFilesFromDirectory(const String& path) {
-  if (ChromeClient* chrome_client = this->GetChromeClient()) {
+  if (ChromeClient* chrome_client = GetChromeClient()) {
     Vector<String> files;
     files.push_back(path);
     WebFileChooserParams params;
