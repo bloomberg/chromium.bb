@@ -69,6 +69,17 @@ check_pointer_move(struct client *client, int x, int y)
 	check_pointer(client, x, y);
 }
 
+static struct client *
+create_client_with_pointer_focus(int x, int y, int w, int h)
+{
+	struct client *cl = create_client_and_test_surface(x, y, w, h);
+	assert(cl);
+	/* Move the pointer inside the surface to ensure that the surface
+	 * has the pointer focus. */
+	check_pointer_move(cl, x, y);
+	return cl;
+}
+
 TEST(test_pointer_top_left)
 {
 	struct client *client;
@@ -286,23 +297,26 @@ TEST(test_pointer_surface_move)
 	check_pointer(client, 50, 50);
 }
 
-TEST(simple_pointer_button_test)
+TEST(pointer_motion_events)
 {
-	struct client *client;
-	struct pointer *pointer;
-
-	client = create_client_and_test_surface(100, 100, 100, 100);
-	assert(client);
-
-	pointer = client->input->pointer;
-
-	assert(pointer->button == 0);
-	assert(pointer->state == 0);
+	struct client *client = create_client_with_pointer_focus(100, 100,
+								 100, 100);
+	struct pointer *pointer = client->input->pointer;
 
 	weston_test_move_pointer(client->test->weston_test, 150, 150);
 	client_roundtrip(client);
 	assert(pointer->x == 50);
 	assert(pointer->y == 50);
+}
+
+TEST(pointer_button_events)
+{
+	struct client *client = create_client_with_pointer_focus(100, 100,
+								 100, 100);
+	struct pointer *pointer = client->input->pointer;
+
+	assert(pointer->button == 0);
+	assert(pointer->state == 0);
 
 	weston_test_send_button(client->test->weston_test, BTN_LEFT,
 			    WL_POINTER_BUTTON_STATE_PRESSED);
