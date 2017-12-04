@@ -33,6 +33,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 
@@ -400,7 +401,7 @@ void RenderWidgetHostViewGuest::SubmitCompositorFrame(
 void RenderWidgetHostViewGuest::OnAttached() {
   RegisterFrameSinkId();
 #if defined(USE_AURA)
-  if (IsUsingMus()) {
+  if (switches::IsMusHostingViz()) {
     aura::Env::GetInstance()->ScheduleEmbed(
         GetWindowTreeClientFromRenderer(),
         base::BindOnce(&RenderWidgetHostViewGuest::OnGotEmbedToken,

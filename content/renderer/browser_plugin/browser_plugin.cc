@@ -46,6 +46,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if defined(USE_AURA)
@@ -141,7 +142,7 @@ void BrowserPlugin::OnSetChildFrameSurface(
     int browser_plugin_instance_id,
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
-  if (!attached() || IsRunningWithMus())
+  if (!attached() || switches::IsMusHostingViz())
     return;
 
   if (!enable_surface_synchronization_) {
@@ -359,7 +360,7 @@ void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
 void BrowserPlugin::OnSetMusEmbedToken(
     int instance_id,
     const base::UnguessableToken& embed_token) {
-  DCHECK(IsRunningWithMus());
+  DCHECK(switches::IsMusHostingViz());
   if (!attached_) {
     pending_embed_token_ = embed_token;
   } else {
