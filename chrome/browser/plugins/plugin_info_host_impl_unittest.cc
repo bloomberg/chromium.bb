@@ -324,37 +324,20 @@ TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
       host, GURL(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
       CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
-  // Allow plugin "foo" on all sites.
-  map->SetContentSettingCustomScope(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTINGS_TYPE_PLUGINS, "foo", CONTENT_SETTING_ALLOW);
-
   GURL unmatched_host("https://www.google.com");
-  ASSERT_EQ(
+  EXPECT_EQ(
       CONTENT_SETTING_BLOCK,
       map->GetContentSetting(unmatched_host, unmatched_host,
                              CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
-  ASSERT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+  EXPECT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
             map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
                                    std::string()));
-  ASSERT_EQ(
-      CONTENT_SETTING_ALLOW,
-      map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "foo"));
-  ASSERT_EQ(
-      CONTENT_SETTING_DEFAULT,
-      map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "bar"));
 
-  // "foo" is allowed everywhere.
-  VerifyPluginContentSetting(host, "foo", CONTENT_SETTING_ALLOW, false, false);
-
-  // There is no specific content setting for "bar", so the general setting
-  // for example.com applies.
-  VerifyPluginContentSetting(
-      host, "bar", CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, false, false);
-
-  // Otherwise, use the default.
-  VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK, true,
+  VerifyPluginContentSetting(host, std::string(),
+                             CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, false,
                              false);
+  VerifyPluginContentSetting(unmatched_host, std::string(),
+                             CONTENT_SETTING_BLOCK, false, false);
 
   // Block plugins via policy.
   sync_preferences::TestingPrefServiceSyncable* prefs =
@@ -363,8 +346,8 @@ TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
                         base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
 
   // All plugins should be blocked now.
-  VerifyPluginContentSetting(host, "foo", CONTENT_SETTING_BLOCK, true, true);
-  VerifyPluginContentSetting(host, "bar", CONTENT_SETTING_BLOCK, true, true);
-  VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK, true,
+  VerifyPluginContentSetting(host, std::string(), CONTENT_SETTING_BLOCK, true,
                              true);
+  VerifyPluginContentSetting(unmatched_host, std::string(),
+                             CONTENT_SETTING_BLOCK, true, true);
 }
