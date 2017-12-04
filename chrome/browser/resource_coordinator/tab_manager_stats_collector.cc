@@ -16,11 +16,13 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sessions/session_restore.h"
+#include "components/metrics/system_memory_stats_recorder.h"
 #include "content/public/browser/swap_metrics_driver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -115,16 +117,40 @@ class TabManagerStatsCollector::SwapMetricsDelegate
   const SessionType session_type_;
 };
 
-TabManagerStatsCollector::TabManagerStatsCollector()
-    : is_session_restore_loading_tabs_(false),
-      is_in_background_tab_opening_session_(false),
-      is_overlapping_session_restore_(false),
-      is_overlapping_background_tab_opening_(false) {
+TabManagerStatsCollector::TabManagerStatsCollector() {
   SessionRestore::AddObserver(this);
 }
 
 TabManagerStatsCollector::~TabManagerStatsCollector() {
   SessionRestore::RemoveObserver(this);
+}
+
+void TabManagerStatsCollector::RecordWillDiscardUrgently(int num_alive_tabs) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::TimeTicks discard_time = NowTicks();
+
+  UMA_HISTOGRAM_COUNTS_100("Discarding.Urgent.NumAliveTabs", num_alive_tabs);
+
+  if (last_urgent_discard_time_.is_null()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Discarding.Urgent.TimeSinceStartup", discard_time - start_time_,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Discarding.Urgent.TimeSinceLastUrgent",
+                               discard_time - last_urgent_discard_time_,
+                               base::TimeDelta::FromMilliseconds(100),
+                               base::TimeDelta::FromDays(1), 50);
+  }
+
+// TODO(fdoray): Remove this #if when RecordMemoryStats is implemented for all
+// platforms.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  // Record system memory usage at the time of the discard.
+  metrics::RecordMemoryStats(metrics::RECORD_MEMORY_STATS_TAB_DISCARDED);
+#endif
+
+  last_urgent_discard_time_ = discard_time;
 }
 
 void TabManagerStatsCollector::RecordSwitchToTab(
@@ -165,6 +191,8 @@ void TabManagerStatsCollector::RecordSwitchToTab(
 void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
     content::WebContents* contents,
     base::TimeDelta queueing_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!contents->IsVisible())
     return;
 
@@ -185,7 +213,7 @@ void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
           TabManager_SessionRestore_ForegroundTab_ExpectedTaskQueueingDurationInfo(
               ukm_source_id)
               .SetExpectedTaskQueueingDuration(queueing_time.InMilliseconds())
-              .SetSequenceId(sequence_->GetNext())
+              .SetSequenceId(sequence_++)
               .SetSessionRestoreSessionId(session_id_)
               .SetSessionRestoreTabCount(restored_tab_count)
               .SetSystemTabCount(
@@ -213,7 +241,7 @@ void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
               .SetBackgroundTabOpeningSessionId(session_id_)
               .SetBackgroundTabPendingCount(background_tab_pending_count)
               .SetExpectedTaskQueueingDuration(queueing_time.InMilliseconds())
-              .SetSequenceId(sequence_->GetNext())
+              .SetSequenceId(sequence_++)
               .SetSystemTabCount(
                   g_browser_process->GetTabManager()->GetTabCount())
               .Record(ukm::UkmRecorder::Get());
@@ -329,6 +357,8 @@ void TabManagerStatsCollector::OnWillLoadNextBackgroundTab(bool timeout) {
 }
 
 void TabManagerStatsCollector::OnTabIsLoaded(content::WebContents* contents) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!base::ContainsKey(foreground_contents_switched_to_times_, contents))
     return;
 
@@ -343,7 +373,7 @@ void TabManagerStatsCollector::OnTabIsLoaded(content::WebContents* contents) {
       ukm::builders::
           TabManager_Experimental_SessionRestore_TabSwitchLoadStopped(
               ukm_source_id)
-              .SetSequenceId(sequence_->GetNext())
+              .SetSequenceId(sequence_++)
               .SetSessionRestoreSessionId(session_id_)
               .SetSessionRestoreTabCount(
                   g_browser_process->GetTabManager()->restored_tab_count())
@@ -368,7 +398,7 @@ void TabManagerStatsCollector::OnTabIsLoaded(content::WebContents* contents) {
               .SetBackgroundTabPendingCount(
                   g_browser_process->GetTabManager()
                       ->GetBackgroundTabPendingCount())
-              .SetSequenceId(sequence_->GetNext())
+              .SetSequenceId(sequence_++)
               .SetSystemTabCount(
                   g_browser_process->GetTabManager()->GetTabCount())
               .SetTabSwitchLoadTime(switch_load_time.InMilliseconds())
@@ -402,11 +432,12 @@ void TabManagerStatsCollector::ClearStatsWhenInOverlappedSession() {
 }
 
 void TabManagerStatsCollector::UpdateSessionAndSequence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // This function is used by both SessionRestore and BackgroundTabOpening. This
   // is fine because we do not report any metric when those two overlap.
-  static base::AtomicSequenceNumber session_seq;
-  session_id_ = session_seq.GetNext();
-  sequence_.reset(new base::AtomicSequenceNumber());
+  ++session_id_;
+  sequence_ = 0;
 }
 
 // static

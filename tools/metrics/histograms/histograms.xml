@@ -14932,6 +14932,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Discarding.Urgent.NumAliveTabs" units="tabs">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Number of tabs that are not pending load or discarded when an urgent discard
+    request is received.
+  </summary>
+</histogram>
+
+<histogram name="Discarding.Urgent.TimeSinceLastUrgent" units="ms">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Time between two consecutive urgent discard requests. Urgent discards are
+    undesirable; it is better to reduce memory usage before the system is in a
+    bad state.
+  </summary>
+</histogram>
+
+<histogram name="Discarding.Urgent.TimeSinceStartup" units="ms">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Time between Chrome startup and the first urgent discard request. Urgent
+    discards are undesirable; it is better to reduce memory usage before the
+    system is in a bad state.
+  </summary>
+</histogram>
+
 <histogram name="DiskBasedCertCache.CertIo" enum="CertificateChainPosition">
   <obsolete>
     Deprecated as of 01/2016. CertCacheTrial has been removed.
@@ -87924,6 +87950,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tabs.Discard.InitialTime2" units="seconds">
+  <obsolete>
+    Deprecated 11/2017. Replaced with Discarding.Urgent.TimeSinceStartup which
+    is recorded when Chrome has to discard tabs or apps urgently (instead of
+    before an individual tab is urgently or proactively discarded).
+  </obsolete>
   <owner>jamescook@chromium.org</owner>
   <summary>
     Time in seconds between system startup and when the first tab is discarded
@@ -87945,6 +87976,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tabs.Discard.IntervalTime2" units="ms">
+  <obsolete>
+    Deprecated 11/2017. Replaced with Discarding.Urgent.TimeSinceLastUrgent
+    which is recorded before a set of tabs/apps are urgently discarded (instead
+    of before an individual tab is urgently or proactively discarded).
+  </obsolete>
   <owner>jamescook@chromium.org</owner>
   <summary>
     Time in milliseconds between tab discard events after the first one,
@@ -88016,6 +88052,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Tabs.Discard.TabCount" units="tabs">
+  <obsolete>
+    Deprecated 11/2017. Replaced with Discarding.Urgent.NumAliveTabs which
+    records the number of tabs that are not pending load or discarded when an
+    urgent discard request is received (vs. this that records the total number
+    of tabs every time a tab is discarded, no matter the reason).
+  </obsolete>
   <owner>jamescook@chromium.org</owner>
   <summary>
     The number of tabs open across all browser windows when a tab was discarded
