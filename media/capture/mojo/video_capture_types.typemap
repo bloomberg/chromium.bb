@@ -13,11 +13,11 @@ public_headers = [
 traits_headers = [
   "//media/capture/ipc/capture_param_traits_macros.h",
   "//media/capture/ipc/capture_param_traits.h",
-  "//media/capture/mojo/video_capture_types_typemap_traits.h",
+  "//media/capture/mojo/video_capture_types_struct_traits.h",
 ]
 
 sources = [
-  "//media/capture/mojo/video_capture_types_typemap_traits.cc",
+  "//media/capture/mojo/video_capture_types_struct_traits.cc",
 ]
 
 deps = [
