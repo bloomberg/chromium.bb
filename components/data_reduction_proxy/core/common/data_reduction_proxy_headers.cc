@@ -23,8 +23,6 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
-using base::StringPiece;
-
 namespace {
 
 const char kChromeProxyHeader[] = "chrome-proxy";
@@ -290,7 +288,8 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders& headers,
     if (StartsWithActionPrefix(value, action_prefix)) {
       int64_t seconds;
       if (!base::StringToInt64(
-              StringPiece(value).substr(action_prefix.size() + 1), &seconds) ||
+              base::StringPiece(value).substr(action_prefix.size() + 1),
+              &seconds) ||
           seconds < 0) {
         continue;  // In case there is a well formed instruction.
       }
