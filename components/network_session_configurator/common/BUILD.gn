@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("common") {
+component("common") {
+  output_name = "network_session_configurator"
   sources = [
     "network_features.cc",
     "network_features.h",
+    "network_session_configurator_export.h",
     "network_switch_list.h",
     "network_switches.cc",
     "network_switches.h",
@@ -14,4 +16,6 @@ static_library("common") {
   public_deps = [
     "//base",
   ]
+
+  defines = [ "NETWORK_SESSION_CONFIGURATOR_IMPLEMENTATION" ]
 }

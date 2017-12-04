@@ -3318,6 +3318,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkService)},
 
+    {"network-service-in-process",
+     flag_descriptions::kEnableNetworkServiceInProcessName,
+     flag_descriptions::kEnableNetworkServiceInProcessDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kNetworkServiceInProcess)},
+
     {"out-of-blink-cors", flag_descriptions::kEnableOutOfBlinkCORSName,
      flag_descriptions::kEnableOutOfBlinkCORSDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kOutOfBlinkCORS)},

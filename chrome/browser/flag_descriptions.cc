@@ -464,6 +464,11 @@ const char kEnableNetworkServiceDescription[] =
     "Enables the network service, which makes network requests through a "
     "separate service. Note: most features don't work with this yet.";
 
+const char kEnableNetworkServiceInProcessName[] =
+    "Runs network service in-process";
+const char kEnableNetworkServiceInProcessDescription[] =
+    "Runs the network service in the browser process.";
+
 const char kEnableNewPrintPreview[] = "Enable new Print Preview UI";
 const char kEnableNewPrintPreviewDescription[] =
     "If enabled, Print Preview will display a newer UI";
