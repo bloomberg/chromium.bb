@@ -18,14 +18,17 @@ has_metadata() {
     return 1
 }
 
-for table in $(dirname $0)/../tables/*; do
-    cat $table | grep '^include ' | sed "s|^include  *\(.[^ ]*\).*$|$(dirname $table)/\1|g"
-done | sort | uniq | \
+ret=0
 while read -r table; do
     if has_metadata $table; then
         echo "Table $table has metadata and is also included somewhere" >&2
-        exit 1
+        ret=1
     fi
-done
+done <<< $(
+    for table in $(dirname $0)/../tables/*; do
+        cat "$table" | grep '^include ' | sed "s|^include  *\([^ ]*\).*$|$(dirname $table)/\1|g"
+    done | sort | uniq
+)
+exit $ret
 
 # TODO: Test that all tables without metadata are included at least once
