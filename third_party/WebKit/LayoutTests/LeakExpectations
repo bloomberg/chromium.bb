@@ -23,19 +23,14 @@ crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 # Untriaged but known leaks of PausableObject (http).
 # -----------------------------------------------------------------
 crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
-crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/service-worker-script-streaming/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
-crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/service-worker-script-streaming/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 
 crbug.com/664874 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
-crbug.com/664874 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
 
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
-crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
-crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 
 crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Leak ]
 
@@ -52,7 +47,6 @@ crbug.com/780386 external/wpt/html/dom/reflection-grouping.html [ Leak Pass ]
 # Not revert suspected CL as jam@ request, expected to be fixed soon.
 # -----------------------------------------------------------------
 crbug.com/765721 [ Linux ] http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
-crbug.com/765721 [ Linux ] virtual/mojo-loading/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Leak ]
 crbug.com/765721 [ Linux ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 
 ###########################################################################

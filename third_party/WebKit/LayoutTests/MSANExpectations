@@ -16,7 +16,6 @@ crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
 crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
 
 crbug.com/700795 [ Linux ] http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Skip ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Skip ]
 
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
 crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
@@ -40,12 +39,7 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-d
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.js [ Timeout ]
 
 crbug.com/667560 [ Linux ] http/tests/devtools/startup/console/console-format-startup.html [ Timeout Pass ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/startup/console/console-format-startup.html [ Timeout Pass ]
 crbug.com/751906 [ Linux ] http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
-crbug.com/751906 [ Linux ] virtual/mojo-loading/http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
-
-crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag-replace-state.html [ Timeout Pass ]
-crbug.com/671556 [ Linux ] virtual/mojo-loading/http/tests/security/xssAuditor/report-script-tag.html [ Timeout Pass ]
 
 crbug.com/736370 [ Linux ] external/wpt/editing/run/removeformat.html [ Timeout ]
 crbug.com/736554 [ Linux ] external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Timeout ]
@@ -67,9 +61,7 @@ crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/forced-layout-in-microtask.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/tracing/timeline-xhr-response-type-blob-event.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/components/file-path-scoring.js [ Timeout ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/components/file-path-scoring.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.js [ Timeout ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.js [ Timeout ]
 crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]
 
 crbug.com/739365 [ Linux ] virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Skip ]

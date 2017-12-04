@@ -19,9 +19,6 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 # These tests started failing when browser-side navigation was turned on.
 crbug.com/762529 http/tests/devtools/network/network-datareceived.js [ Failure ]
 crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
-crbug.com/762529 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.js [ Failure ]
-crbug.com/759632 virtual/mojo-loading/http/tests/devtools/network/network-datasaver-warning.js [ Failure ]
-crbug.com/576261 [ Win ] virtual/mojo-loading/http/tests/devtools/resource-parameters.html [ Failure ]
 # ====== Browserside navigation until here ======
 
 # ====== Paint team owned tests from here ======
@@ -726,33 +723,23 @@ crbug.com/776656 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-elemen
 
 # ====== DevTools test migration failures from here ======
 
-### virtual/mojo-loading/http/tests/devtools
 crbug.com/667560 http/tests/devtools/console/console-search.js [ Skip ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/console/console-search.js [ Skip ]
 
 crbug.com/667560 http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
-crbug.com/778515 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 
 crbug.com/785571 http/tests/devtools/console/console-context-selector.js [ Pass Failure ]
-crbug.com/785571 virtual/mojo-loading/http/tests/devtools/console/console-context-selector.js [ Pass Failure ]
 
 # ====== DevTools test migration failures until here ======
 
 crbug.com/789225 http/tests/devtools/console/console-focus.js [ Pass Failure ]
-crbug.com/789225 virtual/mojo-loading/http/tests/devtools/console/console-focus.js [ Pass Failure ]
 
 crbug.com/667560 [ Win ] http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
-crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
 
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
-crbug.com/778391 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
-crbug.com/778391 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
 
 crbug.com/773353 [ Mac ] http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
-crbug.com/773353 [ Mac ] virtual/mojo-loading/http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
 
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
 
@@ -894,10 +881,8 @@ crbug.com/492664 [ Win ] external/wpt/css/css-writing-modes/bidi-plaintext-001.h
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280342 [ Linux Win ] virtual/mojo-loading/http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
-crbug.com/520739 [ Mac ] virtual/mojo-loading/http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
 crbug.com/520737 [ Mac ] external/wpt/css/css-writing-modes/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
@@ -908,7 +893,6 @@ crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass Crash ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
-crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
@@ -917,10 +901,8 @@ crbug.com/749251 [ Mac ] http/tests/devtools/application-panel/resources-panel-w
 crbug.com/761798 [ Mac ] inspector-protocol/emulation/device-emulation-desktop.js [ Failure ]
 
 crbug.com/761881 [ Win7 Debug ] http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.js [ Pass Crash ]
-crbug.com/761881 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints.js [ Pass Crash ]
 
 crbug.com/771233 [ Win10 ] http/tests/devtools/audits2/ [ Skip ]
-crbug.com/771233 [ Win10 ] virtual/mojo-loading/http/tests/devtools/audits2/ [ Skip ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -951,7 +933,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
-crbug.com/518883 crbug.com/390452 virtual/mojo-loading/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518989 [ Mac ] external/wpt/css/css-writing-modes/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
 
@@ -1010,21 +991,15 @@ crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Fail
 # crbug.com/778784 Is tracking recent flakiness in decode-resize.html. Once that is fixed, the following
 # failures should be uncommented:
 # crbug.com/498539 [ Win ] http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
-# crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
 crbug.com/778784 http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
-crbug.com/778784 virtual/mojo-loading/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
 crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
 
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 [ Mac ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Crash Pass Timeout Failure ]
-crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Crash Pass Timeout Failure ]
 crbug.com/790892 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Failure Pass ]
-crbug.com/790892 virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Failure Pass ]
 
 crbug.com/498539 [ Win7 ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass ]
-crbug.com/667560 [ Win7 ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass ]
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
@@ -1033,13 +1008,10 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
 
 crbug.com/734744 http/tests/devtools/indexeddb/resources-panel.js [ Pass Failure Timeout ]
-crbug.com/734744 virtual/mojo-loading/http/tests/devtools/indexeddb/resources-panel.js [ Pass Failure Timeout ]
 
 crbug.com/734793 http/tests/devtools/indexeddb/database-names.js [ Pass Failure Timeout ]
-crbug.com/734793 virtual/mojo-loading/http/tests/devtools/indexeddb/database-names.js [ Pass Failure Timeout ]
 
 crbug.com/735259 http/tests/devtools/indexeddb/upgrade-events.js [ Pass Failure ]
-crbug.com/735259 virtual/mojo-loading/http/tests/devtools/indexeddb/upgrade-events.js [ Pass Failure ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
@@ -1048,12 +1020,9 @@ crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
-crbug.com/410145 [ Win ] virtual/mojo-loading/fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
-crbug.com/411164 [ Win ] virtual/mojo-loading/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 crbug.com/699347 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash ]
-crbug.com/699347 virtual/mojo-loading/http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash ]
 
 crbug.com/788042 animations/animation-ready-reject-script-forbidden.html [ Timeout ]
 crbug.com/788042 virtual/threaded/animations/animation-ready-reject-script-forbidden.html [ Timeout ]
@@ -1097,7 +1066,6 @@ crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scro
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 crbug.com/659456 http/tests/devtools/persistence/automapping-sourcemap.js [ Pass Failure ]
-crbug.com/659456 virtual/mojo-loading/http/tests/devtools/persistence/automapping-sourcemap.js [ Pass Failure ]
 
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-align.html [ Skip ]
@@ -1305,9 +1273,7 @@ crbug.com/492664 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.x
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
 crbug.com/760367 http/tests/devtools/console/console-tainted-globals.js [ NeedsManualRebaseline Timeout ]
-crbug.com/760367 virtual/mojo-loading/http/tests/devtools/console/console-tainted-globals.js [ NeedsManualRebaseline Timeout ]
 crbug.com/760367 http/tests/devtools/runtime/runtime-callFunctionOn.js [ NeedsManualRebaseline Timeout ]
-crbug.com/760367 virtual/mojo-loading/http/tests/devtools/runtime/runtime-callFunctionOn.js [ NeedsManualRebaseline Timeout ]
 
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 external/wpt/css/css-writing-modes/text-combine-upright-value-all-001.html [ Failure ]
@@ -1413,20 +1379,17 @@ crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeo
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
-crbug.com/524160 [ Debug ] virtual/mojo-loading/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
 # Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
 # with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
 crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
-crbug.com/630342 virtual/mojo-loading/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
 crbug.com/555703 [ Linux Mac Win ] virtual/media-gpu-accelerated [ Skip ]
 
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
-crbug.com/613887 virtual/mojo-loading/http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
@@ -1453,21 +1416,12 @@ crbug.com/528062 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cache
 crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-data-blob.html [ Failure Timeout ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
 crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Pass ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Pass ]
 crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Pass ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Pass ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
@@ -1491,15 +1445,11 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
 crbug.com/599670 [ Win Linux ] http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
-crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/devtools/resource-parameters-ipv6.html [ Timeout Failure Pass ]
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
 crbug.com/700795 http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Timeout Pass ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Timeout Pass ]
-
-crbug.com/769357 [ Win7 Debug ] virtual/mojo-loading/http/tests/misc/webtiming-slow-load.php [ Failure Pass ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
@@ -1673,13 +1623,11 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
-crbug.com/491764 virtual/mojo-loading/http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Skip ]
 crbug.com/733495 [ Linux ] http/tests/devtools/elements/styles-4/styles-history.js [ Skip ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-history.js [ Skip ]
 crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Skip ]
 
 
@@ -1698,7 +1646,6 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
-crbug.com/501659 virtual/mojo-loading/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 # Mac10.10-specific failures that still need triaging.
@@ -1778,14 +1725,10 @@ crbug.com/240576 external/wpt/fullscreen/api/element-ready-check-containing-ifra
 crbug.com/747758 [ Mac Win ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure ]
 
 crbug.com/567419 http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Skip ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Skip ]
 
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
-crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
-crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
-crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win ] http/tests/permissions/chromium/test-request-worker.html [ Pass Timeout ]
 
 crbug.com/543369 [ Win Mac Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure Pass ]
@@ -1793,14 +1736,11 @@ crbug.com/543369 [ Win Mac Linux ] fast/forms/select-popup/popup-menu-appearance
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
-crbug.com/548765 virtual/mojo-loading/http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 
 crbug.com/564109 [ Win ] external/wpt/css/css-fonts/font-display/font-display.html [ Failure Pass Timeout ]
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
-crbug.com/564109 [ Win ]  virtual/mojo-loading/http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
-crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
@@ -1831,7 +1771,6 @@ crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
 crbug.com/610464 [ Linux Win7 Debug ] http/tests/devtools/components/throttler.js [ Failure Pass ]
-crbug.com/667560 [ Linux Win7 Debug ] virtual/mojo-loading/http/tests/devtools/components/throttler.js [ Failure Pass ]
 crbug.com/654477 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/654477 fast/layers/video-layer.html [ Failure ]
@@ -1849,13 +1788,10 @@ crbug.com/654477 media/video-display-toggle.html [ Failure ]
 crbug.com/654477 media/video-empty-source.html [ Failure ]
 crbug.com/654477 media/video-no-audio.html [ Failure ]
 crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/638621 [ Win7 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
-crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/699096 media/controls-drag-timebar-rendering.html [ Failure ]
 
@@ -1876,7 +1812,6 @@ crbug.com/399507 virtual/threaded/http/tests/devtools/tracing/timeline-paint/lay
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/638618 http/tests/devtools/editor/text-editor-search-switch-editor.js [ Skip ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/editor/text-editor-search-switch-editor.js [ Skip ]
 
 # These tests have test harness errors and PASS lines that have a
 # non-deterministic order.
@@ -1884,7 +1819,6 @@ crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-o
 
 # Skip the non-virtualized CORS-RFC1918 tests:
 crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
-crbug.com/763830 virtual/mojo-loading/http/tests/security/cors-rfc1918/ [ Skip ]
 
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
@@ -1893,7 +1827,6 @@ crbug.com/763830 virtual/mojo-loading/http/tests/security/cors-rfc1918/ [ Skip ]
 crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
 
 crbug.com/698077 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ NeedsManualRebaseline ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ NeedsManualRebaseline ]
 
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/object-src [ Skip ]
@@ -1935,12 +1868,6 @@ crbug.com/711529 http/tests/permissions/test-api-surface.html [ Timeout ]
 crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
 crbug.com/711529 http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/notifications/serviceworker-notification-event.html [ Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/origin_trials/sample-api-workers.html [ Crash Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-api-surface.html [ Failure Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/permissions/test-query.html [ Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
-crbug.com/711529 virtual/mojo-loading/http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 crbug.com/711529 virtual/mojo-notifications/http/tests/notifications/serviceworker-notification-event.html [ Timeout ]
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
@@ -1985,31 +1912,22 @@ crbug.com/626703 external/wpt/web-nfc/idlharness.https.html [ Skip ]
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.html [ Failure Pass Timeout ]
 crbug.com/723826 http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
-crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 
 
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.js [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.js [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
 crbug.com/751952 fast/dom/Range/getClientRects.html [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/console/console-format.js [ Pass Failure ]
-crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-format.js [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/unit/datagrid-editable-longtext.js [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
-crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
-crbug.com/751952 virtual/mojo-loading/http/tests/devtools/unit/datagrid-editable-longtext.js [ Pass Failure ]
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
@@ -2566,13 +2484,11 @@ crbug.com/490511 external/wpt/html/semantics/embedded-content/media-elements/pla
 crbug.com/675540 external/wpt/service-workers/service-worker/claim-with-redirect.https.html [ Skip ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
-crbug.com/435547 virtual/mojo-loading/http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
 crbug.com/678481 http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Timeout Failure Pass ]
 crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Failure Pass ]
-crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Failure Pass ]
 
 crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units-off-screen.html [ Skip ]
 crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units.html [ Skip ]
@@ -2614,9 +2530,7 @@ crbug.com/701047 [ Mac10.12 ] editing/style/block-style-003.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/style/block-styles-007.html [ Failure ]
 
 crbug.com/660295 http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.js [ Pass Failure ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.js [ Pass Failure ]
 crbug.com/735245 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout Failure ]
-crbug.com/735245 virtual/mojo-loading/http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout Failure ]
 
 # [css-grid]
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
@@ -2665,7 +2579,6 @@ crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
 
 crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
-crbug.com/664450 virtual/mojo-loading/http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
 
 # Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
 crbug.com/508730 external/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
@@ -2710,7 +2623,6 @@ crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
 crbug.com/667371 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Failure ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Failure ]
 
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 external/wpt/css/css-ui/box-sizing-014.html [ Failure ]
@@ -2738,7 +2650,6 @@ crbug.com/660384 virtual/mojo-blobs/external/wpt/webmessaging/without-ports/001.
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
-crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 
 # Added 2016-12-12
 crbug.com/673539 [ Linux Win ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
@@ -2757,18 +2668,13 @@ crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Fa
 crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/671478 fast/table/percent-height-replaced-content-in-cell.html [ Pass Failure ]
-crbug.com/671478 virtual/mojo-loading/fast/table/percent-height-replaced-content-in-cell.html [ Pass Failure ]
 crbug.com/663858 fast/text/selection/emphasis.html [ Pass Failure ]
 crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
-crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
-crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
-crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
-crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 
 crbug.com/787084 http/tests/security/contentSecurityPolicy/report-blocked-data-uri.php [ Skip ]
 
@@ -2965,8 +2871,6 @@ crbug.com/709227 external/wpt/workers/nested_worker.worker.html [ Timeout ]
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash ]
 crbug.com/786249 http/tests/inspector-protocol/network/response-interception-no-change-content-not-ready.js [ Crash ]
 crbug.com/786249 http/tests/inspector-protocol/network/response-interception-request-completes-network-closes.js [ Crash ]
-crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/response-interception-no-change-content-not-ready.js [ Crash ]
-crbug.com/786249 virtual/mojo-loading/http/tests/inspector-protocol/network/response-interception-request-completes-network-closes.js [ Crash ]
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 
@@ -2992,14 +2896,10 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openK
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
 
 crbug.com/678492 http/tests/misc/webtiming-ssl.php [ Failure Pass ]
-crbug.com/678492 virtual/mojo-loading/http/tests/misc/webtiming-ssl.php [ Failure Pass ]
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
-crbug.com/678493 virtual/mojo-loading/http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
-crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
 crbug.com/747751 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
-crbug.com/747751 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 
@@ -3047,22 +2947,18 @@ crbug.com/688486 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
-crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pass Timeout ]
 
 # Sheriff failures 2017-02-27
 crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-with-colon.sub.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-10
 crbug.com/741210 [ Mac ] inspector-protocol/emulation/device-emulation-restore.js [ Failure ]
-crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/devtools/workers-on-navigation.js [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/devtools/workers-on-navigation.js [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
 crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
 crbug.com/703518 virtual/threaded/http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
-crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
 
 # Sheriff failure 2017-05-05
 crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Pass Timeout ]
@@ -3070,8 +2966,6 @@ crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Pa
 # Sheriff failures 2017-05-11
 crbug.com/724027 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
 crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
-crbug.com/724027 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
-crbug.com/724027 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
 
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
@@ -3114,10 +3008,6 @@ crbug.com/737643 http/tests/feature-policy/payment-disabled.php [ Failure ]
 crbug.com/737643 http/tests/feature-policy/payment-enabledforall.php [ Failure ]
 crbug.com/737643 virtual/feature-policy/http/tests/feature-policy/payment-disabled.php [ Failure ]
 crbug.com/737643 virtual/feature-policy/http/tests/feature-policy/payment-enabledforall.php [ Failure ]
-crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/fullscreen-disabled.php [ Failure ]
-crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/fullscreen-enabledforall.php [ Failure ]
-crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/payment-disabled.php [ Failure ]
-crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/payment-enabledforall.php [ Failure ]
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
 crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pass Timeout ]
@@ -3141,8 +3031,6 @@ crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 # More flaky tests on Mac
 crbug.com/731111 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
 crbug.com/731111 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Failure Pass Timeout ]
-crbug.com/731111 [ Mac ] virtual/mojo-loading/http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
-crbug.com/731111 [ Mac ] virtual/mojo-loading/http/tests/media/video-load-metadata-decode-error.html [ Failure Pass Timeout ]
 
 # Sheriff failures 2017-06-09
 crbug.com/731518 [ Win Linux Mac ] webaudio/DynamicsCompressor/dynamicscompressor-clear-internal-state.html [ Failure Pass ]
@@ -3152,16 +3040,12 @@ crbug.com/731509 [ Win ] css3/viewport-percentage-lengths/viewport-percentage-le
 crbug.com/731535 [ Win ] fast/dom/Window/window-resize-contents.html [ Failure Pass Timeout ]
 
 crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
-crbug.com/732103 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
 
 # Sheriff failures 2017-06-14
 crbug.com/733357 [ Win Mac ] http/tests/devtools/elements/styles-4/styles-history.js [ Failure Pass ]
-crbug.com/667560 [ Win Mac ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-history.js [ Failure Pass ]
 crbug.com/733448 http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
-crbug.com/733448 virtual/mojo-loading/http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
-crbug.com/737959 virtual/mojo-loading/http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
 
@@ -3184,7 +3068,6 @@ crbug.com/736177 [ Mac ] fast/forms/search/searchfield-heights.html [ Failure Pa
 # These tests are failing on Mac-10.12 when using an Intel GPU and Mac Retina
 crbug.com/736177 [ Mac10.12 Retina ] compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] css1/box_properties/acid_test.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 Retina ] virtual/mojo-loading/css1/box_properties/acid_test.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] css2.1/t09-c5526c-display-00-e.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/html/css3-modsel-25.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] css3/selectors3/html/css3-modsel-70.html [ Failure Pass ]
@@ -3250,7 +3133,6 @@ crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
-crbug.com/708994 virtual/mojo-loading/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 
 crbug.com/745887 [ Mac Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
 
@@ -3262,18 +3144,6 @@ crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/contr
 # For Skia roll
 crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
 
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-log-object-with-getter.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar-jquery1.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar-jquery2.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/runtime/runtime-getProperties.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/function-generator-details.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/persistence/automapping-sourcemap-nameclash.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/persistence/automapping-sourcemap-nameclash.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
@@ -3289,16 +3159,12 @@ crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/watch-expressions-pres
 crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
 
 crbug.com/v8/4958 http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
 # http/tests/devtools/console/console-format-es6.js and its virtual counterpart needs attention, but is listed as NeedsManualRebaseline directly above for all platforms
 # crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6.js [ Timeout ]
-# crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout ]
-crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout ]
 
 # Sheriff failures 2017-07-28
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
-crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 
 # Sheriff failure 2017-08-07
 crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
@@ -3438,11 +3304,8 @@ crbug.com/755405 [ Android ] transforms/transformed-caret.html [ Failure ]
 
 # ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
-crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
-crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-partial.html [ Pass Crash ]
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
-crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/register-bypassing-scheme-script.https.html [ Pass Crash ]
 
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
@@ -3508,9 +3371,6 @@ crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-on-accelerate
 crbug.com/757165 [ Win ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
-crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-filter-test.js [ Skip ]
-crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
-crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/extensions/extensions-panel.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/threaded/animations/svg/animated-filter-svg-element.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-clipping.html [ Skip ]
@@ -3559,53 +3419,36 @@ crbug.com/787971 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKC
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
-crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
 crbug.com/757955 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] external/wpt/encoding/legacy-mb-japanese/shift_jis/sjis-encode-form-errors-han.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Pass Failure Timeout ]
-crbug.com/760546 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Pass Failure Timeout ]
 
 # This test has a fixed number of time which can depend on performance.
 
 crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 
 # These can be rebaselined after their V8 changes are rolled into Blink.
 crbug.com/700624 http/tests/devtools/console/console-tests.js [ NeedsManualRebaseline ]
-crbug.com/700624 virtual/mojo-loading/http/tests/devtools/console/console-tests.js [ NeedsManualRebaseline ]
 crbug.com/727514 http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
-crbug.com/727514 virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
 crbug.com/727514 virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
 # Uncomment these lines after the NeedsManualRebaseline counterpart is rebaselined.
 # crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
-# crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Timeout ]
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
@@ -3618,7 +3461,6 @@ crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
 # Uncomment this line after the NeedsManualRebaseline counterpart is rebaselined.
-# crbug.com/770232 [ Mac ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 
 # Test flaky (crashing) on WebKit Android (Nexus4)
 crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
@@ -3637,7 +3479,6 @@ crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash 
 
 # Sheriff failures 2017-09-08
 crbug.com/763208 http/tests/devtools/sources/debugger-ui/source-frame-count.js [ Pass Failure ]
-crbug.com/763208 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.js [ Pass Failure ]
 
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
 
@@ -3656,7 +3497,6 @@ crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip 
 
 # Sheriff failures 2017-09-20
 # Timeouts flakily on chromium.webkit/WebKit Win7 and WebKit Win10
-crbug.com/767012 [ Win7 Win10 ] virtual/mojo-loading/http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Timeout ]
 # Fails flakily on chromium.mac/Mac10.12 Tests and WebKit Mac10.12.
 crbug.com/767040 [ Mac10.12 ] external/wpt/clear-site-data/storage.https.html [ Pass Failure ]
 # Fails reliably on last 3 builds of this bot.
@@ -3665,10 +3505,8 @@ crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-c
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
-crbug.com/767469 virtual/mojo-loading/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-22
-crbug.com/767892 [ Win Linux Mac ] virtual/mojo-loading/http/tests/devtools/startup/database-open.html [ Pass Timeout ]
 
 # Sheriff failures 2017-09-29
 
@@ -3694,7 +3532,6 @@ crbug.com/773122 [ Win7 ] fast/text/word-break.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure Pass ]
 
 # Sheriff failures 2017-10-11
-crbug.com/772411 [ Mac ] virtual/mojo-loading/http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 
 # Sheriff failures 2017-10-13
 crbug.com/774437 paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
@@ -3707,17 +3544,12 @@ crbug.com/776201 [ Win7 Debug ] virtual/longtask-v2/http/tests/performance-timin
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
-crbug.com/777466 virtual/mojo-loading/http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
 crbug.com/777222 http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Failure Timeout ]
-crbug.com/777222 virtual/mojo-loading/http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
-crbug.com/777222 virtual/mojo-loading/http/tests/devtools/import-open-inspector.js [ Pass Failure Timeout ]
-crbug.com/777222 virtual/mojo-loading/http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 crbug.com/777259 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
 
 crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
-crbug.com/778745 virtual/mojo-loading/http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
 
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
@@ -3781,23 +3613,16 @@ crbug.com/783229 external/wpt/cookie-store/one_simple_origin_cookie_static.tenta
 
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
-crbug.com/785179 [ Mac10.11 ] virtual/mojo-loading/http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Failure Pass ]
-crbug.com/785179 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
 crbug.com/785662 [ Debug ] http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
-crbug.com/785662 [ Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
 
 # Flaky DevTools
 crbug.com/667560 http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 
 # Sheriff failures 2017-11-16
-crbug.com/785980 [ Win10 ] virtual/mojo-loading/http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
 crbug.com/785980 [ Win7 Win10 ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
 
 # Sheriff failures 2017-11-17
 crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
-crbug.com/786235 virtual/mojo-loading/http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
-crbug.com/786348 [ Win7 ] virtual/mojo-loading/http/tests/devtools/console/console-link-to-snippet.js [ Failure Pass ]
 
 # Sheriff failures 2017-11-21
 crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Timeout Pass ]
@@ -3805,7 +3630,6 @@ crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageS
 # Sheriff failures 2017-11-28
 crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
 crbug.com/789139 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Pass Failure ]
-crbug.com/789139 [ Linux ] virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Pass Failure ]
 crbug.com/785179 [ Mac10.11 ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
 # Sheriff failures 2017-11-29
 crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
@@ -3827,11 +3651,3 @@ crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-fe
 crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-feature-policy-same-origin.html [ Failure Pass Timeout ]
 crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-delegation.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-gesture.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-same-origin.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]
