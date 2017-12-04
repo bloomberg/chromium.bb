@@ -101,14 +101,6 @@ const FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
 static const FilePath::CharType kLevelDBTestDirectoryPrefix[] =
     FILE_PATH_LITERAL("leveldb-test-");
 
-static base::File::Error LastFileError() {
-#if defined(OS_WIN)
-  return base::File::OSErrorToFileError(GetLastError());
-#else
-  return base::File::OSErrorToFileError(errno);
-#endif
-}
-
 // Making direct platform in lieu of using base::FileEnumerator because the
 // latter can fail quietly without return an error result.
 static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
@@ -249,7 +241,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
     TRACE_EVENT1("leveldb", "ChromiumSequentialFile::Read", "size", n);
     int bytes_read = file_.ReadAtCurrentPosNoBestEffort(scratch, n);
     if (bytes_read == -1) {
-      base::File::Error error = LastFileError();
+      base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordErrorAt(kSequentialFileRead);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          kSequentialFileRead, error);
@@ -262,7 +254,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
 
   Status Skip(uint64_t n) override {
     if (file_.Seek(base::File::FROM_CURRENT, n) == -1) {
-      base::File::Error error = LastFileError();
+      base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordErrorAt(kSequentialFileSkip);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          kSequentialFileSkip, error);
@@ -389,7 +381,7 @@ Status ChromiumWritableFile::SyncParent() {
                        f.error_details());
   }
   if (!f.Flush()) {
-    base::File::Error error = LastFileError();
+    base::File::Error error = base::File::GetLastFileError();
     uma_logger_->RecordOSError(kSyncParent, error);
     return MakeIOError(parent_dir_, base::File::ErrorToString(error),
                        kSyncParent, error);
@@ -403,7 +395,7 @@ Status ChromiumWritableFile::Append(const Slice& data) {
   DCHECK(uma_logger_);
   int bytes_written = file_.WriteAtCurrentPos(data.data(), data.size());
   if (static_cast<size_t>(bytes_written) != data.size()) {
-    base::File::Error error = LastFileError();
+    base::File::Error error = base::File::GetLastFileError();
     uma_logger_->RecordOSError(kWritableFileAppend, error);
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileAppend, error);
@@ -428,7 +420,7 @@ Status ChromiumWritableFile::Sync() {
   TRACE_EVENT0("leveldb", "WritableFile::Sync");
 
   if (!file_.Flush()) {
-    base::File::Error error = LastFileError();
+    base::File::Error error = base::File::GetLastFileError();
     uma_logger_->RecordErrorAt(kWritableFileSync);
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileSync, error);

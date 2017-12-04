@@ -234,7 +234,7 @@ File::Error File::Lock() {
 
   BOOL result = LockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
-    return OSErrorToFileError(GetLastError());
+    return GetLastFileError();
   return FILE_OK;
 }
 
@@ -245,7 +245,7 @@ File::Error File::Unlock() {
 
   BOOL result = UnlockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
   if (!result)
-    return OSErrorToFileError(GetLastError());
+    return GetLastFileError();
   return FILE_OK;
 }
 
@@ -264,7 +264,7 @@ File File::Duplicate() const {
                          0,  // dwDesiredAccess ignored due to SAME_ACCESS
                          FALSE,  // !bInheritHandle
                          DUPLICATE_SAME_ACCESS)) {
-    return File(OSErrorToFileError(GetLastError()));
+    return File(GetLastFileError());
   }
 
   File other(other_handle);
@@ -404,7 +404,7 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
     else if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
       created_ = true;
   } else {
-    error_details_ = OSErrorToFileError(GetLastError());
+    error_details_ = GetLastFileError();
   }
 }
 
@@ -417,6 +417,11 @@ bool File::Flush() {
 
 void File::SetPlatformFile(PlatformFile file) {
   file_.Set(file);
+}
+
+// static
+File::Error File::GetLastFileError() {
+  return File::OSErrorToFileError(GetLastError());
 }
 
 }  // namespace base
