@@ -42,6 +42,9 @@ CGFloat kMinFaviconSizePt = 16;
 
 // Cell height, in points.
 CGFloat kCellHeightPt = 56.0;
+
+// Minimium spacing between keyboard and the titleText when creating new folder.
+CGFloat keyboardSpacing = 16.0;
 }
 
 using bookmarks::BookmarkNode;
@@ -937,21 +940,32 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 // Called when the UIKeyboardDidShowNotification is sent
 - (void)keyboardWasShown:(NSNotification*)aNotification {
+  if (![self.delegate isAtTopOfNavigation:self]) {
+    return;
+  }
   NSDictionary* info = [aNotification userInfo];
-  CGSize kbSize =
-      [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].size;
+  CGFloat keyboardTop =
+      [[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue].origin.y;
+  CGFloat tableBottom =
+      CGRectGetMaxY([self convertRect:self.tableView.frame toView:nil]);
+  CGFloat shiftY = tableBottom - keyboardTop + keyboardSpacing;
 
-  UIEdgeInsets previousContentInsets = self.tableView.contentInset;
-  // Shift the content inset by the height of the keyboard so we can scoll to
-  // the bottom of the content that is potentially behind the keyboard.
-  UIEdgeInsets contentInsets =
-      UIEdgeInsetsMake(previousContentInsets.top, 0.0, kbSize.height, 0.0);
-  self.tableView.contentInset = contentInsets;
-  self.tableView.scrollIndicatorInsets = contentInsets;
+  if (shiftY >= 0) {
+    UIEdgeInsets previousContentInsets = self.tableView.contentInset;
+    // Shift the content inset to prevent the editing content from being hidden
+    // by the keyboard.
+    UIEdgeInsets contentInsets =
+        UIEdgeInsetsMake(previousContentInsets.top, 0.0, shiftY, 0.0);
+    self.tableView.contentInset = contentInsets;
+    self.tableView.scrollIndicatorInsets = contentInsets;
+  }
 }
 
 // Called when the UIKeyboardWillHideNotification is sent
 - (void)keyboardWillBeHidden:(NSNotification*)aNotification {
+  if (![self.delegate isAtTopOfNavigation:self]) {
+    return;
+  }
   UIEdgeInsets previousContentInsets = self.tableView.contentInset;
   // Restore the content inset now that the keyboard has been hidden.
   UIEdgeInsets contentInsets =

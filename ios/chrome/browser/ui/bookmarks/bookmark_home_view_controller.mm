@@ -559,6 +559,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 }
 
+- (BOOL)isAtTopOfNavigation:(BookmarkTableView*)view {
+  return (self.navigationController.topViewController == self);
+}
+
 #pragma mark - BookmarkFolderViewControllerDelegate
 
 - (void)folderPicker:(BookmarkFolderViewController*)folderPicker

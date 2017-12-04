@@ -64,6 +64,9 @@ class ChromeBrowserState;
 // Tells the delegate to refresh the context bar.
 - (void)bookmarkTableViewRefreshContextBar:(BookmarkTableView*)view;
 
+// Returns true if this table is at the top of the navigation stack.
+- (BOOL)isAtTopOfNavigation:(BookmarkTableView*)view;
+
 @end
 
 @interface BookmarkTableView : UIView
