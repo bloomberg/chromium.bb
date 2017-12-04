@@ -20926,6 +20926,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="HistoryUrlType">
+  <int value="0" label="Empty"/>
+  <int value="1" label="Same as baseUrl"/>
+  <int value="2" label="Different from baseUrl"/>
+</enum>
+
 <enum name="HomedirEncryptionType">
   <int value="1" label="Ecryptfs"/>
   <int value="2" label="Ext4 Dir Encryption"/>
