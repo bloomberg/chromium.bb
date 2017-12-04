@@ -175,7 +175,8 @@ cr.define('extension_manager_tests', function() {
 
       service.itemStateChangedTarget.callListeners({
         event_type: chrome.developerPrivate.EventType.UNINSTALLED,
-        // When an extension is unistalled, only the ID is passed back from C++.
+        // When an extension is uninstalled, only the ID is passed back from
+        // C++.
         item_id: extension.id,
       });
 
@@ -189,7 +190,7 @@ cr.define('extension_manager_tests', function() {
 
     // Test case where an extension is uninstalled from the details view. User
     // should be forwarded to the main view.
-    test(assert(TestNames.UninstallFromDetails), function() {
+    test(assert(TestNames.UninstallFromDetails), function(done) {
       const extension = extension_test_util.createExtensionInfo(
           {location: 'FROM_STORE', name: 'Alpha', id: 'a'.repeat(32)});
       simulateExtensionInstall(extension);
@@ -199,13 +200,17 @@ cr.define('extension_manager_tests', function() {
       Polymer.dom.flush();
       assertViewActive('extensions-detail-view');
 
-      service.itemStateChangedTarget.callListeners({
-        event_type: chrome.developerPrivate.EventType.UNINSTALLED,
-        // When an extension is unistalled, only the ID is passed back from C++.
-        item_id: extension.id,
+      window.addEventListener('popstate', () => {
+        assertViewActive('extensions-item-list');
+        done();
       });
 
-      assertViewActive('extensions-item-list');
+      service.itemStateChangedTarget.callListeners({
+        event_type: chrome.developerPrivate.EventType.UNINSTALLED,
+        // When an extension is uninstalled, only the ID is passed back from
+        // C++.
+        item_id: extension.id,
+      });
     });
 
     test(assert(TestNames.ToggleIncognitoMode), function() {
