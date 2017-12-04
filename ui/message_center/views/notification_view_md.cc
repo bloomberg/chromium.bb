@@ -519,6 +519,23 @@ void NotificationViewMD::Layout() {
   // (e.g. Show expand button when |message_view_| exceeds one line.)
   header_row_->SetExpandButtonEnabled(IsExpandable());
   header_row_->Layout();
+
+  // The notification background is rounded in MessageView::Layout(),
+  // but we also have to round the actions row background here.
+  if (actions_row_->visible()) {
+    constexpr SkScalar kCornerRadius = SkIntToScalar(kNotificationCornerRadius);
+
+    // Use vertically larger clip path, so that actions row's top coners will
+    // not be rounded.
+    gfx::Path path;
+    gfx::Rect bounds = actions_row_->GetLocalBounds();
+    bounds.set_y(bounds.y() - bounds.height());
+    bounds.set_height(bounds.height() * 2);
+    path.addRoundRect(gfx::RectToSkRect(bounds), kCornerRadius, kCornerRadius);
+
+    action_buttons_row_->set_clip_path(path);
+    inline_reply_->set_clip_path(path);
+  }
 }
 
 void NotificationViewMD::OnFocus() {

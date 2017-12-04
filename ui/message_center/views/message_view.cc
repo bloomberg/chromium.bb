@@ -15,6 +15,7 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/views/message_view_delegate.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -28,13 +29,9 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
-const int kBorderCorderRadius = 2;
 const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
-#else
 const int kShadowCornerRadius = 0;
 const int kShadowElevation = 2;
-#endif
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
@@ -55,6 +52,14 @@ base::string16 CreateAccessibleName(
                                items[i].message);
   }
   return base::JoinString(accessible_lines, base::ASCIIToUTF16("\n"));
+}
+
+bool ShouldRoundMessageViewCorners() {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return message_center::IsNewStyleNotificationEnabled();
+#endif
 }
 
 }  // namespace
@@ -96,19 +101,20 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
 void MessageView::SetIsNested() {
   is_nested_ = true;
 
-#if defined(OS_CHROMEOS)
-  SetBorder(views::CreateRoundedRectBorder(kNotificationBorderThickness,
-                                           kBorderCorderRadius, kBorderColor));
-#else
-  const auto& shadow =
-      gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
-  gfx::Insets ninebox_insets = gfx::ShadowValue::GetBlurRegion(shadow.values) +
-                               gfx::Insets(kShadowCornerRadius);
-  SetBorder(views::CreateBorderPainter(
-      std::unique_ptr<views::Painter>(views::Painter::CreateImagePainter(
-          shadow.ninebox_image, ninebox_insets)),
-      -gfx::ShadowValue::GetMargin(shadow.values)));
-#endif
+  if (ShouldRoundMessageViewCorners()) {
+    SetBorder(views::CreateRoundedRectBorder(
+        kNotificationBorderThickness, kNotificationCornerRadius, kBorderColor));
+  } else {
+    const auto& shadow =
+        gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
+    gfx::Insets ninebox_insets =
+        gfx::ShadowValue::GetBlurRegion(shadow.values) +
+        gfx::Insets(kShadowCornerRadius);
+    SetBorder(views::CreateBorderPainter(
+        std::unique_ptr<views::Painter>(views::Painter::CreateImagePainter(
+            shadow.ninebox_image, ninebox_insets)),
+        -gfx::ShadowValue::GetMargin(shadow.values)));
+  }
 }
 
 void MessageView::SetExpanded(bool expanded) {
@@ -195,15 +201,16 @@ void MessageView::Layout() {
 
   // Background.
   background_view_->SetBoundsRect(content_bounds);
-#if defined(OS_CHROMEOS)
+
   // ChromeOS rounds the corners of the message view. TODO(estade): should we do
   // this for all platforms?
-  gfx::Path path;
-  constexpr SkScalar kCornerRadius = SkIntToScalar(2);
-  path.addRoundRect(gfx::RectToSkRect(background_view_->GetLocalBounds()),
-                    kCornerRadius, kCornerRadius);
-  background_view_->set_clip_path(path);
-#endif
+  if (ShouldRoundMessageViewCorners()) {
+    gfx::Path path;
+    constexpr SkScalar kCornerRadius = SkIntToScalar(kNotificationCornerRadius);
+    path.addRoundRect(gfx::RectToSkRect(background_view_->GetLocalBounds()),
+                      kCornerRadius, kCornerRadius);
+    background_view_->set_clip_path(path);
+  }
 }
 
 void MessageView::OnGestureEvent(ui::GestureEvent* event) {

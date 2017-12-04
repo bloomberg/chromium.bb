@@ -127,20 +127,22 @@ const int kContextMessageLineLimit = 1;
 
 // Around notifications ////////////////////////////////////////////////////////
 
-#if defined(OS_CHROMEOS)
 // Horizontal & vertical thickness of the border around the notifications in the
 // notification list.
 constexpr int kNotificationBorderThickness = 1;
 // Horizontal & vertical space around & between notifications in the
 // notification list.
 constexpr int kMarginBetweenItemsInList = 8;
-#endif
 
 // Horizontal & vertical space around & between popup notifications.
 constexpr int kMarginBetweenPopups = 10;
 
 // Shadow in the tray.
 const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
+
+// Radius of the rounded corners of a notification.
+// The corners are only rounded in Chrome OS.
+constexpr int kNotificationCornerRadius = 2;
 
 }  // namespace message_center
 
