@@ -63,6 +63,33 @@ TEST_F(XmlParserTest, ParseBadXml) {
     TestParseXml(xml, "");
 }
 
+TEST_F(XmlParserTest, IgnoreComments) {
+  TestParseXml("<!-- This is the best XML document IN THE WORLD! --><a></a>",
+               R"( {"type": "element", "tag": "a"} )");
+}
+
+TEST_F(XmlParserTest, IgnoreProcessingCommands) {
+  TestParseXml(R"(<?xml-stylesheet href="mystyle.css" type="text/css"?>
+                  <a></a>)",
+               R"( {"type": "element", "tag": "a"} )");
+  TestParseXml("<a/><?hello?>", R"( {"type": "element", "tag": "a"} )");
+}
+
+TEST_F(XmlParserTest, IgnoreDocumentTypes) {
+  TestParseXml(
+      R"(<?xml version="1.0" encoding="utf-8"?>
+         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+             "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+         <html xmlns="http://www.w3.org/1999/xhtml">Some HTML</html>
+      )",
+      R"( {"type": "element",
+           "namespaces": {"": "http://www.w3.org/1999/xhtml"},
+           "tag": "html",
+           "children":[{"type": "text", "text": "Some HTML"}]
+          }
+      )");
+}
+
 TEST_F(XmlParserTest, ParseSelfClosingTag) {
   TestParseXml("<a/>", R"( {"type": "element", "tag": "a"} )");
   TestParseXml("<a><b/></a>",

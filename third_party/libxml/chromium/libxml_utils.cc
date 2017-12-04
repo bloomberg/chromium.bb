@@ -158,21 +158,16 @@ bool XmlReader::GetTextIfCDataElement(std::string* content) {
   return true;
 }
 
+bool XmlReader::IsElement() {
+  return NodeType() == XML_READER_TYPE_ELEMENT;
+}
+
 bool XmlReader::IsClosingElement() {
   return NodeType() == XML_READER_TYPE_END_ELEMENT;
 }
 
 bool XmlReader::IsEmptyElement() {
   return xmlTextReaderIsEmptyElement(reader_);
-}
-
-bool XmlReader::IsWhiteSpace() {
-  return NodeType() == XML_READER_TYPE_WHITESPACE ||
-         NodeType() == XML_READER_TYPE_SIGNIFICANT_WHITESPACE;
-}
-
-bool XmlReader::IsComment() {
-  return NodeType() == XML_READER_TYPE_COMMENT;
 }
 
 bool XmlReader::ReadElementContent(std::string* content) {
