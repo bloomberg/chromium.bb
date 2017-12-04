@@ -2661,10 +2661,19 @@ static void encode_quantization(const AV1_COMMON *const cm,
                                 struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->base_qindex, QINDEX_BITS);
   write_delta_q(wb, cm->y_dc_delta_q);
-  assert(cm->u_dc_delta_q == cm->v_dc_delta_q);
+  int diff_uv_delta = (cm->u_dc_delta_q != cm->v_dc_delta_q) ||
+                      (cm->u_ac_delta_q != cm->v_ac_delta_q);
+#if CONFIG_EXT_QM
+  if (cm->separate_uv_delta_q) aom_wb_write_bit(wb, diff_uv_delta);
+#else
+  assert(!diff_uv_delta);
+#endif
   write_delta_q(wb, cm->u_dc_delta_q);
-  assert(cm->u_ac_delta_q == cm->v_ac_delta_q);
   write_delta_q(wb, cm->u_ac_delta_q);
+  if (diff_uv_delta) {
+    write_delta_q(wb, cm->v_dc_delta_q);
+    write_delta_q(wb, cm->v_ac_delta_q);
+  }
 #if CONFIG_AOM_QM
   aom_wb_write_bit(wb, cm->using_qmatrix);
   if (cm->using_qmatrix) {
@@ -3497,6 +3506,9 @@ static void write_bitdepth_colorspace_sampling(
     assert(cm->profile == PROFILE_1 || cm->profile == PROFILE_3);
     aom_wb_write_bit(wb, 0);  // unused
   }
+#if CONFIG_EXT_QM
+  aom_wb_write_bit(wb, cm->separate_uv_delta_q);
+#endif
 }
 
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU

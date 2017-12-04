@@ -1242,10 +1242,19 @@ static void setup_quantization(AV1_COMMON *const cm,
                                struct aom_read_bit_buffer *rb) {
   cm->base_qindex = aom_rb_read_literal(rb, QINDEX_BITS);
   cm->y_dc_delta_q = read_delta_q(rb);
+  int diff_uv_delta = 0;
+#if CONFIG_EXT_QM
+  if (cm->separate_uv_delta_q) diff_uv_delta = aom_rb_read_bit(rb);
+#endif
   cm->u_dc_delta_q = read_delta_q(rb);
   cm->u_ac_delta_q = read_delta_q(rb);
-  cm->v_dc_delta_q = cm->u_dc_delta_q;
-  cm->v_ac_delta_q = cm->u_ac_delta_q;
+  if (diff_uv_delta) {
+    cm->v_dc_delta_q = read_delta_q(rb);
+    cm->v_ac_delta_q = read_delta_q(rb);
+  } else {
+    cm->v_dc_delta_q = cm->u_dc_delta_q;
+    cm->v_ac_delta_q = cm->u_ac_delta_q;
+  }
   cm->dequant_bit_depth = cm->bit_depth;
 #if CONFIG_AOM_QM
   cm->using_qmatrix = aom_rb_read_bit(rb);
@@ -2423,6 +2432,9 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                          "4:4:4 color not supported in profile 0 or 2");
     }
   }
+#if CONFIG_EXT_QM
+  cm->separate_uv_delta_q = aom_rb_read_bit(rb);
+#endif
 }
 
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
