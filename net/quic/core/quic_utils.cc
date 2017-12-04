@@ -11,8 +11,10 @@
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "net/quic/core/quic_constants.h"
+#include "net/quic/platform/api/quic_aligned.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flags.h"
+#include "net/quic/platform/api/quic_prefetch.h"
 
 using std::string;
 
@@ -237,16 +239,12 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
   // generally, the iov_offset is not 0, input iov consists of 2K buffers and
   // the output buffer is ~1.4K.
   if (copy_len == iov_available && iovnum + 1 < iov_count) {
-    // TODO(ckrasic) - this is unused without prefetch()
-    // char* next_base = static_cast<char*>(iov.iov[iovnum + 1].iov_base);
-    // char* next_base = static_cast<char*>(iov.iov[iovnum + 1].iov_base);
     // Prefetch 2 cachelines worth of data to get the prefetcher started; leave
     // it to the hardware prefetcher after that.
-    // TODO(ckrasic) - investigate what to do about prefetch directives.
-    // ::base::PrefetchT0(next_base);
+    char* next_base = static_cast<char*>(iov[iovnum + 1].iov_base);
+    QuicPrefetchT0(next_base);
     if (iov[iovnum + 1].iov_len >= 64) {
-      // TODO(ckrasic) - investigate what to do about prefetch directives.
-      // ::base::PrefetchT0(next_base + ABSL_CACHELINE_SIZE);
+      QuicPrefetchT0(next_base + QUIC_CACHELINE_SIZE);
     }
   }
 
