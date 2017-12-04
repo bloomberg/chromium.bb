@@ -1023,4 +1023,35 @@ TEST_F(GridLayoutTest, TwoViewsBothColumnsResizableOneViewFixedWidthMin) {
   EXPECT_EQ(gfx::Rect(10, 0, 50, 10), view2->bounds());
 }
 
+class SettablePreferredHeightView : public View {
+ public:
+  explicit SettablePreferredHeightView(int height) : pref_height_(height) {}
+  ~SettablePreferredHeightView() override = default;
+
+  // View:
+  int GetHeightForWidth(int width) const override { return pref_height_; }
+
+ private:
+  const int pref_height_;
+
+  DISALLOW_COPY_AND_ASSIGN(SettablePreferredHeightView);
+};
+
+TEST_F(GridLayoutTest, HeightForWidthCalledWhenNotGivenPreferredWidth) {
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1, GridLayout::USE_PREF,
+                 0, 0);
+  layout()->StartRow(0, 0);
+  const int pref_height = 100;
+  // |view| is owned by parent.
+  SettablePreferredHeightView* view =
+      new SettablePreferredHeightView(pref_height);
+  const gfx::Size pref(10, 20);
+  view->SetPreferredSize(pref);
+  layout()->AddView(view);
+
+  EXPECT_EQ(pref, GetPreferredSize());
+  EXPECT_EQ(pref_height, host().GetHeightForWidth(5));
+}
+
 }  // namespace views
