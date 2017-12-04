@@ -36,8 +36,9 @@ bool DefaultSearchProviderIsGoogle(
 // to an NTP, but aren't an NTP themselves (such as the NTP's service worker).
 bool IsNTPURL(const GURL& url, Profile* profile);
 
-// Returns true if the visible entry of |contents| is a New Tab page rendered
-// in an Instant process.
+// Returns true if the active navigation entry of |contents| is a New Tab page
+// rendered in an Instant process. This is the last committed entry if it
+// exists, and otherwise the visible entry.
 bool IsInstantNTP(const content::WebContents* contents);
 
 // Same as IsInstantNTP but uses |nav_entry| to determine the URL for the page
