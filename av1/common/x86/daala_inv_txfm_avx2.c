@@ -443,6 +443,30 @@ static INLINE void od_transpose8x8(__m128i *r0, __m128i *r1, __m128i *r2,
   *r6 = _mm_unpacklo_epi64(*r6, r8);
 }
 
+#undef OD_KERNEL
+#undef OD_WORD
+#undef OD_REG
+#undef OD_ADD
+#undef OD_SUB
+#undef OD_RSHIFT1
+#undef OD_AVG
+#undef OD_HRSUB
+#undef OD_MULHRS
+#undef OD_SWAP
+
+/* Define 8-wide 16-bit SSSE3 kernels. */
+
+#define OD_KERNEL kernel8
+#define OD_WORD epi16
+#define OD_REG __m128i
+#define OD_ADD _mm_add_epi16
+#define OD_SUB _mm_sub_epi16
+#define OD_RSHIFT1 od_unbiased_rshift1_epi16
+#define OD_AVG od_avg_epi16
+#define OD_HRSUB od_hrsub_epi16
+#define OD_MULHRS od_mulhrs_epi16
+#define OD_SWAP od_swap_epi16
+
 #include "av1/common/x86/daala_tx_kernels.h"
 
 static void od_row_iidtx_avx2(int16_t *out, int coeffs, const tran_low_t *in) {
