@@ -87,6 +87,7 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fBindAttribLocation = gl->glBindAttribLocationFn;
   functions->fBindBuffer = gl->glBindBufferFn;
   functions->fBindFragDataLocation = gl->glBindFragDataLocationFn;
+  functions->fBindUniformLocation = gl->glBindUniformLocationCHROMIUMFn;
   functions->fBeginQuery = gl->glBeginQueryFn;
   functions->fBindTexture = gl->glBindTextureFn;
 
