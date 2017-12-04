@@ -13,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -187,7 +188,13 @@ public final class PrefServiceBridge {
     }
 
     @CalledByNative
-    private static void copyLanguageList(List<String> list, String[] source) {
+    private static void addNewLanguageItemToList(List<LanguageItem> list, String code,
+            String displayName, String nativeDisplayName, boolean supportTranslate) {
+        list.add(new LanguageItem(code, displayName, nativeDisplayName, supportTranslate));
+    }
+
+    @CalledByNative
+    private static void copyStringArrayToList(List<String> list, String[] source) {
         list.addAll(Arrays.asList(source));
     }
 
@@ -911,12 +918,34 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * Return the list of preferred languages strings.
+     * @return A sorted list of LanguageItems representing the Chrome accept languages with details.
+     *         Languages that are not supported on Android have been filtered out.
      */
-    public List<String> getChromeLanguageList() {
-        List<String> list = new ArrayList<>();
-        nativeGetChromeLanguageList(list);
+    public List<LanguageItem> getChromeLanguageList() {
+        List<LanguageItem> list = new ArrayList<>();
+        nativeGetChromeAcceptLanguages(list);
         return list;
+    }
+
+    /**
+     * @return A sorted list of accept language codes for the current user.
+     *         Note that for the signed-in user, the list might contain some language codes from
+     *         other platforms but not supported on Android.
+     */
+    public List<String> getUserLanguageCodes() {
+        List<String> list = new ArrayList<>();
+        nativeGetUserAcceptLanguages(list);
+        return list;
+    }
+
+    /**
+     * Update accept language for the current user.
+     *
+     * @param languageCode A valid language code to update.
+     * @param add Whether this is an "add" operation or "delete" operation.
+     */
+    public void updateUserAcceptLanguages(String languageCode, boolean add) {
+        nativeUpdateUserAcceptLanguages(languageCode, add);
     }
 
     private native boolean nativeIsContentSettingEnabled(int contentSettingType);
@@ -1089,5 +1118,7 @@ public final class PrefServiceBridge {
     private native String nativeGetLatestVersionWhenClickedUpdateMenuItem();
     private native void nativeSetSupervisedUserId(String supervisedUserId);
     private native void nativeSetChromeHomePersonalizedOmniboxSuggestionsEnabled(boolean enabled);
-    private native void nativeGetChromeLanguageList(List<String> list);
+    private native void nativeGetChromeAcceptLanguages(List<LanguageItem> list);
+    private native void nativeGetUserAcceptLanguages(List<String> list);
+    private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
 }

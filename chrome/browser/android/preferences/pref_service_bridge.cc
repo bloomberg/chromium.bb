@@ -1145,7 +1145,28 @@ JNI_PrefServiceBridge_SetChromeHomePersonalizedOmniboxSuggestionsEnabled(
                                is_enabled);
 }
 
-static void JNI_PrefServiceBridge_GetChromeLanguageList(
+static void JNI_PrefServiceBridge_GetChromeAcceptLanguages(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& list) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+
+  std::vector<translate::TranslateLanguageInfo> languages;
+  translate_prefs->GetLanguageInfoList(
+      g_browser_process->GetApplicationLocale(),
+      translate_prefs->IsTranslateAllowedByPolicy(), &languages);
+
+  for (const auto& info : languages) {
+    Java_PrefServiceBridge_addNewLanguageItemToList(
+        env, list, ConvertUTF8ToJavaString(env, info.code),
+        ConvertUTF8ToJavaString(env, info.display_name),
+        ConvertUTF8ToJavaString(env, info.native_display_name),
+        info.supports_translate);
+  }
+}
+
+static void JNI_PrefServiceBridge_GetUserAcceptLanguages(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& list) {
@@ -1154,8 +1175,24 @@ static void JNI_PrefServiceBridge_GetChromeLanguageList(
 
   std::vector<std::string> languages;
   translate_prefs->GetLanguageList(&languages);
-  Java_PrefServiceBridge_copyLanguageList(env, list,
-                                          ToJavaArrayOfStrings(env, languages));
+  Java_PrefServiceBridge_copyStringArrayToList(
+      env, list, ToJavaArrayOfStrings(env, languages));
+}
+
+static void JNI_PrefServiceBridge_UpdateUserAcceptLanguages(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& language,
+    jboolean is_add) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  std::string language_code(ConvertJavaStringToUTF8(env, language));
+
+  if (is_add) {
+    translate_prefs->AddToLanguageList(language_code, false /*force_blocked=*/);
+  } else {
+    translate_prefs->RemoveFromLanguageList(language_code);
+  }
 }
 
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
