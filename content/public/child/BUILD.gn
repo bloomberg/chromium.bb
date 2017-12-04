@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//ppapi/features/features.gni")
 
 # See //content/BUILD.gn for how this works.
@@ -23,7 +24,7 @@ group("child") {
   }
 }
 
-source_set("child_sources") {
+jumbo_source_set("child_sources") {
   # External code should depend in via ":child" above.
   visibility = [ "//content/*" ]
 
