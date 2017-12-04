@@ -29,4 +29,5 @@ void HostedAppMenuModel::Build() {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   CreateCutCopyPasteMenu();
   AddItemWithStringId(IDC_SITE_SETTINGS, IDS_SITE_SETTINGS);
+  AddItemWithStringId(IDC_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO);
 }

@@ -51,4 +51,7 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                const extensions::Extension* app,
                                const base::Closure& close_callback);
 
+// Gets the callback to run after a dialog is created. Only used in tests.
+base::OnceClosure& GetAppInfoDialogCreatedCallbackForTesting();
+
 #endif  // CHROME_BROWSER_UI_APPS_APP_INFO_DIALOG_H_
