@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "net/dns/mock_host_resolver.h"
@@ -34,6 +35,12 @@ class NetTestSuite : public base::TestSuite {
   // Returns the base::test::ScopedTaskEnvironment initialized by the current
   // NetTestSuite.
   static base::test::ScopedTaskEnvironment* GetScopedTaskEnvironment();
+
+  // Sets the global ScopedTaskEnvironment with a new environment of main thread
+  // type, |type|. For example, one might want to use a MOCK_TIME
+  // ScopedTaskEnvironment.
+  static void SetScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::MainThreadType type);
 
  protected:
   // Called from within Initialize(), but separate so that derived classes
