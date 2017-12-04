@@ -331,12 +331,14 @@
 
 - (void)locationBarHasBecomeFirstResponder {
   [self.delegate locationBarDidBecomeFirstResponder];
-  [self expandOmniboxAnimated:YES];
+  if (!self.toolbarViewController.expanded)
+    [self expandOmniboxAnimated:YES];
 }
 
 - (void)locationBarHasResignedFirstResponder {
   [self.delegate locationBarDidResignFirstResponder];
-  [self contractOmnibox];
+  if (self.toolbarViewController.expanded)
+    [self contractOmnibox];
 }
 
 - (void)locationBarBeganEdit {
@@ -355,8 +357,7 @@
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
-  if (!self.viewController.view.hidden)
-    [_locationBarView.textField becomeFirstResponder];
+  [_locationBarView.textField becomeFirstResponder];
 }
 
 - (void)cancelOmniboxEdit {
@@ -531,6 +532,7 @@
                  curve:UIViewAnimationCurveEaseInOut
             animations:^{
             }];
+
   [self.locationBarView addExpandOmniboxAnimations:animator];
   [self.toolbarViewController addToolbarExpansionAnimations:animator];
   [animator startAnimation];

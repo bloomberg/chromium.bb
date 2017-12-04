@@ -41,6 +41,8 @@
 @property(nonatomic, strong) UIView* locationBarView;
 // The ToolsMenu button.
 @property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
+// Whether the toolbar is in the expanded state or not.
+@property(nonatomic, assign) BOOL expanded;
 
 // Adds the toolbar expanded state animations to |animator|, and changes the
 // toolbar constraints in preparation for the animation.
