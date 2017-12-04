@@ -89,8 +89,9 @@ class ASH_EXPORT LoginPasswordView
   // Clear all currently entered text.
   void Clear();
 
-  // Add the given numeric value to the textfield.
-  void AppendNumber(int value);
+  // Inserts the given numeric value to the textfield at the current cursor
+  // position (most likely the end).
+  void InsertNumber(int value);
 
   // Erase the last entered value.
   void Backspace();
