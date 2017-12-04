@@ -91,6 +91,7 @@ void UpdateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
 
   // TODO(bokan): If plugin_parent == nullptr, pointInRootFrame will really be
   // pointInRootContent.
+  // TODO(bokan): This conversion is wrong for RLS. https://crbug.com/781431.
   IntPoint point_in_root_frame(event.AbsoluteLocation().X(),
                                event.AbsoluteLocation().Y());
   if (plugin_parent) {
@@ -294,11 +295,11 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   // The mouse event co-ordinates should be generated from the co-ordinates of
   // the touch point.
   // FIXME: if plugin_parent == nullptr, pointInRootFrame will really be
-  // pointInRootContent.
+  // pointInAbsolute.
   IntPoint point_in_root_frame = RoundedIntPoint(touch->AbsoluteLocation());
   if (plugin_parent) {
     point_in_root_frame =
-        plugin_parent->ContentsToRootFrame(point_in_root_frame);
+        plugin_parent->AbsoluteToRootFrame(point_in_root_frame);
   }
   FloatPoint screen_point = touch->ScreenLocation();
   SetPositionInScreen(screen_point.X(), screen_point.Y());

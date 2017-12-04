@@ -157,8 +157,6 @@ Touch* TouchEventManager::CreateDomTouch(
   Node* touch_node = point_attr->target_;
   String region_id = point_attr->region_;
   *known_target = false;
-  FloatPoint content_point;
-  FloatSize adjusted_radius;
 
   LocalFrame* target_frame = nullptr;
   if (touch_node) {
@@ -192,17 +190,18 @@ Touch* TouchEventManager::CreateDomTouch(
 
   WebPointerEvent transformed_event =
       point_attr->event_.WebPointerEventInRootFrame();
-  // pagePoint should always be in the target element's document coordinates.
-  FloatPoint page_point = target_frame->View()->RootFrameToContents(
-      transformed_event.PositionInWidget());
   float scale_factor = 1.0f / target_frame->PageZoomFactor();
 
-  content_point = page_point.ScaledBy(scale_factor);
-  adjusted_radius = FloatSize(transformed_event.width, transformed_event.height)
-                        .ScaledBy(scale_factor);
+  FloatPoint document_point =
+      target_frame->View()
+          ->RootFrameToDocument(transformed_event.PositionInWidget())
+          .ScaledBy(scale_factor);
+  FloatSize adjusted_radius =
+      FloatSize(transformed_event.width, transformed_event.height)
+          .ScaledBy(scale_factor);
 
   return Touch::Create(target_frame, touch_node, point_attr->event_.id,
-                       transformed_event.PositionInScreen(), content_point,
+                       transformed_event.PositionInScreen(), document_point,
                        adjusted_radius, transformed_event.rotation_angle,
                        transformed_event.force, region_id);
 }
