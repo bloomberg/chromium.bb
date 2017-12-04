@@ -139,6 +139,21 @@
                                    tintColor:tintColor];
   _locationBar = base::MakeUnique<LocationBarControllerImpl>(
       self.locationBarView, self.browserState, self, self.dispatcher);
+  self.locationBarView.incognito = isIncognito;
+  self.locationBarView.textField.incognito = isIncognito;
+  if (isIncognito) {
+    [_locationBarView.textField
+        setSelectedTextBackgroundColor:[UIColor colorWithWhite:1 alpha:0.1]];
+    [_locationBarView.textField
+        setPlaceholderTextColor:[UIColor colorWithWhite:1 alpha:0.5]];
+  } else if (!IsIPadIdiom()) {
+    // Set placeholder text color to match fakebox placeholder text color when
+    // on iPhone.
+    UIColor* placeholderTextColor =
+        [UIColor colorWithWhite:kiPhoneOmniboxPlaceholderColorBrightness
+                          alpha:1.0];
+    [_locationBarView.textField setPlaceholderTextColor:placeholderTextColor];
+  }
 
   self.keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
   self.keyboardDelegate.dispatcher = self.dispatcher;
