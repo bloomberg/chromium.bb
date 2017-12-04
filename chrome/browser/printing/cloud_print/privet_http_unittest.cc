@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -1056,13 +1057,11 @@ class PrivetHttpWithServerTest : public ::testing::Test,
   }
 
   void OnNeedPrivetToken(
-      PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override {
     callback.Run("abc");
   }
 
-  void OnError(PrivetURLFetcher* fetcher,
-               PrivetURLFetcher::ErrorType error) override {
+  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override {
     done_ = true;
     success_ = false;
     error_ = error;
@@ -1077,8 +1076,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_);
   }
 
-  bool OnRawData(PrivetURLFetcher* fetcher,
-                 bool response_is_file,
+  bool OnRawData(bool response_is_file,
                  const std::string& data_string,
                  const base::FilePath& data_file) override {
     done_ = true;

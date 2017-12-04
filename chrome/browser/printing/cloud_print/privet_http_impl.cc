@@ -113,7 +113,7 @@ PrivetHTTPClient* PrivetInfoOperationImpl::GetHTTPClient() {
   return privet_client_;
 }
 
-void PrivetInfoOperationImpl::OnError(PrivetURLFetcher* fetcher,
+void PrivetInfoOperationImpl::OnError(int response_code,
                                       PrivetURLFetcher::ErrorType error) {
   callback_.Run(nullptr);
 }
@@ -173,14 +173,14 @@ PrivetHTTPClient* PrivetRegisterOperationImpl::GetHTTPClient() {
   return privet_client_;
 }
 
-void PrivetRegisterOperationImpl::OnError(PrivetURLFetcher* fetcher,
+void PrivetRegisterOperationImpl::OnError(int response_code,
                                           PrivetURLFetcher::ErrorType error) {
   ongoing_ = false;
   int visible_http_code = -1;
   FailureReason reason = FAILURE_NETWORK;
 
   if (error == PrivetURLFetcher::RESPONSE_CODE_ERROR) {
-    visible_http_code = fetcher->response_code();
+    visible_http_code = response_code;
     reason = FAILURE_HTTP_ERROR;
   } else if (error == PrivetURLFetcher::JSON_PARSE_ERROR) {
     reason = FAILURE_MALFORMED_RESPONSE;
@@ -218,7 +218,6 @@ void PrivetRegisterOperationImpl::OnParsedJson(
 }
 
 void PrivetRegisterOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher* fetcher,
     const PrivetURLFetcher::TokenCallback& callback) {
   privet_client_->RefreshPrivetToken(callback);
 }
@@ -319,9 +318,8 @@ PrivetRegisterOperationImpl::Cancelation::~Cancelation() {
 }
 
 void PrivetRegisterOperationImpl::Cancelation::OnError(
-    PrivetURLFetcher* fetcher,
-    PrivetURLFetcher::ErrorType error) {
-}
+    int response_code,
+    PrivetURLFetcher::ErrorType error) {}
 
 void PrivetRegisterOperationImpl::Cancelation::OnParsedJson(
     PrivetURLFetcher* fetcher,
@@ -359,9 +357,8 @@ PrivetHTTPClient* PrivetJSONOperationImpl::GetHTTPClient() {
   return privet_client_;
 }
 
-void PrivetJSONOperationImpl::OnError(
-    PrivetURLFetcher* fetcher,
-    PrivetURLFetcher::ErrorType error) {
+void PrivetJSONOperationImpl::OnError(int response_code,
+                                      PrivetURLFetcher::ErrorType error) {
   callback_.Run(nullptr);
 }
 
@@ -372,7 +369,6 @@ void PrivetJSONOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
 }
 
 void PrivetJSONOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher* fetcher,
     const PrivetURLFetcher::TokenCallback& callback) {
   privet_client_->RefreshPrivetToken(callback);
 }
@@ -611,9 +607,8 @@ PrivetHTTPClient* PrivetLocalPrintOperationImpl::GetHTTPClient() {
   return privet_client_;
 }
 
-void PrivetLocalPrintOperationImpl::OnError(
-    PrivetURLFetcher* fetcher,
-    PrivetURLFetcher::ErrorType error) {
+void PrivetLocalPrintOperationImpl::OnError(int response_code,
+                                            PrivetURLFetcher::ErrorType error) {
   delegate_->OnPrivetPrintingError(this, -1);
 }
 
@@ -626,7 +621,6 @@ void PrivetLocalPrintOperationImpl::OnParsedJson(
 }
 
 void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher* fetcher,
     const PrivetURLFetcher::TokenCallback& callback) {
   privet_client_->RefreshPrivetToken(callback);
 }

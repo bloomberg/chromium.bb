@@ -46,20 +46,18 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
     // If you do not implement this method for PrivetV1 callers, you will always
     // get a TOKEN_ERROR error when your token is invalid.
-    virtual void OnNeedPrivetToken(
-        PrivetURLFetcher* fetcher,
-        const TokenCallback& callback);
+    virtual void OnNeedPrivetToken(const TokenCallback& callback);
 
-    virtual void OnError(PrivetURLFetcher* fetcher, ErrorType error) = 0;
+    // |response_code| is only needed for RESPONSE_CODE_ERROR.
+    virtual void OnError(int response_code, ErrorType error) = 0;
     virtual void OnParsedJson(PrivetURLFetcher* fetcher,
                               const base::DictionaryValue& value,
                               bool has_error) = 0;
 
     // If this method is returns true, the data will not be parsed as JSON, and
-    // |OnParsedJson| will not be called. Otherwise, |OnParsedJson| will be
+    // OnParsedJson() will not be called. Otherwise, OnParsedJson() will be
     // called.
-    virtual bool OnRawData(PrivetURLFetcher* fetcher,
-                           bool response_is_file,
+    virtual bool OnRawData(bool response_is_file,
                            const std::string& data_string,
                            const base::FilePath& data_file);
   };
@@ -87,11 +85,11 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
   void SendEmptyPrivetToken();
 
-  // Set the contents of the Range header. |OnRawData| must return true if this
+  // Set the contents of the Range header. OnRawData() must return true if this
   // is called.
   void SetByteRange(int start, int end);
 
-  // Save the response to a file. |OnRawData| must return true if this is
+  // Save the response to a file. OnRawData() must return true if this is
   // called.
   void SaveResponseToFile();
 
