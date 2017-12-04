@@ -361,11 +361,19 @@ bool WKBasedNavigationManagerImpl::CanPruneAllButLastCommittedItem() const {
 void WKBasedNavigationManagerImpl::Restore(
     int last_committed_item_index,
     std::vector<std::unique_ptr<NavigationItem>> items) {
-  DCHECK(GetItemCount() == 0 && !GetPendingItem());
   DCHECK_LT(last_committed_item_index, static_cast<int>(items.size()));
   DCHECK(items.empty() || last_committed_item_index >= 0);
   if (items.empty())
     return;
+
+  DiscardNonCommittedItems();
+  if (GetItemCount() > 0) {
+    delegate_->RemoveWebView();
+  }
+  DCHECK_EQ(0, GetItemCount());
+  pending_item_index_ = -1;
+  previous_item_index_ = -1;
+  last_committed_item_index_ = -1;
 
   // This function restores session history by loading a magic local file
   // (restore_session.html) into the web view. The session history is encoded

@@ -291,6 +291,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   WebState* GetWebState() override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
+  void RemoveWebView() override;
 
  protected:
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;

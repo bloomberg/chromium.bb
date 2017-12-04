@@ -28,6 +28,7 @@ class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
       const LoadCommittedDetails& load_details) override;
   WebState* GetWebState() override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
+  void RemoveWebView() override;
 
   // Setters for tests to inject dependencies.
   void SetWebViewNavigationProxy(id test_web_view);
