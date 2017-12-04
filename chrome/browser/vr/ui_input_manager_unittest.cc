@@ -57,7 +57,6 @@ class MockTextInput : public TextInput {
   MockTextInput()
       : TextInput(512,
                   1,
-                  1,
                   base::RepeatingCallback<void(bool)>(),
                   base::RepeatingCallback<void(const TextInputInfo&)>()) {}
   ~MockTextInput() override = default;

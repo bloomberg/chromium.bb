@@ -85,7 +85,7 @@ class TextInputTest : public UiTest {
         base::MakeUnique<StrictMock<MockTextInputDelegate>>();
     text_input_info_ = base::MakeUnique<TextInputInfo>();
     auto text_input = UiSceneCreator::CreateTextInput(
-        512, 1, 1, model_, text_input_info_.get(), text_input_delegate_.get());
+        512, 1, model_, text_input_info_.get(), text_input_delegate_.get());
     text_input_ = text_input.get();
     scene_->AddUiElement(k2dBrowsingForeground, std::move(text_input));
     EXPECT_TRUE(OnBeginFrame());

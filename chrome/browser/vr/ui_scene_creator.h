@@ -33,7 +33,6 @@ class UiSceneCreator {
   static std::unique_ptr<TextInput> CreateTextInput(
       int maximum_width_pixels,
       float font_height_meters,
-      float text_width_meters,
       Model* model,
       TextInputInfo* text_input_model,
       TextInputDelegate* text_input_delegate);
