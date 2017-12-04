@@ -12,7 +12,5 @@ flags: {testmode: backward}
 tests:
   # backward translation seems to fail
   - [⠬, ó]
-  # this test seems weird: Why should 34678 be translated as ó? The
-  # Es-Es-G0.utb table defines 0 to be 34678 (`digit 0 34678`)
-  - [⣬, ó, {xfail: Not sure if this test is even valid}]
+  - [⣬, 0]
 
