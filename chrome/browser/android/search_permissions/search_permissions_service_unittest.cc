@@ -58,9 +58,13 @@ class TestSearchEngineDelegate
     dse_changed_callback_ = callback;
   }
 
-  void SetDSEOrigin(const std::string& dse_origin) {
-    dse_origin_ = url::Origin::Create(GURL(dse_origin));
+  void ChangeDSEOrigin(const std::string& dse_origin) {
+    set_dse_origin(dse_origin);
     dse_changed_callback_.Run();
+  }
+
+  void set_dse_origin(const std::string& dse_origin) {
+    dse_origin_ = url::Origin::Create(GURL(dse_origin));
   }
 
  private:
@@ -176,34 +180,34 @@ TEST_F(SearchPermissionsServiceTest, Initialization) {
   for (ContentSettingsType type : {CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                    CONTENT_SETTINGS_TYPE_NOTIFICATIONS}) {
     // DSE setting initialized to true if the content setting is ALLOW.
-    test_delegate()->SetDSEOrigin(kGoogleURL);
+    test_delegate()->ChangeDSEOrigin(kGoogleURL);
     SetContentSetting(kGoogleURL, type, CONTENT_SETTING_ALLOW);
     ReinitializeService(true /* clear_pref */);
     EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(kGoogleURL, type));
     // Check that the correct value is restored when changing the DSE.
-    test_delegate()->SetDSEOrigin(kExampleURL);
+    test_delegate()->ChangeDSEOrigin(kExampleURL);
     EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(kGoogleURL, type));
 
     // DSE setting initialized to true if the content setting is ASK.
-    test_delegate()->SetDSEOrigin(kGoogleURL);
+    test_delegate()->ChangeDSEOrigin(kGoogleURL);
     SetContentSetting(kGoogleURL, type, CONTENT_SETTING_DEFAULT);
     EXPECT_EQ(CONTENT_SETTING_ASK, GetContentSetting(kGoogleURL, type));
     ReinitializeService(true /* clear_pref */);
     EXPECT_EQ(CONTENT_SETTING_ALLOW, GetContentSetting(kGoogleURL, type));
-    test_delegate()->SetDSEOrigin(kExampleURL);
+    test_delegate()->ChangeDSEOrigin(kExampleURL);
     EXPECT_EQ(CONTENT_SETTING_ASK, GetContentSetting(kGoogleURL, type));
 
     // DSE setting initialized to false if the content setting is BLOCK.
-    test_delegate()->SetDSEOrigin(kGoogleURL);
+    test_delegate()->ChangeDSEOrigin(kGoogleURL);
     SetContentSetting(kGoogleURL, type, CONTENT_SETTING_BLOCK);
     ReinitializeService(true /* clear_pref */);
     EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(kGoogleURL, type));
-    test_delegate()->SetDSEOrigin(kExampleURL);
+    test_delegate()->ChangeDSEOrigin(kExampleURL);
     EXPECT_EQ(CONTENT_SETTING_BLOCK, GetContentSetting(kGoogleURL, type));
 
     // Nothing happens if the pref is already set when the service is
     // initialized.
-    test_delegate()->SetDSEOrigin(kGoogleURL);
+    test_delegate()->ChangeDSEOrigin(kGoogleURL);
     SetContentSetting(kGoogleURL, type, CONTENT_SETTING_DEFAULT);
     ReinitializeService(false /* clear_pref */);
     EXPECT_EQ(CONTENT_SETTING_ASK, GetContentSetting(kGoogleURL, type));
@@ -233,7 +237,7 @@ TEST_F(SearchPermissionsServiceTest, OffTheRecord) {
 TEST_F(SearchPermissionsServiceTest, Migration) {
   // When location was previously allowed for the DSE, it should be carried
   // over.
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
@@ -260,7 +264,7 @@ TEST_F(SearchPermissionsServiceTest, Migration) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   // Changing DSE should cause the setting to go back to ASK for Google.
-  test_delegate()->SetDSEOrigin(kExampleURL);
+  test_delegate()->ChangeDSEOrigin(kExampleURL);
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
@@ -281,7 +285,7 @@ TEST_F(SearchPermissionsServiceTest, Migration) {
 
 TEST_F(SearchPermissionsServiceTest, ArePermissionsControlledByDSE) {
   // True for origin that matches the CCTLD and meets all requirements.
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
   EXPECT_TRUE(
       GetService()->ArePermissionsControlledByDSE(ToOrigin(kGoogleURL)));
 
@@ -290,18 +294,18 @@ TEST_F(SearchPermissionsServiceTest, ArePermissionsControlledByDSE) {
       GetService()->ArePermissionsControlledByDSE(ToOrigin(kGoogleAusURL)));
 
   // False for http origin.
-  test_delegate()->SetDSEOrigin(kGoogleHTTPURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleHTTPURL);
   EXPECT_FALSE(
       GetService()->ArePermissionsControlledByDSE(ToOrigin(kGoogleHTTPURL)));
 
   // True even for non-Google search engines.
-  test_delegate()->SetDSEOrigin(kExampleURL);
+  test_delegate()->ChangeDSEOrigin(kExampleURL);
   EXPECT_TRUE(
       GetService()->ArePermissionsControlledByDSE(ToOrigin(kExampleURL)));
 }
 
 TEST_F(SearchPermissionsServiceTest, DSEChanges) {
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -309,7 +313,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
 
   // Change to google.com.au. Settings for google.com should revert and settings
   // for google.com.au should be set to allow.
-  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
   EXPECT_EQ(CONTENT_SETTING_ASK,
@@ -325,7 +329,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
   // change back to google.com, the setting should still be blocked.
   SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                     CONTENT_SETTING_BLOCK);
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(
@@ -337,7 +341,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
   // notifications setting should remain blocked.
   SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                     CONTENT_SETTING_ALLOW);
-  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(
@@ -346,7 +350,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
 
   // Now changing back to google.com, the google.com.au notifications setting
   // should be reset to ask (we reset it because of the conflict previously).
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(
@@ -358,7 +362,7 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
   // reset it back to ask once it is no longer the DSE.
   SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                     CONTENT_SETTING_ALLOW);
-  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   EXPECT_EQ(CONTENT_SETTING_ASK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(
@@ -367,29 +371,29 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
 }
 
 TEST_F(SearchPermissionsServiceTest, DSEChangesAndDisclosure) {
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
   SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
       profile());
   // Change to google.com.au. The disclosure should not be reset.
-  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   EXPECT_FALSE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
       profile()));
 
   // Now set to a non-google search. The disclosure should be reset.
-  test_delegate()->SetDSEOrigin(kExampleURL);
+  test_delegate()->ChangeDSEOrigin(kExampleURL);
   EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
       profile()));
   SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
       profile());
 
   // Go back to google.com.au. The disclosure should again be reset.
-  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
       profile()));
 }
 
 TEST_F(SearchPermissionsServiceTest, Embargo) {
-  test_delegate()->SetDSEOrigin(kGoogleURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
 
   // Place another origin under embargo.
   GURL google_aus_url(kGoogleAusURL);
@@ -407,9 +411,93 @@ TEST_F(SearchPermissionsServiceTest, Embargo) {
   EXPECT_EQ(result.content_setting, CONTENT_SETTING_BLOCK);
 
   // Now change the DSE to this origin and make sure the embargo is cleared.
-  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   result = auto_blocker->GetEmbargoResult(GURL(kGoogleAusURL),
                                           CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(result.source, PermissionStatusSource::UNSPECIFIED);
   EXPECT_EQ(result.content_setting, CONTENT_SETTING_ASK);
+}
+
+TEST_F(SearchPermissionsServiceTest, DSEChangedButDisabled) {
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // DSE disabled by enterprise policy
+  test_delegate()->ChangeDSEOrigin(std::string());
+
+  // The settings should return to their original value.
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // Now disable enterprise policy. We revert to the default ALLOW behavior.
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+}
+
+TEST_F(SearchPermissionsServiceTest, DSEInitializedButDisabled) {
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // Set the DSE origin without calling OnDSEChanged.
+  test_delegate()->set_dse_origin(std::string());
+
+  ReinitializeService(/*clear_pref=*/false);
+
+  // Settings should revert back to default.
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // The pref shouldn't exist anymore.
+  EXPECT_FALSE(
+      profile()->GetPrefs()->HasPrefPath(prefs::kDSEPermissionsSettings));
+
+  // Firing the DSE changed event now should not do anything.
+  test_delegate()->ChangeDSEOrigin(std::string());
+
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  EXPECT_FALSE(
+      profile()->GetPrefs()->HasPrefPath(prefs::kDSEPermissionsSettings));
+
+  // Re-enabling the DSE origin should revert to the default ALLOW behavior.
+  test_delegate()->set_dse_origin(kGoogleAusURL);
+  ReinitializeService(/*clear_pref=*/false);
+
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
