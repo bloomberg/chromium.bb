@@ -16,9 +16,9 @@
 namespace media {
 
 // Key information structure containing data necessary to decrypt/decode media.
-struct MEDIA_EXPORT KeyInfo {
-  KeyInfo();
-  ~KeyInfo();
+struct MEDIA_EXPORT CdmProxyKeyInfo {
+  CdmProxyKeyInfo();
+  ~CdmProxyKeyInfo();
   // Crypto session for decryption.
   uint32_t crypto_session_id = 0;
   // ID of the key.
@@ -49,6 +49,7 @@ class MEDIA_EXPORT CdmProxy {
   enum class Status {
     kOk,
     kFail,
+    kMax = kFail,
   };
 
   enum class Protocol {
@@ -56,6 +57,7 @@ class MEDIA_EXPORT CdmProxy {
     kIntelConvergedSecurityAndManageabilityEngine,
     // There will be more values in the future e.g. kD3D11RsaHardware,
     // kD3D11RsaSoftware to use the D3D11 RSA method.
+    kMax = kIntelConvergedSecurityAndManageabilityEngine,
   };
 
   enum class Function {
@@ -63,6 +65,7 @@ class MEDIA_EXPORT CdmProxy {
     // ID3D11VideoContext::NegotiateCryptoSessionKeyExchange.
     kIntelNegotiateCryptoSessionKeyExchange,
     // There will be more values in the future e.g. for D3D11 RSA method.
+    kMax = kIntelNegotiateCryptoSessionKeyExchange,
   };
 
   CdmProxy() {}
@@ -109,7 +112,7 @@ class MEDIA_EXPORT CdmProxy {
       CreateMediaCryptoSessionCB create_media_crypto_session_cb) = 0;
 
   // Send multiple key information to the proxy.
-  virtual void SetKeyInfo(const std::vector<KeyInfo>& key_infos) = 0;
+  virtual void SetKeyInfo(const std::vector<CdmProxyKeyInfo>& key_infos) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmProxy);

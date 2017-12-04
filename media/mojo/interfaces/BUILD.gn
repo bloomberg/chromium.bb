@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
@@ -28,6 +29,10 @@ mojom("interfaces") {
     "video_encode_accelerator.mojom",
     "watch_time_recorder.mojom",
   ]
+
+  if (enable_library_cdms) {
+    sources += [ "cdm_proxy.mojom" ]
+  }
 
   if (is_android) {
     sources += [ "media_drm_storage.mojom" ]

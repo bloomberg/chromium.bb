@@ -1,0 +1,32 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module media.mojom;
+
+// In general, the interpretation of the method and callback parameters are
+// protocol dependent.
+// CdmProxy implemenation is hosted in the GPU process.
+interface CdmProxy {
+  // See media/cdm/cdm_proxy.h.
+  [Native]
+  enum Status;
+
+  // See media/cdm/cdm_proxy.h.
+  [Native]
+  enum Protocol;
+
+  // See media/cdm/cdm_proxy.h.
+  [Native]
+  enum Function;
+
+  // TODO(xhwang): Add methods for this interface so that they match
+  // the methods in media/cdm/cdm_proxy.h.
+};
+
+// Client of CdmProxy.
+// CdmProxyClient is running in CDM utility process.
+interface CdmProxyClient {
+  // Notifies the client that there has been a hardware reset.
+  NotifyHardwareReset();
+};

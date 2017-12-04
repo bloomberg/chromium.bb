@@ -6,7 +6,7 @@
 
 namespace media {
 
-KeyInfo::KeyInfo() = default;
-KeyInfo::~KeyInfo() = default;
+CdmProxyKeyInfo::CdmProxyKeyInfo() = default;
+CdmProxyKeyInfo::~CdmProxyKeyInfo() = default;
 
 }  // namespace media
