@@ -160,8 +160,11 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         @Override
-        public void onNetworkQualityEstimate(WebContents webContents, int effectiveConnectionType,
-                long httpRttMs, long transportRttMs) {
+        public void onNewNavigation(WebContents webContents, long navigationId) {}
+
+        @Override
+        public void onNetworkQualityEstimate(WebContents webContents, long navigationId,
+                int effectiveConnectionType, long httpRttMs, long transportRttMs) {
             if (webContents != mWebContents) return;
 
             Bundle args = new Bundle();
@@ -172,8 +175,8 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         @Override
-        public void onFirstContentfulPaint(
-                WebContents webContents, long navigationStartTick, long firstContentfulPaintMs) {
+        public void onFirstContentfulPaint(WebContents webContents, long navigationId,
+                long navigationStartTick, long firstContentfulPaintMs) {
             if (webContents != mWebContents) return;
 
             mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT,
@@ -181,17 +184,17 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         @Override
-        public void onLoadEventStart(
-                WebContents webContents, long navigationStartTick, long loadEventStartMs) {
+        public void onLoadEventStart(WebContents webContents, long navigationId,
+                long navigationStartTick, long loadEventStartMs) {
             if (webContents != mWebContents) return;
             mConnection.notifySinglePageLoadMetric(mSession, PageLoadMetrics.LOAD_EVENT_START,
                     navigationStartTick, loadEventStartMs);
         }
 
         @Override
-        public void onLoadedMainResource(WebContents webContents, long dnsStartMs, long dnsEndMs,
-                long connectStartMs, long connectEndMs, long requestStartMs, long sendStartMs,
-                long sendEndMs) {
+        public void onLoadedMainResource(WebContents webContents, long navigationId,
+                long dnsStartMs, long dnsEndMs, long connectStartMs, long connectEndMs,
+                long requestStartMs, long sendStartMs, long sendEndMs) {
             if (webContents != mWebContents) return;
 
             Bundle args = new Bundle();
