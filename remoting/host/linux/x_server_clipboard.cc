@@ -4,13 +4,12 @@
 
 #include "remoting/host/linux/x_server_clipboard.h"
 
-#include <X11/extensions/Xfixes.h>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/util.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 
@@ -18,14 +17,13 @@ XServerClipboard::XServerClipboard()
     : display_(nullptr),
       clipboard_window_(BadValue),
       xfixes_event_base_(-1),
-      clipboard_atom_(None),
-      large_selection_atom_(None),
-      selection_string_atom_(None),
-      targets_atom_(None),
-      timestamp_atom_(None),
-      utf8_string_atom_(None),
-      large_selection_property_(None) {
-}
+      clipboard_atom_(x11::None),
+      large_selection_atom_(x11::None),
+      selection_string_atom_(x11::None),
+      targets_atom_(x11::None),
+      timestamp_atom_(x11::None),
+      utf8_string_atom_(x11::None),
+      large_selection_property_(x11::None) {}
 
 XServerClipboard::~XServerClipboard() = default;
 
@@ -68,7 +66,7 @@ void XServerClipboard::Init(Display* display,
 
   Atom atoms[kNumAtomNames];
   if (XInternAtoms(display_, const_cast<char**>(kAtomNames), kNumAtomNames,
-                   False, atoms)) {
+                   x11::False, atoms)) {
     clipboard_atom_ = atoms[0];
     large_selection_atom_ = atoms[1];
     selection_string_atom_ = atoms[2];
@@ -167,7 +165,7 @@ void XServerClipboard::OnSetSelectionOwnerNotify(Atom selection,
 }
 
 void XServerClipboard::OnPropertyNotify(XEvent* event) {
-  if (large_selection_property_ != None &&
+  if (large_selection_property_ != x11::None &&
       event->xproperty.atom == large_selection_property_ &&
       event->xproperty.state == PropertyNewValue) {
     Atom type;
@@ -175,37 +173,36 @@ void XServerClipboard::OnPropertyNotify(XEvent* event) {
     unsigned long item_count, after;
     unsigned char *data;
     XGetWindowProperty(display_, clipboard_window_, large_selection_property_,
-                       0, ~0L, True, AnyPropertyType, &type, &format,
+                       0, ~0L, x11::True, AnyPropertyType, &type, &format,
                        &item_count, &after, &data);
-    if (type != None) {
+    if (type != x11::None) {
       // TODO(lambroslambrou): Properly support large transfers -
       // http://crbug.com/151447.
       XFree(data);
 
       // If the property is zero-length then the large transfer is complete.
       if (item_count == 0)
-        large_selection_property_ = None;
+        large_selection_property_ = x11::None;
     }
   }
 }
 
 void XServerClipboard::OnSelectionNotify(XEvent* event) {
-  if (event->xselection.property != None) {
+  if (event->xselection.property != x11::None) {
     Atom type;
     int format;
     unsigned long item_count, after;
     unsigned char *data;
-    XGetWindowProperty(display_, clipboard_window_,
-                       event->xselection.property, 0, ~0L, True,
-                       AnyPropertyType, &type, &format,
+    XGetWindowProperty(display_, clipboard_window_, event->xselection.property,
+                       0, ~0L, x11::True, AnyPropertyType, &type, &format,
                        &item_count, &after, &data);
     if (type == large_selection_atom_) {
       // Large selection - just read and ignore these for now.
       large_selection_property_ = event->xselection.property;
     } else {
       // Standard selection - call the selection notifier.
-      large_selection_property_ = None;
-      if (type != None) {
+      large_selection_property_ = x11::None;
+      if (type != x11::None) {
         HandleSelectionNotify(&event->xselection, type, format, item_count,
                               data);
         XFree(data);
@@ -224,10 +221,10 @@ void XServerClipboard::OnSelectionRequest(XEvent* event) {
   selection_event.selection = event->xselectionrequest.selection;
   selection_event.time = event->xselectionrequest.time;
   selection_event.target = event->xselectionrequest.target;
-  if (event->xselectionrequest.property == None)
+  if (event->xselectionrequest.property == x11::None)
     event->xselectionrequest.property = event->xselectionrequest.target;
   if (!IsSelectionOwner(selection_event.selection)) {
-    selection_event.property = None;
+    selection_event.property = x11::None;
   } else {
     selection_event.property = event->xselectionrequest.property;
     if (selection_event.target == targets_atom_) {
@@ -241,7 +238,7 @@ void XServerClipboard::OnSelectionRequest(XEvent* event) {
                          selection_event.target);
     }
   }
-  XSendEvent(display_, selection_event.requestor, False, 0,
+  XSendEvent(display_, selection_event.requestor, x11::False, 0,
              reinterpret_cast<XEvent*>(&selection_event));
 }
 
@@ -268,7 +265,7 @@ void XServerClipboard::SendTimestampResponse(Window requestor, Atom property) {
   // TODO(lambroslambrou): Should use a proper timestamp here instead of
   // CurrentTime.  ICCCM recommends doing a zero-length property append,
   // and getting a timestamp from the subsequent PropertyNotify event.
-  Time time = CurrentTime;
+  Time time = x11::CurrentTime;
   XChangeProperty(display_, requestor, property, XA_INTEGER, 32,
                   PropModeReplace, reinterpret_cast<unsigned char*>(&time), 1);
 }
@@ -350,16 +347,16 @@ void XServerClipboard::NotifyClipboardText(const std::string& text) {
 
 void XServerClipboard::RequestSelectionTargets(Atom selection) {
   XConvertSelection(display_, selection, targets_atom_, targets_atom_,
-                    clipboard_window_, CurrentTime);
+                    clipboard_window_, x11::CurrentTime);
 }
 
 void XServerClipboard::RequestSelectionString(Atom selection, Atom target) {
   XConvertSelection(display_, selection, target, selection_string_atom_,
-                    clipboard_window_, CurrentTime);
+                    clipboard_window_, x11::CurrentTime);
 }
 
 void XServerClipboard::AssertSelectionOwnership(Atom selection) {
-  XSetSelectionOwner(display_, selection, clipboard_window_, CurrentTime);
+  XSetSelectionOwner(display_, selection, clipboard_window_, x11::CurrentTime);
   if (XGetSelectionOwner(display_, selection) == clipboard_window_) {
     selections_owned_.insert(selection);
   } else {

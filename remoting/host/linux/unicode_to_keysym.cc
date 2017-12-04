@@ -5,28 +5,9 @@
 #include "remoting/host/linux/unicode_to_keysym.h"
 
 #include <algorithm>
-#define XK_MISCELLANY
-#define XK_XKB_KEYS
-#define XK_LATIN1
-#define XK_LATIN2
-#define XK_LATIN3
-#define XK_LATIN4
-#define XK_LATIN9
-#define XK_GREEK
-#define XK_KATAKANA
-#define XK_ARABIC
-#define XK_CYRILLIC
-#define XK_HEBREW
-#define XK_THAI
-#define XK_KOREAN
-#define XK_CURRENCY
-#define XK_TECHNICAL
-#define XK_PUBLISHING
-#define XK_APL
-#define XK_SPECIAL
-#include <X11/keysymdef.h>
 
 #include "base/macros.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 

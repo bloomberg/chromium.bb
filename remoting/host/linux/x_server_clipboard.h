@@ -7,15 +7,13 @@
 #ifndef REMOTING_HOST_LINUX_X_SERVER_CLIPBOARD_H_
 #define REMOTING_HOST_LINUX_X_SERVER_CLIPBOARD_H_
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 

@@ -118,11 +118,10 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
-#include <X11/Xlib.h>
-#undef Status  // Xlib.h #defines this, which breaks protobuf headers.
-#include <base/linux_util.h>
+#include "base/linux_util.h"
 #include "remoting/host/audio_capturer_linux.h"
 #include "remoting/host/linux/certificate_watcher.h"
+#include "ui/gfx/x/x11.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)

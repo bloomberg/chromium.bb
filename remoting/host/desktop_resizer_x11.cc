@@ -4,8 +4,6 @@
 
 #include "remoting/host/desktop_resizer.h"
 
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrandr.h>
 #include <string.h>
 
 #include "base/command_line.h"
@@ -13,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/linux/x11_util.h"
+#include "ui/gfx/x/x11.h"
 
 // On Linux, we use the xrandr extension to change the desktop resolution. In
 // curtain mode, we do exact resize where supported (currently only using a
@@ -168,9 +167,9 @@ class DesktopResizerX11 : public DesktopResizer {
 DesktopResizerX11::DesktopResizerX11()
     : display_(XOpenDisplay(nullptr)),
       screen_(DefaultScreen(display_)),
-      root_(RootWindow(display_, screen_)),
-      exact_resize_(base::CommandLine::ForCurrentProcess()->
-                    HasSwitch("server-supports-exact-resize")) {
+      root_(XRootWindow(display_, screen_)),
+      exact_resize_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "server-supports-exact-resize")) {
   int rr_event_base;
   int rr_error_base;
 
@@ -320,7 +319,7 @@ void DesktopResizerX11::SetResolutionExistingMode(
       if (sizes[i].width == resolution.dimensions().width()
           && sizes[i].height == resolution.dimensions().height()) {
         XRRSetScreenConfig(display_, config, root_, i, current_rotation,
-                           CurrentTime);
+                           x11::CurrentTime);
         break;
       }
     }
@@ -358,7 +357,7 @@ void DesktopResizerX11::DeleteMode(const char* name) {
 }
 
 void DesktopResizerX11::SwitchToMode(const char* name) {
-  RRMode mode_id = None;
+  RRMode mode_id = x11::None;
   RROutput* outputs = nullptr;
   int number_of_outputs = 0;
   if (name) {
@@ -368,7 +367,8 @@ void DesktopResizerX11::SwitchToMode(const char* name) {
     number_of_outputs = resources_.get()->noutput;
   }
   XRRSetCrtcConfig(display_, resources_.get(), resources_.GetCrtc(),
-                   CurrentTime, 0, 0, mode_id, 1, outputs, number_of_outputs);
+                   x11::CurrentTime, 0, 0, mode_id, 1, outputs,
+                   number_of_outputs);
 }
 
 std::unique_ptr<DesktopResizer> DesktopResizer::Create() {

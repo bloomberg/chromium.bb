@@ -6,13 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <X11/extensions/XInput.h>
-#include <X11/extensions/XTest.h>
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#include <X11/keysym.h>
-#undef Status  // Xlib.h #defines this, which breaks protobuf headers.
-
 #include <set>
 #include <utility>
 
@@ -35,6 +28,7 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/gfx/x/x11.h"
 
 #if defined(OS_CHROMEOS)
 #include "remoting/host/chromeos/point_transformer.h"
@@ -50,7 +44,7 @@ using protocol::TextEvent;
 using protocol::MouseEvent;
 using protocol::TouchEvent;
 
-bool IsModifierKey(ui::DomCode dom_code) {
+bool IsDomModifierKey(ui::DomCode dom_code) {
   return dom_code == ui::DomCode::CONTROL_LEFT ||
          dom_code == ui::DomCode::SHIFT_LEFT ||
          dom_code == ui::DomCode::ALT_LEFT ||
@@ -228,7 +222,7 @@ bool InputInjectorX11::Core::Init() {
   if (!task_runner_->BelongsToCurrentThread())
     task_runner_->PostTask(FROM_HERE, base::Bind(&Core::InitClipboard, this));
 
-  root_window_ = RootWindow(display_, DefaultScreen(display_));
+  root_window_ = XRootWindow(display_, DefaultScreen(display_));
   if (root_window_ == BadValue) {
     LOG(ERROR) << "Unable to get the root window";
     return false;
@@ -278,11 +272,11 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
   if (event.pressed()) {
     if (pressed_keys_.find(keycode) != pressed_keys_.end()) {
       // Ignore repeats for modifier keys.
-      if (IsModifierKey(static_cast<ui::DomCode>(event.usb_keycode())))
+      if (IsDomModifierKey(static_cast<ui::DomCode>(event.usb_keycode())))
         return;
       // Key is already held down, so lift the key up to ensure this repeated
       // press takes effect.
-      XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
+      XTestFakeKeyEvent(display_, keycode, x11::False, x11::CurrentTime);
     }
 
     if (!IsLockKey(keycode)) {
@@ -325,7 +319,7 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
     }
   }
 
-  XTestFakeKeyEvent(display_, keycode, event.pressed(), CurrentTime);
+  XTestFakeKeyEvent(display_, keycode, event.pressed(), x11::CurrentTime);
   XFlush(display_);
 }
 
@@ -340,7 +334,7 @@ void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
   // any interference with the currently pressed keys. E.g. if Shift is pressed
   // when TextEvent is received.
   for (int key : pressed_keys_) {
-    XTestFakeKeyEvent(display_, key, False, CurrentTime);
+    XTestFakeKeyEvent(display_, key, x11::False, x11::CurrentTime);
   }
   pressed_keys_.clear();
 
@@ -382,9 +376,9 @@ void InputInjectorX11::Core::SetAutoRepeatEnabled(bool mode) {
 bool InputInjectorX11::Core::IsLockKey(KeyCode keycode) {
   XkbStateRec state;
   KeySym keysym;
-  if (XkbGetState(display_, XkbUseCoreKbd, &state) == Success &&
+  if (XkbGetState(display_, XkbUseCoreKbd, &state) == x11::Success &&
       XkbLookupKeySym(display_, keycode, XkbStateMods(&state), nullptr,
-                      &keysym) == True) {
+                      &keysym) == x11::True) {
     return keysym == XK_Caps_Lock || keysym == XK_Num_Lock;
   } else {
     return false;
@@ -426,8 +420,8 @@ void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {
   }
   for (int i = 0; i < count; i++) {
     // Generate a button-down and a button-up to simulate a wheel click.
-    XTestFakeButtonEvent(display_, button, true, CurrentTime);
-    XTestFakeButtonEvent(display_, button, false, CurrentTime);
+    XTestFakeButtonEvent(display_, button, true, x11::CurrentTime);
+    XTestFakeButtonEvent(display_, button, false, x11::CurrentTime);
   }
 }
 
@@ -443,9 +437,8 @@ void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
       (event.delta_x() != 0 || event.delta_y() != 0)) {
     latest_mouse_position_.set(-1, -1);
     VLOG(3) << "Moving mouse by " << event.delta_x() << "," << event.delta_y();
-    XTestFakeRelativeMotionEvent(display_,
-                                 event.delta_x(), event.delta_y(),
-                                 CurrentTime);
+    XTestFakeRelativeMotionEvent(display_, event.delta_x(), event.delta_y(),
+                                 x11::CurrentTime);
 
   } else if (event.has_x() && event.has_y()) {
     // Injecting a motion event immediately before a button release results in
@@ -474,8 +467,7 @@ void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
               << "," << latest_mouse_position_.y();
       XTestFakeMotionEvent(display_, DefaultScreen(display_),
                            latest_mouse_position_.x(),
-                           latest_mouse_position_.y(),
-                           CurrentTime);
+                           latest_mouse_position_.y(), x11::CurrentTime);
     }
   }
 
@@ -492,7 +484,7 @@ void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
             << (event.button_down() ? "down " : "up ")
             << button_number;
     XTestFakeButtonEvent(display_, button_number, event.button_down(),
-                         CurrentTime);
+                         x11::CurrentTime);
   }
 
   // Older client plugins always send scroll events in pixels, which
@@ -602,7 +594,7 @@ void InputInjectorX11::Core::InitMouseButtonMap() {
   }
   error = XSetDeviceButtonMapping(display_, device, button_mapping.get(),
                                   num_device_buttons);
-  if (error != Success)
+  if (error != x11::Success)
     LOG(ERROR) << "Failed to set XTest device button mapping: " << error;
 
   XCloseDevice(display_, device);

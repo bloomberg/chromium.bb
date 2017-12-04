@@ -11,9 +11,9 @@
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
-#include <X11/Xlib.h>
 
 #include "base/linux_util.h"
+#include "ui/gfx/x/x11.h"
 #endif  // defined(OS_LINUX)
 
 int main(int argc, const char** argv) {
