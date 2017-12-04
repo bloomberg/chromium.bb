@@ -95,7 +95,7 @@ class AppBannerManagerTest : public AppBannerManager {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_done_);
   }
 
-  void ShowBannerUi() override {
+  void ShowBannerUi(WebAppInstallSource install_source) override {
     // Fake the call to ReportStatus here - this is usually called in
     // platform-specific code which is not exposed here.
     ReportStatus(SHOWING_WEB_APP_BANNER);

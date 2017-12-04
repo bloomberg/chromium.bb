@@ -43,7 +43,7 @@ class AppBannerManagerDesktop
                                    const GURL& validated_url,
                                    const GURL& start_url,
                                    const GURL& manifest_url) override;
-  void ShowBannerUi() override;
+  void ShowBannerUi(WebAppInstallSource install_source) override;
 
   // content::WebContentsObserver override.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,

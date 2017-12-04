@@ -230,7 +230,7 @@ void AppBannerManagerAndroid::ResetCurrentPageData() {
   native_app_package_ = "";
 }
 
-void AppBannerManagerAndroid::ShowBannerUi() {
+void AppBannerManagerAndroid::ShowBannerUi(WebAppInstallSource install_source) {
   content::WebContents* contents = web_contents();
   DCHECK(contents);
 
@@ -239,7 +239,7 @@ void AppBannerManagerAndroid::ShowBannerUi() {
             contents, GetWeakPtr(),
             CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
                                badge_icon_url_, can_install_webapk_),
-            primary_icon_, badge_icon_, can_install_webapk_)) {
+            primary_icon_, badge_icon_, install_source, can_install_webapk_)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
       ReportStatus(SHOWING_WEB_APP_BANNER);

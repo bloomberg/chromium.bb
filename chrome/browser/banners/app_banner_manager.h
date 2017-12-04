@@ -14,6 +14,7 @@
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
@@ -276,7 +277,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Creates the app banner UI. Overridden by subclasses as the infobar is
   // platform-specific.
-  virtual void ShowBannerUi() = 0;
+  virtual void ShowBannerUi(WebAppInstallSource install_source) = 0;
 
   // Called after the manager sends a message to the renderer regarding its
   // intention to show a prompt. The renderer will send a message back with the
