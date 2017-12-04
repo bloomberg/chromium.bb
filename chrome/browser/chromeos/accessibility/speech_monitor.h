@@ -32,6 +32,9 @@ class SpeechMonitor : public TtsPlatformImpl {
   // Returns true if StopSpeaking() was called on TtsController.
   bool DidStop();
 
+  // Blocks until StopSpeaking() is called on TtsController.
+  void BlockUntilStop();
+
  private:
   // TtsPlatformImpl implementation.
   bool PlatformImplAvailable() override;
