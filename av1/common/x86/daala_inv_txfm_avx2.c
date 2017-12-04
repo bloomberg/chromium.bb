@@ -55,6 +55,20 @@ static INLINE __m128i od_mulhrs_epi16(__m128i a, int16_t b) {
   return _mm_mulhrs_epi16(a, _mm_set1_epi16(b));
 }
 
+static INLINE __m128i od_mul_epi16(__m128i a, int32_t b, int r) {
+  int32_t b_q15;
+  b_q15 = b << (15 - r);
+  /* b and r are in all cases compile-time constants, so these branches
+     disappear when this function gets inlined. */
+  if (b_q15 > 32767) {
+    return _mm_add_epi16(a, od_mulhrs_epi16(a, (int16_t)(b_q15 - 32768)));
+  } else if (b_q15 < -32767) {
+    return _mm_sub_epi16(od_mulhrs_epi16(a, (int16_t)(32768 + b_q15)), a);
+  } else {
+    return od_mulhrs_epi16(a, b_q15);
+  }
+}
+
 static INLINE __m128i od_hbd_max_epi16(int bd) {
   return _mm_set1_epi16((1 << bd) - 1);
 }
@@ -451,7 +465,7 @@ static INLINE void od_transpose8x8(__m128i *r0, __m128i *r1, __m128i *r2,
 #undef OD_RSHIFT1
 #undef OD_AVG
 #undef OD_HRSUB
-#undef OD_MULHRS
+#undef OD_MUL
 #undef OD_SWAP
 
 /* Define 8-wide 16-bit SSSE3 kernels. */
@@ -464,7 +478,7 @@ static INLINE void od_transpose8x8(__m128i *r0, __m128i *r1, __m128i *r2,
 #define OD_RSHIFT1 od_unbiased_rshift1_epi16
 #define OD_AVG od_avg_epi16
 #define OD_HRSUB od_hrsub_epi16
-#define OD_MULHRS od_mulhrs_epi16
+#define OD_MUL od_mul_epi16
 #define OD_SWAP od_swap_epi16
 
 #include "av1/common/x86/daala_tx_kernels.h"
