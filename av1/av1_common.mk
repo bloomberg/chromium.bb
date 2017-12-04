@@ -28,6 +28,7 @@ AV1_COMMON_SRCS-yes += common/daala_tx.c
 AV1_COMMON_SRCS-yes += common/daala_tx.h
 AV1_COMMON_SRCS-yes += common/daala_inv_txfm.c
 AV1_COMMON_SRCS-yes += common/daala_inv_txfm.h
+AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/daala_tx_kernels.h
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/daala_inv_txfm_avx2.c
 AV1_COMMON_SRCS-yes += common/entropy.h
 AV1_COMMON_SRCS-yes += common/entropymode.h
