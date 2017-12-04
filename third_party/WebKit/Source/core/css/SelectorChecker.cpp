@@ -900,6 +900,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return element.IsFormControlElement() &&
              ToHTMLFormControlElement(element).IsAutofilled();
     case CSSSelector::kPseudoAnyLink:
+      UseCounter::Count(context.element->GetDocument(),
+                        WebFeature::kCSSSelectorPseudoWebkitAnyLink);
     case CSSSelector::kPseudoLink:
       return element.IsLink();
     case CSSSelector::kPseudoVisited:
