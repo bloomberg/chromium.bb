@@ -607,6 +607,108 @@ static INLINE void od_idct8_kernel8_epi16(__m128i *r0, __m128i *r4, __m128i *r2,
   *r7 = _mm_sub_epi16(*r0, *r7);
 }
 
+static INLINE void od_idst8_kernel8_epi16(__m128i *r0, __m128i *r4, __m128i *r2,
+                                          __m128i *r6, __m128i *r1, __m128i *r5,
+                                          __m128i *r3, __m128i *r7) {
+  __m128i t_;
+  __m128i u_;
+  __m128i r0h;
+  __m128i r2h;
+  __m128i r5h;
+  __m128i r7h;
+  t_ = od_avg_epi16(*r1, *r6);
+  /* 11585/8192 ~= 2*Sin[Pi/4] ~= 1.4142135623730951 */
+  *r1 = _mm_add_epi16(*r6, od_mulhrs_epi16(*r6, (11585 - 8192) << 2));
+  /* 11585/8192 ~= 2*Cos[Pi/4] ~= 1.4142135623730951 */
+  *r6 = _mm_add_epi16(t_, od_mulhrs_epi16(t_, (11585 - 8192) << 2));
+  *r1 = _mm_sub_epi16(*r1, *r6);
+  t_ = od_hrsub_epi16(*r5, *r2);
+  /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */
+  u_ = _mm_add_epi16(*r5, od_mulhrs_epi16(*r5, (21407 - 16384) << 1));
+  /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.5411961001461969 */
+  *r5 = od_mulhrs_epi16(*r2, 8867 << 1);
+  /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */
+  t_ = od_mulhrs_epi16(t_, 3135 << 3);
+  *r5 = _mm_sub_epi16(*r5, t_);
+  *r2 = _mm_sub_epi16(t_, u_);
+  t_ = od_avg_epi16(*r3, *r4);
+  /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */
+  u_ = _mm_add_epi16(*r4, od_mulhrs_epi16(*r4, (21407 - 16384) << 1));
+  /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.5411961001461969 */
+  *r4 = od_mulhrs_epi16(*r3, 8867 << 1);
+  /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */
+  t_ = od_mulhrs_epi16(t_, 3135 << 3);
+  *r3 = _mm_sub_epi16(u_, t_);
+  *r4 = _mm_add_epi16(*r4, t_);
+  *r7 = _mm_add_epi16(*r7, *r6);
+  r7h = od_unbiased_rshift1_epi16(*r7);
+  *r6 = _mm_sub_epi16(*r6, r7h);
+  *r2 = _mm_add_epi16(*r2, *r4);
+  r2h = od_unbiased_rshift1_epi16(*r2);
+  *r4 = _mm_sub_epi16(*r4, r2h);
+  *r0 = _mm_sub_epi16(*r0, *r1);
+  r0h = od_unbiased_rshift1_epi16(*r0);
+  *r1 = _mm_add_epi16(*r1, r0h);
+  *r5 = _mm_add_epi16(*r5, *r3);
+  r5h = od_unbiased_rshift1_epi16(*r5);
+  *r3 = _mm_sub_epi16(*r3, r5h);
+  *r4 = _mm_sub_epi16(*r4, r7h);
+  *r7 = _mm_add_epi16(*r7, *r4);
+  *r6 = _mm_add_epi16(*r6, r5h);
+  *r5 = _mm_sub_epi16(*r5, *r6);
+  *r3 = _mm_add_epi16(*r3, r0h);
+  *r0 = _mm_sub_epi16(*r0, *r3);
+  *r1 = _mm_sub_epi16(*r1, r2h);
+  *r2 = _mm_add_epi16(*r2, *r1);
+  t_ = _mm_add_epi16(*r0, *r7);
+  /* 17911/16384 ~= Sin[15*Pi/32] + Cos[15*Pi/32] ~= 1.0932018670017576 */
+  u_ = _mm_add_epi16(*r0, od_mulhrs_epi16(*r0, (17911 - 16384) << 1));
+  /* 14699/16384 ~= Sin[15*Pi/32] - Cos[15*Pi/32] ~= 0.8971675863426363 */
+  *r0 = od_mulhrs_epi16(*r7, 14699 << 1);
+  /* 803/8192 ~= Cos[15*Pi/32] ~= 0.0980171403295606 */
+  t_ = od_mulhrs_epi16(t_, 803 << 2);
+  *r7 = _mm_sub_epi16(u_, t_);
+  *r0 = _mm_add_epi16(*r0, t_);
+  t_ = _mm_sub_epi16(*r1, *r6);
+  /* 40869/32768 ~= Sin[13*Pi/32] + Cos[13*Pi/32] ~= 1.247225012986671 */
+  u_ = _mm_add_epi16(*r6, od_mulhrs_epi16(*r6, 40869 - 32768));
+  /* 21845/32768 ~= Sin[13*Pi/32] - Cos[13*Pi/32] ~= 0.6666556584777465 */
+  *r6 = od_mulhrs_epi16(*r1, 21845);
+  /* 1189/4096 ~= Cos[13*Pi/32] ~= 0.29028467725446233 */
+  t_ = od_mulhrs_epi16(t_, 1189 << 3);
+  *r1 = _mm_add_epi16(u_, t_);
+  *r6 = _mm_add_epi16(*r6, t_);
+  t_ = _mm_add_epi16(*r2, *r5);
+  /* 22173/16384 ~= Sin[11*Pi/32] + Cos[11*Pi/32] ~= 1.3533180011743526 */
+  u_ = _mm_add_epi16(*r2, od_mulhrs_epi16(*r2, (22173 - 16384) << 1));
+  /* 3363/8192 ~= Sin[11*Pi/32] - Cos[11*Pi/32] ~= 0.4105245275223574 */
+  *r2 = od_mulhrs_epi16(*r5, 3363 << 2);
+  /* 15447/32768 ~= Cos[11*Pi/32] ~= 0.47139673682599764 */
+  t_ = od_mulhrs_epi16(t_, 15447);
+  *r5 = _mm_sub_epi16(u_, t_);
+  *r2 = _mm_add_epi16(*r2, t_);
+  t_ = _mm_sub_epi16(*r3, *r4);
+  /* 23059/16384 ~= Sin[9*Pi/32] + Cos[9*Pi/32] ~= 1.4074037375263826 */
+  u_ = _mm_add_epi16(*r4, od_mulhrs_epi16(*r4, (23059 - 16384) << 1));
+  /* 2271/16384 ~= Sin[9*Pi/32] - Cos[9*Pi/32] ~= 0.1386171691990915 */
+  *r4 = od_mulhrs_epi16(*r3, 2271 << 1);
+  /* 5197/8192 ~= Cos[9*Pi/32] ~= 0.6343932841636455 */
+  t_ = od_mulhrs_epi16(t_, 5197 << 2);
+  *r3 = _mm_add_epi16(u_, t_);
+  *r4 = _mm_add_epi16(*r4, t_);
+}
+
+static INLINE void od_flip_idst8_kernel8_epi16(__m128i *r0, __m128i *r4,
+                                               __m128i *r2, __m128i *r6,
+                                               __m128i *r1, __m128i *r5,
+                                               __m128i *r3, __m128i *r7) {
+  od_idst8_kernel8_epi16(r0, r4, r2, r6, r1, r5, r3, r7);
+  od_swap_epi16(r0, r7);
+  od_swap_epi16(r4, r3);
+  od_swap_epi16(r2, r5);
+  od_swap_epi16(r6, r1);
+}
+
 static void od_row_iidtx_avx2(int16_t *out, int coeffs, const tran_low_t *in) {
   int c;
   /* The number of rows and number of columns are both multiples of 4, so the
@@ -877,6 +979,29 @@ static void od_col_idct8_add_hbd_avx2(unsigned char *output_pixels,
                           od_idct8_kernel8_epi16);
 }
 
+static void od_row_idst8_avx2(int16_t *out, int rows, const tran_low_t *in) {
+  od_row_tx8_avx2(out, rows, in, od_idst8_kernel8_epi16);
+}
+
+static void od_col_idst8_add_hbd_avx2(unsigned char *output_pixels,
+                                      int output_stride, int cols,
+                                      const int16_t *in, int bd) {
+  od_col_tx8_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                          od_idst8_kernel8_epi16);
+}
+
+static void od_row_flip_idst8_avx2(int16_t *out, int rows,
+                                   const tran_low_t *in) {
+  od_row_tx8_avx2(out, rows, in, od_flip_idst8_kernel8_epi16);
+}
+
+static void od_col_flip_idst8_add_hbd_avx2(unsigned char *output_pixels,
+                                           int output_stride, int cols,
+                                           const int16_t *in, int bd) {
+  od_col_tx8_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                          od_flip_idst8_kernel8_epi16);
+}
+
 typedef void (*daala_row_itx)(int16_t *out, int rows, const tran_low_t *in);
 typedef void (*daala_col_itx_add)(unsigned char *output_pixels,
                                   int output_stride, int cols,
@@ -887,7 +1012,7 @@ static const daala_row_itx TX_ROW_MAP[TX_SIZES][TX_TYPES] = {
   { od_row_idct4_avx2, od_row_idst4_avx2, od_row_flip_idst4_avx2,
     od_row_iidtx4_avx2 },
   // 8-point transforms
-  { od_row_idct8_avx2, NULL, NULL, NULL },
+  { od_row_idct8_avx2, od_row_idst8_avx2, od_row_flip_idst8_avx2, NULL },
   // 16-point transforms
   { NULL, NULL, NULL, NULL },
   // 32-point transforms
@@ -920,7 +1045,8 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
       { od_col_idct4_add_hbd_avx2, od_col_idst4_add_hbd_avx2,
         od_col_flip_idst4_add_hbd_avx2, od_col_iidtx4_add_hbd_avx2 },
       // 8-point transforms
-      { od_col_idct8_add_hbd_avx2, NULL, NULL, NULL },
+      { od_col_idct8_add_hbd_avx2, od_col_idst8_add_hbd_avx2,
+        od_col_flip_idst8_add_hbd_avx2, NULL },
       // 16-point transforms
       { NULL, NULL, NULL, NULL },
       // 32-point transforms
