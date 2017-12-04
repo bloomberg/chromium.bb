@@ -203,9 +203,7 @@ class NavigationAccessibilityTest : public InProcessBrowserTest {
 
 // Tests that when focus is in the omnibox and the user types a url and
 // presses enter, no focus events are sent on the old document.
-// TODO(dmazzoni): enable this test.  http://crbug.com/421116
-IN_PROC_BROWSER_TEST_F(NavigationAccessibilityTest,
-                       DISABLED_TestNavigateToNewUrl) {
+IN_PROC_BROWSER_TEST_F(NavigationAccessibilityTest, TestNavigateToNewUrl) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
   ui_test_utils::NavigateToURL(browser(),
