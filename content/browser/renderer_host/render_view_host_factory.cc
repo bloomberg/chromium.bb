@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_factory.h"
 
 namespace content {
 
@@ -50,8 +50,9 @@ RenderViewHost* RenderViewHostFactory::Create(
   }
   return new RenderViewHostImpl(
       instance,
-      std::make_unique<RenderWidgetHostImpl>(
-          widget_delegate, instance->GetProcess(), routing_id, nullptr, hidden),
+      base::WrapUnique(RenderWidgetHostFactory::Create(
+          widget_delegate, instance->GetProcess(), routing_id, nullptr,
+          hidden)),
       delegate, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);
 }

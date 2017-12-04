@@ -636,6 +636,28 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // from a newly loaded page. Used for testing.
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
 
+  // Can be overriden for subclass based testing.
+  virtual void OnGpuSwapBuffersCompletedInternal(
+      const ui::LatencyInfo& latency_info);
+
+  // InputAckHandler
+  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
+                          InputEventAckSource ack_source,
+                          InputEventAckState ack_result) override;
+  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                       InputEventAckSource ack_source,
+                       InputEventAckState ack_result) override;
+  void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
+                       InputEventAckSource ack_source,
+                       InputEventAckState ack_result) override;
+  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckSource ack_source,
+                       InputEventAckState ack_result) override;
+  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                         InputEventAckSource ack_source,
+                         InputEventAckState ack_result) override;
+  void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
+
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
@@ -676,9 +698,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // renderer is unresponsive, this will clear that state and call
   // NotifyRendererResponsive.
   void RendererIsResponsive();
-
-  void OnGpuSwapBuffersCompletedInternal(const ui::LatencyInfo& latency_info);
-
 
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
@@ -740,24 +759,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Dispatch input events with latency information
   void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,
                                          ui::LatencyInfo* latency);
-
-  // InputAckHandler
-  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
-                          InputEventAckSource ack_source,
-                          InputEventAckState ack_result) override;
-  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
-  void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
-  void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override;
-  void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).

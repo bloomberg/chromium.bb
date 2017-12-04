@@ -226,6 +226,7 @@ class LatencyInfo {
   void set_trace_id(int64_t trace_id) { trace_id_ = trace_id; }
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
   void set_ukm_source_id(ukm::SourceId id) { ukm_source_id_ = id; }
+  const std::string& trace_name() const { return trace_name_; }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
