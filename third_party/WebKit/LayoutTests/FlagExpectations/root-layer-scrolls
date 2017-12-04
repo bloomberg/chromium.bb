@@ -50,15 +50,6 @@ crbug.com/417782 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-controls-timeline.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Failure ]
 crbug.com/417782 [ Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Timeout ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/device-mode/default-background-color.html [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/layers/layer-tree-model.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
-crbug.com/417782 virtual/mojo-loading/http/tests/misc/acid3.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-mouse-coords-in-zoom-and-scroll.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-pen-coords-in-zoom-and-scroll.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/scale-and-scroll-iframe-window.html [ Failure ]
@@ -79,7 +70,6 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 
 # Tests known to be flaky
 crbug.com/786117 [ Linux ] plugins/mouse-events-fixedpos.html [ Pass Crash ]
-crbug.com/417782 virtual/mojo-loading/http/tests/devtools/tracing/scroll-invalidations.html [ Crash Failure ]
 
 # Virtual test suites to skip.
 crbug.com/417782 virtual/spv175 [ Skip ]

@@ -1,11 +1,10 @@
 # These tests currently fail when run with --enable-network-service
 # See https://crbug.com/729849
 
-# Skip the mojo-blobs and mojo-loading virtual test suites because these flags
+# Skip the mojo-blobs virtual test suite because these flags
 # are implied by the Network Service flag. Failures there are therefore
 # duplicates of failures below.
 Bug(none) virtual/mojo-blobs [ Skip ]
-Bug(none) virtual/mojo-loading [ Skip ]
 
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/XMLHttpRequest/overridemimetype-blob.html [ Failure ]

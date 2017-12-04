@@ -10,26 +10,21 @@ crbug.com/769508 fast/css/acid2-pixel.html [ Failure ]
 
 # https://crbug.com/765779: unique name trouble with PlzNavigate
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/765779 virtual/mojo-loading/http/tests/loading/bad-server-subframe.html [ Failure ]
 
 # https://crbug.com/393285: Text-autosizing doesn't support OOPIFs.
 # https://crbug.com/667551: Pixel dumps don't support OOPIFs.
 # Both of the bugs above need to be fixed, before enabling the tests below.
 crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure ]
-crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/narrow-iframe.html [ Failure ]
-crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/wide-iframe.html [ Failure ]
 
 # https://crbug.com/697111: assert failures in test added in r451938.
 crbug.com/697111 svg/dom/getScreenCTM-ancestor-transform.html [ Failure ]
 
 # https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
-crbug.com/669083 virtual/mojo-loading/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 
 # https://crbug.com/661725 - Propagating user gesture via postMessage doesn't work for OOPIFs
 crbug.com/661725 http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
-crbug.com/661725 virtual/mojo-loading/http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Failure Timeout ]
 
 # https://crbug.com/582245 - no exception, b/c BindingSecurity::shouldAllowAccessTo exits early when |!target|.
 crbug.com/582245 external/wpt/x-frame-options/deny.sub.html [ Failure ]
@@ -37,84 +32,59 @@ crbug.com/582245 external/wpt/x-frame-options/multiple.sub.html [ Failure ]
 crbug.com/582245 external/wpt/x-frame-options/sameorigin.sub.html [ Failure ]
 crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
 crbug.com/582245 http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]
-crbug.com/582245 virtual/mojo-loading/http/tests/security/xss-DENIED-getSVGDocument-iframe.html [ Failure ]
-crbug.com/582245 virtual/mojo-loading/http/tests/security/xss-DENIED-getSVGDocument-object.html [ Failure ]
 crbug.com/582245 http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure ]
 crbug.com/582245 http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
-crbug.com/582245 virtual/mojo-loading/http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure ]
-crbug.com/582245 virtual/mojo-loading/http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
 crbug.com/582245 http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
-crbug.com/582245 virtual/mojo-loading/http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
 
 # https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
 crbug.com/582176 http/tests/devtools/console-cd-completions.js [ Failure ]
 crbug.com/582176 http/tests/devtools/console-cd.js [ Failure ]
-crbug.com/582176 virtual/mojo-loading/http/tests/devtools/console-cd-completions.js [ Failure ]
-crbug.com/582176 virtual/mojo-loading/http/tests/devtools/console-cd.js [ Failure ]
 
 # https://crbug.com/608015 - node.contentDocument is undefined.
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
-crbug.com/608015 virtual/mojo-loading/http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 
 # https://crbug.com/771003 - Dump history from all processes in layout tests
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
-crbug.com/771003 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
 # https://crbug.com/585188 - testRunner.addOriginAccessWhitelistEntry is not replicated to OOPIFs.
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
-crbug.com/585188 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
 crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
-crbug.com/585188 virtual/mojo-loading/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
 
 # https://crbug.com/601584 - No OOPIF support for UserGestureIndicator triggers
 #                            cross-origin-iframe.html layout test failure
 crbug.com/601584 http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
-crbug.com/601584 virtual/mojo-loading/http/tests/bluetooth/https/requestDevice/cross-origin-iframe.html [ Failure ]
 
 # https://crbug.com/606594 - UaF of delegate_ in WebFrameTestClient::willSendRequest
 # https://crbug.com/786510 - test tries to access cross-origin document body
 crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
-crbug.com/606594 virtual/mojo-loading/http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
 
 # https://crbug.com/607991 - MockWebClipboardImpl not replicated across OOPIFs.
 crbug.com/607991 http/tests/misc/copy-resolves-urls.html [ Failure ]
-crbug.com/607991 virtual/mojo-loading/http/tests/misc/copy-resolves-urls.html [ Failure ]
 
 # https://crbug.com/608780 - window.performance doesn't work with OOPIFs
 crbug.com/608780 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Failure ]
 crbug.com/608780 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Failure ]
 crbug.com/608780 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html [ Failure ]
 crbug.com/608780 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html [ Failure ]
-crbug.com/608780 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Failure ]
-crbug.com/608780 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Failure ]
-crbug.com/608780 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_resource_request.html [ Failure ]
-crbug.com/608780 virtual/mojo-loading/http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_timing_allow_cross_origin_resource_request.html [ Failure ]
 
 # https://crbug.com/611232 - CSP checks from remote parent frame do not properly report violations
 crbug.com/611232 http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Timeout ]
-crbug.com/611232 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Timeout ]
 
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
 # https://crbug.com/665058 - EventSender drag-and-drop simulation doesn't support OOPIFs.
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
-crbug.com/665058 virtual/mojo-loading/http/tests/local/drag-over-remote-content.html [ Crash ]
 
 # https://crbug.com/619662 - Expected console output differences.
 crbug.com/619662 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 crbug.com/619662 virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
-crbug.com/619662 virtual/mojo-loading/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
 
 # https://crbug.com/623268 - Can't inspect OOPIFs from main page's DevTools window.
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
 crbug.com/623268 http/tests/devtools/console-cross-origin-iframe-logging.js [ Timeout ]
-crbug.com/623268 virtual/mojo-loading/http/tests/devtools/console-cross-origin-iframe-logging.js [ Timeout ]
 
 # https://crbug.com/645641 - test_runner.cc(1863) Check failed:
 # layout_test_runtime_flags_.have_top_loading_frame()
@@ -122,28 +92,20 @@ crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash 
 
 # http/ flaky tests w/ --site-per-process
 crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Pass ]
-crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Pass ]
 crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
-crbug.com/678482 virtual/mojo-loading/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
 crbug.com/678484 http/tests/devtools/startup/reattach-after-editing-styles.html [ Timeout Pass ]
-crbug.com/678484 virtual/mojo-loading/http/tests/devtools/startup/reattach-after-editing-styles.html [ Timeout Pass ]
 crbug.com/678485 http/tests/devtools/startup/shadow-dom-rules-restart.html [ Timeout ]
-crbug.com/678485 virtual/mojo-loading/http/tests/devtools/startup/shadow-dom-rules-restart.html [ Timeout ]
 crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
-crbug.com/678491 virtual/mojo-loading/http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
 
 # Slow tests. These are listed in SlowTests listed here also because
 # expectations are unfortunately not inherited automatically (e.g. see
 # https://crbug.com/594216)
 crbug.com/451577 http/tests/devtools/network/network-datareceived.js [ Timeout Pass ]
-crbug.com/451577 virtual/mojo-loading/http/tests/devtools/network/network-datareceived.js [ Timeout Pass ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout Pass ]
-crbug.com/24182 virtual/mojo-loading/http/tests/perf/large-inlined-script.html [ Timeout Pass ]
 
 # https://crbug.com/650348: Remove input event forwarding path from RenderFrameProxies
 # This test needs to be modified to not rely on EventSender passing mouse events directly to an OOPIF.
 crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
-crbug.com/650348 virtual/mojo-loading/http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 
 # https://crbug.com/745881: Image diff in test due to font rendering issues.
 crbug.com/745881 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure ]
@@ -156,10 +118,6 @@ crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin
 crbug.com/788390 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
 crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
 crbug.com/788390 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
-crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Timeout ]
-crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Timeout ]
-crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Timeout ]
-crbug.com/788390 virtual/mojo-loading/http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Timeout ]
 
 # The tests below are inherently incompatible with isolating same-site, cross-origin
 # frames into separate processes (which is how Site Isolation bots treat

@@ -318,26 +318,6 @@
              "--disable-smooth-scrolling"]
   },
   {
-    "prefix": "mojo-loading",
-    "base": "webexposed",
-    "args": ["--enable-blink-features=LoadingWithMojo"]
-  },
-  {
-    "prefix": "mojo-loading",
-    "base": "http/tests",
-    "args": ["--enable-blink-features=LoadingWithMojo"]
-  },
-  {
-    "prefix": "mojo-loading",
-    "base": "css1",
-    "args": ["--enable-blink-features=LoadingWithMojo"]
-  },
-  {
-    "prefix": "mojo-loading",
-    "base": "fast/table",
-    "args": ["--enable-blink-features=LoadingWithMojo"]
-  },
-  {
     "prefix": "mojo-notifications",
     "base": "http/tests/notifications",
     "args": ["--enable-blink-features=NotificationsWithMojo"]
