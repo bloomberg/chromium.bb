@@ -11,6 +11,10 @@
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace gfx {
+class RenderText;
+}
+
 namespace vr {
 
 class TextTexture;
@@ -22,12 +26,15 @@ class Text : public TexturedElement {
 
   void SetText(const base::string16& text);
   void SetColor(SkColor color);
+
   void SetTextAlignment(UiTexture::TextAlignment alignment);
   void SetMultiLine(bool multiline);
 
   void OnSetSize(gfx::SizeF size) override;
 
-  TextTexture* GetTextureForTest();
+  std::vector<std::unique_ptr<gfx::RenderText>> LayOutTextForTest(
+      const gfx::Size& texture_size);
+  gfx::SizeF GetTextureSizeForTest() const;
 
  private:
   UiTexture* GetTexture() const override;
