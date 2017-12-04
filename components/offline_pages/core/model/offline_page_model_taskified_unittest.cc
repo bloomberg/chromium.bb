@@ -76,6 +76,8 @@ class OfflinePageModelTaskifiedTest
   // Runs until all of the tasks that are not delayed are gone from the task
   // queue.
   void PumpLoop() { task_runner_->RunUntilIdle(); }
+  void BuildStore();
+  void BuildModel();
   void ResetResults();
 
   // OfflinePageModel::Observer implementation.
@@ -110,8 +112,12 @@ class OfflinePageModelTaskifiedTest
   std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(const GURL& url,
                                                          ArchiverResult result);
   void CheckTaskQueueIdle();
+  void SetTestingClock(std::unique_ptr<base::Clock> clock) {
+    model_->clock_ = std::move(clock);
+  }
 
   // Getters for private fields.
+  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
   OfflinePageModelTaskified* model() { return model_.get(); }
   OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
   OfflinePageMetadataStoreTestUtil* store_test_util() {
@@ -134,6 +140,9 @@ class OfflinePageModelTaskifiedTest
   bool observer_delete_page_called() { return observer_delete_page_called_; }
   const OfflinePageModel::DeletedPageInfo& last_deleted_page_info() {
     return last_deleted_page_info_;
+  }
+  base::Time last_clear_page_time() {
+    return model_->last_clear_cached_pages_time_;
   }
 
  private:
@@ -160,21 +169,12 @@ OfflinePageModelTaskifiedTest::OfflinePageModelTaskifiedTest()
 OfflinePageModelTaskifiedTest::~OfflinePageModelTaskifiedTest() {}
 
 void OfflinePageModelTaskifiedTest::SetUp() {
-  store_test_util()->BuildStoreInMemory();
+  BuildStore();
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
   ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
-  auto archive_manager = base::MakeUnique<ArchiveManager>(
-      temporary_dir_path(), persistent_dir_path(),
-      base::ThreadTaskRunnerHandle::Get());
-  model_ = base::MakeUnique<OfflinePageModelTaskified>(
-      store_test_util()->ReleaseStore(), std::move(archive_manager),
-      base::ThreadTaskRunnerHandle::Get());
-  model_->AddObserver(this);
-  page_generator()->SetArchiveDirectory(temporary_dir_path());
-  ResetResults();
+  BuildModel();
   PumpLoop();
   CheckTaskQueueIdle();
-  EXPECT_EQ(0UL, model_->pending_archivers_.size());
 }
 
 void OfflinePageModelTaskifiedTest::TearDown() {
@@ -192,6 +192,23 @@ void OfflinePageModelTaskifiedTest::TearDown() {
   model_->RemoveObserver(this);
   model_.reset();
   PumpLoop();
+}
+
+void OfflinePageModelTaskifiedTest::BuildStore() {
+  store_test_util()->BuildStoreInMemory();
+}
+
+void OfflinePageModelTaskifiedTest::BuildModel() {
+  ASSERT_TRUE(store_test_util_.store());
+  auto archive_manager = base::MakeUnique<ArchiveManager>(
+      temporary_dir_path(), persistent_dir_path(),
+      base::ThreadTaskRunnerHandle::Get());
+  model_ = base::MakeUnique<OfflinePageModelTaskified>(
+      store_test_util()->ReleaseStore(), std::move(archive_manager),
+      base::ThreadTaskRunnerHandle::Get());
+  model_->AddObserver(this);
+  ResetResults();
+  EXPECT_EQ(0UL, model_->pending_archivers_.size());
 }
 
 void OfflinePageModelTaskifiedTest::ResetResults() {
@@ -454,6 +471,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverTwoPages) {
 
 TEST_F(OfflinePageModelTaskifiedTest, AddPage) {
   // Creates a fresh page.
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
   OfflinePageItem page = page_generator()->CreateItemWithTempFile();
 
   base::MockCallback<AddPageCallback> callback;
@@ -519,6 +537,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeleteMultiplePages) {}
 // should be covered in DeletePagesTaskTest.
 
 TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
   OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
   InsertPageIntoStore(page1);
@@ -542,6 +561,7 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kDefaultNamespace);
   page_generator()->SetUrl(kTestUrl);
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
@@ -668,6 +688,16 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_AllUrls) {
   PumpLoop();
 }
 
+TEST_F(OfflinePageModelTaskifiedTest, CanSaveURL) {
+  EXPECT_TRUE(OfflinePageModel::CanSaveURL(GURL("http://foo")));
+  EXPECT_TRUE(OfflinePageModel::CanSaveURL(GURL("https://foo")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("file:///foo")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("data:image/png;base64,ab")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("chrome://version")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("chrome-native://newtab/")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("/invalid/url.mhtml")));
+}
+
 TEST_F(OfflinePageModelTaskifiedTest, GetOfflineIdsForClientId) {
   page_generator()->SetNamespace(kTestClientId1.name_space);
   page_generator()->SetId(kTestClientId1.id);
@@ -724,6 +754,7 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByRequestOrigin) {
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kTestClientId1.name_space);
   page_generator()->SetId(kTestClientId1.id);
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
@@ -883,6 +914,7 @@ TEST_F(OfflinePageModelTaskifiedTest, ExtraActionTriggeredWhenSaveSuccess) {
   // Add pages that have the same namespace and url directly into store, in
   // order to avoid triggering the removal.
   // The 'default' namespace has a limit of 1 per url.
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kDefaultNamespace);
   page_generator()->SetUrl(kTestUrl);
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
@@ -921,6 +953,92 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPages) {
   EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
   model()->GetAllPages(callback.Get());
   PumpLoop();
+}
+
+// This test is affected by https://crbug.com/725685, which only affects windows
+// platform.
+#if defined(OS_WIN)
+#define MAYBE_StartUp_ConsistencyCheckExecuted \
+  DISABLED_StartUp_ConsistencyCheckExecuted
+#else
+#define MAYBE_StartUp_ConsistencyCheckExecuted StartUp_ConsistencyCheckExecuted
+#endif
+TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
+  // Rebuild the store so that we can insert pages before the model constructs.
+  BuildStore();
+
+  // Insert temporary pages
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
+  page_generator()->SetNamespace(kDefaultNamespace);
+  // Page missing archive file in temporary directory.
+  OfflinePageItem temp_page1 = page_generator()->CreateItem();
+  // Page missing metadata entry in database since it's not inserted into store.
+  OfflinePageItem temp_page2 = page_generator()->CreateItemWithTempFile();
+  // Page in temporary namespace saved in persistent directory to simulate pages
+  // saved in legacy directory.
+  page_generator()->SetArchiveDirectory(persistent_dir_path());
+  OfflinePageItem temp_page3 = page_generator()->CreateItemWithTempFile();
+  InsertPageIntoStore(temp_page1);
+  InsertPageIntoStore(temp_page3);
+
+  // Insert persistent pages.
+  page_generator()->SetNamespace(kDownloadNamespace);
+  // Page missing archive file in pesistent directory.
+  OfflinePageItem persistent_page1 = page_generator()->CreateItem();
+  // Page missing metadata entry in database since it's not inserted into store.
+  OfflinePageItem persistent_page2 = page_generator()->CreateItemWithTempFile();
+  // Page in persistent namespace saved in persistent directory to simulate
+  // pages saved in legacy directory.
+  OfflinePageItem persistent_page3 = page_generator()->CreateItemWithTempFile();
+  InsertPageIntoStore(persistent_page1);
+  InsertPageIntoStore(persistent_page3);
+
+  PumpLoop();
+
+  EXPECT_EQ(4LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
+  EXPECT_EQ(3UL, test_util::GetFileCountInDirectory(persistent_dir_path()));
+
+  // Rebuild the model in order to trigger consistency check.
+  BuildModel();
+  PumpLoop();
+
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  EXPECT_EQ(0UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
+  EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(persistent_dir_path()));
+}
+
+TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
+  // Rebuilding store and model in order to set clock before executing the clear
+  // storage during model initialization so that we can check the time.
+  BuildStore();
+  BuildModel();
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  base::SimpleTestClock* clock_ptr = clock.get();
+  clock_ptr->SetNow(base::Time::Now());
+  SetTestingClock(std::move(clock));
+
+  PumpLoop();
+  EXPECT_EQ(clock_ptr->Now(), last_clear_page_time());
+
+  // Only 5 minutes passed and the last clear page time should not be changed
+  // since the clear page will not be triggered.
+  clock_ptr->Advance(base::TimeDelta::FromMinutes(5));
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  int64_t offline_id = SavePageWithExpectedResult(
+      kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
+      std::move(archiver), SavePageResult::SUCCESS);
+  PumpLoop();
+  EXPECT_EQ(clock_ptr->Now() - base::TimeDelta::FromMinutes(5),
+            last_clear_page_time());
+
+  clock_ptr->Advance(base::TimeDelta::FromMinutes(30));
+  archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  offline_id = SavePageWithExpectedResult(
+      kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
+      std::move(archiver), SavePageResult::SUCCESS);
+  PumpLoop();
+  EXPECT_EQ(clock_ptr->Now(), last_clear_page_time());
 }
 
 }  // namespace offline_pages

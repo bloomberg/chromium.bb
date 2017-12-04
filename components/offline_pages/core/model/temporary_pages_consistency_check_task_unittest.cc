@@ -30,8 +30,9 @@ class TemporaryPagesConsistencyCheckTaskTest : public testing::Test {
 
   OfflinePageItem AddPage(const std::string& name_space,
                           const base::FilePath& archive_dir);
-  void SetRemoveDbEntryAndFile(bool remove_db_entry, bool remove_file);
-  bool IsPageRemoved(const OfflinePageItem& page);
+  void SetShouldCreateDbEntry(bool should_create_db_entry);
+  void SetShouldCreateFile(bool should_create_file);
+  bool IsPageRemovedFromBothPlaces(const OfflinePageItem& page);
 
   OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
   OfflinePageMetadataStoreTestUtil* store_test_util() {
@@ -54,8 +55,8 @@ class TemporaryPagesConsistencyCheckTaskTest : public testing::Test {
   std::unique_ptr<ClientPolicyController> policy_controller_;
 
   base::ScopedTempDir temporary_dir_;
-  bool remove_db_entry_;
-  bool remove_file_;
+  bool should_create_db_entry_;
+  bool should_create_file_;
 };
 
 TemporaryPagesConsistencyCheckTaskTest::TemporaryPagesConsistencyCheckTaskTest()
@@ -63,8 +64,8 @@ TemporaryPagesConsistencyCheckTaskTest::TemporaryPagesConsistencyCheckTaskTest()
       task_runner_handle_(task_runner_),
       store_test_util_(task_runner_),
       runner_(task_runner_),
-      remove_db_entry_(false),
-      remove_file_(false) {}
+      should_create_db_entry_(false),
+      should_create_file_(false) {}
 
 TemporaryPagesConsistencyCheckTaskTest::
     ~TemporaryPagesConsistencyCheckTaskTest() {}
@@ -88,21 +89,24 @@ OfflinePageItem TemporaryPagesConsistencyCheckTaskTest::AddPage(
   generator()->SetNamespace(name_space);
   generator()->SetArchiveDirectory(archive_dir);
   OfflinePageItem page = generator()->CreateItemWithTempFile();
-  if (!remove_db_entry_)
+  if (should_create_db_entry_)
     store_test_util()->InsertItem(page);
-  if (remove_file_)
+  if (!should_create_file_)
     EXPECT_TRUE(base::DeleteFile(page.file_path, false));
   return page;
 }
 
-void TemporaryPagesConsistencyCheckTaskTest::SetRemoveDbEntryAndFile(
-    bool remove_db_entry,
-    bool remove_file) {
-  remove_db_entry_ = remove_db_entry;
-  remove_file_ = remove_file;
+void TemporaryPagesConsistencyCheckTaskTest::SetShouldCreateDbEntry(
+    bool should_create_db_entry) {
+  should_create_db_entry_ = should_create_db_entry;
 }
 
-bool TemporaryPagesConsistencyCheckTaskTest::IsPageRemoved(
+void TemporaryPagesConsistencyCheckTaskTest::SetShouldCreateFile(
+    bool should_create_file) {
+  should_create_file_ = should_create_file;
+}
+
+bool TemporaryPagesConsistencyCheckTaskTest::IsPageRemovedFromBothPlaces(
     const OfflinePageItem& page) {
   return !base::PathExists(page.file_path) &&
          !store_test_util()->GetPageByOfflineId(page.offline_id);
@@ -118,9 +122,11 @@ bool TemporaryPagesConsistencyCheckTaskTest::IsPageRemoved(
 TEST_F(TemporaryPagesConsistencyCheckTaskTest,
        MAYBE_TestDeleteFileWithoutDbEntry) {
   // Only the file without DB entry and in temporary directory will be deleted.
-  SetRemoveDbEntryAndFile(false, false);
+  SetShouldCreateFile(true);
+
+  SetShouldCreateDbEntry(true);
   OfflinePageItem page1 = AddPage(kLastNNamespace, temporary_dir());
-  SetRemoveDbEntryAndFile(true, false);
+  SetShouldCreateDbEntry(false);
   OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
@@ -132,8 +138,8 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
-  EXPECT_FALSE(IsPageRemoved(page1));
-  EXPECT_TRUE(IsPageRemoved(page2));
+  EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
+  EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows
@@ -147,9 +153,11 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
        MAYBE_TestDeleteDbEntryWithoutFile) {
   // The temporary pages will be deleted from DB if their DB entries exist but
   // files are missing.
-  SetRemoveDbEntryAndFile(false, false);
+  SetShouldCreateDbEntry(true);
+
+  SetShouldCreateFile(true);
   OfflinePageItem page1 = AddPage(kLastNNamespace, temporary_dir());
-  SetRemoveDbEntryAndFile(false, true);
+  SetShouldCreateFile(false);
   OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
@@ -161,8 +169,8 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
-  EXPECT_FALSE(IsPageRemoved(page1));
-  EXPECT_TRUE(IsPageRemoved(page2));
+  EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
+  EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows
@@ -175,11 +183,14 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
 TEST_F(TemporaryPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   // Adding a bunch of pages with different setups.
   // After the consistency check, only page1 will exist.
-  SetRemoveDbEntryAndFile(false, false);
+  SetShouldCreateDbEntry(true);
+  SetShouldCreateFile(true);
   OfflinePageItem page1 = AddPage(kLastNNamespace, temporary_dir());
-  SetRemoveDbEntryAndFile(true, false);
+  SetShouldCreateDbEntry(false);
+  SetShouldCreateFile(true);
   OfflinePageItem page2 = AddPage(kLastNNamespace, temporary_dir());
-  SetRemoveDbEntryAndFile(false, true);
+  SetShouldCreateDbEntry(true);
+  SetShouldCreateFile(false);
   OfflinePageItem page3 = AddPage(kLastNNamespace, temporary_dir());
 
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
@@ -191,9 +202,9 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_util::GetFileCountInDirectory(temporary_dir()));
-  EXPECT_FALSE(IsPageRemoved(page1));
-  EXPECT_TRUE(IsPageRemoved(page2));
-  EXPECT_TRUE(IsPageRemoved(page3));
+  EXPECT_FALSE(IsPageRemovedFromBothPlaces(page1));
+  EXPECT_TRUE(IsPageRemovedFromBothPlaces(page2));
+  EXPECT_TRUE(IsPageRemovedFromBothPlaces(page3));
 }
 
 }  // namespace offline_pages

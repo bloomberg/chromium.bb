@@ -101,9 +101,6 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
   if (!db)
     return false;
 
-  std::vector<int64_t> offline_ids_to_delete;
-  std::vector<base::FilePath> files_to_delete;
-
   // One large database transaction that will:
   // 1. Gets persistent page infos from the database.
   // 2. Decide which pages to delete.
@@ -114,6 +111,7 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
 
   auto persistent_page_infos = GetAllPersistentPageInfos(namespaces, db);
 
+  std::vector<int64_t> offline_ids_to_delete;
   for (const auto& page_info : persistent_page_infos) {
     // Get pages whose archive files does not exist and delete.
     if (!base::PathExists(page_info.file_path)) {
@@ -135,6 +133,7 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
   // associated entries in the database.
   // TODO(romax): https://crbug.com/786240.
   std::set<base::FilePath> archive_paths = GetAllArchives(archives_dir);
+  std::vector<base::FilePath> files_to_delete;
   for (const auto& archive_path : archive_paths) {
     if (std::find_if(persistent_page_infos.begin(), persistent_page_infos.end(),
                      [&archive_path](const PageInfo& page_info) -> bool {
