@@ -25,6 +25,14 @@ namespace {
 // Delay until a key state change expected to be acknowledged is expired.
 const int kExpirationDelayForPendingKeyAcksMs = 1000;
 
+// These modifiers reflect what clients are supposed to be aware of.
+// I.e. EF_SCROLL_LOCK_ON is missing because clients are not supposed
+// to be aware scroll lock.
+const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                          ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
+                          ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN |
+                          ui::EF_NUM_LOCK_ON | ui::EF_CAPS_LOCK_ON;
+
 // The accelerator keys reserved to be processed by chrome.
 const struct {
   ui::KeyboardCode keycode;
@@ -198,13 +206,6 @@ void Keyboard::AckKeyboardKey(uint32_t serial, bool handled) {
 // ui::EventHandler overrides:
 
 void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
-  // These modifiers reflect what clients are supposed to be aware of.
-  // I.e. EF_SCROLL_LOCK_ON is missing because clients are not supposed
-  // to be aware scroll lock.
-  const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                            ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
-                            ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN |
-                            ui::EF_NUM_LOCK_ON | ui::EF_CAPS_LOCK_ON;
   int modifier_flags = event->flags() & kModifierMask;
   if (modifier_flags != modifier_flags_) {
     modifier_flags_ = modifier_flags;
@@ -313,6 +314,7 @@ void Keyboard::SetFocus(Surface* surface) {
     pending_key_acks_.clear();
   }
   if (surface) {
+    modifier_flags_ = seat_->modifier_flags() & kModifierMask;
     delegate_->OnKeyboardModifiers(modifier_flags_);
     delegate_->OnKeyboardEnter(surface, seat_->pressed_keys());
     focus_ = surface;

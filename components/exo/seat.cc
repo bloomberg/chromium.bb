@@ -117,6 +117,7 @@ void Seat::OnKeyEvent(ui::KeyEvent* event) {
       NOTREACHED();
       break;
   }
+  modifier_flags_ = event->flags();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
