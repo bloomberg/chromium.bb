@@ -482,11 +482,8 @@ void LoginPasswordView::Clear() {
   ContentsChanged(textfield_, textfield_->text());
 }
 
-void LoginPasswordView::AppendNumber(int value) {
-  textfield_->SetText(textfield_->text() + base::IntToString16(value));
-  // |ContentsChanged| won't be called by |Textfield| if the text is changed
-  // by |Textfield::AppendText()|.
-  ContentsChanged(textfield_, textfield_->text());
+void LoginPasswordView::InsertNumber(int value) {
+  textfield_->InsertOrReplaceText(base::IntToString16(value));
 }
 
 void LoginPasswordView::Backspace() {

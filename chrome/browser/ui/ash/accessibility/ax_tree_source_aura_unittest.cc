@@ -78,6 +78,9 @@ class AXTreeSourceAuraTest : public ash::AshTestBase {
 };
 
 TEST_F(AXTreeSourceAuraTest, Accessors) {
+  // Focus the textfield so the cursor does not disappear.
+  textfield_->RequestFocus();
+
   AXTreeSourceAura ax_tree;
   ASSERT_TRUE(ax_tree.GetRoot());
 

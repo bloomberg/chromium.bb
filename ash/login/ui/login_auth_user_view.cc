@@ -115,7 +115,7 @@ LoginAuthUserView::LoginAuthUserView(
   password_view_->UpdateForUser(user);
 
   pin_view_ =
-      new LoginPinView(base::BindRepeating(&LoginPasswordView::AppendNumber,
+      new LoginPinView(base::BindRepeating(&LoginPasswordView::InsertNumber,
                                            base::Unretained(password_view_)),
                        base::BindRepeating(&LoginPasswordView::Backspace,
                                            base::Unretained(password_view_)));
