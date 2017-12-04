@@ -698,6 +698,8 @@ class CORE_EXPORT LocalFrameView final
   // coordinates". https://crbug.com/417782.
   IntRect AbsoluteToRootFrame(const IntRect&) const;
   IntRect RootFrameToDocument(const IntRect&);
+  FloatPoint RootFrameToDocument(const FloatPoint&);
+  DoublePoint DocumentToAbsolute(const DoublePoint&) const;
 
   // Handles painting of the contents of the view as well as the scrollbars.
   void Paint(GraphicsContext&,
