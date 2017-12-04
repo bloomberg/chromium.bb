@@ -2201,10 +2201,11 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   ])
   _nyc_no_hwtest_boards = frozenset([
       'bob',
+      'coral',
       'hana',
       'reef',
   ])
-  _nyc_no_hwtest_experimental_boards = frozenset(['coral',])
+  _nyc_no_hwtest_experimental_boards = frozenset([])
   _nyc_vmtest_boards = frozenset([
       'betty',
       'betty-arc64',
@@ -3092,6 +3093,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'betty',
       'caroline',
       'chell',
+      'coral',
       'cyan',
       'daisy_skate',
       'lumpy',
@@ -3108,7 +3110,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'nyan_big',
       'scarlet',
-      'coral',
   ])
 
   _chromte_pfq_tryjob_boards = (
