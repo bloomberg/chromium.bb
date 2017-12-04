@@ -58,27 +58,6 @@ const char kPrinterInfo[] = "prn-info-%" PRIuS;
 const char kNumberOfUsers[] = "num-users";
 #endif
 
-#if defined(OS_MACOSX)
-namespace mac {
-
-const char kFirstNSException[] = "firstexception";
-const char kFirstNSExceptionTrace[] = "firstexception_bt";
-
-const char kLastNSException[] = "lastexception";
-const char kLastNSExceptionTrace[] = "lastexception_bt";
-
-const char kNSException[] = "nsexception";
-const char kNSExceptionTrace[] = "nsexception_bt";
-
-const char kSendAction[] = "sendaction";
-
-const char kNSEvent[] = "nsevent";
-
-const char kToolbarNibInfo[] = "toolbar-nib-info";
-
-}  // namespace mac
-#endif
-
 const char kViewCount[] = "view-count";
 
 const char kUserCloudPolicyManagerConnectTrace[] =
@@ -148,15 +127,6 @@ size_t RegisterChromeCrashKeys() {
     {kNumberOfUsers, kSmallSize},
 #endif
 #if defined(OS_MACOSX)
-    {mac::kFirstNSException, kMediumSize},
-    {mac::kFirstNSExceptionTrace, kMediumSize},
-    {mac::kLastNSException, kMediumSize},
-    {mac::kLastNSExceptionTrace, kMediumSize},
-    {mac::kNSException, kMediumSize},
-    {mac::kNSExceptionTrace, kMediumSize},
-    {mac::kSendAction, kMediumSize},
-    {mac::kNSEvent, kMediumSize},
-    {mac::kToolbarNibInfo, kMediumSize},
     // content/:
     {"text-input-context-client", kMediumSize},
 // media/:

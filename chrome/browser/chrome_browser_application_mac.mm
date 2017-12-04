@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/strings/stringprintf.h"
@@ -15,7 +14,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/mac/exception_processor.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/crash_keys.h"
+#include "components/crash/core/common/crash_key.h"
 #import "components/crash/core/common/objc_zombie.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
@@ -224,7 +223,9 @@ void CancelTerminate() {
       static_cast<long>(tag),
       [actionString UTF8String],
       aTarget);
-  base::debug::ScopedCrashKey key(crash_keys::mac::kSendAction, value);
+
+  static crash_reporter::CrashKeyString<256> sendActionKey("sendaction");
+  crash_reporter::ScopedCrashKeyString scopedKey(&sendActionKey, value);
 
   __block BOOL rv;
   base::mac::CallWithEHFrame(^{
@@ -243,8 +244,9 @@ void CancelTerminate() {
 
 - (void)sendEvent:(NSEvent*)event {
   TRACE_EVENT0("toplevel", "BrowserCrApplication::sendEvent");
-  base::debug::ScopedCrashKey crash_key(
-      crash_keys::mac::kNSEvent, base::SysNSStringToUTF8([event description]));
+  static crash_reporter::CrashKeyString<256> nseventKey("nsevent");
+  crash_reporter::ScopedCrashKeyString scopedKey(
+      &nseventKey, base::SysNSStringToUTF8([event description]));
 
   base::mac::CallWithEHFrame(^{
     switch (event.type) {
