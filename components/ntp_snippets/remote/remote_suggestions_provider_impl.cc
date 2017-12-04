@@ -386,7 +386,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       status_service_(std::move(status_service)),
       clear_history_dependent_state_when_initialized_(false),
       clear_cached_suggestions_when_initialized_(false),
-      clock_(base::MakeUnique<base::DefaultClock>()),
+      clock_(base::DefaultClock::GetInstance()),
       prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
       breaking_news_raw_data_provider_(
           std::move(breaking_news_raw_data_provider)),

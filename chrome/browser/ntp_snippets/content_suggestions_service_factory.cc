@@ -215,7 +215,7 @@ void RegisterDownloadsProviderIfEnabled(ContentSuggestionsService* service,
 
   auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
       service, offline_page_model, download_manager, download_history,
-      profile->GetPrefs(), base::MakeUnique<base::DefaultClock>());
+      profile->GetPrefs(), base::DefaultClock::GetInstance());
   service->RegisterProvider(std::move(provider));
 }
 
@@ -311,7 +311,7 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
       base::Bind(
           &data_decoder::SafeJsonParser::Parse,
           content::ServiceManagerConnection::GetForProcess()->GetConnector()),
-      base::MakeUnique<base::DefaultClock>(),
+      base::DefaultClock::GetInstance(),
       /*token_validation_timer=*/base::MakeUnique<base::OneShotTimer>(),
       /*forced_subscription_timer=*/base::MakeUnique<base::OneShotTimer>());
 }
@@ -479,7 +479,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   PrefService* pref_service = profile->GetPrefs();
 
   auto user_classifier = base::MakeUnique<UserClassifier>(
-      pref_service, base::MakeUnique<base::DefaultClock>());
+      pref_service, base::DefaultClock::GetInstance());
   auto* user_classifier_raw = user_classifier.get();
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -499,7 +499,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #endif  // OS_ANDROID
   auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
       persistent_scheduler, user_classifier_raw, pref_service,
-      g_browser_process->local_state(), base::MakeUnique<base::DefaultClock>(),
+      g_browser_process->local_state(), base::DefaultClock::GetInstance(),
       raw_debug_logger);
 
   // Create the ContentSuggestionsService.
@@ -511,7 +511,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       LargeIconServiceFactory::GetForBrowserContext(profile);
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
-          pref_service, base::MakeUnique<base::DefaultClock>(),
+          pref_service, base::DefaultClock::GetInstance(),
           GetIsChromeHomeEnabled());
 
   auto* service = new ContentSuggestionsService(

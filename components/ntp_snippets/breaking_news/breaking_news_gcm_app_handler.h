@@ -53,7 +53,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
       PrefService* pref_service_,
       std::unique_ptr<SubscriptionManager> subscription_manager,
       const ParseJSONCallback& parse_json_callback,
-      std::unique_ptr<base::Clock> clock,
+      base::Clock* clock,
       std::unique_ptr<base::OneShotTimer> token_validation_timer,
       std::unique_ptr<base::OneShotTimer> forced_subscription_timer);
 
@@ -128,7 +128,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   PrefService* const pref_service_;
   const std::unique_ptr<SubscriptionManager> subscription_manager_;
   const ParseJSONCallback parse_json_callback_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Called every time a push-by-value message is received to notify the
   // observer.

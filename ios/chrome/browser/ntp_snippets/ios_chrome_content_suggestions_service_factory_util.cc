@@ -112,7 +112,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   PrefService* prefs = chrome_browser_state->GetPrefs();
 
   auto user_classifier = base::MakeUnique<UserClassifier>(
-      prefs, base::MakeUnique<base::DefaultClock>());
+      prefs, base::DefaultClock::GetInstance());
 
   auto debug_logger = base::MakeUnique<Logger>();
 
@@ -120,7 +120,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
   auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
       /*persistent_scheduler=*/nullptr, user_classifier.get(), prefs,
       GetApplicationContext()->GetLocalState(),
-      base::MakeUnique<base::DefaultClock>(), debug_logger.get());
+      base::DefaultClock::GetInstance(), debug_logger.get());
 
   // Create the ContentSuggestionsService.
   SigninManager* signin_manager =
@@ -133,7 +133,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
           chrome_browser_state);
   std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
-          prefs, base::MakeUnique<base::DefaultClock>(),
+          prefs, base::DefaultClock::GetInstance(),
           /*is_chrome_home_enabled=*/false);
   return base::MakeUnique<ContentSuggestionsService>(
       State::ENABLED, signin_manager, history_service, large_icon_service,

@@ -30,7 +30,7 @@ namespace ntp_snippets {
 class ClickBasedCategoryRanker : public CategoryRanker {
  public:
   explicit ClickBasedCategoryRanker(PrefService* pref_service,
-                                    std::unique_ptr<base::Clock> clock);
+                                    base::Clock* clock);
   ~ClickBasedCategoryRanker() override;
 
   // CategoryRanker implementation.
@@ -93,7 +93,7 @@ class ClickBasedCategoryRanker : public CategoryRanker {
 
   std::vector<RankedCategory> ordered_categories_;
   PrefService* pref_service_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   base::Optional<Category> promoted_category_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickBasedCategoryRanker);

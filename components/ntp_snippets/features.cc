@@ -99,7 +99,7 @@ CategoryRankerChoice GetSelectedCategoryRanker(bool is_chrome_home_enabled) {
 
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     bool is_chrome_home_enabled) {
   CategoryRankerChoice choice =
       ntp_snippets::GetSelectedCategoryRanker(is_chrome_home_enabled);
@@ -108,8 +108,7 @@ std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     case CategoryRankerChoice::CONSTANT:
       return base::MakeUnique<ConstantCategoryRanker>();
     case CategoryRankerChoice::CLICK_BASED:
-      return base::MakeUnique<ClickBasedCategoryRanker>(pref_service,
-                                                        std::move(clock));
+      return base::MakeUnique<ClickBasedCategoryRanker>(pref_service, clock);
   }
   return nullptr;
 }

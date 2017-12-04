@@ -95,7 +95,7 @@ BreakingNewsGCMAppHandler::BreakingNewsGCMAppHandler(
     PrefService* pref_service,
     std::unique_ptr<SubscriptionManager> subscription_manager,
     const ParseJSONCallback& parse_json_callback,
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     std::unique_ptr<base::OneShotTimer> token_validation_timer,
     std::unique_ptr<base::OneShotTimer> forced_subscription_timer)
     : gcm_driver_(gcm_driver),
@@ -103,7 +103,7 @@ BreakingNewsGCMAppHandler::BreakingNewsGCMAppHandler(
       pref_service_(pref_service),
       subscription_manager_(std::move(subscription_manager)),
       parse_json_callback_(parse_json_callback),
-      clock_(std::move(clock)),
+      clock_(clock),
       token_validation_timer_(std::move(token_validation_timer)),
       forced_subscription_timer_(std::move(forced_subscription_timer)),
       weak_ptr_factory_(this) {

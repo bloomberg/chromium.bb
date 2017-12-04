@@ -273,7 +273,7 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
         test_url_(gurl) {
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
     user_classifier_ = base::MakeUnique<UserClassifier>(
-        utils_.pref_service(), base::MakeUnique<base::DefaultClock>());
+        utils_.pref_service(), base::DefaultClock::GetInstance());
     // Increase initial time such that ticks are non-zero.
     mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
     ResetFetcher();
@@ -296,7 +296,8 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
         GetFetchEndpoint(version_info::Channel::STABLE), api_key,
         user_classifier_.get());
 
-    fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
+    clock_ = mock_task_runner_->GetMockClock();
+    fetcher_->SetClockForTesting(clock_.get());
   }
 
   void SignIn() {
@@ -374,6 +375,10 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   std::map<std::string, std::string> default_variation_params_;
 
  private:
+  // TODO(tzik): Remove |clock_| after updating GetMockTickClock to own the
+  // instance. http://crbug.com/789079
+  std::unique_ptr<base::Clock> clock_;
+
   test::RemoteSuggestionsTestUtils utils_;
   variations::testing::VariationParamsManager params_manager_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;

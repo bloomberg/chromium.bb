@@ -32,6 +32,7 @@
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::Clock;
 using base::TestMockTimeTaskRunner;
 using base::TickClock;
 using base::TimeTicks;
@@ -253,6 +254,8 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
   std::unique_ptr<BreakingNewsGCMAppHandler> MakeHandler(
       scoped_refptr<TestMockTimeTaskRunner> timer_mock_task_runner) {
     tick_clock_ = timer_mock_task_runner->GetMockTickClock();
+    clock_ = timer_mock_task_runner->GetMockClock();
+
     message_loop_.SetTaskRunner(timer_mock_task_runner);
 
     // TODO(vitaliii): Initialize MockSubscriptionManager in the constructor, so
@@ -272,8 +275,7 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
     return base::MakeUnique<BreakingNewsGCMAppHandler>(
         mock_gcm_driver_.get(), mock_instance_id_driver_.get(), pref_service(),
         std::move(wrapped_mock_subscription_manager), base::Bind(&ParseJson),
-        timer_mock_task_runner->GetMockClock(),
-        std::move(token_validation_timer),
+        clock_.get(), std::move(token_validation_timer),
         std::move(forced_subscription_timer));
   }
 
@@ -310,6 +312,7 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
   std::unique_ptr<StrictMock<MockInstanceIDDriver>> mock_instance_id_driver_;
   std::unique_ptr<StrictMock<MockInstanceID>> mock_instance_id_;
   std::unique_ptr<TickClock> tick_clock_;
+  std::unique_ptr<Clock> clock_;
 };
 
 TEST_F(BreakingNewsGCMAppHandlerTest,

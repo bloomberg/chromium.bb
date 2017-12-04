@@ -444,7 +444,7 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
     const UserClassifier* user_classifier,
     PrefService* profile_prefs,
     PrefService* local_state_prefs,
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     Logger* debug_logger)
     : persistent_scheduler_(persistent_scheduler),
       provider_(nullptr),
@@ -469,7 +469,7 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
           base::Bind(&RemoteSuggestionsSchedulerImpl::RunQueuedTriggersIfReady,
                      base::Unretained(this)))),
       profile_prefs_(profile_prefs),
-      clock_(std::move(clock)),
+      clock_(clock),
       enabled_triggers_(GetEnabledTriggerTypes()),
       debug_logger_(debug_logger) {
   DCHECK(user_classifier);

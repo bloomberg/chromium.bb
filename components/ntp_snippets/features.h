@@ -78,7 +78,7 @@ CategoryRankerChoice GetSelectedCategoryRanker(bool is_chrome_home_enabled);
 // Builds a CategoryRanker according to kCategoryRanker feature and Chrome Home.
 std::unique_ptr<CategoryRanker> BuildSelectedCategoryRanker(
     PrefService* pref_service,
-    std::unique_ptr<base::Clock> clock,
+    base::Clock* clock,
     bool is_chrome_home_enabled);
 
 // Feature to choose a default category order.

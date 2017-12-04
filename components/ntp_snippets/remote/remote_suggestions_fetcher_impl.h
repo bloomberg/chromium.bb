@@ -59,9 +59,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   const GURL& GetFetchUrlForDebugging() const override;
 
   // Overrides internal clock for testing purposes.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-    clock_ = std::move(clock);
-  }
+  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
  private:
   void FetchSnippetsNonAuthenticated(internal::JsonRequest::Builder builder,
@@ -114,7 +112,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   const std::string api_key_;
 
   // Allow for an injectable clock for testing.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Classifier that tells us how active the user is. Not owned.
   const UserClassifier* user_classifier_;

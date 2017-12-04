@@ -56,7 +56,7 @@ class UserClassifier {
   };
 
   // The provided |pref_service| may be nullptr in unit-tests.
-  UserClassifier(PrefService* pref_service, std::unique_ptr<base::Clock> clock);
+  UserClassifier(PrefService* pref_service, base::Clock* clock);
   ~UserClassifier();
 
   // Registers profile prefs for all metrics. Called from browser_prefs.cc.
@@ -97,7 +97,7 @@ class UserClassifier {
   void ClearMetricValue(Metric metric);
 
   PrefService* pref_service_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // Params of the metric.
   const double discount_rate_per_hour_;
