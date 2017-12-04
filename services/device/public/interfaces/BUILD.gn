@@ -14,6 +14,7 @@ mojom("interfaces") {
     "nfc.mojom",
     "nfc_provider.mojom",
     "power_monitor.mojom",
+    "public_ip_address_geolocation_provider.mojom",
     "serial.mojom",
     "time_zone_monitor.mojom",
     "vibration_manager.mojom",
@@ -22,9 +23,17 @@ mojom("interfaces") {
     "wake_lock_provider.mojom",
   ]
 
+  deps = [
+    "//device/geolocation/public/interfaces",
+    "//services/network/public/interfaces:interfaces",
+  ]
+
   public_deps = [
     ":constants",
   ]
+
+  overridden_deps_blink = [ "//services/network/public/interfaces:interfaces" ]
+  component_deps_blink = [ "//third_party/WebKit/Source/platform" ]
 }
 
 mojom("generic_sensor") {
