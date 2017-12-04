@@ -2533,10 +2533,15 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
+#if DISABLE_TRELLISQ_SEARCH
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    coeff_ctx, AV1_XFORM_QUANT_B);
+#else
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l, 1);
+#endif
     av1_dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                    &this_rd_stats.dist, &this_rd_stats.sse,
                    OUTPUT_HAS_PREDICTED_PIXELS);
@@ -2563,12 +2568,17 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   x->plane[plane].txb_entropy_ctx[block] = best_eob;
 
   if (!is_inter_block(mbmi)) {
-    // intra mode needs decoded result such that the next transform block
-    // can use it for prediction.
+// intra mode needs decoded result such that the next transform block
+// can use it for prediction.
+#if DISABLE_TRELLISQ_SEARCH
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    coeff_ctx, AV1_XFORM_QUANT_B);
+#else
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l, 1);
+#endif
 
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
                                        x->plane[plane].eobs[block],

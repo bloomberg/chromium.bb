@@ -21,6 +21,13 @@
 extern "C" {
 #endif
 
+// Setting this to 1 will disable trellis optimization within the
+// transform search. Trellis optimization will still be applied
+// in the final encode.
+#ifndef DISABLE_TRELLISQ_SEARCH
+#define DISABLE_TRELLISQ_SEARCH 0
+#endif
+
 struct TileInfo;
 struct AV1_COMP;
 struct macroblock;

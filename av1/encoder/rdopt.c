@@ -122,13 +122,6 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 #define FILTER_FAST_SEARCH 1
 #endif  // CONFIG_EXT_INTRA
 
-// Setting this to 1 will disable trellis optimization within the
-// transform search. Trellis optimization will still be applied
-// in the final encode.
-#ifndef DISABLE_TRELLISQ_SEARCH
-#define DISABLE_TRELLISQ_SEARCH 0
-#endif
-
 static const double ADST_FLIP_SVM[8] = {
   /* vertical */
   -6.6623, -2.8062, -3.2531, 3.1671,
