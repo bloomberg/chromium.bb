@@ -1739,7 +1739,8 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
       std::string("NQE.RTT.RawObservation.") +
           nqe::internal::GetNameForObservationSource(observation.source()),
       1, 10 * 1000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  raw_observation_histogram->Add(observation.value());
+  if (raw_observation_histogram)
+    raw_observation_histogram->Add(observation.value());
 
   // Maybe recompute the effective connection type since a new RTT observation
   // is available.
@@ -1773,7 +1774,8 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
       std::string("NQE.Kbps.RawObservation.") +
           nqe::internal::GetNameForObservationSource(observation.source()),
       1, 10 * 1000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  raw_observation_histogram->Add(observation.value());
+  if (raw_observation_histogram)
+    raw_observation_histogram->Add(observation.value());
 
   // Maybe recompute the effective connection type since a new throughput
   // observation is available.
