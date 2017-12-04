@@ -40,7 +40,9 @@ namespace {
 const int kPollRate = 1000;
 
 // How long we'll wait to connect to a printer before declaring an error.
-const int kConnectingTimeout = 20;
+// TODO(crbug.com/786182): Increase to 120s to give pipeline more time to
+// complete.
+const int kConnectingTimeout = 120;
 
 // Threshold for giving up on communicating with CUPS.
 const int kRetryMax = 6;
