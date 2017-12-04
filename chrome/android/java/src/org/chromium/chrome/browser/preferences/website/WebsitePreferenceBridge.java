@@ -277,4 +277,5 @@ public abstract class WebsitePreferenceBridge {
     private static native boolean nativeArePermissionsControlledByDSE(
             String origin, boolean isIncognito);
     private static native boolean nativeGetAdBlockingActivated(String origin);
+    static native void nativeResetNotificationsSettingsForTest();
 }

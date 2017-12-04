@@ -79,6 +79,26 @@ HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
       GetActiveUserProfile(is_incognito));
 }
 
+// Reset the give permission for the DSE if the permission and origin are
+// controlled by the DSE.
+bool MaybeResetDSEPermission(ContentSettingsType type,
+                             const GURL& origin,
+                             const GURL& embedder,
+                             bool is_incognito,
+                             ContentSetting setting) {
+  SearchPermissionsService* search_helper =
+      SearchPermissionsService::Factory::GetForBrowserContext(
+          GetActiveUserProfile(is_incognito));
+  bool same_embedder = embedder.is_empty() || embedder == origin;
+  if (same_embedder && search_helper &&
+      search_helper->ArePermissionsControlledByDSE(
+          url::Origin::Create(origin)) &&
+      setting == CONTENT_SETTING_DEFAULT) {
+    return search_helper->ResetDSEPermission(type);
+  }
+  return false;
+}
+
 ScopedJavaLocalRef<jstring>
 JNI_WebsitePreferenceBridge_ConvertOriginToJavaString(
     JNIEnv* env,
@@ -225,6 +245,11 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
         origin_url, content_type);
   }
 
+  if (MaybeResetDSEPermission(content_type, origin_url, embedder_url,
+                              is_incognito, setting)) {
+    return;
+  }
+
   PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile, origin_url, embedder_url, content_type,
       PermissionSourceUI::SITE_SETTINGS);
@@ -368,6 +393,11 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
   if (setting != CONTENT_SETTING_BLOCK) {
     PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
         url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  }
+
+  if (MaybeResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, url,
+                              is_incognito, setting)) {
+    return;
   }
 
   switch (setting) {
@@ -816,4 +846,13 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
   return !!GetHostContentSettingsMap(false)->GetWebsiteSetting(
       url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(), nullptr);
+}
+
+// On Android O+ notification channels are not stored in the Chrome profile and
+// so are persisted across tests. This function resets them.
+static void JNI_WebsitePreferenceBridge_ResetNotificationsSettingsForTest(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  GetHostContentSettingsMap(/*is_incognito=*/false)
+      ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }

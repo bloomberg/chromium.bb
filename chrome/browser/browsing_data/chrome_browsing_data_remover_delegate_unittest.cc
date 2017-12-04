@@ -88,6 +88,7 @@
 #include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #else
 #include "content/public/browser/host_zoom_map.h"
@@ -148,6 +149,9 @@ const char kTestRealm[] = "TestRealm";
 // For Autofill.
 const char kWebOrigin[] = "https://www.example.com/";
 
+// Default search engine URL.
+const char kDSETestUrl[] = "https://search.com";
+
 const GURL kOrigin1(kTestOrigin1);
 const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
@@ -155,6 +159,8 @@ const GURL kOrigin4(kTestOrigin4);
 
 const GURL kOriginExt(kTestOriginExt);
 const GURL kOriginDevTools(kTestOriginDevTools);
+
+const GURL kDSEOrigin(kDSETestUrl);
 
 // Shorthands for origin types.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -180,6 +186,26 @@ class TestWebappRegistry : public WebappRegistry {
       const base::Callback<bool(const GURL&)>& url_filter) override {
     // Mocks out a JNI call.
   }
+};
+
+// TestSearchEngineDelegate
+class TestSearchEngineDelegate
+    : public SearchPermissionsService::SearchEngineDelegate {
+ public:
+  base::string16 GetDSEName() override { return base::string16(); }
+
+  url::Origin GetDSEOrigin() override {
+    return url::Origin::Create(kDSEOrigin);
+  }
+
+  void SetDSEChangedCallback(const base::Closure& callback) override {
+    dse_changed_callback_ = callback;
+  }
+
+  void UpdateDSEOrigin() { dse_changed_callback_.Run(); }
+
+ private:
+  base::Closure dse_changed_callback_;
 };
 #endif
 
@@ -995,6 +1021,14 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
         profile_->GetBrowsingDataRemoverDelegate())
         ->OverrideWebappRegistryForTesting(
             base::WrapUnique<WebappRegistry>(new TestWebappRegistry()));
+
+    SearchPermissionsService* service =
+        SearchPermissionsService::Factory::GetForBrowserContext(profile_.get());
+    std::unique_ptr<TestSearchEngineDelegate> delegate =
+        base::MakeUnique<TestSearchEngineDelegate>();
+    TestSearchEngineDelegate* delegate_ptr = delegate.get();
+    service->SetSearchEngineDelegateForTest(std::move(delegate));
+    delegate_ptr->UpdateDSEOrigin();
 #endif
   }
 
@@ -1720,6 +1754,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
   map->SetContentSettingDefaultScope(kOrigin1, kOrigin1,
                                      CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                      std::string(), CONTENT_SETTING_ALLOW);
+  map->SetContentSettingDefaultScope(kDSEOrigin, kDSEOrigin,
+                                     CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                     std::string(), CONTENT_SETTING_BLOCK);
   map->SetContentSettingDefaultScope(kOrigin2, kOrigin2,
                                      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                      std::string(), CONTENT_SETTING_ALLOW);
@@ -1735,23 +1772,64 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
 
-  // Everything except the default settings should be deleted now.
+  // Everything except the default settings should be deleted. On Android the
+  // default search engine setting should also not be deleted.
+  bool expect_geolocation_dse_origin = false;
+  bool expect_notifications_dse_origin = false;
+
+#if defined(OS_ANDROID)
+  expect_geolocation_dse_origin = true;
+  expect_notifications_dse_origin =
+      base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE);
+#endif
+
   ContentSettingsForOneType host_settings;
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
                              &host_settings);
-  ASSERT_EQ(1u, host_settings.size());
-  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
-            host_settings[0].primary_pattern)
-      << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].GetContentSetting());
+
+  if (expect_geolocation_dse_origin) {
+    ASSERT_EQ(2u, host_settings.size());
+    EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kDSEOrigin),
+              host_settings[0].primary_pattern)
+        << host_settings[0].primary_pattern.ToString();
+    EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kDSEOrigin),
+              host_settings[0].secondary_pattern)
+        << host_settings[0].secondary_pattern.ToString();
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].GetContentSetting());
+
+    EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+              host_settings[1].primary_pattern)
+        << host_settings[1].primary_pattern.ToString();
+    EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].GetContentSetting());
+  } else {
+    ASSERT_EQ(1u, host_settings.size());
+    EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+              host_settings[0].primary_pattern)
+        << host_settings[0].primary_pattern.ToString();
+    EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].GetContentSetting());
+  }
 
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
                              &host_settings);
-  ASSERT_EQ(1u, host_settings.size());
-  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
-            host_settings[0].primary_pattern)
-      << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].GetContentSetting());
+
+  if (expect_notifications_dse_origin) {
+    ASSERT_EQ(2u, host_settings.size());
+    EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kDSEOrigin),
+              host_settings[0].primary_pattern)
+        << host_settings[0].primary_pattern.ToString();
+    EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].GetContentSetting());
+
+    EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+              host_settings[1].primary_pattern)
+        << host_settings[1].primary_pattern.ToString();
+    EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].GetContentSetting());
+  } else {
+    ASSERT_EQ(1u, host_settings.size());
+    EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+              host_settings[0].primary_pattern)
+        << host_settings[0].primary_pattern.ToString();
+    EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].GetContentSetting());
+  }
 
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
                              &host_settings);

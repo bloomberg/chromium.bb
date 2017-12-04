@@ -170,6 +170,27 @@ bool SearchPermissionsService::ArePermissionsControlledByDSE(
   return true;
 }
 
+bool SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
+  GURL dse_origin = delegate_->GetDSEOrigin().GetURL();
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    SetContentSetting(dse_origin, type, CONTENT_SETTING_ALLOW);
+    return true;
+  }
+
+  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS &&
+      base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE)) {
+    SetContentSetting(dse_origin, type, CONTENT_SETTING_ALLOW);
+    return true;
+  }
+
+  return false;
+}
+
+void SearchPermissionsService::ResetDSEPermissions() {
+  ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+}
+
 void SearchPermissionsService::Shutdown() {
   delegate_.reset();
 }

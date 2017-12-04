@@ -1729,6 +1729,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/preferences/privacy/ClearBrowsingDataPreferencesBasicTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManagerNativeTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/website/ManageSpaceActivityTest.java",
+  "javatests/src/org/chromium/chrome/browser/preferences/website/PermissionInfoTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/website/SiteSettingsPreferencesTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/website/WebsiteAddressTest.java",
   "javatests/src/org/chromium/chrome/browser/preferences/website/WebsitePermissionsFetcherTest.java",
