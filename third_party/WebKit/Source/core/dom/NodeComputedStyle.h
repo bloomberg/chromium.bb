@@ -38,6 +38,9 @@ inline const ComputedStyle* Node::GetComputedStyle() const {
 }
 
 inline ComputedStyle* Node::MutableComputedStyle() const {
+  if (NeedsReattachLayoutTree())
+    return GetNonAttachedStyle();
+
   if (LayoutObject* layout_object = GetLayoutObject())
     return layout_object->MutableStyle();
 

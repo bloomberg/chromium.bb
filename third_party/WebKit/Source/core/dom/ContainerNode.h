@@ -261,6 +261,7 @@ class CORE_EXPORT ContainerNode : public Node {
                                    Node* node_before_change,
                                    Node* node_after_change);
   void RecalcDescendantStyles(StyleRecalcChange);
+  void RecalcDescendantStylesForReattach();
   void RebuildChildrenLayoutTrees(WhitespaceAttacher&);
   void RebuildLayoutTreeForChild(Node* child, WhitespaceAttacher&);
   void RebuildNonDistributedChildren();

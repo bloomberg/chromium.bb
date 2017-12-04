@@ -1482,6 +1482,13 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   }
 }
 
+void ContainerNode::RecalcDescendantStylesForReattach() {
+  for (Node* child = lastChild(); child; child = child->previousSibling()) {
+    if (child->IsElementNode())
+      ToElement(child)->RecalcStyleForReattach();
+  }
+}
+
 void ContainerNode::RebuildLayoutTreeForChild(
     Node* child,
     WhitespaceAttacher& whitespace_attacher) {
