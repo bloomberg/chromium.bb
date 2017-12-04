@@ -44819,6 +44819,11 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="43" label="Exit"/>
   <int value="44" label="Upgrade browser"/>
   <int value="45" label="Cast"/>
+  <int value="46" label="Beta Forum"/>
+  <int value="47" label="Copy URL"/>
+  <int value="48" label="Open in Chrome"/>
+  <int value="49" label="Site Settings"/>
+  <int value="50" label="App Info"/>
 </enum>
 
 <enum name="XFrameOptions">
