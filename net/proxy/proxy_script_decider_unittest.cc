@@ -162,9 +162,9 @@ class MockDhcpProxyScriptFetcher : public DhcpProxyScriptFetcher {
   DISALLOW_COPY_AND_ASSIGN(MockDhcpProxyScriptFetcher);
 };
 
-MockDhcpProxyScriptFetcher::MockDhcpProxyScriptFetcher() { }
+MockDhcpProxyScriptFetcher::MockDhcpProxyScriptFetcher() = default;
 
-MockDhcpProxyScriptFetcher::~MockDhcpProxyScriptFetcher() { }
+MockDhcpProxyScriptFetcher::~MockDhcpProxyScriptFetcher() = default;
 
 int MockDhcpProxyScriptFetcher::Fetch(base::string16* utf16_text,
                                       const CompletionCallback& callback) {
@@ -756,8 +756,8 @@ class AsyncFailDhcpFetcher
     : public DhcpProxyScriptFetcher,
       public base::SupportsWeakPtr<AsyncFailDhcpFetcher> {
  public:
-  AsyncFailDhcpFetcher() {}
-  ~AsyncFailDhcpFetcher() override {}
+  AsyncFailDhcpFetcher() = default;
+  ~AsyncFailDhcpFetcher() override = default;
 
   int Fetch(base::string16* utf16_text,
             const CompletionCallback& callback) override {

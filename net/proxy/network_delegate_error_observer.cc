@@ -43,8 +43,7 @@ NetworkDelegateErrorObserver::Core::Core(
   DCHECK(origin_runner);
 }
 
-NetworkDelegateErrorObserver::Core::~Core() {}
-
+NetworkDelegateErrorObserver::Core::~Core() = default;
 
 void NetworkDelegateErrorObserver::Core::NotifyPACScriptError(
     int line_number,

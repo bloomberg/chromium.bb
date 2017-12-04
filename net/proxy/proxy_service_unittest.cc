@@ -51,7 +51,7 @@ namespace {
 // This polling policy will decide to poll every 1 ms.
 class ImmediatePollPolicy : public ProxyService::PacPollPolicy {
  public:
-  ImmediatePollPolicy() {}
+  ImmediatePollPolicy() = default;
 
   Mode GetNextDelay(int error,
                     base::TimeDelta current_delay,
@@ -68,7 +68,7 @@ class ImmediatePollPolicy : public ProxyService::PacPollPolicy {
 // will never trigger a poll
 class NeverPollPolicy : public ProxyService::PacPollPolicy {
  public:
-  NeverPollPolicy() {}
+  NeverPollPolicy() = default;
 
   Mode GetNextDelay(int error,
                     base::TimeDelta current_delay,
@@ -84,7 +84,7 @@ class NeverPollPolicy : public ProxyService::PacPollPolicy {
 // This polling policy starts a poll immediately after network activity.
 class ImmediateAfterActivityPollPolicy : public ProxyService::PacPollPolicy {
  public:
-  ImmediateAfterActivityPollPolicy() {}
+  ImmediateAfterActivityPollPolicy() = default;
 
   Mode GetNextDelay(int error,
                     base::TimeDelta current_delay,

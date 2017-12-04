@@ -12,13 +12,13 @@ std::string DhcpProxyScriptFetcher::GetFetcherName() const {
   return std::string();
 }
 
-DhcpProxyScriptFetcher::DhcpProxyScriptFetcher() {}
+DhcpProxyScriptFetcher::DhcpProxyScriptFetcher() = default;
 
-DhcpProxyScriptFetcher::~DhcpProxyScriptFetcher() {}
+DhcpProxyScriptFetcher::~DhcpProxyScriptFetcher() = default;
 
-DoNothingDhcpProxyScriptFetcher::DoNothingDhcpProxyScriptFetcher() {}
+DoNothingDhcpProxyScriptFetcher::DoNothingDhcpProxyScriptFetcher() = default;
 
-DoNothingDhcpProxyScriptFetcher::~DoNothingDhcpProxyScriptFetcher() {}
+DoNothingDhcpProxyScriptFetcher::~DoNothingDhcpProxyScriptFetcher() = default;
 
 int DoNothingDhcpProxyScriptFetcher::Fetch(
     base::string16* utf16_text, const CompletionCallback& callback) {

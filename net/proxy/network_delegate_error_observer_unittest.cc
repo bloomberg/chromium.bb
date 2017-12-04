@@ -22,7 +22,7 @@ namespace {
 class TestNetworkDelegate : public NetworkDelegateImpl {
  public:
   TestNetworkDelegate() : got_pac_error_(false) {}
-  ~TestNetworkDelegate() override {}
+  ~TestNetworkDelegate() override = default;
 
   bool got_pac_error() const { return got_pac_error_; }
 

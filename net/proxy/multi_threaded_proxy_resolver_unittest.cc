@@ -142,7 +142,7 @@ class BlockableProxyResolverFactory : public ProxyResolverFactory {
  public:
   BlockableProxyResolverFactory() : ProxyResolverFactory(false) {}
 
-  ~BlockableProxyResolverFactory() override {}
+  ~BlockableProxyResolverFactory() override = default;
 
   int CreateProxyResolver(
       const scoped_refptr<ProxyResolverScriptData>& script_data,

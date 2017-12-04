@@ -17,8 +17,7 @@ ProxyInfo::ProxyInfo()
 
 ProxyInfo::ProxyInfo(const ProxyInfo& other) = default;
 
-ProxyInfo::~ProxyInfo() {
-}
+ProxyInfo::~ProxyInfo() = default;
 
 void ProxyInfo::Use(const ProxyInfo& other) {
   proxy_resolve_start_time_ = other.proxy_resolve_start_time_;

@@ -125,7 +125,7 @@ const int64_t kDelayAfterNetworkChangesMs = 2000;
 // TODO(eroman): Figure out what Internet Explorer does.
 class DefaultPollPolicy : public ProxyService::PacPollPolicy {
  public:
-  DefaultPollPolicy() {}
+  DefaultPollPolicy() = default;
 
   Mode GetNextDelay(int initial_error,
                     TimeDelta current_delay,
@@ -180,7 +180,7 @@ class ProxyConfigServiceDirect : public ProxyConfigService {
 // Proxy resolver that fails every time.
 class ProxyResolverNull : public ProxyResolver {
  public:
-  ProxyResolverNull() {}
+  ProxyResolverNull() = default;
 
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
@@ -322,8 +322,8 @@ std::unique_ptr<base::Value> NetLogFinishedResolvingProxyCallback(
 #if defined(OS_CHROMEOS)
 class UnsetProxyConfigService : public ProxyConfigService {
  public:
-  UnsetProxyConfigService() {}
-  ~UnsetProxyConfigService() override {}
+  UnsetProxyConfigService() = default;
+  ~UnsetProxyConfigService() override = default;
 
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
@@ -894,7 +894,7 @@ class ProxyService::PacRequest
  private:
   friend class base::RefCounted<ProxyService::PacRequest>;
 
-  ~PacRequest() {}
+  ~PacRequest() = default;
 
   // Callback for when the ProxyResolver request has completed.
   void QueryComplete(int result_code) {

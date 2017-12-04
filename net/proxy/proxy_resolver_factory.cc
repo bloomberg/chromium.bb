@@ -13,7 +13,6 @@ ProxyResolverFactory::ProxyResolverFactory(bool expects_pac_bytes)
     : expects_pac_bytes_(expects_pac_bytes) {
 }
 
-ProxyResolverFactory::~ProxyResolverFactory() {
-}
+ProxyResolverFactory::~ProxyResolverFactory() = default;
 
 }  // namespace net

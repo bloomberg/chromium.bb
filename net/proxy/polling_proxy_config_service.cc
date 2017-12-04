@@ -98,7 +98,7 @@ class PollingProxyConfigService::Core
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  ~Core() {}
+  ~Core() = default;
 
   void PollAsync(GetConfigFunction func) {
     ProxyConfig config;

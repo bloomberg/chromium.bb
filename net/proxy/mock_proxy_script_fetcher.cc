@@ -18,7 +18,7 @@ MockProxyScriptFetcher::MockProxyScriptFetcher()
       waiting_for_fetch_(false),
       is_shutdown_(false) {}
 
-MockProxyScriptFetcher::~MockProxyScriptFetcher() {}
+MockProxyScriptFetcher::~MockProxyScriptFetcher() = default;
 
 // ProxyScriptFetcher implementation.
 int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
