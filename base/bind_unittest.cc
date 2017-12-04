@@ -1281,11 +1281,11 @@ TEST_F(BindTest, EmptyFunctor) {
 }
 
 TEST_F(BindTest, CapturingLambdaForTesting) {
-  int x = 42;
-  EXPECT_EQ(42, BindLambdaForTesting([=] { return x; }).Run());
+  int x = 6;
+  EXPECT_EQ(42, BindLambdaForTesting([=](int y) { return x * y; }).Run(7));
 
-  auto f = [x] { return x; };
-  EXPECT_EQ(42, BindLambdaForTesting(f).Run());
+  auto f = [x](std::unique_ptr<int> y) { return x * *y; };
+  EXPECT_EQ(42, BindLambdaForTesting(f).Run(std::make_unique<int>(7)));
 }
 
 TEST_F(BindTest, Cancellation) {
