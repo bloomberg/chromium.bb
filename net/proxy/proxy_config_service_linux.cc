@@ -94,8 +94,7 @@ std::string FixupProxyHostScheme(ProxyServer::Scheme scheme,
 
 }  // namespace
 
-ProxyConfigServiceLinux::Delegate::~Delegate() {
-}
+ProxyConfigServiceLinux::Delegate::~Delegate() = default;
 
 bool ProxyConfigServiceLinux::Delegate::GetProxyFromEnvVarForScheme(
     base::StringPiece variable,

@@ -13,9 +13,9 @@
 
 namespace net {
 
-DhcpProxyScriptFetcherFactory::DhcpProxyScriptFetcherFactory() {}
+DhcpProxyScriptFetcherFactory::DhcpProxyScriptFetcherFactory() = default;
 
-DhcpProxyScriptFetcherFactory::~DhcpProxyScriptFetcherFactory() {}
+DhcpProxyScriptFetcherFactory::~DhcpProxyScriptFetcherFactory() = default;
 
 std::unique_ptr<DhcpProxyScriptFetcher> DhcpProxyScriptFetcherFactory::Create(
     URLRequestContext* context) {

@@ -10,7 +10,7 @@ ProxyConfigServiceFixed::ProxyConfigServiceFixed(const ProxyConfig& pc)
     : pc_(pc) {
 }
 
-ProxyConfigServiceFixed::~ProxyConfigServiceFixed() {}
+ProxyConfigServiceFixed::~ProxyConfigServiceFixed() = default;
 
 ProxyConfigService::ConfigAvailability
     ProxyConfigServiceFixed::GetLatestProxyConfig(ProxyConfig* config) {

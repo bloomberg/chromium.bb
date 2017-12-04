@@ -140,8 +140,8 @@ GURL GetTestFileUrl(const std::string& relpath) {
 
 class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
-  BasicNetworkDelegate() {}
-  ~BasicNetworkDelegate() override {}
+  BasicNetworkDelegate() = default;
+  ~BasicNetworkDelegate() override = default;
 
  private:
   int OnBeforeURLRequest(URLRequest* request,

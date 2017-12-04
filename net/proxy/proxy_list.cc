@@ -19,13 +19,11 @@ using base::TimeTicks;
 
 namespace net {
 
-ProxyList::ProxyList() {
-}
+ProxyList::ProxyList() = default;
 
 ProxyList::ProxyList(const ProxyList& other) = default;
 
-ProxyList::~ProxyList() {
-}
+ProxyList::~ProxyList() = default;
 
 void ProxyList::Set(const std::string& proxy_uri_list) {
   proxies_.clear();

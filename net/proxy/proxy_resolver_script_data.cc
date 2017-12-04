@@ -71,6 +71,6 @@ ProxyResolverScriptData::ProxyResolverScriptData(Type type,
       utf16_(utf16) {
 }
 
-ProxyResolverScriptData::~ProxyResolverScriptData() {}
+ProxyResolverScriptData::~ProxyResolverScriptData() = default;
 
 }  // namespace net

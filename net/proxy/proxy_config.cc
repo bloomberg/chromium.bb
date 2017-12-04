@@ -45,8 +45,7 @@ ProxyConfig::ProxyRules::ProxyRules()
 
 ProxyConfig::ProxyRules::ProxyRules(const ProxyRules& other) = default;
 
-ProxyConfig::ProxyRules::~ProxyRules() {
-}
+ProxyConfig::ProxyRules::~ProxyRules() = default;
 
 void ProxyConfig::ProxyRules::Apply(const GURL& url, ProxyInfo* result) const {
   if (empty()) {
@@ -198,8 +197,7 @@ ProxyConfig::ProxyConfig()
 
 ProxyConfig::ProxyConfig(const ProxyConfig& config) = default;
 
-ProxyConfig::~ProxyConfig() {
-}
+ProxyConfig::~ProxyConfig() = default;
 
 ProxyConfig& ProxyConfig::operator=(const ProxyConfig& config) = default;
 

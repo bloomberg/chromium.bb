@@ -224,7 +224,7 @@ class Job : public base::RefCountedThreadSafe<Job> {
 
   friend class base::RefCountedThreadSafe<Job>;
 
-  virtual ~Job() {}
+  virtual ~Job() = default;
 
  private:
   const Type type_;
@@ -270,7 +270,7 @@ class CreateResolverJob : public Job {
   }
 
  protected:
-  ~CreateResolverJob() override {}
+  ~CreateResolverJob() override = default;
 
  private:
   // Runs the completion callback on the origin thread.
@@ -338,7 +338,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
   }
 
  protected:
-  ~GetProxyForURLJob() override {}
+  ~GetProxyForURLJob() override = default;
 
  private:
   // Runs the completion callback on the origin thread.

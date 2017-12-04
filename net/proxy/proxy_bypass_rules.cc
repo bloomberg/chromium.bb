@@ -136,18 +136,15 @@ bool IsIPAddress(const std::string& domain) {
 
 }  // namespace
 
-ProxyBypassRules::Rule::Rule() {
-}
+ProxyBypassRules::Rule::Rule() = default;
 
-ProxyBypassRules::Rule::~Rule() {
-}
+ProxyBypassRules::Rule::~Rule() = default;
 
 bool ProxyBypassRules::Rule::Equals(const Rule& rule) const {
   return ToString() == rule.ToString();
 }
 
-ProxyBypassRules::ProxyBypassRules() {
-}
+ProxyBypassRules::ProxyBypassRules() = default;
 
 ProxyBypassRules::ProxyBypassRules(const ProxyBypassRules& rhs) {
   AssignFrom(rhs);

@@ -31,7 +31,7 @@ MockAsyncProxyResolver::Job::Job(MockAsyncProxyResolver* resolver,
                                  const CompletionCallback& callback)
     : resolver_(resolver), url_(url), results_(results), callback_(callback) {}
 
-MockAsyncProxyResolver::Job::~Job() {}
+MockAsyncProxyResolver::Job::~Job() = default;
 
 void MockAsyncProxyResolver::Job::CompleteNow(int rv) {
   CompletionCallback callback = callback_;
@@ -41,7 +41,7 @@ void MockAsyncProxyResolver::Job::CompleteNow(int rv) {
   callback.Run(rv);
 }
 
-MockAsyncProxyResolver::~MockAsyncProxyResolver() {}
+MockAsyncProxyResolver::~MockAsyncProxyResolver() = default;
 
 int MockAsyncProxyResolver::GetProxyForURL(
     const GURL& url,
@@ -77,8 +77,7 @@ void MockAsyncProxyResolver::RemovePendingJob(Job* job) {
   pending_jobs_.erase(it);
 }
 
-MockAsyncProxyResolver::MockAsyncProxyResolver() {
-}
+MockAsyncProxyResolver::MockAsyncProxyResolver() = default;
 
 MockAsyncProxyResolverFactory::Request::Request(
     MockAsyncProxyResolverFactory* factory,
@@ -90,8 +89,7 @@ MockAsyncProxyResolverFactory::Request::Request(
       resolver_(resolver),
       callback_(callback) {}
 
-MockAsyncProxyResolverFactory::Request::~Request() {
-}
+MockAsyncProxyResolverFactory::Request::~Request() = default;
 
 void MockAsyncProxyResolverFactory::Request::CompleteNow(
     int rv,
