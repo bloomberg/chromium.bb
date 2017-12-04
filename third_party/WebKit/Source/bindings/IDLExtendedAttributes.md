@@ -142,7 +142,7 @@ Unsupported: `[ArrayClass]`, `[ImplicitThis]`, `[LenientThis]`, `[NamedPropertie
 
 Standard: [CEReactions](https://html.spec.whatwg.org/multipage/scripting.html#cereactions)
 
-Summary: `[CEReactoins]` indicates that
+Summary: `[CEReactions]` indicates that
 [custom element reactions](https://html.spec.whatwg.org/multipage/scripting.html#concept-custom-element-reaction)
 are triggered for this method or attribute.
 
