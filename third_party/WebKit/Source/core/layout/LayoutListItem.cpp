@@ -324,6 +324,9 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
 void LayoutListItem::PositionListMarker() {
   if (marker_ && marker_->Parent() && marker_->Parent()->IsBox() &&
       !marker_->IsInside() && marker_->InlineBoxWrapper()) {
+    if (need_block_direction_align_)
+      AlignMarkerInBlockDirection();
+
     LayoutUnit marker_old_logical_left = marker_->LogicalLeft();
     LayoutUnit block_offset;
     LayoutUnit line_offset;
@@ -334,14 +337,12 @@ void LayoutListItem::PositionListMarker() {
 
     bool adjust_overflow = false;
     LayoutUnit marker_logical_left;
-    RootInlineBox& root = marker_->InlineBoxWrapper()->Root();
+    InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
+    RootInlineBox& root = marker_inline_box->Root();
     bool hit_self_painting_layer = false;
 
     LayoutUnit line_top = root.LineTop();
     LayoutUnit line_bottom = root.LineBottom();
-
-    if (need_block_direction_align_)
-      AlignMarkerInBlockDirection();
 
     // We figured out the inline position of the marker before laying out the
     // line so that floats later in the line don't interfere with it. However
@@ -359,9 +360,9 @@ void LayoutListItem::PositionListMarker() {
                                             kDoNotIndentText, LayoutUnit()));
       marker_logical_left = marker_line_offset - line_offset - PaddingStart() -
                             BorderStart() + marker_->MarginStart();
-      marker_->InlineBoxWrapper()->MoveInInlineDirection(
-          marker_logical_left - marker_old_logical_left);
-      for (InlineFlowBox* box = marker_->InlineBoxWrapper()->Parent(); box;
+      marker_inline_box->MoveInInlineDirection(marker_logical_left -
+                                               marker_old_logical_left);
+      for (InlineFlowBox* box = marker_inline_box->Parent(); box;
            box = box->Parent()) {
         LayoutRect new_logical_visual_overflow_rect =
             box->LogicalVisualOverflowRect(line_top, line_bottom);
@@ -395,9 +396,9 @@ void LayoutListItem::PositionListMarker() {
                                              kDoNotIndentText, LayoutUnit()));
       marker_logical_left = marker_line_offset - line_offset + PaddingStart() +
                             BorderStart() + marker_->MarginEnd();
-      marker_->InlineBoxWrapper()->MoveInInlineDirection(
-          marker_logical_left - marker_old_logical_left);
-      for (InlineFlowBox* box = marker_->InlineBoxWrapper()->Parent(); box;
+      marker_inline_box->MoveInInlineDirection(marker_logical_left -
+                                               marker_old_logical_left);
+      for (InlineFlowBox* box = marker_inline_box->Parent(); box;
            box = box->Parent()) {
         LayoutRect new_logical_visual_overflow_rect =
             box->LogicalVisualOverflowRect(line_top, line_bottom);
@@ -430,8 +431,12 @@ void LayoutListItem::PositionListMarker() {
     }
 
     if (adjust_overflow) {
+      // AlignMarkerInBlockDirection and pagination_strut might move root or
+      // marker_inline_box in block direction. We should add marker_inline_box
+      // top when propagate overflow.
       LayoutRect marker_rect(
-          LayoutPoint(marker_logical_left + line_offset, block_offset),
+          LayoutPoint(marker_logical_left + line_offset,
+                      block_offset + marker_inline_box->LogicalTop()),
           marker_->Size());
       if (!Style()->IsHorizontalWritingMode())
         marker_rect = marker_rect.TransposedRect();

@@ -396,4 +396,21 @@ TEST_F(LayoutBoxTest, DeferredInvalidation) {
             PaintInvalidationReason::kImage);
 }
 
+TEST_F(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html { font-size: 16px; }
+    </style>
+    <div id='target' style='display: list-item;'>
+      <div style='overflow: hidden; line-height:100px;'>hello</div>
+    </div>
+  )HTML");
+
+  LayoutBox* marker_container =
+      ToLayoutBox(GetLayoutObjectByElementId("target")->SlowFirstChild());
+  // Unit marker_container's frame_rect which y-pos starts from 0 and marker's
+  // frame_rect.
+  EXPECT_TRUE(marker_container->LayoutOverflowRect().Height() > LayoutUnit(50));
+}
+
 }  // namespace blink
