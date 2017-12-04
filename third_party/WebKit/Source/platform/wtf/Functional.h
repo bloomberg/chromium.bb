@@ -349,10 +349,6 @@ class Function<R(Args...)> {
     return *this;
   }
 
-  R Run(Args... args) const & {
-    return callback_.Run(std::forward<Args>(args)...);
-  }
-
   R Run(Args... args) && {
     return std::move(callback_).Run(std::forward<Args>(args)...);
   }

@@ -64,7 +64,7 @@ void OffscreenCanvasTest::SetUp() {
     return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
   };
   SharedGpuContext::SetContextProviderFactoryForTesting(
-      WTF::Bind(factory, WTF::Unretained(&gl_)));
+      WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   dummy_page_holder_ =
