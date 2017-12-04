@@ -76,6 +76,7 @@ EXTRA_DIST =					\
 	ko-g2_harness.yaml			\
 	letterDefTest_harness.yaml		\
 	lt_harness.yaml				\
+	lt-6dot_harness.yaml			\
 	lv_harness.yaml				\
 	mn-MN_harness.yaml			\
 	multipass-backward.yaml			\

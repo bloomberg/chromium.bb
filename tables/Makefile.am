@@ -237,6 +237,8 @@ table_files = \
 	loweredDigits8Dots.uti \
 	lt.ctb \
 	lt.tbl \
+	lt-6dot.utb \
+	lt-6dot.tbl \
 	Lv-Lv-g1.utb \
 	lv.tbl \
 	malayalam.cti \
