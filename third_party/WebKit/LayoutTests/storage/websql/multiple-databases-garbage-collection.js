@@ -1,15 +1,3 @@
-function GC()
-{
-    // Force GC.
-    if (window.GCController)
-        GCController.collectAll();
-    else {
-        for (var i = 0; i < 10000; ++i) {
-            ({ });
-        }
-    }
-}
-
 // Variable for the database that will never be forgotten
 var persistentDB = 0;
 // Variable for the forgotten database
@@ -32,12 +20,12 @@ function runTest()
     }, function(err) {
         log("Forgotten Database Transaction Errored - " + err);
         forgottenDB = 0;
-        GC();
+        gc();
         checkCompletion();
     }, function() {
         log("Forgotten Database Transaction Complete");
         forgottenDB = 0;
-        GC();
+        gc();
         checkCompletion();
     });
 

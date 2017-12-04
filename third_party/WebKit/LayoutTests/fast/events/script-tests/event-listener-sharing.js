@@ -2,15 +2,6 @@ description(
 "Tests that an event handler registered on two nodes still fires after one of the nodes has been GC'd."
 );
 
-function gc() {
-    if (window.GCController)
-        GCController.collect();
-    else {
-        for (var i = 0; i < 10000; ++i)
-            new Object;
-    }
-}
-
 var clickCount = 0;
 function clickHandler() {
     ++clickCount;
