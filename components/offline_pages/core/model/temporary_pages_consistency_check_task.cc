@@ -108,6 +108,7 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
 
   auto temp_page_infos = GetAllTemporaryPageInfos(namespaces, db);
 
+  std::set<base::FilePath> temp_page_info_paths;
   std::vector<int64_t> offline_ids_to_delete;
   for (const auto& page_info : temp_page_infos) {
     // Get pages whose archive files does not exist and delete.
@@ -115,6 +116,9 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
       offline_ids_to_delete.push_back(page_info.offline_id);
       continue;
     }
+    // Extract existing file paths from |temp_page_infos| so that we can do a
+    // faster matching later.
+    temp_page_info_paths.insert(page_info.file_path);
   }
   // Try to delete the pages by offline ids collected above.
   // If there's any database related errors, the function will return false,
@@ -128,16 +132,11 @@ bool CheckConsistencySync(const base::FilePath& archives_dir,
 
   // Delete any files in the temporary archive directory that no longer have
   // associated entries in the database.
-  // TODO(romax): https://crbug.com/786240.
   std::set<base::FilePath> archive_paths = GetAllArchives(archives_dir);
   std::vector<base::FilePath> files_to_delete;
   for (const auto& archive_path : archive_paths) {
-    if (std::find_if(temp_page_infos.begin(), temp_page_infos.end(),
-                     [&archive_path](const PageInfo& page_info) -> bool {
-                       return page_info.file_path == archive_path;
-                     }) == temp_page_infos.end()) {
+    if (temp_page_info_paths.find(archive_path) == temp_page_info_paths.end())
       files_to_delete.push_back(archive_path);
-    }
   }
 
   return DeleteFiles(files_to_delete);
