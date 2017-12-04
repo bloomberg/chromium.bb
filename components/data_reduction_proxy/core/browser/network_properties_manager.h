@@ -41,11 +41,13 @@ class NetworkPropertiesManager {
   void OnChangeInNetworkID(const std::string& network_id);
 
   // Returns true if usage of secure proxies are allowed on the current network.
-  bool IsSecureProxyAllowed() const;
+  // Returns the status of core secure proxies if |is_core_proxy| is true.
+  bool IsSecureProxyAllowed(bool is_core_proxy) const;
 
   // Returns true if usage of insecure proxies are allowed on the current
-  // network.
-  bool IsInsecureProxyAllowed() const;
+  // network.  Returns the status of core non-secure proxies if |is_core_proxy|
+  // is true.
+  bool IsInsecureProxyAllowed(bool is_core_proxy) const;
 
   // Returns true if usage of secure proxies has been disallowed by the carrier
   // on the current network.
@@ -63,15 +65,16 @@ class NetworkPropertiesManager {
   // disallowed.
   void SetIsCaptivePortal(bool is_captive_portal);
 
-  // If secure_proxy is true, returns true if the warmup URL probe has failed
-  // on secure proxies on the current network. Otherwise, returns true if the
-  // warmup URL probe has failed on insecure proxies.
-  bool HasWarmupURLProbeFailed(bool secure_proxy) const;
+  // Returns true if the warmup URL probe has failed
+  // on secure (or insecure), core (or non-core) data saver proxies on the
+  // current network.
+  bool HasWarmupURLProbeFailed(bool secure_proxy, bool is_core_proxy) const;
 
   // Sets the status of whether the fetching of warmup URL failed on the current
-  // network. Sets the status for secure proxies if |secure_proxy| is true.
-  // Otherwise, sets the status for the insecure proxies.
+  // network. Sets the status for secure (or insecure), core (or non-core) data
+  // saver proxies.
   void SetHasWarmupURLProbeFailed(bool secure_proxy,
+                                  bool is_core_proxy,
                                   bool warmup_url_probe_failed);
 
  private:

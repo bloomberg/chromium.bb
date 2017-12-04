@@ -186,10 +186,8 @@ void DataReductionProxyConfig::ReloadConfig() {
 
   if (enabled_by_user_ && !params::IsIncludedInHoldbackFieldTrial() &&
       !config_values_->proxies_for_http().empty()) {
-    configurator_->Enable(
-        !network_properties_manager_->IsSecureProxyAllowed(),
-        !network_properties_manager_->IsInsecureProxyAllowed(),
-        config_values_->proxies_for_http());
+    configurator_->Enable(*network_properties_manager_,
+                          config_values_->proxies_for_http());
   } else {
     configurator_->Disable();
   }
@@ -403,7 +401,11 @@ void DataReductionProxyConfig::UpdateConfigForTesting(
   network_properties_manager_->SetIsSecureProxyDisallowedByCarrier(
       !secure_proxies_allowed);
   network_properties_manager_->SetHasWarmupURLProbeFailed(
-      false, !insecure_proxies_allowed);
+      false /* secure_proxy */, false /* is_core_proxy */,
+      !insecure_proxies_allowed);
+  network_properties_manager_->SetHasWarmupURLProbeFailed(
+      false /* secure_proxy */, true /* is_core_proxy */,
+      !insecure_proxies_allowed);
 }
 
 void DataReductionProxyConfig::SetNetworkPropertiesManagerForTesting(
@@ -626,34 +628,26 @@ base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
 }
 
 void DataReductionProxyConfig::OnInsecureProxyWarmupURLProbeStatusChange(
-    bool insecure_proxies_allowed) {
+    bool insecure_proxies_allowed,
+    bool is_core_proxy) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bool old_status = network_properties_manager_->IsInsecureProxyAllowed();
+  bool old_status =
+      network_properties_manager_->IsInsecureProxyAllowed(is_core_proxy);
   network_properties_manager_->SetHasWarmupURLProbeFailed(
-      false, !insecure_proxies_allowed);
+      false, is_core_proxy, !insecure_proxies_allowed);
 
-  if (old_status == network_properties_manager_->IsInsecureProxyAllowed())
+  if (old_status ==
+      network_properties_manager_->IsInsecureProxyAllowed(is_core_proxy)) {
     return;
+  }
   ReloadConfig();
 }
 
 net::ProxyConfig DataReductionProxyConfig::ProxyConfigIgnoringHoldback() const {
   if (!enabled_by_user_ || config_values_->proxies_for_http().empty())
     return net::ProxyConfig::CreateDirect();
-  return configurator_->CreateProxyConfig(
-      !network_properties_manager_->IsSecureProxyAllowed(),
-      !network_properties_manager_->IsInsecureProxyAllowed(),
-      config_values_->proxies_for_http());
-}
-
-bool DataReductionProxyConfig::secure_proxy_allowed() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return network_properties_manager_->IsSecureProxyAllowed();
-}
-
-bool DataReductionProxyConfig::insecure_proxies_allowed() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return network_properties_manager_->IsInsecureProxyAllowed();
+  return configurator_->CreateProxyConfig(*network_properties_manager_,
+                                          config_values_->proxies_for_http());
 }
 
 std::vector<DataReductionProxyServer>
@@ -712,6 +706,12 @@ std::string DataReductionProxyConfig::GetCurrentNetworkID() const {
     }
   }
   NOTREACHED();
+}
+
+const NetworkPropertiesManager&
+DataReductionProxyConfig::GetNetworkPropertiesManager() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return *network_properties_manager_;
 }
 
 }  // namespace data_reduction_proxy
