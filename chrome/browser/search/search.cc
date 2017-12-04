@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -222,14 +221,6 @@ struct NewTabURLDetails {
   const NewTabURLState state;
 };
 
-}  // namespace
-
-bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
-  return url.is_valid() && profile && IsInstantExtendedAPIEnabled() &&
-         (url.SchemeIs(chrome::kChromeSearchScheme) ||
-          IsNTPOrServiceWorkerURL(url, profile));
-}
-
 bool IsRenderedInInstantProcess(const content::WebContents* contents,
                                 Profile* profile) {
 #if defined(OS_ANDROID)
@@ -249,11 +240,7 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
 #endif
 }
 
-bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
-  return ShouldAssignURLToInstantRenderer(url, profile) &&
-         (url.host_piece() == chrome::kChromeSearchLocalNtpHost ||
-          url.host_piece() == chrome::kChromeSearchRemoteNtpHost);
-}
+}  // namespace
 
 bool DefaultSearchProviderIsGoogle(Profile* profile) {
   return DefaultSearchProviderIsGoogle(
@@ -319,6 +306,20 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
 
 GURL GetNewTabPageURL(Profile* profile) {
   return NewTabURLDetails::ForProfile(profile).url;
+}
+
+#if !defined(OS_ANDROID)
+
+bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
+  return url.is_valid() && profile && IsInstantExtendedAPIEnabled() &&
+         (url.SchemeIs(chrome::kChromeSearchScheme) ||
+          IsNTPOrServiceWorkerURL(url, profile));
+}
+
+bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
+  return ShouldAssignURLToInstantRenderer(url, profile) &&
+         (url.host_piece() == chrome::kChromeSearchLocalNtpHost ||
+          url.host_piece() == chrome::kChromeSearchRemoteNtpHost);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
@@ -387,5 +388,7 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
 
   return false;
 }
+
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace search
