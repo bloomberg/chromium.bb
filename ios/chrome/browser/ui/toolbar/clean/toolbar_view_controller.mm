@@ -68,6 +68,7 @@
 @synthesize buttonFactory = _buttonFactory;
 @synthesize buttonUpdater = _buttonUpdater;
 @synthesize dispatcher = _dispatcher;
+@synthesize expanded = _expanded;
 @synthesize locationBarView = _locationBarView;
 @synthesize stackView = _stackView;
 @synthesize loading = _loading;
@@ -117,6 +118,7 @@
     [self setUpToolbarButtons];
     [self setUpLocationBarContainer];
     [self setUpProgressBar];
+    _expanded = NO;
   }
   return self;
 }
@@ -131,6 +133,7 @@
     self.contractButton.hidden = NO;
     self.contractButton.alpha = 1;
   }];
+  self.expanded = YES;
 }
 
 - (void)addToolbarContractionAnimations:(UIViewPropertyAnimator*)animator {
@@ -143,6 +146,7 @@
     self.contractButton.hidden = YES;
     self.contractButton.alpha = 0;
   }];
+  self.expanded = NO;
 }
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
