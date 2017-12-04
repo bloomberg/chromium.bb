@@ -60,10 +60,10 @@ class HostedAppBrowserController {
   // Gets the domain and registry of the app start url (e.g example.com.au).
   std::string GetDomainAndRegistry() const;
 
- private:
   // Gets the extension for this controller.
   const Extension* GetExtension() const;
 
+ private:
   Browser* const browser_;
   const std::string extension_id_;
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -443,6 +444,27 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OpenInChrome) {
   // |app_browser|.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+}
+
+// Check the 'App info' menu button for Hosted App windows.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfo) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kExampleURL);
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+  Browser* app_browser = LaunchAppBrowser(app);
+
+  bool dialog_created = false;
+
+  GetAppInfoDialogCreatedCallbackForTesting() = base::BindOnce(
+      [](bool* dialog_created) { *dialog_created = true; }, &dialog_created);
+
+  chrome::ExecuteCommand(app_browser, IDC_APP_INFO);
+
+  EXPECT_TRUE(dialog_created);
+
+  // The test closure should have run. But clear the global in case it hasn't.
+  EXPECT_FALSE(GetAppInfoDialogCreatedCallbackForTesting());
+  GetAppInfoDialogCreatedCallbackForTesting().Reset();
 }
 
 // Common app manifest for HostedAppProcessModelTests.
