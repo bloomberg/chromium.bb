@@ -67,7 +67,6 @@ class ASH_EXPORT AppListPresenterDelegate
   // KeyboardControllerObserver overrides:
   void OnKeyboardWorkspaceOccludedBoundsChanging(
       const gfx::Rect& new_bounds) override;
-  void OnKeyboardClosed() override;
 
   // ShellObserver overrides:
   void OnOverviewModeStarting() override;

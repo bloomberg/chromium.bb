@@ -100,8 +100,6 @@ void VirtualKeyboardTray::OnKeyboardBoundsChanging(
   SetIsActive(!new_bounds.IsEmpty());
 }
 
-void VirtualKeyboardTray::OnKeyboardClosed() {}
-
 void VirtualKeyboardTray::OnKeyboardControllerCreated() {
   ObserveKeyboardController();
 }

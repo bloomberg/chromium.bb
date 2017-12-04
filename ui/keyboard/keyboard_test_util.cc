@@ -49,8 +49,6 @@ class ControllerStateChangeWaiter
   void Wait() { run_loop_.Run(); }
 
  private:
-  void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {}
-  void OnKeyboardClosed() override {}
   void OnStateChanged(const keyboard::KeyboardControllerState state) override {
     if (state == state_) {
       run_loop_.QuitWhenIdle();
