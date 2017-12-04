@@ -1705,7 +1705,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Motion utility functions.
   bool HasOffset() const {
-    return (OffsetPosition().X() != Length(kAuto)) || OffsetPath();
+    return !OffsetPosition().X().IsAuto() || OffsetPath();
   }
 
   // Direction utility functions.

@@ -710,10 +710,10 @@ static CSSValue* ValueForLineHeight(const ComputedStyle& style) {
 
 static CSSValue* ValueForPosition(const LengthPoint& position,
                                   const ComputedStyle& style) {
-  DCHECK((position.X() == kAuto) == (position.Y() == kAuto));
-  if (position.X() == kAuto) {
+  DCHECK_EQ(position.X().IsAuto(), position.Y().IsAuto());
+  if (position.X().IsAuto())
     return CSSIdentifierValue::Create(CSSValueAuto);
-  }
+
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ZoomAdjustedPixelValueForLength(position.X(), style));
   list->Append(*ZoomAdjustedPixelValueForLength(position.Y(), style));

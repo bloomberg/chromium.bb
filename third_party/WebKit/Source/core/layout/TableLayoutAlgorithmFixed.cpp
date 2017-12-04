@@ -167,7 +167,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
     while (used_span < span && current_column < n_eff_cols) {
       float e_span = table_->SpanOfEffectiveColumn(current_column);
       // Only set if no col element has already set it.
-      if (width_[current_column].IsAuto() && logical_width.GetType() != kAuto) {
+      if (width_[current_column].IsAuto() && !logical_width.IsAuto()) {
         width_[current_column] = logical_width;
         width_[current_column] *= e_span / span;
         used_width += fixed_border_box_logical_width * e_span / span;
