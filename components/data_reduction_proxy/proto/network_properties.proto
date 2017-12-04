@@ -15,9 +15,18 @@ message ProxyFlags {
 
 // State of different proxy schemes on a given network.
 message NetworkProperties {
+  // True if the usage of secure proxy has been disallowed by the carrier.
   optional bool secure_proxy_disallowed_by_carrier = 1;
+  // True if the network has a captive portal.
   optional bool has_captive_portal = 2;
+  // State of the secure core data saver proxies.
   optional ProxyFlags secure_proxy_flags = 3;
+  // State of the insecure core data saver proxies.
   optional ProxyFlags insecure_proxy_flags = 4;
+  // Time when this network property was last modified.
   optional int64 last_modified = 5;
+  // State of the secure non-core data saver proxies.
+  optional ProxyFlags secure_non_core_proxy_flags = 6;
+  // State of the insecure non-core data saver proxies.
+  optional ProxyFlags insecure_non_core_proxy_flags = 7;
 }

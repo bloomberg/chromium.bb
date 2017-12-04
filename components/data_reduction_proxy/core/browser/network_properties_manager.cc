@@ -225,18 +225,17 @@ NetworkPropertiesManager::ConvertDictionaryValueToParsedPrefs(
   return read_prefs;
 }
 
-bool NetworkPropertiesManager::IsSecureProxyAllowed() const {
+bool NetworkPropertiesManager::IsSecureProxyAllowed(bool is_core_proxy) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !network_properties_.secure_proxy_disallowed_by_carrier() &&
          !network_properties_.has_captive_portal() &&
-         !network_properties_.secure_proxy_flags()
-              .disallowed_due_to_warmup_probe_failure();
+         !HasWarmupURLProbeFailed(true, is_core_proxy);
 }
 
-bool NetworkPropertiesManager::IsInsecureProxyAllowed() const {
+bool NetworkPropertiesManager::IsInsecureProxyAllowed(
+    bool is_core_proxy) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return !network_properties_.insecure_proxy_flags()
-              .disallowed_due_to_warmup_probe_failure();
+  return !HasWarmupURLProbeFailed(false, is_core_proxy);
 }
 
 bool NetworkPropertiesManager::IsSecureProxyDisallowedByCarrier() const {
@@ -264,23 +263,44 @@ void NetworkPropertiesManager::SetIsCaptivePortal(bool is_captive_portal) {
 }
 
 bool NetworkPropertiesManager::HasWarmupURLProbeFailed(
-    bool secure_proxy) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return secure_proxy ? network_properties_.secure_proxy_flags()
-                            .disallowed_due_to_warmup_probe_failure()
-                      : network_properties_.insecure_proxy_flags()
-                            .disallowed_due_to_warmup_probe_failure();
+    bool secure_proxy,
+    bool is_core_proxy) const {
+  if (secure_proxy && is_core_proxy) {
+    return network_properties_.secure_proxy_flags()
+        .disallowed_due_to_warmup_probe_failure();
+  }
+  if (secure_proxy && !is_core_proxy) {
+    return network_properties_.secure_non_core_proxy_flags()
+        .disallowed_due_to_warmup_probe_failure();
+  }
+  if (!secure_proxy && is_core_proxy) {
+    return network_properties_.insecure_proxy_flags()
+        .disallowed_due_to_warmup_probe_failure();
+  }
+  if (!secure_proxy && !is_core_proxy) {
+    return network_properties_.insecure_non_core_proxy_flags()
+        .disallowed_due_to_warmup_probe_failure();
+  }
+  NOTREACHED();
+  return false;
 }
 
 void NetworkPropertiesManager::SetHasWarmupURLProbeFailed(
     bool secure_proxy,
+    bool is_core_proxy,
     bool warmup_url_probe_failed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (secure_proxy) {
+  if (secure_proxy && is_core_proxy) {
     network_properties_.mutable_secure_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
-  } else {
+  } else if (secure_proxy && !is_core_proxy) {
+    network_properties_.mutable_secure_non_core_proxy_flags()
+        ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
+  } else if (!secure_proxy && is_core_proxy) {
     network_properties_.mutable_insecure_proxy_flags()
+        ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
+  } else {
+    network_properties_.mutable_insecure_non_core_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   }
   OnChangeInNetworkPropertyOnIOThread();

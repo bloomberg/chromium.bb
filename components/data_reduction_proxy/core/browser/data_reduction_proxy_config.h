@@ -190,12 +190,6 @@ class DataReductionProxyConfig
   // This should only be used for logging purposes.
   net::ProxyConfig ProxyConfigIgnoringHoldback() const;
 
-  // Returns true if secure data saver proxies are allowed.
-  bool secure_proxy_allowed() const;
-
-  // Returns true if insecure data saver proxies are allowed.
-  bool insecure_proxies_allowed() const;
-
   std::vector<DataReductionProxyServer> GetProxiesForHttp() const;
 
   // Called when a new client config has been fetched.
@@ -203,10 +197,17 @@ class DataReductionProxyConfig
 
   void SetNetworkPropertiesManagerForTesting(NetworkPropertiesManager* manager);
 
+  // Returns the network properties manager which manages whether a given data
+  // saver proxy is currently allowed or not.
+  const NetworkPropertiesManager& GetNetworkPropertiesManager() const;
+
  protected:
   // Should be called when there is a change in the status of the availability
-  // of the insecure data saver proxies triggered due to warmup URL.
-  void OnInsecureProxyWarmupURLProbeStatusChange(bool insecure_proxies_allowed);
+  // of the insecure data saver proxies triggered due to fetching of the warmup
+  // URL. |is_core_proxy| indicates if the warmup URL was fetched over a core
+  // data saver proxy or not.
+  void OnInsecureProxyWarmupURLProbeStatusChange(bool insecure_proxies_allowed,
+                                                 bool is_core_proxy);
 
   virtual base::TimeTicks GetTicksNow() const;
 

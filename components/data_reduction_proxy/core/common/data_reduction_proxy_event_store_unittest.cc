@@ -13,13 +13,18 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -217,6 +222,11 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheckFailed) {
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
+  base::MessageLoopForIO loop;
+  TestingPrefServiceSimple test_prefs;
+  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
+  NetworkPropertiesManager manager(&test_prefs,
+                                   base::ThreadTaskRunnerHandle::Get());
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   EXPECT_EQ(std::string(), event_store()->GetHttpProxyList());
   EXPECT_EQ(std::string(), event_store()->SanitizedLastBypassEvent());
@@ -230,7 +240,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
       net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
                        net::HostPortPair("bar.com", 443)),
       ProxyServer::CORE));
-  configurator.Enable(false, false, http_proxies);
+  configurator.Enable(manager, http_proxies);
   EXPECT_EQ("foo.com:80;https://bar.com:443",
             event_store()->GetHttpProxyList());
 
@@ -239,9 +249,14 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackMethods) {
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
+  base::MessageLoopForIO loop;
+  TestingPrefServiceSimple test_prefs;
+  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
+  NetworkPropertiesManager manager(&test_prefs,
+                                   base::ThreadTaskRunnerHandle::Get());
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   std::vector<DataReductionProxyServer> http_proxies;
-  configurator.Enable(false, false, http_proxies);
+  configurator.Enable(manager, http_proxies);
 
   std::unique_ptr<base::DictionaryValue> bypass_event(
       new base::DictionaryValue());
@@ -272,9 +287,14 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
 }
 
 TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
+  base::MessageLoopForIO loop;
+  TestingPrefServiceSimple test_prefs;
+  test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
+  NetworkPropertiesManager manager(&test_prefs,
+                                   base::ThreadTaskRunnerHandle::Get());
   DataReductionProxyConfigurator configurator(net_log(), event_creator());
   std::vector<DataReductionProxyServer> http_proxies;
-  configurator.Enable(false, false, http_proxies);
+  configurator.Enable(manager, http_proxies);
 
   std::unique_ptr<base::DictionaryValue> bypass_event(
       new base::DictionaryValue());

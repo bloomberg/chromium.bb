@@ -98,8 +98,7 @@ void DataReductionProxyDelegate::OnResolveProxy(
       proxies_for_http.end());
 
   net::ProxyConfig proxy_config = configurator_->CreateProxyConfig(
-      !config_->secure_proxy_allowed(), !config_->insecure_proxies_allowed(),
-      proxies_for_http);
+      config_->GetNetworkPropertiesManager(), proxies_for_http);
 
   OnResolveProxyHandler(url, method, proxy_config, proxy_retry_info, *config_,
                         io_data_, result);
