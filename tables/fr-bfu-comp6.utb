@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-03
+#-updated: 2017-12-04
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -69,6 +69,7 @@ space \x007f 0
 include latinLetterDef6Dots.uti
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
+uplow \x00c6\x00E6 345     #*ae
 uplow \x0152\x0153    246 # oe liés (Œœ)
 noback uplow \x00d1\x00f1 12456 # n tilde (Ññ)
 
@@ -233,15 +234,15 @@ noback sign \x00B7 0       # middle dot
 sign \x00BA 26      # masculine ordinal indicator
 
 sign \x00BF 26      #*inverted question mark
-sign \x00C5 2       #*latin capital letter a with ring above
-sign \x00C6 345     #*latin capital letter ae
+sign \x00C5 1       #*latin capital letter a with ring above
+#sign \x00C6 345     #*latin capital letter ae
 sign \x00D0 12      # latin capital letter eth
 sign \x00D7 5-35    # multiplication sign
 sign \x00D8 3456    # latin capital letter o with stroke
 sign \x00DE 245     # latin capital letter thorn
 sign \x00DF 234     # latin small letter sharp s
 sign \x00E5 2       #*latin small letter a with ring above
-sign \x00E6 345     #*latin small letter ae
+uplow \x00c6\x00E6 345     #*ae
 sign \x00F0 12      # latin small letter eth
 sign \x00F8 56      # latin small letter o with stroke
 sign \x00FE 245     # latin small letter thorn
