@@ -64,9 +64,14 @@ void NetworkChangeNotifierDelegateAndroid::JavaLongArrayToNetworkMap(
 }
 
 NetworkChangeNotifierDelegateAndroid::NetworkChangeNotifierDelegateAndroid()
-    : observers_(new base::ObserverListThreadSafe<Observer>()) {
+    : observers_(new base::ObserverListThreadSafe<Observer>()),
+      java_network_change_notifier_(Java_NetworkChangeNotifier_init(
+          base::android::AttachCurrentThread())),
+      register_network_callback_failed_(
+          Java_NetworkChangeNotifier_registerNetworkCallbackFailed(
+              base::android::AttachCurrentThread(),
+              java_network_change_notifier_)) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_network_change_notifier_.Reset(Java_NetworkChangeNotifier_init(env));
   Java_NetworkChangeNotifier_addNativeObserver(
       env, java_network_change_notifier_, reinterpret_cast<intptr_t>(this));
   SetCurrentConnectionType(

@@ -183,7 +183,8 @@ bool NetworkChangeNotifierAndroid::AreNetworkHandlesCurrentlySupported() const {
   return force_network_handles_supported_for_testing_ ||
          (base::android::BuildInfo::GetInstance()->sdk_int() >=
               base::android::SDK_VERSION_LOLLIPOP &&
-          !delegate_->IsProcessBoundToNetwork());
+          !delegate_->IsProcessBoundToNetwork() &&
+          !delegate_->RegisterNetworkCallbackFailed());
 }
 
 void NetworkChangeNotifierAndroid::GetCurrentConnectedNetworks(

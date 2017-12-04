@@ -129,6 +129,15 @@ public class NetworkChangeNotifier {
     }
 
     /**
+     * Returns {@code true} if NetworkCallback failed to register, indicating that network-specific
+     * callbacks will not be issued.
+     */
+    @CalledByNative
+    public boolean registerNetworkCallbackFailed() {
+        return mAutoDetector == null ? false : mAutoDetector.registerNetworkCallbackFailed();
+    }
+
+    /**
      * Returns the singleton instance.
      */
     public static NetworkChangeNotifier getInstance() {
