@@ -80,6 +80,7 @@
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -3100,43 +3101,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
   }
 }
 
-namespace {
-class FailingURLLoaderImpl : public mojom::URLLoader {
- public:
-  explicit FailingURLLoaderImpl(mojom::URLLoaderClientPtr client) {
-    network::URLLoaderCompletionStatus status;
-    status.error_code = net::ERR_NOT_IMPLEMENTED;
-    client->OnComplete(status);
-  }
-
-  void FollowRedirect() override {}
-  void SetPriority(net::RequestPriority priority,
-                   int32_t intra_priority_value) override {}
-  void PauseReadingBodyFromNet() override {}
-  void ResumeReadingBodyFromNet() override {}
-};
-
-class FailingLoadFactory : public mojom::URLLoaderFactory {
- public:
-  FailingLoadFactory() {}
-  ~FailingLoadFactory() override {}
-
-  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const ResourceRequest& request,
-                            mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    new FailingURLLoaderImpl(std::move(client));
-  }
-
-  void Clone(mojom::URLLoaderFactoryRequest request) override { NOTREACHED(); }
-};
-
-}  // namespace
-
 // Ensure that a cross-site page ends up in the correct process when it
 // successfully loads after earlier encountering a network error for it.
 // See https://crbug.com/560511.
@@ -3157,14 +3121,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
   bool network_service =
       base::FeatureList::IsEnabled(features::kNetworkService);
-  FailingLoadFactory failing_factory;
-  StoragePartitionImpl* storage_partition = nullptr;
+  std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor;
   if (network_service) {
-    storage_partition = static_cast<StoragePartitionImpl*>(
+    StoragePartition* storage_partition =
         BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext()));
-    storage_partition->url_loader_factory_getter()->SetNetworkFactoryForTesting(
-        &failing_factory);
+            shell()->web_contents()->GetBrowserContext());
+    url_loader_interceptor = std::make_unique<URLLoaderInterceptor>(
+        base::BindRepeating([](URLLoaderInterceptor::RequestParams* params) {
+          network::URLLoaderCompletionStatus status;
+          status.error_code = net::ERR_NOT_IMPLEMENTED;
+          params->client->OnComplete(status);
+          return true;
+        }),
+        storage_partition);
   } else {
     host_resolver()->ClearRules();
   }
@@ -3202,8 +3171,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
 
   // Try again after re-enabling host resolution.
   if (network_service) {
-    storage_partition->url_loader_factory_getter()->SetNetworkFactoryForTesting(
-        nullptr);
+    url_loader_interceptor.reset();
   } else {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
