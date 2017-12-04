@@ -311,8 +311,10 @@ void FakeShillManagerClient::ConfigureService(
   merged_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                    &profile_path);
   if (!profile_path.empty()) {
-    DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
-        AddService(profile_path, service_path);
+    auto* profile_client =
+        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    if (!profile_client->UpdateService(profile_path, service_path))
+      profile_client->AddService(profile_path, service_path);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
