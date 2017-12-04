@@ -37,7 +37,6 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceLoadScheduler.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/SubstituteData.h"
 #include "platform/wtf/HashMap.h"
@@ -152,6 +151,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void RemovePreload(Resource*);
 
+  void LoosenLoadThrottlingPolicy() { scheduler_->LoosenThrottlingPolicy(); }
   void OnNetworkQuiet() { scheduler_->OnNetworkQuiet(); }
 
   // Workaround for https://crbug.com/666214.

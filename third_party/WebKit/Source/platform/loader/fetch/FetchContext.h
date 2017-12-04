@@ -38,6 +38,7 @@
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
+#include "platform/loader/fetch/ResourceLoadScheduler.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
@@ -232,6 +233,13 @@ class PLATFORM_EXPORT FetchContext
       scoped_refptr<WebTaskRunner>) {
     NOTREACHED();
     return nullptr;
+  }
+
+  // Returns the initial throttling policy used by the associated
+  // ResourceLoadScheduler.
+  virtual ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
+      const {
+    return ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   }
 
   virtual bool IsDetached() const { return false; }

@@ -7,7 +7,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "platform/Histogram.h"
+#include "platform/loader/fetch/FetchContext.h"
 #include "platform/runtime_enabled_features.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -330,9 +332,17 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
   if (!scheduler)
     return;
 
+  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled())
+    policy_ = context->InitialLoadThrottlingPolicy();
+
   is_enabled_ = true;
   scheduler->AddThrottlingObserver(WebFrameScheduler::ObserverType::kLoader,
                                    this);
+}
+
+ResourceLoadScheduler* ResourceLoadScheduler::Create(FetchContext* context) {
+  return new ResourceLoadScheduler(context ? context
+                                           : &FetchContext::NullInstance());
 }
 
 ResourceLoadScheduler::~ResourceLoadScheduler() = default;
@@ -340,6 +350,17 @@ ResourceLoadScheduler::~ResourceLoadScheduler() = default;
 void ResourceLoadScheduler::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_request_map_);
   visitor->Trace(context_);
+}
+
+void ResourceLoadScheduler::LoosenThrottlingPolicy() {
+  switch (policy_) {
+    case ThrottlingPolicy::kTight:
+      break;
+    case ThrottlingPolicy::kNormal:
+      return;
+  }
+  policy_ = ThrottlingPolicy::kNormal;
+  MaybeRun();
 }
 
 void ResourceLoadScheduler::Shutdown() {
@@ -405,12 +426,6 @@ void ResourceLoadScheduler::SetPriority(ClientId client_id,
   client_it->value->priority = priority;
   client_it->value->intra_priority = intra_priority;
 
-  if (!IsThrottablePriority(priority)) {
-    ResourceLoadSchedulerClient* client = client_it->value->client;
-    pending_request_map_.erase(client_it);
-    Run(client_id, client);
-    return;
-  }
   pending_requests_.emplace(client_id, priority, intra_priority);
   MaybeRun();
 }
@@ -447,8 +462,11 @@ bool ResourceLoadScheduler::Release(
   return false;
 }
 
-void ResourceLoadScheduler::SetOutstandingLimitForTesting(size_t limit) {
-  SetOutstandingLimitAndMaybeRun(limit);
+void ResourceLoadScheduler::SetOutstandingLimitForTesting(size_t tight_limit,
+                                                          size_t limit) {
+  tight_outstanding_limit_ = tight_limit;
+  outstanding_limit_ = limit;
+  MaybeRun();
 }
 
 void ResourceLoadScheduler::OnNetworkQuiet() {
@@ -525,7 +543,14 @@ bool ResourceLoadScheduler::IsThrottablePriority(
     }
   }
 
-  return priority < ResourceLoadPriority::kMedium;
+  switch (policy_) {
+    case ThrottlingPolicy::kTight:
+      return priority < ResourceLoadPriority::kHigh;
+    case ThrottlingPolicy::kNormal:
+      return priority < ResourceLoadPriority::kMedium;
+  }
+  NOTREACHED();
+  return true;
 }
 
 void ResourceLoadScheduler::OnThrottlingStateChanged(
@@ -570,8 +595,23 @@ void ResourceLoadScheduler::MaybeRun() {
     return;
 
   while (!pending_requests_.empty()) {
-    if (running_requests_.size() >= outstanding_limit_)
-      return;
+    bool has_enough_running_requets = false;
+
+    switch (policy_) {
+      case ThrottlingPolicy::kTight:
+        if (running_requests_.size() >= tight_outstanding_limit_)
+          has_enough_running_requets = true;
+        break;
+      case ThrottlingPolicy::kNormal:
+        if (running_requests_.size() >= outstanding_limit_)
+          has_enough_running_requets = true;
+        break;
+    }
+    if (IsThrottablePriority(pending_requests_.begin()->priority) &&
+        has_enough_running_requets) {
+      break;
+    }
+
     ClientId id = pending_requests_.begin()->client_id;
     pending_requests_.erase(pending_requests_.begin());
     auto found = pending_request_map_.find(id);

@@ -96,6 +96,11 @@ class MockFetchContext : public FetchContext {
     return url_loader_factory_->CreateURLLoader(wrapped, task_runner);
   }
 
+  ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
+      const override {
+    return ResourceLoadScheduler::ThrottlingPolicy::kTight;
+  }
+
   WebFrameScheduler* GetFrameScheduler() override {
     return frame_scheduler_.get();
   }

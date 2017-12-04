@@ -9,12 +9,13 @@
 #include "platform/WebFrameScheduler.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/HeapAllocator.h"
-#include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/HashSet.h"
 
 namespace blink {
+
+class FetchContext;
 
 // Client interface to use the throttling/scheduling functionality that
 // ResourceLoadScheduler provides.
@@ -34,6 +35,9 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 // in-flight requests that are granted but are not released (by Release()) yet.
 // Note: If FetchContext can not provide a WebFrameScheduler, throttling and
 // scheduling functionalities will be completely disabled.
+//
+// TODO(yhirano): Provide the general algorithm and running experiments
+// information.
 class PLATFORM_EXPORT ResourceLoadScheduler final
     : public GarbageCollectedFinalized<ResourceLoadScheduler>,
       public WebFrameScheduler::Observer {
@@ -85,6 +89,12 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
     int64_t decoded_body_length_ = 0;
   };
 
+  // ResourceLoadScheduler has two policies: |kTight| and |kNormal|. Currently
+  // this is used to support aggressive throttling while the corresponding frame
+  // is in layout-blocking phase. There is only one state transition,
+  // |kTight| => |kNormal|, which is done by |LoosenThrottlingPolicy|.
+  enum class ThrottlingPolicy { kTight, kNormal };
+
   // Returned on Request(). Caller should need to return it via Release().
   using ClientId = uint64_t;
 
@@ -93,12 +103,15 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   static constexpr size_t kOutstandingUnlimited =
       std::numeric_limits<size_t>::max();
 
-  static ResourceLoadScheduler* Create(FetchContext* context = nullptr) {
-    return new ResourceLoadScheduler(context ? context
-                                             : &FetchContext::NullInstance());
-  }
+  static ResourceLoadScheduler* Create(FetchContext* = nullptr);
   ~ResourceLoadScheduler();
+
   void Trace(blink::Visitor*);
+
+  // Changes the policy from |kTight| to |kNormal|. This function can be called
+  // multiple times, and does nothing when the scheduler is already working with
+  // the normal policy. This function may initiate a new resource loading.
+  void LoosenThrottlingPolicy();
 
   // Stops all operations including observing throttling signals.
   // ResourceLoadSchedulerClient::Run() will not be called once this method is
@@ -127,7 +140,10 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   bool Release(ClientId, ReleaseOption, const TrafficReportHints&);
 
   // Sets outstanding limit for testing.
-  void SetOutstandingLimitForTesting(size_t limit);
+  void SetOutstandingLimitForTesting(size_t limit) {
+    SetOutstandingLimitForTesting(limit, limit);
+  }
+  void SetOutstandingLimitForTesting(size_t tight_limit, size_t limit);
 
   void OnNetworkQuiet();
 
@@ -200,9 +216,14 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Can be modified by field trial flags or for testing.
   bool is_enabled_ = false;
 
-  // Outstanding limit. 0u means unlimited.
+  ThrottlingPolicy policy_ = ThrottlingPolicy::kNormal;
+
+  // Used to limit outstanding requests when |policy_| is kTight.
+  size_t tight_outstanding_limit_ = kOutstandingUnlimited;
+
   // TODO(crbug.com/735410): If this throttling is enabled always, it makes some
   // tests fail.
+  // Used to limit outstanding requests when |policy_| is kNormal.
   size_t outstanding_limit_ = kOutstandingUnlimited;
 
   // Outstanding limit for throttled frames. Managed via the field trial.

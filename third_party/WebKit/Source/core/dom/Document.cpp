@@ -3088,6 +3088,10 @@ void Document::setBody(HTMLElement* prp_new_body,
 void Document::WillInsertBody() {
   if (GetFrame())
     GetFrame()->Client()->DispatchWillInsertBody();
+
+  if (auto* loader = Loader())
+    loader->Fetcher()->LoosenLoadThrottlingPolicy();
+
   // If we get to the <body> try to resume commits since we should have content
   // to paint now.
   // TODO(esprehn): Is this really optimal? We might start producing frames

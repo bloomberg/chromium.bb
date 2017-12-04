@@ -157,6 +157,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceRequest&,
       scoped_refptr<WebTaskRunner>) override;
 
+  ResourceLoadScheduler::ThrottlingPolicy InitialLoadThrottlingPolicy()
+      const override {
+    // Frame loading should normally start with |kTight| throttling, as the
+    // frame will be in layout-blocking state until the <body> tag is inserted.
+    return ResourceLoadScheduler::ThrottlingPolicy::kTight;
+  }
+
   bool IsDetached() const override { return frozen_state_; }
 
   FetchContext* Detach() override;
