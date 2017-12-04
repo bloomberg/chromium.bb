@@ -361,18 +361,18 @@ static bool HasEditableLevel(const Node& node, EditableLevel editable_level) {
   // would fire in the middle of Document::setFocusedNode().
 
   for (const Node& ancestor : NodeTraversal::InclusiveAncestorsOf(node)) {
-    if ((ancestor.IsHTMLElement() || ancestor.IsDocumentNode()) &&
-        ancestor.GetLayoutObject()) {
-      switch (ancestor.GetLayoutObject()->Style()->UserModify()) {
-        case EUserModify::kReadOnly:
-          return false;
-        case EUserModify::kReadWrite:
-          return true;
-        case EUserModify::kReadWritePlaintextOnly:
-          return editable_level != kRichlyEditable;
-      }
-      NOTREACHED();
-      return false;
+    if (!(ancestor.IsHTMLElement() || ancestor.IsDocumentNode()))
+      continue;
+    const ComputedStyle* style = ancestor.GetComputedStyle();
+    if (!style)
+      continue;
+    switch (style->UserModify()) {
+      case EUserModify::kReadOnly:
+        return false;
+      case EUserModify::kReadWrite:
+        return true;
+      case EUserModify::kReadWritePlaintextOnly:
+        return editable_level != kRichlyEditable;
     }
   }
 

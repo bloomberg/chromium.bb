@@ -171,6 +171,12 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
   ClearChildNeedsStyleRecalc();
 }
 
+void ShadowRoot::RecalcStylesForReattach() {
+  // ShadowRoot doesn't support custom callbacks.
+  DCHECK(!HasCustomStyleCallbacks());
+  RecalcDescendantStylesForReattach();
+}
+
 void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   ClearNeedsReattachLayoutTree();
   RebuildChildrenLayoutTrees(whitespace_attacher);

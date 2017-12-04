@@ -2992,7 +2992,7 @@ TEST_P(ParameterizedWebFrameTest, AtViewportAffectingAtMediaRecalcCount) {
 
   // The styleForElementCount() should match the number of elements for a single
   // pass of computed styles construction for the document.
-  EXPECT_EQ(10u, document->GetStyleEngine().StyleForElementCount());
+  EXPECT_EQ(8u, document->GetStyleEngine().StyleForElementCount());
   EXPECT_EQ(Color(0, 128, 0),
             document->body()->GetComputedStyle()->VisitedDependentColor(
                 CSSPropertyColor));
