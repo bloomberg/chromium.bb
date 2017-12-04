@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "content/common/clipboard.mojom.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
-#include "ui/base/clipboard/clipboard.h"
 
 namespace content {
 
@@ -23,19 +22,20 @@ class WebClipboardImpl : public blink::WebClipboard {
   virtual ~WebClipboardImpl();
 
   // WebClipboard methods:
-  uint64_t SequenceNumber(Buffer buffer) override;
-  bool IsFormatAvailable(Format format, Buffer buffer) override;
+  uint64_t SequenceNumber(blink::mojom::ClipboardBuffer buffer) override;
+  bool IsFormatAvailable(blink::mojom::ClipboardFormat format,
+                         blink::mojom::ClipboardBuffer buffer) override;
   blink::WebVector<blink::WebString> ReadAvailableTypes(
-      Buffer buffer,
+      blink::mojom::ClipboardBuffer buffer,
       bool* contains_filenames) override;
-  blink::WebString ReadPlainText(Buffer buffer) override;
-  blink::WebString ReadHTML(Buffer buffer,
+  blink::WebString ReadPlainText(blink::mojom::ClipboardBuffer buffer) override;
+  blink::WebString ReadHTML(blink::mojom::ClipboardBuffer buffer,
                             blink::WebURL* source_url,
                             unsigned* fragment_start,
                             unsigned* fragment_end) override;
-  blink::WebString ReadRTF(Buffer buffer) override;
-  blink::WebBlobInfo ReadImage(Buffer buffer) override;
-  blink::WebString ReadCustomData(Buffer buffer,
+  blink::WebString ReadRTF(blink::mojom::ClipboardBuffer buffer) override;
+  blink::WebBlobInfo ReadImage(blink::mojom::ClipboardBuffer buffer) override;
+  blink::WebString ReadCustomData(blink::mojom::ClipboardBuffer buffer,
                                   const blink::WebString& type) override;
   void WritePlainText(const blink::WebString& plain_text) override;
   void WriteHTML(const blink::WebString& html_text,
@@ -48,8 +48,8 @@ class WebClipboardImpl : public blink::WebClipboard {
   void WriteDataObject(const blink::WebDragData& data) override;
 
  private:
-  bool ConvertBufferType(Buffer, ui::ClipboardType*);
-  bool WriteImageToClipboard(ui::ClipboardType clipboard_type,
+  bool IsValidBufferType(blink::mojom::ClipboardBuffer buffer);
+  bool WriteImageToClipboard(blink::mojom::ClipboardBuffer buffer,
                              const SkBitmap& bitmap);
   mojom::ClipboardHost& clipboard_;
 };

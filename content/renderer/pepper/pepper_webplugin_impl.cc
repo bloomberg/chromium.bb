@@ -320,7 +320,7 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
 
     blink::WebString text =
         blink::Platform::Current()->Clipboard()->ReadPlainText(
-            blink::WebClipboard::kBufferStandard);
+            blink::mojom::ClipboardBuffer::kStandard);
 
     instance_->ReplaceSelection(text.Utf8());
     return true;

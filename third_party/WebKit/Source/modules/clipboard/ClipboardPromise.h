@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "public/platform/WebClipboard.h"
+#include "third_party/WebKit/common/clipboard/clipboard.mojom-blink.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ class ClipboardPromise final
 
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
-  WebClipboard::Buffer buffer_;
+  mojom::ClipboardBuffer buffer_;
 };
 
 }  // namespace blink

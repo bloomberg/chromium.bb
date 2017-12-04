@@ -13,6 +13,7 @@
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "third_party/WebKit/public/platform/WebClipboard.h"
 
 namespace blink {
 
@@ -54,7 +55,7 @@ ScriptPromise ClipboardPromise::CreateForWriteText(ScriptState* script_state,
 ClipboardPromise::ClipboardPromise(ScriptState* script_state)
     : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
       script_promise_resolver_(ScriptPromiseResolver::Create(script_state)),
-      buffer_(WebClipboard::kBufferStandard) {}
+      buffer_(mojom::ClipboardBuffer::kStandard) {}
 
 scoped_refptr<WebTaskRunner> ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.

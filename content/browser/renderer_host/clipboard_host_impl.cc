@@ -68,46 +68,52 @@ ClipboardHostImpl::~ClipboardHostImpl() {
   clipboard_writer_->Reset();
 }
 
-void ClipboardHostImpl::GetSequenceNumber(ui::ClipboardType type,
+void ClipboardHostImpl::GetSequenceNumber(blink::mojom::ClipboardBuffer buffer,
                                           GetSequenceNumberCallback callback) {
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(callback).Run(clipboard_->GetSequenceNumber(type));
+  std::move(callback).Run(clipboard_->GetSequenceNumber(clipboard_type));
 }
 
 void ClipboardHostImpl::ReadAvailableTypes(
-    ui::ClipboardType type,
+    blink::mojom::ClipboardBuffer buffer,
     ReadAvailableTypesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
   std::vector<base::string16> types;
   bool contains_filenames;
-  clipboard_->ReadAvailableTypes(type, &types, &contains_filenames);
+  clipboard_->ReadAvailableTypes(clipboard_type, &types, &contains_filenames);
   std::move(callback).Run(types, contains_filenames);
 }
 
-void ClipboardHostImpl::IsFormatAvailable(content::ClipboardFormat format,
-                                          ui::ClipboardType type,
+void ClipboardHostImpl::IsFormatAvailable(blink::mojom::ClipboardFormat format,
+                                          blink::mojom::ClipboardBuffer buffer,
                                           IsFormatAvailableCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
   bool result = false;
   switch (format) {
-    case CLIPBOARD_FORMAT_PLAINTEXT:
+    case blink::mojom::ClipboardFormat::kPlaintext:
       result = clipboard_->IsFormatAvailable(
-                   ui::Clipboard::GetPlainTextWFormatType(), type) ||
+                   ui::Clipboard::GetPlainTextWFormatType(), clipboard_type) ||
                clipboard_->IsFormatAvailable(
-                   ui::Clipboard::GetPlainTextFormatType(), type);
+                   ui::Clipboard::GetPlainTextFormatType(), clipboard_type);
       break;
-    case CLIPBOARD_FORMAT_HTML:
+    case blink::mojom::ClipboardFormat::kHtml:
       result = clipboard_->IsFormatAvailable(ui::Clipboard::GetHtmlFormatType(),
-                                             type);
+                                             clipboard_type);
       break;
-    case CLIPBOARD_FORMAT_SMART_PASTE:
+    case blink::mojom::ClipboardFormat::kSmartPaste:
       result = clipboard_->IsFormatAvailable(
-          ui::Clipboard::GetWebKitSmartPasteFormatType(), type);
+          ui::Clipboard::GetWebKitSmartPasteFormatType(), clipboard_type);
       break;
-    case CLIPBOARD_FORMAT_BOOKMARK:
+    case blink::mojom::ClipboardFormat::kBookmark:
 #if defined(OS_WIN) || defined(OS_MACOSX)
       result = clipboard_->IsFormatAvailable(ui::Clipboard::GetUrlWFormatType(),
-                                             type);
+                                             clipboard_type);
 #else
       result = false;
 #endif
@@ -116,47 +122,59 @@ void ClipboardHostImpl::IsFormatAvailable(content::ClipboardFormat format,
   std::move(callback).Run(result);
 }
 
-void ClipboardHostImpl::ReadText(ui::ClipboardType type,
+void ClipboardHostImpl::ReadText(blink::mojom::ClipboardBuffer buffer,
                                  ReadTextCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
+
   base::string16 result;
   if (clipboard_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                    type)) {
-    clipboard_->ReadText(type, &result);
+                                    clipboard_type)) {
+    clipboard_->ReadText(clipboard_type, &result);
   } else if (clipboard_->IsFormatAvailable(
-                 ui::Clipboard::GetPlainTextFormatType(), type)) {
+                 ui::Clipboard::GetPlainTextFormatType(), clipboard_type)) {
     std::string ascii;
-    clipboard_->ReadAsciiText(type, &ascii);
+    clipboard_->ReadAsciiText(clipboard_type, &ascii);
     result = base::ASCIIToUTF16(ascii);
   }
   std::move(callback).Run(result);
 }
 
-void ClipboardHostImpl::ReadHtml(ui::ClipboardType type,
+void ClipboardHostImpl::ReadHtml(blink::mojom::ClipboardBuffer buffer,
                                  ReadHtmlCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
+
   base::string16 markup;
   std::string src_url_str;
   uint32_t fragment_start = 0;
   uint32_t fragment_end = 0;
-  clipboard_->ReadHTML(type, &markup, &src_url_str, &fragment_start,
+  clipboard_->ReadHTML(clipboard_type, &markup, &src_url_str, &fragment_start,
                        &fragment_end);
   std::move(callback).Run(std::move(markup), GURL(src_url_str), fragment_start,
                           fragment_end);
 }
 
-void ClipboardHostImpl::ReadRtf(ui::ClipboardType type,
+void ClipboardHostImpl::ReadRtf(blink::mojom::ClipboardBuffer buffer,
                                 ReadRtfCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
   std::string result;
-  clipboard_->ReadRTF(type, &result);
+  clipboard_->ReadRTF(clipboard_type, &result);
   std::move(callback).Run(result);
 }
 
-void ClipboardHostImpl::ReadImage(ui::ClipboardType type,
+void ClipboardHostImpl::ReadImage(blink::mojom::ClipboardBuffer buffer,
                                   ReadImageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SkBitmap bitmap = clipboard_->ReadImage(type);
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
+
+  SkBitmap bitmap = clipboard_->ReadImage(clipboard_type);
 
   base::PostTaskWithTraits(
       FROM_HERE,
@@ -215,22 +233,25 @@ void ClipboardHostImpl::OnReadAndEncodeImageFinished(
   std::move(callback).Run(std::string(), std::string(), -1);
 }
 
-void ClipboardHostImpl::ReadCustomData(ui::ClipboardType clipboard_type,
+void ClipboardHostImpl::ReadCustomData(blink::mojom::ClipboardBuffer buffer,
                                        const base::string16& type,
                                        ReadCustomDataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ui::ClipboardType clipboard_type;
+  ConvertBufferType(buffer, &clipboard_type);
+
   base::string16 result;
   clipboard_->ReadCustomData(clipboard_type, type, &result);
   std::move(callback).Run(result);
 }
 
-void ClipboardHostImpl::WriteText(ui::ClipboardType clipboard_type,
+void ClipboardHostImpl::WriteText(blink::mojom::ClipboardBuffer,
                                   const base::string16& text) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   clipboard_writer_->WriteText(text);
 }
 
-void ClipboardHostImpl::WriteHtml(ui::ClipboardType clipboard_type,
+void ClipboardHostImpl::WriteHtml(blink::mojom::ClipboardBuffer,
                                   const base::string16& markup,
                                   const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -238,13 +259,13 @@ void ClipboardHostImpl::WriteHtml(ui::ClipboardType clipboard_type,
 }
 
 void ClipboardHostImpl::WriteSmartPasteMarker(
-    ui::ClipboardType clipboard_type) {
+    blink::mojom::ClipboardBuffer buffer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   clipboard_writer_->WriteWebSmartPaste();
 }
 
 void ClipboardHostImpl::WriteCustomData(
-    ui::ClipboardType type,
+    blink::mojom::ClipboardBuffer,
     const std::unordered_map<base::string16, base::string16>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Pickle pickle;
@@ -253,7 +274,7 @@ void ClipboardHostImpl::WriteCustomData(
       pickle, ui::Clipboard::GetWebCustomDataFormatType());
 }
 
-void ClipboardHostImpl::WriteBookmark(ui::ClipboardType clipboard_type,
+void ClipboardHostImpl::WriteBookmark(blink::mojom::ClipboardBuffer,
                                       const std::string& url,
                                       const base::string16& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -261,7 +282,7 @@ void ClipboardHostImpl::WriteBookmark(ui::ClipboardType clipboard_type,
 }
 
 void ClipboardHostImpl::WriteImage(
-    ui::ClipboardType type,
+    blink::mojom::ClipboardBuffer,
     const gfx::Size& size,
     mojo::ScopedSharedBufferHandle shared_buffer_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -289,7 +310,7 @@ void ClipboardHostImpl::WriteImage(
   clipboard_writer_->WriteImage(bitmap);
 }
 
-void ClipboardHostImpl::CommitWrite(ui::ClipboardType clipboard_type) {
+void ClipboardHostImpl::CommitWrite(blink::mojom::ClipboardBuffer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   clipboard_writer_.reset(
       new ui::ScopedClipboardWriter(ui::CLIPBOARD_TYPE_COPY_PASTE));
@@ -300,4 +321,23 @@ void ClipboardHostImpl::WriteStringToFindPboard(const base::string16& text) {
   mojo::ReportBadMessage("Unexpected call to WriteStringToFindPboard.");
 }
 #endif
+
+void ClipboardHostImpl::ConvertBufferType(blink::mojom::ClipboardBuffer buffer,
+                                          ui::ClipboardType* result) {
+  *result = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  switch (buffer) {
+    case blink::mojom::ClipboardBuffer::kStandard:
+      break;
+    case blink::mojom::ClipboardBuffer::kSelection:
+#if defined(USE_X11)
+      *result = ui::CLIPBOARD_TYPE_SELECTION;
+      break;
+#else
+      // Chrome OS and non-X11 unix builds do not support
+      // the X selection clipboad.
+      // TODO: remove the need for this case, see http://crbug.com/361753
+      mojo::ReportBadMessage("Cannot use kSelection on non X11 platforms.");
+#endif
+  }
+}
 }  // namespace content

@@ -247,7 +247,7 @@ WebPluginContainer* GetWebPluginContainer(WebViewImpl* web_view,
 
 WebString ReadClipboard() {
   return Platform::Current()->Clipboard()->ReadPlainText(
-      WebClipboard::Buffer());
+      mojom::ClipboardBuffer::kStandard);
 }
 
 void ClearClipboardBuffer() {

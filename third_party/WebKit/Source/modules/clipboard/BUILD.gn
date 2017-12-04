@@ -13,4 +13,7 @@ blink_modules_sources("clipboard") {
     "NavigatorClipboard.cpp",
     "NavigatorClipboard.h",
   ]
+  deps = [
+    "//third_party/WebKit/public:blink_headers",
+  ]
 }

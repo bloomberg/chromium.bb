@@ -110,6 +110,7 @@ mojom("mojo_platform_bindings") {
   sources = [
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
+    "clipboard/clipboard.mojom",
     "page/page_visibility_state.mojom",
     "service_worker/service_worker_client.mojom",
     "service_worker/service_worker_provider_type.mojom",

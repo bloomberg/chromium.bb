@@ -183,19 +183,20 @@ void CopyImageAtAndCapturePixels(
   DCHECK(!callback.is_null());
   uint64_t sequence_number =
       blink::Platform::Current()->Clipboard()->SequenceNumber(
-          blink::WebClipboard::Buffer());
+          blink::mojom::ClipboardBuffer::kStandard);
   web_frame->CopyImageAt(blink::WebPoint(x, y));
   if (sequence_number ==
       blink::Platform::Current()->Clipboard()->SequenceNumber(
-          blink::WebClipboard::Buffer())) {
+          blink::mojom::ClipboardBuffer::kStandard)) {
     SkBitmap emptyBitmap;
     std::move(callback).Run(emptyBitmap);
     return;
   }
 
-  blink::WebImage image = static_cast<blink::WebMockClipboard*>(
-                              blink::Platform::Current()->Clipboard())
-                              ->ReadRawImage(blink::WebClipboard::Buffer());
+  blink::WebImage image =
+      static_cast<blink::WebMockClipboard*>(
+          blink::Platform::Current()->Clipboard())
+          ->ReadRawImage(blink::mojom::ClipboardBuffer::kStandard);
   std::move(callback).Run(image.GetSkBitmap());
 }
 
