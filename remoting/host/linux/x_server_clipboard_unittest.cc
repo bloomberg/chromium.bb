@@ -7,12 +7,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "remoting/base/constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-// X11 headers must be #included after gtest.h, since the X11 headers define
-// some macros that cause errors in gtest-type-util.h.
-#include <X11/Xlib.h>
 #include "remoting/host/linux/x_server_clipboard.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 
@@ -72,10 +69,10 @@ class XServerClipboardTest : public testing::Test {
     // XSynchronize() ensures that PumpXEvents() fully processes all X server
     // requests and responses before returning to the caller.
     Display* display1 = XOpenDisplay(nullptr);
-    XSynchronize(display1, True);
+    XSynchronize(display1, x11::True);
     client1_.Init(display1);
     Display* display2 = XOpenDisplay(nullptr);
-    XSynchronize(display2, True);
+    XSynchronize(display2, x11::True);
     client2_.Init(display2);
   }
 

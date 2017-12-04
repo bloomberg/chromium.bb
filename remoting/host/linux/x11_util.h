@@ -5,14 +5,15 @@
 #ifndef REMOTING_HOST_LINUX_X11_UTIL_H_
 #define REMOTING_HOST_LINUX_X11_UTIL_H_
 
-// Xlib.h defines XErrorEvent as an anonymous struct, so we can't forward-
-// declare it in this header. Since Xlib.h is not generally something you
-// should #include into arbitrary code, please refrain from #including this
-// header in another header.
-#include <X11/Xlib.h>
+// Xlib.h (via ui/gfx/x/x11.h) defines XErrorEvent as an anonymous
+// struct, so we can't forward- declare it in this header. Since
+// Xlib.h is not generally something you should #include into
+// arbitrary code, please refrain from #including this header in
+// another header.
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 

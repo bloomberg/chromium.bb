@@ -4,14 +4,13 @@
 
 #include "remoting/host/curtain_mode.h"
 
-#include <X11/extensions/XInput.h>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 

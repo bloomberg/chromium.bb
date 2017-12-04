@@ -7,9 +7,8 @@
 
 #include "remoting/host/linux/x11_keyboard.h"
 
-#include <X11/Xlib.h>
-
 #include "base/macros.h"
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 

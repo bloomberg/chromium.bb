@@ -7,11 +7,6 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include "base/memory/ptr_util.h"
-#include "base/sequence_checker.h"
-#define XK_MISCELLANY
-#include <X11/keysymdef.h>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -19,15 +14,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
-
-// These includes need to be later than dictated by the style guide due to
-// Xlib header pollution, specifically the min, max, and Status macros.
-#include <X11/XKBlib.h>
-#include <X11/Xlibint.h>
-#include <X11/extensions/record.h>
+#include "ui/gfx/x/x11.h"
 
 namespace remoting {
 
