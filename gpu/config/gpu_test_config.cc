@@ -79,8 +79,7 @@ GPUTestConfig::OS GetCurrentOS() {
 }  // namespace anonymous
 
 GPUTestConfig::GPUTestConfig()
-    : validate_gpu_info_(true),
-      os_(kOsUnknown),
+    : os_(kOsUnknown),
       gpu_device_id_(0),
       build_type_(kBuildTypeUnknown),
       api_(kAPIUnknown) {}
@@ -117,8 +116,6 @@ void GPUTestConfig::set_api(int32_t api) {
 }
 
 bool GPUTestConfig::IsValid() const {
-  if (!validate_gpu_info_)
-    return true;
   if (gpu_device_id_ != 0 && (gpu_vendor_.size() != 1 || gpu_vendor_[0] == 0))
     return false;
   return true;
@@ -153,10 +150,6 @@ bool GPUTestConfig::OverlapsWith(const GPUTestConfig& config) const {
   return true;
 }
 
-void GPUTestConfig::DisableGPUInfoValidation() {
-  validate_gpu_info_ = false;
-}
-
 void GPUTestConfig::ClearGPUVendor() {
   gpu_vendor_.clear();
 }
@@ -170,7 +163,6 @@ void GPUTestBotConfig::AddGPUVendor(uint32_t gpu_vendor) {
 }
 
 bool GPUTestBotConfig::SetGPUInfo(const GPUInfo& gpu_info) {
-  DCHECK(validate_gpu_info_);
   if (gpu_info.gpu.device_id == 0 || gpu_info.gpu.vendor_id == 0)
     return false;
   ClearGPUVendor();
@@ -202,12 +194,10 @@ bool GPUTestBotConfig::IsValid() const {
     default:
       return false;
   }
-  if (validate_gpu_info_) {
-    if (gpu_vendor().size() != 1 || gpu_vendor()[0] == 0)
-      return false;
-    if (gpu_device_id() == 0)
-      return false;
-  }
+  if (gpu_vendor().size() != 1 || gpu_vendor()[0] == 0)
+    return false;
+  if (gpu_device_id() == 0)
+    return false;
   switch (build_type()) {
     case kBuildTypeRelease:
     case kBuildTypeDebug:
@@ -261,8 +251,7 @@ bool GPUTestBotConfig::LoadCurrentConfig(const GPUInfo* gpu_info) {
     CollectInfoResult result = CollectBasicGraphicsInfo(&my_gpu_info);
     if (result != kCollectInfoSuccess) {
       LOG(ERROR) << "Fail to identify GPU";
-      DisableGPUInfoValidation();
-      rt = true;
+      rt = false;
     } else {
       rt = SetGPUInfo(my_gpu_info);
     }
