@@ -28,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/payments/ios_payment_instrument.h"
@@ -89,15 +90,6 @@ PaymentRequest::PaymentRequest(
       web_state_(web_state),
       personal_data_manager_(personal_data_manager),
       payment_request_ui_delegate_(payment_request_ui_delegate),
-      // TODO(crbug.com/788229): Use a factory for the AddressNormalizer.
-      address_normalizer_(
-          GetAddressInputSource(
-              GetApplicationContext()->GetSystemURLRequestContext()),
-          GetAddressInputStorage(),
-          GetApplicationContext()->GetApplicationLocale()),
-      address_normalization_manager_(
-          &address_normalizer_,
-          GetApplicationContext()->GetApplicationLocale()),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_payment_method_(nullptr),
@@ -179,7 +171,7 @@ void PaymentRequest::DoFullCardRequest(
 }
 
 autofill::AddressNormalizer* PaymentRequest::GetAddressNormalizer() {
-  return &address_normalizer_;
+  return autofill::AddressNormalizerFactory::GetInstance();
 }
 
 autofill::RegionDataLoader* PaymentRequest::GetRegionDataLoader() {
@@ -281,7 +273,13 @@ CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
 
 autofill::AddressNormalizationManager*
 PaymentRequest::GetAddressNormalizationManager() {
-  return &address_normalization_manager_;
+  if (!address_normalization_manager_) {
+    address_normalization_manager_ =
+        std::make_unique<autofill::AddressNormalizationManager>(
+            GetAddressNormalizer(),
+            GetApplicationContext()->GetApplicationLocale());
+  }
+  return address_normalization_manager_.get();
 }
 
 autofill::AutofillProfile* PaymentRequest::AddAutofillProfile(

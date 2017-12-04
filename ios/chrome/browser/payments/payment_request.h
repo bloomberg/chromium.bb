@@ -381,11 +381,9 @@ class PaymentRequest : public PaymentOptionsProvider,
   // created this PaymentRequest object.
   __weak id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
 
-  // The address normalizer to use for the duration of the Payment Request.
-  autofill::AddressNormalizerImpl address_normalizer_;
-
   // Used to normalize the shipping address and the contact info.
-  autofill::AddressNormalizationManager address_normalization_manager_;
+  std::unique_ptr<autofill::AddressNormalizationManager>
+      address_normalization_manager_;
 
   // The currency formatter instance for this PaymentRequest flow.
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
