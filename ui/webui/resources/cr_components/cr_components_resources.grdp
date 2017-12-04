@@ -78,7 +78,7 @@
     <structure name="IDR_WEBUI_CERTIFICATE_SHARED_CSS_HTML"
                file="cr_components/certificate_manager/certificate_shared_css.html"
                type="chrome_html"
-               preprocess="true" />
+               compress="gzip" />
     <structure name="IDR_WEBUI_CERTIFICATE_SUBENTRY_HTML"
                file="cr_components/certificate_manager/certificate_subentry.html"
                type="chrome_html"
