@@ -4,8 +4,6 @@
 
 #include "components/leveldb/env_mojo.h"
 
-#include <errno.h>
-
 #include <memory>
 
 #include "base/metrics/histogram_functions.h"
@@ -24,14 +22,6 @@ namespace leveldb {
 namespace {
 
 const base::FilePath::CharType table_extension[] = FILE_PATH_LITERAL(".ldb");
-
-base::File::Error LastFileError() {
-#if defined(OS_WIN)
-  return base::File::OSErrorToFileError(GetLastError());
-#else
-  return base::File::OSErrorToFileError(errno);
-#endif
-}
 
 Status FilesystemErrorToStatus(FileError error,
                                const std::string& filename,
@@ -83,7 +73,7 @@ class MojoSequentialFile : public leveldb::SequentialFile {
         scratch,
         static_cast<int>(n));
     if (bytes_read == -1) {
-      base::File::Error error = LastFileError();
+      base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordOSError(leveldb_env::kSequentialFileRead, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kSequentialFileRead, error);
@@ -96,7 +86,7 @@ class MojoSequentialFile : public leveldb::SequentialFile {
 
   Status Skip(uint64_t n) override {
     if (file_.Seek(base::File::FROM_CURRENT, n) == -1) {
-      base::File::Error error = LastFileError();
+      base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordOSError(leveldb_env::kSequentialFileSkip, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kSequentialFileSkip, error);
@@ -128,7 +118,7 @@ class MojoRandomAccessFile : public leveldb::RandomAccessFile {
     *result = Slice(scratch, (bytes_read < 0) ? 0 : bytes_read);
     if (bytes_read < 0) {
       uma_logger_->RecordOSError(leveldb_env::kRandomAccessFileRead,
-                                 LastFileError());
+                                 base::File::GetLastFileError());
       return MakeIOError(filename_, "Could not perform read",
                          leveldb_env::kRandomAccessFileRead);
     }
@@ -175,7 +165,7 @@ class MojoWritableFile : public leveldb::WritableFile {
     int bytes_written =
         file_.WriteAtCurrentPos(data.data(), static_cast<int>(data.size()));
     if (bytes_written != static_cast<int>(data.size())) {
-      base::File::Error error = LastFileError();
+      base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordOSError(leveldb_env::kWritableFileAppend, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kWritableFileAppend, error);
@@ -200,7 +190,7 @@ class MojoWritableFile : public leveldb::WritableFile {
     TRACE_EVENT0("leveldb", "MojoWritableFile::Sync");
 
     if (!file_.Flush()) {
-      base::File::Error error = LastFileError();
+      base::File::Error error = base::File::GetLastFileError();
       uma_logger_->RecordOSError(leveldb_env::kWritableFileSync, error);
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          leveldb_env::kWritableFileSync, error);

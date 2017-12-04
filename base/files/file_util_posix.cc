@@ -289,7 +289,7 @@ bool ReplaceFile(const FilePath& from_path,
   if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
     return true;
   if (error)
-    *error = File::OSErrorToFileError(errno);
+    *error = File::GetLastFileError();
   return false;
 }
 

@@ -144,7 +144,7 @@ bool ReplaceFile(const FilePath& from_path,
   // already exist.
   if (::MoveFile(from_path.value().c_str(), to_path.value().c_str()))
     return true;
-  File::Error move_error = File::OSErrorToFileError(GetLastError());
+  File::Error move_error = File::GetLastFileError();
 
   // Try the full-blown replace if the move fails, as ReplaceFile will only
   // succeed when |to_path| does exist. When writing to a network share, we may
@@ -158,7 +158,7 @@ bool ReplaceFile(const FilePath& from_path,
   // |to_path| does not exist. In this case, the more relevant error comes
   // from the call to MoveFile.
   if (error) {
-    File::Error replace_error = File::OSErrorToFileError(GetLastError());
+    File::Error replace_error = File::GetLastFileError();
     *error = replace_error == File::FILE_ERROR_NOT_FOUND ? move_error
                                                          : replace_error;
   }

@@ -78,7 +78,7 @@ File::Error CallFcntlFlock(PlatformFile file, bool do_lock) {
   lock.l_start = 0;
   lock.l_len = 0;  // Lock entire file.
   if (HANDLE_EINTR(fcntl(file, F_SETLK, &lock)) == -1)
-    return File::OSErrorToFileError(errno);
+    return File::GetLastFileError();
   return File::FILE_OK;
 }
 #endif
@@ -383,7 +383,7 @@ File File::Duplicate() const {
 
   PlatformFile other_fd = HANDLE_EINTR(dup(GetPlatformFile()));
   if (other_fd == -1)
-    return File(OSErrorToFileError(errno));
+    return File(File::GetLastFileError());
 
   File other(other_fd);
   if (async())
@@ -503,7 +503,7 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
   }
 
   if (descriptor < 0) {
-    error_details_ = File::OSErrorToFileError(errno);
+    error_details_ = File::GetLastFileError();
     return;
   }
 
@@ -537,6 +537,11 @@ bool File::Flush() {
 void File::SetPlatformFile(PlatformFile file) {
   DCHECK(!file_.is_valid());
   file_.reset(file);
+}
+
+// static
+File::Error File::GetLastFileError() {
+  return base::File::OSErrorToFileError(errno);
 }
 
 }  // namespace base

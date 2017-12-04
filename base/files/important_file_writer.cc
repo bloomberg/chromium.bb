@@ -99,22 +99,12 @@ void WriteScopedStringToFileAtomically(
     after_write_callback.Run(result);
 }
 
-base::File::Error GetLastFileError() {
-#if defined(OS_WIN)
-  return base::File::OSErrorToFileError(::GetLastError());
-#elif defined(OS_POSIX)
-  return base::File::OSErrorToFileError(errno);
-#else
-  return base::File::FILE_OK;
-#endif
-}
-
 void DeleteTmpFile(const FilePath& tmp_file_path,
                    StringPiece histogram_suffix) {
   if (!DeleteFile(tmp_file_path, false)) {
-    UmaHistogramExactLinearWithSuffix("ImportantFile.FileDeleteError",
-                                      histogram_suffix, -GetLastFileError(),
-                                      -base::File::FILE_ERROR_MAX);
+    UmaHistogramExactLinearWithSuffix(
+        "ImportantFile.FileDeleteError", histogram_suffix,
+        -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
   }
 }
 
@@ -144,9 +134,9 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   // is securely created.
   FilePath tmp_file_path;
   if (!CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
-    UmaHistogramExactLinearWithSuffix("ImportantFile.FileCreateError",
-                                      histogram_suffix, -GetLastFileError(),
-                                      -base::File::FILE_ERROR_MAX);
+    UmaHistogramExactLinearWithSuffix(
+        "ImportantFile.FileCreateError", histogram_suffix,
+        -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
     LogFailure(path, histogram_suffix, FAILED_CREATING,
                "could not create temporary file");
     return false;
@@ -167,9 +157,9 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   const int data_length = checked_cast<int32_t>(data.length());
   int bytes_written = tmp_file.Write(0, data.data(), data_length);
   if (bytes_written < data_length) {
-    UmaHistogramExactLinearWithSuffix("ImportantFile.FileWriteError",
-                                      histogram_suffix, -GetLastFileError(),
-                                      -base::File::FILE_ERROR_MAX);
+    UmaHistogramExactLinearWithSuffix(
+        "ImportantFile.FileWriteError", histogram_suffix,
+        -base::File::GetLastFileError(), -base::File::FILE_ERROR_MAX);
   }
   bool flush_success = tmp_file.Flush();
   tmp_file.Close();
