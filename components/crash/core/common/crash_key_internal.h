@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRASH_CORE_COMMON_CRASH_KEY_INTERNAL_H_
 #define COMPONENTS_CRASH_CORE_COMMON_CRASH_KEY_INTERNAL_H_
 
+#include "components/crash/core/common/crash_export.h"
 #include "components/crash/core/common/crash_key.h"
 #include "third_party/breakpad/breakpad/src/common/simple_string_dictionary.h"
 
@@ -15,9 +16,9 @@ using TransitionalCrashKeyStorage = google_breakpad::
     NonAllocatingMap<40, kCrashKeyStorageValueSize, kCrashKeyStorageNumEntries>;
 
 // Accesses the underlying storage for crash keys for non-Crashpad clients.
-TransitionalCrashKeyStorage* GetCrashKeyStorage();
+CRASH_KEY_EXPORT TransitionalCrashKeyStorage* GetCrashKeyStorage();
 
-void ResetCrashKeyStorageForTesting();
+CRASH_KEY_EXPORT void ResetCrashKeyStorageForTesting();
 
 }  // namespace internal
 }  // namespace crash_reporter

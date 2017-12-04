@@ -31,6 +31,9 @@ static TransitionalCrashKeyStorage* g_storage = nullptr;
 }  // namespace
 
 TransitionalCrashKeyStorage* GetCrashKeyStorage() {
+  if (!g_storage) {
+    g_storage = new internal::TransitionalCrashKeyStorage();
+  }
   return g_storage;
 }
 
@@ -98,10 +101,8 @@ bool CrashKeyStringImpl::is_set() const {
 }  // namespace internal
 
 void InitializeCrashKeys() {
-  if (!internal::g_storage) {
-    internal::g_storage = new internal::TransitionalCrashKeyStorage();
-    InitializeCrashKeyBaseSupport();
-  }
+  internal::GetCrashKeyStorage();
+  InitializeCrashKeyBaseSupport();
 }
 
 }  // namespace crash_reporter

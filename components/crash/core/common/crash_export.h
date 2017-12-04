@@ -26,4 +26,9 @@
 #define CRASH_EXPORT
 #endif
 
+// See BUILD.gn :crash_key target for the declaration.
+#if !defined(CRASH_KEY_EXPORT)
+#define CRASH_KEY_EXPORT
+#endif
+
 #endif  // COMPONENTS_CRASH_CORE_COMMON_CRASH_EXPORT_H_
