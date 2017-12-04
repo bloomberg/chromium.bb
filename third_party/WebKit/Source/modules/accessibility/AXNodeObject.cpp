@@ -1156,7 +1156,7 @@ unsigned AXNodeObject::HierarchicalLevel() const {
 
 // TODO: rename this just AutoComplete, it's not only ARIA.
 String AXNodeObject::AriaAutoComplete() const {
-  if (IsARIATextControl()) {
+  if (IsNativeTextControl() || IsARIATextControl()) {
     const AtomicString& aria_auto_complete =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)
             .DeprecatedLower();
