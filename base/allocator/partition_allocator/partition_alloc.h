@@ -230,8 +230,31 @@ class PartitionStatsDumper;
 struct PartitionBucket;
 struct PartitionRootBase;
 
+// TODO(ajwong): Introduce an EncodedFreelistEntry type and then replace
+// Transform() with Encode()/Decode() such that the API provides some static
+// type safety.
+//
+// https://crbug.com/787153
 struct PartitionFreelistEntry {
   PartitionFreelistEntry* next;
+
+  static ALWAYS_INLINE PartitionFreelistEntry* Transform(
+      PartitionFreelistEntry* ptr) {
+// We use bswap on little endian as a fast mask for two reasons:
+// 1) If an object is freed and its vtable used where the attacker doesn't
+// get the chance to run allocations between the free and use, the vtable
+// dereference is likely to fault.
+// 2) If the attacker has a linear buffer overflow and elects to try and
+// corrupt a freelist pointer, partial pointer overwrite attacks are
+// thwarted.
+// For big endian, similar guarantees are arrived at with a negation.
+#if defined(ARCH_CPU_BIG_ENDIAN)
+    uintptr_t masked = ~reinterpret_cast<uintptr_t>(ptr);
+#else
+    uintptr_t masked = ByteSwapUintPtrT(reinterpret_cast<uintptr_t>(ptr));
+#endif
+    return reinterpret_cast<PartitionFreelistEntry*>(masked);
+  }
 };
 
 // Some notes on page states. A page can be in one of four major states:
@@ -295,6 +318,11 @@ struct PartitionPage {
   }
 
   ALWAYS_INLINE size_t get_raw_size() const;
+
+  ALWAYS_INLINE void Reset();
+
+  // TODO(ajwong): Can this be made private?  https://crbug.com/787153
+  BASE_EXPORT static PartitionPage* get_sentinel_page();
 };
 static_assert(sizeof(PartitionPage) <= kPageMetadataSize,
               "PartitionPage must be able to fit in a metadata slot");
@@ -310,6 +338,7 @@ struct PartitionBucket {
   unsigned num_full_pages : 24;
 
   // Public API.
+  void Init(uint32_t new_slot_size);
 
   // Note the matching Free() functions are in PartitionPage.
   BASE_EXPORT void* Alloc(PartitionRootBase* root, int flags, size_t size);
@@ -328,6 +357,60 @@ struct PartitionBucket {
     // TODO(ajwong): Chagne to CheckedMul. https://crbug.com/787153
     return static_cast<uint16_t>(get_bytes_per_span() / slot_size);
   }
+
+  // TODO(ajwong): Can this be made private?  https://crbug.com/787153
+  static PartitionBucket* get_sentinel_bucket();
+
+  // This helper function scans a bucket's active page list for a suitable new
+  // active page.  When it finds a suitable new active page (one that has
+  // free slots and is not empty), it is set as the new active page. If there
+  // is no suitable new active page, the current active page is set to
+  // PartitionPage::get_sentinel_page(). As potential pages are scanned, they
+  // are tidied up according to their state. Empty pages are swept on to the
+  // empty page list, decommitted pages on to the decommitted page list and full
+  // pages are unlinked from any list.
+  //
+  // This is where the guts of the bucket maintenance is done!
+  bool SetNewActivePage();
+
+ private:
+  static void OutOfMemory(const PartitionRootBase* root);
+  static void OutOfMemoryWithLotsOfUncommitedPages();
+
+  static NOINLINE void OnFull();
+
+  // Returns a natural number of PartitionPages (calculated by
+  // get_system_pages_per_slot_span()) to allocate from the current
+  // SuperPage when the bucket runs out of slots.
+  ALWAYS_INLINE uint16_t get_pages_per_slot_span();
+
+  // Returns the number of system pages in a slot span.
+  //
+  // The calculation attemps to find the best number of System Pages to
+  // allocate for the given slot_size to minimize wasted space. It uses a
+  // heuristic that looks at number of bytes wasted after the last slot and
+  // attempts to account for the PTE usage of each System Page.
+  uint8_t get_system_pages_per_slot_span();
+
+  // Allocates a new slot span with size |num_partition_pages| from the
+  // current extent. Metadata within this slot span will be uninitialized.
+  // Returns nullptr on error.
+  ALWAYS_INLINE void* AllocNewSlotSpan(PartitionRootBase* root,
+                                       int flags,
+                                       uint16_t num_partition_pages);
+
+  // Each bucket allocates a slot span when it runs out of slots.
+  // A slot span's size is equal to get_pages_per_slot_span() number of
+  // PartitionPages. This function initializes all PartitionPage within the
+  // span to point to the first PartitionPage which holds all the metadata
+  // for the span and registers this bucket as the owner of the span. It does
+  // NOT put the slots into the bucket's freelist.
+  ALWAYS_INLINE void InitializeSlotSpan(PartitionPage* page);
+
+  // Allocates one slot from the given |page| and then adds the remainder to
+  // the current bucket. If the |page| was freshly allocated, it must have been
+  // passed through InitializeSlotSpan() first.
+  ALWAYS_INLINE char* AllocAndFillFreelist(PartitionPage* page);
 };
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
@@ -555,24 +638,6 @@ class BASE_EXPORT PartitionAllocHooks {
   static FreeHook* free_hook_;
 };
 
-ALWAYS_INLINE PartitionFreelistEntry* PartitionFreelistMask(
-    PartitionFreelistEntry* ptr) {
-// We use bswap on little endian as a fast mask for two reasons:
-// 1) If an object is freed and its vtable used where the attacker doesn't
-// get the chance to run allocations between the free and use, the vtable
-// dereference is likely to fault.
-// 2) If the attacker has a linear buffer overflow and elects to try and
-// corrupt a freelist pointer, partial pointer overwrite attacks are
-// thwarted.
-// For big endian, similar guarantees are arrived at with a negation.
-#if defined(ARCH_CPU_BIG_ENDIAN)
-  uintptr_t masked = ~reinterpret_cast<uintptr_t>(ptr);
-#else
-  uintptr_t masked = ByteSwapUintPtrT(reinterpret_cast<uintptr_t>(ptr));
-#endif
-  return reinterpret_cast<PartitionFreelistEntry*>(masked);
-}
-
 ALWAYS_INLINE size_t PartitionCookieSizeAdjustAdd(size_t size) {
 #if DCHECK_IS_ON()
   // Add space for cookies, checking for integer overflow. TODO(palmer):
@@ -728,8 +793,8 @@ ALWAYS_INLINE void* PartitionBucket::Alloc(PartitionRootBase* root,
     // All large allocations must go through the slow path to correctly
     // update the size metadata.
     DCHECK(page->get_raw_size() == 0);
-    PartitionFreelistEntry* new_head =
-        PartitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
+    PartitionFreelistEntry* new_head = PartitionFreelistEntry::Transform(
+        static_cast<PartitionFreelistEntry*>(ret)->next);
     page->freelist_head = new_head;
     page->num_allocated_slots++;
   } else {
@@ -802,9 +867,10 @@ ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
                                PartitionPage::FromPointer(freelist_head)));
   CHECK(ptr != freelist_head);  // Catches an immediate double free.
   // Look for double free one level deeper in debug.
-  DCHECK(!freelist_head || ptr != PartitionFreelistMask(freelist_head->next));
+  DCHECK(!freelist_head ||
+         ptr != PartitionFreelistEntry::Transform(freelist_head->next));
   PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
-  entry->next = PartitionFreelistMask(freelist_head);
+  entry->next = PartitionFreelistEntry::Transform(freelist_head);
   freelist_head = entry;
   --this->num_allocated_slots;
   if (UNLIKELY(this->num_allocated_slots <= 0)) {
@@ -972,8 +1038,6 @@ class BASE_EXPORT PartitionAllocatorGeneric {
  private:
   PartitionRootGeneric partition_root_;
 };
-
-BASE_EXPORT PartitionPage* GetSentinelPageForTesting();
 
 }  // namespace base
 
