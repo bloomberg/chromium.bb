@@ -167,38 +167,6 @@ class ReportingCacheImpl : public ReportingCache {
     context_->NotifyCacheUpdated();
   }
 
-  void GetClients(
-      std::vector<const ReportingClient*>* clients_out) const override {
-    clients_out->clear();
-    for (const auto& it : clients_)
-      for (const auto& endpoint_and_client : it.second)
-        clients_out->push_back(endpoint_and_client.second.get());
-  }
-
-  void GetClientsForOriginAndGroup(
-      const url::Origin& origin,
-      const std::string& group,
-      std::vector<const ReportingClient*>* clients_out) const override {
-    clients_out->clear();
-
-    const auto it = clients_.find(origin);
-    if (it != clients_.end()) {
-      for (const auto& endpoint_and_client : it->second) {
-        if (endpoint_and_client.second->group == group)
-          clients_out->push_back(endpoint_and_client.second.get());
-      }
-    }
-
-    // If no clients were found, try successive superdomain suffixes until a
-    // client with includeSubdomains is found or there are no more domain
-    // components left.
-    std::string domain = origin.host();
-    while (clients_out->empty() && !domain.empty()) {
-      GetWildcardClientsForDomainAndGroup(domain, group, clients_out);
-      domain = GetSuperdomain(domain);
-    }
-  }
-
   void SetClient(const url::Origin& origin,
                  const GURL& endpoint,
                  ReportingClient::Subdomains subdomains,
@@ -240,6 +208,51 @@ class ReportingCacheImpl : public ReportingCache {
         GetClientByOriginAndEndpoint(origin, endpoint);
     DCHECK(client);
     client_last_used_[client] = tick_clock()->NowTicks();
+  }
+
+  void GetClients(
+      std::vector<const ReportingClient*>* clients_out) const override {
+    clients_out->clear();
+    for (const auto& it : clients_)
+      for (const auto& endpoint_and_client : it.second)
+        clients_out->push_back(endpoint_and_client.second.get());
+  }
+
+  void GetClientsForOriginAndGroup(
+      const url::Origin& origin,
+      const std::string& group,
+      std::vector<const ReportingClient*>* clients_out) const override {
+    clients_out->clear();
+
+    const auto it = clients_.find(origin);
+    if (it != clients_.end()) {
+      for (const auto& endpoint_and_client : it->second) {
+        if (endpoint_and_client.second->group == group)
+          clients_out->push_back(endpoint_and_client.second.get());
+      }
+    }
+
+    // If no clients were found, try successive superdomain suffixes until a
+    // client with includeSubdomains is found or there are no more domain
+    // components left.
+    std::string domain = origin.host();
+    while (clients_out->empty() && !domain.empty()) {
+      GetWildcardClientsForDomainAndGroup(domain, group, clients_out);
+      domain = GetSuperdomain(domain);
+    }
+  }
+
+  // TODO(juliatuttle): Unittests.
+  void GetEndpointsForOrigin(const url::Origin& origin,
+                             std::vector<GURL>* endpoints_out) const override {
+    endpoints_out->clear();
+
+    const auto it = clients_.find(origin);
+    if (it == clients_.end())
+      return;
+
+    for (const auto& endpoint_and_client : it->second)
+      endpoints_out->push_back(endpoint_and_client.first);
   }
 
   void RemoveClients(
@@ -295,36 +308,6 @@ class ReportingCacheImpl : public ReportingCache {
   }
 
  private:
-  ReportingContext* context_;
-
-  // Owns all reports, keyed by const raw pointer for easier lookup.
-  std::unordered_map<const ReportingReport*, std::unique_ptr<ReportingReport>>
-      reports_;
-
-  // Reports that have been marked pending (in use elsewhere and should not be
-  // deleted until no longer pending).
-  std::unordered_set<const ReportingReport*> pending_reports_;
-
-  // Reports that have been marked doomed (would have been deleted, but were
-  // pending when the deletion was requested).
-  std::unordered_set<const ReportingReport*> doomed_reports_;
-
-  // Owns all clients, keyed by origin, then endpoint URL.
-  // (These would be unordered_map, but neither url::Origin nor GURL has a hash
-  // function implemented.)
-  std::map<url::Origin, std::map<GURL, std::unique_ptr<ReportingClient>>>
-      clients_;
-
-  // References but does not own all clients with includeSubdomains set, keyed
-  // by domain name.
-  std::unordered_map<std::string, std::unordered_set<const ReportingClient*>>
-      wildcard_clients_;
-
-  // The time that each client has last been used.
-  std::unordered_map<const ReportingClient*, base::TimeTicks> client_last_used_;
-
-  base::TickClock* tick_clock() { return context_->tick_clock(); }
-
   void RemoveReportInternal(const ReportingReport* report) {
     reports_[report]->RecordOutcome(tick_clock()->NowTicks());
     size_t erased = reports_.erase(report);
@@ -454,6 +437,36 @@ class ReportingCacheImpl : public ReportingCache {
     else
       return earliest_used;
   }
+
+  base::TickClock* tick_clock() { return context_->tick_clock(); }
+
+  ReportingContext* context_;
+
+  // Owns all reports, keyed by const raw pointer for easier lookup.
+  std::unordered_map<const ReportingReport*, std::unique_ptr<ReportingReport>>
+      reports_;
+
+  // Reports that have been marked pending (in use elsewhere and should not be
+  // deleted until no longer pending).
+  std::unordered_set<const ReportingReport*> pending_reports_;
+
+  // Reports that have been marked doomed (would have been deleted, but were
+  // pending when the deletion was requested).
+  std::unordered_set<const ReportingReport*> doomed_reports_;
+
+  // Owns all clients, keyed by origin, then endpoint URL.
+  // (These would be unordered_map, but neither url::Origin nor GURL has a hash
+  // function implemented.)
+  std::map<url::Origin, std::map<GURL, std::unique_ptr<ReportingClient>>>
+      clients_;
+
+  // References but does not own all clients with includeSubdomains set, keyed
+  // by domain name.
+  std::unordered_map<std::string, std::unordered_set<const ReportingClient*>>
+      wildcard_clients_;
+
+  // The time that each client has last been used.
+  std::unordered_map<const ReportingClient*, base::TimeTicks> client_last_used_;
 };
 
 }  // namespace

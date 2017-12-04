@@ -126,6 +126,13 @@ class NET_EXPORT ReportingCache {
       const std::string& group,
       std::vector<const ReportingClient*>* clients_out) const = 0;
 
+  // Gets all of the endpoints in the cache configured for a particular origin.
+  // Does not pay attention to wildcard hosts; only returns endpoints configured
+  // by |origin| itself.
+  virtual void GetEndpointsForOrigin(
+      const url::Origin& origin,
+      std::vector<GURL>* endpoints_out) const = 0;
+
   // Removes a set of clients.
   //
   // May invalidate ReportingClient pointers returned by |GetClients| or
