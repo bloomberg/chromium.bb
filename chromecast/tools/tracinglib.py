@@ -41,6 +41,8 @@ class TracingBackend(object):
     self._devtools_port = devtools_port
     self._timeout = timeout
     self._buffer_usage_reporting_interval = buffer_usage_reporting_interval
+    self._included_categories = []
+    self._excluded_categories = []
 
   def Connect(self):
     """Connect to cast_shell."""
@@ -71,14 +73,23 @@ class TracingBackend(object):
     """
     self._tracing_client = TracingClient()
     self._socket.settimeout(self._timeout)
+    self._ParseCustomCategories(custom_categories)
     req = {
-      'method': 'Tracing.start',
-      'params': {
-        'categories': custom_categories,
-        'bufferUsageReportingInterval': self._buffer_usage_reporting_interval,
-        'options': 'record-continuously' if record_continuously else
-                   'record-until-full'
-      }
+        'method': 'Tracing.start',
+        'params': {
+            'transferMode': 'ReportEvents',
+            'traceConfig': {
+                'recordMode':
+                    'recordContinuously'
+                    if record_continuously else 'recordUntilFull',
+                'includedCategories':
+                    self._included_categories,
+                'excludedCategories':
+                    self._excluded_categories,
+            },
+            'bufferUsageReportingInterval':
+                self._buffer_usage_reporting_interval,
+        }
     }
     self._SendRequest(req)
 
@@ -146,6 +157,22 @@ class TracingBackend(object):
       self._tracing_client.BufferUsage(value)
     elif 'Tracing.tracingComplete' == method:
       return True
+
+  def _ParseCustomCategories(self, custom_categories):
+    """Parse a category filter into trace config format"""
+
+    self._included_categories = []
+    self._excluded_categories = []
+
+    # See TraceConfigCategoryFilter::InitializeFromString in chromium.
+    categories = (token.strip() for token in custom_categories.split(','))
+    for category in categories:
+      if not category:
+        continue
+      if category.startswith('-'):
+        self._excluded_categories.append(category[1:])
+      else:
+        self._included_categories.append(category)
 
 
 class TracingBackendAndroid(object):
