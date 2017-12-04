@@ -2417,13 +2417,6 @@ ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,
     }
     return nullptr;
   }
-  if (AlwaysCreateUserAgentShadowRoot()) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "Shadow root cannot be created on a host which already hosts a "
-        "user-agent shadow tree.");
-    return nullptr;
-  }
   // Some elements make assumptions about what kind of layoutObjects they allow
   // as children so we can't allow author shadows on them for now.
   if (!AreAuthorShadowsAllowed()) {
@@ -2491,8 +2484,6 @@ ShadowRoot* Element::attachShadow(const ScriptState* script_state,
 ShadowRoot& Element::CreateShadowRootInternal() {
   DCHECK(!ClosedShadowRoot());
   DCHECK(AreAuthorShadowsAllowed());
-  if (AlwaysCreateUserAgentShadowRoot())
-    EnsureUserAgentShadowRoot();
   GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV0);
   return EnsureShadow().AddShadowRoot(*this, ShadowRootType::V0);
 }
@@ -2508,7 +2499,6 @@ ShadowRoot& Element::AttachShadowRootInternal(ShadowRootType type,
   DCHECK(AreAuthorShadowsAllowed());
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed)
       << type;
-  DCHECK(!AlwaysCreateUserAgentShadowRoot());
 
   GetDocument().SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
   ShadowRoot& shadow_root = EnsureShadow().AddShadowRoot(*this, type);

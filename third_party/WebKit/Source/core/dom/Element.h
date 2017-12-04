@@ -944,7 +944,6 @@ class CORE_EXPORT Element : public ContainerNode {
   // FIXME: Everyone should allow author shadows.
   virtual bool AreAuthorShadowsAllowed() const { return true; }
   virtual void DidAddUserAgentShadowRoot(ShadowRoot&) {}
-  virtual bool AlwaysCreateUserAgentShadowRoot() const { return false; }
 
   enum SynchronizationOfLazyAttribute {
     kNotInSynchronizationOfLazyAttribute = 0,

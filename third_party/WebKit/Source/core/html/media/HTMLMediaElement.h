@@ -356,7 +356,6 @@ class CORE_EXPORT HTMLMediaElement
 
   void ResetMediaPlayerAndMediaSource();
 
-  bool AlwaysCreateUserAgentShadowRoot() const final { return true; }
   bool AreAuthorShadowsAllowed() const final { return false; }
 
   bool SupportsFocus() const final;
