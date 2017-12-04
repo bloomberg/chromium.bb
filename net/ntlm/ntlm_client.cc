@@ -144,7 +144,7 @@ NtlmClient::NtlmClient(NtlmFeatures features)
   GenerateNegotiateMessage();
 }
 
-NtlmClient::~NtlmClient() {}
+NtlmClient::~NtlmClient() = default;
 
 Buffer NtlmClient::GetNegotiateMessage() const {
   return negotiate_message_;
