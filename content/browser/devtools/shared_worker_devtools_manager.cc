@@ -5,7 +5,7 @@
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
-#include "content/browser/shared_worker/shared_worker_instance.h"
+#include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -18,80 +18,56 @@ SharedWorkerDevToolsManager* SharedWorkerDevToolsManager::GetInstance() {
 
 void SharedWorkerDevToolsManager::AddAllAgentHosts(
     SharedWorkerDevToolsAgentHost::List* result) {
-  for (auto& worker : workers_) {
-    if (!worker.second->IsTerminated())
-      result->push_back(worker.second);
-  }
+  for (auto& it : live_hosts_)
+    result->push_back(it.second.get());
 }
 
-bool SharedWorkerDevToolsManager::WorkerCreated(
-    int worker_process_id,
-    int worker_route_id,
-    const SharedWorkerInstance& instance) {
+bool SharedWorkerDevToolsManager::WorkerCreated(SharedWorkerHost* worker_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const WorkerId id(worker_process_id, worker_route_id);
-  AgentHostMap::iterator it =
-      FindExistingWorkerAgentHost(instance);
-  if (it == workers_.end()) {
-    workers_[id] = new SharedWorkerDevToolsAgentHost(id, instance);
+  DCHECK(live_hosts_.find(worker_host) == live_hosts_.end());
+
+  auto it =
+      std::find_if(terminated_hosts_.begin(), terminated_hosts_.end(),
+                   [&worker_host](SharedWorkerDevToolsAgentHost* agent_host) {
+                     return agent_host->Matches(worker_host);
+                   });
+  if (it == terminated_hosts_.end()) {
+    live_hosts_[worker_host] = new SharedWorkerDevToolsAgentHost(worker_host);
     return false;
   }
 
-  // Worker restarted.
-  SharedWorkerDevToolsAgentHost* agent_host = it->second;
-  agent_host->WorkerRestarted(id);
-  workers_.erase(it);
-  workers_[id] = agent_host;
-  return agent_host->IsAttached();
+  SharedWorkerDevToolsAgentHost* agent_host = *it;
+  terminated_hosts_.erase(it);
+  live_hosts_[worker_host] = agent_host;
+  return agent_host->WorkerRestarted(worker_host);
 }
 
 void SharedWorkerDevToolsManager::WorkerReadyForInspection(
-    int worker_process_id,
-    int worker_route_id) {
+    SharedWorkerHost* worker_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const WorkerId id(worker_process_id, worker_route_id);
-  AgentHostMap::iterator it = workers_.find(id);
-  if (it == workers_.end() || it->second->IsTerminated())
-    return;
-  it->second->WorkerReadyForInspection();
+  live_hosts_[worker_host]->WorkerReadyForInspection();
 }
 
 void SharedWorkerDevToolsManager::WorkerDestroyed(
-    int worker_process_id,
-    int worker_route_id) {
+    SharedWorkerHost* worker_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const WorkerId id(worker_process_id, worker_route_id);
-  AgentHostMap::iterator it = workers_.find(id);
-  if (it == workers_.end() || it->second->IsTerminated())
-    return;
-  scoped_refptr<SharedWorkerDevToolsAgentHost> agent_host(it->second);
+  scoped_refptr<SharedWorkerDevToolsAgentHost> agent_host =
+      live_hosts_[worker_host];
+  live_hosts_.erase(worker_host);
+  terminated_hosts_.insert(agent_host.get());
   agent_host->WorkerDestroyed();
 }
 
-void SharedWorkerDevToolsManager::RemoveInspectedWorkerData(WorkerId id) {
+void SharedWorkerDevToolsManager::AgentHostDestroyed(
+    SharedWorkerDevToolsAgentHost* agent_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  workers_.erase(id);
+  terminated_hosts_.erase(agent_host);
 }
+
 SharedWorkerDevToolsManager::SharedWorkerDevToolsManager() {
 }
 
 SharedWorkerDevToolsManager::~SharedWorkerDevToolsManager() {
 }
-
-SharedWorkerDevToolsManager::AgentHostMap::iterator
-SharedWorkerDevToolsManager::FindExistingWorkerAgentHost(
-    const SharedWorkerInstance& instance) {
-  AgentHostMap::iterator it = workers_.begin();
-  for (; it != workers_.end(); ++it) {
-    if (it->second->Matches(instance))
-      break;
-  }
-  return it;
-}
-
-void SharedWorkerDevToolsManager::ResetForTesting() {
-  workers_.clear();
-}
-
 
 }  // namespace content

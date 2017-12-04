@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -15,14 +16,12 @@
 namespace content {
 
 class SharedWorkerDevToolsAgentHost;
-class SharedWorkerInstance;
+class SharedWorkerHost;
 
 // Manages WorkerDevToolsAgentHost's for Shared Workers.
 // This class lives on UI thread.
 class CONTENT_EXPORT SharedWorkerDevToolsManager {
  public:
-  using WorkerId = std::pair<int, int>;
-
   // Returns the SharedWorkerDevToolsManager singleton.
   static SharedWorkerDevToolsManager* GetInstance();
 
@@ -31,12 +30,9 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
 
   // Returns true when the worker must be paused on start because a DevTool
   // window for the same former SharedWorkerInstance is still opened.
-  bool WorkerCreated(int worker_process_id,
-                     int worker_route_id,
-                     const SharedWorkerInstance& instance);
-  void WorkerReadyForInspection(int worker_process_id, int worker_route_id);
-  void WorkerDestroyed(int worker_process_id, int worker_route_id);
-  void RemoveInspectedWorkerData(WorkerId id);
+  bool WorkerCreated(SharedWorkerHost* worker_host);
+  void WorkerReadyForInspection(SharedWorkerHost* worker_host);
+  void WorkerDestroyed(SharedWorkerHost* worker_host);
 
  private:
   friend struct base::DefaultSingletonTraits<SharedWorkerDevToolsManager>;
@@ -45,18 +41,17 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
   FRIEND_TEST_ALL_PREFIXES(SharedWorkerDevToolsManagerTest, BasicTest);
   FRIEND_TEST_ALL_PREFIXES(SharedWorkerDevToolsManagerTest, AttachTest);
 
-  using AgentHostMap = std::map<WorkerId, SharedWorkerDevToolsAgentHost*>;
-
   SharedWorkerDevToolsManager();
   ~SharedWorkerDevToolsManager();
+  void AgentHostDestroyed(SharedWorkerDevToolsAgentHost* agent_host);
 
-  AgentHostMap::iterator FindExistingWorkerAgentHost(
-      const SharedWorkerInstance& instance);
+  // We retatin agent hosts as long as the shared worker is alive.
+  std::map<SharedWorkerHost*, scoped_refptr<SharedWorkerDevToolsAgentHost>>
+      live_hosts_;
+  // Clients may retain agent host for the terminated shared worker,
+  // and we reconnect them when shared worker is restarted.
+  base::flat_set<SharedWorkerDevToolsAgentHost*> terminated_hosts_;
 
-  // Resets to its initial state as if newly created.
-  void ResetForTesting();
-
-  AgentHostMap workers_;
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsManager);
 };
 

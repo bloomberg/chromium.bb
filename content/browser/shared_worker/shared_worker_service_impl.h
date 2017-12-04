@@ -40,8 +40,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
                        StoragePartition* storage_partition,
                        ResourceContext* resource_context) override;
 
-  // Terminates the given worker. Returns true if the process was found.
-  bool TerminateWorkerById(int process_id, int route_id);
   void TerminateAllWorkersForTesting(base::OnceClosure callback);
 
   // Creates the worker if necessary or connects to an already existing worker.
