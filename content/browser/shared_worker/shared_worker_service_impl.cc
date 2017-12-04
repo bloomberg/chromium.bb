@@ -87,6 +87,15 @@ bool SharedWorkerServiceImpl::TerminateWorker(
   return false;
 }
 
+bool SharedWorkerServiceImpl::TerminateWorkerById(int process_id,
+                                                  int route_id) {
+  SharedWorkerHost* host = FindSharedWorkerHost(process_id, route_id);
+  if (!host || !host->instance())
+    return false;
+  host->TerminateWorker();
+  return true;
+}
+
 void SharedWorkerServiceImpl::TerminateAllWorkersForTesting(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -201,11 +210,12 @@ void SharedWorkerServiceImpl::CreateWorker(
   // Dev Tools will need to be modified to use something else as an identifier.
   int worker_route_id = process_host->GetNextRoutingID();
 
+  bool pause_on_start =
+      SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
+          worker_process_id, worker_route_id, *instance);
+
   auto host = std::make_unique<SharedWorkerHost>(
       std::move(instance), worker_process_id, worker_route_id);
-
-  bool pause_on_start =
-      SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(host.get());
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
