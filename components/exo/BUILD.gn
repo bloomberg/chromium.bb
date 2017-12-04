@@ -127,6 +127,7 @@ source_set("unit_tests") {
   sources = [
     "../../ui/events/ozone/gamepad/gamepad_event.cc",
     "buffer_unittest.cc",
+    "client_controlled_shell_surface_unittest.cc",
     "data_device_unittest.cc",
     "data_offer_unittest.cc",
     "data_source_unittest.cc",
