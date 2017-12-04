@@ -46,15 +46,16 @@ static INLINE void OD_KERNEL_FUNC(od_idct2)(OD_REG *p0, OD_REG *p1) {
 
 static INLINE void OD_KERNEL_FUNC(od_idst2)(OD_REG *p0, OD_REG *p1) {
   OD_REG t_;
+  OD_REG u_;
   t_ = OD_AVG(*p0, *p1);
-  /* 8867/16384 ~= Cos[3*Pi/8]*Sqrt[2] = 0.541196100146197 */
-  *p0 = OD_MUL(*p0, 8867, 14);
-  /* 21407/16384 ~= Sin[3*Pi/8]*Sqrt[2] = 1.3065629648763766 */
-  *p1 = OD_MUL(*p1, 21407, 14);
-  /* 15137/8192 ~= 2*Cos[Pi/8] = 1.8477590650225735 */
-  t_ = OD_MUL(t_, 15137, 13);
-  *p0 = OD_SUB(t_, *p0);
-  *p1 = OD_SUB(t_, *p1);
+  /* 21407/16384 ~= Sin[3*Pi/8] + Cos[3*Pi/8] ~= 1.3065629648763766 */
+  u_ = OD_MUL(*p0, 21407, 14);
+  /* 8867/16384 ~= Sin[3*Pi/8] - Cos[3*Pi/8] ~= 0.541196100146197 */
+  *p0 = OD_MUL(*p1, 8867, 14);
+  /* 3135/4096 ~= 2*Cos[3*Pi/8] ~= 0.7653668647301796 */
+  t_ = OD_MUL(t_, 3135, 12);
+  *p0 = OD_ADD(*p0, t_);
+  *p1 = OD_SUB(u_, t_);
 }
 
 static INLINE void OD_KERNEL_FUNC(od_idct2_asym)(OD_REG *p0, OD_REG *p1,
