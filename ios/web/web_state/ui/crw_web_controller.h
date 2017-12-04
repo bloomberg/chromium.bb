@@ -118,6 +118,11 @@ class WebStateImpl;
 // WebStateImpl API instead of calling this method directly.
 - (void)clearTransientContentView;
 
+// Removes the back WebView. DANGER: this method is exposed for the sole purpose
+// of allowing WKBasedNavigationManagerImpl to reset the back-forward history.
+// Please reconsider before using this method.
+- (void)removeWebView;
+
 // Call to stop the CRWWebController from doing stuff, in particular to
 // stop all network requests. Called as part of the close sequence if it hasn't
 // already been halted; also called from [Tab halt] as part of the shutdown

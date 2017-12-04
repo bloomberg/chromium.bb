@@ -809,6 +809,10 @@ id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {
   return [web_controller_ webViewNavigationProxy];
 }
 
+void WebStateImpl::RemoveWebView() {
+  return [web_controller_ removeWebView];
+}
+
 void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
   SessionStorageBuilder session_storage_builder;
   session_storage_builder.ExtractSessionState(this, session_storage);

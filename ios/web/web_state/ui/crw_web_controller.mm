@@ -509,8 +509,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Wraps the web view in a CRWWebViewContentView and adds it to the container
 // view.
 - (void)displayWebView;
-// Removes webView.
-- (void)removeWebView;
 // Called when web view process has been terminated.
 - (void)webViewWebProcessDidCrash;
 // Returns the WKWebViewConfigurationProvider associated with the web

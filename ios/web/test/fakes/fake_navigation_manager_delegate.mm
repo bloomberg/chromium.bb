@@ -32,6 +32,7 @@ id<CRWWebViewNavigationProxy>
 FakeNavigationManagerDelegate::GetWebViewNavigationProxy() const {
   return test_web_view_;
 }
+void FakeNavigationManagerDelegate::RemoveWebView() {}
 
 void FakeNavigationManagerDelegate::SetWebViewNavigationProxy(id web_view) {
   test_web_view_ = web_view;

@@ -81,6 +81,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
   MOCK_METHOD0(OnNavigationItemChanged, void());
   MOCK_METHOD1(OnNavigationItemCommitted, void(const LoadCommittedDetails&));
+  MOCK_METHOD0(RemoveWebView, void());
 
  private:
   WebState* GetWebState() override { return nullptr; }
