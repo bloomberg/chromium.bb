@@ -2975,6 +2975,9 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
       Take photo
     </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_CAPTURE_VIDEO" desc="The text on the button to capture video of the current user.">
+      Capture video
+    </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO" desc="The text on the button to discard the captured photo of the current user.">
       Discard photo
     </message>

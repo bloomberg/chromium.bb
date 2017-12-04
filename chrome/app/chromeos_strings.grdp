@@ -2280,6 +2280,9 @@
   <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
     Take photo
   </message>
+  <message name="IDS_OPTIONS_CHANGE_PICTURE_CAPTURE_VIDEO" desc="The text on the button to capture video of the current user.">
+    Capture video
+  </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA" desc="The accessible text on the icon in the user image grid for a camera photo, when a photo has been captured.">
     Photo from internal camera
   </message>

@@ -35,6 +35,7 @@ Polymer({
   properties: {
     /** Strings provided by host */
     takePhotoLabel: String,
+    captureVideoLabel: String,
     switchModeToCameraLabel: String,
     switchModeToVideoLabel: String,
 
@@ -273,6 +274,15 @@ Polymer({
     /** Convert image sequence to animated PNG. */
     return CrPngBehavior.convertImageSequenceToPng(
         forwardBackwardImageSequence);
+  },
+
+  /**
+   * Returns the label to use for take photo button.
+   * @return {string}
+   * @private
+   */
+  getTakePhotoLabel_: function(videomode, photoLabel, videoLabel) {
+    return videomode ? videoLabel : photoLabel;
   },
 
   /**

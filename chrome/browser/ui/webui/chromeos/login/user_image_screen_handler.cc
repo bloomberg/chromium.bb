@@ -93,6 +93,7 @@ void UserImageScreenHandler::DeclareLocalizedValues(
   builder->Add("userImageScreenDescription",
                IDS_USER_IMAGE_SCREEN_DESCRIPTION);
   builder->Add("takePhoto", IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO);
+  builder->Add("captureVideo", IDS_OPTIONS_CHANGE_PICTURE_CAPTURE_VIDEO);
   builder->Add("discardPhoto", IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO);
   builder->Add("switchModeToCamera",
                IDS_OPTIONS_CHANGE_PICTURE_SWITCH_MODE_TO_CAMERA);
