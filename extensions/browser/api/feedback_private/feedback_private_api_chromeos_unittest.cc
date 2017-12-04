@@ -186,6 +186,31 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceIncremental) {
   EXPECT_NE("", RunReadLogSourceFunctionWithError(params));
 }
 
+TEST_F(FeedbackPrivateApiUnittest, Anonymize) {
+  const TimeDelta timeout(TimeDelta::FromMilliseconds(0));
+  LogSourceAccessManager::SetRateLimitingTimeoutForTesting(&timeout);
+
+  ReadLogSourceParams params;
+  params.source = api::feedback_private::LOG_SOURCE_MESSAGES;
+  params.incremental = true;
+
+  int result_reader_id = 0;
+  std::string result_string;
+  // Skip over all the alphabetic results, to test anonymization of the
+  // subsequent MAC address.
+  for (int i = 0; i < 26; ++i) {
+    EXPECT_TRUE(
+        RunReadLogSourceFunction(params, &result_reader_id, &result_string));
+    EXPECT_GT(result_reader_id, 0);
+    params.reader_id = std::make_unique<int>(result_reader_id);
+  }
+
+  EXPECT_TRUE(
+      RunReadLogSourceFunction(params, &result_reader_id, &result_string));
+  EXPECT_EQ(*params.reader_id, result_reader_id);
+  EXPECT_EQ("11:22:33:00:00:01", result_string);
+}
+
 TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceMultipleSources) {
   const TimeDelta timeout(TimeDelta::FromMilliseconds(0));
   LogSourceAccessManager::SetRateLimitingTimeoutForTesting(&timeout);

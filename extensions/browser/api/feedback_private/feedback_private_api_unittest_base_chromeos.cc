@@ -28,6 +28,9 @@ using api::feedback_private::LogSource;
 using system_logs::SystemLogsResponse;
 using system_logs::SystemLogsSource;
 
+// A fake MAC address used to test anonymization.
+const char kDummyMacAddress[] = "11:22:33:44:55:66";
+
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
   return std::make_unique<ApiResourceManager<LogSourceResource>>(context);
@@ -43,15 +46,12 @@ class TestSingleLogSource : public SystemLogsSource {
   ~TestSingleLogSource() override = default;
 
   // Fetch() will return a single different string each time, in the following
-  // sequence: "a", " bb", "  ccc", until 25 spaces followed by 26 z's. Will
-  // never return an empty result.
+  // sequence: "a", " bb", "  ccc", until 25 spaces followed by 26 z's. After
+  // that, it returns |kDummyMacAddress| before repeating the entire process.
+  // It will never return an empty result.
   void Fetch(const system_logs::SysLogsSourceCallback& callback) override {
-    int count_modulus = call_count_ % kNumCharsToIterate;
-    std::string result =
-        std::string(count_modulus, ' ') +
-        std::string(count_modulus + 1, kInitialChar + count_modulus);
+    std::string result = GetNextLogResult();
     DCHECK_GT(result.size(), 0U);
-    ++call_count_;
 
     auto result_map = std::make_unique<SystemLogsResponse>();
     result_map->emplace("", result);
@@ -64,6 +64,18 @@ class TestSingleLogSource : public SystemLogsSource {
   }
 
  private:
+  std::string GetNextLogResult() {
+    if (call_count_ == kNumCharsToIterate) {
+      call_count_ = 0;
+      return kDummyMacAddress;
+    }
+    std::string result =
+        std::string(call_count_, ' ') +
+        std::string(call_count_ + 1, kInitialChar + call_count_);
+    ++call_count_;
+    return result;
+  }
+
   // Iterate over the whole lowercase alphabet, starting from 'a'.
   const int kNumCharsToIterate = 26;
   const char kInitialChar = 'a';
