@@ -1366,7 +1366,9 @@ STDMETHODIMP AXPlatformNodeWin::scrollTo(enum IA2ScrollType scroll_type) {
   COM_OBJECT_VALIDATE();
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_SCROLL_TO);
 
-  gfx::Rect r = delegate_->GetScreenBoundsRect();
+  // AX_ACTION_SCROLL_TO_MAKE_VISIBLE wants a target rect in *local* coords.
+  gfx::Rect r = gfx::ToEnclosingRect(GetData().location);
+  r.Offset(-r.OffsetFromOrigin());
   switch (scroll_type) {
     case IA2_SCROLL_TYPE_TOP_LEFT:
       r = gfx::Rect(r.x(), r.y(), 0, 0);

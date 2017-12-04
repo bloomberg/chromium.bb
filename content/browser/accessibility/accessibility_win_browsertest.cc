@@ -2063,4 +2063,77 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   accessible_cell.Reset();
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollTo) {
+  LoadInitialAccessibilityTreeFromHtml(
+      "<!DOCTYPE html><html><body>"
+      "<div style='height: 5000px;'></div>"
+      "<img src='#' alt='Target1'>"
+      "<div style='height: 5000px;'></div>"
+      "<img src='#' alt='Target2'>"
+      "<div style='height: 5000px;'></div>"
+      "</body></html>");
+
+  // Retrieve the IAccessible interface for the document node.
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+
+  // Get the dimensions of the document.
+  LONG doc_x, doc_y, doc_width, doc_height;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  ASSERT_HRESULT_SUCCEEDED(document->accLocation(&doc_x, &doc_y, &doc_width,
+                                                 &doc_height, childid_self));
+
+  // The document should only have two children, both with a role of GRAPHIC.
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(2u, document_children.size());
+  Microsoft::WRL::ComPtr<IAccessible2> target;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      target.GetAddressOf()));
+  LONG target_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(target->role(&target_role));
+  ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, target_role);
+  Microsoft::WRL::ComPtr<IAccessible2> target2;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[1].AsInput())
+          .Get(),
+      target2.GetAddressOf()));
+  LONG target2_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(target2->role(&target2_role));
+  ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, target2_role);
+
+  // Call scrollTo on the first target. Ensure it ends up very near the
+  // center of the window.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ui::AX_EVENT_SCROLL_POSITION_CHANGED);
+  ASSERT_HRESULT_SUCCEEDED(target->scrollTo(IA2_SCROLL_TYPE_ANYWHERE));
+  waiter.WaitForNotification();
+
+  // Don't assume anything about the font size or the exact centering
+  // behavior, just assert that the object is (roughly) centered by
+  // checking that its top coordinate is between 40% and 60% of the
+  // document's height.
+  LONG x, y, width, height;
+  ASSERT_HRESULT_SUCCEEDED(
+      target->accLocation(&x, &y, &width, &height, childid_self));
+  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
+  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+
+  // Now call scrollTo on the second target. Ensure it ends up very near the
+  // center of the window.
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
+                                          ui::kAXModeComplete,
+                                          ui::AX_EVENT_SCROLL_POSITION_CHANGED);
+  ASSERT_HRESULT_SUCCEEDED(target2->scrollTo(IA2_SCROLL_TYPE_ANYWHERE));
+  waiter2.WaitForNotification();
+
+  // Same as above, make sure it's roughly centered.
+  ASSERT_HRESULT_SUCCEEDED(
+      target2->accLocation(&x, &y, &width, &height, childid_self));
+  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
+  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+}
+
 }  // namespace content

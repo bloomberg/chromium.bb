@@ -1027,7 +1027,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollToPoint) {
   EXPECT_EQ(S_OK,
             ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
   EXPECT_EQ(610, x_left);
-  EXPECT_EQ(610, y_top);
+  EXPECT_EQ(660, y_top);
   EXPECT_EQ(10, width);
   EXPECT_EQ(10, height);
 
@@ -1077,8 +1077,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollTo) {
 
   EXPECT_EQ(S_OK,
             ax_child1->accLocation(&x_left, &y_top, &width, &height, SELF));
-  EXPECT_EQ(20, x_left);
-  EXPECT_EQ(20, y_top);
+  EXPECT_EQ(0, x_left);
+  EXPECT_EQ(0, y_top);
   EXPECT_EQ(10, width);
   EXPECT_EQ(10, height);
 }
