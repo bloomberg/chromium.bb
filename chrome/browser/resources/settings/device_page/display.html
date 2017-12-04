@@ -147,7 +147,7 @@
             [[getResolutionText_(selectedDisplay, selectedModePref_.value)]]
           </div>
         </div>
-        <settings-slider disabled="[[selectedDisplay.isTabletMode]]"
+        <settings-slider disabled="[[!enableSetResolution_(selectedDisplay)]]"
             tick-values="[[modeValues_]]" pref="{{selectedModePref_}}"
             on-change="onSelectedModeChange_">
         </settings-slider>
