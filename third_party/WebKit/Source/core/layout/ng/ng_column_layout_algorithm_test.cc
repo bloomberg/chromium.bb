@@ -603,7 +603,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockStartAtColumnBoundary) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:50x100
-        offset:0,100 size:60x0
       offset:110,0 size:100x100
         offset:0,0 size:60x100
 )DUMP";
@@ -796,6 +795,144 @@ TEST_F(NGColumnLayoutAlgorithmTest, NestedBreakInsideAvoidTall) {
       offset:220,0 size:100x80
         offset:0,0 size:30x80
           offset:0,0 size:22x80
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, MarginTopPastEndOfFragmentainer) {
+  // A block whose border box would start past the end of the current
+  // fragmentainer should start exactly at the start of the next fragmentainer,
+  // discarding what's left of the margin.
+  // https://www.w3.org/TR/css-break-3/#break-margins
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="height:90px;"></div>
+        <div style="margin-top:20px; width:20px; height:20px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x90
+      offset:110,0 size:100x20
+        offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, MarginBottomPastEndOfFragmentainer) {
+  // A block whose border box would start past the end of the current
+  // fragmentainer should start exactly at the start of the next fragmentainer,
+  // discarding what's left of the margin.
+  // https://www.w3.org/TR/css-break-3/#break-margins
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="margin-bottom:20px; height:90px;"></div>
+        <div style="width:20px; height:20px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x90
+      offset:110,0 size:100x20
+        offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, MarginTopAtEndOfFragmentainer) {
+  // A block whose border box is flush with the end of the fragmentainer
+  // shouldn't produce an empty fragment there - only one fragment in the next
+  // fragmentainer.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="height:90px;"></div>
+        <div style="margin-top:10px; width:20px; height:20px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x90
+      offset:110,0 size:100x20
+        offset:0,0 size:20x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, MarginBottomAtEndOfFragmentainer) {
+  // A block whose border box is flush with the end of the fragmentainer
+  // shouldn't produce an empty fragment there - only one fragment in the next
+  // fragmentainer.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="margin-bottom:10px; height:90px;"></div>
+        <div style="width:20px; height:20px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x90
+      offset:110,0 size:100x20
+        offset:0,0 size:20x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
