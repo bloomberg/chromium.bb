@@ -35,6 +35,7 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
 #include "ash/touch/touch_observer_hud.h"
+#include "ash/virtual_keyboard_container_layout_manager.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/always_on_top_controller.h"
@@ -580,17 +581,25 @@ aura::Window* RootWindowController::GetWindowForFullscreenMode() {
 
 void RootWindowController::ActivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
-  if (!keyboard::IsKeyboardEnabled() ||
-      GetContainer(kShellWindowId_VirtualKeyboardContainer)) {
+  if (!keyboard::IsKeyboardEnabled() || !keyboard_controller)
+    return;
+
+  // keyboard window is already initialized and it's under the root window of
+  // this controller.
+  if (keyboard_controller->keyboard_container_initialized() &&
+      keyboard_controller->GetContainerWindow()->GetRootWindow() ==
+          GetRootWindow()) {
     return;
   }
-  DCHECK(keyboard_controller);
+
+  aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
+  DCHECK(keyboard_window->parent() == nullptr);
+
   Shell::Get()->NotifyVirtualKeyboardActivated(true, GetRootWindow());
-  aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
-  DCHECK(parent);
-  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
-  keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
-  parent->AddChild(keyboard_container);
+  aura::Window* vk_container =
+      GetContainer(kShellWindowId_VirtualKeyboardContainer);
+  DCHECK(vk_container);
+  vk_container->AddChild(keyboard_window);
 
   keyboard_controller->LoadKeyboardUiInBackground();
 }
@@ -601,23 +610,21 @@ void RootWindowController::DeactivateKeyboard(
       !keyboard_controller->keyboard_container_initialized()) {
     return;
   }
-  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
-  if (keyboard_container->GetRootWindow() == GetRootWindow()) {
-    aura::Window* parent =
-        GetContainer(kShellWindowId_ImeWindowParentContainer);
-    DCHECK(parent);
+
+  aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
+  // If the VK is under the root window of this controller.
+  if (keyboard_window->GetRootWindow() == GetRootWindow()) {
     // Virtual keyboard may be deactivated while still showing, hide the
     // keyboard before removing it from view hierarchy.
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
-    parent->RemoveChild(keyboard_container);
+    aura::Window* vk_container =
+        GetContainer(kShellWindowId_VirtualKeyboardContainer);
+    DCHECK(vk_container);
+    DCHECK_EQ(vk_container, keyboard_window->parent());
+    vk_container->RemoveChild(keyboard_window);
     Shell::Get()->NotifyVirtualKeyboardActivated(false, GetRootWindow());
   }
-}
-
-bool RootWindowController::IsVirtualKeyboardWindow(aura::Window* window) {
-  aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
-  return parent ? parent->Contains(window) : false;
 }
 
 void RootWindowController::SetTouchAccessibilityAnchorPoint(
@@ -951,6 +958,14 @@ void RootWindowController::CreateContainers() {
       virtual_keyboard_parent_container);
   virtual_keyboard_parent_container->SetProperty(kUsesScreenCoordinatesKey,
                                                  true);
+  virtual_keyboard_parent_container->SetLayoutManager(
+      new VirtualKeyboardContainerLayoutManager(
+          virtual_keyboard_parent_container));
+  aura::Window* virtual_keyboard_container = CreateContainer(
+      kShellWindowId_VirtualKeyboardContainer, "VirtualKeyboardContainer",
+      virtual_keyboard_parent_container);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(virtual_keyboard_container);
+  virtual_keyboard_container->SetProperty(kUsesScreenCoordinatesKey, true);
 
   aura::Window* menu_container =
       CreateContainer(kShellWindowId_MenuContainer, "MenuContainer",

@@ -95,7 +95,6 @@ enum ShellWindowId {
   kShellWindowId_ImeWindowParentContainer,
 
   // The virtual keyboard container.
-  // NOTE: this is lazily created.
   kShellWindowId_VirtualKeyboardContainer,
 
   // The container for menus.

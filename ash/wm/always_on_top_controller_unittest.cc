@@ -72,8 +72,7 @@ TEST_F(VirtualKeyboardAlwaysOnTopControllerTest, NotifyKeyboardBoundsChanged) {
   controller->ActivateKeyboard(keyboard_controller);
 
   // Mock a keyboard appearing.
-  aura::Window* keyboard_container =
-      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
   aura::Window* contents_window =

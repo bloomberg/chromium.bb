@@ -242,9 +242,6 @@ class ASH_EXPORT RootWindowController {
   // Deactivate virtual keyboard on current root window controller.
   void DeactivateKeyboard(keyboard::KeyboardController* keyboard_controller);
 
-  // Tests if a window is associated with the virtual keyboard.
-  bool IsVirtualKeyboardWindow(aura::Window* window);
-
   // If touch exploration is enabled, update the touch exploration
   // controller so that synthesized touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
