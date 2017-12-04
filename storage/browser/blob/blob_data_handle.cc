@@ -95,6 +95,9 @@ bool BlobDataHandle::IsBroken() const {
 }
 
 BlobStatus BlobDataHandle::GetBlobStatus() const {
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  if (!shared_->context_)
+    return BlobStatus::ERR_REFERENCED_BLOB_BROKEN;
   return shared_->context_->GetBlobStatus(shared_->uuid_);
 }
 
