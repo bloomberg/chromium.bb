@@ -175,14 +175,14 @@ class SpdySessionTest : public PlatformTest {
 
   void StallSessionSend() {
     // Reduce the send window size to 0 to stall.
-    while (session_->session_send_window_size_ > 0) {
-      session_->DecreaseSendWindowSize(std::min(
-          kMaxSpdyFrameChunkSize, session_->session_send_window_size_));
+    while (session_send_window_size() > 0) {
+      DecreaseSendWindowSize(
+          std::min(kMaxSpdyFrameChunkSize, session_send_window_size()));
     }
   }
 
   void UnstallSessionSend(int32_t delta_window_size) {
-    session_->IncreaseSendWindowSize(delta_window_size);
+    IncreaseSendWindowSize(delta_window_size);
   }
 
   void StallStreamSend(SpdyStream* stream) {
@@ -200,6 +200,134 @@ class SpdySessionTest : public PlatformTest {
   void RunResumeAfterUnstallTest(
       const base::Callback<void(SpdyStream*)>& stall_function,
       const base::Callback<void(SpdyStream*, int32_t)>& unstall_function);
+
+  // SpdySession private methods.
+
+  void MaybeSendPrefacePing() { session_->MaybeSendPrefacePing(); }
+
+  void WritePingFrame(SpdyPingId unique_id, bool is_ack) {
+    session_->WritePingFrame(unique_id, is_ack);
+  }
+
+  void CheckPingStatus(base::TimeTicks last_check_time) {
+    session_->CheckPingStatus(last_check_time);
+  }
+
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) {
+    return session_->OnUnknownFrame(stream_id, frame_type);
+  }
+
+  void IncreaseSendWindowSize(int delta_window_size) {
+    session_->IncreaseSendWindowSize(delta_window_size);
+  }
+
+  void DecreaseSendWindowSize(int32_t delta_window_size) {
+    session_->DecreaseSendWindowSize(delta_window_size);
+  }
+
+  void IncreaseRecvWindowSize(int delta_window_size) {
+    session_->IncreaseRecvWindowSize(delta_window_size);
+  }
+
+  void DecreaseRecvWindowSize(int32_t delta_window_size) {
+    session_->DecreaseRecvWindowSize(delta_window_size);
+  }
+
+  // Accessors for SpdySession private members.
+
+  void set_in_io_loop(bool in_io_loop) { session_->in_io_loop_ = in_io_loop; }
+
+  void set_stream_hi_water_mark(SpdyStreamId stream_hi_water_mark) {
+    session_->stream_hi_water_mark_ = stream_hi_water_mark;
+  }
+
+  void set_last_accepted_push_stream_id(
+      SpdyStreamId last_accepted_push_stream_id) {
+    session_->last_accepted_push_stream_id_ = last_accepted_push_stream_id;
+  }
+
+  size_t num_pushed_streams() { return session_->num_pushed_streams_; }
+
+  size_t num_active_pushed_streams() {
+    return session_->num_active_pushed_streams_;
+  }
+
+  size_t max_concurrent_streams() { return session_->max_concurrent_streams_; }
+
+  void set_max_concurrent_streams(size_t max_concurrent_streams) {
+    session_->max_concurrent_streams_ = max_concurrent_streams;
+  }
+
+  void set_max_concurrent_pushed_streams(size_t max_concurrent_pushed_streams) {
+    session_->max_concurrent_pushed_streams_ = max_concurrent_pushed_streams;
+  }
+
+  int64_t pings_in_flight() { return session_->pings_in_flight_; }
+
+  SpdyPingId next_ping_id() { return session_->next_ping_id_; }
+
+  base::TimeTicks last_read_time() { return session_->last_read_time_; }
+
+  void set_last_read_time(base::TimeTicks last_read_time) {
+    session_->last_read_time_ = last_read_time;
+  }
+
+  bool check_ping_status_pending() {
+    return session_->check_ping_status_pending_;
+  }
+
+  void set_check_ping_status_pending(bool check_ping_status_pending) {
+    session_->check_ping_status_pending_ = check_ping_status_pending;
+  }
+
+  int32_t session_send_window_size() {
+    return session_->session_send_window_size_;
+  }
+
+  int32_t session_recv_window_size() {
+    return session_->session_recv_window_size_;
+  }
+
+  void set_session_recv_window_size(int32_t session_recv_window_size) {
+    session_->session_recv_window_size_ = session_recv_window_size;
+  }
+
+  int32_t session_unacked_recv_window_bytes() {
+    return session_->session_unacked_recv_window_bytes_;
+  }
+
+  int32_t stream_initial_send_window_size() {
+    return session_->stream_initial_send_window_size_;
+  }
+
+  void set_connection_at_risk_of_loss_time(base::TimeDelta duration) {
+    session_->connection_at_risk_of_loss_time_ = duration;
+  }
+
+  void set_hung_interval(base::TimeDelta duration) {
+    session_->hung_interval_ = duration;
+  }
+
+  // Quantities derived from SpdySession private members.
+
+  size_t pending_create_stream_queue_size(RequestPriority priority) {
+    DCHECK_GE(priority, MINIMUM_PRIORITY);
+    DCHECK_LE(priority, MAXIMUM_PRIORITY);
+    return session_->pending_create_stream_queues_[priority].size();
+  }
+
+  size_t num_active_streams() { return session_->active_streams_.size(); }
+
+  size_t num_created_streams() { return session_->created_streams_.size(); }
+
+  size_t num_unclaimed_pushed_streams() {
+    return session_->unclaimed_pushed_streams_.CountStreamsForSession();
+  }
+
+  bool has_unclaimed_pushed_stream_for_url(const GURL& url) {
+    return session_->unclaimed_pushed_streams_.FindStream(url) !=
+           kNoPushedStreamFound;
+  }
 
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
@@ -892,24 +1020,23 @@ TEST_F(SpdySessionTest, ClientPing) {
 
   base::TimeTicks before_ping_time = base::TimeTicks::Now();
 
-  session_->set_connection_at_risk_of_loss_time(
-      base::TimeDelta::FromSeconds(-1));
-  session_->set_hung_interval(base::TimeDelta::FromMilliseconds(50));
+  set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(-1));
+  set_hung_interval(base::TimeDelta::FromMilliseconds(50));
 
-  session_->MaybeSendPrefacePing();
+  MaybeSendPrefacePing();
 
-  EXPECT_EQ(1, session_->pings_in_flight());
-  EXPECT_EQ(2u, session_->next_ping_id());
-  EXPECT_TRUE(session_->check_ping_status_pending());
+  EXPECT_EQ(1, pings_in_flight());
+  EXPECT_EQ(2u, next_ping_id());
+  EXPECT_TRUE(check_ping_status_pending());
 
   base::RunLoop().RunUntilIdle();
 
-  session_->CheckPingStatus(before_ping_time);
+  CheckPingStatus(before_ping_time);
 
-  EXPECT_EQ(0, session_->pings_in_flight());
-  EXPECT_EQ(2u, session_->next_ping_id());
-  EXPECT_FALSE(session_->check_ping_status_pending());
-  EXPECT_GE(session_->last_read_time(), before_ping_time);
+  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_EQ(2u, next_ping_id());
+  EXPECT_FALSE(check_ping_status_pending());
+  EXPECT_GE(last_read_time(), before_ping_time);
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -1050,9 +1177,9 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
   CreateSpdySession();
 
   // Fix stream_hi_water_mark_ to allow for two stream activations.
-  session_->stream_hi_water_mark_ = kLastStreamId - 2;
+  set_stream_hi_water_mark(kLastStreamId - 2);
   // Fix max_concurrent_streams to allow for three stream creations.
-  session_->max_concurrent_streams_ = 3;
+  set_max_concurrent_streams(3);
 
   // Create three streams synchronously, and begin a fourth (which is stalled).
   base::WeakPtr<SpdyStream> stream1 =
@@ -1081,9 +1208,9 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
                             MEDIUM, NetLogWithSource(), callback4.callback()));
 
   // Streams 1-3 were created. 4th is stalled. No streams are active yet.
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(3u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(3u, num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
 
   // Activate stream 1. One ID remains available.
   stream1->SendRequestHeaders(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl),
@@ -1091,9 +1218,9 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kLastStreamId - 2u, stream1->stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(2u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(2u, num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
 
   // Activate stream 2. ID space is exhausted.
   stream2->SendRequestHeaders(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl),
@@ -1102,14 +1229,14 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
 
   // Active streams remain active.
   EXPECT_EQ(kLastStreamId, stream2->stream_id());
-  EXPECT_EQ(2u, session_->num_active_streams());
+  EXPECT_EQ(2u, num_active_streams());
 
   // Session is going away. Created and stalled streams were aborted.
-  EXPECT_EQ(SpdySession::STATE_GOING_AWAY, session_->availability_state_);
+  EXPECT_TRUE(session_->IsGoingAway());
   EXPECT_THAT(delegate3.WaitForClose(), IsError(ERR_ABORTED));
   EXPECT_THAT(callback4.WaitForResult(), IsError(ERR_ABORTED));
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
 
   // Read responses on remaining active streams.
   data.Resume();
@@ -1175,7 +1302,7 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
 
   // Receive SETTINGS frame that sets max_concurrent_streams to zero.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, session_->max_concurrent_streams_);
+  EXPECT_EQ(0u, max_concurrent_streams());
 
   // Start request.
   SpdyStreamRequest request;
@@ -1186,17 +1313,17 @@ TEST_F(SpdySessionTest, MaxConcurrentStreamsZero) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   // Stream is stalled.
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
-  EXPECT_EQ(0u, session_->num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(0u, num_created_streams());
 
   // Receive SETTINGS frame that sets max_concurrent_streams to one.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, session_->max_concurrent_streams_);
+  EXPECT_EQ(1u, max_concurrent_streams());
 
   // Stream is created.
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
-  EXPECT_EQ(1u, session_->num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, num_created_streams());
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -1238,7 +1365,7 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
   CreateSpdySession();
 
   // Fix max_concurrent_streams to allow for one open stream.
-  session_->max_concurrent_streams_ = 1;
+  set_max_concurrent_streams(1);
 
   // Create two streams: one synchronously, and one which stalls.
   base::WeakPtr<SpdyStream> stream1 =
@@ -1252,36 +1379,36 @@ TEST_F(SpdySessionTest, UnstallRacesWithStreamCreation) {
       request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
                             MEDIUM, NetLogWithSource(), callback2.callback()));
 
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
 
   // Cancel the first stream. A callback to unstall the second stream was
   // posted. Don't run it yet.
   stream1->Cancel();
 
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
 
   // Create a third stream prior to the second stream's callback.
   base::WeakPtr<SpdyStream> stream3 =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
                                 test_url_, MEDIUM, NetLogWithSource());
 
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
 
   // Now run the message loop. The unstalled stream will re-stall itself.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
 
   // Cancel the third stream and run the message loop. Verify that the second
   // stream creation now completes.
   stream3->Cancel();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(MEDIUM));
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
 }
 
@@ -1321,14 +1448,14 @@ TEST_F(SpdySessionTest, CancelPushAfterSessionGoesAway) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that there is one unclaimed push stream.
-  EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams());
+  EXPECT_TRUE(has_unclaimed_pushed_stream_for_url(
       GURL("https://www.example.org/a.dat")));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+            session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Read and process EOF.
   data.Resume();
@@ -1422,13 +1549,13 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
 
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url("https://www.example.org/a.dat");
-  EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams());
+  EXPECT_TRUE(has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+            session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Fast forward to CancelPushedStreamIfUnclaimed() that was posted with a
   // delay.
@@ -1436,16 +1563,16 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
   task_runner->RunUntilIdle();
 
   // Verify that pushed stream is cancelled.
-  EXPECT_EQ(0u, session_->num_unclaimed_pushed_streams());
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams());
 
   // Verify that the session window reclaimed the evicted stream body.
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
-  EXPECT_EQ(kUploadDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
+  EXPECT_EQ(kUploadDataSize, session_unacked_recv_window_bytes());
 
   // Try to cancel the expired push after its expiration: must not crash.
   EXPECT_TRUE(session_);
   EXPECT_TRUE(test_push_delegate_->CancelPush(pushed_url));
-  EXPECT_EQ(0u, session_->num_unclaimed_pushed_streams());
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams());
 
   // Read and process EOF.
   data.Resume();
@@ -1530,13 +1657,13 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
 
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url("https://www.example.org/a.dat");
-  EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams());
+  EXPECT_TRUE(has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+            session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   SpdyStream* spdy_stream2;
   rv = session_->GetPushStream(pushed_url, MEDIUM, &spdy_stream2,
@@ -1548,7 +1675,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
   spdy_stream2->SetDelegate(&delegate2);
 
   // Verify that pushed stream is claimed.
-  EXPECT_EQ(0u, session_->num_unclaimed_pushed_streams());
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams());
 
   // Fast forward to CancelPushedStreamIfUnclaimed() that was posted with a
   // delay.  CancelPushedStreamIfUnclaimed() must be a no-op.
@@ -1607,22 +1734,22 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
 
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url("https://www.example.org/a.dat");
-  EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams());
+  EXPECT_TRUE(has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+            session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Cancel the push before it is claimed.
   EXPECT_TRUE(test_push_delegate_->CancelPush(pushed_url));
-  EXPECT_EQ(0u, session_->num_unclaimed_pushed_streams());
-  EXPECT_FALSE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams());
+  EXPECT_FALSE(has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Verify that the session window reclaimed the evicted stream body.
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
-  EXPECT_EQ(kUploadDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
+  EXPECT_EQ(kUploadDataSize, session_unacked_recv_window_bytes());
 
   EXPECT_TRUE(session_);
 
@@ -1664,30 +1791,28 @@ TEST_F(SpdySessionTest, FailedPing) {
   test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
   spdy_stream1->SetDelegate(&delegate);
 
-  session_->set_connection_at_risk_of_loss_time(
-      base::TimeDelta::FromSeconds(0));
-  session_->set_hung_interval(base::TimeDelta::FromSeconds(0));
+  set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(0));
+  set_hung_interval(base::TimeDelta::FromSeconds(0));
 
   // Send a PING frame.
-  session_->WritePingFrame(1, false);
-  EXPECT_LT(0, session_->pings_in_flight());
-  EXPECT_EQ(2u, session_->next_ping_id());
-  EXPECT_TRUE(session_->check_ping_status_pending());
+  WritePingFrame(1, false);
+  EXPECT_LT(0, pings_in_flight());
+  EXPECT_EQ(2u, next_ping_id());
+  EXPECT_TRUE(check_ping_status_pending());
 
   // Assert session is not closed.
   EXPECT_TRUE(session_->IsAvailable());
-  EXPECT_LT(0u,
-            session_->num_active_streams() + session_->num_created_streams());
+  EXPECT_LT(0u, num_active_streams() + num_created_streams());
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
   // We set last time we have received any data in 1 sec less than now.
   // CheckPingStatus will trigger timeout because hung interval is zero.
   base::TimeTicks now = base::TimeTicks::Now();
-  session_->last_read_time_ = now - base::TimeDelta::FromSeconds(1);
-  session_->CheckPingStatus(now);
+  set_last_read_time(now - base::TimeDelta::FromSeconds(1));
+  CheckPingStatus(now);
   // Set check_ping_status_pending_ so that DCHECK in pending CheckPingStatus()
   // on message loop does not fail.
-  session_->check_ping_status_pending_ = true;
+  set_check_ping_status_pending(true);
   // Execute pending CheckPingStatus() and drain session.
   base::RunLoop().RunUntilIdle();
 
@@ -1719,11 +1844,10 @@ TEST_F(SpdySessionTest, WaitingForWrongPing) {
   CreateSpdySession();
 
   // Negative value means a preface ping will always be sent.
-  session_->set_connection_at_risk_of_loss_time(
-      base::TimeDelta::FromSeconds(-1));
+  set_connection_at_risk_of_loss_time(base::TimeDelta::FromSeconds(-1));
 
   const base::TimeDelta hung_interval = base::TimeDelta::FromMilliseconds(100);
-  session_->set_hung_interval(hung_interval);
+  set_hung_interval(hung_interval);
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
@@ -1732,31 +1856,31 @@ TEST_F(SpdySessionTest, WaitingForWrongPing) {
   test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
   spdy_stream1->SetDelegate(&delegate);
 
-  EXPECT_EQ(0, session_->pings_in_flight());
-  EXPECT_EQ(1u, session_->next_ping_id());
-  EXPECT_FALSE(session_->check_ping_status_pending());
+  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_EQ(1u, next_ping_id());
+  EXPECT_FALSE(check_ping_status_pending());
 
   // Send preface ping and post CheckPingStatus() task with delay.
-  session_->MaybeSendPrefacePing();
+  MaybeSendPrefacePing();
 
-  EXPECT_EQ(1, session_->pings_in_flight());
-  EXPECT_EQ(2u, session_->next_ping_id());
-  EXPECT_TRUE(session_->check_ping_status_pending());
+  EXPECT_EQ(1, pings_in_flight());
+  EXPECT_EQ(2u, next_ping_id());
+  EXPECT_TRUE(check_ping_status_pending());
 
   // Read PING ACK.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, session_->pings_in_flight());
-  EXPECT_TRUE(session_->check_ping_status_pending());
+  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_TRUE(check_ping_status_pending());
 
   // Fast forward mock time and send another preface ping.
   // This will not post another CheckPingStatus().
   g_time_delta = base::TimeDelta::FromMilliseconds(150);
-  session_->MaybeSendPrefacePing();
+  MaybeSendPrefacePing();
 
-  EXPECT_EQ(0, session_->pings_in_flight());
-  EXPECT_EQ(2u, session_->next_ping_id());
-  EXPECT_TRUE(session_->check_ping_status_pending());
+  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_EQ(2u, next_ping_id());
+  EXPECT_TRUE(check_ping_status_pending());
 
   // Read EOF.
   data.Resume();
@@ -1768,7 +1892,7 @@ TEST_F(SpdySessionTest, WaitingForWrongPing) {
   // that could be used to call RunLoop::Quit().
   // TODO(bnc): Fix once a RunLoop-compatible mock time framework is supported.
   // See https://crbug.com/708584#c75.
-  EXPECT_TRUE(session_->check_ping_status_pending());
+  EXPECT_TRUE(check_ping_status_pending());
 
   // Finish going away.
   base::RunLoop().RunUntilIdle();
@@ -2667,9 +2791,9 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
       request3.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_,
                             LOWEST, NetLogWithSource(), callback3.callback()));
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(2u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(2u, pending_create_stream_queue_size(LOWEST));
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -2680,16 +2804,16 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_FALSE(spdy_stream1);
   EXPECT_EQ(1u, delegate1.stream_id());
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(LOWEST));
 
   // Pump loop for SpdySession::ProcessPendingStreamRequests() to
   // create the 2nd stream.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(LOWEST));
 
   base::WeakPtr<SpdyStream> stream2 = request2.ReleaseStream();
   test::StreamDelegateDoNothing delegate2(stream2);
@@ -2703,16 +2827,16 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_FALSE(stream2);
   EXPECT_EQ(3u, delegate2.stream_id());
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(LOWEST));
 
   // Pump loop for SpdySession::ProcessPendingStreamRequests() to
   // create the 3rd stream.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(LOWEST));
 
   base::WeakPtr<SpdyStream> stream3 = request3.ReleaseStream();
   test::StreamDelegateDoNothing delegate3(stream3);
@@ -2726,9 +2850,9 @@ TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
   EXPECT_FALSE(stream3);
   EXPECT_EQ(5u, delegate3.stream_id());
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(LOWEST));
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -2777,9 +2901,9 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
       request3.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
                             LOWEST, NetLogWithSource(), callback3.callback()));
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(kInitialMaxConcurrentStreams, session_->num_created_streams());
-  EXPECT_EQ(2u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(kInitialMaxConcurrentStreams, num_created_streams());
+  EXPECT_EQ(2u, pending_create_stream_queue_size(LOWEST));
 
   // Cancel the first stream; this will allow the second stream to be created.
   EXPECT_TRUE(spdy_stream1);
@@ -2787,9 +2911,9 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   EXPECT_FALSE(spdy_stream1);
 
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(kInitialMaxConcurrentStreams, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(kInitialMaxConcurrentStreams, num_created_streams());
+  EXPECT_EQ(1u, pending_create_stream_queue_size(LOWEST));
 
   // Cancel the second stream; this will allow the third stream to be created.
   base::WeakPtr<SpdyStream> spdy_stream2 = request2.ReleaseStream();
@@ -2797,17 +2921,17 @@ TEST_F(SpdySessionTest, CancelTwoStalledCreateStream) {
   EXPECT_FALSE(spdy_stream2);
 
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(kInitialMaxConcurrentStreams, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(kInitialMaxConcurrentStreams, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(LOWEST));
 
   // Cancel the third stream.
   base::WeakPtr<SpdyStream> spdy_stream3 = request3.ReleaseStream();
   spdy_stream3->Cancel();
   EXPECT_FALSE(spdy_stream3);
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(kInitialMaxConcurrentStreams - 1, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->pending_create_stream_queue_size(LOWEST));
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(kInitialMaxConcurrentStreams - 1, num_created_streams());
+  EXPECT_EQ(0u, pending_create_stream_queue_size(LOWEST));
 }
 
 // Test that SpdySession::DoReadLoop reads data from the socket
@@ -3280,9 +3404,9 @@ TEST_F(SpdySessionTest, ProtocolNegotiation) {
   CreateNetworkSession();
   session_ = CreateFakeSpdySession(spdy_session_pool_, key_);
 
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_send_window_size_);
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_send_window_size());
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 }
 
 // Tests the case of a non-SPDY request closing an idle SPDY session when no
@@ -3609,8 +3733,8 @@ TEST_F(SpdySessionTest, CreateStreamOnStreamReset) {
 
   EXPECT_FALSE(spdy_stream);
   EXPECT_TRUE(delegate.StreamIsClosed());
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -3656,7 +3780,7 @@ TEST_F(SpdySessionTest, UpdateStreamsSendWindowSize) {
 
   // Process the SETTINGS frame.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(session_->stream_initial_send_window_size(), window_size);
+  EXPECT_EQ(stream_initial_send_window_size(), window_size);
   EXPECT_EQ(spdy_stream1->send_window_size(), window_size);
 
   // Release the first one, this will allow the second to be created.
@@ -3703,29 +3827,29 @@ TEST_F(SpdySessionTest, AdjustRecvWindowSize) {
   CreateNetworkSession();
   CreateSpdySession();
 
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
-  session_->IncreaseRecvWindowSize(delta_window_size);
+  IncreaseRecvWindowSize(delta_window_size);
   EXPECT_EQ(initial_window_size + delta_window_size,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(delta_window_size, session_->session_unacked_recv_window_bytes_);
+            session_recv_window_size());
+  EXPECT_EQ(delta_window_size, session_unacked_recv_window_bytes());
 
   // Should trigger sending a WINDOW_UPDATE frame.
-  session_->IncreaseRecvWindowSize(initial_window_size);
+  IncreaseRecvWindowSize(initial_window_size);
   EXPECT_EQ(initial_window_size + delta_window_size + initial_window_size,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+            session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   base::RunLoop().RunUntilIdle();
 
   // DecreaseRecvWindowSize() expects |in_io_loop_| to be true.
-  session_->in_io_loop_ = true;
-  session_->DecreaseRecvWindowSize(initial_window_size + delta_window_size +
-                                   initial_window_size);
-  session_->in_io_loop_ = false;
-  EXPECT_EQ(0, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  set_in_io_loop(true);
+  DecreaseRecvWindowSize(initial_window_size + delta_window_size +
+                         initial_window_size);
+  set_in_io_loop(false);
+  EXPECT_EQ(0, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   EXPECT_TRUE(session_);
   data.Resume();
@@ -3751,14 +3875,14 @@ TEST_F(SpdySessionTest, AdjustSendWindowSize) {
   const int32_t initial_window_size = kDefaultInitialWindowSize;
   const int32_t delta_window_size = 100;
 
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
 
-  session_->IncreaseSendWindowSize(delta_window_size);
+  IncreaseSendWindowSize(delta_window_size);
   EXPECT_EQ(initial_window_size + delta_window_size,
-            session_->session_send_window_size_);
+            session_send_window_size());
 
-  session_->DecreaseSendWindowSize(delta_window_size);
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
+  DecreaseSendWindowSize(delta_window_size);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
 }
 
 // Incoming data for an inactive stream should not cause the session
@@ -3780,13 +3904,13 @@ TEST_F(SpdySessionTest, SessionFlowControlInactiveStream) {
   CreateNetworkSession();
   CreateSpdySession();
 
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
-  EXPECT_EQ(kUploadDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
+  EXPECT_EQ(kUploadDataSize, session_unacked_recv_window_bytes());
 
   EXPECT_TRUE(session_);
   data.Resume();
@@ -3814,14 +3938,14 @@ TEST_F(SpdySessionTest, SessionFlowControlPadding) {
   CreateNetworkSession();
   CreateSpdySession();
 
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
+  EXPECT_EQ(kDefaultInitialWindowSize, session_recv_window_size());
   EXPECT_EQ(kUploadDataSize + padding_length,
-            session_->session_unacked_recv_window_bytes_);
+            session_unacked_recv_window_bytes());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -3935,20 +4059,19 @@ TEST_F(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
   CreateSpdySession();
   // Setting session level receiving window size to smaller than initial is not
   // possible via SpdySessionPoolPeer.
-  session_->session_recv_window_size_ = session_max_recv_window_size;
+  set_session_recv_window_size(session_max_recv_window_size);
 
   // First data frame is immediately consumed and does not trigger
   // WINDOW_UPDATE.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(first_data_frame_size,
-            session_->session_unacked_recv_window_bytes_);
-  EXPECT_EQ(session_max_recv_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(SpdySession::STATE_AVAILABLE, session_->availability_state_);
+  EXPECT_EQ(first_data_frame_size, session_unacked_recv_window_bytes());
+  EXPECT_EQ(session_max_recv_window_size, session_recv_window_size());
+  EXPECT_TRUE(session_->IsAvailable());
 
   // Second data frame overflows receiving window, causes session to close.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SpdySession::STATE_DRAINING, session_->availability_state_);
+  EXPECT_TRUE(session_->IsDraining());
 }
 
 // Regression test for a bug that was caused by including unsent WINDOW_UPDATE
@@ -4102,21 +4225,21 @@ TEST_F(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
             stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
 
   const int32_t initial_window_size = kDefaultInitialWindowSize;
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(kMsgDataSize, session_unacked_recv_window_bytes());
 
   stream->Close();
   EXPECT_FALSE(stream);
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
 
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(kMsgDataSize, session_unacked_recv_window_bytes());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -4167,25 +4290,24 @@ TEST_F(SpdySessionTest, SessionFlowControlNoSendLeaks) {
             stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
 
   const int32_t initial_window_size = kDefaultInitialWindowSize;
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
 
   // Write request.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
 
   // Read response, but do not run the message loop, so that the body is not
   // written to the socket.
   data.Resume();
 
-  EXPECT_EQ(initial_window_size - kMsgDataSize,
-            session_->session_send_window_size_);
+  EXPECT_EQ(initial_window_size - kMsgDataSize, session_send_window_size());
 
   // Closing the stream should increase the session's send window.
   stream->Close();
   EXPECT_FALSE(stream);
 
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
 
@@ -4250,53 +4372,49 @@ TEST_F(SpdySessionTest, SessionFlowControlEndToEnd) {
             stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND));
 
   const int32_t initial_window_size = kDefaultInitialWindowSize;
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Send request and message.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size - kMsgDataSize,
-            session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size - kMsgDataSize, session_send_window_size());
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Read echo.
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size - kMsgDataSize,
-            session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size - kMsgDataSize,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size - kMsgDataSize, session_send_window_size());
+  EXPECT_EQ(initial_window_size - kMsgDataSize, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Read window update.
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size - kMsgDataSize,
-            session_->session_recv_window_size_);
-  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
+  EXPECT_EQ(initial_window_size - kMsgDataSize, session_recv_window_size());
+  EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   EXPECT_EQ(msg_data, delegate.TakeReceivedData());
 
   // Draining the delegate's read queue should increase the session's
   // receive window.
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(kMsgDataSize, session_unacked_recv_window_bytes());
 
   stream->Close();
   EXPECT_FALSE(stream);
 
   EXPECT_THAT(delegate.WaitForClose(), IsOk());
 
-  EXPECT_EQ(initial_window_size, session_->session_send_window_size_);
-  EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
-  EXPECT_EQ(kMsgDataSize, session_->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(initial_window_size, session_send_window_size());
+  EXPECT_EQ(initial_window_size, session_recv_window_size());
+  EXPECT_EQ(kMsgDataSize, session_unacked_recv_window_bytes());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -4947,7 +5065,7 @@ TEST_F(SpdySessionTest, GoAwayOnSessionFlowControlError) {
   base::RunLoop().RunUntilIdle();
 
   // Put session on the edge of overflowing it's recv window.
-  session_->session_recv_window_size_ = 1;
+  set_session_recv_window_size(1);
 
   // Read response headers & body. Body overflows the session window, and a
   // goaway is written.
@@ -5004,10 +5122,10 @@ TEST_F(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -5016,18 +5134,18 @@ TEST_F(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
   EXPECT_EQ(0u, delegate1.stream_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate1.stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Run until pushed stream is created.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Second stream should not be stalled, although we have 2 active streams, but
   // one of them is push stream and should not be taken into account when we
@@ -5036,10 +5154,10 @@ TEST_F(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
                                 test_url_, LOWEST, NetLogWithSource());
   EXPECT_TRUE(spdy_stream2);
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();
@@ -5078,7 +5196,7 @@ TEST_F(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
 
   CreateNetworkSession();
   CreateSpdySession();
-  session_->set_max_concurrent_pushed_streams(1);
+  set_max_concurrent_pushed_streams(1);
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
@@ -5088,10 +5206,10 @@ TEST_F(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -5100,26 +5218,26 @@ TEST_F(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   EXPECT_EQ(0u, delegate1.stream_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate1.stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Run until pushed stream is created.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Reset incoming pushed stream.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();
@@ -5184,10 +5302,10 @@ TEST_F(SpdySessionTest, TrustedSpdyProxy) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -5196,26 +5314,26 @@ TEST_F(SpdySessionTest, TrustedSpdyProxy) {
   EXPECT_EQ(0u, delegate.stream_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate.stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Run until pushed stream is created.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Reset incoming pushed stream.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();
@@ -5263,10 +5381,10 @@ TEST_F(SpdySessionTest, TrustedSpdyProxyNotSet) {
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -5275,10 +5393,10 @@ TEST_F(SpdySessionTest, TrustedSpdyProxyNotSet) {
   EXPECT_EQ(0u, delegate.stream_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate.stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();
@@ -5324,7 +5442,7 @@ TEST_F(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
 
   CreateNetworkSession();
   CreateSpdySession();
-  session_->set_max_concurrent_pushed_streams(1);
+  set_max_concurrent_pushed_streams(1);
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
@@ -5334,10 +5452,10 @@ TEST_F(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -5346,35 +5464,35 @@ TEST_F(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   EXPECT_EQ(0u, delegate1.stream_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate1.stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Run until pushed stream is created.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Accept promised stream. It should not count towards pushed stream limit.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(2u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(3u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(2u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Reset last pushed stream upon headers reception as it is going to be 2nd,
   // while we accept only one.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(1u, num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();
@@ -5424,10 +5542,10 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
-  EXPECT_EQ(0u, session_->num_active_streams());
-  EXPECT_EQ(1u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(0u, num_active_streams());
+  EXPECT_EQ(1u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   spdy_stream1->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
@@ -5436,18 +5554,18 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   EXPECT_EQ(0u, delegate1.stream_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, delegate1.stream_id());
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Run until pushed stream is created.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(1u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(2u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(1u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   SpdyStream* pushed_stream;
   int rv = session_->GetPushStream(GURL(kPushedUrl), IDLE, &pushed_stream,
@@ -5461,10 +5579,10 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   // that all our counters are in consistent state.
   data.Resume();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, session_->num_active_streams());
-  EXPECT_EQ(0u, session_->num_created_streams());
-  EXPECT_EQ(0u, session_->num_pushed_streams());
-  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+  EXPECT_EQ(1u, num_active_streams());
+  EXPECT_EQ(0u, num_created_streams());
+  EXPECT_EQ(0u, num_pushed_streams());
+  EXPECT_EQ(0u, num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();
@@ -5488,17 +5606,17 @@ TEST_F(SpdySessionTest, RejectInvalidUnknownFrames) {
   CreateNetworkSession();
   CreateSpdySession();
 
-  session_->stream_hi_water_mark_ = 5;
+  set_stream_hi_water_mark(5);
   // Low client (odd) ids are fine.
-  EXPECT_TRUE(session_->OnUnknownFrame(3, 0));
+  EXPECT_TRUE(OnUnknownFrame(3, 0));
   // Client id exceeding watermark.
-  EXPECT_FALSE(session_->OnUnknownFrame(9, 0));
+  EXPECT_FALSE(OnUnknownFrame(9, 0));
 
-  session_->last_accepted_push_stream_id_ = 6;
+  set_last_accepted_push_stream_id(6);
   // Low server (even) ids are fine.
-  EXPECT_TRUE(session_->OnUnknownFrame(2, 0));
+  EXPECT_TRUE(OnUnknownFrame(2, 0));
   // Server id exceeding last accepted id.
-  EXPECT_FALSE(session_->OnUnknownFrame(8, 0));
+  EXPECT_FALSE(OnUnknownFrame(8, 0));
 }
 
 enum ReadIfReadySupport {

@@ -392,8 +392,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
         session->spdy_session_pool()->FindAvailableSession(
             key, /* enable_ip_based_pooling = */ true, log_);
     ASSERT_TRUE(spdy_session);
-    EXPECT_EQ(0u, spdy_session->num_active_streams());
-    EXPECT_EQ(0u, spdy_session->num_unclaimed_pushed_streams());
+    EXPECT_EQ(0u, num_active_streams(spdy_session));
+    EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session));
   }
 
   void RunServerPushTest(SequencedSocketData* data,
@@ -516,6 +516,20 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
   SpdyString GetDefaultUrlWithPath(const char* path) const {
     return SpdyString(kDefaultUrl) + path;
+  }
+
+  size_t num_active_streams(base::WeakPtr<SpdySession> session) {
+    return session->active_streams_.size();
+  }
+
+  size_t num_unclaimed_pushed_streams(base::WeakPtr<SpdySession> session) {
+    return session->unclaimed_pushed_streams_.CountStreamsForSession();
+  }
+
+  bool has_unclaimed_pushed_stream_for_url(base::WeakPtr<SpdySession> session,
+                                           const GURL& url) {
+    return session->unclaimed_pushed_streams_.FindStream(url) !=
+           kNoPushedStreamFound;
   }
 
   const GURL default_url_;
@@ -4973,10 +4987,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true, log_);
 
-  EXPECT_EQ(1u,
-            spdy_session->unclaimed_pushed_streams_.CountStreamsForSession());
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
   EXPECT_TRUE(
-      spdy_session->has_unclaimed_pushed_stream_for_url(GURL(url_to_push)));
+      has_unclaimed_pushed_stream_for_url(spdy_session, GURL(url_to_push)));
 
   HttpNetworkTransaction trans1(DEFAULT_PRIORITY, helper.session());
   HttpRequestInfo push_request;
@@ -4987,8 +5000,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   rv = callback1.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
-  EXPECT_EQ(0u,
-            spdy_session->unclaimed_pushed_streams_.CountStreamsForSession());
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session));
 
   HttpResponseInfo response = *trans0->GetResponseInfo();
   EXPECT_TRUE(response.headers);
@@ -5115,8 +5127,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
       spdy_session_pool->FindAvailableSession(
           key0, /* enable_ip_based_pooling = */ true, log_);
 
-  EXPECT_EQ(0u,
-            spdy_session0->unclaimed_pushed_streams_.CountStreamsForSession());
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session0));
 
   HostPortPair host_port_pair1("docs.example.org", 443);
   SpdySessionKey key1(host_port_pair1, ProxyServer::Direct(),
@@ -5125,10 +5136,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
       spdy_session_pool->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true, log_);
 
-  EXPECT_EQ(1u,
-            spdy_session1->unclaimed_pushed_streams_.CountStreamsForSession());
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session1));
   EXPECT_TRUE(
-      spdy_session1->has_unclaimed_pushed_stream_for_url(GURL(url_to_push)));
+      has_unclaimed_pushed_stream_for_url(spdy_session1, GURL(url_to_push)));
 
   // Request |url_to_push|, which should be served from the pushed resource.
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
@@ -5140,10 +5150,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   rv = callback2.GetResult(rv);
   EXPECT_THAT(rv, IsOk());
 
-  EXPECT_EQ(0u,
-            spdy_session0->unclaimed_pushed_streams_.CountStreamsForSession());
-  EXPECT_EQ(0u,
-            spdy_session1->unclaimed_pushed_streams_.CountStreamsForSession());
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session0));
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session1));
 
   HttpResponseInfo response0 = *trans0->GetResponseInfo();
   EXPECT_TRUE(response0.headers);

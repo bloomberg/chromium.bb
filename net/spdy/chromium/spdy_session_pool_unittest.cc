@@ -66,6 +66,10 @@ class SpdySessionPoolTest : public ::testing::Test {
 
   void RunIPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type);
 
+  size_t num_active_streams(base::WeakPtr<SpdySession> session) {
+    return session->active_streams_.size();
+  }
+
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> http_session_;
   SpdySessionPool* spdy_session_pool_;
@@ -778,7 +782,7 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(sessionC->IsDraining());
 
   EXPECT_EQ(1u,
-            sessionA->num_active_streams());  // Active stream is still active.
+            num_active_streams(sessionA));  // Active stream is still active.
   EXPECT_FALSE(delegateA.StreamIsClosed());
 
   EXPECT_TRUE(delegateB.StreamIsClosed());  // Created stream was closed.
