@@ -296,11 +296,10 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kMetaSetCookie:
       return {"MetaSetCookie", M65,
               String::Format(
-                  "Setting cookies via `<meta http-equiv='Set-Cookie' ...>` is "
-                  "deprecated, and will stop working in %s. Consider switching "
-                  "to `document.cookie = ...`, or to `Set-Cookie` HTTP headers "
+                  "Setting cookies via `<meta http-equiv='Set-Cookie' ...>` no "
+                  "longer works, as of M65. Consider switching to "
+                  " `document.cookie = ...`, or to `Set-Cookie` HTTP headers "
                   "instead. See %s for more details.",
-                  milestoneString(M65),
                   "https://www.chromestatus.com/feature/6170540112871424")};
 
     // Powerful features on insecure origins (https://goo.gl/rStTGz)

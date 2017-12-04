@@ -134,7 +134,7 @@
     },
     {
       name: "BlockMetaSetCookie",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "Budget",
