@@ -139,6 +139,10 @@ MATCHER_P(RedirectReason, expected, "") {
   return arg.second == expected;
 }
 
+MATCHER_P(CookieValue, expected, "") {
+  return arg->GetValue() == expected;
+}
+
 const DOMNode* FindTag(const GetSnapshotResult* snapshot, const char* name) {
   auto tags = FindTags(snapshot, name);
   if (tags.empty())
@@ -874,5 +878,113 @@ class RedirectNewFragment : public HeadlessRenderTest {
   }
 };
 HEADLESS_RENDER_BROWSERTEST(RedirectNewFragment);
+
+class WindowLocationFragments : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/#fragment1",
+                                         HttpOk(R"|(
+ <script>
+   if (window.location.hash == '#fragment1') {
+     document.write('<iframe src="iframe#fragment2"></iframe>');
+   }
+ </script>)|"));
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/iframe#fragment2", HttpOk(R"|(
+ <script>
+   if (window.location.hash == '#fragment2') {
+     document.location = 'http://www.example.com/pass';
+   }
+ </script>)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/pass",
+                                         HttpOk("<p>Pass</p>"));
+    return GURL("http://www.example.com/#fragment1");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/#fragment1",
+                            "http://www.example.com/iframe#fragment2",
+                            "http://www.example.com/pass"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(WindowLocationFragments);
+
+class CookieSetFromJs : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html><head><script>
+document.cookie = 'SessionID=123';
+n = document.cookie.indexOf('SessionID');
+if (n < 0) {
+  top.location = '/epicfail';
+}
+</script></head><body>Pass</body></html>)|"));
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "BODY")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs);
+
+class CookieSetFromJs_NoCookies : public CookieSetFromJs {
+ private:
+  void OverrideWebPreferences(WebPreferences* preferences) override {
+    HeadlessRenderTest::OverrideWebPreferences(preferences);
+    preferences->cookie_enabled = false;
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/",
+                            "http://www.example.com/epicfail"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs_NoCookies);
+
+class CookieUpdatedFromJs : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    client->GetNetwork()->SetCookie(network::SetCookieParams::Builder()
+                                        .SetUrl("http://www.example.com/")
+                                        .SetName("foo")
+                                        .SetValue("bar")
+                                        .Build());
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html><head><script>
+var x = document.cookie;
+document.cookie = x + 'baz';
+</script></head><body>Pass</body></html>)|"));
+    return GURL("http://www.example.com/");
+  }
+
+  void OnPageRenderCompleted() override {
+    devtools_client_->GetNetwork()->GetCookies(
+        network::GetCookiesParams::Builder()
+            .SetUrls({"http://www.example.com/"})
+            .Build(),
+        base::Bind(&CookieUpdatedFromJs::OnGetCookies, base::Unretained(this)));
+  }
+
+  void OnGetCookies(std::unique_ptr<network::GetCookiesResult> result) {
+    const auto& cookies = *result->GetCookies();
+    EXPECT_THAT(cookies, ElementsAre(CookieValue("barbaz")));
+    HeadlessRenderTest::OnPageRenderCompleted();
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "BODY")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(CookieUpdatedFromJs);
 
 }  // namespace headless
