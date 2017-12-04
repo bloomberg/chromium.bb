@@ -55,6 +55,7 @@ EXTRA_DIST =					\
 	fi_harness.yaml				\
 	foo.yaml				\
 	fr-bfu-comp6.yaml			\
+	fr-bfu-g2.yaml			\
 	fr-bfu-g2_harness.yaml			\
 	fr-fr-g1.yaml				\
 	ga-g1_harness.yaml			\

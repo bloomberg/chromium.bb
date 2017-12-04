@@ -173,6 +173,7 @@ dist_yaml_TESTS =				\
 	yaml/fi_harness.yaml			\
 	yaml/foo.yaml				\
 	yaml/fr-bfu-comp6.yaml			\
+	yaml/fr-bfu-g2.yaml			\
 	yaml/fr-bfu-g2_harness.yaml		\
 	yaml/fr-fr-g1.yaml			\
 	yaml/ga-g1_harness.yaml			\
