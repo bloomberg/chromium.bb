@@ -31,7 +31,7 @@ class SharedGpuContextTestBase : public Test {
       return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
     };
     SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::Bind(factory, WTF::Unretained(&gl_)));
+        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   }
 
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
@@ -63,7 +63,8 @@ class BadSharedGpuContextTest : public Test {
       *gpu_compositing_disabled = false;
       return nullptr;
     };
-    SharedGpuContext::SetContextProviderFactoryForTesting(WTF::Bind(factory));
+    SharedGpuContext::SetContextProviderFactoryForTesting(
+        WTF::BindRepeating(factory));
   }
 
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
@@ -82,7 +83,7 @@ class SoftwareCompositingTest : public Test {
       return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
     };
     SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::Bind(factory, WTF::Unretained(&gl_)));
+        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   }
 
   void TearDown() override { SharedGpuContext::ResetForTesting(); }

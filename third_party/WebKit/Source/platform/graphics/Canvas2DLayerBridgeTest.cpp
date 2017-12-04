@@ -144,7 +144,7 @@ class Canvas2DLayerBridgeTest : public Test {
       return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
     };
     SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::Bind(factory, WTF::Unretained(&gl_)));
+        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   }
   void TearDown() override { SharedGpuContext::ResetForTesting(); }
 

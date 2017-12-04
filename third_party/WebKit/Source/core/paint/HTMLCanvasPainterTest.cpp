@@ -39,7 +39,7 @@ class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
       return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
     };
     SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::Bind(factory, WTF::Unretained(&gl_)));
+        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
     PaintControllerPaintTest::SetUp();
   }
 

@@ -37,7 +37,7 @@ class PLATFORM_EXPORT SharedGpuContext {
   static bool IsValidWithoutRestoring();
 
   using ContextProviderFactory =
-      WTF::Function<std::unique_ptr<WebGraphicsContext3DProvider>(
+      WTF::RepeatingFunction<std::unique_ptr<WebGraphicsContext3DProvider>(
           bool* is_gpu_compositing_disabled)>;
   static void SetContextProviderFactoryForTesting(ContextProviderFactory);
   // Resets the global instance including the |context_provider_factory_| and
