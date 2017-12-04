@@ -29,9 +29,8 @@ void EvictOldestOptOut(BlackListItemMap* black_list_item_map) {
       item_to_delete = iter;
       break;
     }
-    if (!oldest_opt_out ||
-        iter->second->most_recent_opt_out_time().value() <
-            oldest_opt_out.value()) {
+    if (!oldest_opt_out || iter->second->most_recent_opt_out_time().value() <
+                               oldest_opt_out.value()) {
       oldest_opt_out = iter->second->most_recent_opt_out_time().value();
       item_to_delete = iter;
     }
@@ -147,23 +146,29 @@ void PreviewsBlackList::AddPreviewNavigationSync(const GURL& url,
 
 PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
     const GURL& url,
-    PreviewsType type) const {
+    PreviewsType type,
+    std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(url.has_host());
   if (!loaded_)
     return PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED;
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED);
   DCHECK(black_list_item_map_);
   if (last_opt_out_time_ &&
       clock_->Now() <
           last_opt_out_time_.value() + params::SingleOptOutDuration()) {
     return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
   }
+  passed_reasons->push_back(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT);
   if (host_indifferent_black_list_item_->IsBlackListed(clock_->Now()))
     return PreviewsEligibilityReason::USER_BLACKLISTED;
+  passed_reasons->push_back(PreviewsEligibilityReason::USER_BLACKLISTED);
   PreviewsBlackListItem* black_list_item =
       GetBlackListItemFromMap(*black_list_item_map_, url.host());
   if (black_list_item && black_list_item->IsBlackListed(clock_->Now()))
     return PreviewsEligibilityReason::HOST_BLACKLISTED;
+  passed_reasons->push_back(PreviewsEligibilityReason::HOST_BLACKLISTED);
   return PreviewsEligibilityReason::ALLOWED;
 }
 

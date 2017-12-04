@@ -71,14 +71,17 @@ class TestPreviewsLogger : public PreviewsLogger {
     navigation_time_ = base::Time(time);
   }
 
-  void LogPreviewDecisionMade(PreviewsEligibilityReason reason,
-                              const GURL& url,
-                              base::Time time,
-                              PreviewsType type) override {
+  void LogPreviewDecisionMade(
+      PreviewsEligibilityReason reason,
+      const GURL& url,
+      base::Time time,
+      PreviewsType type,
+      std::vector<PreviewsEligibilityReason>&& passed_reasons) override {
     decision_reason_ = reason;
     decision_url_ = GURL(url);
     decision_time_ = time;
     decision_type_ = type;
+    decision_passed_reasons_ = std::move(passed_reasons);
   }
 
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
@@ -103,6 +106,10 @@ class TestPreviewsLogger : public PreviewsLogger {
   GURL decision_url() const { return decision_url_; }
   PreviewsType decision_type() const { return decision_type_; }
   base::Time decision_time() const { return decision_time_; }
+  const std::vector<PreviewsEligibilityReason>& decision_passed_reasons()
+      const {
+    return decision_passed_reasons_;
+  }
 
   // Return the passed in LogPreviewNavigation parameters.
   GURL navigation_url() const { return navigation_url_; }
@@ -125,6 +132,7 @@ class TestPreviewsLogger : public PreviewsLogger {
   GURL decision_url_;
   PreviewsType decision_type_;
   base::Time decision_time_;
+  std::vector<PreviewsEligibilityReason> decision_passed_reasons_;
 
   // Passed in LogPreviewsNavigation parameters.
   GURL navigation_url_;
@@ -238,26 +246,53 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   const GURL url_a("http://www.url_a.com/url_a");
   const base::Time time_a = base::Time::Now();
   PreviewsType type_a = PreviewsType::OFFLINE;
+  std::vector<PreviewsEligibilityReason> passed_reasons_a = {
+      PreviewsEligibilityReason::NETWORK_NOT_SLOW,
+      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
+      PreviewsEligibilityReason::RELOAD_DISALLOWED,
+  };
+  const std::vector<PreviewsEligibilityReason> expected_passed_reasons_a(
+      passed_reasons_a);
 
-  ui_service()->LogPreviewDecisionMade(reason_a, url_a, time_a, type_a);
+  ui_service()->LogPreviewDecisionMade(reason_a, url_a, time_a, type_a,
+                                       std::move(passed_reasons_a));
 
   EXPECT_EQ(reason_a, logger_ptr_->decision_reason());
   EXPECT_EQ(url_a, logger_ptr_->decision_url());
   EXPECT_EQ(time_a, logger_ptr_->decision_time());
   EXPECT_EQ(type_a, logger_ptr_->decision_type());
 
+  auto actual_passed_reasons_a = logger_ptr_->decision_passed_reasons();
+  EXPECT_EQ(3UL, actual_passed_reasons_a.size());
+  for (size_t i = 0; i < actual_passed_reasons_a.size(); i++) {
+    EXPECT_EQ(expected_passed_reasons_a[i], actual_passed_reasons_a[i]);
+  }
+
   PreviewsEligibilityReason reason_b =
       PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   const GURL url_b("http://www.url_b.com/url_b");
   const base::Time time_b = base::Time::Now();
   PreviewsType type_b = PreviewsType::LOFI;
+  std::vector<PreviewsEligibilityReason> passed_reasons_b = {
+      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+      PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
+  };
+  const std::vector<PreviewsEligibilityReason> expected_passed_reasons_b(
+      passed_reasons_b);
 
-  ui_service()->LogPreviewDecisionMade(reason_b, url_b, time_b, type_b);
+  ui_service()->LogPreviewDecisionMade(reason_b, url_b, time_b, type_b,
+                                       std::move(passed_reasons_b));
 
   EXPECT_EQ(reason_b, logger_ptr_->decision_reason());
   EXPECT_EQ(url_b, logger_ptr_->decision_url());
   EXPECT_EQ(type_b, logger_ptr_->decision_type());
   EXPECT_EQ(time_b, logger_ptr_->decision_time());
+
+  auto actual_passed_reasons_b = logger_ptr_->decision_passed_reasons();
+  EXPECT_EQ(2UL, actual_passed_reasons_b.size());
+  for (size_t i = 0; i < actual_passed_reasons_b.size(); i++) {
+    EXPECT_EQ(expected_passed_reasons_b[i], actual_passed_reasons_b[i]);
+  }
 }
 
 TEST_F(PreviewsUIServiceTest, TestOnNewBlacklistedHostPassesCorrectParams) {

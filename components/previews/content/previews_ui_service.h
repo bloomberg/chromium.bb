@@ -81,12 +81,15 @@ class PreviewsUIService {
                                     bool opt_out,
                                     base::Time time);
 
-  // Log the made decision of previews to PreviewsLogger. Virtualized in
-  // testing.
-  virtual void LogPreviewDecisionMade(PreviewsEligibilityReason reason,
-                                      const GURL& url,
-                                      base::Time time,
-                                      PreviewsType type);
+  // Log the made decision of previews to PreviewsLogger. |passed_reasons| is a
+  // collection of PreviewsEligibilityReasons passed the checks before |reason|.
+  // The method takes ownership of |passed_reasons|. Virtualized in testing.
+  virtual void LogPreviewDecisionMade(
+      PreviewsEligibilityReason reason,
+      const GURL& url,
+      base::Time time,
+      PreviewsType type,
+      std::vector<PreviewsEligibilityReason>&& passed_reasons);
 
   // Expose the pointer to PreviewsLogger to extract logging messages. This
   // pointer's life time is the same as of |this|, and it is guaranteed to not

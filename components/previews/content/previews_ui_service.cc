@@ -52,12 +52,15 @@ void PreviewsUIService::LogPreviewNavigation(const GURL& url,
   logger_->LogPreviewNavigation(url, type, opt_out, time);
 }
 
-void PreviewsUIService::LogPreviewDecisionMade(PreviewsEligibilityReason reason,
-                                               const GURL& url,
-                                               base::Time time,
-                                               PreviewsType type) {
+void PreviewsUIService::LogPreviewDecisionMade(
+    PreviewsEligibilityReason reason,
+    const GURL& url,
+    base::Time time,
+    PreviewsType type,
+    std::vector<PreviewsEligibilityReason>&& passed_reasons) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  logger_->LogPreviewDecisionMade(reason, url, time, type);
+  logger_->LogPreviewDecisionMade(reason, url, time, type,
+                                  std::move(passed_reasons));
 }
 
 void PreviewsUIService::OnNewBlacklistedHost(const std::string& host,
