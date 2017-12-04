@@ -572,6 +572,32 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Exit", delta);
       LogMenuAction(MENU_ACTION_EXIT);
       break;
+
+    // Hosted App menu.
+    case IDC_COPY_URL:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.CopyUrl", delta);
+      LogMenuAction(MENU_ACTION_COPY_URL);
+      break;
+    case IDC_OPEN_IN_CHROME:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.OpenInChrome",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_OPEN_IN_CHROME);
+      break;
+    case IDC_SITE_SETTINGS:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.SiteSettings",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_SITE_SETTINGS);
+      break;
+    case IDC_APP_INFO:
+      if (!uma_action_recorded_)
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.AppInfo", delta);
+      LogMenuAction(MENU_ACTION_APP_INFO);
+      break;
   }
 
   if (!uma_action_recorded_) {
