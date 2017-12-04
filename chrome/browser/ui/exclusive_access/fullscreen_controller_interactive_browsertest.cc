@@ -552,6 +552,10 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_MouseLockSilentAfterTargetUnlock \
   DISABLED_MouseLockSilentAfterTargetUnlock
+#elif defined(OS_WIN)
+// Flaky on Windows; see https://crbug.com/791539.
+#define MAYBE_MouseLockSilentAfterTargetUnlock \
+  DISABLED_MouseLockSilentAfterTargetUnlock
 #else
 #define MAYBE_MouseLockSilentAfterTargetUnlock MouseLockSilentAfterTargetUnlock
 #endif
