@@ -11,11 +11,6 @@
              "--disable-display-list-2d-canvas"]
   },
   {
-    "prefix": "display_list_2d_canvas",
-    "base": "fast/canvas",
-    "args": ["--force-display-list-2d-canvas"]
-  },
-  {
     "prefix": "threaded",
     "base": "fast/idleToBlob",
     "args": ["--enable-threaded-compositing"]

@@ -337,10 +337,6 @@
       status: "experimental",
     },
     {
-      name: "DisplayList2dCanvas",
-      status: "stable",
-    },
-    {
       name: "DisplayNoneIFrameCreatesNoLayoutObject",
       status: "experimental",
     },
@@ -422,9 +418,6 @@
     {
       name: "FontCacheScaling",
       status: "test",
-    },
-    {
-      name: "ForceDisplayList2dCanvas",
     },
     // For simulating Android's overlay fullscreen video in layout tests on Linux.
     {

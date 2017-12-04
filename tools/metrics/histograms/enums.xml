@@ -4217,12 +4217,12 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="CanvasContextUsage">
   <int value="0" label="CanvasCreated"/>
   <int value="1" label="GPUAccelerated2DCanvasImageBufferCreated"/>
-  <int value="2" label="DisplayList2DCanvasImageBufferCreated"/>
+  <int value="2" label="(obsolete) DisplayList2DCanvasImageBufferCreated"/>
   <int value="3" label="Unaccelerated2DCanvasImageBufferCreated"/>
   <int value="4" label="Accelerated2DCanvasGPUContextLost"/>
   <int value="5" label="Unaccelerated2DCanvasImageBufferCreationFailed"/>
   <int value="6" label="GPUAccelerated2DCanvasImageBufferCreationFailed"/>
-  <int value="7" label="DisplayList2DCanvasFallbackToRaster"/>
+  <int value="7" label="(obsolete) DisplayList2DCanvasFallbackToRaster"/>
   <int value="8" label="GPUAccelerated2DCanvasDeferralDisabled"/>
   <int value="10" label="GPUAccelerated2DCanvasSurfaceCreationFailed"/>
 </enum>
@@ -4239,6 +4239,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="CanvasDisplayListFallbackReason">
+  <obsolete>
+    Deprecated 11/2017 with removal of Display List Canvas 2D mode.
+  </obsolete>
   <int value="0" label="Unknown (Should not be seen in production)."/>
   <int value="1" label="Canvas not cleared between consecutive frames."/>
   <int value="2"
