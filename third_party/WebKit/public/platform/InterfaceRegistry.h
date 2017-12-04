@@ -69,9 +69,9 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
           factory) {
     AddAssociatedInterface(
         Interface::Name_,
-        ConvertToBaseCallback(WTF::Bind(
+        WTF::BindRepeating(
             &InterfaceRegistry::ForwardToAssociatedInterfaceFactory<Interface>,
-            std::move(factory))));
+            std::move(factory)));
   }
 
  private:

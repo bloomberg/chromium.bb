@@ -60,7 +60,6 @@ class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
 class WebAutofillClient;
 class WebDevToolsAgentImpl;
-class WebDevToolsFrontendImpl;
 class WebFrameClient;
 class WebNode;
 class WebPerformance;
@@ -420,14 +419,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void SetFrameWidget(WebFrameWidgetBase*);
 
-  // DevTools front-end bindings.
-  void SetDevToolsFrontend(WebDevToolsFrontendImpl* frontend) {
-    web_dev_tools_frontend_ = frontend;
-  }
-  WebDevToolsFrontendImpl* DevToolsFrontend() {
-    return web_dev_tools_frontend_;
-  }
-
   WebNode ContextMenuNode() const { return context_menu_node_.Get(); }
   void SetContextMenuNode(Node* node) { context_menu_node_ = node; }
   void ClearContextMenuNode() { context_menu_node_.Clear(); }
@@ -502,8 +493,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   // Borrowed pointers to Mojo objects.
   blink::InterfaceRegistry* interface_registry_;
-
-  WebDevToolsFrontendImpl* web_dev_tools_frontend_;
 
   Member<Node> context_menu_node_;
 
