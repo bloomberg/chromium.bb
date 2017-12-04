@@ -139,11 +139,12 @@ public class PreferencesTest {
                         ContentSetting.ASK, locationPermissionForSearchEngine(keyword2));
 
                 // Make sure a pre-existing ALLOW value does not get deleted when switching away
-                // from a search engine. For this to work we need to change the DSE setting to true
-                // for search engine 3 before changing to search engine 2. Otherwise the false DSE
-                // setting will cause the content setting for search engine 2 to be reset when we
-                // switch to it.
-                WebsitePreferenceBridge.setDSEGeolocationSetting(true);
+                // from a search engine. For this to work we need to change the DSE's content
+                // setting to allow for search engine 3 before changing to search engine 2.
+                // Otherwise the block setting will cause the content setting for search engine 2
+                // to be reset when we switch to it.
+                WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
+                        url, url, ContentSetting.ALLOW.toInt(), false);
                 keyword2 = pref.getKeywordFromIndexForTesting(2);
                 url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(

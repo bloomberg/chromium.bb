@@ -263,13 +263,8 @@ public class Website implements Serializable {
      * Configure geolocation access setting for this site.
      */
     public void setGeolocationPermission(ContentSetting value) {
-        if (WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(
-                    mOrigin.getOrigin(), false)) {
-            WebsitePreferenceBridge.setDSEGeolocationSetting(value != ContentSetting.BLOCK);
-        } else {
-            if (mGeolocationInfo != null) {
-                mGeolocationInfo.setContentSetting(value);
-            }
+        if (mGeolocationInfo != null) {
+            mGeolocationInfo.setContentSetting(value);
         }
     }
 

@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.components.location.LocationUtils;
@@ -458,9 +457,7 @@ public class SearchEngineAdapter extends BaseAdapter
         // Only show the location setting if it is explicitly enabled or disabled.
         GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
-        if (locationPermission != ContentSetting.ASK) return true;
-
-        return WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(url, false);
+        return locationPermission != ContentSetting.ASK;
     }
 
     private boolean locationEnabled(TemplateUrl templateUrl) {
@@ -469,13 +466,6 @@ public class SearchEngineAdapter extends BaseAdapter
 
         GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
-        if (locationPermission == ContentSetting.ASK) {
-            // Handle the case where the geoHeader being sent when no permission has been specified.
-            if (WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(url, false)) {
-                return WebsitePreferenceBridge.getDSEGeolocationSetting();
-            }
-        }
-
         return locationPermission == ContentSetting.ALLOW;
     }
 

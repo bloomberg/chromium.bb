@@ -35,6 +35,8 @@ import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.NotificationInfo;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
@@ -72,6 +74,17 @@ public class ClearBrowsingDataPreferencesTest {
 
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+
+        // Disable notifications for the default search engine so that it doesn't interfere with
+        // important sites tests.
+        NotificationInfo notificationSettings =
+                new NotificationInfo("https://www.google.com", null, false);
+        // Due to Android notification channels we need to delete the existing content setting in
+        // in order to change it to block.
+        ThreadUtils.runOnUiThread(
+                () -> notificationSettings.setContentSetting(ContentSetting.DEFAULT));
+        ThreadUtils.runOnUiThread(
+                () -> notificationSettings.setContentSetting(ContentSetting.BLOCK));
     }
 
     @After

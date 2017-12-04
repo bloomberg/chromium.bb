@@ -839,7 +839,9 @@ extern const char kSearchGeolocationPreDisclosureMetricsRecorded[];
 extern const char kSearchGeolocationPostDisclosureMetricsRecorded[];
 #endif
 
-extern const char kDSEGeolocationSetting[];
+extern const char kDSEGeolocationSettingDeprecated[];
+
+extern const char kDSEPermissionsSettings[];
 
 extern const char kWebShareVisitedTargets[];
 

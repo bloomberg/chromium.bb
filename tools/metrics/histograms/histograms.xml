@@ -26314,6 +26314,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="GeolocationDisclosure.PostDisclosureContentSetting"
     enum="ContentSetting">
+  <obsolete>
+    Deprecated 2017/11. Use PostDisclosureDSESetting instead.
+  </obsolete>
   <owner>benwells@chromium.org</owner>
   <summary>
     Records the geolocation content setting for the default search engine's
@@ -26347,6 +26350,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="GeolocationDisclosure.PreDisclosureContentSetting"
     enum="ContentSetting">
+  <obsolete>
+    Deprecated 2017/11. Use PreDisclosureDSESetting instead.
+  </obsolete>
   <owner>benwells@chromium.org</owner>
   <summary>
     Records the geolocation content setting for the default search engine's

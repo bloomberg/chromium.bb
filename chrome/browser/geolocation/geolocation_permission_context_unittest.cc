@@ -81,9 +81,16 @@ class TestSearchEngineDelegate
     return url::Origin::Create(GURL(kDSETestUrl));
   }
 
-  void SetDSEChangedCallback(const base::Closure& callback) override {}
+  void SetDSEChangedCallback(const base::Closure& callback) override {
+    dse_changed_callback_ = callback;
+  }
+
+  void UpdateDSEOrigin() { dse_changed_callback_.Run(); }
 
   static const char kDSETestUrl[];
+
+ private:
+  base::Closure dse_changed_callback_;
 };
 
 const char TestSearchEngineDelegate::kDSETestUrl[] = "https://www.dsetest.com";
@@ -1110,26 +1117,26 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
 #if defined(OS_ANDROID)
 TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
   GURL requesting_frame(TestSearchEngineDelegate::kDSETestUrl);
-  // The DSE Geolocation setting should be used in incognito if it is BLOCK,
-  // but not if it is ALLOW.
-  SearchPermissionsService* geo_service =
+
+  SearchPermissionsService* service =
       SearchPermissionsService::Factory::GetForBrowserContext(profile());
-  geo_service->SetSearchEngineDelegateForTest(
-      base::MakeUnique<TestSearchEngineDelegate>());
+  std::unique_ptr<TestSearchEngineDelegate> delegate =
+      base::MakeUnique<TestSearchEngineDelegate>();
+  TestSearchEngineDelegate* delegate_ptr = delegate.get();
+  service->SetSearchEngineDelegateForTest(std::move(delegate));
+  delegate_ptr->UpdateDSEOrigin();
 
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
-
-  // A DSE setting of ALLOW should not flow through to incognito.
-  geo_service->SetDSEGeolocationSetting(true);
-  ASSERT_EQ(CONTENT_SETTING_ASK,
-            PermissionManager::Get(otr_profile)
+  // The DSE should be auto-granted geolocation.
+  ASSERT_EQ(CONTENT_SETTING_ALLOW,
+            PermissionManager::Get(profile())
                 ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                       requesting_frame, requesting_frame)
                 .content_setting);
 
-  // Changing the setting to BLOCK should flow through to incognito.
-  geo_service->SetDSEGeolocationSetting(false);
-  ASSERT_EQ(CONTENT_SETTING_BLOCK,
+  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+
+  // A DSE setting of ALLOW should not flow through to incognito.
+  ASSERT_EQ(CONTENT_SETTING_ASK,
             PermissionManager::Get(otr_profile)
                 ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                       requesting_frame, requesting_frame)

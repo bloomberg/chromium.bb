@@ -5,6 +5,7 @@
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -27,8 +29,11 @@
 
 namespace {
 
-const char kDSESettingKey[] = "dse_setting";
 const char kDSENameKey[] = "dse_name";
+const char kDSEOriginKey[] = "dse_origin";
+const char kDSEGeolocationSettingKey[] = "geolocation_setting_to_restore";
+const char kDSENotificationsSettingKey[] = "notifications_setting_to_restore";
+const char kDSESettingKeyDeprecated[] = "dse_setting";
 
 // Default implementation of SearchEngineDelegate that is used for production
 // code.
@@ -94,7 +99,9 @@ class SearchEngineDelegateImpl
 
 struct SearchPermissionsService::PrefValue {
   base::string16 dse_name;
-  bool setting = false;
+  std::string dse_origin;
+  ContentSetting geolocation_setting_to_restore;
+  ContentSetting notifications_setting_to_restore;
 };
 
 // static
@@ -133,7 +140,8 @@ KeyedService* SearchPermissionsService::Factory::BuildServiceInstanceFor(
 
 void SearchPermissionsService::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(prefs::kDSEGeolocationSetting);
+  registry->RegisterDictionaryPref(prefs::kDSEGeolocationSettingDeprecated);
+  registry->RegisterDictionaryPref(prefs::kDSEPermissionsSettings);
 }
 
 SearchPermissionsService::SearchPermissionsService(Profile* profile)
@@ -148,15 +156,10 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
   delegate_->SetDSEChangedCallback(base::Bind(
       &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 
-  InitializeDSEGeolocationSettingIfNeeded();
-
-  // Make sure the setting is valid now. It's possible that the setting has
-  // become invalid either by changes being made to enterprise policy, or while
-  // the flag to enable consistent search geolocation was off.
-  EnsureDSEGeolocationSettingIsValid();
+  InitializeSettingsIfNeeded();
 }
 
-bool SearchPermissionsService::UseDSEGeolocationSetting(
+bool SearchPermissionsService::ArePermissionsControlledByDSE(
     const url::Origin& requesting_origin) {
   if (requesting_origin.scheme() != url::kHttpsScheme)
     return false;
@@ -164,47 +167,7 @@ bool SearchPermissionsService::UseDSEGeolocationSetting(
   if (!requesting_origin.IsSameOriginWith(delegate_->GetDSEOrigin()))
     return false;
 
-  // If the content setting for the DSE CCTLD is controlled by policy, and is st
-  // to ASK, don't use the DSE geolocation setting.
-  if (!IsContentSettingUserSettable() &&
-      GetCurrentContentSetting() == CONTENT_SETTING_ASK) {
-    return false;
-  }
-
   return true;
-}
-
-bool SearchPermissionsService::GetDSEGeolocationSetting() {
-  // Make sure the setting is valid, in case enterprise policy has changed.
-  // TODO(benwells): Check if enterprise policy can change while Chrome is
-  // running. If it can't this call is probably not needed.
-  EnsureDSEGeolocationSettingIsValid();
-
-  return GetDSEGeolocationPref().setting;
-}
-
-void SearchPermissionsService::SetDSEGeolocationSetting(bool setting) {
-  PrefValue pref = GetDSEGeolocationPref();
-  if (setting == pref.setting)
-    return;
-
-  // If the user cannot change their geolocation content setting (e.g. due to
-  // enterprise policy), they also can't change this preference so just bail
-  // out.
-  if (!IsContentSettingUserSettable())
-    return;
-
-  pref.setting = setting;
-  SetDSEGeolocationPref(pref);
-
-  ResetContentSetting();
-}
-
-url::Origin SearchPermissionsService::GetDSEOriginIfEnabled() {
-  url::Origin dse_origin = delegate_->GetDSEOrigin();
-  if (UseDSEGeolocationSetting(dse_origin))
-    return dse_origin;
-  return url::Origin();
 }
 
 void SearchPermissionsService::Shutdown() {
@@ -214,104 +177,258 @@ void SearchPermissionsService::Shutdown() {
 SearchPermissionsService::~SearchPermissionsService() {}
 
 void SearchPermissionsService::OnDSEChanged() {
-  base::string16 new_dse_name = delegate_->GetDSEName();
-  PrefValue pref = GetDSEGeolocationPref();
-  ContentSetting content_setting = GetCurrentContentSetting();
+  InitializeSettingsIfNeeded();
 
-  // Remove any geolocation embargo on the URL.
-  PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveEmbargoByUrl(
-      delegate_->GetDSEOrigin().GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  if (content_setting == CONTENT_SETTING_BLOCK && pref.setting) {
-    pref.setting = false;
-  } else if (content_setting == CONTENT_SETTING_ALLOW && !pref.setting) {
-    ResetContentSetting();
+  PrefValue pref = GetDSEPref();
+
+  base::string16 new_dse_name = delegate_->GetDSEName();
+  base::string16 old_dse_name = pref.dse_name;
+
+  GURL old_dse_origin(pref.dse_origin);
+  GURL new_dse_origin = delegate_->GetDSEOrigin().GetURL();
+
+  // This can happen in tests.
+  // TODO(raymes): It turns out this can also happen if the DSE is disabled by
+  // policy. This is another case we need to correctly handle.
+  if (!new_dse_origin.is_valid())
+    return;
+
+  // Don't do anything if the DSE name/origin hasn't changed.
+  if (old_dse_origin == new_dse_origin)
+    return;
+
+  ContentSetting geolocation_setting_to_restore = UpdatePermission(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, old_dse_origin, new_dse_origin,
+      pref.geolocation_setting_to_restore, old_dse_name != new_dse_name);
+  ContentSetting notifications_setting_to_restore =
+      pref.notifications_setting_to_restore;
+  // Only update the notifications part of the pref if the feature is enabled.
+  if (base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE)) {
+    notifications_setting_to_restore = UpdatePermission(
+        CONTENT_SETTINGS_TYPE_NOTIFICATIONS, old_dse_origin, new_dse_origin,
+        pref.notifications_setting_to_restore, old_dse_name != new_dse_name);
   }
 
-  if (new_dse_name != pref.dse_name && pref.setting)
-    SearchGeolocationDisclosureTabHelper::ResetDisclosure(profile_);
-
+  // Write the pref for restoring the old values when the DSE changes.
   pref.dse_name = new_dse_name;
-  SetDSEGeolocationPref(pref);
+  pref.dse_origin = new_dse_origin.spec();
+  pref.geolocation_setting_to_restore = geolocation_setting_to_restore;
+  pref.notifications_setting_to_restore = notifications_setting_to_restore;
+  SetDSEPref(pref);
 }
 
-void SearchPermissionsService::InitializeDSEGeolocationSettingIfNeeded() {
-  // Initialize the pref if it hasn't been initialized yet.
-  if (!pref_service_->HasPrefPath(prefs::kDSEGeolocationSetting)) {
-    ContentSetting content_setting = GetCurrentContentSetting();
+ContentSetting SearchPermissionsService::UpdatePermission(
+    ContentSettingsType type,
+    const GURL& old_dse_origin,
+    const GURL& new_dse_origin,
+    ContentSetting old_dse_setting_to_restore,
+    bool dse_name_changed) {
+  // Remove any embargo on the URL.
+  PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveEmbargoByUrl(
+      new_dse_origin, type);
+
+  // Read the current value of the old DSE. This is the DSE setting that we want
+  // to try to apply to the new DSE origin.
+  ContentSetting dse_setting = GetContentSetting(old_dse_origin, type);
+
+  // The user's setting should never be ASK while an origin is the DSE. There
+  // should be no way for the user to reset the DSE content setting to ASK.
+  if (dse_setting == CONTENT_SETTING_ASK) {
+    // The style guide suggests not to handle cases which are invalid code paths
+    // however in this case there are security risks to state being invalid so
+    // we ensure the dse_setting is reverted to BLOCK.
+    dse_setting = CONTENT_SETTING_BLOCK;
+  }
+
+  // Restore the setting for the old origin. If the user has changed the setting
+  // since the origin became the DSE, we reset the setting so the user will be
+  // prompted.
+  if (old_dse_setting_to_restore != dse_setting)
+    old_dse_setting_to_restore = CONTENT_SETTING_ASK;
+  SetContentSetting(old_dse_origin, type, old_dse_setting_to_restore);
+
+  ContentSetting new_dse_setting_to_restore =
+      GetContentSetting(new_dse_origin, type);
+  // If the DSE we're changing to is already blocked, we just leave it in the
+  // blocked state.
+  if (new_dse_setting_to_restore != CONTENT_SETTING_BLOCK) {
+    // If the DSE we're changing to is allowed, but the DSE setting is blocked,
+    // we change the setting to block, but when we restore the setting, we go
+    // back to ask.
+    if (new_dse_setting_to_restore == CONTENT_SETTING_ALLOW &&
+        dse_setting == CONTENT_SETTING_BLOCK) {
+      SetContentSetting(new_dse_origin, type, CONTENT_SETTING_BLOCK);
+      new_dse_setting_to_restore = CONTENT_SETTING_ASK;
+    } else {
+      SetContentSetting(new_dse_origin, type, dse_setting);
+    }
+  }
+
+  // Reset the disclosure if needed.
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION && dse_name_changed &&
+      dse_setting == CONTENT_SETTING_ALLOW) {
+    SearchGeolocationDisclosureTabHelper::ResetDisclosure(profile_);
+  }
+
+  return new_dse_setting_to_restore;
+}
+
+void SearchPermissionsService::InitializeSettingsIfNeeded() {
+  GURL dse_origin = delegate_->GetDSEOrigin().GetURL();
+
+  // This can happen in tests or if the DSE is disabled by policy. We defer
+  // initialization until later.
+  if (!dse_origin.is_valid())
+    return;
+
+  // Initialize the pref for geolocation if it hasn't been initialized yet.
+  if (!pref_service_->HasPrefPath(prefs::kDSEPermissionsSettings)) {
+    ContentSetting geolocation_setting_to_restore =
+        GetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    ContentSetting dse_geolocation_setting = geolocation_setting_to_restore;
+    bool reset_disclosure = true;
+    // Migrate the old geolocation pref if it exists.
+    if (pref_service_->HasPrefPath(prefs::kDSEGeolocationSettingDeprecated)) {
+      // If the DSE geolocation setting is already initialized, it means we've
+      // already setup the disclosure to be shown so we don't need to do it
+      // again.
+      reset_disclosure = false;
+
+      const base::DictionaryValue* dict =
+          pref_service_->GetDictionary(prefs::kDSEGeolocationSettingDeprecated);
+
+      // If the user's content setting is being overridden by the DSE setting,
+      // we migrate the DSE setting to be stored in the user's content setting.
+      bool dse_setting = false;
+      dict->GetBoolean(kDSESettingKeyDeprecated, &dse_setting);
+      if (dse_geolocation_setting == CONTENT_SETTING_ASK) {
+        dse_geolocation_setting =
+            dse_setting ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+      }
+
+      // Delete setting.
+      pref_service_->ClearPref(prefs::kDSEGeolocationSettingDeprecated);
+    } else if (dse_geolocation_setting == CONTENT_SETTING_ASK) {
+      // If the user hasn't explicitly allowed or blocked geolocation for the
+      // DSE, initialize it to allowed.
+      dse_geolocation_setting = CONTENT_SETTING_ALLOW;
+    }
+
+    // Update the content setting with the auto-grants for the DSE.
+    SetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                      dse_geolocation_setting);
+
+    if (reset_disclosure)
+      SearchGeolocationDisclosureTabHelper::ResetDisclosure(profile_);
 
     PrefValue pref;
     pref.dse_name = delegate_->GetDSEName();
-    pref.setting = content_setting != CONTENT_SETTING_BLOCK;
-    SetDSEGeolocationPref(pref);
+    pref.dse_origin = delegate_->GetDSEOrigin().GetURL().spec();
+    pref.geolocation_setting_to_restore = geolocation_setting_to_restore;
+    pref.notifications_setting_to_restore = CONTENT_SETTING_DEFAULT;
+    SetDSEPref(pref);
+  }
 
-    SearchGeolocationDisclosureTabHelper::ResetDisclosure(profile_);
+  // Initialize the notifications part of the pref if needed.
+  PrefValue pref = GetDSEPref();
+  if (base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE) &&
+      pref.notifications_setting_to_restore == CONTENT_SETTING_DEFAULT) {
+    ContentSetting notifications_setting_to_restore =
+        GetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+    ContentSetting dse_notifications_setting = notifications_setting_to_restore;
+    // If the user hasn't explicitly allowed or blocked notifications for the
+    // DSE, initialize it to allowed.
+    if (dse_notifications_setting == CONTENT_SETTING_ASK)
+      dse_notifications_setting = CONTENT_SETTING_ALLOW;
+
+    // Update the content setting with the auto-grants for the DSE.
+    SetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                      dse_notifications_setting);
+
+    // Write the pref for restoring the old values when the DSE changes.
+    pref.notifications_setting_to_restore = notifications_setting_to_restore;
+    SetDSEPref(pref);
+  } else if (!base::FeatureList::IsEnabled(
+                 features::kGrantNotificationsToDSE) &&
+             pref.notifications_setting_to_restore != CONTENT_SETTING_DEFAULT) {
+    // Handle the case where the feature has been disabled. Restore the pref
+    // value and reset the setting to restore to DEFAULT.
+    SetContentSetting(dse_origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                      pref.notifications_setting_to_restore);
+    pref.notifications_setting_to_restore = CONTENT_SETTING_DEFAULT;
+    SetDSEPref(pref);
   }
 }
 
-void SearchPermissionsService::EnsureDSEGeolocationSettingIsValid() {
-  PrefValue pref = GetDSEGeolocationPref();
-  ContentSetting content_setting = GetCurrentContentSetting();
-  bool new_setting = pref.setting;
-
-  if (pref.setting && content_setting == CONTENT_SETTING_BLOCK) {
-    new_setting = false;
-  } else if (!pref.setting && content_setting == CONTENT_SETTING_ALLOW) {
-    new_setting = true;
-  }
-
-  if (pref.setting != new_setting) {
-    pref.setting = new_setting;
-    SetDSEGeolocationPref(pref);
-  }
-}
-
-SearchPermissionsService::PrefValue
-SearchPermissionsService::GetDSEGeolocationPref() {
+SearchPermissionsService::PrefValue SearchPermissionsService::GetDSEPref() {
   const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(prefs::kDSEGeolocationSetting);
+      pref_service_->GetDictionary(prefs::kDSEPermissionsSettings);
 
   PrefValue pref;
   base::string16 dse_name;
-  bool setting;
+  std::string dse_origin;
+  int geolocation_setting_to_restore;
+  int notifications_setting_to_restore;
+
   if (dict->GetString(kDSENameKey, &dse_name) &&
-      dict->GetBoolean(kDSESettingKey, &setting)) {
+      dict->GetString(kDSEOriginKey, &dse_origin) &&
+      dict->GetInteger(kDSEGeolocationSettingKey,
+                       &geolocation_setting_to_restore) &&
+      dict->GetInteger(kDSENotificationsSettingKey,
+                       &notifications_setting_to_restore)) {
     pref.dse_name = dse_name;
-    pref.setting = setting;
+    pref.dse_origin = dse_origin;
+    pref.geolocation_setting_to_restore =
+        IntToContentSetting(geolocation_setting_to_restore);
+    pref.notifications_setting_to_restore =
+        IntToContentSetting(notifications_setting_to_restore);
   }
 
   return pref;
 }
 
-void SearchPermissionsService::SetDSEGeolocationPref(
+void SearchPermissionsService::SetDSEPref(
     const SearchPermissionsService::PrefValue& pref) {
   base::DictionaryValue dict;
   dict.SetString(kDSENameKey, pref.dse_name);
-  dict.SetBoolean(kDSESettingKey, pref.setting);
-  pref_service_->Set(prefs::kDSEGeolocationSetting, dict);
+  dict.SetString(kDSEOriginKey, pref.dse_origin);
+  dict.SetInteger(kDSEGeolocationSettingKey,
+                  pref.geolocation_setting_to_restore);
+  dict.SetInteger(kDSENotificationsSettingKey,
+                  pref.notifications_setting_to_restore);
+  pref_service_->Set(prefs::kDSEPermissionsSettings, dict);
 }
 
-ContentSetting SearchPermissionsService::GetCurrentContentSetting() {
-  url::Origin origin = delegate_->GetDSEOrigin();
-  return host_content_settings_map_->GetContentSetting(
-      origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string());
+ContentSetting SearchPermissionsService::GetContentSetting(
+    const GURL& origin,
+    ContentSettingsType type) {
+  // TODO(raymes): For this to be correct, it should only query the user-defined
+  // settings in HostContentSettingsMap. Add a function to do this.
+  return host_content_settings_map_->GetContentSetting(origin, origin, type,
+                                                       std::string());
 }
 
-void SearchPermissionsService::ResetContentSetting() {
-  url::Origin origin = delegate_->GetDSEOrigin();
+void SearchPermissionsService::SetContentSetting(const GURL& origin,
+                                                 ContentSettingsType type,
+                                                 ContentSetting setting) {
+  // Clear a setting before setting it. This is needed because in general
+  // notifications settings can't be changed from ALLOW<->BLOCK on Android O+.
+  // We need to change the setting from ALLOW->BLOCK in one case, where the
+  // previous DSE had permission blocked but the new DSE we're changing to has
+  // permission allowed. Thus this works around that restriction.
+  // WARNING: This is a special case and in general notification settings should
+  // never be changed between ALLOW<->BLOCK on Android. Do not copy this code.
+  // Check with the notifications team if you need to do something like this.
   host_content_settings_map_->SetContentSettingDefaultScope(
-      origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
-      std::string(), CONTENT_SETTING_DEFAULT);
-}
+      origin, origin, type, std::string(), CONTENT_SETTING_DEFAULT);
 
-bool SearchPermissionsService::IsContentSettingUserSettable() {
-  content_settings::SettingInfo info;
-  url::Origin origin = delegate_->GetDSEOrigin();
-  std::unique_ptr<base::Value> value =
-      host_content_settings_map_->GetWebsiteSetting(
-          origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string(), &info);
-  return info.source == content_settings::SETTING_SOURCE_USER;
+  // If we're restoring an ASK setting, it really implies that we should delete
+  // the user-defined setting to fall back to the default.
+  if (setting == CONTENT_SETTING_ASK)
+    return;  // We deleted the setting above already.
+
+  host_content_settings_map_->SetContentSettingDefaultScope(
+      origin, origin, type, std::string(), setting);
 }
 
 void SearchPermissionsService::SetSearchEngineDelegateForTest(

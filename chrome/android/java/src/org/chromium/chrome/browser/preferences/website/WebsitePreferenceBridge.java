@@ -218,26 +218,11 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
-     * Returns whether the DSE (Default Search Engine) geolocation setting should be used to
-     * determine geolocation access for the given origin.
+     * Returns whether the DSE (Default Search Engine) controls the geolocation
+     * and notifications settings for the given origin.
      */
-    public static boolean shouldUseDSEGeolocationSetting(
-            String origin, boolean isIncognito) {
-        return nativeShouldUseDSEGeolocationSetting(origin, isIncognito);
-    }
-
-    /**
-     * Returns the DSE (Default Search Engine) geolocation setting.
-     */
-    public static boolean getDSEGeolocationSetting() {
-        return nativeGetDSEGeolocationSetting();
-    }
-
-    /**
-     * Sets the DSE (Default Search Engine) geolocation setting.
-     */
-    public static void setDSEGeolocationSetting(boolean setting) {
-        nativeSetDSEGeolocationSetting(setting);
+    public static boolean arePermissionsControlledByDSE(String origin, boolean isIncognito) {
+        return nativeArePermissionsControlledByDSE(origin, isIncognito);
     }
 
     /**
@@ -289,9 +274,7 @@ public abstract class WebsitePreferenceBridge {
     static native void nativeGetUsbOrigins(Object list);
     static native void nativeRevokeUsbPermission(String origin, String embedder, String object);
     static native void nativeClearBannerData(String origin);
-    private static native boolean nativeShouldUseDSEGeolocationSetting(
+    private static native boolean nativeArePermissionsControlledByDSE(
             String origin, boolean isIncognito);
-    private static native boolean nativeGetDSEGeolocationSetting();
-    private static native void nativeSetDSEGeolocationSetting(boolean setting);
     private static native boolean nativeGetAdBlockingActivated(String origin);
 }
