@@ -233,6 +233,7 @@ noback before voy always gl 345
 nofor before voyabr before voyabr2 begmidword gl 345
 noback always gn 2356
 nofor before voyabr midword gn 2356
+nofor midendword gnable 2356-45
 nofor midendword gnai 2356-34
 nofor before conabr midword gnan 2356-2
 nofor before voyabr2 midword gn 2356
@@ -2320,8 +2321,19 @@ compbrl .wav
 compbrl .tar
 compbrl .zip
 
-nofor pass2 $l[]@256$l@256 @56
-nofor context [@56-256]$l "."
+nofor pass3 $l[]@256$l@256 @56-56
+nofor pass2 @56-56-256$l[]@256 @56-56
+nofor context [@56-56-256] "."
+nofor correct "m.s." "miens."
+nofor correct "v.s." "viens."
+nofor correct "t.s." "tiens."
+nofor correct "v.t." "vient."
+nofor correct "t.t." "tient."
+nofor pass3 @46$l[]@256@46$l@256 @56-56
+nofor pass2 @56-56-256-46$l[]@256 @56-56
+nofor context [@56-56-256] "."
+
+
 nofor pass2 $a[]$d@56 @6
 nofor pass3 $a$d[@56] @0-56-346-0-1-356-25-0-56
 nofor correct "\só\sa):\s" ?
