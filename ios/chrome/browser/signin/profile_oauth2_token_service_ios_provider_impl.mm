@@ -25,7 +25,7 @@ ProfileOAuth2TokenServiceIOSProvider::AccountInfo GetAccountInfo(
   ProfileOAuth2TokenServiceIOSProvider::AccountInfo account_info;
   if (identity) {
     account_info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
-    account_info.email = GetCanonicalizedEmailForIdentity(identity);
+    account_info.email = base::SysNSStringToUTF8([identity userEmail]);
   }
   return account_info;
 }
