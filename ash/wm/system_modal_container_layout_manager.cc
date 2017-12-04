@@ -140,8 +140,6 @@ void SystemModalContainerLayoutManager::
   PositionDialogsAfterWorkAreaResize();
 }
 
-void SystemModalContainerLayoutManager::OnKeyboardClosed() {}
-
 bool SystemModalContainerLayoutManager::IsPartOfActiveModalWindow(
     aura::Window* window) {
   return modal_window() &&

@@ -289,8 +289,6 @@ void ArcImeService::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   ime_bridge_->SendOnKeyboardBoundsChanging(bounds_in_px);
 }
 
-void ArcImeService::OnKeyboardClosed() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from ui::TextInputClient:
 

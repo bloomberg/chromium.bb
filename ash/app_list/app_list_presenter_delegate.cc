@@ -265,8 +265,6 @@ void AppListPresenterDelegate::OnKeyboardWorkspaceOccludedBoundsChanging(
   UpdateBounds();
 }
 
-void AppListPresenterDelegate::OnKeyboardClosed() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterDelegate, ShellObserver implementation:
 void AppListPresenterDelegate::OnOverviewModeStarting() {
