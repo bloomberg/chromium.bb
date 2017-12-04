@@ -317,46 +317,60 @@ class AndroidNetworkLibrary {
                 this.fd = mPfd.getFileDescriptor();
             }
 
+            @Override
             protected void accept(SocketImpl s) {
                 throw new RuntimeException("accept not implemented");
             }
+            @Override
             protected int available() {
                 throw new RuntimeException("accept not implemented");
             }
+            @Override
             protected void bind(InetAddress host, int port) {
                 throw new RuntimeException("accept not implemented");
             }
+            @Override
             protected void close() {
                 // Detach from |fd| to avoid leak detection false positives without closing |fd|.
                 mPfd.detachFd();
             }
+            @Override
             protected void connect(InetAddress address, int port) {
                 throw new RuntimeException("connect not implemented");
             }
+            @Override
             protected void connect(SocketAddress address, int timeout) {
                 throw new RuntimeException("connect not implemented");
             }
+            @Override
             protected void connect(String host, int port) {
                 throw new RuntimeException("connect not implemented");
             }
+            @Override
             protected void create(boolean stream) {
                 throw new RuntimeException("create not implemented");
             }
+            @Override
             protected InputStream getInputStream() {
                 throw new RuntimeException("getInputStream not implemented");
             }
+            @Override
             protected OutputStream getOutputStream() {
                 throw new RuntimeException("getOutputStream not implemented");
             }
+            @Override
             protected void listen(int backlog) {
                 throw new RuntimeException("listen not implemented");
             }
+            @Override
             protected void sendUrgentData(int data) {
                 throw new RuntimeException("sendUrgentData not implemented");
             }
+            @Override
             public Object getOption(int optID) {
                 throw new RuntimeException("getOption not implemented");
             }
+            @Override
             public void setOption(int optID, Object value) {
                 throw new RuntimeException("setOption not implemented");
             }
