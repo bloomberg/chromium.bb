@@ -123,6 +123,9 @@ class DirectOutputSurface : public viz::OutputSurface {
   bool SurfaceIsSuspendForRecycle() const override { return false; }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanSurface* GetVulkanSurface() override { return nullptr; }
+#endif
 
  private:
   void OnSwapBuffersComplete(uint64_t swap_id) {

@@ -10,6 +10,9 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/vulkan/features.h"
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
+#endif
 
 namespace gpu {
 class VulkanDeviceQueue;
@@ -24,6 +27,7 @@ class VIZ_COMMON_EXPORT VulkanInProcessContextProvider
 
   bool Initialize();
   void Destroy();
+  GrContext* GetGrContext() override;
 
   // VulkanContextProvider implementation
   gpu::VulkanDeviceQueue* GetDeviceQueue() override;
@@ -33,8 +37,10 @@ class VIZ_COMMON_EXPORT VulkanInProcessContextProvider
   ~VulkanInProcessContextProvider() override;
 
  private:
+  GrContext* gr_context_;
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
+  sk_sp<GrVkBackendContext> backend_context_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VulkanInProcessContextProvider);

@@ -26,20 +26,21 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
 }
 
 bool VulkanDeviceQueue::Initialize(uint32_t options) {
-  VkInstance vk_instance = gpu::GetVulkanInstance();
-  if (VK_NULL_HANDLE == vk_instance)
+  vk_instance_ = gpu::GetVulkanInstance();
+
+  if (VK_NULL_HANDLE == vk_instance_)
     return false;
 
   VkResult result = VK_SUCCESS;
 
   uint32_t device_count = 0;
-  result = vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr);
+  result = vkEnumeratePhysicalDevices(vk_instance_, &device_count, nullptr);
   if (VK_SUCCESS != result || device_count == 0)
     return false;
 
   std::vector<VkPhysicalDevice> devices(device_count);
   result =
-      vkEnumeratePhysicalDevices(vk_instance, &device_count, devices.data());
+      vkEnumeratePhysicalDevices(vk_instance_, &device_count, devices.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
     return false;

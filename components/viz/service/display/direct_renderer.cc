@@ -471,6 +471,13 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     return;
   UseRenderPass(render_pass);
 
+  // TODO(crbug.com/582554): This change applies only when Vulkan is enabled and
+  // it will be removed once SkiaRenderer has complete support for Vulkan.
+  if (current_frame()->current_render_pass !=
+          current_frame()->root_render_pass &&
+      !IsRenderPassResourceAllocated(render_pass->id))
+    return;
+
   const gfx::Rect surface_rect_in_draw_space = OutputSurfaceRectInDrawSpace();
   gfx::Rect render_pass_scissor_in_draw_space = surface_rect_in_draw_space;
 
@@ -618,6 +625,11 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
 
   AllocateRenderPassResourceIfNeeded(render_pass->id, enlarged_size,
                                      RenderPassTextureHint(render_pass));
+
+  // TODO(crbug.com/582554): This change applies only when Vulkan is enabled and
+  // it will be removed once SkiaRenderer has complete support for Vulkan.
+  if (!IsRenderPassResourceAllocated(render_pass->id))
+    return;
 
   BindFramebufferToTexture(render_pass->id);
   InitializeViewport(current_frame(), render_pass->output_rect,

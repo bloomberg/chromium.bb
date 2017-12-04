@@ -51,19 +51,10 @@ if (enable_vulkan) {
       ]
 
       configs += [ "//build/config:precompiled_headers" ]
+
       defines = [ "VULKAN_IMPLEMENTATION" ]
 
-      all_dependent_configs = [ "//third_party/vulkan:vulkan_headers" ]
-      libs = [ "vulkan" ]
-
-      if (current_cpu == "x64") {
-        lib_dirs = [
-          "/usr/lib/x86_64-linux-gnu",
-          vulkan_lib_dir,
-        ]
-      } else {
-        assert(false, "Unsupported vulkan target: " + current_cpu)
-      }
+      all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 
       deps = [
         "//base",

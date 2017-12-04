@@ -9,6 +9,7 @@
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/vulkan/features.h"
 #include "ui/latency/latency_info.h"
 
 class SkNWayCanvas;

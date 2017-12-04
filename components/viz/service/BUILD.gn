@@ -240,11 +240,6 @@ viz_component("service") {
   }
 
   if (enable_vulkan) {
-    sources += [
-      "display/vulkan_renderer.cc",
-      "display/vulkan_renderer.h",
-    ]
-
     deps += [ "//gpu/vulkan" ]
   }
 }

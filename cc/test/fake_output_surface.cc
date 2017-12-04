@@ -106,4 +106,11 @@ unsigned FakeOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
+gpu::VulkanSurface* FakeOutputSurface::GetVulkanSurface() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+#endif
+
 }  // namespace cc

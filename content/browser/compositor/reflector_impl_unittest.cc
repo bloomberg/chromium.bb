@@ -118,6 +118,10 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
   void SetSurfaceSuspendedForRecycle(bool suspended) override {}
 #endif
 
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanSurface* GetVulkanSurface() override { return nullptr; }
+#endif
+
  private:
   std::unique_ptr<ReflectorTexture> reflector_texture_;
 };

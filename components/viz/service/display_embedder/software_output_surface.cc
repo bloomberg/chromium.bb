@@ -128,4 +128,11 @@ void SoftwareOutputSurface::SwapBuffersCallback(uint64_t swap_id) {
       gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
+gpu::VulkanSurface* SoftwareOutputSurface::GetVulkanSurface() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+#endif
+
 }  // namespace viz

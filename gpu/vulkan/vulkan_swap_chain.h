@@ -52,6 +52,11 @@ class VulkanSwapChain {
     return images_[current_image_]->command_buffer.get();
   }
 
+  VkImage GetCurrentImage(uint32_t index) const {
+    DCHECK_LT(index, images_.size());
+    return images_[index]->image;
+  }
+
  private:
   bool InitializeSwapChain(VkSurfaceKHR surface,
                            const VkSurfaceCapabilitiesKHR& surface_caps,

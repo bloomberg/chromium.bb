@@ -169,4 +169,11 @@ void GLOutputSurface::OnPresentation(
   client_->DidReceivePresentationFeedback(swap_id, feedback);
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
+gpu::VulkanSurface* GLOutputSurface::GetVulkanSurface() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+#endif
+
 }  // namespace viz
