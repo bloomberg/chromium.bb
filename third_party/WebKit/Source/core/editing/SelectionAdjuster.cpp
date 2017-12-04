@@ -36,181 +36,6 @@
 
 namespace blink {
 
-namespace {
-
-Node* EnclosingShadowHost(Node* node) {
-  for (Node* runner = node; runner;
-       runner = FlatTreeTraversal::Parent(*runner)) {
-    if (IsShadowHost(runner))
-      return runner;
-  }
-  return nullptr;
-}
-
-bool IsEnclosedBy(const PositionInFlatTree& position, const Node& node) {
-  DCHECK(position.IsNotNull());
-  Node* anchor_node = position.AnchorNode();
-  if (anchor_node == node)
-    return !position.IsAfterAnchor() && !position.IsBeforeAnchor();
-
-  return FlatTreeTraversal::IsDescendantOf(*anchor_node, node);
-}
-
-bool IsSelectionBoundary(const Node& node) {
-  return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
-         IsHTMLSelectElement(node);
-}
-
-Node* EnclosingShadowHostForStart(const PositionInFlatTree& position) {
-  Node* node = position.NodeAsRangeFirstNode();
-  if (!node)
-    return nullptr;
-  Node* shadow_host = EnclosingShadowHost(node);
-  if (!shadow_host)
-    return nullptr;
-  if (!IsEnclosedBy(position, *shadow_host))
-    return nullptr;
-  return IsSelectionBoundary(*shadow_host) ? shadow_host : nullptr;
-}
-
-Node* EnclosingShadowHostForEnd(const PositionInFlatTree& position) {
-  Node* node = position.NodeAsRangeLastNode();
-  if (!node)
-    return nullptr;
-  Node* shadow_host = EnclosingShadowHost(node);
-  if (!shadow_host)
-    return nullptr;
-  if (!IsEnclosedBy(position, *shadow_host))
-    return nullptr;
-  return IsSelectionBoundary(*shadow_host) ? shadow_host : nullptr;
-}
-
-PositionInFlatTree AdjustPositionInFlatTreeForStart(
-    const PositionInFlatTree& position,
-    Node* shadow_host) {
-  if (IsEnclosedBy(position, *shadow_host)) {
-    if (position.IsBeforeChildren())
-      return PositionInFlatTree::BeforeNode(*shadow_host);
-    return PositionInFlatTree::AfterNode(*shadow_host);
-  }
-
-  // We use |firstChild|'s after instead of beforeAllChildren for backward
-  // compatibility. The positions are same but the anchors would be different,
-  // and selection painting uses anchor nodes.
-  if (Node* first_child = FlatTreeTraversal::FirstChild(*shadow_host))
-    return PositionInFlatTree::BeforeNode(*first_child);
-  return PositionInFlatTree();
-}
-
-Position AdjustPositionForEnd(const Position& current_position,
-                              Node* start_container_node) {
-  TreeScope& tree_scope = start_container_node->GetTreeScope();
-
-  DCHECK(current_position.ComputeContainerNode()->GetTreeScope() != tree_scope);
-
-  if (Node* ancestor = tree_scope.AncestorInThisScope(
-          current_position.ComputeContainerNode())) {
-    if (ancestor->contains(start_container_node))
-      return Position::AfterNode(*ancestor);
-    return Position::BeforeNode(*ancestor);
-  }
-
-  if (Node* last_child = tree_scope.RootNode().lastChild())
-    return Position::AfterNode(*last_child);
-
-  return Position();
-}
-
-PositionInFlatTree AdjustPositionInFlatTreeForEnd(
-    const PositionInFlatTree& position,
-    Node* shadow_host) {
-  if (IsEnclosedBy(position, *shadow_host)) {
-    if (position.IsAfterChildren())
-      return PositionInFlatTree::AfterNode(*shadow_host);
-    return PositionInFlatTree::BeforeNode(*shadow_host);
-  }
-
-  // We use |lastChild|'s after instead of afterAllChildren for backward
-  // compatibility. The positions are same but the anchors would be different,
-  // and selection painting uses anchor nodes.
-  if (Node* last_child = FlatTreeTraversal::LastChild(*shadow_host))
-    return PositionInFlatTree::AfterNode(*last_child);
-  return PositionInFlatTree();
-}
-
-Position AdjustPositionForStart(const Position& current_position,
-                                Node* end_container_node) {
-  TreeScope& tree_scope = end_container_node->GetTreeScope();
-
-  DCHECK(current_position.ComputeContainerNode()->GetTreeScope() != tree_scope);
-
-  if (Node* ancestor = tree_scope.AncestorInThisScope(
-          current_position.ComputeContainerNode())) {
-    if (ancestor->contains(end_container_node))
-      return Position::BeforeNode(*ancestor);
-    return Position::AfterNode(*ancestor);
-  }
-
-  if (Node* first_child = tree_scope.RootNode().firstChild())
-    return Position::BeforeNode(*first_child);
-
-  return Position();
-}
-
-// TODO(hajimehoshi): Checking treeScope is wrong when a node is
-// distributed, but we leave it as it is for backward compatibility.
-bool IsCrossingShadowBoundaries(const EphemeralRange& range) {
-  DCHECK(range.IsNotNull());
-  return range.StartPosition().AnchorNode()->GetTreeScope() !=
-         range.EndPosition().AnchorNode()->GetTreeScope();
-}
-
-}  // namespace
-
-Position SelectionAdjuster::AdjustSelectionStartToAvoidCrossingShadowBoundaries(
-    const EphemeralRange& range) {
-  DCHECK(range.IsNotNull());
-  if (!IsCrossingShadowBoundaries(range))
-    return range.StartPosition();
-  return AdjustPositionForStart(range.StartPosition(),
-                                range.EndPosition().ComputeContainerNode());
-}
-
-Position SelectionAdjuster::AdjustSelectionEndToAvoidCrossingShadowBoundaries(
-    const EphemeralRange& range) {
-  DCHECK(range.IsNotNull());
-  if (!IsCrossingShadowBoundaries(range))
-    return range.EndPosition();
-  return AdjustPositionForEnd(range.EndPosition(),
-                              range.StartPosition().ComputeContainerNode());
-}
-
-PositionInFlatTree
-SelectionAdjuster::AdjustSelectionStartToAvoidCrossingShadowBoundaries(
-    const EphemeralRangeInFlatTree& range) {
-  Node* const shadow_host_start =
-      EnclosingShadowHostForStart(range.StartPosition());
-  Node* const shadow_host_end = EnclosingShadowHostForEnd(range.EndPosition());
-  if (shadow_host_start == shadow_host_end)
-    return range.StartPosition();
-  Node* const shadow_host =
-      shadow_host_end ? shadow_host_end : shadow_host_start;
-  return AdjustPositionInFlatTreeForStart(range.StartPosition(), shadow_host);
-}
-
-PositionInFlatTree
-SelectionAdjuster::AdjustSelectionEndToAvoidCrossingShadowBoundaries(
-    const EphemeralRangeInFlatTree& range) {
-  Node* const shadow_host_start =
-      EnclosingShadowHostForStart(range.StartPosition());
-  Node* const shadow_host_end = EnclosingShadowHostForEnd(range.EndPosition());
-  if (shadow_host_start == shadow_host_end)
-    return range.EndPosition();
-  Node* const shadow_host =
-      shadow_host_start ? shadow_host_start : shadow_host_end;
-  return AdjustPositionInFlatTreeForEnd(range.EndPosition(), shadow_host);
-}
-
 class GranularityAdjuster final {
   STATIC_ONLY(GranularityAdjuster);
 
@@ -471,11 +296,9 @@ class ShadowBoundaryAdjuster final {
         granularity_adjusted_selection.IsBaseFirst()
             ? EphemeralRangeTemplate<Strategy>(
                   expanded_range.StartPosition(),
-                  SelectionAdjuster::
                       AdjustSelectionEndToAvoidCrossingShadowBoundaries(
                           expanded_range))
             : EphemeralRangeTemplate<Strategy>(
-                  SelectionAdjuster::
                       AdjustSelectionStartToAvoidCrossingShadowBoundaries(
                           expanded_range),
                   expanded_range.EndPosition());
@@ -483,6 +306,181 @@ class ShadowBoundaryAdjuster final {
     return granularity_adjusted_selection.IsBaseFirst()
                ? builder.SetAsForwardSelection(shadow_adjusted_range).Build()
                : builder.SetAsBackwardSelection(shadow_adjusted_range).Build();
+  }
+
+ private:
+  static Node* EnclosingShadowHost(Node* node) {
+    for (Node* runner = node; runner;
+         runner = FlatTreeTraversal::Parent(*runner)) {
+      if (IsShadowHost(runner))
+        return runner;
+    }
+    return nullptr;
+  }
+
+  static bool IsEnclosedBy(const PositionInFlatTree& position,
+                           const Node& node) {
+    DCHECK(position.IsNotNull());
+    Node* anchor_node = position.AnchorNode();
+    if (anchor_node == node)
+      return !position.IsAfterAnchor() && !position.IsBeforeAnchor();
+
+    return FlatTreeTraversal::IsDescendantOf(*anchor_node, node);
+  }
+
+  static bool IsSelectionBoundary(const Node& node) {
+    return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
+           IsHTMLSelectElement(node);
+  }
+
+  static Node* EnclosingShadowHostForStart(const PositionInFlatTree& position) {
+    Node* node = position.NodeAsRangeFirstNode();
+    if (!node)
+      return nullptr;
+    Node* shadow_host = EnclosingShadowHost(node);
+    if (!shadow_host)
+      return nullptr;
+    if (!IsEnclosedBy(position, *shadow_host))
+      return nullptr;
+    return IsSelectionBoundary(*shadow_host) ? shadow_host : nullptr;
+  }
+
+  static Node* EnclosingShadowHostForEnd(const PositionInFlatTree& position) {
+    Node* node = position.NodeAsRangeLastNode();
+    if (!node)
+      return nullptr;
+    Node* shadow_host = EnclosingShadowHost(node);
+    if (!shadow_host)
+      return nullptr;
+    if (!IsEnclosedBy(position, *shadow_host))
+      return nullptr;
+    return IsSelectionBoundary(*shadow_host) ? shadow_host : nullptr;
+  }
+
+  static PositionInFlatTree AdjustPositionInFlatTreeForStart(
+      const PositionInFlatTree& position,
+      Node* shadow_host) {
+    if (IsEnclosedBy(position, *shadow_host)) {
+      if (position.IsBeforeChildren())
+        return PositionInFlatTree::BeforeNode(*shadow_host);
+      return PositionInFlatTree::AfterNode(*shadow_host);
+    }
+
+    // We use |firstChild|'s after instead of beforeAllChildren for backward
+    // compatibility. The positions are same but the anchors would be different,
+    // and selection painting uses anchor nodes.
+    if (Node* first_child = FlatTreeTraversal::FirstChild(*shadow_host))
+      return PositionInFlatTree::BeforeNode(*first_child);
+    return PositionInFlatTree();
+  }
+
+  static Position AdjustPositionForEnd(const Position& current_position,
+                                       Node* start_container_node) {
+    TreeScope& tree_scope = start_container_node->GetTreeScope();
+
+    DCHECK(current_position.ComputeContainerNode()->GetTreeScope() !=
+           tree_scope);
+
+    if (Node* ancestor = tree_scope.AncestorInThisScope(
+            current_position.ComputeContainerNode())) {
+      if (ancestor->contains(start_container_node))
+        return Position::AfterNode(*ancestor);
+      return Position::BeforeNode(*ancestor);
+    }
+
+    if (Node* last_child = tree_scope.RootNode().lastChild())
+      return Position::AfterNode(*last_child);
+
+    return Position();
+  }
+
+  static PositionInFlatTree AdjustPositionInFlatTreeForEnd(
+      const PositionInFlatTree& position,
+      Node* shadow_host) {
+    if (IsEnclosedBy(position, *shadow_host)) {
+      if (position.IsAfterChildren())
+        return PositionInFlatTree::AfterNode(*shadow_host);
+      return PositionInFlatTree::BeforeNode(*shadow_host);
+    }
+
+    // We use |lastChild|'s after instead of afterAllChildren for backward
+    // compatibility. The positions are same but the anchors would be different,
+    // and selection painting uses anchor nodes.
+    if (Node* last_child = FlatTreeTraversal::LastChild(*shadow_host))
+      return PositionInFlatTree::AfterNode(*last_child);
+    return PositionInFlatTree();
+  }
+
+  static Position AdjustPositionForStart(const Position& current_position,
+                                         Node* end_container_node) {
+    TreeScope& tree_scope = end_container_node->GetTreeScope();
+
+    DCHECK(current_position.ComputeContainerNode()->GetTreeScope() !=
+           tree_scope);
+
+    if (Node* ancestor = tree_scope.AncestorInThisScope(
+            current_position.ComputeContainerNode())) {
+      if (ancestor->contains(end_container_node))
+        return Position::BeforeNode(*ancestor);
+      return Position::AfterNode(*ancestor);
+    }
+
+    if (Node* first_child = tree_scope.RootNode().firstChild())
+      return Position::BeforeNode(*first_child);
+
+    return Position();
+  }
+
+  // TODO(hajimehoshi): Checking treeScope is wrong when a node is
+  // distributed, but we leave it as it is for backward compatibility.
+  static bool IsCrossingShadowBoundaries(const EphemeralRange& range) {
+    DCHECK(range.IsNotNull());
+    return range.StartPosition().AnchorNode()->GetTreeScope() !=
+           range.EndPosition().AnchorNode()->GetTreeScope();
+  }
+
+  static Position AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+      const EphemeralRange& range) {
+    DCHECK(range.IsNotNull());
+    if (!IsCrossingShadowBoundaries(range))
+      return range.StartPosition();
+    return AdjustPositionForStart(range.StartPosition(),
+                                  range.EndPosition().ComputeContainerNode());
+  }
+
+  static Position AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+      const EphemeralRange& range) {
+    DCHECK(range.IsNotNull());
+    if (!IsCrossingShadowBoundaries(range))
+      return range.EndPosition();
+    return AdjustPositionForEnd(range.EndPosition(),
+                                range.StartPosition().ComputeContainerNode());
+  }
+
+  static PositionInFlatTree AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+      const EphemeralRangeInFlatTree& range) {
+    Node* const shadow_host_start =
+        EnclosingShadowHostForStart(range.StartPosition());
+    Node* const shadow_host_end =
+        EnclosingShadowHostForEnd(range.EndPosition());
+    if (shadow_host_start == shadow_host_end)
+      return range.StartPosition();
+    Node* const shadow_host =
+        shadow_host_end ? shadow_host_end : shadow_host_start;
+    return AdjustPositionInFlatTreeForStart(range.StartPosition(), shadow_host);
+  }
+
+  static PositionInFlatTree AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+      const EphemeralRangeInFlatTree& range) {
+    Node* const shadow_host_start =
+        EnclosingShadowHostForStart(range.StartPosition());
+    Node* const shadow_host_end =
+        EnclosingShadowHostForEnd(range.EndPosition());
+    if (shadow_host_start == shadow_host_end)
+      return range.EndPosition();
+    Node* const shadow_host =
+        shadow_host_start ? shadow_host_start : shadow_host_end;
+    return AdjustPositionInFlatTreeForEnd(range.EndPosition(), shadow_host);
   }
 };
 
