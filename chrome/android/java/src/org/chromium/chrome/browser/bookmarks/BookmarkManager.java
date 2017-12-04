@@ -285,7 +285,15 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         if (mBookmarkModel == null) return;
 
         if (mBookmarkModel.isBookmarkModelLoaded()) {
+            BookmarkUIState searchState = null;
+            if (!mStateStack.isEmpty()
+                    && mStateStack.peek().mState == BookmarkUIState.STATE_SEARCHING) {
+                searchState = mStateStack.pop();
+            }
+
             setState(BookmarkUIState.createStateFromUrl(url, mBookmarkModel));
+
+            if (searchState != null) setState(searchState);
         } else {
             mInitialUrl = url;
         }
@@ -330,8 +338,9 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         }
         mStateStack.push(state);
 
-        if (state.mState != BookmarkUIState.STATE_LOADING) {
-            // Loading state may be pushed to the stack but should never be stored in preferences.
+        if (state.mState == BookmarkUIState.STATE_FOLDER) {
+            // Loading and searching states may be pushed to the stack but should never be stored in
+            // preferences.
             BookmarkUtils.setLastUsedUrl(mActivity, state.mUrl);
             // If a loading state is replaced by another loading state, do not notify this change.
             if (mNativePage != null) {
