@@ -40,6 +40,14 @@ bool SpeechMonitor::DidStop() {
   return did_stop_;
 }
 
+void SpeechMonitor::BlockUntilStop() {
+  if (!did_stop_) {
+    loop_runner_ = new content::MessageLoopRunner();
+    loop_runner_->Run();
+    loop_runner_ = NULL;
+  }
+}
+
 bool SpeechMonitor::SkipChromeVoxMessage(const std::string& message) {
   while (true) {
     if (utterance_queue_.empty()) {
