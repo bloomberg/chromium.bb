@@ -17,6 +17,8 @@
 #include "core/css/parser/CSSParserTokenStream.h"
 #include "core/css/parser/CSSTokenizer.h"
 
+#include <numeric>
+
 namespace blink {
 
 namespace {
@@ -141,6 +143,15 @@ CSSNumericValue* CalcToNumericValue(const CSSCalcExpressionNode& root) {
   return CSSMathProduct::Create(std::move(values));
 }
 
+CSSUnitValue* CSSNumericSumValueEntryToUnitValue(
+    const CSSNumericSumValue::Term& term) {
+  if (term.units.size() == 0)
+    return CSSUnitValue::Create(term.value);
+  if (term.units.size() == 1 && term.units.begin()->value == 1)
+    return CSSUnitValue::Create(term.value, term.units.begin()->key);
+  return nullptr;
+}
+
 }  // namespace
 
 bool CSSNumericValue::IsValidUnit(CSSPrimitiveValue::UnitType unit) {
@@ -241,14 +252,87 @@ CSSUnitValue* CSSNumericValue::to(CSSPrimitiveValue::UnitType unit) const {
   if (!sum || sum->terms.size() != 1)
     return nullptr;
 
-  const auto& term = sum->terms[0];
-  if (term.units.size() == 0)
-    return CSSUnitValue::Create(term.value)->ConvertTo(unit);
-  if (term.units.size() == 1 && term.units.begin()->value == 1) {
-    return CSSUnitValue::Create(term.value, term.units.begin()->key)
-        ->ConvertTo(unit);
+  CSSUnitValue* value = CSSNumericSumValueEntryToUnitValue(sum->terms[0]);
+  if (!value)
+    return nullptr;
+  return value->ConvertTo(unit);
+}
+
+CSSMathSum* CSSNumericValue::toSum(const Vector<String>& unit_strings,
+                                   ExceptionState& exception_state) {
+  for (const auto& unit_string : unit_strings) {
+    if (!IsValidUnit(UnitFromName(unit_string))) {
+      exception_state.ThrowDOMException(kSyntaxError,
+                                        "Invalid unit for conversion");
+      return nullptr;
+    }
   }
-  return nullptr;
+
+  const WTF::Optional<CSSNumericSumValue> sum = SumValue();
+  if (!sum) {
+    exception_state.ThrowTypeError("Invalid value for conversion");
+    return nullptr;
+  }
+
+  CSSNumericValueVector values;
+  for (const auto& term : sum->terms) {
+    CSSUnitValue* value = CSSNumericSumValueEntryToUnitValue(term);
+    if (!value) {
+      exception_state.ThrowTypeError("Invalid value for conversion");
+      return nullptr;
+    }
+    values.push_back(value);
+  }
+
+  if (unit_strings.size() == 0) {
+    std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {
+      return WTF::CodePointCompareLessThan(ToCSSUnitValue(a)->unit(),
+                                           ToCSSUnitValue(b)->unit());
+    });
+
+    // We got 'values' from a sum value, so it must be a valid CSSMathSum.
+    CSSMathSum* result = CSSMathSum::Create(values);
+    DCHECK(result);
+    return result;
+  }
+
+  CSSNumericValueVector result;
+  for (const auto& unit_string : unit_strings) {
+    CSSPrimitiveValue::UnitType target_unit = UnitFromName(unit_string);
+    DCHECK(IsValidUnit(target_unit));
+
+    // Collect all the terms that are compatible with this unit.
+    // We mark used terms as null so we don't use them again.
+    double total_value =
+        std::accumulate(values.begin(), values.end(), 0.0,
+                        [target_unit](double cur_sum, auto& value) {
+                          if (value) {
+                            auto& unit_value = ToCSSUnitValue(*value);
+                            if (const auto* converted_value =
+                                    unit_value.ConvertTo(target_unit)) {
+                              cur_sum += converted_value->value();
+                              value = nullptr;
+                            }
+                          }
+                          return cur_sum;
+                        });
+
+    result.push_back(CSSUnitValue::Create(total_value, target_unit));
+  }
+
+  if (std::any_of(values.begin(), values.end(),
+                  [](const auto& v) { return v; })) {
+    exception_state.ThrowTypeError(
+        "There were leftover terms that were not converted");
+    return nullptr;
+  }
+
+  CSSMathSum* value = CSSMathSum::Create(result);
+  if (!value) {
+    exception_state.ThrowTypeError("Can't create CSSMathSum");
+    return nullptr;
+  }
+  return value;
 }
 
 CSSNumericValue* CSSNumericValue::add(
