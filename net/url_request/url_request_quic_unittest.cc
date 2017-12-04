@@ -248,7 +248,7 @@ TEST_F(URLRequestQuicTest, TestGetRequest) {
   EXPECT_EQ(kHelloBodyValue, delegate.data_received());
 }
 
-TEST_F(URLRequestQuicTest, CancelPushIfCached) {
+TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   base::RunLoop run_loop;
   Init();
 
@@ -292,7 +292,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached) {
   net::TestNetLogEntry::List entries;
   ExtractNetLog(NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION, &entries);
 
-  EXPECT_EQ(4u, entries.size());
+  ASSERT_EQ(4u, entries.size());
 
   std::string value;
   int net_error;
@@ -301,14 +301,43 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached) {
   std::string push_url_2 =
       base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
 
+  ASSERT_EQ(entries[0].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[0].phase, net::NetLogEventPhase::BEGIN);
+  EXPECT_EQ(entries[0].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_TRUE(entries[0].params);
   EXPECT_TRUE(entries[0].GetStringValue("push_url", &value));
   EXPECT_EQ(value, push_url_1);
+
+  ASSERT_EQ(entries[1].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[1].phase, net::NetLogEventPhase::BEGIN);
+  EXPECT_EQ(entries[1].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_TRUE(entries[1].params);
   EXPECT_TRUE(entries[1].GetStringValue("push_url", &value));
   EXPECT_EQ(value, push_url_2);
+
+  ASSERT_EQ(entries[2].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[2].phase, net::NetLogEventPhase::END);
+  EXPECT_EQ(entries[2].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[2].source.id, entries[1].source.id);
+  EXPECT_TRUE(entries[2].params);
   // Net error code -400 is found for this lookup transaction, the push is not
   // found in the cache.
   EXPECT_TRUE(entries[2].GetIntegerValue("net_error", &net_error));
   EXPECT_EQ(net_error, -400);
+
+  ASSERT_EQ(entries[3].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[3].phase, net::NetLogEventPhase::END);
+  EXPECT_EQ(entries[3].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[3].source.id, entries[0].source.id);
+  EXPECT_FALSE(entries[3].params);
   // No net error code for this lookup transaction, the push is found.
   EXPECT_FALSE(entries[3].GetIntegerValue("net_error", &net_error));
 
@@ -316,7 +345,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached) {
   EXPECT_LE(1u, GetRstErrorCountReceivedByServer(QUIC_STREAM_CANCELLED));
 }
 
-TEST_F(URLRequestQuicTest, CancelPushIfCached2) {
+TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   base::RunLoop run_loop;
   Init();
 
@@ -357,7 +386,7 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached2) {
   EXPECT_TRUE(request_1->status().is_success());
 
   // Send a request to /index2.html which pushes /kitten-1.jpg and /favicon.ico.
-  // Should cancel push for /kitten-1.jpg.
+  // Should cancel push for both pushed resources, since they're already cached.
   CheckLoadTimingDelegate delegate(true);
   std::string url =
       base::StringPrintf("https://%s%s", kTestServerHost, "/index2.html");
@@ -387,15 +416,39 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached2) {
   std::string push_url_2 =
       base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
 
+  ASSERT_EQ(entries[0].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[0].phase, net::NetLogEventPhase::BEGIN);
+  EXPECT_EQ(entries[0].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_TRUE(entries[0].params);
   EXPECT_TRUE(entries[0].GetStringValue("push_url", &value));
   EXPECT_EQ(value, push_url_1);
 
+  ASSERT_EQ(entries[1].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[1].phase, net::NetLogEventPhase::BEGIN);
+  EXPECT_EQ(entries[1].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_TRUE(entries[1].params);
   EXPECT_TRUE(entries[1].GetStringValue("push_url", &value));
   EXPECT_EQ(value, push_url_2);
 
+  ASSERT_EQ(entries[2].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[2].phase, net::NetLogEventPhase::END);
+  EXPECT_EQ(entries[2].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_FALSE(entries[2].params);
   // No net error code for this lookup transaction, the push is found.
   EXPECT_FALSE(entries[2].GetIntegerValue("net_error", &net_error));
 
+  ASSERT_EQ(entries[3].type,
+            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_EQ(entries[3].phase, net::NetLogEventPhase::END);
+  EXPECT_EQ(entries[3].source.type,
+            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
+  EXPECT_FALSE(entries[3].params);
   // No net error code for this lookup transaction, the push is found.
   EXPECT_FALSE(entries[3].GetIntegerValue("net_error", &net_error));
 
