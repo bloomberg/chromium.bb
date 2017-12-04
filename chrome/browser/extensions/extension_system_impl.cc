@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -432,10 +433,21 @@ std::unique_ptr<ExtensionSet> ExtensionSystemImpl::GetDependentExtensions(
       extension);
 }
 
-void ExtensionSystemImpl::InstallUpdate(const std::string& extension_id,
-                                        const base::FilePath& temp_dir) {
-  NOTREACHED() << "Not yet implemented";
-  base::DeleteFile(temp_dir, true /* recursive */);
+void ExtensionSystemImpl::InstallUpdate(
+    const std::string& extension_id,
+    const std::string& public_key,
+    const base::FilePath& unpacked_dir,
+    InstallUpdateCallback install_update_callback) {
+  DCHECK(!install_update_callback.is_null());
+
+  ExtensionService* service = extension_service();
+  DCHECK(service);
+
+  scoped_refptr<CrxInstaller> installer = CrxInstaller::CreateSilent(service);
+  installer->set_delete_source(true);
+  installer->set_installer_callback(std::move(install_update_callback));
+  installer->UpdateExtensionFromUnpackedCrx(extension_id, public_key,
+                                            unpacked_dir);
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

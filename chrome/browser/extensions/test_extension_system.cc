@@ -136,8 +136,11 @@ std::unique_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
       extension);
 }
 
-void TestExtensionSystem::InstallUpdate(const std::string& extension_id,
-                                        const base::FilePath& temp_dir) {
+void TestExtensionSystem::InstallUpdate(
+    const std::string& extension_id,
+    const std::string& public_key,
+    const base::FilePath& temp_dir,
+    InstallUpdateCallback install_update_callback) {
   NOTREACHED();
 }
 

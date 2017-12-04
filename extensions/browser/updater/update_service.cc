@@ -9,6 +9,7 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/updater/update_data_provider.h"
@@ -16,15 +17,30 @@
 
 namespace {
 
+using UpdateClientCallback =
+    extensions::UpdateDataProvider::UpdateClientCallback;
+
 void UpdateCheckCompleteCallback(update_client::Error error) {}
 
 void SendUninstallPingCompleteCallback(update_client::Error error) {}
 
 void InstallUpdateCallback(content::BrowserContext* context,
                            const std::string& extension_id,
-                           const base::FilePath& temp_dir) {
-  extensions::ExtensionSystem::Get(context)
-      ->InstallUpdate(extension_id, temp_dir);
+                           const std::string& public_key,
+                           const base::FilePath& unpacked_dir,
+                           UpdateClientCallback update_client_callback) {
+  using InstallError = update_client::InstallError;
+  using Result = update_client::CrxInstaller::Result;
+  extensions::ExtensionSystem::Get(context)->InstallUpdate(
+      extension_id, public_key, unpacked_dir,
+      base::BindOnce(
+          [](UpdateClientCallback update_client_callback, bool success) {
+            DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+            std::move(update_client_callback)
+                .Run(Result(success ? InstallError::NONE
+                                    : InstallError::GENERIC_ERROR));
+          },
+          std::move(update_client_callback)));
 }
 
 }  // namespace
@@ -49,16 +65,17 @@ void UpdateService::SendUninstallPing(const std::string& id,
                                       const base::Version& version,
                                       int reason) {
   update_client_->SendUninstallPing(
-      id, version, reason, base::Bind(&SendUninstallPingCompleteCallback));
+      id, version, reason, base::BindOnce(&SendUninstallPingCompleteCallback));
 }
 
 void UpdateService::StartUpdateCheck(
     const std::vector<std::string>& extension_ids) {
   if (!update_client_)
     return;
-  update_client_->Update(extension_ids, base::Bind(&UpdateDataProvider::GetData,
-                                                   update_data_provider_),
-                         base::Bind(&UpdateCheckCompleteCallback));
+  update_client_->Update(
+      extension_ids,
+      base::BindOnce(&UpdateDataProvider::GetData, update_data_provider_),
+      base::BindOnce(&UpdateCheckCompleteCallback));
 }
 
 UpdateService::UpdateService(
@@ -66,8 +83,8 @@ UpdateService::UpdateService(
     scoped_refptr<update_client::UpdateClient> update_client)
     : context_(context), update_client_(update_client) {
   CHECK(update_client_);
-  update_data_provider_ =
-      new UpdateDataProvider(context_, base::Bind(&InstallUpdateCallback));
+  update_data_provider_ = base::MakeRefCounted<UpdateDataProvider>(
+      context_, base::BindOnce(&InstallUpdateCallback));
 }
 
 UpdateService::~UpdateService() {}

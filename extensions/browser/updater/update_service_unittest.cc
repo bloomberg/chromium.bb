@@ -112,6 +112,7 @@ UninstallPingSender::FilterResult ShouldPing(const Extension* extension,
 // versions of an extension.
 class FakeExtensionSystem : public MockExtensionSystem {
  public:
+  using InstallUpdateCallback = MockExtensionSystem::InstallUpdateCallback;
   explicit FakeExtensionSystem(content::BrowserContext* context)
       : MockExtensionSystem(context) {}
   ~FakeExtensionSystem() override {}
@@ -131,14 +132,18 @@ class FakeExtensionSystem : public MockExtensionSystem {
 
   // ExtensionSystem override
   void InstallUpdate(const std::string& extension_id,
-                     const base::FilePath& temp_dir) override {
+                     const std::string& public_key,
+                     const base::FilePath& temp_dir,
+                     InstallUpdateCallback install_update_callback) override {
     base::DeleteFile(temp_dir, true /*recursive*/);
     InstallUpdateRequest request;
     request.extension_id = extension_id;
     request.temp_dir = temp_dir;
     install_requests_.push_back(request);
-    if (!next_install_callback_.is_null())
+    if (!next_install_callback_.is_null()) {
       std::move(next_install_callback_).Run();
+    }
+    std::move(install_update_callback).Run(true);
   }
 
  private:
@@ -261,12 +266,16 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   base::ScopedTempDir new_version_dir;
   ASSERT_TRUE(new_version_dir.CreateUniqueTempDir());
 
+  bool done = false;
   installer->Install(
       new_version_dir.GetPath(), std::string(),
-      base::Bind([](const update_client::CrxInstaller::Result& result) {
-        EXPECT_EQ(0, result.error);
-        EXPECT_EQ(0, result.extended_error);
-      }));
+      base::BindOnce(
+          [](bool* done, const update_client::CrxInstaller::Result& result) {
+            *done = true;
+            EXPECT_EQ(0, result.error);
+            EXPECT_EQ(0, result.extended_error);
+          },
+          &done));
 
   scoped_refptr<content::MessageLoopRunner> loop_runner =
       base::MakeRefCounted<content::MessageLoopRunner>();
@@ -277,8 +286,9 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
       extension_system()->install_requests();
   ASSERT_EQ(1u, requests->size());
   EXPECT_EQ(requests->at(0).extension_id, extension1->id());
-  EXPECT_NE(requests->at(0).temp_dir.value(),
+  EXPECT_EQ(requests->at(0).temp_dir.value(),
             new_version_dir.GetPath().value());
+  EXPECT_TRUE(done);
 }
 
 TEST_F(UpdateServiceTest, UninstallPings) {

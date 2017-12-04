@@ -132,7 +132,9 @@ class ExtensionSystem : public KeyedService {
   // transferred and implementors of this function are responsible for cleaning
   // it up on errors, etc.
   virtual void InstallUpdate(const std::string& extension_id,
-                             const base::FilePath& unpacked_dir) = 0;
+                             const std::string& public_key,
+                             const base::FilePath& unpacked_dir,
+                             InstallUpdateCallback install_update_callback) = 0;
 };
 
 }  // namespace extensions

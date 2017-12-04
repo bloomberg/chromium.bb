@@ -586,7 +586,7 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
 
     return false;
   }
-
+  // Either |pending_extension_info| or |extension| or both must not be null.
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
   installer->set_expected_id(id);
   installer->set_expected_hash(file.expected_hash);
@@ -611,39 +611,25 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
     creation_flags = pending_extension_info->creation_flags();
     if (pending_extension_info->mark_acknowledged())
       external_install_manager_->AcknowledgeExternalExtension(id);
-  } else if (extension) {
+    // If the extension was installed from or has migrated to the webstore, or
+    // its auto-update URL is from the webstore, treat it as a webstore install.
+    // Note that we ignore some older extensions with blank auto-update URLs
+    // because we are mostly concerned with restrictions on NaCl extensions,
+    // which are newer.
+    if (!extension && extension_urls::IsWebstoreUpdateUrl(
+                          pending_extension_info->update_url()))
+      creation_flags |= Extension::FROM_WEBSTORE;
+  } else {
+    // |extension| must not be null.
     installer->set_install_source(extension->location());
   }
-  // If the extension was installed from or has migrated to the webstore, or
-  // its auto-update URL is from the webstore, treat it as a webstore install.
-  // Note that we ignore some older extensions with blank auto-update URLs
-  // because we are mostly concerned with restrictions on NaCl extensions,
-  // which are newer.
-  if ((extension && extension->from_webstore()) ||
-      (extension && extensions::ManifestURL::UpdatesFromGallery(extension)) ||
-      (!extension && extension_urls::IsWebstoreUpdateUrl(
-           pending_extension_info->update_url()))) {
-    creation_flags |= Extension::FROM_WEBSTORE;
-  }
 
-  // Bookmark apps being updated is kind of a contradiction, but that's because
-  // we mark the default apps as bookmark apps, and they're hosted in the web
-  // store, thus they can get updated. See http://crbug.com/101605 for more
-  // details.
-  if (extension && extension->from_bookmark())
-    creation_flags |= Extension::FROM_BOOKMARK;
-
-  if (extension && extension->was_installed_by_default())
-    creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
-
-  if (extension && extension->was_installed_by_oem())
-    creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
-
-  if (extension)
+  if (extension) {
+    installer->InitializeCreationFlagsForUpdate(extension, creation_flags);
     installer->set_do_not_sync(extension_prefs_->DoNotSync(id));
-
-  installer->set_creation_flags(creation_flags);
-
+  } else {
+    installer->set_creation_flags(creation_flags);
+  }
   installer->set_delete_source(file_ownership_passed);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
   installer->InstallCrxFile(file);

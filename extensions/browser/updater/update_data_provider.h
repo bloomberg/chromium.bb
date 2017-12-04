@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "extensions/browser/updater/extension_installer.h"
 
 namespace base {
 class FilePath;
@@ -30,17 +31,20 @@ namespace extensions {
 // extensions it is doing an update check for.
 class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
  public:
-  typedef base::Callback<void(content::BrowserContext* context,
-                              const std::string& /* extension_id */,
-                              const base::FilePath& /* temp_dir */)>
-      InstallCallback;
+  using UpdateClientCallback = ExtensionInstaller::UpdateClientCallback;
+  using InstallCallback = base::OnceCallback<void(
+      content::BrowserContext* context,
+      const std::string& /* extension_id */,
+      const std::string& /* public_key */,
+      const base::FilePath& /* unpacked_dir */,
+      UpdateClientCallback /* update_client_callback */)>;
 
   // We need a browser context to use when retrieving data for a set of
-  // extension ids, as well as a callback for proceeding with installation
-  // steps once the UpdateClient has downloaded and unpacked an update for an
-  // extension.
+  // extension ids, as well as an install callback for proceeding with
+  // installation steps once the UpdateClient has downloaded and unpacked
+  // an update for an extension.
   UpdateDataProvider(content::BrowserContext* context,
-                     const InstallCallback& callback);
+                     InstallCallback install_callback);
 
   // Notify this object that the associated browser context is being shut down
   // the pointer to the context should be dropped and no more work should be
@@ -55,11 +59,14 @@ class UpdateDataProvider : public base::RefCounted<UpdateDataProvider> {
   friend class base::RefCounted<UpdateDataProvider>;
   ~UpdateDataProvider();
 
+  // This function should be called on the browser UI thread.
   void RunInstallCallback(const std::string& extension_id,
-                          const base::FilePath& temp_dir);
+                          const std::string& public_key,
+                          const base::FilePath& unpacked_dir,
+                          UpdateClientCallback update_client_callback);
 
   content::BrowserContext* context_;
-  InstallCallback callback_;
+  InstallCallback install_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateDataProvider);
 };

@@ -33,6 +33,7 @@ class TestValueStoreFactory;
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {
  public:
+  using InstallUpdateCallback = ExtensionSystem::InstallUpdateCallback;
   explicit TestExtensionSystem(Profile* profile);
   ~TestExtensionSystem() override;
 
@@ -68,7 +69,9 @@ class TestExtensionSystem : public ExtensionSystem {
   std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
   void InstallUpdate(const std::string& extension_id,
-                     const base::FilePath& temp_dir) override;
+                     const std::string& public_key,
+                     const base::FilePath& temp_dir,
+                     InstallUpdateCallback install_update_callback) override;
 
   // Note that you probably want to use base::RunLoop().RunUntilIdle() right
   // after this to run all the accumulated tasks.
