@@ -1,4 +1,9 @@
 {
+  "Android Builder (dbg) Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "Android Builder Goma Canary (dbg)": {
     "additional_compile_targets": [
       "all"
@@ -2950,25 +2955,6 @@
       }
     ]
   },
-  "CrWin7Goma(clbr)": {
-    "additional_compile_targets": [
-      "all"
-    ],
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      }
-    ]
-  },
   "CrWin7Goma(dbg)": {
     "additional_compile_targets": [
       "all"
@@ -4418,9 +4404,162 @@
       }
     ]
   },
+  "Linux Builder Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
   "Linux Clang Analyzer": {
     "additional_compile_targets": [
       "chrome"
+    ]
+  },
+  "Linux x64 Goma Canary (clobber)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Linux x64 Goma Canary LocalOutputCache": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Mac Builder (dbg) Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Mac Builder (dbg) Goma Canary (clobber)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Mac Builder Goma Canary": {
+    "additional_compile_targets": [
+      "all",
+      "pdf_fuzzers"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Mac Goma Canary (clobber)": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Mac Goma Canary LocalOutputCache": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
     ]
   },
   "Mojo ChromiumOS": {
@@ -6908,6 +7047,25 @@
       }
     ]
   },
+  "ToTWin Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
   "UBSanVptr Linux": {
     "gtest_tests": [
       {
@@ -7619,6 +7777,146 @@
         },
         "test": "zucchini_unittests"
       }
+    ]
+  },
+  "Win Builder (dbg) Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win Builder Goma Canary": {
+    "additional_compile_targets": [
+      "all",
+      "pdf_fuzzers"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win Goma Canary LocalOutputCache": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win cl.exe Goma Canary LocalOutputCache": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win7 Builder (dbg) Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win7 Builder Goma Canary": {
+    "additional_compile_targets": [
+      "all",
+      "pdf_fuzzers"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "WinMSVC64 Goma Canary": {
+    "additional_compile_targets": [
+      "all"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "chromeos-amd64-generic-rel-goma-canary": {
+    "additional_compile_targets": [
+      "chromiumos_preflight"
     ]
   }
 }
