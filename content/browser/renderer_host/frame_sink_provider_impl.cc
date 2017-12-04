@@ -32,7 +32,7 @@ void FrameSinkProviderImpl::CreateForWidget(
       RenderWidgetHostImpl::FromID(process_id_, widget_id);
   if (!render_widget_host_impl) {
     DLOG(ERROR) << "No RenderWidgetHost exists with id " << widget_id
-                << "in process " << process_id_;
+                << " in process " << process_id_;
     return;
   }
   render_widget_host_impl->RequestCompositorFrameSink(std::move(request),
