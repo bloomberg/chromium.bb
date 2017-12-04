@@ -1699,8 +1699,8 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
 
               elif filetype == 'tar':
                 basedir = os.path.dirname(fullpath)
-                with tarfile.TarFile(fileobj=srcfileobj) as extractor:
-                  for ti in extractor:
+                with tarfile.TarFile(fileobj=srcfileobj, encoding='utf-8') as t:
+                  for ti in t:
                     if not ti.isfile():
                       logging.warning(
                           'Path(%r) is nonfile (%s), skipped',
@@ -1711,7 +1711,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
                       logging.error(
                           'Path(%r) is outside root directory',
                           fp)
-                    ifd = extractor.extractfile(ti)
+                    ifd = t.extractfile(ti)
                     file_path.ensure_tree(os.path.dirname(fp))
                     putfile(ifd, fp, 0700, ti.size)
 
