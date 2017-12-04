@@ -1351,13 +1351,12 @@ const gfx::ScrollOffset ScrollTree::current_scroll_offset(ElementId id) const {
 
 gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
     SyncedScrollOffset* scroll_offset) {
+  DCHECK(property_trees()->is_active);
   // TODO(miletus): Remove all this temporary flooring machinery when
   // Blink fully supports fractional scrolls.
   gfx::ScrollOffset current_offset =
-      scroll_offset->Current(property_trees()->is_active);
-  gfx::ScrollOffset current_delta = property_trees()->is_active
-                                        ? scroll_offset->Delta()
-                                        : scroll_offset->PendingDelta().get();
+      scroll_offset->Current(/* is_active_tree */ true);
+  gfx::ScrollOffset current_delta = scroll_offset->Delta();
   gfx::ScrollOffset floored_delta(floor(current_delta.x()),
                                   floor(current_delta.y()));
   gfx::ScrollOffset diff_delta = floored_delta - current_delta;
