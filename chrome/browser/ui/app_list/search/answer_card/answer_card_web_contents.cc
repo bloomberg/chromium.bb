@@ -198,8 +198,7 @@ content::WebContents* AnswerCardWebContents::OpenURLFromTab(
 
   // Open the user-clicked link in the browser taking into account the requested
   // disposition.
-  chrome::NavigateParams new_tab_params(profile_, params.url,
-                                        params.transition);
+  NavigateParams new_tab_params(profile_, params.url, params.transition);
 
   new_tab_params.disposition = params.disposition;
 
@@ -208,10 +207,10 @@ content::WebContents* AnswerCardWebContents::OpenURLFromTab(
     // activated window with the new activated tab after the user closes the
     // launcher. So it's "background" relative to the launcher itself.
     new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-    new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW_INACTIVE;
+    new_tab_params.window_action = NavigateParams::SHOW_WINDOW_INACTIVE;
   }
 
-  chrome::Navigate(&new_tab_params);
+  Navigate(&new_tab_params);
 
   base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
 

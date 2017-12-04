@@ -38,15 +38,13 @@ void SimulateGPUCrash(Browser* browser) {
   // do here: navigate with the PAGE_TRANSITION_FROM_ADDRESS_BAR flag,
   // without waiting for the navigation. It would be painful to change
   // either of the NavigateToURL entry points to support these two
-  // constraints, so we use chrome::Navigate directly.
-  chrome::NavigateParams params(
-      browser,
-      GURL(content::kChromeUIGpuCrashURL),
-      ui::PageTransitionFromInt(
-          ui::PAGE_TRANSITION_TYPED |
-          ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  // constraints, so we use Navigate directly.
+  NavigateParams params(
+      browser, GURL(content::kChromeUIGpuCrashURL),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 }  // namespace

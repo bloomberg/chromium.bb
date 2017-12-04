@@ -477,8 +477,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
 
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
   Browser* app_browser = LaunchAppBrowser(app);
-  chrome::NavigateParams params(app_browser, kAppStartURL,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(app_browser, kAppStartURL, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
 
   BrowserView* browser_view =

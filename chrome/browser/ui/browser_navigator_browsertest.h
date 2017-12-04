@@ -26,8 +26,8 @@ class WebContents;
 class BrowserNavigatorTest : public InProcessBrowserTest,
                              public content::NotificationObserver {
  protected:
-  chrome::NavigateParams MakeNavigateParams() const;
-  chrome::NavigateParams MakeNavigateParams(Browser* browser) const;
+  NavigateParams MakeNavigateParams() const;
+  NavigateParams MakeNavigateParams(Browser* browser) const;
 
   Browser* CreateEmptyBrowserForType(Browser::Type type, Profile* profile);
   Browser* CreateEmptyBrowserForApp(Profile* profile);

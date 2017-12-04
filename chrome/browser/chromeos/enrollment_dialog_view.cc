@@ -145,11 +145,10 @@ base::string16 EnrollmentDialogView::GetWindowTitle() const {
 void EnrollmentDialogView::WindowClosing() {
   if (!accepted_)
     return;
-  chrome::NavigateParams params(profile_, GURL(target_uri_),
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(profile_, GURL(target_uri_), ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
 }
 
 gfx::Size EnrollmentDialogView::CalculatePreferredSize() const {

@@ -45,7 +45,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
     browser =
         new Browser(Browser::CreateParams(Browser::TYPE_TABBED, profile, true));
   }
-  chrome::NavigateParams nav_params(browser, params.url, params.transition);
+  NavigateParams nav_params(browser, params.url, params.transition);
   nav_params.referrer = params.referrer;
   if (source && source->IsCrashed() &&
       params.disposition == WindowOpenDisposition::CURRENT_TAB &&
@@ -55,9 +55,9 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
   } else {
     nav_params.disposition = params.disposition;
   }
-  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  nav_params.window_action = NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = true;
-  chrome::Navigate(&nav_params);
+  Navigate(&nav_params);
 
   // Close the browser if chrome::Navigate created a new one.
   if (browser_created && (browser != nav_params.browser))
@@ -90,13 +90,13 @@ void ChromeWebContentsHandler::AddNewContents(
     browser = new Browser(
         Browser::CreateParams(Browser::TYPE_TABBED, profile, user_gesture));
   }
-  chrome::NavigateParams params(browser, new_contents);
+  NavigateParams params(browser, new_contents);
   params.source_contents = source;
   params.disposition = disposition;
   params.window_bounds = initial_rect;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = user_gesture;
-  chrome::Navigate(&params);
+  Navigate(&params);
 
   // Close the browser if chrome::Navigate created a new one.
   if (browser_created && (browser != params.browser))

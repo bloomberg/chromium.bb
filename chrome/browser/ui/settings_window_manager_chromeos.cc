@@ -52,7 +52,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
     NavigateParams params(browser, gurl, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
     params.window_action = NavigateParams::SHOW_WINDOW;
     params.user_gesture = true;
-    chrome::Navigate(&params);
+    Navigate(&params);
     return;
   }
 
@@ -63,7 +63,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   params.window_action = NavigateParams::SHOW_WINDOW;
   params.user_gesture = true;
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
-  chrome::Navigate(&params);
+  Navigate(&params);
   settings_session_map_[profile] = params.browser->session_id().id();
   DCHECK(params.browser->is_trusted_source());
 

@@ -381,10 +381,10 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
 
   browser->window()->Activate();
 
-  chrome::NavigateParams params(browser, GURL(kKeyboardShortcutHelpPageUrl),
-                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  NavigateParams params(browser, GURL(kKeyboardShortcutHelpPageUrl),
+                        ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 gfx::Image ChromeShellDelegate::GetDeprecatedAcceleratorImage() const {

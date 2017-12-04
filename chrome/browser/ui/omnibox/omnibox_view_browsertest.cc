@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 
   // Navigate in the first tab, currently in the background.
   GURL url2("data:text/html,page2");
-  chrome::NavigateParams params(browser(), url2, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), url2, ui::PAGE_TRANSITION_LINK);
   params.source_contents = contents;
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
   ui_test_utils::NavigateToURL(&params);

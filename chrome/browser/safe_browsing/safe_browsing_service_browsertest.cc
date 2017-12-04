@@ -953,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
       .Times(1);
 
-  chrome::NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -986,8 +986,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
       .Times(1);
 
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -1018,8 +1017,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
 
   // Navigate to malware page. The malware subresources haven't loaded yet, so
   // no interstitial should show yet.
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -1072,8 +1070,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
 
   // Navigate to malware page. The malware subresources haven't loaded yet, so
   // no interstitial should show yet.
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -2064,7 +2061,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
       .Times(1);
 
-  chrome::NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), bad_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -2095,8 +2092,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(bad_url)))
       .Times(1);
 
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -2125,8 +2121,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
   // Navigate to malware page. The malware subresources haven't loaded yet, so
   // no interstitial should show yet.
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 
@@ -2176,8 +2171,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
 
   // Navigate to malware page. The malware subresources haven't loaded yet, so
   // no interstitial should show yet.
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   params.referrer.url = first_url;
   ui_test_utils::NavigateToURL(&params);
 

@@ -106,9 +106,9 @@ void DriveOfflineNotificationDelegate::ButtonClick(int button_index) {
   const GURL url = GURL(kDriveOfflineSupportUrl);
 
   chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-  chrome::ShowSingletonTabOverwritingNTP(
+  ShowSingletonTabOverwritingNTP(
       displayer.browser(),
-      chrome::GetSingletonTabNavigateParams(displayer.browser(), url));
+      GetSingletonTabNavigateParams(displayer.browser(), url));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

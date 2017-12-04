@@ -182,11 +182,10 @@ void QuickUnlockNotificationController::Close(bool by_user) {
 
 // message_center::NotificationDelegate override:
 void QuickUnlockNotificationController::Click() {
-  chrome::NavigateParams params(profile_, params_.url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(profile_, params_.url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
 
   SetNotificationPreferenceWasShown();
 

@@ -604,9 +604,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), aborted_url);
 
-  chrome::NavigateParams params(browser(), aborted_url,
-                                ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
+  NavigateParams params(browser(), aborted_url, ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
   ASSERT_TRUE(manager.WaitForRequestStart());
   browser()->tab_strip_model()->GetActiveWebContents()->Stop();
 

@@ -139,10 +139,10 @@ gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
-  chrome::NavigateParams params(browser, url, ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_TYPED);
   params.tabstrip_index = 0;
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
   CommitPendingLoad(&params.target_contents->GetController());
 }
 

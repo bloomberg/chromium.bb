@@ -58,10 +58,10 @@ void InitializePrefsForProfile(Profile* profile) {
 void ShowSigninErrorLearnMorePage(Profile* profile) {
   static const char kSigninErrorLearnMoreUrl[] =
       "https://support.google.com/chrome/answer/1181420?";
-  chrome::NavigateParams params(
-      profile, GURL(kSigninErrorLearnMoreUrl), ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(profile, GURL(kSigninErrorLearnMoreUrl),
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {

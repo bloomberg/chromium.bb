@@ -19,9 +19,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/window_open_disposition.h"
 
-namespace chrome {
 struct NavigateParams;
-}
 
 namespace content {
 struct OpenURLParams;
@@ -95,7 +93,7 @@ class PopupBlockerTabHelper
   static bool MaybeBlockPopup(
       content::WebContents* web_contents,
       const base::Optional<GURL>& opener_url,
-      const chrome::NavigateParams& params,
+      const NavigateParams& params,
       const content::OpenURLParams* open_url_params,
       const blink::mojom::WindowFeatures& window_features);
 
@@ -119,7 +117,7 @@ class PopupBlockerTabHelper
 
   explicit PopupBlockerTabHelper(content::WebContents* web_contents);
 
-  void AddBlockedPopup(const chrome::NavigateParams& params,
+  void AddBlockedPopup(const NavigateParams& params,
                        const blink::mojom::WindowFeatures& window_features);
 
   // Called when the blocked popup notification is shown or hidden.

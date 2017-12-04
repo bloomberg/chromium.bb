@@ -107,7 +107,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
   //     this function directly and which would therefore break (e.g.
   //     "Browser::EmailPageLocation" (to name only one).
   // As such we should keep this code here.
-  chrome::NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(profile, url, ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
   if (url.SchemeIs("mailto")) {
@@ -116,7 +116,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
     params.url = GURL(url);
   }
 
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 }  // namespace platform_util

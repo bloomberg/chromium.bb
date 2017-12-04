@@ -433,8 +433,8 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     if (tabs[i].is_pinned)
       add_types |= TabStripModel::ADD_PINNED;
 
-    chrome::NavigateParams params(browser, tabs[i].url,
-                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+    NavigateParams params(browser, tabs[i].url,
+                          ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
     params.disposition = first_tab ? WindowOpenDisposition::NEW_FOREGROUND_TAB
                                    : WindowOpenDisposition::NEW_BACKGROUND_TAB;
     params.tabstrip_add_types = add_types;
@@ -446,7 +446,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     }
 #endif  // BUILDFLAG(ENABLE_RLZ)
 
-    chrome::Navigate(&params);
+    Navigate(&params);
 
     first_tab = false;
   }

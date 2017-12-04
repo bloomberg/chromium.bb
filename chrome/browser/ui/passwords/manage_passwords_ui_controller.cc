@@ -448,11 +448,11 @@ void ManagePasswordsUIController::ChooseCredential(
 }
 
 void ManagePasswordsUIController::NavigateToSmartLockHelpPage() {
-  chrome::NavigateParams params(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      GURL(chrome::kSmartLockHelpPage), ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(chrome::FindBrowserWithWebContents(web_contents()),
+                        GURL(chrome::kSmartLockHelpPage),
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
@@ -462,12 +462,12 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
-  chrome::NavigateParams params(
+  NavigateParams params(
       chrome::FindBrowserWithWebContents(web_contents()),
       GURL(password_manager::kPasswordManagerAccountDashboardURL),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::Navigate(&params);
+  Navigate(&params);
 }
 
 void ManagePasswordsUIController::NavigateToChromeSignIn() {

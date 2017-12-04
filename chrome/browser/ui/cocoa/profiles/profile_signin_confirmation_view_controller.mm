@@ -363,12 +363,12 @@ NSTextView* AddTextView(
 }
 
 - (void)learnMore {
-  chrome::NavigateParams params(
-      browser_, GURL(chrome::kChromeEnterpriseSignInLearnMoreURL),
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  NavigateParams params(browser_,
+                        GURL(chrome::kChromeEnterpriseSignInLearnMoreURL),
+                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
 }
 
 - (BOOL)textView:(NSTextView*)textView

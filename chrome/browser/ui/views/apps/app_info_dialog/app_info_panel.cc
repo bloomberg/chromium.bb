@@ -33,8 +33,8 @@ void AppInfoPanel::Close() {
 
 void AppInfoPanel::OpenLink(const GURL& url) {
   DCHECK(!url.is_empty());
-  chrome::NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
-  chrome::Navigate(&params);
+  NavigateParams params(profile_, url, ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
 }
 
 views::Label* AppInfoPanel::CreateHeading(const base::string16& text) const {

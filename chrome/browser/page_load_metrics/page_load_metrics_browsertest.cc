@@ -438,12 +438,12 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  chrome::NavigateParams params(browser(),
-                                embedded_test_server()->GetURL("/title1.html"),
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(),
+                        embedded_test_server()->GetURL("/title1.html"),
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
-  chrome::Navigate(&params);
+  Navigate(&params);
   auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(params.target_contents);
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
   waiter->Wait();
@@ -858,20 +858,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortNewNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
-  chrome::Navigate(&params);
+  Navigate(&params);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   GURL url2(embedded_test_server()->GetURL("/title2.html"));
-  chrome::NavigateParams params2(browser(), url2,
-                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  NavigateParams params2(browser(), url2, ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
 
   auto waiter = CreatePageLoadMetricsWaiter();
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
-  chrome::Navigate(&params2);
+  Navigate(&params2);
   waiter->Wait();
 
   histogram_tester_.ExpectTotalCount(
@@ -882,18 +881,18 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
-  chrome::Navigate(&params);
+  Navigate(&params);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
-  chrome::NavigateParams params2(browser(), url, ui::PAGE_TRANSITION_RELOAD);
+  NavigateParams params2(browser(), url, ui::PAGE_TRANSITION_RELOAD);
 
   auto waiter = CreatePageLoadMetricsWaiter();
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
-  chrome::Navigate(&params2);
+  Navigate(&params2);
   waiter->Wait();
 
   histogram_tester_.ExpectTotalCount(
@@ -910,11 +909,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_AbortClose) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
-  chrome::Navigate(&params);
+  Navigate(&params);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
@@ -929,28 +928,28 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), url);
 
-  chrome::Navigate(&params);
+  Navigate(&params);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   GURL url2(embedded_test_server()->GetURL("/title2.html"));
-  chrome::NavigateParams params2(browser(), url2, ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params2(browser(), url2, ui::PAGE_TRANSITION_TYPED);
   content::TestNavigationManager manager2(
       browser()->tab_strip_model()->GetActiveWebContents(), url2);
-  chrome::Navigate(&params2);
+  Navigate(&params2);
 
   EXPECT_TRUE(manager2.WaitForRequestStart());
   manager.WaitForNavigationFinished();
 
   GURL url3(embedded_test_server()->GetURL("/title3.html"));
-  chrome::NavigateParams params3(browser(), url3, ui::PAGE_TRANSITION_TYPED);
+  NavigateParams params3(browser(), url3, ui::PAGE_TRANSITION_TYPED);
 
   auto waiter = CreatePageLoadMetricsWaiter();
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
-  chrome::Navigate(&params3);
+  Navigate(&params3);
   waiter->Wait();
 
   manager2.WaitForNavigationFinished();
@@ -967,11 +966,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), first_url);
 
   GURL second_url(embedded_test_server()->GetURL("/title2.html"));
-  chrome::NavigateParams params(browser(), second_url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser(), second_url, ui::PAGE_TRANSITION_LINK);
   content::TestNavigationManager manager(
       browser()->tab_strip_model()->GetActiveWebContents(), second_url);
-  chrome::Navigate(&params);
+  Navigate(&params);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   {

@@ -272,7 +272,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
     add_type |= TabStripModel::ADD_PINNED;
 
   ui::PageTransition transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  chrome::NavigateParams params(browser, url, transition);
+  NavigateParams params(browser, url, transition);
   params.tabstrip_add_types = add_type;
   params.disposition = disposition;
 
@@ -300,7 +300,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
 
     contents = existing_tab;
   } else {
-    chrome::Navigate(&params);
+    Navigate(&params);
     contents = params.target_contents;
   }
 

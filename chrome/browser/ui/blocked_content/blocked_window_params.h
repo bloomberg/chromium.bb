@@ -27,8 +27,7 @@ class BlockedWindowParams {
   BlockedWindowParams(const BlockedWindowParams& other);
   ~BlockedWindowParams();
 
-  chrome::NavigateParams CreateNavigateParams(
-      content::WebContents* web_contents) const;
+  NavigateParams CreateNavigateParams(content::WebContents* web_contents) const;
 
   blink::mojom::WindowFeatures features() const { return features_; }
 

@@ -54,7 +54,7 @@ void TabModelList::RemoveObserver(TabModelListObserver* observer) {
   observers_.Get().RemoveObserver(observer);
 }
 
-void TabModelList::HandlePopupNavigation(chrome::NavigateParams* params) {
+void TabModelList::HandlePopupNavigation(NavigateParams* params) {
   TabAndroid* tab = TabAndroid::FromWebContents(params->source_contents);
 
   // NOTE: If this fails contact dtrainor@.

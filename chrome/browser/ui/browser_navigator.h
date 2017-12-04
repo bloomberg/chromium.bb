@@ -11,8 +11,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace chrome {
-
 struct NavigateParams;
 
 // Navigates according to the configuration specified in |params|.
@@ -21,7 +19,5 @@ void Navigate(NavigateParams* params);
 // Returns true if the url is allowed to open in incognito window.
 bool IsURLAllowedInIncognito(const GURL& url,
                              content::BrowserContext* browser_context);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_H_

@@ -421,7 +421,7 @@ bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
   if (incognito && !profile->IsGuestSession()) {
     std::string first_url_erased;
     for (size_t i = 0; i < urls->size();) {
-      if (chrome::IsURLAllowedInIncognito((*urls)[i], profile)) {
+      if (IsURLAllowedInIncognito((*urls)[i], profile)) {
         i++;
       } else {
         if (first_url_erased.empty())
@@ -606,8 +606,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 #endif
 
   for (const GURL& url : urls) {
-    chrome::NavigateParams navigate_params(new_window, url,
-                                           ui::PAGE_TRANSITION_LINK);
+    NavigateParams navigate_params(new_window, url, ui::PAGE_TRANSITION_LINK);
     navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
     // Depending on the |setSelfAsOpener| option, we need to put the new
@@ -619,7 +618,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     navigate_params.source_site_instance =
         render_frame_host()->GetSiteInstance();
 
-    chrome::Navigate(&navigate_params);
+    Navigate(&navigate_params);
   }
 
   WebContents* contents = NULL;
@@ -1248,8 +1247,7 @@ bool TabsUpdateFunction::RunAsync() {
   if (params->update_properties.url.get()) {
     std::string updated_url = *params->update_properties.url;
     if (browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE &&
-        !chrome::IsURLAllowedInIncognito(GURL(updated_url),
-                                         browser->profile())) {
+        !IsURLAllowedInIncognito(GURL(updated_url), browser->profile())) {
       error_ = ErrorUtils::FormatErrorMessage(
           keys::kURLsNotAllowedInIncognitoError, updated_url);
       return false;

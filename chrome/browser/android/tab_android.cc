@@ -256,7 +256,7 @@ void TabAndroid::SetSyncId(int sync_id) {
   Java_Tab_setSyncId(env, weak_java_tab_.get(env), sync_id);
 }
 
-void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
+void TabAndroid::HandlePopupNavigation(NavigateParams* params) {
   DCHECK(params->source_contents == web_contents());
   DCHECK(params->target_contents == NULL ||
          params->target_contents == web_contents());
@@ -541,7 +541,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   if (prerender_manager) {
     bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
     // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
-    chrome::NavigateParams params(web_contents());
+    NavigateParams params(web_contents());
     if (prerender_manager->MaybeUsePrerenderedPage(gurl, &params)) {
       return prefetched_page_loaded ?
           FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;

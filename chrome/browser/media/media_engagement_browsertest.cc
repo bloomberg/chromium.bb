@@ -120,11 +120,11 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
   };
 
   void OpenTab(const GURL& url) {
-    chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     // params.opener does not need to be set in the context of this test because
     // it will use the current tab by default.
-    chrome::Navigate(&params);
+    Navigate(&params);
 
     InjectTimerTaskRunner();
     params.target_contents->SetAudioMuted(false);

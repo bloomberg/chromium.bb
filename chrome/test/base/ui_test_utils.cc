@@ -171,14 +171,13 @@ bool GetCurrentTabTitle(const Browser* browser, base::string16* title) {
   return true;
 }
 
-void NavigateToURL(chrome::NavigateParams* params) {
-  chrome::Navigate(params);
+void NavigateToURL(NavigateParams* params) {
+  Navigate(params);
   content::WaitForLoadStop(params->target_contents);
 }
 
 void NavigateToURLWithPost(Browser* browser, const GURL& url) {
-  chrome::NavigateParams params(browser, url,
-                                ui::PAGE_TRANSITION_FORM_SUBMIT);
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_FORM_SUBMIT);
 
   std::string post_data("test=body");
   params.post_data = content::ResourceRequestBody::CreateFromBytes(

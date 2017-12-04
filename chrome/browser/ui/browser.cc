@@ -906,11 +906,10 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Browser::UpdateUIForNavigationInTab(
-    WebContents* contents,
-    ui::PageTransition transition,
-    chrome::NavigateParams::WindowAction action,
-    bool user_initiated) {
+void Browser::UpdateUIForNavigationInTab(WebContents* contents,
+                                         ui::PageTransition transition,
+                                         NavigateParams::WindowAction action,
+                                         bool user_initiated) {
   tab_strip_model_->TabNavigating(contents, transition);
 
   bool contents_is_selected =
@@ -934,7 +933,7 @@ void Browser::UpdateUIForNavigationInTab(
   ScheduleUIUpdate(contents, content::INVALIDATE_TYPE_URL);
 
   if (contents_is_selected &&
-      (window()->IsActive() || action == chrome::NavigateParams::SHOW_WINDOW)) {
+      (window()->IsActive() || action == NavigateParams::SHOW_WINDOW)) {
     contents->SetInitialFocus();
   }
 }
@@ -1446,12 +1445,12 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     return window->OpenURLFromTab(source, params);
   }
 
-  chrome::NavigateParams nav_params(this, params.url, params.transition);
-  FillNavigateParamsFromOpenURLParams(&nav_params, params);
+  NavigateParams nav_params(this, params.url, params.transition);
+  nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = source;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   if (params.user_gesture)
-    nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    nav_params.window_action = NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
   bool is_popup = source && PopupBlockerTabHelper::ConsiderForPopupBlocking(
                                 params.disposition);
@@ -1461,7 +1460,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     return nullptr;
   }
 
-  chrome::Navigate(&nav_params);
+  Navigate(&nav_params);
 
   if (is_popup && nav_params.target_contents)
     PopupTracker::CreateForWebContents(nav_params.target_contents, source);

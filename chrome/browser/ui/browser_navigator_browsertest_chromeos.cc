@@ -81,12 +81,12 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_EQ(1, incognito_browser->tab_strip_model()->count());
 
   // Navigate to the settings page.
-  chrome::NavigateParams params(MakeNavigateParams(incognito_browser));
+  NavigateParams params(MakeNavigateParams(incognito_browser));
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = GURL("chrome://chrome/settings");
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
-  chrome::Navigate(&params);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+  Navigate(&params);
 
   // Settings page should be opened in incognito window.
   EXPECT_NE(browser(), params.browser);
@@ -112,13 +112,13 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
     EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
     // Navigate to the settings page.
-    chrome::NavigateParams params(MakeNavigateParams(browser()));
+    NavigateParams params(MakeNavigateParams(browser()));
     params.disposition = WindowOpenDisposition::NEW_POPUP;
     params.url = GURL("chrome://chrome/settings");
-    params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-    params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
     params.browser = browser();
-    chrome::Navigate(&params);
+    Navigate(&params);
 
     EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
@@ -136,13 +136,13 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
         new TestMultiUserWindowManager(browser(), browser_owner);
 
     // Navigate to the settings page.
-    chrome::NavigateParams params(MakeNavigateParams(browser()));
+    NavigateParams params(MakeNavigateParams(browser()));
     params.disposition = WindowOpenDisposition::NEW_POPUP;
     params.url = GURL("chrome://chrome/settings");
-    params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-    params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
     params.browser = browser();
-    chrome::Navigate(&params);
+    Navigate(&params);
 
     EXPECT_EQ(3u, chrome::GetTotalBrowserCount());
 

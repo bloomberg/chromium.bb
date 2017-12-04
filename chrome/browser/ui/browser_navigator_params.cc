@@ -16,8 +16,6 @@ using content::GlobalRequestID;
 using content::NavigationController;
 using content::WebContents;
 
-namespace chrome {
-
 #if defined(OS_ANDROID)
 NavigateParams::NavigateParams(WebContents* a_target_contents)
     : target_contents(a_target_contents) {}
@@ -45,21 +43,18 @@ NavigateParams::NavigateParams(const NavigateParams& other) = default;
 
 NavigateParams::~NavigateParams() {}
 
-void FillNavigateParamsFromOpenURLParams(NavigateParams* nav_params,
-                                         const content::OpenURLParams& params) {
-  nav_params->referrer = params.referrer;
-  nav_params->source_site_instance = params.source_site_instance;
-  nav_params->frame_tree_node_id = params.frame_tree_node_id;
-  nav_params->redirect_chain = params.redirect_chain;
-  nav_params->extra_headers = params.extra_headers;
-  nav_params->disposition = params.disposition;
-  nav_params->trusted_source = false;
-  nav_params->is_renderer_initiated = params.is_renderer_initiated;
-  nav_params->should_replace_current_entry =
-      params.should_replace_current_entry;
-  nav_params->uses_post = params.uses_post;
-  nav_params->post_data = params.post_data;
-  nav_params->started_from_context_menu = params.started_from_context_menu;
+void NavigateParams::FillNavigateParamsFromOpenURLParams(
+    const content::OpenURLParams& params) {
+  this->referrer = params.referrer;
+  this->source_site_instance = params.source_site_instance;
+  this->frame_tree_node_id = params.frame_tree_node_id;
+  this->redirect_chain = params.redirect_chain;
+  this->extra_headers = params.extra_headers;
+  this->disposition = params.disposition;
+  this->trusted_source = false;
+  this->is_renderer_initiated = params.is_renderer_initiated;
+  this->should_replace_current_entry = params.should_replace_current_entry;
+  this->uses_post = params.uses_post;
+  this->post_data = params.post_data;
+  this->started_from_context_menu = params.started_from_context_menu;
 }
-
-}  // namespace chrome

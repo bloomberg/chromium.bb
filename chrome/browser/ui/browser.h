@@ -413,11 +413,11 @@ class Browser : public TabStripModelObserver,
 
   /////////////////////////////////////////////////////////////////////////////
 
-  // Called by chrome::Navigate() when a navigation has occurred in a tab in
+  // Called by Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.
   void UpdateUIForNavigationInTab(content::WebContents* contents,
                                   ui::PageTransition transition,
-                                  chrome::NavigateParams::WindowAction action,
+                                  NavigateParams::WindowAction action,
                                   bool user_initiated);
 
   // Used to register a KeepAlive to affect the Chrome lifetime. The KeepAlive

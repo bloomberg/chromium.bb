@@ -63,7 +63,7 @@ class ExtensionFetchTest : public ExtensionApiTest {
   // Opens a tab, puts it in the foreground, navigates it to |url| then returns
   // its WebContents.
   content::WebContents* CreateAndNavigateTab(const GURL& url) {
-    chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
     return browser()->tab_strip_model()->GetActiveWebContents();

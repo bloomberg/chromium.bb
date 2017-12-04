@@ -2163,13 +2163,12 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
       base::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
-      chrome::NavigateParams params(browser_, *url,
-                                    ui::PAGE_TRANSITION_TYPED);
+      NavigateParams params(browser_, *url, ui::PAGE_TRANSITION_TYPED);
       params.disposition = disposition;
       params.tabstrip_index = index;
       params.tabstrip_add_types =
           TabStripModel::ADD_ACTIVE | TabStripModel::ADD_FORCE_INDEX;
-      chrome::Navigate(&params);
+      Navigate(&params);
       break;
     }
     case WindowOpenDisposition::CURRENT_TAB: {

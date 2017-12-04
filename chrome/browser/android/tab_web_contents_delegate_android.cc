@@ -334,12 +334,10 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   }
 
   Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
-  chrome::NavigateParams nav_params(profile,
-                                    params.url,
-                                    params.transition);
-  FillNavigateParamsFromOpenURLParams(&nav_params, params);
+  NavigateParams nav_params(profile, params.url, params.transition);
+  nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = source;
-  nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+  nav_params.window_action = NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
   if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
        params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||

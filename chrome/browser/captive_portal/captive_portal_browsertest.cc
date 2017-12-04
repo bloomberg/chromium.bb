@@ -2731,13 +2731,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   MultiNavigationObserver navigation_observer;
 
   // Navigate the tab in the inactive browser to an SSL timeout.  Have to use
-  // chrome::NavigateParams and NEW_BACKGROUND_TAB to avoid activating the
-  // window.
-  chrome::NavigateParams params(inactive_browser,
-                                GURL(kMockHttpsQuickTimeoutUrl),
-                                ui::PAGE_TRANSITION_TYPED);
+  // NavigateParams and NEW_BACKGROUND_TAB to avoid activating the window.
+  NavigateParams params(inactive_browser, GURL(kMockHttpsQuickTimeoutUrl),
+                        ui::PAGE_TRANSITION_TYPED);
   params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
-  params.window_action = chrome::NavigateParams::NO_ACTION;
+  params.window_action = NavigateParams::NO_ACTION;
   ui_test_utils::NavigateToURL(&params);
   navigation_observer.WaitForNavigations(2);
 

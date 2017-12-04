@@ -227,7 +227,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     manager->clear_will_show();
     manager->PrepareDone(run_loop.QuitClosure());
-    chrome::NavigateParams nav_params(browser, test_url, transition);
+    NavigateParams nav_params(browser, test_url, transition);
     ui_test_utils::NavigateToURL(&nav_params);
     run_loop.Run();
 

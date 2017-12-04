@@ -255,13 +255,12 @@ void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
-  chrome::NavigateParams params(
-      browser_,
-      GURL("https://support.google.com/chromebook/answer/1331549"),
+  NavigateParams params(
+      browser_, GURL("https://support.google.com/chromebook/answer/1331549"),
       ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
 }
 
 void ProfileSigninConfirmationDialogViews::ButtonPressed(

@@ -95,10 +95,9 @@ Browser* GetOrCreateBrowser(Profile* profile, bool user_gesture) {
 // technically an incognito window, these URLs are allowed.
 // Returns true on success. Otherwise, if changing params leads the browser into
 // an erroneous state, returns false.
-bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
+bool AdjustNavigateParamsForURL(NavigateParams* params) {
   if (params->target_contents != NULL ||
-      chrome::IsURLAllowedInIncognito(params->url,
-                                      params->initiating_profile) ||
+      IsURLAllowedInIncognito(params->url, params->initiating_profile) ||
       params->initiating_profile->IsGuestSession()) {
     return true;
   }
@@ -118,7 +117,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
 
     params->disposition = WindowOpenDisposition::SINGLETON_TAB;
     params->browser = GetOrCreateBrowser(profile, params->user_gesture);
-    params->window_action = chrome::NavigateParams::SHOW_WINDOW;
+    params->window_action = NavigateParams::SHOW_WINDOW;
   }
 
   return true;
@@ -127,7 +126,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
 // Returns a Browser that can host the navigation or tab addition specified in
 // |params|. This might just return the same Browser specified in |params|, or
 // some other if that Browser is deemed incompatible.
-Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
+Browser* GetBrowserForDisposition(NavigateParams* params) {
   // If no source WebContents was specified, we use the selected one from
   // the target browser. This must happen first, before
   // GetBrowserForDisposition() has a chance to replace |params->browser| with
@@ -206,7 +205,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
 
 // Fix disposition and other parameter values depending on prevailing
 // conditions.
-void NormalizeDisposition(chrome::NavigateParams* params) {
+void NormalizeDisposition(NavigateParams* params) {
   // Calculate the WindowOpenDisposition if necessary.
   if (params->browser->tab_strip_model()->empty() &&
       (params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
@@ -234,8 +233,8 @@ void NormalizeDisposition(chrome::NavigateParams* params) {
     case WindowOpenDisposition::NEW_POPUP: {
       // Code that wants to open a new window typically expects it to be shown
       // automatically.
-      if (params->window_action == chrome::NavigateParams::NO_ACTION)
-        params->window_action = chrome::NavigateParams::SHOW_WINDOW;
+      if (params->window_action == NavigateParams::NO_ACTION)
+        params->window_action = NavigateParams::SHOW_WINDOW;
       // Fall-through.
     }
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
@@ -249,7 +248,7 @@ void NormalizeDisposition(chrome::NavigateParams* params) {
 }
 
 // Obtain the profile used by the code that originated the Navigate() request.
-Profile* GetSourceProfile(chrome::NavigateParams* params) {
+Profile* GetSourceProfile(NavigateParams* params) {
   // |source_site_instance| needs to be checked before |source_contents|. This
   // might matter when chrome.windows.create is used to open multiple URLs,
   // which would reuse |params| and modify |params->source_contents| across
@@ -269,7 +268,7 @@ Profile* GetSourceProfile(chrome::NavigateParams* params) {
 
 void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
-                       chrome::NavigateParams* params) {
+                       NavigateParams* params) {
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.source_site_instance = params->source_site_instance;
   load_url_params.referrer = params->referrer;
@@ -295,14 +294,11 @@ void LoadURLInContents(WebContents* target_contents,
 // by the time it goes out of scope, provided |params| wants it to be shown.
 class ScopedBrowserShower {
  public:
-  explicit ScopedBrowserShower(chrome::NavigateParams* params)
-      : params_(params) {
-  }
+  explicit ScopedBrowserShower(NavigateParams* params) : params_(params) {}
   ~ScopedBrowserShower() {
-    if (params_->window_action ==
-        chrome::NavigateParams::SHOW_WINDOW_INACTIVE) {
+    if (params_->window_action == NavigateParams::SHOW_WINDOW_INACTIVE) {
       params_->browser->window()->ShowInactive();
-    } else if (params_->window_action == chrome::NavigateParams::SHOW_WINDOW) {
+    } else if (params_->window_action == NavigateParams::SHOW_WINDOW) {
       BrowserWindow* window = params_->browser->window();
       window->Show();
       // If a user gesture opened a popup window, focus the contents.
@@ -316,7 +312,7 @@ class ScopedBrowserShower {
   }
 
  private:
-  chrome::NavigateParams* params_;
+  NavigateParams* params_;
   DISALLOW_COPY_AND_ASSIGN(ScopedBrowserShower);
 };
 
@@ -329,9 +325,8 @@ class ScopedBrowserShower {
 // avoid a leak and the params->target_contents field is set to NULL.
 class ScopedTargetContentsOwner {
  public:
-  explicit ScopedTargetContentsOwner(chrome::NavigateParams* params)
-      : params_(params) {
-  }
+  explicit ScopedTargetContentsOwner(NavigateParams* params)
+      : params_(params) {}
   ~ScopedTargetContentsOwner() {
     if (target_contents_owner_.get())
       params_->target_contents = NULL;
@@ -349,12 +344,12 @@ class ScopedTargetContentsOwner {
   }
 
  private:
-  chrome::NavigateParams* params_;
+  NavigateParams* params_;
   std::unique_ptr<WebContents> target_contents_owner_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetContentsOwner);
 };
 
-content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
+content::WebContents* CreateTargetContents(const NavigateParams& params,
                                            const GURL& url) {
   // Always create the new WebContents in a new SiteInstance (and therefore a
   // new BrowsingInstance), *unless* there's a |params.opener|.
@@ -412,7 +407,7 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
 // If a prerendered page exists for |url|, replace the page at
 // |params->target_contents| with it and update to point to the swapped-in
 // WebContents.
-bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
+bool SwapInPrerender(const GURL& url, NavigateParams* params) {
   Profile* profile =
       Profile::FromBrowserContext(params->target_contents->GetBrowserContext());
   prerender::PrerenderManager* prerender_manager =
@@ -422,9 +417,6 @@ bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
 }
 
 }  // namespace
-
-
-namespace chrome {
 
 void Navigate(NavigateParams* params) {
   Browser* source_browser = params->browser;
@@ -540,7 +532,7 @@ void Navigate(NavigateParams* params) {
                                    ui::PAGE_TRANSITION_KEYWORD);
 
   // Check if this is a singleton tab that already exists
-  int singleton_index = chrome::GetIndexOfSingletonTab(params);
+  int singleton_index = GetIndexOfSingletonTab(params);
 
   // Did we use a prerender?
   bool swapped_in_prerender = false;
@@ -697,5 +689,3 @@ bool IsURLAllowedInIncognito(const GURL& url,
   return !(rewritten_url.scheme_piece() == content::kChromeUIScheme &&
            rewritten_url.host_piece() == chrome::kChromeUIUberHost);
 }
-
-}  // namespace chrome

@@ -114,7 +114,7 @@ bool OpenMultipleTabs(int index, const std::vector<GURL>& urls) {
        it != urls.end(); ++it) {
     DVLOG(1) << "Opening tab: " << it->spec() << " using browser " << index
              << ".";
-    chrome::ShowSingletonTab(browser, *it);
+    ShowSingletonTab(browser, *it);
   }
   return WaitForTabsToLoad(index, urls);
 }
@@ -157,8 +157,8 @@ void MoveTab(int from_index, int to_index, int tab_index) {
 }
 
 bool NavigateTab(int index, const GURL& url) {
-  chrome::NavigateParams params(test()->GetBrowser(index), url,
-                                ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(test()->GetBrowser(index), url,
+                        ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
 
   ui_test_utils::NavigateToURL(&params);

@@ -428,9 +428,9 @@ void InspectUI::InspectBrowserWithCustomFrontend(
 
 void InspectUI::InspectDevices(Browser* browser) {
   base::RecordAction(base::UserMetricsAction("InspectDevices"));
-  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+  NavigateParams params(GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUIInspectURL)));
-  params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
 }
 

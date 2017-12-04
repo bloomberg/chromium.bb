@@ -36,7 +36,7 @@ bool IsVirtualKeyboardEnabled() {
 }
 
 void ShowAccessibilityHelp(Browser* browser) {
-  chrome::ShowSingletonTab(browser, GURL(chrome::kChromeAccessibilityHelpURL));
+  ShowSingletonTab(browser, GURL(chrome::kChromeAccessibilityHelpURL));
 }
 
 }  // namespace accessibility

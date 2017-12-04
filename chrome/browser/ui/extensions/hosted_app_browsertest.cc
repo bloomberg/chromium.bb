@@ -72,7 +72,7 @@ void NavigateToURLAndWait(Browser* browser, const GURL& url) {
   content::TestNavigationObserver observer(
       browser->tab_strip_model()->GetActiveWebContents(),
       content::MessageLoopRunner::QuitMode::DEFERRED);
-  chrome::NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
+  NavigateParams params(browser, url, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&params);
   observer.Wait();
 }
