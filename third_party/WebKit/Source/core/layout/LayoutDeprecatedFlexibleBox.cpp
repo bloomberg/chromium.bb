@@ -1356,17 +1356,18 @@ LayoutUnit LayoutDeprecatedFlexibleBox::AllowedChildFlex(LayoutBox* child,
   if (IsHorizontal()) {
     LayoutUnit min_width = child->MinPreferredLogicalWidth();
     LayoutUnit width = ContentWidthForChild(child);
-    if (child->Style()->MinWidth().IsFixed())
-      min_width = LayoutUnit(child->Style()->MinWidth().Value());
-    else if (child->Style()->MinWidth().GetType() == kAuto)
+    const Length& min_width_length = child->Style()->MinWidth();
+    if (min_width_length.IsFixed())
+      min_width = LayoutUnit(min_width_length.Value());
+    else if (min_width_length.IsAuto())
       min_width = LayoutUnit();
 
     LayoutUnit allowed_shrinkage = (min_width - width).ClampPositiveToZero();
     return allowed_shrinkage;
   }
-  Length min_height = child->Style()->MinHeight();
-  if (min_height.IsFixed() || min_height.IsAuto()) {
-    LayoutUnit min_height(child->Style()->MinHeight().Value());
+  const Length& min_height_length = child->Style()->MinHeight();
+  if (min_height_length.IsFixed() || min_height_length.IsAuto()) {
+    LayoutUnit min_height(min_height_length.Value());
     LayoutUnit height = ContentHeightForChild(child);
     LayoutUnit allowed_shrinkage = (min_height - height).ClampPositiveToZero();
     return allowed_shrinkage;

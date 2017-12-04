@@ -1500,11 +1500,12 @@ LayoutObject* InlineMinMaxIterator::Next() {
   return current;
 }
 
-static LayoutUnit GetBPMWidth(LayoutUnit child_value, Length css_unit) {
-  if (css_unit.GetType() != kAuto)
-    return (css_unit.IsFixed() ? static_cast<LayoutUnit>(css_unit.Value())
-                               : child_value);
-  return LayoutUnit();
+static LayoutUnit GetBPMWidth(LayoutUnit child_value, const Length& css_unit) {
+  if (css_unit.IsFixed())
+    return LayoutUnit(css_unit.Value());
+  if (css_unit.IsAuto())
+    return LayoutUnit();
+  return child_value;
 }
 
 static LayoutUnit GetBorderPaddingMargin(const LayoutBoxModelObject& child,
