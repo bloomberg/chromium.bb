@@ -139,10 +139,12 @@ class CONTENT_EXPORT RenderWidget
  public:
   // Creates a new RenderWidget for a popup. |opener| is the RenderView that
   // this widget lives inside.
-  static RenderWidget* CreateForPopup(RenderViewImpl* opener,
-                                      CompositorDependencies* compositor_deps,
-                                      blink::WebPopupType popup_type,
-                                      const ScreenInfo& screen_info);
+  static RenderWidget* CreateForPopup(
+      RenderViewImpl* opener,
+      CompositorDependencies* compositor_deps,
+      blink::WebPopupType popup_type,
+      const ScreenInfo& screen_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
   static RenderWidget* CreateForFrame(int widget_routing_id,
@@ -480,6 +482,7 @@ class CONTENT_EXPORT RenderWidget
                bool swapped_out,
                bool hidden,
                bool never_visible,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                mojom::WidgetRequest widget_request = nullptr);
 
   ~RenderWidget() override;
@@ -933,6 +936,8 @@ class CONTENT_EXPORT RenderWidget
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
   mojo::Binding<mojom::Widget> widget_binding_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 

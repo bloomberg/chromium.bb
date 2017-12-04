@@ -91,24 +91,26 @@ base::LazyInstance<FrameProxyCreationCallback>::Leaky
 using WebViewTestProxyType =
     test_runner::WebViewTestProxy<RenderViewImpl,
                                   CompositorDependencies*,
-                                  const mojom::CreateViewParams&>;
-using WebWidgetTestProxyType =
-    test_runner::WebWidgetTestProxy<RenderWidget,
-                                    int32_t,
-                                    CompositorDependencies*,
-                                    blink::WebPopupType,
-                                    const ScreenInfo&,
-                                    bool,
-                                    bool,
-                                    bool>;
+                                  const mojom::CreateViewParams&,
+                                  scoped_refptr<base::SingleThreadTaskRunner>>;
+using WebWidgetTestProxyType = test_runner::WebWidgetTestProxy<
+    RenderWidget,
+    int32_t,
+    CompositorDependencies*,
+    blink::WebPopupType,
+    const ScreenInfo&,
+    bool,
+    bool,
+    bool,
+    scoped_refptr<base::SingleThreadTaskRunner>>;
 using WebFrameTestProxyType =
     test_runner::WebFrameTestProxy<RenderFrameImpl,
                                    RenderFrameImpl::CreateParams>;
 
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
-  WebViewTestProxyType* render_view_proxy =
-      new WebViewTestProxyType(compositor_deps, params);
+  WebViewTestProxyType* render_view_proxy = new WebViewTestProxyType(
+      compositor_deps, params, base::ThreadTaskRunnerHandle::Get());
   if (g_view_test_proxy_callback == nullptr)
     return render_view_proxy;
   g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
@@ -124,7 +126,7 @@ RenderWidget* CreateWebWidgetTestProxy(int32_t routing_id,
                                        bool never_visible) {
   WebWidgetTestProxyType* render_widget_proxy = new WebWidgetTestProxyType(
       routing_id, compositor_deps, popup_type, screen_info, swapped_out, hidden,
-      never_visible);
+      never_visible, base::ThreadTaskRunnerHandle::Get());
   return render_widget_proxy;
 }
 

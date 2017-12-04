@@ -1535,7 +1535,9 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
     HidePopups();
   DCHECK(!page_popup_);
 
-  WebWidget* popup_widget = client_->CreatePopup(kWebPopupTypePage);
+  WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
+      client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot());
+  WebWidget* popup_widget = client_->CreatePopup(frame, kWebPopupTypePage);
   // CreatePopup returns nullptr if this renderer process is about to die.
   if (!popup_widget)
     return nullptr;
@@ -1544,8 +1546,7 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
     page_popup_->ClosePopup();
     page_popup_ = nullptr;
   }
-  EnablePopupMouseWheelEventListener(WebLocalFrameImpl::FromFrame(
-      client->OwnerElement().GetDocument().GetFrame()->LocalFrameRoot()));
+  EnablePopupMouseWheelEventListener(frame);
   return page_popup_.get();
 }
 

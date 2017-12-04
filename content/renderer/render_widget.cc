@@ -339,14 +339,16 @@ ui::TextInputMode ConvertWebTextInputMode(blink::WebTextInputMode mode) {
 
 // RenderWidget ---------------------------------------------------------------
 
-RenderWidget::RenderWidget(int32_t widget_routing_id,
-                           CompositorDependencies* compositor_deps,
-                           blink::WebPopupType popup_type,
-                           const ScreenInfo& screen_info,
-                           bool swapped_out,
-                           bool hidden,
-                           bool never_visible,
-                           mojom::WidgetRequest widget_request)
+RenderWidget::RenderWidget(
+    int32_t widget_routing_id,
+    CompositorDependencies* compositor_deps,
+    blink::WebPopupType popup_type,
+    const ScreenInfo& screen_info,
+    bool swapped_out,
+    bool hidden,
+    bool never_visible,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    mojom::WidgetRequest widget_request)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
@@ -388,6 +390,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)),
+      task_runner_(task_runner),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   if (!swapped_out)
@@ -439,7 +442,8 @@ RenderWidget* RenderWidget::CreateForPopup(
     RenderViewImpl* opener,
     CompositorDependencies* compositor_deps,
     blink::WebPopupType popup_type,
-    const ScreenInfo& screen_info) {
+    const ScreenInfo& screen_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojom::WidgetPtr widget_channel;
   mojom::WidgetRequest widget_channel_request =
       mojo::MakeRequest(&widget_channel);
@@ -452,9 +456,9 @@ RenderWidget* RenderWidget::CreateForPopup(
     return nullptr;
   }
 
-  scoped_refptr<RenderWidget> widget(
-      new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
-                       false, false, false, std::move(widget_channel_request)));
+  scoped_refptr<RenderWidget> widget(new RenderWidget(
+      routing_id, compositor_deps, popup_type, screen_info, false, false, false,
+      task_runner, std::move(widget_channel_request)));
   ShowCallback opener_callback =
       base::Bind(&RenderViewImpl::ShowCreatedPopupWidget, opener->GetWeakPtr());
   widget->Init(opener_callback, RenderWidget::CreateWebWidget(widget.get()));
@@ -479,6 +483,8 @@ RenderWidget* RenderWidget::CreateForFrame(
         RenderWidget::CreateWebFrameWidget(view->GetWidget(), frame));
     return view->GetWidget();
   }
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame->GetTaskRunner(blink::TaskType::kUnthrottled);
   scoped_refptr<RenderWidget> widget(
       g_create_render_widget
           ? g_create_render_widget(widget_routing_id, compositor_deps,
@@ -486,7 +492,7 @@ RenderWidget* RenderWidget::CreateForFrame(
                                    hidden, false)
           : new RenderWidget(widget_routing_id, compositor_deps,
                              blink::kWebPopupTypeNone, screen_info, false,
-                             hidden, false));
+                             hidden, false, task_runner));
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
@@ -772,7 +778,7 @@ void RenderWidget::OnClose() {
     // If there is a Send call on the stack, then it could be dangerous to close
     // now.  Post a task that only gets invoked when there are no nested message
     // loops.
-    base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+    task_runner_->PostNonNestableTask(
         FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
   }
 
@@ -1603,8 +1609,8 @@ void RenderWidget::CloseWidgetSoon() {
   // could be closed before the JS finishes executing.  So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, this));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&RenderWidget::DoDeferredClose, this));
 }
 
 void RenderWidget::Close() {

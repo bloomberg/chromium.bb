@@ -124,7 +124,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   static RenderViewImpl* Create(
       CompositorDependencies* compositor_deps,
       mojom::CreateViewParamsPtr params,
-      const RenderWidget::ShowCallback& show_callback);
+      const RenderWidget::ShowCallback& show_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.
@@ -282,7 +283,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener,
                              blink::WebSandboxFlags sandbox_flags) override;
-  blink::WebWidget* CreatePopup(blink::WebPopupType popup_type) override;
+  blink::WebWidget* CreatePopup(blink::WebLocalFrame* creator,
+                                blink::WebPopupType popup_type) override;
   int64_t GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   bool EnumerateChosenDirectory(
@@ -386,7 +388,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void ResizeWebWidget() override;
 
   RenderViewImpl(CompositorDependencies* compositor_deps,
-                 const mojom::CreateViewParams& params);
+                 const mojom::CreateViewParams& params,
+                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void Initialize(mojom::CreateViewParamsPtr params,
                   const RenderWidget::ShowCallback& show_callback);
