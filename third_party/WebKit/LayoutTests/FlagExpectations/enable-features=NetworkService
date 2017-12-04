@@ -122,6 +122,7 @@ crbug.com/721408 http/tests/inspector-protocol/network/request-interception-patt
 crbug.com/721408 http/tests/inspector-protocol/network/request-interception-resource-types.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/request-response-interception-disable-between.js [ Failure Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network/response-interception-cancel-xhr-while-responding-error.js [ Failure Timeout ]
+crbug.com/721408 http/tests/inspector-protocol/network/response-interception-main-resource-cross-origin.js [ Failure Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network/response-interception-no-change-content-not-ready.js [ Failure Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network/response-interception-request-completes-network-closes.js [ Failure Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network/response-interception-with-data-url.js [ Failure Timeout ]
