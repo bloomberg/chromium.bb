@@ -368,6 +368,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual void DisableAcceleration() {}
   virtual void DidInvokeGPUReadbackInCurrentFrame() {}
 
+  virtual bool IsPaint2D() const { return false; }
+
  private:
   void RealizeSaves();
 

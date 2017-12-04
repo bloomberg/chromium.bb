@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/Histogram.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -85,11 +84,6 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
     return;
   }
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, canvas_fallback_histogram,
-      ("Canvas.DisplayListFallbackReason", kFallbackReasonCount));
-  canvas_fallback_histogram.Count(reason);
-
   fallback_surface_ = WTF::WrapUnique(new UnacceleratedImageBufferSurface(
       Size(), kInitializeImagePixels, ColorParams()));
   // If the fallback surface fails to be created, then early out.
@@ -111,9 +105,6 @@ void RecordingImageBufferSurface::FallBackToRasterCanvas(
   if (resource_host_) {
     resource_host_->RestoreCanvasMatrixClipStack(fallback_surface_->Canvas());
   }
-
-  CanvasMetrics::CountCanvasContextUsage(
-      CanvasMetrics::kDisplayList2DCanvasFallbackToRaster);
 }
 
 static RecordingImageBufferSurface::FallbackReason

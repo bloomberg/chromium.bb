@@ -152,10 +152,6 @@ crbug.com/653722 virtual/spv175/compositing/reflections/nested-reflection-animat
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 crbug.com/653722 virtual/spv175/compositing/reflections/nested-reflection-transition.html [ Skip ]
 
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
-crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
-
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
@@ -2408,11 +2404,6 @@ crbug.com/788337 external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Fa
 # This test times out on debug builds, see https://crbug.com/755810
 crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
 
-# These external tests fail after turning on color correct rendering for canvas
-# since they use a non-SRGB source image.
-crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Failure ]
-crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/image-object-in-canvas.html [ Failure ]
-
 crbug.com/666993 external/wpt/requestidlecallback/callback-idle-periods.html [ Timeout ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
@@ -2480,9 +2471,6 @@ crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html 
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
 crbug.com/678481 http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Timeout Failure Pass ]
 crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Failure Pass ]
-
-crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units-off-screen.html [ Skip ]
-crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units.html [ Skip ]
 
 crbug.com/701047 [ Mac10.12 ] editing/caret/caret-color.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/deleting/delete-at-paragraph-boundaries-011.html [ Failure ]
@@ -3456,9 +3444,6 @@ crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.
 
 # Sheriff failures 2017-09-11
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
-
-# Sheriff failures 2017-09-12
-crbug.com/764180 [ Android ] virtual/display_list_2d_canvas/fast/canvas/script-inside-canvas-fallback.html [ Pass Crash ]
 
 # Sheriff failure 2017-09-18
 crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]

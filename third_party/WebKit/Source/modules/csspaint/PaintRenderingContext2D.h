@@ -72,6 +72,9 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   // PaintRenderingContext2D cannot lose it's context.
   bool isContextLost() const final { return false; }
 
+ protected:
+  bool IsPaint2D() const override { return true; }
+
  private:
   PaintRenderingContext2D(std::unique_ptr<ImageBuffer>,
                           const PaintRenderingContext2DSettings&,

@@ -233,11 +233,6 @@ const char kDisallowDocWrittenScriptsUiDescription[] =
     "Disallows fetches for third-party parser-blocking scripts inserted into "
     "the main frame via document.write.";
 
-const char kDisplayList2dCanvasName[] = "Display list 2D canvas";
-const char kDisplayList2dCanvasDescription[] =
-    "Enables the use of display lists to record 2D canvas commands. This "
-    "allows 2D canvas rasterization to be performed on separate thread.";
-
 const char kDistanceFieldTextName[] = "Distance field text";
 const char kDistanceFieldTextDescription[] =
     "Text is rendered with signed distance fields rather than bitmap alpha "

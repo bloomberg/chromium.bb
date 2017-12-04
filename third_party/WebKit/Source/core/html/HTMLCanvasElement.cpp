@@ -75,8 +75,6 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
-#include "platform/graphics/RecordingImageBufferSurface.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/paint/PaintCanvas.h"
@@ -337,7 +335,6 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
 
 bool HTMLCanvasElement::ShouldBeDirectComposited() const {
   return (context_ && context_->IsComposited()) ||
-         (GetImageBuffer() && GetImageBuffer()->IsExpensiveToPaint()) ||
          (!!surface_layer_bridge_);
 }
 
@@ -456,11 +453,11 @@ void HTMLCanvasElement::FinalizeFrame() {
 }
 
 void HTMLCanvasElement::DisableAcceleration() {
-  // Create and configure a recording (unaccelerated) surface.
+  // Create and configure an unaccelerated surface.
   std::unique_ptr<ImageBufferSurface> surface =
-      WTF::WrapUnique(new RecordingImageBufferSurface(
-          Size(), RecordingImageBufferSurface::kAllowFallback, ColorParams()));
-  if (image_buffer_) {
+      CreateUnacceleratedImageBufferSurface();
+
+  if (surface && image_buffer_) {
     RestoreCanvasMatrixClipStack(surface->Canvas());
     image_buffer_->SetSurface(std::move(surface));
     UpdateMemoryUsage();
@@ -585,8 +582,7 @@ void HTMLCanvasElement::Reset() {
 
   // If the size of an existing buffer matches, we can just clear it instead of
   // reallocating.  This optimization is only done for 2D canvases for now.
-  if (had_image_buffer && old_size == new_size && Is2d() &&
-      !GetOrCreateImageBuffer()->IsRecording()) {
+  if (had_image_buffer && old_size == new_size && Is2d()) {
     if (!image_buffer_is_clear_) {
       image_buffer_is_clear_ = true;
       context_->ClearRect(0, 0, width(), height());
@@ -955,9 +951,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (LowLatencyEnabled())
     return false;
 
-  if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
-    return false;
-
   if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled())
     return false;
 
@@ -972,22 +965,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   if (!checked_canvas_pixel_count.IsValid())
     return false;
   int canvas_pixel_count = checked_canvas_pixel_count.ValueOrDie();
-
-  if (RuntimeEnabledFeatures::DisplayList2dCanvasEnabled()) {
-#if 0
-        // TODO(junov): re-enable this code once we solve the problem of recording
-        // GPU-backed images to a PaintRecord for cross-context rendering crbug.com/490328
-
-        // If the compositor provides GPU acceleration to display list canvases, we
-        // prefer that over direct acceleration.
-        if (document().viewportDescription().matchesHeuristicsForGpuRasterization())
-            return false;
-#endif
-    // If the GPU resources would be very expensive, prefer a display list.
-    if (canvas_pixel_count >
-        CanvasHeuristicParameters::kPreferDisplayListOverGpuSizeThreshold)
-      return false;
-  }
 
   // Do not use acceleration for small canvas.
   if (criteria != kIgnoreResourceLimitCriteria) {
@@ -1037,33 +1014,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   return true;
 }
 
-bool HTMLCanvasElement::ShouldUseDisplayList() {
-  // Rasterization of web contents will blend in the output space. Only embed
-  // the canvas as a display list if it intended to do output space blending as
-  // well.
-  if (!ColorParams().NeedsSkColorSpaceXformCanvas())
-    return false;
-
-  if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
-    return true;
-
-  if (GetDocument().GetSettings() &&
-      GetDocument().GetSettings()->GetForceDisplayList2dCanvasEnabled()) {
-    return true;
-  }
-
-  if (MemoryCoordinator::IsLowEndDevice())
-    return false;
-
-  if (!RuntimeEnabledFeatures::DisplayList2dCanvasEnabled())
-    return false;
-
-  // TODO(crbug.com/721727): Due to a rendering regression with display-
-  // list-2d-canvas, this feature is now disabled by default.  For now, the
-  // feature will only be enabled with --force-display-list-2d-canvas.
-  return false;
-}
-
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::CreateWebGLImageBufferSurface() {
   DCHECK(Is3d());
@@ -1103,18 +1053,6 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(int* msaa_sample_count) {
 
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::CreateUnacceleratedImageBufferSurface() {
-  if (ShouldUseDisplayList()) {
-    auto surface = std::make_unique<RecordingImageBufferSurface>(
-        Size(), RecordingImageBufferSurface::kAllowFallback, ColorParams());
-    if (surface->IsValid()) {
-      CanvasMetrics::CountCanvasContextUsage(
-          CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);
-      return std::move(surface);
-    }
-    // We fallback to a non-display-list surface without recording a metric
-    // here.
-  }
-
   auto surface = std::make_unique<Canvas2DLayerBridge>(
       Size(), 0, Canvas2DLayerBridge::kDisableAcceleration, ColorParams());
   if (surface->IsValid()) {

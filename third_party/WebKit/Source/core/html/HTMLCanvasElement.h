@@ -317,7 +317,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void CreateImageBuffer();
   void CreateImageBufferInternal(
       std::unique_ptr<ImageBufferSurface> external_surface);
-  bool ShouldUseDisplayList();
 
   void SetSurfaceSize(const IntSize&);
 

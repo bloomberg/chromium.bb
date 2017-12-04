@@ -8348,6 +8348,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Canvas.DisplayListFallbackReason"
     enum="CanvasDisplayListFallbackReason">
+  <obsolete>
+    Deprecated 11/2017 with removal of Display List Canvas 2D mode.
+  </obsolete>
   <owner>junov@chromium.org</owner>
   <summary>
     The reasons why a canvas initially set to display list mode had to fall back
@@ -99397,7 +99400,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="BlinkCanvasDurationBySource" separator=".">
   <suffix name="CPU"/>
-  <suffix name="DisplayList"/>
+  <suffix name="DisplayList">
+    <obsolete>
+      Deprecated 11/2017 with removal of Display List Canvas 2D mode.
+    </obsolete>
+  </suffix>
   <suffix name="GPU"/>
   <affected-histogram name="Blink.Canvas.DrawImage.Canvas"/>
   <affected-histogram name="Blink.Canvas.DrawImage.ImageBitmap"/>
