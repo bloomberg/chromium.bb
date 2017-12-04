@@ -74,6 +74,15 @@
   return UIColor.whiteColor;
 }
 
++ (UIColor*)menuSeparatorColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:1.f alpha:0.4f];
+  });
+  return color;
+}
+
 + (UIColor*)pinEntryPairingColor {
   return UIColor.whiteColor;
 }
