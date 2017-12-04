@@ -71,7 +71,12 @@ class NetworkStateListDetailedView::InfoBubble
     AddChildView(content);
   }
 
-  ~InfoBubble() override { detailed_view_->OnInfoBubbleDestroyed(); }
+  ~InfoBubble() override {
+    // Anchor view can be destructed before info bubble is destructed. Call
+    // OnInfoBubbleDestroyed only if anchor view is live.
+    if (GetAnchorView())
+      detailed_view_->OnInfoBubbleDestroyed();
+  }
 
  private:
   // View:
@@ -178,6 +183,10 @@ void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
   UpdateHeaderButtons();
   Layout();
+}
+
+void NetworkStateListDetailedView::ToggleInfoBubbleForTesting() {
+  ToggleInfoBubble();
 }
 
 void NetworkStateListDetailedView::Init() {

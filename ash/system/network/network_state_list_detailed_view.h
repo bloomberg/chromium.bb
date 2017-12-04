@@ -23,7 +23,8 @@ class SystemTrayItem;
 
 namespace tray {
 
-class NetworkStateListDetailedView
+// Exported for tests.
+class ASH_EXPORT NetworkStateListDetailedView
     : public TrayDetailsView,
       public base::SupportsWeakPtr<NetworkStateListDetailedView> {
  public:
@@ -34,6 +35,8 @@ class NetworkStateListDetailedView
   // Called when the contents of the network list have changed or when any
   // Manager properties (e.g. technology state) have changed.
   void Update();
+
+  void ToggleInfoBubbleForTesting();
 
  protected:
   enum ListType { LIST_TYPE_NETWORK, LIST_TYPE_VPN };
