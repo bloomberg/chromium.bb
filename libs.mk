@@ -151,6 +151,12 @@ libaom_srcs.txt:
 	@echo $(CODEC_SRCS) | xargs -n1 echo | LC_ALL=C sort -u > $@
 CLEAN-OBJS += libaom_srcs.txt
 
+# Assembly files that are included, but don't define symbols themselves.
+# Filtered out to avoid Visual Studio build warnings.
+ASM_INCLUDES := \
+    third_party/x86inc/x86inc.asm \
+    aom_config.asm \
+    aom_ports/x86_abi_support.asm \
 
 ifeq ($(CONFIG_EXTERNAL_BUILD),yes)
 ifeq ($(CONFIG_MSVS),yes)
@@ -161,13 +167,6 @@ aom.def: $(call enabled,CODEC_EXPORTS)
             --name=aom\
             --out=$@ $^
 CLEAN-OBJS += aom.def
-
-# Assembly files that are included, but don't define symbols themselves.
-# Filtered out to avoid Visual Studio build warnings.
-ASM_INCLUDES := \
-    third_party/x86inc/x86inc.asm \
-    aom_config.asm \
-    aom_ports/x86_abi_support.asm \
 
 aom.$(VCPROJ_SFX): $(CODEC_SRCS) aom.def
 	@echo "    [CREATE] $@"
@@ -191,7 +190,7 @@ aom.$(VCPROJ_SFX): $(RTCD)
 
 endif
 else
-LIBAOM_OBJS=$(call objs,$(CODEC_SRCS))
+LIBAOM_OBJS=$(call objs, $(filter-out $(ASM_INCLUDES), $(CODEC_SRCS)))
 OBJS-yes += $(LIBAOM_OBJS)
 LIBS-$(if yes,$(CONFIG_STATIC)) += $(BUILD_PFX)libaom.a $(BUILD_PFX)libaom_g.a
 $(BUILD_PFX)libaom_g.a: $(LIBAOM_OBJS)
