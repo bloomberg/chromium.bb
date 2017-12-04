@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/hostname_handler.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
@@ -204,6 +205,9 @@ void BrowserPolicyConnectorChromeOS::Init(
   bluetooth_policy_handler_ =
       std::make_unique<BluetoothPolicyHandler>(chromeos::CrosSettings::Get());
 
+  hostname_handler_ =
+      std::make_unique<HostnameHandler>(chromeos::CrosSettings::Get());
+
   minimum_version_policy_handler_ =
       std::make_unique<MinimumVersionPolicyHandler>(
           chromeos::CrosSettings::Get());
@@ -229,6 +233,9 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
 
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->RemoveDeviceCloudPolicyManagerObserver(this);
+
+  if (hostname_handler_)
+    hostname_handler_->Shutdown();
 
   ChromeBrowserPolicyConnector::Shutdown();
 }

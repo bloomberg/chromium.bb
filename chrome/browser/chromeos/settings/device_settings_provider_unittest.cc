@@ -183,6 +183,15 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     EXPECT_EQ(expected_enabled_value, *provider_->Get(kSystemLogUploadEnabled));
   }
 
+  void VerifyPolicyValue(const char* policy_key,
+                         const base::Value* const ptr_to_expected_value) {
+    // The pointer might be null, so check before dereferencing.
+    if (ptr_to_expected_value)
+      EXPECT_EQ(*ptr_to_expected_value, *provider_->Get(policy_key));
+    else
+      EXPECT_EQ(nullptr, provider_->Get(policy_key));
+  }
+
   // Helper routine to set LoginScreenDomainAutoComplete policy.
   void SetDomainAutoComplete(const std::string& domain) {
     EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
@@ -198,13 +207,20 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to check value of the LoginScreenDomainAutoComplete policy.
   void VerifyDomainAutoComplete(
       const base::Value* const ptr_to_expected_value) {
-    // The pointer might be null, so check before dereferencing.
-    if (ptr_to_expected_value)
-      EXPECT_EQ(*ptr_to_expected_value,
-                *provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete));
-    else
-      EXPECT_EQ(ptr_to_expected_value,
-                provider_->Get(kAccountsPrefLoginScreenDomainAutoComplete));
+    VerifyPolicyValue(kAccountsPrefLoginScreenDomainAutoComplete,
+                      ptr_to_expected_value);
+  }
+
+  // Helper routine to set HostnameTemplate policy.
+  void SetHostnameTemplate(const std::string& hostname_template) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::NetworkHostnameProto* proto =
+        device_policy_.payload().mutable_network_hostname();
+    proto->set_device_hostname_template(hostname_template);
+    device_policy_.Build();
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
   }
 
   ScopedTestingLocalState local_state_;
@@ -523,6 +539,21 @@ TEST_F(DeviceSettingsProviderTest, DecodeDomainAutoComplete) {
   const base::Value domain_value(domain);
   SetDomainAutoComplete(domain);
   VerifyDomainAutoComplete(&domain_value);
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodeHostnameTemplate) {
+  // By default DeviceHostnameTemplate policy should not be set.
+  VerifyPolicyValue(kDeviceHostnameTemplate, nullptr);
+
+  // Empty string means that the policy is not set.
+  SetHostnameTemplate("");
+  VerifyPolicyValue(kDeviceHostnameTemplate, nullptr);
+
+  // Check some meaningful value. Policy should be set.
+  const std::string hostname_template = "chromebook-${ASSET_ID}";
+  const base::Value template_value(hostname_template);
+  SetHostnameTemplate(hostname_template);
+  VerifyPolicyValue(kDeviceHostnameTemplate, &template_value);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeLogUploadSettings) {

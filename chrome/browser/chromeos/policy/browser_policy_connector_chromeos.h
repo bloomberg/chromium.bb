@@ -35,14 +35,15 @@ class URLRequestContextGetter;
 
 namespace policy {
 
+class ActiveDirectoryPolicyManager;
 class AffiliatedCloudPolicyInvalidator;
 class AffiliatedInvalidationServiceProvider;
 class AffiliatedRemoteCommandsInvalidator;
 class BluetoothPolicyHandler;
-class ActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
 class DeviceLocalAccountPolicyService;
 struct EnrollmentConfig;
+class HostnameHandler;
 class MinimumVersionPolicyHandler;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
@@ -203,7 +204,7 @@ class BrowserPolicyConnectorChromeOS
       device_remote_commands_invalidator_;
 
   std::unique_ptr<BluetoothPolicyHandler> bluetooth_policy_handler_;
-
+  std::unique_ptr<HostnameHandler> hostname_handler_;
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the

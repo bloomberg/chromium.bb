@@ -139,6 +139,10 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // only set it.
   void SetWakeOnLanEnabled(bool enabled);
 
+  // Sets the HostName property. Note: we do not track this property, we
+  // only set it.
+  void SetHostname(const std::string& hostname);
+
   // Calls shill to enable/disable network bandwidth throttling. If |enabled|
   // is true, |upload_rate_kbits| and |download_rate_kbits| specify the rate
   // in kbits/s to throttle to. If |enabled| is false, throttling is disabled

@@ -318,6 +318,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // only set it.
   void SetWakeOnLanEnabled(bool enabled);
 
+  // Sets the HostName property. Note: we do not track this property, we
+  // only set it.
+  void SetHostname(const std::string& hostname);
+
   // Enable or disable network bandwidth throttling, on all interfaces on the
   // system. If |enabled| is true, |upload_rate_kbits| and |download_rate_kbits|
   // are the desired rates (in kbits/s) to throttle to. If |enabled| is false,

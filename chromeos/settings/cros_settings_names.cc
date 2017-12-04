@@ -302,4 +302,12 @@ const char kDeviceEnrollmentIdNeeded[] = "cros.device.enrollment_id_needed";
 // use ARC.
 const char kUnaffiliatedArcAllowed[] = "cros.device.unaffiliated_arc_allowed";
 
+// String that is used as a template for generating device hostname (that is
+// used in DHCP requests).
+// If the string contains either ASSET_ID, SERIAL_NUM or MAC_ADDR values,
+// they will be substituted for real values.
+// If the string is empty or blank, or the resulting hostname is not valid
+// as per RFC 1035, then no hostname will be used.
+const char kDeviceHostnameTemplate[] = "cros.network.hostname_template";
+
 }  // namespace chromeos
