@@ -12,6 +12,7 @@
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/vibration/VibrationController.h"
 #include "platform/wtf/Time.h"
+#include "platform/wtf/text/StringView.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
@@ -94,8 +95,11 @@ WebNotificationData CreateWebNotificationData(
     if (exception_state.HadException())
       return WebNotificationData();
 
+    StringView ssv_wire_data = serialized_script_value->GetWireData();
+    DCHECK(ssv_wire_data.Is8Bit());
     Vector<char> serialized_data;
-    serialized_script_value->ToWireBytes(serialized_data);
+    serialized_data.ReserveInitialCapacity(ssv_wire_data.length());
+    serialized_data.Append(ssv_wire_data.Characters8(), ssv_wire_data.length());
 
     web_data.data = serialized_data;
   }

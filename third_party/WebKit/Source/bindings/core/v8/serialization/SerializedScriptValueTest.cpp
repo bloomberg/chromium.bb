@@ -12,6 +12,7 @@
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
 #include "core/fileapi/File.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/text/StringView.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -25,11 +26,13 @@ TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
           scope.GetIsolate(), v8OriginalTrue,
           SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
 
-  Vector<char> wireData;
-  sourceSerializedScriptValue->ToWireBytes(wireData);
+  StringView wire_data = sourceSerializedScriptValue->GetWireData();
+  DCHECK(wire_data.Is8Bit());
 
   scoped_refptr<SerializedScriptValue> serializedScriptValue =
-      SerializedScriptValue::Create(wireData.data(), wireData.size());
+      SerializedScriptValue::Create(
+          reinterpret_cast<const char*>(wire_data.Characters8()),
+          wire_data.length());
   v8::Local<v8::Value> deserialized =
       serializedScriptValue->Deserialize(scope.GetIsolate());
   EXPECT_TRUE(deserialized->IsTrue());
