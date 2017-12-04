@@ -24,6 +24,8 @@ source_set("main_content_ui") {
     "main_content_ui.h",
     "main_content_ui_state.h",
     "main_content_ui_state.mm",
+    "web_scroll_view_main_content_ui_forwarder.h",
+    "web_scroll_view_main_content_ui_forwarder.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -32,6 +34,8 @@ source_set("main_content_ui") {
     "//base",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/broadcaster",
+    "//ios/chrome/browser/web_state_list",
+    "//ios/web/public",
   ]
 }
 
