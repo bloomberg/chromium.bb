@@ -4,10 +4,32 @@
 
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
+
+namespace {
+
+class DummyLifecycleUnit : public LifecycleUnit {
+ public:
+  DummyLifecycleUnit() = default;
+
+  // LifecycleUnit:
+  base::string16 GetTitle() const override { return base::string16(); }
+  std::string GetIconURL() const override { return std::string(); }
+  SortKey GetSortKey() const override { return SortKey(); }
+  State GetState() const override { return State::LOADED; }
+  int GetEstimatedMemoryFreedOnDiscardKB() const override { return 0; }
+  bool CanDiscard(DiscardReason reason) const override { return false; }
+  bool Discard(DiscardReason discard_reason) override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyLifecycleUnit);
+};
+
+}  // namespace
 
 TEST(LifecycleUnitTest, SortKeyComparison) {
   constexpr base::TimeTicks kBaseTime;
@@ -38,6 +60,22 @@ TEST(LifecycleUnitTest, SortKeyComparison) {
   EXPECT_TRUE(c > a);
   EXPECT_TRUE(c > b);
   EXPECT_FALSE(c > c);
+}
+
+// Verify that GetID() returns different ids for different LifecycleUnits, but
+// always the same id for the same LifecycleUnit.
+TEST(LifecycleUnitTest, GetID) {
+  DummyLifecycleUnit a;
+  DummyLifecycleUnit b;
+  DummyLifecycleUnit c;
+
+  EXPECT_NE(a.GetID(), b.GetID());
+  EXPECT_NE(a.GetID(), c.GetID());
+  EXPECT_NE(b.GetID(), c.GetID());
+
+  EXPECT_EQ(a.GetID(), a.GetID());
+  EXPECT_EQ(b.GetID(), b.GetID());
+  EXPECT_EQ(c.GetID(), c.GetID());
 }
 
 }  // namespace resource_coordinator

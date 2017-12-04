@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LIFECYCLE_UNIT_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
@@ -41,7 +43,11 @@ class LifecycleUnit {
     base::TimeTicks last_focused_time;
   };
 
-  virtual ~LifecycleUnit() = default;
+  LifecycleUnit();
+  virtual ~LifecycleUnit();
+
+  // Returns a unique id representing this LifecycleUnit.
+  uint32_t GetID() const;
 
   // Returns a title describing this LifecycleUnit, or an empty string if no
   // title is available.
@@ -84,6 +90,14 @@ class LifecycleUnit {
   // in the same process(es) than if we discard individual LifecycleUnits.
   // https://crbug.com/775644
   virtual bool Discard(DiscardReason discard_reason) = 0;
+
+ private:
+  static uint32_t next_id_;
+
+  // A unique id representing this LifecycleUnit.
+  const uint32_t id_ = ++next_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(LifecycleUnit);
 };
 
 using LifecycleUnitSet = base::flat_set<LifecycleUnit*>;
