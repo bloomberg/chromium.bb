@@ -102648,6 +102648,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="LowMemoryMargin" separator="_">
+  <obsolete>
+    Deprecated 12/2017. The low memory margin is a per-platform constant.
+  </obsolete>
   <suffix name="default" label="Low memory margin set to the system default"/>
   <suffix name="off" label="Low memory notification disabled"/>
   <suffix name="0mb" label="Low memory margin set to 0MB"/>
