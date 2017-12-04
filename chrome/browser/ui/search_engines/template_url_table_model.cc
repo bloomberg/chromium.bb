@@ -16,11 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 
-// Group IDs used by TemplateURLTableModel.
-static const int kMainGroupID = 0;
-static const int kOtherGroupID = 1;
-static const int kExtensionGroupID = 2;
-
 TemplateURLTableModel::TemplateURLTableModel(
     TemplateURLService* template_url_service)
     : observer_(NULL), template_url_service_(template_url_service) {
@@ -94,41 +89,6 @@ base::string16 TemplateURLTableModel::GetText(int row, int col_id) {
 
 void TemplateURLTableModel::SetObserver(ui::TableModelObserver* observer) {
   observer_ = observer;
-}
-
-bool TemplateURLTableModel::HasGroups() {
-  return true;
-}
-
-TemplateURLTableModel::Groups TemplateURLTableModel::GetGroups() {
-  Groups groups;
-
-  Group search_engine_group;
-  search_engine_group.title =
-      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR);
-  search_engine_group.id = kMainGroupID;
-  groups.push_back(search_engine_group);
-
-  Group other_group;
-  other_group.title =
-      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_OTHER_SEPARATOR);
-  other_group.id = kOtherGroupID;
-  groups.push_back(other_group);
-
-  Group extension_group;
-  extension_group.title =
-      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_EXTENSIONS_SEPARATOR);
-  extension_group.id = kExtensionGroupID;
-  groups.push_back(extension_group);
-
-  return groups;
-}
-
-int TemplateURLTableModel::GetGroupID(int row) {
-  DCHECK(row >= 0 && row < RowCount());
-  if (row < last_search_engine_index_)
-    return kMainGroupID;
-  return row < last_other_engine_index_ ? kOtherGroupID : kExtensionGroupID;
 }
 
 void TemplateURLTableModel::Remove(int index) {

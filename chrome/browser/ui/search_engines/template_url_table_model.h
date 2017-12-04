@@ -44,9 +44,6 @@ class TemplateURLTableModel : public ui::TableModel,
   int RowCount() override;
   base::string16 GetText(int row, int column) override;
   void SetObserver(ui::TableModelObserver* observer) override;
-  bool HasGroups() override;
-  Groups GetGroups() override;
-  int GetGroupID(int row) override;
 
   // Removes the entry at the specified index.
   void Remove(int index);
