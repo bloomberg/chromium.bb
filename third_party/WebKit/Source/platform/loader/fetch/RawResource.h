@@ -66,12 +66,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
     return CreateForTest(KURL(url), type);
   }
 
-  // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and
-  // therefore shouldn't use RawResource. However, it is, and it needs to be
-  // able to defer loading. This can be fixed by splitting CORS preflighting out
-  // of DocumentThreadableLoader.
-  void SetDefersLoading(bool);
-
   // Resource implementation
   bool CanReuse(const FetchParameters&) const override;
   bool WillFollowRedirect(const ResourceRequest&,
