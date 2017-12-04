@@ -213,12 +213,6 @@
 
 - (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
                           safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  // The snapshotted view must not be in the view hierarchy, because the code
-  // below temporarily changes the frames of views in order to take the snapshot
-  // in simulated target frame. The frames will be returned to normal after the
-  // snapshot is taken.
-  DCHECK(self.toolbarViewController.view.window == nil);
-
   CGRect oldFrame = self.toolbarViewController.view.superview.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
