@@ -168,6 +168,8 @@
     movdqa          [rdi + 16],    xmm2
 %endmacro
 
+SECTION .text
+
 ;void aom_sad16x16x8_sse4_1(
 ;    const unsigned char *src_ptr,
 ;    int  src_stride,

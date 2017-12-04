@@ -134,6 +134,8 @@
     dec         rcx
 %endm
 
+SECTION .text
+
 global sym(aom_filter_block1d4_v2_sse2) PRIVATE
 sym(aom_filter_block1d4_v2_sse2):
     push        rbp
