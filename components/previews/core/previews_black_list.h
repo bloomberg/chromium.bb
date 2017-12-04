@@ -99,10 +99,12 @@ class PreviewsBlackList {
 
   // Synchronously determines if |host_name| should be allowed to show previews.
   // Returns the reason the blacklist disallowed the preview, or
-  // PreviewsEligibilityReason::ALLOWED if the preview is allowed. Virtualized
-  // in testing.
-  virtual PreviewsEligibilityReason IsLoadedAndAllowed(const GURL& url,
-                                                       PreviewsType type) const;
+  // PreviewsEligibilityReason::ALLOWED if the preview is allowed. Record
+  // checked reasons in |passed_reasons|. Virtualized in testing.
+  virtual PreviewsEligibilityReason IsLoadedAndAllowed(
+      const GURL& url,
+      PreviewsType type,
+      std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
   // Asynchronously deletes all entries in the in-memory black list. Informs
   // the backing store to delete entries between |begin_time| and |end_time|,

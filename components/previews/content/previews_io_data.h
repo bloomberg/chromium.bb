@@ -67,11 +67,15 @@ class PreviewsIOData : public PreviewsDecider,
                             PreviewsType type,
                             base::Time time) const;
 
-  // Adds log message of preview decision made asynchronously.
-  void LogPreviewDecisionMade(PreviewsEligibilityReason reason,
-                              const GURL& url,
-                              base::Time time,
-                              PreviewsType type) const;
+  // Adds log message of preview decision made asynchronously. |passed_reasons|
+  // are PreviewsEligibilityReasons that got passed the decision before
+  // |reason|. The method takes ownership of |passed_reasons|.
+  void LogPreviewDecisionMade(
+      PreviewsEligibilityReason reason,
+      const GURL& url,
+      base::Time time,
+      PreviewsType type,
+      std::vector<PreviewsEligibilityReason>&& passed_reasons) const;
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
