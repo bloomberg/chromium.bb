@@ -563,7 +563,7 @@ process, and not as a (potentially compromised) web renderer or other
 low-privilege process.
 
 * Use the standard pattern for instantiating `MojoWebUIController`. WebUI
-methods must only be exposed through a `MojoWebUIController` subclass.
+Mojo interfaces must only be exposed through a `MojoWebUIController` subclass.
 * If there is external functionality that the WebUI needs, make sure to route
 it through the Mojo interfaces implemented by the `MojoWebUIController`, to
 avoid circumventing access checks.
