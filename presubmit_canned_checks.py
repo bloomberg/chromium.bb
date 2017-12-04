@@ -1315,4 +1315,3 @@ def CheckChangedLUCIConfigs(input_api, output_api):
         out_f = output_api.PresubmitNotifyResult
       outputs.append(out_f('Config validation: %s' % msg['text']))
   return outputs
-

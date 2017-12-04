@@ -1800,7 +1800,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
       'CheckCIPDManifest', 'CheckCIPDPackages',
-      'CheckChangedLUCIConfigs', 'CheckChangedConfigs',
+      'CheckChangedLUCIConfigs',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
