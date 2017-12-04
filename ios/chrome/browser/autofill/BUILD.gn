@@ -5,6 +5,8 @@
 source_set("autofill") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "address_normalizer_factory.cc",
+    "address_normalizer_factory.h",
     "form_input_accessory_view.h",
     "form_input_accessory_view.mm",
     "form_input_accessory_view_controller.h",
