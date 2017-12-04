@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/common/content_export.h"
+#include "gpu/vulkan/features.h"
 
 namespace cc {
 class SoftwareOutputDevice;
@@ -45,6 +46,9 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanSurface* GetVulkanSurface() override;
+#endif
 
  private:
   // BrowserCompositorOutputSurface implementation.

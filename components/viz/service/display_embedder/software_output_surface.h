@@ -39,6 +39,9 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   void ApplyExternalStencil() override;
   bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanSurface* GetVulkanSurface() override;
+#endif
 
  private:
   void SwapBuffersCallback(uint64_t swap_id);

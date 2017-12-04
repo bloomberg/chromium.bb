@@ -35,10 +35,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
 
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "cc/output/vulkan_renderer.h"
-#endif
-
 namespace viz {
 
 Display::Display(
@@ -207,8 +203,8 @@ void Display::InitializeRenderer() {
           &settings_, output_surface_.get(), resource_provider_.get());
     }
   } else if (output_surface_->vulkan_context_provider()) {
-#if defined(ENABLE_VULKAN)
-    renderer_ = base::MakeUnique<VulkanRenderer>(
+#if BUILDFLAG(ENABLE_VULKAN)
+    renderer_ = base::MakeUnique<SkiaRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());
 #else
     NOTREACHED();

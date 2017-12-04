@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "gpu/vulkan/features.h"
 #include "ui/latency/latency_info.h"
 
 namespace ui {
@@ -57,6 +58,10 @@ class OffscreenBrowserCompositorOutputSurface
   void OnReflectorChanged() override;
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override {}
+#endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
 
   void OnSwapBuffersComplete(const std::vector<ui::LatencyInfo>& latency_info,

@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/viz_common_export.h"
 
+class GrContext;
+
 namespace gpu {
 class VulkanDeviceQueue;
 }
@@ -19,6 +21,7 @@ class VIZ_COMMON_EXPORT VulkanContextProvider
     : public base::RefCountedThreadSafe<VulkanContextProvider> {
  public:
   virtual gpu::VulkanDeviceQueue* GetDeviceQueue() = 0;
+  virtual GrContext* GetGrContext() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<VulkanContextProvider>;

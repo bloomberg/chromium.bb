@@ -46,6 +46,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
     return vk_queue_;
   }
 
+  VkInstance GetVulkanInstance() const { return vk_instance_; }
+
   uint32_t GetVulkanQueueIndex() const { return vk_queue_index_; }
 
   std::unique_ptr<gpu::VulkanCommandPool> CreateCommandPool();
@@ -55,6 +57,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   VkDevice vk_device_ = VK_NULL_HANDLE;
   VkQueue vk_queue_ = VK_NULL_HANDLE;
   uint32_t vk_queue_index_ = 0;
+  VkInstance vk_instance_ = VK_NULL_HANDLE;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

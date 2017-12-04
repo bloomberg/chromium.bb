@@ -4,6 +4,7 @@
 
 import("//components/viz/viz.gni")
 import("//testing/test.gni")
+import("//gpu/vulkan/features.gni")
 
 viz_component("resource_format") {
   output_name = "viz_resource_format"
@@ -166,6 +167,11 @@ viz_component("common") {
     "//ui/gfx/geometry",
     "//ui/latency",
   ]
+
+  if (enable_vulkan) {
+    configs = [ "//third_party/vulkan:vulkan_config" ]
+    deps += [ "//gpu/vulkan" ]
+  }
 
   public_deps = [
     ":resource_format",

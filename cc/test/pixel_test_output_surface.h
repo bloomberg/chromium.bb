@@ -39,6 +39,9 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
+#if BUILDFLAG(ENABLE_VULKAN)
+  gpu::VulkanSurface* GetVulkanSurface() override;
+#endif
 
   void set_has_external_stencil_test(bool has_test) {
     external_stencil_test_ = has_test;
