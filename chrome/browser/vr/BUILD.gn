@@ -84,8 +84,6 @@ static_library("vr_common") {
     "elements/text.h",
     "elements/text_input.cc",
     "elements/text_input.h",
-    "elements/text_texture.cc",
-    "elements/text_texture.h",
     "elements/textured_element.cc",
     "elements/textured_element.h",
     "elements/throbber.cc",
