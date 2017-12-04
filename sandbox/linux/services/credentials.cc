@@ -23,8 +23,6 @@
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/services/namespace_utils.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -115,10 +113,10 @@ bool ChrootToSafeEmptyDir() {
 void CheckCloneNewUserErrno(int error) {
   // EPERM can happen if already in a chroot. EUSERS if too many nested
   // namespaces are used. EINVAL for kernels that don't support the feature.
-  // Valgrind will ENOSYS unshare().  ENOSPC can occur when the system has
-  // reached its maximum configured number of user namespaces.
+  // ENOSPC can occur when the system has reached its maximum configured
+  // number of user namespaces.
   PCHECK(error == EPERM || error == EUSERS || error == EINVAL ||
-         error == ENOSYS || error == ENOSPC);
+         error == ENOSPC);
 }
 
 // Converts a Capability to the corresponding Linux CAP_XXX value.
@@ -256,12 +254,6 @@ bool Credentials::HasCapability(Capability cap) {
 
 // static
 bool Credentials::CanCreateProcessInNewUserNS() {
-  // Valgrind will let clone(2) pass-through, but doesn't support unshare(),
-  // so always consider UserNS unsupported there.
-  if (RunningOnValgrind()) {
-    return false;
-  }
-
 #if defined(THREAD_SANITIZER)
   // With TSAN, processes will always have threads running and can never
   // enter a new user namespace with MoveToNewUserNS().

@@ -15,8 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
@@ -122,12 +120,6 @@ SandboxBPF::~SandboxBPF() {
 
 // static
 bool SandboxBPF::SupportsSeccompSandbox(SeccompLevel level) {
-  // Never pretend to support seccomp with Valgrind, as it
-  // throws the tool off.
-  if (RunningOnValgrind()) {
-    return false;
-  }
-
   switch (level) {
     case SeccompLevel::SINGLE_THREADED:
       return KernelSupportsSeccompBPF();

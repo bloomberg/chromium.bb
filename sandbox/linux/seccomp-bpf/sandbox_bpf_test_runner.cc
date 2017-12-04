@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -44,9 +43,9 @@ void SandboxBPFTestRunner::Run() {
     bpf_tester_delegate_->RunTestFunction();
   } else {
     printf("This BPF test is not fully running in this configuration!\n");
-    // Android and Valgrind are the only configurations where we accept not
-    // having kernel BPF support.
-    if (!IsAndroid() && !RunningOnValgrind()) {
+    // Android is the only configuration where we accept not having kernel
+    // BPF support.
+    if (!IsAndroid()) {
       const bool seccomp_bpf_is_supported = false;
       SANDBOX_ASSERT(seccomp_bpf_is_supported);
     }

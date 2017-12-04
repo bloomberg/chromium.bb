@@ -23,8 +23,6 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/syscall_broker/broker_common.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
@@ -41,10 +39,6 @@ namespace {
 int sys_open(const char* pathname, int flags) {
   // Hardcode mode to rw------- when creating files.
   int mode = (flags & O_CREAT) ? 0600 : 0;
-  if (RunningOnValgrind()) {
-    // Valgrind does not support AT_FDCWD, just use libc's open() in this case.
-    return open(pathname, flags, mode);
-  }
   return syscall(__NR_openat, AT_FDCWD, pathname, flags, mode);
 }
 
