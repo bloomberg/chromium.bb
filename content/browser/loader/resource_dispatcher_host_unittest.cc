@@ -804,25 +804,6 @@ class ShareableFileReleaseWaiter {
   DISALLOW_COPY_AND_ASSIGN(ShareableFileReleaseWaiter);
 };
 
-// For verifying notifications sent to the WebContents by the
-// ResourceDispatcherHostImpl.
-class TestWebContentsObserver : public WebContentsObserver {
- public:
-  explicit TestWebContentsObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        resource_response_start_count_(0) {}
-
-  void DidGetResourceResponseStart(
-      const ResourceRequestDetails& details) override {
-    ++resource_response_start_count_;
-  }
-
-  int resource_response_start_count() { return resource_response_start_count_; }
-
- private:
-  int resource_response_start_count_;
-};
-
 void CheckRequestCompleteErrorCode(const IPC::Message& message,
                                    int expected_error_code) {
   // Verify the expected error code was received.
@@ -901,8 +882,6 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
         SiteInstance::Create(browser_context_.get());
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(browser_context_.get())));
-    web_contents_observer_.reset(
-        new TestWebContentsObserver(web_contents_.get()));
     web_contents_filter_ = new TestFilterSpecifyingChild(
         browser_context_->GetResourceContext(),
         web_contents_->GetMainFrame()->GetProcess()->GetID());
@@ -914,7 +893,6 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
 
   void TearDown() override {
     web_contents_filter_->OnChannelClosing();
-    web_contents_observer_.reset();
     web_contents_.reset();
 
     EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
@@ -1133,7 +1111,6 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestURLRequestJobFactory> job_factory_;
   std::unique_ptr<WebContents> web_contents_;
-  std::unique_ptr<TestWebContentsObserver> web_contents_observer_;
   scoped_refptr<ForwardingFilter> filter_;
   scoped_refptr<TestFilterSpecifyingChild> web_contents_filter_;
   net::TestNetworkDelegate network_delegate_;
@@ -3734,18 +3711,6 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
   EXPECT_EQ(0u, (*load_info_map)[wc2].upload_size);
 }
 
-// Confirm that resource response started notifications are correctly
-// transmitted to the WebContents.
-TEST_F(ResourceDispatcherHostTest, TransferResponseStarted) {
-  int initial_count = web_contents_observer_->resource_response_start_count();
-
-  MakeWebContentsAssociatedTestRequest(1, net::URLRequestTestJob::test_url_1());
-  content::RunAllTasksUntilIdle();
-
-  EXPECT_EQ(initial_count + 1,
-            web_contents_observer_->resource_response_start_count());
-}
-
 // Confirm that DidChangePriority messages are respected.
 TEST_F(ResourceDispatcherHostTest, DidChangePriority) {
   // ResourceScheduler only throttles http and https requests.
@@ -3781,18 +3746,6 @@ TEST_F(ResourceDispatcherHostTest, DidChangePriority) {
   // Cleanup.
   host_.OnRenderViewHostDeleted(filter_->child_id(),  // child_id
                                 0);                   // route_id
-}
-
-// Confirm that resource response started notifications for downloads are not
-// transmitted to the WebContents.
-TEST_F(ResourceDispatcherHostTest, TransferResponseStartedDownload) {
-  int initial_count(web_contents_observer_->resource_response_start_count());
-
-  MakeWebContentsAssociatedDownloadRequest(
-      1, net::URLRequestTestJob::test_url_1());
-  content::RunAllTasksUntilIdle();
-  EXPECT_EQ(initial_count,
-            web_contents_observer_->resource_response_start_count());
 }
 
 // Tests that a ResourceThrottle that needs to process the response before any

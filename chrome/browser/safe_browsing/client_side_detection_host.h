@@ -46,6 +46,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // we should classify the new URL.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void SubresourceResponseStarted(const GURL& url,
+                                  const GURL& referrer,
+                                  const std::string& method,
+                                  content::ResourceType resource_type,
+                                  const std::string& ip) override;
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
@@ -82,11 +87,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // Verdict is an encoded ClientPhishingRequest protocol message.
   void OnPhishingDetectionDone(const std::string& verdict);
-  void OnSubresourceResponseStarted(const std::string& ip,
-                                    const GURL& url,
-                                    const std::string& method,
-                                    const GURL& referrer,
-                                    content::ResourceType resource_type);
 
   // Callback that is called when the server ping back is
   // done. Display an interstitial if |is_phishing| is true.
