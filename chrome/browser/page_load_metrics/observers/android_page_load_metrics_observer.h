@@ -44,6 +44,8 @@ class AndroidPageLoadMetricsObserver
       : web_contents_(web_contents),
         network_quality_provider_(network_quality_provider) {}
 
+  virtual void ReportNewNavigation();
+
   virtual void ReportNetworkQualityEstimate(
       net::EffectiveConnectionType connection_type,
       int64_t http_rtt_ms,
@@ -67,6 +69,7 @@ class AndroidPageLoadMetricsObserver
   content::WebContents* web_contents_;
 
   bool did_dispatch_on_main_resource_ = false;
+  int64_t navigation_id_ = -1;
 
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_provider_ = nullptr;

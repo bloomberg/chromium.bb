@@ -42,9 +42,10 @@ public class PageLoadMetricsTest {
 
     private static final int PAGE_LOAD_METRICS_TIMEOUT_MS = 3000;
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
-    private static final String TEST_PAGE_TITLE = "The Google";
+    private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
 
     private String mTestPage;
+    private String mTestPage2;
     private EmbeddedTestServer mTestServer;
     private PageLoadMetricsObserver mMetricsObserver;
 
@@ -53,6 +54,7 @@ public class PageLoadMetricsTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE);
+        mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
 
         mMetricsObserver =
                 new PageLoadMetricsObserver(mActivityTestRule.getActivity().getActivityTab());
@@ -60,37 +62,49 @@ public class PageLoadMetricsTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PageLoadMetrics.removeObserver(mMetricsObserver);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> PageLoadMetrics.removeObserver(mMetricsObserver));
 
         mTestServer.stopAndDestroyServer();
     }
 
+    private void assertMetricsEmitted(PageLoadMetricsObserver observer)
+            throws InterruptedException {
+        Assert.assertTrue("First Contentful Paint should be reported",
+                observer.waitForFirstContentfulPaintEvent());
+        Assert.assertTrue(
+                "Load event start event should be reported", observer.waitForLoadEventStartEvent());
+    }
+
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
+        private static final long NO_NAVIGATION_ID = -1;
+
         private final Tab mTab;
         private final CountDownLatch mFirstContentfulPaintLatch = new CountDownLatch(1);
         private final CountDownLatch mLoadEventStartLatch = new CountDownLatch(1);
+        private long mNavigationId = NO_NAVIGATION_ID;
 
         public PageLoadMetricsObserver(Tab tab) {
             mTab = tab;
         }
 
         @Override
-        public void onFirstContentfulPaint(
-                WebContents webContents, long navigationStartTick, long firstContentfulPaintMs) {
-            if (webContents != mTab.getWebContents()) return;
+        public void onNewNavigation(WebContents webContents, long navigationId) {
+            if (mNavigationId == NO_NAVIGATION_ID) mNavigationId = navigationId;
+        }
+
+        @Override
+        public void onFirstContentfulPaint(WebContents webContents, long navigationId,
+                long navigationStartTick, long firstContentfulPaintMs) {
+            if (webContents != mTab.getWebContents() || navigationId != mNavigationId) return;
 
             if (firstContentfulPaintMs > 0) mFirstContentfulPaintLatch.countDown();
         }
 
         @Override
-        public void onLoadEventStart(
-                WebContents webContents, long navigationStartTick, long loadEventStartMs) {
-            if (webContents != mTab.getWebContents()) return;
+        public void onLoadEventStart(WebContents webContents, long navigationId,
+                long navigationStartTick, long loadEventStartMs) {
+            if (webContents != mTab.getWebContents() || navigationId != mNavigationId) return;
 
             if (loadEventStartMs > 0) mLoadEventStartLatch.countDown();
         }
@@ -104,14 +118,18 @@ public class PageLoadMetricsTest {
             return mLoadEventStartLatch.await(PAGE_LOAD_METRICS_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         }
 
-        @Override
-        public void onLoadedMainResource(WebContents webContents, long dnsStartMs, long dnsEndMs,
-                long connectStartMs, long connectEndMs, long requestStartMs, long sendStartMs,
-                long sendEndMs) {}
+        public long getNavigationId() {
+            return mNavigationId;
+        }
 
         @Override
-        public void onNetworkQualityEstimate(WebContents webContents, int effectiveConnectionType,
-                long httpRttMs, long transportRttMs) {}
+        public void onLoadedMainResource(WebContents webContents, long navigationId,
+                long dnsStartMs, long dnsEndMs, long connectStartMs, long connectEndMs,
+                long requestStartMs, long sendStartMs, long sendEndMs) {}
+
+        @Override
+        public void onNetworkQualityEstimate(WebContents webContents, long navigationId,
+                int effectiveConnectionType, long httpRttMs, long transportRttMs) {}
     }
 
     @Test
@@ -119,18 +137,31 @@ public class PageLoadMetricsTest {
     public void testPageLoadMetricEmitted() throws InterruptedException {
         Assert.assertFalse("Tab shouldn't be loading anything before we add observer",
                 mActivityTestRule.getActivity().getActivityTab().isLoading());
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                PageLoadMetrics.addObserver(mMetricsObserver);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> PageLoadMetrics.addObserver(mMetricsObserver));
 
         mActivityTestRule.loadUrl(mTestPage);
+        assertMetricsEmitted(mMetricsObserver);
+    }
 
-        Assert.assertTrue("First Contentful Paint should be reported",
-                mMetricsObserver.waitForFirstContentfulPaintEvent());
-        Assert.assertTrue("Load event start event should be reported",
-                mMetricsObserver.waitForLoadEventStartEvent());
+    @Test
+    @SmallTest
+    public void testPageLoadMetricNavigationIdSetCorrectly() throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> PageLoadMetrics.addObserver(mMetricsObserver));
+        mActivityTestRule.loadUrl(mTestPage);
+        assertMetricsEmitted(mMetricsObserver);
+
+        PageLoadMetricsObserver metricsObserver2 =
+                new PageLoadMetricsObserver(mActivityTestRule.getActivity().getActivityTab());
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> PageLoadMetrics.addObserver(metricsObserver2));
+        mActivityTestRule.loadUrl(mTestPage2);
+        assertMetricsEmitted(metricsObserver2);
+
+        Assert.assertNotEquals("Subsequent navigations should have different navigation ids",
+                mMetricsObserver.getNavigationId(), metricsObserver2.getNavigationId());
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> PageLoadMetrics.removeObserver(metricsObserver2));
     }
 }
