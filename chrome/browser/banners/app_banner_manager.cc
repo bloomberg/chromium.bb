@@ -619,6 +619,7 @@ void AppBannerManager::OnBannerPromptReply(
 }
 
 void AppBannerManager::ShowBanner() {
+  WebAppInstallSource install_source;
   // If we are still in the SENDING_EVENT state, the prompt was never canceled
   // by the page. Otherwise the page requested a delayed showing of the prompt.
   if (state_ == State::SENDING_EVENT) {
@@ -626,9 +627,11 @@ void AppBannerManager::ShowBanner() {
     // requests it to be shown.
     DCHECK(!IsExperimentalAppBannersEnabled());
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_NO_ACTION);
+    install_source = WebAppInstallSource::AUTOMATIC_PROMPT;
   } else {
     TrackBeforeInstallEvent(
         BEFORE_INSTALL_EVENT_PROMPT_CALLED_AFTER_PREVENT_DEFAULT);
+    install_source = WebAppInstallSource::API;
   }
 
   // If this is the first time that we are showing the banner for this site,
@@ -647,7 +650,7 @@ void AppBannerManager::ShowBanner() {
   DCHECK(!primary_icon_.drawsNothing());
 
   TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_COMPLETE);
-  ShowBannerUi();
+  ShowBannerUi(install_source);
   UpdateState(State::COMPLETE);
 }
 

@@ -14,10 +14,10 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
-#include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -73,8 +73,7 @@ void AddToHomescreenManager::AddShortcut(
     WebApkInstallService::Get(web_contents->GetBrowserContext())
         ->InstallAsync(web_contents, data_fetcher_->shortcut_info(),
                        data_fetcher_->primary_icon(),
-                       data_fetcher_->badge_icon(),
-                       webapk::INSTALL_SOURCE_MENU);
+                       data_fetcher_->badge_icon(), WebAppInstallSource::MENU);
   } else {
     base::string16 user_title =
         base::android::ConvertJavaStringToUTF16(env, j_user_title);

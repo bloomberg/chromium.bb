@@ -93822,6 +93822,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Webapp.Install.InstallSource" enum="WebAppInstallSource">
+  <owner>mcgreevy@chromium.org</owner>
+  <summary>
+    Records the mechanism by which a web app installation was triggered,
+    regardless of whether the installation was successful.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout"
     enum="AddToHomescreenTimeoutStatus">
   <owner>dominickn@chromium.org</owner>

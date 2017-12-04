@@ -37,14 +37,14 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
                                         const ShortcutInfo& shortcut_info,
                                         const SkBitmap& primary_icon,
                                         const SkBitmap& badge_icon,
-                                        webapk::InstallSource install_source) {
+                                        WebAppInstallSource install_source) {
   if (IsInstallInProgress(shortcut_info.manifest_url)) {
     ShortcutHelper::ShowWebApkInstallInProgressToast();
     return;
   }
 
   installs_.insert(shortcut_info.manifest_url);
-  webapk::TrackInstallSource(install_source);
+  InstallableMetrics::TrackInstallSource(install_source);
 
   ShowInstallInProgressNotification(shortcut_info, primary_icon);
 

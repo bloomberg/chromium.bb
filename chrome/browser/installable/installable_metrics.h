@@ -31,6 +31,15 @@ enum class AddToHomescreenTimeoutStatus {
   COUNT,
 };
 
+// The ways that an app install can be triggered.
+// This enum backs a UMA histogram and must be treated as append-only.
+enum class WebAppInstallSource {
+  AUTOMATIC_PROMPT = 0,  // Automatic prompt e.g. install banner.
+  MENU = 1,              // Chrome menu
+  API = 2,               // BeforeInstallPrompt.prompt().
+  COUNT,
+};
+
 class InstallableMetrics {
  public:
   class Recorder {
@@ -49,6 +58,8 @@ class InstallableMetrics {
 
   InstallableMetrics();
   ~InstallableMetrics();
+
+  static void TrackInstallSource(WebAppInstallSource source);
 
   // This records the state of the installability check when the Android menu is
   // opened.
