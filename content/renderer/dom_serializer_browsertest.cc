@@ -65,10 +65,16 @@ bool HasDocType(const WebDocument& doc) {
   return doc.FirstChild().IsDocumentTypeNode();
 }
 
-class DomSerializerTests : public ContentBrowserTest,
-                           public WebFrameSerializerClient {
+// https://crbug.com/788788
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_DomSerializerTests DISABLED_DomSerializerTests
+#else
+#define MAYBE_DomSerializerTests DomSerializerTests
+#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+class MAYBE_DomSerializerTests : public ContentBrowserTest,
+                                 public WebFrameSerializerClient {
  public:
-  DomSerializerTests() : serialization_reported_end_of_data_(false) {}
+  MAYBE_DomSerializerTests() : serialization_reported_end_of_data_(false) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kSingleProcess);
@@ -626,7 +632,7 @@ class DomSerializerTests : public ContentBrowserTest,
 // Disabled on OSX by ellyjones@ on 2015-05-18, see https://crbug.com/488495,
 // on all platforms by tsergeant@ on 2016-03-10, see https://crbug.com/593575
 
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
                        DISABLED_SerializeHTMLDOMWithDocType) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_1.htm");
@@ -635,14 +641,15 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(&DomSerializerTests::SerializeHTMLDOMWithDocTypeOnRenderer,
-                   base::Unretained(this), file_url));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithDocTypeOnRenderer,
+      base::Unretained(this), file_url));
 }
 
 // If original contents do not have document type, the serialized contents
 // also do not have document type.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
+                       SerializeHTMLDOMWithoutDocType) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_2.htm");
   GURL file_url = net::FilePathToFileURL(page_file_path);
@@ -650,16 +657,15 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithoutDocType) {
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::SerializeHTMLDOMWithoutDocTypeOnRenderer,
-            base::Unretained(this), file_url));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithoutDocTypeOnRenderer,
+      base::Unretained(this), file_url));
 }
 
 // Serialize XML document which has all 5 built-in entities. After
 // finishing serialization, the serialized contents should be same
 // with original XML document.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
                        SerializeXMLDocWithBuiltInEntities) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "note.html");
@@ -680,14 +686,14 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::SerializeXMLDocWithBuiltInEntitiesOnRenderer,
-            base::Unretained(this), xml_file_url, original_contents));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeXMLDocWithBuiltInEntitiesOnRenderer,
+      base::Unretained(this), xml_file_url, original_contents));
 }
 
 // When serializing DOM, we add MOTW declaration before html tag.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
+                       SerializeHTMLDOMWithAddingMOTW) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_2.htm");
 
@@ -705,10 +711,9 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
-            base::Unretained(this), file_url, original_contents));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
+      base::Unretained(this), file_url, original_contents));
 }
 
 // When serializing DOM, we will add the META which have correct charset
@@ -718,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
 // Disabled on OSX by battre@ on 2015-05-21, see https://crbug.com/488495,
 // on all platforms by tsergeant@ on 2016-03-10, see https://crbug.com/593575
 IN_PROC_BROWSER_TEST_F(
-    DomSerializerTests,
+    MAYBE_DomSerializerTests,
     DISABLED_SerializeHTMLDOMWithNoMetaCharsetInOriginalDoc) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_1.htm");
@@ -729,17 +734,16 @@ IN_PROC_BROWSER_TEST_F(
   NavigateToURL(shell(), file_url);
 
   PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::
-                SerializeHTMLDOMWithNoMetaCharsetInOriginalDocOnRenderer,
-            base::Unretained(this), file_url));
+      base::Bind(&MAYBE_DomSerializerTests::
+                     SerializeHTMLDOMWithNoMetaCharsetInOriginalDocOnRenderer,
+                 base::Unretained(this), file_url));
 }
 
 // When serializing DOM, if the original document has multiple META charset
 // declaration, we will add the META which have correct charset declaration
 // as first child of HEAD element and remove all original META charset
 // declarations.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
                        SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDoc) {
   base::FilePath page_file_path =
       GetTestFilePath("dom_serializer", "youtube_2.htm");
@@ -749,30 +753,29 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::
-                SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDocOnRenderer,
-            base::Unretained(this), file_url));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::
+          SerializeHTMLDOMWithMultipleMetaCharsetInOriginalDocOnRenderer,
+      base::Unretained(this), file_url));
 }
 
 // Test situation of html entities in text when serializing HTML DOM.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
+                       SerializeHTMLDOMWithEntitiesInText) {
   // Need to spin up the renderer and also navigate to a file url so that the
   // renderer code doesn't attempt a fork when it sees a load to file scheme
   // from non-file scheme.
   NavigateToURL(shell(), GetTestUrl(".", "simple_page.html"));
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::SerializeHTMLDOMWithEntitiesInTextOnRenderer,
-            base::Unretained(this)));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithEntitiesInTextOnRenderer,
+      base::Unretained(this)));
 }
 
 // Test situation of html entities in attribute value when serializing
 // HTML DOM.
 // This test started to fail at WebKit r65388. See http://crbug.com/52279.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
                        SerializeHTMLDOMWithEntitiesInAttributeValue) {
   // Need to spin up the renderer and also navigate to a file url so that the
   // renderer code doesn't attempt a fork when it sees a load to file scheme
@@ -780,15 +783,14 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   NavigateToURL(shell(), GetTestUrl(".", "simple_page.html"));
 
   PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::
-                SerializeHTMLDOMWithEntitiesInAttributeValueOnRenderer,
-            base::Unretained(this)));
+      base::Bind(&MAYBE_DomSerializerTests::
+                     SerializeHTMLDOMWithEntitiesInAttributeValueOnRenderer,
+                 base::Unretained(this)));
 }
 
 // Test situation of non-standard HTML entities when serializing HTML DOM.
 // This test started to fail at WebKit r65351. See http://crbug.com/52279.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
                        SerializeHTMLDOMWithNonStandardEntities) {
   // Make a test file URL and load it.
   base::FilePath page_file_path = GetTestFilePath(
@@ -797,18 +799,16 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   NavigateToURL(shell(), file_url);
 
   PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::
-                SerializeHTMLDOMWithNonStandardEntitiesOnRenderer,
-            base::Unretained(this), file_url));
+      base::Bind(&MAYBE_DomSerializerTests::
+                     SerializeHTMLDOMWithNonStandardEntitiesOnRenderer,
+                 base::Unretained(this), file_url));
 }
 
 // Test situation of BASE tag in original document when serializing HTML DOM.
 // When serializing, we should comment the BASE tag, append a new BASE tag.
 // rewrite all the savable URLs to relative local path, and change other URLs
 // to absolute URLs.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
-                       SerializeHTMLDOMWithBaseTag) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests, SerializeHTMLDOMWithBaseTag) {
   base::FilePath page_file_path = GetTestFilePath(
       "dom_serializer", "html_doc_has_base_tag.htm");
 
@@ -824,25 +824,25 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::SerializeHTMLDOMWithBaseTagOnRenderer,
-            base::Unretained(this), file_url, path_dir_url));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithBaseTagOnRenderer,
+      base::Unretained(this), file_url, path_dir_url));
 }
 
 // Serializing page which has an empty HEAD tag.
-IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithEmptyHead) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
+                       SerializeHTMLDOMWithEmptyHead) {
   // Need to spin up the renderer and also navigate to a file url so that the
   // renderer code doesn't attempt a fork when it sees a load to file scheme
   // from non-file scheme.
   NavigateToURL(shell(), GetTestUrl(".", "simple_page.html"));
 
-  PostTaskToInProcessRendererAndWait(
-        base::Bind(&DomSerializerTests::SerializeHTMLDOMWithEmptyHeadOnRenderer,
-                   base::Unretained(this)));
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithEmptyHeadOnRenderer,
+      base::Unretained(this)));
 }
 
-IN_PROC_BROWSER_TEST_F(DomSerializerTests,
+IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
                        SubResourceForElementsInNonHTMLNamespace) {
   base::FilePath page_file_path = GetTestFilePath(
       "dom_serializer", "non_html_namespace.htm");
@@ -850,10 +850,9 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
   NavigateToURL(shell(), file_url);
 
   PostTaskToInProcessRendererAndWait(
-        base::Bind(
-            &DomSerializerTests::
-                SubResourceForElementsInNonHTMLNamespaceOnRenderer,
-            base::Unretained(this), file_url));
+      base::Bind(&MAYBE_DomSerializerTests::
+                     SubResourceForElementsInNonHTMLNamespaceOnRenderer,
+                 base::Unretained(this), file_url));
 }
 
 }  // namespace content
