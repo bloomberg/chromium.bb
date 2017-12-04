@@ -22,6 +22,8 @@
 static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
 static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
+static const CGFloat kSectionSeparatorHeight = 1.f;
+
 @interface RemotingSettingsViewController () {
   MDCAppBar* _appBar;
   NSArray* _sections;
@@ -72,6 +74,13 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
           forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                  withReuseIdentifier:UICollectionElementKindSectionHeader];
 
+  // A 1px height cell acting as the separator. Not being shown on the last
+  // section. See also:
+  // -collectionView:layout:referenceSizeForFooterInSection:
+  [self.collectionView registerClass:[UICollectionViewCell class]
+          forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
+                 withReuseIdentifier:UICollectionElementKindSectionFooter];
+
   _sections = @[
     l10n_util::GetNSString(IDS_DISPLAY_OPTIONS),
     l10n_util::GetNSString(IDS_MOUSE_OPTIONS),
@@ -79,6 +88,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     l10n_util::GetNSString(IDS_SUPPORT_MENU),
   ];
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  self.styler.shouldHideSeparators = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -106,9 +116,6 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
   SettingOption* setting = _content[indexPath.section][indexPath.item];
-  // TODO(nicholss): There is a bug in MDCCollectionViewTextCell, it has a
-  // wrapping UIView that leaves behind a one pixel edge. Filed a bug:
-  // https://github.com/material-components/material-components-ios/issues/1519
   MDCCollectionViewTextCell* cell = [collectionView
       dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
                                 forIndexPath:indexPath];
@@ -198,18 +205,25 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 - (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
           viewForSupplementaryElementOfKind:(NSString*)kind
                                 atIndexPath:(NSIndexPath*)indexPath {
-  MDCCollectionViewTextCell* supplementaryView =
-      [collectionView dequeueReusableSupplementaryViewOfKind:kind
-                                         withReuseIdentifier:kind
-                                                forIndexPath:indexPath];
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
+    MDCCollectionViewTextCell* supplementaryView =
+        [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                           withReuseIdentifier:kind
+                                                  forIndexPath:indexPath];
     supplementaryView.contentView.backgroundColor = RemotingTheme.menuBlueColor;
     supplementaryView.textLabel.text = _sections[(NSUInteger)indexPath.section];
     supplementaryView.textLabel.textColor = RemotingTheme.menuTextColor;
     supplementaryView.isAccessibilityElement = YES;
     supplementaryView.accessibilityLabel = supplementaryView.textLabel.text;
+    return supplementaryView;
   }
-  return supplementaryView;
+  DCHECK([kind isEqualToString:UICollectionElementKindSectionFooter]);
+  UICollectionViewCell* view =
+      [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                         withReuseIdentifier:kind
+                                                forIndexPath:indexPath];
+  view.contentView.backgroundColor = RemotingTheme.menuSeparatorColor;
+  return view;
 }
 
 #pragma mark - <UICollectionViewDelegateFlowLayout>
@@ -220,6 +234,18 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     referenceSizeForHeaderInSection:(NSInteger)section {
   return CGSizeMake(collectionView.bounds.size.width,
                     MDCCellDefaultOneLineHeight);
+}
+
+- (CGSize)collectionView:(UICollectionView*)collectionView
+                             layout:
+                                 (UICollectionViewLayout*)collectionViewLayout
+    referenceSizeForFooterInSection:(NSInteger)section {
+  if (section == (NSInteger)(_sections.count - 1)) {
+    // No separator for last section. Note that the footer cell will not be
+    // created if 0 is returned.
+    return CGSizeZero;
+  }
+  return CGSizeMake(collectionView.bounds.size.width, kSectionSeparatorHeight);
 }
 
 #pragma mark - Private
