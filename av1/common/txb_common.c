@@ -253,51 +253,6 @@ const int16_t k_eob_group_start[12] = { 0,  1,  2,  3,   5,   9,
                                         17, 33, 65, 129, 257, 513 };
 const int16_t k_eob_offset_bits[12] = { 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-int av1_get_eob_pos_ctx(TX_TYPE tx_type, int eob_token) {
-  int offset = 0;
-  int tx_class = get_tx_class(tx_type);
-  if (tx_class != TX_CLASS_2D) offset = 11;
-  return eob_token - 1 + offset;
-}
-
-int16_t get_eob_pos_token(int eob, int16_t *extra) {
-  int16_t t;
-
-  if (eob < 3) {
-    t = eob;
-  } else {
-    t = 3;
-    if (eob > 4) {
-      t++;
-    }
-    if (eob > 8) {
-      t++;
-    }
-    if (eob > 16) {
-      t++;
-    }
-    if (eob > 32) {
-      t++;
-    }
-    if (eob > 64) {
-      t++;
-    }
-    if (eob > 128) {
-      t++;
-    }
-    if (eob > 256) {
-      t++;
-    }
-    if (eob > 512) {
-      t++;
-    }
-  }
-
-  *extra = eob - k_eob_group_start[t];
-
-  return t;
-}
-
 // Note: because of the SSE2 optimization, levels[] must be in the range [0,
 // 127], inclusive.
 void av1_get_base_level_counts(const uint8_t *const levels,

@@ -143,10 +143,9 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
                             TX_TYPE tx_type, PLANE_TYPE plane,
                             FRAME_CONTEXT *ec_ctx, FRAME_COUNTS *counts,
                             uint8_t allow_update_cdf) {
-  int16_t eob_extra;
-  int16_t eob_pt = get_eob_pos_token(eob, &eob_extra);
-  int16_t dummy;
-  int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
+  int eob_extra, dummy;
+  const int eob_pt = get_eob_pos_token(eob, &eob_extra);
+  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
   TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
 
   for (int i = 1; i < max_eob_pt; i++) {
@@ -171,10 +170,9 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE tx_size,
 
 static int get_eob_cost(int eob, int seg_eob,
                         const LV_MAP_COEFF_COST *txb_costs, TX_TYPE tx_type) {
-  int16_t eob_extra;
-  int16_t eob_pt = get_eob_pos_token(eob, &eob_extra);
-  int16_t dummy;
-  int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
+  int eob_extra, dummy;
+  const int eob_pt = get_eob_pos_token(eob, &eob_extra);
+  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
   int eob_cost = 0;
 
   // printf("Enc: [%d, %d], (%d, %d) ", seg_eob, eob, eob_pt, eob_extra);
@@ -351,10 +349,9 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                     get_min_tx_size(tx_size), w);
 #endif
 
-  int16_t eob_extra;
-  int16_t eob_pt = get_eob_pos_token(eob, &eob_extra);
-  int16_t dummy;
-  int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
+  int eob_extra, dummy;
+  const int eob_pt = get_eob_pos_token(eob, &eob_extra);
+  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
 
   // printf("Enc: [%d, %d], (%d, %d) ", seg_eob, eob, eob_pt, eob_extra);
   for (int i = 1; i < max_eob_pt; i++) {
@@ -865,8 +862,8 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
     const int row = coeff_idx >> bwl;
     const int col = coeff_idx - (row << bwl);
 
-    txb_cache->nz_count_arr[coeff_idx] =
-        get_nz_count(levels, bwl, row, col, get_tx_class(txb_info->tx_type));
+    txb_cache->nz_count_arr[coeff_idx] = get_nz_count(
+        levels, bwl, row, col, tx_type_to_class[txb_info->tx_type]);
 
     txb_cache->nz_ctx_arr[coeff_idx] = get_nz_map_ctx_from_stats(
 #if USE_CAUSAL_BASE_CTX

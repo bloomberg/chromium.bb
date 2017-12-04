@@ -46,7 +46,7 @@ static int read_golomb(MACROBLOCKD *xd, aom_reader *r, FRAME_COUNTS *counts) {
   return x - 1;
 }
 
-static INLINE int rec_eob_pos(int16_t eob_token, int16_t extra) {
+static INLINE int rec_eob_pos(const int eob_token, const int extra) {
   int eob = k_eob_group_start[eob_token];
   if (eob > 2) {
     eob += extra;
@@ -115,17 +115,14 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *const scan = scan_order->scan;
+  int dummy;
+  const int max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
+  int eob_extra = 0;
+  int eob_pt = 1;
 
-  int16_t dummy;
-  const int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
-
-  int16_t eob_extra = 0;
-  int16_t eob_pt = 0;
-  int is_equal = 0;
-
-  for (int i = 1; i < max_eob_pt; i++) {
-    const int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, i);
-    is_equal = av1_read_record_bin(
+  for (eob_pt = 1; eob_pt < max_eob_pt; eob_pt++) {
+    const int eob_pos_ctx = av1_get_eob_pos_ctx(tx_type, eob_pt);
+    const int is_equal = av1_read_record_bin(
         counts, r, ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_pos_ctx], 2,
         ACCT_STR);
     // printf("eob_flag_cdf: %d %d %2d\n", txs_ctx, plane_type, eob_pos_ctx);
@@ -135,12 +132,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (counts) ++counts->eob_flag[txs_ctx][plane_type][eob_pos_ctx][is_equal];
 
     if (is_equal) {
-      eob_pt = i;
       break;
     }
-  }
-  if (is_equal == 0) {
-    eob_pt = max_eob_pt;
   }
 
   // printf("Dec: ");

@@ -14,8 +14,6 @@
 
 extern const int16_t k_eob_group_start[12];
 extern const int16_t k_eob_offset_bits[12];
-int16_t get_eob_pos_token(int eob, int16_t *extra);
-int av1_get_eob_pos_ctx(TX_TYPE tx_type, int eob_token);
 
 extern const int8_t av1_coeff_band_4x4[16];
 
@@ -54,16 +52,61 @@ static const int mag_ref_offset[CONTEXT_MAG_POSITION_NUM][2] = {
   { 0, 1 }, { 1, 0 }, { 1, 1 }
 };
 
-static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
-  switch (tx_type) {
-    case V_DCT:
-    case V_ADST:
-    case V_FLIPADST: return TX_CLASS_VERT;
-    case H_DCT:
-    case H_ADST:
-    case H_FLIPADST: return TX_CLASS_HORIZ;
-    default: return TX_CLASS_2D;
+static const TX_CLASS tx_type_to_class[TX_TYPES] = {
+  TX_CLASS_2D,     // DCT_DCT
+  TX_CLASS_2D,     // ADST_DCT
+  TX_CLASS_2D,     // DCT_ADST
+  TX_CLASS_2D,     // ADST_ADST
+  TX_CLASS_2D,     // FLIPADST_DCT
+  TX_CLASS_2D,     // DCT_FLIPADST
+  TX_CLASS_2D,     // FLIPADST_FLIPADST
+  TX_CLASS_2D,     // ADST_FLIPADST
+  TX_CLASS_2D,     // FLIPADST_ADST
+  TX_CLASS_2D,     // IDTX
+  TX_CLASS_VERT,   // V_DCT
+  TX_CLASS_HORIZ,  // H_DCT
+  TX_CLASS_VERT,   // V_ADST
+  TX_CLASS_HORIZ,  // H_ADST
+  TX_CLASS_VERT,   // V_FLIPADST
+  TX_CLASS_HORIZ,  // H_FLIPADST
+};
+
+static const int8_t eob_to_pos_small[33] = {
+  0, 1, 2,                                        // 0-2
+  3, 3,                                           // 3-4
+  4, 4, 4, 4,                                     // 5-8
+  5, 5, 5, 5, 5, 5, 5, 5,                         // 9-16
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6  // 17-32
+};
+
+static const int8_t eob_to_pos_large[17] = {
+  6,                               // place holder
+  7,                               // 33-64
+  8,  8,                           // 65-128
+  9,  9,  9,  9,                   // 129-256
+  10, 10, 10, 10, 10, 10, 10, 10,  // 257-512
+  11                               // 513-
+};
+
+static INLINE int get_eob_pos_token(const int eob, int *const extra) {
+  int t;
+
+  if (eob < 33) {
+    t = eob_to_pos_small[eob];
+  } else {
+    const int e = AOMMIN((eob - 1) >> 5, 16);
+    t = eob_to_pos_large[e];
   }
+
+  *extra = eob - k_eob_group_start[t];
+
+  return t;
+}
+
+static INLINE int av1_get_eob_pos_ctx(const TX_TYPE tx_type,
+                                      const int eob_token) {
+  const int offset = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 11;
+  return eob_token - 1 + offset;
 }
 
 static INLINE int get_txb_bwl(TX_SIZE tx_size) {
@@ -337,7 +380,7 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
   int nb_mag[3] = { 0 };
 #if CONFIG_LV_MAP_MULTI && USE_CAUSAL_BR_CTX
   (void)count;
-  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   get_level_mag_with_txclass(levels, stride, row, col, nb_mag, tx_class);
 
   mag = AOMMIN(nb_mag[0], COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1) +
@@ -496,7 +539,7 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
-  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const int stats =
 #if USE_CAUSAL_BASE_CTX
       get_nz_mag(levels, bwl, row, col, tx_class);
