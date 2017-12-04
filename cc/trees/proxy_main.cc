@@ -213,6 +213,9 @@ void ProxyMain::BeginMainFrame(
     // We intentionally don't report CommitComplete() here since it was aborted
     // prematurely and we're waiting to do another commit in the future.
     layer_tree_host_->DidBeginMainFrame();
+    // When we stop deferring commits, we should resume any previously requested
+    // pipeline stages.
+    max_requested_pipeline_stage_ = final_pipeline_stage_;
     return;
   }
 

@@ -3160,12 +3160,19 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
   void AfterTest() override {
     EXPECT_EQ(1, commit_count_);
     EXPECT_EQ(2, begin_main_frame_count_);
+    // The commit should not have been aborted.
+    EXPECT_EQ(1, ready_to_commit_count_);
+  }
+
+  void ReadyToCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    ++ready_to_commit_count_;
   }
 
  private:
   bool allow_commits_ = false;
   int commit_count_ = 0;
   int begin_main_frame_count_ = 0;
+  int ready_to_commit_count_ = 0;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
