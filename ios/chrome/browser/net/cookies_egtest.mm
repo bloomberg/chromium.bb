@@ -75,7 +75,6 @@ NSString* const kIncognitoCookieValue = @"rainbow";
 }
 
 // Clear cookies to make sure that tests do not interfere each other.
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
 - (void)tearDown {
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kTestUrlNormalBrowsing)];

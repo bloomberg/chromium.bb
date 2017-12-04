@@ -498,7 +498,6 @@ bool IsCertificateCleared() {
 // Tests that clearing the cookies through the UI does clear all of them. Use a
 // local server to navigate to a page that sets then tests a cookie, and then
 // clears the cookie and tests it is not set.
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
 - (void)testClearCookies {
   // Creates a map of canned responses and set up the test HTML server.
   std::map<GURL, std::pair<std::string, std::string>> response;
