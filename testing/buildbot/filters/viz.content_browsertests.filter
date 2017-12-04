@@ -80,3 +80,6 @@
 
 # TODO: investigate flaky failure http://crbug.com/783434
 -GpuProcessHostBrowserTest.Shutdown
+
+# OnGpuSwapBuffersCompletedInternal not called. http://crbug.com/791557
+-MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
