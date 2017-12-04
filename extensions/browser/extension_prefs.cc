@@ -47,147 +47,149 @@ namespace {
 // during Chrome shutdown (and won't be updated on a browser crash) and so can
 // be used at startup to determine whether the extension was running when Chrome
 // was last terminated.
-const char kPrefRunning[] = "running";
+constexpr const char kPrefRunning[] = "running";
 
 // Whether this extension had windows when it was last running.
-const char kIsActive[] = "is_active";
+constexpr const char kIsActive[] = "is_active";
 
 // Where an extension was installed from. (see Manifest::Location)
-const char kPrefLocation[] = "location";
+constexpr const char kPrefLocation[] = "location";
 
 // Enabled, disabled, killed, etc. (see Extension::State)
-const char kPrefState[] = "state";
+constexpr const char kPrefState[] = "state";
 
 // The path to the current version's manifest file.
-const char kPrefPath[] = "path";
+constexpr const char kPrefPath[] = "path";
 
 // The dictionary containing the extension's manifest.
-const char kPrefManifest[] = "manifest";
+constexpr const char kPrefManifest[] = "manifest";
 
 // The version number.
-const char kPrefVersion[] = "manifest.version";
+constexpr const char kPrefVersion[] = "manifest.version";
 
 // Indicates whether an extension is blacklisted.
-const char kPrefBlacklist[] = "blacklist";
+constexpr const char kPrefBlacklist[] = "blacklist";
 
 // If extension is greylisted.
-const char kPrefBlacklistState[] = "blacklist_state";
+constexpr const char kPrefBlacklistState[] = "blacklist_state";
 
 // The count of how many times we prompted the user to acknowledge an
 // extension.
-const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
+constexpr const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 
 // Indicates whether the user has acknowledged various types of extensions.
-const char kPrefExternalAcknowledged[] = "ack_external";
-const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
+constexpr const char kPrefExternalAcknowledged[] = "ack_external";
+constexpr const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
 
 // Indicates whether the external extension was installed during the first
 // run of this profile.
-const char kPrefExternalInstallFirstRun[] = "external_first_run";
+constexpr const char kPrefExternalInstallFirstRun[] = "external_first_run";
 
 // A bitmask of all the reasons an extension is disabled.
-const char kPrefDisableReasons[] = "disable_reasons";
+constexpr const char kPrefDisableReasons[] = "disable_reasons";
 
 // The key for a serialized Time value indicating the start of the day (from the
 // server's perspective) an extension last included a "ping" parameter during
 // its update check.
-const char kLastPingDay[] = "lastpingday";
+constexpr const char kLastPingDay[] = "lastpingday";
 
 // Similar to kLastPingDay, but for "active" instead of "rollcall" pings.
-const char kLastActivePingDay[] = "last_active_pingday";
+constexpr const char kLastActivePingDay[] = "last_active_pingday";
 
 // A bit we use to keep track of whether we need to do an "active" ping.
-const char kActiveBit[] = "active_bit";
+constexpr const char kActiveBit[] = "active_bit";
 
 // Path for settings specific to blacklist update.
-const char kExtensionsBlacklistUpdate[] = "extensions.blacklistupdate";
+constexpr const char kExtensionsBlacklistUpdate[] =
+    "extensions.blacklistupdate";
 
 // Path for the delayed install info dictionary preference. The actual string
 // value is a legacy artifact for when delayed installs only pertained to
 // updates that were waiting for idle.
-const char kDelayedInstallInfo[] = "idle_install_info";
+constexpr const char kDelayedInstallInfo[] = "idle_install_info";
 
 // Reason why the extension's install was delayed.
-const char kDelayedInstallReason[] = "delay_install_reason";
+constexpr const char kDelayedInstallReason[] = "delay_install_reason";
 
 // Path for the suggested page ordinal of a delayed extension install.
-const char kPrefSuggestedPageOrdinal[] = "suggested_page_ordinal";
+constexpr const char kPrefSuggestedPageOrdinal[] = "suggested_page_ordinal";
 
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
-const char kPrefIncognitoEnabled[] = "incognito";
+constexpr const char kPrefIncognitoEnabled[] = "incognito";
 
 // A preference to control whether an extension is allowed to inject script in
 // pages with file URLs.
-const char kPrefAllowFileAccess[] = "newAllowFileAccess";
+constexpr const char kPrefAllowFileAccess[] = "newAllowFileAccess";
 // TODO(jstritar): As part of fixing http://crbug.com/91577, we revoked all
 // extension file access by renaming the pref. We should eventually clean up
 // the old flag and possibly go back to that name.
-// const char kPrefAllowFileAccessOld[] = "allowFileAccess";
+// constexpr const char kPrefAllowFileAccessOld[] = "allowFileAccess";
 
 // A preference specifying if the user dragged the app on the NTP.
-const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
+constexpr const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
 
 // Preferences that hold which permissions the user has granted the extension.
 // We explicitly keep track of these so that extensions can contain unknown
 // permissions, for backwards compatibility reasons, and we can still prompt
 // the user to accept them once recognized. We store the active permission
 // permissions because they may differ from those defined in the manifest.
-const char kPrefActivePermissions[] = "active_permissions";
-const char kPrefGrantedPermissions[] = "granted_permissions";
+constexpr const char kPrefActivePermissions[] = "active_permissions";
+constexpr const char kPrefGrantedPermissions[] = "granted_permissions";
 
 // The preference names for PermissionSet values.
-const char kPrefAPIs[] = "api";
-const char kPrefManifestPermissions[] = "manifest_permissions";
-const char kPrefExplicitHosts[] = "explicit_host";
-const char kPrefScriptableHosts[] = "scriptable_host";
+constexpr const char kPrefAPIs[] = "api";
+constexpr const char kPrefManifestPermissions[] = "manifest_permissions";
+constexpr const char kPrefExplicitHosts[] = "explicit_host";
+constexpr const char kPrefScriptableHosts[] = "scriptable_host";
 
 // A preference that indicates when an extension was installed.
-const char kPrefInstallTime[] = "install_time";
+constexpr const char kPrefInstallTime[] = "install_time";
 
 // A preference which saves the creation flags for extensions.
-const char kPrefCreationFlags[] = "creation_flags";
+constexpr const char kPrefCreationFlags[] = "creation_flags";
 
 // A preference that indicates whether the extension was installed from the
 // Chrome Web Store.
-const char kPrefFromWebStore[] = "from_webstore";
+constexpr const char kPrefFromWebStore[] = "from_webstore";
 
 // A preference that indicates whether the extension was installed from a
 // mock App created from a bookmark.
-const char kPrefFromBookmark[] = "from_bookmark";
+constexpr const char kPrefFromBookmark[] = "from_bookmark";
 
 // A preference that indicates whether the extension was installed as a
 // default app.
-const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
+constexpr const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
 
 // A preference that indicates whether the extension was installed as an
 // OEM app.
-const char kPrefWasInstalledByOem[] = "was_installed_by_oem";
+constexpr const char kPrefWasInstalledByOem[] = "was_installed_by_oem";
 
 // Key for Geometry Cache preference.
-const char kPrefGeometryCache[] = "geometry_cache";
+constexpr const char kPrefGeometryCache[] = "geometry_cache";
 
 // A preference that indicates when an extension is last launched.
-const char kPrefLastLaunchTime[] = "last_launch_time";
+constexpr const char kPrefLastLaunchTime[] = "last_launch_time";
 
 // Am installation parameter bundled with an extension.
-const char kPrefInstallParam[] = "install_parameter";
+constexpr const char kPrefInstallParam[] = "install_parameter";
 
 // A list of installed ids and a signature.
-const char kInstallSignature[] = "extensions.install_signature";
+constexpr const char kInstallSignature[] = "extensions.install_signature";
 
 // A boolean preference that indicates whether the extension should not be
 // synced. Default value is false.
-const char kPrefDoNotSync[] = "do_not_sync";
+constexpr const char kPrefDoNotSync[] = "do_not_sync";
 
-const char kCorruptedDisableCount[] = "extensions.corrupted_disable_count";
+constexpr const char kCorruptedDisableCount[] =
+    "extensions.corrupted_disable_count";
 
 // A boolean preference that indicates whether the extension has local changes
 // that need to be synced. Default value is false.
-const char kPrefNeedsSync[] = "needs_sync";
+constexpr const char kPrefNeedsSync[] = "needs_sync";
 
 // The indexed ruleset checksum for the Declarative Net Request API.
-const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
+constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
