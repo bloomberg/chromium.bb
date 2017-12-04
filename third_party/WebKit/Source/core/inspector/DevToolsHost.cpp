@@ -221,6 +221,18 @@ String DevToolsHost::getSelectionForegroundColor() {
   return LayoutTheme::GetTheme().ActiveSelectionForegroundColor().Serialized();
 }
 
+String DevToolsHost::getInactiveSelectionBackgroundColor() {
+  return LayoutTheme::GetTheme()
+      .InactiveSelectionBackgroundColor()
+      .Serialized();
+}
+
+String DevToolsHost::getInactiveSelectionForegroundColor() {
+  return LayoutTheme::GetTheme()
+      .InactiveSelectionForegroundColor()
+      .Serialized();
+}
+
 bool DevToolsHost::isUnderTest() {
   return client_ && client_->IsUnderTest();
 }

@@ -43,6 +43,8 @@
 
     DOMString getSelectionBackgroundColor();
     DOMString getSelectionForegroundColor();
+    DOMString getInactiveSelectionBackgroundColor();
+    DOMString getInactiveSelectionForegroundColor();
 
     boolean isUnderTest();
     boolean isHostedMode();
