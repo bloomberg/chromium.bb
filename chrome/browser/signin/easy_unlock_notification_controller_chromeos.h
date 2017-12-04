@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/signin/easy_unlock_notification_controller.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 
@@ -22,9 +21,7 @@ class Profile;
 class EasyUnlockNotificationControllerChromeOS
     : public EasyUnlockNotificationController {
  public:
-  EasyUnlockNotificationControllerChromeOS(
-      Profile* profile,
-      message_center::MessageCenter* message_center);
+  explicit EasyUnlockNotificationControllerChromeOS(Profile* profile);
   ~EasyUnlockNotificationControllerChromeOS() override;
 
   // EasyUnlockNotificationController:
@@ -67,8 +64,6 @@ class EasyUnlockNotificationControllerChromeOS
       std::unique_ptr<message_center::Notification> notification);
 
   Profile* profile_;
-
-  message_center::MessageCenter* message_center_;
 
   base::WeakPtrFactory<EasyUnlockNotificationControllerChromeOS>
       weak_ptr_factory_;
