@@ -1836,6 +1836,7 @@ test("content_unittests") {
     ]
     deps += [
       "//services/device/public/interfaces",
+      "//third_party/libyuv",
       "//third_party/opus",
       "//third_party/webrtc/api:libjingle_peerconnection",
       "//third_party/webrtc/api:rtc_stats_api",
