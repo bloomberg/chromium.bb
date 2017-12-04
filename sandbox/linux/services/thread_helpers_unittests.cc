@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -30,13 +29,7 @@ namespace {
 // These tests fail under ThreadSanitizer, see http://crbug.com/342305
 #if !defined(THREAD_SANITIZER)
 
-int GetRaceTestIterations() {
-  if (RunningOnValgrind()) {
-    return 2;
-  } else {
-    return 1000;
-  }
-}
+const int kRaceTestIterations = 1000;
 
 class ScopedProc {
  public:
@@ -81,7 +74,7 @@ TEST(ThreadHelpers, IsSingleThreadedIterated) {
   ASSERT_TRUE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
 
   // Iterate to check for race conditions.
-  for (int i = 0; i < GetRaceTestIterations(); ++i) {
+  for (int i = 0; i < kRaceTestIterations; ++i) {
     base::Thread thread("sandbox_tests");
     ASSERT_TRUE(
         ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread));
@@ -98,7 +91,7 @@ TEST(ThreadHelpers, IsSingleThreadedStartAndStop) {
   base::Thread thread("sandbox_tests");
   // This is testing for a race condition, so iterate.
   // Manually, this has been tested with more that 1M iterations.
-  for (int i = 0; i < GetRaceTestIterations(); ++i) {
+  for (int i = 0; i < kRaceTestIterations; ++i) {
     ASSERT_TRUE(
         ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread));
     ASSERT_FALSE(ThreadHelpers::IsSingleThreaded(proc_fd.fd()));
@@ -116,7 +109,7 @@ SANDBOX_TEST(ThreadHelpers, AssertSingleThreadedAfterThreadStopped) {
   base::Thread thread1("sandbox_tests");
   base::Thread thread2("sandbox_tests");
 
-  for (int i = 0; i < GetRaceTestIterations(); ++i) {
+  for (int i = 0; i < kRaceTestIterations; ++i) {
     SANDBOX_ASSERT(
         ThreadHelpers::StartThreadAndWatchProcFS(proc_fd.fd(), &thread1));
     SANDBOX_ASSERT(

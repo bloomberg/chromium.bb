@@ -13,7 +13,6 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/system_headers/linux_signal.h"
 #include "sandbox/linux/tests/test_utils.h"

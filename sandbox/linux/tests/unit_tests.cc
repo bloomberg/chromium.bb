@@ -17,8 +17,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
@@ -179,13 +177,9 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
     SANDBOX_ASSERT(!close(fds[0]));
     SANDBOX_ASSERT(!close(fds[1]));
 
-    // Don't set a timeout if running on Valgrind, since it's generally much
-    // slower.
-    if (!RunningOnValgrind()) {
 #if !defined(OS_NACL_NONSFI)
-      SetProcessTimeout(GetSubProcessTimeoutTimeInSeconds());
+    SetProcessTimeout(GetSubProcessTimeoutTimeInSeconds());
 #endif
-    }
 
     // Disable core files. They are not very useful for our individual test
     // cases.
