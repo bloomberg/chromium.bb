@@ -4384,6 +4384,28 @@ bind_output(struct wl_client *client,
 		wl_output_send_done(resource);
 }
 
+/** Remove the global wl_output protocol object
+ *
+ * \param head The head whose global to remove.
+ *
+ * Also orphans the wl_resources for this head (wl_output).
+ */
+static void
+weston_head_remove_global(struct weston_head *head)
+{
+	struct wl_resource *resource, *tmp;
+
+	if (head->global)
+		wl_global_destroy(head->global);
+	head->global = NULL;
+
+	wl_resource_for_each_safe(resource, tmp, &head->resource_list) {
+		unbind_resource(resource);
+		wl_resource_set_destructor(resource, NULL);
+		wl_resource_set_user_data(resource, NULL);
+	}
+}
+
 /** Get the backing object of wl_output
  *
  * \param resource A wl_output protocol object.
@@ -4833,7 +4855,6 @@ static void
 weston_compositor_remove_output(struct weston_output *output)
 {
 	struct weston_compositor *compositor = output->compositor;
-	struct wl_resource *resource;
 	struct weston_view *view;
 	struct weston_head *head;
 
@@ -4856,13 +4877,8 @@ weston_compositor_remove_output(struct weston_output *output)
 	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
 
-	wl_list_for_each(head, &output->head_list, output_link) {
-		wl_global_destroy(head->global);
-		head->global = NULL;
-
-		wl_resource_for_each(resource, &head->resource_list)
-			wl_resource_set_destructor(resource, NULL);
-	}
+	wl_list_for_each(head, &output->head_list, output_link)
+		weston_head_remove_global(head);
 
 	compositor->output_id_pool &= ~(1u << output->id);
 	output->id = 0xffffffff; /* invalid */
