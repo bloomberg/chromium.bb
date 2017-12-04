@@ -346,7 +346,7 @@ class TestImporterTest(LoggingTestCase):
         importer.host.environ['BUILDBOT_BUILDNUMBER'] = '123'
         description = importer._cl_description(directory_owners={})
         self.assertIn(
-            'Build: https://build.chromium.org/p/my.master/builders/b/builds/123\n\n',
+            'Build: https://ci.chromium.org/buildbot/my.master/b/123\n\n',
             description)
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
