@@ -107,9 +107,10 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   SkPixmap src_data_;
   const MimeType mime_type_;
+
+  // Chrome metrics use
   double start_time_;
-  double schedule_initiate_start_time_;
-  double elapsed_time_;
+  double schedule_idle_task_start_time_;
 
   ToBlobFunctionType function_type_;
 
