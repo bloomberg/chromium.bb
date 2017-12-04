@@ -179,4 +179,20 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.clear();
 }
 
+#ifndef NDEBUG
+
+String NGContainerFragmentBuilder::ToString() const {
+  StringBuilder builder;
+  builder.Append(String::Format("ContainerFragment %.2fx%.2f, Children %zu\n",
+                                inline_size_.ToFloat(), block_size_.ToFloat(),
+                                children_.size()));
+  for (auto& child : children_) {
+    builder.Append(child->DumpFragmentTree(
+        NGPhysicalFragment::DumpAll & ~NGPhysicalFragment::DumpHeaderText));
+  }
+  return builder.ToString();
+}
+
+#endif
+
 }  // namespace blink

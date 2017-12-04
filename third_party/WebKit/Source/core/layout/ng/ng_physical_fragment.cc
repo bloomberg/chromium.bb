@@ -277,15 +277,17 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset()
 String NGPhysicalFragment::ToString() const {
   return String::Format(
       "Type: '%d' Size: '%s' Offset: '%s' Placed: '%d', BoxType: '%s'", Type(),
-      Size().ToString().Ascii().data(), Offset().ToString().Ascii().data(),
-      IsPlaced(), StringForBoxType(BoxType()).Ascii().data());
+      Size().ToString().Ascii().data(),
+      is_placed_ ? Offset().ToString().Ascii().data() : "no offset", IsPlaced(),
+      StringForBoxType(BoxType()).Ascii().data());
 }
 
-String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags) const {
+String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags,
+                                            unsigned indent) const {
   StringBuilder string_builder;
   if (flags & DumpHeaderText)
     string_builder.Append(".:: LayoutNG Physical Fragment Tree ::.\n");
-  AppendFragmentToString(this, &string_builder, flags);
+  AppendFragmentToString(this, &string_builder, flags, indent);
   return string_builder.ToString();
 }
 

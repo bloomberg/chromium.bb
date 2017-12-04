@@ -106,6 +106,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   void GetAndClearOutOfFlowDescendantCandidates(
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates);
 
+#ifndef NDEBUG
+  String ToString() const;
+#endif
+
  protected:
   // An out-of-flow positioned-candidate is a temporary data structure used
   // within the NGFragmentBuilder.
