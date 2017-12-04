@@ -1,49 +1,36 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
+<title>Adding and removing track node</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body>
 <script>
-var video = document.createElement('video');
+test(function() {
+  var video = document.createElement('video');
+  var tracka = document.createElement('track');
+  video.appendChild(tracka);
+  var trackb = document.createElement('track');
+  video.appendChild(trackb);
 
-var tracka = document.createElement('track');
-video.appendChild(tracka);
-var trackb = document.createElement('track');
-video.appendChild(trackb);
+  // Adding tracks outside the DOM tree.
+  assert_array_equals(video.textTracks, [tracka.track, trackb.track]);
 
-debug("Adding tracks outside the DOM tree:");
-shouldBe("video.textTracks.length", "2");
-shouldBe("video.textTracks[0]", "tracka.track");
-shouldBe("video.textTracks[1]", "trackb.track");
+  // Inserting the parent video element into the document.
+  document.body.appendChild(video);
+  assert_array_equals(video.textTracks, [tracka.track, trackb.track]);
 
-debug("Inserting the parent video element into the document.");
-document.body.appendChild(video);
-shouldBe("video.textTracks.length", "2");
-shouldBe("video.textTracks[0]", "tracka.track");
-shouldBe("video.textTracks[1]", "trackb.track");
+  // Inserting and removing another track in the document.
+  var trackc = document.createElement('track');
+  video.appendChild(trackc);
+  assert_array_equals(video.textTracks, [tracka.track, trackb.track, trackc.track]);
 
-debug("Inserting and removing another track in the document.");
-var trackc = document.createElement('track');
-video.appendChild(trackc);
-shouldBe("video.textTracks.length", "3");
-shouldBe("video.textTracks[2]", "trackc.track");
+  trackb.parentNode.removeChild(trackb);
+  assert_array_equals(video.textTracks, [tracka.track, trackc.track]);
 
-trackb.parentNode.removeChild(trackb);
-shouldBe("video.textTracks.length", "2");
-shouldBe("video.textTracks[0]", "tracka.track");
-shouldBe("video.textTracks[1]", "trackc.track");
+  // Removing the video from the document.
+  document.body.removeChild(video);
+  assert_array_equals(video.textTracks, [tracka.track, trackc.track]);
 
-debug("Removing the video from the document.");
-document.body.removeChild(video);
-shouldBe("video.textTracks.length", "2");
-shouldBe("video.textTracks[0]", "tracka.track");
-shouldBe("video.textTracks[1]", "trackc.track");
-
-tracka.parentNode.removeChild(tracka);
-shouldBe("video.textTracks.length", "1");
-shouldBe("video.textTracks[0]", "trackc.track");
-
+  tracka.parentNode.removeChild(tracka);
+  assert_array_equals(video.textTracks, [trackc.track]);
+});
 </script>
-</body>
-</html>

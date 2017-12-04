@@ -1,17 +1,28 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
-<body>
+<title>TextTrackCue exceptions are properly messaged to developers</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description("Verify that TextTrackCue exceptions are properly messaged to developers.");
-
-var cue = new VTTCue(0, 0, "Test.");
-
-function testInfinityAndNaN(property) {
-    shouldThrow("cue." + property + " = Number.NaN;");
-    shouldThrow("cue." + property + " = Number.POSITIVE_INFINITY;");
-    shouldThrow("cue." + property + " = Number.NEGATIVE_INFINITY;");
+function getExceptionMsg(property) {
+    return "Failed to set the '" + property
+        + "' property on 'TextTrackCue': The provided double value is non-finite.";
 }
-
-testInfinityAndNaN("startTime");
-testInfinityAndNaN("endTime");
+var cue = new VTTCue(0, 0, "Test.");
+function testProperty(property) {
+    var expected_exception_msg = getExceptionMsg(property);
+    test(function() {
+        var testValues = [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+        testValues.forEach(function(value) {
+            try {
+                cue[property] = value;
+                assert_unreached("should throw");
+            } catch (e) {
+                assert_equals(e.name, "TypeError");
+                assert_equals(e.message, expected_exception_msg);
+            }
+        });
+    }, expected_exception_msg);
+}
+testProperty("startTime");
+testProperty("endTime");
 </script>
