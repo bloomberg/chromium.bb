@@ -4239,6 +4239,21 @@
             ]
         }
     ],
+    "WebRTC-NetEqOpusDtxDelayFix": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "WebRTC-ProbingScreenshareBwe": [
         {
             "platforms": [
