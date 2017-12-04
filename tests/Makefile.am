@@ -189,6 +189,7 @@ dist_yaml_TESTS =				\
 	yaml/issue-400.yaml			\
 	yaml/issue-401.yaml			\
 	yaml/issue-406.yaml			\
+	yaml/issue-479.yaml			\
 	yaml/iu-ca-g1_harness.yaml		\
 	yaml/ko-2006-g2_harness.yaml		\
 	yaml/ko-g2_harness.yaml			\

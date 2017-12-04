@@ -73,6 +73,7 @@ EXTRA_DIST =					\
 	issue-400.yaml				\
 	issue-401.yaml				\
 	issue-406.yaml				\
+	issue-479.yaml				\
 	iu-ca-g1_harness.yaml			\
 	ko-2006-g2_harness.yaml			\
 	ko-g2_harness.yaml			\
