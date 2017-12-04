@@ -23,7 +23,7 @@
   `);
 
   await TestRunner.NetworkAgent.setCacheDisabled(true);
-  await new Promise(fulfill => PerformanceTestRunner.invokeAsyncWithTimeline('performActions', fulfill));
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
   var model = PerformanceTestRunner.timelineModel();
   var linkifier = new Components.Linkifier();

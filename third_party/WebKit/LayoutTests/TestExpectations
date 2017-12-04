@@ -982,11 +982,11 @@ crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
 
-# crbug.com/778784 Is tracking recent flakiness in decode-resize.html. Once that is fixed, the following
+# crbug.com/778784 Is tracking recent flakiness in decode-resize.js. Once that is fixed, the following
 # failures should be uncommented:
-# crbug.com/498539 [ Win ] http/tests/devtools/tracing/decode-resize.html [ Failure Timeout ]
-crbug.com/778784 http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
-crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.html [ Failure Timeout Pass ]
+# crbug.com/498539 [ Win ] http/tests/devtools/tracing/decode-resize.js [ Failure Timeout ]
+crbug.com/778784 http/tests/devtools/tracing/decode-resize.js [ Failure Timeout Pass ]
+crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Timeout Pass ]
 
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]

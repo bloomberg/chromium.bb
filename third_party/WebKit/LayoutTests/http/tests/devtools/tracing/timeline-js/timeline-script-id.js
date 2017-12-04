@@ -8,10 +8,6 @@
        It expects two FunctionCall for InjectedScript, two TimerInstall events, two FunctionCall events and one TimerRemove event to be logged with performActions.js script name and some line number.\n`);
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
-  await TestRunner.evaluateInPagePromise(`
-      if (!window.testRunner)
-          setTimeout(performActions, 2000);
-  `);
 
   function performActions() {
     var callback;

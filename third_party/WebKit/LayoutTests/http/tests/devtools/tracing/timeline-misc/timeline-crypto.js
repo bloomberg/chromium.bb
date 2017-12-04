@@ -16,7 +16,7 @@
       }
   `);
 
-  await new Promise(resolve => PerformanceTestRunner.invokeAsyncWithTimeline('performActions', resolve));
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
   const events = new Set([
     TimelineModel.TimelineModel.RecordType.CryptoDoEncrypt,

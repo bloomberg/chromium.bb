@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Test filtering in Timeline Tree View panel.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+
   var sessionId = '4.20';
   var mainThread = 1;
   var pid = 100;
@@ -274,7 +276,10 @@ function test() {
   ];
 
   var model = PerformanceTestRunner.createPerformanceModelWithEvents(testData);
-  var view = new Timeline.EventsTimelineTreeView(UI.panels.timeline._filters, null);
+  const tabbedPane = UI.panels.timeline._flameChart._detailsView._tabbedPane;
+  tabbedPane.selectTab(Timeline.TimelineDetailsView.Tab.EventLog);
+  const view = tabbedPane.visibleView;
+
   view.setModel(model);
   view.updateContents(Timeline.TimelineSelection.fromRange(
       model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
@@ -290,24 +295,13 @@ function test() {
   TestRunner.addResult('Initial:');
   dumpRecords();
 
-  TestRunner.addResult('Filtered by \'bar\':');
+  TestRunner.addResult(`Filtered by 'bar':`);
   view._textFilterUI._internalSetValue('bar', true);
   dumpRecords();
 
-  TestRunner.addResult('Filtered by \'foo\':');
+  TestRunner.addResult(`Filtered by 'foo':`);
   view._textFilterUI._internalSetValue('foo', true);
   dumpRecords();
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Test filtering in Timeline Tree View panel.</a>
-</p>
-
-</body>
-</html>
+})();

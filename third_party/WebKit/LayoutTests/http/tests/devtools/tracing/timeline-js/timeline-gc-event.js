@@ -9,11 +9,8 @@
   await TestRunner.evaluateInPagePromise(`
       function produceGarbageForGCEvents()
       {
-          if (window.testRunner) {
-              window.gc();
-              return new Promise((fulfill) => testRunner.layoutAndPaintAsyncThen(fulfill));
-          }
-          return Promise.reject();
+          window.gc();
+          return new Promise(fulfill => testRunner.layoutAndPaintAsyncThen(fulfill));
       }
   `);
 

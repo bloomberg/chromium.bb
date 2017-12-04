@@ -1,12 +1,8 @@
 Tests grouped invalidations on the timeline.
 
-P
-A
-S
-S
 paint invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:21}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -17,7 +13,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -28,7 +24,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:21}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -39,7 +35,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -50,7 +46,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:21}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -61,7 +57,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -72,7 +68,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:21}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -83,7 +79,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: test://evaluations/0/timeline-grouped-invalidations.js:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -94,6 +90,6 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
 ]
-PASS - record contained Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:14
-PASS - record contained Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:15
+PASS - record contained Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.js:21
+PASS - record contained Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.js:22
 
