@@ -25,13 +25,13 @@ class PrefService;
 
 namespace net {
 class URLRequestContext;
-class URLRequestContextBuilder;
 class HttpServerPropertiesManager;
 }
 
 namespace content {
 class NetworkServiceImpl;
 class URLLoader;
+class URLRequestContextBuilderMojo;
 
 // A NetworkContext creates and manages access to a URLRequestContext.
 //
@@ -42,7 +42,7 @@ class URLLoader;
 //
 // When the network service is disabled, NetworkContexts may be created through
 // NetworkServiceImpl::CreateNetworkContextWithBuilder, and take in a
-// URLRequestContextBuilder to seed construction of the NetworkContext's
+// URLRequestContextBuilderMojo to seed construction of the NetworkContext's
 // URLRequestContext. When that happens, the consumer takes ownership of the
 // NetworkContext directly, has direct access to its URLRequestContext, and is
 // responsible for destroying it before the NetworkService.
@@ -53,11 +53,11 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
                  mojom::NetworkContextParamsPtr params);
 
   // Temporary constructor that allows creating an in-process NetworkContext
-  // with a pre-populated URLRequestContextBuilder.
+  // with a pre-populated URLRequestContextBuilderMojo.
   NetworkContext(NetworkServiceImpl* network_service,
                  mojom::NetworkContextRequest request,
                  mojom::NetworkContextParamsPtr params,
-                 std::unique_ptr<net::URLRequestContextBuilder> builder);
+                 std::unique_ptr<URLRequestContextBuilderMojo> builder);
 
   // Creates a NetworkContext that wraps a consumer-provided URLRequestContext
   // that the NetworkContext does not own. In this case, there is no
@@ -115,7 +115,7 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
 
   // Applies the values in |network_context_params| to |builder|.
   void ApplyContextParamsToBuilder(
-      net::URLRequestContextBuilder* builder,
+      URLRequestContextBuilderMojo* builder,
       mojom::NetworkContextParams* network_context_params);
 
   NetworkServiceImpl* const network_service_;

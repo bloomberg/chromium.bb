@@ -34,7 +34,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
-#include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
@@ -724,24 +723,10 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
 
 void IOThread::SetUpProxyService(
     content::URLRequestContextBuilderMojo* builder) const {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  // TODO(eroman): Figure out why this doesn't work in single-process mode.
-  // Should be possible now that a private isolate is used.
-  // http://crbug.com/474654
-  if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
-    if (command_line.HasSwitch(switches::kSingleProcess)) {
-      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
-    } else {
-      builder->SetMojoProxyResolverFactory(
-          ChromeMojoProxyResolverFactory::CreateWithStrongBinding());
 #if defined(OS_CHROMEOS)
-      builder->SetDhcpFetcherFactory(
-          base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
+  builder->SetDhcpFetcherFactory(
+      base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
 #endif
-    }
-  }
 
   builder->set_pac_quick_check_enabled(WpadQuickCheckEnabled());
   builder->set_pac_sanitize_url_policy(

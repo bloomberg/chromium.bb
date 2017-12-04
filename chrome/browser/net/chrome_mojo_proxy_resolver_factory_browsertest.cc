@@ -110,34 +110,6 @@ class TestServiceManagerListener
   DISALLOW_COPY_AND_ASSIGN(TestServiceManagerListener);
 };
 
-// Creates a ProxyResolverFactory on the IO thread that can then be used on the
-// UI thread.
-proxy_resolver::mojom::ProxyResolverFactoryPtr
-CreateResolverFactoryOnIOThread() {
-  base::RunLoop run_loop;
-  proxy_resolver::mojom::ProxyResolverFactoryPtrInfo resolver_factory_info;
-
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          [](mojo::InterfacePtrInfo<
-              proxy_resolver::mojom::ProxyResolverFactory>*
-                 resolver_factory_info) {
-            // Getting the InterfacePtr to an InterfacePtrInfo allows it to be
-            // passed to another thread.
-            *resolver_factory_info =
-                ChromeMojoProxyResolverFactory::CreateWithStrongBinding()
-                    .PassInterface();
-          },
-          &resolver_factory_info),
-      run_loop.QuitClosure());
-  run_loop.Run();
-
-  proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory;
-  resolver_factory.Bind(std::move(resolver_factory_info));
-  return resolver_factory;
-}
-
 // Dummy consumer of a ProxyResolverFactory. It just calls CreateResolver, and
 // keeps Mojo objects alive from when CreateResolver() is called until it's
 // destroyed.
@@ -206,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                        ServiceLifecycle) {
   // Set up the ProxyResolverFactory.
   proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory =
-      CreateResolverFactoryOnIOThread();
+      ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
 
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client1 =
@@ -246,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                        DestroyFactory) {
   // Set up the ProxyResolverFactory.
   proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory =
-      CreateResolverFactoryOnIOThread();
+      ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
 
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client1 =
@@ -288,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                        DestroyAndCreateService) {
   // Set up the ProxyResolverFactory.
   proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory =
-      CreateResolverFactoryOnIOThread();
+      ChromeMojoProxyResolverFactory::CreateWithStrongBinding();
 
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client =

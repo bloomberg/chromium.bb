@@ -17,7 +17,7 @@
 // Starts the service as needed, and maintains no active mojo pipes to it,
 // so that it's automatically shut down as needed.
 //
-// ChromeMojoProxyResolverFactories must be created and used only on the IO
+// ChromeMojoProxyResolverFactories must be created and used only on the UI
 // thread.
 class ChromeMojoProxyResolverFactory
     : public proxy_resolver::mojom::ProxyResolverFactory {
@@ -38,9 +38,6 @@ class ChromeMojoProxyResolverFactory
       override;
 
  private:
-  // Initializes the ServiceManager's connector if it hasn't been already.
-  void InitServiceManagerConnector();
-
   std::unique_ptr<service_manager::Connector> service_manager_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMojoProxyResolverFactory);

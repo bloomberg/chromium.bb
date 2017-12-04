@@ -14,23 +14,12 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace {
-
-void BindConnectorOnUIThread(service_manager::mojom::ConnectorRequest request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindConnectorRequest(std::move(request));
-}
-
-}  // namespace
-
 ChromeMojoProxyResolverFactory::ChromeMojoProxyResolverFactory() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 ChromeMojoProxyResolverFactory::~ChromeMojoProxyResolverFactory() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 proxy_resolver::mojom::ProxyResolverFactoryPtr
@@ -45,34 +34,16 @@ void ChromeMojoProxyResolverFactory::CreateResolver(
     const std::string& pac_script,
     proxy_resolver::mojom::ProxyResolverRequest req,
     proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  InitServiceManagerConnector();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Bind a ProxyResolverFactory backed by the proxy resolver service, have it
   // create a ProxyResolverFactory and then destroy the factory, to avoid
   // keeping the service alive after all resolvers have been destroyed.
   proxy_resolver::mojom::ProxyResolverFactoryPtr resolver_factory;
-  service_manager_connector_->BindInterface(
-      proxy_resolver::mojom::kProxyResolverServiceName,
-      mojo::MakeRequest(&resolver_factory));
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(proxy_resolver::mojom::kProxyResolverServiceName,
+                      mojo::MakeRequest(&resolver_factory));
   resolver_factory->CreateResolver(pac_script, std::move(req),
                                    std::move(client));
-}
-
-void ChromeMojoProxyResolverFactory::InitServiceManagerConnector() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (service_manager_connector_)
-    return;
-
-  // The existing ServiceManagerConnection retrieved with
-  // ServiceManagerConnection::GetForProcess() lives on the UI thread, so we
-  // can't access it from here. We create our own connector so it can be used
-  // right away and will bind it on the UI thread.
-  service_manager::mojom::ConnectorRequest request;
-  service_manager_connector_ = service_manager::Connector::Create(&request);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&BindConnectorOnUIThread, base::Passed(&request)));
 }

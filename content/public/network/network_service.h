@@ -13,10 +13,11 @@
 namespace net {
 class NetLog;
 class URLRequestContext;
-class URLRequestContextBuilder;
 }  // namespace net
 
 namespace content {
+
+class URLRequestContextBuilderMojo;
 
 // Allows an in-process NetworkService to be set up.
 class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
@@ -44,7 +45,7 @@ class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
   CreateNetworkContextWithBuilder(
       mojom::NetworkContextRequest request,
       mojom::NetworkContextParamsPtr params,
-      std::unique_ptr<net::URLRequestContextBuilder> builder,
+      std::unique_ptr<URLRequestContextBuilderMojo> builder,
       net::URLRequestContext** url_request_context) = 0;
 
   ~NetworkService() override {}
