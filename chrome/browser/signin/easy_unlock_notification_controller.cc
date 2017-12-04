@@ -9,7 +9,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/easy_unlock_notification_controller_chromeos.h"
-#include "ui/message_center/message_center.h"
 #endif
 
 namespace {
@@ -38,8 +37,7 @@ class EasyUnlockNotificationControllerStub
 std::unique_ptr<EasyUnlockNotificationController>
 EasyUnlockNotificationController::Create(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<EasyUnlockNotificationControllerChromeOS>(
-      profile, message_center::MessageCenter::Get());
+  return base::MakeUnique<EasyUnlockNotificationControllerChromeOS>(profile);
 #else
   return base::MakeUnique<EasyUnlockNotificationControllerStub>();
 #endif

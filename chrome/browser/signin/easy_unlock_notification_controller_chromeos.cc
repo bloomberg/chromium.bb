@@ -7,6 +7,7 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -53,12 +54,8 @@ std::unique_ptr<message_center::Notification> CreateNotification(
 }  // namespace
 
 EasyUnlockNotificationControllerChromeOS::
-    EasyUnlockNotificationControllerChromeOS(
-        Profile* profile,
-        message_center::MessageCenter* message_center)
-    : profile_(profile),
-      message_center_(message_center),
-      weak_ptr_factory_(this) {}
+    EasyUnlockNotificationControllerChromeOS(Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {}
 
 EasyUnlockNotificationControllerChromeOS::
     ~EasyUnlockNotificationControllerChromeOS() {}
@@ -110,8 +107,8 @@ void EasyUnlockNotificationControllerChromeOS::ShowPairingChangeNotification() {
 void EasyUnlockNotificationControllerChromeOS::
     ShowPairingChangeAppliedNotification(const std::string& phone_name) {
   // Remove the pairing change notification if it is still being shown.
-  message_center_->RemoveNotification(kEasyUnlockPairingChangeNotifierId,
-                                      false /* by_user */);
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationHandler::Type::TRANSIENT, kEasyUnlockPairingChangeNotifierId);
 
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.buttons.push_back(
@@ -154,13 +151,8 @@ void EasyUnlockNotificationControllerChromeOS::ShowPromotionNotification() {
 void EasyUnlockNotificationControllerChromeOS::ShowNotification(
     std::unique_ptr<message_center::Notification> notification) {
   notification->SetSystemPriority();
-  std::string notification_id = notification->id();
-  if (message_center_->FindVisibleNotificationById(notification_id)) {
-    message_center_->UpdateNotification(notification_id,
-                                        std::move(notification));
-  } else {
-    message_center_->AddNotification(std::move(notification));
-  }
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void EasyUnlockNotificationControllerChromeOS::LaunchEasyUnlockSettings() {
