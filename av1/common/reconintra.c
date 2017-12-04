@@ -675,7 +675,9 @@ static void av1_init_intra_predictors_internal(void) {
   p[TX_4X16] = aom_##type##_predictor_4x16;   \
   p[TX_16X4] = aom_##type##_predictor_16x4;   \
   p[TX_8X32] = aom_##type##_predictor_8x32;   \
-  p[TX_32X8] = aom_##type##_predictor_32x8;
+  p[TX_32X8] = aom_##type##_predictor_32x8;   \
+  p[TX_16X64] = aom_##type##_predictor_16x64; \
+  p[TX_64X16] = aom_##type##_predictor_64x16;
 #else
 #define INIT_RECTANGULAR(p, type)             \
   p[TX_4X8] = aom_##type##_predictor_4x8;     \
