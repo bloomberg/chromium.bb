@@ -1,6 +1,5 @@
 Tests that InspectorCSSAgent API methods work as expected.
 
-H1
 
 Running: test_styles
 

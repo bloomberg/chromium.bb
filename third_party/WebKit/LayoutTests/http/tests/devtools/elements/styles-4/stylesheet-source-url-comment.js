@@ -1,44 +1,14 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<style>
-body {
-    color: green;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-/*# sourceURL=inlineStyleSheet.css */
-</style>
-<script>
-function addInlineStyleSheet()
-{
-    var styleElement = document.createElement("style");
-    styleElement.textContent = "body { color: black; }\n/*# sourceURL=css/addedInlineStylesheet.css */";
-    document.head.appendChild(styleElement);
-}
+(async function() {
+  TestRunner.addResult(`Tests that stylesheets with sourceURL comment are shown in the Sources panel.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.showPanel('elements');
+  await TestRunner.navigatePromise('resources/stylesheet-source-url-comment.html');
 
-function addInlineStyleSheetNonRelative()
-{
-    var styleElement = document.createElement("style");
-    styleElement.textContent = "body { color: red; }\n/*# sourceURL=css/nonRelativeInlineStylesheet.css */";
-    document.head.appendChild(styleElement);
-}
-
-function addInlineStyleSheetMultiple()
-{
-    var styleElement = document.createElement("style");
-    styleElement.textContent = "\n/*# sourceURL=1.css */\nbody { color: red; }\n/*# sourceURL=2.css*/\n/*# sourceURL=css/addedInlineStylesheetMultiple.css */";
-    document.head.appendChild(styleElement);
-}
-
-function addInlineStyleSheetDeprecated()
-{
-    var styleElement = document.createElement("style");
-    styleElement.textContent = "body { color: black; }\n/*@ sourceURL=css/addedInlineStylesheetDeprecated.css */";
-    document.head.appendChild(styleElement);
-}
-
-function test() {
   function forEachHeaderMatchingURL(url, handler) {
     var headers = TestRunner.cssModel.styleSheetHeaders();
     for (var i = 0; i < headers.length; ++i) {
@@ -109,13 +79,4 @@ function test() {
       }
     }
   ]);
-};
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>Tests that stylesheets with sourceURL comment are shown in the Sources panel.</p>
-</body>
-</html>
+})();

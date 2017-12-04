@@ -1,13 +1,39 @@
-<html>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that InspectorCSSAgent API methods work as expected.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
 <head>
-
 <link rel="stylesheet" href="resources/styles-new-API.css">
+<style>
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+/* An inline stylesheet */
+body.mainpage {
+    text-decoration: none; /* at least one valid property is necessary for WebCore to match a rule */
+    ;badproperty: 1badvalue1;
+}
 
-function test() {
+body.mainpage {
+    prop1: val1;
+    prop2: val2;
+}
+
+body:hover {
+  color: #CDE;
+}
+</style>
+</head>
+<body id="mainBody" class="main1 main2 mainpage" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
+  <table width="50%" id="thetable">
+  </table>
+  <h1 id="toggle">H1</h1>
+</body>
+    `);
+
   var bodyId;
   TestRunner.runTestSuite([
     function test_styles(next) {
@@ -184,35 +210,4 @@ function test() {
       next();
     },
   ]);
-}
-
-</script>
-
-<style>
-
-/* An inline stylesheet */
-body.mainpage {
-    text-decoration: none; /* at least one valid property is necessary for WebCore to match a rule */
-    ;badproperty: 1badvalue1;
-}
-
-body.mainpage {
-    prop1: val1;
-    prop2: val2;
-}
-
-body:hover {
-  color: #CDE;
-}
-</style>
-</head>
-
-<body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
-<p>
-Tests that InspectorCSSAgent API methods work as expected.
-</p>
-<table width="50%" id="thetable">
-</table>
-<h1 id="toggle">H1</h1>
-</body>
-</html>
+})();

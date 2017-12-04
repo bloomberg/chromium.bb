@@ -1,58 +1,67 @@
-<html>
-<head>
-<style>
-#inspected:before, .some-other-selector {
-  content: "BEFORE";
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#inspected:after {
-  content: "AFTER";
-}
-</style>
-<style>
-#empty::before {
-  content: "EmptyBefore";
-}
+(async function() {
+  TestRunner.addResult(`Tests that pseudo elements and their styles are handled properly.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #inspected:before, .some-other-selector {
+        content: "BEFORE";
+      }
 
-#empty::after {
-  content: "EmptyAfter";
-}
-</style>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+      #inspected:after {
+        content: "AFTER";
+      }
+      </style>
+      <style>
+      #empty::before {
+        content: "EmptyBefore";
+      }
 
-function removeLastRule()
-{
-    document.styleSheets[0].deleteRule(document.styleSheets[0].cssRules.length - 1);
-}
+      #empty::after {
+        content: "EmptyAfter";
+      }
+      </style>
+      <div id="container">
+          <div id="inspected">Text</div>
+          <div id="empty"></div>
+      </div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function removeLastRule()
+      {
+          document.styleSheets[0].deleteRule(document.styleSheets[0].cssRules.length - 1);
+      }
 
-function addAfterRule()
-{
-    document.styleSheets[0].addRule("#inspected:after", "content: \"AFTER\"");
-}
+      function addAfterRule()
+      {
+          document.styleSheets[0].addRule("#inspected:after", "content: \\"AFTER\\"");
+      }
 
-function addBeforeRule()
-{
-    document.styleSheets[0].addRule("#inspected:before", "content: \"BEFORE\"");
-}
+      function addBeforeRule()
+      {
+          document.styleSheets[0].addRule("#inspected:before", "content: \\"BEFORE\\"");
+      }
 
-function modifyTextContent()
-{
-    document.getElementById("inspected").textContent = "bar";
-}
+      function modifyTextContent()
+      {
+          document.getElementById("inspected").textContent = "bar";
+      }
 
-function clearTextContent()
-{
-    document.getElementById("inspected").textContent = "";
-}
+      function clearTextContent()
+      {
+          document.getElementById("inspected").textContent = "";
+      }
 
-function removeNode()
-{
-    document.getElementById("inspected").remove();
-}
+      function removeNode()
+      {
+          document.getElementById("inspected").remove();
+      }
+  `);
 
-function test() {
   var containerNode;
   var inspectedNode;
 
@@ -157,20 +166,4 @@ function test() {
       callback();
     }
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that pseudo elements and their styles are handled properly.
-</p>
-
-<div id="container">
-    <div id="inspected">Text</div>
-    <div id="empty"></div>
-</div>
-
-</body>
-</html>
+})();

@@ -1,24 +1,33 @@
-<html>
-<head>
-<style>
-div:hover, a:hover {
-    color: red;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-div:focus, a:focus {
-    border: 1px solid green;
-}
+(async function() {
+  TestRunner.addResult(`Tests that forced element state is reflected in the DOM tree and Styles pane.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <head>
+        <style>
+        div:hover, a:hover {
+            color: red;
+        }
 
-div:active, a:active {
-    font-weight: bold;
-}
+        div:focus, a:focus {
+            border: 1px solid green;
+        }
 
-</style>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+        div:active, a:active {
+            font-weight: bold;
+        }
 
-function test() {
+        </style>
+      </head>
+      <body id="mainBody" class="main1 main2 mainpage" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
+        <div id="div">Test text</div>
+      </body>
+    `);
+
   ElementsTestRunner.nodeWithId('div', foundDiv);
 
   var divNode;
@@ -67,13 +76,4 @@ function test() {
     dumpData();
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
-<p>
-Tests that forced element state is reflected in the DOM tree and Styles pane.
-</p>
-<div id="div">Test text</div>
-</body>
-</html>
+})();

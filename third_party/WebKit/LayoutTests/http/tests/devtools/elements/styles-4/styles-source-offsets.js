@@ -1,13 +1,28 @@
-<html>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Tests that proper data and start/end offset positions are reported for CSS style declarations and properties.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
 <head>
-
 <link rel="stylesheet" href="../styles/resources/styles-source-offsets.css">
+<style>
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+body.mainpage {
+    text-decoration: none; /* at least one valid property is necessary for WebCore to match a rule */
+    badproperty: 1badvalue1;
+}
 
-function test() {
+</style>
+</head>
+<body id="mainBody" class="main1 main2 mainpage" style="font-weight: normal; width: 80%">
+</body>
+    `);
+
   function dumpStyleData(ruleOrStyle) {
     var isRule = !!(ruleOrStyle.style);
     var style;
@@ -53,24 +68,4 @@ function test() {
     dumpStyleData(response.inlineStyle);
     TestRunner.completeTest();
   }
-}
-
-</script>
-
-<style>
-
-body.mainpage {
-    text-decoration: none; /* at least one valid property is necessary for WebCore to match a rule */
-    badproperty: 1badvalue1;
-}
-
-</style>
-</head>
-
-<body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 80%">
-<p>
-Tests that proper data and start/end offset positions are reported for CSS style declarations and properties.
-</p>
-
-</body>
-</html>
+})();
