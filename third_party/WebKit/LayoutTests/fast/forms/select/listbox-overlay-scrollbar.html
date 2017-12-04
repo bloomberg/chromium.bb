@@ -19,7 +19,7 @@ html, body {
 <script>
 if (window.internals) {
     testRunner.dumpAsTextWithPixelResults();
-    internals.settings.setOverlayScrollbarsEnabled(true);
+    internals.runtimeFlags.overlayScrollbarsEnabled = true;
     internals.settings.setMockScrollbarsEnabled(true);
 }
 </script>

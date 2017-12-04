@@ -60,7 +60,6 @@ interface InternalSettings : InternalSettingsGenerated {
     // cannot be changed after process start.  These setters should
     // be removed or moved onto internals.runtimeFlags:
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
-    void setOverlayScrollbarsEnabled(boolean enabled);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(boolean enabled);
     void setScrollTopLeftInteropEnabled(boolean enabled);
 };

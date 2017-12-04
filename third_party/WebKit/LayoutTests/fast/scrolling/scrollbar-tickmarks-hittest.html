@@ -6,7 +6,7 @@
 <script>
 description('Checks that clicking on scrollbar works when tickmarks are added.');
 if (window.internals) {
-    window.internals.settings.setOverlayScrollbarsEnabled(true);
+    window.internals.runtimeFlags.overlayScrollbarsEnabled = true;
 }
 
 onload = function()

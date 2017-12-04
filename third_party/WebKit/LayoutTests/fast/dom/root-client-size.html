@@ -39,15 +39,15 @@
 
     var originalOverlayScrollbars = internals.runtimeFlags.overlayScrollbarsEnabled;
 
-    internals.settings.setOverlayScrollbarsEnabled(true);
+    internals.runtimeFlags.overlayScrollbarsEnabled = true;
 
     runClientSizeTest("wide", false, false, 1);
     runClientSizeTest("tall", false, false, 1);
 
-    internals.settings.setOverlayScrollbarsEnabled(false);
+    internals.runtimeFlags.overlayScrollbarsEnabled = false;
 
     runClientSizeTest("wide", false, true, 0);
     runClientSizeTest("tall", true, false, 0);
 
-    internals.settings.setOverlayScrollbarsEnabled(originalOverlayScrollbars);
+    internals.runtimeFlags.overlayScrollbarsEnabled = originalOverlayScrollbars;
 </script>

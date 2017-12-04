@@ -13,7 +13,7 @@
     shouldBeDefined(window.internals);
 
     var originalOverlayScrollbars = internals.runtimeFlags.overlayScrollbarsEnabled;
-    internals.settings.setOverlayScrollbarsEnabled(true);
+    internals.runtimeFlags.overlayScrollbarsEnabled = true;
 
     function runTests() {
         clientWidthBefore = frame.contentDocument.documentElement.clientWidth;
@@ -24,7 +24,7 @@
         shouldBe("clientWidthBefore", "100");
         shouldBe("clientWidthAfter", "200");
 
-        internals.settings.setOverlayScrollbarsEnabled(originalOverlayScrollbars);
+        internals.runtimeFlags.overlayScrollbarsEnabled = originalOverlayScrollbars;
         finishJSTest();
     }
 </script>

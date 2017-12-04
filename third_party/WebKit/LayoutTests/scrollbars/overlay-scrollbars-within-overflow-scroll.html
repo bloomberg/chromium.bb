@@ -31,7 +31,7 @@ html, body { margin: 0; padding: 0; }
 
 <script>
 if (window.internals) {
-    internals.settings.setOverlayScrollbarsEnabled(true);
+    internals.runtimeFlags.overlayScrollbarsEnabled = true;
     internals.settings.setMockScrollbarsEnabled(true);
 }
 const outer = document.getElementById('outer');

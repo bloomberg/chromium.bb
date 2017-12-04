@@ -57,7 +57,7 @@
         // RuntimeEnabledFeature after the ScrollbarTheme is initialized. It
         // makes the non overlay scrollbars think they're overlay so it works
         // for this test but it should probably be in a unit test.
-        internals.settings.setOverlayScrollbarsEnabled(true);
+        internals.runtimeFlags.overlayScrollbarsEnabled = true;
 
         var d = document.getElementById('container');
         var plugin = document.createElement('object');
