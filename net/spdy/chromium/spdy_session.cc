@@ -1287,14 +1287,6 @@ bool SpdySession::GetLoadTimingInfo(SpdyStreamId stream_id,
                                         load_timing_info);
 }
 
-size_t SpdySession::num_unclaimed_pushed_streams() const {
-  return unclaimed_pushed_streams_.CountStreamsForSession();
-}
-
-bool SpdySession::has_unclaimed_pushed_stream_for_url(const GURL& url) const {
-  return unclaimed_pushed_streams_.FindStream(url) != kNoPushedStreamFound;
-}
-
 int SpdySession::GetPeerAddress(IPEndPoint* address) const {
   if (connection_->socket())
     return connection_->socket()->GetPeerAddress(address);

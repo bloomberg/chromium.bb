@@ -452,29 +452,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return !active_streams_.empty() || !created_streams_.empty();
   }
 
-  // Access to the number of active and pending streams.  These are primarily
-  // available for testing and diagnostics.
-  size_t num_active_streams() const { return active_streams_.size(); }
-  size_t num_unclaimed_pushed_streams() const;
-  size_t num_created_streams() const { return created_streams_.size(); }
-  bool has_unclaimed_pushed_stream_for_url(const GURL& url) const;
-
-  size_t num_pushed_streams() const { return num_pushed_streams_; }
-  size_t num_active_pushed_streams() const {
-    return num_active_pushed_streams_;
-  }
-
-  size_t pending_create_stream_queue_size(RequestPriority priority) const {
-    DCHECK_GE(priority, MINIMUM_PRIORITY);
-    DCHECK_LE(priority, MAXIMUM_PRIORITY);
-    return pending_create_stream_queues_[priority].size();
-  }
-
-  // Returns the current |stream_initial_send_window_size_|.
-  int32_t stream_initial_send_window_size() const {
-    return stream_initial_send_window_size_;
-  }
-
   // Returns true if no stream in the session can send data due to
   // session flow control.
   bool IsSendStalled() const { return session_send_window_size_ == 0; }
@@ -527,44 +504,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   friend class SpdyHttpStreamTest;
   friend class SpdyNetworkTransactionTest;
   friend class SpdyProxyClientSocketTest;
+  friend class SpdySessionPoolTest;
   friend class SpdySessionTest;
   friend class SpdyStreamRequest;
 
-  // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClientPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, FailedPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, WaitingForWrongPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushBeforeClaimed);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterSessionGoesAway);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterExpired);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClaimPushedStreamBeforeExpires);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ProtocolNegotiation);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustRecvWindowSize);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustSendWindowSize);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlInactiveStream);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlPadding);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
-                           SessionFlowControlTooMuchDataTwoDataFrames);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
-                           StreamFlowControlTooMuchDataTwoDataFrames);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoReceiveLeaks);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, StreamIdSpaceExhausted);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, MaxConcurrentStreamsZero);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, UnstallRacesWithStreamCreation);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GoAwayOnSessionFlowControlError);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
-                           RejectPushedStreamExceedingConcurrencyLimit);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, IgnoreReservedRemoteStreamsCount);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
-                           CancelReservedStreamOnHeadersReceived);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, RejectInvalidUnknownFrames);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionPoolTest, IPAddressChanged);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
-                           ServerPushValidCrossOrigin);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
-                           ServerPushValidCrossOriginWithOpenSession);
   FRIEND_TEST_ALL_PREFIXES(RecordPushedStreamHistogramTest, VaryResponseHeader);
 
   using PendingStreamRequestQueue =
@@ -601,7 +544,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Container class for unclaimed pushed streams on a SpdySession.  Guarantees
   // that |spdy_session_.pool_| gets notified every time a stream is pushed or
   // an unclaimed pushed stream is claimed.
-  class UnclaimedPushedStreamContainer {
+  class NET_EXPORT_PRIVATE UnclaimedPushedStreamContainer {
    public:
     UnclaimedPushedStreamContainer() = delete;
     explicit UnclaimedPushedStreamContainer(SpdySession* spdy_session);
@@ -951,30 +894,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Returns the next stream to possibly resume, or 0 if the queue is
   // empty.
   SpdyStreamId PopStreamToPossiblyResume();
-
-  // --------------------------
-  // Helper methods for testing
-  // --------------------------
-
-  void set_connection_at_risk_of_loss_time(base::TimeDelta duration) {
-    connection_at_risk_of_loss_time_ = duration;
-  }
-
-  void set_hung_interval(base::TimeDelta duration) {
-    hung_interval_ = duration;
-  }
-
-  void set_max_concurrent_pushed_streams(size_t value) {
-    max_concurrent_pushed_streams_ = value;
-  }
-
-  int64_t pings_in_flight() const { return pings_in_flight_; }
-
-  SpdyPingId next_ping_id() const { return next_ping_id_; }
-
-  base::TimeTicks last_read_time() const { return last_read_time_; }
-
-  bool check_ping_status_pending() const { return check_ping_status_pending_; }
 
   // Whether Do{Read,Write}Loop() is in the call stack. Useful for
   // making sure we don't destroy ourselves prematurely in that case.
