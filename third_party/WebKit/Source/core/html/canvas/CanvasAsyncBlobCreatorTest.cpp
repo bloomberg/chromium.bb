@@ -249,16 +249,16 @@ TEST_F(CanvasAsyncBlobCreatorTest,
   // StartTimeoutEvent is inspecting the idle task status.
   // The whole image encoding process (including initialization)  will then
   // become carried out in the alternative code path instead.
-  this->PrepareMockCanvasAsyncBlobCreatorWithoutStartPng();
+  PrepareMockCanvasAsyncBlobCreatorWithoutStartPng();
   EXPECT_CALL(*(AsyncBlobCreator()),
               SignalTaskSwitchInStartTimeoutEventForTesting());
 
-  this->AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
+  AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
   testing::EnterRunLoop();
 
   ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
-            this->AsyncBlobCreator()->GetIdleTaskStatus());
+            AsyncBlobCreator()->GetIdleTaskStatus());
 }
 
 TEST_F(CanvasAsyncBlobCreatorTest,
@@ -267,16 +267,16 @@ TEST_F(CanvasAsyncBlobCreatorTest,
   // CompleteTimeoutEvent is inspecting the idle task status.
   // The remaining image encoding process (excluding initialization)  will
   // then become carried out in the alternative code path instead.
-  this->PrepareMockCanvasAsyncBlobCreatorWithoutCompletePng();
+  PrepareMockCanvasAsyncBlobCreatorWithoutCompletePng();
   EXPECT_CALL(*(AsyncBlobCreator()),
               SignalTaskSwitchInCompleteTimeoutEventForTesting());
 
-  this->AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
+  AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
   testing::EnterRunLoop();
 
   ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
-            this->AsyncBlobCreator()->GetIdleTaskStatus());
+            AsyncBlobCreator()->GetIdleTaskStatus());
 }
 
 TEST_F(CanvasAsyncBlobCreatorTest,
@@ -284,53 +284,53 @@ TEST_F(CanvasAsyncBlobCreatorTest,
   // This test mocks the scenario when idle task is not failed during when
   // either the StartTimeoutEvent or the CompleteTimeoutEvent is inspecting
   // the idle task status.
-  this->PrepareMockCanvasAsyncBlobCreatorFailPng();
+  PrepareMockCanvasAsyncBlobCreatorFailPng();
 
-  this->AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
+  AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
   testing::EnterRunLoop();
 
   EXPECT_EQ(IdleTaskStatus::kIdleTaskFailed,
-            this->AsyncBlobCreator()->GetIdleTaskStatus());
+            AsyncBlobCreator()->GetIdleTaskStatus());
 }
 
 // The below 3 unit tests have exactly same workflow as the above 3 unit tests
 // except that they are encoding on JPEG image formats instead of PNG.
 TEST_F(CanvasAsyncBlobCreatorTest,
        JpegIdleTaskNotStartedWhenStartTimeoutEventHappens) {
-  this->PrepareMockCanvasAsyncBlobCreatorWithoutStartJpeg();
+  PrepareMockCanvasAsyncBlobCreatorWithoutStartJpeg();
   EXPECT_CALL(*(AsyncBlobCreator()),
               SignalTaskSwitchInStartTimeoutEventForTesting());
 
-  this->AsyncBlobCreator()->ScheduleAsyncBlobCreation(1.0);
+  AsyncBlobCreator()->ScheduleAsyncBlobCreation(1.0);
   testing::EnterRunLoop();
 
   ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
-            this->AsyncBlobCreator()->GetIdleTaskStatus());
+            AsyncBlobCreator()->GetIdleTaskStatus());
 }
 
 TEST_F(CanvasAsyncBlobCreatorTest,
        JpegIdleTaskNotCompletedWhenCompleteTimeoutEventHappens) {
-  this->PrepareMockCanvasAsyncBlobCreatorWithoutCompleteJpeg();
+  PrepareMockCanvasAsyncBlobCreatorWithoutCompleteJpeg();
   EXPECT_CALL(*(AsyncBlobCreator()),
               SignalTaskSwitchInCompleteTimeoutEventForTesting());
 
-  this->AsyncBlobCreator()->ScheduleAsyncBlobCreation(1.0);
+  AsyncBlobCreator()->ScheduleAsyncBlobCreation(1.0);
   testing::EnterRunLoop();
 
   ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
-            this->AsyncBlobCreator()->GetIdleTaskStatus());
+            AsyncBlobCreator()->GetIdleTaskStatus());
 }
 
 TEST_F(CanvasAsyncBlobCreatorTest,
        JpegIdleTaskFailedWhenStartTimeoutEventHappens) {
-  this->PrepareMockCanvasAsyncBlobCreatorFailJpeg();
+  PrepareMockCanvasAsyncBlobCreatorFailJpeg();
 
-  this->AsyncBlobCreator()->ScheduleAsyncBlobCreation(1.0);
+  AsyncBlobCreator()->ScheduleAsyncBlobCreation(1.0);
   testing::EnterRunLoop();
 
   EXPECT_EQ(IdleTaskStatus::kIdleTaskFailed,
-            this->AsyncBlobCreator()->GetIdleTaskStatus());
+            AsyncBlobCreator()->GetIdleTaskStatus());
 }
 }

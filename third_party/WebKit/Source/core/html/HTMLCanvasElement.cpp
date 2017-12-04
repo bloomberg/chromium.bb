@@ -311,7 +311,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     UpdateMemoryUsage();
   }
 
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   if (layout_object && Is2d() && !context_->CreationAttributes().alpha()) {
     // In the alpha false case, canvas is initially opaque even though there is
     // no ImageBuffer, so we need to trigger an invalidation.
@@ -599,7 +599,7 @@ void HTMLCanvasElement::Reset() {
   if (Is3d() && old_size != Size())
     context_->Reshape(width(), height());
 
-  if (LayoutObject* layout_object = this->GetLayoutObject()) {
+  if (LayoutObject* layout_object = GetLayoutObject()) {
     if (layout_object->IsCanvas()) {
       if (old_size != Size()) {
         ToLayoutHTMLCanvas(layout_object)->CanvasSizeChanged();

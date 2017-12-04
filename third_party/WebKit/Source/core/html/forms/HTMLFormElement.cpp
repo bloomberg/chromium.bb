@@ -139,7 +139,7 @@ Node::InsertionNotificationRequest HTMLFormElement::InsertedInto(
   HTMLElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("form", methodAttr, actionAttr);
   if (insertion_point->isConnected())
-    this->GetDocument().DidAssociateFormControl(this);
+    GetDocument().DidAssociateFormControl(this);
   return kInsertionDone;
 }
 
@@ -694,7 +694,7 @@ bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
     CheckValidityEventBehavior event_behavior) {
   // Copy listedElements because event handlers called from
   // HTMLFormControlElement::checkValidity() might change listedElements.
-  const ListedElement::List& listed_elements = this->ListedElements();
+  const ListedElement::List& listed_elements = ListedElements();
   HeapVector<Member<ListedElement>> elements;
   elements.ReserveCapacity(listed_elements.size());
   for (const auto& element : listed_elements)

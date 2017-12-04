@@ -120,7 +120,7 @@ void CueTimeline::UpdateActiveCues(double movie_time) {
   if (IgnoreUpdateRequests())
     return;
 
-  HTMLMediaElement& media_element = this->MediaElement();
+  HTMLMediaElement& media_element = MediaElement();
 
   // Don't run the "time marches on" algorithm if the document has been
   // detached. This primarily guards against dispatch of events w/

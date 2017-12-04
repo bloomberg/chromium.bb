@@ -64,7 +64,7 @@ Element* HTMLAllCollection::NamedItemWithIndex(const AtomicString& name,
 void HTMLAllCollection::namedGetter(const AtomicString& name,
                                     NodeListOrElement& return_value) {
   HeapVector<Member<Element>> named_items;
-  this->NamedItems(name, named_items);
+  NamedItems(name, named_items);
 
   if (!named_items.size())
     return;

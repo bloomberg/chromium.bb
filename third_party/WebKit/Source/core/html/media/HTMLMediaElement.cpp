@@ -2751,7 +2751,7 @@ void HTMLMediaElement::ForgetResourceSpecificTracks() {
   // algorithm.  The order is explicitly specified as text, then audio, and
   // finally video.  Also 'removetrack' events should not be fired.
   if (text_tracks_) {
-    TrackDisplayUpdateScope scope(this->GetCueTimeline());
+    TrackDisplayUpdateScope scope(GetCueTimeline());
     text_tracks_->RemoveAllInbandTracks();
   }
 

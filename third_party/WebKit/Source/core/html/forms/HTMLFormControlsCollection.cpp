@@ -78,7 +78,7 @@ static unsigned FindListedElement(const ListedElement::List& listed_elements,
 
 HTMLElement* HTMLFormControlsCollection::VirtualItemAfter(
     Element* previous) const {
-  const ListedElement::List& listed_elements = this->ListedElements();
+  const ListedElement::List& listed_elements = ListedElements();
   unsigned offset;
   if (!previous)
     offset = 0;
@@ -176,7 +176,7 @@ void HTMLFormControlsCollection::namedGetter(
     const AtomicString& name,
     RadioNodeListOrElement& return_value) {
   HeapVector<Member<Element>> named_items;
-  this->NamedItems(name, named_items);
+  NamedItems(name, named_items);
 
   if (named_items.IsEmpty())
     return;

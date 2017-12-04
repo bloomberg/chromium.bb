@@ -274,7 +274,7 @@ void ImageDocument::CreateDocumentStructure() {
   if (ShouldShrinkToFit()) {
     // Add event listeners
     EventListener* listener = ImageEventListener::Create(this);
-    if (LocalDOMWindow* dom_window = this->domWindow())
+    if (LocalDOMWindow* dom_window = domWindow())
       dom_window->addEventListener(EventTypeNames::resize, listener, false);
 
     if (shrink_to_fit_mode_ == kDesktop) {
@@ -348,7 +348,7 @@ void ImageDocument::ImageClicked(int x, int y) {
 
     UpdateStyleAndLayout();
 
-    double scale = this->Scale();
+    double scale = Scale();
     double device_scale_factor =
         GetFrame()->View()->GetChromeClient()->WindowToViewportScalar(1.f);
 
@@ -492,7 +492,7 @@ void ImageDocument::RestoreImageSize() {
 
 bool ImageDocument::ImageFitsInWindow() const {
   DCHECK_EQ(shrink_to_fit_mode_, kDesktop);
-  return this->Scale() >= 1;
+  return Scale() >= 1;
 }
 
 int ImageDocument::CalculateDivWidth() {

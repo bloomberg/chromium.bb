@@ -53,8 +53,8 @@ bool HTMLImport::Precedes(HTMLImport* import) {
 }
 
 bool HTMLImport::FormsCycle() const {
-  for (const HTMLImport* i = this->Parent(); i; i = i->Parent()) {
-    if (i->GetDocument() == this->GetDocument())
+  for (const HTMLImport* i = Parent(); i; i = i->Parent()) {
+    if (i->GetDocument() == GetDocument())
       return true;
   }
 
@@ -74,7 +74,7 @@ void HTMLImport::AppendImport(HTMLImport* child) {
 
 void HTMLImport::StateDidChange() {
   if (!GetState().ShouldBlockScriptExecution()) {
-    if (Document* document = this->GetDocument())
+    if (Document* document = GetDocument())
       document->DidLoadAllImports();
   }
 }

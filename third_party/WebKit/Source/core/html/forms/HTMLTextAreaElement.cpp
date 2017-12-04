@@ -169,7 +169,7 @@ void HTMLTextAreaElement::ParseAttribute(
       cols = kDefaultCols;
     if (cols_ != cols) {
       cols_ = cols;
-      if (LayoutObject* layout_object = this->GetLayoutObject()) {
+      if (LayoutObject* layout_object = GetLayoutObject()) {
         layout_object
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
                 LayoutInvalidationReason::kAttributeChanged);
@@ -190,7 +190,7 @@ void HTMLTextAreaElement::ParseAttribute(
       wrap = kSoftWrap;
     if (wrap != wrap_) {
       wrap_ = wrap;
-      if (LayoutObject* layout_object = this->GetLayoutObject()) {
+      if (LayoutObject* layout_object = GetLayoutObject()) {
         layout_object
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
                 LayoutInvalidationReason::kAttributeChanged);

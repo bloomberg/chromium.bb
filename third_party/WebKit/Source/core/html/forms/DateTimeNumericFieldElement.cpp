@@ -66,7 +66,7 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(
   // should follow the direction of numeric values.
   if (LocaleForOwner().IsRTL()) {
     WTF::Unicode::CharDirection dir =
-        WTF::Unicode::Direction(FormatValue(this->Maximum())[0]);
+        WTF::Unicode::Direction(FormatValue(Maximum())[0]);
     if (dir == WTF::Unicode::kLeftToRight ||
         dir == WTF::Unicode::kEuropeanNumber ||
         dir == WTF::Unicode::kArabicNumber) {

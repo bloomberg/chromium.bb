@@ -70,7 +70,7 @@ void HTMLImageLoader::NoImageResourceToLoad() {
 
 void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
   ImageResourceContent* cached_image = GetContent();
-  Element* element = this->GetElement();
+  Element* element = GetElement();
   ImageLoader::ImageNotifyFinished(cached_image);
 
   bool load_error = cached_image->ErrorOccurred();

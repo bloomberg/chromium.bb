@@ -250,11 +250,11 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
     }
   } else {
     idle_task_status_ = kIdleTaskNotStarted;
-    this->ScheduleInitiateEncoding(quality);
+    ScheduleInitiateEncoding(quality);
 
     // We post the below task to check if the above idle task isn't late.
     // There's no risk of concurrency as both tasks are on the same thread.
-    this->PostDelayedTaskToCurrentThread(
+    PostDelayedTaskToCurrentThread(
         BLINK_FROM_HERE,
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent,
                   WrapPersistent(this), quality),
@@ -286,7 +286,7 @@ void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
     return;
   }
 
-  this->IdleEncodeRows(deadline_seconds);
+  IdleEncodeRows(deadline_seconds);
 }
 
 void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
@@ -307,7 +307,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
 
     if (!encoder_->encodeRows(1)) {
       idle_task_status_ = kIdleTaskFailed;
-      this->CreateNullAndReturnResult();
+      CreateNullAndReturnResult();
       return;
     }
   }
@@ -322,7 +322,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
                    WTF::Bind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
                              WrapPersistent(this)));
   } else {
-    this->CreateBlobAndReturnResult();
+    CreateBlobAndReturnResult();
   }
 }
 
@@ -333,14 +333,14 @@ void CanvasAsyncBlobCreator::ForceEncodeRowsOnCurrentThread() {
   for (int y = num_rows_completed_; y < src_data_.height(); ++y) {
     if (!encoder_->encodeRows(1)) {
       idle_task_status_ = kIdleTaskFailed;
-      this->CreateNullAndReturnResult();
+      CreateNullAndReturnResult();
       return;
     }
   }
   num_rows_completed_ = src_data_.height();
 
   if (IsMainThread()) {
-    this->CreateBlobAndReturnResult();
+    CreateBlobAndReturnResult();
   } else {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(
@@ -349,7 +349,7 @@ void CanvasAsyncBlobCreator::ForceEncodeRowsOnCurrentThread() {
                             WrapCrossThreadPersistent(this)));
   }
 
-  this->SignalAlternativeCodePathFinishedForTesting();
+  SignalAlternativeCodePathFinishedForTesting();
 }
 
 void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
@@ -440,7 +440,7 @@ bool CanvasAsyncBlobCreator::InitializeEncoder(double quality) {
 void CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent(double quality) {
   if (idle_task_status_ == kIdleTaskStarted) {
     // Even if the task started quickly, we still want to ensure completion
-    this->PostDelayedTaskToCurrentThread(
+    PostDelayedTaskToCurrentThread(
         BLINK_FROM_HERE,
         WTF::Bind(&CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent,
                   WrapPersistent(this)),
@@ -461,12 +461,12 @@ void CanvasAsyncBlobCreator::IdleTaskStartTimeoutEvent(double quality) {
                         WrapPersistent(this)));
     } else {
       // Failing in initialization of encoder
-      this->SignalAlternativeCodePathFinishedForTesting();
+      SignalAlternativeCodePathFinishedForTesting();
     }
   } else {
     DCHECK(idle_task_status_ == kIdleTaskFailed ||
            idle_task_status_ == kIdleTaskCompleted);
-    this->SignalAlternativeCodePathFinishedForTesting();
+    SignalAlternativeCodePathFinishedForTesting();
   }
 }
 
@@ -487,7 +487,7 @@ void CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent() {
   } else {
     DCHECK(idle_task_status_ == kIdleTaskFailed ||
            idle_task_status_ == kIdleTaskCompleted);
-    this->SignalAlternativeCodePathFinishedForTesting();
+    SignalAlternativeCodePathFinishedForTesting();
   }
 }
 

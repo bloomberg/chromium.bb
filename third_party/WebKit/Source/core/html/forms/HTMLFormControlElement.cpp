@@ -376,7 +376,7 @@ String HTMLFormControlElement::ResultForDialogSubmit() {
 }
 
 void HTMLFormControlElement::DidRecalcStyle() {
-  if (LayoutObject* layout_object = this->GetLayoutObject())
+  if (LayoutObject* layout_object = GetLayoutObject())
     layout_object->UpdateFromElement();
 }
 

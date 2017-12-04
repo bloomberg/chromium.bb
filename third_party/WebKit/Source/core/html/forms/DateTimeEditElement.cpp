@@ -728,7 +728,7 @@ void DateTimeEditElement::GetLayout(const LayoutParameters& layout_parameters,
   }
   Element* fields_wrapper = FieldsWrapperElement();
 
-  size_t focused_field_index = this->FocusedFieldIndex();
+  size_t focused_field_index = FocusedFieldIndex();
   DateTimeFieldElement* const focused_field = FieldAt(focused_field_index);
   const AtomicString focused_field_id =
       focused_field ? focused_field->ShadowPseudoId() : g_null_atom;

@@ -180,7 +180,7 @@ bool StepRange::StepMismatch(const Decimal& value_for_check) const {
 
 Decimal StepRange::StepSnappedMaximum() const {
   Decimal base = StepBase();
-  Decimal step = this->Step();
+  Decimal step = Step();
   if (base - step == base || !(base / step).IsFinite())
     return Decimal::Nan();
   Decimal aligned_maximum = base + ((Maximum() - base) / step).Floor() * step;

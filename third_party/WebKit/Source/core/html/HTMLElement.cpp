@@ -1282,7 +1282,7 @@ int HTMLElement::offsetHeightForBinding() {
 Element* HTMLElement::unclosedOffsetParent() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
-  LayoutObject* layout_object = this->GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
     return nullptr;
 

@@ -109,7 +109,7 @@ void HTMLIFrameElement::ParseAttribute(
   const AtomicString& value = params.new_value;
   if (name == nameAttr) {
     if (IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
-      HTMLDocument& document = ToHTMLDocument(this->GetDocument());
+      HTMLDocument& document = ToHTMLDocument(GetDocument());
       document.RemoveNamedItem(name_);
       document.AddNamedItem(value);
     }
