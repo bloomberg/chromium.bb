@@ -985,13 +985,7 @@ bool BrowserAccessibility::AccessibilityPerformAction(
   }
 
   if (data.action == ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE) {
-    // target_rect is in screen coordinates.  We need to convert this to frame
-    // coordinates because that's what BrowserAccessiblity cares about.
-    gfx::Rect target =
-        data.target_rect -
-        manager_->GetRootManager()->GetViewBounds().OffsetFromOrigin();
-
-    manager_->ScrollToMakeVisible(*this, target);
+    manager_->ScrollToMakeVisible(*this, data.target_rect);
     return true;
   }
 

@@ -201,12 +201,13 @@ void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
 bool TestAXNodeWrapper::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   if (data.action == ui::AX_ACTION_SCROLL_TO_POINT) {
-    g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.x());
+    g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.y());
     return true;
   }
 
   if (data.action == ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE) {
-    g_offset = gfx::Vector2d(data.target_rect.x(), data.target_rect.x());
+    auto offset = node_->data().location.OffsetFromOrigin();
+    g_offset = gfx::Vector2d(-offset.x(), -offset.y());
     return true;
   }
 

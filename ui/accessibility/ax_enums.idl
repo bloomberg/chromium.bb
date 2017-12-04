@@ -275,7 +275,7 @@
 
     // Scroll any scrollable containers to make the target object visible
     // on the screen.  Optionally pass a subfocus rect in
-    // AXActionData.target_rect.
+    // AXActionData.target_rect, in node-local coordinates.
     scroll_to_make_visible,
 
     // Scroll the given object to a specified point on the screen in
