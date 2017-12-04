@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/provisionally_saved_password_form.h"
@@ -32,21 +34,21 @@
 #endif
 
 namespace blink {
-class WebFormElementObserver;
 class WebInputElement;
 }
 
 namespace autofill {
 
 // Names of HTML attributes to show form and field signatures for debugging.
-const char kDebugAttributeForFormSignature[] = "form_signature";
-const char kDebugAttributeForFieldSignature[] = "field_signature";
+extern const char kDebugAttributeForFormSignature[];
+extern const char kDebugAttributeForFieldSignature[];
 
 class RendererSavePasswordProgressLogger;
 class PasswordGenerationAgent;
 
 // This class is responsible for filling password forms.
 class PasswordAutofillAgent : public content::RenderFrameObserver,
+                              public FormTracker::Observer,
                               public mojom::PasswordAutofillAgent {
  public:
   PasswordAutofillAgent(content::RenderFrame* render_frame,
@@ -70,6 +72,14 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FindFocusedPasswordForm(
       FindFocusedPasswordFormCallback callback) override;
   void BlacklistedFormFound() override;
+
+  // FormTracker::Observer
+  void OnProvisionallySaveForm(const blink::WebFormElement& form,
+                               const blink::WebInputElement& element,
+                               ElementChangeSource source) override;
+  void OnProbablyFormSubmitted() override;
+  void OnFormSubmitted(const blink::WebFormElement& form) override;
+  void OnInferredFormSubmission(SubmissionSource source) override;
 
   // WebFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
@@ -132,10 +142,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
 
-  // Called when an AJAX has succesfully completed. Used to determine if
-  // a form has been submitted by AJAX without navigation.
-  void AJAXSucceeded();
-
   // Called when the user interacts with the page after a load. This is a
   // signal to make autofilled values of password input elements accessible to
   // JavaScript.
@@ -170,8 +176,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   virtual bool FrameCanAccessPasswordManager();
 
  private:
-  class FormElementObserverCallback;
-
   // Ways to restrict which passwords are saved in ProvisionallySavePassword.
   enum ProvisionallySaveRestriction {
     RESTRICTION_NONE,
@@ -227,14 +231,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // RenderFrameObserver:
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
-  void FrameDetached() override;
   void DidStartProvisionalLoad(
       blink::WebDocumentLoader* document_loader) override;
   void WillCommitProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
-  void WillSendSubmitEvent(const blink::WebFormElement& form) override;
-  void WillSubmitForm(const blink::WebFormElement& form) override;
   void OnDestruct() override;
 
   // Scans the given frame for password forms and sends them up to the browser.
@@ -313,11 +314,14 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       base::Callback<void(blink::WebInputElement*)> registration_callback,
       RendererSavePasswordProgressLogger* logger);
 
-  // Helper function called when same-document navigation completed
-  void OnSameDocumentNavigationCompleted(
+  // Helper function called when form submission is successful.
+  void FireSubmissionIfFormDisappear(
       PasswordForm::SubmissionIndicatorEvent event);
 
-  const mojom::AutofillDriverPtr& GetAutofillDriver();
+  void OnFrameDetached();
+  void OnWillSubmitForm(const blink::WebFormElement& form);
+
+  void HidePopup();
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
@@ -365,7 +369,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // username predictions.
   UsernameDetectorCache username_detector_cache_;
 
-  AutofillAgent* autofill_agent_;  // Weak reference.
+  base::WeakPtr<AutofillAgent> autofill_agent_;
+
   PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -375,8 +380,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerDriverPtr password_manager_driver_;
 
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
-
-  blink::WebFormElementObserver* form_element_observer_;
 
   bool blacklisted_form_found_ = false;
 

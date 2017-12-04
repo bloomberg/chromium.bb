@@ -51,8 +51,6 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/WebKit/public/web/modules/password_manager/WebFormElementObserver.h"
-#include "third_party/WebKit/public/web/modules/password_manager/WebFormElementObserverCallback.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -61,7 +59,7 @@ namespace autofill {
 namespace {
 
 // The size above which we stop triggering autocomplete.
-static const size_t kMaximumTextSizeForAutocomplete = 1000;
+const size_t kMaximumTextSizeForAutocomplete = 1000;
 
 const char kDummyUsernameField[] = "anonymous_username";
 const char kDummyPasswordField[] = "anonymous_password";
@@ -563,28 +561,29 @@ bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
           password_manager::features::kEnableManualFallbacksFillingStandalone));
 }
 
-}  // namespace
-
-class PasswordAutofillAgent::FormElementObserverCallback
-    : public blink::WebFormElementObserverCallback {
- public:
-  explicit FormElementObserverCallback(PasswordAutofillAgent* agent)
-      : agent_(agent) {}
-  ~FormElementObserverCallback() override = default;
-
-  void ElementWasHiddenOrRemoved() override {
-    agent_->OnSameDocumentNavigationCompleted(
-        PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
+    FormTracker::Observer::SubmissionSource source) {
+  switch (source) {
+    case FormTracker::Observer::SubmissionSource::FRAME_DETACHED:
+      return PasswordForm::SubmissionIndicatorEvent::FRAME_DETACHED;
+    case FormTracker::Observer::SubmissionSource::SAME_DOCUMENT_NAVIGATION:
+      return PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+    case FormTracker::Observer::SubmissionSource::XHR_SUCCEEDED:
+      return PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED;
+    case FormTracker::Observer::SubmissionSource::DOM_MUTATION_AFTER_XHR:
+      return PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
+    default:
+      return PasswordForm::SubmissionIndicatorEvent::NONE;
   }
+}
 
- private:
-  PasswordAutofillAgent* agent_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormElementObserverCallback);
-};
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, public:
+
+const char kDebugAttributeForFormSignature[] = "form_signature";
+const char kDebugAttributeForFieldSignature[] = "field_signature";
 
 PasswordAutofillAgent::PasswordAutofillAgent(
     content::RenderFrame* render_frame,
@@ -597,17 +596,15 @@ PasswordAutofillAgent::PasswordAutofillAgent(
       was_password_autofilled_(false),
       sent_request_to_store_(false),
       checked_safe_browsing_reputation_(false),
-      binding_(this),
-      form_element_observer_(nullptr) {
+      binding_(this) {
   registry->AddInterface(
       base::Bind(&PasswordAutofillAgent::BindRequest, base::Unretained(this)));
 }
 
 PasswordAutofillAgent::~PasswordAutofillAgent() {
-  if (form_element_observer_) {
-    form_element_observer_->Disconnect();
-    form_element_observer_ = nullptr;
-  }
+  AutofillAgent* agent = autofill_agent_.get();
+  if (agent)
+    agent->RemoveFormObserver(this);
 }
 
 void PasswordAutofillAgent::BindRequest(
@@ -616,7 +613,11 @@ void PasswordAutofillAgent::BindRequest(
 }
 
 void PasswordAutofillAgent::SetAutofillAgent(AutofillAgent* autofill_agent) {
-  autofill_agent_ = autofill_agent;
+  AutofillAgent* agent = autofill_agent_.get();
+  if (agent)
+    agent->RemoveFormObserver(this);
+  autofill_agent_ = autofill_agent->GetWeakPtr();
+  autofill_agent->AddFormObserver(this);
 }
 
 void PasswordAutofillAgent::SetPasswordGenerationAgent(
@@ -942,7 +943,9 @@ bool PasswordAutofillAgent::ShowSuggestions(
       }
 
       if (ShouldShowNotSecureWarning(element)) {
-        autofill_agent_->ShowNotSecureWarning(element);
+        AutofillAgent* agent = autofill_agent_.get();
+        if (agent)
+          agent->ShowNotSecureWarning(element);
         return true;
       }
     }
@@ -1012,12 +1015,7 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
   SendPasswordForms(false /* only_visible */);
 }
 
-void PasswordAutofillAgent::AJAXSucceeded() {
-  OnSameDocumentNavigationCompleted(
-      PasswordForm::SubmissionIndicatorEvent::XHR_SUCCEEDED);
-}
-
-void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
+void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
     PasswordForm::SubmissionIndicatorEvent event) {
   if (!provisionally_saved_form_.IsPasswordValid())
     return;
@@ -1038,27 +1036,12 @@ void PasswordAutofillAgent::OnSameDocumentNavigationCompleted(
         (provisionally_saved_form_.form_element().IsNull() &&
          IsUnownedPasswordFormVisible(
              provisionally_saved_form_.input_element()))) {
-      if (!form_element_observer_) {
-        std::unique_ptr<FormElementObserverCallback> callback(
-            new FormElementObserverCallback(this));
-        if (!provisionally_saved_form_.form_element().IsNull()) {
-          form_element_observer_ = blink::WebFormElementObserver::Create(
-              provisionally_saved_form_.form_element(), std::move(callback));
-        } else if (!provisionally_saved_form_.input_element().IsNull()) {
-          form_element_observer_ = blink::WebFormElementObserver::Create(
-              provisionally_saved_form_.input_element(), std::move(callback));
-        }
-      }
       return;
     }
   }
 
   provisionally_saved_form_.SetSubmissionIndicatorEvent(event);
   GetPasswordManagerDriver()->InPageNavigation(password_form);
-  if (form_element_observer_) {
-    form_element_observer_->Disconnect();
-    form_element_observer_ = nullptr;
-  }
   provisionally_saved_form_.Reset();
 }
 
@@ -1222,15 +1205,12 @@ void PasswordAutofillAgent::WillCommitProvisionalLoad() {
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_new_navigation,
     bool is_same_document_navigation) {
-  if (is_same_document_navigation) {
-    OnSameDocumentNavigationCompleted(
-        PasswordForm::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
-  } else {
+  if (!is_same_document_navigation) {
     checked_safe_browsing_reputation_ = false;
   }
 }
 
-void PasswordAutofillAgent::FrameDetached() {
+void PasswordAutofillAgent::OnFrameDetached() {
   // If a sub frame has been destroyed while the user was entering information
   // into a password form, try to save the data. See https://crbug.com/450806
   // for examples of sites that perform login using this technique.
@@ -1245,26 +1225,8 @@ void PasswordAutofillAgent::FrameDetached() {
   FrameClosing();
 }
 
-void PasswordAutofillAgent::WillSendSubmitEvent(
+void PasswordAutofillAgent::OnWillSubmitForm(
     const blink::WebFormElement& form) {
-  // Forms submitted via XHR are not seen by WillSubmitForm if the default
-  // onsubmit handler is overridden. Such submission first gets detected in
-  // DidStartProvisionalLoad, which no longer knows about the particular form,
-  // and uses the candidate stored in |provisionally_saved_form_|.
-  //
-  // User-typed password will get stored to |provisionally_saved_form_| in
-  // TextDidChangeInTextField. Autofilled or JavaScript-copied passwords need to
-  // be saved here.
-  //
-  // Only non-empty passwords are saved here. Empty passwords were likely
-  // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
-  // Had the user cleared the password, |provisionally_saved_form_| would
-  // already have been updated in TextDidChangeInTextField.
-  ProvisionallySavePassword(form, blink::WebInputElement(),
-                            RESTRICTION_NON_EMPTY_PASSWORD);
-}
-
-void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(
@@ -1317,10 +1279,6 @@ void PasswordAutofillAgent::WillSubmitForm(const blink::WebFormElement& form) {
       }
     }
 
-    if (form_element_observer_) {
-      form_element_observer_->Disconnect();
-      form_element_observer_ = nullptr;
-    }
     provisionally_saved_form_.Reset();
   } else if (logger) {
     logger->LogMessage(Logger::STRING_FORM_IS_NOT_PASSWORD);
@@ -1351,6 +1309,15 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
   // This is a new navigation, so require a new user gesture before filling in
   // passwords.
   gatekeeper_.Reset();
+}
+
+void PasswordAutofillAgent::OnProbablyFormSubmitted() {
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
+  if (logging_state_active_) {
+    logger.reset(new RendererSavePasswordProgressLogger(
+        GetPasswordManagerDriver().get()));
+    logger->LogMessage(Logger::STRING_DID_START_PROVISIONAL_LOAD_METHOD);
+  }
 
   if (!FrameCanAccessPasswordManager()) {
     if (logger)
@@ -1358,82 +1325,63 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
     return;
   }
 
-  // Bug fix for crbug.com/368690. isProcessingUserGesture() is false when
-  // the user is performing actions outside the page (e.g. typed url,
-  // history navigation). We don't want to trigger saving in these cases.
-  content::DocumentState* document_state =
-      content::DocumentState::FromDocumentLoader(document_loader);
-  content::NavigationState* navigation_state =
-      document_state->navigation_state();
-  ui::PageTransition type = navigation_state->GetTransitionType();
-  if (ui::PageTransitionIsWebTriggerable(type) &&
-      ui::PageTransitionIsNewNavigation(type) &&
-      !blink::WebUserGestureIndicator::IsProcessingUserGesture(
-          navigated_frame)) {
-    // If onsubmit has been called, try and save that form.
-    if (provisionally_saved_form_.IsSet()) {
+  // If onsubmit has been called, try and save that form.
+  if (provisionally_saved_form_.IsSet()) {
+    if (logger) {
+      logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME,
+                              provisionally_saved_form_.password_form());
+    }
+    provisionally_saved_form_.SetSubmissionIndicatorEvent(
+        PasswordForm::SubmissionIndicatorEvent::
+            PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD);
+    GetPasswordManagerDriver()->PasswordFormSubmitted(
+        provisionally_saved_form_.password_form());
+    provisionally_saved_form_.Reset();
+  } else {
+    std::vector<std::unique_ptr<PasswordForm>> possible_submitted_forms;
+    // Loop through the forms on the page looking for one that has been
+    // filled out. If one exists, try and save the credentials.
+    blink::WebVector<blink::WebFormElement> forms;
+    render_frame()->GetWebFrame()->GetDocument().Forms(forms);
+
+    bool password_forms_found = false;
+    for (const auto& form_element : forms) {
       if (logger) {
-        logger->LogPasswordForm(
-            Logger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME,
-            provisionally_saved_form_.password_form());
+        LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE,
+                    form_element);
       }
-      provisionally_saved_form_.SetSubmissionIndicatorEvent(
-          PasswordForm::SubmissionIndicatorEvent::
-              PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD);
-      GetPasswordManagerDriver()->PasswordFormSubmitted(
-          provisionally_saved_form_.password_form());
-      if (form_element_observer_) {
-        form_element_observer_->Disconnect();
-        form_element_observer_ = nullptr;
-      }
-      provisionally_saved_form_.Reset();
-    } else {
-      std::vector<std::unique_ptr<PasswordForm>> possible_submitted_forms;
-      // Loop through the forms on the page looking for one that has been
-      // filled out. If one exists, try and save the credentials.
-      blink::WebVector<blink::WebFormElement> forms;
-      render_frame()->GetWebFrame()->GetDocument().Forms(forms);
-
-      bool password_forms_found = false;
-      for (size_t i = 0; i < forms.size(); ++i) {
-        blink::WebFormElement form_element = forms[i];
-        if (logger) {
-          LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE,
-                      form_element);
-        }
-        std::unique_ptr<PasswordForm> form =
-            GetPasswordFormFromWebForm(form_element);
-        if (form) {
-          form->submission_event = PasswordForm::SubmissionIndicatorEvent::
-              FILLED_FORM_ON_START_PROVISIONAL_LOAD;
-          possible_submitted_forms.push_back(std::move(form));
-        }
-      }
-
       std::unique_ptr<PasswordForm> form =
-          GetPasswordFormFromUnownedInputElements();
+          GetPasswordFormFromWebForm(form_element);
       if (form) {
         form->submission_event = PasswordForm::SubmissionIndicatorEvent::
-            FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
+            FILLED_FORM_ON_START_PROVISIONAL_LOAD;
         possible_submitted_forms.push_back(std::move(form));
       }
-
-      for (const auto& password_form : possible_submitted_forms) {
-        if (password_form && !password_form->username_value.empty() &&
-            FormContainsNonDefaultPasswordValue(*password_form)) {
-          password_forms_found = true;
-          if (logger) {
-            logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_FOUND_ON_PAGE,
-                                    *password_form);
-          }
-          GetPasswordManagerDriver()->PasswordFormSubmitted(*password_form);
-          break;
-        }
-      }
-
-      if (!password_forms_found && logger)
-        logger->LogMessage(Logger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE);
     }
+
+    std::unique_ptr<PasswordForm> form =
+        GetPasswordFormFromUnownedInputElements();
+    if (form) {
+      form->submission_event = PasswordForm::SubmissionIndicatorEvent::
+          FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD;
+      possible_submitted_forms.push_back(std::move(form));
+    }
+
+    for (const auto& password_form : possible_submitted_forms) {
+      if (password_form && !password_form->username_value.empty() &&
+          FormContainsNonDefaultPasswordValue(*password_form)) {
+        password_forms_found = true;
+        if (logger) {
+          logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_FOUND_ON_PAGE,
+                                  *password_form);
+        }
+        GetPasswordManagerDriver()->PasswordFormSubmitted(*password_form);
+        break;
+      }
+    }
+
+    if (!password_forms_found && logger)
+      logger->LogMessage(Logger::STRING_PASSWORD_FORM_NOT_FOUND_ON_PAGE);
   }
 }
 
@@ -1661,7 +1609,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   if (user_input.IsPasswordField() && !user_input.IsAutofilled() &&
       !user_input.Value().IsEmpty()) {
-    GetAutofillDriver()->HidePopup();
+    HidePopup();
     return false;
   }
 
@@ -1689,7 +1637,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 bool PasswordAutofillAgent::ShowManualFallbackSuggestion(
     const blink::WebInputElement& element) {
   if (!element.Value().IsEmpty()) {
-    GetAutofillDriver()->HidePopup();
+    HidePopup();
     return false;
   }
 
@@ -1707,10 +1655,6 @@ void PasswordAutofillAgent::FrameClosing() {
     password_to_username_.erase(iter.second.password_field);
   }
   web_input_to_password_info_.clear();
-  if (form_element_observer_) {
-    form_element_observer_->Disconnect();
-    form_element_observer_ = nullptr;
-  }
   provisionally_saved_form_.Reset();
   field_value_and_properties_map_.clear();
   username_detector_cache_.clear();
@@ -1918,9 +1862,54 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
       registration_callback, logger);
 }
 
-const mojom::AutofillDriverPtr& PasswordAutofillAgent::GetAutofillDriver() {
-  DCHECK(autofill_agent_);
-  return autofill_agent_->GetAutofillDriver();
+void PasswordAutofillAgent::OnProvisionallySaveForm(
+    const blink::WebFormElement& form,
+    const blink::WebInputElement& element,
+    ElementChangeSource source) {
+  if (source == ElementChangeSource::TEXTFIELD_CHANGED) {
+    // keeps track of all text changes even if it isn't displaying UI.
+    UpdateStateForTextChange(element);
+    return;
+  }
+
+  DCHECK_EQ(ElementChangeSource::WILL_SEND_SUBMIT_EVENT, source);
+  // Forms submitted via XHR are not seen by WillSubmitForm if the default
+  // onsubmit handler is overridden. Such submission first gets detected in
+  // DidStartProvisionalLoad, which no longer knows about the particular form,
+  // and uses the candidate stored in |provisionally_saved_form_|.
+  //
+  // User-typed password will get stored to |provisionally_saved_form_| in
+  // TextDidChangeInTextField. Autofilled or JavaScript-copied passwords need to
+  // be saved here.
+  //
+  // Only non-empty passwords are saved here. Empty passwords were likely
+  // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
+  // Had the user cleared the password, |provisionally_saved_form_| would
+  // already have been updated in TextDidChangeInTextField.
+  ProvisionallySavePassword(form, element, RESTRICTION_NON_EMPTY_PASSWORD);
+}
+
+void PasswordAutofillAgent::OnFormSubmitted(const blink::WebFormElement& form) {
+  OnWillSubmitForm(form);
+}
+
+void PasswordAutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
+  if (source == SubmissionSource::FRAME_DETACHED) {
+    OnFrameDetached();
+  } else {
+    PasswordForm::SubmissionIndicatorEvent event =
+        ToSubmissionIndicatorEvent(source);
+    if (event == PasswordForm::SubmissionIndicatorEvent::NONE)
+      return;
+    FireSubmissionIfFormDisappear(event);
+  }
+}
+
+void PasswordAutofillAgent::HidePopup() {
+  AutofillAgent* agent = autofill_agent_.get();
+  if (agent) {
+    autofill_agent_->GetAutofillDriver()->HidePopup();
+  }
 }
 
 const mojom::PasswordManagerDriverPtr&
