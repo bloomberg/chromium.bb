@@ -18,8 +18,8 @@ namespace net {
 // that saves messages to a buffer.
 class TestNetLog::Observer : public NetLog::ThreadSafeObserver {
  public:
-  Observer() {}
-  ~Observer() override {}
+  Observer() = default;
+  ~Observer() override = default;
 
   // Returns the list of all entries in the log.
   void GetEntries(TestNetLogEntry::List* entry_list) const {
@@ -110,8 +110,7 @@ BoundTestNetLog::BoundTestNetLog()
     : net_log_(NetLogWithSource::Make(&test_net_log_, NetLogSourceType::NONE)) {
 }
 
-BoundTestNetLog::~BoundTestNetLog() {
-}
+BoundTestNetLog::~BoundTestNetLog() = default;
 
 void BoundTestNetLog::GetEntries(TestNetLogEntry::List* entry_list) const {
   test_net_log_.GetEntries(entry_list);

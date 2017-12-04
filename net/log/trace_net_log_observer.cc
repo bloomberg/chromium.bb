@@ -30,7 +30,7 @@ class TracedValue : public base::trace_event::ConvertableToTraceFormat {
       : value_(std::move(value)) {}
 
  private:
-  ~TracedValue() override {}
+  ~TracedValue() override = default;
 
   void AppendAsTraceFormat(std::string* out) const override {
     if (value_) {

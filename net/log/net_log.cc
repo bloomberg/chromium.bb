@@ -108,8 +108,7 @@ void NetLog::ThreadSafeObserver::OnAddEntryData(
 NetLog::NetLog() : last_id_(0), is_capturing_(0) {
 }
 
-NetLog::~NetLog() {
-}
+NetLog::~NetLog() = default;
 
 void NetLog::AddGlobalEntry(NetLogEventType type) {
   AddEntry(type, NetLogSource(NetLogSourceType::NONE, NextID()),

@@ -58,12 +58,12 @@ NetLogEntryData::NetLogEntryData(
       time(time),
       parameters_callback(parameters_callback) {}
 
-NetLogEntryData::~NetLogEntryData() {}
+NetLogEntryData::~NetLogEntryData() = default;
 
 NetLogEntry::NetLogEntry(const NetLogEntryData* data,
                          NetLogCaptureMode capture_mode)
     : data_(data), capture_mode_(capture_mode) {}
 
-NetLogEntry::~NetLogEntry() {}
+NetLogEntry::~NetLogEntry() = default;
 
 }  // namespace net

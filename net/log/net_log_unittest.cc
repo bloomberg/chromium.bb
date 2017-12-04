@@ -126,7 +126,7 @@ class CountingObserver : public NetLog::ThreadSafeObserver {
 
 class LoggingObserver : public NetLog::ThreadSafeObserver {
  public:
-  LoggingObserver() {}
+  LoggingObserver() = default;
 
   ~LoggingObserver() override {
     if (net_log())
@@ -191,8 +191,8 @@ class NetLogTestThread : public base::SimpleThread {
 // A thread that adds a bunch of events to the NetLog.
 class AddEventsTestThread : public NetLogTestThread {
  public:
-  AddEventsTestThread() {}
-  ~AddEventsTestThread() override {}
+  AddEventsTestThread() = default;
+  ~AddEventsTestThread() override = default;
 
  private:
   void RunTestThread() override {
@@ -206,7 +206,7 @@ class AddEventsTestThread : public NetLogTestThread {
 // A thread that adds and removes an observer from the NetLog repeatedly.
 class AddRemoveObserverTestThread : public NetLogTestThread {
  public:
-  AddRemoveObserverTestThread() {}
+  AddRemoveObserverTestThread() = default;
 
   ~AddRemoveObserverTestThread() override { EXPECT_TRUE(!observer_.net_log()); }
 

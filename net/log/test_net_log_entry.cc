@@ -30,8 +30,7 @@ TestNetLogEntry::TestNetLogEntry(const TestNetLogEntry& entry) {
   *this = entry;
 }
 
-TestNetLogEntry::~TestNetLogEntry() {
-}
+TestNetLogEntry::~TestNetLogEntry() = default;
 
 TestNetLogEntry& TestNetLogEntry::operator=(const TestNetLogEntry& entry) {
   type = entry.type;
