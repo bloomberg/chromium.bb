@@ -70,6 +70,8 @@ source_set("reading_list_ui") {
     "reading_list_empty_collection_background.mm",
     "reading_list_toolbar.h",
     "reading_list_toolbar.mm",
+    "reading_list_toolbar_button.h",
+    "reading_list_toolbar_button.mm",
     "reading_list_view_controller.h",
     "reading_list_view_controller.mm",
     "text_badge_view.h",
