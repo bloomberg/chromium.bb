@@ -401,7 +401,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
       TestHooks* test_hooks) {
     return base::WrapUnique(new LayerTreeHostClientForTesting(test_hooks));
   }
-  ~LayerTreeHostClientForTesting() override {}
+  ~LayerTreeHostClientForTesting() override = default;
 
   void WillBeginMainFrame() override { test_hooks_->WillBeginMainFrame(); }
 

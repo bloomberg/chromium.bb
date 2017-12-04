@@ -24,7 +24,7 @@ FakeContentLayerClient::ImageData::ImageData(PaintImage img,
 
 FakeContentLayerClient::ImageData::ImageData(const ImageData& other) = default;
 
-FakeContentLayerClient::ImageData::~ImageData() {}
+FakeContentLayerClient::ImageData::~ImageData() = default;
 
 FakeContentLayerClient::FakeContentLayerClient()
     : fill_with_nonsolid_color_(false),
@@ -34,8 +34,7 @@ FakeContentLayerClient::FakeContentLayerClient()
       bounds_set_(false),
       contains_slow_paths_(false) {}
 
-FakeContentLayerClient::~FakeContentLayerClient() {
-}
+FakeContentLayerClient::~FakeContentLayerClient() = default;
 
 gfx::Rect FakeContentLayerClient::PaintableRegion() {
   CHECK(bounds_set_);

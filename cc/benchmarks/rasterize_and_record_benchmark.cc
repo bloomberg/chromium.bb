@@ -191,6 +191,6 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
 RasterizeAndRecordBenchmark::RecordResults::RecordResults()
     : pixels_recorded(0), bytes_used(0) {}
 
-RasterizeAndRecordBenchmark::RecordResults::~RecordResults() {}
+RasterizeAndRecordBenchmark::RecordResults::~RecordResults() = default;
 
 }  // namespace cc

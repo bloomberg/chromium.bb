@@ -79,7 +79,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
       paint_time_graph_(16.0, 48.0),
       fade_step_(0) {}
 
-HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
+HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

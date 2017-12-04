@@ -104,8 +104,7 @@ TilingSetRasterQueueAll::TilingSetRasterQueueAll(
     AdvanceToNextStage();
 }
 
-TilingSetRasterQueueAll::~TilingSetRasterQueueAll() {
-}
+TilingSetRasterQueueAll::~TilingSetRasterQueueAll() = default;
 
 void TilingSetRasterQueueAll::MakeTilingIterator(IteratorType type,
                                                  PictureLayerTiling* tiling) {
@@ -376,8 +375,7 @@ TilingSetRasterQueueAll::TilingIterator::TilingIterator(
   current_tile_ = *visible_iterator_;
 }
 
-TilingSetRasterQueueAll::TilingIterator::~TilingIterator() {
-}
+TilingSetRasterQueueAll::TilingIterator::~TilingIterator() = default;
 
 void TilingSetRasterQueueAll::TilingIterator::AdvancePhase() {
   DCHECK_LT(phase_, Phase::EVENTUALLY_RECT);

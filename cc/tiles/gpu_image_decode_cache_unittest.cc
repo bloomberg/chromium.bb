@@ -178,7 +178,7 @@ class DiscardableTextureMockContextProvider : public TestContextProvider {
   }
 
  private:
-  ~DiscardableTextureMockContextProvider() override {}
+  ~DiscardableTextureMockContextProvider() override = default;
   DiscardableTextureMockContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,

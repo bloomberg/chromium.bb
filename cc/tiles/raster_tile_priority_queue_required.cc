@@ -28,11 +28,9 @@ void AppendTilingSetRequiredQueues(
 
 }  // namespace
 
-RasterTilePriorityQueueRequired::RasterTilePriorityQueueRequired() {
-}
+RasterTilePriorityQueueRequired::RasterTilePriorityQueueRequired() = default;
 
-RasterTilePriorityQueueRequired::~RasterTilePriorityQueueRequired() {
-}
+RasterTilePriorityQueueRequired::~RasterTilePriorityQueueRequired() = default;
 
 void RasterTilePriorityQueueRequired::Build(
     const std::vector<PictureLayerImpl*>& active_layers,

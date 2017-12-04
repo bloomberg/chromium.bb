@@ -84,15 +84,15 @@ void TaskState::DidCancel() {
   value_ = Value::CANCELED;
 }
 
-Task::Task() {}
+Task::Task() = default;
 
-Task::~Task() {}
+Task::~Task() = default;
 
-TaskGraph::TaskGraph() {}
+TaskGraph::TaskGraph() = default;
 
 TaskGraph::TaskGraph(TaskGraph&& other) = default;
 
-TaskGraph::~TaskGraph() {}
+TaskGraph::~TaskGraph() = default;
 
 TaskGraph::Node::Node(scoped_refptr<Task> task,
                       uint16_t category,

@@ -11,6 +11,6 @@ DrawProperties::DrawProperties()
       screen_space_transform_is_animating(false),
       is_clipped(false) {}
 
-DrawProperties::~DrawProperties() {}
+DrawProperties::~DrawProperties() = default;
 
 }  // namespace cc

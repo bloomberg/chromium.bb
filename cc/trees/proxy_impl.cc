@@ -88,7 +88,7 @@ ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
 ProxyImpl::BlockedMainCommitOnly::BlockedMainCommitOnly()
     : layer_tree_host(nullptr) {}
 
-ProxyImpl::BlockedMainCommitOnly::~BlockedMainCommitOnly() {}
+ProxyImpl::BlockedMainCommitOnly::~BlockedMainCommitOnly() = default;
 
 ProxyImpl::~ProxyImpl() {
   TRACE_EVENT0("cc", "ProxyImpl::~ProxyImpl");

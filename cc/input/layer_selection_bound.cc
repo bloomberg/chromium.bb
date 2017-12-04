@@ -10,8 +10,7 @@ namespace cc {
 LayerSelectionBound::LayerSelectionBound()
     : type(gfx::SelectionBound::EMPTY), layer_id(0), hidden(false) {}
 
-LayerSelectionBound::~LayerSelectionBound() {
-}
+LayerSelectionBound::~LayerSelectionBound() = default;
 
 bool LayerSelectionBound::operator==(const LayerSelectionBound& other) const {
   return type == other.type && layer_id == other.layer_id &&

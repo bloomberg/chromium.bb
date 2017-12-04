@@ -190,7 +190,7 @@ OverlayCandidate::OverlayCandidate()
 
 OverlayCandidate::OverlayCandidate(const OverlayCandidate& other) = default;
 
-OverlayCandidate::~OverlayCandidate() {}
+OverlayCandidate::~OverlayCandidate() = default;
 
 // static
 bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
@@ -365,7 +365,7 @@ bool OverlayCandidate::FromStreamVideoQuad(
   return true;
 }
 
-OverlayCandidateList::OverlayCandidateList() {}
+OverlayCandidateList::OverlayCandidateList() = default;
 
 OverlayCandidateList::OverlayCandidateList(const OverlayCandidateList& other) =
     default;
@@ -373,7 +373,7 @@ OverlayCandidateList::OverlayCandidateList(const OverlayCandidateList& other) =
 OverlayCandidateList::OverlayCandidateList(OverlayCandidateList&& other) =
     default;
 
-OverlayCandidateList::~OverlayCandidateList() {}
+OverlayCandidateList::~OverlayCandidateList() = default;
 
 OverlayCandidateList& OverlayCandidateList::operator=(
     const OverlayCandidateList& other) = default;

@@ -218,7 +218,7 @@ class TestMailboxHolder : public TextureLayer::TransferableResourceHolder {
   using TextureLayer::TransferableResourceHolder::Create;
 
  protected:
-  ~TestMailboxHolder() override {}
+  ~TestMailboxHolder() override = default;
 };
 
 class TextureLayerWithResourceTest : public TextureLayerTest {

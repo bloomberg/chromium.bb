@@ -40,7 +40,7 @@ EffectTreeLayerListIterator::EffectTreeLayerListIterator(
 EffectTreeLayerListIterator::EffectTreeLayerListIterator(
     const EffectTreeLayerListIterator& iterator) = default;
 
-EffectTreeLayerListIterator::~EffectTreeLayerListIterator() {}
+EffectTreeLayerListIterator::~EffectTreeLayerListIterator() = default;
 
 void EffectTreeLayerListIterator::operator++() {
   switch (state_) {

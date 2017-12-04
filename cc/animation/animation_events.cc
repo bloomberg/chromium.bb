@@ -50,11 +50,11 @@ AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
   return *this;
 }
 
-AnimationEvent::~AnimationEvent() {}
+AnimationEvent::~AnimationEvent() = default;
 
-AnimationEvents::AnimationEvents() {}
+AnimationEvents::AnimationEvents() = default;
 
-AnimationEvents::~AnimationEvents() {}
+AnimationEvents::~AnimationEvents() = default;
 
 bool AnimationEvents::IsEmpty() const {
   return events_.empty();

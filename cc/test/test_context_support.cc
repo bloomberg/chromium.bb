@@ -17,7 +17,7 @@ namespace cc {
 TestContextSupport::TestContextSupport()
     : out_of_order_callbacks_(false), weak_ptr_factory_(this) {}
 
-TestContextSupport::~TestContextSupport() {}
+TestContextSupport::~TestContextSupport() = default;
 
 void TestContextSupport::FlushPendingWork() {}
 

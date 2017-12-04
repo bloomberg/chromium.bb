@@ -19,8 +19,7 @@ UniqueNotifier::UniqueNotifier(base::SequencedTaskRunner* task_runner,
       weak_ptr_factory_(this) {
 }
 
-UniqueNotifier::~UniqueNotifier() {
-}
+UniqueNotifier::~UniqueNotifier() = default;
 
 void UniqueNotifier::Cancel() {
   base::AutoLock hold(lock_);

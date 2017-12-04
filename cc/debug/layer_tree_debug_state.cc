@@ -29,7 +29,7 @@ LayerTreeDebugState::LayerTreeDebugState()
 LayerTreeDebugState::LayerTreeDebugState(const LayerTreeDebugState& other) =
     default;
 
-LayerTreeDebugState::~LayerTreeDebugState() {}
+LayerTreeDebugState::~LayerTreeDebugState() = default;
 
 void LayerTreeDebugState::SetRecordRenderingStats(bool enabled) {
   record_rendering_stats_ = enabled;

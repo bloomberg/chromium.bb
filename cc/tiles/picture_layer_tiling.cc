@@ -65,8 +65,7 @@ PictureLayerTiling::PictureLayerTiling(
   tiling_data_.SetMaxTextureSize(tile_size);
 }
 
-PictureLayerTiling::~PictureLayerTiling() {
-}
+PictureLayerTiling::~PictureLayerTiling() = default;
 
 Tile* PictureLayerTiling::CreateTile(const Tile::CreateInfo& info) {
   const int i = info.tiling_i_index;
@@ -428,8 +427,7 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
   ++(*this);
 }
 
-PictureLayerTiling::CoverageIterator::~CoverageIterator() {
-}
+PictureLayerTiling::CoverageIterator::~CoverageIterator() = default;
 
 PictureLayerTiling::CoverageIterator&
 PictureLayerTiling::CoverageIterator::operator++() {

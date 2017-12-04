@@ -9,7 +9,7 @@
 
 namespace cc {
 
-SwapPromiseManager::SwapPromiseManager() {}
+SwapPromiseManager::SwapPromiseManager() = default;
 
 SwapPromiseManager::~SwapPromiseManager() {
   DCHECK(swap_promise_monitors_.empty());

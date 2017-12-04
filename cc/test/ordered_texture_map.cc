@@ -13,9 +13,9 @@
 
 namespace cc {
 
-OrderedTextureMap::OrderedTextureMap() {}
+OrderedTextureMap::OrderedTextureMap() = default;
 
-OrderedTextureMap::~OrderedTextureMap() {}
+OrderedTextureMap::~OrderedTextureMap() = default;
 
 void OrderedTextureMap::Append(GLuint id,
                                scoped_refptr<TestTexture> texture) {

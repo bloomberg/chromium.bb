@@ -59,7 +59,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(
         MainThreadScrollingReason::kScrollbarScrolling);
 }
 
-PaintedScrollbarLayer::~PaintedScrollbarLayer() {}
+PaintedScrollbarLayer::~PaintedScrollbarLayer() = default;
 
 void PaintedScrollbarLayer::SetScrollElementId(ElementId element_id) {
   if (element_id == scroll_element_id_)

@@ -36,8 +36,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
       twin_tiling_(nullptr),
       has_valid_tile_priorities_(true) {}
 
-FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
-}
+FakePictureLayerTilingClient::~FakePictureLayerTilingClient() = default;
 
 std::unique_ptr<Tile> FakePictureLayerTilingClient::CreateTile(
     const Tile::CreateInfo& info) {

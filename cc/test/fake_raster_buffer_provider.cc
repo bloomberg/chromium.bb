@@ -6,9 +6,9 @@
 
 namespace cc {
 
-FakeRasterBufferProviderImpl::FakeRasterBufferProviderImpl() {}
+FakeRasterBufferProviderImpl::FakeRasterBufferProviderImpl() = default;
 
-FakeRasterBufferProviderImpl::~FakeRasterBufferProviderImpl() {}
+FakeRasterBufferProviderImpl::~FakeRasterBufferProviderImpl() = default;
 
 std::unique_ptr<RasterBuffer>
 FakeRasterBufferProviderImpl::AcquireBufferForRaster(

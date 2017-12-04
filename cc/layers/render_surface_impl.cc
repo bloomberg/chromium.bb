@@ -47,7 +47,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl,
   damage_tracker_ = DamageTracker::Create();
 }
 
-RenderSurfaceImpl::~RenderSurfaceImpl() {}
+RenderSurfaceImpl::~RenderSurfaceImpl() = default;
 
 RenderSurfaceImpl* RenderSurfaceImpl::render_target() {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
@@ -73,7 +73,7 @@ RenderSurfaceImpl::DrawProperties::DrawProperties() {
   is_clipped = false;
 }
 
-RenderSurfaceImpl::DrawProperties::~DrawProperties() {}
+RenderSurfaceImpl::DrawProperties::~DrawProperties() = default;
 
 gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   if (content_rect().IsEmpty())

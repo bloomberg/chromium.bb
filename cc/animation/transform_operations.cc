@@ -30,8 +30,7 @@ TransformOperations::TransformOperations(const TransformOperations& other) {
   }
 }
 
-TransformOperations::~TransformOperations() {
-}
+TransformOperations::~TransformOperations() = default;
 
 TransformOperations& TransformOperations::operator=(
     const TransformOperations& other) {

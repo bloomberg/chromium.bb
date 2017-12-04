@@ -83,11 +83,9 @@ void CreateTilingSetRasterQueues(
 
 }  // namespace
 
-RasterTilePriorityQueueAll::RasterTilePriorityQueueAll() {
-}
+RasterTilePriorityQueueAll::RasterTilePriorityQueueAll() = default;
 
-RasterTilePriorityQueueAll::~RasterTilePriorityQueueAll() {
-}
+RasterTilePriorityQueueAll::~RasterTilePriorityQueueAll() = default;
 
 void RasterTilePriorityQueueAll::Build(
     const std::vector<PictureLayerImpl*>& active_layers,

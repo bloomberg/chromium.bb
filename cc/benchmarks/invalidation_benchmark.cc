@@ -61,7 +61,7 @@ InvalidationBenchmark::InvalidationBenchmark(
   }
 }
 
-InvalidationBenchmark::~InvalidationBenchmark() {}
+InvalidationBenchmark::~InvalidationBenchmark() = default;
 
 void InvalidationBenchmark::DidUpdateLayers(LayerTreeHost* layer_tree_host) {
   LayerTreeHostCommon::CallFunctionForEveryLayer(

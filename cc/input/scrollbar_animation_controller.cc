@@ -85,7 +85,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       thinning_duration);
 }
 
-ScrollbarAnimationController::~ScrollbarAnimationController() {}
+ScrollbarAnimationController::~ScrollbarAnimationController() = default;
 
 ScrollbarSet ScrollbarAnimationController::Scrollbars() const {
   return client_->ScrollbarsFor(scroll_element_id_);

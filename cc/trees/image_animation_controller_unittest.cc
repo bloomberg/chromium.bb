@@ -15,8 +15,8 @@ namespace cc {
 
 class FakeAnimationDriver : public ImageAnimationController::AnimationDriver {
  public:
-  FakeAnimationDriver() {}
-  ~FakeAnimationDriver() override {}
+  FakeAnimationDriver() = default;
+  ~FakeAnimationDriver() override = default;
 
   void set_should_animate(bool should_animate) {
     should_animate_ = should_animate;

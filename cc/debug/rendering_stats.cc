@@ -6,14 +6,12 @@
 
 namespace cc {
 
-RenderingStats::TimeDeltaList::TimeDeltaList() {
-}
+RenderingStats::TimeDeltaList::TimeDeltaList() = default;
 
 RenderingStats::TimeDeltaList::TimeDeltaList(const TimeDeltaList& other) =
     default;
 
-RenderingStats::TimeDeltaList::~TimeDeltaList() {
-}
+RenderingStats::TimeDeltaList::~TimeDeltaList() = default;
 
 void RenderingStats::TimeDeltaList::Append(base::TimeDelta value) {
   values.push_back(value);
@@ -47,8 +45,7 @@ RenderingStats::RenderingStats()
 
 RenderingStats::RenderingStats(const RenderingStats& other) = default;
 
-RenderingStats::~RenderingStats() {
-}
+RenderingStats::~RenderingStats() = default;
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 RenderingStats::AsTraceableData() const {

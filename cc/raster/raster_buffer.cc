@@ -6,10 +6,8 @@
 
 namespace cc {
 
-RasterBuffer::RasterBuffer() {
-}
+RasterBuffer::RasterBuffer() = default;
 
-RasterBuffer::~RasterBuffer() {
-}
+RasterBuffer::~RasterBuffer() = default;
 
 }  // namespace cc

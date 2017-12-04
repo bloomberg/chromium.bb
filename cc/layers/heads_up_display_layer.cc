@@ -27,7 +27,7 @@ HeadsUpDisplayLayer::HeadsUpDisplayLayer()
   UpdateDrawsContent(HasDrawableContent());
 }
 
-HeadsUpDisplayLayer::~HeadsUpDisplayLayer() {}
+HeadsUpDisplayLayer::~HeadsUpDisplayLayer() = default;
 
 void HeadsUpDisplayLayer::PrepareForCalculateDrawProperties(
     const gfx::Size& device_viewport, float device_scale_factor) {

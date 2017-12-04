@@ -29,7 +29,7 @@ MicroBenchmarkImpl::MicroBenchmarkImpl(
       is_done_(false),
       origin_task_runner_(origin_task_runner) {}
 
-MicroBenchmarkImpl::~MicroBenchmarkImpl() {}
+MicroBenchmarkImpl::~MicroBenchmarkImpl() = default;
 
 bool MicroBenchmarkImpl::IsDone() const {
   return is_done_;

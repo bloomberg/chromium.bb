@@ -19,7 +19,7 @@ class TestNotifier : public DelayedUniqueNotifier {
                const base::Closure& closure,
                const base::TimeDelta& delay)
       : DelayedUniqueNotifier(task_runner, closure, delay) {}
-  ~TestNotifier() override {}
+  ~TestNotifier() override = default;
 
   // Overridden from DelayedUniqueNotifier:
   base::TimeTicks Now() const override { return now_; }

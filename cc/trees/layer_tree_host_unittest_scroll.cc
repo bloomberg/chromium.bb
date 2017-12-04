@@ -1117,7 +1117,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScroll);
 class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     : public LayerTreeHostScrollTest {
  public:
-  LayerTreeHostScrollTestScrollZeroMaxScrollOffset() {}
+  LayerTreeHostScrollTestScrollZeroMaxScrollOffset() = default;
 
   void BeginTest() override {
     outer_viewport_container_layer_id_ =
@@ -1190,7 +1190,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostScrollTestScrollNonDrawnLayer
     : public LayerTreeHostScrollTest {
  public:
-  LayerTreeHostScrollTestScrollNonDrawnLayer() {}
+  LayerTreeHostScrollTestScrollNonDrawnLayer() = default;
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -1240,7 +1240,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollNonDrawnLayer);
 class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
     : public LayerTreeHostScrollTest {
  public:
-  LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent() {}
+  LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent() = default;
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -1861,7 +1861,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollAbortedCommitMFBA);
 
 class MockInputHandlerClient : public InputHandlerClient {
  public:
-  MockInputHandlerClient() {}
+  MockInputHandlerClient() = default;
 
   MOCK_METHOD0(ReconcileElasticOverscrollAndRootScroll, void());
 

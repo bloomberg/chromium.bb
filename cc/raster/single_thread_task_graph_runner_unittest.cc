@@ -11,7 +11,7 @@ namespace {
 
 class SingleThreadTaskGraphRunnerTestDelegate {
  public:
-  SingleThreadTaskGraphRunnerTestDelegate() {}
+  SingleThreadTaskGraphRunnerTestDelegate() = default;
 
   void StartTaskGraphRunner() {
     single_thread_task_graph_runner_.Start(

@@ -22,12 +22,12 @@ namespace {
 
 class LayerWithForcedDrawsContent : public Layer {
  public:
-  LayerWithForcedDrawsContent() {}
+  LayerWithForcedDrawsContent() = default;
 
   bool DrawsContent() const override;
 
  private:
-  ~LayerWithForcedDrawsContent() override {}
+  ~LayerWithForcedDrawsContent() override = default;
 };
 
 bool LayerWithForcedDrawsContent::DrawsContent() const {

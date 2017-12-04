@@ -26,8 +26,8 @@ class DrawsContentLayer : public Layer {
   bool DrawsContent() const override { return true; }
 
  private:
-  DrawsContentLayer() {}
-  ~DrawsContentLayer() override {}
+  DrawsContentLayer() = default;
+  ~DrawsContentLayer() override = default;
 };
 
 class HudWithRootLayerChange : public HeadsUpDisplayTest {

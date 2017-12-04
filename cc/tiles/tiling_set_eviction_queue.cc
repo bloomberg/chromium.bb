@@ -28,8 +28,7 @@ TilingSetEvictionQueue::TilingSetEvictionQueue(
   current_tile_ = *eventually_iterator_;
 }
 
-TilingSetEvictionQueue::~TilingSetEvictionQueue() {
-}
+TilingSetEvictionQueue::~TilingSetEvictionQueue() = default;
 
 void TilingSetEvictionQueue::GenerateTilingOrder(
     PictureLayerTilingSet* tiling_set) {

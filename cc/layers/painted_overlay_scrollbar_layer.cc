@@ -47,7 +47,7 @@ PaintedOverlayScrollbarLayer::PaintedOverlayScrollbarLayer(
   DCHECK(scrollbar_->UsesNinePatchThumbResource());
 }
 
-PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() {}
+PaintedOverlayScrollbarLayer::~PaintedOverlayScrollbarLayer() = default;
 
 void PaintedOverlayScrollbarLayer::SetScrollElementId(ElementId element_id) {
   if (element_id == scroll_element_id_)

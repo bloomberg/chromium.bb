@@ -48,7 +48,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
       track_start_(0),
       track_length_(0) {}
 
-PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() {}
+PaintedScrollbarLayerImpl::~PaintedScrollbarLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> PaintedScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

@@ -19,7 +19,7 @@ MicroBenchmarkControllerImpl::MicroBenchmarkControllerImpl(
   DCHECK(host_);
 }
 
-MicroBenchmarkControllerImpl::~MicroBenchmarkControllerImpl() {}
+MicroBenchmarkControllerImpl::~MicroBenchmarkControllerImpl() = default;
 
 void MicroBenchmarkControllerImpl::ScheduleRun(
     std::unique_ptr<MicroBenchmarkImpl> benchmark) {

@@ -14,7 +14,7 @@ namespace cc {
 CCTestSuite::CCTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {}
 
-CCTestSuite::~CCTestSuite() {}
+CCTestSuite::~CCTestSuite() = default;
 
 void CCTestSuite::Initialize() {
   base::TestSuite::Initialize();

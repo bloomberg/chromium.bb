@@ -15,7 +15,7 @@ UnittestOnlyBenchmarkImpl::UnittestOnlyBenchmarkImpl(
     const DoneCallback& callback)
     : MicroBenchmarkImpl(callback, origin_task_runner) {}
 
-UnittestOnlyBenchmarkImpl::~UnittestOnlyBenchmarkImpl() {}
+UnittestOnlyBenchmarkImpl::~UnittestOnlyBenchmarkImpl() = default;
 
 void UnittestOnlyBenchmarkImpl::DidCompleteCommit(LayerTreeHostImpl* host) {
   NotifyDone(nullptr);

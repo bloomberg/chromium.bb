@@ -11,13 +11,13 @@ namespace {
 
 class FakeTaskImpl : public Task {
  public:
-  FakeTaskImpl() {}
+  FakeTaskImpl() = default;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
 
  private:
-  ~FakeTaskImpl() override {}
+  ~FakeTaskImpl() override = default;
   DISALLOW_COPY_AND_ASSIGN(FakeTaskImpl);
 };
 

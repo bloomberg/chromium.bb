@@ -14,7 +14,7 @@ FakeUIResourceLayerTreeHostImpl::FakeUIResourceLayerTreeHostImpl(
     TaskGraphRunner* task_graph_runner)
     : FakeLayerTreeHostImpl(task_runner_provider, task_graph_runner) {}
 
-FakeUIResourceLayerTreeHostImpl::~FakeUIResourceLayerTreeHostImpl() {}
+FakeUIResourceLayerTreeHostImpl::~FakeUIResourceLayerTreeHostImpl() = default;
 
 void FakeUIResourceLayerTreeHostImpl::CreateUIResource(
     UIResourceId uid,

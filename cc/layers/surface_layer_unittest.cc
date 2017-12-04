@@ -78,7 +78,7 @@ class SurfaceLayerTest : public testing::Test {
 class MockSurfaceReferenceFactory
     : public viz::SequenceSurfaceReferenceFactory {
  public:
-  MockSurfaceReferenceFactory() {}
+  MockSurfaceReferenceFactory() = default;
 
   // SequenceSurfaceReferenceFactory implementation.
   MOCK_CONST_METHOD1(SatisfySequence, void(const viz::SurfaceSequence&));

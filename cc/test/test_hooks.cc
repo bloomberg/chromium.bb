@@ -6,9 +6,9 @@
 
 namespace cc {
 
-TestHooks::TestHooks() {}
+TestHooks::TestHooks() = default;
 
-TestHooks::~TestHooks() {}
+TestHooks::~TestHooks() = default;
 
 DrawResult TestHooks::PrepareToDrawOnThread(
     LayerTreeHostImpl* host_impl,

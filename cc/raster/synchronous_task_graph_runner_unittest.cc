@@ -11,7 +11,7 @@ namespace {
 
 class SynchronousTaskGraphRunnerTestDelegate {
  public:
-  SynchronousTaskGraphRunnerTestDelegate() {}
+  SynchronousTaskGraphRunnerTestDelegate() = default;
 
   void StartTaskGraphRunner() {}
 

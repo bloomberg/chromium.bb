@@ -84,7 +84,7 @@ class MockLayer : public Layer {
  private:
   explicit MockLayer(std::vector<int>* layer_impl_destruction_list)
       : layer_impl_destruction_list_(layer_impl_destruction_list) {}
-  ~MockLayer() override {}
+  ~MockLayer() override = default;
 
   std::vector<int>* layer_impl_destruction_list_;
 };

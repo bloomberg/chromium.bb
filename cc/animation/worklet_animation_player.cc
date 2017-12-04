@@ -17,7 +17,7 @@ WorkletAnimationPlayer::WorkletAnimationPlayer(
       name_(name),
       scroll_timeline_(std::move(scroll_timeline)) {}
 
-WorkletAnimationPlayer::~WorkletAnimationPlayer() {}
+WorkletAnimationPlayer::~WorkletAnimationPlayer() = default;
 
 scoped_refptr<WorkletAnimationPlayer> WorkletAnimationPlayer::Create(
     int id,

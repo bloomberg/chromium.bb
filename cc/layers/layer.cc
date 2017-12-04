@@ -68,7 +68,7 @@ Layer::Inputs::Inputs(int layer_id)
       client(nullptr),
       overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto) {}
 
-Layer::Inputs::~Inputs() {}
+Layer::Inputs::~Inputs() = default;
 
 scoped_refptr<Layer> Layer::Create() {
   return base::WrapRefCounted(new Layer());

@@ -12,8 +12,7 @@ BeginFrameTracker::BeginFrameTracker(const base::Location& location)
       current_finished_at_(base::TimeTicks() +
                            base::TimeDelta::FromMicroseconds(-1)) {}
 
-BeginFrameTracker::~BeginFrameTracker() {
-}
+BeginFrameTracker::~BeginFrameTracker() = default;
 
 void BeginFrameTracker::Start(viz::BeginFrameArgs new_args) {
   // Trace the frame time being passed between BeginFrameTrackers.

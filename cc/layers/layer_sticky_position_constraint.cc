@@ -22,24 +22,7 @@ LayerStickyPositionConstraint::LayerStickyPositionConstraint()
       nearest_element_shifting_containing_block(kInvalidElementId) {}
 
 LayerStickyPositionConstraint::LayerStickyPositionConstraint(
-    const LayerStickyPositionConstraint& other)
-    : is_sticky(other.is_sticky),
-      is_anchored_left(other.is_anchored_left),
-      is_anchored_right(other.is_anchored_right),
-      is_anchored_top(other.is_anchored_top),
-      is_anchored_bottom(other.is_anchored_bottom),
-      left_offset(other.left_offset),
-      right_offset(other.right_offset),
-      top_offset(other.top_offset),
-      bottom_offset(other.bottom_offset),
-      scroll_container_relative_sticky_box_rect(
-          other.scroll_container_relative_sticky_box_rect),
-      scroll_container_relative_containing_block_rect(
-          other.scroll_container_relative_containing_block_rect),
-      nearest_element_shifting_sticky_box(
-          other.nearest_element_shifting_sticky_box),
-      nearest_element_shifting_containing_block(
-          other.nearest_element_shifting_containing_block) {}
+    const LayerStickyPositionConstraint& other) = default;
 
 bool LayerStickyPositionConstraint::operator==(
     const LayerStickyPositionConstraint& other) const {

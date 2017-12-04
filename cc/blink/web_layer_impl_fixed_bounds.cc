@@ -13,15 +13,13 @@ using cc::Layer;
 
 namespace cc_blink {
 
-WebLayerImplFixedBounds::WebLayerImplFixedBounds() {
-}
+WebLayerImplFixedBounds::WebLayerImplFixedBounds() = default;
 
 WebLayerImplFixedBounds::WebLayerImplFixedBounds(scoped_refptr<Layer> layer)
     : WebLayerImpl(layer) {
 }
 
-WebLayerImplFixedBounds::~WebLayerImplFixedBounds() {
-}
+WebLayerImplFixedBounds::~WebLayerImplFixedBounds() = default;
 
 void WebLayerImplFixedBounds::InvalidateRect(const blink::WebRect& rect) {
   // Partial invalidations seldom occur for such layers.

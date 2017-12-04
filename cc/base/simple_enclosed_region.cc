@@ -24,8 +24,7 @@ SimpleEnclosedRegion::SimpleEnclosedRegion(const Region& region) {
     Union(it.rect());
 }
 
-SimpleEnclosedRegion::~SimpleEnclosedRegion() {
-}
+SimpleEnclosedRegion::~SimpleEnclosedRegion() = default;
 
 void SimpleEnclosedRegion::Subtract(const gfx::Rect& sub_rect) {
   // We want to keep as much of the current rect as we can, so find the one

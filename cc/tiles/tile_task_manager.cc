@@ -9,9 +9,9 @@
 
 namespace cc {
 
-TileTaskManager::TileTaskManager() {}
+TileTaskManager::TileTaskManager() = default;
 
-TileTaskManager::~TileTaskManager() {}
+TileTaskManager::~TileTaskManager() = default;
 
 // static
 std::unique_ptr<TileTaskManagerImpl> TileTaskManagerImpl::Create(
@@ -24,7 +24,7 @@ TileTaskManagerImpl::TileTaskManagerImpl(TaskGraphRunner* task_graph_runner)
     : task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GenerateNamespaceToken()) {}
 
-TileTaskManagerImpl::~TileTaskManagerImpl() {}
+TileTaskManagerImpl::~TileTaskManagerImpl() = default;
 
 void TileTaskManagerImpl::ScheduleTasks(TaskGraph* graph) {
   TRACE_EVENT0("cc", "TileTaskManagerImpl::ScheduleTasks");

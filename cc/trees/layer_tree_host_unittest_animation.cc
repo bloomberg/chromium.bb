@@ -779,7 +779,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestScrollOffsetAnimationTakeover() {}
+  LayerTreeHostAnimationTestScrollOffsetAnimationTakeover() = default;
 
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();
@@ -839,7 +839,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
 class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted() {}
+  LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted() = default;
 
   void SetupTree() override {
     LayerTreeHostAnimationTest::SetupTree();

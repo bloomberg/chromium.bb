@@ -11,11 +11,9 @@
 
 namespace cc {
 
-TestImageFactory::TestImageFactory() {
-}
+TestImageFactory::TestImageFactory() = default;
 
-TestImageFactory::~TestImageFactory() {
-}
+TestImageFactory::~TestImageFactory() = default;
 
 scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,

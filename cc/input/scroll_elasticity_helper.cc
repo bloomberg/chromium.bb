@@ -32,8 +32,7 @@ ScrollElasticityHelperImpl::ScrollElasticityHelperImpl(
     LayerTreeHostImpl* layer_tree)
     : host_impl_(layer_tree) {}
 
-ScrollElasticityHelperImpl::~ScrollElasticityHelperImpl() {
-}
+ScrollElasticityHelperImpl::~ScrollElasticityHelperImpl() = default;
 
 bool ScrollElasticityHelperImpl::IsUserScrollable() const {
   const auto* scroll_node = host_impl_->OuterViewportScrollNode();

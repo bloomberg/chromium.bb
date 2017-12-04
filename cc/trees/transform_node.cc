@@ -119,7 +119,7 @@ TransformCachedNodeData::TransformCachedNodeData()
 TransformCachedNodeData::TransformCachedNodeData(
     const TransformCachedNodeData& other) = default;
 
-TransformCachedNodeData::~TransformCachedNodeData() {}
+TransformCachedNodeData::~TransformCachedNodeData() = default;
 
 bool TransformCachedNodeData::operator==(
     const TransformCachedNodeData& other) const {

@@ -35,7 +35,7 @@ LayerTreePixelTest::LayerTreePixelTest()
       test_type_(PIXEL_TEST_GL),
       pending_texture_mailbox_callbacks_(0) {}
 
-LayerTreePixelTest::~LayerTreePixelTest() {}
+LayerTreePixelTest::~LayerTreePixelTest() = default;
 
 std::unique_ptr<viz::TestLayerTreeFrameSink>
 LayerTreePixelTest::CreateLayerTreeFrameSink(

@@ -16,7 +16,7 @@ ScrollState::ScrollState(ScrollStateData data)
 
 ScrollState::ScrollState(const ScrollState& other) = default;
 
-ScrollState::~ScrollState() {}
+ScrollState::~ScrollState() = default;
 
 void ScrollState::ConsumeDelta(double x, double y) {
   data_.delta_x -= x;

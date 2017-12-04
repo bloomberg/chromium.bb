@@ -36,7 +36,7 @@ class TestUIResourceLayer : public UIResourceLayer {
 
  protected:
   TestUIResourceLayer() : UIResourceLayer() { SetIsDrawable(true); }
-  ~TestUIResourceLayer() override {}
+  ~TestUIResourceLayer() override = default;
 };
 
 class UIResourceLayerTest : public testing::Test {

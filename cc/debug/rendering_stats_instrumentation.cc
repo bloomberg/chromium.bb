@@ -20,7 +20,7 @@ RenderingStatsInstrumentation::RenderingStatsInstrumentation()
     : record_rendering_stats_(false) {
 }
 
-RenderingStatsInstrumentation::~RenderingStatsInstrumentation() {}
+RenderingStatsInstrumentation::~RenderingStatsInstrumentation() = default;
 
 RenderingStats RenderingStatsInstrumentation::TakeImplThreadRenderingStats() {
   base::AutoLock scoped_lock(lock_);

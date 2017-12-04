@@ -51,7 +51,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
   SetTileTaskManagerForTesting(std::make_unique<FakeTileTaskManagerImpl>());
 }
 
-FakeTileManager::~FakeTileManager() {}
+FakeTileManager::~FakeTileManager() = default;
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
   return std::find(tiles_for_raster.begin(),

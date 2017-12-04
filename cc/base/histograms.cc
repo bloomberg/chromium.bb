@@ -59,8 +59,7 @@ static const int64_t kMinimumTimeMicroseconds = 1;
 ScopedUMAHistogramAreaTimerBase::ScopedUMAHistogramAreaTimerBase() : area_(0) {
 }
 
-ScopedUMAHistogramAreaTimerBase::~ScopedUMAHistogramAreaTimerBase() {
-}
+ScopedUMAHistogramAreaTimerBase::~ScopedUMAHistogramAreaTimerBase() = default;
 
 bool ScopedUMAHistogramAreaTimerBase::GetHistogramValues(
     Sample* time_microseconds,

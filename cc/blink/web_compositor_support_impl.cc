@@ -28,11 +28,9 @@ using blink::WebScrollbarThemePainter;
 
 namespace cc_blink {
 
-WebCompositorSupportImpl::WebCompositorSupportImpl() {
-}
+WebCompositorSupportImpl::WebCompositorSupportImpl() = default;
 
-WebCompositorSupportImpl::~WebCompositorSupportImpl() {
-}
+WebCompositorSupportImpl::~WebCompositorSupportImpl() = default;
 
 std::unique_ptr<WebLayer> WebCompositorSupportImpl::CreateLayer() {
   return std::make_unique<WebLayerImpl>();

@@ -83,5 +83,5 @@ UIResourceBitmap::UIResourceBitmap(sk_sp<SkPixelRef> pixel_ref,
 
 UIResourceBitmap::UIResourceBitmap(const UIResourceBitmap& other) = default;
 
-UIResourceBitmap::~UIResourceBitmap() {}
+UIResourceBitmap::~UIResourceBitmap() = default;
 }  // namespace cc
