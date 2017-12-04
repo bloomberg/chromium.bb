@@ -769,19 +769,19 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
         'open(sys.argv[1], "w").write("bar")\n')
       script_hash = isolateserver_mock.hash_content(script)
       isolated = {
-        'algo': 'sha-1',
-        'command': ['cmd.py', '${ISOLATED_OUTDIR}/foo'],
-        'files': {
-          'cmd.py': {
-            'h': script_hash,
-            'm': 0700,
-            's': len(script),
+        u'algo': u'sha-1',
+        u'command': [u'cmd.py', u'${ISOLATED_OUTDIR}/foo'],
+        u'files': {
+          u'cmd.py': {
+            u'h': script_hash,
+            u'm': 0700,
+            u's': len(script),
           },
         },
-        'version': isolated_format.ISOLATED_FILE_VERSION,
+        u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
-        isolated['files']['cmd.py'].pop('m')
+        isolated[u'files'][u'cmd.py'].pop(u'm')
       isolated_data = json_dumps(isolated)
       isolated_hash = isolateserver_mock.hash_content(isolated_data)
       server.add_content('default-store', script)
@@ -814,20 +814,20 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       hashes = {isolated_hash, script_hash}
       output_hash = isolateserver_mock.hash_content('bar')
       hashes.add(output_hash)
-      isolated =  {
-        'algo': 'sha-1',
-        'files': {
-          'foo': {
-            'h': output_hash,
+      isolated = {
+        u'algo': u'sha-1',
+        u'files': {
+          u'foo': {
+            u'h': output_hash,
             # TODO(maruel): Handle umask.
-            'm': 0640,
-            's': 3,
+            u'm': 0640,
+            u's': 3,
           },
         },
-        'version': isolated_format.ISOLATED_FILE_VERSION,
+        u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
-        isolated['files']['foo'].pop('m')
+        isolated[u'files'][u'foo'].pop(u'm')
       uploaded = json_dumps(isolated)
       uploaded_hash = isolateserver_mock.hash_content(uploaded)
       hashes.add(uploaded_hash)
@@ -908,23 +908,23 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       foo2_output_hash = isolateserver_mock.hash_content('baz')
       hashes.add(foo_output_hash)
       hashes.add(foo2_output_hash)
-      isolated =  {
-        'algo': 'sha-1',
-        'files': {
-          'foo': {
-            'h': foo_output_hash,
+      isolated = {
+        u'algo': u'sha-1',
+        u'files': {
+          u'foo': {
+            u'h': foo_output_hash,
             # TODO(maruel): Handle umask.
-            'm': 0640,
-            's': 3,
+            u'm': 0640,
+            u's': 3,
           },
-          'foodir/foo2': {
-            'h': foo2_output_hash,
+          u'foodir/foo2': {
+            u'h': foo2_output_hash,
             # TODO(maruel): Handle umask.
-            'm': 0640,
-            's': 3,
+            u'm': 0640,
+            u's': 3,
           },
         },
-        'version': isolated_format.ISOLATED_FILE_VERSION,
+        u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       if sys.platform == 'win32':
         isolated['files']['foo'].pop('m')
@@ -946,30 +946,27 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
 
   def test_output_cmd_isolated(self):
     isolated = {
-      'algo': 'sha-1',
-      'command': ['cmd.py', 'foo', 'foodir/foo2'],
-      'files': {
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+      u'algo': u'sha-1',
+      u'command': [u'cmd.py', u'foo', u'foodir/foo2'],
+      u'files': {},
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._run_test(isolated, [])
 
   def test_output_cmd(self):
     isolated = {
-      'algo': 'sha-1',
-      'files': {
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+      u'algo': u'sha-1',
+      u'files': {},
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._run_test(isolated, ['cmd.py', 'foo', 'foodir/foo2'])
 
   def test_output_cmd_isolated_extra_args(self):
     isolated = {
-      'algo': 'sha-1',
-      'command': ['cmd.py'],
-      'files': {
-      },
-      'version': isolated_format.ISOLATED_FILE_VERSION,
+      u'algo': u'sha-1',
+      u'command': [u'cmd.py'],
+      u'files': {},
+      u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     self._run_test(isolated, ['foo', 'foodir/foo2'])
 
