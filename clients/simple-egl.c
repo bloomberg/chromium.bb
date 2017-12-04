@@ -100,7 +100,7 @@ struct window {
 	struct ivi_surface *ivi_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
-	int fullscreen, opaque, buffer_size, frame_sync, delay;
+	int fullscreen, maximized, opaque, buffer_size, frame_sync, delay;
 	bool wait_for_configure;
 };
 
@@ -317,23 +317,27 @@ handle_toplevel_configure(void *data, struct zxdg_toplevel_v6 *toplevel,
 	uint32_t *p;
 
 	window->fullscreen = 0;
+	window->maximized = 0;
 	wl_array_for_each(p, states) {
 		uint32_t state = *p;
 		switch (state) {
 		case ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN:
 			window->fullscreen = 1;
 			break;
+		case ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED:
+			window->maximized = 1;
+			break;
 		}
 	}
 
 	if (width > 0 && height > 0) {
-		if (!window->fullscreen) {
+		if (!window->fullscreen && !window->maximized) {
 			window->window_size.width = width;
 			window->window_size.height = height;
 		}
 		window->geometry.width = width;
 		window->geometry.height = height;
-	} else if (!window->fullscreen) {
+	} else if (!window->fullscreen && !window->maximized) {
 		window->geometry = window->window_size;
 	}
 
