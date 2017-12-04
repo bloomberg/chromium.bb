@@ -202,6 +202,7 @@ dist_yaml_TESTS =				\
 	yaml/letterDefTest_harness.yaml		\
 	yaml/lt_harness.yaml			\
 	yaml/lv_harness.yaml			\
+	yaml/mixed-case.yaml			\
 	yaml/mn-MN_harness.yaml			\
 	yaml/multipass-backward.yaml		\
 	yaml/multipass-forward.yaml		\

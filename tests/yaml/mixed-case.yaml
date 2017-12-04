@@ -1,0 +1,65 @@
+# Tests for #???: mixed lower and upper case.
+
+# we define a very simple table and just test whether the word rule
+# matches when we encounter mixed case input. Since we do not define
+# any caps rules we expect liblouis to ignore capitalization
+table: |
+  uplow Ii 24
+  uplow Mm 134
+  uplow Tt  2345
+  word mit 2345
+  
+tests:
+  - [mit, t]
+  - [Mit, t, {xfail: "returns ',t' instead"}]
+  - [MIT, t]
+  - [mIt, t, {xfail: "returns 'mit' instead"}]
+  - [miT, t, {xfail: "returns 'mit' instead"}]
+
+# same test as above basically but this time using an always rule
+# instead of a word rule
+table: |
+  uplow Ii 24
+  uplow Mm 134
+  uplow Tt  2345
+  always mit 2345
+  
+tests:
+  - [mit, t]
+  - [Mit, t, {xfail: "returns ',t' instead"}]
+  - [MIT, t]
+  - [mIt, t, {xfail: "returns 'mit' instead"}]
+  - [miT, t, {xfail: "returns 'mit' instead"}]
+
+# when enabling capitalization using a capsletter rule everything
+# works as expected
+table: |
+  uplow Ii 24
+  uplow Mm 134
+  uplow Tt  2345
+  always mit 2345
+  sign $ 46
+  capsletter 46
+
+tests:
+  - [mit, t]
+  - [Mit, $t]
+  - [MIT, t]
+  - [mIt, m$it]
+  - [miT, mi$t]
+
+# here's another test similar to the first one just using a different
+# input text
+table: |
+  uplow Aa 1
+  uplow Mm 134
+  uplow Nn  1345
+  word man 134
+  
+tests:
+  - [man, m]
+  - [Man, m, {xfail: "returns 'man' instead"}]
+  - [MAN, m]
+  - [maN, m, {xfail: "returns 'man' instead"}]
+  - [mAn, m, {xfail: "returns 'man' instead"}]
+

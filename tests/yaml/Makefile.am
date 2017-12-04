@@ -72,16 +72,17 @@ EXTRA_DIST =					\
 	hu-hu-g1_backward.yaml			\
 	hu-hu-g1_harness.yaml			\
 	issue-238.yaml				\
-	issue-401.yaml				\
 	issue-35.yaml				\
 	issue-384.yaml				\
 	issue-400.yaml				\
+	issue-401.yaml				\
 	iu-ca-g1_harness.yaml			\
 	ko-2006-g2_harness.yaml			\
 	ko-g2_harness.yaml			\
 	letterDefTest_harness.yaml		\
 	lt_harness.yaml				\
 	lv_harness.yaml				\
+	mixed-case.yaml				\
 	mn-MN_harness.yaml			\
 	multipass-backward.yaml			\
 	multipass-forward.yaml			\
