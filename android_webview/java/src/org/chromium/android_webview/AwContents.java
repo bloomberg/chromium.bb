@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
@@ -57,6 +58,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -132,6 +134,16 @@ public class AwContents implements SmartClipProvider {
             return "goldfish".equals(Build.HARDWARE) || "ranchu".equals(Build.HARDWARE)
                     || !nativeHasRequiredHardwareExtensions();
         }
+    }
+
+    // Used to record the UMA histogram WebView.LoadDataWithBaseUrl.HistoryUrl. Since these values
+    // are persisted to logs, they should never be renumbered nor reused.
+    @IntDef({HistoryUrl.EMPTY, HistoryUrl.BASEURL, HistoryUrl.DIFFERENT, HistoryUrl.COUNT})
+    @interface HistoryUrl {
+        int EMPTY = 0;
+        int BASEURL = 1;
+        int DIFFERENT = 2;
+        int COUNT = 3;
     }
 
     /**
@@ -1611,6 +1623,11 @@ public class AwContents implements SmartClipProvider {
         return "base64".equals(encoding);
     }
 
+    private static void recordHistoryUrl(@HistoryUrl int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "WebView.LoadDataWithBaseUrl.HistoryUrl", value, HistoryUrl.COUNT);
+    }
+
     /**
      * WebView.loadData.
      */
@@ -1634,6 +1651,14 @@ public class AwContents implements SmartClipProvider {
         LoadUrlParams loadUrlParams;
         baseUrl = fixupBase(baseUrl);
         historyUrl = fixupHistory(historyUrl);
+
+        if (historyUrl.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+            recordHistoryUrl(HistoryUrl.EMPTY);
+        } else if (historyUrl.equals(baseUrl)) {
+            recordHistoryUrl(HistoryUrl.BASEURL);
+        } else {
+            recordHistoryUrl(HistoryUrl.DIFFERENT);
+        }
 
         if (baseUrl.startsWith("data:")) {
             // For backwards compatibility with WebViewClassic, we use the value of |encoding|

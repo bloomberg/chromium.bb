@@ -98262,6 +98262,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebView.LoadDataWithBaseUrl.HistoryUrl" enum="HistoryUrlType">
+  <owner>jamwalla@chromium.org</owner>
+  <summary>
+    Records whether the historyUrl parameter to loadDataWithBaseUrl is empty/
+    null, the same as the baseUrl parameter, or different from baseUrl.
+  </summary>
+</histogram>
+
 <histogram name="Welcome.SignInPromptResult" enum="WelcomeSignInPromptOutcome">
   <owner>tmartino@chromium.org</owner>
   <summary>
