@@ -1118,4 +1118,46 @@ TEST_F(WindowOcclusionTrackerTest, RecreateLayerOfAnimatedWindow) {
   window_a->layer()->SetAnimator(nullptr);
 }
 
+namespace {
+
+class ObserverChangingWindowBounds : public WindowObserver {
+ public:
+  ObserverChangingWindowBounds() = default;
+
+  // WindowObserver:
+  void OnWindowParentChanged(Window* window, Window* parent) override {
+    window->SetBounds(gfx::Rect(1, 2, 3, 4));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ObserverChangingWindowBounds);
+};
+
+}  // namespace
+
+// Verify that no crash occurs if a tracked window is modified by an observer
+// after it has been added to a new root but before WindowOcclusionTracker has
+// been notified.
+TEST_F(WindowOcclusionTrackerTest, ChangeTrackedWindowBeforeObserveAddToRoot) {
+  // Create a window. Expect it to be non-occluded.
+  MockWindowDelegate* delegate = new MockWindowDelegate();
+  delegate->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window = CreateTrackedWindow(delegate, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate->is_expecting_call());
+
+  // Remove the window from its root.
+  root_window()->RemoveChild(window);
+
+  // Add an observer that changes the bounds of |window| when it gets a new
+  // parent.
+  ObserverChangingWindowBounds observer;
+  window->AddObserver(&observer);
+
+  // Re-add the window to its root. Expect no crash when |observer| changes the
+  // bounds.
+  root_window()->AddChild(window);
+
+  window->RemoveObserver(&observer);
+}
+
 }  // namespace aura

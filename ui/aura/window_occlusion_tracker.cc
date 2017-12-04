@@ -240,7 +240,16 @@ void WindowOcclusionTracker::MarkRootWindowAsDirtyAndMaybeRecomputeOcclusionIf(
   if (!root_window)
     return;
   auto root_window_state_it = root_windows_.find(root_window);
-  DCHECK(root_window_state_it != root_windows_.end());
+
+  // This may be called if a WindowObserver or a LayoutManager changes |window|
+  // after Window::AddChild() has added it to a new root but before
+  // OnWindowAddedToRootWindow() is called on |this|. In that case, do nothing
+  // here and rely on OnWindowAddedToRootWindow() to mark the new root as dirty.
+  if (root_window_state_it == root_windows_.end()) {
+    DCHECK(WindowIsTracked(window));
+    return;
+  }
+
   if (root_window_state_it->second.dirty)
     return;
   if (predicate()) {
