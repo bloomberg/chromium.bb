@@ -13,22 +13,48 @@ group("common") {
   }
 }
 
-static_library("crash_key") {
+use_crashpad = is_mac || is_win
+use_stubs = is_fuchsia
+
+# Crashpad's annotation system can store data on a per-module basis (i.e.,
+# in different shared libraries in the component build) without issue. The
+# Breakpad implementation uses a static global variable, so ensure there is
+# only one instance of the symbol in the component build by making this
+# target a component.
+if (use_stubs || use_crashpad) {
+  crash_key_target_type = "static_library"
+} else {
+  crash_key_target_type = "component"
+}
+target(crash_key_target_type, "crash_key") {
   sources = [
+    "crash_export.h",
     "crash_key.cc",
     "crash_key.h",
     "crash_key_base_support.cc",
     "crash_key_base_support.h",
   ]
 
+  defines = [ "CRASH_CORE_COMMON_IMPLEMENTATION" ]
+
+  # This target is not always a component, depending on the implementation.
+  # When it is not a component, annotating functions with the standard
+  # CRASH_EXPORT macro causes linking errors on Windows (clients of this target
+  # expect it to be dllimport but it is linked statically). Instead, provide a
+  # wrapper macro CRASH_KEY_EXPORT that only evaluates to CRASH_EXPORT if this
+  # target is really a component.
+  if (crash_key_target_type == "component") {
+    defines += [ "CRASH_KEY_EXPORT=CRASH_EXPORT" ]
+  }
+
   deps = [
     "//base",
   ]
 
-  if (is_mac || is_win) {
+  if (use_crashpad) {
     sources += [ "crash_key_crashpad.cc" ]
     deps += [ "//third_party/crashpad/crashpad/client" ]
-  } else if (is_fuchsia) {
+  } else if (use_stubs) {
     sources += [ "crash_key_stubs.cc" ]
   } else {
     include_dirs = [ "//third_party/breakpad/breakpad/src/" ]

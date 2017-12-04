@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_export.h"
 
 // The crash key interface exposed by this file is the same as the Crashpad
 // Annotation interface. Because not all platforms use Crashpad yet, a
@@ -61,7 +62,7 @@ constexpr size_t kCrashKeyStorageValueSize = 128;
 // Base implementation of a CrashKeyString for non-Crashpad clients. A separate
 // base class is used to avoid inlining complex logic into the public template
 // API.
-class CrashKeyStringImpl {
+class CRASH_KEY_EXPORT CrashKeyStringImpl {
  public:
   constexpr explicit CrashKeyStringImpl(const char name[],
                                         size_t* index_array,
@@ -178,8 +179,9 @@ namespace internal {
 // Formats a stack trace into a string whose length will not exceed
 // |max_length|. This function ensures no addresses are truncated when
 // being formatted.
-std::string FormatStackTrace(const base::debug::StackTrace& trace,
-                             size_t max_length);
+CRASH_KEY_EXPORT std::string FormatStackTrace(
+    const base::debug::StackTrace& trace,
+    size_t max_length);
 }  // namespace internal
 
 // Formats a base::debug::StackTrace as a string of space-separated hexadecimal
@@ -194,7 +196,7 @@ void SetCrashKeyStringToStackTrace(CrashKeyString<Size>* key,
 }
 
 // Initializes the crash key subsystem if it is required.
-void InitializeCrashKeys();
+CRASH_KEY_EXPORT void InitializeCrashKeys();
 
 }  // namespace crash_reporter
 
