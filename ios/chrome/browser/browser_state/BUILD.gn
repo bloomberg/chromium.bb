@@ -108,6 +108,8 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/browser_list:browser_list_impl",
+    "//ios/chrome/browser/ui/fullscreen",
+    "//ios/chrome/browser/ui/fullscreen:new_fullscreen",
     "//ios/chrome/browser/undo",
     "//ios/net",
     "//ios/public/provider/chrome/browser",

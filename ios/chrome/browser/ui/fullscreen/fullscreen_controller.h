@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/supports_user_data.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 @class ChromeBroadcaster;
 @class ChromeBroadcastOberverBridge;
@@ -21,14 +21,10 @@ class FullscreenWebStateListObserver;
 // calculates how much of the toolbar should be visible as a result.  When the
 // user scrolls down the screen, the toolbar should be hidden to allow more of
 // the page's content to be visible.
-class FullscreenController : public base::SupportsUserData::Data {
+class FullscreenController : public KeyedService {
  public:
+  explicit FullscreenController();
   ~FullscreenController() override;
-
-  // Creation and getter functions for FullscreenController.
-  // TODO(crbug.com/790886): Convert FullscreenController to a BrowserUserData.
-  static void CreateForUserData(base::SupportsUserData* user_data);
-  static FullscreenController* FromUserData(base::SupportsUserData* user_data);
 
   // The ChromeBroadcaster through the FullscreenController receives UI
   // information necessary to calculate fullscreen progress.
@@ -54,8 +50,8 @@ class FullscreenController : public base::SupportsUserData::Data {
   void DecrementDisabledCounter();
 
  private:
-  // Private contructor used by CreateForUserData().
-  explicit FullscreenController();
+  // KeyedService:
+  void Shutdown() override;
 
   // The broadcaster that drives the model.
   __strong ChromeBroadcaster* broadcaster_ = nil;

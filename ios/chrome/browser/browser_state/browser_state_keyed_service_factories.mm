@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 
+#include "base/feature_list.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "ios/chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -52,6 +53,8 @@
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
 #include "ios/chrome/browser/ui/browser_list/browser_list_factory.h"
 #include "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 
@@ -119,4 +122,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   TabRestoreServiceDelegateImplIOSFactory::GetInstance();
   TranslateAcceptLanguagesFactory::GetInstance();
   UrlLanguageHistogramFactory::GetInstance();
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    FullscreenControllerFactory::GetInstance();
+  }
 }
