@@ -163,14 +163,13 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 
   // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
-  PrefService(
-      PrefNotifierImpl* pref_notifier,
-      PrefValueStore* pref_value_store,
-      PersistentPrefStore* user_prefs,
-      PrefRegistry* pref_registry,
-      base::Callback<void(PersistentPrefStore::PrefReadError)>
-          read_error_callback,
-      bool async);
+  PrefService(std::unique_ptr<PrefNotifierImpl> pref_notifier,
+              std::unique_ptr<PrefValueStore> pref_value_store,
+              PersistentPrefStore* user_prefs,
+              PrefRegistry* pref_registry,
+              base::Callback<void(PersistentPrefStore::PrefReadError)>
+                  read_error_callback,
+              bool async);
   virtual ~PrefService();
 
   // Lands pending writes to disk. This should only be used if we need to save

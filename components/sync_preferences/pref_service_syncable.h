@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -35,8 +36,8 @@ class PrefServiceSyncable : public PrefService {
   // You may wish to use PrefServiceFactory or one of its subclasses
   // for simplified construction.
   PrefServiceSyncable(
-      PrefNotifierImpl* pref_notifier,
-      PrefValueStore* pref_value_store,
+      std::unique_ptr<PrefNotifierImpl> pref_notifier,
+      std::unique_ptr<PrefValueStore> pref_value_store,
       PersistentPrefStore* user_prefs,
       user_prefs::PrefRegistrySyncable* pref_registry,
       const PrefModelAssociatorClient* pref_model_associato_client,

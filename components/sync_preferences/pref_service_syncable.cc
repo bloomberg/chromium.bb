@@ -4,6 +4,8 @@
 
 #include "components/sync_preferences/pref_service_syncable.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -26,16 +28,16 @@
 namespace sync_preferences {
 
 PrefServiceSyncable::PrefServiceSyncable(
-    PrefNotifierImpl* pref_notifier,
-    PrefValueStore* pref_value_store,
+    std::unique_ptr<PrefNotifierImpl> pref_notifier,
+    std::unique_ptr<PrefValueStore> pref_value_store,
     PersistentPrefStore* user_prefs,
     user_prefs::PrefRegistrySyncable* pref_registry,
     const PrefModelAssociatorClient* pref_model_associator_client,
     base::Callback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
-    : PrefService(pref_notifier,
-                  pref_value_store,
+    : PrefService(std::move(pref_notifier),
+                  std::move(pref_value_store),
                   user_prefs,
                   pref_registry,
                   read_error_callback,
@@ -48,7 +50,7 @@ PrefServiceSyncable::PrefServiceSyncable(
   priority_pref_sync_associator_.SetPrefService(this);
 
   // Let PrefModelAssociators know about changes to preference values.
-  pref_value_store->set_callback(base::Bind(
+  pref_value_store_->set_callback(base::Bind(
       &PrefServiceSyncable::ProcessPrefChange, base::Unretained(this)));
 
   // Add already-registered syncable preferences to PrefModelAssociator.
@@ -78,7 +80,7 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
     const std::vector<const char*>& overlay_pref_names,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
   pref_service_forked_ = true;
-  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
+  auto pref_notifier = std::make_unique<PrefNotifierImpl>();
 
   scoped_refptr<user_prefs::PrefRegistrySyncable> forked_registry =
       static_cast<user_prefs::PrefRegistrySyncable*>(pref_registry_.get())
@@ -96,16 +98,17 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
   for (const char* overlay_pref_name : overlay_pref_names)
     incognito_pref_store->RegisterOverlayPref(overlay_pref_name);
 
+  auto pref_value_store = pref_value_store_->CloneAndSpecialize(
+      nullptr,  // managed
+      nullptr,  // supervised_user
+      incognito_extension_pref_store,
+      nullptr,  // command_line_prefs
+      incognito_pref_store.get(),
+      nullptr,  // recommended
+      forked_registry->defaults().get(), pref_notifier.get(),
+      std::move(delegate));
   PrefServiceSyncable* incognito_service = new PrefServiceSyncable(
-      pref_notifier,
-      pref_value_store_->CloneAndSpecialize(nullptr,  // managed
-                                            nullptr,  // supervised_user
-                                            incognito_extension_pref_store,
-                                            nullptr,  // command_line_prefs
-                                            incognito_pref_store.get(),
-                                            nullptr,  // recommended
-                                            forked_registry->defaults().get(),
-                                            pref_notifier, std::move(delegate)),
+      std::move(pref_notifier), std::move(pref_value_store),
       incognito_pref_store.get(), forked_registry.get(),
       pref_sync_associator_.client(), read_error_callback_, false);
   return incognito_service;

@@ -39,7 +39,7 @@ class InProcessPrefServiceFactory::RegisteringDelegate
             PrefStore* user_prefs,
             PrefStore* recommended_prefs,
             PrefStore* default_prefs,
-            PrefNotifier* pref_notifier) override {
+            PrefNotifier* /*pref_notifier*/) override {
     if (!factory_)
       return;
 

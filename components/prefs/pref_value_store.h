@@ -6,6 +6,7 @@
 #define COMPONENTS_PREFS_PREF_VALUE_STORE_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -115,7 +116,7 @@ class COMPONENTS_PREFS_EXPORT PrefValueStore {
   // by the parameters passed, if unequal NULL.
   //
   // The new PrefValueStore is passed the |delegate| in its constructor.
-  PrefValueStore* CloneAndSpecialize(
+  std::unique_ptr<PrefValueStore> CloneAndSpecialize(
       PrefStore* managed_prefs,
       PrefStore* supervised_user_prefs,
       PrefStore* extension_prefs,

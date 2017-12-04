@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/containers/circular_deque.h"
@@ -68,17 +69,18 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
 
     pref_store_client_ =
         base::MakeRefCounted<PersistentPrefStoreClient>(std::move(connection));
-    PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
+    auto pref_notifier = std::make_unique<PrefNotifierImpl>();
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     pref_registry->RegisterIntegerPref(kKey, kInitialValue);
     pref_registry->RegisterIntegerPref(kOtherKey, kInitialValue);
     pref_registry->RegisterDictionaryPref(kDictionaryKey);
-    auto* pref_value_store = new PrefValueStore(
+    auto pref_value_store = std::make_unique<PrefValueStore>(
         nullptr, nullptr, nullptr, nullptr, pref_store_client_.get(), nullptr,
-        pref_registry->defaults().get(), pref_notifier);
-    pref_service_ = std::make_unique<::PrefService>(
-        pref_notifier, pref_value_store, pref_store_client_.get(),
-        pref_registry.get(), base::Bind(&DoNothingHandleReadError), true);
+        pref_registry->defaults().get(), pref_notifier.get());
+    pref_service_ = std::make_unique<PrefService>(
+        std::move(pref_notifier), std::move(pref_value_store),
+        pref_store_client_.get(), pref_registry.get(),
+        base::Bind(&DoNothingHandleReadError), true);
   }
 
   ~PrefServiceConnection() override {

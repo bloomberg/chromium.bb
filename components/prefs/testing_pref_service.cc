@@ -4,6 +4,8 @@
 
 #include "components/prefs/testing_pref_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "components/prefs/default_pref_store.h"
@@ -21,15 +23,15 @@ TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
     PrefRegistry* pref_registry,
     PrefNotifierImpl* pref_notifier)
     : PrefService(
-          pref_notifier,
-          new PrefValueStore(managed_prefs,
-                             nullptr,
-                             extension_prefs,
-                             nullptr,
-                             user_prefs,
-                             recommended_prefs,
-                             pref_registry->defaults().get(),
-                             pref_notifier),
+          std::unique_ptr<PrefNotifierImpl>(pref_notifier),
+          std::make_unique<PrefValueStore>(managed_prefs,
+                                           nullptr,
+                                           extension_prefs,
+                                           nullptr,
+                                           user_prefs,
+                                           recommended_prefs,
+                                           pref_registry->defaults().get(),
+                                           pref_notifier),
           user_prefs,
           pref_registry,
           base::Bind(&TestingPrefServiceBase<PrefService,
