@@ -73,7 +73,6 @@ using chrome_test_util::RecentTabsMenuButton;
 }
 
 // Waits for the bookmark editor to display.
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
 - (void)waitForSingleBookmarkEditorToDisplay {
   BOOL (^block)
   () = ^BOOL {
