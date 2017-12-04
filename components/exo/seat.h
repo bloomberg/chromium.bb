@@ -46,6 +46,9 @@ class Seat : public aura::client::FocusChangeObserver,
     return pressed_keys_;
   }
 
+  // Returns current set of modifier flags.
+  int modifier_flags() const { return modifier_flags_; }
+
   // Sets clipboard data from |source|.
   void SetSelection(DataSource* source);
 
@@ -70,6 +73,7 @@ class Seat : public aura::client::FocusChangeObserver,
 
   base::ObserverList<SeatObserver> observers_;
   base::flat_set<ui::DomCode> pressed_keys_;
+  int modifier_flags_ = 0;
 
   // Data source being used as a clipboard content.
   std::unique_ptr<ScopedDataSource> selection_source_;

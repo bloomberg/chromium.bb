@@ -80,7 +80,7 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
   // Pressing key before Keyboard instance is created and surface has
   // received focus.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
-  generator.PressKey(ui::VKEY_A, 0);
+  generator.PressKey(ui::VKEY_A, ui::EF_SHIFT_DOWN);
 
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
@@ -94,7 +94,7 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
 
   EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface.get()))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(delegate, OnKeyboardModifiers(0));
+  EXPECT_CALL(delegate, OnKeyboardModifiers(ui::EF_SHIFT_DOWN));
   EXPECT_CALL(delegate, OnKeyboardEnter(
                             surface.get(),
                             base::flat_set<ui::DomCode>({ui::DomCode::US_A})));
