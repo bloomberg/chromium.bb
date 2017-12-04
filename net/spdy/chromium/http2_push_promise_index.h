@@ -57,8 +57,8 @@ class NET_EXPORT Http2PushPromiseIndex {
   // Returns a session with |key| that has an unclaimed push stream for |url| if
   // such exists.  Makes no guarantee on which one it returns if there are
   // multiple.  Returns nullptr if no such session exists.
-  base::WeakPtr<SpdySession> Find(const SpdySessionKey& key,
-                                  const GURL& url) const;
+  base::WeakPtr<SpdySession> FindSession(const SpdySessionKey& key,
+                                         const GURL& url) const;
 
   // (Un)registers a Delegate with an unclaimed pushed stream for |url|.
   // Caller must make sure |delegate| stays valid by unregistering the exact
