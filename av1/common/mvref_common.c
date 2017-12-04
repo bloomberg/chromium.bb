@@ -757,6 +757,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   nearest_match = ref_match_count;
   nearest_refmv_count = *refmv_count;
 
+  ref_mv_stack[0].weight = 0;
   for (idx = 0; idx < nearest_refmv_count; ++idx)
     ref_mv_stack[idx].weight += REF_CAT_LEVEL;
 

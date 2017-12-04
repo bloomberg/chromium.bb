@@ -149,7 +149,8 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
   if (new_mv) {
     int idx;
     for (idx = 0; idx < 2; ++idx) {
-      if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+      if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1 ||
+          CONFIG_OPT_REF_MV) {
         uint8_t drl_ctx =
             av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
 
@@ -165,7 +166,8 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
     int idx;
     // TODO(jingning): Temporary solution to compensate the NEARESTMV offset.
     for (idx = 1; idx < 3; ++idx) {
-      if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+      if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1 ||
+          CONFIG_OPT_REF_MV) {
         uint8_t drl_ctx =
             av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
         aom_write_symbol(w, mbmi->ref_mv_idx != (idx - 1),
