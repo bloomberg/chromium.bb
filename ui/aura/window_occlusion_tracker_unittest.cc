@@ -13,7 +13,9 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
@@ -1158,6 +1160,66 @@ TEST_F(WindowOcclusionTrackerTest, ChangeTrackedWindowBeforeObserveAddToRoot) {
   root_window()->AddChild(window);
 
   window->RemoveObserver(&observer);
+}
+
+namespace {
+
+class ObserverDestroyingWindowOnAnimationEnded
+    : public ui::LayerAnimationObserver {
+ public:
+  ObserverDestroyingWindowOnAnimationEnded(Window* window) : window_(window) {}
+
+  ~ObserverDestroyingWindowOnAnimationEnded() override {
+    EXPECT_FALSE(window_);
+  }
+
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    EXPECT_TRUE(window_);
+    delete window_;
+    window_ = nullptr;
+  }
+
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+ private:
+  Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserverDestroyingWindowOnAnimationEnded);
+};
+
+}  // namespace
+
+// Verify that no crash occurs if a LayerAnimationObserver destroys a tracked
+// window before WindowOcclusionTracker is notified that the animation ended.
+TEST_F(WindowOcclusionTrackerTest,
+       DestroyTrackedWindowFromLayerAnimationObserver) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::LayerAnimatorTestController test_controller(
+      ui::LayerAnimator::CreateImplicitAnimator());
+  ui::ScopedLayerAnimationSettings layer_animation_settings(
+      test_controller.animator());
+  layer_animation_settings.SetTransitionDuration(kTransitionDuration);
+
+  // Create a window. Expect it to be non-occluded.
+  MockWindowDelegate* delegate = new MockWindowDelegate();
+  delegate->set_expectation(WindowOcclusionChangedExpectation::NOT_OCCLUDED);
+  Window* window = CreateTrackedWindow(delegate, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate->is_expecting_call());
+  window->layer()->SetAnimator(test_controller.animator());
+
+  // Add a LayerAnimationObserver that destroys the window when an animation
+  // ends.
+  ObserverDestroyingWindowOnAnimationEnded observer(window);
+  window->layer()->GetAnimator()->AddObserver(&observer);
+
+  // Start animating the opacity of the window.
+  window->layer()->SetOpacity(0.5f);
+
+  // Complete the animation. Expect no crash.
+  window->layer()->GetAnimator()->StopAnimating();
 }
 
 }  // namespace aura

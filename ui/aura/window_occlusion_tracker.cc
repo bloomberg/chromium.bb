@@ -441,9 +441,15 @@ void WindowOcclusionTracker::OnWindowStackingChanged(Window* window) {
 
 void WindowOcclusionTracker::OnWindowDestroyed(Window* window) {
   DCHECK(!window->GetRootWindow() || (window == window->GetRootWindow()));
-  // Animations should be completed or aborted before a window is destroyed.
-  DCHECK(!WindowIsAnimated(window));
   tracked_windows_.erase(window);
+  // Animations should be completed or aborted before a window is destroyed.
+  DCHECK(!window->layer()->GetAnimator()->IsAnimatingOnePropertyOf(
+      kSkipWindowWhenPropertiesAnimated));
+  // |window| must be removed from |animated_windows_| to prevent an invalid
+  // access in CleanupAnimatedWindows() if |window| is being destroyed from a
+  // LayerAnimationObserver after an animation has ended but before |this| has
+  // been notified.
+  animated_windows_.erase(window);
 }
 
 void WindowOcclusionTracker::OnWindowAddedToRootWindow(Window* window) {
