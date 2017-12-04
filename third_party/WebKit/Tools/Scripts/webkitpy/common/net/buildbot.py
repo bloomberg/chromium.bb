@@ -140,7 +140,8 @@ def current_build_link(host):
     build_number = host.environ.get('BUILDBOT_BUILDNUMBER')
     if not (master_name and builder_name and build_number):
         return None
-    return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)
+    return ('https://ci.chromium.org/buildbot/%s/%s/%s' %
+            (master_name, builder_name, build_number))
 
 
 def filter_latest_builds(builds):
