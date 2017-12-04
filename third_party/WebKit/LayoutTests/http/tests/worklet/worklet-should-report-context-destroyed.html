@@ -3,6 +3,7 @@
 <html>
 <title>Worklet: Worklet should report context destroyed</title>
 <body>
+<script src="../../../resources/gc.js"></script>
 <script>
 // This test was added for confirming a crash bug fix (see
 // https://crbug.com/657450). This should not be upstreamed to WPT because of
@@ -10,16 +11,6 @@
 if (window.testRunner) {
   testRunner.waitUntilDone();
   testRunner.dumpAsText();
-}
-
-function gc()
-{
-  if (window.GCController) {
-    GCController.collect();
-  } else {
-    for (var i = 0; i < 10000; ++i)
-      new Object;
-  }
 }
 
 function tryCrash()

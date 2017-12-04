@@ -2,15 +2,6 @@ description(
 'Tests to make sure that dynamic scope objects are correctly protected from GC.  To pass we need to not crash.'
 );
 
-function gc()
-{
-    if (this.GCController)
-        GCController.collectAll();
-    else
-        for (var i = 0; i < 10000; ++i) // Allocate a sufficient number of objects to force a GC.
-            ({});
-}
-
 (function() {
     try {
         // Immediate value for scope

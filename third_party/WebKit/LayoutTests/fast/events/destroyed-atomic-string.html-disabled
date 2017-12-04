@@ -1,18 +1,8 @@
 <body>
 <p>Test that adding an event listener for an event with a unique name works correctly (this used to corrupt event listener map after GC).</p>
 <pre id=log></pre>
-
+<script src="../../resources/gc.js"></script>
 <script>
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("abc");
-    }
-}
-
 function log(message)
 {
     document.getElementById("log").innerHTML += message + "<br>";
