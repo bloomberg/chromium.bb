@@ -57,15 +57,10 @@ int GetAvailableHoverTypes() {
   if (base::win::IsTabletDevice(nullptr, ui::GetHiddenWindow()))
     return HOVER_TYPE_NONE;
 
-  int available_hover_types;
-  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0) {
-    available_hover_types = HOVER_TYPE_HOVER;
-    if (IsTouchDevicePresent())
-      available_hover_types |= HOVER_TYPE_NONE;
-  } else
-    available_hover_types = HOVER_TYPE_NONE;
+  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0)
+    return HOVER_TYPE_HOVER;
 
-  return available_hover_types;
+  return HOVER_TYPE_NONE;
 }
 
 TouchScreensAvailability GetTouchScreensAvailability() {
