@@ -21,12 +21,18 @@ class WorkletModulatorImpl final : public ModulatorImplBase {
  public:
   static ModulatorImplBase* Create(scoped_refptr<ScriptState>);
 
-  // Implements Modulator.
+  // Implements ModulatorImplBase.
   SecurityOrigin* GetSecurityOriginForFetch() override;
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
 
  private:
   explicit WorkletModulatorImpl(scoped_refptr<ScriptState>);
+
+  // Implements ModulatorImplBase.
+  void ResolveDynamically(const String& specifier,
+                          const KURL&,
+                          const ReferrerScriptInfo&,
+                          ScriptPromiseResolver*) final;
 };
 
 }  // namespace blink
