@@ -168,10 +168,6 @@ void InternalSettings::setExperimentalContentSecurityPolicyFeaturesEnabled(
       enabled);
 }
 
-void InternalSettings::setOverlayScrollbarsEnabled(bool enabled) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(enabled);
-}
-
 void InternalSettings::setViewportEnabled(bool enabled,
                                           ExceptionState& exception_state) {
   InternalSettingsGuardForSettings();

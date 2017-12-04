@@ -4,7 +4,7 @@
 if (window.internals) {
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
   internals.settings.setMockScrollbarsEnabled(true);
-  internals.settings.setOverlayScrollbarsEnabled(true);
+  internals.runtimeFlags.overlayScrollbarsEnabled = true;
 }
 
 if (window.testRunner)

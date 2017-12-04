@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script>
 if (window.internals) {
-  internals.settings.setOverlayScrollbarsEnabled(true);
+  internals.runtimeFlags.overlayScrollbarsEnabled = true;
   internals.settings.setMockScrollbarsEnabled(true);
 }
 </script>
@@ -15,7 +15,7 @@ if (window.internals) {
 <script>
   window.onload = function() {
     if (window.internals) {
-      internals.settings.setOverlayScrollbarsEnabled(true);
+      internals.runtimeFlags.overlayScrollbarsEnabled = true;
 
       var div = document.querySelector('#div');
       var iframe = document.querySelector('#iframe');

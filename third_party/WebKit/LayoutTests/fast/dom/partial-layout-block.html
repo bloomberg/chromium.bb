@@ -28,7 +28,7 @@ html, body {
         testRunner.dumpAsText();
 
     if (window.internals)
-        window.internals.settings.setOverlayScrollbarsEnabled(true);
+        window.internals.runtimeFlags.overlayScrollbarsEnabled = true;
 
     test(function() {
         var measure = document.getElementById('measure');

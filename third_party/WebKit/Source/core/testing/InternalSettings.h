@@ -131,7 +131,6 @@ class InternalSettings final : public InternalSettingsGenerated,
   // cannot be changed after process start. These setters should
   // be removed or moved onto internals.runtimeFlags:
   void setLangAttributeAwareFormControlUIEnabled(bool);
-  void setOverlayScrollbarsEnabled(bool);
   void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
   void setImageAnimationPolicy(const String&, ExceptionState&);
   void setScrollTopLeftInteropEnabled(bool);
