@@ -30,10 +30,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
       const VideoCaptureDeviceDescriptor& device_descriptor,
       VideoCaptureFormats* supported_formats) override;
 
+  void set_use_media_foundation_for_testing(bool use) {
+    use_media_foundation_ = use;
+  }
+
  private:
-  // Media Foundation is available in Win7 and later, use it if explicitly
-  // forced via flag, else use DirectShow.
-  const bool use_media_foundation_;
+  bool use_media_foundation_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryWin);
 };

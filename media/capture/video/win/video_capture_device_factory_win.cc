@@ -69,10 +69,9 @@ static bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
 
 static bool LoadMediaFoundationDlls() {
   static const wchar_t* const kMfDLLs[] = {
-      L"%WINDIR%\\system32\\mf.dll",
-      L"%WINDIR%\\system32\\mfplat.dll",
+      L"%WINDIR%\\system32\\mf.dll", L"%WINDIR%\\system32\\mfplat.dll",
       L"%WINDIR%\\system32\\mfreadwrite.dll",
-  };
+      L"%WINDIR%\\system32\\MFCaptureEngine.dll"};
 
   for (const wchar_t* kMfDLL : kMfDLLs) {
     wchar_t path[MAX_PATH] = {0};
@@ -86,8 +85,13 @@ static bool LoadMediaFoundationDlls() {
 static bool PrepareVideoCaptureAttributesMediaFoundation(
     IMFAttributes** attributes,
     int count) {
-  if (!InitializeMediaFoundation())
+  // Once https://bugs.chromium.org/p/chromium/issues/detail?id=791615 is fixed,
+  // we must make sure that this method succeeds in capture_unittests context
+  // when MediaFoundation is enabled.
+  if (!VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() ||
+      !InitializeMediaFoundation()) {
     return false;
+  }
 
   if (FAILED(MFCreateAttributes(attributes, count)))
     return false;
@@ -286,8 +290,9 @@ static void GetDeviceSupportedFormatsMediaFoundation(
 
   DWORD stream_index = 0;
   ComPtr<IMFMediaType> type;
-  while (SUCCEEDED(reader->GetNativeMediaType(kFirstVideoStream, stream_index,
-                                              type.GetAddressOf()))) {
+  while (SUCCEEDED(hr = reader->GetNativeMediaType(
+                       static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM),
+                       stream_index, type.GetAddressOf()))) {
     UINT32 width, height;
     hr = MFGetAttributeSize(type.Get(), MF_MT_FRAME_SIZE, &width, &height);
     if (FAILED(hr)) {
