@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/search/search.h"
+
 #include <stddef.h>
 
 #include <map>
-#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -13,16 +16,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
-#include "components/prefs/pref_service.h"
-#include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -396,8 +394,7 @@ TEST_F(SearchTest, IsNTPURL) {
   GURL local_ntp_url(chrome::kChromeSearchLocalNtpUrl);
 
   EXPECT_FALSE(IsNTPURL(invalid_url, profile()));
-  // No margin.
-  profile()->GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
   GURL remote_ntp_url(GetNewTabPageURL(profile()));
   GURL remote_ntp_service_worker_url("https://foo.com/newtab-serviceworker.js");
   GURL search_url_with_search_terms("https://foo.com/url?bar=abc");

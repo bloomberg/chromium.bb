@@ -24,9 +24,6 @@ enum CacheableNTPLoad {
   CACHEABLE_NTP_LOAD_MAX = 2
 };
 
-// Returns whether the suggest is enabled for the given |profile|.
-bool IsSuggestPrefEnabled(Profile* profile);
-
 // Returns true if |url| should be rendered in the Instant renderer process.
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile);
 

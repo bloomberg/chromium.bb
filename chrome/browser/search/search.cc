@@ -16,10 +16,8 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
@@ -317,11 +315,6 @@ bool IsInstantNTPURL(const GURL& url, Profile* profile) {
 
   GURL new_tab_url(GetNewTabPageURL(profile));
   return new_tab_url.is_valid() && MatchesOriginAndPath(url, new_tab_url);
-}
-
-bool IsSuggestPrefEnabled(Profile* profile) {
-  return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
-         profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
 GURL GetNewTabPageURL(Profile* profile) {
