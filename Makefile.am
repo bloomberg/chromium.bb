@@ -1226,7 +1226,7 @@ weston_tests =					\
 	bad_buffer.weston			\
 	keyboard.weston				\
 	event.weston				\
-	button.weston				\
+	pointer.weston				\
 	text.weston				\
 	presentation.weston			\
 	viewporter.weston			\
@@ -1383,9 +1383,9 @@ event_weston_SOURCES = tests/event-test.c
 event_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 event_weston_LDADD = libtest-client.la
 
-button_weston_SOURCES = tests/button-test.c
-button_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
-button_weston_LDADD = libtest-client.la
+pointer_weston_SOURCES = tests/pointer-test.c
+pointer_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+pointer_weston_LDADD = libtest-client.la
 
 devices_weston_SOURCES = tests/devices-test.c
 devices_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
