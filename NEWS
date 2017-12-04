@@ -31,6 +31,8 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 - Fix some math signs in Czech Braille (~cs-chardefs.cti~). Thanks to
   Christian Herden of ViewPlus for reporting this.
 - Updates to the SEB British Braille Tables thanks to Paul Wood
+- Massive improvements to French back translation thanks to Michel
+  Such and André-Abush Clause
 ** Other changes
 *** Improved documentation
 - Bue Vester-Andersen added some notes about back-translation and
