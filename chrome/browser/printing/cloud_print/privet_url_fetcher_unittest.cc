@@ -40,8 +40,7 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
   ~MockPrivetURLFetcherDelegate() override {
   }
 
-  void OnError(PrivetURLFetcher* fetcher,
-               PrivetURLFetcher::ErrorType error) override {
+  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override {
     OnErrorInternal(error);
   }
 
@@ -57,12 +56,10 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
   MOCK_METHOD1(OnParsedJsonInternal, void(bool has_error));
 
   virtual void OnNeedPrivetToken(
-      PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) {
   }
 
-  bool OnRawData(PrivetURLFetcher* fetcher,
-                 bool response_is_file,
+  bool OnRawData(bool response_is_file,
                  const std::string& data,
                  const base::FilePath& response_file) {
     if (!raw_mode_) return false;
@@ -130,7 +127,7 @@ class PrivetURLFetcherTest : public ::testing::Test {
 TEST_F(PrivetURLFetcherTest, FetchSuccess) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleParsableJSON);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -141,7 +138,7 @@ TEST_F(PrivetURLFetcherTest, FetchSuccess) {
 
   const base::DictionaryValue* value = delegate_.saved_value();
   int hello_value;
-  ASSERT_TRUE(value != NULL);
+  ASSERT_TRUE(value);
   ASSERT_TRUE(value->GetInteger("hello", &hello_value));
   EXPECT_EQ(2, hello_value);
 }
@@ -149,7 +146,7 @@ TEST_F(PrivetURLFetcherTest, FetchSuccess) {
 TEST_F(PrivetURLFetcherTest, HTTP503Retry) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleParsableJSON);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -160,7 +157,7 @@ TEST_F(PrivetURLFetcherTest, HTTP503Retry) {
   RunFor(base::TimeDelta::FromSeconds(7));
   fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleParsableJSON);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -173,7 +170,7 @@ TEST_F(PrivetURLFetcherTest, HTTP503Retry) {
 TEST_F(PrivetURLFetcherTest, ResponseCodeError) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleParsableJSON);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -187,7 +184,7 @@ TEST_F(PrivetURLFetcherTest, ResponseCodeError) {
 TEST_F(PrivetURLFetcherTest, JsonParseError) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleUnparsableJSON);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -201,7 +198,7 @@ TEST_F(PrivetURLFetcherTest, JsonParseError) {
 TEST_F(PrivetURLFetcherTest, Header) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
 
@@ -218,7 +215,7 @@ TEST_F(PrivetURLFetcherTest, Header2) {
   privet_urlfetcher_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
 
@@ -235,7 +232,7 @@ TEST_F(PrivetURLFetcherTest, AlwaysSendEmpty) {
   privet_urlfetcher_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
 
@@ -247,7 +244,7 @@ TEST_F(PrivetURLFetcherTest, AlwaysSendEmpty) {
 TEST_F(PrivetURLFetcherTest, FetchHasError) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleJSONWithError);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -261,7 +258,7 @@ TEST_F(PrivetURLFetcherTest, FetcherRawData) {
   delegate_.SetRawMode(true);
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseString(kSampleJSONWithError);
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
                                             net::OK));
@@ -276,7 +273,7 @@ TEST_F(PrivetURLFetcherTest, RangeRequest) {
   privet_urlfetcher_->SetByteRange(200, 300);
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   net::HttpRequestHeaders headers;
   fetcher->GetExtraRequestHeaders(&headers);
 
@@ -290,7 +287,7 @@ TEST_F(PrivetURLFetcherTest, FetcherToFile) {
   privet_urlfetcher_->SaveResponseToFile();
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
+  ASSERT_TRUE(fetcher);
   fetcher->SetResponseFilePath(
       base::FilePath(FILE_PATH_LITERAL("sample/file")));
   fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,

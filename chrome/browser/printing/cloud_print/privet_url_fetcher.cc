@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <memory>
 
 #include "base/bind.h"
@@ -58,13 +59,11 @@ std::string MakeRangeHeader(int start, int end) {
 }  // namespace
 
 void PrivetURLFetcher::Delegate::OnNeedPrivetToken(
-    PrivetURLFetcher* fetcher,
     const TokenCallback& callback) {
-  OnError(fetcher, TOKEN_ERROR);
+  OnError(0, TOKEN_ERROR);
 }
 
-bool PrivetURLFetcher::Delegate::OnRawData(PrivetURLFetcher* fetcher,
-                                           bool response_is_file,
+bool PrivetURLFetcher::Delegate::OnRawData(bool response_is_file,
                                            const std::string& data_string,
                                            const base::FilePath& data_file) {
   return false;
@@ -191,16 +190,15 @@ void PrivetURLFetcher::Try() {
 
     url_fetcher_->Start();
   } else {
-    delegate_->OnError(this, UNKNOWN_ERROR);
+    delegate_->OnError(0, UNKNOWN_ERROR);
   }
 }
 
 void PrivetURLFetcher::Start() {
   DCHECK_EQ(tries_, 0);  // We haven't called |Start()| yet.
 
-  if (!url_.is_valid()) {
-    return delegate_->OnError(this, UNKNOWN_ERROR);
-  }
+  if (!url_.is_valid())
+    return delegate_->OnError(0, UNKNOWN_ERROR);
 
   if (!send_empty_privet_token_) {
     std::string privet_access_token;
@@ -256,7 +254,7 @@ void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
     const net::URLFetcher* source) {
   if (source->GetStatus().status() == net::URLRequestStatus::CANCELED) {
-    delegate_->OnError(this, REQUEST_CANCELED);
+    delegate_->OnError(0, REQUEST_CANCELED);
     return true;
   }
 
@@ -268,7 +266,7 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
   if (source->GetResponseCode() != net::HTTP_OK &&
       source->GetResponseCode() != net::HTTP_PARTIAL_CONTENT &&
       source->GetResponseCode() != net::HTTP_BAD_REQUEST) {
-    delegate_->OnError(this, RESPONSE_CODE_ERROR);
+    delegate_->OnError(response_code(), RESPONSE_CODE_ERROR);
     return true;
   }
 
@@ -276,21 +274,20 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
     base::FilePath response_file_path;
 
     if (!source->GetResponseAsFilePath(true, &response_file_path)) {
-      delegate_->OnError(this, UNKNOWN_ERROR);
+      delegate_->OnError(0, UNKNOWN_ERROR);
       return true;
     }
 
-    return delegate_->OnRawData(this, true, std::string(), response_file_path);
-  } else {
-    std::string response_str;
-
-    if (!source->GetResponseAsString(&response_str)) {
-      delegate_->OnError(this, UNKNOWN_ERROR);
-      return true;
-    }
-
-    return delegate_->OnRawData(this, false, response_str, base::FilePath());
+    return delegate_->OnRawData(true, std::string(), response_file_path);
   }
+
+  std::string response_str;
+  if (!source->GetResponseAsString(&response_str)) {
+    delegate_->OnError(0, UNKNOWN_ERROR);
+    return true;
+  }
+
+  return delegate_->OnRawData(false, response_str, base::FilePath());
 }
 
 void PrivetURLFetcher::OnURLFetchCompleteParseData(
@@ -298,27 +295,27 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
   // Response contains error description.
   bool is_error_response = false;
   if (source->GetResponseCode() != net::HTTP_OK) {
-    delegate_->OnError(this, RESPONSE_CODE_ERROR);
+    delegate_->OnError(response_code(), RESPONSE_CODE_ERROR);
     return;
   }
 
   std::string response_str;
   if (!source->GetResponseAsString(&response_str)) {
-    delegate_->OnError(this, UNKNOWN_ERROR);
+    delegate_->OnError(0, UNKNOWN_ERROR);
     return;
   }
 
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(response_str);
   if (!value) {
-    delegate_->OnError(this, JSON_PARSE_ERROR);
+    delegate_->OnError(0, JSON_PARSE_ERROR);
     return;
   }
 
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value->GetAsDictionary(&dictionary_value)) {
-    delegate_->OnError(this, JSON_PARSE_ERROR);
+    delegate_->OnError(0, JSON_PARSE_ERROR);
     return;
   }
 
@@ -367,13 +364,12 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
 
 void PrivetURLFetcher::RequestTokenRefresh() {
   delegate_->OnNeedPrivetToken(
-      this,
       base::Bind(&PrivetURLFetcher::RefreshToken, weak_factory_.GetWeakPtr()));
 }
 
 void PrivetURLFetcher::RefreshToken(const std::string& token) {
   if (token.empty()) {
-    delegate_->OnError(this, TOKEN_ERROR);
+    delegate_->OnError(0, TOKEN_ERROR);
   } else {
     SetTokenForHost(GetHostString(), token);
     Try();

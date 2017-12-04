@@ -34,8 +34,7 @@ class PrivetInfoOperationImpl : public PrivetJSONOperation,
 
   PrivetHTTPClient* GetHTTPClient() override;
 
-  void OnError(PrivetURLFetcher* fetcher,
-               PrivetURLFetcher::ErrorType error) override;
+  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override;
@@ -60,15 +59,13 @@ class PrivetRegisterOperationImpl
   void Cancel() override;
   void CompleteRegistration() override;
 
-  void OnError(PrivetURLFetcher* fetcher,
-               PrivetURLFetcher::ErrorType error) override;
+  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
 
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override;
 
   void OnNeedPrivetToken(
-      PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
 
   PrivetHTTPClient* GetHTTPClient() override;
@@ -79,8 +76,7 @@ class PrivetRegisterOperationImpl
     Cancelation(PrivetHTTPClient* privet_client, const std::string& user);
     ~Cancelation() override;
 
-    void OnError(PrivetURLFetcher* fetcher,
-                 PrivetURLFetcher::ErrorType error) override;
+    void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
 
     void OnParsedJson(PrivetURLFetcher* fetcher,
                       const base::DictionaryValue& value,
@@ -131,13 +127,11 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
 
   PrivetHTTPClient* GetHTTPClient() override;
 
-  void OnError(PrivetURLFetcher* fetcher,
-               PrivetURLFetcher::ErrorType error) override;
+  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override;
   void OnNeedPrivetToken(
-      PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
 
  private:
@@ -172,13 +166,11 @@ class PrivetLocalPrintOperationImpl
   PrivetHTTPClient* GetHTTPClient() override;
 
   // PrivetURLFetcher::Delegate:
-  void OnError(PrivetURLFetcher* fetcher,
-               PrivetURLFetcher::ErrorType error) override;
+  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override;
   void OnNeedPrivetToken(
-      PrivetURLFetcher* fetcher,
       const PrivetURLFetcher::TokenCallback& callback) override;
 
  private:
