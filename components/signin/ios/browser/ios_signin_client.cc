@@ -14,8 +14,7 @@ IOSSigninClient::IOSSigninClient(
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     scoped_refptr<HostContentSettingsMap> host_content_settings_map,
     scoped_refptr<TokenWebData> token_web_data)
-    : OAuth2TokenService::Consumer("ios_signin_client"),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       url_request_context_(url_request_context),
       signin_error_controller_(signin_error_controller),
       cookie_settings_(cookie_settings),
@@ -88,41 +87,6 @@ IOSSigninClient::AddCookieChangedCallback(
   std::unique_ptr<SigninCookieChangedSubscription> subscription(
       new SigninCookieChangedSubscription(context_getter, url, name, callback));
   return subscription;
-}
-
-void IOSSigninClient::OnGetTokenInfoResponse(
-    std::unique_ptr<base::DictionaryValue> token_info) {
-  oauth_request_.reset();
-}
-
-void IOSSigninClient::OnOAuthError() {
-  // Ignore the failure.  It's not essential and we'll try again next time.
-  oauth_request_.reset();
-}
-
-void IOSSigninClient::OnNetworkError(int response_code) {
-  // Ignore the failure.  It's not essential and we'll try again next time.
-  oauth_request_.reset();
-}
-
-void IOSSigninClient::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  // Exchange the access token for a handle that can be used for later
-  // verification that the token is still valid (i.e. the password has not
-  // been changed).
-  if (!oauth_client_) {
-    oauth_client_.reset(new gaia::GaiaOAuthClient(GetURLRequestContext()));
-  }
-  oauth_client_->GetTokenInfo(access_token, 3 /* retries */, this);
-}
-
-void IOSSigninClient::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  // Ignore the failure.  It's not essential and we'll try again next time.
-  oauth_request_.reset();
 }
 
 void IOSSigninClient::OnNetworkChanged(

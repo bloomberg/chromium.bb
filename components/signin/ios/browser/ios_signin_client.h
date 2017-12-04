@@ -12,8 +12,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "google_apis/gaia/gaia_oauth_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -21,9 +19,7 @@
 class IOSSigninClient
     : public SigninClient,
       public net::NetworkChangeNotifier::NetworkChangeObserver,
-      public SigninErrorController::Observer,
-      public gaia::GaiaOAuthClient::Delegate,
-      public OAuth2TokenService::Consumer {
+      public SigninErrorController::Observer {
  public:
   IOSSigninClient(
       PrefService* pref_service,
@@ -61,19 +57,6 @@ class IOSSigninClient
   // KeyedService implementation.
   void Shutdown() override;
 
-  // gaia::GaiaOAuthClient::Delegate implementation.
-  void OnGetTokenInfoResponse(
-      std::unique_ptr<base::DictionaryValue> token_info) override;
-  void OnOAuthError() override;
-  void OnNetworkError(int response_code) override;
-
-  // OAuth2TokenService::Consumer implementation
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
   // net::NetworkChangeController::NetworkChangeObserver implementation.
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
@@ -86,9 +69,6 @@ class IOSSigninClient
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<TokenWebData> token_web_data_;
   std::list<base::Closure> delayed_callbacks_;
-
-  std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSSigninClient);
 };
