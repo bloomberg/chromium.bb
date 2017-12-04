@@ -2997,7 +2997,7 @@ unless @code{dotsIO} is also set. @code{lou_dotsToChar} and
 @code{lou_backTranslate} recognize Unicode braille automatically.
 
 @item pass1Only
-When this bit is set, Only pass 1 of the translation will be run. this
+When this bit is set, Only pass 1 of the translation will be run. This
 excludes all rules that use the @code{correct} and @code{multi-pass}
 opcodes as well as some rules using the @code{context} opcode. The flag
 was originally introduced for the benefit of screen reading programs,
@@ -3554,7 +3554,7 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  tablelist fileName printindex deprecatedopcode setDataPath
 @c  LocalWords:  getDataPath MathML suboperands logEnd liblouisutdml whitespace
 @c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice documentencoding
-@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL env
+@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL env NVDA
 @c  LocalWords:  MERCHANTABILITY registerLogCallback setLogLevel brf
 @c  LocalWords:  cindex chardefs xhtml pxref dec multi hyph dic Aa al
 @c  LocalWords:  mrow mfrac emphclass transnote subsubsection begemph
@@ -3567,4 +3567,5 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
 @c  LocalWords:  lbu EOF heckTable fn ispell getTypeformForEmphClass
 @c  LocalWords:  indexTables begcapsword endcapsword typeforms
-@c  LocalWords:  endemphphraseopcode emphClass
+@c  LocalWords:  endemphphraseopcode emphClass BrailleSense HumanWare
+@c  LocalWords:  BrailleNote
