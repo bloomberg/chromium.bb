@@ -68,6 +68,8 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
 
   String getSelectionBackgroundColor();
   String getSelectionForegroundColor();
+  String getInactiveSelectionBackgroundColor();
+  String getInactiveSelectionForegroundColor();
 
   bool isUnderTest();
   bool isHostedMode();
