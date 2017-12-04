@@ -498,8 +498,13 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                     int32_t tx_size_cat, aom_reader *r) {
-  const int max_depths = tx_size_cat_to_max_depth(tx_size_cat);
+                                     int is_inter, aom_reader *r) {
+  // TODO(debargha): Clean up the logic here. This function should only
+  // be called for intra.
+  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
+                                       : intra_tx_size_cat_lookup[bsize];
+  const int max_depths = bsize_to_max_depth(bsize);
   const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
@@ -507,8 +512,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     max_depths + 1, ACCT_STR);
   assert(depth >= 0 && depth <= max_depths);
-  const TX_SIZE tx_size = depth_to_tx_size(depth, tx_size_cat);
-  assert(!is_rect_tx(tx_size));
+  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize);
   return tx_size;
 }
 
@@ -520,14 +524,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
 
   if (block_signals_txsize(bsize)) {
     if ((!is_inter || allow_select_inter) && tx_mode == TX_MODE_SELECT) {
-      const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                           : intra_tx_size_cat_lookup[bsize];
-      const TX_SIZE coded_tx_size =
-          read_selected_tx_size(cm, xd, tx_size_cat, r);
-      if (coded_tx_size > max_txsize_lookup[bsize]) {
-        assert(coded_tx_size == max_txsize_lookup[bsize] + 1);
-        return get_max_rect_tx_size(bsize, is_inter);
-      }
+      const TX_SIZE coded_tx_size = read_selected_tx_size(cm, xd, is_inter, r);
       return coded_tx_size;
     } else {
       return tx_size_from_tx_mode(bsize, tx_mode, is_inter);

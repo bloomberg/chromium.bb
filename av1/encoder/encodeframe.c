@@ -4506,9 +4506,8 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     const TX_SIZE tx_size = mbmi->tx_size;
     const int tx_size_ctx = get_tx_size_context(xd);
     const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
-    const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
-    const int depth = tx_size_to_depth(coded_tx_size, tx_size_cat);
-    const int max_depths = tx_size_cat_to_max_depth(tx_size_cat);
+    const int depth = tx_size_to_depth(tx_size, bsize);
+    const int max_depths = bsize_to_max_depth(bsize);
     update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
                max_depths + 1);
   }

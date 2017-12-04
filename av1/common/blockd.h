@@ -900,15 +900,15 @@ static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
     0,  // BLOCK_128X64
     0,  // BLOCK_128X128
 #endif  // CONFIG_EXT_PARTITION
-    0,  // BLOCK_4X16
-    0,  // BLOCK_16X4
-    0,  // BLOCK_8X32
-    0,  // BLOCK_32X8
-    0,  // BLOCK_16X64
-    0,  // BLOCK_64X16
+    1,  // BLOCK_4X16
+    1,  // BLOCK_16X4
+    1,  // BLOCK_8X32
+    1,  // BLOCK_32X8
+    1,  // BLOCK_16X64
+    1,  // BLOCK_64X16
 #if CONFIG_EXT_PARTITION
-    0,  // BLOCK_32X128
-    0,  // BLOCK_128X32
+    1,  // BLOCK_32X128
+    1,  // BLOCK_128X32
 #endif  // CONFIG_EXT_PARTITION
   };
 
@@ -1075,15 +1075,21 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
 
-static INLINE int tx_size_cat_to_max_depth(int tx_size_cat) {
+static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
+  const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
   return AOMMIN(tx_size_cat + 1, MAX_TX_DEPTH);
 }
 
-static INLINE int tx_size_to_depth(TX_SIZE tx_size, int tx_size_cat) {
-  return (int)(tx_size_cat + 1 - (int)tx_size);
+static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize) {
+  if (tx_size == max_txsize_rect_intra_lookup[bsize]) return 0;
+  const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
+  const TX_SIZE coded_tx_size = txsize_sqr_map[tx_size];
+  return (int)(tx_size_cat + 1 - (int)coded_tx_size);
 }
 
-static INLINE TX_SIZE depth_to_tx_size(int depth, int tx_size_cat) {
+static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize) {
+  if (depth == 0) return max_txsize_rect_intra_lookup[bsize];
+  const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
   assert(tx_size_cat + 1 - depth >= 0 && tx_size_cat + 1 - depth < TX_SIZES);
   return (TX_SIZE)(tx_size_cat + 1 - depth);
 }

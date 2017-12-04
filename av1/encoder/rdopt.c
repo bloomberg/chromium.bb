@@ -2153,6 +2153,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+
   const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   this_rd_stats.rate =
       av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
@@ -2326,8 +2327,7 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
     const int is_inter = is_inter_block(mbmi);
     const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                          : intra_tx_size_cat_lookup[bsize];
-    const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
-    const int depth = tx_size_to_depth(coded_tx_size, tx_size_cat);
+    const int depth = tx_size_to_depth(tx_size, bsize);
     const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
     return r_tx_size;
@@ -3627,7 +3627,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                       tx_size, a, l, 0, rd_stats);
   return;
 #endif
-
+  // This function is used only for inter
+  assert(is_inter_block(&xd->mi[0]->mbmi));
   int64_t tmp;
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = get_plane_type(plane);
