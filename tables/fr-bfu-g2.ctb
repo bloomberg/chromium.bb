@@ -102,6 +102,7 @@ nofor before conabr always au 13
 nofor endword az 1-1356
 nofor begword æch 345-12356
 nofor begword æg 345-1245
+nofor begword æl 345-1245
 
 begmidword bl 45
 nofor begword bless 45-15-2346
@@ -168,6 +169,7 @@ endword elle 456
 endword elles 456-234
 noback before con always em 345
 nofor before bmpabr always em 345
+nofor begword ems 345-234
 nofor before voyabr before voyabr2 always embl 345-45
 nofor before voyabr always embr 345-23
 nofor begword œn 246-1345
@@ -2318,6 +2320,8 @@ compbrl .wav
 compbrl .tar
 compbrl .zip
 
+nofor pass2 $l[]@256$l@256 @56
+nofor context [@56-256]$l "."
 nofor pass2 $a[]$d@56 @6
 nofor pass3 $a$d[@56] @0-56-346-0-1-356-25-0-56
 nofor correct "\só\sa):\s" ?

@@ -1288,7 +1288,7 @@ tests:
   # ⠜ -> gl, em
     - ["⠜⠿⠕⠎⠏⠕⠗⠊⠕⠎⠑", "gléosporiose"]
     - ["⠓⠁⠜⠥⠗⠑", "haglure"]
-    - ["⠜⠎⠊⠢", "emsien", {xfail: true}]
+    - ["⠜⠎⠊⠢", "emsien"]
   # ⠲ -> ien, dis (début mot)
     - ["⠲⠒⠿⠞⠼⠝⠌⠗⠑⠍⠣", "discrétionnairement"]
     - ["⠐⠝⠥⠷⠕⠻⠙⠊⠎⠍⠑", "eunuchoïdisme"]
