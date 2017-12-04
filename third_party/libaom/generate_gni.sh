@@ -321,7 +321,7 @@ gen_config_files linux/x64 "--target=x86_64-linux-gcc ${all_platforms} ${x86_pla
 #gen_config_files linux/arm64 "--target=armv8-linux-gcc ${all_platforms}"
 #gen_config_files linux/mipsel "--target=mips32-linux-gcc ${all_platforms}"
 #gen_config_files linux/mips64el "--target=mips64-linux-gcc ${all_platforms}"
-#gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
+gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
 gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platforms}"
 gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
 #gen_config_files mac/ia32 "--target=x86-darwin9-gcc ${all_platforms} ${x86_platforms}"
@@ -343,7 +343,7 @@ lint_config linux/x64
 #lint_config linux/arm64
 #lint_config linux/mipsel
 #lint_config linux/mips64el
-#lint_config linux/generic
+lint_config linux/generic
 lint_config win/ia32
 lint_config win/x64
 #lint_config mac/ia32
@@ -366,7 +366,7 @@ gen_rtcd_header linux/x64 x86_64
 #gen_rtcd_header linux/arm64 armv8
 #gen_rtcd_header linux/mipsel mipsel
 #gen_rtcd_header linux/mips64el mips64el
-#gen_rtcd_header linux/generic generic
+gen_rtcd_header linux/generic generic
 gen_rtcd_header win/ia32 x86
 gen_rtcd_header win/x64 x86_64
 #gen_rtcd_header mac/ia32 x86
@@ -436,12 +436,12 @@ if [ -z $ONLY_CONFIGS ]; then
 #  make_clean
 #  make libaom_srcs.txt target=libs $config > /dev/null
 #  convert_srcs_to_project_files libaom_srcs.txt libaom_srcs_nacl
-#
-#  echo "Generate GENERIC source list."
-#  config=$(print_config_basic linux/generic)
-#  make_clean
-#  make libaom_srcs.txt target=libs $config > /dev/null
-#  convert_srcs_to_project_files libaom_srcs.txt libaom_srcs_generic
+
+  echo "Generate GENERIC source list."
+  config=$(print_config_basic linux/generic)
+  make_clean
+  make libaom_srcs.txt target=libs $config > /dev/null
+  convert_srcs_to_project_files libaom_srcs.txt libaom_srcs_generic
 fi
 
 echo "Remove temporary directory."

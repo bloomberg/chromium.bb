@@ -22,6 +22,8 @@ if (enable_av1_decoder) {
     cpu_arch_full = "ia32"
   } else if (current_cpu == "x64") {
     if (is_msan) {
+      # TODO(johannkoenig): Check if MSAN builds pass. libaom is favoring
+      # intrinsics over assembly.
       cpu_arch_full = "generic"
     } else {
       cpu_arch_full = "x64"
@@ -39,7 +41,7 @@ if (enable_av1_decoder) {
   }
 
   if (is_nacl) {
-    platform_include_dir = "source/config/nacl"
+    platform_include_dir = "source/config/linux/generic"
   } else {
     # TODO(johannkoenig): remove mac-specific config files.
     # The mac configurations are currently a relic. They were useful when
