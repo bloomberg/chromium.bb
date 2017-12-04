@@ -130,9 +130,6 @@
 -NewlibPackagedAppTest.NoSocketPermissions
 -NewlibPackagedAppTest.SocketPermissions
 -NewlibPackagedAppTest.SuccessfulLoad
--OutOfProcessPPAPITest.FileRef1
--OutOfProcessPPAPITest.FileRef2
--OutOfProcessPPAPITest.URLLoader1
 -OutOfProcessProxyResolverBrowserTest.Verify
 -PageInfoBubbleViewBrowserTest.SiteSettingsLinkWithNonDefaultPort
 -PageInfoBubbleViewBrowserTest.SiteSettingsLinkWithSiteDetailsEnabledAndNonDefaultPort
@@ -153,13 +150,6 @@
 -PolicyTest.BookmarkBarEnabled
 -PolicyTest.DefaultCookiesSetting
 -PolicyTest.HomepageLocation
--PPAPINaClNewlibTest.FileRef1
--PPAPINaClNewlibTest.FileRef2
--PPAPINaClNewlibTest.URLLoader1
-# Note: the next 3 tests pass locally but fail on bot.
--PPAPINaClPNaClNonSfiTest.FileRef1
--PPAPINaClPNaClNonSfiTest.FileRef2
--PPAPINaClPNaClNonSfiTest.URLLoader1
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
 -ProcessManagementTest.ProcessOverflow
@@ -900,3 +890,16 @@
 # TODO(jam): switch the tests to hook in via URLLoaderFactory to check load flags.
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.IssuesIdlePriorityRequests/0
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.IssuesIdlePriorityRequests/1
+
+# Add support of download_to_file for URLLoader.
+# http://crbug.com/791702
+-OutOfProcessPPAPITest.FileRef1
+-OutOfProcessPPAPITest.FileRef2
+-OutOfProcessPPAPITest.URLLoader1
+-PPAPINaClNewlibTest.FileRef1
+-PPAPINaClNewlibTest.FileRef2
+-PPAPINaClNewlibTest.URLLoader1
+# Note: the next 3 tests pass locally but fail on bot.
+-PPAPINaClPNaClNonSfiTest.FileRef1
+-PPAPINaClPNaClNonSfiTest.FileRef2
+-PPAPINaClPNaClNonSfiTest.URLLoader1
