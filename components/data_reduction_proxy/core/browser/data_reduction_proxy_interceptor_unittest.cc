@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -113,7 +113,9 @@ class TestURLRequestContextWithDataReductionProxy
 
 class DataReductionProxyInterceptorTest : public testing::Test {
  public:
-  DataReductionProxyInterceptorTest() {
+  DataReductionProxyInterceptorTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     test_context_ =
         DataReductionProxyTestContext::Builder()
             .Build();
@@ -140,7 +142,9 @@ class DataReductionProxyInterceptorTest : public testing::Test {
     default_context_->Init();
   }
 
-  base::MessageLoopForIO message_loop_;
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   net::TestNetworkDelegate default_network_delegate_;
   std::unique_ptr<net::URLRequestJobFactory> job_factory_;
@@ -190,7 +194,9 @@ TEST_F(DataReductionProxyInterceptorTest, MAYBE_TestJobFactoryChaining) {
 class DataReductionProxyInterceptorWithServerTest : public testing::Test {
  public:
   DataReductionProxyInterceptorWithServerTest()
-      : context_(true) {
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        context_(true) {
     context_.set_network_delegate(&network_delegate_);
     context_.set_net_log(&net_log_);
   }
@@ -245,8 +251,10 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
 
   const net::EmbeddedTestServer& direct() { return direct_; }
 
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  private:
-  base::MessageLoopForIO message_loop_;
   net::TestNetLog net_log_;
   net::TestNetworkDelegate network_delegate_;
   net::TestURLRequestContext context_;
@@ -289,7 +297,10 @@ TEST_F(DataReductionProxyInterceptorWithServerTest, TestNoBypass) {
 class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
  public:
   DataReductionProxyInterceptorEndToEndTest()
-      : context_(true), context_storage_(&context_) {}
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        context_(true),
+        context_storage_(&context_) {}
 
   ~DataReductionProxyInterceptorEndToEndTest() override {}
 
@@ -338,8 +349,10 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
     return config()->test_params()->proxies_for_http().front().proxy_server();
   }
 
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
  private:
-  base::MessageLoopForIO message_loop_;
   net::TestDelegate delegate_;
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
