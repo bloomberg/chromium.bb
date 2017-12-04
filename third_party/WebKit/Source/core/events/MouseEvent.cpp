@@ -542,6 +542,9 @@ void MouseEvent::ComputeRelativePosition() {
     n = n->parentNode();
 
   if (n) {
+    if (LocalFrameView* view = n->GetLayoutObject()->View()->GetFrameView())
+      layer_location_ = view->DocumentToAbsolute(page_location_);
+
     // FIXME: This logic is a wrong implementation of convertToLayerCoords.
     for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;
          layer = layer->Parent()) {
