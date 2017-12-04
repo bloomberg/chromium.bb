@@ -11,7 +11,7 @@ table: |
   
 tests:
   - [mit, t]
-  - [Mit, t, {xfail: "returns ',t' instead"}]
+  - [Mit, t, {xfail: "returns 'mit' instead"}]
   - [MIT, t]
   - [mIt, t, {xfail: "returns 'mit' instead"}]
   - [miT, t, {xfail: "returns 'mit' instead"}]
@@ -26,7 +26,7 @@ table: |
   
 tests:
   - [mit, t]
-  - [Mit, t, {xfail: "returns ',t' instead"}]
+  - [Mit, t, {xfail: "returns 'mit' instead"}]
   - [MIT, t]
   - [mIt, t, {xfail: "returns 'mit' instead"}]
   - [miT, t, {xfail: "returns 'mit' instead"}]
