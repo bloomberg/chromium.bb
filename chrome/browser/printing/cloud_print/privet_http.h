@@ -168,9 +168,6 @@ class PrivetLocalPrintOperation {
   // Username and jobname are for display only.
   virtual void SetUsername(const std::string& username) = 0;
   virtual void SetJobname(const std::string& jobname) = 0;
-  // If |offline| is true, we will indicate to the printer not to post the job
-  // to Google Cloud Print.
-  virtual void SetOffline(bool offline) = 0;
   // Document page size.
   virtual void SetPageSize(const gfx::Size& page_size) = 0;
 

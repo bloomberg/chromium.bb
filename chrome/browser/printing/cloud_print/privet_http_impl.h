@@ -156,30 +156,22 @@ class PrivetLocalPrintOperationImpl
  public:
   PrivetLocalPrintOperationImpl(PrivetHTTPClient* privet_client,
                                 PrivetLocalPrintOperation::Delegate* delegate);
-
   ~PrivetLocalPrintOperationImpl() override;
+
+  // PrivetLocalPrintOperation:
   void Start() override;
-
   void SetData(const scoped_refptr<base::RefCountedBytes>& data) override;
-
   void SetCapabilities(const std::string& capabilities) override;
-
   void SetTicket(const std::string& ticket) override;
-
   void SetUsername(const std::string& user) override;
-
   void SetJobname(const std::string& jobname) override;
-
-  void SetOffline(bool offline) override;
-
   void SetPageSize(const gfx::Size& page_size) override;
-
   void SetPWGRasterConverterForTesting(
       std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter)
       override;
-
   PrivetHTTPClient* GetHTTPClient() override;
 
+  // PrivetURLFetcher::Delegate:
   void OnError(PrivetURLFetcher* fetcher,
                PrivetURLFetcher::ErrorType error) override;
   void OnParsedJson(PrivetURLFetcher* fetcher,
@@ -221,7 +213,6 @@ class PrivetLocalPrintOperationImpl
   bool use_pdf_;
   bool has_extended_workflow_;
   bool started_;
-  bool offline_;
   gfx::Size page_size_;
 
   std::string user_;
