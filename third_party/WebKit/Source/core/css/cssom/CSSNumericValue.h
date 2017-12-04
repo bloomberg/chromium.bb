@@ -21,6 +21,7 @@ class CSSUnitValue;
 class ExceptionState;
 
 class CSSNumericValue;
+class CSSMathSum;
 using CSSNumberish = DoubleOrCSSNumericValue;
 using CSSNumericValueVector = HeapVector<Member<CSSNumericValue>>;
 
@@ -45,6 +46,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
   // Converts between compatible types, as defined in the IDL.
   CSSNumericValue* to(const String&, ExceptionState&);
+  CSSMathSum* toSum(const Vector<String>&, ExceptionState&);
 
   // Internal methods.
   // Converts between compatible types.
