@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
-import logging
 import sys
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
@@ -35,11 +34,6 @@ from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.builder_list import BuilderList
-
-# Print out useful debug logs in very verbose (-vv) mode.
-_log = logging.getLogger()
-_log.level = logging.DEBUG
-_log.addHandler(logging.StreamHandler(sys.stderr))
 
 ALL_PASS_TESTHARNESS_RESULT = """This is a testharness.js-based test.
 PASS woohoo
