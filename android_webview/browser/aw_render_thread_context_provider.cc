@@ -67,7 +67,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   context_ = gpu::GLInProcessContext::CreateWithoutInit();
   context_->Initialize(service, surface, surface->IsOffscreen(),
                        gpu::kNullSurfaceHandle, nullptr /* share_context */,
-                       attributes, limits, nullptr, nullptr, nullptr);
+                       attributes, limits, nullptr, nullptr, nullptr, nullptr);
 
   context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));

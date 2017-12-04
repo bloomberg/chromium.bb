@@ -47,7 +47,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
   auto result = context->Initialize(
       nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, shared_context,
       attribs, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager,
-      image_factory, std::move(task_runner));
+      image_factory, nullptr, std::move(task_runner));
 
   DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   return context;

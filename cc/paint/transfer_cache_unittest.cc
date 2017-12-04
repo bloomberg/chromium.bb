@@ -57,7 +57,7 @@ class TransferCacheTest : public testing::Test {
     auto result = context_->Initialize(
         nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, nullptr,
         attribs, gpu::SharedMemoryLimits(), &gpu_memory_buffer_manager_,
-        &image_factory_, base::ThreadTaskRunnerHandle::Get());
+        &image_factory_, nullptr, base::ThreadTaskRunnerHandle::Get());
 
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
     ASSERT_TRUE(context_->GetCapabilities().supports_oop_raster);

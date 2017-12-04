@@ -36,15 +36,16 @@ class ContextTestBase : public testing::Test {
     attributes.bind_generates_resource = false;
 
     auto context = gpu::GLInProcessContext::CreateWithoutInit();
-    auto result = context->Initialize(nullptr,                 /* service */
-                                      nullptr,                 /* surface */
-                                      true,                    /* offscreen */
-                                      gpu::kNullSurfaceHandle, /* window */
-                                      nullptr, /* share_context */
-                                      attributes, gpu::SharedMemoryLimits(),
-                                      gpu_memory_buffer_manager_.get(),
-                                      nullptr, /* image_factory */
-                                      base::ThreadTaskRunnerHandle::Get());
+    auto result = context->Initialize(
+        nullptr,                 /* service */
+        nullptr,                 /* surface */
+        true,                    /* offscreen */
+        gpu::kNullSurfaceHandle, /* window */
+        nullptr,                 /* share_context */
+        attributes, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
+        nullptr, /* image_factory */
+        nullptr /* gpu_channel_manager_delegate */,
+        base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     return context;
   }
