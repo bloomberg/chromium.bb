@@ -63,7 +63,7 @@ def _CreateOptionParser():
       '-c', '--category-filter',
       help='Apply filter to control what category groups should be traced.',
       type='string',
-      default='"*"')
+      default='')
   tracing_opts.add_option(
       '--record-continuously',
       help='Keep recording until stopped. The trace buffer is of fixed size '
