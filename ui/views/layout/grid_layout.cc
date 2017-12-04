@@ -364,6 +364,10 @@ struct ViewState {
   const bool pref_width_fixed;
   const bool pref_height_fixed;
 
+  // The preferred size, only set during the preferred size pass
+  // (SizeCalculationType::PREFERRED).
+  gfx::Size pref_size;
+
   // The width/height. This is one of possible three values:
   // . an explicitly set value (if pref_X_fixed is true). If an explicitly set
   //   value was provided, then this value never changes.
@@ -630,6 +634,7 @@ void ColumnSet::CalculateSize(SizeCalculationType type) {
           size.set_height(view_state->height);
       } else {
         size = view_state->view->GetPreferredSize();
+        view_state->pref_size = size;
       }
       if (!view_state->pref_width_fixed)
         view_state->width = size.width();
@@ -986,20 +991,22 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   //   view and update the rows ascent/descent.
   // . Reset the remaining_height of each view state.
   // . If the width the view will be given is different than it's pref, ask
-  //   for the height given a particularly width.
+  //   for the height given the actual width.
   for (const auto& view_state : view_states_) {
     view_state->remaining_height = view_state->height;
 
     if (view_state->v_align == BASELINE)
       view_state->baseline = view_state->view->GetBaseline();
 
-    if (view_state->h_align == FILL) {
-      // The view is resizable. As the pref height may vary with the width,
-      // ask for the pref again.
-      int actual_width =
-          view_state->column_set->GetColumnWidth(view_state->start_col,
-                                                 view_state->col_span);
-      if (actual_width != view_state->width && !view_state->pref_height_fixed) {
+    if (!view_state->pref_height_fixed) {
+      // If the view is given a different width than it's preferred width
+      // requery for the preferred height. This is necessary as the preferred
+      // height may depend upon the width.
+      int actual_width = view_state->column_set->GetColumnWidth(
+          view_state->start_col, view_state->col_span);
+      int x = 0;  // Not used in this stage.
+      CalculateSize(view_state->width, view_state->h_align, &x, &actual_width);
+      if (actual_width != view_state->width) {
         // The width this view will get differs from its preferred. Some Views
         // pref height varies with its width; ask for the preferred again.
         view_state->height = view_state->view->GetHeightForWidth(actual_width);
