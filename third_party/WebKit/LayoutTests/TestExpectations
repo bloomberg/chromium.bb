@@ -3414,15 +3414,9 @@ crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer
 crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 
-# These can be rebaselined after their V8 changes are rolled into Blink.
-crbug.com/700624 http/tests/devtools/console/console-tests.js [ NeedsManualRebaseline ]
-crbug.com/727514 http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
-crbug.com/727514 virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ NeedsManualRebaseline ]
-
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-# Uncomment these lines after the NeedsManualRebaseline counterpart is rebaselined.
-# crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Pass Timeout ]
@@ -3444,7 +3438,6 @@ crbug.com/720047 external/wpt/paint-timing [ Skip ]
 crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
-# Uncomment this line after the NeedsManualRebaseline counterpart is rebaselined.
 
 # Test flaky (crashing) on WebKit Android (Nexus4)
 crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
