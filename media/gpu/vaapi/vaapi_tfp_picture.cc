@@ -4,8 +4,8 @@
 
 #include "media/gpu/vaapi/vaapi_tfp_picture.h"
 
-#include "media/gpu/va_surface.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_glx.h"

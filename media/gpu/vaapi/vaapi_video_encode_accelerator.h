@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
-#define MEDIA_GPU_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
+#define MEDIA_GPU_VAAPI_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,8 +18,8 @@
 #include "media/filters/h264_bitstream_buffer.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/va_surface.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {
@@ -272,4 +272,4 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_VIDEO_ENCODE_ACCELERATOR_H_

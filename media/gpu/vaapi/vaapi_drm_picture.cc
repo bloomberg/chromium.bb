@@ -5,8 +5,8 @@
 #include "media/gpu/vaapi/vaapi_drm_picture.h"
 
 #include "base/file_descriptor_posix.h"
-#include "media/gpu/va_surface.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"

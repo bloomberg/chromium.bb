@@ -24,7 +24,7 @@
 #include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #endif
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_video_encode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_video_encode_accelerator.h"
 #endif
 
 namespace media {

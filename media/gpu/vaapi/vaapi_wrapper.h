@@ -7,8 +7,8 @@
 // and VaapiVideoEncodeAccelerator for encode, to interface
 // with libva (VA-API library for hardware video codec).
 
-#ifndef MEDIA_GPU_VAAPI_WRAPPER_H_
-#define MEDIA_GPU_VAAPI_WRAPPER_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_WRAPPER_H_
+#define MEDIA_GPU_VAAPI_VAAPI_WRAPPER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,7 +25,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/va_surface.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
@@ -285,4 +285,4 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_WRAPPER_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_WRAPPER_H_

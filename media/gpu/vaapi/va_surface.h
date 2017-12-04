@@ -5,8 +5,8 @@
 // This file contains the definition of VASurface class, used for decoding by
 // VaapiVideoDecodeAccelerator and VaapiH264Decoder.
 
-#ifndef MEDIA_GPU_VA_SURFACE_H_
-#define MEDIA_GPU_VA_SURFACE_H_
+#ifndef MEDIA_GPU_VAAPI_VA_SURFACE_H_
+#define MEDIA_GPU_VAAPI_VA_SURFACE_H_
 
 #include <va/va.h>
 
@@ -114,4 +114,4 @@ class MEDIA_GPU_EXPORT VASurface
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VA_SURFACE_H_
+#endif  // MEDIA_GPU_VAAPI_VA_SURFACE_H_

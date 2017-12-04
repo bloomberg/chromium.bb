@@ -56,7 +56,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #elif defined(OS_WIN)
 #include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #endif

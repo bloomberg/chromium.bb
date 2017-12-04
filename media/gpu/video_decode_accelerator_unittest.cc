@@ -75,7 +75,7 @@
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
 #endif  // defined(OS_WIN)
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif  // BUILDFLAG(USE_VAAPI)
 
 #if defined(OS_CHROMEOS)

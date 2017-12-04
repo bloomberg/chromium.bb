@@ -4,7 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gl/gl_bindings.h"
 
 #include "media/gpu/vaapi/vaapi_drm_picture.h"

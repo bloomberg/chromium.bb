@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_JPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_VAAPI_JPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
@@ -18,8 +18,8 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/shared_memory_region.h"
-#include "media/gpu/vaapi_jpeg_decoder.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
 namespace media {
@@ -118,4 +118,4 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_JPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_H_
