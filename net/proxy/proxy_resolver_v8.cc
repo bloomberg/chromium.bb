@@ -855,7 +855,7 @@ ProxyResolverV8::ProxyResolverV8(std::unique_ptr<Context> context)
   DCHECK(context_);
 }
 
-ProxyResolverV8::~ProxyResolverV8() {}
+ProxyResolverV8::~ProxyResolverV8() = default;
 
 int ProxyResolverV8::GetProxyForURL(const GURL& query_url,
                                     ProxyInfo* results,
