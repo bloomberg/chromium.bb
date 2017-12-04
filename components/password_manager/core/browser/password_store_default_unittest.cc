@@ -207,7 +207,6 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
-  delegate.FinishAsyncProcessing();
 
   // Change the password.
   form->password_value = base::ASCIIToUTF16("a different password");
@@ -221,7 +220,6 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
-  delegate.FinishAsyncProcessing();
 
   const PasswordStoreChange expected_delete_changes[] = {
       PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
@@ -232,6 +230,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
+  // Run the tasks to allow all the above expected calls to take place.
   delegate.FinishAsyncProcessing();
 
   store->RemoveObserver(&observer);
