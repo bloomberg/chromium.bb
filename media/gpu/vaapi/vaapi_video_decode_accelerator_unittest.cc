@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi_video_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -12,7 +12,7 @@
 #include "media/gpu/format_utils.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

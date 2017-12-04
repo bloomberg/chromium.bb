@@ -17,7 +17,7 @@
 #endif
 
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_jpeg_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator.h"
 #endif
 
 #if defined(USE_V4L2_JDA)

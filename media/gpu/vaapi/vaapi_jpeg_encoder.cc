@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi_jpeg_encoder.h"
+#include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 
 #define ARRAY_MEMCPY_CHECKED(to, from)                               \
   do {                                                               \

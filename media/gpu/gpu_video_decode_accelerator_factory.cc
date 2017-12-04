@@ -34,7 +34,7 @@
 #include "media/gpu/android/device_info.h"
 #endif
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_video_decode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 #include "ui/gl/gl_implementation.h"
 #endif
 

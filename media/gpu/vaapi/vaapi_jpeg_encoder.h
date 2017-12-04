@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_JPEG_ENCODER_H_
-#define MEDIA_GPU_VAAPI_JPEG_ENCODER_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_JPEG_ENCODER_H_
+#define MEDIA_GPU_VAAPI_VAAPI_JPEG_ENCODER_H_
 
 #include <va/va.h>
 #include <memory>
@@ -62,4 +62,4 @@ class MEDIA_GPU_EXPORT VaapiJpegEncoder {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_JPEG_ENCODER_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_JPEG_ENCODER_H_

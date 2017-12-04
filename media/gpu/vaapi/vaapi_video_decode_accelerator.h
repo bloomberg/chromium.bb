@@ -5,8 +5,8 @@
 // This file contains an implementation of VideoDecoderAccelerator
 // that utilizes hardware video decoder present on Intel CPUs.
 
-#ifndef MEDIA_GPU_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
-#define MEDIA_GPU_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
+#define MEDIA_GPU_VAAPI_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -32,7 +32,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/shared_memory_region.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -322,4 +322,4 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_VIDEO_DECODE_ACCELERATOR_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi_video_encode_accelerator.h"
+#include "media/gpu/vaapi/vaapi_video_encode_accelerator.h"
 
 #include <string.h>
 

@@ -95,7 +95,7 @@
 #endif
 
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_wrapper.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
 
 namespace content {

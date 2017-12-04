@@ -21,7 +21,7 @@
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/vaapi_jpeg_decoder.h"
+#include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 
 namespace media {
 namespace {
