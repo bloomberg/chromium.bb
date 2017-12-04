@@ -4,10 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 
-#include <sys/stat.h>
 #include <algorithm>
 
-#include "base/debug/crash_logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -54,7 +52,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -256,25 +253,6 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)viewDidLoadImpl {
-  // Temporary: collect information about a potentially missing or inaccessible
-  // nib (https://crbug.com/685985)
-  NSString* nibPath = [self.nibBundle pathForResource:@"Toolbar" ofType:@"nib"];
-  struct stat sb;
-  int nibErrno = 0;
-  if (stat(nibPath.fileSystemRepresentation, &sb) != 0) {
-    nibErrno = errno;
-  }
-  NSString* closestPath = nibPath;
-  while (closestPath && stat(closestPath.fileSystemRepresentation, &sb) != 0) {
-    closestPath = [closestPath stringByDeletingLastPathComponent];
-  }
-  base::debug::ScopedCrashKey nibCrashKey {
-    crash_keys::mac::kToolbarNibInfo,
-        [NSString stringWithFormat:@"errno: %d nib: %@ closest: %@", nibErrno,
-                                   nibPath, closestPath]
-            .UTF8String
-  };
-
   // When linking and running on 10.10+, both -awakeFromNib and -viewDidLoad may
   // be called, don't initialize twice.
   if (locationBarView_) {

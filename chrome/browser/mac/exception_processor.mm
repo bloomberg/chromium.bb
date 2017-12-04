@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/common/crash_keys.h"
+#include "components/crash/core/common/crash_key.h"
 
 namespace chrome {
 
@@ -91,8 +91,10 @@ static NOINLINE void TERMINATING_FROM_UNCAUGHT_NSEXCEPTION(id exception) {
   NSString* exception_message_ns = [NSString
       stringWithFormat:@"%@: %@", [exception name], [exception reason]];
   std::string exception_message = base::SysNSStringToUTF8(exception_message_ns);
-  base::debug::SetCrashKeyValue(crash_keys::mac::kNSException,
-                                exception_message);
+
+  static crash_reporter::CrashKeyString<256> crash_key("nsexception");
+  crash_key.Set(exception_message);
+
   LOG(FATAL) << "Terminating from Objective-C exception: " << exception_message;
 }
 
@@ -102,20 +104,25 @@ static id ObjcExceptionPreprocessor(id exception) {
   // Record UMA and crash keys about the exception.
   RecordExceptionWithUma(exception);
 
-  const char* const kExceptionKey =
-      seen_first_exception ? crash_keys::mac::kLastNSException
-                           : crash_keys::mac::kFirstNSException;
+  static crash_reporter::CrashKeyString<256> firstexception("firstexception");
+  static crash_reporter::CrashKeyString<256> lastexception("lastexception");
+
+  static crash_reporter::CrashKeyString<1024> firstexception_bt(
+      "firstexception_bt");
+  static crash_reporter::CrashKeyString<1024> lastexception_bt(
+      "lastexception_bt");
+
+  auto* key = seen_first_exception ? &lastexception : &firstexception;
+  auto* bt_key = seen_first_exception ? &lastexception_bt : &firstexception_bt;
+
   NSString* value = [NSString stringWithFormat:@"%@ reason %@",
       [exception name], [exception reason]];
-  base::debug::SetCrashKeyValue(kExceptionKey, base::SysNSStringToUTF8(value));
+  key->Set(base::SysNSStringToUTF8(value));
 
-  const char* const kExceptionTraceKey =
-      seen_first_exception ? crash_keys::mac::kLastNSExceptionTrace
-                           : crash_keys::mac::kFirstNSExceptionTrace;
   // This exception preprocessor runs prior to the one in libobjc, which sets
   // the -[NSException callStackReturnAddresses].
-  base::debug::SetCrashKeyToStackTrace(kExceptionTraceKey,
-                                       base::debug::StackTrace());
+  crash_reporter::SetCrashKeyStringToStackTrace(bt_key,
+                                                base::debug::StackTrace());
 
   seen_first_exception = true;
 
