@@ -26,14 +26,17 @@ namespace chromeos {
 // OpenSSL (http://crbug.com/338888).
 class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
  public:
-  ~EasyUnlockClient() override;
-
-  typedef base::Callback<void(const std::string& data)> DataCallback;
-
   // Callback for |GenerateEcP256KeyPair|. Carries the generated keys.
-  typedef base::Callback<void(const std::string& private_key,
-                              const std::string& public_key)>
-      KeyPairCallback;
+  // On error, arguments are empty strings.
+  using KeyPairCallback =
+      base::OnceCallback<void(const std::string& private_key,
+                              const std::string& public_key)>;
+
+  // Callback for D-Bus calls returning byte arrays as strings.
+  // On error, |data| is empty.
+  using DataCallback = base::OnceCallback<void(const std::string& data)>;
+
+  ~EasyUnlockClient() override;
 
   // Parameters used to create a secure message.
   struct CreateSecureMessageOptions {
@@ -96,7 +99,7 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
 
   // Generates ECDSA key pair using P256 curve.
   // The created keys should only be used with this client.
-  virtual void GenerateEcP256KeyPair(const KeyPairCallback& callback) = 0;
+  virtual void GenerateEcP256KeyPair(KeyPairCallback callback) = 0;
 
   // Converts public key bytes to format used by Easy Unlock.
   // |key_algorithm|: The asymmetric encryption algorithm with which the key is
@@ -105,7 +108,7 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
   // |callback|: The callback carrying the wrapped key.
   virtual void WrapPublicKey(const std::string& key_algorithm,
                              const std::string& public_key,
-                             const DataCallback& callback) = 0;
+                             DataCallback callback) = 0;
 
   // Given a private and a public key, creates a symetric secret key using
   // EC Diffe-Hellman key exchange. The provided keys come from different
@@ -114,7 +117,7 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
   // private and public key come generates the same secret key.
   virtual void PerformECDHKeyAgreement(const std::string& private_key,
                                        const std::string& public_key,
-                                       const DataCallback& callback) = 0;
+                                       DataCallback callback) = 0;
 
   // Creates signed and, if specified, encrypted message in format used by Easy
   // Unlock.
@@ -124,7 +127,7 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
   //     be empty.
   virtual void CreateSecureMessage(const std::string& payload,
                                    const CreateSecureMessageOptions& options,
-                                   const DataCallback& callback) = 0;
+                                   DataCallback callback) = 0;
 
   // Authenticates and, if specified, decrypts a secure message.
   // |message|: The message to unwrap. It is in the same format as the message
@@ -135,7 +138,7 @@ class CHROMEOS_EXPORT EasyUnlockClient : public DBusClient {
   //     will be called with an empty string.
   virtual void UnwrapSecureMessage(const std::string& message,
                                    const UnwrapSecureMessageOptions& options,
-                                   const DataCallback& callback) = 0;
+                                   DataCallback callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

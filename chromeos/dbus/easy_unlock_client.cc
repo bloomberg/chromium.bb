@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -48,20 +49,20 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   ~EasyUnlockClientImpl() override = default;
 
   // EasyUnlockClient override.
-  void GenerateEcP256KeyPair(const KeyPairCallback& callback) override {
+  void GenerateEcP256KeyPair(KeyPairCallback callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kGenerateEcP256KeyPairMethod);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&EasyUnlockClientImpl::OnKeyPair,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // EasyUnlockClient override.
   void WrapPublicKey(const std::string& key_algorithm,
                      const std::string& public_key,
-                     const DataCallback& callback) override {
+                     DataCallback callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kWrapPublicKeyMethod);
@@ -71,13 +72,13 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&EasyUnlockClientImpl::OnData,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // EasyUnlockClient override.
   void PerformECDHKeyAgreement(const std::string& private_key,
                                const std::string& public_key,
-                               const DataCallback& callback) override {
+                               DataCallback callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kPerformECDHKeyAgreementMethod);
@@ -89,13 +90,13 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&EasyUnlockClientImpl::OnData,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // EasyUnlockClient override.
   void CreateSecureMessage(const std::string& payload,
                            const CreateSecureMessageOptions& options,
-                           const DataCallback& callback) override {
+                           DataCallback callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kCreateSecureMessageMethod);
@@ -113,13 +114,13 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&EasyUnlockClientImpl::OnData,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // EasyUnlockClient override.
   void UnwrapSecureMessage(const std::string& message,
                            const UnwrapSecureMessageOptions& options,
-                           const DataCallback& callback) override {
+                           DataCallback callback) override {
     dbus::MethodCall method_call(
         easy_unlock::kEasyUnlockServiceInterface,
         easy_unlock::kUnwrapSecureMessageMethod);
@@ -134,7 +135,7 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&EasyUnlockClientImpl::OnData,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:
@@ -146,19 +147,19 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
   }
 
  private:
-  void OnData(const DataCallback& callback, dbus::Response* response) {
+  void OnData(DataCallback callback, dbus::Response* response) {
     if (!response) {
-      callback.Run("");
+      std::move(callback).Run(std::string());
       return;
     }
 
     dbus::MessageReader reader(response);
-    callback.Run(PopResponseData(&reader));
+    std::move(callback).Run(PopResponseData(&reader));
   }
 
-  void OnKeyPair(const KeyPairCallback& callback, dbus::Response* response) {
+  void OnKeyPair(KeyPairCallback callback, dbus::Response* response) {
     if (!response) {
-      callback.Run("", "");
+      std::move(callback).Run(std::string(), std::string());
       return;
     }
 
@@ -167,11 +168,11 @@ class EasyUnlockClientImpl : public EasyUnlockClient {
     std::string public_key = PopResponseData(&reader);
 
     if (public_key.empty() || private_key.empty()) {
-      callback.Run("", "");
+      std::move(callback).Run(std::string(), std::string());
       return;
     }
 
-    callback.Run(private_key, public_key);
+    std::move(callback).Run(private_key, public_key);
   }
 
   dbus::ObjectProxy* proxy_;
