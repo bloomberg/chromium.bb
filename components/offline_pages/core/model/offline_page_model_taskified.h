@@ -115,6 +115,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   OfflinePageMetadataStoreSQL* GetStoreForTesting() { return store_.get(); }
 
  private:
+  // TODO(romax): https://crbug.com/791115, remove the friend class usage.
   friend class OfflinePageModelTaskifiedTest;
 
   // Callbacks for saving pages.
@@ -148,16 +149,24 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       DeletePageResult result,
       const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
 
-  // Callbacks for clearing temporary pages.
+  // Methods for clearing temporary pages.
+  void PostClearLegacyTemporaryPagesTask();
+  void ClearLegacyTemporaryPages();
   void PostClearCachedPagesTask(bool is_initializing);
   void ClearCachedPages();
   void OnClearCachedPagesDone(base::Time start_time,
                               size_t deleted_page_count,
                               ClearStorageTask::ClearStorageResult result);
 
+  // Methods for consistency check.
+  void PostCheckMetadataConsistencyTask(bool is_initializing);
+  void CheckTemporaryPagesConsistency();
+  void CheckPersistentPagesConsistency();
+
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
   void CreateArchivesDirectoryIfNeeded();
+  base::Time GetCurrentTime();
 
   // Persistent store for offline page metadata.
   std::unique_ptr<OfflinePageMetadataStoreSQL> store_;
@@ -186,6 +195,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // Time of when the most recent cached pages clearing happened. The value will
   // not persist across Chrome restarts.
   base::Time last_clear_cached_pages_time_;
+
+  // Clock for testing only.
+  std::unique_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_;
 

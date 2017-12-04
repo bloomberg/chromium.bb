@@ -25,6 +25,8 @@ namespace offline_pages {
 
 namespace {
 
+#define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
+
 struct PageInfo {
   int64_t offline_id;
   base::FilePath file_path;
@@ -37,8 +39,7 @@ std::vector<PageInfo> GetAllTemporaryPageInfos(
 
   const char kSql[] =
       "SELECT offline_id, file_path"
-      " FROM offlinepages_v1"
-      " WHERE client_namespace = ?";
+      " FROM " OFFLINE_PAGES_TABLE_NAME " WHERE client_namespace = ?";
 
   for (const auto& temp_namespace : temp_namespaces) {
     sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -66,7 +67,8 @@ std::set<base::FilePath> GetAllArchives(const base::FilePath& archives_dir) {
 
 bool DeletePagesByOfflineIds(const std::vector<int64_t>& offline_ids,
                              sql::Connection* db) {
-  static const char kSql[] = "DELETE FROM offlinepages_v1 WHERE offline_id = ?";
+  static const char kSql[] =
+      "DELETE FROM " OFFLINE_PAGES_TABLE_NAME " WHERE offline_id = ?";
 
   for (const auto& offline_id : offline_ids) {
     sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
