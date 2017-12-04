@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/key_systems.h"
@@ -72,12 +72,8 @@ class WebEncryptedMediaClientImpl::Reporter {
 
  private:
   void Report(KeySystemSupportStatus status) {
-    // Not using UMA_HISTOGRAM_ENUMERATION directly because UMA_* macros
-    // require the names to be constant throughout the process' lifetime.
-    base::LinearHistogram::FactoryGet(
-        uma_name_, 1, KEY_SYSTEM_SUPPORT_STATUS_COUNT,
-        KEY_SYSTEM_SUPPORT_STATUS_COUNT + 1,
-        base::Histogram::kUmaTargetedHistogramFlag)->Add(status);
+    base::UmaHistogramEnumeration(uma_name_, status,
+                                  KEY_SYSTEM_SUPPORT_STATUS_COUNT);
   }
 
   const std::string uma_name_;
