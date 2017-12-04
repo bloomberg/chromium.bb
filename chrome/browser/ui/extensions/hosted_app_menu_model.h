@@ -17,6 +17,7 @@ class HostedAppMenuModel : public AppMenuModel {
  private:
   // AppMenuModel:
   void Build() override;
+  void LogMenuAction(AppMenuAction action_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppMenuModel);
 };
