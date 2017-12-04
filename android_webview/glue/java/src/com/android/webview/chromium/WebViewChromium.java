@@ -59,6 +59,7 @@ import org.chromium.android_webview.AwPrintDocumentAdapter;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content.browser.SmartClipProvider;
@@ -191,6 +192,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             mWebSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
             mWebSettings.setAcceptThirdPartyCookies(true);
             mWebSettings.getAwSettings().setZeroLayoutHeightDisablesViewportQuirk(true);
+        }
+
+        if (BuildInfo.targetsAtLeastP()) {
+            mWebSettings.getAwSettings().setCSSHexAlphaColorEnabled(true);
+            mWebSettings.getAwSettings().setScrollTopLeftInteropEnabled(true);
         }
 
         if (mShouldDisableThreadChecking) disableThreadChecking();
