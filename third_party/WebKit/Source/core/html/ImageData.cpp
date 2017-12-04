@@ -746,7 +746,8 @@ bool ImageData::ImageDataInCanvasColorSettings(
     CanvasPixelFormat canvas_pixel_format,
     unsigned char* converted_pixels,
     DataU8ColorType u8_color_type,
-    const IntRect* src_rect) {
+    const IntRect* src_rect,
+    const AlphaDisposition alpha_disposition) {
   if (!data_ && !data_u16_ && !data_f32_)
     return false;
 
@@ -764,6 +765,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
 
   // if color conversion is not needed, copy data into pixel buffer.
   if (!src_color_space.get() && !dst_color_space.get() && data_) {
+    int num_pixels = width() * height();
     SwizzleIfNeeded(u8_color_type, crop_rect);
     if (crop_rect) {
       unsigned char* src_data =
@@ -778,11 +780,23 @@ bool ImageData::ImageDataInCanvasColorSettings(
         src_index += src_row_stride;
         dst_index += dst_row_stride;
       }
+      num_pixels = crop_rect->Width() * crop_rect->Height();
     } else {
       memcpy(converted_pixels, data_->Data(), data_->length());
     }
+    bool conversion_result = true;
+    if (alpha_disposition == kPremultiplyAlpha) {
+      std::unique_ptr<SkColorSpaceXform> xform =
+          SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
+                                 SkColorSpace::MakeSRGBLinear().get());
+      SkColorSpaceXform::ColorFormat color_format =
+          SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+      conversion_result =
+          xform->apply(color_format, converted_pixels, color_format,
+                       converted_pixels, num_pixels, kPremul_SkAlphaType);
+    }
     SwizzleIfNeeded(u8_color_type, crop_rect);
-    return true;
+    return conversion_result;
   }
 
   bool conversion_result = false;
@@ -806,6 +820,9 @@ bool ImageData::ImageDataInCanvasColorSettings(
           : SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat;
   if (canvas_pixel_format == kF16CanvasPixelFormat)
     dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+  SkAlphaType alpha_type = (alpha_disposition == kPremultiplyAlpha)
+                               ? kPremul_SkAlphaType
+                               : kUnpremul_SkAlphaType;
 
   // SkColorSpaceXform only accepts big-endian integers when source data is
   // uint16. Since ImageData is always little-endian, we need to convert back
@@ -827,17 +844,16 @@ bool ImageData::ImageDataInCanvasColorSettings(
     for (int i = 0; i < crop_rect->Height(); i++) {
       conversion_result &=
           xform->apply(dst_color_format, dst_data + dst_index, src_color_format,
-                       src_data + src_index, crop_rect->Width(),
-                       SkAlphaType::kUnpremul_SkAlphaType);
+                       src_data + src_index, crop_rect->Width(), alpha_type);
       if (!conversion_result)
         break;
       src_index += src_row_stride;
       dst_index += dst_row_stride;
     }
   } else {
-    conversion_result = xform->apply(dst_color_format, converted_pixels,
-                                     src_color_format, src_data, size_.Area(),
-                                     SkAlphaType::kUnpremul_SkAlphaType);
+    conversion_result =
+        xform->apply(dst_color_format, converted_pixels, src_color_format,
+                     src_data, size_.Area(), alpha_type);
   }
 
   SwapU16EndiannessForSkColorSpaceXform(crop_rect);

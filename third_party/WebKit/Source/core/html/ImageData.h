@@ -138,11 +138,13 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   // For example, if ImageDataInCanvasColorSettings() is called to fill an
   // ImageBuffer, kRGBAColorType should be used. If the converted pixels are
   // used to create an ImageBitmap, kN32ColorType should be used.
-  bool ImageDataInCanvasColorSettings(CanvasColorSpace,
-                                      CanvasPixelFormat,
-                                      unsigned char* converted_pixels,
-                                      DataU8ColorType,
-                                      const IntRect* = nullptr);
+  bool ImageDataInCanvasColorSettings(
+      CanvasColorSpace,
+      CanvasPixelFormat,
+      unsigned char* converted_pixels,
+      DataU8ColorType,
+      const IntRect* = nullptr,
+      const AlphaDisposition = kDontPremultiplyAlpha);
 
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override { return size_; }

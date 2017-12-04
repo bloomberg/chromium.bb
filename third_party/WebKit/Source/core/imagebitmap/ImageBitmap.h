@@ -28,11 +28,6 @@ class ImageData;
 class ImageDecoder;
 class OffscreenCanvas;
 
-enum AlphaDisposition {
-  kPremultiplyAlpha,
-  kDontPremultiplyAlpha,
-};
-
 enum ColorSpaceInfoUpdate {
   kUpdateColorSpaceInformation,
   kDontUpdateColorSpaceInformation,
