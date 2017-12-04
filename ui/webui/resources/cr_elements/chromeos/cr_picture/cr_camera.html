@@ -144,7 +144,8 @@
       </div>
       <div>
         <button is="paper-icon-button-light" id="takePhoto" tabindex="1"
-            title="[[takePhotoLabel]]" on-tap="takePhoto"
+            title="[[getTakePhotoLabel_(videomode, takePhotoLabel,
+                captureVideoLabel)]]" on-tap="takePhoto"
             disabled="[[!cameraOnline_]]">
         </button>
       </div>
