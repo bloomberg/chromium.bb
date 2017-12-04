@@ -1,16 +1,27 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 3.4.0 (2017-12-04)
-For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/14?closed=1][the list of closed issues]].
+This release brings together a lot of work by lots of different
+people. Probably the most prominent fix is the work on output
+positions by Bue and Bert. NVDA should benefit from this. Then there
+are new and massively improved tables like the Lithuanian 6-dot table
+by Rimas or the improved back-translation for French by Michel and
+André-Abush to name just a few. There are too many contributors to
+name them here, thanks to them all.
+
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/14?closed=1][the list of closed
+issues]].
 
 ** New features
-- Add support for inpos and outpos checking in ~lou_checkyaml~ thanks
-  to Bue Vester-Andersen.
+- Add support for ~inputPos~ and ~outputPos~ checking in
+  ~lou_checkyaml~ thanks to Bue Vester-Andersen. See the manual for
+  details and examples.
 ** Bug fixes
-- outputPositions are now calculated based on inputPositions thanks to
-  Bert Frees. This avoids a whole class of bugs that previously
-  plagued the outputPositions. This fix also obviates the need for the
-  ~pass1Only~ flag. See below for the deprecation notice.
+- output positions (~outputPos~) are now calculated based on input
+  positions (~inputPos~) thanks to Bert Frees. This avoids a whole
+  class of bugs that previously plagued the output positions. This fix
+  also obviates the need for the ~pass1Only~ flag. See below for the
+  deprecation notice.
 ** Braille table improvements
 - Addition of Nemeth and Kangxi radical characters and other
   improvements to Chinese braille (~zh-tw.ctb~) thanks to Bo-Cheng
@@ -31,7 +42,7 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 - Fix some math signs in Czech Braille (~cs-chardefs.cti~). Thanks to
   Christian Herden of ViewPlus for reporting this.
 - Updates to the SEB British Braille Tables thanks to Paul Wood
-- Massive improvements to French back translation thanks to Michel
+- Massive improvements to French back-translation thanks to Michel
   Such and André-Abush Clause
 ** Other changes
 *** Improved documentation
@@ -61,13 +72,16 @@ Liblouis. When using the ~pass1Only~ flag in this release you will get
 a warning.
 
 ** Backwards incompatible changes
+None
 
 ** New, renamed or removed tables
 *** New
 - no-no-braillo-047-01.dis
 - lt-6dot.utb
 *** Renamed
+None
 *** Removed
+None
 
 * Noteworthy changes in release 3.3.0 (2017-09-04)
 This release brings a slew of Braille table improvements, fixes a
