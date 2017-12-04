@@ -340,6 +340,7 @@
     aria_invalid_value,
     auto_complete,
     chrome_channel,  // Automation only.
+    class_name, // views and Android
     container_live_relevant,
     container_live_status,
     description,

@@ -431,8 +431,7 @@ chrome.automation.AutomationNode.prototype.location;
 chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex) {};
 
 /**
- * The location (as a bounding box) of this node in global screen coordinates.
- * This is the same as location but not clipped by ancestors.
+ * The location (as a bounding box) of this node in global screen coordinates without applying any clipping from ancestors.
  * @type {(!chrome.automation.Rect|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-unclippedLocation
  */
@@ -893,6 +892,20 @@ chrome.automation.AutomationNode.prototype.containerLiveAtomic;
  * @see https://developer.chrome.com/extensions/automation#type-containerLiveBusy
  */
 chrome.automation.AutomationNode.prototype.containerLiveBusy;
+
+/**
+ * Aria auto complete.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-autoComplete
+ */
+chrome.automation.AutomationNode.prototype.autoComplete;
+
+/**
+ * The name of the programmatic backing object.
+ * @type {(string|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-className
+ */
+chrome.automation.AutomationNode.prototype.className;
 
 /**
  * A map containing all HTML attributes and their values

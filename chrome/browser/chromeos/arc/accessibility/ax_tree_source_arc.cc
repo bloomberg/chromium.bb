@@ -191,8 +191,11 @@ void PopulateAXRole(arc::mojom::AccessibilityNodeInfoData* node,
   }
 
   std::string class_name;
-  GetStringProperty(node, arc::mojom::AccessibilityStringProperty::CLASS_NAME,
-                    &class_name);
+  if (GetStringProperty(node,
+                        arc::mojom::AccessibilityStringProperty::CLASS_NAME,
+                        &class_name)) {
+    out_data->AddStringAttribute(ui::AX_ATTR_CLASS_NAME, class_name);
+  }
 
 #define MAP_ROLE(android_class_name, chrome_role) \
   if (class_name == android_class_name) {         \

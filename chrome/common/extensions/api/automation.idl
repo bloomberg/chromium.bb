@@ -643,6 +643,12 @@
     // Miscellaneous attributes.
     //
 
+    // Aria auto complete.
+    DOMString? autoComplete;
+
+    // The name of the programmatic backing object.
+    DOMString? className;
+
     // A map containing all HTML attributes and their values
     // <jsexterns>@type {Object<string>}</jsexterns>
     object? htmlAttributes;
