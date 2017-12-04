@@ -1,17 +1,22 @@
-<html>
-<head>
-<script type="text/javascript" src="../../../inspector/inspector-test.js"></script>
-<script type="text/javascript" src="../../../inspector/debugger-test.js"></script>
-<link rel="stylesheet">
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function addStyleSheet()
-{
-    var link = document.querySelector("link");
-    link.setAttribute("href", "./resources/styles-rerequest-sourcemap-on-watchdog.css");
-}
+(async function() {
+  TestRunner.addResult(
+      `Verifies that the sourceMap is in fact re-requested from network as SASS watchdog updates the CSS file.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`<link rel="stylesheet">`);
+  await TestRunner.evaluateInPagePromise(`
+      function addStyleSheet()
+      {
+          var link = document.querySelector("link");
+          link.setAttribute("href", "./resources/styles-rerequest-sourcemap-on-watchdog.css");
+      }
+  `);
 
-function test() {
   TestRunner.cssModel.sourceMapManager().addEventListener(
       SDK.SourceMapManager.Events.SourceMapAttached, onInitialSourceMap);
 
@@ -32,11 +37,4 @@ function test() {
     TestRunner.addResult('SourceMap successfully re-requested.');
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onLoad="runTest();">
-<p>Verifies that the sourceMap is in fact re-requested from network as SASS watchdog updates the CSS file.</p>
-
-</body>
-</html>
+})();

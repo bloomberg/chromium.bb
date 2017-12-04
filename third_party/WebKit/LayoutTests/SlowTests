@@ -234,7 +234,7 @@ crbug.com/516319 [ Win ] http/tests/fetch/ [ Slow ]
 crbug.com/459009 crypto/subtle/ [ Slow ]
 
 
-crbug.com/528419 http/tests/devtools/elements/styles-2/pseudo-elements.html [ Slow ]
+crbug.com/528419 http/tests/devtools/elements/styles-2/pseudo-elements.js [ Slow ]
 
 crbug.com/529345 [ Win10 ] paint/masks/fieldset-mask.html [ Slow ]
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Slow ]

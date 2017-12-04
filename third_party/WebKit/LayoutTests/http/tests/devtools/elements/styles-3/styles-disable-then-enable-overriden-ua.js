@@ -1,12 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(
+      `Tests that disabling shorthand removes the "overriden" mark from the UA shorthand it overrides.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <body id="body-id" style="margin: 10px">
+    `);
 
-function test() {
   ElementsTestRunner.selectNodeAndWaitForStyles('body-id', step1);
 
   function step1() {
@@ -28,14 +32,4 @@ function test() {
     ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-
-<body onload="runTest()" id="body-id" style="margin: 10px">
-<p>
-Tests that disabling shorthand removes the "overriden" mark from the UA shorthand it overrides.
-</p>
-
-</body>
-</html>
+})();
