@@ -1,0 +1,168 @@
+table: |
+  include tables/unicode.dis
+  include tables/latinLetterDef6Dots.uti
+  include tables/loweredDigits6Dots.uti
+  space \s 0
+  punctuation . 46
+  punctuation , 6
+  punctuation - 36
+  
+  include tables/unicode-braille.utb
+  
+  noback correct "f,"[]"o" "-"
+  noback correct "f"["."]"o" ?
+  word above 1-12-1236
+  word below 23-123
+  partword en 26
+  noback context "o,"[]"o" @36
+  noback context "o"["."]"o" ?
+  noback pass2 @135-6[]@12 @36
+  noback pass2 @135[@46]@12 ?
+  noback pass3 @12-6[]@1 @36
+  noback pass3 @12[@46]@1 ?
+  noback pass4 @1-6[]@1235 @36
+  noback pass4 @1[@46]@1235 ?
+
+tests:
+  # Simple test using regular pass 1 rules
+  # - |h|e| |w|en|t| |above|
+  # - |⠓|⠑| |⠺|⠢|⠞| |⠁⠃⠧|
+  - - he went above
+    - ⠓⠑ ⠺⠢⠞ ⠁⠃⠧
+    - inputPos: [0,1,2,3,4,6,7,8,8,8]
+      outputPos: [0,1,2,3,4,4,5,6,7,7,7,7,7]
+  # Insertion with correct rule: prepend to next
+  # - |f|,|o|o|b|a|r|
+  # - |⠋|⠠|⠤⠕|⠕|⠃|⠁|⠗|
+  - - f,oobar
+    - ⠋⠠⠤⠕⠕⠃⠁⠗
+    - inputPos: [0,1,2,2,3,4,5,6]
+      outputPos: [0,1,2,4,5,6,7]
+  # Deletion with correct rule: append to previous
+  # - |f.|o|o|b|a|r|
+  # - |⠋|⠕|⠕|⠃|⠁|⠗|
+  - - f.oobar
+    - ⠋⠕⠕⠃⠁⠗
+    - inputPos: [0,2,3,4,5,6]
+      outputPos: [0,0,1,2,3,4,5]
+  # Insertion with context rule: prepend to next
+  # - |f|o,|o|b|a|r|
+  # - |⠋|⠕⠠|⠤⠕|⠃|⠁|⠗|
+  - - fo,obar
+    - ⠋⠕⠠⠤⠕⠃⠁⠗
+    - inputPos: [0,1,1,3,3,4,5,6]
+      outputPos: [0,1,1,3,5,6,7]
+  # Deletion with context rule: append to previous
+  # - |f|o.|o|b|a|r|
+  # - |⠋|⠕|⠕|⠃|⠁|⠗|
+  - - fo.obar
+    - ⠋⠕⠕⠃⠁⠗
+    - inputPos: [0,1,3,4,5,6]
+      outputPos: [0,1,1,2,3,4,5]
+  # Insertion with pass2 rule: prepend to next
+  # - |f|o|o|,|b|a|r|
+  # - |⠋|⠕|⠕|⠠|⠤⠃|⠁|⠗|
+  - - foo,bar
+    - ⠋⠕⠕⠠⠤⠃⠁⠗
+    - inputPos: [0,1,2,3,4,4,5,6]
+      outputPos: [0,1,2,3,4,6,7]
+  # Deletion with pass2 rule: append to previous
+  # - |f|o|o.|b|a|r
+  # - |⠋|⠕|⠕|⠃|⠁|⠗|
+  - - foo.bar
+    - ⠋⠕⠕⠃⠁⠗
+    - inputPos: [0,1,2,4,5,6]
+      outputPos: [0,1,2,2,3,4,5]
+  # Insertion with pass3 rule: prepend to next
+  # - |f|o|o|b|,|a|r|
+  # - |⠋|⠕|⠕|⠃|⠠|⠤⠁|⠗|
+  - - foob,ar
+    - ⠋⠕⠕⠃⠠⠤⠁⠗
+    - inputPos: [0,1,2,3,4,5,5,6]
+      outputPos: [0,1,2,3,4,5,7]
+  # Deletion with pass3 rule: append to previous
+  # - |f|o|o|b.|a|r|
+  # - |⠋|⠕|⠕|⠃|⠁|⠗|
+  - - foob.ar
+    - ⠋⠕⠕⠃⠁⠗
+    - inputPos: [0,1,2,3,5,6]
+      outputPos: [0,1,2,3,3,4,5]
+  # Insertion with pass4 rule: prepend to next
+  # - |f|o|o|b|a|,|r|
+  # - |⠋|⠕|⠕|⠃|⠁|⠠|⠤⠗|
+  - - fooba,r
+    - ⠋⠕⠕⠃⠁⠠⠤⠗
+    - inputPos: [0,1,2,3,4,5,6,6]
+      outputPos: [0,1,2,3,4,5,6]
+  # Deletion with pass4 rule: append to previous
+  # - |f|o|o|b|a.|r|
+  # - |⠋|⠕|⠕|⠃|⠁|⠗|
+  - - fooba.r
+    - ⠋⠕⠕⠃⠁⠗
+    - inputPos: [0,1,2,3,4,6]
+      outputPos: [0,1,2,3,4,4,5]
+  # Using all passes!
+  # - |f|,|o,|o|,|b|,|a|,|r|
+  # - |⠋|⠠|⠤⠕⠠|⠤⠕|⠠|⠤⠃|⠠|⠤⠁|⠠|⠤⠗|
+  - - f,o,o,b,a,r
+    - ⠋⠠⠤⠕⠠⠤⠕⠠⠤⠃⠠⠤⠁⠠⠤⠗
+    - inputPos: [0,1,2,2,2,4,4,5,6,6,7,8,8,9,10,10]
+      outputPos: [0,1,2,2,5,7,8,10,11,13,14]
+  # - |f.|o.|o.|b.|a.|r|
+  # - |⠋|⠕|⠕|⠃|⠁|⠗|
+  - - f.o.o.b.a.r
+    - ⠋⠕⠕⠃⠁⠗
+    - inputPos: [0,2,4,6,8,10]
+      outputPos: [0,0,1,1,2,2,3,3,4,4,5]
+
+# Insertion at the start of a string: prepend to next
+table: |
+  include tables/latinLetterDef6Dots.uti
+  sign . 123456
+  # noback correct `[]$a "." # true insertion currently not possible
+  noback correct `[$a] "."*
+tests:
+  # - |f|o|o|b|a|r|
+  # - |.f|o|o|b|a|r|
+  - - foobar
+    - .foobar
+    - inputPos: [0,0,1,2,3,4,5]
+      outputPos: [0,2,3,4,5,6]
+
+# Insertion at the end of a string: append to previous
+table: |
+  include tables/latinLetterDef6Dots.uti
+  sign . 123456
+  noback correct $a[]~ "." # true insertion
+tests:
+  # - |f|o|o|b|a|r|
+  # - |f|o|o|b|a|r.|
+  - - foobar
+    - foobar.
+    - inputPos: [0,1,2,3,4,5,5]
+      outputPos: [0,1,2,3,4,5]
+table: |
+  include tables/latinLetterDef6Dots.uti
+  sign . 123456
+  noback correct [$a]~ *"."
+tests:
+  # - |f|o|o|b|a|r|
+  # - |f|o|o|b|a|r.|
+  - - foobar
+    - foobar.
+    - inputPos: [0,1,2,3,4,5,5]
+      outputPos: [0,1,2,3,4,5]
+      
+# Deletion at the start of a string: append to previous from pov of output, prepend to next from pov of input
+# Deletion at the end of a string: append to previous
+table: |
+  include tables/latinLetterDef6Dots.uti
+  noback correct `[$a] ?
+  noback correct [$a]~ ?
+tests:
+  # - f|o|o|b|ar|
+  # - |o|o|b|a|
+  - - foobar
+    - ooba
+    - inputPos: [1,2,3,4]
+      outputPos: [0,0,1,2,3,3]

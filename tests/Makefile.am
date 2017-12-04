@@ -37,7 +37,6 @@ inpos_match_replace_SOURCES = inpos_match_replace.c
 lastworditalafter_SOURCES = default_table.h lastworditalafter.c
 letterDefTest_SOURCES = letterDefTest.c
 logging_SOURCES = logging.c
-outpos_SOURCES = outpos.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
 pass1Only_SOURCES = pass1Only.c
 pass2_SOURCES = pass2.c
@@ -82,9 +81,7 @@ program_TESTS =					\
 	lastworditalafter			\
 	letterDefTest				\
 	logging					\
-	outpos					\
 	pass0_typebuf				\
-	pass1Only				\
 	pass2					\
 	pass2_inpos				\
 	present_progressive			\
@@ -185,6 +182,7 @@ dist_yaml_TESTS =				\
 	yaml/hu-hu-comp8_harness.yaml		\
 	yaml/hu-hu-g1_backward.yaml		\
 	yaml/hu-hu-g1_harness.yaml		\
+	yaml/inpos_outpos.yaml			\
 	yaml/issue-238.yaml			\
 	yaml/issue-35.yaml			\
 	yaml/issue-384.yaml			\
@@ -211,6 +209,7 @@ dist_yaml_TESTS =				\
 	yaml/no_harness.yaml			\
 	yaml/nocross_harness.yaml		\
 	yaml/noletsignafter.yaml		\
+	yaml/pass1Only.yaml			\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sk-g1_harness.yaml			\
 	yaml/sr-g1_harness.yaml			\
