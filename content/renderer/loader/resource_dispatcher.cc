@@ -40,6 +40,7 @@
 #include "content/renderer/loader/sync_load_context.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/url_loader_client_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -77,6 +78,35 @@ void CheckSchemeForReferrerPolicy(const ResourceRequest& request) {
                << "URL = " << request.url << "\n"
                << "Referrer = " << request.referrer;
   }
+}
+
+void NotifySubresourceStarted(
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
+    int render_frame_id,
+    const GURL& url,
+    const GURL& referrer,
+    const std::string& method,
+    ResourceType resource_type,
+    const std::string& ip,
+    uint32_t cert_status) {
+  if (!thread_task_runner)
+    return;
+
+  if (!thread_task_runner->BelongsToCurrentThread()) {
+    thread_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(NotifySubresourceStarted, thread_task_runner,
+                                  render_frame_id, url, referrer, method,
+                                  resource_type, ip, cert_status));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->GetFrameHost()->SubresourceResponseStarted(
+      url, referrer, method, resource_type, ip, cert_status);
 }
 
 }  // namespace
@@ -181,6 +211,14 @@ void ResourceDispatcher::OnReceivedResponse(
         response_head);
     DCHECK(new_peer);
     request_info->peer = std::move(new_peer);
+  }
+
+  if (!IsResourceTypeFrame(request_info->resource_type)) {
+    NotifySubresourceStarted(
+        RenderThreadImpl::GetMainTaskRunner(), request_info->render_frame_id,
+        request_info->response_url, request_info->response_referrer,
+        request_info->response_method, request_info->resource_type,
+        response_head.socket_address.host(), response_head.cert_status);
   }
 
   ResourceResponseInfo renderer_response_info;

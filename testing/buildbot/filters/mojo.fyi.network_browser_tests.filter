@@ -198,7 +198,6 @@
 -SSLUIMITMSoftwareEnabledTest.OverridableError_NoMITMSoftwareInterstitial
 -SSLUIMITMSoftwareEnabledTest.TwoCertErrors_NoMITMSoftwareInterstitial
 -SSLUIMITMSoftwareEnabledTest.WrongCertError_NoMITMSoftwareInterstitial
--SSLUITest.BadCertFollowedByGoodCert
 -SSLUITest.TestBadHTTPSDownload
 -SSLUITest.TestHTTPSOCSPOk
 -SSLUITest.TestHTTPSOCSPRevoked

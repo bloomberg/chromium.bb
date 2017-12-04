@@ -3901,6 +3901,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
       reinterpret_cast<ChromeSSLHostStateDelegate*>(
           profile->GetSSLHostStateDelegate());
 
+  // First check that frame requests revoke the decision.
   ui_test_utils::NavigateToURL(
       browser(), https_server_expired_.GetURL("/ssl/google.html"));
 
@@ -3910,6 +3911,26 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
   ASSERT_FALSE(tab->GetInterstitialPage());
+  EXPECT_FALSE(state->HasAllowException(https_server_host));
+
+  // Now check that subresource requests revoke the decision.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+
+  ProceedThroughInterstitial(tab);
+  EXPECT_TRUE(state->HasAllowException(https_server_host));
+
+  GURL image = https_server_.GetURL("/ssl/google_files/logo.gif");
+  bool result = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      tab,
+      std::string("var img = document.createElement('img');img.src ='") +
+          image.spec() +
+          "';img.onload=function() { "
+          "window.domAutomationController.send(true); };"
+          "document.body.appendChild(img);",
+      &result));
+  EXPECT_TRUE(result);
   EXPECT_FALSE(state->HasAllowException(https_server_host));
 }
 

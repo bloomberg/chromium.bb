@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/navigation_params.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
+import "content/public/common/resource_type.mojom";
 import "content/public/common/url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/common/unguessable_token.mojom";
@@ -176,5 +177,14 @@ interface FrameHost {
   BeginNavigation(
       CommonNavigationParams common_params,
       BeginNavigationParams begin_params);
+
+  // Sent when a subresource response has started.
+  SubresourceResponseStarted(
+      url.mojom.Url url,
+      url.mojom.Url referrer,
+      string method,
+      ResourceType resource_type,
+      string ip,
+      uint32 cert_status);
 };
 

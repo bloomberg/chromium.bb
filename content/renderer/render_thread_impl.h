@@ -197,6 +197,9 @@ class CONTENT_EXPORT RenderThreadImpl
   static void SetRendererBlinkPlatformImplForTesting(
       RendererBlinkPlatformImpl* blink_platform_impl);
 
+  // Returns the task runner for the main thread where the RenderThread lives.
+  static scoped_refptr<base::SingleThreadTaskRunner> GetMainTaskRunner();
+
   ~RenderThreadImpl() override;
   void Shutdown() override;
   bool ShouldBeDestroyed() override;

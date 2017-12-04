@@ -885,6 +885,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params) override;
   void BeginNavigation(const CommonNavigationParams& common_params,
                        mojom::BeginNavigationParamsPtr begin_params) override;
+  void SubresourceResponseStarted(const GURL& url,
+                                  const GURL& referrer,
+                                  const std::string& method,
+                                  ResourceType resource_type,
+                                  const std::string& ip,
+                                  uint32_t cert_status) override;
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();

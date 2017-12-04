@@ -3471,30 +3471,6 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   EXPECT_EQ(SK_ColorGREEN, observer.last_theme_color());
 }
 
-// Test that if a resource is loaded with empty security info, the SSLManager
-// does not mistakenly think it has seen a good certificate and thus forget any
-// user exceptions for that host. See https://crbug.com/516808.
-TEST_F(WebContentsImplTest, LoadResourceWithEmptySecurityInfo) {
-  WebContentsImplTestBrowserClient browser_client;
-  SetBrowserClientForTesting(&browser_client);
-
-  scoped_refptr<net::X509Certificate> cert =
-      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-  const GURL test_url("https://example.test");
-
-  SSLHostStateDelegate* state_delegate =
-      contents()->controller_.GetBrowserContext()->GetSSLHostStateDelegate();
-  ASSERT_TRUE(state_delegate);
-  state_delegate->AllowCert(test_url.host(), *cert.get(), 1);
-  EXPECT_TRUE(state_delegate->HasAllowException(test_url.host()));
-  contents()->controller_.ssl_manager()->DidStartResourceResponse(
-      test_url, false, 0, RESOURCE_TYPE_MAIN_FRAME);
-
-  EXPECT_TRUE(state_delegate->HasAllowException(test_url.host()));
-
-  DeleteContents();
-}
-
 TEST_F(WebContentsImplTest, ParseDownloadHeaders) {
   DownloadUrlParameters::RequestHeadersType request_headers =
       WebContentsImpl::ParseDownloadHeaders("A: 1\r\nB: 2\r\nC: 3\r\n\r\n");
