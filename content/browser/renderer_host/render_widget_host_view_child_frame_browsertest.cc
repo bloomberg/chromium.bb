@@ -23,6 +23,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -155,8 +156,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
 // Tests that while in mus, the child frame receives an updated FrameSinkId
 // representing the frame sink used by the RenderFrameProxy.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
-  // Only in mus do we expect a RenderFrameProxy to provide the FrameSinkId.
-  if (!IsUsingMus())
+  // Only when mus hosts viz do we expect a RenderFrameProxy to provide the
+  // FrameSinkId.
+  if (!switches::IsMusHostingViz())
     return;
 
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
