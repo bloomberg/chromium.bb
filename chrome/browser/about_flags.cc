@@ -3667,29 +3667,6 @@ class FlagsStateSingleton {
 
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
-#if defined(OS_ANDROID)
-  // enable-data-reduction-proxy-dev is only available for the Dev/Beta channel.
-  if (!strcmp("enable-data-reduction-proxy-dev", entry.internal_name) &&
-      channel != version_info::Channel::BETA &&
-      channel != version_info::Channel::DEV) {
-    return true;
-  }
-  // enable-data-reduction-proxy-alt is only available for the Dev channel.
-  if (!strcmp("enable-data-reduction-proxy-alt", entry.internal_name) &&
-      channel != version_info::Channel::DEV) {
-    return true;
-  }
-  // enable-data-reduction-proxy-carrier-test is only available for Chromium
-  // builds and the Canary/Dev channel.
-  if (!strcmp("enable-data-reduction-proxy-carrier-test",
-              entry.internal_name) &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
-  }
-#endif  // OS_ANDROID
-
 #if defined(OS_CHROMEOS)
   // Don't expose --mash/--mus outside of Canary or developer builds.
   if (!strcmp("mus", entry.internal_name) &&
