@@ -11,6 +11,7 @@ _typemap_imports = [
   "//chrome/typemaps.gni",
   "//components/arc/common/typemaps.gni",
   "//components/metrics/public/cpp/typemaps.gni",
+  "//components/sync/mojo/typemaps.gni",
   "//components/typemaps.gni",
   "//content/common/bluetooth/typemaps.gni",
   "//content/common/indexed_db/typemaps.gni",
