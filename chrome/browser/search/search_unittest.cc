@@ -275,8 +275,7 @@ const SearchTestCase kInstantNTPTestCases[] = {
 
 TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
-    const SearchTestCase& test = kInstantNTPTestCases[i];
+  for (const SearchTestCase& test : kInstantNTPTestCases) {
     NavigateAndCommitActiveTab(GURL(test.url));
     const content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -287,8 +286,7 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
 
 TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   AddTab(browser(), GURL("chrome://blank"));
-  for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
-    const SearchTestCase& test = kInstantNTPTestCases[i];
+  for (const SearchTestCase& test : kInstantNTPTestCases) {
     NavigateAndCommitActiveTab(GURL(test.url));
     content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -300,11 +298,13 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
                                          false,
                                          std::string(),
                                          contents->GetBrowserContext()));
-    // The active entry is chrome://blank and not an NTP.
-    EXPECT_FALSE(IsInstantNTP(contents));
+    // The visible entry is now chrome://blank, but this is still an NTP.
+    EXPECT_FALSE(NavEntryIsInstantNTP(contents, controller.GetVisibleEntry()));
     EXPECT_EQ(test.expected_result,
               NavEntryIsInstantNTP(contents,
                                    controller.GetLastCommittedEntry()))
+        << test.url << " " << test.comment;
+    EXPECT_EQ(test.expected_result, IsInstantNTP(contents))
         << test.url << " " << test.comment;
   }
 }
