@@ -79,6 +79,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDialogElement.h"
@@ -2406,6 +2407,21 @@ void Node::DefaultEventHandler(Event* event) {
       if (layout_object) {
         if (LocalFrame* frame = GetDocument().GetFrame())
           frame->GetEventHandler().StartMiddleClickAutoscroll(layout_object);
+      }
+    }
+  } else if (event_type == EventTypeNames::mouseup && event->IsMouseEvent()) {
+    MouseEvent* mouse_event = ToMouseEvent(event);
+    if (mouse_event->button() ==
+        static_cast<short>(WebPointerProperties::Button::kBack)) {
+      if (LocalFrame* frame = GetDocument().GetFrame()) {
+        if (frame->Client()->NavigateBackForward(-1))
+          event->SetDefaultHandled();
+      }
+    } else if (mouse_event->button() ==
+               static_cast<short>(WebPointerProperties::Button::kForward)) {
+      if (LocalFrame* frame = GetDocument().GetFrame()) {
+        if (frame->Client()->NavigateBackForward(1))
+          event->SetDefaultHandled();
       }
     }
   }

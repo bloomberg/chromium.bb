@@ -887,4 +887,94 @@ TEST_F(EventHandlerLatencyTest, NeedsUnbufferedInput) {
   ASSERT_FALSE(chrome_client_->ReceivedRequestForUnbufferedInput());
 }
 
+class NavigationCapturingFrameClient : public EmptyLocalFrameClient {
+ public:
+  NavigationCapturingFrameClient() {}
+
+  bool NavigateBackForward(int offset) const override {
+    offset_ = offset;
+    return true;
+  }
+
+  int Offset() const { return offset_; }
+
+ private:
+  mutable int offset_ = 0;
+};
+
+class EventHandlerNavigationTest : public EventHandlerTest {
+ public:
+  EventHandlerNavigationTest() {}
+
+  void SetUp() override {
+    frame_client_ = new NavigationCapturingFrameClient();
+    Page::PageClients clients;
+    FillWithEmptyClients(clients);
+    SetupPageWithClients(&clients, frame_client_);
+  }
+
+  int Offset() { return frame_client_->Offset(); }
+
+ private:
+  Persistent<NavigationCapturingFrameClient> frame_client_;
+};
+
+TEST_F(EventHandlerNavigationTest, MouseButtonsNavigate) {
+  SetHtmlInnerHTML("<div>");
+
+  EXPECT_EQ(0, Offset());
+
+  WebMouseEvent mouse_back_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::kBack, 0, WebInputEvent::kNoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouse_back_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_back_event);
+
+  EXPECT_EQ(-1, Offset());
+
+  WebMouseEvent mouse_forward_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::kForward, 0, WebInputEvent::kNoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouse_forward_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_forward_event);
+
+  EXPECT_EQ(1, Offset());
+}
+
+TEST_F(EventHandlerNavigationTest, MouseButtonsDontNavigate) {
+  SetHtmlInnerHTML("<div>");
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  Element* script = GetDocument().createElement("script");
+  script->SetInnerHTMLFromString(
+      "document.addEventListener('mouseup', event => "
+      "event.preventDefault());");
+  GetDocument().body()->AppendChild(script);
+
+  EXPECT_EQ(0, Offset());
+
+  WebMouseEvent mouse_back_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::kBack, 0, WebInputEvent::kNoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouse_back_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_back_event);
+
+  EXPECT_EQ(0, Offset());
+
+  WebMouseEvent mouse_forward_event(
+      WebInputEvent::kMouseUp, WebFloatPoint(51, 50), WebFloatPoint(51, 50),
+      WebPointerProperties::Button::kForward, 0, WebInputEvent::kNoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouse_forward_event.SetFrameScale(1);
+  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
+      mouse_forward_event);
+
+  EXPECT_EQ(0, Offset());
+}
+
 }  // namespace blink

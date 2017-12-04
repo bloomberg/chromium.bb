@@ -92,6 +92,10 @@ const base::Feature kCompositorImageAnimation{
 const base::Feature kCompositorTouchAction{"CompositorTouchAction",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables exposing back/forward mouse buttons to the renderer and the web.
+const base::Feature kExtendedMouseButtons{"ExtendedMouseButtons",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
 const base::Feature kExpensiveBackgroundTimerThrottling{

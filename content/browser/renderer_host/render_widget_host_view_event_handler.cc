@@ -18,6 +18,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/common/content_features.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -82,10 +83,11 @@ bool IsFractionalScaleFactor(float scale_factor) {
 
 // We don't mark these as handled so that they're sent back to the
 // DefWindowProc so it can generate WM_APPCOMMAND as necessary.
-bool IsXButtonUpEvent(const ui::MouseEvent* event) {
+bool ShouldGenerateAppCommand(const ui::MouseEvent* event) {
 #if defined(OS_WIN)
   switch (event->native_event().message) {
     case WM_XBUTTONUP:
+      return !base::FeatureList::IsEnabled(features::kExtendedMouseButtons);
     case WM_NCXBUTTONUP:
       return true;
   }
@@ -396,7 +398,7 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
       break;
   }
 
-  if (!IsXButtonUpEvent(event))
+  if (!ShouldGenerateAppCommand(event))
     event->SetHandled();
 }
 
@@ -599,6 +601,7 @@ bool RenderWidgetHostViewEventHandler::CanRendererHandleEvent(
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
     case WM_XBUTTONDBLCLK:
+      return base::FeatureList::IsEnabled(features::kExtendedMouseButtons);
     case WM_NCMOUSELEAVE:
     case WM_NCMOUSEMOVE:
     case WM_NCLBUTTONDOWN:
@@ -618,18 +621,20 @@ bool RenderWidgetHostViewEventHandler::CanRendererHandleEvent(
       break;
   }
 #elif defined(USE_X11)
-  // Renderer only supports standard mouse buttons, so ignore programmable
-  // buttons.
-  switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED: {
-      const int kAllowedButtons = ui::EF_LEFT_MOUSE_BUTTON |
-                                  ui::EF_MIDDLE_MOUSE_BUTTON |
-                                  ui::EF_RIGHT_MOUSE_BUTTON;
-      return (event->flags() & kAllowedButtons) != 0;
+  if (!base::FeatureList::IsEnabled(features::kExtendedMouseButtons)) {
+    // Renderer only supports standard mouse buttons, so ignore programmable
+    // buttons.
+    switch (event->type()) {
+      case ui::ET_MOUSE_PRESSED:
+      case ui::ET_MOUSE_RELEASED: {
+        const int kAllowedButtons = ui::EF_LEFT_MOUSE_BUTTON |
+                                    ui::EF_MIDDLE_MOUSE_BUTTON |
+                                    ui::EF_RIGHT_MOUSE_BUTTON;
+        return (event->flags() & kAllowedButtons) != 0;
+      }
+      default:
+        break;
     }
-    default:
-      break;
   }
 #endif
   return true;
