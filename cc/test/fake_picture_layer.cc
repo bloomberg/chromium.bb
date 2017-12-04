@@ -21,7 +21,7 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
   SetIsDrawable(true);
 }
 
-FakePictureLayer::~FakePictureLayer() {}
+FakePictureLayer::~FakePictureLayer() = default;
 
 std::unique_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

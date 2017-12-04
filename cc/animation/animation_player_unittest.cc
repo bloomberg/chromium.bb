@@ -19,8 +19,8 @@ namespace {
 
 class AnimationPlayerTest : public AnimationTimelinesTest {
  public:
-  AnimationPlayerTest() {}
-  ~AnimationPlayerTest() override {}
+  AnimationPlayerTest() = default;
+  ~AnimationPlayerTest() override = default;
 };
 
 // See element_animations_unittest.cc for active/pending observers tests.

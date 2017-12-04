@@ -176,7 +176,7 @@ ScrollAndScaleSet::ScrollAndScaleSet()
       has_scrolled_by_wheel(false),
       has_scrolled_by_touch(false) {}
 
-ScrollAndScaleSet::~ScrollAndScaleSet() {}
+ScrollAndScaleSet::~ScrollAndScaleSet() = default;
 
 static inline void SetMaskLayersContributeToDrawnRenderSurface(
     RenderSurfaceImpl* surface,

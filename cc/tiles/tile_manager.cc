@@ -322,7 +322,7 @@ class TaskSetFinishedTaskImpl : public TileTask {
   void OnTaskCompleted() override {}
 
  protected:
-  ~TaskSetFinishedTaskImpl() override {}
+  ~TaskSetFinishedTaskImpl() override = default;
 
   void TaskSetFinished() {
     task_runner_->PostTask(FROM_HERE, on_task_set_finished_callback_);

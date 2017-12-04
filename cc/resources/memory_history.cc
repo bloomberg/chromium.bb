@@ -15,7 +15,7 @@ std::unique_ptr<MemoryHistory> MemoryHistory::Create() {
   return base::WrapUnique(new MemoryHistory());
 }
 
-MemoryHistory::MemoryHistory() {}
+MemoryHistory::MemoryHistory() = default;
 
 void MemoryHistory::SaveEntry(const MemoryHistory::Entry& entry) {
   ring_buffer_.SaveToBuffer(entry);

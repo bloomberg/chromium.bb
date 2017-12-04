@@ -18,7 +18,7 @@ class MockSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   explicit MockSwapPromiseMonitor(SwapPromiseManager* manager)
       : SwapPromiseMonitor(manager, nullptr) {}
-  ~MockSwapPromiseMonitor() override {}
+  ~MockSwapPromiseMonitor() override = default;
 
   MOCK_METHOD0(OnSetNeedsCommitOnMain, void());
   void OnSetNeedsRedrawOnImpl() override {}
@@ -27,8 +27,8 @@ class MockSwapPromiseMonitor : public SwapPromiseMonitor {
 
 class MockSwapPromise : public SwapPromise {
  public:
-  MockSwapPromise() {}
-  ~MockSwapPromise() override {}
+  MockSwapPromise() = default;
+  ~MockSwapPromise() override = default;
 
   void DidActivate() override {}
   void WillSwap(viz::CompositorFrameMetadata* metadata) override {}

@@ -8,11 +8,9 @@
 
 namespace cc {
 
-FakeTileManagerClient::FakeTileManagerClient() {
-}
+FakeTileManagerClient::FakeTileManagerClient() = default;
 
-FakeTileManagerClient::~FakeTileManagerClient() {
-}
+FakeTileManagerClient::~FakeTileManagerClient() = default;
 
 std::unique_ptr<RasterTilePriorityQueue>
 FakeTileManagerClient::BuildRasterQueue(TreePriority tree_priority,

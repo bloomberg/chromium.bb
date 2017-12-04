@@ -32,7 +32,7 @@ INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(LayerTreeHostMasksPixelTest);
 class MaskContentLayerClient : public ContentLayerClient {
  public:
   explicit MaskContentLayerClient(const gfx::Size& bounds) : bounds_(bounds) {}
-  ~MaskContentLayerClient() override {}
+  ~MaskContentLayerClient() override = default;
 
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
@@ -181,7 +181,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
                            SkColor color,
                            bool vertical)
       : bounds_(bounds), color_(color), vertical_(vertical) {}
-  ~CheckerContentLayerClient() override {}
+  ~CheckerContentLayerClient() override = default;
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
   gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
@@ -230,7 +230,7 @@ class CircleContentLayerClient : public ContentLayerClient {
  public:
   explicit CircleContentLayerClient(const gfx::Size& bounds)
       : bounds_(bounds) {}
-  ~CircleContentLayerClient() override {}
+  ~CircleContentLayerClient() override = default;
   bool FillsBoundsCompletely() const override { return false; }
   size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
   gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
@@ -393,7 +393,7 @@ class StaticPictureLayer : private ContentLayerClient, public PictureLayer {
  protected:
   explicit StaticPictureLayer(scoped_refptr<DisplayItemList> display_list)
       : PictureLayer(this), display_list_(std::move(display_list)) {}
-  ~StaticPictureLayer() override {}
+  ~StaticPictureLayer() override = default;
 
  private:
   scoped_refptr<DisplayItemList> display_list_;

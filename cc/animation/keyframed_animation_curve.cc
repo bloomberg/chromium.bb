@@ -92,7 +92,7 @@ Keyframe::Keyframe(base::TimeDelta time,
                    std::unique_ptr<TimingFunction> timing_function)
     : time_(time), timing_function_(std::move(timing_function)) {}
 
-Keyframe::~Keyframe() {}
+Keyframe::~Keyframe() = default;
 
 base::TimeDelta Keyframe::Time() const {
   return time_;
@@ -111,7 +111,7 @@ ColorKeyframe::ColorKeyframe(base::TimeDelta time,
                              std::unique_ptr<TimingFunction> timing_function)
     : Keyframe(time, std::move(timing_function)), value_(value) {}
 
-ColorKeyframe::~ColorKeyframe() {}
+ColorKeyframe::~ColorKeyframe() = default;
 
 SkColor ColorKeyframe::Value() const { return value_; }
 
@@ -135,7 +135,7 @@ FloatKeyframe::FloatKeyframe(base::TimeDelta time,
                              std::unique_ptr<TimingFunction> timing_function)
     : Keyframe(time, std::move(timing_function)), value_(value) {}
 
-FloatKeyframe::~FloatKeyframe() {}
+FloatKeyframe::~FloatKeyframe() = default;
 
 float FloatKeyframe::Value() const {
   return value_;
@@ -162,7 +162,7 @@ TransformKeyframe::TransformKeyframe(
     std::unique_ptr<TimingFunction> timing_function)
     : Keyframe(time, std::move(timing_function)), value_(value) {}
 
-TransformKeyframe::~TransformKeyframe() {}
+TransformKeyframe::~TransformKeyframe() = default;
 
 const TransformOperations& TransformKeyframe::Value() const {
   return value_;
@@ -188,7 +188,7 @@ FilterKeyframe::FilterKeyframe(base::TimeDelta time,
                                std::unique_ptr<TimingFunction> timing_function)
     : Keyframe(time, std::move(timing_function)), value_(value) {}
 
-FilterKeyframe::~FilterKeyframe() {}
+FilterKeyframe::~FilterKeyframe() = default;
 
 const FilterOperations& FilterKeyframe::Value() const {
   return value_;
@@ -214,7 +214,7 @@ SizeKeyframe::SizeKeyframe(base::TimeDelta time,
                            std::unique_ptr<TimingFunction> timing_function)
     : Keyframe(time, std::move(timing_function)), value_(value) {}
 
-SizeKeyframe::~SizeKeyframe() {}
+SizeKeyframe::~SizeKeyframe() = default;
 
 const gfx::SizeF& SizeKeyframe::Value() const {
   return value_;
@@ -235,7 +235,7 @@ KeyframedColorAnimationCurve::Create() {
 KeyframedColorAnimationCurve::KeyframedColorAnimationCurve()
     : scaled_duration_(1.0) {}
 
-KeyframedColorAnimationCurve::~KeyframedColorAnimationCurve() {}
+KeyframedColorAnimationCurve::~KeyframedColorAnimationCurve() = default;
 
 void KeyframedColorAnimationCurve::AddKeyframe(
     std::unique_ptr<ColorKeyframe> keyframe) {
@@ -286,7 +286,7 @@ KeyframedFloatAnimationCurve::Create() {
 KeyframedFloatAnimationCurve::KeyframedFloatAnimationCurve()
     : scaled_duration_(1.0) {}
 
-KeyframedFloatAnimationCurve::~KeyframedFloatAnimationCurve() {}
+KeyframedFloatAnimationCurve::~KeyframedFloatAnimationCurve() = default;
 
 void KeyframedFloatAnimationCurve::AddKeyframe(
     std::unique_ptr<FloatKeyframe> keyframe) {
@@ -337,7 +337,7 @@ KeyframedTransformAnimationCurve::Create() {
 KeyframedTransformAnimationCurve::KeyframedTransformAnimationCurve()
     : scaled_duration_(1.0) {}
 
-KeyframedTransformAnimationCurve::~KeyframedTransformAnimationCurve() {}
+KeyframedTransformAnimationCurve::~KeyframedTransformAnimationCurve() = default;
 
 void KeyframedTransformAnimationCurve::AddKeyframe(
     std::unique_ptr<TransformKeyframe> keyframe) {
@@ -464,7 +464,7 @@ KeyframedFilterAnimationCurve::Create() {
 KeyframedFilterAnimationCurve::KeyframedFilterAnimationCurve()
     : scaled_duration_(1.0) {}
 
-KeyframedFilterAnimationCurve::~KeyframedFilterAnimationCurve() {}
+KeyframedFilterAnimationCurve::~KeyframedFilterAnimationCurve() = default;
 
 void KeyframedFilterAnimationCurve::AddKeyframe(
     std::unique_ptr<FilterKeyframe> keyframe) {
@@ -524,7 +524,7 @@ KeyframedSizeAnimationCurve::Create() {
 KeyframedSizeAnimationCurve::KeyframedSizeAnimationCurve()
     : scaled_duration_(1.0) {}
 
-KeyframedSizeAnimationCurve::~KeyframedSizeAnimationCurve() {}
+KeyframedSizeAnimationCurve::~KeyframedSizeAnimationCurve() = default;
 
 void KeyframedSizeAnimationCurve::AddKeyframe(
     std::unique_ptr<SizeKeyframe> keyframe) {

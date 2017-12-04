@@ -44,7 +44,7 @@ class MockBrowserControlsOffsetManagerClient
     root_scroll_layer_ = LayerImpl::Create(active_tree_.get(), 1);
   }
 
-  ~MockBrowserControlsOffsetManagerClient() override {}
+  ~MockBrowserControlsOffsetManagerClient() override = default;
 
   void DidChangeBrowserControlsPosition() override {
     redraw_needed_ = true;

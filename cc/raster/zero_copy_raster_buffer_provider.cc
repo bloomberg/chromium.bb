@@ -80,7 +80,7 @@ ZeroCopyRasterBufferProvider::ZeroCopyRasterBufferProvider(
     : resource_provider_(resource_provider),
       preferred_tile_format_(preferred_tile_format) {}
 
-ZeroCopyRasterBufferProvider::~ZeroCopyRasterBufferProvider() {}
+ZeroCopyRasterBufferProvider::~ZeroCopyRasterBufferProvider() = default;
 
 std::unique_ptr<RasterBuffer>
 ZeroCopyRasterBufferProvider::AcquireBufferForRaster(

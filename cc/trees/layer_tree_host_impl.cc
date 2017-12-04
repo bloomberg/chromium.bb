@@ -175,7 +175,7 @@ LayerTreeHostImpl::FrameData::FrameData()
       has_no_damage(false),
       may_contain_video(false) {}
 
-LayerTreeHostImpl::FrameData::~FrameData() {}
+LayerTreeHostImpl::FrameData::~FrameData() = default;
 
 std::unique_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     const LayerTreeSettings& settings,

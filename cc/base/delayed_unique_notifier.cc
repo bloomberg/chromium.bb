@@ -22,8 +22,7 @@ DelayedUniqueNotifier::DelayedUniqueNotifier(
       weak_ptr_factory_(this) {
 }
 
-DelayedUniqueNotifier::~DelayedUniqueNotifier() {
-}
+DelayedUniqueNotifier::~DelayedUniqueNotifier() = default;
 
 void DelayedUniqueNotifier::Schedule() {
   base::AutoLock hold(lock_);

@@ -36,8 +36,8 @@ const TimeTicks kInitialTickTime = TicksFromSecondsF(1.0);
 
 class ElementAnimationsTest : public AnimationTimelinesTest {
  public:
-  ElementAnimationsTest() {}
-  ~ElementAnimationsTest() override {}
+  ElementAnimationsTest() = default;
+  ~ElementAnimationsTest() override = default;
 
   void SetUp() override {
     AnimationTimelinesTest::SetUp();
@@ -290,7 +290,7 @@ TEST_F(ElementAnimationsTest,
 
 class TestAnimationDelegateThatDestroysPlayer : public TestAnimationDelegate {
  public:
-  TestAnimationDelegateThatDestroysPlayer() {}
+  TestAnimationDelegateThatDestroysPlayer() = default;
 
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                               int target_property,

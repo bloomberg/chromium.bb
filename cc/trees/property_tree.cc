@@ -37,7 +37,7 @@ PropertyTree<T>::PropertyTree()
 // but due to a gcc bug the generated destructor will have wrong symbol
 // visibility in component build.
 template <typename T>
-PropertyTree<T>::~PropertyTree() {}
+PropertyTree<T>::~PropertyTree() = default;
 
 template <typename T>
 PropertyTree<T>& PropertyTree<T>::operator=(const PropertyTree<T>&) = default;
@@ -735,7 +735,7 @@ EffectTree::EffectTree() {
   render_surfaces_.push_back(nullptr);
 }
 
-EffectTree::~EffectTree() {}
+EffectTree::~EffectTree() = default;
 
 int EffectTree::Insert(const EffectNode& tree_node, int parent_id) {
   int node_id = PropertyTree<EffectNode>::Insert(tree_node, parent_id);
@@ -1160,7 +1160,7 @@ ScrollTree::ScrollTree()
     : currently_scrolling_node_id_(kInvalidNodeId),
       scroll_offset_map_(ScrollTree::ScrollOffsetMap()) {}
 
-ScrollTree::~ScrollTree() {}
+ScrollTree::~ScrollTree() = default;
 
 ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
   PropertyTree::operator=(from);
@@ -1587,7 +1587,7 @@ PropertyTreesCachedData::PropertyTreesCachedData()
   animation_scales.clear();
 }
 
-PropertyTreesCachedData::~PropertyTreesCachedData() {}
+PropertyTreesCachedData::~PropertyTreesCachedData() = default;
 
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
@@ -1603,7 +1603,7 @@ PropertyTrees::PropertyTrees()
   scroll_tree.SetPropertyTrees(this);
 }
 
-PropertyTrees::~PropertyTrees() {}
+PropertyTrees::~PropertyTrees() = default;
 
 bool PropertyTrees::operator==(const PropertyTrees& other) const {
   return transform_tree == other.transform_tree &&

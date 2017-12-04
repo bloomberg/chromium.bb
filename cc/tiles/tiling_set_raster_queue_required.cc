@@ -58,8 +58,7 @@ TilingSetRasterQueueRequired::TilingSetRasterQueueRequired(
     ++iterator_;
 }
 
-TilingSetRasterQueueRequired::~TilingSetRasterQueueRequired() {
-}
+TilingSetRasterQueueRequired::~TilingSetRasterQueueRequired() = default;
 
 bool TilingSetRasterQueueRequired::IsEmpty() const {
   return iterator_.done();
@@ -112,8 +111,7 @@ TilingSetRasterQueueRequired::TilingIterator::TilingIterator(
   ++(*this);
 }
 
-TilingSetRasterQueueRequired::TilingIterator::~TilingIterator() {
-}
+TilingSetRasterQueueRequired::TilingIterator::~TilingIterator() = default;
 
 TilingSetRasterQueueRequired::TilingIterator&
     TilingSetRasterQueueRequired::TilingIterator::

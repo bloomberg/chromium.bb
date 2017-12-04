@@ -8,14 +8,12 @@
 
 namespace cc {
 
-PropertyAnimationState::PropertyAnimationState() {}
+PropertyAnimationState::PropertyAnimationState() = default;
 
 PropertyAnimationState::PropertyAnimationState(
-    const PropertyAnimationState& rhs)
-    : currently_running(rhs.currently_running),
-      potentially_animating(rhs.potentially_animating) {}
+    const PropertyAnimationState& rhs) = default;
 
-PropertyAnimationState::~PropertyAnimationState() {}
+PropertyAnimationState::~PropertyAnimationState() = default;
 
 bool PropertyAnimationState::operator==(
     const PropertyAnimationState& other) const {

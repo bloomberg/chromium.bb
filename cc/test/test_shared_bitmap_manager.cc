@@ -24,7 +24,7 @@ class OwnedSharedBitmap : public viz::SharedBitmap {
                           g_next_sequence_number++),
         shared_memory_(std::move(shared_memory)) {}
 
-  ~OwnedSharedBitmap() override {}
+  ~OwnedSharedBitmap() override = default;
 
   // viz::SharedBitmap:
   base::SharedMemoryHandle GetSharedMemoryHandle() const override {
@@ -48,9 +48,9 @@ class UnownedSharedBitmap : public viz::SharedBitmap {
 
 }  // namespace
 
-TestSharedBitmapManager::TestSharedBitmapManager() {}
+TestSharedBitmapManager::TestSharedBitmapManager() = default;
 
-TestSharedBitmapManager::~TestSharedBitmapManager() {}
+TestSharedBitmapManager::~TestSharedBitmapManager() = default;
 
 std::unique_ptr<viz::SharedBitmap>
 TestSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {

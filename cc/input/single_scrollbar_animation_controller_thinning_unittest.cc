@@ -35,7 +35,7 @@ class MockSingleScrollbarAnimationControllerClient
   explicit MockSingleScrollbarAnimationControllerClient(
       LayerTreeHostImpl* host_impl)
       : host_impl_(host_impl) {}
-  virtual ~MockSingleScrollbarAnimationControllerClient() {}
+  virtual ~MockSingleScrollbarAnimationControllerClient() = default;
 
   ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const override {
     return host_impl_->ScrollbarsFor(scroll_element_id);

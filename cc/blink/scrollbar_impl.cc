@@ -20,8 +20,7 @@ ScrollbarImpl::ScrollbarImpl(
       painter_(painter),
       geometry_(std::move(geometry)) {}
 
-ScrollbarImpl::~ScrollbarImpl() {
-}
+ScrollbarImpl::~ScrollbarImpl() = default;
 
 cc::ScrollbarOrientation ScrollbarImpl::Orientation() const {
   if (scrollbar_->GetOrientation() == WebScrollbar::kHorizontal)

@@ -19,7 +19,7 @@ scoped_refptr<NinePatchLayer> NinePatchLayer::Create() {
 NinePatchLayer::NinePatchLayer()
     : UIResourceLayer(), fill_center_(false), nearest_neighbor_(false) {}
 
-NinePatchLayer::~NinePatchLayer() {}
+NinePatchLayer::~NinePatchLayer() = default;
 
 std::unique_ptr<LayerImpl> NinePatchLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

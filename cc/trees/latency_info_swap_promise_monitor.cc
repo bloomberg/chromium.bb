@@ -46,8 +46,7 @@ LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
     LayerTreeHostImpl* host_impl)
     : SwapPromiseMonitor(swap_promise_manager, host_impl), latency_(latency) {}
 
-LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
-}
+LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() = default;
 
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
   if (AddRenderingScheduledComponent(latency_, true /* on_main */)) {

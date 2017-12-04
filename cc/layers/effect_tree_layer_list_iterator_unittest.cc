@@ -24,7 +24,7 @@ class TestLayerImpl : public LayerImpl {
   static std::unique_ptr<TestLayerImpl> Create(LayerTreeImpl* tree, int id) {
     return base::WrapUnique(new TestLayerImpl(tree, id));
   }
-  ~TestLayerImpl() override {}
+  ~TestLayerImpl() override = default;
 
   int count_;
 

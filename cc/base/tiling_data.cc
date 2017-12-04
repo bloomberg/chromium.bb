@@ -477,8 +477,7 @@ bool TilingData::BaseDifferenceIterator::HasConsiderRect() const {
   return consider_index_rect_.left() != -1;
 }
 
-TilingData::DifferenceIterator::DifferenceIterator() {
-}
+TilingData::DifferenceIterator::DifferenceIterator() = default;
 
 TilingData::DifferenceIterator::DifferenceIterator(
     const TilingData* tiling_data,

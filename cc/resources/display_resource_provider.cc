@@ -112,7 +112,7 @@ DisplayResourceProvider::Child::Child()
 
 DisplayResourceProvider::Child::Child(const Child& other) = default;
 
-DisplayResourceProvider::Child::~Child() {}
+DisplayResourceProvider::Child::~Child() = default;
 
 int DisplayResourceProvider::CreateChild(
     const ReturnCallback& return_callback) {
@@ -486,7 +486,7 @@ DisplayResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
       unit_(unit),
       target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {}
 
-DisplayResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {}
+DisplayResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() = default;
 
 DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     DisplayResourceProvider* resource_provider,

@@ -16,8 +16,8 @@ namespace {
 
 class AnimationHostTest : public AnimationTimelinesTest {
  public:
-  AnimationHostTest() {}
-  ~AnimationHostTest() override {}
+  AnimationHostTest() = default;
+  ~AnimationHostTest() override = default;
 };
 
 // See AnimationPlayer tests on layer registration/unregistration in

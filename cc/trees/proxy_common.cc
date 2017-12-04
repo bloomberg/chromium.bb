@@ -8,8 +8,8 @@
 
 namespace cc {
 
-BeginMainFrameAndCommitState::BeginMainFrameAndCommitState() {}
+BeginMainFrameAndCommitState::BeginMainFrameAndCommitState() = default;
 
-BeginMainFrameAndCommitState::~BeginMainFrameAndCommitState() {}
+BeginMainFrameAndCommitState::~BeginMainFrameAndCommitState() = default;
 
 }  // namespace cc

@@ -27,7 +27,7 @@ class SatisfySwapPromise : public SwapPromise {
       : reference_returner_(reference_returner),
         main_task_runner_(std::move(main_task_runner)) {}
 
-  ~SatisfySwapPromise() override {}
+  ~SatisfySwapPromise() override = default;
 
  private:
   void DidActivate() override {}

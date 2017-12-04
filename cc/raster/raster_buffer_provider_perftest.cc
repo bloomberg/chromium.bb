@@ -121,7 +121,7 @@ class PerfContextProvider : public viz::ContextProvider {
   void RemoveObserver(viz::ContextLostObserver* obs) override {}
 
  private:
-  ~PerfContextProvider() override {}
+  ~PerfContextProvider() override = default;
 
   std::unique_ptr<PerfGLES2Interface> context_gl_;
   sk_sp<class GrContext> gr_context_;
@@ -162,12 +162,12 @@ class PerfTileTask : public TileTask {
   }
 
  protected:
-  ~PerfTileTask() override {}
+  ~PerfTileTask() override = default;
 };
 
 class PerfImageDecodeTaskImpl : public PerfTileTask {
  public:
-  PerfImageDecodeTaskImpl() {}
+  PerfImageDecodeTaskImpl() = default;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -176,7 +176,7 @@ class PerfImageDecodeTaskImpl : public PerfTileTask {
   void OnTaskCompleted() override {}
 
  protected:
-  ~PerfImageDecodeTaskImpl() override {}
+  ~PerfImageDecodeTaskImpl() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PerfImageDecodeTaskImpl);
@@ -206,7 +206,7 @@ class PerfRasterTaskImpl : public PerfTileTask {
   void OnTaskCompleted() override { raster_buffer_ = nullptr; }
 
  protected:
-  ~PerfRasterTaskImpl() override {}
+  ~PerfRasterTaskImpl() override = default;
 
  private:
   std::unique_ptr<ScopedResource> resource_;

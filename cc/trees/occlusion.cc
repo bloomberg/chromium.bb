@@ -9,8 +9,7 @@
 
 namespace cc {
 
-Occlusion::Occlusion() {
-}
+Occlusion::Occlusion() = default;
 
 Occlusion::Occlusion(const gfx::Transform& draw_transform,
                      const SimpleEnclosedRegion& occlusion_from_outside_target,

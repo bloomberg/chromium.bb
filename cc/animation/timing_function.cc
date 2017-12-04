@@ -12,9 +12,9 @@
 
 namespace cc {
 
-TimingFunction::TimingFunction() {}
+TimingFunction::TimingFunction() = default;
 
-TimingFunction::~TimingFunction() {}
+TimingFunction::~TimingFunction() = default;
 
 std::unique_ptr<CubicBezierTimingFunction>
 CubicBezierTimingFunction::CreatePreset(EaseType ease_type) {
@@ -51,7 +51,7 @@ CubicBezierTimingFunction::CubicBezierTimingFunction(EaseType ease_type,
                                                      double y2)
     : bezier_(x1, y1, x2, y2), ease_type_(ease_type) {}
 
-CubicBezierTimingFunction::~CubicBezierTimingFunction() {}
+CubicBezierTimingFunction::~CubicBezierTimingFunction() = default;
 
 TimingFunction::Type CubicBezierTimingFunction::GetType() const {
   return Type::CUBIC_BEZIER;
@@ -83,8 +83,7 @@ std::unique_ptr<StepsTimingFunction> StepsTimingFunction::Create(
 StepsTimingFunction::StepsTimingFunction(int steps, StepPosition step_position)
     : steps_(steps), step_position_(step_position) {}
 
-StepsTimingFunction::~StepsTimingFunction() {
-}
+StepsTimingFunction::~StepsTimingFunction() = default;
 
 TimingFunction::Type StepsTimingFunction::GetType() const {
   return Type::STEPS;
@@ -137,7 +136,7 @@ std::unique_ptr<FramesTimingFunction> FramesTimingFunction::Create(int frames) {
 
 FramesTimingFunction::FramesTimingFunction(int frames) : frames_(frames) {}
 
-FramesTimingFunction::~FramesTimingFunction() {}
+FramesTimingFunction::~FramesTimingFunction() = default;
 
 TimingFunction::Type FramesTimingFunction::GetType() const {
   return Type::FRAMES;

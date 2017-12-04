@@ -17,9 +17,9 @@ scoped_refptr<SolidColorLayer> SolidColorLayer::Create() {
   return base::WrapRefCounted(new SolidColorLayer());
 }
 
-SolidColorLayer::SolidColorLayer() {}
+SolidColorLayer::SolidColorLayer() = default;
 
-SolidColorLayer::~SolidColorLayer() {}
+SolidColorLayer::~SolidColorLayer() = default;
 
 void SolidColorLayer::SetBackgroundColor(SkColor color) {
   SetContentsOpaque(SkColorGetA(color) == 255);

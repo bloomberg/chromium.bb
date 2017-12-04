@@ -22,7 +22,7 @@ ClipNode::ClipNode(const ClipNode& other) = default;
 
 ClipNode& ClipNode::operator=(const ClipNode& other) = default;
 
-ClipNode::~ClipNode() {}
+ClipNode::~ClipNode() = default;
 
 bool ClipNode::operator==(const ClipNode& other) const {
   return id == other.id && parent_id == other.parent_id &&

@@ -135,7 +135,7 @@ class TestableCache : public StubDecodeCache {
 // A simple class that can receive decode callbacks.
 class DecodeClient {
  public:
-  DecodeClient() {}
+  DecodeClient() = default;
   void Callback(base::OnceClosure quit_closure,
                 ImageController::ImageDecodeRequestId id,
                 ImageController::ImageDecodeResult result) {

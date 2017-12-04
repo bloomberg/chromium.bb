@@ -21,7 +21,7 @@ MicroBenchmark::MicroBenchmark(const DoneCallback& callback)
       processed_for_benchmark_impl_(false),
       id_(0) {}
 
-MicroBenchmark::~MicroBenchmark() {}
+MicroBenchmark::~MicroBenchmark() = default;
 
 bool MicroBenchmark::IsDone() const {
   return is_done_;

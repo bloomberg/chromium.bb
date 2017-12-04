@@ -61,8 +61,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
                                            is_left_side_vertical_scrollbar,
                                            cc::ElementId()))) {}
 
-WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {
-}
+WebScrollbarLayerImpl::~WebScrollbarLayerImpl() = default;
 
 blink::WebLayer* WebScrollbarLayerImpl::Layer() {
   return layer_.get();

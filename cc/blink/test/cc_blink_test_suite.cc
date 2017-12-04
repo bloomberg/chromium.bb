@@ -12,7 +12,7 @@ namespace cc_blink {
 CCBlinkTestSuite::CCBlinkTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {}
 
-CCBlinkTestSuite::~CCBlinkTestSuite() {}
+CCBlinkTestSuite::~CCBlinkTestSuite() = default;
 
 void CCBlinkTestSuite::Initialize() {
   base::TestSuite::Initialize();

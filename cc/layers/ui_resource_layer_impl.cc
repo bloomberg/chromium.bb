@@ -25,7 +25,7 @@ UIResourceLayerImpl::UIResourceLayerImpl(LayerTreeImpl* tree_impl, int id)
   vertex_opacity_[3] = 1.0f;
 }
 
-UIResourceLayerImpl::~UIResourceLayerImpl() {}
+UIResourceLayerImpl::~UIResourceLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> UIResourceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

@@ -34,7 +34,7 @@ ElementAnimations::ElementAnimations()
       has_element_in_pending_list_(false),
       needs_push_properties_(false) {}
 
-ElementAnimations::~ElementAnimations() {}
+ElementAnimations::~ElementAnimations() = default;
 
 void ElementAnimations::SetAnimationHost(AnimationHost* host) {
   animation_host_ = host;

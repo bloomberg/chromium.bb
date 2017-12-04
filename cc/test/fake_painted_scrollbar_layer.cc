@@ -44,7 +44,7 @@ FakePaintedScrollbarLayer::FakePaintedScrollbarLayer(
   SetIsDrawable(true);
 }
 
-FakePaintedScrollbarLayer::~FakePaintedScrollbarLayer() {}
+FakePaintedScrollbarLayer::~FakePaintedScrollbarLayer() = default;
 
 bool FakePaintedScrollbarLayer::Update() {
   bool updated = PaintedScrollbarLayer::Update();

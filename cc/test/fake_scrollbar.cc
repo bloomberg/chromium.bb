@@ -33,7 +33,7 @@ FakeScrollbar::FakeScrollbar(bool paint,
       track_rect_(0, 0, 100, 10),
       fill_color_(SK_ColorGREEN) {}
 
-FakeScrollbar::~FakeScrollbar() {}
+FakeScrollbar::~FakeScrollbar() = default;
 
 ScrollbarOrientation FakeScrollbar::Orientation() const {
   return orientation_;

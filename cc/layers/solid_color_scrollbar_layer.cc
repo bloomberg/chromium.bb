@@ -62,7 +62,7 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
   Layer::SetOpacity(0.f);
 }
 
-SolidColorScrollbarLayer::~SolidColorScrollbarLayer() {}
+SolidColorScrollbarLayer::~SolidColorScrollbarLayer() = default;
 
 ScrollbarLayerInterface* SolidColorScrollbarLayer::ToScrollbarLayer() {
   return this;

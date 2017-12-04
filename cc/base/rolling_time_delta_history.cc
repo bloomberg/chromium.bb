@@ -13,7 +13,7 @@ namespace cc {
 RollingTimeDeltaHistory::RollingTimeDeltaHistory(size_t max_size)
     : max_size_(max_size) {}
 
-RollingTimeDeltaHistory::~RollingTimeDeltaHistory() {}
+RollingTimeDeltaHistory::~RollingTimeDeltaHistory() = default;
 
 void RollingTimeDeltaHistory::InsertSample(base::TimeDelta time) {
   if (max_size_ == 0)

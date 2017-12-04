@@ -24,9 +24,9 @@ std::unique_ptr<DebugRectHistory> DebugRectHistory::Create() {
   return base::WrapUnique(new DebugRectHistory());
 }
 
-DebugRectHistory::DebugRectHistory() {}
+DebugRectHistory::DebugRectHistory() = default;
 
-DebugRectHistory::~DebugRectHistory() {}
+DebugRectHistory::~DebugRectHistory() = default;
 
 void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     LayerTreeImpl* tree_impl,

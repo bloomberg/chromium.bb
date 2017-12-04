@@ -756,7 +756,7 @@ class TestInputHandlerClient : public InputHandlerClient {
       : page_scale_factor_(0.f),
         min_page_scale_factor_(-1.f),
         max_page_scale_factor_(-1.f) {}
-  ~TestInputHandlerClient() override {}
+  ~TestInputHandlerClient() override = default;
 
   // InputHandlerClient implementation.
   void WillShutdown() override {}
@@ -9852,7 +9852,7 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
         set_needs_redraw_count_(set_needs_redraw_count),
         forward_to_main_count_(forward_to_main_count) {}
 
-  ~SimpleSwapPromiseMonitor() override {}
+  ~SimpleSwapPromiseMonitor() override = default;
 
   void OnSetNeedsCommitOnMain() override { (*set_needs_commit_count_)++; }
 

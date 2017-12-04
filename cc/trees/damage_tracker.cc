@@ -27,7 +27,7 @@ std::unique_ptr<DamageTracker> DamageTracker::Create() {
 
 DamageTracker::DamageTracker() : mailboxId_(0) {}
 
-DamageTracker::~DamageTracker() {}
+DamageTracker::~DamageTracker() = default;
 
 void DamageTracker::UpdateDamageTracking(
     LayerTreeImpl* layer_tree_impl,

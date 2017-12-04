@@ -26,7 +26,7 @@ TestLayer::TestLayer() {
   ClearMutatedProperties();
 }
 
-TestLayer::~TestLayer() {}
+TestLayer::~TestLayer() = default;
 
 void TestLayer::ClearMutatedProperties() {
   transform_ = gfx::Transform();
@@ -360,8 +360,7 @@ AnimationTimelinesTest::AnimationTimelinesTest()
   element_id_ = ElementId(NextTestLayerId());
 }
 
-AnimationTimelinesTest::~AnimationTimelinesTest() {
-}
+AnimationTimelinesTest::~AnimationTimelinesTest() = default;
 
 void AnimationTimelinesTest::SetUp() {
   timeline_ = AnimationTimeline::Create(timeline_id_);

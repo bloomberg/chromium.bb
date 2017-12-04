@@ -14,9 +14,9 @@ const int kMaxInvalidationRectCount = 256;
 
 namespace cc {
 
-InvalidationRegion::InvalidationRegion() {}
+InvalidationRegion::InvalidationRegion() = default;
 
-InvalidationRegion::~InvalidationRegion() {}
+InvalidationRegion::~InvalidationRegion() = default;
 
 void InvalidationRegion::Swap(Region* region) {
   FinalizePendingRects();

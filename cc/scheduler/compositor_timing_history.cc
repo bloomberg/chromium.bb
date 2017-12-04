@@ -16,7 +16,7 @@ namespace cc {
 
 class CompositorTimingHistory::UMAReporter {
  public:
-  virtual ~UMAReporter() {}
+  virtual ~UMAReporter() = default;
 
   // Throughput measurements
   virtual void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) = 0;
@@ -163,7 +163,7 @@ const int kUMADurationBuckets[] = {
 
 class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
-  ~RendererUMAReporter() override {}
+  ~RendererUMAReporter() override = default;
 
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
@@ -288,7 +288,7 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
 
 class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
-  ~BrowserUMAReporter() override {}
+  ~BrowserUMAReporter() override = default;
 
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
@@ -417,7 +417,7 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
 
 class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
-  ~NullUMAReporter() override {}
+  ~NullUMAReporter() override = default;
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
   void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
   }
@@ -479,8 +479,7 @@ CompositorTimingHistory::CompositorTimingHistory(
       uma_reporter_(CreateUMAReporter(uma_category)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {}
 
-CompositorTimingHistory::~CompositorTimingHistory() {
-}
+CompositorTimingHistory::~CompositorTimingHistory() = default;
 
 std::unique_ptr<CompositorTimingHistory::UMAReporter>
 CompositorTimingHistory::CreateUMAReporter(UMACategory category) {

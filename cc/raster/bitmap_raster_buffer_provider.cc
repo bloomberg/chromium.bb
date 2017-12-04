@@ -78,7 +78,7 @@ BitmapRasterBufferProvider::BitmapRasterBufferProvider(
     LayerTreeResourceProvider* resource_provider)
     : resource_provider_(resource_provider) {}
 
-BitmapRasterBufferProvider::~BitmapRasterBufferProvider() {}
+BitmapRasterBufferProvider::~BitmapRasterBufferProvider() = default;
 
 std::unique_ptr<RasterBuffer>
 BitmapRasterBufferProvider::AcquireBufferForRaster(

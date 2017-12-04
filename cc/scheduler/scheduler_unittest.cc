@@ -261,7 +261,7 @@ class SchedulerTest : public testing::Test {
     task_runner_->SetRunTaskLimit(100);
   }
 
-  ~SchedulerTest() override {}
+  ~SchedulerTest() override = default;
 
  protected:
   TestScheduler* CreateScheduler(BeginFrameSourceType bfs_type) {

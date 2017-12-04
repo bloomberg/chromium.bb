@@ -139,7 +139,7 @@ RasterizeAndRecordBenchmarkImpl::RasterizeAndRecordBenchmarkImpl(
     settings->GetInteger("rasterize_repeat_count", &rasterize_repeat_count_);
 }
 
-RasterizeAndRecordBenchmarkImpl::~RasterizeAndRecordBenchmarkImpl() {}
+RasterizeAndRecordBenchmarkImpl::~RasterizeAndRecordBenchmarkImpl() = default;
 
 void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
     LayerTreeHostImpl* host) {
@@ -240,6 +240,7 @@ RasterizeAndRecordBenchmarkImpl::RasterizeResults::RasterizeResults()
       total_picture_layers_with_no_content(0),
       total_picture_layers_off_screen(0) {}
 
-RasterizeAndRecordBenchmarkImpl::RasterizeResults::~RasterizeResults() {}
+RasterizeAndRecordBenchmarkImpl::RasterizeResults::~RasterizeResults() =
+    default;
 
 }  // namespace cc

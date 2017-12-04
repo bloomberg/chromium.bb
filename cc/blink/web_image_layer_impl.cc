@@ -15,8 +15,7 @@ WebImageLayerImpl::WebImageLayerImpl() {
   layer_.reset(new WebLayerImplFixedBounds(cc::PictureImageLayer::Create()));
 }
 
-WebImageLayerImpl::~WebImageLayerImpl() {
-}
+WebImageLayerImpl::~WebImageLayerImpl() = default;
 
 blink::WebLayer* WebImageLayerImpl::Layer() {
   return layer_.get();

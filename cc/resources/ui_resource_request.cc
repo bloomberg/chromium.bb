@@ -36,6 +36,6 @@ UIResourceRequest& UIResourceRequest::operator=(
   return *this;
 }
 
-UIResourceRequest::~UIResourceRequest() {}
+UIResourceRequest::~UIResourceRequest() = default;
 
 }  // namespace cc

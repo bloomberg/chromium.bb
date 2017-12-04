@@ -28,7 +28,7 @@ TestTexture::TestTexture() : format(viz::RGBA_8888) {
   params[GL_TEXTURE_USAGE_ANGLE] = GL_NONE;
 }
 
-TestTexture::~TestTexture() {}
+TestTexture::~TestTexture() = default;
 
 void TestTexture::Reallocate(const gfx::Size& size,
                              viz::ResourceFormat format) {

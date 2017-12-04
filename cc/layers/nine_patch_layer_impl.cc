@@ -18,7 +18,7 @@ namespace cc {
 NinePatchLayerImpl::NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id)
     : UIResourceLayerImpl(tree_impl, id) {}
 
-NinePatchLayerImpl::~NinePatchLayerImpl() {}
+NinePatchLayerImpl::~NinePatchLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> NinePatchLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

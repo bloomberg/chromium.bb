@@ -68,7 +68,7 @@ PageScaleAnimation::PageScaleAnimation(
       // Easing constants experimentally determined.
       timing_function_(.8, 0, .3, .9) {}
 
-PageScaleAnimation::~PageScaleAnimation() {}
+PageScaleAnimation::~PageScaleAnimation() = default;
 
 void PageScaleAnimation::ZoomTo(const gfx::Vector2dF& target_scroll_offset,
                                 float target_page_scale_factor,

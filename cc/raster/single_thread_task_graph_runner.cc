@@ -20,7 +20,7 @@ SingleThreadTaskGraphRunner::SingleThreadTaskGraphRunner()
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
       shutdown_(false) {}
 
-SingleThreadTaskGraphRunner::~SingleThreadTaskGraphRunner() {}
+SingleThreadTaskGraphRunner::~SingleThreadTaskGraphRunner() = default;
 
 void SingleThreadTaskGraphRunner::Start(
     const std::string& thread_name,

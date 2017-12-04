@@ -19,7 +19,7 @@ namespace cc {
 SurfaceLayerImpl::SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id) {}
 
-SurfaceLayerImpl::~SurfaceLayerImpl() {}
+SurfaceLayerImpl::~SurfaceLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

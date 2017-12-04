@@ -16,20 +16,17 @@
 
 namespace cc {
 
-FilterOperations::FilterOperations() {}
+FilterOperations::FilterOperations() = default;
 
-FilterOperations::FilterOperations(const FilterOperations& other)
-    : operations_(other.operations_) {}
+FilterOperations::FilterOperations(const FilterOperations& other) = default;
 
 FilterOperations::FilterOperations(std::vector<FilterOperation>&& operations)
     : operations_(std::move(operations)) {}
 
-FilterOperations::~FilterOperations() {}
+FilterOperations::~FilterOperations() = default;
 
-FilterOperations& FilterOperations::operator=(const FilterOperations& other) {
-  operations_ = other.operations_;
-  return *this;
-}
+FilterOperations& FilterOperations::operator=(const FilterOperations& other) =
+    default;
 
 FilterOperations& FilterOperations::operator=(FilterOperations&& other) {
   operations_ = std::move(other.operations_);

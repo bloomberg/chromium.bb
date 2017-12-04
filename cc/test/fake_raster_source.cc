@@ -144,7 +144,7 @@ FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
     : RasterSource(recording_source),
       playback_allowed_event_(playback_allowed_event) {}
 
-FakeRasterSource::~FakeRasterSource() {}
+FakeRasterSource::~FakeRasterSource() = default;
 
 void FakeRasterSource::PlaybackToCanvas(
     SkCanvas* canvas,

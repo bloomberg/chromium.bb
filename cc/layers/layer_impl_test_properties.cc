@@ -30,7 +30,7 @@ LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
       parent(nullptr),
       overscroll_behavior(OverscrollBehavior()) {}
 
-LayerImplTestProperties::~LayerImplTestProperties() {}
+LayerImplTestProperties::~LayerImplTestProperties() = default;
 
 void LayerImplTestProperties::AddChild(std::unique_ptr<LayerImpl> child) {
   child->test_properties()->parent = owning_layer;

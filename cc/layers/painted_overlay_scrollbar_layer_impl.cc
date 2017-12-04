@@ -32,7 +32,7 @@ PaintedOverlayScrollbarLayerImpl::PaintedOverlayScrollbarLayerImpl(
       track_start_(0),
       track_length_(0) {}
 
-PaintedOverlayScrollbarLayerImpl::~PaintedOverlayScrollbarLayerImpl() {}
+PaintedOverlayScrollbarLayerImpl::~PaintedOverlayScrollbarLayerImpl() = default;
 
 std::unique_ptr<LayerImpl> PaintedOverlayScrollbarLayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {

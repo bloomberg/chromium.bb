@@ -23,8 +23,7 @@ OcclusionTracker::OcclusionTracker(const gfx::Rect& screen_space_clip_rect)
     : screen_space_clip_rect_(screen_space_clip_rect) {
 }
 
-OcclusionTracker::~OcclusionTracker() {
-}
+OcclusionTracker::~OcclusionTracker() = default;
 
 Occlusion OcclusionTracker::GetCurrentOcclusionForLayer(
     const gfx::Transform& draw_transform) const {

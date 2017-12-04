@@ -1282,7 +1282,7 @@ class DrawsContentChangeLayer : public Layer {
 
  private:
   DrawsContentChangeLayer() : fake_draws_content_(false) {}
-  ~DrawsContentChangeLayer() override {}
+  ~DrawsContentChangeLayer() override = default;
 
   bool fake_draws_content_;
 };

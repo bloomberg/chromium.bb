@@ -818,7 +818,7 @@ ResourceProvider::SynchronousFence::SynchronousFence(
     gpu::gles2::GLES2Interface* gl)
     : gl_(gl), has_synchronized_(true) {}
 
-ResourceProvider::SynchronousFence::~SynchronousFence() {}
+ResourceProvider::SynchronousFence::~SynchronousFence() = default;
 
 void ResourceProvider::SynchronousFence::Set() {
   has_synchronized_ = false;

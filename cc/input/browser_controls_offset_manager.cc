@@ -51,7 +51,7 @@ BrowserControlsOffsetManager::BrowserControlsOffsetManager(
   CHECK(client_);
 }
 
-BrowserControlsOffsetManager::~BrowserControlsOffsetManager() {}
+BrowserControlsOffsetManager::~BrowserControlsOffsetManager() = default;
 
 float BrowserControlsOffsetManager::ControlsTopOffset() const {
   return ContentTopOffset() - TopControlsHeight();

@@ -15,7 +15,7 @@
 
 namespace cc {
 
-SynchronousTaskGraphRunner::SynchronousTaskGraphRunner() {}
+SynchronousTaskGraphRunner::SynchronousTaskGraphRunner() = default;
 
 SynchronousTaskGraphRunner::~SynchronousTaskGraphRunner() {
   DCHECK(!work_queue_.HasReadyToRunTasks());

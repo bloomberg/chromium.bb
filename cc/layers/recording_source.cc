@@ -41,7 +41,7 @@ RecordingSource::RecordingSource()
       background_color_(SK_ColorTRANSPARENT),
       recording_scale_factor_(1.f) {}
 
-RecordingSource::~RecordingSource() {}
+RecordingSource::~RecordingSource() = default;
 
 void RecordingSource::UpdateInvalidationForNewViewport(
     const gfx::Rect& old_recorded_viewport,

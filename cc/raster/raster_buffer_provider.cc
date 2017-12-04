@@ -18,9 +18,9 @@
 
 namespace cc {
 
-RasterBufferProvider::RasterBufferProvider() {}
+RasterBufferProvider::RasterBufferProvider() = default;
 
-RasterBufferProvider::~RasterBufferProvider() {}
+RasterBufferProvider::~RasterBufferProvider() = default;
 
 namespace {
 

@@ -8,7 +8,7 @@
 
 namespace cc {
 
-FakeTileTaskManagerImpl::FakeTileTaskManagerImpl() {}
+FakeTileTaskManagerImpl::FakeTileTaskManagerImpl() = default;
 
 FakeTileTaskManagerImpl::~FakeTileTaskManagerImpl() {
   DCHECK_EQ(0u, completed_tasks_.size());

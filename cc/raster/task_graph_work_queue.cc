@@ -101,15 +101,15 @@ class DependentIterator {
 
 }  // namespace
 
-TaskGraphWorkQueue::TaskNamespace::TaskNamespace() {}
+TaskGraphWorkQueue::TaskNamespace::TaskNamespace() = default;
 
 TaskGraphWorkQueue::TaskNamespace::TaskNamespace(TaskNamespace&& other) =
     default;
 
-TaskGraphWorkQueue::TaskNamespace::~TaskNamespace() {}
+TaskGraphWorkQueue::TaskNamespace::~TaskNamespace() = default;
 
 TaskGraphWorkQueue::TaskGraphWorkQueue() : next_namespace_id_(1) {}
-TaskGraphWorkQueue::~TaskGraphWorkQueue() {}
+TaskGraphWorkQueue::~TaskGraphWorkQueue() = default;
 
 TaskGraphWorkQueue::PrioritizedTask::PrioritizedTask(
     scoped_refptr<Task> task,

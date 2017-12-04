@@ -67,9 +67,9 @@ static base::AtomicSequenceNumber s_image_decode_sequence_number;
 
 namespace cc {
 
-LayerTreeHost::InitParams::InitParams() {}
+LayerTreeHost::InitParams::InitParams() = default;
 
-LayerTreeHost::InitParams::~InitParams() {}
+LayerTreeHost::InitParams::~InitParams() = default;
 
 std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -953,9 +953,9 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   SetNeedsFullTreeSync();
 }
 
-LayerTreeHost::ViewportLayers::ViewportLayers() {}
+LayerTreeHost::ViewportLayers::ViewportLayers() = default;
 
-LayerTreeHost::ViewportLayers::~ViewportLayers() {}
+LayerTreeHost::ViewportLayers::~ViewportLayers() = default;
 
 void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   DCHECK(!layers.inner_viewport_scroll ||

@@ -6,8 +6,8 @@
 
 namespace cc {
 
-MockLayerTreeMutator::MockLayerTreeMutator() {}
+MockLayerTreeMutator::MockLayerTreeMutator() = default;
 
-MockLayerTreeMutator::~MockLayerTreeMutator() {}
+MockLayerTreeMutator::~MockLayerTreeMutator() = default;
 
 }  // namespace cc

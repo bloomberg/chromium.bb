@@ -17,7 +17,7 @@ namespace {
 // Element class having derived classes.
 class DerivedElement {
  public:
-  virtual ~DerivedElement() {}
+  virtual ~DerivedElement() = default;
 
  protected:
   bool bool_values[1];
@@ -69,8 +69,8 @@ static_assert(alignof(DerivedElement2) <= kLargestDerivedElementSize,
 // Element class having no derived classes.
 class NonDerivedElement {
  public:
-  NonDerivedElement() {}
-  ~NonDerivedElement() {}
+  NonDerivedElement() = default;
+  ~NonDerivedElement() = default;
 
   int int_values[1];
 };
@@ -89,7 +89,7 @@ const int kMagicNumberToUseForSimpleDerivedElementThree = 1618;
 
 class SimpleDerivedElement : public DerivedElement {
  public:
-  ~SimpleDerivedElement() override {}
+  ~SimpleDerivedElement() override = default;
   void set_value(int val) { value = val; }
   int get_value() { return value; }
 
@@ -1108,7 +1108,7 @@ const size_t kLongCountForLongSimpleDerivedElement = 5;
 
 class LongSimpleDerivedElement : public SimpleDerivedElement {
  public:
-  ~LongSimpleDerivedElement() override {}
+  ~LongSimpleDerivedElement() override = default;
   void SetAllValues(unsigned long value) {
     for (size_t i = 0; i < kLongCountForLongSimpleDerivedElement; i++)
       values[i] = value;

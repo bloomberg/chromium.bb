@@ -12,7 +12,7 @@ SchedulerSettings::SchedulerSettings() = default;
 
 SchedulerSettings::SchedulerSettings(const SchedulerSettings& other) = default;
 
-SchedulerSettings::~SchedulerSettings() {}
+SchedulerSettings::~SchedulerSettings() = default;
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {

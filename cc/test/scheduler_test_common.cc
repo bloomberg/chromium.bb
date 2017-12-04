@@ -34,8 +34,7 @@ FakeCompositorTimingHistory::FakeCompositorTimingHistory(
       rendering_stats_instrumentation_owned_(
           std::move(rendering_stats_instrumentation)) {}
 
-FakeCompositorTimingHistory::~FakeCompositorTimingHistory() {
-}
+FakeCompositorTimingHistory::~FakeCompositorTimingHistory() = default;
 
 void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
   begin_main_frame_queue_duration_critical_ = duration;
@@ -137,7 +136,6 @@ base::TimeTicks TestScheduler::Now() const {
   return now_src_->NowTicks();
 }
 
-TestScheduler::~TestScheduler() {
-}
+TestScheduler::~TestScheduler() = default;
 
 }  // namespace cc

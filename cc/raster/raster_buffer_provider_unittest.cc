@@ -92,7 +92,7 @@ class TestRasterTaskImpl : public TileTask {
   }
 
  protected:
-  ~TestRasterTaskImpl() override {}
+  ~TestRasterTaskImpl() override = default;
 
  private:
   TestRasterTaskCompletionHandler* completion_handler_;
@@ -124,7 +124,7 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
   }
 
  protected:
-  ~BlockingTestRasterTaskImpl() override {}
+  ~BlockingTestRasterTaskImpl() override = default;
 
  private:
   base::Lock* lock_;

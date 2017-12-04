@@ -35,7 +35,7 @@ class MockScrollbarAnimationControllerClient
  public:
   explicit MockScrollbarAnimationControllerClient(LayerTreeHostImpl* host_impl)
       : host_impl_(host_impl) {}
-  virtual ~MockScrollbarAnimationControllerClient() {}
+  virtual ~MockScrollbarAnimationControllerClient() = default;
 
   void PostDelayedScrollbarAnimationTask(const base::Closure& start_fade,
                                          base::TimeDelta delay) override {

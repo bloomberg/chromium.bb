@@ -49,7 +49,7 @@ MicroBenchmarkController::MicroBenchmarkController(LayerTreeHost* host)
   DCHECK(host_);
 }
 
-MicroBenchmarkController::~MicroBenchmarkController() {}
+MicroBenchmarkController::~MicroBenchmarkController() = default;
 
 int MicroBenchmarkController::ScheduleRun(
     const std::string& micro_benchmark_name,

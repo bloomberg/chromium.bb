@@ -80,8 +80,7 @@ TestInProcessContextProvider::TestInProcessContextProvider(
   }
 }
 
-TestInProcessContextProvider::~TestInProcessContextProvider() {
-}
+TestInProcessContextProvider::~TestInProcessContextProvider() = default;
 
 gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
   return gpu::ContextResult::kSuccess;

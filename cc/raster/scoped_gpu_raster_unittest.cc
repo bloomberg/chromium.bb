@@ -11,7 +11,7 @@ namespace {
 
 class ScopedGpuRasterTest : public testing::Test {
  public:
-  ScopedGpuRasterTest() {}
+  ScopedGpuRasterTest() = default;
 };
 
 // Releasing ScopedGpuRaster should restore GL_UNPACK_ALIGNMENT == 4.

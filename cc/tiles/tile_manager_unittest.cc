@@ -1886,7 +1886,7 @@ class VerifyResourceContentIdRasterBufferProvider
   explicit VerifyResourceContentIdRasterBufferProvider(
       uint64_t expected_resource_id)
       : expected_resource_id_(expected_resource_id) {}
-  ~VerifyResourceContentIdRasterBufferProvider() override {}
+  ~VerifyResourceContentIdRasterBufferProvider() override = default;
 
   // RasterBufferProvider methods.
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(

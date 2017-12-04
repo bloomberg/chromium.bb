@@ -147,7 +147,7 @@ FilterOperation::FilterOperation(const FilterOperation& other)
   memcpy(matrix_, other.matrix_, sizeof(matrix_));
 }
 
-FilterOperation::~FilterOperation() {}
+FilterOperation::~FilterOperation() = default;
 
 static FilterOperation CreateNoOpFilter(FilterOperation::FilterType type) {
   switch (type) {

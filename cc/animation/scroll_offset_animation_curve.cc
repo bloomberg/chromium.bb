@@ -71,7 +71,7 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
       duration_behavior_(duration_behavior),
       has_set_initial_value_(false) {}
 
-ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
+ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() = default;
 
 base::TimeDelta ScrollOffsetAnimationCurve::SegmentDuration(
     const gfx::Vector2dF& delta,

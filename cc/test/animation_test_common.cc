@@ -136,7 +136,7 @@ FakeFloatAnimationCurve::FakeFloatAnimationCurve(double duration)
     : duration_(base::TimeDelta::FromSecondsD(duration)) {
 }
 
-FakeFloatAnimationCurve::~FakeFloatAnimationCurve() {}
+FakeFloatAnimationCurve::~FakeFloatAnimationCurve() = default;
 
 base::TimeDelta FakeFloatAnimationCurve::Duration() const {
   return duration_;
@@ -154,7 +154,7 @@ FakeTransformTransition::FakeTransformTransition(double duration)
     : duration_(base::TimeDelta::FromSecondsD(duration)) {
 }
 
-FakeTransformTransition::~FakeTransformTransition() {}
+FakeTransformTransition::~FakeTransformTransition() = default;
 
 base::TimeDelta FakeTransformTransition::Duration() const {
   return duration_;
@@ -196,7 +196,7 @@ FakeFloatTransition::FakeFloatTransition(double duration, float from, float to)
     : duration_(base::TimeDelta::FromSecondsD(duration)), from_(from), to_(to) {
 }
 
-FakeFloatTransition::~FakeFloatTransition() {}
+FakeFloatTransition::~FakeFloatTransition() = default;
 
 base::TimeDelta FakeFloatTransition::Duration() const {
   return duration_;
