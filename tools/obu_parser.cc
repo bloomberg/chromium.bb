@@ -43,13 +43,13 @@ namespace aom_tools {
 //     reserved bits
 //   0
 //     extension bit
-const uint32_t kObuForbiddenBit = 0x80;
+const uint32_t kObuForbiddenBitMask = 0x1;
 const uint32_t kObuForbiddenBitShift = 7;
-const uint32_t kObuTypeBits = 0x78;
+const uint32_t kObuTypeBitsMask = 0xF;
 const uint32_t kObuTypeBitsShift = 3;
-const uint32_t kObuReservedBits = 0x6;
+const uint32_t kObuReservedBitsMask = 0x3;
 const uint32_t kObuReservedBitsShift = 1;
-const uint32_t kObuExtensionFlagBit = 0x1;
+const uint32_t kObuExtensionFlagBitMask = 0x1;
 
 // When extension bit is set:
 // 8 bits: extension header
@@ -61,11 +61,11 @@ const uint32_t kObuExtensionFlagBit = 0x1;
 //   quality ID
 // 0
 //   reserved bit
-const uint32_t kObuExtTemporalIdBits = 0xE0;
+const uint32_t kObuExtTemporalIdBitsMask = 0x7;
 const uint32_t kObuExtTemporalIdBitsShift = 5;
-const uint32_t kObuExtSpatialIdBits = 0x18;
+const uint32_t kObuExtSpatialIdBitsMask = 0x3;
 const uint32_t kObuExtSpatialIdBitsShift = 3;
-const uint32_t kObuExtQualityIdBits = 0x6;
+const uint32_t kObuExtQualityIdBitsMask = 0x3;
 const uint32_t kObuExtQualityIdBitsShift = 1;
 const uint32_t kObuExtReservedFlagBit = 0x1;
 
@@ -83,37 +83,37 @@ bool ValidObuType(int obu_type) {
 
 bool ParseObuHeader(uint8_t obu_header_byte, ObuHeader *obu_header) {
   const int forbidden_bit =
-      (obu_header_byte & kObuForbiddenBit) >> kObuForbiddenBitShift;
+      (obu_header_byte >> kObuForbiddenBitShift) & kObuForbiddenBitMask;
   if (forbidden_bit) {
     fprintf(stderr, "Invalid OBU, forbidden bit set.\n");
     return false;
   }
 
-  obu_header->type = (obu_header_byte & kObuTypeBits) >> kObuTypeBitsShift;
+  obu_header->type = (obu_header_byte >> kObuTypeBitsShift) & kObuTypeBitsMask;
   if (!ValidObuType(obu_header->type)) {
     fprintf(stderr, "Invalid OBU type: %d.\n", obu_header->type);
     return false;
   }
 
   obu_header->reserved =
-      (obu_header_byte & kObuReservedBits) >> kObuReservedBitsShift;
+      (obu_header_byte >> kObuReservedBitsShift) & kObuReservedBitsMask;
   if (obu_header->reserved != 0) {
     fprintf(stderr, "Invalid OBU: reserved bit(s) set.\n");
     return false;
   }
 
-  obu_header->has_extension = obu_header_byte & kObuExtensionFlagBit;
+  obu_header->has_extension = obu_header_byte & kObuExtensionFlagBitMask;
   return true;
 }
 
 bool ParseObuExtensionHeader(uint8_t ext_header_byte,
                              ObuExtensionHeader *ext_header) {
-  ext_header->temporal_id =
-      (ext_header_byte & kObuExtTemporalIdBits) >> kObuExtTemporalIdBitsShift;
+  ext_header->temporal_id = (ext_header_byte >> kObuExtTemporalIdBitsShift) &
+                            kObuExtTemporalIdBitsMask;
   ext_header->spatial_id =
-      (ext_header_byte & kObuExtSpatialIdBits) >> kObuExtSpatialIdBitsShift;
+      (ext_header_byte >> kObuExtSpatialIdBitsShift) & kObuExtSpatialIdBitsMask;
   ext_header->quality_id =
-      (ext_header_byte & kObuExtQualityIdBits) >> kObuExtQualityIdBitsShift;
+      (ext_header_byte >> kObuExtQualityIdBitsShift) & kObuExtQualityIdBitsMask;
   ext_header->reserved_flag = ext_header_byte & kObuExtReservedFlagBit;
 
   if (ext_header->reserved_flag) {
