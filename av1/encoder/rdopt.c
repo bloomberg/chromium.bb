@@ -10090,7 +10090,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         {
           int64_t tmp_alt_rd = INT64_MAX;
           int dummy_disable_skip = 0;
-          int ref;
           int_mv cur_mv;
           RD_STATS tmp_rd_stats, tmp_rd_stats_y, tmp_rd_stats_uv;
 #if CONFIG_JNT_COMP
@@ -10141,17 +10140,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
               mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
             }
           } else {
-            for (ref = 0; ref < 1 + comp_pred; ++ref) {
-              int_mv this_mv =
-                  (ref == 0)
-                      ? mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
-                            .this_mv
-                      : mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
-                            .comp_mv;
-              clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                           xd->n8_h << MI_SIZE_LOG2, xd);
-              mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
-            }
+            int_mv this_mv =
+                mbmi_ext->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
+                    .this_mv;
+            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                         xd->n8_h << MI_SIZE_LOG2, xd);
+            mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
           }
 
           cur_mv =
