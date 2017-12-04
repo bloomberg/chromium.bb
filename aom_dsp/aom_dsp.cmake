@@ -269,16 +269,10 @@ else ()
       "${AOM_ROOT}/aom_dsp/mips/itrans8_dspr2.c")
 endif ()
 
-if (CONFIG_ANS)
-  set(AOM_DSP_COMMON_SOURCES
-      ${AOM_DSP_COMMON_SOURCES}
-      "${AOM_ROOT}/aom_dsp/ans.h")
-else ()
-  set(AOM_DSP_COMMON_SOURCES
-      ${AOM_DSP_COMMON_SOURCES}
-      "${AOM_ROOT}/aom_dsp/entcode.c"
-      "${AOM_ROOT}/aom_dsp/entcode.h")
-endif ()
+set(AOM_DSP_COMMON_SOURCES
+    ${AOM_DSP_COMMON_SOURCES}
+    "${AOM_ROOT}/aom_dsp/entcode.c"
+    "${AOM_ROOT}/aom_dsp/entcode.h")
 
 if (CONFIG_AV1)
   set(AOM_DSP_COMMON_SOURCES
@@ -304,18 +298,12 @@ if (CONFIG_AV1_DECODER)
       "${AOM_ROOT}/aom_dsp/bitreader_buffer.c"
       "${AOM_ROOT}/aom_dsp/bitreader_buffer.h")
 
-  if (CONFIG_ANS)
-    set(AOM_DSP_DECODER_SOURCES
-        ${AOM_DSP_DECODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/ansreader.h")
-  else ()
-    set(AOM_DSP_DECODER_SOURCES
-        ${AOM_DSP_DECODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
-        "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
-        "${AOM_ROOT}/aom_dsp/entdec.c"
-        "${AOM_ROOT}/aom_dsp/entdec.h")
-  endif ()
+  set(AOM_DSP_DECODER_SOURCES
+      ${AOM_DSP_DECODER_SOURCES}
+      "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
+      "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
+      "${AOM_ROOT}/aom_dsp/entdec.c"
+      "${AOM_ROOT}/aom_dsp/entdec.h")
 endif ()
 
 if (CONFIG_AV1_ENCODER)
@@ -435,20 +423,12 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
   endif ()
 
-  if (CONFIG_ANS)
-    set(AOM_DSP_ENCODER_SOURCES
-        ${AOM_DSP_ENCODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/answriter.h"
-        "${AOM_ROOT}/aom_dsp/buf_ans.c"
-        "${AOM_ROOT}/aom_dsp/buf_ans.h")
-  else ()
-    set(AOM_DSP_ENCODER_SOURCES
-        ${AOM_DSP_ENCODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
-        "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
-        "${AOM_ROOT}/aom_dsp/entenc.c"
-        "${AOM_ROOT}/aom_dsp/entenc.h")
-  endif ()
+  set(AOM_DSP_ENCODER_SOURCES
+      ${AOM_DSP_ENCODER_SOURCES}
+      "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
+      "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
+      "${AOM_ROOT}/aom_dsp/entenc.c"
+      "${AOM_ROOT}/aom_dsp/entenc.h")
 
   if (CONFIG_INTERNAL_STATS)
     set(AOM_DSP_ENCODER_SOURCES

@@ -20,19 +20,12 @@ DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/synonyms.h
 # bit reader
 DSP_SRCS-yes += prob.h
 DSP_SRCS-yes += prob.c
-DSP_SRCS-$(CONFIG_ANS) += ans.h
 
 ifeq ($(CONFIG_AV1_ENCODER),yes)
-ifeq ($(CONFIG_ANS),yes)
-DSP_SRCS-yes += answriter.h
-DSP_SRCS-yes += buf_ans.h
-DSP_SRCS-yes += buf_ans.c
-else
 DSP_SRCS-yes += entenc.c
 DSP_SRCS-yes += entenc.h
 DSP_SRCS-yes += daalaboolwriter.c
 DSP_SRCS-yes += daalaboolwriter.h
-endif
 DSP_SRCS-yes += bitwriter.h
 DSP_SRCS-yes += bitwriter_buffer.c
 DSP_SRCS-yes += bitwriter_buffer.h
@@ -47,14 +40,10 @@ DSP_SRCS-$(CONFIG_INTERNAL_STATS) += fastssim.c
 endif
 
 ifeq ($(CONFIG_AV1_DECODER),yes)
-ifeq ($(CONFIG_ANS),yes)
-DSP_SRCS-yes += ansreader.h
-else
 DSP_SRCS-yes += entdec.c
 DSP_SRCS-yes += entdec.h
 DSP_SRCS-yes += daalaboolreader.c
 DSP_SRCS-yes += daalaboolreader.h
-endif
 DSP_SRCS-yes += bitreader.h
 DSP_SRCS-yes += bitreader_buffer.c
 DSP_SRCS-yes += bitreader_buffer.h
@@ -66,10 +55,8 @@ endif
 DSP_SRCS-yes += intrapred.c
 DSP_SRCS-yes += intrapred_common.h
 
-ifneq ($(CONFIG_ANS),yes)
 DSP_SRCS-yes += entcode.c
 DSP_SRCS-yes += entcode.h
-endif
 
 DSP_SRCS-$(HAVE_SSE) += x86/intrapred_sse2.asm
 DSP_SRCS-$(HAVE_SSE2) += x86/intrapred_sse2.asm

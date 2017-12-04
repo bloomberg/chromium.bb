@@ -16,9 +16,6 @@
 #include "./av1_rtcd.h"
 #include "aom/internal/aom_codec_internal.h"
 #include "aom_util/aom_thread.h"
-#if CONFIG_ANS
-#include "aom_dsp/ans.h"
-#endif
 #include "av1/common/alloccommon.h"
 #include "av1/common/av1_loopfilter.h"
 #include "av1/common/entropy.h"
@@ -567,9 +564,6 @@ typedef struct AV1Common {
   int refresh_mask;
   int invalid_delta_frame_id_minus1;
 #endif  // CONFIG_REFERENCE_BUFFER
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  int ans_window_size_log2;
-#endif
 #if CONFIG_LV_MAP
   LV_MAP_CTX_TABLE coeff_ctx_table;
 #endif
@@ -977,11 +971,7 @@ static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
 static INLINE aom_cdf_prob cdf_element_prob(const aom_cdf_prob *cdf,
                                             size_t element) {
   assert(cdf != NULL);
-#if !CONFIG_ANS
   return (element > 0 ? cdf[element - 1] : CDF_PROB_TOP) - cdf[element];
-#else
-  return cdf[element] - (element > 0 ? cdf[element - 1] : 0);
-#endif
 }
 
 static INLINE void partition_gather_horz_alike(aom_cdf_prob *out,

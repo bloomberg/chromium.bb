@@ -922,9 +922,6 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
                                const size_t read_size,
                                struct aom_internal_error_info *error_info,
                                aom_reader *r, uint8_t allow_update_cdf,
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-                               int window_size,
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
                                aom_decrypt_cb decrypt_cb, void *decrypt_state) {
   // Validate the calculated partition length. If the buffer
   // described by the partition can't be fully read, then restrict
@@ -933,9 +930,6 @@ static void setup_bool_decoder(const uint8_t *data, const uint8_t *data_end,
     aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt tile length");
 
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  r->window_size = window_size;
-#endif
   if (aom_reader_init(r, data, read_size, decrypt_cb, decrypt_state))
     aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder %d", 1);
@@ -2198,11 +2192,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero(td->dqcoeff);
       av1_tile_init(&td->xd.tile, td->cm, tile_row, tile_col);
       setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
-                         &td->bit_reader, allow_update_cdf,
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-                         1 << cm->ans_window_size_log2,
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
-                         pbi->decrypt_cb, pbi->decrypt_state);
+                         &td->bit_reader, allow_update_cdf, pbi->decrypt_cb,
+                         pbi->decrypt_state);
 #if CONFIG_ACCOUNTING
       if (pbi->acct_enabled) {
         td->bit_reader.accounting = &pbi->accounting;
@@ -2341,32 +2332,24 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_EXT_TILE
   if (cm->large_scale_tile) {
     if (n_tiles == 1) {
-#if CONFIG_ANS
-      return data_end;
-#else
       // Find the end of the single tile buffer
       return aom_reader_find_end(&pbi->tile_data->bit_reader);
-#endif  // CONFIG_ANS
     } else {
       // Return the end of the last tile buffer
       return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
     }
   } else {
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_ANS
-    return data_end;
-#else
 #if !CONFIG_OBU
-  {
-    // Get last tile data.
-    TileData *const td = pbi->tile_data + tile_cols * tile_rows - 1;
-    return aom_reader_find_end(&td->bit_reader);
-  }
+    {
+      // Get last tile data.
+      TileData *const td = pbi->tile_data + tile_cols * tile_rows - 1;
+      return aom_reader_find_end(&td->bit_reader);
+    }
 #else
   TileData *const td = pbi->tile_data + endTile;
   return aom_reader_find_end(&td->bit_reader);
 #endif
-#endif  // CONFIG_ANS
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
@@ -2764,9 +2747,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
       pbi->need_resync = 0;
     }
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-    cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #if CONFIG_INTRABC
     if (cm->allow_screen_content_tools) cm->allow_intrabc = aom_rb_read_bit(rb);
@@ -2828,9 +2808,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
         pbi->need_resync = 0;
       }
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-      cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
-#endif
       cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #if CONFIG_INTRABC
       if (cm->allow_screen_content_tools)

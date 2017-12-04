@@ -31,9 +31,6 @@
 #if CONFIG_BGSPRITE
 #include "av1/encoder/bgsprite.h"
 #endif  // CONFIG_BGSPRITE
-#if CONFIG_ANS
-#include "aom_dsp/buf_ans.h"
-#endif
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemv.h"
@@ -544,10 +541,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_free_pc_tree(&cpi->td);
 
   aom_free(cpi->td.mb.palette_buffer);
-
-#if CONFIG_ANS
-  aom_buf_ans_free(&cpi->buf_ans);
-#endif  // CONFIG_ANS
 }
 
 static void save_coding_context(AV1_COMP *cpi) {
@@ -2538,9 +2531,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #if CONFIG_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
 #endif
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  cpi->common.ans_window_size_log2 = cpi->oxcf.ans_window_size_log2;
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 #if CONFIG_AMVR
   cm->seq_force_integer_mv = 2;
 #endif

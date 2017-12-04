@@ -84,9 +84,6 @@ struct av1_extracfg {
   int render_width;
   int render_height;
   aom_superblock_size_t superblock_size;
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  int ans_window_size_log2;
-#endif
 #if CONFIG_EXT_TILE
   unsigned int single_tile_decoding;
 #endif  // CONFIG_EXT_TILE
@@ -149,9 +146,6 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // render width
   0,                            // render height
   AOM_SUPERBLOCK_SIZE_DYNAMIC,  // superblock_size
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  23,  // ans_window_size_log2
-#endif
 #if CONFIG_EXT_TILE
   0,    // Single tile decoding is off by default.
 #endif  // CONFIG_EXT_TILE
@@ -397,9 +391,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_SRGB);
 #endif
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  RANGE_CHECK(extra_cfg, ans_window_size_log2, 8, 23);
-#endif
 
 #if CONFIG_DIST_8X8
   if (extra_cfg->enable_dist_8x8 && extra_cfg->lossless)
@@ -616,9 +607,6 @@ static aom_codec_err_t set_encoder_config(
 #if CONFIG_EXT_PARTITION
   oxcf->superblock_size = extra_cfg->superblock_size;
 #endif  // CONFIG_EXT_PARTITION
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  oxcf->ans_window_size_log2 = extra_cfg->ans_window_size_log2;
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 
 #if CONFIG_EXT_TILE
   oxcf->large_scale_tile = cfg->large_scale_tile;
@@ -1578,15 +1566,6 @@ static aom_codec_err_t ctrl_set_superblock_size(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-static aom_codec_err_t ctrl_set_ans_window_size_log2(aom_codec_alg_priv_t *ctx,
-                                                     va_list args) {
-  struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.ans_window_size_log2 = CAST(AV1E_SET_ANS_WINDOW_SIZE_LOG2, args);
-  return update_extra_cfg(ctx, &extra_cfg);
-}
-#endif
-
 static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1_COPY_REFERENCE, ctrl_copy_reference },
   { AOME_USE_REFERENCE, ctrl_use_reference },
@@ -1649,9 +1628,6 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_MAX_GF_INTERVAL, ctrl_set_max_gf_interval },
   { AV1E_SET_RENDER_SIZE, ctrl_set_render_size },
   { AV1E_SET_SUPERBLOCK_SIZE, ctrl_set_superblock_size },
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  { AV1E_SET_ANS_WINDOW_SIZE_LOG2, ctrl_set_ans_window_size_log2 },
-#endif
 #if CONFIG_EXT_TILE
   { AV1E_SET_SINGLE_TILE_DECODING, ctrl_set_single_tile_decoding },
 #endif  // CONFIG_EXT_TILE

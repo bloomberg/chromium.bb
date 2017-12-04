@@ -15,11 +15,7 @@
 #include <assert.h>
 #include "./aom_config.h"
 
-#if CONFIG_ANS
-#include "aom_dsp/buf_ans.h"
-#else
 #include "aom_dsp/daalaboolwriter.h"
-#endif
 #include "aom_dsp/prob.h"
 
 #if CONFIG_RD_DEBUG
@@ -31,11 +27,7 @@
 extern "C" {
 #endif
 
-#if CONFIG_ANS
-typedef struct BufAnsCoder aom_writer;
-#else
 typedef struct daala_writer aom_writer;
-#endif
 
 typedef struct TOKEN_STATS {
   int cost;
@@ -57,29 +49,15 @@ static INLINE void init_token_stats(TOKEN_STATS *token_stats) {
 }
 
 static INLINE void aom_start_encode(aom_writer *bc, uint8_t *buffer) {
-#if CONFIG_ANS
-  aom_buf_ans_alloc(bc, /* error context*/ NULL);
-  buf_ans_write_init(bc, buffer);
-#else
   aom_daala_start_encode(bc, buffer);
-#endif
 }
 
 static INLINE void aom_stop_encode(aom_writer *bc) {
-#if CONFIG_ANS
-  aom_buf_ans_flush(bc);
-  bc->pos = buf_ans_write_end(bc);
-#else
   aom_daala_stop_encode(bc);
-#endif
 }
 
 static INLINE void aom_write(aom_writer *br, int bit, int probability) {
-#if CONFIG_ANS
-  buf_rabs_write(br, bit, probability);
-#else
   aom_daala_write(br, bit, probability);
-#endif
 }
 
 static INLINE void aom_write_record(aom_writer *br, int bit, int probability,
@@ -93,11 +71,7 @@ static INLINE void aom_write_record(aom_writer *br, int bit, int probability,
 }
 
 static INLINE void aom_write_bit(aom_writer *w, int bit) {
-#if CONFIG_ANS
-  buf_rabs_write_bit(w, bit);
-#else
   aom_write(w, bit, 128);  // aom_prob_half
-#endif
 }
 
 static INLINE void aom_write_bit_record(aom_writer *w, int bit,
@@ -118,15 +92,7 @@ static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {
 
 static INLINE void aom_write_cdf(aom_writer *w, int symb,
                                  const aom_cdf_prob *cdf, int nsymbs) {
-#if CONFIG_ANS
-  (void)nsymbs;
-  assert(cdf);
-  const aom_cdf_prob cum_prob = symb > 0 ? cdf[symb - 1] : 0;
-  const aom_cdf_prob prob = cdf[symb] - cum_prob;
-  buf_rans_write(w, cum_prob, prob);
-#else
   daala_write_symbol(w, symb, cdf, nsymbs);
-#endif
 }
 
 static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,

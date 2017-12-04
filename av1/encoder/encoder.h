@@ -23,10 +23,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/resize.h"
 #include "av1/encoder/aq_cyclicrefresh.h"
-#if CONFIG_ANS
-#include "aom_dsp/ans.h"
-#include "aom_dsp/buf_ans.h"
-#endif
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encodemb.h"
@@ -296,9 +292,6 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_EXT_PARTITION
   aom_superblock_size_t superblock_size;
 #endif  // CONFIG_EXT_PARTITION
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  int ans_window_size_log2;
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 #if CONFIG_EXT_TILE
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
@@ -595,9 +588,6 @@ typedef struct AV1_COMP {
   AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
   AV1LfSync lf_row_sync;
-#if CONFIG_ANS
-  struct BufAnsCoder buf_ans;
-#endif
   int refresh_frame_mask;
   int existing_fb_idx_to_show;
   int is_arf_filter_off[MAX_EXT_ARFS + 1];

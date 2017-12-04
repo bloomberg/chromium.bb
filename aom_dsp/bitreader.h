@@ -19,11 +19,7 @@
 
 #include "aom/aomdx.h"
 #include "aom/aom_integer.h"
-#if CONFIG_ANS
-#include "aom_dsp/ansreader.h"
-#else
 #include "aom_dsp/daalaboolreader.h"
-#endif
 #include "aom_dsp/prob.h"
 #include "av1/common/odintrin.h"
 
@@ -63,63 +59,32 @@
 extern "C" {
 #endif
 
-#if CONFIG_ANS
-typedef struct AnsDecoder aom_reader;
-#else
 typedef struct daala_reader aom_reader;
-#endif
 
 static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
                                   size_t size, aom_decrypt_cb decrypt_cb,
                                   void *decrypt_state) {
   (void)decrypt_cb;
   (void)decrypt_state;
-#if CONFIG_ANS
-  if (size > INT_MAX) return 1;
-  return ans_read_init(r, buffer, (int)size);
-#else
   return aom_daala_reader_init(r, buffer, (int)size);
-#endif
 }
 
 static INLINE const uint8_t *aom_reader_find_end(aom_reader *r) {
-#if CONFIG_ANS
-  (void)r;
-  assert(0 && "Use the raw buffer size with ANS");
-  return NULL;
-#else
   return aom_daala_reader_find_end(r);
-#endif
 }
 
 static INLINE int aom_reader_has_error(aom_reader *r) {
-#if CONFIG_ANS
-  return ans_reader_has_error(r);
-#else
   return aom_daala_reader_has_error(r);
-#endif
 }
 
 // Returns the position in the bit reader in bits.
 static INLINE uint32_t aom_reader_tell(const aom_reader *r) {
-#if CONFIG_ANS
-  (void)r;
-  assert(0 && "aom_reader_tell() is unimplemented for ANS");
-  return 0;
-#else
   return aom_daala_reader_tell(r);
-#endif
 }
 
 // Returns the position in the bit reader in 1/8th bits.
 static INLINE uint32_t aom_reader_tell_frac(const aom_reader *r) {
-#if CONFIG_ANS
-  (void)r;
-  assert(0 && "aom_reader_tell_frac() is unimplemented for ANS");
-  return 0;
-#else
   return aom_daala_reader_tell_frac(r);
-#endif
 }
 
 #if CONFIG_ACCOUNTING
@@ -143,11 +108,7 @@ static INLINE void aom_update_symb_counts(const aom_reader *r, int is_binary) {
 
 static INLINE int aom_read_(aom_reader *r, int prob ACCT_STR_PARAM) {
   int ret;
-#if CONFIG_ANS
-  ret = rabs_read(r, prob);
-#else
   ret = aom_daala_read(r, prob);
-#endif
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
   aom_update_symb_counts(r, 1);
@@ -157,11 +118,7 @@ static INLINE int aom_read_(aom_reader *r, int prob ACCT_STR_PARAM) {
 
 static INLINE int aom_read_bit_(aom_reader *r ACCT_STR_PARAM) {
   int ret;
-#if CONFIG_ANS
-  ret = rabs_read_bit(r);  // Non trivial optimization at half probability
-#else
   ret = aom_read(r, 128, NULL);  // aom_prob_half
-#endif
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
 #endif
@@ -181,12 +138,7 @@ static INLINE int aom_read_literal_(aom_reader *r, int bits ACCT_STR_PARAM) {
 static INLINE int aom_read_cdf_(aom_reader *r, const aom_cdf_prob *cdf,
                                 int nsymbs ACCT_STR_PARAM) {
   int ret;
-#if CONFIG_ANS
-  (void)nsymbs;
-  ret = rans_read(r, cdf);
-#else
   ret = daala_read_symbol(r, cdf, nsymbs);
-#endif
 
 #if CONFIG_ACCOUNTING
   if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);

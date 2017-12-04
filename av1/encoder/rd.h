@@ -14,9 +14,6 @@
 
 #include <limits.h>
 
-#if CONFIG_ANS
-#include "aom_dsp/ans.h"
-#endif  // CONFIG_ANS
 #include "av1/common/blockd.h"
 
 #include "av1/encoder/block.h"

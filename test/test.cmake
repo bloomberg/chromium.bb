@@ -296,17 +296,10 @@ if (NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/superframe_test.cc"
         "${AOM_ROOT}/test/tile_independence_test.cc")
 
-    if (CONFIG_ANS)
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/ans_codec_test.cc"
-          "${AOM_ROOT}/test/ans_test.cc")
-    else ()
-      set(AOM_UNIT_TEST_COMMON_SOURCES
-          ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/binary_codes_test.cc"
-          "${AOM_ROOT}/test/boolcoder_test.cc")
-    endif ()
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/binary_codes_test.cc"
+        "${AOM_ROOT}/test/boolcoder_test.cc")
 
     if (CONFIG_EXT_TILE)
       set(AOM_UNIT_TEST_COMMON_SOURCES

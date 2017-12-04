@@ -35,9 +35,6 @@ TEST(AV1, TestAccounting) {
   }
   aom_stop_encode(&bw);
   aom_reader br;
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  br.window_size = 1 << 16;
-#endif
   aom_reader_init(&br, bw_buffer, bw.pos, NULL, NULL);
 
   Accounting accounting;

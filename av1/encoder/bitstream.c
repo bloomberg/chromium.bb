@@ -3060,9 +3060,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_ANS
-        mode_bc.size = 1 << cpi->common.ans_window_size_log2;
-#endif
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
 #if CONFIG_LOOP_RESTORATION
         av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
@@ -3244,9 +3241,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_ANS
-        mode_bc.size = 1 << cpi->common.ans_window_size_log2;
-#endif  // CONFIG_ANS
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
         av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
@@ -3715,11 +3709,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif
     write_sb_size(cm, wb);
 
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-    assert(cpi->common.ans_window_size_log2 >= 8);
-    assert(cpi->common.ans_window_size_log2 < 24);
-    aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_INTRABC
     if (cm->allow_screen_content_tools) aom_wb_write_bit(wb, cm->allow_intrabc);
@@ -3761,11 +3750,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       write_frame_size(cm, wb);
 #endif
       write_sb_size(cm, wb);
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-      assert(cpi->common.ans_window_size_log2 >= 8);
-      assert(cpi->common.ans_window_size_log2 < 24);
-      aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
       aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_INTRABC
       if (cm->allow_screen_content_tools)
@@ -4041,11 +4025,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
     write_sb_size(cm, wb);
 
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-    assert(cpi->common.ans_window_size_log2 >= 8);
-    assert(cpi->common.ans_window_size_log2 < 24);
-    aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
 #if CONFIG_AMVR
     if (cm->allow_screen_content_tools) {
@@ -4076,12 +4055,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #else
       write_frame_size(cm, wb);
 #endif
-
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-      assert(cpi->common.ans_window_size_log2 >= 8);
-      assert(cpi->common.ans_window_size_log2 < 24);
-      aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     }
   } else if (cm->frame_type == INTER_FRAME) {
     MV_REFERENCE_FRAME ref_frame;
@@ -4325,9 +4298,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 
   aom_writer real_header_bc;
   header_bc = &real_header_bc;
-#if CONFIG_ANS
-  header_bc->size = 1 << cpi->common.ans_window_size_log2;
-#endif
   aom_start_encode(header_bc, data);
 
   if (!frame_is_intra_only(cm)) {
@@ -4633,9 +4603,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_ANS
-        mode_bc.size = 1 << cpi->common.ans_window_size_log2;
-#endif
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
         aom_start_encode(&mode_bc, buf->data + data_offset);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
@@ -4755,9 +4722,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_ANS
-        mode_bc.size = 1 << cpi->common.ans_window_size_log2;
-#endif  // CONFIG_ANS
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
         av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
@@ -4969,9 +4933,5 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_ANS && ANS_REVERSE
-  // Avoid aliasing the superframe index
-  *data++ = 0;
-#endif
   *size = data - dst;
 }

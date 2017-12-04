@@ -262,7 +262,6 @@ EXPERIMENT_LIST="
     ext_intra_mod
     intrabc
     new_quant
-    ans
     loop_restoration
     striped_loop_restoration
     ext_partition

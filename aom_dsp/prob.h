@@ -21,9 +21,7 @@
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem.h"
 
-#if !CONFIG_ANS
 #include "aom_dsp/entcode.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,11 +37,7 @@ typedef uint16_t aom_cdf_prob;
 #define CDF_PROB_BITS 15
 #define CDF_PROB_TOP (1 << CDF_PROB_BITS)
 
-#if !CONFIG_ANS
 #define AOM_ICDF OD_ICDF
-#else
-#define AOM_ICDF(x) (x)
-#endif
 
 #define AOM_CDF2(a0) AOM_ICDF(a0), AOM_ICDF(CDF_PROB_TOP), 0
 #define AOM_CDF3(a0, a1) AOM_ICDF(a0), AOM_ICDF(a1), AOM_ICDF(CDF_PROB_TOP), 0
@@ -249,18 +243,11 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   tmp = AOM_ICDF(tmp0);
   diff = ((CDF_PROB_TOP - (nsymbs << rate2)) >> rate) << rate;
 
-// Single loop (faster)
-#if !CONFIG_ANS
+  // Single loop (faster)
   for (i = 0; i < nsymbs - 1; ++i, tmp -= tmp0) {
     tmp -= (i == val ? diff : 0);
     cdf[i] += ((tmp - cdf[i]) >> rate);
   }
-#else
-  for (i = 0; i < nsymbs - 1; ++i, tmp += tmp0) {
-    tmp += (i == val ? diff : 0);
-    cdf[i] -= ((cdf[i] - tmp) >> rate);
-  }
-#endif
 
 #endif
 

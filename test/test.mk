@@ -113,20 +113,13 @@ LIBAOM_TEST_SRCS-yes                   += superframe_test.cc
 LIBAOM_TEST_SRCS-yes                   += tile_independence_test.cc
 LIBAOM_TEST_SRCS-yes                   += ethread_test.cc
 LIBAOM_TEST_SRCS-yes                   += motion_vector_test.cc
-ifneq ($(CONFIG_ANS),yes)
 LIBAOM_TEST_SRCS-yes                   += binary_codes_test.cc
-endif
 ifeq ($(CONFIG_EXT_TILE),yes)
 LIBAOM_TEST_SRCS-yes                   += av1_ext_tile_test.cc
 endif
-ifeq ($(CONFIG_ANS),yes)
-LIBAOM_TEST_SRCS-yes                   += ans_test.cc
-LIBAOM_TEST_SRCS-yes                   += ans_codec_test.cc
-else
 LIBAOM_TEST_SRCS-yes                   += boolcoder_test.cc
 ifeq ($(CONFIG_ACCOUNTING),yes)
 LIBAOM_TEST_SRCS-yes                   += accounting_test.cc
-endif
 endif
 LIBAOM_TEST_SRCS-yes                   += divu_small_test.cc
 #LIBAOM_TEST_SRCS-yes                   += encoder_parms_get_to_decoder.cc
