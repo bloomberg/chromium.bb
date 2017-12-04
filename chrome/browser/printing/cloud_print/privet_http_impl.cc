@@ -50,8 +50,6 @@ const int kPrivetCancelationTimeoutSeconds = 3;
 const char kPrivetURLKeyUserName[] = "user_name";
 const char kPrivetURLKeyClientName[] = "client_name";
 const char kPrivetURLKeyJobname[] = "job_name";
-const char kPrivetURLKeyOffline[] = "offline";
-const char kPrivetURLValueOffline[] = "1";
 const char kPrivetURLValueClientName[] = "Chrome";
 
 const char kPrivetContentTypePDF[] = "application/pdf";
@@ -388,7 +386,6 @@ PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
       use_pdf_(false),
       has_extended_workflow_(false),
       started_(false),
-      offline_(false),
       invalid_job_retries_(0),
       weak_factory_(this) {
 }
@@ -499,12 +496,6 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
     url = net::AppendQueryParameter(url,
                                     kPrivetKeyJobID,
                                     jobid_);
-  }
-
-  if (offline_) {
-    url = net::AppendQueryParameter(url,
-                                    kPrivetURLKeyOffline,
-                                    kPrivetURLValueOffline);
   }
 
   url_fetcher_ =
@@ -665,11 +656,6 @@ void PrivetLocalPrintOperationImpl::SetUsername(const std::string& user) {
 void PrivetLocalPrintOperationImpl::SetJobname(const std::string& jobname) {
   DCHECK(!started_);
   jobname_ = jobname;
-}
-
-void PrivetLocalPrintOperationImpl::SetOffline(bool offline) {
-  DCHECK(!started_);
-  offline_ = offline;
 }
 
 void PrivetLocalPrintOperationImpl::SetPageSize(const gfx::Size& page_size) {
