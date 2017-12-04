@@ -264,7 +264,6 @@ void TabManager::Start() {
 // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
 // discarded.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  start_time_ = NowTicks();
   // Create a |MemoryPressureListener| to listen for memory events when
   // MemoryCoordinator is disabled. When MemoryCoordinator is enabled
   // it asks TabManager to do tab discarding.
@@ -411,6 +410,9 @@ bool TabManager::CanDiscardTab(const TabStats& tab_stats,
 }
 
 void TabManager::DiscardTab(DiscardReason reason) {
+  if (reason == DiscardReason::kUrgent)
+    stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
+
 #if defined(OS_CHROMEOS)
   // Call Chrome OS specific low memory handling process.
   if (base::FeatureList::IsEnabled(features::kArcMemoryManagement)) {
@@ -637,41 +639,6 @@ bool TabManager::IsInternalPage(const GURL& url) {
   return false;
 }
 
-void TabManager::RecordDiscardStatistics() {
-  discard_count_++;
-
-  // TODO(jamescook): Maybe incorporate extension count?
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.TabCount", GetTabCount(), 1, 100,
-                              50);
-  // TODO(jamescook): If the time stats prove too noisy, then divide up users
-  // based on how heavily they use Chrome using tab count as a proxy.
-  // Bin into <= 1, <= 2, <= 4, <= 8, etc.
-  if (last_discard_time_.is_null()) {
-    // This is the first discard this session.
-    TimeDelta interval = NowTicks() - start_time_;
-    int interval_seconds = static_cast<int>(interval.InSeconds());
-    // Record time in seconds over an interval of approximately 1 day.
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.InitialTime2", interval_seconds,
-                                1, 100000, 50);
-  } else {
-    // Not the first discard, so compute time since last discard.
-    TimeDelta interval = NowTicks() - last_discard_time_;
-    int interval_ms = static_cast<int>(interval.InMilliseconds());
-    // Record time in milliseconds over an interval of approximately 1 day.
-    // Start at 100 ms to get extra resolution in the target 750 ms range.
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.IntervalTime2", interval_ms, 100,
-                                100000 * 1000, 50);
-  }
-// TODO(georgesak): Remove this #if when RecordMemoryStats is implemented for
-// all platforms.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-  // Record system memory usage at the time of the discard.
-  metrics::RecordMemoryStats(metrics::RECORD_MEMORY_STATS_TAB_DISCARDED);
-#endif
-  // Set up to record the next interval.
-  last_discard_time_ = NowTicks();
-}
-
 void TabManager::PurgeBrowserMemory() {
   // Based on experimental evidence, attempts to free memory from renderers
   // have been too slow to use in OOM situations (V8 garbage collection) or
@@ -809,9 +776,7 @@ WebContents* TabManager::DiscardWebContentsAt(int index,
   if (GetWebContentsData(old_contents)->IsDiscarded())
     return nullptr;
 
-  // Record statistics before discarding to capture the memory state that leads
-  // to the discard.
-  RecordDiscardStatistics();
+  ++discard_count_;
 
   UMA_HISTOGRAM_BOOLEAN(
       "TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler",
@@ -1309,6 +1274,23 @@ bool TabManager::ComparePendingNavigations(
     return !first_is_internal_page;
 
   return false;
+}
+
+int TabManager::GetNumAliveTabs() const {
+  int tab_count = 0;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    for (int index = 0; index < tab_strip_model->count(); ++index) {
+      content::WebContents* contents = tab_strip_model->GetWebContentsAt(index);
+      if (!IsTabDiscarded(contents))
+        ++tab_count;
+    }
+  }
+
+  tab_count -= pending_navigations_.size();
+  DCHECK_GE(tab_count, 0);
+
+  return tab_count;
 }
 
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
