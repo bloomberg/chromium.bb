@@ -14,7 +14,16 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 
+namespace mojo {
+template <typename DataViewType, typename T>
+struct StructTraits;
+}
+
 namespace syncer {
+
+namespace mojom {
+class StringOrdinalDataView;
+}
 
 // An Ordinal<T> is an object that can be used for ordering. The
 // Ordinal<T> class has an unbounded dense strict total order, which
@@ -151,6 +160,9 @@ class Ordinal {
   static_assert(kRadix == kMaxDigitValue + 1, "incorrect ordinal radix");
 
  private:
+  friend struct mojo::StructTraits<syncer::mojom::StringOrdinalDataView,
+                                   Ordinal<Traits>>;
+
   // Returns true iff the given byte string satisfies the criteria for
   // a valid Ordinal.
   static bool IsValidOrdinalBytes(const std::string& bytes);
