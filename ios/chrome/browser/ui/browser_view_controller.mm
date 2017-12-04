@@ -143,6 +143,8 @@
 #import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
@@ -150,6 +152,10 @@
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/main/main_feature_flags.h"
+#import "ios/chrome/browser/ui/main_content/main_content_ui.h"
+#import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
+#import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
+#import "ios/chrome/browser/ui/main_content/web_scroll_view_main_content_ui_forwarder.h"
 #import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_coordinator.h"
@@ -184,6 +190,7 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_ui.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_configuration_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
@@ -393,6 +400,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     InfobarContainerStateDelegate,
                                     KeyCommandsPlumbing,
                                     NetExportTabHelperDelegate,
+                                    MainContentUI,
                                     ManageAccountsDelegate,
                                     MFMailComposeViewControllerDelegate,
                                     NewTabPageControllerObserver,
@@ -573,6 +581,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
   LegacyToolbarUIUpdater* _toolbarUIUpdater;
 
+  // The main content UI updater for the content displayed by this BVC.
+  MainContentUIStateUpdater* _mainContentUIUpdater;
+
+  // The forwarder for web scroll view interation events.
+  WebScrollViewMainContentUIForwarder* _webMainContentUIForwarder;
+
   // Coordinator for the External Search UI.
   ExternalSearchCoordinator* _externalSearchCoordinator;
 
@@ -606,6 +620,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether the controller's view is currently visible.
 // YES from viewDidAppear to viewWillDisappear.
 @property(nonatomic, assign) BOOL viewVisible;
+// Whether the controller should broadcast its UI.
+@property(nonatomic, assign, getter=isBroadcasting) BOOL broadcasting;
 // Whether the controller is currently dismissing a presented view controller.
 @property(nonatomic, assign, getter=isDismissingModal) BOOL dismissingModal;
 // Returns YES if the toolbar has not been scrolled out by fullscreen.
@@ -732,9 +748,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (UIImageView*)pageFullScreenOpenCloseAnimationView;
 // Updates the toolbar display based on the current tab.
 - (void)updateToolbar;
-// Starts or stops broadcasting the toolbar UI depending on whether the BVC is
-// visible and active.
-- (void)updateToolbarBroadcastState;
+// Starts or stops broadcasting the toolbar UI and main content UI depending on
+// whether the BVC is visible and active.
+- (void)updateBroadcastState;
 // Updates |dialogPresenter|'s |active| property to account for the BVC's
 // |active|, |visible|, and |inNewTabAnimation| properties.
 - (void)updateDialogPresenterActiveState;
@@ -909,6 +925,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize active = _active;
 @synthesize visible = _visible;
 @synthesize viewVisible = _viewVisible;
+@synthesize broadcasting = _broadcasting;
 @synthesize dismissingModal = _dismissingModal;
 @synthesize hideStatusBar = _hideStatusBar;
 @synthesize activityOverlayCoordinator = _activityOverlayCoordinator;
@@ -1044,7 +1061,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   [_model setWebUsageEnabled:active];
   [self updateDialogPresenterActiveState];
-  [self updateToolbarBroadcastState];
+  [self updateBroadcastState];
 
   if (active) {
     // Make sure the tab (if any; it's possible to get here without a current
@@ -1068,7 +1085,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_model setPrimary:primary];
   if (primary) {
     [self updateDialogPresenterActiveState];
-    [self updateToolbarBroadcastState];
+    [self updateBroadcastState];
   } else {
     self.dialogPresenter.active = false;
   }
@@ -1155,7 +1172,42 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _viewVisible = viewVisible;
   self.visible = viewVisible;
   [self updateDialogPresenterActiveState];
-  [self updateToolbarBroadcastState];
+  [self updateBroadcastState];
+}
+
+- (void)setBroadcasting:(BOOL)broadcasting {
+  if (_broadcasting == broadcasting)
+    return;
+  _broadcasting = broadcasting;
+  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
+    // TODO(crbug.com/790886): Use the Browser's broadcaster once Browsers are
+    // supported.
+    ChromeBroadcaster* broadcaster = FullscreenControllerFactory::GetInstance()
+                                         ->GetForBrowserState(_browserState)
+                                         ->broadcaster();
+    if (_broadcasting) {
+      _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
+          initWithToolbarUI:[[ToolbarUIState alloc] init]
+               toolbarOwner:self
+               webStateList:[_model webStateList]];
+      [_toolbarUIUpdater startUpdating];
+      StartBroadcastingToolbarUI(_toolbarUIUpdater.toolbarUI, broadcaster);
+      _mainContentUIUpdater = [[MainContentUIStateUpdater alloc]
+          initWithState:[[MainContentUIState alloc] init]];
+      _webMainContentUIForwarder = [[WebScrollViewMainContentUIForwarder alloc]
+          initWithUpdater:_mainContentUIUpdater
+             webStateList:[_model webStateList]];
+      StartBroadcastingMainContentUI(self, broadcaster);
+    } else {
+      StopBroadcastingToolbarUI(broadcaster);
+      StopBroadcastingMainContentUI(broadcaster);
+      [_toolbarUIUpdater stopUpdating];
+      _toolbarUIUpdater = nil;
+      _mainContentUIUpdater = nil;
+      [_webMainContentUIForwarder disconnect];
+      _webMainContentUIForwarder = nil;
+    }
+  }
 }
 
 - (BOOL)isToolbarOnScreen {
@@ -1167,7 +1219,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   _inNewTabAnimation = inNewTabAnimation;
   [self updateDialogPresenterActiveState];
-  [self updateToolbarBroadcastState];
+  [self updateBroadcastState];
 }
 
 - (BOOL)isInNewTabAnimation {
@@ -1276,7 +1328,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewDidAppear:animated];
   self.viewVisible = YES;
   [self updateDialogPresenterActiveState];
-  [self updateToolbarBroadcastState];
+  [self updateBroadcastState];
 
   // |viewDidAppear| can be called after |browserState| is destroyed. Since
   // |presentBubblesIfEligible| requires that |self.browserState| is not NULL,
@@ -1310,7 +1362,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)viewWillDisappear:(BOOL)animated {
   self.viewVisible = NO;
   [self updateDialogPresenterActiveState];
-  [self updateToolbarBroadcastState];
+  [self updateBroadcastState];
   [[_model currentTab] wasHidden];
   [_bookmarkInteractionController dismissSnackbar];
   if (IsIPadIdiom() && _infoBarContainer) {
@@ -1866,7 +1918,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_dispatcher startDispatchingToTarget:_toolbarCoordinator
                             forProtocol:@protocol(OmniboxFocuser)];
   [_toolbarCoordinator setTabCount:[_model count]];
-  [self updateToolbarBroadcastState];
+  [self updateBroadcastState];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(
         [_toolbarCoordinator voiceSearchDelegate]);
@@ -2124,22 +2176,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-- (void)updateToolbarBroadcastState {
-  BOOL shouldBroadcast =
+- (void)updateBroadcastState {
+  self.broadcasting =
       self.active && self.viewVisible && !self.inNewTabAnimation;
-  BOOL broadcasting = _toolbarUIUpdater != nil;
-  if (shouldBroadcast == broadcasting)
-    return;
-  if (shouldBroadcast) {
-    _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
-        initWithToolbarUI:[[ToolbarUIState alloc] init]
-             toolbarOwner:self
-             webStateList:[_model webStateList]];
-    [_toolbarUIUpdater startUpdating];
-  } else {
-    [_toolbarUIUpdater stopUpdating];
-    _toolbarUIUpdater = nil;
-  }
 }
 
 - (void)updateDialogPresenterActiveState {
@@ -3897,6 +3936,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)focusOmnibox {
   [_toolbarCoordinator focusOmnibox];
+}
+
+#pragma mark - MainContentUI
+
+- (MainContentUIState*)mainContentUIState {
+  return _mainContentUIUpdater.state;
 }
 
 #pragma mark - UIResponder
