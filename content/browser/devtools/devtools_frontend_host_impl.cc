@@ -36,7 +36,7 @@ void DevToolsFrontendHost::SetupExtensionsAPI(
     RenderFrameHost* frame_host,
     const std::string& extension_api) {
   DCHECK(frame_host->GetParent());
-  mojom::DevToolsFrontendAssociatedPtr frontend;
+  blink::mojom::DevToolsFrontendAssociatedPtr frontend;
   frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&frontend);
   frontend->SetupDevToolsExtensionAPI(extension_api);
 }
@@ -59,13 +59,13 @@ DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
     : web_contents_(WebContents::FromRenderFrameHost(frame_host)),
       handle_message_callback_(handle_message_callback),
       binding_(this) {
-  mojom::DevToolsFrontendAssociatedPtr frontend;
+  blink::mojom::DevToolsFrontendAssociatedPtr frontend;
   frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&frontend);
   std::string api_script =
       content::DevToolsFrontendHost::GetFrontendResource(kCompatibilityScript)
           .as_string() +
       kCompatibilityScriptSourceURL;
-  mojom::DevToolsFrontendHostAssociatedPtrInfo host;
+  blink::mojom::DevToolsFrontendHostAssociatedPtrInfo host;
   binding_.Bind(mojo::MakeRequest(&host));
   frontend->SetupDevToolsFrontend(api_script, std::move(host));
 }
