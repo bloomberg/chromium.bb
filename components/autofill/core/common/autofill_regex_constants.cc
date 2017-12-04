@@ -297,6 +297,10 @@ const char kPhoneSuffixRe[] = "suffix";
 const char kPhoneExtensionRe[] =
     "\\bext|ext\\b|extension"
     "|ramal";  // pt-BR, pt-PT
+
+/////////////////////////////////////////////////////////////////////////////
+// validation.cc
+/////////////////////////////////////////////////////////////////////////////
 const char kUPIVirtualPaymentAddressRe[] =
     "^\\w+@("
     "allbank|"      // Allahabad Bank UPI
@@ -347,5 +351,10 @@ const char kUPIVirtualPaymentAddressRe[] =
     "ybl|"          // Yes Pay
     "yesbank"       // NuPay
     ")$";
+
+/////////////////////////////////////////////////////////////////////////////
+// form_structure.cc
+/////////////////////////////////////////////////////////////////////////////
+const char kUrlSearchActionRe[] = "/search(/|((\\w*\\.\\w+)?$))";
 
 }  // namespace autofill
