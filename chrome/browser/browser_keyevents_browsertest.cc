@@ -295,8 +295,16 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   }
 };
 
-// Flaky: http://crbug.com/129235, http://crbug.com/81451.
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_NormalKeyEvents) {
+#if defined(OS_MACOSX)
+// http://crbug.com/81451
+#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
+#elif defined(OS_LINUX)
+// http://crbug.com/129235
+#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
+#else
+#define MAYBE_NormalKeyEvents NormalKeyEvents
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
     { ui::VKEY_A, false, false, false, false,
@@ -521,9 +529,16 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_CommandKeyEvents) {
 }
 #endif
 
-// Flaky: http://crbug.com/81451 , http://crbug.com/129235 ,
-// also fails on Windows.
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
+#if defined(OS_MACOSX)
+// http://crbug.com/81451 for mac
+#define MAYBE_AccessKeys DISABLED_AccessKeys
+#elif defined(OS_LINUX)
+// http://crbug.com/129235
+#define MAYBE_AccessKeys DISABLED_AccessKeys
+#else
+#define MAYBE_AccessKeys AccessKeys
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
@@ -658,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
 }
 
 // Flaky, http://crbug.com/69475.
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX)
 #define MAYBE_ReservedAccelerators DISABLED_ReservedAccelerators
 #else
 #define MAYBE_ReservedAccelerators ReservedAccelerators
@@ -786,7 +801,12 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
 #endif
 
 // See http://crbug.com/147579
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_PageUpDownKeys) {
+#if defined(OS_WIN)
+#define MAYBE_PageUpDownKeys PageUpDownKeys
+#else
+#define MAYBE_PageUpDownKeys DISABLED_PageUpDownKeys
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_PageUpDownKeys) {
   static const KeyEventTestData kTestPageUp = {
     ui::VKEY_PRIOR, false, false, false, false,
     false, false, false, false, 2,
