@@ -34,6 +34,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/network/ignore_errors_cert_verifier.h"
+#include "content/public/network/url_request_context_builder_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -69,7 +70,7 @@ NetworkContext::NetworkContext(
     NetworkServiceImpl* network_service,
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params,
-    std::unique_ptr<net::URLRequestContextBuilder> builder)
+    std::unique_ptr<URLRequestContextBuilderMojo> builder)
     : network_service_(network_service),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
@@ -203,7 +204,7 @@ NetworkContext::DiskChecker::~DiskChecker() = default;
 
 std::unique_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
     mojom::NetworkContextParams* network_context_params) {
-  net::URLRequestContextBuilder builder;
+  URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
@@ -231,7 +232,7 @@ std::unique_ptr<net::URLRequestContext> NetworkContext::MakeURLRequestContext(
 }
 
 void NetworkContext::ApplyContextParamsToBuilder(
-    net::URLRequestContextBuilder* builder,
+    URLRequestContextBuilderMojo* builder,
     mojom::NetworkContextParams* network_context_params) {
   // |network_service_| may be nullptr in tests.
   if (network_service_)
@@ -240,6 +241,12 @@ void NetworkContext::ApplyContextParamsToBuilder(
   builder->set_enable_brotli(network_context_params->enable_brotli);
   if (network_context_params->context_name)
     builder->set_name(*network_context_params->context_name);
+
+  if (network_context_params->proxy_resolver_factory) {
+    builder->SetMojoProxyResolverFactory(
+        proxy_resolver::mojom::ProxyResolverFactoryPtr(
+            std::move(network_context_params->proxy_resolver_factory)));
+  }
 
   if (!network_context_params->http_cache_enabled) {
     builder->DisableHttpCache();

@@ -486,7 +486,6 @@
 # use Mojo APIs instead.
 -HangingPacRequestProxyScriptBrowserTest.Shutdown
 -IOThreadBrowserTestWithHangingPacRequest.Shutdown
--IOThreadBrowserTestWithPacFileURL.FilePac
 -ProxySettingsApiTest.ProxyEventsParseError
 
 # http://crbug.com/783996

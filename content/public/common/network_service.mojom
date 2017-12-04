@@ -14,6 +14,7 @@ import "url/mojo/url.mojom";
 import "services/network/public/interfaces/cookie_manager.mojom";
 import "services/network/public/interfaces/network_change_manager.mojom";
 import "services/network/public/interfaces/restricted_cookie_manager.mojom";
+import "services/proxy_resolver/public/interfaces/proxy_resolver.mojom";
 
 [Native]
 struct SSLInfo;
@@ -28,6 +29,11 @@ struct NetworkContextParams {
 
   // QUIC user agent.
   string quic_user_agent_id;
+
+  // Handles PAC script execution. If not populated, will attempt to use
+  // platform implementation to execute PAC scripts, if available (Only
+  // available on Windows and Mac).
+  proxy_resolver.mojom.ProxyResolverFactory? proxy_resolver_factory;
 
   // Points to the cookie file. Currently ignored. An in-memory cookie store is
   // always used instead.

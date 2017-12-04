@@ -374,6 +374,7 @@ mojom("interfaces") {
     ":resource_type_bindings",
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces",
+    "//services/proxy_resolver/public/interfaces",
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]

@@ -35,8 +35,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/network_quality_estimator.h"
 
-class PrefService;
 class PrefRegistrySimple;
+class PrefService;
 class SystemNetworkContextManager;
 
 #if defined(OS_ANDROID)
@@ -210,8 +210,7 @@ class IOThread : public content::BrowserThreadDelegate {
   bool WpadQuickCheckEnabled() const;
   bool PacHttpsUrlStrippingEnabled() const;
 
-  // Configures |builder|'s ProxyService based on prefs, policies, and the
-  // command line.
+  // Configures |builder|'s ProxyService based on prefs and policies.
   void SetUpProxyService(content::URLRequestContextBuilderMojo* builder) const;
 
   // Gets a pointer to the NetworkService. Can only be called on the UI thread.
