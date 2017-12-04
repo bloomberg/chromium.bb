@@ -3425,9 +3425,6 @@ void WebContentsImpl::LoadStateChanged(
 void WebContentsImpl::DidGetResourceResponseStart(
     const ResourceRequestDetails& details) {
   SetNotWaitingForResponse();
-
-  for (auto& observer : observers_)
-    observer.DidGetResourceResponseStart(details);
 }
 
 void WebContentsImpl::NotifyWebContentsFocused(
@@ -4007,6 +4004,11 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
                                                  ResourceType resource_type,
                                                  const std::string& ip,
                                                  net::CertStatus cert_status) {
+  for (auto& observer : observers_) {
+    observer.SubresourceResponseStarted(url, referrer, method, resource_type,
+                                        ip);
+  }
+
   controller_.ssl_manager()->DidStartResourceResponse(url, cert_status);
 }
 

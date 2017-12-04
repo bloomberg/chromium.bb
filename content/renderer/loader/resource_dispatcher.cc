@@ -205,10 +205,8 @@ void ResourceDispatcher::OnReceivedResponse(
 
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
-        std::move(request_info->peer), request_info->render_frame_id,
-        request_info->response_url, request_info->response_referrer,
-        request_info->response_method, request_info->resource_type,
-        response_head);
+        std::move(request_info->peer), response_head.mime_type,
+        request_info->url);
     DCHECK(new_peer);
     request_info->peer = std::move(new_peer);
   }
