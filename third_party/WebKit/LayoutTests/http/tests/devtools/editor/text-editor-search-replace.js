@@ -15,7 +15,8 @@
   function showReplaceField() {
     var searchableView = UI.panels.sources.searchableView();
     searchableView.showSearchField();
-    searchableView._replaceCheckboxElement.click();
+    searchableView._replaceToggleButton.setToggled(true);
+    searchableView._updateSecondRowVisibility();
   }
 
   function runReplaceAll(searchValue, replaceValue) {
