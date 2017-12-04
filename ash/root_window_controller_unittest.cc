@@ -704,10 +704,17 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
                                             ? root_windows[1]
                                             : root_windows[0];
 
-  ASSERT_TRUE(Shell::GetContainer(primary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
-  ASSERT_FALSE(Shell::GetContainer(secondary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
+  ASSERT_TRUE(controller);
+  aura::Window* vk_container_in_primary = Shell::GetContainer(
+      primary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* vk_container_in_secondary = Shell::GetContainer(
+      secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* vk_window =
+      controller->GetContainerWindowWithoutCreationForTest();
+  EXPECT_TRUE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_FALSE(vk_container_in_secondary->Contains(vk_window));
 }
 
 // Test for http://crbug.com/303429. Virtual keyboard container should show on
@@ -738,12 +745,18 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::Window* secondary_root_window = root_windows[0] == primary_root_window
                                             ? root_windows[1]
                                             : root_windows[0];
+  aura::Window* vk_container_in_primary = Shell::GetContainer(
+      primary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* vk_container_in_secondary = Shell::GetContainer(
+      secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
 
-  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
-  ASSERT_FALSE(Shell::GetContainer(primary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
-  ASSERT_TRUE(Shell::GetContainer(secondary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
+  controller->ShowKeyboard(false);
+  aura::Window* vk_window =
+      controller->GetContainerWindowWithoutCreationForTest();
+  EXPECT_FALSE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_TRUE(vk_container_in_secondary->Contains(vk_window));
 
   // Move the focus to the primary display.
   aura::Window* focusable_window_in_primary_display =
@@ -756,11 +769,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   // Virtual keyboard shows up on the secondary display even if a window in the
   // primary screen has the focus.
-  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
-  EXPECT_FALSE(Shell::GetContainer(primary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
-  EXPECT_TRUE(Shell::GetContainer(secondary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
+  controller->ShowKeyboard(false);
+  EXPECT_FALSE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_TRUE(vk_container_in_secondary->Contains(vk_window));
 }
 
 // Test for http://crbug.com/303429. If both of displays have touch capability,
@@ -794,6 +805,12 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
   aura::Window* secondary_root_window = root_windows[0] == primary_root_window
                                             ? root_windows[1]
                                             : root_windows[0];
+  aura::Window* vk_container_in_primary = Shell::GetContainer(
+      primary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* vk_container_in_secondary = Shell::GetContainer(
+      secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* focusable_window_in_primary_display =
       CreateTestWindowInShellWithBounds(
           primary_root_window->GetBoundsInScreen());
@@ -805,31 +822,27 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, FollowInputFocus) {
   ASSERT_EQ(secondary_root_window,
             focusable_window_in_secondary_display->GetRootWindow());
 
-  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
-  EXPECT_TRUE(Shell::GetContainer(primary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
-  EXPECT_FALSE(Shell::GetContainer(secondary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
+  controller->ShowKeyboard(false);
+  aura::Window* vk_window =
+      controller->GetContainerWindowWithoutCreationForTest();
+  EXPECT_TRUE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_FALSE(vk_container_in_secondary->Contains(vk_window));
 
   // Move the focus to the secondary display.
   focusable_window_in_secondary_display->Focus();
   ASSERT_TRUE(focusable_window_in_secondary_display->HasFocus());
 
-  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
-  ASSERT_FALSE(Shell::GetContainer(primary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
-  ASSERT_TRUE(Shell::GetContainer(secondary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
+  controller->ShowKeyboard(false);
+  EXPECT_FALSE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_TRUE(vk_container_in_secondary->Contains(vk_window));
 
   // Move back focus to the primary display.
   focusable_window_in_primary_display->Focus();
   ASSERT_TRUE(focusable_window_in_primary_display->HasFocus());
 
-  keyboard::KeyboardController::GetInstance()->ShowKeyboard(false);
-  EXPECT_TRUE(Shell::GetContainer(primary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
-  EXPECT_FALSE(Shell::GetContainer(secondary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
+  controller->ShowKeyboard(false);
+  EXPECT_TRUE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_FALSE(vk_container_in_secondary->Contains(vk_window));
 }
 
 // Test for http://crbug.com/303429. Even if both of display don't have touch
@@ -848,20 +861,23 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   aura::Window* secondary_root_window = root_windows[0] == primary_root_window
                                             ? root_windows[1]
                                             : root_windows[0];
+  aura::Window* vk_container_in_primary = Shell::GetContainer(
+      primary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* vk_container_in_secondary = Shell::GetContainer(
+      secondary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
+  aura::Window* vk_window =
+      controller->GetContainerWindowWithoutCreationForTest();
 
-  ASSERT_TRUE(Shell::GetContainer(primary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
-  ASSERT_FALSE(Shell::GetContainer(secondary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_TRUE(vk_container_in_primary->Contains(vk_window));
+  ASSERT_FALSE(vk_container_in_secondary->Contains(vk_window));
 
   const int64_t secondary_display_id = secondary_display.id();
-  keyboard::KeyboardController::GetInstance()->ShowKeyboardInDisplay(
-      secondary_display_id);
+  controller->ShowKeyboardInDisplay(secondary_display_id);
 
-  EXPECT_FALSE(Shell::GetContainer(primary_root_window,
-                                   kShellWindowId_VirtualKeyboardContainer));
-  EXPECT_TRUE(Shell::GetContainer(secondary_root_window,
-                                  kShellWindowId_VirtualKeyboardContainer));
+  EXPECT_FALSE(vk_container_in_primary->Contains(vk_window));
+  EXPECT_TRUE(vk_container_in_secondary->Contains(vk_window));
 }
 
 // Test for http://crbug.com/263599. Virtual keyboard should be able to receive
@@ -906,9 +922,10 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // GetWindowContainer().
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* keyboard_container =
-      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
+      controller->GetContainerWindowWithoutCreationForTest();
   ASSERT_TRUE(keyboard_container);
   // Track the keyboard container window.
   aura::WindowTracker tracker;
@@ -956,14 +973,16 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
 // Ensure that system modal dialogs do not block events targeted at the virtual
 // keyboard.
 TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::GetInstance();
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container =
-      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
-  ASSERT_TRUE(keyboard_container);
-  keyboard_container->Show();
+  aura::Window* container_window = controller->GetContainerWindow();
+  ASSERT_TRUE(container_window);
+  ASSERT_TRUE(root_window->Contains(container_window));
+  container_window->Show();
 
-  aura::Window* contents_window =
-      keyboard::KeyboardController::GetInstance()->ui()->GetContentsWindow();
+  aura::Window* contents_window = controller->ui()->GetContentsWindow();
+  contents_window->SetName("KeyboardContentsWindow");
   contents_window->SetBounds(
       keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
 
@@ -1005,10 +1024,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
   input_method->SetFocusedTextInputClient(&text_input_client);
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container =
-      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
-  ASSERT_TRUE(keyboard_container);
-  keyboard_container->Show();
+  ASSERT_TRUE(keyboard_controller->GetContainerWindowWithoutCreationForTest());
+  keyboard_controller->GetContainerWindow()->Show();
 
   const int keyboard_height = 100;
   aura::Window* contents_window = ui->GetContentsWindow();
@@ -1053,8 +1070,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   const int keyboard_height = 100;
   // Check that the keyboard on the primary screen doesn't cover the window on
   // the secondary screen.
-  aura::Window* keyboard_container = Shell::GetContainer(
-      primary_root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
   aura::Window* contents_window = ui->GetContentsWindow();
@@ -1097,8 +1113,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
   keyboard::KeyboardUI* ui = keyboard_controller->ui();
 
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container =
-      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
 
@@ -1173,12 +1188,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 // orientation. See crbug/417612.
 TEST_F(VirtualKeyboardRootWindowControllerTest, DisplayRotation) {
   UpdateDisplay("800x600");
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container =
-      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
-  ASSERT_TRUE(keyboard_container);
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
+  aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
   keyboard_controller->ShowKeyboard(false);
   keyboard_controller->ui()->GetContentsWindow()->SetBounds(
       gfx::Rect(0, 400, 800, 200));

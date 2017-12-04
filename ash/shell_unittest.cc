@@ -99,6 +99,8 @@ void ExpectAllContainers() {
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window,
                                   kShellWindowId_ImeWindowParentContainer));
+  EXPECT_TRUE(Shell::GetContainer(root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_MouseCursorContainer));
 
