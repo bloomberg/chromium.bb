@@ -87,27 +87,12 @@
 
 namespace web {
 
-class WebState;
-
 // Bridge to use an id<CRWWebStateObserver> as a web::WebStateObserver.
 class WebStateObserverBridge : public web::WebStateObserver {
  public:
-  // Returns the web state associated with this observer.
-  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
-  // have been converted to manage the registration with WebState directly.
-  WebState* web_state() const { return web_state_; }
-
-  // Use this constructor to control which WebStates to observe. It it the
-  // responsibility of calling code to add/remove the instance from the
-  // WebStates observer lists.
+  // It it the responsibility of calling code to add/remove the instance
+  // from the WebStates observer lists.
   WebStateObserverBridge(id<CRWWebStateObserver> observer);
-  // Use this constructor when using automatic registration/unregistration
-  // of the WebStateObserver. Deprecated. TODO(crbug.com/775684): remove
-  // once all observer have been converted.
-  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
-  // have been converted to manage the registration with WebState directly.
-  WebStateObserverBridge(web::WebState* web_state,
-                         id<CRWWebStateObserver> observer);
   ~WebStateObserverBridge() override;
 
   // web::WebStateObserver methods.
@@ -141,19 +126,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void DidStartLoading(web::WebState* web_state) override;
   void DidStopLoading(web::WebState* web_state) override;
 
- protected:
-  // Start observing a different WebState; used with the default constructor.
-  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
-  // have been converted to manage the registration with WebState directly.
-  void Observe(WebState* web_state);
-
  private:
-  // The WebState this instance is observing. Will be null after
-  // WebStateDestroyed has been called or if registration is manual.
-  // TODO(crbug.com/775684): this is deprecated. Remove once all observer
-  // have been converted to manage the registration with WebState directly.
-  WebState* web_state_ = nullptr;
-
   __weak id<CRWWebStateObserver> observer_ = nil;
   DISALLOW_COPY_AND_ASSIGN(WebStateObserverBridge);
 };
