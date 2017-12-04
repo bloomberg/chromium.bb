@@ -14,6 +14,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_cache.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_cache_factory.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -23,6 +25,11 @@ namespace {
 
 const int kWebserviceQueryThrottleIntrevalInMs = 100;
 const size_t kMinimumQueryLength = 3u;
+
+bool IsSuggestPrefEnabled(Profile* profile) {
+  return profile && !profile->IsOffTheRecord() && profile->GetPrefs() &&
+         profile->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
+}
 
 }  // namespace
 
@@ -50,7 +57,7 @@ bool WebserviceSearchProvider::IsValidQuery(const base::string16& query) {
   // If |query| contains sensitive data, bail out and do not create the place
   // holder "search-web-store" result.
   if (IsSensitiveInput(query) || (query.size() < kMinimumQueryLength) ||
-      !search::IsSuggestPrefEnabled(profile_)) {
+      !IsSuggestPrefEnabled(profile_)) {
     return false;
   }
 
