@@ -6,7 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -305,10 +305,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
       assertWithMatcher:grey_notNil()];
 
   // Verify that the forward button is not enabled.
-  // TODO(crbug.com/638674): Evaluate if size class determination can move to
-  // shared code.
-  if (UIApplication.sharedApplication.keyWindow.traitCollection
-          .horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
+  if (IsCompact()) {
     // In horizontally compact environments, the forward button is not visible.
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         assertWithMatcher:grey_nil()];
