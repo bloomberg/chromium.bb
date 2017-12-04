@@ -1,8 +1,7 @@
 {
   "comments": [
-    "Builder for 32-bit devices.",
-    "Build is performed with gn+ninja.",
-    "If modified, please change chromium.fyi/ios-device-goma-canary-clobber.json too."
+    "Goma canary builder for iOS.",
+    "It is chromium.mac/ios-device.json + use_goma_canary, clobber."
   ],
   "xcode version": "9.0",
   "gn_args": [
@@ -22,5 +21,7 @@
   "explain": true,
   "sdk": "iphoneos11.0",
   "tests": [
-  ]
+  ],
+  "clobber": true,
+  "use_goma_canary": true
 }
