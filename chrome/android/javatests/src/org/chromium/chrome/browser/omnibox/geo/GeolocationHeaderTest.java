@@ -94,8 +94,11 @@ public class GeolocationHeaderTest {
 
         // X-Geo shouldn't be sent when location is disallowed for the origin.
         checkHeaderWithPermission(ContentSetting.ALLOW, now, false);
-        checkHeaderWithPermission(ContentSetting.DEFAULT, now, true);
         checkHeaderWithPermission(ContentSetting.BLOCK, now, true);
+
+        // The default permission for the DSE is to allow access, so the header
+        // should be sent in this case.
+        checkHeaderWithPermission(ContentSetting.DEFAULT, now, false);
     }
 
     @Test

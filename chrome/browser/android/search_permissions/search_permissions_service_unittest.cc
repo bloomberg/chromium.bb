@@ -501,3 +501,57 @@ TEST_F(SearchPermissionsServiceTest, DSEInitializedButDisabled) {
       CONTENT_SETTING_ALLOW,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
+
+TEST_F(SearchPermissionsServiceTest, ResetDSEPermission) {
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_BLOCK);
+  SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+
+  EXPECT_TRUE(
+      GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  EXPECT_TRUE(
+      GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  EXPECT_FALSE(GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_MIDI));
+}
+
+TEST_F(SearchPermissionsServiceTest, ResetDSEPermissions) {
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_BLOCK);
+  SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+
+  GetService()->ResetDSEPermissions();
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+}

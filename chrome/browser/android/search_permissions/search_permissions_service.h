@@ -78,10 +78,18 @@ class SearchPermissionsService : public KeyedService {
   // configured for the DSE for that given origin.
   bool ArePermissionsControlledByDSE(const url::Origin& requesting_origin);
 
+  // Resets the DSE permission for a single ContentSettingsType. Returns true
+  // if that type is controlled by the DSE and was thus reset, false otherwise.
+  bool ResetDSEPermission(ContentSettingsType type);
+
+  // Reset all supported DSE permissions.
+  void ResetDSEPermissions();
+
   // KeyedService:
   void Shutdown() override;
 
  private:
+  friend class ChromeBrowsingDataRemoverDelegateTest;
   friend class SearchPermissionsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(GeolocationPermissionContextTests,
                            SearchGeolocationInIncognito);
