@@ -40,6 +40,8 @@ class ValueStoreFactoryImpl;
 // but with a shared instance for incognito) keeps the common services.
 class ExtensionSystemImpl : public ExtensionSystem {
  public:
+  using InstallUpdateCallback = ExtensionSystem::InstallUpdateCallback;
+
   explicit ExtensionSystemImpl(Profile* profile);
   ~ExtensionSystemImpl() override;
 
@@ -73,7 +75,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
   std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
   void InstallUpdate(const std::string& extension_id,
-                     const base::FilePath& temp_dir) override;
+                     const std::string& public_key,
+                     const base::FilePath& unpacked_dir,
+                     InstallUpdateCallback install_update_callback) override;
 
  private:
   friend class ExtensionSystemSharedFactory;

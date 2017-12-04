@@ -198,8 +198,11 @@ std::unique_ptr<ExtensionSet> ShellExtensionSystem::GetDependentExtensions(
   return std::make_unique<ExtensionSet>();
 }
 
-void ShellExtensionSystem::InstallUpdate(const std::string& extension_id,
-                                         const base::FilePath& temp_dir) {
+void ShellExtensionSystem::InstallUpdate(
+    const std::string& extension_id,
+    const std::string& public_key,
+    const base::FilePath& temp_dir,
+    InstallUpdateCallback install_update_callback) {
   NOTREACHED();
   base::DeleteFile(temp_dir, true /* recursive */);
 }

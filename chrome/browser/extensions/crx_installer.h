@@ -119,7 +119,18 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Convert the specified web app into an extension and install it.
   void InstallWebApp(const WebApplicationInfo& web_app);
 
+  // Update the extension |extension_id| with the unpacked crx in
+  // |unpacked_dir|.
+  // If |delete_source_| is true, |unpacked_dir| will be removed at the end of
+  // the update.
+  void UpdateExtensionFromUnpackedCrx(const std::string& extension_id,
+                                      const std::string& public_key,
+                                      const base::FilePath& unpacked_dir);
+
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+
+  void InitializeCreationFlagsForUpdate(const Extension* extension,
+                                        const int initial_flags);
 
   int creation_flags() const { return creation_flags_; }
   void set_creation_flags(int val) { creation_flags_ = val; }

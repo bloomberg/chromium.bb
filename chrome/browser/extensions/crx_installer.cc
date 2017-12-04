@@ -256,6 +256,45 @@ void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
     NOTREACHED();
 }
 
+void CrxInstaller::UpdateExtensionFromUnpackedCrx(
+    const std::string& extension_id,
+    const std::string& public_key,
+    const base::FilePath& unpacked_dir) {
+  ExtensionService* service = service_weak_.get();
+  if (!service || service->browser_terminating())
+    return;
+
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  if (!extension) {
+    LOG(WARNING) << "Will not update extension " << extension_id
+                 << " because it is not installed";
+    if (delete_source_)
+      temp_dir_ = unpacked_dir;
+    if (installer_callback_.is_null()) {
+      installer_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&CrxInstaller::CleanupTempFiles, this));
+    } else {
+      installer_task_runner_->PostTaskAndReply(
+          FROM_HERE, base::BindOnce(&CrxInstaller::CleanupTempFiles, this),
+          base::BindOnce(
+              base::BindOnce(std::move(installer_callback_), false)));
+    }
+    return;
+  }
+
+  expected_id_ = extension_id;
+  install_source_ = extension->location();
+  install_cause_ = extension_misc::INSTALL_CAUSE_UPDATE;
+  InitializeCreationFlagsForUpdate(extension, Extension::NO_FLAGS);
+
+  const ExtensionPrefs* extension_prefs =
+      ExtensionPrefs::Get(service->GetBrowserContext());
+  DCHECK(extension_prefs);
+  set_do_not_sync(extension_prefs->DoNotSync(extension_id));
+
+  InstallUnpackedCrx(extension_id, public_key, unpacked_dir);
+}
+
 void CrxInstaller::ConvertWebAppOnFileThread(
     const WebApplicationInfo& web_app) {
   scoped_refptr<Extension> extension(ConvertWebAppToExtension(
@@ -701,6 +740,34 @@ void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
   }
 
   Release();  // balanced in ConfirmInstall() or ConfirmReEnable().
+}
+
+void CrxInstaller::InitializeCreationFlagsForUpdate(const Extension* extension,
+                                                    const int initial_flags) {
+  DCHECK(extension);
+
+  creation_flags_ = initial_flags;
+
+  // If the extension was installed from or has migrated to the webstore, or
+  // its auto-update URL is from the webstore, treat it as a webstore install.
+  // Note that we ignore some older extensions with blank auto-update URLs
+  // because we are mostly concerned with restrictions on NaCl extensions,
+  // which are newer.
+  if (extension->from_webstore() || ManifestURL::UpdatesFromGallery(extension))
+    creation_flags_ |= Extension::FROM_WEBSTORE;
+
+  // Bookmark apps being updated is kind of a contradiction, but that's because
+  // we mark the default apps as bookmark apps, and they're hosted in the web
+  // store, thus they can get updated. See http://crbug.com/101605 for more
+  // details.
+  if (extension->from_bookmark())
+    creation_flags_ |= Extension::FROM_BOOKMARK;
+
+  if (extension->was_installed_by_default())
+    creation_flags_ |= Extension::WAS_INSTALLED_BY_DEFAULT;
+
+  if (extension->was_installed_by_oem())
+    creation_flags_ |= Extension::WAS_INSTALLED_BY_OEM;
 }
 
 void CrxInstaller::UpdateCreationFlagsAndCompleteInstall() {
