@@ -50,7 +50,9 @@ struct GraphicsLayerPaintInfo {
 
   // The clip rect to apply, in the local coordinate space of the squashed
   // layer, when painting it.
-  IntRect local_clip_rect_for_squashed_layer;
+  ClipRect local_clip_rect_for_squashed_layer;
+  PaintLayer* local_clip_rect_root;
+  LayoutPoint offset_from_clip_rect_root;
 
   // Offset describing where this squashed Layer paints into the shared
   // GraphicsLayer backing.
@@ -484,10 +486,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // no such containing layer, returns the infinite rect.
   // FIXME: unify this code with the code that sets up ancestor_clipping_layer_.
   // They are doing very similar things.
-  static IntRect LocalClipRectForSquashedLayer(
+  static void LocalClipRectForSquashedLayer(
       const PaintLayer& reference_layer,
-      const GraphicsLayerPaintInfo&,
-      const Vector<GraphicsLayerPaintInfo>& layers);
+      const Vector<GraphicsLayerPaintInfo>& layers,
+      GraphicsLayerPaintInfo&);
 
   // Conservatively check whether there exists any border-radius clip that
   // must be applied by an ancestor clipping mask layer. There are two inputs

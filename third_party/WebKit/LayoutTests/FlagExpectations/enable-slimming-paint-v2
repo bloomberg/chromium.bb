@@ -1040,6 +1040,7 @@ Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.htm
 Bug(none) compositing/composited-translated-child-with-border-radius-parent-clip.html [ Failure ]
 Bug(none) compositing/overflow/border-radius-on-grandparent-composited-grandchild.html [ Failure ]
 Bug(none) compositing/overflow/border-radius-on-two-ancestors-composited-grandchild.html [ Failure ]
+Bug(none) compositing/overflow/border-radius-on-squashed-layers.html [ Failure ]
 Bug(none) compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
 Bug(none) compositing/overflow/grandchild-composited-with-border-radius-ancestor.html [ Failure ]
 Bug(none) compositing/overflow/grandchild-with-border-radius-ancestor.html [ Failure ]
