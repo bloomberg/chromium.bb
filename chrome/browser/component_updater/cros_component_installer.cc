@@ -40,7 +40,11 @@
    {"star-cups-driver",                                                      \
     {{"env_version", "1.1"},                                                 \
      {"sha2hashstr",                                                         \
-      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"}}}};
+      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"}}}, \
+   {"cros-cellular",                                                         \
+    {{"env_version", "1.0"},                                                 \
+     {"sha2hashstr",                                                         \
+      "5714811c04f0a63aac96b39096faa759ace4c04e9b68291e7c9716128f5a2722"}}}};
 
 using content::BrowserThread;
 
