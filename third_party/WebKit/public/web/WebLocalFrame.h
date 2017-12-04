@@ -370,6 +370,10 @@ class WebLocalFrame : public WebFrame {
   // Associates an isolated world (see above for description) with a security
   // origin. XMLHttpRequest instances used in that world will be considered
   // to come from that origin, not the frame's.
+  //
+  // Currently the origin shouldn't be aliased, because IsolatedCopy() is
+  // taken before associating it to an isolated world and aliased relationship,
+  // if any, is broken. crbug.com/779730
   virtual void SetIsolatedWorldSecurityOrigin(int world_id,
                                               const WebSecurityOrigin&) = 0;
 

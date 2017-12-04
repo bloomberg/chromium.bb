@@ -181,6 +181,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // created in an isolated world. Otherwise, returns the SecurityOrigin of the
   // execution context.
   SecurityOrigin* GetSecurityOrigin() const;
+  SecurityOrigin* GetMutableSecurityOrigin();
 
   void DidSendData(unsigned long long bytes_sent,
                    unsigned long long total_bytes_to_be_sent) override;
