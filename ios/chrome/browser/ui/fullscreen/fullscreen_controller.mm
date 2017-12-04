@@ -14,29 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The key under which FullscreenControllers are associated with their user
-// data.
-const void* const kFullscreenControllerKey = &kFullscreenControllerKey;
-}  // namespace
-
-// static
-void FullscreenController::CreateForUserData(
-    base::SupportsUserData* user_data) {
-  DCHECK(user_data);
-  if (!FullscreenController::FromUserData(user_data)) {
-    user_data->SetUserData(kFullscreenControllerKey,
-                           base::WrapUnique(new FullscreenController()));
-  }
-}
-
-// static
-FullscreenController* FullscreenController::FromUserData(
-    base::SupportsUserData* user_data) {
-  return static_cast<FullscreenController*>(
-      user_data->GetUserData(kFullscreenControllerKey));
-}
-
 FullscreenController::FullscreenController()
     : broadcaster_([[ChromeBroadcaster alloc] init]),
       model_(base::MakeUnique<FullscreenModel>()),
@@ -53,16 +30,7 @@ FullscreenController::FullscreenController()
                 forSelector:@selector(broadcastToolbarHeight:)];
 }
 
-FullscreenController::~FullscreenController() {
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastContentScrollOffset:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewIsScrolling:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastScrollViewIsDragging:)];
-  [broadcaster_ removeObserver:bridge_
-                   forSelector:@selector(broadcastToolbarHeight:)];
-}
+FullscreenController::~FullscreenController() = default;
 
 void FullscreenController::AddObserver(FullscreenControllerObserver* observer) {
   // TODO(crbug.com/785671): Use FullscreenControllerObserverManager to keep
@@ -85,4 +53,15 @@ void FullscreenController::IncrementDisabledCounter() {
 
 void FullscreenController::DecrementDisabledCounter() {
   model_->DecrementDisabledCounter();
+}
+
+void FullscreenController::Shutdown() {
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastContentScrollOffset:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsScrolling:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsDragging:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastToolbarHeight:)];
 }
