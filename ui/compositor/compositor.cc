@@ -365,7 +365,11 @@ void Compositor::SetScaleAndSize(float scale,
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
   output_color_space_ = color_space;
   blending_color_space_ = output_color_space_.GetBlendingColorSpace();
-  host_->SetRasterColorSpace(output_color_space_.GetRasterColorSpace());
+  // Do all ui::Compositor rasterization to sRGB because UI resources will not
+  // have their color conversion results cached, and will suffer repeated
+  // image color conversions.
+  // https://crbug.com/769677
+  host_->SetRasterColorSpace(gfx::ColorSpace::CreateSRGB());
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.
   // TODO(fsamuel): Get rid of this.
