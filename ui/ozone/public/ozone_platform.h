@@ -96,6 +96,15 @@ class OZONE_EXPORT OzonePlatform {
 
   static OzonePlatform* GetInstance();
 
+  // Registers a callback to be run when the OzonePlatform is initialized. Note
+  // that if an instance already exists, then the callback is called
+  // immediately. If an instance does not exist, and is created later, then the
+  // callback is called once the instance is created and initialized, on the
+  // thread it is initialized on. If the caller requires the callback to run on
+  // a specific thread, then it needs to do ensure that by itself.
+  static void RegisterStartupCallback(
+      base::OnceCallback<void(OzonePlatform*)> callback);
+
   // Factory getters to override in subclasses. The returned objects will be
   // injected into the appropriate layer at startup. Subclasses should not
   // inject these objects themselves. Ownership is retained by OzonePlatform.

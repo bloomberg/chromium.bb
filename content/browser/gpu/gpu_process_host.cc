@@ -631,13 +631,40 @@ bool GpuProcessHost::Init() {
 #if defined(USE_OZONE)
   // Ozone needs to send the primary DRM device to GPU process as early as
   // possible to ensure the latter always has a valid device. crbug.com/608839
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupportHost()
-      ->OnGpuProcessLaunched(
-          host_id_, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          base::ThreadTaskRunnerHandle::Get(),
-          base::Bind(&SendGpuProcessMessage, weak_ptr_factory_.GetWeakPtr()));
-#endif
+  // When running with mus, the OzonePlatform may not have been created yet. So
+  // defer the callback until OzonePlatform instance is created.
+  auto send_callback = base::BindRepeating(&SendGpuProcessMessage,
+                                           weak_ptr_factory_.GetWeakPtr());
+  // Create the callback that should run on the current thread (i.e. IO thread).
+  auto io_callback = base::BindOnce(
+      [](int host_id,
+         const base::RepeatingCallback<void(IPC::Message*)>& send_callback,
+         ui::OzonePlatform* platform) {
+        DCHECK_CURRENTLY_ON(BrowserThread::IO);
+        platform->GetGpuPlatformSupportHost()->OnGpuProcessLaunched(
+            host_id, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+            send_callback);
+      },
+      host_id_, send_callback);
+  // The callback registered in ozone can be called in any thread. So use an
+  // intermediary callback that bounces to the IO thread if needed, before
+  // running the callback.
+  auto bounce_callback = base::BindOnce(
+      [](base::TaskRunner* task_runner,
+         base::OnceCallback<void(ui::OzonePlatform*)> callback,
+         ui::OzonePlatform* platform) {
+        if (task_runner->RunsTasksInCurrentSequence()) {
+          std::move(callback).Run(platform);
+        } else {
+          task_runner->PostTask(FROM_HERE,
+                                base::BindOnce(std::move(callback), platform));
+        }
+      },
+      base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+      base::Passed(&io_callback));
+  ui::OzonePlatform::RegisterStartupCallback(std::move(bounce_callback));
+#endif  // defined(USE_OZONE)
 
   return true;
 }
