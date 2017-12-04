@@ -299,7 +299,7 @@ InlineBoxPosition ComputeInlineBoxPositionForAtomicInline(
 }
 
 template <typename Strategy>
-PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPosition(
+PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>&);
 
 template <typename Strategy>
@@ -312,8 +312,9 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
   const PositionTemplate<Strategy>& downstream_equivalent =
       DownstreamIgnoringEditingBoundaries(position);
   if (downstream_equivalent != position) {
-    return ComputeInlineAdjustedPosition(PositionWithAffinityTemplate<Strategy>(
-        downstream_equivalent, TextAffinity::kUpstream));
+    return ComputeInlineAdjustedPositionAlgorithm(
+        PositionWithAffinityTemplate<Strategy>(downstream_equivalent,
+                                               TextAffinity::kUpstream));
   }
   const PositionTemplate<Strategy>& upstream_equivalent =
       UpstreamIgnoringEditingBoundaries(position);
@@ -321,14 +322,13 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
       DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
     return PositionWithAffinityTemplate<Strategy>();
 
-  return ComputeInlineAdjustedPosition(PositionWithAffinityTemplate<Strategy>(
-      upstream_equivalent, TextAffinity::kUpstream));
+  return ComputeInlineAdjustedPositionAlgorithm(
+      PositionWithAffinityTemplate<Strategy>(upstream_equivalent,
+                                             TextAffinity::kUpstream));
 }
 
-// TODO(xiaochengh): Expose this function for current callers of
-// ComputeInlineBoxPosition() for deciding to use legacy or NG implementation.
 template <typename Strategy>
-PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPosition(
+PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& position) {
   const LayoutObject& layout_object =
       GetLayoutObjectSkippingShadowRoot(position.GetPosition());
@@ -350,9 +350,8 @@ PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPosition(
   return AdjustBlockFlowPositionToInline(position.GetPosition());
 }
 
-// TODO(xiaochengh): Expose this function for code depending on legacy layout.
 template <typename Strategy>
-InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
+InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& adjusted,
     TextDirection primary_direction) {
   const PositionTemplate<Strategy>& position = adjusted.GetPosition();
@@ -370,6 +369,13 @@ InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
   DCHECK(layout_object.IsInline());
   return ComputeInlineBoxPositionForAtomicInline(&layout_object, caret_offset,
                                                  primary_direction);
+}
+
+template <typename Strategy>
+InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
+    const PositionWithAffinityTemplate<Strategy>& position) {
+  return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
+      position, PrimaryDirectionOf(*position.AnchorNode()));
 }
 
 template <typename Strategy>
@@ -421,6 +427,47 @@ InlineBoxPosition ComputeInlineBoxPosition(
     const PositionInFlatTreeWithAffinity& position,
     TextDirection primary_direction) {
   return ComputeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(
+      position, primary_direction);
+}
+
+PositionWithAffinity ComputeInlineAdjustedPosition(
+    const PositionWithAffinity& position) {
+  return ComputeInlineAdjustedPositionAlgorithm(position);
+}
+
+PositionInFlatTreeWithAffinity ComputeInlineAdjustedPosition(
+    const PositionInFlatTreeWithAffinity& position) {
+  return ComputeInlineAdjustedPositionAlgorithm(position);
+}
+
+PositionWithAffinity ComputeInlineAdjustedPosition(
+    const VisiblePosition& position) {
+  DCHECK(position.IsValid()) << position;
+  return ComputeInlineAdjustedPositionAlgorithm(
+      position.ToPositionWithAffinity());
+}
+
+InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
+    const PositionWithAffinity& position) {
+  return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(position);
+}
+
+InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
+    const PositionInFlatTreeWithAffinity& position) {
+  return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(position);
+}
+
+InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
+    const PositionWithAffinity& position,
+    TextDirection primary_direction) {
+  return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
+      position, primary_direction);
+}
+
+InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
+    const PositionInFlatTreeWithAffinity& position,
+    TextDirection primary_direction) {
+  return ComputeInlineBoxPositionForInlineAdjustedPositionAlgorithm(
       position, primary_direction);
 }
 
