@@ -58,6 +58,11 @@ namespace test {
 class SpdyStreamTest;
 }
 
+// This value means that UnclaimedPushedStreamContainer::FindStream() has not
+// found any streams.
+// TODO(bnc): Move to Http2PushPromiseIndex.  https://crbug.com/791054
+const SpdyStreamId kNoPushedStreamFound = 0;
+
 // This is somewhat arbitrary and not really fixed, but it will always work
 // reasonably with ethernet. Chop the world into 2-packet chunks.  This is
 // somewhat arbitrary, but is reasonably small and ensures that we elicit
@@ -452,7 +457,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   size_t num_active_streams() const { return active_streams_.size(); }
   size_t num_unclaimed_pushed_streams() const;
   size_t num_created_streams() const { return created_streams_.size(); }
-  size_t count_unclaimed_pushed_streams_for_url(const GURL& url) const;
+  bool has_unclaimed_pushed_stream_for_url(const GURL& url) const;
 
   size_t num_pushed_streams() const { return num_pushed_streams_; }
   size_t num_active_pushed_streams() const {
@@ -598,29 +603,15 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // an unclaimed pushed stream is claimed.
   class UnclaimedPushedStreamContainer {
    public:
-    using PushedStreamMap = std::map<GURL, SpdyStreamId>;
-    using iterator = PushedStreamMap::iterator;
-    using const_iterator = PushedStreamMap::const_iterator;
-
     UnclaimedPushedStreamContainer() = delete;
     explicit UnclaimedPushedStreamContainer(SpdySession* spdy_session);
     ~UnclaimedPushedStreamContainer();
 
-    bool empty() const { return streams_.empty(); }
-    size_t size() const { return streams_.size(); }
-    const_iterator begin() const { return streams_.begin(); }
-    const_iterator end() const { return streams_.end(); }
-    const_iterator find(const GURL& url) const { return streams_.find(url); }
-    size_t count(const GURL& url) const { return streams_.count(url); }
-    const_iterator lower_bound(const GURL& url) const {
-      return streams_.lower_bound(url);
-    }
+    size_t CountStreamsForSession() const { return streams_.size(); }
+    SpdyStreamId FindStream(const GURL& url) const;
 
     // Return true if there was an element with |url|, which was then erased.
-    bool erase(const GURL& url);
-
-    // Return the iterator following |it|.
-    iterator erase(const_iterator it);
+    bool erase(const GURL& url, SpdyStreamId stream_id) WARN_UNUSED_RESULT;
 
     // Return true if there was not already an entry with |url|,
     // in which case the insertion was successful.
@@ -629,6 +620,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     size_t EstimateMemoryUsage() const;
 
    private:
+    using PushedStreamMap = std::map<GURL, SpdyStreamId>;
+
     SpdySession* spdy_session_;
 
     // (Bijective) map from the URL to the ID of the streams that have

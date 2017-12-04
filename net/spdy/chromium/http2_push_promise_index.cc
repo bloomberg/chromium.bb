@@ -14,7 +14,7 @@ Http2PushPromiseIndex::~Http2PushPromiseIndex() {
   DCHECK(unclaimed_pushed_streams_.empty());
 }
 
-base::WeakPtr<SpdySession> Http2PushPromiseIndex::Find(
+base::WeakPtr<SpdySession> Http2PushPromiseIndex::FindSession(
     const SpdySessionKey& key,
     const GURL& url) const {
   DCHECK(!url.is_empty());

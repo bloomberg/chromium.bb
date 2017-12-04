@@ -1322,8 +1322,8 @@ TEST_F(SpdySessionTest, CancelPushAfterSessionGoesAway) {
 
   // Verify that there is one unclaimed push stream.
   EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_EQ(1u, session_->count_unclaimed_pushed_streams_for_url(
-                    GURL("https://www.example.org/a.dat")));
+  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(
+      GURL("https://www.example.org/a.dat")));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
@@ -1423,7 +1423,7 @@ TEST_F(SpdySessionTest, CancelPushAfterExpired) {
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url("https://www.example.org/a.dat");
   EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_EQ(1u, session_->count_unclaimed_pushed_streams_for_url(pushed_url));
+  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
@@ -1531,7 +1531,7 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url("https://www.example.org/a.dat");
   EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_EQ(1u, session_->count_unclaimed_pushed_streams_for_url(pushed_url));
+  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
@@ -1608,7 +1608,7 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
   // Verify that there is one unclaimed push stream.
   const GURL pushed_url("https://www.example.org/a.dat");
   EXPECT_EQ(1u, session_->num_unclaimed_pushed_streams());
-  EXPECT_EQ(1u, session_->count_unclaimed_pushed_streams_for_url(pushed_url));
+  EXPECT_TRUE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Unclaimed push body consumes bytes from the session window.
   EXPECT_EQ(kDefaultInitialWindowSize - kUploadDataSize,
@@ -1618,7 +1618,7 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
   // Cancel the push before it is claimed.
   EXPECT_TRUE(test_push_delegate_->CancelPush(pushed_url));
   EXPECT_EQ(0u, session_->num_unclaimed_pushed_streams());
-  EXPECT_EQ(0u, session_->count_unclaimed_pushed_streams_for_url(pushed_url));
+  EXPECT_FALSE(session_->has_unclaimed_pushed_stream_for_url(pushed_url));
 
   // Verify that the session window reclaimed the evicted stream body.
   EXPECT_EQ(kDefaultInitialWindowSize, session_->session_recv_window_size_);
