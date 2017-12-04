@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -249,6 +251,43 @@ void GetClientCertsImpl(std::unique_ptr<ClientCertIdentity> preferred_identity,
   sort(sort_begin, sort_end, ClientCertIdentitySorter());
 }
 
+// Given a |sec_identity|, identifies its corresponding certificate, and either
+// adds it to |regular_identities| or assigns it to |preferred_identity|, if the
+// |sec_identity| matches the |preferred_sec_identity|.
+void AddIdentity(ScopedCFTypeRef<SecIdentityRef> sec_identity,
+                 SecIdentityRef preferred_sec_identity,
+                 ClientCertIdentityList* regular_identities,
+                 std::unique_ptr<ClientCertIdentity>* preferred_identity) {
+  OSStatus err;
+  ScopedCFTypeRef<SecCertificateRef> cert_handle;
+  err = SecIdentityCopyCertificate(sec_identity.get(),
+                                   cert_handle.InitializeInto());
+  if (err != noErr)
+    return;
+
+  if (!SupportsSSLClientAuth(cert_handle.get()))
+    return;
+
+  // Allow UTF-8 inside PrintableStrings in client certificates. See
+  // crbug.com/770323.
+  X509Certificate::UnsafeCreateOptions options;
+  options.printable_string_is_utf8 = true;
+  scoped_refptr<X509Certificate> cert(
+      x509_util::CreateX509CertificateFromSecCertificate(cert_handle.get(), {},
+                                                         options));
+  if (!cert)
+    return;
+
+  if (preferred_sec_identity &&
+      CFEqual(preferred_sec_identity, sec_identity.get())) {
+    *preferred_identity = std::make_unique<ClientCertIdentityMac>(
+        std::move(cert), std::move(sec_identity));
+  } else {
+    regular_identities->push_back(std::make_unique<ClientCertIdentityMac>(
+        std::move(cert), std::move(sec_identity)));
+  }
+}
+
 ClientCertIdentityList GetClientCertsOnBackgroundThread(
     const SSLCertRequestInfo& request) {
   std::string server_domain = request.host_and_port.host();
@@ -293,41 +332,46 @@ ClientCertIdentityList GetClientCertsOnBackgroundThread(
     }
     if (err)
       break;
-
-    ScopedCFTypeRef<SecCertificateRef> cert_handle;
-    err = SecIdentityCopyCertificate(sec_identity.get(),
-                                     cert_handle.InitializeInto());
-    if (err != noErr)
-      continue;
-
-    if (!SupportsSSLClientAuth(cert_handle.get()))
-      continue;
-
-    // Allow UTF-8 inside PrintableStrings in client certificates. See
-    // crbug.com/770323.
-    X509Certificate::UnsafeCreateOptions options;
-    options.printable_string_is_utf8 = true;
-    scoped_refptr<X509Certificate> cert(
-        x509_util::CreateX509CertificateFromSecCertificate(
-            cert_handle.get(), std::vector<SecCertificateRef>(), options));
-    if (!cert)
-      continue;
-
-    if (preferred_sec_identity &&
-        CFEqual(preferred_sec_identity, sec_identity.get())) {
-      // Only one certificate should match.
-      DCHECK(!preferred_identity.get());
-      preferred_identity = std::make_unique<ClientCertIdentityMac>(
-          std::move(cert), std::move(sec_identity));
-    } else {
-      regular_identities.push_back(std::make_unique<ClientCertIdentityMac>(
-          std::move(cert), std::move(sec_identity)));
-    }
+    AddIdentity(std::move(sec_identity), preferred_sec_identity.get(),
+                &regular_identities, &preferred_identity);
   }
 
   if (err != errSecItemNotFound) {
     OSSTATUS_LOG(ERROR, err) << "SecIdentitySearch error";
     return ClientCertIdentityList();
+  }
+
+  // macOS provides two ways to search for identities. SecIdentitySearchCreate()
+  // is deprecated, as it relies on CSSM_KEYUSE_SIGN (part of the deprecated
+  // CDSM/CSSA implementation), but is necessary to return some certificates
+  // that would otherwise not be returned by SecItemCopyMatching(), which is the
+  // non-deprecated way. However, SecIdentitySearchCreate() will not return all
+  // items, particularly smart-card based identities, so it's necessary to call
+  // both functions.
+  static const void* kKeys[] = {
+      kSecClass, kSecMatchLimit, kSecReturnRef, kSecAttrCanSign,
+  };
+  static const void* kValues[] = {
+      kSecClassIdentity, kSecMatchLimitAll, kCFBooleanTrue, kCFBooleanTrue,
+  };
+  ScopedCFTypeRef<CFDictionaryRef> query(CFDictionaryCreate(
+      kCFAllocatorDefault, kKeys, kValues, arraysize(kValues),
+      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
+  ScopedCFTypeRef<CFArrayRef> result;
+  {
+    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+    err = SecItemCopyMatching(
+        query, reinterpret_cast<CFTypeRef*>(result.InitializeInto()));
+  }
+  if (!err) {
+    for (CFIndex i = 0; i < CFArrayGetCount(result); i++) {
+      SecIdentityRef item = reinterpret_cast<SecIdentityRef>(
+          const_cast<void*>(CFArrayGetValueAtIndex(result, i)));
+      AddIdentity(
+          ScopedCFTypeRef<SecIdentityRef>(item, base::scoped_policy::RETAIN),
+          preferred_sec_identity.get(), &regular_identities,
+          &preferred_identity);
+    }
   }
 
   ClientCertIdentityList selected_identities;
