@@ -324,7 +324,8 @@ void RenderViewTest::SetUp() {
   view_params->max_size = gfx::Size();
 
   view_ = RenderViewImpl::Create(compositor_deps_.get(), std::move(view_params),
-                                 RenderWidget::ShowCallback());
+                                 RenderWidget::ShowCallback(),
+                                 base::ThreadTaskRunnerHandle::Get());
 }
 
 void RenderViewTest::TearDown() {

@@ -136,7 +136,8 @@ class InteractiveRenderWidget : public RenderWidget {
                      ScreenInfo(),
                      false,
                      false,
-                     false),
+                     false,
+                     base::ThreadTaskRunnerHandle::Get()),
         always_overscroll_(false) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
 
@@ -377,7 +378,8 @@ class PopupRenderWidget : public RenderWidget {
                      ScreenInfo(),
                      false,
                      false,
-                     false) {
+                     false,
+                     base::ThreadTaskRunnerHandle::Get()) {
     Init(RenderWidget::ShowCallback(), mock_webwidget());
     did_show_ = true;
   }

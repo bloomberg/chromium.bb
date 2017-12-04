@@ -2211,7 +2211,8 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   is_scroll_animator_enabled_ = params->web_preferences.enable_scroll_animator;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderViewImpl::Create(compositor_deps, std::move(params),
-                         RenderWidget::ShowCallback());
+                         RenderWidget::ShowCallback(),
+                         GetRendererScheduler()->DefaultTaskRunner());
 }
 
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {

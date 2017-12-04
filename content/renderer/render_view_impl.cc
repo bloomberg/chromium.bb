@@ -490,15 +490,18 @@ content::mojom::WindowContainerType WindowFeaturesToContainerType(
 
 }  // namespace
 
-RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
-                               const mojom::CreateViewParams& params)
+RenderViewImpl::RenderViewImpl(
+    CompositorDependencies* compositor_deps,
+    const mojom::CreateViewParams& params,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : RenderWidget(params.view_id,
                    compositor_deps,
                    blink::kWebPopupTypeNone,
                    params.initial_size.screen_info,
                    params.swapped_out,
                    params.hidden,
-                   params.never_visible),
+                   params.never_visible,
+                   task_runner),
       webkit_preferences_(params.web_preferences),
       send_content_state_immediately_(false),
       send_preferred_size_changes_(false),
@@ -1007,13 +1010,14 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 RenderViewImpl* RenderViewImpl::Create(
     CompositorDependencies* compositor_deps,
     mojom::CreateViewParamsPtr params,
-    const RenderWidget::ShowCallback& show_callback) {
+    const RenderWidget::ShowCallback& show_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(params->view_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(compositor_deps, *params);
   else
-    render_view = new RenderViewImpl(compositor_deps, *params);
+    render_view = new RenderViewImpl(compositor_deps, *params, task_runner);
 
   render_view->Initialize(std::move(params), show_callback);
   return render_view;
@@ -1373,14 +1377,17 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                  base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      compositor_deps_, std::move(view_params), show_callback);
+      compositor_deps_, std::move(view_params), show_callback,
+      creator->GetTaskRunner(blink::TaskType::kUnthrottled));
 
   return view->webview();
 }
 
-WebWidget* RenderViewImpl::CreatePopup(blink::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidget::CreateForPopup(this, compositor_deps_,
-                                                      popup_type, screen_info_);
+WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator,
+                                       blink::WebPopupType popup_type) {
+  RenderWidget* widget = RenderWidget::CreateForPopup(
+      this, compositor_deps_, popup_type, screen_info_,
+      creator->GetTaskRunner(blink::TaskType::kUnthrottled));
   if (!widget)
     return nullptr;
   if (screen_metrics_emulator_) {

@@ -280,6 +280,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
                    false,
                    false,
                    false,
+                   base::ThreadTaskRunnerHandle::Get(),
                    std::move(widget_request)),
       active_url_(active_url),
       plugin_(plugin),
