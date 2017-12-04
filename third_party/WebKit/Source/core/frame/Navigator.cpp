@@ -88,16 +88,15 @@ bool Navigator::cookieEnabled() const {
 }
 
 Vector<String> Navigator::languages() {
-  Vector<String> languages;
   languages_changed_ = false;
 
-  if (!GetFrame() || !GetFrame()->GetPage()) {
-    languages.push_back(DefaultLanguage());
-    return languages;
+  String accept_languages;
+  if (GetFrame() && GetFrame()->GetPage()) {
+    accept_languages =
+        GetFrame()->GetPage()->GetChromeClient().AcceptLanguages();
   }
 
-  String accept_languages =
-      GetFrame()->GetPage()->GetChromeClient().AcceptLanguages();
+  Vector<String> languages;
   accept_languages.Split(',', languages);
 
   // Sanitizing tokens. We could do that more extensively but we should assume
@@ -109,6 +108,9 @@ Vector<String> Navigator::languages() {
     if (token.length() >= 3 && token[2] == '_')
       token.replace(2, 1, "-");
   }
+
+  if (languages.IsEmpty())
+    languages.push_back(DefaultLanguage());
 
   return languages;
 }

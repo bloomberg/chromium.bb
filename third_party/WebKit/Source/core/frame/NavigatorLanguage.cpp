@@ -11,7 +11,7 @@ namespace blink {
 NavigatorLanguage::NavigatorLanguage() {}
 
 AtomicString NavigatorLanguage::language() {
-  return DefaultLanguage();
+  return AtomicString(languages().front());
 }
 
 bool NavigatorLanguage::hasLanguagesChanged() const {
