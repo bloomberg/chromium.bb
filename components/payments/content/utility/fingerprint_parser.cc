@@ -25,15 +25,15 @@ uint8_t HexDigitToByte(char c) {
 
 std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input) {
   std::vector<uint8_t> output;
+  if (!base::IsStringASCII(input)) {
+    LOG(ERROR) << "Fingerprint should be an ASCII string.";
+    return output;
+  }
+
   const size_t kLength = 32 * 3 - 1;
   if (input.size() != kLength) {
     LOG(ERROR) << "Fingerprint \"" << input << "\" should contain exactly "
                << kLength << " characters.";
-    return output;
-  }
-
-  if (!base::IsStringASCII(input)) {
-    LOG(ERROR) << "Fingerprint \"" << input << "\" should be ASCII.";
     return output;
   }
 
