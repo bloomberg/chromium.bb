@@ -6,8 +6,11 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
+#include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "ash/app_list/model/app_list_item.h"
@@ -146,7 +149,6 @@ class AppSearchProvider::DataSource {
   virtual std::unique_ptr<AppResult> CreateResult(
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
-      AppListItemList* top_level_item_list,
       bool is_recommended) = 0;
 
  protected:
@@ -184,7 +186,6 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
   std::unique_ptr<AppResult> CreateResult(
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
-      AppListItemList* top_level_item_list,
       bool is_recommended) override {
     return base::MakeUnique<ExtensionAppResult>(
         profile(), app_id, list_controller, is_recommended);
@@ -272,7 +273,6 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   std::unique_ptr<AppResult> CreateResult(
       const std::string& app_id,
       AppListControllerDelegate* list_controller,
-      AppListItemList* top_level_item_list,
       bool is_recommended) override {
     return base::MakeUnique<ArcAppResult>(profile(), app_id, list_controller,
                                           is_recommended);
@@ -354,8 +354,8 @@ void AppSearchProvider::UpdateResults() {
       id_to_app_list_index[top_level_item_list_->item_at(i)->id()] = i;
 
     for (auto& app : apps_) {
-      std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
-          app->id(), list_controller_, top_level_item_list_, true);
+      std::unique_ptr<AppResult> result =
+          app->data_source()->CreateResult(app->id(), list_controller_, true);
       result->set_title(app->name());
 
       // Use the app list order to tiebreak apps that have never been launched.
@@ -380,8 +380,8 @@ void AppSearchProvider::UpdateResults() {
   } else {
     const TokenizedString query_terms(query_);
     for (auto& app : apps_) {
-      std::unique_ptr<AppResult> result = app->data_source()->CreateResult(
-          app->id(), list_controller_, top_level_item_list_, false);
+      std::unique_ptr<AppResult> result =
+          app->data_source()->CreateResult(app->id(), list_controller_, false);
       TokenizedStringMatch match;
       TokenizedString* indexed_name = app->GetTokenizedIndexedName();
       if (!match.Calculate(query_terms, *indexed_name))
