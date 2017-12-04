@@ -935,6 +935,11 @@ void NetworkStateHandler::SetWakeOnLanEnabled(bool enabled) {
   shill_property_handler_->SetWakeOnLanEnabled(enabled);
 }
 
+void NetworkStateHandler::SetHostname(const std::string& hostname) {
+  NET_LOG_EVENT("SetHostname", hostname);
+  shill_property_handler_->SetHostname(hostname);
+}
+
 void NetworkStateHandler::SetNetworkThrottlingStatus(
     bool enabled,
     uint32_t upload_rate_kbits,

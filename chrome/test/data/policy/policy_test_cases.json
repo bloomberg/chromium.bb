@@ -3433,6 +3433,16 @@
     ]
   },
 
+  "DeviceHostnameTemplate": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "DeviceHostnameTemplate": "chromebook-${ASSET_ID}"
+    },
+    "pref_mappings": [
+      { "pref": "cros.network.hostname_template" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

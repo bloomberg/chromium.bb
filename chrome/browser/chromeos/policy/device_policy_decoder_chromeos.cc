@@ -440,6 +440,14 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   base::MakeUnique<base::Value>(config), nullptr);
   }
+
+  if (policy.has_network_hostname() &&
+      policy.network_hostname().has_device_hostname_template()) {
+    std::string hostname(policy.network_hostname().device_hostname_template());
+    policies->Set(key::kDeviceHostnameTemplate, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  base::MakeUnique<base::Value>(hostname), nullptr);
+  }
 }
 
 void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
