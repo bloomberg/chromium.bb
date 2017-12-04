@@ -76,7 +76,7 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
 
 PrefValueStore::~PrefValueStore() {}
 
-PrefValueStore* PrefValueStore::CloneAndSpecialize(
+std::unique_ptr<PrefValueStore> PrefValueStore::CloneAndSpecialize(
     PrefStore* managed_prefs,
     PrefStore* supervised_user_prefs,
     PrefStore* extension_prefs,
@@ -102,10 +102,10 @@ PrefValueStore* PrefValueStore::CloneAndSpecialize(
   if (!default_prefs)
     default_prefs = GetPrefStore(DEFAULT_STORE);
 
-  return new PrefValueStore(managed_prefs, supervised_user_prefs,
-                            extension_prefs, command_line_prefs, user_prefs,
-                            recommended_prefs, default_prefs, pref_notifier,
-                            std::move(delegate));
+  return std::make_unique<PrefValueStore>(
+      managed_prefs, supervised_user_prefs, extension_prefs, command_line_prefs,
+      user_prefs, recommended_prefs, default_prefs, pref_notifier,
+      std::move(delegate));
 }
 
 void PrefValueStore::set_callback(const PrefChangedCallback& callback) {

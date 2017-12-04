@@ -4,6 +4,9 @@
 
 #include "services/preferences/public/cpp/pref_service_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -108,14 +111,16 @@ void OnConnect(
     }
     persistent_pref_store = overlay_pref_store;
   }
-  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
-  auto* pref_value_store = new PrefValueStore(
+  auto pref_notifier = std::make_unique<PrefNotifierImpl>();
+  auto pref_value_store = std::make_unique<PrefValueStore>(
       managed_prefs.get(), supervised_user_prefs.get(), extension_prefs.get(),
       command_line_prefs.get(), persistent_pref_store.get(),
-      recommended_prefs.get(), pref_registry->defaults().get(), pref_notifier);
+      recommended_prefs.get(), pref_registry->defaults().get(),
+      pref_notifier.get());
   auto pref_service = std::make_unique<PrefService>(
-      pref_notifier, pref_value_store, persistent_pref_store.get(),
-      pref_registry.get(), base::Bind(&DoNothingHandleReadError), true);
+      std::move(pref_notifier), std::move(pref_value_store),
+      persistent_pref_store.get(), pref_registry.get(),
+      base::Bind(&DoNothingHandleReadError), true);
   switch (pref_service->GetAllPrefStoresInitializationStatus()) {
     case PrefService::INITIALIZATION_STATUS_WAITING:
       pref_service->AddPrefInitObserver(base::Bind(&OnPrefServiceInit,

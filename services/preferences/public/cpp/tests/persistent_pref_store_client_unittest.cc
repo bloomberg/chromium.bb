@@ -4,6 +4,7 @@
 
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -49,11 +50,12 @@ class PersistentPrefStoreClientTest : public testing::Test,
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     pref_registry->RegisterDictionaryPref(kDictionaryKey);
     pref_registry->RegisterDictionaryPref(kUninitializedDictionaryKey);
-    PrefNotifierImpl* pref_notifier = new PrefNotifierImpl;
+    auto pref_notifier = std::make_unique<PrefNotifierImpl>();
+    auto pref_value_store = std::make_unique<PrefValueStore>(
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        pref_notifier.get());
     pref_service_ = std::make_unique<PrefService>(
-        pref_notifier,
-        new PrefValueStore(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                           nullptr, pref_notifier),
+        std::move(pref_notifier), std::move(pref_value_store),
         persistent_pref_store_client.get(), pref_registry.get(),
         base::Bind(&DoNothingWithReadError), false);
   }

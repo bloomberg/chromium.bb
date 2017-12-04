@@ -59,15 +59,15 @@ uint32_t GetWriteFlags(const PrefService::Preference* pref) {
 }  // namespace
 
 PrefService::PrefService(
-    PrefNotifierImpl* pref_notifier,
-    PrefValueStore* pref_value_store,
+    std::unique_ptr<PrefNotifierImpl> pref_notifier,
+    std::unique_ptr<PrefValueStore> pref_value_store,
     PersistentPrefStore* user_prefs,
     PrefRegistry* pref_registry,
     base::Callback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
-    : pref_notifier_(pref_notifier),
-      pref_value_store_(pref_value_store),
+    : pref_notifier_(std::move(pref_notifier)),
+      pref_value_store_(std::move(pref_value_store)),
       pref_registry_(pref_registry),
       user_pref_store_(user_prefs),
       read_error_callback_(read_error_callback) {
