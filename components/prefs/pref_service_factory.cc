@@ -22,13 +22,7 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {
 }  // namespace
 
 PrefServiceFactory::PrefServiceFactory()
-    : managed_prefs_(nullptr),
-      supervised_user_prefs_(nullptr),
-      extension_prefs_(nullptr),
-      command_line_prefs_(nullptr),
-      user_prefs_(nullptr),
-      recommended_prefs_(nullptr),
-      read_error_callback_(base::Bind(&DoNothingHandleReadError)),
+    : read_error_callback_(base::Bind(&DoNothingHandleReadError)),
       async_(false) {}
 
 PrefServiceFactory::~PrefServiceFactory() {}
@@ -37,7 +31,7 @@ void PrefServiceFactory::SetUserPrefsFile(
     const base::FilePath& prefs_file,
     base::SequencedTaskRunner* task_runner) {
   user_prefs_ =
-      new JsonPrefStore(prefs_file, task_runner, std::unique_ptr<PrefFilter>());
+      base::MakeRefCounted<JsonPrefStore>(prefs_file, task_runner, nullptr);
 }
 
 std::unique_ptr<PrefService> PrefServiceFactory::Create(

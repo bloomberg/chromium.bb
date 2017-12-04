@@ -28,26 +28,28 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
   virtual ~PrefServiceFactory();
 
   // Functions for setting the various parameters of the PrefService to build.
-  void set_managed_prefs(const scoped_refptr<PrefStore>& managed_prefs) {
-    managed_prefs_ = managed_prefs;
+  void set_managed_prefs(scoped_refptr<PrefStore> prefs) {
+    managed_prefs_.swap(prefs);
   }
-  void set_supervised_user_prefs(
-      const scoped_refptr<PrefStore>& supervised_user_prefs) {
-    supervised_user_prefs_ = supervised_user_prefs;
+
+  void set_supervised_user_prefs(scoped_refptr<PrefStore> prefs) {
+    supervised_user_prefs_.swap(prefs);
   }
-  void set_extension_prefs(const scoped_refptr<PrefStore>& extension_prefs) {
-    extension_prefs_ = extension_prefs;
+
+  void set_extension_prefs(scoped_refptr<PrefStore> prefs) {
+    extension_prefs_.swap(prefs);
   }
-  void set_command_line_prefs(
-      const scoped_refptr<PrefStore>& command_line_prefs) {
-    command_line_prefs_ = command_line_prefs;
+
+  void set_command_line_prefs(scoped_refptr<PrefStore> prefs) {
+    command_line_prefs_.swap(prefs);
   }
-  void set_user_prefs(const scoped_refptr<PersistentPrefStore>& user_prefs) {
-    user_prefs_ = user_prefs;
+
+  void set_user_prefs(scoped_refptr<PersistentPrefStore> prefs) {
+    user_prefs_.swap(prefs);
   }
-  void set_recommended_prefs(
-      const scoped_refptr<PrefStore>& recommended_prefs) {
-    recommended_prefs_ = recommended_prefs;
+
+  void set_recommended_prefs(scoped_refptr<PrefStore> prefs) {
+    recommended_prefs_.swap(prefs);
   }
 
   // Sets up error callback for the PrefService.  A do-nothing default
