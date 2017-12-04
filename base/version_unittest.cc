@@ -91,24 +91,31 @@ TEST(VersionTest, Compare) {
     const char* rhs;
     int expected;
   } cases[] = {
-    {"1.0", "1.0", 0},
-    {"1.0", "0.0", 1},
-    {"1.0", "2.0", -1},
-    {"1.0", "1.1", -1},
-    {"1.1", "1.0", 1},
-    {"1.0", "1.0.1", -1},
-    {"1.1", "1.0.1", 1},
-    {"1.1", "1.0.1", 1},
-    {"1.0.0", "1.0", 0},
-    {"1.0.3", "1.0.20", -1},
-    {"11.0.10", "15.007.20011", -1},
-    {"11.0.10", "15.5.28.130162", -1},
+      {"1.0", "1.0", 0},
+      {"1.0", "0.0", 1},
+      {"1.0", "2.0", -1},
+      {"1.0", "1.1", -1},
+      {"1.1", "1.0", 1},
+      {"1.0", "1.0.1", -1},
+      {"1.1", "1.0.1", 1},
+      {"1.1", "1.0.1", 1},
+      {"1.0.0", "1.0", 0},
+      {"1.0.3", "1.0.20", -1},
+      {"11.0.10", "15.007.20011", -1},
+      {"11.0.10", "15.5.28.130162", -1},
+      {"15.5.28.130162", "15.5.28.130162", 0},
   };
   for (size_t i = 0; i < arraysize(cases); ++i) {
     base::Version lhs(cases[i].lhs);
     base::Version rhs(cases[i].rhs);
     EXPECT_EQ(lhs.CompareTo(rhs), cases[i].expected) <<
         cases[i].lhs << " ? " << cases[i].rhs;
+    // CompareToWildcardString() should have same behavior as CompareTo() when
+    // no wildcards are present.
+    EXPECT_EQ(lhs.CompareToWildcardString(cases[i].rhs), cases[i].expected)
+        << cases[i].lhs << " ? " << cases[i].rhs;
+    EXPECT_EQ(rhs.CompareToWildcardString(cases[i].lhs), -cases[i].expected)
+        << cases[i].lhs << " ? " << cases[i].rhs;
 
     // Test comparison operators
     switch (cases[i].expected) {
