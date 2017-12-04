@@ -62,6 +62,9 @@ void AXViewObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
                                       base::UTF16ToUTF8(description));
   }
 
+  out_node_data->AddStringAttribute(ui::AX_ATTR_CLASS_NAME,
+                                    view_->GetClassName());
+
   out_node_data->location = gfx::RectF(view_->GetBoundsInScreen());
 }
 
