@@ -193,9 +193,6 @@ external/wpt/html/editing/dnd/svg [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-003.html [ Skip ]
 external/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-004.html [ Skip ]
 
-# https://github.com/w3c/web-platform-tests/pull/8533
-external/wpt/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]
-
 # Fails on Chrome, Edge, Firefox and Safari, but did pass on Opera Presto.
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
