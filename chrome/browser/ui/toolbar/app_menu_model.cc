@@ -606,11 +606,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
   }
 }
 
-void AppMenuModel::LogMenuAction(AppMenuAction action_id) {
-  UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
-                            LIMIT_MENU_ACTION);
-}
-
 bool AppMenuModel::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
     return browser_->profile()->GetPrefs()->GetBoolean(
@@ -688,6 +683,11 @@ void AppMenuModel::Observe(int type,
                            const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   UpdateZoomControls();
+}
+
+void AppMenuModel::LogMenuAction(AppMenuAction action_id) {
+  UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
+                            LIMIT_MENU_ACTION);
 }
 
 // Note: When adding new menu items please place under an appropriate section.
