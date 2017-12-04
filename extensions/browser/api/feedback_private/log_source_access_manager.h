@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "components/feedback/anonymizer_tool.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/feedback_private/access_rate_limiter.h"
@@ -149,6 +150,9 @@ class LogSourceAccessManager {
   // Provides a timer clock implementation for keeping track of access times.
   // Can override the default clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;
+
+  // For removing PII from log strings from log sources.
+  std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
 
   base::WeakPtrFactory<LogSourceAccessManager> weak_factory_;
 

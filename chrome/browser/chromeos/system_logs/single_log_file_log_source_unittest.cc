@@ -270,32 +270,6 @@ TEST_F(SingleLogFileLogSourceTest, IncompleteLines) {
   EXPECT_EQ("Goodbye world\n", latest_response());
 }
 
-TEST_F(SingleLogFileLogSourceTest, Anonymize) {
-  InitializeSource(SingleLogFileLogSource::SupportedSource::kUiLatest);
-
-  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"),
-                           "My MAC address is: 11:22:33:44:55:66\n"));
-  FetchFromSource();
-
-  EXPECT_EQ(1, num_callback_calls());
-  EXPECT_EQ("My MAC address is: 11:22:33:00:00:01\n", latest_response());
-
-  // Suppose the write operation is not atomic, and the MAC address is written
-  // across two separate writes.
-  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"),
-                           "Your MAC address is: AB:88:C"));
-  FetchFromSource();
-
-  EXPECT_EQ(2, num_callback_calls());
-  EXPECT_EQ("", latest_response());
-
-  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "D:99:EF:77\n"));
-  FetchFromSource();
-
-  EXPECT_EQ(3, num_callback_calls());
-  EXPECT_EQ("Your MAC address is: ab:88:cd:00:00:02\n", latest_response());
-}
-
 TEST_F(SingleLogFileLogSourceTest, HandleLogFileRotation) {
   InitializeSource(SingleLogFileLogSource::SupportedSource::kMessages);
 

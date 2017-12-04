@@ -169,8 +169,7 @@ void SingleLogFileLogSource::ReadFile(size_t num_rotations_allowed,
   num_bytes_read_ += size_read;
 
   // Pass it back to the callback.
-  AppendToSystemLogsResponse(result, source_name(),
-                             anonymizer_.Anonymize(result_string));
+  AppendToSystemLogsResponse(result, source_name(), result_string);
 
   // If the file was rotated, close the file handle and call this function
   // again, to read from the new file.

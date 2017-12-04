@@ -57,6 +57,7 @@ void GetLogLinesFromSystemLogsResponse(const SystemLogsResponse& response,
 LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
     : context_(context),
       tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      anonymizer_(std::make_unique<feedback::AnonymizerTool>()),
       weak_factory_(this) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}
@@ -121,6 +122,10 @@ void LogSourceAccessManager::OnFetchComplete(
   result.reader_id = delete_resource ? kInvalidResourceId : resource_id;
 
   GetLogLinesFromSystemLogsResponse(*response, &result.log_lines);
+
+  for (std::string& line : result.log_lines)
+    line = anonymizer_->Anonymize(line);
+
   if (delete_resource) {
     // This should also remove the entry from |sources_|.
     ApiResourceManager<LogSourceResource>::Get(context_)->Remove(extension_id,
