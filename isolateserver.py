@@ -152,7 +152,8 @@ def fileobj_path(fileobj):
   # the standard library). We want all our paths to be unicode objects, so we
   # decode it.
   if not isinstance(name, unicode):
-    name = name.decode(sys.getfilesystemencoding())
+    # We incorrectly assume that UTF-8 is used everywhere.
+    name = name.decode('utf-8')
 
   # fs.exists requires an absolute path, otherwise it will fail with an
   # assertion error.
