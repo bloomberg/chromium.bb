@@ -64,15 +64,17 @@
                JSAutofillManager:(JsAutofillManager*)JSAutofillManager {
   self = [super init];
   if (self) {
+    DCHECK(webState);
     _webState = webState;
 
     ios_web_view::WebViewBrowserState* browserState =
         ios_web_view::WebViewBrowserState::FromBrowserState(
-            webState->GetBrowserState());
+            _webState->GetBrowserState());
     _autofillAgent = autofillAgent;
 
-    _webStateObserverBridge.reset(
-        new web::WebStateObserverBridge(webState, self));
+    _webStateObserverBridge =
+        std::make_unique<web::WebStateObserverBridge>(self);
+    _webState->AddObserver(_webStateObserverBridge.get());
 
     std::unique_ptr<IdentityProvider> identityProvider(
         std::make_unique<ProfileIdentityProvider>(
@@ -90,15 +92,23 @@
             GetAutofillWebDataForBrowserState(
                 browserState, ServiceAccessType::EXPLICIT_ACCESS)));
     autofill::AutofillDriverIOS::CreateForWebStateAndDelegate(
-        webState, _autofillClient.get(), self,
+        _webState, _autofillClient.get(), self,
         ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale(),
         autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-    _autofillManager =
-        autofill::AutofillDriverIOS::FromWebState(webState)->autofill_manager();
+    _autofillManager = autofill::AutofillDriverIOS::FromWebState(_webState)
+                           ->autofill_manager();
 
     _JSAutofillManager = JSAutofillManager;
   }
   return self;
+}
+
+- (void)dealloc {
+  if (_webState) {
+    _webState->RemoveObserver(_webStateObserverBridge.get());
+    _webStateObserverBridge.reset();
+    _webState = nullptr;
+  }
 }
 
 #pragma mark - Public Methods
@@ -243,6 +253,7 @@
 
 - (void)webState:(web::WebState*)webState
     didRegisterFormActivity:(const web::FormActivityParams&)params {
+  DCHECK_EQ(_webState, webState);
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
   NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
@@ -289,7 +300,9 @@
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
   [_autofillAgent detachFromWebState];
+  _webState->RemoveObserver(_webStateObserverBridge.get());
   _webStateObserverBridge.reset();
   _webState = nullptr;
 }
