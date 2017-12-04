@@ -16,7 +16,6 @@
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_header_parser.h"
-#include "net/reporting/reporting_persister.h"
 #include "url/gurl.h"
 
 namespace net {
