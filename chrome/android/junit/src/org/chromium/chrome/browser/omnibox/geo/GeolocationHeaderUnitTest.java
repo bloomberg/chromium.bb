@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowU
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowWebsitePreferenceBridge;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -305,13 +306,14 @@ public class GeolocationHeaderUnitTest {
     @Implements(WebsitePreferenceBridge.class)
     public static class ShadowWebsitePreferenceBridge {
         @Implementation
-        public static boolean shouldUseDSEGeolocationSetting(String origin, boolean isIncognito) {
+        public static boolean arePermissionsControlledByDSE(String origin, boolean isIncognito) {
             return true;
         }
 
         @Implementation
-        public static boolean getDSEGeolocationSetting() {
-            return true;
+        public static int nativeGetGeolocationSettingForOrigin(
+                String origin, String embedder, boolean isIncognito) {
+            return ContentSetting.ALLOW.toInt();
         }
     }
 

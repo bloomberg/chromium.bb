@@ -252,6 +252,11 @@ const base::Feature kGdiTextPrinting {"GdiTextPrinting",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_ANDROID)
+const base::Feature kGrantNotificationsToDSE{"GrantNotificationsToDSE",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
 #if defined (OS_CHROMEOS)
 // Enables or disables the Happiness Tracking System for the device.
 const base::Feature kHappinessTrackingSystem {

@@ -26,8 +26,7 @@ class PrefService;
 class Profile;
 
 // Helper class to manage DSE permissions. It keeps the setting valid by
-// watching change to the CCTLD and DSE, and also provides logic for whether the
-// setting should be used and it's current value.
+// watching change to the CCTLD and DSE.
 // Glossary:
 //     DSE: Default Search Engine
 //     CCTLD: Country Code Top Level Domain (e.g. google.com.au)
@@ -75,19 +74,9 @@ class SearchPermissionsService : public KeyedService {
 
   explicit SearchPermissionsService(Profile* profile);
 
-  // Returns whether the DSE geolocation setting is applicable for geolocation
-  // requests for the given top level origin.
-  bool UseDSEGeolocationSetting(const url::Origin& requesting_origin);
-
-  // Returns the DSE geolocation setting, after applying any updates needed to
-  // make it valid.
-  bool GetDSEGeolocationSetting();
-
-  // Changes the DSE geolocation setting.
-  void SetDSEGeolocationSetting(bool setting);
-
-  // Returns the DSE's Origin if geolocation enabled, else an unique Origin.
-  url::Origin GetDSEOriginIfEnabled();
+  // Returns whether the geolocation and notifications permissions are being
+  // configured for the DSE for that given origin.
+  bool ArePermissionsControlledByDSE(const url::Origin& requesting_origin);
 
   // KeyedService:
   void Shutdown() override;
@@ -101,49 +90,44 @@ class SearchPermissionsService : public KeyedService {
   ~SearchPermissionsService() override;
 
   // When the DSE CCTLD changes (either by changing their DSE or by changing
-  // their CCTLD, and their DSE supports geolocation:
-  // * If the DSE CCTLD origin permission is BLOCK, but the DSE geolocation
-  //   setting is on, change the DSE geolocation setting to off
-  // * If the DSE CCTLD origin permission is ALLOW, but the DSE geolocation
-  //   setting is off, reset the DSE CCTLD origin permission to ASK.
-  // Also, if the previous DSE did not support geolocation, and the new one
-  // does, and the geolocation setting is on, reset whether the DSE geolocation
-  // disclosure has been shown.
+  // their CCTLD) we carry over the geolocation/notification permissions from
+  // the last DSE CCTLD. Before carrying them over, we store the old value
+  // of the permissions in a pref so the user's settings can be restored if
+  // they change DSE in the future.
+  // We resolve conflicts in the following way:
+  // * If the DSE CCTLD origin permission is BLOCK, but the old DSE's permission
+  //   is ALLOW, change the DSE permission setting to BLOCK.
+  // * If the DSE CCTLD origin permission is ALLOW, but the old DSE's permission
+  //   is BLOCK, change the DSE permission setting to BLOCK but restore it to
+  //   ASK later.
+  // * If the user changes the DSE CCTLD origin permission, we restore it back
+  //   to ASK when they change DSE.
+  // Also, if the DSE changes and geolocation is enabled, we reset the
+  // geolocation disclosure so that it will be shown again.
   void OnDSEChanged();
 
-  // Initialize the DSE geolocation setting if it hasn't already been
-  // initialized. Also, if it hasn't been initialized, reset whether the DSE
+  ContentSetting UpdatePermission(ContentSettingsType type,
+                                  const GURL& old_dse_origin,
+                                  const GURL& new_dse_origin,
+                                  ContentSetting old_setting,
+                                  bool dse_name_changed);
+
+  // Initialize the DSE permission settings if they haven't already been
+  // initialized. Also, if they haven't been initialized, reset whether the DSE
   // geolocation disclosure has been shown to ensure user who may have seen it
   // on earlier versions (due to Finch experiments) see it again.
-  void InitializeDSEGeolocationSettingIfNeeded();
+  void InitializeSettingsIfNeeded();
 
-  // Check that the DSE geolocation setting is valid with respect to the content
-  // setting. The rules of vaidity are:
-  // * If the content setting is BLOCK, the DSE geolocation setting must
-  //   be false.
-  // * If the content setting is ALLOW, the DSE geolocation setting must be
-  //   true.
-  // * If the content setting is ASK, the DSE geolocation setting can be true or
-  //   false.
-  // One way the setting could become invalid is if the feature enabling the
-  // setting was disabled (via Finch or flags), content settings were changed,
-  // and the feature enabled again. Or the enterprise policy settings could have
-  // been updated in a way that makes the setting invalid.
-  void EnsureDSEGeolocationSettingIsValid();
+  PrefValue GetDSEPref();
+  void SetDSEPref(const PrefValue& pref);
 
-  PrefValue GetDSEGeolocationPref();
-  void SetDSEGeolocationPref(const PrefValue& pref);
-
-  // Retrieve the geolocation content setting for the current DSE CCTLD.
-  ContentSetting GetCurrentContentSetting();
-
-  // Reset the geolocation content setting for the current DSE CCTLD back to the
-  // default.
-  void ResetContentSetting();
-
-  // Returns whether the user can change the geolocation content setting for the
-  // current DSE CCTLD.
-  bool IsContentSettingUserSettable();
+  // Retrieve the content setting for the given permission/origin.
+  ContentSetting GetContentSetting(const GURL& origin,
+                                   ContentSettingsType type);
+  // Set the content setting for the given permission/origin.
+  void SetContentSetting(const GURL& origin,
+                         ContentSettingsType type,
+                         ContentSetting setting);
 
   void SetSearchEngineDelegateForTest(
       std::unique_ptr<SearchEngineDelegate> delegate);

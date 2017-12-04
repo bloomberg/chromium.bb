@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
-import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -90,15 +89,13 @@ public class GeolocationHeaderTest {
     @SmallTest
     @Feature({"Location"})
     @CommandLineFlags.Add({GOOGLE_BASE_URL_SWITCH})
-    public void testPermissionAndSetting() {
+    public void testPermission() {
         long now = setMockLocationNow();
 
-        // X-Geo shouldn't be sent when location is disallowed for the origin, or when the DSE
-        // geolocation setting is off.
-        checkHeaderWithPermissionAndSetting(ContentSetting.ALLOW, true, now, false);
-        checkHeaderWithPermissionAndSetting(ContentSetting.DEFAULT, true, now, false);
-        checkHeaderWithPermissionAndSetting(ContentSetting.DEFAULT, false, now, true);
-        checkHeaderWithPermissionAndSetting(ContentSetting.BLOCK, false, now, true);
+        // X-Geo shouldn't be sent when location is disallowed for the origin.
+        checkHeaderWithPermission(ContentSetting.ALLOW, now, false);
+        checkHeaderWithPermission(ContentSetting.DEFAULT, now, true);
+        checkHeaderWithPermission(ContentSetting.BLOCK, now, true);
     }
 
     @Test
@@ -153,31 +150,14 @@ public class GeolocationHeaderTest {
         assertNonNullHeader(SEARCH_URL_1, false, now);
     }
 
-    private void checkHeaderWithPermissions(final ContentSetting httpsPermission,
+    private void checkHeaderWithPermission(final ContentSetting httpsPermission,
             final long locationTime, final boolean shouldBeNull) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                GeolocationInfo infoHttps =
-                        new GeolocationInfo("https://www.google.de", null, false);
-                infoHttps.setContentSetting(httpsPermission);
-                String header = GeolocationHeader.getGeoHeader(
-                        "https://www.google.de/search?q=kartoffelsalat",
-                        mActivityTestRule.getActivity().getActivityTab());
-                assertHeaderState(header, locationTime, shouldBeNull);
-            }
-        });
-    }
-
-    private void checkHeaderWithPermissionAndSetting(final ContentSetting httpsPermission,
-            final boolean settingValue, final long locationTime, final boolean shouldBeNull) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 GeolocationInfo infoHttps =
                         new GeolocationInfo(SEARCH_URL_1, null, false);
                 infoHttps.setContentSetting(httpsPermission);
-                WebsitePreferenceBridge.setDSEGeolocationSetting(settingValue);
                 String header = GeolocationHeader.getGeoHeader(
                         SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());
                 assertHeaderState(header, locationTime, shouldBeNull);

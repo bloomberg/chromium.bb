@@ -14,6 +14,8 @@
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_infobar_delegate.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -143,20 +145,12 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
   // shown.
   RecordPreDisclosureMetrics(gurl);
 
-  // Only show the disclosure if the geolocation permission is set ask (i.e. has
-  // not been explicitly set or revoked).
-  ContentSetting status =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile())
-          ->GetContentSetting(gurl, gurl, CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                              std::string());
-  if (status != CONTENT_SETTING_ASK)
+  // Only show disclosure if the DSE geolocation setting is on.
+  if (PermissionManager::Get(GetProfile())
+          ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_GEOLOCATION, gurl, gurl)
+          .content_setting != CONTENT_SETTING_ALLOW) {
     return;
-
-  // And only show disclosure if the DSE geolocation setting is on.
-  SearchPermissionsService* service =
-      SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
-  if (!service->GetDSEGeolocationSetting())
-    return;
+  }
 
   // Check that the Chrome app has geolocation permission.
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -190,7 +184,7 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
   if (gIgnoreUrlChecksForTesting)
     return true;
 
-  return service->UseDSEGeolocationSetting(url::Origin::Create(gurl));
+  return service->ArePermissionsControlledByDSE(url::Origin::Create(gurl));
 }
 
 bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForNavigation(
@@ -224,16 +218,9 @@ void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
         HostContentSettingsMapFactory::GetForProfile(GetProfile())
             ->GetContentSetting(gurl, gurl, CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 std::string());
-    UMA_HISTOGRAM_ENUMERATION(
-        "GeolocationDisclosure.PreDisclosureContentSetting",
-        static_cast<base::HistogramBase::Sample>(status),
-        static_cast<base::HistogramBase::Sample>(CONTENT_SETTING_NUM_SETTINGS) +
-            1);
 
-    SearchPermissionsService* service =
-        SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
     UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PreDisclosureDSESetting",
-                          service->GetDSEGeolocationSetting());
+                          status == CONTENT_SETTING_ALLOW);
 
     prefs->SetBoolean(prefs::kSearchGeolocationPreDisclosureMetricsRecorded,
                       true);
@@ -249,16 +236,9 @@ void SearchGeolocationDisclosureTabHelper::RecordPostDisclosureMetrics(
         HostContentSettingsMapFactory::GetForProfile(GetProfile())
             ->GetContentSetting(gurl, gurl, CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                 std::string());
-    UMA_HISTOGRAM_ENUMERATION(
-        "GeolocationDisclosure.PostDisclosureContentSetting",
-        static_cast<base::HistogramBase::Sample>(status),
-        static_cast<base::HistogramBase::Sample>(CONTENT_SETTING_NUM_SETTINGS) +
-            1);
 
-    SearchPermissionsService* service =
-        SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
     UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PostDisclosureDSESetting",
-                          service->GetDSEGeolocationSetting());
+                          status == CONTENT_SETTING_ALLOW);
 
     prefs->SetBoolean(prefs::kSearchGeolocationPostDisclosureMetricsRecorded,
                       true);

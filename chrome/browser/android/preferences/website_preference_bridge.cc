@@ -183,26 +183,6 @@ void JNI_WebsitePreferenceBridge_GetOrigins(
           jembedder);
     }
   }
-
-  // Add the DSE origin if it allows geolocation.
-  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    SearchPermissionsService* search_helper =
-        SearchPermissionsService::Factory::GetForBrowserContext(
-            GetActiveUserProfile(false /* is_incognito */));
-    if (search_helper) {
-      const url::Origin& dse_origin = search_helper->GetDSEOriginIfEnabled();
-      if (!dse_origin.unique()) {
-        std::string dse_origin_string = dse_origin.Serialize();
-        if (!base::ContainsValue(seen_origins, dse_origin_string)) {
-          seen_origins.push_back(dse_origin_string);
-          insertionFunc(env, list,
-                        JNI_WebsitePreferenceBridge_ConvertOriginToJavaString(
-                            env, dse_origin_string),
-                        jembedder);
-        }
-      }
-    }
-  }
 }
 
 ContentSetting JNI_WebsitePreferenceBridge_GetSettingForOrigin(
@@ -816,7 +796,7 @@ static void JNI_WebsitePreferenceBridge_ClearBannerData(
       CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), nullptr);
 }
 
-static jboolean JNI_WebsitePreferenceBridge_ShouldUseDSEGeolocationSetting(
+static jboolean JNI_WebsitePreferenceBridge_ArePermissionsControlledByDSE(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jorigin,
@@ -825,27 +805,8 @@ static jboolean JNI_WebsitePreferenceBridge_ShouldUseDSEGeolocationSetting(
       SearchPermissionsService::Factory::GetForBrowserContext(
           GetActiveUserProfile(is_incognito));
   return search_helper &&
-         search_helper->UseDSEGeolocationSetting(
+         search_helper->ArePermissionsControlledByDSE(
              url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
-}
-
-static jboolean JNI_WebsitePreferenceBridge_GetDSEGeolocationSetting(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  SearchPermissionsService* search_helper =
-      SearchPermissionsService::Factory::GetForBrowserContext(
-          GetActiveUserProfile(false /* is_incognito */));
-  return search_helper->GetDSEGeolocationSetting();
-}
-
-static void JNI_WebsitePreferenceBridge_SetDSEGeolocationSetting(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    jboolean setting) {
-  SearchPermissionsService* search_helper =
-      SearchPermissionsService::Factory::GetForBrowserContext(
-          GetActiveUserProfile(false /* is_incognito */));
-  return search_helper->SetDSEGeolocationSetting(setting);
 }
 
 static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(

@@ -41,7 +41,7 @@ public class SiteEngagementServiceTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final String url = "https://www.google.com";
+                final String url = "https://www.example.com";
                 SiteEngagementService service = SiteEngagementService.getForProfile(
                         mActivityTestRule.getActivity().getActivityTab().getProfile());
 
@@ -65,7 +65,7 @@ public class SiteEngagementServiceTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final String url = "https://www.google.com";
+                final String url = "https://www.example.com";
                 Profile profile = mActivityTestRule.getActivity().getActivityTab().getProfile();
 
                 Assert.assertEquals(

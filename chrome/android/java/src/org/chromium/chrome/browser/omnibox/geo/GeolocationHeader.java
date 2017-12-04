@@ -389,8 +389,11 @@ public class GeolocationHeader {
      */
     static boolean isLocationDisabledForUrl(Uri uri, boolean isIncognito) {
         boolean enabled =
-                WebsitePreferenceBridge.shouldUseDSEGeolocationSetting(uri.toString(), isIncognito)
-                && WebsitePreferenceBridge.getDSEGeolocationSetting();
+                // TODO(raymes): The call to arePermissionsControlledByDSE is only needed if this
+                // could be called for an origin that isn't the default search engine. Otherwise
+                // remove this line.
+                WebsitePreferenceBridge.arePermissionsControlledByDSE(uri.toString(), isIncognito)
+                && locationContentSettingForUrl(uri, isIncognito) == ContentSetting.ALLOW;
         return !enabled;
     }
 
