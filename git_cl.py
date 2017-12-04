@@ -4533,7 +4533,7 @@ def CMDissue(parser, args):
 
   if options.reverse:
     branches = RunGit(['for-each-ref', 'refs/heads',
-                       '--format=%(refname:short)']).splitlines()
+                       '--format=%(refname)']).splitlines()
     # Reverse issue lookup.
     issue_branch_map = {}
     for branch in branches:
