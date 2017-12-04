@@ -5,10 +5,10 @@
 #include "android_webview/browser/java_browser_view_renderer_helper.h"
 
 #include <android/bitmap.h>
+#include <memory>
 
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "jni/JavaBrowserViewRendererHelper_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -121,7 +121,7 @@ AuxiliaryCanvasHolder::AuxiliaryCanvasHolder(
       SkImageInfo::MakeN32Premul(bitmap_info.width, bitmap_info.height);
   bitmap_.reset(new SkBitmap);
   bitmap_->installPixels(info, pixels, bitmap_info.stride);
-  canvas_ = base::MakeUnique<SkCanvas>(*bitmap_);
+  canvas_ = std::make_unique<SkCanvas>(*bitmap_);
 }
 
 AuxiliaryCanvasHolder::~AuxiliaryCanvasHolder() {

@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -22,7 +23,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
@@ -123,13 +123,13 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // AwContentBrowserClient::IsHandledURL.
   bool set_protocol = aw_job_factory->SetProtocolHandler(
       url::kFileScheme,
-      base::MakeUnique<net::FileProtocolHandler>(
+      std::make_unique<net::FileProtocolHandler>(
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
-      url::kDataScheme, base::MakeUnique<net::DataProtocolHandler>());
+      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       url::kBlobScheme,
@@ -159,7 +159,7 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // This logical dependency is also the reason why the Content
   // URLRequestInterceptor has to be added as an interceptor rather than as a
   // ProtocolHandler.
-  request_interceptors.push_back(base::MakeUnique<AwRequestInterceptor>());
+  request_interceptors.push_back(std::make_unique<AwRequestInterceptor>());
 
   // The chain of responsibility will execute the handlers in reverse to the
   // order in which the elements of the chain are created.
@@ -223,7 +223,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
     std::unique_ptr<base::DictionaryValue> constants_dict =
         net::GetNetConstants();
     // Add a dictionary with client information
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
 
     dict->SetString("name", version_info::GetProductName());
     dict->SetString("version", version_info::GetVersionNumber());
@@ -260,7 +260,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
   DCHECK(browser_context);
 
-  builder.set_network_delegate(base::MakeUnique<AwNetworkDelegate>());
+  builder.set_network_delegate(std::make_unique<AwNetworkDelegate>());
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -293,7 +293,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
         std::move(proxy_config_service_), net_log_.get()));
   }
   builder.set_net_log(net_log_.get());
-  builder.SetCookieAndChannelIdStores(base::MakeUnique<AwCookieStoreWrapper>(),
+  builder.SetCookieAndChannelIdStores(std::make_unique<AwCookieStoreWrapper>(),
                                       std::move(channel_id_service));
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;

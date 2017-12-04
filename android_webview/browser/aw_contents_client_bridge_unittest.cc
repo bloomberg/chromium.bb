@@ -11,7 +11,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -116,7 +115,7 @@ void AwContentsClientBridgeTest::TestCertType(
   cert_request_info_->cert_key_types.push_back(type);
   bridge_->SelectClientCertificate(
       cert_request_info_.get(),
-      base::MakeUnique<TestClientCertificateDelegate>(this));
+      std::make_unique<TestClientCertificateDelegate>(this));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, cert_selected_callbacks_);
   ScopedJavaLocalRef<jobjectArray> key_types =

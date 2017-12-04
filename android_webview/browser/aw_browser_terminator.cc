@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_terminator.h"
 
 #include <unistd.h>
+#include <memory>
 
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -110,8 +111,8 @@ void AwBrowserTerminator::OnChildStart(
   base::AutoLock auto_lock(process_host_id_to_pipe_lock_);
   DCHECK(!ContainsKey(process_host_id_to_pipe_, process_host_id));
 
-  auto local_pipe = base::MakeUnique<base::SyncSocket>();
-  auto child_pipe = base::MakeUnique<base::SyncSocket>();
+  auto local_pipe = std::make_unique<base::SyncSocket>();
+  auto child_pipe = std::make_unique<base::SyncSocket>();
   if (base::SyncSocket::CreatePair(local_pipe.get(), child_pipe.get())) {
     process_host_id_to_pipe_[process_host_id] = std::move(local_pipe);
     mappings->Transfer(kAndroidWebViewCrashSignalDescriptor,

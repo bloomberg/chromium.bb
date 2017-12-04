@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/test/rendering_test.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/browser_view_renderer.h"
@@ -12,7 +13,6 @@
 #include "android_webview/common/aw_switches.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -75,7 +75,7 @@ void RenderingTest::SetUpTestHarness() {
       new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));
   functor_.reset(new FakeFunctor);
   functor_->Init(window.get(),
-                 base::MakeUnique<RenderThreadManager>(
+                 std::make_unique<RenderThreadManager>(
                      functor_.get(), base::ThreadTaskRunnerHandle::Get()));
   browser_view_renderer_->SetCurrentCompositorFrameConsumer(
       functor_->GetCompositorFrameConsumer());
@@ -118,7 +118,7 @@ content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
 }
 
 std::unique_ptr<viz::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
-  auto compositor_frame = base::MakeUnique<viz::CompositorFrame>(
+  auto compositor_frame = std::make_unique<viz::CompositorFrame>(
       viz::test::MakeEmptyCompositorFrame());
   std::unique_ptr<viz::RenderPass> root_pass(viz::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());

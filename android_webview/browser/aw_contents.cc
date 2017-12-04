@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_contents.h"
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/aw_autofill_client.h"
@@ -47,7 +48,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -229,7 +229,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
-                             base::MakeUnique<AwContentsUserData>(this));
+                             std::make_unique<AwContentsUserData>(this));
   browser_view_renderer_.RegisterWithWebContents(web_contents_.get());
 
   CompositorID compositor_id;
@@ -283,11 +283,11 @@ void AwContents::SetJavaPeers(
   AwContentsIoThreadClient::Associate(web_contents_.get(), io_thread_client);
 
   InterceptNavigationDelegate::Associate(
-      web_contents_.get(), base::MakeUnique<InterceptNavigationDelegate>(
+      web_contents_.get(), std::make_unique<InterceptNavigationDelegate>(
                                env, intercept_navigation_delegate));
 
   if (!autofill_provider.is_null()) {
-    autofill_provider_ = base::MakeUnique<autofill::AutofillProviderAndroid>(
+    autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
         autofill_provider, web_contents_.get());
   }
 

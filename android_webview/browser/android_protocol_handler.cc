@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/android_protocol_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/input_stream.h"
@@ -13,7 +14,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AndroidProtocolHandler_jni.h"
 #include "net/base/io_buffer.h"
@@ -41,7 +41,7 @@ const void* const kPreviouslyFailedKey = &kPreviouslyFailedKey;
 
 void MarkRequestAsFailed(net::URLRequest* request) {
   request->SetUserData(kPreviouslyFailedKey,
-                       base::MakeUnique<base::SupportsUserData::Data>());
+                       std::make_unique<base::SupportsUserData::Data>());
 }
 
 bool HasRequestPreviouslyFailed(net::URLRequest* request) {
@@ -120,7 +120,7 @@ AndroidStreamReaderURLRequestJobDelegateImpl::OpenInputStream(JNIEnv* env,
     DLOG(ERROR) << "Unable to open input stream for Android URL";
     return std::unique_ptr<InputStream>();
   }
-  return base::MakeUnique<InputStream>(stream);
+  return std::make_unique<InputStream>(stream);
 }
 
 void AndroidStreamReaderURLRequestJobDelegateImpl::OnInputStreamOpenFailed(
@@ -222,7 +222,7 @@ namespace android_webview {
 // static
 std::unique_ptr<net::URLRequestInterceptor>
 CreateContentSchemeRequestInterceptor() {
-  return base::MakeUnique<ContentSchemeRequestInterceptor>();
+  return std::make_unique<ContentSchemeRequestInterceptor>();
 }
 
 // static

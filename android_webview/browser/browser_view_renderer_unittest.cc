@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <utility>
 
@@ -12,7 +13,6 @@
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/test/rendering_test.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -500,7 +500,7 @@ class RenderThreadManagerSwitchTest : public ResourceRenderingTest {
         // Switch to new RTM.
         std::unique_ptr<FakeFunctor> functor(new FakeFunctor);
         functor->Init(window_.get(),
-                      base::MakeUnique<RenderThreadManager>(
+                      std::make_unique<RenderThreadManager>(
                           functor.get(), base::ThreadTaskRunnerHandle::Get()));
         browser_view_renderer_->SetCurrentCompositorFrameConsumer(
             functor->GetCompositorFrameConsumer());

@@ -5,13 +5,13 @@
 #include "android_webview/browser/surfaces_instance.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/aw_gl_surface.h"
 #include "android_webview/browser/aw_render_thread_context_provider.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/parent_output_surface.h"
-#include "base/memory/ptr_util.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -69,10 +69,10 @@ SurfacesInstance::SurfacesInstance()
           base::WrapRefCounted(new AwGLSurface),
           DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
-  auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
+  auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source_.get(), nullptr /* current_task_runner */,
       output_surface_holder->capabilities().max_frames_pending);
-  display_ = base::MakeUnique<viz::Display>(
+  display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings, frame_sink_id_,
       std::move(output_surface_holder), std::move(scheduler),

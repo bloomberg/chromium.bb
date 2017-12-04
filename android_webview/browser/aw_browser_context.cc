@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/aw_browser_policy_connector.h"
@@ -111,7 +112,7 @@ CreateSafeBrowsingWhitelistManager() {
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  return base::MakeUnique<AwSafeBrowsingWhitelistManager>(
+  return std::make_unique<AwSafeBrowsingWhitelistManager>(
       background_task_runner, io_task_runner);
 }
 
@@ -194,7 +195,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   safe_browsing_db_manager_ =
       new safe_browsing::RemoteSafeBrowsingDatabaseManager();
   safe_browsing_trigger_manager_ =
-      base::MakeUnique<safe_browsing::TriggerManager>(
+      std::make_unique<safe_browsing::TriggerManager>(
           safe_browsing_ui_manager_.get());
   safe_browsing_whitelist_manager_ = CreateSafeBrowsingWhitelistManager();
 
@@ -282,7 +283,7 @@ content::DownloadManagerDelegate*
 AwBrowserContext::GetDownloadManagerDelegate() {
   if (!GetUserData(kDownloadManagerDelegateKey)) {
     SetUserData(kDownloadManagerDelegateKey,
-                base::MakeUnique<AwDownloadManagerDelegate>());
+                std::make_unique<AwDownloadManagerDelegate>());
   }
   return static_cast<AwDownloadManagerDelegate*>(
       GetUserData(kDownloadManagerDelegateKey));

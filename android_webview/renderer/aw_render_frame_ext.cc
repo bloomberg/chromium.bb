@@ -4,6 +4,8 @@
 
 #include "android_webview/renderer/aw_render_frame_ext.h"
 
+#include <memory>
+
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
 #include "base/strings/utf_string_conversions.h"
@@ -140,7 +142,7 @@ void PopulateHitTestData(const GURL& absolute_link_url,
 
 AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame) {
-  registry_ = base::MakeUnique<service_manager::BinderRegistry>();
+  registry_ = std::make_unique<service_manager::BinderRegistry>();
 
   // TODO(sgurun) do not create a password autofill agent (change
   // autofill agent to store a weakptr).

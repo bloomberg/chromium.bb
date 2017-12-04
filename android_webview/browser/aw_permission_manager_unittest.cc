@@ -10,13 +10,11 @@
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using base::MakeUnique;
 using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
@@ -46,7 +44,7 @@ class AwBrowserPermissionRequestDelegateForTesting final
       callback.Run(grant);
       return;
     }
-    response_.push_back(MakeUnique<Response>(origin, type, grant));
+    response_.push_back(std::make_unique<Response>(origin, type, grant));
   }
 
   // AwBrowserPermissionRequestDelegate:
@@ -89,7 +87,7 @@ class AwBrowserPermissionRequestDelegateForTesting final
       callback.Run(grant);
       return;
     }
-    request_.push_back(MakeUnique<Request>(origin, type, callback));
+    request_.push_back(std::make_unique<Request>(origin, type, callback));
   }
 
   void CancelPermission(const GURL& origin, PermissionType type) {

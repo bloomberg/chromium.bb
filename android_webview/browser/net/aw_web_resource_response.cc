@@ -4,11 +4,12 @@
 
 #include "android_webview/browser/net/aw_web_resource_response.h"
 
+#include <memory>
+
 #include "android_webview/browser/input_stream.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "jni/AwWebResourceResponse_jni.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -31,7 +32,7 @@ std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
       Java_AwWebResourceResponse_getData(env, java_object_);
   if (jstream.is_null())
     return std::unique_ptr<InputStream>();
-  return base::MakeUnique<InputStream>(jstream);
+  return std::make_unique<InputStream>(jstream);
 }
 
 bool AwWebResourceResponse::GetMimeType(JNIEnv* env,

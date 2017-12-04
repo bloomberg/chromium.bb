@@ -4,6 +4,7 @@
 
 #include "android_webview/renderer/aw_content_renderer_client.h"
 
+#include <memory>
 #include <vector>
 
 #include "android_webview/common/aw_switches.h"
@@ -19,7 +20,6 @@
 #include "android_webview/renderer/print_render_frame_observer.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -85,17 +85,17 @@ void AwContentRendererClient::RenderThreadStarted() {
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
 
-  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(visited_link_slave_->GetBindCallback(),
                          base::ThreadTaskRunnerHandle::Get());
   content::ChildThread::Get()
       ->GetServiceManagerConnection()
-      ->AddConnectionFilter(base::MakeUnique<content::SimpleConnectionFilter>(
+      ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
           std::move(registry)));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   if (!spellcheck_) {
-    spellcheck_ = base::MakeUnique<SpellCheck>(this);
+    spellcheck_ = std::make_unique<SpellCheck>(this);
     thread->AddObserver(spellcheck_.get());
   }
 #endif
@@ -168,7 +168,7 @@ void AwContentRendererClient::RenderFrameCreated(
   new AwContentSettingsClient(render_frame);
   new PrintRenderFrameObserver(render_frame);
   new printing::PrintRenderFrameHelper(
-      render_frame, base::MakeUnique<AwPrintRenderFrameHelperDelegate>());
+      render_frame, std::make_unique<AwPrintRenderFrameHelperDelegate>());
   new AwRenderFrameExt(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
@@ -301,7 +301,7 @@ std::unique_ptr<blink::WebSocketHandshakeThrottle>
 AwContentRendererClient::CreateWebSocketHandshakeThrottle() {
   if (!UsingSafeBrowsingMojoService())
     return nullptr;
-  return base::MakeUnique<safe_browsing::WebSocketSBHandshakeThrottle>(
+  return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
       safe_browsing_.get());
 }
 
@@ -315,7 +315,7 @@ bool AwContentRendererClient::WillSendRequest(
     content::RenderFrame* render_frame =
         content::RenderFrame::FromWebFrame(frame);
     throttles->push_back(
-        base::MakeUnique<safe_browsing::RendererURLLoaderThrottle>(
+        std::make_unique<safe_browsing::RendererURLLoaderThrottle>(
             safe_browsing_.get(), render_frame->GetRoutingID()));
   }
 
