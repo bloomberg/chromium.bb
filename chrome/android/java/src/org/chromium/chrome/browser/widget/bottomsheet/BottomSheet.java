@@ -517,7 +517,7 @@ public class BottomSheet
 
             if (dpPerMs > SHEET_SWIPE_MAX_DP_PER_MS) {
                 if (shouldRecordHistogram && !mIsSwipeVelocityRecorded) {
-                    recordSwipeVelocity("Android.ChromeHome.OpenSwipeVelocity.Fail",
+                    recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Fail",
                             (int) mLastSheetOpenMicrosPerDp);
                     mIsSwipeVelocityRecorded = true;
                 }
@@ -526,7 +526,7 @@ public class BottomSheet
             }
 
             if (shouldRecordHistogram && !mIsSwipeVelocityRecorded) {
-                recordSwipeVelocity("Android.ChromeHome.OpenSwipeVelocity.Success",
+                recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Success",
                         (int) mLastSheetOpenMicrosPerDp);
                 mIsSwipeVelocityRecorded = true;
             }
@@ -597,7 +597,7 @@ public class BottomSheet
                         || reason == StateChangeReason.BACK_PRESS
                         || reason == StateChangeReason.TAP_SCRIM;
                 if (mShouldRecordSwipeVelocity && shouldRecordClose) {
-                    recordSwipeVelocity("Android.ChromeHome.OpenSwipeVelocity.NoNavigation",
+                    recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.NoNavigation",
                             (int) mLastSheetOpenMicrosPerDp);
                 }
                 mShouldRecordSwipeVelocity = false;
@@ -624,7 +624,7 @@ public class BottomSheet
              */
             private void recordVelocityForNavigation() {
                 if (!mShouldRecordSwipeVelocity) return;
-                recordSwipeVelocity("Android.ChromeHome.OpenSwipeVelocity.Navigation",
+                recordSwipeVelocity("Android.ChromeHome.OpenSheetVelocity.Navigation",
                         (int) mLastSheetOpenMicrosPerDp);
                 mShouldRecordSwipeVelocity = false;
             }
