@@ -72,6 +72,7 @@ class ProgramCache;
 class ShaderTranslatorCache;
 }
 
+class GpuChannelManagerDelegate;
 class GpuMemoryBufferManager;
 class ImageFactory;
 class TransferBufferManager;
@@ -94,6 +95,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // If |surface| is not null, use it directly; in this case, the command
   // buffer gpu thread must be the same as the client thread. Otherwise create
   // a new GLSurface.
+  // |gpu_channel_manager_delegate| should be non-null when the command buffer
+  // is used in the GPU process for compositor to gpu thread communication.
   gpu::ContextResult Initialize(
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
@@ -102,6 +105,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
       InProcessCommandBuffer* share_group,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
+      GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // CommandBuffer implementation:
@@ -339,24 +343,25 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
   base::Closure context_lost_callback_;
   // Used to throttle PerformDelayedWorkOnGpuThread.
-  bool delayed_work_pending_;
-  ImageFactory* image_factory_;
+  bool delayed_work_pending_ = false;
+  ImageFactory* image_factory_ = nullptr;
+  GpuChannelManagerDelegate* gpu_channel_manager_delegate_ = nullptr;
 
   base::Closure snapshot_requested_callback_;
-  bool snapshot_requested_;
+  bool snapshot_requested_ = false;
 
   // Members accessed on the client thread:
-  GpuControlClient* gpu_control_client_;
+  GpuControlClient* gpu_control_client_ = nullptr;
 #if DCHECK_IS_ON()
-  bool context_lost_;
+  bool context_lost_ = false;
 #endif
   State last_state_;
   base::Lock last_state_lock_;
-  int32_t last_put_offset_;
+  int32_t last_put_offset_ = -1;
   Capabilities capabilities_;
-  GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  uint64_t next_fence_sync_release_;
-  uint64_t flushed_fence_sync_release_;
+  GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
+  uint64_t next_fence_sync_release_ = 1;
+  uint64_t flushed_fence_sync_release_ = 0;
 
   // Accessed on both threads:
   std::unique_ptr<CommandBufferService> command_buffer_;

@@ -47,6 +47,7 @@
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
@@ -189,17 +190,6 @@ InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
     : command_buffer_id_(CommandBufferId::FromUnsafeValue(
           g_next_command_buffer_id.GetNext() + 1)),
-      delayed_work_pending_(false),
-      image_factory_(nullptr),
-      snapshot_requested_(false),
-      gpu_control_client_(nullptr),
-#if DCHECK_IS_ON()
-      context_lost_(false),
-#endif
-      last_put_offset_(-1),
-      gpu_memory_buffer_manager_(nullptr),
-      next_fence_sync_release_(1),
-      flushed_fence_sync_release_(0),
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       service_(GetInitialService(service)),
@@ -251,8 +241,12 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
+    GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!share_group || service_.get() == share_group->service_.get());
+
+  gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
+  gpu_channel_manager_delegate_ = gpu_channel_manager_delegate;
 
   if (surface) {
     // If a surface is provided, we are running in a webview and should not have
@@ -284,8 +278,6 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
   QueueTask(true, base::Bind(&RunTaskWithResult<gpu::ContextResult>, init_task,
                              &result, &completion));
   completion.Wait();
-
-  gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
 
   if (result == gpu::ContextResult::kSuccess)
     capabilities_ = capabilities;
@@ -1036,7 +1028,15 @@ void InProcessCommandBuffer::SetSnapshotRequested() {
 void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
     SurfaceHandle parent_window,
     SurfaceHandle child_window) {
-  ::SetParent(child_window, parent_window);
+  // In the browser process call ::SetParent() directly.
+  if (!gpu_channel_manager_delegate_) {
+    ::SetParent(child_window, parent_window);
+    return;
+  }
+
+  // In the GPU process forward the request back to the browser process.
+  gpu_channel_manager_delegate_->SendAcceleratedSurfaceCreatedChildWindow(
+      parent_window, child_window);
 }
 #endif
 

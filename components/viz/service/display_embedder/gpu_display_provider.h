@@ -20,6 +20,7 @@
 
 namespace gpu {
 class GpuChannelManager;
+class GpuChannelManagerDelegate;
 class ImageFactory;
 }  // namespace gpu
 
@@ -54,6 +55,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 
   const uint32_t restart_id_;
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
+  gpu::GpuChannelManagerDelegate* const gpu_channel_manager_delegate_;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* const image_factory_;
   CompositingModeReporterImpl* const compositing_mode_reporter_;

@@ -63,6 +63,7 @@ class GLInProcessContextImpl
       const SharedMemoryLimits& mem_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
+      GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
@@ -157,6 +158,7 @@ gpu::ContextResult GLInProcessContextImpl::Initialize(
     const SharedMemoryLimits& mem_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
+    GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // If a surface is provided, we are running in a webview and should not have
   // a task runner. We must have a task runner in all other cases.
@@ -183,7 +185,8 @@ gpu::ContextResult GLInProcessContextImpl::Initialize(
 
   auto result = command_buffer_->Initialize(
       surface, is_offscreen, window, attribs, share_command_buffer,
-      gpu_memory_buffer_manager, image_factory, std::move(task_runner));
+      gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
+      std::move(task_runner));
   if (result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;

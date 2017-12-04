@@ -98,7 +98,8 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
       !window_, /* is_offscreen */
       window_, (shared_context_ ? shared_context_->context_.get() : nullptr),
       attribs_, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_,
-      image_factory_, base::ThreadTaskRunnerHandle::Get());
+      image_factory_, nullptr /* gpu_channel_manager_delegate */,
+      base::ThreadTaskRunnerHandle::Get());
 
   if (bind_result_ != gpu::ContextResult::kSuccess)
     return bind_result_;

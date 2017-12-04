@@ -22,6 +22,7 @@ class GrContext;
 
 namespace gpu {
 class GLInProcessContext;
+class GpuChannelManagerDelegate;
 class GpuMemoryBufferManager;
 class ImageFactory;
 struct SharedMemoryLimits;
@@ -33,6 +34,10 @@ class GrContextForGLES2Interface;
 
 namespace viz {
 
+// A ContextProvider used in the viz process to setup command buffers between
+// the compositor and gpu thread.
+// TODO(kylechar): Rename VizProcessContextProvider and move to
+// components/viz/service.
 class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
  public:
   InProcessContextProvider(
@@ -40,6 +45,7 @@ class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
       gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
+      gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       const gpu::SharedMemoryLimits& limits,
       InProcessContextProvider* shared_context);
 
