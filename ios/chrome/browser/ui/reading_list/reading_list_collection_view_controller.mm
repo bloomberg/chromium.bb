@@ -205,6 +205,11 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   [self.collectionView addGestureRecognizer:longPressRecognizer];
 }
 
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  [_toolbar updateHeight];
+}
+
 #pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
