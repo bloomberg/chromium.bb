@@ -221,4 +221,35 @@ TEST(BlinkEventUtilTest, WebGestureEventCoalescing) {
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }
 
+TEST(BlinkEventUtilTest, WebEventModifersAndEventFlags) {
+  using WebInputEvent = blink::WebInputEvent;
+  constexpr int kWebEventModifiersToTest[] = {WebInputEvent::kShiftKey,
+                                              WebInputEvent::kControlKey,
+                                              WebInputEvent::kAltKey,
+                                              WebInputEvent::kAltGrKey,
+                                              WebInputEvent::kMetaKey,
+                                              WebInputEvent::kCapsLockOn,
+                                              WebInputEvent::kNumLockOn,
+                                              WebInputEvent::kScrollLockOn,
+                                              WebInputEvent::kLeftButtonDown,
+                                              WebInputEvent::kMiddleButtonDown,
+                                              WebInputEvent::kRightButtonDown,
+                                              WebInputEvent::kBackButtonDown,
+                                              WebInputEvent::kForwardButtonDown,
+                                              WebInputEvent::kIsAutoRepeat};
+  // For each WebEventModifier value, test that it maps to a unique ui::Event
+  // flag, and that the flag correctly maps back to the WebEventModifier.
+  int event_flags = 0;
+  for (int event_modifier : kWebEventModifiersToTest) {
+    int event_flag = WebEventModifiersToEventFlags(event_modifier);
+
+    // |event_flag| must be unique.
+    EXPECT_EQ(event_flags & event_flag, 0);
+    event_flags |= event_flag;
+
+    // |event_flag| must map to |event_modifier|.
+    EXPECT_EQ(EventFlagsToWebEventModifiers(event_flag), event_modifier);
+  }
+}
+
 }  // namespace ui
