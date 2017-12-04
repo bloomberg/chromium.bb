@@ -1,4 +1,3 @@
-UNKNOWN_TYPE | searchPhrase |  |  | searchPhrase_1-default
 UNKNOWN_TYPE | shipto | Select a Saved Shipping Address |  | shipto_1-default
 NAME_FIRST | shippingFirstName | First Name | First Name | shipto_1-default
 NAME_LAST | shippingLastName | Last Name | Last Name | shipto_1-default

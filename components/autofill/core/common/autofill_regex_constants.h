@@ -62,6 +62,14 @@ extern const char kPhoneExtensionRe[];
 //   - https://upipayments.co.in/virtual-payment-address-vpa/
 extern const char kUPIVirtualPaymentAddressRe[];
 
+// Match the path values for form actions that look like generic search:
+//  e.g. /search
+//       /search/
+//       /search/products...
+//       /products/search/
+//       /blah/search_all.jsp
+extern const char kUrlSearchActionRe[];
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_REGEX_CONSTANTS_H_

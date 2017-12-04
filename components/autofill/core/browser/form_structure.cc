@@ -32,6 +32,8 @@
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -645,10 +647,11 @@ bool FormStructure::ShouldBeParsed() const {
     return false;
   }
 
-  // Rule out http(s)://*/search?...
-  //  e.g. http://www.google.com/search?q=...
-  //       http://search.yahoo.com/search?p=...
-  if (target_url_.path_piece() == "/search") {
+  // Rule out search forms.
+  static const base::string16 kUrlSearchActionPattern =
+      base::UTF8ToUTF16(kUrlSearchActionRe);
+  if (MatchesPattern(base::UTF8ToUTF16(target_url_.path_piece()),
+                     kUrlSearchActionPattern)) {
     return false;
   }
 
