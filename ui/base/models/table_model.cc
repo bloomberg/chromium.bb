@@ -50,28 +50,6 @@ base::string16 TableModel::GetTooltip(int row) {
   return base::string16();
 }
 
-bool TableModel::ShouldIndent(int row) {
-  return false;
-}
-
-bool TableModel::HasGroups() {
-  return false;
-}
-
-TableModel::Groups TableModel::GetGroups() {
-  // If you override HasGroups to return true, you must override this as
-  // well.
-  NOTREACHED();
-  return std::vector<Group>();
-}
-
-int TableModel::GetGroupID(int row) {
-  // If you override HasGroups to return true, you must override this as
-  // well.
-  NOTREACHED();
-  return 0;
-}
-
 int TableModel::CompareValues(int row1, int row2, int column_id) {
   DCHECK(row1 >= 0 && row1 < RowCount() &&
          row2 >= 0 && row2 < RowCount());
