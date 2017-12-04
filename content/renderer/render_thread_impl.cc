@@ -280,6 +280,9 @@ RendererBlinkPlatformImpl* g_current_blink_platform_impl_for_testing;
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl>>::DestructorAtExit
     lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<scoped_refptr<base::SingleThreadTaskRunner>>::
+    DestructorAtExit g_main_task_runner = LAZY_INSTANCE_INITIALIZER;
+
 // v8::MemoryPressureLevel should correspond to base::MemoryPressureListener.
 static_assert(static_cast<v8::MemoryPressureLevel>(
     base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) ==
@@ -613,6 +616,12 @@ void RenderThreadImpl::SetRendererBlinkPlatformImplForTesting(
   g_current_blink_platform_impl_for_testing = blink_platform_impl;
 }
 
+// static
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImpl::GetMainTaskRunner() {
+  return g_main_task_runner.Get();
+}
+
 // In single-process mode used for debugging, we don't pass a renderer client
 // ID via command line because RenderThreadImpl lives in the same process as
 // the browser
@@ -675,6 +684,7 @@ void RenderThreadImpl::Init(
 #endif
 
   lazy_tls.Pointer()->Set(this);
+  g_main_task_runner.Get() = base::MessageLoop::current()->task_runner();
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
@@ -1005,7 +1015,9 @@ void RenderThreadImpl::Init(
   }
 }
 
-RenderThreadImpl::~RenderThreadImpl() = default;
+RenderThreadImpl::~RenderThreadImpl() {
+  g_main_task_runner.Get() = nullptr;
+}
 
 void RenderThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();

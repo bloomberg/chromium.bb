@@ -18,8 +18,10 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/resource_type.h"
 #include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "ui/base/window_open_disposition.h"
@@ -336,6 +338,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Whether the delegate is being destroyed, in which case the RenderFrameHost
   // should not be asked to create a RenderFrame.
   virtual bool IsBeingDestroyed() const;
+
+  // Notifies that the render frame started loading a subresource.
+  virtual void SubresourceResponseStarted(const GURL& url,
+                                          const GURL& referrer,
+                                          const std::string& method,
+                                          ResourceType resource_type,
+                                          const std::string& ip,
+                                          net::CertStatus cert_status) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

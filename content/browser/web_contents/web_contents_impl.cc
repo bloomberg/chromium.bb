@@ -3423,11 +3423,8 @@ void WebContentsImpl::LoadStateChanged(
 }
 
 void WebContentsImpl::DidGetResourceResponseStart(
-  const ResourceRequestDetails& details) {
+    const ResourceRequestDetails& details) {
   SetNotWaitingForResponse();
-  controller_.ssl_manager()->DidStartResourceResponse(
-      details.url, details.has_certificate, details.ssl_cert_status,
-      details.resource_type);
 
   for (auto& observer : observers_)
     observer.DidGetResourceResponseStart(details);
@@ -3698,6 +3695,10 @@ void WebContentsImpl::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
+
+  controller_.ssl_manager()->DidStartResourceResponse(
+      navigation_handle->GetURL(),
+      net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
 }
 
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
@@ -3998,6 +3999,15 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
                             initial_rect, kUserGesture, &ignored_was_blocked);
   // Note that the |delegate_| could have deleted |view_source_contents| during
   // AddNewContents method call.
+}
+
+void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
+                                                 const GURL& referrer,
+                                                 const std::string& method,
+                                                 ResourceType resource_type,
+                                                 const std::string& ip,
+                                                 net::CertStatus cert_status) {
+  controller_.ssl_manager()->DidStartResourceResponse(url, cert_status);
 }
 
 #if defined(OS_ANDROID)
