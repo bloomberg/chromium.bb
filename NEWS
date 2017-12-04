@@ -4,13 +4,21 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/14?closed=1][the list of closed issues]].
 
 ** New features
+- Add support for inpos and outpos checking in ~lou_checkyaml~ thanks
+  to Bue Vester-Andersen.
 ** Bug fixes
+- outputPositions are now calculated based on inputPositions thanks to
+  Bert Frees. This avoids a whole class of bugs that previously
+  plagued the outputPositions. This fix also obviates the need for the
+  ~pass1Only~ flag. See below for the deprecation notice.
 ** Braille table improvements
 - Addition of Nemeth and Kangxi radical characters and other
   improvements to Chinese braille (~zh-tw.ctb~) thanks to Bo-Cheng
   Jhan and 黃偉豪.
 - Improvements to the Spanish chardefs table thanks to Luis Lorente
   Barajas and Simon Aittamaa.
+- Fixed a lowercase ó in Spanish first reported for NVDA thanks to
+  Sukil Etxenike.
 - New Norwegian 6-dot display braille table for Braillo embossers
   thanks to Lars Bjørndal
 - Added a bunch of whitespace-like codepoints as spaces thanks to
@@ -26,7 +34,7 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 *** Improved documentation
 - Bue Vester-Andersen added some notes about back-translation and
   documented all possible values of the ~mode~ parameter. Also the
-  description of decpoint and litdigit was improved
+  description of ~decpoint~ and ~litdigit~ was improved
 - The ~match~ opcode is now documented
 
 *** lou_maketable
@@ -45,7 +53,8 @@ Thanks to Davy Kager building with nmake should work again
 ** Deprecation notice
 The ~pass1Only~ flag has been deprecated. Its use should be avoided,
 and it will be completely removed from the code in the next version of
-Liblouis.
+Liblouis. When using the ~pass1Only~ flag in this release you will get
+a warning.
 
 ** Backwards incompatible changes
 
