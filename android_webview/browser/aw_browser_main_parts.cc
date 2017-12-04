@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_browser_main_parts.h"
 
+#include <memory>
+
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_terminator.h"
 #include "android_webview/browser/aw_content_browser_client.h"
@@ -106,7 +108,7 @@ int AwBrowserMainParts::PreCreateThreads() {
           switches::kWebViewSandboxedRenderer)) {
     // Create the renderers crash manager on the UI thread.
     breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
-        base::MakeUnique<AwBrowserTerminator>(crash_dir));
+        std::make_unique<AwBrowserTerminator>(crash_dir));
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -4,13 +4,13 @@
 
 #include "android_webview/browser/net/aw_request_interceptor.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
@@ -103,7 +103,7 @@ class ShouldInterceptRequestAdaptor
       std::unique_ptr<AwWebResourceResponse> response) {
     if (response) {
       callback_.Run(
-          base::MakeUnique<StreamReaderJobDelegateImpl>(std::move(response)));
+          std::make_unique<StreamReaderJobDelegateImpl>(std::move(response)));
     } else {
       callback_.Run(nullptr);
     }
@@ -174,10 +174,10 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
                                          referrer.spec(), true);
   }
   request->SetUserData(kRequestAlreadyHasJobDataKey,
-                       base::MakeUnique<base::SupportsUserData::Data>());
+                       std::make_unique<base::SupportsUserData::Data>());
   return new AndroidStreamReaderURLRequestJob(
       request, network_delegate,
-      base::MakeUnique<ShouldInterceptRequestAdaptor>(
+      std::make_unique<ShouldInterceptRequestAdaptor>(
           std::move(io_thread_client)),
       true);
 }

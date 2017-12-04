@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/net/android_stream_reader_url_request_job.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -14,7 +15,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -157,7 +157,7 @@ void AndroidStreamReaderURLRequestJob::Kill() {
 
 std::unique_ptr<InputStreamReader>
 AndroidStreamReaderURLRequestJob::CreateStreamReader(InputStream* stream) {
-  return base::MakeUnique<InputStreamReader>(stream);
+  return std::make_unique<InputStreamReader>(stream);
 }
 
 void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(

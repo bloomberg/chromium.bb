@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -256,7 +255,7 @@ int AwPermissionManager::RequestPermissions(
 
   const GURL& embedding_origin = LastCommittedOrigin(render_frame_host);
 
-  auto pending_request = base::MakeUnique<PendingRequest>(
+  auto pending_request = std::make_unique<PendingRequest>(
       permissions, requesting_origin, embedding_origin,
       GetRenderProcessID(render_frame_host),
       GetRenderFrameID(render_frame_host), callback);

@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -68,7 +69,7 @@ void InsertRuleToTrie(const std::vector<base::StringPiece>& components,
     std::string component = hostcomp->as_string();
     auto child_node = node->children.find(component);
     if (child_node == node->children.end()) {
-      std::unique_ptr<TrieNode> temp = base::MakeUnique<TrieNode>();
+      std::unique_ptr<TrieNode> temp = std::make_unique<TrieNode>();
       TrieNode* current = temp.get();
       node->children.emplace(component, std::move(temp));
       node = current;
@@ -183,7 +184,7 @@ AwSafeBrowsingWhitelistManager::AwSafeBrowsingWhitelistManager(
     : background_task_runner_(background_task_runner),
       io_task_runner_(io_task_runner),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      whitelist_(base::MakeUnique<TrieNode>()) {}
+      whitelist_(std::make_unique<TrieNode>()) {}
 
 AwSafeBrowsingWhitelistManager::~AwSafeBrowsingWhitelistManager() {}
 
@@ -199,7 +200,7 @@ void AwSafeBrowsingWhitelistManager::BuildWhitelist(
     const base::Callback<void(bool)>& callback) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
-  std::unique_ptr<TrieNode> whitelist(base::MakeUnique<TrieNode>());
+  std::unique_ptr<TrieNode> whitelist(std::make_unique<TrieNode>());
   bool success = AddRules(rules, whitelist.get());
   DCHECK(!whitelist->is_terminal);
   DCHECK(!whitelist->match_prefix);

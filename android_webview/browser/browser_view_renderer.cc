@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/browser_view_renderer_client.h"
@@ -12,7 +13,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
@@ -137,7 +137,7 @@ void BrowserViewRenderer::RegisterWithWebContents(
     content::WebContents* web_contents) {
   web_contents->SetUserData(
       kBrowserViewRendererUserDataKey,
-      base::MakeUnique<BrowserViewRendererUserData>(this));
+      std::make_unique<BrowserViewRendererUserData>(this));
 }
 
 void BrowserViewRenderer::TrimMemory() {
@@ -252,7 +252,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   }
 
   allow_async_draw_ = true;
-  std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
+  std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame.layer_tree_frame_sink_id, std::move(frame.frame),
       compositor_id_, viewport_rect_for_tile_priority.IsEmpty(),
       transform_for_tile_priority, offscreen_pre_raster_,

@@ -13,7 +13,6 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,7 +76,7 @@ class UserData : public base::SupportsUserData::Data {
 void AwContentsClientBridge::Associate(WebContents* web_contents,
                                        AwContentsClientBridge* handler) {
   web_contents->SetUserData(kAwContentsClientBridge,
-                            base::MakeUnique<UserData>(handler));
+                            std::make_unique<UserData>(handler));
 }
 
 // static
@@ -148,7 +147,7 @@ void AwContentsClientBridge::AllowCertificateError(
   // We need to add the callback before making the call to java side,
   // as it may do a synchronous callback prior to returning.
   int request_id = pending_cert_error_callbacks_.Add(
-      base::MakeUnique<CertErrorCallback>(callback));
+      std::make_unique<CertErrorCallback>(callback));
   *cancel_request = !Java_AwContentsClientBridge_allowCertificateError(
       env, obj, cert_error, jcert, jurl, request_id);
   // if the request is cancelled, then cancel the stored callback
@@ -297,7 +296,7 @@ void AwContentsClientBridge::RunJavaScriptDialog(
   }
 
   int callback_id = pending_js_dialog_callbacks_.Add(
-      base::MakeUnique<content::JavaScriptDialogManager::DialogClosedCallback>(
+      std::make_unique<content::JavaScriptDialogManager::DialogClosedCallback>(
           std::move(callback)));
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, origin_url.spec()));
@@ -346,7 +345,7 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
       l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE);
 
   int callback_id = pending_js_dialog_callbacks_.Add(
-      base::MakeUnique<content::JavaScriptDialogManager::DialogClosedCallback>(
+      std::make_unique<content::JavaScriptDialogManager::DialogClosedCallback>(
           std::move(callback)));
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, origin_url.spec()));
@@ -455,7 +454,7 @@ void AwContentsClientBridge::OnSafeBrowsingHit(
     const safe_browsing::SBThreatType& threat_type,
     const SafeBrowsingActionCallback& callback) {
   int request_id = safe_browsing_callbacks_.Add(
-      base::MakeUnique<SafeBrowsingActionCallback>(callback));
+      std::make_unique<SafeBrowsingActionCallback>(callback));
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();

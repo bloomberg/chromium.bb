@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/hardware_renderer.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/browser/aw_gl_surface.h"
@@ -12,7 +13,6 @@
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/surfaces_instance.h"
 #include "android_webview/public/browser/draw_gl.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -29,7 +29,7 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
       frame_sink_id_(surfaces_->AllocateFrameSinkId()),
       local_surface_id_allocator_(
-          base::MakeUnique<viz::LocalSurfaceIdAllocator>()),
+          std::make_unique<viz::LocalSurfaceIdAllocator>()),
       last_committed_layer_tree_frame_sink_id_(0u),
       last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
