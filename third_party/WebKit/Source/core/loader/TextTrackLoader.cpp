@@ -69,7 +69,7 @@ void TextTrackLoader::CancelLoad() {
 bool TextTrackLoader::RedirectReceived(Resource* resource,
                                        const ResourceRequest& request,
                                        const ResourceResponse&) {
-  DCHECK_EQ(this->GetResource(), resource);
+  DCHECK_EQ(GetResource(), resource);
   if (resource->GetResourceRequest().GetFetchRequestMode() ==
           network::mojom::FetchRequestMode::kCORS ||
       GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(request.Url()))
@@ -85,7 +85,7 @@ bool TextTrackLoader::RedirectReceived(Resource* resource,
 void TextTrackLoader::DataReceived(Resource* resource,
                                    const char* data,
                                    size_t length) {
-  DCHECK_EQ(this->GetResource(), resource);
+  DCHECK_EQ(GetResource(), resource);
 
   if (state_ == kFailed)
     return;
@@ -110,7 +110,7 @@ void TextTrackLoader::CorsPolicyPreventedLoad(SecurityOrigin* security_origin,
 }
 
 void TextTrackLoader::NotifyFinished(Resource* resource) {
-  DCHECK_EQ(this->GetResource(), resource);
+  DCHECK_EQ(GetResource(), resource);
   if (cue_parser_)
     cue_parser_->Flush();
 

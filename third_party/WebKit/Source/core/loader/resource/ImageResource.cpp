@@ -329,7 +329,7 @@ void ImageResource::AppendData(const char* data, size_t length) {
 
     // Update the image immediately if needed.
     if (GetContent()->ShouldUpdateImageImmediately()) {
-      UpdateImage(this->Data(), ImageResourceContent::kUpdateImage, false);
+      UpdateImage(Data(), ImageResourceContent::kUpdateImage, false);
       return;
     }
 
@@ -357,7 +357,7 @@ void ImageResource::FlushImageIfNeeded(TimerBase*) {
   // to call |updateImage()|.
   if (IsLoading()) {
     last_flush_time_ = WTF::MonotonicallyIncreasingTime();
-    UpdateImage(this->Data(), ImageResourceContent::kUpdateImage, false);
+    UpdateImage(Data(), ImageResourceContent::kUpdateImage, false);
   }
 }
 
