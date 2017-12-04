@@ -284,6 +284,11 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   info = info.makeAlphaType(alpha_type);
 
   // For premul to unpremul, we have to readback the pixels.
+  // For unpremul to premul, we can either readback the pixels or draw onto a
+  // surface. As shown  in
+  // https://fiddle.skia.org/c/1ec3c61ed08f7863d43b9f49ab120a0a, drawing on a
+  // surface and getting a snapshot is slower if the image is small. Therefore,
+  // for small images (< 128x128 pixels), we still do read back.
   if (alpha_type == kUnpremul_SkAlphaType ||
       (image->width() * image->height() < 16384)) {
     // Set the color space of the ImageInfo to nullptr to unpremul in gamma
@@ -294,12 +299,6 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
       return nullptr;
     return NewImageFromRaster(info, std::move(dst_pixels));
   }
-
-  // For unpremul to premul, we can either readback the pixels or draw onto a
-  // surface. As shown  in
-  // https://fiddle.skia.org/c/1ec3c61ed08f7863d43b9f49ab120a0a, drawing on a
-  // surface and getting a snapshot is slower if the image is small. Therefore,
-  // for small images (< 128x128 pixels), we still do read back.
 
   // Draw on a surface. Avoid sRGB gamma transfer curve.
   if (SkColorSpace::Equals(info.colorSpace(), SkColorSpace::MakeSRGB().get()))
@@ -766,13 +765,17 @@ ImageBitmap::ImageBitmap(ImageData* data,
   if (!data->ImageDataInCanvasColorSettings(
           parsed_options.color_params.ColorSpace(),
           parsed_options.color_params.PixelFormat(), image_pixels->Data(),
-          kN32ColorType, &src_rect))
+          kN32ColorType, &src_rect,
+          parsed_options.premultiply_alpha ? kPremultiplyAlpha
+                                           : kDontPremultiplyAlpha))
     return;
 
   // Create Image object
   SkImageInfo info = SkImageInfo::Make(
       src_rect.Width(), src_rect.Height(),
-      parsed_options.color_params.GetSkColorType(), kUnpremul_SkAlphaType,
+      parsed_options.color_params.GetSkColorType(),
+      parsed_options.premultiply_alpha ? kPremul_SkAlphaType
+                                       : kUnpremul_SkAlphaType,
       parsed_options.color_params.GetSkColorSpaceForSkSurfaces());
   image_ = NewImageFromRaster(info, std::move(image_pixels));
   if (!image_)
@@ -788,12 +791,6 @@ ImageBitmap::ImageBitmap(ImageData* data,
   // resize if down-scaling
   if (down_scaling)
     image_ = ScaleImage(std::move(image_), parsed_options);
-  if (!image_)
-    return;
-
-  // premultiply if needed
-  if (parsed_options.premultiply_alpha)
-    image_ = GetImageWithAlphaDisposition(std::move(image_), kPremultiplyAlpha);
   if (!image_)
     return;
 
