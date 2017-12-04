@@ -139,7 +139,8 @@ class PartitionAllocTest : public testing::Test {
                              bucket->active_pages_head->num_allocated_slots));
     EXPECT_EQ(nullptr, bucket->active_pages_head->freelist_head);
     EXPECT_TRUE(bucket->active_pages_head);
-    EXPECT_TRUE(bucket->active_pages_head != GetSentinelPageForTesting());
+    EXPECT_TRUE(bucket->active_pages_head !=
+                PartitionPage::get_sentinel_page());
     return bucket->active_pages_head;
   }
 
@@ -380,7 +381,7 @@ TEST(PageAllocatorTest, MAYBE_ReserveAddressSpace) {
 // Check that the most basic of allocate / free pairs work.
 TEST_F(PartitionAllocTest, Basic) {
   PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
-  PartitionPage* seedPage = GetSentinelPageForTesting();
+  PartitionPage* seedPage = PartitionPage::get_sentinel_page();
 
   EXPECT_FALSE(bucket->empty_pages_head);
   EXPECT_FALSE(bucket->decommitted_pages_head);
@@ -445,7 +446,7 @@ TEST_F(PartitionAllocTest, MultiPages) {
   PartitionPage* page = GetFullPage(kTestAllocSize);
   FreeFullPage(page);
   EXPECT_TRUE(bucket->empty_pages_head);
-  EXPECT_EQ(GetSentinelPageForTesting(), bucket->active_pages_head);
+  EXPECT_EQ(PartitionPage::get_sentinel_page(), bucket->active_pages_head);
   EXPECT_EQ(nullptr, page->next_page);
   EXPECT_EQ(0, page->num_allocated_slots);
 
@@ -464,7 +465,7 @@ TEST_F(PartitionAllocTest, MultiPages) {
   FreeFullPage(page);
   EXPECT_EQ(0, page->num_allocated_slots);
   EXPECT_TRUE(bucket->empty_pages_head);
-  EXPECT_EQ(GetSentinelPageForTesting(), bucket->active_pages_head);
+  EXPECT_EQ(PartitionPage::get_sentinel_page(), bucket->active_pages_head);
 
   // Allocate a new page, it should pull from the freelist.
   page = GetFullPage(kTestAllocSize);
@@ -560,7 +561,7 @@ TEST_F(PartitionAllocTest, FreePageListPageTransitions) {
   EXPECT_EQ(pages[numToFillFreeListPage - 1], bucket->active_pages_head);
   for (i = 0; i < numToFillFreeListPage; ++i)
     FreeFullPage(pages[i]);
-  EXPECT_EQ(GetSentinelPageForTesting(), bucket->active_pages_head);
+  EXPECT_EQ(PartitionPage::get_sentinel_page(), bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
 
   // Allocate / free in a different bucket size so we get control of a
@@ -578,7 +579,7 @@ TEST_F(PartitionAllocTest, FreePageListPageTransitions) {
 
   for (i = 0; i < numToFillFreeListPage; ++i)
     FreeFullPage(pages[i]);
-  EXPECT_EQ(GetSentinelPageForTesting(), bucket->active_pages_head);
+  EXPECT_EQ(PartitionPage::get_sentinel_page(), bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
 }
 
@@ -1301,14 +1302,14 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 
   EXPECT_TRUE(bucket->empty_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head->next_page);
-  EXPECT_EQ(GetSentinelPageForTesting(), bucket->active_pages_head);
+  EXPECT_EQ(PartitionPage::get_sentinel_page(), bucket->active_pages_head);
 
   // At this moment, we have two decommitted pages, on the empty list.
   ptr = generic_allocator.root()->Alloc(size, type_name);
   EXPECT_TRUE(ptr);
   generic_allocator.root()->Free(ptr);
 
-  EXPECT_EQ(GetSentinelPageForTesting(), bucket->active_pages_head);
+  EXPECT_EQ(PartitionPage::get_sentinel_page(), bucket->active_pages_head);
   EXPECT_TRUE(bucket->empty_pages_head);
   EXPECT_TRUE(bucket->decommitted_pages_head);
 
