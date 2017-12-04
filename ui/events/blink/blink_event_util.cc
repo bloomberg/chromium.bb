@@ -1079,6 +1079,8 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= EF_CONTROL_DOWN;
   if (modifiers & blink::WebInputEvent::kAltKey)
     flags |= EF_ALT_DOWN;
+  if (modifiers & blink::WebInputEvent::kAltGrKey)
+    flags |= EF_ALTGR_DOWN;
   if (modifiers & blink::WebInputEvent::kMetaKey)
     flags |= EF_COMMAND_DOWN;
   if (modifiers & blink::WebInputEvent::kCapsLockOn)
