@@ -200,16 +200,10 @@ function (add_gas_asm_library lib_name asm_sources dependent_target)
 endfunction ()
 
 # Terminates generation if nasm found in PATH does not meet requirements.
-# Currently checks only for presence of required object formats and support for
-# the -Ox argument (multipass optimization).
+# Currently checks only for presence of required object formats.
 function (test_nasm)
   execute_process(COMMAND ${AS_EXECUTABLE} -hf
                   OUTPUT_VARIABLE nasm_helptext)
-
-  if (NOT "${nasm_helptext}" MATCHES "-Ox")
-    message(FATAL_ERROR
-            "Unsupported nasm: multipass optimization not supported.")
-  endif ()
 
   if ("${AOM_TARGET_CPU}" STREQUAL "x86")
     if ("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
