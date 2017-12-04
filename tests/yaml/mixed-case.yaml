@@ -31,6 +31,21 @@ tests:
   - [mIt, t, {xfail: "returns 'mit' instead"}]
   - [miT, t, {xfail: "returns 'mit' instead"}]
 
+# here's another test similar to the first one just using a different
+# input text
+table: |
+  uplow Aa 1
+  uplow Mm 134
+  uplow Nn  1345
+  word man 134
+
+tests:
+  - [man, m]
+  - [Man, m, {xfail: "returns 'man' instead"}]
+  - [MAN, m]
+  - [maN, m, {xfail: "returns 'man' instead"}]
+  - [mAn, m, {xfail: "returns 'man' instead"}]
+
 # when enabling capitalization using a capsletter rule everything
 # works as expected
 table: |
@@ -48,18 +63,21 @@ tests:
   - [mIt, m$it]
   - [miT, mi$t]
 
-# here's another test similar to the first one just using a different
-# input text
+# Now, let's try to add capitalization and remove it later in a pass2
 table: |
-  uplow Aa 1
+  uplow Ii 24
   uplow Mm 134
-  uplow Nn  1345
-  word man 134
-  
+  uplow Tt  2345
+  always mit 2345
+  sign $ ef
+  capsletter ef
+  noback pass2 @ef ?
+
 tests:
-  - [man, m]
-  - [Man, m, {xfail: "returns 'man' instead"}]
-  - [MAN, m]
-  - [maN, m, {xfail: "returns 'man' instead"}]
-  - [mAn, m, {xfail: "returns 'man' instead"}]
+  - [mit, t]
+  - [Mit, t]
+  - [MIT, t]
+  - [mIt, t]
+  - [miT, t]
+
 
