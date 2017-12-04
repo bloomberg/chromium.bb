@@ -24,6 +24,7 @@
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
+#include "content/public/common/content_features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -423,7 +424,15 @@ class ResourceScheduler::Client {
             resource_scheduler->throttle_delayable_.GetMaxDelayableRequests(
                 network_quality_estimator)),
         resource_scheduler_(resource_scheduler),
-        weak_ptr_factory_(this) {}
+        weak_ptr_factory_(this) {
+    if (base::FeatureList::IsEnabled(
+            features::kRendererSideResourceScheduler)) {
+      // When kRendererSideResourceScheduler is enabled, "layout blocking"
+      // concept is moved to the renderer side, so the shceduler works always
+      // with the normal mode.
+      has_html_body_ = true;
+    }
+  }
 
   ~Client() {}
 
@@ -488,6 +497,14 @@ class ResourceScheduler::Client {
 
   void OnNavigate() {
     has_html_body_ = false;
+    if (base::FeatureList::IsEnabled(
+            features::kRendererSideResourceScheduler)) {
+      // When kRendererSideResourceScheduler is enabled, "layout blocking"
+      // concept is moved to the renderer side, so the shceduler works always
+      // with the normal mode.
+      has_html_body_ = true;
+    }
+
     is_loaded_ = false;
     max_delayable_requests_ =
         resource_scheduler_->throttle_delayable_.GetMaxDelayableRequests(
@@ -960,6 +977,8 @@ class ResourceScheduler::Client {
   bool is_loaded_;
   // Tracks if the main HTML parser has reached the body which marks the end of
   // layout-blocking resources.
+  // This is disabled and the is always true when kRendererSideResourceScheduler
+  // is enabled.
   bool has_html_body_;
   bool using_spdy_proxy_;
   RequestQueue pending_requests_;

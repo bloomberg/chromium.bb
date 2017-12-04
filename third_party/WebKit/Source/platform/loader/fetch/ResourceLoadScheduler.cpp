@@ -38,6 +38,19 @@ constexpr base::HistogramBase::Sample kMaximumReportSize1G =
 // Bucket count for metrics.
 constexpr int32_t kReportBucketCount = 25;
 
+constexpr char kRendererSideResourceScheduler[] =
+    "RendererSideResourceScheduler";
+
+// These values are copied from resource_scheduler.cc, but the meaning is a bit
+// different because ResourceScheduler counts the running delayable requests
+// while ResourceLoadScheduler counts all the running requests.
+constexpr size_t kTightLimitForRendererSideResourceScheduler = 1u;
+constexpr size_t kLimitForRendererSideResourceScheduler = 10u;
+
+constexpr char kTightLimitForRendererSideResourceSchedulerName[] =
+    "tight_limit";
+constexpr char kLimitForRendererSideResourceSchedulerName[] = "limit";
+
 // Represents a resource load circumstance, e.g. from main frame vs sub-frames,
 // or on throttled state vs on not-throttled state.
 // Used to report histograms. Do not reorder or insert new items.
@@ -54,14 +67,15 @@ base::HistogramBase::Sample ToSample(ReportCircumstance circumstance) {
   return static_cast<base::HistogramBase::Sample>(circumstance);
 }
 
-uint32_t GetFieldTrialUint32Param(const char* name, uint32_t default_param) {
+uint32_t GetFieldTrialUint32Param(const char* trial_name,
+                                  const char* parameter_name,
+                                  uint32_t default_param) {
   std::map<std::string, std::string> trial_params;
-  bool result =
-      base::GetFieldTrialParams(kResourceLoadSchedulerTrial, &trial_params);
+  bool result = base::GetFieldTrialParams(trial_name, &trial_params);
   if (!result)
     return default_param;
 
-  const auto& found = trial_params.find(name);
+  const auto& found = trial_params.find(parameter_name);
   if (found == trial_params.end())
     return default_param;
 
@@ -75,16 +89,17 @@ uint32_t GetFieldTrialUint32Param(const char* name, uint32_t default_param) {
 uint32_t GetOutstandingThrottledLimit(FetchContext* context) {
   DCHECK(context);
 
-  uint32_t main_frame_limit =
-      GetFieldTrialUint32Param(kOutstandingLimitForBackgroundMainFrameName,
-                               kOutstandingLimitForBackgroundFrameDefault);
+  uint32_t main_frame_limit = GetFieldTrialUint32Param(
+      kResourceLoadSchedulerTrial, kOutstandingLimitForBackgroundMainFrameName,
+      kOutstandingLimitForBackgroundFrameDefault);
   if (context->IsMainFrame())
     return main_frame_limit;
 
   // We do not have a fixed default limit for sub-frames, but use the limit for
   // the main frame so that it works as how previous versions that haven't
   // consider sub-frames' specific limit work.
-  return GetFieldTrialUint32Param(kOutstandingLimitForBackgroundSubFrameName,
+  return GetFieldTrialUint32Param(kResourceLoadSchedulerTrial,
+                                  kOutstandingLimitForBackgroundSubFrameName,
                                   main_frame_limit);
 }
 
@@ -331,15 +346,26 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
   traffic_monitor_ = std::make_unique<ResourceLoadScheduler::TrafficMonitor>(
       context_->IsMainFrame());
 
-  if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
+  if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled() &&
+      !Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
     return;
+  }
 
   auto* scheduler = context->GetFrameScheduler();
   if (!scheduler)
     return;
 
-  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled())
+  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
     policy_ = context->InitialLoadThrottlingPolicy();
+    outstanding_limit_ =
+        GetFieldTrialUint32Param(kRendererSideResourceScheduler,
+                                 kLimitForRendererSideResourceSchedulerName,
+                                 kLimitForRendererSideResourceScheduler);
+    tight_outstanding_limit_ = GetFieldTrialUint32Param(
+        kRendererSideResourceScheduler,
+        kTightLimitForRendererSideResourceSchedulerName,
+        kTightLimitForRendererSideResourceScheduler);
+  }
 
   is_enabled_ = true;
   scheduler->AddThrottlingObserver(WebFrameScheduler::ObserverType::kLoader,
@@ -612,6 +638,10 @@ void ResourceLoadScheduler::MaybeRun() {
         if (running_requests_.size() >= outstanding_limit_)
           has_enough_running_requets = true;
         break;
+    }
+    if (IsThrottablePriority(pending_requests_.begin()->priority) &&
+        has_enough_running_requets) {
+      break;
     }
     if (IsThrottablePriority(pending_requests_.begin()->priority) &&
         has_enough_running_requets) {
