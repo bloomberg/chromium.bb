@@ -20,9 +20,6 @@
           }
           return promise;
       }
-
-      if (!window.testRunner)
-          setTimeout(performActions, 2000);
   `);
 
   PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);

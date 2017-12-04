@@ -13,9 +13,6 @@
           element.innerHTML = "Test data";
           document.body.appendChild(element);
       }
-
-      if (!window.testRunner)
-          setTimeout(performActions, 2000);
   `);
 
   PerformanceTestRunner.performActionsAndPrint('performActions()', 'ParseHTML');

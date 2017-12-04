@@ -3,15 +3,13 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Tests the Timeline API timeStamp feature\n`);
+  TestRunner.addResult(`Tests instrumentation for Timeline HitTest event.\n`);
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
+  await TestRunner.loadHTML(`<p>A text</p>`);
   await TestRunner.evaluateInPagePromise(`
-      function performActions()
-      {
-          console.timeStamp("TIME STAMP");
-      }
-  `);
-
-  PerformanceTestRunner.performActionsAndPrint('performActions()', 'TimeStamp', true);
+    function performActions() {
+      var e = document.elementFromPoint(10, 10);
+    }`);
+  PerformanceTestRunner.performActionsAndPrint('performActions()', 'HitTest');
 })();

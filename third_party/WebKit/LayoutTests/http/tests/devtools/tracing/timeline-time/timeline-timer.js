@@ -24,9 +24,6 @@
           }
           return promise;
       }
-
-      if (!window.testRunner)
-          setTimeout(performActions, 2000);
   `);
 
   UI.panels.timeline._disableCaptureJSProfileSetting.set(true);

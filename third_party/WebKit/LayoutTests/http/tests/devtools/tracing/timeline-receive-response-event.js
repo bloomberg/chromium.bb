@@ -25,9 +25,6 @@
           }
           return promise;
       }
-
-      if (!window.testRunner)
-          setTimeout(performActions, 3000);
   `);
 
   UI.viewManager.showView('timeline');
