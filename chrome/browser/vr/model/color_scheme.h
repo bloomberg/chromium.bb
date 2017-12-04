@@ -108,6 +108,8 @@ struct ColorScheme {
   SkColor omnibox_text;
   SkColor omnibox_suggestion_content;
   SkColor omnibox_suggestion_description;
+
+  SkColor cursor;
 };
 
 }  // namespace vr

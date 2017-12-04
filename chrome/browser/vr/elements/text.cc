@@ -13,6 +13,10 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
 
+namespace {
+constexpr float kCursorWidthRatio = 0.07f;
+}
+
 namespace vr {
 
 class TextTexture : public UiTexture {
@@ -29,10 +33,19 @@ class TextTexture : public UiTexture {
   }
 
   void SetMultiLine(bool multiline) { SetAndDirty(&multiline_, multiline); }
+  void SetCursorEnabled(bool enabled) {
+    SetAndDirty(&cursor_enabled_, enabled);
+  }
+
+  void SetCursorPosition(int position) {
+    SetAndDirty(&cursor_position_, position);
+  }
 
   void SetTextWidth(float width) { SetAndDirty(&text_width_, width); }
 
   gfx::SizeF GetDrawnSize() const override { return size_; }
+
+  gfx::Rect get_cursor_bounds() { return cursor_bounds_; }
 
   // This method does all text preparation for the element other than drawing to
   // the texture. This allows for deeper unit testing of the Text element
@@ -56,6 +69,9 @@ class TextTexture : public UiTexture {
   TextAlignment alignment_ = kTextAlignmentCenter;
   bool multiline_ = true;
   SkColor color_ = SK_ColorBLACK;
+  bool cursor_enabled_ = false;
+  int cursor_position_ = 0;
+  gfx::Rect cursor_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TextTexture);
 };
@@ -79,6 +95,25 @@ void Text::SetTextAlignment(UiTexture::TextAlignment alignment) {
 
 void Text::SetMultiLine(bool multiline) {
   texture_->SetMultiLine(multiline);
+}
+
+void Text::SetCursorEnabled(bool enabled) {
+  texture_->SetCursorEnabled(enabled);
+}
+
+void Text::SetCursorPosition(int position) {
+  texture_->SetCursorPosition(position);
+}
+
+gfx::RectF Text::GetCursorBounds() {
+  // Note that gfx:: cursor bounds always indicate a one-pixel width, so we
+  // override the width here to be a percentage of height for the sake of
+  // arbitrary texture sizes.
+  gfx::Rect bounds = texture_->get_cursor_bounds();
+  float scale = size().width() / texture_->GetDrawnSize().width();
+  return gfx::RectF(
+      bounds.CenterPoint().x() * scale, bounds.CenterPoint().y() * scale,
+      bounds.height() * scale * kCursorWidthRatio, bounds.height() * scale);
 }
 
 void Text::OnSetSize(gfx::SizeF size) {
@@ -112,6 +147,13 @@ std::vector<std::unique_ptr<gfx::RenderText>> TextTexture::LayOutText(
       PrepareDrawStringRect(
           text_, fonts, color_, &text_bounds, alignment_,
           multiline_ ? kWrappingBehaviorWrap : kWrappingBehaviorNoWrap);
+
+  if (cursor_enabled_) {
+    DCHECK(!multiline_);
+    lines.front()->SetCursorEnabled(true);
+    lines.front()->SetCursorPosition(cursor_position_);
+    cursor_bounds_ = lines.front()->GetUpdatedCursorBounds();
+  }
 
   // Note, there is no padding here whatsoever.
   size_ = gfx::SizeF(text_bounds.size());

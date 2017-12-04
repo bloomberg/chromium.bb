@@ -982,12 +982,11 @@ void UiSceneCreator::CreateController() {
 std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
     int maximum_width_pixels,
     float font_height_meters,
-    float text_width_meters,
     Model* model,
     TextInputInfo* text_input_model,
     TextInputDelegate* text_input_delegate) {
   auto text_input = base::MakeUnique<TextInput>(
-      maximum_width_pixels, font_height_meters, text_width_meters,
+      maximum_width_pixels, font_height_meters,
       base::BindRepeating(
           [](Model* model, bool focused) { model->editing_input = focused; },
           base::Unretained(model)),
@@ -996,9 +995,8 @@ std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
             *model = text_input_info;
           },
           base::Unretained(text_input_model)));
-  text_input->set_draw_phase(kPhaseForeground);
+  text_input->set_draw_phase(kPhaseNone);
   text_input->SetTextInputDelegate(text_input_delegate);
-  text_input->set_hit_testable(true);
   text_input->AddBinding(base::MakeUnique<Binding<TextInputInfo>>(
       base::BindRepeating([](TextInputInfo* info) { return *info; },
                           base::Unretained(text_input_model)),
@@ -1121,7 +1119,7 @@ void UiSceneCreator::CreateOmnibox() {
 
   float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
   auto omnibox_text_field =
-      CreateTextInput(1024, kOmniboxTextHeightDMM, width, model_,
+      CreateTextInput(1024, kOmniboxTextHeightDMM, model_,
                       &model_->omnibox_text_field_info, text_input_delegate_);
   omnibox_text_field->AddBinding(
       VR_BIND(TextInputInfo, Model, model_, omnibox_text_field_info,
@@ -1131,6 +1129,21 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->set_x_anchoring(LEFT);
   omnibox_text_field->set_x_centering(LEFT);
   omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
+  omnibox_text_field->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::BindRepeating([](Model* m) { return m->omnibox_input_active; },
+                          base::Unretained(model_)),
+      base::BindRepeating(
+          [](TextInput* e, const bool& v) {
+            if (v) {
+              e->RequestFocus();
+            }
+          },
+          base::Unretained(omnibox_text_field.get()))));
+  BindColor(model_, omnibox_text_field.get(), &ColorScheme::omnibox_text,
+            &TextInput::SetTextColor);
+  BindColor(model_, omnibox_text_field.get(), &ColorScheme::cursor,
+            &TextInput::SetCursorColor);
+
   scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
 
   auto close_button = Create<Button>(

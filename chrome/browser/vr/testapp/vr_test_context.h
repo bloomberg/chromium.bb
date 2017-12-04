@@ -20,6 +20,8 @@ class Event;
 
 namespace vr {
 
+class TextInputDelegate;
+class TestKeyboardDelegate;
 class Ui;
 struct Model;
 
@@ -56,6 +58,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   unsigned int CreateFakeContentTexture();
   void CreateFakeOmniboxSuggestions();
   void CreateFakeVoiceSearchResult();
+  void CreateFakeTextInput();
   void CycleWebVrModes();
   void ToggleSplashScreen();
   gfx::Transform ProjectionMatrix() const;
@@ -85,6 +88,9 @@ class VrTestContext : public vr::UiBrowserInterface {
   bool voice_search_enabled_ = false;
 
   ControllerModel last_controller_model_;
+
+  std::unique_ptr<TextInputDelegate> text_input_delegate_;
+  std::unique_ptr<TestKeyboardDelegate> keyboard_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(VrTestContext);
 };

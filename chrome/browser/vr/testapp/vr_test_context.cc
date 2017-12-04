@@ -11,11 +11,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/test/constants.h"
+#include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
@@ -56,6 +58,31 @@ void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
 
 }  // namespace
 
+// This stub delegate does nothing today, but can be expanded to offer
+// legitimate keyboard support if required.
+class TestKeyboardDelegate : KeyboardDelegate {
+ public:
+  // KeyboardDelegate implemenation.
+  void ShowKeyboard() override {}
+  void HideKeyboard() override {}
+  void SetTransform(const gfx::Transform&) override {}
+  bool HitTest(const gfx::Point3F& ray_origin,
+               const gfx::Point3F& ray_target,
+               gfx::Point3F* hit_position) override {
+    return false;
+  }
+  void Draw(const CameraModel&) override {}
+
+  // Testapp-specific hooks.
+  void SetUiInterface(vr::KeyboardUiInterface* keyboard) {
+    keyboard_interface_ = keyboard;
+  }
+  void UpdateInput(const vr::TextInputInfo& info) {}
+
+ private:
+  vr::KeyboardUiInterface* keyboard_interface_ = nullptr;
+};
+
 VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   base::FilePath pak_path;
   PathService::Get(base::DIR_MODULE, &pak_path);
@@ -64,7 +91,19 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   base::i18n::InitializeICU();
 
-  ui_ = base::MakeUnique<Ui>(this, nullptr, nullptr, nullptr, UiInitialState());
+  text_input_delegate_ = base::MakeUnique<vr::TextInputDelegate>();
+  keyboard_delegate_ = base::MakeUnique<vr::TestKeyboardDelegate>();
+
+  ui_ = base::MakeUnique<Ui>(this, nullptr, nullptr, text_input_delegate_.get(),
+                             UiInitialState());
+
+  text_input_delegate_->SetRequestFocusCallback(
+      base::BindRepeating(&vr::Ui::RequestFocus, base::Unretained(ui_.get())));
+  text_input_delegate_->SetUpdateInputCallback(
+      base::BindRepeating(&TestKeyboardDelegate::UpdateInput,
+                          base::Unretained(keyboard_delegate_.get())));
+  keyboard_delegate_->SetUiInterface(ui_.get());
+
   model_ = ui_->model_for_test();
 
   ToolbarState state(GURL("https://dangerous.com/dir/file.html"),
@@ -107,8 +146,6 @@ void VrTestContext::DrawFrame() {
   if (model_->web_vr_has_produced_frames()) {
     ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
   }
-
-  // TODO(cjgrant): Render viewport-aware elements.
 }
 
 void VrTestContext::HandleInput(ui::Event* event) {
@@ -149,6 +186,10 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_R:
         ui_->OnWebVrFrameAvailable();
         break;
+      case ui::DomCode::US_A: {
+        CreateFakeTextInput();
+        break;
+      }
       default:
         break;
     }
@@ -307,10 +348,24 @@ unsigned int VrTestContext::CreateFakeContentTexture() {
   return texture_id;
 }
 
+void VrTestContext::CreateFakeTextInput() {
+  // Every time this method is called, change the number of suggestions shown.
+  const std::string text =
+      "what is the actual meaning of life when considering all factors";
+
+  static int len = 0;
+  len = (len + 1) % text.size();
+
+  TextInputInfo info;
+  info.text = base::UTF8ToUTF16(text.substr(0, len));
+  info.selection_start = len;
+  info.selection_end = len;
+  ui_->OnInputEdited(info);
+}
+
 void VrTestContext::CreateFakeOmniboxSuggestions() {
   // Every time this method is called, change the number of suggestions shown.
   static int num_suggestions = 0;
-  num_suggestions = (num_suggestions + 1) % 4;
 
   auto result = base::MakeUnique<OmniboxSuggestions>();
   for (int i = 0; i < num_suggestions; i++) {
@@ -323,6 +378,9 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
   }
   model_->omnibox_input_active = true;
   ui_->SetOmniboxSuggestions(std::move(result));
+
+  num_suggestions++;
+  num_suggestions %= 5;
 }
 
 void VrTestContext::CreateFakeVoiceSearchResult() {

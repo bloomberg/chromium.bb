@@ -10,6 +10,7 @@
 #include "chrome/browser/vr/elements/textured_element.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace gfx {
 class RenderText;
@@ -29,6 +30,16 @@ class Text : public TexturedElement {
 
   void SetTextAlignment(UiTexture::TextAlignment alignment);
   void SetMultiLine(bool multiline);
+
+  // This text element does not typically feature a cursor, but since the cursor
+  // position is deterined while laying out text, a parent may wish to supply
+  // cursor parameters and determine where the cursor was last drawn.
+  void SetCursorEnabled(bool enabled);
+  void SetCursorPosition(int position);
+
+  // Returns the most recently computed cursor position, in DMM, relative to the
+  // corner of the element.
+  gfx::RectF GetCursorBounds();
 
   void OnSetSize(gfx::SizeF size) override;
 
