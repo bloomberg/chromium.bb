@@ -55,14 +55,9 @@ ASH_EXPORT bool ShouldAlwaysShowPopups(
 ASH_EXPORT bool IsAshSystemNotifier(
     const message_center::NotifierId& notifier_id);
 
-// Utility function to call Notification::CreateSystemNotification when
-// IsNewStyleNotificationEnabled() is true, and otherwise call
-// Notification constructor directly.
-// When IsNewStyleNotificationEnabled() is true, |icon| will be ignored.
-// When IsNewStyleNotificationEnabled() is false, |small_image| and |color_type|
-// will be ignored.
-// TODO(tetsui): Remove this function when new style notification becomes
-// default.
+// Utility function to call Notification::CreateSystemNotification.
+// |icon| is ignored.
+// TODO(tetsui): Remove this function. https://crbug.com/757703
 ASH_EXPORT std::unique_ptr<message_center::Notification>
 CreateSystemNotification(
     message_center::NotificationType type,

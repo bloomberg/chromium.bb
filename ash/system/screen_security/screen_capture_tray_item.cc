@@ -56,13 +56,8 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
       system_notifier::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kScreenCaptureNotificationId,
-          message_center::IsNewStyleNotificationEnabled()
-              ? l10n_util::GetStringUTF16(
-                    IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE)
-              : screen_capture_status_,
-          message_center::IsNewStyleNotificationEnabled()
-              ? screen_capture_status_
-              : base::string16() /* body is blank */,
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
+          screen_capture_status_,
           resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(

@@ -106,14 +106,9 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
     scoped_refptr<message_center::NotificationDelegate> delegate,
     const gfx::VectorIcon& small_image,
     message_center::SystemNotificationWarningLevel color_type) {
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    return message_center::Notification::CreateSystemNotification(
-        type, id, title, message, gfx::Image(), display_source, origin_url,
-        notifier_id, optional_fields, delegate, small_image, color_type);
-  }
-  return std::make_unique<message_center::Notification>(
-      type, id, title, message, icon, display_source, origin_url, notifier_id,
-      optional_fields, delegate);
+  return message_center::Notification::CreateSystemNotification(
+      type, id, title, message, gfx::Image(), display_source, origin_url,
+      notifier_id, optional_fields, delegate, small_image, color_type);
 }
 
 }  // namespace system_notifier

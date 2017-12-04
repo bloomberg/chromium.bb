@@ -61,13 +61,8 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
   std::unique_ptr<Notification> notification =
       system_notifier::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kScreenShareNotificationId,
-          message_center::IsNewStyleNotificationEnabled()
-              ? l10n_util::GetStringUTF16(
-                    IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE)
-              : help_label_text,
-          message_center::IsNewStyleNotificationEnabled()
-              ? help_label_text
-              : base::string16() /* body is blank */,
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SCREEN_SHARE_TITLE),
+          help_label_text,
           resource_bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE_DARK),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
