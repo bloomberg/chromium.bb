@@ -34,14 +34,14 @@ TEST(FakeEasyUnlockClientTest, GenerateEcP256KeyPair) {
   std::string private_key_1;
   std::string public_key_1;
   client.GenerateEcP256KeyPair(
-      base::Bind(&RecordKeyPair, &private_key_1, &public_key_1));
+      base::BindOnce(&RecordKeyPair, &private_key_1, &public_key_1));
   ASSERT_EQ("{\"ec_p256_private_key\": 1}", private_key_1);
   ASSERT_EQ("{\"ec_p256_public_key\": 1}", public_key_1);
 
   std::string private_key_2;
   std::string public_key_2;
   client.GenerateEcP256KeyPair(
-      base::Bind(&RecordKeyPair, &private_key_2, &public_key_2));
+      base::BindOnce(&RecordKeyPair, &private_key_2, &public_key_2));
   ASSERT_EQ("{\"ec_p256_private_key\": 2}", private_key_2);
   ASSERT_EQ("{\"ec_p256_public_key\": 2}", public_key_2);
 
@@ -116,17 +116,15 @@ TEST(FakeEasyUnlockClientTest, ECDHKeyAgreementSuccess) {
   // Generate shared key for key pairs 1 and 2, using private key from the
   // second key pair and public key from the first key pair.
   std::string shared_key_1;
-  client.PerformECDHKeyAgreement(private_key_2,
-                                 public_key_1,
-                                 base::Bind(&RecordData, &shared_key_1));
+  client.PerformECDHKeyAgreement(private_key_2, public_key_1,
+                                 base::BindOnce(&RecordData, &shared_key_1));
   EXPECT_FALSE(shared_key_1.empty());
 
   // Generate shared key for key pairs 1 and 2, using private key from the
   // first key pair and public key from the second key pair.
   std::string shared_key_2;
-  client.PerformECDHKeyAgreement(private_key_1,
-                                 public_key_2,
-                                 base::Bind(&RecordData, &shared_key_2));
+  client.PerformECDHKeyAgreement(private_key_1, public_key_2,
+                                 base::BindOnce(&RecordData, &shared_key_2));
   EXPECT_FALSE(shared_key_2.empty());
 
   // The generated keys should be equal. They were generated using keys from
@@ -136,9 +134,8 @@ TEST(FakeEasyUnlockClientTest, ECDHKeyAgreementSuccess) {
 
   // Generate a key using key pairs 1 and 3.
   std::string shared_key_3;
-  client.PerformECDHKeyAgreement(private_key_1,
-                                 public_key_3,
-                                 base::Bind(&RecordData, &shared_key_3));
+  client.PerformECDHKeyAgreement(private_key_1, public_key_3,
+                                 base::BindOnce(&RecordData, &shared_key_3));
   EXPECT_FALSE(shared_key_3.empty());
 
   // The new key should be different from the previously generated ones, since
@@ -154,9 +151,8 @@ TEST(FakeEasyUnlockClientTest, ECDHKeyAgreementFailsIfKeyOrderSwitched) {
   const std::string public_key = "{\"ec_p256_public_key\": 345}";
 
   std::string shared_key;
-  client.PerformECDHKeyAgreement(public_key,
-                                 private_key,
-                                 base::Bind(&RecordData, &shared_key));
+  client.PerformECDHKeyAgreement(public_key, private_key,
+                                 base::BindOnce(&RecordData, &shared_key));
   EXPECT_TRUE(shared_key.empty());
 }
 
@@ -167,9 +163,8 @@ TEST(FakeEasyUnlockClientTest, ECDHKeyAgreementFailsIfKeyDictKeyInvalid) {
   const std::string public_key = "{\"ec_p256_public_key_invalid\": 345}";
 
   std::string shared_key;
-  client.PerformECDHKeyAgreement(private_key,
-                                 public_key,
-                                 base::Bind(&RecordData, &shared_key));
+  client.PerformECDHKeyAgreement(private_key, public_key,
+                                 base::BindOnce(&RecordData, &shared_key));
   EXPECT_TRUE(shared_key.empty());
 }
 
@@ -180,9 +175,8 @@ TEST(FakeEasyUnlockClientTest, ECDHKeyAgreementFailsIfKeyDictValueInvalid) {
   const std::string public_key = "{\"ec_p256_public_key\": \"345__\"}";
 
   std::string shared_key;
-  client.PerformECDHKeyAgreement(private_key,
-                                 public_key,
-                                 base::Bind(&RecordData, &shared_key));
+  client.PerformECDHKeyAgreement(private_key, public_key,
+                                 base::BindOnce(&RecordData, &shared_key));
   EXPECT_TRUE(shared_key.empty());
 }
 
@@ -193,9 +187,8 @@ TEST(FakeEasyUnlockClientTest, ECDHKeyAgreementFailsIfKeyFormatInvalid) {
   const std::string public_key = "{\"ec_p256_public_key\": 345}";
 
   std::string shared_key;
-  client.PerformECDHKeyAgreement(private_key,
-                                 public_key,
-                                 base::Bind(&RecordData, &shared_key));
+  client.PerformECDHKeyAgreement(private_key, public_key,
+                                 base::BindOnce(&RecordData, &shared_key));
   EXPECT_TRUE(shared_key.empty());
 }
 
@@ -213,10 +206,8 @@ TEST(FakeEasyUnlockClientTest, CreateSecureMessage) {
   options.encryption_type = "ENCRYPTION_TYPE";
   options.signature_type = "SIGNATURE_TYPE";
 
-  client.CreateSecureMessage(
-      "PAYLOAD",
-      options,
-      base::Bind(&RecordData, &message));
+  client.CreateSecureMessage("PAYLOAD", options,
+                             base::BindOnce(&RecordData, &message));
 
   const std::string expected_message(
       "{\"securemessage\": {"
@@ -243,10 +234,8 @@ TEST(FakeEasyUnlockClientTest, UnwrapSecureMessage) {
   options.encryption_type = "ENCRYPTION_TYPE";
   options.signature_type = "SIGNATURE_TYPE";
 
-  client.UnwrapSecureMessage(
-      "MESSAGE",
-      options,
-      base::Bind(&RecordData, &message));
+  client.UnwrapSecureMessage("MESSAGE", options,
+                             base::BindOnce(&RecordData, &message));
 
   const std::string expected_message(
       "{\"unwrapped_securemessage\": {"
@@ -260,4 +249,3 @@ TEST(FakeEasyUnlockClientTest, UnwrapSecureMessage) {
 }
 
 }  // namespace
-
