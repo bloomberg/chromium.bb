@@ -6,12 +6,13 @@
 #define COMPONENTS_NETWORK_SESSION_CONFIGURATOR_COMMON_NETWORK_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "network_session_configurator_export.h"
 
 namespace features {
 
 // Enables token binding
 // (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
-extern const base::Feature kTokenBinding;
+NETWORK_SESSION_CONFIGURATOR_EXPORT extern const base::Feature kTokenBinding;
 
 }  // namespace features
 

@@ -30,6 +30,7 @@
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/grit/content_resources.h"
+#include "content/network/network_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_service_registry.h"
@@ -280,6 +281,12 @@ void RegisterUIServiceInProcessIfNecessary(
 }
 #endif
 
+std::unique_ptr<service_manager::Service> CreateNetworkService() {
+  // TODO(jam): make in-process network service work with test interfaces.
+  return std::make_unique<NetworkServiceImpl>(
+      std::make_unique<service_manager::BinderRegistry>());
+}
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -494,9 +501,20 @@ ServiceManagerContext::ServiceManagerContext() {
 
   bool network_service_enabled =
       base::FeatureList::IsEnabled(features::kNetworkService);
+  bool network_service_in_process =
+      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess);
   if (network_service_enabled) {
-    out_of_process_services[content::mojom::kNetworkServiceName] =
-        base::ASCIIToUTF16("Network Service");
+    if (network_service_in_process) {
+      service_manager::EmbeddedServiceInfo network_service_info;
+      network_service_info.factory = base::BindRepeating(CreateNetworkService);
+      network_service_info.task_runner =
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      packaged_services_connection_->AddEmbeddedService(
+          mojom::kNetworkServiceName, network_service_info);
+    } else {
+      out_of_process_services[mojom::kNetworkServiceName] =
+          base::ASCIIToUTF16("Network Service");
+    }
   }
 
   if (base::FeatureList::IsEnabled(video_capture::kMojoVideoCapture)) {
@@ -541,7 +559,7 @@ ServiceManagerContext::ServiceManagerContext() {
   RegisterCommonBrowserInterfaces(browser_connection);
   browser_connection->Start();
 
-  if (network_service_enabled) {
+  if (network_service_enabled && !network_service_in_process) {
     // Start the network service process as soon as possible, since it is
     // critical to start up performance.
     browser_connection->GetConnector()->StartService(

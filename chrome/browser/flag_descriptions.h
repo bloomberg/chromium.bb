@@ -298,6 +298,9 @@ extern const char kEnableNetworkLoggingToFileDescription[];
 extern const char kEnableNetworkServiceName[];
 extern const char kEnableNetworkServiceDescription[];
 
+extern const char kEnableNetworkServiceInProcessName[];
+extern const char kEnableNetworkServiceInProcessDescription[];
+
 extern const char kEnableNewPrintPreview[];
 extern const char kEnableNewPrintPreviewDescription[];
 
