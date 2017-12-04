@@ -140,7 +140,7 @@ RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
       parse_json_callback_(parse_json_callback),
       fetch_url_(api_endpoint),
       api_key_(api_key),
-      clock_(new base::DefaultClock()),
+      clock_(base::DefaultClock::GetInstance()),
       user_classifier_(user_classifier) {}
 
 RemoteSuggestionsFetcherImpl::~RemoteSuggestionsFetcherImpl() = default;
@@ -164,18 +164,18 @@ void RemoteSuggestionsFetcherImpl::FetchSnippets(
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "NewTabPage.Snippets.FetchTimeLocal",
         GetMinuteOfTheDay(/*local_time=*/true,
-                          /*reduced_resolution=*/true, clock_.get()));
+                          /*reduced_resolution=*/true, clock_));
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "NewTabPage.Snippets.FetchTimeUTC",
         GetMinuteOfTheDay(/*local_time=*/false,
-                          /*reduced_resolution=*/true, clock_.get()));
+                          /*reduced_resolution=*/true, clock_));
   }
 
   JsonRequest::Builder builder;
   builder.SetLanguageHistogram(language_histogram_)
       .SetParams(params)
       .SetParseJsonCallback(parse_json_callback_)
-      .SetClock(clock_.get())
+      .SetClock(clock_)
       .SetUrlRequestContextGetter(url_request_context_getter_)
       .SetUserClassifier(*user_classifier_);
 

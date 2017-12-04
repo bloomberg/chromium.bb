@@ -41,7 +41,7 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
                                  const UserClassifier* user_classifier,
                                  PrefService* profile_prefs,
                                  PrefService* local_state_prefs,
-                                 std::unique_ptr<base::Clock> clock,
+                                 base::Clock* clock,
                                  Logger* debug_logger);
 
   ~RemoteSuggestionsSchedulerImpl() override;
@@ -169,7 +169,7 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   std::unique_ptr<EulaState> eula_state_;
 
   PrefService* profile_prefs_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   std::set<TriggerType> enabled_triggers_;
   std::set<TriggerType> queued_triggers_;
 

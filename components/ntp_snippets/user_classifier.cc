@@ -184,10 +184,9 @@ double GetMetricValueForEstimateHoursBetweenEvents(
 
 }  // namespace
 
-UserClassifier::UserClassifier(PrefService* pref_service,
-                               std::unique_ptr<base::Clock> clock)
+UserClassifier::UserClassifier(PrefService* pref_service, base::Clock* clock)
     : pref_service_(pref_service),
-      clock_(std::move(clock)),
+      clock_(clock),
       discount_rate_per_hour_(GetDiscountRatePerHour()),
       min_hours_(GetMinHours()),
       max_hours_(GetMaxHours()),

@@ -176,7 +176,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
                         default_variation_params_,
                         {kArticleSuggestionsFeature.name}),
         user_classifier_(/*pref_service=*/nullptr,
-                         base::MakeUnique<base::DefaultClock>()) {
+                         base::DefaultClock::GetInstance()) {
     RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
@@ -194,13 +194,11 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
     provider_ = base::MakeUnique<StrictMock<MockRemoteSuggestionsProvider>>(
         /*observer=*/nullptr);
 
-    auto test_clock = base::MakeUnique<base::SimpleTestClock>();
-    test_clock_ = test_clock.get();
-    test_clock_->SetNow(base::Time::Now());
+    test_clock_.SetNow(base::Time::Now());
 
     scheduler_ = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
         &persistent_scheduler_, &user_classifier_, utils_.pref_service(),
-        &local_state_, std::move(test_clock), &debug_logger_);
+        &local_state_, &test_clock_, &debug_logger_);
     scheduler_->SetProvider(provider_.get());
   }
 
@@ -271,7 +269,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
     return &persistent_scheduler_;
   }
 
-  base::SimpleTestClock* test_clock() { return test_clock_; }
+  base::SimpleTestClock* test_clock() { return &test_clock_; }
   MockRemoteSuggestionsProvider* provider() { return provider_.get(); }
   RemoteSuggestionsSchedulerImpl* scheduler() { return scheduler_.get(); }
 
@@ -280,7 +278,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
   UserClassifier user_classifier_;
   TestingPrefServiceSimple local_state_;
   StrictMock<MockPersistentScheduler> persistent_scheduler_;
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
   std::unique_ptr<MockRemoteSuggestionsProvider> provider_;
   std::unique_ptr<RemoteSuggestionsSchedulerImpl> scheduler_;
   Logger debug_logger_;

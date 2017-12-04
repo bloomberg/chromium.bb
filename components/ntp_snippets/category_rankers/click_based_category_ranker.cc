@@ -143,10 +143,9 @@ std::string GetOptionalCategoryAsString(
 
 }  // namespace
 
-ClickBasedCategoryRanker::ClickBasedCategoryRanker(
-    PrefService* pref_service,
-    std::unique_ptr<base::Clock> clock)
-    : pref_service_(pref_service), clock_(std::move(clock)) {
+ClickBasedCategoryRanker::ClickBasedCategoryRanker(PrefService* pref_service,
+                                                   base::Clock* clock)
+    : pref_service_(pref_service), clock_(clock) {
   if (!ReadOrderFromPrefs(&ordered_categories_)) {
     // TODO(crbug.com/676273): Handle adding new hardcoded KnownCategories to
     // existing order from prefs. Currently such new category is completely

@@ -156,7 +156,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
 
     // TODO(jkrcal): Replace by a mock.
     auto user_classifier = base::MakeUnique<UserClassifier>(
-        pref_service_.get(), base::MakeUnique<base::DefaultClock>());
+        pref_service_.get(), base::DefaultClock::GetInstance());
 
     service_ = base::MakeUnique<ContentSuggestionsService>(
         enabled, /*signin_manager=*/nullptr, /*history_service=*/nullptr,

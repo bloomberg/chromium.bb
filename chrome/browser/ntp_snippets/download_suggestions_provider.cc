@@ -150,7 +150,7 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
     content::DownloadManager* download_manager,
     DownloadHistory* download_history,
     PrefService* pref_service,
-    std::unique_ptr<base::Clock> clock)
+    base::Clock* clock)
     : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(Category::FromKnownCategory(
@@ -159,7 +159,7 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
       download_manager_(download_manager),
       download_history_(download_history),
       pref_service_(pref_service),
-      clock_(std::move(clock)),
+      clock_(clock),
       is_asset_downloads_initialization_complete_(false),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
