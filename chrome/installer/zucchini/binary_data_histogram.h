@@ -9,11 +9,47 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/installer/zucchini/buffer_view.h"
 
 namespace zucchini {
+
+// A class to detect outliers in a list of doubles using Chauvenet's criterion:
+// Compute mean and standard deviation of observations, then determine whether
+// a query value lies beyond a fixed number of standard deviations (sigmas) from
+// the mean. The purpose of this test is to reduce the chance of false-positive
+// ensemble matches.
+class OutlierDetector {
+ public:
+  OutlierDetector();
+  ~OutlierDetector();
+
+  // Incorporates |sample| into mean and standard deviation.
+  void Add(double sample);
+
+  // Prepares basic statistics for DecideOutlier() calls. Should be called after
+  // all samples have been added.
+  void Prepare();
+
+  // Renders current statistics as strings for logging.
+  std::string RenderStats();
+
+  // Heuristically decides whether |sample| is an outlier. Returns 1 if |sample|
+  // is "too high", 0 if |sample| is "normal", and -1 if |sample| is "too low".
+  // Must be called after Prepare().
+  int DecideOutlier(double sample);
+
+ private:
+  size_t n_ = 0;
+  double sum_ = 0;
+  double sum_of_squares_ = 0;
+  double mean_ = 0;
+  double standard_deviation_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(OutlierDetector);
+};
 
 // A class to compute similarity score between binary data. The heuristic here
 // preprocesses input data to a size-65536 histogram, counting the frequency of

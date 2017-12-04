@@ -6,12 +6,72 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "chrome/installer/zucchini/buffer_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
+
+TEST(OutlierDetectorTest, Basic) {
+  auto make_detector = [](const std::vector<double>& values) {
+    auto detector = std::make_unique<OutlierDetector>();
+    for (double v : values)
+      detector->Add(v);
+    detector->Prepare();
+    return detector;
+  };
+
+  std::unique_ptr<OutlierDetector> detector;
+  // No data: Should at least not cause error.
+  detector = make_detector({});
+  EXPECT_EQ(0, detector->DecideOutlier(0.0));
+  // Single point: Trivially inert.
+  detector = make_detector({0.5});
+  EXPECT_EQ(0, detector->DecideOutlier(0.1));
+  EXPECT_EQ(0, detector->DecideOutlier(0.5));
+  EXPECT_EQ(0, detector->DecideOutlier(0.9));
+  // Two identical points: StdDev is 0, so falls back to built-in tolerance.
+  detector = make_detector({0.5, 0.5});
+  EXPECT_EQ(-1, detector->DecideOutlier(0.3));
+  EXPECT_EQ(0, detector->DecideOutlier(0.499));
+  EXPECT_EQ(0, detector->DecideOutlier(0.5));
+  EXPECT_EQ(0, detector->DecideOutlier(0.501));
+  EXPECT_EQ(1, detector->DecideOutlier(0.7));
+  // Two separate points: Outliner test is pretty lax.
+  detector = make_detector({0.4, 0.6});
+  EXPECT_EQ(-1, detector->DecideOutlier(0.2));
+  EXPECT_EQ(0, detector->DecideOutlier(0.3));
+  EXPECT_EQ(0, detector->DecideOutlier(0.5));
+  EXPECT_EQ(0, detector->DecideOutlier(0.7));
+  EXPECT_EQ(1, detector->DecideOutlier(0.8));
+  // Sharpen distribution by clustering toward norm: Now test is stricter.
+  detector = make_detector({0.4, 0.47, 0.48, 0.49, 0.50, 0.51, 0.52, 0.6});
+  EXPECT_EQ(-1, detector->DecideOutlier(0.3));
+  EXPECT_EQ(0, detector->DecideOutlier(0.4));
+  EXPECT_EQ(0, detector->DecideOutlier(0.5));
+  EXPECT_EQ(0, detector->DecideOutlier(0.6));
+  EXPECT_EQ(1, detector->DecideOutlier(0.7));
+  // Shift numbers around: Mean is 0.3, and data order scrambled.
+  detector = make_detector({0.28, 0.2, 0.31, 0.4, 0.29, 0.32, 0.27, 0.30});
+  EXPECT_EQ(-1, detector->DecideOutlier(0.0));
+  EXPECT_EQ(-1, detector->DecideOutlier(0.1));
+  EXPECT_EQ(0, detector->DecideOutlier(0.2));
+  EXPECT_EQ(0, detector->DecideOutlier(0.3));
+  EXPECT_EQ(0, detector->DecideOutlier(0.4));
+  EXPECT_EQ(1, detector->DecideOutlier(0.5));
+  EXPECT_EQ(1, detector->DecideOutlier(1.0));
+  // Typical usage: Potential outlier would be part of original input data!
+  detector = make_detector({0.3, 0.29, 0.31, 0.0, 0.3, 0.32, 0.3, 0.29, 0.6});
+  EXPECT_EQ(-1, detector->DecideOutlier(0.0));
+  EXPECT_EQ(0, detector->DecideOutlier(0.28));
+  EXPECT_EQ(0, detector->DecideOutlier(0.29));
+  EXPECT_EQ(0, detector->DecideOutlier(0.3));
+  EXPECT_EQ(0, detector->DecideOutlier(0.31));
+  EXPECT_EQ(0, detector->DecideOutlier(0.32));
+  EXPECT_EQ(1, detector->DecideOutlier(0.6));
+}
 
 TEST(BinaryDataHistogramTest, Basic) {
   constexpr double kUninitScore = -1;
