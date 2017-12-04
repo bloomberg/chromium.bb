@@ -25,7 +25,7 @@ NtlmBufferReader::NtlmBufferReader(const uint8_t* ptr, size_t len)
     : NtlmBufferReader(
           base::StringPiece(reinterpret_cast<const char*>(ptr), len)) {}
 
-NtlmBufferReader::~NtlmBufferReader() {}
+NtlmBufferReader::~NtlmBufferReader() = default;
 
 bool NtlmBufferReader::CanRead(size_t len) const {
   return CanReadFrom(GetCursor(), len);

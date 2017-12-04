@@ -18,7 +18,7 @@ namespace ntlm {
 NtlmBufferWriter::NtlmBufferWriter(size_t buffer_len)
     : buffer_(buffer_len, 0), cursor_(0) {}
 
-NtlmBufferWriter::~NtlmBufferWriter() {}
+NtlmBufferWriter::~NtlmBufferWriter() = default;
 
 bool NtlmBufferWriter::CanWrite(size_t len) const {
   if (!GetBufferPtr())
