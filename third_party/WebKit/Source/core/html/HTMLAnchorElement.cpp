@@ -412,12 +412,15 @@ bool IsEnterKeyKeydownEvent(Event* event) {
 }
 
 bool IsLinkClick(Event* event) {
-  // Allow detail <= 1 so that synthetic clicks work. They may have detail == 0.
-  return (event->type() == EventTypeNames::click ||
-          event->type() == EventTypeNames::auxclick) &&
-         (!event->IsMouseEvent() ||
-          ToMouseEvent(event)->button() !=
-              static_cast<short>(WebPointerProperties::Button::kRight));
+  if ((event->type() != EventTypeNames::click &&
+       event->type() != EventTypeNames::auxclick) ||
+      !event->IsMouseEvent()) {
+    return false;
+  }
+  MouseEvent* mouse_event = ToMouseEvent(event);
+  short button = mouse_event->button();
+  return (button == static_cast<short>(WebPointerProperties::Button::kLeft) ||
+          button == static_cast<short>(WebPointerProperties::Button::kMiddle));
 }
 
 bool HTMLAnchorElement::WillRespondToMouseClickEvents() {

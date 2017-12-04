@@ -78,6 +78,14 @@ WebMouseEvent WebMouseEventBuilder::Build(
       type = WebInputEvent::kMouseDown;
       button = WebMouseEvent::Button::kRight;
       break;
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONDBLCLK:
+      type = WebInputEvent::kMouseDown;
+      if ((HIWORD(wparam) & XBUTTON1))
+        button = WebMouseEvent::Button::kBack;
+      else if ((HIWORD(wparam) & XBUTTON2))
+        button = WebMouseEvent::Button::kForward;
+      break;
     case WM_LBUTTONUP:
       type = WebInputEvent::kMouseUp;
       button = WebMouseEvent::Button::kLeft;
@@ -89,6 +97,13 @@ WebMouseEvent WebMouseEventBuilder::Build(
     case WM_RBUTTONUP:
       type = WebInputEvent::kMouseUp;
       button = WebMouseEvent::Button::kRight;
+      break;
+    case WM_XBUTTONUP:
+      type = WebInputEvent::kMouseUp;
+      if ((HIWORD(wparam) & XBUTTON1))
+        button = WebMouseEvent::Button::kBack;
+      else if ((HIWORD(wparam) & XBUTTON2))
+        button = WebMouseEvent::Button::kForward;
       break;
     default:
       NOTREACHED();
@@ -107,6 +122,10 @@ WebMouseEvent WebMouseEventBuilder::Build(
     modifiers |= WebInputEvent::kMiddleButtonDown;
   if (wparam & MK_RBUTTON)
     modifiers |= WebInputEvent::kRightButtonDown;
+  if (wparam & MK_XBUTTON1)
+    modifiers |= WebInputEvent::kBackButtonDown;
+  if (wparam & MK_XBUTTON2)
+    modifiers |= WebInputEvent::kForwardButtonDown;
 
   WebMouseEvent result(type, modifiers, time_stamp);
   result.pointer_type = pointer_type;

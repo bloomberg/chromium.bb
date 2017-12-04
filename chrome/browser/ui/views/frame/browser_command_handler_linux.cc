@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 
@@ -30,6 +31,10 @@ BrowserCommandHandlerLinux::~BrowserCommandHandlerLinux() {
 void BrowserCommandHandlerLinux::OnMouseEvent(ui::MouseEvent* event) {
   // Handle standard Linux mouse buttons for going back and forward.
   if (event->type() != ui::ET_MOUSE_PRESSED)
+    return;
+
+  // If extended mouse buttons are supported handle them in the renderer.
+  if (base::FeatureList::IsEnabled(features::kExtendedMouseButtons))
     return;
 
   bool back_button_pressed =
