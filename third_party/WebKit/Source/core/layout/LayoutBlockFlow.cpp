@@ -387,6 +387,16 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
   if (has_auto_height || ((logical_height_length.IsFixed() ||
                            logical_height_length.IsPercentOrCalc()) &&
                           logical_height_length.IsZero())) {
+    // Marker_container should be a self-collapsing block. Marker_container is a
+    // zero height anonymous block and marker is its only child.
+    if (logical_height_length.IsFixed() && logical_height_length.IsZero() &&
+        IsAnonymous() && Parent() && Parent()->IsListItem()) {
+      LayoutObject* first_child = FirstChild();
+      if (first_child && first_child->IsListMarker() &&
+          !first_child->NextSibling())
+        return true;
+    }
+
     // If the block has inline children, see if we generated any line boxes.
     // If we have any line boxes, then we can't be self-collapsing, since we
     // have content.
