@@ -2866,6 +2866,40 @@ public class AwSettingsTest {
         }
     }
 
+    private void testScrollTopLeftInteropState(boolean state) throws Throwable {
+        final TestAwContentsClient client = new TestAwContentsClient();
+        final AwTestContainerView view =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(client);
+        final AwContents awContents = view.getAwContents();
+        CallbackHelper onPageFinishedHelper = client.getOnPageFinishedHelper();
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> awContents.getSettings().setScrollTopLeftInteropEnabled(state));
+        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        final String page = "<!doctype html>"
+                + "<script>"
+                + "window.onload = function() {"
+                + "  document.title = document.scrollingElement === document.documentElement;"
+                + "};"
+                + "</script>";
+        mActivityTestRule.loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
+        String actualTitle = mActivityTestRule.getTitleOnUiThread(awContents);
+        Assert.assertEquals(state ? "true" : "false", actualTitle);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testScrollTopLeftInteropEnabled() throws Throwable {
+        testScrollTopLeftInteropState(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testScrollTopLeftInteropDisabled() throws Throwable {
+        testScrollTopLeftInteropState(false);
+    }
+
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
