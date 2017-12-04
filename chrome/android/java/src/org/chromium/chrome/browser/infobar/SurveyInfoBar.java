@@ -91,13 +91,18 @@ public class SurveyInfoBar extends InfoBar {
         });
 
         NoUnderlineClickableSpan clickableSpan = new NoUnderlineClickableSpan() {
+            /** Prevent double clicking on the text span. */
+            private boolean mClicked;
+
             @Override
             public void onClick(View widget) {
+                if (mClicked) return;
                 mDelegate.onSurveyTriggered();
 
                 SurveyController.getInstance().showSurveyIfAvailable(
                         tab.getActivity(), mSiteId, mShowAsBottomSheet, mDisplayLogoResId);
                 onCloseButtonClicked();
+                mClicked = true;
             }
         };
 
