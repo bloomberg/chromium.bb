@@ -1862,13 +1862,11 @@ crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-re
 crbug.com/704259 external/wpt/content-security-policy/reporting/reporting-api-sends-reports-on-violation.https.sub.html [ Skip ]
 
 # These HTTP tests that started failing after a web-platform-tests import.
-crbug.com/711529 http/tests/notifications/serviceworker-notification-event.html [ Timeout ]
 crbug.com/711529 http/tests/origin_trials/sample-api-workers.html [ Crash Timeout ]
 crbug.com/711529 http/tests/permissions/test-api-surface.html [ Timeout ]
 crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
 crbug.com/711529 http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
-crbug.com/711529 virtual/mojo-notifications/http/tests/notifications/serviceworker-notification-event.html [ Timeout ]
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 
