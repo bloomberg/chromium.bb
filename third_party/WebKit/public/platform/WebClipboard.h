@@ -37,6 +37,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "third_party/WebKit/common/clipboard/clipboard.mojom-shared.h"
 
 namespace blink {
 
@@ -46,45 +47,39 @@ class WebURL;
 
 class WebClipboard {
  public:
-  enum Format {
-    kFormatPlainText,
-    kFormatHTML,
-    kFormatBookmark,
-    kFormatSmartPaste
-  };
-
-  enum Buffer {
-    kBufferStandard,
-    // Used on platforms like the X Window System that treat selection
-    // as a type of clipboard.
-    kBufferSelection,
-  };
-
   // Returns an identifier which can be used to determine whether the data
   // contained within the clipboard has changed.
-  virtual uint64_t SequenceNumber(Buffer) { return 0; }
+  virtual uint64_t SequenceNumber(mojom::ClipboardBuffer) { return 0; }
 
-  virtual bool IsFormatAvailable(Format, Buffer) { return false; }
+  virtual bool IsFormatAvailable(mojom::ClipboardFormat,
+                                 mojom::ClipboardBuffer) {
+    return false;
+  }
 
-  virtual WebVector<WebString> ReadAvailableTypes(Buffer,
+  virtual WebVector<WebString> ReadAvailableTypes(blink::mojom::ClipboardBuffer,
                                                   bool* contains_filenames) {
     return WebVector<WebString>();
   }
-  virtual WebString ReadPlainText(Buffer) { return WebString(); }
+  virtual WebString ReadPlainText(blink::mojom::ClipboardBuffer) {
+    return WebString();
+  }
   // |fragment_start| and |fragment_end| are indexes into the returned markup
   // that indicate the start and end of the fragment if the returned markup
   // contains additional context. If there is no additional context,
   // |fragment_start| will be zero and |fragment_end| will be the same as the
   // length of the returned markup.
-  virtual WebString ReadHTML(Buffer buffer,
+  virtual WebString ReadHTML(blink::mojom::ClipboardBuffer buffer,
                              WebURL* page_url,
                              unsigned* fragment_start,
                              unsigned* fragment_end) {
     return WebString();
   }
-  virtual WebString ReadRTF(Buffer) { return WebString(); }
-  virtual WebBlobInfo ReadImage(Buffer) { return WebBlobInfo(); }
-  virtual WebString ReadCustomData(Buffer, const WebString& type) {
+  virtual WebString ReadRTF(mojom::ClipboardBuffer) { return WebString(); }
+  virtual WebBlobInfo ReadImage(mojom::ClipboardBuffer) {
+    return WebBlobInfo();
+  }
+  virtual WebString ReadCustomData(mojom::ClipboardBuffer,
+                                   const WebString& type) {
     return WebString();
   }
 

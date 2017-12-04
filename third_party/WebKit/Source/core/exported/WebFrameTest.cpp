@@ -10859,17 +10859,17 @@ TEST_P(ParameterizedWebFrameTest, CopyImageAt) {
   web_view->Resize(WebSize(400, 400));
 
   uint64_t sequence = Platform::Current()->Clipboard()->SequenceNumber(
-      WebClipboard::kBufferStandard);
+      mojom::ClipboardBuffer::kStandard);
 
   WebLocalFrame* local_frame = web_view->MainFrameImpl();
   local_frame->CopyImageAt(WebPoint(50, 50));
 
   EXPECT_NE(sequence, Platform::Current()->Clipboard()->SequenceNumber(
-                          WebClipboard::kBufferStandard));
+                          mojom::ClipboardBuffer::kStandard));
 
   WebImage image =
       static_cast<WebMockClipboard*>(Platform::Current()->Clipboard())
-          ->ReadRawImage(WebClipboard::Buffer());
+          ->ReadRawImage(mojom::ClipboardBuffer::kStandard);
 
   EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
 }
@@ -10886,17 +10886,17 @@ TEST_P(ParameterizedWebFrameTest, CopyImageAtWithPinchZoom) {
   web_view->SetVisualViewportOffset(WebFloatPoint(200, 200));
 
   uint64_t sequence = Platform::Current()->Clipboard()->SequenceNumber(
-      WebClipboard::kBufferStandard);
+      mojom::ClipboardBuffer::kStandard);
 
   WebLocalFrame* local_frame = web_view->MainFrameImpl();
   local_frame->CopyImageAt(WebPoint(0, 0));
 
   EXPECT_NE(sequence, Platform::Current()->Clipboard()->SequenceNumber(
-                          WebClipboard::kBufferStandard));
+                          mojom::ClipboardBuffer::kStandard));
 
   WebImage image =
       static_cast<WebMockClipboard*>(Platform::Current()->Clipboard())
-          ->ReadRawImage(WebClipboard::Buffer());
+          ->ReadRawImage(mojom::ClipboardBuffer::kStandard);
 
   EXPECT_EQ(SkColorSetARGB(255, 255, 0, 0), image.GetSkBitmap().getColor(0, 0));
 }

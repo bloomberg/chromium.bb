@@ -48,15 +48,15 @@ Pasteboard* Pasteboard::GeneralPasteboard() {
   return pasteboard;
 }
 
-Pasteboard::Pasteboard() : buffer_(WebClipboard::kBufferStandard) {}
+Pasteboard::Pasteboard() : buffer_(mojom::ClipboardBuffer::kStandard) {}
 
 bool Pasteboard::IsSelectionMode() const {
-  return buffer_ == WebClipboard::kBufferSelection;
+  return buffer_ == mojom::ClipboardBuffer::kSelection;
 }
 
 void Pasteboard::SetSelectionMode(bool selection_mode) {
-  buffer_ = selection_mode ? WebClipboard::kBufferSelection
-                           : WebClipboard::kBufferStandard;
+  buffer_ = selection_mode ? mojom::ClipboardBuffer::kSelection
+                           : mojom::ClipboardBuffer::kStandard;
 }
 
 void Pasteboard::WritePlainText(const String& text, SmartReplaceOption) {
@@ -90,12 +90,12 @@ void Pasteboard::WriteDataObject(DataObject* data_object) {
 
 bool Pasteboard::CanSmartReplace() {
   return Platform::Current()->Clipboard()->IsFormatAvailable(
-      WebClipboard::kFormatSmartPaste, buffer_);
+      mojom::ClipboardFormat::kSmartPaste, buffer_);
 }
 
 bool Pasteboard::IsHTMLAvailable() {
   return Platform::Current()->Clipboard()->IsFormatAvailable(
-      WebClipboard::kFormatHTML, buffer_);
+      mojom::ClipboardFormat::kHtml, buffer_);
 }
 
 String Pasteboard::PlainText() {

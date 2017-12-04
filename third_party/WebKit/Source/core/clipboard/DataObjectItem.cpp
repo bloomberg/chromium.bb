@@ -128,7 +128,7 @@ File* DataObjectItem::GetAsFile() const {
   DCHECK_EQ(source_, kPasteboardSource);
   if (GetType() == kMimeTypeImagePng) {
     WebBlobInfo blob_info = Platform::Current()->Clipboard()->ReadImage(
-        WebClipboard::kBufferStandard);
+        mojom::ClipboardBuffer::kStandard);
     if (blob_info.size() < 0)
       return nullptr;
     return File::Create(
@@ -148,7 +148,7 @@ String DataObjectItem::GetAsString() const {
 
   DCHECK_EQ(source_, kPasteboardSource);
 
-  WebClipboard::Buffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
+  mojom::ClipboardBuffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
   String data;
   // This is ugly but there's no real alternative.
   if (type_ == kMimeTypeTextPlain) {

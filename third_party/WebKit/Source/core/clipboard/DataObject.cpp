@@ -46,7 +46,7 @@ DataObject* DataObject::CreateFromPasteboard(PasteMode paste_mode) {
 #if DCHECK_IS_ON()
   HashSet<String> types_seen;
 #endif
-  WebClipboard::Buffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
+  mojom::ClipboardBuffer buffer = Pasteboard::GeneralPasteboard()->GetBuffer();
   uint64_t sequence_number =
       Platform::Current()->Clipboard()->SequenceNumber(buffer);
   bool ignored;

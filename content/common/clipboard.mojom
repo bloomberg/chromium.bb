@@ -5,48 +5,43 @@
 module content.mojom;
 
 import "mojo/common/string16.mojom";
-import "ui/base/clipboard/mojom/clipboard.mojom";
+import "third_party/WebKit/common/clipboard/clipboard.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
-enum ClipboardFormat {
-  kPlaintext,
-  kHtml,
-  kSmartPaste,
-  kBookmark,
-};
-
 interface ClipboardHost {
   [Sync]
-  GetSequenceNumber(ui.mojom.ClipboardType type) => (uint64 result);
+  GetSequenceNumber(blink.mojom.ClipboardBuffer buffer) => (uint64 result);
 
   [Sync]
-  IsFormatAvailable(ClipboardFormat format,
-                    ui.mojom.ClipboardType type) => (bool result);
+  IsFormatAvailable(blink.mojom.ClipboardFormat format,
+                    blink.mojom.ClipboardBuffer buffer) => (bool result);
 
   [Sync]
-  ReadAvailableTypes(ui.mojom.ClipboardType type) =>
+  ReadAvailableTypes(blink.mojom.ClipboardBuffer buffer) =>
       (array<mojo.common.mojom.String16> types, bool result);
 
   [Sync]
-  ReadText(ui.mojom.ClipboardType type) => (mojo.common.mojom.String16 result);
+  ReadText(blink.mojom.ClipboardBuffer buffer) =>
+      (mojo.common.mojom.String16 result);
 
   [Sync]
-  ReadHtml(ui.mojom.ClipboardType type) => (mojo.common.mojom.String16 markup,
-                                            url.mojom.Url url,
-                                            uint32 fragment_start,
-                                            uint32 fragment_end);
+  ReadHtml(blink.mojom.ClipboardBuffer buffer) =>
+      (mojo.common.mojom.String16 markup,
+       url.mojom.Url url,
+       uint32 fragment_start,
+       uint32 fragment_end);
 
   [Sync]
-  ReadRtf(ui.mojom.ClipboardType type) => (string result);
+  ReadRtf(blink.mojom.ClipboardBuffer buffer) => (string result);
 
   [Sync]
-  ReadImage(ui.mojom.ClipboardType type) => (string blob_uuid,
-                                             string mime_type,
-                                             int64 size);
+  ReadImage(blink.mojom.ClipboardBuffer buffer) => (string blob_uuid,
+                                                    string mime_type,
+                                                    int64 size);
 
   [Sync]
-  ReadCustomData(ui.mojom.ClipboardType clipboard_type,
+  ReadCustomData(blink.mojom.ClipboardBuffer buffer,
                  mojo.common.mojom.String16 type) =>
                      (mojo.common.mojom.String16 result);
 
@@ -54,31 +49,32 @@ interface ClipboardHost {
   // sender sends the different types of data it'd like to write to the
   // receiver. Then, it sends a commit message to commit the data to the system
   // clipboard.
-  WriteText(ui.mojom.ClipboardType type, mojo.common.mojom.String16 text);
+  WriteText(blink.mojom.ClipboardBuffer buffer,
+            mojo.common.mojom.String16 text);
 
-  WriteHtml(ui.mojom.ClipboardType type,
+  WriteHtml(blink.mojom.ClipboardBuffer buffer,
             mojo.common.mojom.String16 markup,
             url.mojom.Url url);
 
-  WriteSmartPasteMarker(ui.mojom.ClipboardType type);
+  WriteSmartPasteMarker(blink.mojom.ClipboardBuffer buffer);
 
   WriteCustomData(
-      ui.mojom.ClipboardType type,
+      blink.mojom.ClipboardBuffer buffer,
       map<mojo.common.mojom.String16, mojo.common.mojom.String16> data);
 
   // TODO(dcheng): The |url| parameter should really be a GURL, but <canvas>'s
   // copy as image tries to set very long data: URLs on the clipboard. Using
   // GURL causes the browser to kill the renderer for sending a bad IPC (GURLs
   // bigger than 2 megabytes are considered to be bad). https://crbug.com/459822
-  WriteBookmark(ui.mojom.ClipboardType type,
+  WriteBookmark(blink.mojom.ClipboardBuffer buffer,
                 string url,
                 mojo.common.mojom.String16 title);
 
-  WriteImage(ui.mojom.ClipboardType type,
+  WriteImage(blink.mojom.ClipboardBuffer buffer,
              gfx.mojom.Size size_in_pixels,
              handle<shared_buffer> shared_buffer_handle);
 
-  CommitWrite(ui.mojom.ClipboardType type);
+  CommitWrite(blink.mojom.ClipboardBuffer buffer);
 
   // OS_MACOSX only
   WriteStringToFindPboard(mojo.common.mojom.String16 text);

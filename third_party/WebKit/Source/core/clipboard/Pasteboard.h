@@ -70,12 +70,12 @@ class CORE_EXPORT Pasteboard {
   bool IsSelectionMode() const;
   void SetSelectionMode(bool);
 
-  WebClipboard::Buffer GetBuffer() const { return buffer_; }
+  mojom::ClipboardBuffer GetBuffer() const { return buffer_; }
 
  private:
   Pasteboard();
 
-  WebClipboard::Buffer buffer_;
+  mojom::ClipboardBuffer buffer_;
 };
 
 }  // namespace blink

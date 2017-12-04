@@ -16,7 +16,7 @@ namespace blink {
 // used in layout and unit tests.
 class BLINK_PLATFORM_EXPORT WebMockClipboard : public WebClipboard {
  public:
-  virtual WebImage ReadRawImage(Buffer) { return WebImage(); }
+  virtual WebImage ReadRawImage(mojom::ClipboardBuffer) { return WebImage(); }
 
  protected:
   // Convenience method for WebMockClipoard implementations to create a blob

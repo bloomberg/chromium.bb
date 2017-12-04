@@ -44,7 +44,6 @@ _typemap_imports = [
   "//storage/common/typemaps.gni",
   "//third_party/WebKit/common/typemaps.gni",
   "//third_party/WebKit/public/public_typemaps.gni",
-  "//ui/base/clipboard/mojom/typemaps.gni",
   "//ui/base/mojo/typemaps.gni",
   "//ui/display/mojo/typemaps.gni",
   "//ui/events/devices/mojo/typemaps.gni",

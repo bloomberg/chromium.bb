@@ -36,29 +36,31 @@ MockWebClipboardImpl::MockWebClipboardImpl()
 
 MockWebClipboardImpl::~MockWebClipboardImpl() {}
 
-uint64_t MockWebClipboardImpl::SequenceNumber(Buffer) {
+uint64_t MockWebClipboardImpl::SequenceNumber(blink::mojom::ClipboardBuffer) {
   return m_sequenceNumber;
 }
 
-bool MockWebClipboardImpl::IsFormatAvailable(Format format, Buffer buffer) {
+bool MockWebClipboardImpl::IsFormatAvailable(
+    blink::mojom::ClipboardFormat format,
+    blink::mojom::ClipboardBuffer buffer) {
   switch (format) {
-    case kFormatPlainText:
+    case blink::mojom::ClipboardFormat::kPlaintext:
       return !m_plainText.is_null();
 
-    case kFormatHTML:
+    case blink::mojom::ClipboardFormat::kHtml:
       return !m_htmlText.is_null();
 
-    case kFormatSmartPaste:
+    case blink::mojom::ClipboardFormat::kSmartPaste:
       return m_writeSmartPaste;
 
-    default:
-      NOTREACHED();
+    case blink::mojom::ClipboardFormat::kBookmark:
       return false;
   }
+  return false;
 }
 
 WebVector<WebString> MockWebClipboardImpl::ReadAvailableTypes(
-    Buffer buffer,
+    blink::mojom::ClipboardBuffer buffer,
     bool* containsFilenames) {
   *containsFilenames = false;
   std::vector<WebString> results;
@@ -82,13 +84,13 @@ WebVector<WebString> MockWebClipboardImpl::ReadAvailableTypes(
 }
 
 blink::WebString MockWebClipboardImpl::ReadPlainText(
-    blink::WebClipboard::Buffer buffer) {
+    blink::mojom::ClipboardBuffer buffer) {
   return WebString::FromUTF16(m_plainText);
 }
 
 // TODO(wtc): set output argument *url.
 blink::WebString MockWebClipboardImpl::ReadHTML(
-    blink::WebClipboard::Buffer buffer,
+    blink::mojom::ClipboardBuffer buffer,
     blink::WebURL* url,
     unsigned* fragmentStart,
     unsigned* fragmentEnd) {
@@ -98,7 +100,7 @@ blink::WebString MockWebClipboardImpl::ReadHTML(
 }
 
 blink::WebBlobInfo MockWebClipboardImpl::ReadImage(
-    blink::WebClipboard::Buffer buffer) {
+    blink::mojom::ClipboardBuffer buffer) {
   std::vector<unsigned char> output;
   const SkBitmap& bitmap = m_image.GetSkBitmap();
   if (!gfx::PNGCodec::FastEncodeBGRASkBitmap(
@@ -110,12 +112,12 @@ blink::WebBlobInfo MockWebClipboardImpl::ReadImage(
 }
 
 blink::WebImage MockWebClipboardImpl::ReadRawImage(
-    blink::WebClipboard::Buffer buffer) {
+    blink::mojom::ClipboardBuffer buffer) {
   return m_image;
 }
 
 blink::WebString MockWebClipboardImpl::ReadCustomData(
-    blink::WebClipboard::Buffer buffer,
+    blink::mojom::ClipboardBuffer buffer,
     const blink::WebString& type) {
   std::map<base::string16, base::string16>::const_iterator it =
       m_customData.find(type.Utf16());
