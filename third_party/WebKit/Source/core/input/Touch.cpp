@@ -31,15 +31,32 @@
 
 namespace blink {
 
-static FloatPoint ContentsOffset(LocalFrame* frame) {
+namespace {
+
+FloatPoint ContentsOffset(LocalFrame* frame) {
   if (!frame)
     return FloatPoint();
   LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return FloatPoint();
   float scale = 1.0f / frame->PageZoomFactor();
-  return FloatPoint(frame_view->GetScrollOffset()).ScaledBy(scale);
+  return FloatPoint(
+             frame_view->LayoutViewportScrollableArea()->GetScrollOffset())
+      .ScaledBy(scale);
 }
+
+LayoutPoint PageToAbsolute(LocalFrame* frame, const FloatPoint& page_pos) {
+  FloatPoint converted_point;
+  if (frame && frame->View())
+    converted_point = frame->View()->DocumentToAbsolute(page_pos);
+  else
+    converted_point = page_pos;
+
+  float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
+  return LayoutPoint(converted_point.ScaledBy(scale_factor));
+}
+
+}  // namespace
 
 Touch::Touch(LocalFrame* frame,
              EventTarget* target,
@@ -58,10 +75,8 @@ Touch::Touch(LocalFrame* frame,
       radius_(radius),
       rotation_angle_(rotation_angle),
       force_(force),
-      region_(region) {
-  float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
-  absolute_location_ = LayoutPoint(page_pos.ScaledBy(scale_factor));
-}
+      region_(region),
+      absolute_location_(PageToAbsolute(frame, page_pos)) {}
 
 Touch::Touch(EventTarget* target,
              int identifier,
@@ -93,10 +108,8 @@ Touch::Touch(LocalFrame* frame, const TouchInit& initializer)
       radius_(FloatSize(initializer.radiusX(), initializer.radiusY())),
       rotation_angle_(initializer.rotationAngle()),
       force_(initializer.force()),
-      region_(initializer.region()) {
-  float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
-  absolute_location_ = LayoutPoint(page_pos_.ScaledBy(scale_factor));
-}
+      region_(initializer.region()),
+      absolute_location_(PageToAbsolute(frame, page_pos_)) {}
 
 Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
   return new Touch(event_target, identifier_, client_pos_, screen_pos_,

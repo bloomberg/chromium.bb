@@ -697,9 +697,11 @@ class CORE_EXPORT LocalFrameView final
   // coordinates" in RLS. Without RLS, "absolute coordinates" == "document
   // coordinates". https://crbug.com/417782.
   IntRect AbsoluteToRootFrame(const IntRect&) const;
+  IntPoint AbsoluteToRootFrame(const IntPoint&) const;
   IntRect RootFrameToDocument(const IntRect&);
   FloatPoint RootFrameToDocument(const FloatPoint&);
   DoublePoint DocumentToAbsolute(const DoublePoint&) const;
+  FloatPoint DocumentToAbsolute(const FloatPoint&) const;
 
   // Handles painting of the contents of the view as well as the scrollbars.
   void Paint(GraphicsContext&,
