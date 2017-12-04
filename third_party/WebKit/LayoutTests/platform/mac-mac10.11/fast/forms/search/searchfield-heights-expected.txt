@@ -22,16 +22,16 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
 layer at (11,33) size 94x11
   LayoutBlockFlow {DIV} at (0,0) size 94x11
-    LayoutText {#text} at (0,0) size 19x11
-      text run at (0,0) width 19: "mini"
+    LayoutText {#text} at (0,0) size 18x11
+      text run at (0,0) width 18: "mini"
 layer at (126,31) size 113x13
   LayoutBlockFlow {DIV} at (0,0) size 113x13
-    LayoutText {#text} at (0,0) size 28x13
-      text run at (0,0) width 28: "small"
+    LayoutText {#text} at (0,0) size 27x13
+      text run at (0,0) width 27: "small"
 layer at (264,29) size 131x16
   LayoutBlockFlow {DIV} at (0,0) size 131x16
-    LayoutText {#text} at (0,0) size 43x16
-      text run at (0,0) width 43: "regular"
+    LayoutText {#text} at (0,0) size 44x16
+      text run at (0,0) width 44: "regular"
 layer at (106,34) size 9x9 transparent
   LayoutBlockFlow {DIV} at (95,1) size 9x9
 layer at (240,32) size 11x11 transparent

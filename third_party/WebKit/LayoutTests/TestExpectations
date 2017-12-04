@@ -3052,15 +3052,7 @@ crbug.com/785931 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManu
 
 # crbug.com/736177: Failures likely related to different results on Mac with different GPUs
 crbug.com/736177 [ Mac10.12 ] fast/forms/form-element-geometry.html [ Failure Pass ]
-# These tests are failing on both Mac-10.12 when using an Intel GPU and Mac-10.11.6 when using no GPU
-crbug.com/736177 [ Mac ] fast/forms/control-restrict-line-height.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] fast/forms/input-appearance-height.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/placeholder-position.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/search/search-appearance-basic.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/search/search-cancel-button-style-sharing.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/search/search-display-none-cancel-button.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/search/search-rtl.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] fast/forms/search/searchfield-heights.html [ Failure Pass ]
 # These tests are failing on Mac-10.12 when using an Intel GPU and Mac Retina
 crbug.com/736177 [ Mac10.12 Retina ] compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] css1/box_properties/acid_test.html [ Failure Pass ]
