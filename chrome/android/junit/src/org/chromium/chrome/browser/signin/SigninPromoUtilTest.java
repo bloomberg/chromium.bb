@@ -22,8 +22,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
-import java.util.Set;
-
 /** Tests for {@link SigninPromoUtil}. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -79,18 +77,38 @@ public class SigninPromoUtilTest {
     }
 
     @Test
-    public void whenAllConditionsAreMetShouldReturnTrue() {
+    public void whenNoAccountListStoredShouldReturnTrue() {
         when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        // Old implementation hasn't been storing account list
+        when(mPreferenceManager.getSigninPromoLastAccountNames()).thenReturn(null);
         Assert.assertTrue(SigninPromoUtil.shouldLaunchSigninPromo(
                 mPreferenceManager, 42, false, false, ImmutableSet.of("test@gmail.com")));
     }
 
     @Test
+    public void whenHasNewAccountShouldReturnTrue() {
+        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        when(mPreferenceManager.getSigninPromoLastAccountNames())
+                .thenReturn(ImmutableSet.of("test@gmail.com"));
+        Assert.assertTrue(SigninPromoUtil.shouldLaunchSigninPromo(mPreferenceManager, 42, false,
+                false, ImmutableSet.of("test@gmail.com", "test2@gmail.com")));
+    }
+
+    @Test
     public void whenAccountListUnchangedShouldReturnFalse() {
         when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
-        Set<String> accountNames = ImmutableSet.of("test@gmail.com");
-        when(mPreferenceManager.getSigninPromoLastAccountNames()).thenReturn(accountNames);
+        when(mPreferenceManager.getSigninPromoLastAccountNames())
+                .thenReturn(ImmutableSet.of("test@gmail.com"));
         Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
-                mPreferenceManager, 42, false, false, accountNames));
+                mPreferenceManager, 42, false, false, ImmutableSet.of("test@gmail.com")));
+    }
+
+    @Test
+    public void whenNoNewAccountsShouldReturnFalse() {
+        when(mPreferenceManager.getSigninPromoLastShownVersion()).thenReturn(40);
+        when(mPreferenceManager.getSigninPromoLastAccountNames())
+                .thenReturn(ImmutableSet.of("test@gmail.com", "test2@gmail.com"));
+        Assert.assertFalse(SigninPromoUtil.shouldLaunchSigninPromo(
+                mPreferenceManager, 42, false, false, ImmutableSet.of("test2@gmail.com")));
     }
 }
