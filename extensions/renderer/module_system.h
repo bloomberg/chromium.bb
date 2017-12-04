@@ -17,7 +17,6 @@
 #include "extensions/renderer/native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_injection_callback.h"
-#include "gin/modules/module_registry_observer.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -41,10 +40,7 @@ class SourceMap;
 // Note that a ModuleSystem must be used only in conjunction with a single
 // v8::Context.
 // TODO(koz): Rename this to JavaScriptModuleSystem.
-// TODO(yzshen): crbug.com/718047 Remove all gin-related things. Mojo no longer
-// relies on gin.
-class ModuleSystem : public ObjectBackedNativeHandler,
-                     public gin::ModuleRegistryObserver {
+class ModuleSystem : public ObjectBackedNativeHandler {
  public:
   class ExceptionHandler {
    public:
@@ -212,10 +208,6 @@ class ModuleSystem : public ObjectBackedNativeHandler,
       const std::string& native_name);
   void RequireNative(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Return a promise for a requested module.
-  // |args[0]| - the name of a module.
-  void RequireAsync(const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // |args[0]| - the name of a module.
   // This method directly executes the script in the current scope.
   void LoadScript(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -231,17 +223,6 @@ class ModuleSystem : public ObjectBackedNativeHandler,
   v8::Local<v8::Value> LoadModuleWithNativeAPIBridge(
       const std::string& module_name,
       v8::Local<v8::Value> api_object);
-
-  // Invoked when a module is loaded in response to a requireAsync call.
-  // Resolves |resolver| with |value|.
-  void OnModuleLoaded(
-      std::unique_ptr<v8::Global<v8::Promise::Resolver>> resolver,
-      v8::Local<v8::Value> value);
-
-  // gin::ModuleRegistryObserver overrides.
-  void OnDidAddPendingModule(
-      const std::string& id,
-      const std::vector<std::string>& dependencies) override;
 
   // Marks any existing NativeHandler named |name| as clobbered.
   // See |clobbered_native_handlers_|.
@@ -286,8 +267,6 @@ class ModuleSystem : public ObjectBackedNativeHandler,
 
   // The set of modules that we've attempted to load.
   std::set<std::string> loaded_modules_;
-
-  base::WeakPtrFactory<ModuleSystem> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleSystem);
 };

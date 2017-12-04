@@ -284,8 +284,6 @@ source_set("renderer") {
     "//extensions/common",
     "//extensions/common/api",
     "//gin",
-    "//mojo/edk/js",
-    "//mojo/public/js",
     "//skia",
     "//third_party/WebKit/public:blink",
     "//third_party/cld_3/src/src:cld_3",
@@ -368,11 +366,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "activity_log_converter_strategy_unittest.cc",
-    "api/mojo_private/mojo_private_unittest.cc",
     "api_activity_logger_unittest.cc",
-    "api_test_base.cc",
-    "api_test_base.h",
-    "api_test_base_unittest.cc",
     "bindings/api_binding_hooks_test_delegate.cc",
     "bindings/api_binding_hooks_test_delegate.h",
     "bindings/api_binding_js_util_unittest.cc",
@@ -428,7 +422,6 @@ source_set("unit_tests") {
     "//gin",
     "//gin:gin_test",
     "//ipc:test_support",
-    "//mojo/edk/js",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
