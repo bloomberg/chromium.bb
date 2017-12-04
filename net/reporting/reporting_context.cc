@@ -20,7 +20,6 @@
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_network_change_observer.h"
 #include "net/reporting/reporting_observer.h"
-#include "net/reporting/reporting_persister.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
 
@@ -80,7 +79,6 @@ ReportingContext::ReportingContext(const ReportingPolicy& policy,
       cache_(ReportingCache::Create(this)),
       endpoint_manager_(ReportingEndpointManager::Create(this)),
       delivery_agent_(ReportingDeliveryAgent::Create(this)),
-      persister_(ReportingPersister::Create(this)),
       garbage_collector_(ReportingGarbageCollector::Create(this)),
       network_change_observer_(ReportingNetworkChangeObserver::Create(this)) {}
 

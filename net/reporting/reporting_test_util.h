@@ -123,8 +123,8 @@ class TestReportingContext : public ReportingContext {
   }
 
  private:
-  // Owned by the Persister and GarbageCollector, respectively, but referenced
-  // here to preserve type:
+  // Owned by the DeliveryAgent and GarbageCollector, respectively, but
+  // referenced here to preserve type:
 
   base::MockTimer* delivery_timer_;
   base::MockTimer* garbage_collection_timer_;
@@ -171,8 +171,6 @@ class ReportingTestBase : public ::testing::Test {
   ReportingGarbageCollector* garbage_collector() {
     return context_->garbage_collector();
   }
-
-  ReportingPersister* persister() { return context_->persister(); }
 
   base::TimeTicks yesterday();
   base::TimeTicks now();
