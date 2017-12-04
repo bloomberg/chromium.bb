@@ -23,6 +23,7 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
   thanks to Lars Bjørndal
 - Added a bunch of whitespace-like codepoints as spaces thanks to
   Rimas Kudelis
+- Added Lithuanian 6-dot table thanks to Rimas Kudelis.
 - Addition of more characters to the French tables thanks to Samuel
   Thibault
 - Improvements to the Hungarian tables thanks to Attila Hammer
@@ -34,8 +35,9 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 *** Improved documentation
 - Bue Vester-Andersen added some notes about back-translation and
   documented all possible values of the ~mode~ parameter. Also the
-  description of ~decpoint~ and ~litdigit~ was improved
-- The ~match~ opcode is now documented
+  description of ~decpoint~ and ~litdigit~ was improved.
+- The ~match~ opcode is now documented thanks to Mike Gray and
+  Christian Egli.
 
 *** lou_maketable
 Numerous bug fixes and performance enhancements thanks to Bert Frees
@@ -61,6 +63,7 @@ a warning.
 ** New, renamed or removed tables
 *** New
 - no-no-braillo-047-01.dis
+- lt-6dot.utb
 *** Renamed
 *** Removed
 
