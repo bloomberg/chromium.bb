@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_TYPEMAP_TRAITS_H_
-#define MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_TYPEMAP_TRAITS_H_
+#ifndef MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_STRUCT_TRAITS_H_
+#define MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_STRUCT_TRAITS_H_
 
 #include "media/capture/mojo/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
@@ -187,4 +187,4 @@ struct StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
 };
 }  // namespace mojo
 
-#endif  // MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_TYPEMAP_TRAITS_H_
+#endif  // MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_STRUCT_TRAITS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/mojo/video_capture_types_typemap_traits.h"
+#include "media/capture/mojo/video_capture_types_struct_traits.h"
 
 #include "media/base/ipc/media_param_traits_macros.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
