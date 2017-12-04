@@ -157,6 +157,12 @@ cr.define('extension_navigation_helper_tests', function() {
       navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id2});
       expectEquals(++expectedLength, history.length);
+
+      // Using replaceWith, which passes true for replaceState should not push
+      // state.
+      navigationHelper.updateHistory(
+          {page: Page.DETAILS, extensionId: id1}, true /* replaceState */);
+      expectEquals(expectedLength, history.length);
     });
 
     test(assert(TestNames.SupportedRoutes), function() {

@@ -384,7 +384,7 @@ cr.define('extensions', function() {
            this.currentPage_.page == Page.ERRORS) &&
           this.currentPage_.extensionId == itemId) {
         // Leave the details page (the 'list' page is a fine choice).
-        extensions.navigation.navigateTo({page: Page.LIST});
+        extensions.navigation.replaceWith({page: Page.LIST});
       }
     },
 
@@ -428,7 +428,7 @@ cr.define('extensions', function() {
         data = this.getData_(newPage.extensionId);
         if (!data) {
           // Attempting to view an invalid (removed?) app or extension ID.
-          extensions.navigation.navigateTo({page: Page.LIST});
+          extensions.navigation.replaceWith({page: Page.LIST});
           return;
         }
       }
