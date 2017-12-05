@@ -193,6 +193,9 @@ void RemoteFrameView::SetupRenderThrottling() {
 void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,
                                                    bool subtree_throttled) {
   TRACE_EVENT0("blink", "RemoteFrameView::UpdateRenderThrottlingStatus");
+  if (!remote_frame_->Client())
+    return;
+
   bool was_throttled = CanThrottleRendering();
 
   // Note that we disallow throttling of 0x0 and display:none frames because
