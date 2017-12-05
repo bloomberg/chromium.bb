@@ -6,20 +6,24 @@
 #define CONTENT_BROWSER_DEVTOOLS_SHARED_WORKER_DEVTOOLS_AGENT_HOST_H_
 
 #include "base/macros.h"
-#include "content/browser/devtools/worker_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "ipc/ipc_listener.h"
 
 namespace content {
 
 class SharedWorkerInstance;
+class SharedWorkerHost;
+class RenderProcessHost;
 
-class SharedWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
+class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
+                                      public IPC::Listener {
  public:
   using List = std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>;
 
-  SharedWorkerDevToolsAgentHost(WorkerId worker_id,
-                                const SharedWorkerInstance& shared_worker);
+  explicit SharedWorkerDevToolsAgentHost(SharedWorkerHost* worker_host);
 
   // DevToolsAgentHost override.
+  BrowserContext* GetBrowserContext() override;
   std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
@@ -27,13 +31,31 @@ class SharedWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   void Reload() override;
   bool Close() override;
 
-  bool Matches(const SharedWorkerInstance& other);
+  // DevToolsAgentHostImpl overrides.
+  void AttachSession(DevToolsSession* session) override;
+  void DetachSession(int session_id) override;
+  bool DispatchProtocolMessage(DevToolsSession* session,
+                               const std::string& message) override;
+
+  // IPC::Listener implementation.
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
+  bool Matches(SharedWorkerHost* worker_host);
+  void WorkerReadyForInspection();
+  // Returns whether the worker should be paused for reattach.
+  bool WorkerRestarted(SharedWorkerHost* worker_host);
+  void WorkerDestroyed();
 
  private:
   friend class SharedWorkerDevToolsManagerTest;
 
   ~SharedWorkerDevToolsAgentHost() override;
-  std::unique_ptr<SharedWorkerInstance> shared_worker_;
+  RenderProcessHost* GetProcess();
+  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
+
+  SharedWorkerHost* worker_host_;
+  std::unique_ptr<SharedWorkerInstance> instance_;
+  bool waiting_ready_for_reattach_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgentHost);
 };
