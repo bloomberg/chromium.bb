@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -22,6 +23,23 @@ void ReportError(XmlParser::ParseCallback callback, const std::string& error) {
 }
 
 enum class TextNodeType { kText, kCData };
+
+// Returns false if the current node in |xml_reader| is not text or CData.
+// Otherwise returns true and sets |text| to the text/CData of the current node
+// and |node_type| to kText or kCData.
+bool GetTextFromNode(XmlReader* xml_reader,
+                     std::string* text,
+                     TextNodeType* node_type) {
+  if (xml_reader->GetTextIfTextElement(text)) {
+    *node_type = TextNodeType::kText;
+    return true;
+  }
+  if (xml_reader->GetTextIfCDataElement(text)) {
+    *node_type = TextNodeType::kCData;
+    return true;
+  }
+  return false;
+}
 
 base::Value CreateTextNode(const std::string& text, TextNodeType node_type) {
   base::Value element(base::Value::Type::DICTIONARY);
@@ -110,16 +128,18 @@ void XmlParser::Parse(const std::string& xml, ParseCallback callback) {
       continue;
     }
 
-    std::string cdata;
     std::string text;
+    TextNodeType text_node_type = TextNodeType::kText;
     base::Value* current_element =
         element_stack.empty() ? nullptr : element_stack.back();
     bool push_new_node_to_stack = false;
     base::Value new_element;
-    if (xml_reader.GetTextIfTextElement(&text)) {
-      new_element = CreateTextNode(text, TextNodeType::kText);
-    } else if (xml_reader.GetTextIfCDataElement(&text)) {
-      new_element = CreateTextNode(text, TextNodeType::kCData);
+    if (GetTextFromNode(&xml_reader, &text, &text_node_type)) {
+      if (!base::IsStringUTF8(text)) {
+        ReportError(std::move(callback), "Invalid XML: invalid UTF8 text.");
+        return;
+      }
+      new_element = CreateTextNode(text, text_node_type);
     } else if (xml_reader.IsElement()) {
       new_element = CreateNewElement(xml_reader.NodeFullName());
       PopulateNamespaces(&new_element, &xml_reader);
