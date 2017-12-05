@@ -111,47 +111,6 @@ function detectVideo(videoElementName, predicate) {
   });
 }
 
-// Calculates the current frame rate and compares to |expectedFrameRate|
-// The promise is resolved with value |true| if the calculated frame rate
-// is +-1 the expected or rejected with an error message if five calculations
-// fail to match |expectedFrameRate|.
-function validateFrameRate(videoElementName, expectedFrameRate) {
-  return new Promise((resolve, reject) => {
-    var videoElement = $(videoElementName);
-    var startTime = new Date().getTime();
-    var decodedFrames = videoElement.webkitDecodedFrameCount;
-    var attempts = 0;
-
-    if (videoElement.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA ||
-            videoElement.paused || videoElement.ended) {
-      reject("getFrameRate - " + videoElementName + " is not plaing.");
-      return;
-    }
-
-    var waitVideo = setInterval(function() {
-      attempts++;
-      currentTime = new Date().getTime();
-      deltaTime = (currentTime - startTime) / 1000;
-      startTime = currentTime;
-
-      // Calculate decoded frames per sec.
-      var fps =
-          (videoElement.webkitDecodedFrameCount - decodedFrames) / deltaTime;
-      decodedFrames = videoElement.webkitDecodedFrameCount;
-
-      console.log('FrameRate in ' + videoElementName + ' is ' + fps);
-      if (fps < expectedFrameRate + 1  && fps > expectedFrameRate - 1) {
-        clearInterval(waitVideo);
-        resolve(true);
-      } else if (attempts == 5) {
-        clearInterval(waitVideo);
-        reject('Expected frame rate ' + expectedFrameRate + ' for ' +
-               'element ' + videoElementName + ', but got ' + fps);
-      }
-    }, 1000);
-  });
-}
-
 function waitForConnectionToStabilize(peerConnection) {
   return new Promise((resolve, reject) => {
     peerConnection.onsignalingstatechange = function(event) {
