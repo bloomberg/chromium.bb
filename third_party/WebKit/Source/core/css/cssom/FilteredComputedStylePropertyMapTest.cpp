@@ -4,29 +4,32 @@
 
 #include "core/css/cssom/FilteredComputedStylePropertyMap.h"
 
+#include <memory>
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/dom/Element.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
-class FilteredComputedStylePropertyMapTest : public ::testing::Test {
+class FilteredComputedStylePropertyMapTest : public PageTestBase {
  public:
-  FilteredComputedStylePropertyMapTest() : page_(DummyPageHolder::Create()) {
-    declaration_ = CSSComputedStyleDeclaration::Create(
-        page_->GetDocument().documentElement());
-  }
+  FilteredComputedStylePropertyMapTest() {}
 
   CSSComputedStyleDeclaration* Declaration() const {
     return declaration_.Get();
   }
-  Node* PageNode() { return page_->GetDocument().documentElement(); }
+
+  void SetUp() override {
+    PageTestBase::SetUp(IntSize());
+    declaration_ =
+        CSSComputedStyleDeclaration::Create(GetDocument().documentElement());
+  }
+
+  Node* PageNode() { return GetDocument().documentElement(); }
 
  private:
-  std::unique_ptr<DummyPageHolder> page_;
   Persistent<CSSComputedStyleDeclaration> declaration_;
 };
 

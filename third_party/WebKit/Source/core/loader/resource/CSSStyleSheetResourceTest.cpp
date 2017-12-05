@@ -19,7 +19,7 @@
 #include "core/css/parser/CSSParserSelector.h"
 #include "core/dom/Document.h"
 #include "core/loader/resource/ImageResource.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/FetchContext.h"
@@ -43,17 +43,20 @@ class Document;
 
 namespace {
 
-class CSSStyleSheetResourceTest : public ::testing::Test {
+class CSSStyleSheetResourceTest : public PageTestBase {
  protected:
   CSSStyleSheetResourceTest() {
     original_memory_cache_ =
         ReplaceMemoryCacheForTesting(MemoryCache::Create());
-    page_ = DummyPageHolder::Create();
-    GetDocument().SetURL(KURL(NullURL(), "https://localhost/"));
   }
 
   ~CSSStyleSheetResourceTest() override {
     ReplaceMemoryCacheForTesting(original_memory_cache_.Release());
+  }
+
+  void SetUp() override {
+    PageTestBase::SetUp(IntSize());
+    GetDocument().SetURL(KURL(NullURL(), "https://localhost/"));
   }
 
   CSSStyleSheetResource* CreateAndSaveTestStyleSheetResource() {
@@ -69,10 +72,7 @@ class CSSStyleSheetResourceTest : public ::testing::Test {
     return css_resource;
   }
 
-  Document& GetDocument() { return page_->GetDocument(); }
-
   Persistent<MemoryCache> original_memory_cache_;
-  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {

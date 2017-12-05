@@ -82,10 +82,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   std::unique_ptr<StringKeyframeVector> keyframe_vector5_;
   Persistent<StringKeyframeEffectModel> keyframe_animation_effect5_;
 
-  Persistent<Document> document_;
   Persistent<Element> element_;
   Persistent<DocumentTimeline> timeline_;
-  std::unique_ptr<DummyPageHolder> page_holder_;
 
   void SetUp() override {
     RenderingTest::SetUp();
@@ -113,13 +111,11 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     keyframe_animation_effect5_ =
         StringKeyframeEffectModel::Create(*keyframe_vector5_);
 
-    page_holder_ = DummyPageHolder::Create();
-    document_ = &page_holder_->GetDocument();
-    document_->GetAnimationClock().ResetTimeForTesting();
+    GetAnimationClock().ResetTimeForTesting();
 
-    timeline_ = DocumentTimeline::Create(document_.Get());
+    timeline_ = DocumentTimeline::Create(&GetDocument());
     timeline_->ResetForTesting();
-    element_ = document_->createElement("test");
+    element_ = GetDocument().createElement("test");
 
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     base_url_ = "http://www.test.com/";
@@ -287,9 +283,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   }
 
   void SimulateFrame(double time) {
-    document_->GetAnimationClock().UpdateTime(time);
-    document_->GetPendingAnimations().Update(Optional<CompositorElementIdSet>(),
-                                             false);
+    GetAnimationClock().UpdateTime(time);
+    GetPendingAnimations().Update(Optional<CompositorElementIdSet>(), false);
     timeline_->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 
@@ -1194,7 +1189,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        cancelIncompatibleCompositorAnimations) {
-  Persistent<Element> element = document_->createElement("shared");
+  Persistent<Element> element = GetDocument().createElement("shared");
 
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
@@ -1284,7 +1279,7 @@ void UpdateDummyEffectNode(ObjectPaintProperties& properties,
 
 TEST_F(AnimationCompositorAnimationsTest,
        canStartElementOnCompositorTransformSPv2) {
-  Persistent<Element> element = document_->createElement("shared");
+  Persistent<Element> element = GetDocument().createElement("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
 
@@ -1316,7 +1311,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        canStartElementOnCompositorEffectSPv2) {
-  Persistent<Element> element = document_->createElement("shared");
+  Persistent<Element> element = GetDocument().createElement("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
 
