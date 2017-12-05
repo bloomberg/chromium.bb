@@ -39,9 +39,6 @@ void NGTextFragmentPainter::Paint(const Document& document,
   LayoutPoint box_origin(offset.left, offset.top);
   box_origin.Move(adjusted_paint_offset.X(), adjusted_paint_offset.Y());
 
-  LayoutRect box_rect(
-      box_origin, LayoutSize(fragment_.Size().width, fragment_.Size().height));
-
   GraphicsContext& context = paint_info.context;
 
   bool is_printing = paint_info.IsPrinting();
@@ -85,6 +82,21 @@ void NGTextFragmentPainter::Paint(const Document& document,
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
 
+  LayoutRect box_rect(box_origin, fragment_.Size().ToLayoutSize());
+  Optional<GraphicsContextStateSaver> state_saver;
+  NGLineOrientation orientation = text_fragment.LineOrientation();
+  if (orientation != NGLineOrientation::kHorizontal) {
+    state_saver.emplace(context);
+    // Because we rotate the GraphicsContext to be logical, flip the
+    // |box_rect| to match to it.
+    box_rect.SetSize(
+        LayoutSize(fragment_.Size().height, fragment_.Size().width));
+    context.ConcatCTM(TextPainterBase::Rotation(
+        box_rect, orientation == NGLineOrientation::kClockWiseVertical
+                      ? TextPainterBase::kClockwise
+                      : TextPainterBase::kCounterclockwise));
+  }
+
   NGTextPainter text_painter(context, font, text_fragment, text_origin,
                              box_rect, text_fragment.IsHorizontal());
 
@@ -100,13 +112,15 @@ void NGTextFragmentPainter::Paint(const Document& document,
     bool has_line_through_decoration = false;
     if (style.TextDecorationsInEffect() != TextDecoration::kNone) {
       LayoutPoint local_origin = LayoutPoint(box_origin);
-      LayoutUnit width = fragment_.Size().width;
+      LayoutUnit width = box_rect.Width();
       const NGPhysicalBoxFragment* decorating_box = nullptr;
       const ComputedStyle* decorating_box_style =
           decorating_box ? &decorating_box->Style() : nullptr;
 
-      // TODO(eae): Use correct baseline when available.
-      FontBaseline baseline_type = kAlphabeticBaseline;
+      const FontDescription& font_description = font.GetFontDescription();
+      FontBaseline baseline_type = font_description.IsVerticalAnyUpright()
+                                       ? kIdeographicBaseline
+                                       : kAlphabeticBaseline;
 
       text_painter.ComputeDecorationInfo(decoration_info, box_origin,
                                          local_origin, width, baseline_type,
