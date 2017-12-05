@@ -13,8 +13,7 @@ class ToughPinchZoomCasesPage(page_module.Page):
       name = url
     super(ToughPinchZoomCasesPage, self).__init__(
         url=url, page_set=page_set, name=name,
-        shared_page_state_class=shared_page_state.SharedDesktopPageState,
-        credentials_path = 'data/credentials.json')
+        shared_page_state_class=shared_page_state.SharedDesktopPageState)
     self.target_scale_factor = page_set.target_scale_factor
 
   def RunPinchGesture(self, action_runner, left_anchor_ratio=0.5,
@@ -60,8 +59,6 @@ class GmailPage(ToughPinchZoomCasesPage):
       url='https://mail.google.com/mail/',
       page_set=page_set)
 
-    self.credentials = 'google'
-
   def RunNavigateSteps(self, action_runner):
     super(GmailPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
@@ -78,8 +75,6 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
       url='https://www.google.com/calendar/',
       page_set=page_set)
 
-    self.credentials = 'google'
-
   def RunNavigateSteps(self, action_runner):
     super(GoogleCalendarPage, self).RunNavigateSteps(action_runner)
     action_runner.Wait(2)
@@ -93,8 +88,6 @@ class GoogleImageSearchPage(ToughPinchZoomCasesPage):
       url='https://www.google.com/search?q=cats&tbm=isch',
       page_set=page_set)
 
-    self.credentials = 'google'
-
 
 class YoutubePage(ToughPinchZoomCasesPage):
 
@@ -104,8 +97,6 @@ class YoutubePage(ToughPinchZoomCasesPage):
     super(YoutubePage, self).__init__(
       url='http://www.youtube.com',
       page_set=page_set)
-
-    self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
     super(YoutubePage, self).RunNavigateSteps(action_runner)
@@ -136,7 +127,6 @@ class FacebookPage(ToughPinchZoomCasesPage):
     super(FacebookPage, self).__init__(
       url='http://www.facebook.com/barackobama',
       page_set=page_set, name='Facebook')
-    self.credentials = 'facebook'
 
   def RunNavigateSteps(self, action_runner):
     super(FacebookPage, self).RunNavigateSteps(action_runner)

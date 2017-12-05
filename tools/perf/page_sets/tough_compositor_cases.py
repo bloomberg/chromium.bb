@@ -10,7 +10,7 @@ class ToughCompositorPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(ToughCompositorPage, self).__init__(
-        url=url, page_set=page_set, credentials_path = 'data/credentials.json',
+        url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
         name=url)
 
