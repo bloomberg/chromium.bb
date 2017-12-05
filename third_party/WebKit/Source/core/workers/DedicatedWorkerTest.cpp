@@ -7,7 +7,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/ThreadDebugger.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/DedicatedWorkerObjectProxy.h"
@@ -169,14 +169,14 @@ class DedicatedWorkerMessagingProxyForTest
   scoped_refptr<SecurityOrigin> security_origin_;
 };
 
-class DedicatedWorkerTest : public ::testing::Test {
+class DedicatedWorkerTest : public PageTestBase {
  public:
   DedicatedWorkerTest() {}
 
   void SetUp() override {
-    page_ = DummyPageHolder::Create();
+    PageTestBase::SetUp(IntSize());
     worker_messaging_proxy_ =
-        new DedicatedWorkerMessagingProxyForTest(&page_->GetDocument());
+        new DedicatedWorkerMessagingProxyForTest(&GetDocument());
   }
 
   void TearDown() override {
@@ -198,10 +198,7 @@ class DedicatedWorkerTest : public ::testing::Test {
     return worker_messaging_proxy_->GetDedicatedWorkerThread();
   }
 
-  Document& GetDocument() { return page_->GetDocument(); }
-
  private:
-  std::unique_ptr<DummyPageHolder> page_;
   Persistent<DedicatedWorkerMessagingProxyForTest> worker_messaging_proxy_;
 };
 

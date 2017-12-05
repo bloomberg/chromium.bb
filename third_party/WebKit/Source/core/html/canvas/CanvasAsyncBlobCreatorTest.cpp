@@ -5,7 +5,7 @@
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
 #include "core/html/ImageData.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
@@ -149,7 +149,7 @@ class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg
 
 //==============================================================================
 
-class CanvasAsyncBlobCreatorTest : public ::testing::Test {
+class CanvasAsyncBlobCreatorTest : public PageTestBase {
  public:
   // Png unit tests
   void PrepareMockCanvasAsyncBlobCreatorWithoutStartPng();
@@ -169,14 +169,11 @@ class CanvasAsyncBlobCreatorTest : public ::testing::Test {
   void TearDown() override;
 
  private:
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
   Persistent<MockCanvasAsyncBlobCreator> async_blob_creator_;
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 CanvasAsyncBlobCreatorTest::CanvasAsyncBlobCreatorTest() {
-  dummy_page_holder_ = DummyPageHolder::Create();
 }
 
 void CanvasAsyncBlobCreatorTest::

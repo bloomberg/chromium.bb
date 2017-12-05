@@ -101,4 +101,12 @@ Element* PageTestBase::GetElementById(const char* id) const {
   return GetDocument().getElementById(id);
 }
 
+AnimationClock& PageTestBase::GetAnimationClock() {
+  return GetDocument().GetAnimationClock();
+}
+
+PendingAnimations& PageTestBase::GetPendingAnimations() {
+  return GetDocument().GetPendingAnimations();
+}
+
 }  // namespace blink
