@@ -8,6 +8,9 @@ import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utilities to support startup metrics - Android version.
@@ -17,8 +20,10 @@ public class UmaUtils {
     private static long sApplicationStartWallClockMs;
 
     private static boolean sRunningApplicationStart;
+    private static long sApplicationStartTimeMs;
     private static long sForegroundStartTimeMs;
     private static long sBackgroundTimeMs;
+    private static long sFirstCommitTimeMs;
 
     /**
      * Record the time at which the activity started. This should be called asap after
@@ -30,6 +35,7 @@ public class UmaUtils {
         // then need the start time in the C++ side before we return to Java. As such we
         // save it in a static that the C++ can fetch once it has initialized the JNI.
         sApplicationStartWallClockMs = System.currentTimeMillis();
+        sApplicationStartTimeMs = SystemClock.uptimeMillis();
     }
 
     /**
@@ -49,6 +55,22 @@ public class UmaUtils {
      */
     public static void recordBackgroundTime() {
         sBackgroundTimeMs = SystemClock.uptimeMillis();
+    }
+
+    /**
+     * Record the time after a navigation is finished.
+     */
+    public static void recordFinishNavigation(boolean isTrackedPage) {
+        boolean shouldRecordHistogram =
+                isTrackedPage && sRunningApplicationStart && sFirstCommitTimeMs == 0;
+        if (shouldRecordHistogram) {
+            sFirstCommitTimeMs = SystemClock.uptimeMillis() - sApplicationStartTimeMs;
+            // Uses the same buckets as UMA_HISTOGRAM_LONG_TIMES_100
+            RecordHistogram.recordCustomTimesHistogram(
+                    "Startup.Android.Experimental.Cold.TimeToFirstNavigationCommit",
+                    sFirstCommitTimeMs, 1, TimeUnit.HOURS.toMillis(1), TimeUnit.MILLISECONDS, 100);
+        }
+        sRunningApplicationStart = false;
     }
 
     /**
@@ -86,6 +108,10 @@ public class UmaUtils {
     @CalledByNative
     public static long getMainEntryPointWallTime() {
         return sApplicationStartWallClockMs;
+    }
+
+    public static long getApplicationStartTimeMs() {
+        return sApplicationStartTimeMs;
     }
 
     public static long getForegroundStartTime() {

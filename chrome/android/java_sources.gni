@@ -1590,6 +1590,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/media/ui/PictureInPictureControllerTest.java",
   "javatests/src/org/chromium/chrome/browser/metrics/MainIntentBehaviorMetricsIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/metrics/PageLoadMetricsTest.java",
+  "javatests/src/org/chromium/chrome/browser/metrics/StartupLoadingMetricsTest.java",
   "javatests/src/org/chromium/chrome/browser/metrics/UkmIncognitoTest.java",
   "javatests/src/org/chromium/chrome/browser/multiwindow/MultiWindowIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/multiwindow/MultiWindowTestHelper.java",
