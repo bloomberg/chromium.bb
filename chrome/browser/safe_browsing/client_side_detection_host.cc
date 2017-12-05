@@ -375,7 +375,8 @@ bool ClientSideDetectionHost::OnMessageReceived(
 void ClientSideDetectionHost::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (browse_info_.get() && should_extract_malware_features_ &&
-      navigation_handle->HasCommitted() && !navigation_handle->IsDownload()) {
+      navigation_handle->HasCommitted() && !navigation_handle->IsDownload() &&
+      !navigation_handle->IsSameDocument()) {
     content::ResourceType resource_type =
         navigation_handle->IsInMainFrame() ? content::RESOURCE_TYPE_MAIN_FRAME
                                            : content::RESOURCE_TYPE_SUB_FRAME;
