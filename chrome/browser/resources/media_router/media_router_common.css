@@ -8,6 +8,9 @@
   --dialog-width: 340px;
   --navigation-icon-button-size: 36px;
   --non-navigation-icon-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'Roboto', 'Noto', sans-serif;
 }
 
 .button {
