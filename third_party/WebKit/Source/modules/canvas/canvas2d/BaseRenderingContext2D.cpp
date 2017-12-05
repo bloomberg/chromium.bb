@@ -608,19 +608,6 @@ bool BaseRenderingContext2D::IsFullCanvasCompositeMode(SkBlendMode op) {
          op == SkBlendMode::kDstIn || op == SkBlendMode::kDstATop;
 }
 
-static bool IsPathExpensive(const Path& path) {
-  const SkPath& sk_path = path.GetSkPath();
-  if (CanvasHeuristicParameters::kConcavePathsAreExpensive &&
-      !sk_path.isConvex())
-    return true;
-
-  if (sk_path.countPoints() >
-      CanvasHeuristicParameters::kExpensivePathPointCount)
-    return true;
-
-  return false;
-}
-
 void BaseRenderingContext2D::DrawPathInternal(
     const Path& path,
     CanvasRenderingContext2DState::PaintType paint_type,
@@ -638,17 +625,11 @@ void BaseRenderingContext2D::DrawPathInternal(
   if (!DrawingCanvas())
     return;
 
-  if (Draw([&sk_path](PaintCanvas* c, const PaintFlags* flags)  // draw lambda
-           { c->drawPath(sk_path, *flags); },
-           [](const SkIRect& rect)  // overdraw test lambda
-           { return false; },
-           bounds, paint_type)) {
-    if (IsPathExpensive(path)) {
-      ImageBuffer* buffer = GetImageBuffer();
-      if (buffer)
-        buffer->SetHasExpensiveOp();
-    }
-  }
+  Draw([&sk_path](PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+       { c->drawPath(sk_path, *flags); },
+       [](const SkIRect& rect)  // overdraw test lambda
+       { return false; },
+       bounds, paint_type);
 }
 
 static SkPath::FillType ParseWinding(const String& winding_rule_string) {
@@ -751,10 +732,6 @@ void BaseRenderingContext2D::ClipInternal(const Path& path,
   ModifiableState().ClipPath(sk_path, clip_antialiasing_);
   c->clipPath(sk_path, SkClipOp::kIntersect,
               clip_antialiasing_ == kAntiAliased);
-  if (CanvasHeuristicParameters::kComplexClipsAreExpensive &&
-      !sk_path.isRect(nullptr) && HasImageBuffer()) {
-    GetImageBuffer()->SetHasExpensiveOp();
-  }
 }
 
 void BaseRenderingContext2D::clip(const String& winding_rule_string) {
@@ -1143,12 +1120,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   double start_time = 0;
   Optional<CustomCountHistogram> timer;
   if (!IsPaint2D()) {
-    if (HasImageBuffer()) {
-      // TODO(xlai): There should be no more RecordingImageBufferSurface used
-      // by canvas. crbug.com/776806.
-      DCHECK(!GetImageBuffer()->IsRecording());
-    }
-
     start_time = WTF::MonotonicallyIncreasingTime();
     if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
       if (image_source->IsVideoElement()) {
@@ -1222,7 +1193,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   if (!image_source->IsVideoElement()) {
     AccelerationHint hint =
-        (GetImageBuffer() && GetImageBuffer()->IsAccelerated())
+        (HasImageBuffer() && GetImageBuffer()->IsAccelerated())
             ? kPreferAcceleration
             : kPreferNoAcceleration;
     image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
@@ -1309,22 +1280,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
           : CanvasRenderingContext2DState::kNonOpaqueImage);
 
   ValidateStateStack();
-
-  bool is_expensive = false;
-
-  if (CanvasHeuristicParameters::kSVGImageSourcesAreExpensive &&
-      image_source->IsSVGSource())
-    is_expensive = true;
-
-  if (image_size.Width() * image_size.Height() >
-      Width() * Height() * CanvasHeuristicParameters::kExpensiveImageSizeRatio)
-    is_expensive = true;
-
-  if (is_expensive) {
-    ImageBuffer* buffer = GetImageBuffer();
-    if (buffer)
-      buffer->SetHasExpensiveOp();
-  }
 
   if (OriginClean() &&
       WouldTaintOrigin(image_source, ExecutionContext::From(script_state)))
@@ -1601,12 +1556,6 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
-    if (HasImageBuffer()) {
-      // TODO(xlai): There should be no more RecordingImageBufferSurface used
-      // by canvas. crbug.com/776806.
-      DCHECK(!GetImageBuffer()->IsRecording());
-    }
-
     if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, scoped_us_counter_gpu,
@@ -1717,12 +1666,6 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
 
   Optional<ScopedUsHistogramTimer> timer;
   if (!IsPaint2D()) {
-    if (HasImageBuffer()) {
-      // TODO(xlai): There should be no more RecordingImageBufferSurface used
-      // by canvas. crbug.com/776806.
-      DCHECK(!GetImageBuffer()->IsRecording());
-    }
-
     if (GetImageBuffer() && GetImageBuffer()->IsAccelerated()) {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, scoped_us_counter_gpu,
@@ -1853,7 +1796,7 @@ void BaseRenderingContext2D::CheckOverdraw(
         image_type == CanvasRenderingContext2DState::kNoImage) {
       if (flags->HasShader()) {
         if (flags->ShaderIsOpaque() && alpha == 0xFF)
-          GetImageBuffer()->WillOverwriteCanvas();
+          this->WillOverwriteCanvas();
         return;
       }
     }
@@ -1867,7 +1810,7 @@ void BaseRenderingContext2D::CheckOverdraw(
       return;
   }
 
-  GetImageBuffer()->WillOverwriteCanvas();
+  this->WillOverwriteCanvas();
 }
 
 float BaseRenderingContext2D::GetFontBaseline(

@@ -17,12 +17,10 @@ class PLATFORM_EXPORT CanvasMetrics {
   enum CanvasContextUsage {
     kCanvasCreated = 0,
     kGPUAccelerated2DCanvasImageBufferCreated = 1,
-    kDisplayList2DCanvasImageBufferCreated = 2,
     kUnaccelerated2DCanvasImageBufferCreated = 3,
     kAccelerated2DCanvasGPUContextLost = 4,
     kUnaccelerated2DCanvasImageBufferCreationFailed = 5,
     kGPUAccelerated2DCanvasImageBufferCreationFailed = 6,
-    kDisplayList2DCanvasFallbackToRaster = 7,
     kGPUAccelerated2DCanvasDeferralDisabled = 8,
     kGPUAccelerated2DCanvasSurfaceCreationFailed = 9,
     kNumberOfUsages

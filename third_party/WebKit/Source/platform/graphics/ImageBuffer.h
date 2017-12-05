@@ -84,9 +84,6 @@ class PLATFORM_EXPORT ImageBuffer {
   static bool CanCreateImageBuffer(const IntSize&);
   const IntSize& Size() const { return surface_->Size(); }
   bool IsAccelerated() const { return surface_->IsAccelerated(); }
-  bool IsRecording() const { return surface_->IsRecording(); }
-  void SetHasExpensiveOp() { surface_->SetHasExpensiveOp(); }
-  bool IsExpensiveToPaint() const { return surface_->IsExpensiveToPaint(); }
   void PrepareSurfaceForPaintingIfNeeded() {
     surface_->PrepareSurfaceForPaintingIfNeeded();
   }

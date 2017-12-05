@@ -25,7 +25,7 @@ void PaintRenderingContext2DTest::SetUp() {
   PaintRenderingContext2DSettings context_settings;
   context_settings.setAlpha(false);
   ctx_ = PaintRenderingContext2D::Create(
-      ImageBuffer::Create(IntSize(kWidth, kHeight)), context_settings, kZoom);
+      IntSize(kWidth, kHeight), CanvasColorParams(), context_settings, kZoom);
 }
 
 void TrySettingStrokeStyle(PaintRenderingContext2D* ctx,

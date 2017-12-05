@@ -4,39 +4,58 @@
 
 #include "modules/csspaint/PaintRenderingContext2D.h"
 
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include <memory>
 
 namespace blink {
 
 PaintRenderingContext2D::PaintRenderingContext2D(
-    std::unique_ptr<ImageBuffer> image_buffer,
+    const IntSize& container_size,
+    const CanvasColorParams& color_params,
     const PaintRenderingContext2DSettings& context_settings,
     float zoom)
-    : image_buffer_(std::move(image_buffer)),
+    : container_size_(container_size),
+      color_params_(color_params),
       context_settings_(context_settings) {
+  InitializePaintRecorder();
+
   clip_antialiasing_ = kAntiAliased;
   ModifiableState().SetShouldAntialias(true);
 
-  // RecordingImageBufferSurface doesn't call ImageBufferSurface::clear
-  // explicitly.
-  DCHECK(image_buffer_);
-  image_buffer_->Canvas()->clear(context_settings.alpha() ? SK_ColorTRANSPARENT
-                                                          : SK_ColorBLACK);
-  image_buffer_->DidDraw(FloatRect(0, 0, Width(), Height()));
+  Canvas()->clear(context_settings.alpha() ? SK_ColorTRANSPARENT
+                                           : SK_ColorBLACK);
+  did_record_draw_commands_in_paint_recorder_ = true;
+  Canvas()->scale(zoom, zoom);
+}
 
-  image_buffer_->Canvas()->scale(zoom, zoom);
+void PaintRenderingContext2D::InitializePaintRecorder() {
+  paint_recorder_ = WTF::WrapUnique(new PaintRecorder);
+  PaintCanvas* canvas = paint_recorder_->beginRecording(
+      container_size_.Width(), container_size_.Height());
+
+  // Always save an initial frame, to support resetting the top level matrix
+  // and clip.
+  canvas->save();
+
+  did_record_draw_commands_in_paint_recorder_ = false;
+}
+
+PaintCanvas* PaintRenderingContext2D::Canvas() const {
+  DCHECK(paint_recorder_);
+  DCHECK(paint_recorder_->getRecordingCanvas());
+  return paint_recorder_->getRecordingCanvas();
+}
+
+void PaintRenderingContext2D::DidDraw(const SkIRect&) {
+  did_record_draw_commands_in_paint_recorder_ = true;
 }
 
 int PaintRenderingContext2D::Width() const {
-  DCHECK(image_buffer_);
-  return image_buffer_->Size().Width();
+  return container_size_.Width();
 }
 
 int PaintRenderingContext2D::Height() const {
-  DCHECK(image_buffer_);
-  return image_buffer_->Size().Height();
+  return container_size_.Height();
 }
 
 bool PaintRenderingContext2D::ParseColorOrCurrentColor(
@@ -50,17 +69,11 @@ bool PaintRenderingContext2D::ParseColorOrCurrentColor(
 }
 
 PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
-  return image_buffer_->Canvas();
+  return Canvas();
 }
 
 PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
-  DCHECK(image_buffer_);
-  return image_buffer_->Canvas();
-}
-
-void PaintRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
-  DCHECK(image_buffer_);
-  return image_buffer_->DidDraw(SkRect::Make(dirty_rect));
+  return Canvas();
 }
 
 void PaintRenderingContext2D::ValidateStateStack() const {
@@ -78,6 +91,27 @@ bool PaintRenderingContext2D::StateHasFilter() {
 
 sk_sp<PaintFilter> PaintRenderingContext2D::StateGetFilter() {
   return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()));
+}
+
+void PaintRenderingContext2D::WillOverwriteCanvas() {
+  previous_frame_.reset();
+  if (did_record_draw_commands_in_paint_recorder_) {
+    // Discard previous draw commands
+    paint_recorder_->finishRecordingAsPicture();
+    InitializePaintRecorder();
+  }
+}
+
+sk_sp<PaintRecord> PaintRenderingContext2D::GetRecord() {
+  if (!did_record_draw_commands_in_paint_recorder_ && !!previous_frame_) {
+    return previous_frame_;  // Reuse the previous frame
+  }
+
+  CHECK(paint_recorder_);
+  DCHECK(paint_recorder_->getRecordingCanvas());
+  previous_frame_ = paint_recorder_->finishRecordingAsPicture();
+  InitializePaintRecorder();
+  return previous_frame_;
 }
 
 }  // namespace blink

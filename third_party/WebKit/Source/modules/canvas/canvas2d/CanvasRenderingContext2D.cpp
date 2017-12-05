@@ -371,13 +371,6 @@ void CanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
   if (dirty_rect.isEmpty())
     return;
 
-  if (CanvasHeuristicParameters::kBlurredShadowsAreExpensive &&
-      GetState().ShouldDrawShadows() && GetState().ShadowBlur() > 0) {
-    ImageBuffer* buffer = GetImageBuffer();
-    if (buffer)
-      buffer->SetHasExpensiveOp();
-  }
-
   CanvasRenderingContext::DidDraw(dirty_rect);
 }
 

@@ -39,7 +39,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
@@ -400,18 +399,6 @@ void ImageBuffer::SetSurface(std::unique_ptr<ImageBufferSurface> surface) {
   if (!image)
     return;
 
-  if (surface->IsRecording() && image->IsTextureBacked()) {
-    // Using a GPU-backed image with RecordingImageBufferSurface
-    // will fail at playback time.
-    sk_sp<SkImage> texture_image =
-        image->PaintImageForCurrentFrame().GetSkImage();
-    // Must tear down AcceleratedStaticBitmapImage before calling
-    // makeNonTextureImage()
-    image = nullptr;
-    image = StaticBitmapImage::Create(texture_image->makeNonTextureImage());
-  }
-  SkPaint paint;
-  paint.setBlendMode(SkBlendMode::kSrc);
   surface->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0, 0);
   surface->SetImageBuffer(this);
   surface_ = std::move(surface);
