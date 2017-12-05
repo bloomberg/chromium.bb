@@ -196,17 +196,21 @@ function createUrlElement(url) {
 }
 
 /**
+ * Helper function to remove all log message from log-messages-table.
+ */
+function removeAllLogMessagesRows() {
+  let logsTable = $('message-logs-table');
+  for (let row = logsTable.rows.length - 1; row > 0; row--) {
+    logsTable.deleteRow(row);
+  }
+}
+
+/**
  * Initialize the button to clear out all the log messages. This button only
  * remove the logs from the UI, and does not effect any decision made.
  */
 function setupLogClear() {
-  $('clear-log-button').addEventListener('click', () => {
-    // Remove hosts from table.
-    let logsTable = $('message-logs-table');
-    for (let row = logsTable.rows.length - 1; row > 0; row--) {
-      logsTable.deleteRow(row);
-    }
-  });
+  $('clear-log-button').addEventListener('click', removeAllLogMessagesRows);
 }
 
 /** @constructor */
@@ -283,6 +287,9 @@ InterventionsInternalPageImpl.prototype = {
     for (let row = blacklistedHostsTable.rows.length - 1; row > 0; row--) {
       blacklistedHostsTable.deleteRow(row);
     }
+
+    // Remove log message from logs table.
+    removeAllLogMessagesRows();
   },
 
   /**

@@ -252,7 +252,6 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
       expectEquals(
           log.url.url, row.querySelector('.log-url-value').textContent);
     });
-
   });
 
   mocha.run();
@@ -318,7 +317,6 @@ TEST_F('InterventionsInternalsUITest', 'AddNewBlacklistedHost', function() {
         expectedHost, row.querySelector('.host-blacklisted').textContent);
     expectEquals(
         expectedTime, row.querySelector('.host-blacklisted-time').textContent);
-
   });
 
   mocha.run();
@@ -386,6 +384,29 @@ TEST_F('InterventionsInternalsUITest', 'OnBlacklistCleared', function() {
 
   mocha.run();
 });
+
+TEST_F(
+    'InterventionsInternalsUITest', 'ClearLogMessageOnBlacklistCleared',
+    function() {
+      test('ClearLogsTableOnBlacklistCleared', () => {
+        let pageImpl = new InterventionsInternalPageImpl(null);
+        let time = 758675653000;  // Jan 15 1994 23:14:13 UTC
+        let log = {
+          type: 'Some type',
+          url: {url: ''},
+          description: 'Some description',
+          time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+          pageId: 0,
+        };
+
+        pageImpl.logNewMessage(log);
+        expectGT($('message-logs-table').rows.length, 1 /* header row */);
+        pageImpl.onBlacklistCleared(time);
+        expectEquals(1 /* header row */, $('message-logs-table').rows.length);
+      });
+
+      mocha.run();
+    });
 
 TEST_F('InterventionsInternalsUITest', 'OnECTChanged', function() {
   test('UpdateETCOnChange', () => {

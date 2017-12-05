@@ -722,6 +722,20 @@ TEST_F(PreviewsLoggerTest, LastObserverRemovedIsNotified) {
   EXPECT_TRUE(observers[number_of_obs - 1].last_removed_notified());
 }
 
+TEST_F(PreviewsLoggerTest, ClearBufferLogsWhenBlacklistCleared) {
+  std::string type = "Event_";
+  std::string description = "Some description";
+  GURL url("http://www.url_.com/url_");
+  base::Time now = base::Time::Now();
+  logger_->LogMessage(type, description, url, now);
+
+  logger_->OnBlacklistCleared(base::Time::Now());
+
+  TestPreviewsLoggerObserver observer;
+  logger_->AddAndNotifyObserver(&observer);
+  EXPECT_EQ(0UL, observer.messages().size());
+}
+
 }  // namespace
 
 }  // namespace previews
