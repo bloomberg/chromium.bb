@@ -1878,6 +1878,7 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
                                      LayerImpl* root_layer,
                                      const Functor& func,
                                      FindClosestMatchingLayerState* state) {
+  base::ElapsedTimer timer;
   // We want to iterate from front to back when hit testing.
   for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
     if (!func(layer))
@@ -1905,6 +1906,12 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
       state->closest_distance = distance_to_intersection;
       state->closest_match = layer;
     }
+  }
+  if (const char* client_name = GetClientNameForMetrics()) {
+    UMA_HISTOGRAM_COUNTS_1M(
+        base::StringPrintf("Compositing.%s.HitTestTimeToFindClosestLayer",
+                           client_name),
+        timer.Elapsed().InMicroseconds());
   }
 }
 

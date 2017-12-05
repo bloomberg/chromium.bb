@@ -10109,6 +10109,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.HitTestTimeToFindClosestLayer"
+    units="microseconds">
+  <owner>yigu@chromium.org</owner>
+  <summary>
+    Time spent finding the closest matching layer to a given point whenever we
+    do hit testing on LayerTreeImpl (in a browser process).
+
+    Team: animations-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Compositing.Browser.LayersUpdateTime"
     units="microseconds">
   <owner>threaded-rendering-dev@chromium.org</owner>
@@ -10462,6 +10473,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     picture screenspace resolution to do threaded rasterization.
 
     Team: threaded-rendering-dev@chromium.org.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.HitTestTimeToFindClosestLayer"
+    units="microseconds">
+  <owner>yigu@chromium.org</owner>
+  <summary>
+    Time spent finding the closest matching layer to a given point whenever we
+    do hit testing on LayerTreeImpl (in a renderer process).
+
+    Team: animations-dev@chromium.org.
   </summary>
 </histogram>
 
