@@ -39,6 +39,7 @@
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
+#include "core/origin_trials/origin_trials.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AnalyserNode.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -148,7 +149,8 @@ void BaseAudioContext::Initialize() {
 
   FFTFrame::Initialize();
 
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
+  if (OriginTrials::audioWorkletEnabled(GetExecutionContext()) ||
+      RuntimeEnabledFeatures::AudioWorkletEnabled()) {
     audio_worklet_ = AudioWorklet::Create(this);
   }
 

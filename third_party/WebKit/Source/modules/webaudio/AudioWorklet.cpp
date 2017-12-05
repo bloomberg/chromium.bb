@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
 #include "modules/webaudio/BaseAudioContext.h"
@@ -68,11 +69,15 @@ bool AudioWorklet::IsReady() {
 }
 
 bool AudioWorklet::NeedsToCreateGlobalScope() {
+  // This is a callback from |Worklet::FetchAndInvokeScript| call, which only
+  // can be triggered by Worklet.addModule() call.
+  UseCounter::Count(GetFrame(), WebFeature::kAudioWorkletAddModule);
+
   return GetNumberOfGlobalScopes() == 0;
 }
 
 WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
-  DCHECK(NeedsToCreateGlobalScope());
+  DCHECK_EQ(GetNumberOfGlobalScopes(), 0u);
 
   AudioWorkletMessagingProxy* proxy =
       new AudioWorkletMessagingProxy(GetExecutionContext(),
@@ -83,7 +88,7 @@ WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
 }
 
 AudioWorkletMessagingProxy* AudioWorklet::GetMessagingProxy() {
-  return NeedsToCreateGlobalScope()
+  return GetNumberOfGlobalScopes() == 0
       ? nullptr
       : static_cast<AudioWorkletMessagingProxy*>(FindAvailableGlobalScope());
 }

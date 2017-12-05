@@ -17116,6 +17116,9 @@ Called by update_net_error_codes.py.-->
   <int value="2258" label="UserMediaDisableHardwareNoiseSuppression"/>
   <int value="2259" label="CertificateTransparencyRequiredErrorOnResourceLoad"/>
   <int value="2260" label="CSSSelectorPseudoWebkitAnyLink"/>
+  <int value="2261" label="AudioWorkletAddModule"/>
+  <int value="2262" label="AudioWorkletGlobalScopeRegisterProcessor"/>
+  <int value="2263" label="AudioWorkletNodeConstructor"/>
 </enum>
 
 <enum name="FeedbackSource">
