@@ -66,7 +66,7 @@ int GetEventModifiers(int modifiers,
                       bool auto_repeat,
                       bool is_keypad,
                       int location) {
-  int result = blink::WebInputEvent::kFromDebugger;
+  int result = 0;
   if (auto_repeat)
     result |= blink::WebInputEvent::kIsAutoRepeat;
   if (is_keypad)
@@ -293,9 +293,6 @@ void InputHandler::OnInputEvent(const blink::WebInputEvent& event) {
 void InputHandler::OnInputEventAck(InputEventAckSource source,
                                    InputEventAckState state,
                                    const blink::WebInputEvent& event) {
-  if ((event.GetModifiers() & blink::WebInputEvent::kFromDebugger) == 0)
-    return;
-
   if (blink::WebInputEvent::IsKeyboardEventType(event.GetType()) &&
       !pending_key_callbacks_.empty()) {
     pending_key_callbacks_.front()->sendSuccess();
