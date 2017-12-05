@@ -15,21 +15,6 @@
 
 namespace media {
 
-// Key information structure containing data necessary to decrypt/decode media.
-struct MEDIA_EXPORT CdmProxyKeyInfo {
-  CdmProxyKeyInfo();
-  ~CdmProxyKeyInfo();
-  // Crypto session for decryption.
-  uint32_t crypto_session_id = 0;
-  // ID of the key.
-  std::vector<uint8_t> key_id;
-  // Opaque key blob for decrypting or decoding.
-  std::vector<uint8_t> key_blob;
-  // Indicates whether this key/key_id is usable. The caller sets this to false
-  // to invalidate a key.
-  bool is_usable_key = true;
-};
-
 // A proxy for the CDM.
 // In general, the interpretation of the method and callback parameters are
 // protocol dependent. For enum parameters, values outside the enum range may
@@ -111,8 +96,19 @@ class MEDIA_EXPORT CdmProxy {
       const std::vector<uint8_t>& input_data,
       CreateMediaCryptoSessionCB create_media_crypto_session_cb) = 0;
 
-  // Send multiple key information to the proxy.
-  virtual void SetKeyInfo(const std::vector<CdmProxyKeyInfo>& key_infos) = 0;
+  // Sets a key in the proxy.
+  // |crypto_session_id| is the crypto session for decryption.
+  // |key_id| is the ID of the key.
+  // |key_blob| is the opaque key blob for decrypting or decoding.
+  virtual void SetKey(uint32_t crypto_session_id,
+                      const std::vector<uint8_t>& key_id,
+                      const std::vector<uint8_t>& key_blob) = 0;
+
+  // Removes a key from the proxy.
+  // |crypto_session_id| is the crypto session for decryption.
+  // |key_id| is the ID of the key.
+  virtual void RemoveKey(uint32_t crypto_session_id,
+                         const std::vector<uint8_t>& key_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmProxy);
