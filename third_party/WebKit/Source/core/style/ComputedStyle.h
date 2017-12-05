@@ -1386,10 +1386,10 @@ class ComputedStyle : public ComputedStyleBase,
            !PaddingTop().IsZero() || !PaddingBottom().IsZero();
   }
   void ResetPadding() {
-    SetPaddingTop(kFixed);
-    SetPaddingBottom(kFixed);
-    SetPaddingLeft(kFixed);
-    SetPaddingRight(kFixed);
+    SetPaddingTop(Length(kFixed));
+    SetPaddingBottom(Length(kFixed));
+    SetPaddingLeft(Length(kFixed));
+    SetPaddingRight(Length(kFixed));
   }
   void SetPadding(const LengthBox& b) {
     SetPaddingTop(b.top_);

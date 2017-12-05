@@ -64,7 +64,7 @@ class PLATFORM_EXPORT Length {
  public:
   Length() : int_value_(0), quirk_(false), type_(kAuto), is_float_(false) {}
 
-  Length(LengthType t)
+  explicit Length(LengthType t)
       : int_value_(0), quirk_(false), type_(t), is_float_(false) {
     DCHECK_NE(t, kCalculated);
   }
