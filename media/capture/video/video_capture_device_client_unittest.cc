@@ -70,7 +70,8 @@ TEST_F(VideoCaptureDeviceClientTest, Minimal) {
   const size_t kScratchpadSizeInBytes = 400;
   unsigned char data[kScratchpadSizeInBytes] = {};
   const VideoCaptureFormat kFrameFormat(gfx::Size(10, 10), 30.0f /*frame_rate*/,
-                                        PIXEL_FORMAT_I420, PIXEL_STORAGE_CPU);
+                                        PIXEL_FORMAT_I420,
+                                        VideoPixelStorage::CPU);
   DCHECK(device_client_.get());
   {
     InSequence s;
@@ -95,7 +96,7 @@ TEST_F(VideoCaptureDeviceClientTest, FailsSilentlyGivenInvalidFrameFormat) {
   const VideoCaptureFormat kFrameFormat(
       gfx::Size(limits::kMaxDimension + 1, limits::kMaxDimension),
       limits::kMaxFramesPerSecond + 1, VideoPixelFormat::PIXEL_FORMAT_I420,
-      VideoPixelStorage::PIXEL_STORAGE_CPU);
+      VideoPixelStorage::CPU);
   DCHECK(device_client_.get());
   // Expect the the call to fail silently inside the VideoCaptureDeviceClient.
   EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
@@ -111,7 +112,8 @@ TEST_F(VideoCaptureDeviceClientTest, DropsFrameIfNoBuffer) {
   const size_t kScratchpadSizeInBytes = 400;
   unsigned char data[kScratchpadSizeInBytes] = {};
   const VideoCaptureFormat kFrameFormat(gfx::Size(10, 10), 30.0f /*frame_rate*/,
-                                        PIXEL_FORMAT_I420, PIXEL_STORAGE_CPU);
+                                        PIXEL_FORMAT_I420,
+                                        VideoPixelStorage::CPU);
   EXPECT_CALL(*receiver_, OnLog(_)).Times(1);
   // Simulate that receiver still holds |buffer_read_permission| for the first
   // buffer when the second call to OnIncomingCapturedData comes in.

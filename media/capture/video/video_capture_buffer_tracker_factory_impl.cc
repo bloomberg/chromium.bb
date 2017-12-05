@@ -12,7 +12,7 @@ namespace media {
 
 std::unique_ptr<VideoCaptureBufferTracker>
 VideoCaptureBufferTrackerFactoryImpl::CreateTracker(VideoPixelStorage storage) {
-  DCHECK_EQ(PIXEL_STORAGE_CPU, storage);
+  DCHECK_EQ(VideoPixelStorage::CPU, storage);
   return base::MakeUnique<SharedMemoryBufferTracker>();
 }
 

@@ -42,7 +42,7 @@ static void TranslateDeviceInfos(
               : media::PIXEL_FORMAT_I420;
       translated_format.frame_size = format.frame_size;
       translated_format.frame_rate = format.frame_rate;
-      translated_format.pixel_storage = media::PIXEL_STORAGE_CPU;
+      translated_format.pixel_storage = media::VideoPixelStorage::CPU;
       if (base::ContainsValue(translated_device_info.supported_formats,
                               translated_format))
         continue;

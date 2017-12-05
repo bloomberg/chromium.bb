@@ -536,7 +536,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 
   media::VideoCaptureFormat device_format(
       capture_resolution, arbitrary_frame_rate_, media::PIXEL_FORMAT_I420,
-      media::PIXEL_STORAGE_CPU);
+      media::VideoPixelStorage::CPU);
   const int arbitrary_frame_feedback_id = 101;
   media::VideoCaptureDevice::Client::Buffer buffer =
       device_client_->ReserveOutputBuffer(

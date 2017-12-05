@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   bool first_frame = true;
   for (const auto& frame_info : received_frame_infos) {
     EXPECT_EQ(params_.GetPixelFormatToUse(), frame_info.pixel_format);
-    EXPECT_EQ(media::PIXEL_STORAGE_CPU, frame_info.storage_type);
+    EXPECT_EQ(media::VideoPixelStorage::CPU, frame_info.storage_type);
     EXPECT_EQ(params_.resolution_to_use, frame_info.size);
     // Timestamps are expected to increase
     if (!first_frame)

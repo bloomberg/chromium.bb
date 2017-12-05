@@ -14,7 +14,7 @@ namespace mojo {
 media::mojom::VideoPixelStorage
 EnumTraits<media::mojom::VideoPixelStorage, media::VideoPixelStorage>::ToMojom(
     media::VideoPixelStorage video_pixel_storage) {
-  DCHECK_EQ(media::PIXEL_STORAGE_CPU, video_pixel_storage);
+  DCHECK_EQ(media::VideoPixelStorage::CPU, video_pixel_storage);
   return media::mojom::VideoPixelStorage::CPU;
 }
 
@@ -23,7 +23,7 @@ bool EnumTraits<media::mojom::VideoPixelStorage, media::VideoPixelStorage>::
     FromMojom(media::mojom::VideoPixelStorage input,
               media::VideoPixelStorage* out) {
   DCHECK_EQ(media::mojom::VideoPixelStorage::CPU, input);
-  *out = media::PIXEL_STORAGE_CPU;
+  *out = media::VideoPixelStorage::CPU;
   return true;
 }
 
