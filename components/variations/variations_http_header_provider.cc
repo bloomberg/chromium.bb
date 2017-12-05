@@ -229,7 +229,7 @@ std::string VariationsHttpHeaderProvider::GenerateBase64EncodedProto(
       case GOOGLE_WEB_PROPERTIES_TRIGGER:
         proto.add_trigger_variation_id(entry.first);
         break;
-      case CHROME_SYNC_SERVICE:
+      case CHROME_SYNC_EVENT_LOGGER:
       case ID_COLLECTION_COUNT:
         // These cases included to get full enum coverage for switch, so that
         // new enums introduce compiler warnings. Nothing to do for these.

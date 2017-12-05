@@ -58,10 +58,8 @@ void RegisterVariationIds(const Study_Experiment& experiment,
   if (experiment.has_chrome_sync_experiment_id()) {
     const VariationID variation_id =
         static_cast<VariationID>(experiment.chrome_sync_experiment_id());
-    AssociateGoogleVariationIDForce(CHROME_SYNC_SERVICE,
-                                    trial_name,
-                                    experiment.name(),
-                                    variation_id);
+    AssociateGoogleVariationIDForce(CHROME_SYNC_EVENT_LOGGER, trial_name,
+                                    experiment.name(), variation_id);
   }
 }
 
