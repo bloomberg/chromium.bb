@@ -434,7 +434,7 @@ void ScreenLocker::OnStartLockCallback(bool locked) {
   delegate_->OnAshLockAnimationFinished();
 
   AccessibilityManager::Get()->PlayEarcon(
-      chromeos::SOUND_LOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+      SOUND_LOCK, PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
 }
 
 void ScreenLocker::ClearErrors() {
@@ -560,7 +560,7 @@ void ScreenLocker::ScheduleDeletion() {
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
 
   AccessibilityManager::Get()->PlayEarcon(
-      SOUND_UNLOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+      SOUND_UNLOCK, PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
 
   delete screen_locker_;
   screen_locker_ = nullptr;

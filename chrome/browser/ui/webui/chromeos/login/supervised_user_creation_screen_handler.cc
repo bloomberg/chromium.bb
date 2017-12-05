@@ -423,12 +423,12 @@ void SupervisedUserCreationScreenHandler::HandlePhotoTaken
 
 void SupervisedUserCreationScreenHandler::HandleTakePhoto() {
   AccessibilityManager::Get()->PlayEarcon(
-      SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+      SOUND_CAMERA_SNAP, PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
 }
 
 void SupervisedUserCreationScreenHandler::HandleDiscardPhoto() {
   AccessibilityManager::Get()->PlayEarcon(
-      SOUND_OBJECT_DELETE, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+      SOUND_OBJECT_DELETE, PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
 }
 
 void SupervisedUserCreationScreenHandler::HandleSelectImage(

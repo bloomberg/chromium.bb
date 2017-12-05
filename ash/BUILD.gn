@@ -1709,8 +1709,6 @@ static_library("test_support_common") {
   sources = [
     "accessibility/test_accessibility_controller_client.cc",
     "accessibility/test_accessibility_controller_client.h",
-    "accessibility/test_accessibility_delegate.cc",
-    "accessibility/test_accessibility_delegate.h",
     "app_list/test_app_list_presenter_impl.cc",
     "app_list/test_app_list_presenter_impl.h",
     "display/display_configuration_controller_test_api.cc",

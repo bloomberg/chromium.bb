@@ -6,6 +6,9 @@
 
 namespace ash {
 
+constexpr base::TimeDelta
+    TestAccessibilityControllerClient::kShutdownSoundDuration;
+
 TestAccessibilityControllerClient::TestAccessibilityControllerClient()
     : binding_(this) {}
 
@@ -22,6 +25,21 @@ TestAccessibilityControllerClient::CreateInterfacePtrAndBind() {
 void TestAccessibilityControllerClient::TriggerAccessibilityAlert(
     mojom::AccessibilityAlert alert) {
   last_a11y_alert_ = alert;
+}
+
+void TestAccessibilityControllerClient::PlayEarcon(int32_t sound_key) {
+  sound_key_ = sound_key;
+}
+
+void TestAccessibilityControllerClient::PlayShutdownSound(
+    PlayShutdownSoundCallback callback) {
+  std::move(callback).Run(kShutdownSoundDuration);
+}
+
+int32_t TestAccessibilityControllerClient::GetPlayedEarconAndReset() {
+  int32_t tmp = sound_key_;
+  sound_key_ = -1;
+  return tmp;
 }
 
 }  // namespace ash

@@ -119,14 +119,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Play tick sound indicating spoken feedback will be toggled after countdown.
   virtual void PlaySpokenFeedbackToggleCountdown(int tick_count) = 0;
 
-  // Plays an earcon. Earcons are brief and distinctive sounds that indicate
-  // when their mapped event has occurred. The sound key enums can be found in
-  // chromeos/audio/chromeos_sounds.h.
-  virtual void PlayEarcon(int sound_key) = 0;
-
-  // Initiates play of shutdown sound and returns it's duration.
-  virtual base::TimeDelta PlayShutdownSound() const = 0;
-
   // Forward an accessibility gesture from the touch exploration controller to
   // ChromeVox.
   virtual void HandleAccessibilityGesture(ui::AXGesture gesture) = 0;

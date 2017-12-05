@@ -137,7 +137,7 @@ void UserImageScreenHandler::HandleScreenReady() {
 
 void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
   AccessibilityManager::Get()->PlayEarcon(
-      SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+      SOUND_CAMERA_SNAP, PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
 
   std::string raw_data;
   base::StringPiece url(image_url);
@@ -155,7 +155,7 @@ void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
 
 void UserImageScreenHandler::HandleDiscardPhoto() {
   AccessibilityManager::Get()->PlayEarcon(
-      SOUND_OBJECT_DELETE, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+      SOUND_OBJECT_DELETE, PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);
 }
 
 void UserImageScreenHandler::HandleSelectImage(const std::string& image_type,
