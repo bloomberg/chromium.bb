@@ -1954,7 +1954,11 @@
             ],
             "experiments": [
                 {
-                    "name": "ReducedPersistent",
+                    "name": "MoreFrequentTierTwo",
+                    "params": {
+                        "soft_fetching_interval_hours-fallback-active_ntp_user": "4",
+                        "soft_fetching_interval_hours-wifi-active_ntp_user": "4"
+                    },
                     "enable_features": [
                         "NTPArticleSuggestions"
                     ]
