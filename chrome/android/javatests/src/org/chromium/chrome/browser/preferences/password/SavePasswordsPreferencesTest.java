@@ -41,6 +41,29 @@ public class SavePasswordsPreferencesTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     /**
+     * Ensure that resetting of empty passwords list works.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testResetListEmpty() throws Exception {
+        // Load the preferences, they should show the empty list.
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SavePasswordsPreferences savePasswordPreferences =
+                        (SavePasswordsPreferences) preferences.getFragmentForTest();
+                // Emulate an update from PasswordStore. This should not crash.
+                savePasswordPreferences.passwordListAvailable(0);
+            }
+        });
+    }
+
+    /**
      * Ensure that the on/off switch in "Save Passwords" settings actually enables and disables
      * password saving.
      */

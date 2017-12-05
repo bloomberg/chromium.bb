@@ -52,10 +52,10 @@ public class SavePasswordsPreferences extends PreferenceFragment
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
 
-    private static final String PREF_CATEGORY_SAVED_PASSWORDS = "saved_passwords";
-    private static final String PREF_CATEGORY_EXCEPTIONS = "exceptions";
-    private static final String PREF_MANAGE_ACCOUNT_LINK = "manage_account_link";
-    private static final String PREF_CATEGORY_SAVED_PASSWORDS_NO_TEXT = "saved_passwords_no_text";
+    private static final String PREF_KEY_CATEGORY_SAVED_PASSWORDS = "saved_passwords";
+    private static final String PREF_KEY_CATEGORY_EXCEPTIONS = "exceptions";
+    private static final String PREF_KEY_MANAGE_ACCOUNT_LINK = "manage_account_link";
+    private static final String PREF_KEY_SAVED_PASSWORDS_NO_TEXT = "saved_passwords_no_text";
 
     // Name of the feature controlling the password export functionality.
     private static final String EXPORT_PASSWORDS = "password-export";
@@ -108,7 +108,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
     private void displayEmptyScreenMessage() {
         mEmptyView = new TextMessagePreference(getActivity(), null);
         mEmptyView.setSummary(R.string.saved_passwords_none_text);
-        mEmptyView.setKey(PREF_CATEGORY_SAVED_PASSWORDS_NO_TEXT);
+        mEmptyView.setKey(PREF_KEY_SAVED_PASSWORDS_NO_TEXT);
         mEmptyView.setOrder(ORDER_SAVED_PASSWORDS_NO_TEXT);
         getPreferenceScreen().addPreference(mEmptyView);
     }
@@ -134,6 +134,10 @@ public class SavePasswordsPreferences extends PreferenceFragment
         mPasswordManagerHandler.updatePasswordLists();
     }
 
+    /**
+     * Removes the UI displaying the list of saved passwords or exceptions.
+     * @param preferenceCategoryKey The key string identifying the PreferenceCategory to be removed.
+     */
     private void resetList(String preferenceCategoryKey) {
         PreferenceCategory profileCategory =
                 (PreferenceCategory) getPreferenceScreen().findPreference(preferenceCategoryKey);
@@ -143,10 +147,20 @@ public class SavePasswordsPreferences extends PreferenceFragment
         }
     }
 
+    /**
+     * Removes the message informing the user that there are no saved entries to display.
+     */
+    private void resetNoEntriesTextMessage() {
+        Preference message = getPreferenceScreen().findPreference(PREF_KEY_SAVED_PASSWORDS_NO_TEXT);
+        if (message != null) {
+            getPreferenceScreen().removePreference(message);
+        }
+    }
+
     @Override
     public void passwordListAvailable(int count) {
-        resetList(PREF_CATEGORY_SAVED_PASSWORDS);
-        resetList(PREF_CATEGORY_SAVED_PASSWORDS_NO_TEXT);
+        resetList(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
+        resetNoEntriesTextMessage();
 
         mNoPasswords = count == 0;
         if (mNoPasswords) {
@@ -157,7 +171,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
         displayManageAccountLink();
 
         PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
-        profileCategory.setKey(PREF_CATEGORY_SAVED_PASSWORDS);
+        profileCategory.setKey(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
         profileCategory.setTitle(R.string.section_saved_passwords);
         profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
         getPreferenceScreen().addPreference(profileCategory);
@@ -182,8 +196,8 @@ public class SavePasswordsPreferences extends PreferenceFragment
 
     @Override
     public void passwordExceptionListAvailable(int count) {
-        resetList(PREF_CATEGORY_EXCEPTIONS);
-        resetList(PREF_CATEGORY_SAVED_PASSWORDS_NO_TEXT);
+        resetList(PREF_KEY_CATEGORY_EXCEPTIONS);
+        resetNoEntriesTextMessage();
 
         mNoPasswordExceptions = count == 0;
         if (mNoPasswordExceptions) {
@@ -194,7 +208,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
         displayManageAccountLink();
 
         PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
-        profileCategory.setKey(PREF_CATEGORY_EXCEPTIONS);
+        profileCategory.setKey(PREF_KEY_CATEGORY_EXCEPTIONS);
         profileCategory.setTitle(R.string.section_saved_passwords_exceptions);
         profileCategory.setOrder(ORDER_EXCEPTIONS);
         getPreferenceScreen().addPreference(profileCategory);
@@ -300,7 +314,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
     }
 
     private void displayManageAccountLink() {
-        if (getPreferenceScreen().findPreference(PREF_MANAGE_ACCOUNT_LINK) == null) {
+        if (getPreferenceScreen().findPreference(PREF_KEY_MANAGE_ACCOUNT_LINK) == null) {
             if (mLinkPref == null) {
                 ForegroundColorSpan colorSpan = new ForegroundColorSpan(
                         ApiCompatibilityUtils.getColor(getResources(), R.color.google_blue_700));
@@ -308,7 +322,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
                         getString(R.string.manage_passwords_text),
                         new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));
                 mLinkPref = new ChromeBasePreference(getActivity());
-                mLinkPref.setKey(PREF_MANAGE_ACCOUNT_LINK);
+                mLinkPref.setKey(PREF_KEY_MANAGE_ACCOUNT_LINK);
                 mLinkPref.setTitle(title);
                 mLinkPref.setOnPreferenceClickListener(this);
                 mLinkPref.setOrder(ORDER_MANAGE_ACCOUNT_LINK);
