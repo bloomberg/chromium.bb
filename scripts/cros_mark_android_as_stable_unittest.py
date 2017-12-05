@@ -466,10 +466,6 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH).keys():
       self.assertTrue(t in acls)
-    # Test that all MNC targets have their ACLs set.
-    for t in cros_mark_android_as_stable.MakeBuildTargetDict(
-        constants.ANDROID_MNC_BUILD_BRANCH).keys():
-      self.assertTrue(t in acls)
     # Test that all NYC targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_NYC_BUILD_BRANCH).keys():
@@ -490,22 +486,6 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for target in constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS:
       self.assertEquals(targets[target],
                         constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS[target])
-
-  def testMakeBuildTargetDictMNC(self):
-    """Test generation of MNC build target dictionary.
-
-    If the number of targets is correct and MNC-specific targets are present,
-    then the dictionary is correct.
-    """
-    targets = cros_mark_android_as_stable.MakeBuildTargetDict(
-        constants.ANDROID_MNC_BUILD_BRANCH)
-    # Test the number of targets.
-    self.assertEquals(len(targets),
-                      len(constants.ANDROID_MNC_BUILD_TARGETS))
-    # Test that all MNC-specific targets are in the dictionary.
-    for target in constants.ANDROID_MNC_BUILD_TARGETS:
-      self.assertEquals(targets[target],
-                        constants.ANDROID_MNC_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictNYC(self):
     """Test generation of NYC build target dictionary.

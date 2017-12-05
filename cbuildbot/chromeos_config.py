@@ -2185,18 +2185,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       description='Preflight Android Uprev & Build (internal)',
   )
 
-  # Template for Android MNC.
-  # For historical reason, we want to name MNC Android PFQ builders as
-  # $BOARD-android-pfq, so we should name this template also without mnc-
-  # prefix (see testConfigNamesMatchTemplate in chromeos_config_unittest).
-  site_config.AddTemplate(
-      'android_pfq',
-      site_config.templates.generic_android_pfq,
-      display_label=config_lib.DISPLAY_LABEL_MNC_ANDROID_PFQ,
-      android_package='android-container',
-      android_import_branch=constants.ANDROID_MNC_BUILD_BRANCH,
-  )
-
   # Template for Android NYC.
   site_config.AddTemplate(
       'nyc_android_pfq',

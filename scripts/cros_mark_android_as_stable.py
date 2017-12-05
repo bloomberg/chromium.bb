@@ -346,8 +346,6 @@ def MakeBuildTargetDict(build_branch):
   """
   if build_branch == constants.ANDROID_MASTER_ARC_DEV_BUILD_BRANCH:
     return constants.ANDROID_MASTER_ARC_DEV_BUILD_TARGETS
-  elif build_branch == constants.ANDROID_MNC_BUILD_BRANCH:
-    return constants.ANDROID_MNC_BUILD_TARGETS
   elif build_branch == constants.ANDROID_NYC_BUILD_BRANCH:
     return constants.ANDROID_NYC_BUILD_TARGETS
   else:
