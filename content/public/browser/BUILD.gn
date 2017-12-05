@@ -230,8 +230,6 @@ jumbo_source_set("browser_sources") {
     "resource_dispatcher_host_delegate.h",
     "resource_dispatcher_host_login_delegate.h",
     "resource_hints.h",
-    "resource_request_details.cc",
-    "resource_request_details.h",
     "resource_request_info.h",
     "resource_throttle.cc",
     "resource_throttle.h",

@@ -11,7 +11,6 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_states.h"
 
@@ -39,11 +38,6 @@ class CONTENT_EXPORT LoaderDelegate {
       const net::LoadStateWithParam& load_state,
       uint64_t upload_position,
       uint64_t upload_size) = 0;
-
-  // Notification that a response has been received for a resource request.
-  virtual void DidGetResourceResponseStart(
-      const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-      std::unique_ptr<ResourceRequestDetails> details) = 0;
 
   // Called when the network stack started handling the navigation request.
   virtual void LogResourceRequestTime(base::TimeTicks timestamp,

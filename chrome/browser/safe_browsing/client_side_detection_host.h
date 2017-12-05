@@ -16,7 +16,6 @@
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/db/database_manager.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
