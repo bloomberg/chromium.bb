@@ -20,10 +20,12 @@
 
   python tools/code_coverage/coverage.py crypto_unittests url_unittests \\
     -b out/coverage -o out/report -c 'out/coverage/crypto_unittests' \\
-    -c 'out/coverage/url_unittests --gtest_filter=URLParser.PathURL'
+    -c 'out/coverage/url_unittests --gtest_filter=URLParser.PathURL' \\
+    -f url/ -f crypto/
 
   The command above generates code coverage report for crypto_unittests and
-  url_unittests and all generated artifacts are stored in out/report.
+  url_unittests with only files under url/ and crypto/ directories are included
+  in the report, and all generated artifacts are stored in out/report.
   For url_unittests, it only runs the test URLParser.PathURL.
 
   If you are building a fuzz target, you need to add "use_libfuzzer=true" GN
@@ -177,7 +179,8 @@ def DownloadCoverageToolsIfNeeded():
         'Failed to download coverage tools: %s.' % coverage_tools_url)
 
 
-def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path):
+def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
+                                          filters):
   """Generates per file line-by-line coverage in html using 'llvm-cov show'.
 
   For a file with absolute path /a/b/x.cc, a html report is generated as:
@@ -187,6 +190,7 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path):
   Args:
     binary_paths: A list of paths to the instrumented binaries.
     profdata_file_path: A path to the profdata file.
+    filters: A list of directories and files to get coverage for.
   """
   print('Generating per file line by line code coverage in html')
 
@@ -201,6 +205,7 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path):
   ]
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
+  subprocess_cmd.extend(filters)
 
   subprocess.check_call(subprocess_cmd)
 
@@ -443,6 +448,17 @@ def _ParseArgsGnFile():
   return build_args
 
 
+def _AssertPathsExist(paths):
+  """Asserts that the paths specified in |paths| exist.
+
+  Args:
+    paths: A list of files or directories.
+  """
+  for path in paths:
+    abspath = os.path.join(SRC_ROOT_PATH, path)
+    assert os.path.exists(abspath), ('Path: "%s" doesn\'t exist.' % path)
+
+
 def _ParseCommandArguments():
   """Adds and parses relevant arguments for tool comands.
 
@@ -475,6 +491,14 @@ def _ParseCommandArguments():
       help='Commands used to run test targets, one test target needs one and '
       'only one command, when specifying commands, one should assume the '
       'current working directory is the root of the checkout.')
+
+  arg_parser.add_argument(
+      '-f',
+      '--filters',
+      action='append',
+      required=True,
+      help='Directories or files to get code coverage for, and all files under '
+      'the directories are included recursively.')
 
   arg_parser.add_argument(
       '-j',
@@ -515,6 +539,9 @@ def Main():
       'Please run "gn gen" to generate.').format(BUILD_DIR)
   _ValidateBuildingWithClangCoverage()
   _ValidateCommandsAreRelativeToSrcRoot(args.command)
+  if args.filters:
+    _AssertPathsExist(args.filters)
+
   if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
@@ -522,7 +549,8 @@ def Main():
       args.targets, args.command, args.jobs)
 
   binary_paths = [_GetBinaryPath(command) for command in args.command]
-  _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path)
+  _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
+                                        args.filters)
   html_index_file_path = 'file://' + os.path.abspath(
       os.path.join(OUTPUT_DIR, 'index.html'))
   print('\nCode coverage profile data is created as: %s' % profdata_file_path)
