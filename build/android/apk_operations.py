@@ -108,9 +108,9 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
   debug_process_name = _NormalizeProcessName(debug_process_name, package_name)
 
   def launch(device):
-    # Set debug app in order to enable reading command line flags on user
-    # builds.
-    cmd = ['am', 'set-debug-app', debug_process_name]
+    # --persistent is required to have Settings.Global.DEBUG_APP be set, which
+    # we currently use to allow reading of flags. https://crbug.com/784947
+    cmd = ['am', 'set-debug-app', '--persistent', debug_process_name]
     if wait_for_java_debugger:
       cmd[-1:-1] = ['-w']
     # Ignore error since it will fail if apk is not debuggable.
