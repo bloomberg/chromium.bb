@@ -259,12 +259,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return false;
   }
 
-  bool CanAccessDataForOrigin(const GURL& site_url) {
-    if (origin_lock_.is_empty())
-      return true;
-    return origin_lock_ == site_url;
-  }
-
   void LockToOrigin(const GURL& gurl) {
     origin_lock_ = gurl;
   }
@@ -1046,6 +1040,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
   // URLs. Currently, hosted apps cannot set cookies in this mode. See
   // http://crbug.com/160576.
   GURL site_url = SiteInstanceImpl::GetSiteForURL(nullptr, url);
+  bool is_isolated = IsIsolatedOrigin(url::Origin::Create(site_url));
 
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
@@ -1054,7 +1049,30 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     // workaround for https://crbug.com/600441
     return true;
   }
-  bool can_access = state->second->CanAccessDataForOrigin(site_url);
+
+  // Check access in a way that ensures that:
+  // - isolated origins are only allowed access to data for the same origin
+  //   ("jail" enforcement)
+  // - other sites should not be allowed to access data of an isolated origin
+  //   ("citadel" enforcement)
+  // TODO(lukasza): https://crbug.com/509125, https://crbug.com/764958:
+  // Prevent other kinds of forbidden access.  Some cherry-picked examples
+  // of forbidden access:
+  // - open web -> extension
+  // - open web -> WebUI
+  bool can_access = false;
+  switch (state->second->CheckOriginLock(site_url)) {
+    case CheckOriginLockResult::NO_LOCK:
+      can_access = !is_isolated;
+      break;
+    case CheckOriginLockResult::HAS_EQUAL_LOCK:
+      can_access = true;
+      break;
+    case CheckOriginLockResult::HAS_WRONG_LOCK:
+      can_access = false;
+      break;
+  }
+
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
@@ -1063,6 +1081,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     base::debug::SetCrashKeyValue("killed_process_origin_lock",
                                   state->second->origin_lock().spec());
   }
+
   return can_access;
 }
 
