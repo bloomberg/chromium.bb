@@ -180,6 +180,24 @@ TEST_F(FileDataPipeProducerTest, WriteFromFilePartial) {
   EXPECT_EQ(kTestString.substr(0, kBytesToWrite), reader.data());
 }
 
+TEST_F(FileDataPipeProducerTest, WriteFromInvalidFile) {
+  base::FilePath path(FILE_PATH_LITERAL("<nonexistent-file>"));
+  constexpr size_t kBytesToWrite = 7;
+
+  base::RunLoop loop;
+  DataPipe pipe(kBytesToWrite);
+  DataPipeReader reader(std::move(pipe.consumer_handle), kBytesToWrite,
+                        loop.QuitClosure());
+
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  WriteFromFileThenCloseWriter(
+      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::move(file), kBytesToWrite);
+  loop.Run();
+
+  EXPECT_EQ(0UL, reader.data().size());
+}
+
 TEST_F(FileDataPipeProducerTest, WriteFromPath) {
   const std::string kTestStringFragment = "Hello, world!";
   constexpr size_t kNumRepetitions = 1000;
