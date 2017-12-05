@@ -89,9 +89,7 @@ void EnableBadgedReadingListTriggering(
 
 // Verifies that the Badged Reading List feature shows when triggering
 // conditions are met.
-// TODO(crbug.com/789943): This test is flaky on devices. Reenable it once it is
-// fixed.
-- (void)FLAKY_testBadgedReadingListFeatureShouldShow {
+- (void)testBadgedReadingListFeatureShouldShow {
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableBadgedReadingListTriggering(scoped_feature_list);
