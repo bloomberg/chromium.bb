@@ -50,6 +50,7 @@
       },
       'Cast Android (dbg)': {
         'additional_compile_targets': [
+          'cast_junit_test_lists',
           'cast_shell_apk',
         ],
       },
@@ -290,29 +291,6 @@
   {
     'name': 'chromium.linux',
     'machines': {
-      'Android Arm64 Builder (dbg)': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'Android Builder': {
-        'additional_compile_targets': [
-          'cronet_test_instrumentation_apk',
-          'monochrome_static_initializers',
-        ],
-      },
-      'Android Clang Builder (dbg)': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'Cast Android (dbg)': {
-        'additional_compile_targets': [
-          'cast_junit_test_lists',
-          'cast_shell_apk',
-          'cast_test_lists',
-        ],
-      },
       'Fuchsia ARM64': {
         'additional_compile_targets': [
           'base_unittests',
@@ -364,36 +342,6 @@
           'google_apis_unittests',
           'sync_integration_tests'
         ]
-      },
-      'Android Tests': {
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'junit_tests': 'chromium_junit_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
-      'Android Tests (dbg)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'junit_tests': 'chromium_junit_tests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'KTU84P',
-              'device_type': 'hammerhead',
-            },
-          ],
-        },
-        'os_type': 'android',
       },
       'Cast Audio Linux': {
         'additional_compile_targets': [

@@ -673,6 +673,7 @@
   },
   "Cast Android (dbg)": {
     "additional_compile_targets": [
+      "cast_junit_test_lists",
       "cast_shell_apk"
     ]
   },
