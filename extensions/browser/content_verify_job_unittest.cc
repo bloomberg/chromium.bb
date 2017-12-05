@@ -207,6 +207,17 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
               RunContentVerifyJob(*extension.get(), unexpected_resource_path,
                                   contents));
   }
+
+  {
+    // Ask for the root path of the extension (i.e., chrome-extension://<id>/).
+    // Verification should skip this request as if the resource were
+    // non-existent. See https://crbug.com/791929.
+    base::FilePath empty_path_resource_path(FILE_PATH_LITERAL(""));
+    std::string empty_contents;
+    EXPECT_EQ(ContentVerifyJob::NONE,
+              RunContentVerifyJob(*extension.get(), empty_path_resource_path,
+                                  empty_contents));
+  }
 }
 
 // Tests that content modification causes content verification failure.
