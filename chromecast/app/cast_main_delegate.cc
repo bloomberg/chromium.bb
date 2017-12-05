@@ -34,6 +34,7 @@
 #include "base/android/apk_assets.h"
 #include "chromecast/app/android/cast_crash_reporter_client_android.h"
 #include "chromecast/app/android/crash_handler.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #elif defined(OS_LINUX)
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
 #endif  // defined(OS_LINUX)
@@ -203,6 +204,8 @@ void CastMainDelegate::InitializeResourceBundle() {
     DCHECK_GE(pak_fd, 0);
     global_descriptors->Set(kAndroidPakDescriptor, pak_fd, pak_region);
   }
+
+  ui::SetLocalePaksStoredInApk(true);
 #endif  // defined(OS_ANDROID)
 
   resource_delegate_.reset(new CastResourceDelegate());
