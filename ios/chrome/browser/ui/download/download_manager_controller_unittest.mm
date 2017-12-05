@@ -63,7 +63,8 @@ class DownloadManagerControllerTest : public ChromeWebTest {
     helper->SetLauncher(mock_launcher);
     _controller =
         [[DownloadManagerController alloc] initWithWebState:web_state()
-                                                downloadURL:kTestURL];
+                                                downloadURL:kTestURL
+                                         baseViewController:nil];
   }
   std::unique_ptr<net::TestURLFetcherFactory> _fetcher_factory;
   __strong DownloadManagerController* _controller;

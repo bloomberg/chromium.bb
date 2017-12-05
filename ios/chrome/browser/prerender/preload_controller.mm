@@ -341,6 +341,15 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   return nil;
 }
 
+// Override the CRWNativeContentProvider methods to cancel any prerenders that
+// require native content.
+- (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)URL
+                                                  webState:
+                                                      (web::WebState*)webState {
+  [self schedulePrerenderCancel];
+  return nil;
+}
+
 #pragma mark -
 #pragma mark Private Methods
 

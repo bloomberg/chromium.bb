@@ -60,12 +60,6 @@ class GURL;
 - (BOOL)webController:(CRWWebController*)webController
     shouldOpenExternalURL:(const GURL&)URL;
 
-// Called to ask the delegate for a controller to display the given url,
-// which contained content that the UIWebView couldn't display. Returns
-// the native controller to display if the delegate can handle the url,
-// or nil otherwise.
-- (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)url;
-
 // Called to retrieve the height of any header that is overlaying on top of the
 // web view. This can be used to implement, for e.g. a toolbar that changes
 // height dynamically. Returning a non-zero height affects the visible frame

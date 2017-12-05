@@ -490,6 +490,9 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 // downloaded.
 @property(nonatomic) double fractionDownloaded;
 
+// The base view controller from which to present UI.
+@property(nonatomic, readonly, weak) UIViewController* baseViewController;
+
 @end
 
 @implementation DownloadManagerController
@@ -520,9 +523,11 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 @synthesize fileTypeLabelCentered = _fileTypeLabelCentered;
 @synthesize downloadStartedTime = _downloadStartedTime;
 @synthesize fractionDownloaded = _fractionDownloaded;
+@synthesize baseViewController = _baseViewController;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
-                     downloadURL:(const GURL&)url {
+                     downloadURL:(const GURL&)url
+              baseViewController:(UIViewController*)baseViewController {
   self = [super initWithNibName:@"DownloadManagerController" url:url];
   if (self) {
     _downloadManagerId = g_download_manager_id++;
@@ -532,6 +537,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     _headFetcherDelegate.reset(new DownloadHeadDelegate(self));
     _contentFetcherDelegate.reset(new DownloadContentDelegate(self));
     _downloadFilePath = base::FilePath();
+    _baseViewController = baseViewController;
 
     [_documentContainer
         setBackgroundColor:UIColorFromRGB(kUndownloadedDocumentColor)];
@@ -1037,19 +1043,15 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 #pragma mark - Errors
 
 - (void)displayUnableToOpenFileDialog {
-  // This code is called inside a xib file, I am using the topViewController.
-  UIViewController* topViewController =
-      [[[UIApplication sharedApplication] keyWindow] rootViewController];
-
   NSString* title =
       l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UNABLE_TO_OPEN_FILE);
   NSString* message =
       l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_NO_APP_MESSAGE);
 
-  _alertCoordinator =
-      [[AlertCoordinator alloc] initWithBaseViewController:topViewController
-                                                     title:title
-                                                   message:message];
+  _alertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                           title:title
+                         message:message];
 
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(_webState);
   if (tabHelper) {
