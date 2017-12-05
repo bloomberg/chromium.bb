@@ -997,10 +997,6 @@ const char kPluginsShowDetails[] = "plugins.show_details";
 // Boolean that indicates whether outdated plugins are allowed or not.
 const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 
-// Boolean that indicates whether plugins that require authorization should
-// be always allowed or not.
-const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
-
 // Boolean that indicates whether all Flash content (including cross-origin and
 // small content) is allowed to run when it is explicitly allowed via content
 // settings.

@@ -38,7 +38,6 @@ extern const char kAllowHttpScreenCapture[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSilentPush[];
-extern const char kAlwaysAuthorizePlugins[];
 extern const char kApp[];
 extern const char kAppId[];
 extern const char kAppModeAuthCode[];

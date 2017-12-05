@@ -105,7 +105,6 @@ class PluginInfoHostImpl
     scoped_refptr<PluginPrefs> plugin_prefs_;
 
     BooleanPrefMember allow_outdated_plugins_;
-    BooleanPrefMember always_authorize_plugins_;
     BooleanPrefMember run_all_flash_in_allow_mode_;
   };
 

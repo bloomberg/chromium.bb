@@ -4595,14 +4595,15 @@
       'name': 'AlwaysAuthorizePlugins',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:13-', 'chrome_os:13-'],
+      'supported_on': ['chrome.*:13-64', 'chrome_os:13-64'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 86,
-      'caption': '''Always runs plugins that require authorization''',
+      'caption': '''Always runs plugins that require authorization (deprecated)''',
       'tags': ['system-security'],
       'desc': '''If you enable this setting, plugins that are not outdated always run.
 
@@ -10923,4 +10924,3 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
 }
-
