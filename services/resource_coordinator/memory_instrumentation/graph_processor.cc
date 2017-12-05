@@ -136,31 +136,17 @@ void GraphProcessor::CalculateSizesForGraph(GlobalDumpGraph* global_graph) {
   // Eighth pass: calculate the size field for nodes by considering the sizes
   // of their children and owners.
   {
-    auto it = global_graph->shared_memory_graph()->VisitInDepthFirstPostOrder();
+    auto it = global_graph->VisitInDepthFirstPostOrder();
     while (Node* node = it.next()) {
       CalculateSizeForNode(node);
-    }
-
-    for (auto& pid_to_process : global_graph->process_dump_graphs()) {
-      auto it = pid_to_process.second->VisitInDepthFirstPostOrder();
-      while (Node* node = it.next()) {
-        CalculateSizeForNode(node);
-      }
     }
   }
 
   // Ninth pass: Calculate not-owned and not-owning sub-sizes of all nodes.
   {
-    auto it = global_graph->shared_memory_graph()->VisitInDepthFirstPostOrder();
+    auto it = global_graph->VisitInDepthFirstPostOrder();
     while (Node* node = it.next()) {
       CalculateDumpSubSizes(node);
-    }
-
-    for (auto& pid_to_process : global_graph->process_dump_graphs()) {
-      auto it = pid_to_process.second->VisitInDepthFirstPostOrder();
-      while (Node* node = it.next()) {
-        CalculateDumpSubSizes(node);
-      }
     }
   }
 }
