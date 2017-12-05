@@ -168,7 +168,7 @@ static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int width) {
 }
 
 static INLINE int get_paded_idx(const int idx, const int bwl) {
-  return idx + TX_PAD_HOR * (idx >> bwl);
+  return idx + ((idx >> bwl) << TX_PAD_HOR_LOG2);
 }
 
 static INLINE int get_level_count(const uint8_t *const levels, const int stride,
@@ -426,50 +426,68 @@ static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
   // , { 1, 1 }, { 1, 2 },
 };
 
+#define SIG_REF_DIFF_OFFSET_NUM 3
+
+static const int sig_ref_diff_offset[SIG_REF_DIFF_OFFSET_NUM][2] = {
+  { 1, 1 }, { 0, 2 }, { 2, 0 }
+};
+
+static const int sig_ref_diff_offset_vert[SIG_REF_DIFF_OFFSET_NUM][2] = {
+  { 2, 0 }, { 3, 0 }, { 4, 0 }
+};
+
+static const int sig_ref_diff_offset_horiz[SIG_REF_DIFF_OFFSET_NUM][2] = {
+  { 0, 2 }, { 0, 3 }, { 0, 4 }
+};
+
 #if USE_CAUSAL_BASE_CTX
 static INLINE int get_nz_mag(const uint8_t *const levels, const int bwl,
-                             const int row, const int col,
                              const TX_CLASS tx_class) {
-  int mag = 0;
-  for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
+  int mag;
+
+  // Note: AOMMIN(level, 3) is useless for decoder since level < 3.
+  mag = AOMMIN(levels[1], 3);                         // { 0, 1 }
+  mag += AOMMIN(levels[(1 << bwl) + TX_PAD_HOR], 3);  // { 1, 0 }
+
+  for (int idx = 0; idx < SIG_REF_DIFF_OFFSET_NUM; ++idx) {
     const int row_offset =
-        ((tx_class == TX_CLASS_2D)
-             ? sig_ref_offset[idx][0]
-             : ((tx_class == TX_CLASS_VERT) ? sig_ref_offset_vert[idx][0]
-                                            : sig_ref_offset_horiz[idx][0]));
+        ((tx_class == TX_CLASS_2D) ? sig_ref_diff_offset[idx][0]
+                                   : ((tx_class == TX_CLASS_VERT)
+                                          ? sig_ref_diff_offset_vert[idx][0]
+                                          : sig_ref_diff_offset_horiz[idx][0]));
     const int col_offset =
-        ((tx_class == TX_CLASS_2D)
-             ? sig_ref_offset[idx][1]
-             : ((tx_class == TX_CLASS_VERT) ? sig_ref_offset_vert[idx][1]
-                                            : sig_ref_offset_horiz[idx][1]));
-    const int ref_row = row + row_offset;
-    const int ref_col = col + col_offset;
+        ((tx_class == TX_CLASS_2D) ? sig_ref_diff_offset[idx][1]
+                                   : ((tx_class == TX_CLASS_VERT)
+                                          ? sig_ref_diff_offset_vert[idx][1]
+                                          : sig_ref_diff_offset_horiz[idx][1]));
     const int nb_pos =
-        (ref_row << bwl) + (ref_row << TX_PAD_HOR_LOG2) + ref_col;
-    const int level = levels[nb_pos];
-    mag += AOMMIN(level, 3);
+        (row_offset << bwl) + (row_offset << TX_PAD_HOR_LOG2) + col_offset;
+    mag += AOMMIN(levels[nb_pos], 3);
   }
   return mag;
 }
 #endif
 
 static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
-                               const int row, const int col,
                                const TX_CLASS tx_class) {
-  const int stride = (1 << bwl) + TX_PAD_HOR;
-  int count = 0;
-  for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
-    const int ref_row = row + ((tx_class == TX_CLASS_2D)
-                                   ? sig_ref_offset[idx][0]
+  int count;
+
+  count = (levels[1] != 0);                         // { 0, 1 }
+  count += (levels[(1 << bwl) + TX_PAD_HOR] != 0);  // { 1, 0 }
+
+  for (int idx = 0; idx < SIG_REF_DIFF_OFFSET_NUM; ++idx) {
+    const int row_offset =
+        ((tx_class == TX_CLASS_2D) ? sig_ref_diff_offset[idx][0]
                                    : ((tx_class == TX_CLASS_VERT)
-                                          ? sig_ref_offset_vert[idx][0]
-                                          : sig_ref_offset_horiz[idx][0]));
-    const int ref_col = col + ((tx_class == TX_CLASS_2D)
-                                   ? sig_ref_offset[idx][1]
+                                          ? sig_ref_diff_offset_vert[idx][0]
+                                          : sig_ref_diff_offset_horiz[idx][0]));
+    const int col_offset =
+        ((tx_class == TX_CLASS_2D) ? sig_ref_diff_offset[idx][1]
                                    : ((tx_class == TX_CLASS_VERT)
-                                          ? sig_ref_offset_vert[idx][1]
-                                          : sig_ref_offset_horiz[idx][1]));
-    const int nb_pos = ref_row * stride + ref_col;
+                                          ? sig_ref_diff_offset_vert[idx][1]
+                                          : sig_ref_diff_offset_horiz[idx][1]));
+    const int nb_pos =
+        (row_offset << bwl) + (row_offset << TX_PAD_HOR_LOG2) + col_offset;
     count += (levels[nb_pos] != 0);
   }
   return count;
@@ -522,10 +540,10 @@ static INLINE int get_nz_map_ctx_from_stats(
 }
 
 static INLINE int get_nz_map_ctx(const uint8_t *const levels,
-                                 const int scan_idx, const int16_t *const scan,
-                                 const int bwl, const int height,
+                                 const int coeff_idx, const int bwl,
+                                 const int height,
 #if CONFIG_LV_MAP_MULTI
-                                 const int is_eob,
+                                 const int scan_idx, const int is_eob,
 #endif
                                  const TX_TYPE tx_type) {
 #if CONFIG_LV_MAP_MULTI
@@ -536,15 +554,12 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
     return SIG_COEF_CONTEXTS - 1;
   }
 #endif
-  const int coeff_idx = scan[scan_idx];
-  const int row = coeff_idx >> bwl;
-  const int col = coeff_idx - (row << bwl);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const int stats =
 #if USE_CAUSAL_BASE_CTX
-      get_nz_mag(levels, bwl, row, col, tx_class);
+      get_nz_mag(levels + get_paded_idx(coeff_idx, bwl), bwl, tx_class);
 #else
-      get_nz_count(levels, bwl, row, col, tx_class);
+      get_nz_count(levels + get_paded_idx(coeff_idx, bwl), bwl, tx_class);
 #endif
   return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, height, tx_class);
 }
