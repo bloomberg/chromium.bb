@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -255,9 +256,7 @@ class CONTENT_EXPORT UserMediaProcessor
   void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
       const VideoCaptureSettings& settings);
-  void FinalizeSelectVideoContentSettings(
-      const blink::WebUserMediaRequest& web_request,
-      const VideoCaptureSettings& settings);
+  void SelectVideoContentSettings();
 
   void GenerateStreamForCurrentRequestInfo();
 
