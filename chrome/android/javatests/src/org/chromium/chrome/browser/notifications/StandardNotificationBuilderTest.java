@@ -79,10 +79,11 @@ public class StandardNotificationBuilderTest {
                 new int[] {Color.GRAY}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
         actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
-        return new StandardNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
+        return new StandardNotificationBuilder(context)
                 .setTitle("title")
                 .setBody("body")
                 .setOrigin("origin")
+                .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
                 .setTicker(new SpannableStringBuilder("ticker"))
                 .setImage(image)
                 .setLargeIcon(largeIcon)
@@ -176,14 +177,14 @@ public class StandardNotificationBuilderTest {
     @Feature({"Browser", "Notifications"})
     public void testSetSmallIcon() {
         Context context = InstrumentationRegistry.getTargetContext();
-        NotificationBuilderBase notificationBuilder =
-                new StandardNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES);
+        NotificationBuilderBase notificationBuilder = new StandardNotificationBuilder(context);
 
         Bitmap bitmap =
                 BitmapFactory.decodeResource(context.getResources(), R.drawable.chrome_sync_logo);
 
         notificationBuilder.setSmallIcon(R.drawable.ic_chrome);
         notificationBuilder.setSmallIcon(bitmap); // Should override on M+
+        notificationBuilder.setChannelId(ChannelDefinitions.CHANNEL_ID_SITES);
 
         Notification notification = notificationBuilder.build();
 
@@ -198,9 +199,8 @@ public class StandardNotificationBuilderTest {
             Assert.assertTrue(expected.sameAs(result));
 
             // Check using the same bitmap on another builder gives the same result.
-            NotificationBuilderBase otherBuilder =
-                    new StandardNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES);
-            otherBuilder.setSmallIcon(bitmap);
+            NotificationBuilderBase otherBuilder = new StandardNotificationBuilder(context);
+            otherBuilder.setSmallIcon(bitmap).setChannelId(ChannelDefinitions.CHANNEL_ID_SITES);
             Notification otherNotification = otherBuilder.build();
             Assert.assertTrue(expected.sameAs(
                     NotificationTestUtil.getSmallIconFromNotification(context, otherNotification)));
@@ -219,7 +219,8 @@ public class StandardNotificationBuilderTest {
     public void testAddTextActionSetsRemoteInput() {
         Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
-                new StandardNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
+                new StandardNotificationBuilder(context)
+                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
                         .addTextAction(null, "Action Title", null, "Placeholder");
 
         Notification notification = notificationBuilder.build();

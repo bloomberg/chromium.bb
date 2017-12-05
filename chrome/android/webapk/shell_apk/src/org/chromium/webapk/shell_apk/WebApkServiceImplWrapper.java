@@ -93,6 +93,14 @@ public class WebApkServiceImplWrapper extends IWebApkApi.Stub {
         Log.w(TAG, "Should NOT reach WebApkServiceImplWrapper#cancelNotification(String, int).");
     }
 
+    @Override
+    public void notifyNotificationWithChannel(
+            String platformTag, int platformID, Notification notification, String channelName) {
+        Log.w(TAG,
+                "Should NOT reach WebApkServiceImplWrapper#notifyNotificationWithChannel("
+                        + "String, int, Notification, String)");
+    }
+
     /** Creates a WebAPK notification channel on Android O+ if one does not exist. */
     protected void ensureNotificationChannelExists() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
