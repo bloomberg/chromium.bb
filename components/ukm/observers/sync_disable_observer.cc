@@ -16,11 +16,12 @@ SyncDisableObserver::~SyncDisableObserver() {}
 // static
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service) {
+  const bool initialized = sync_service->IsEngineInitialized();
   return SyncDisableObserver::SyncState{
       sync_service->GetPreferredDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES),
-      sync_service->IsEngineInitialized(),
-      sync_service->IsUsingSecondaryPassphrase(),
+      initialized,
+      initialized ? sync_service->IsUsingSecondaryPassphrase() : false,
   };
 }
 
