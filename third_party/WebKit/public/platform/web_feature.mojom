@@ -1779,6 +1779,9 @@ enum WebFeature {
   kUserMediaDisableHardwareNoiseSuppression = 2258,
   kCertificateTransparencyRequiredErrorOnResourceLoad = 2259,
   kCSSSelectorPseudoWebkitAnyLink = 2260,
+  kAudioWorkletAddModule = 2261,
+  kAudioWorkletGlobalScopeRegisterProcessor = 2262,
+  kAudioWorkletNodeConstructor = 2263,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
