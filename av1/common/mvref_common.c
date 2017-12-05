@@ -670,11 +670,6 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // USE_CUR_GM_REFMV
                               int block, int mi_row, int mi_col,
                               int16_t *mode_context) {
-  int idx, nearest_refmv_count = 0;
-  uint8_t newmv_count = 0;
-  uint8_t ref_match_count = 0, nearest_match = 0;
-  CANDIDATE_MV tmp_mv;
-  int len, nr_len;
 #if CONFIG_TMV
   const int prev_frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
   const int tmi_row = mi_row & 0xfffe;
@@ -711,7 +706,6 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int col_adj = (xd->n8_w < mi_size_wide[BLOCK_8X8]) && (mi_col & 0x01);
   int processed_rows = 0;
   int processed_cols = 0;
-  int row_offset, col_offset;
 
   av1_set_ref_frame(rf, ref_frame);
   mode_context[ref_frame] = 0;
@@ -728,6 +722,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     max_col_offset = -(MVREF_COLS << 1) + col_adj;
     max_col_offset = find_valid_col_offset(tile, mi_col, max_col_offset);
   }
+
+  uint8_t ref_match_count = 0;
+  uint8_t newmv_count = 0;
 
   // Scan the first above row mode info. row_offset = -1;
   if (abs(max_row_offset) >= 1)
@@ -754,29 +751,28 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // USE_CUR_GM_REFMV
                                  refmv_count);
 
-  nearest_match = ref_match_count;
-  nearest_refmv_count = *refmv_count;
+  const int nearest_match = ref_match_count;
+  const int nearest_refmv_count = *refmv_count;
 
   ref_mv_stack[0].weight = 0;
-  for (idx = 0; idx < nearest_refmv_count; ++idx)
+  for (int idx = 0; idx < nearest_refmv_count; ++idx)
     ref_mv_stack[idx].weight += REF_CAT_LEVEL;
 
 #if CONFIG_MFMV
   if (cm->use_ref_frame_mvs) {
-    int blk_row, blk_col;
     int coll_blk_count = 0;
-    int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
-    int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
+    const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
+    const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
 
-    int tpl_sample_pos[9][2] = {
+    const int tpl_sample_pos[9][2] = {
       { -2, hoffset }, { 0, hoffset },  { voffset, hoffset },
       { voffset, 0 },  { voffset, -2 }, { voffset, -4 },
       { -4, hoffset }, { voffset, 4 },  { 2, hoffset + 4 },
     };
-    int i;
 
-    for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_size_high[BLOCK_8X8]) {
-      for (blk_col = 0; blk_col < xd->n8_w;
+    for (int blk_row = 0; blk_row < xd->n8_h;
+         blk_row += mi_size_high[BLOCK_8X8]) {
+      for (int blk_col = 0; blk_col < xd->n8_w;
            blk_col += mi_size_wide[BLOCK_8X8]) {
         // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is
         // used.
@@ -790,9 +786,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
 
-    for (i = 0; i < 9; ++i) {
-      blk_row = tpl_sample_pos[i][0];
-      blk_col = tpl_sample_pos[i][1];
+    for (int i = 0; i < 9; ++i) {
+      const int blk_row = tpl_sample_pos[i][0];
+      const int blk_col = tpl_sample_pos[i][1];
 
       if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
       // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
@@ -810,14 +806,13 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       rf[1] == NONE_FRAME)
 #endif
   {
-    int blk_row, blk_col;
     int coll_blk_count = 0;
     const int mi_step = (xd->n8_w == 1 || xd->n8_h == 1)
                             ? mi_size_wide[BLOCK_8X8]
                             : mi_size_wide[BLOCK_16X16];
 
-    for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_step) {
-      for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_step) {
+    for (int blk_row = 0; blk_row < xd->n8_h; blk_row += mi_step) {
+      for (int blk_col = 0; blk_col < xd->n8_w; blk_col += mi_step) {
 #if CONFIG_TMV
         int is_available =
             add_col_ref_mv(cm, prev_frame_mvs_base, prev_frame_mvs_stride, xd,
@@ -850,9 +845,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                 gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                 refmv_count);
-  for (idx = 2; idx <= MVREF_ROWS; ++idx) {
-    row_offset = -(idx << 1) + 1 + row_adj;
-    col_offset = -(idx << 1) + 1 + col_adj;
+  for (int idx = 2; idx <= MVREF_ROWS; ++idx) {
+    const int row_offset = -(idx << 1) + 1 + row_adj;
+    const int col_offset = -(idx << 1) + 1 + col_adj;
 
     if (abs(row_offset) <= abs(max_row_offset) &&
         abs(row_offset) > processed_rows)
@@ -873,7 +868,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                     max_col_offset, &processed_cols);
   }
 
-  col_offset = -(MVREF_COLS << 1) + 1 + col_adj;
+  const int col_offset = -(MVREF_COLS << 1) + 1 + col_adj;
   if (abs(col_offset) <= abs(max_col_offset) &&
       abs(col_offset) > processed_cols)
     scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, col_offset, ref_mv_stack,
@@ -932,12 +927,12 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   // Rank the likelihood and assign nearest and near mvs.
-  len = nearest_refmv_count;
+  int len = nearest_refmv_count;
   while (len > 0) {
-    nr_len = 0;
-    for (idx = 1; idx < len; ++idx) {
+    int nr_len = 0;
+    for (int idx = 1; idx < len; ++idx) {
       if (ref_mv_stack[idx - 1].weight < ref_mv_stack[idx].weight) {
-        tmp_mv = ref_mv_stack[idx - 1];
+        CANDIDATE_MV tmp_mv = ref_mv_stack[idx - 1];
         ref_mv_stack[idx - 1] = ref_mv_stack[idx];
         ref_mv_stack[idx] = tmp_mv;
         nr_len = idx;
@@ -948,10 +943,10 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   len = *refmv_count;
   while (len > nearest_refmv_count) {
-    nr_len = nearest_refmv_count;
-    for (idx = nearest_refmv_count + 1; idx < len; ++idx) {
+    int nr_len = nearest_refmv_count;
+    for (int idx = nearest_refmv_count + 1; idx < len; ++idx) {
       if (ref_mv_stack[idx - 1].weight < ref_mv_stack[idx].weight) {
-        tmp_mv = ref_mv_stack[idx - 1];
+        CANDIDATE_MV tmp_mv = ref_mv_stack[idx - 1];
         ref_mv_stack[idx - 1] = ref_mv_stack[idx];
         ref_mv_stack[idx] = tmp_mv;
         nr_len = idx;
@@ -961,14 +956,15 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   if (rf[1] > NONE_FRAME) {
-    for (idx = 0; idx < *refmv_count; ++idx) {
+    for (int idx = 0; idx < *refmv_count; ++idx) {
       clamp_mv_ref(&ref_mv_stack[idx].this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
                    xd->n8_h << MI_SIZE_LOG2, xd);
       clamp_mv_ref(&ref_mv_stack[idx].comp_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
                    xd->n8_h << MI_SIZE_LOG2, xd);
     }
   } else {
-    for (idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, *refmv_count); ++idx) {
+    for (int idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, *refmv_count);
+         ++idx) {
       mv_ref_list[idx].as_int = ref_mv_stack[idx].this_mv.as_int;
       clamp_mv_ref(&mv_ref_list[idx].as_mv, xd->n8_w << MI_SIZE_LOG2,
                    xd->n8_h << MI_SIZE_LOG2, xd);
