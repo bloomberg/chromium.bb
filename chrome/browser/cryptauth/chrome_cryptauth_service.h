@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -69,7 +71,9 @@ class ChromeCryptAuthService
   void GoogleSigninSucceeded(const std::string& account_id,
                              const std::string& username) override;
 
-  void PerformEnrollmentAndDeviceSync();
+  void PerformEnrollmentAndDeviceSyncIfPossible();
+  bool IsEnrollmentAllowedByPolicy();
+  void OnPrefsChanged();
 
   std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager_;
   std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager_;
@@ -77,6 +81,9 @@ class ChromeCryptAuthService
   Profile* profile_;
   OAuth2TokenService* token_service_;
   SigninManagerBase* signin_manager_;
+  PrefChangeRegistrar registrar_;
+
+  base::WeakPtrFactory<ChromeCryptAuthService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCryptAuthService);
 };
