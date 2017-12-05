@@ -59,6 +59,7 @@ class MEDIA_EXPORT CdmModule {
  private:
   using InitializeCdmModuleFunc = void (*)();
   using DeinitializeCdmModuleFunc = void (*)();
+  using GetCdmVersionFunc = char* (*)();
 
   CdmModule();
 
@@ -68,6 +69,7 @@ class MEDIA_EXPORT CdmModule {
   CreateCdmFunc create_cdm_func_ = nullptr;
   InitializeCdmModuleFunc initialize_cdm_module_func_ = nullptr;
   DeinitializeCdmModuleFunc deinitialize_cdm_module_func_ = nullptr;
+  GetCdmVersionFunc get_cdm_version_func_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CdmModule);
 };
