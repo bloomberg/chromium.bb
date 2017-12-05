@@ -714,12 +714,15 @@ if (is_linux || is_android) {
 
     deps = [
       ":client",
-      ":linux_dumper_unittest_helper",
       ":processor_support",
       "//build/config:exe_and_shlib_deps",
       "//testing/gmock",
       "//testing/gtest",
       "//testing/gtest:gtest_main",
+    ]
+
+    data_deps = [
+      ":linux_dumper_unittest_helper",
     ]
 
     include_dirs = [
