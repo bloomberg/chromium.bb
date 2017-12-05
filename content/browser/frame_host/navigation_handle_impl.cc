@@ -1252,21 +1252,13 @@ bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
     return true;
   }
 
-  // The content embedder can decide that a transfer to a different process is
-  // required for this URL.
-  bool should_transfer =
-      GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
-          frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-          original_url_, url_);
-
-  RenderFrameHostManager* manager =
-      render_frame_host_->frame_tree_node()->render_manager();
-
-  // In the site-per-process model, the RenderFrameHostManager may also decide
-  // (independently from the content embedder's ShouldSwapProcessesForRedirect
-  // above) that a process transfer is needed. Process transfers are skipped for
+  // In the site-per-process model, the RenderFrameHostManager may decide
+  // that a process transfer is needed. Process transfers are skipped for
   // WebUI processes for now, since e.g. chrome://settings has multiple
   // "cross-site" chrome:// frames, and that doesn't yet work cross-process.
+  RenderFrameHostManager* manager =
+      render_frame_host_->frame_tree_node()->render_manager();
+  bool should_transfer = false;
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           render_frame_host_->GetProcess()->GetID())) {
     should_transfer |= manager->IsRendererTransferNeededForNavigation(

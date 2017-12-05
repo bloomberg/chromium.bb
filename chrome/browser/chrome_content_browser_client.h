@@ -142,10 +142,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::SiteInstance* site_instance,
       const GURL& current_url,
       const GURL& new_url) override;
-  bool ShouldSwapProcessesForRedirect(
-      content::BrowserContext* browser_context,
-      const GURL& current_url,
-      const GURL& new_url) override;
   bool ShouldAssignSiteForURL(const GURL& url) override;
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   bool IsFileAccessAllowed(const base::FilePath& path,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
+#define CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
 
 class GURL;
 
@@ -23,12 +23,11 @@ const Extension* GetNonBookmarkAppExtension(const ExtensionSet& extensions,
 // We temporarily consider a workaround where we will keep non-app URLs in
 // an app process, but only if |should_consider_workaround| is true.  See
 // http://crbug.com/59285.
-bool CrossesExtensionProcessBoundary(
-    const ExtensionSet& extensions,
-    const GURL& old_url,
-    const GURL& new_url,
-    bool should_consider_workaround);
+bool CrossesExtensionProcessBoundary(const ExtensionSet& extensions,
+                                     const GURL& old_url,
+                                     const GURL& new_url,
+                                     bool should_consider_workaround);
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
