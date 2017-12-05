@@ -325,7 +325,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int nb_strength_bits;
   int quantizer;
   double lambda;
-  int nplanes = 3;
+  int nplanes = av1_num_planes(cm);
   const int total_strengths = fast ? REDUCED_TOTAL_STRENGTHS : TOTAL_STRENGTHS;
   DECLARE_ALIGNED(32, uint16_t, inbuf[CDEF_INBUF_SIZE]);
   uint16_t *in;

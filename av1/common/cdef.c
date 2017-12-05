@@ -167,7 +167,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int xdec[3];
   int ydec[3];
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
-  int nplanes = MAX_MB_PLANE;
+  int nplanes = av1_num_planes(cm);
   int chroma_cdef = xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
                     xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
   const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
