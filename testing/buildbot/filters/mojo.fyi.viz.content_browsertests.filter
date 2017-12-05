@@ -80,3 +80,6 @@
 
 # TODO: investigate flaky failure http://crbug.com/783434
 -GpuProcessHostBrowserTest.Shutdown
+
+# TODO: investigate flaky failure http://crbug.com/790683
+-SitePerProcessBrowserTest.CrossSiteIframeBlockedByXFrameOptionsOrCSP
