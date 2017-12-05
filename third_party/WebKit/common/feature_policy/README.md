@@ -11,14 +11,7 @@ via a HTTP header and/or an iframe "allow" attribute.
 Below is an example of a header policy (note that the header should be kept in
 one line, split into multiple for clarity reasons):
 
-    Feature-Policy: {"vibrate": [],
-                     "geolocation": ["self", "https://example.com"],
-                     "camera": ["*"]}
-
-Soon the syntax will be updated
-([crbug.com/750259](https://bugs.chromium.org/p/chromium/issues/detail?id=750259)):
-
-    Feature-Policy: vibrate "none"; geolocation "self" https://example.com; camera "*"
+    Feature-Policy: vibrate 'none'; geolocation 'self' https://example.com; camera *
 
 
 - `vibrate` is disabled for all browsing contexts;
@@ -28,16 +21,11 @@ Soon the syntax will be updated
 
 Below is an example of a container policy:
 
-    <iframe allowpaymentrequest allow=’vibrate fullscreen’></iframe>
-
-Soon the syntax will be updated
-([crbug.com/726739](https://bugs.chromium.org/p/chromium/issues/detail?id=726739)):
-
-    <iframe allowpaymentrequest allow='vibrate; fullscreen;'></iframe>
+    <iframe allowpaymentrequest allow='vibrate; fullscreen'></iframe>
 
 OR
 
-    <iframe allowpaymentrequest allow='vibrate "src"; fullscreen "src"'></iframe>
+    <iframe allowpaymentrequest allow="vibrate 'src'; fullscreen 'src'"></iframe>
 
 
 - `payment` is enabled (via `allowpaymentrequest`) on all browsing contexts
