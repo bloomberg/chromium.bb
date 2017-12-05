@@ -26,10 +26,6 @@
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace content {
 
 class ApplyConstraintsProcessor;
@@ -49,8 +45,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   UserMediaClientImpl(
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
-      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner);
+      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer);
   UserMediaClientImpl(RenderFrame* render_frame,
                       std::unique_ptr<UserMediaProcessor> user_media_processor);
   ~UserMediaClientImpl() override;

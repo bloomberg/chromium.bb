@@ -23,10 +23,6 @@
 #include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace blink {
 class WebMediaConstraints;
 class WebMediaStream;
@@ -72,8 +68,7 @@ class CONTENT_EXPORT UserMediaProcessor
       RenderFrame* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
       std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner);
+      MediaDevicesDispatcherCallback media_devices_dispatcher_cb);
   ~UserMediaProcessor() override;
 
   // It can be assumed that the output of CurrentRequest() remains the same
@@ -288,8 +283,6 @@ class CONTENT_EXPORT UserMediaProcessor
   std::unique_ptr<RequestInfo> current_request_info_;
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
-
-  const scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   const int render_frame_id_;
 

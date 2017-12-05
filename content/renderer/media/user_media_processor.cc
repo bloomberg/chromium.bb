@@ -324,12 +324,10 @@ UserMediaProcessor::UserMediaProcessor(
     RenderFrame* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
     std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-    MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner)
+    MediaDevicesDispatcherCallback media_devices_dispatcher_cb)
     : dependency_factory_(dependency_factory),
       media_stream_device_observer_(std::move(media_stream_device_observer)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
-      worker_task_runner_(worker_task_runner),
       render_frame_id_(render_frame ? render_frame->GetRoutingID()
                                     : MSG_ROUTING_NONE),
       weak_factory_(this) {
@@ -486,24 +484,11 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
                                                base::Optional<bool>(true),
                                                base::Optional<bool>(false)};
-  base::PostTaskAndReplyWithResult(
-      worker_task_runner_.get(), FROM_HERE,
-      base::Bind(&SelectSettingsVideoDeviceCapture, std::move(capabilities),
-                 web_request.VideoConstraints(),
-                 MediaStreamVideoSource::kDefaultWidth,
-                 MediaStreamVideoSource::kDefaultHeight,
-                 MediaStreamVideoSource::kDefaultFrameRate),
-      base::Bind(&UserMediaProcessor::FinalizeSelectVideoDeviceSettings,
-                 weak_factory_.GetWeakPtr(), web_request));
-}
-
-void UserMediaProcessor::FinalizeSelectVideoDeviceSettings(
-    const blink::WebUserMediaRequest& web_request,
-    const VideoCaptureSettings& settings) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!IsCurrentRequestInfo(web_request))
-    return;
-
+  VideoCaptureSettings settings = SelectSettingsVideoDeviceCapture(
+      std::move(capabilities), web_request.VideoConstraints(),
+      MediaStreamVideoSource::kDefaultWidth,
+      MediaStreamVideoSource::kDefaultHeight,
+      MediaStreamVideoSource::kDefaultFrameRate);
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());

@@ -117,8 +117,7 @@ UserMediaClientImpl::UserMediaClientImpl(
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrame* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-    const scoped_refptr<base::TaskRunner>& worker_task_runner)
+    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer)
     : UserMediaClientImpl(
           render_frame,
           std::make_unique<UserMediaProcessor>(
@@ -127,8 +126,7 @@ UserMediaClientImpl::UserMediaClientImpl(
               std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
-                  base::Unretained(this)),
-              worker_task_runner)) {}
+                  base::Unretained(this)))) {}
 
 UserMediaClientImpl::~UserMediaClientImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
