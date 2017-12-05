@@ -85,7 +85,7 @@ bool CanvasResource_Skia::IsValid() const {
   return !!context_provider_wrapper_;
 }
 
-void CanvasResource_Skia::Abandon() {
+void CanvasResource_Skia::TearDown() {
   WaitSyncTokenBeforeRelease();
   auto gl = ContextGL();
   if (gl && HasGpuMailbox()) {
@@ -147,7 +147,7 @@ CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
 }
 
 CanvasResource_GpuMemoryBuffer::~CanvasResource_GpuMemoryBuffer() {
-  Abandon();
+  TearDown();
 }
 
 scoped_refptr<CanvasResource_GpuMemoryBuffer>
@@ -164,7 +164,7 @@ CanvasResource_GpuMemoryBuffer::Create(
   return nullptr;
 }
 
-void CanvasResource_GpuMemoryBuffer::Abandon() {
+void CanvasResource_GpuMemoryBuffer::TearDown() {
   WaitSyncTokenBeforeRelease();
   if (!context_provider_wrapper_ || !image_id_)
     return;
