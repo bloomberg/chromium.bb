@@ -125,12 +125,15 @@ NGContainerFragmentBuilder&
 NGContainerFragmentBuilder::AddInlineOutOfFlowChildCandidate(
     NGBlockNode child,
     const NGLogicalOffset& child_offset,
-    TextDirection line_direction) {
+    TextDirection line_direction,
+    LayoutObject* inline_container) {
   DCHECK(child);
   oof_positioned_candidates_.push_back(NGOutOfFlowPositionedCandidate(
-      NGOutOfFlowPositionedDescendant{
-          child, NGStaticPosition::Create(GetWritingMode(), line_direction,
-                                          NGPhysicalOffset())},
+      NGOutOfFlowPositionedDescendant(
+          child,
+          NGStaticPosition::Create(GetWritingMode(), line_direction,
+                                   NGPhysicalOffset()),
+          inline_container),
       child_offset, line_direction));
 
   child.SaveStaticOffsetForLegacy(child_offset);
