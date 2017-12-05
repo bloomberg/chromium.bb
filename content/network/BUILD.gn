@@ -96,6 +96,10 @@ jumbo_source_set("network_sources") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]
+
+  if (is_linux) {
+    deps += [ "//sandbox/linux:sandbox_services" ]
+  }
 }
 
 service_manifest("manifest") {

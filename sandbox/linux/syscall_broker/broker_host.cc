@@ -23,7 +23,7 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
-#include "sandbox/linux/syscall_broker/broker_common.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
@@ -45,73 +45,72 @@ int sys_open(const char* pathname, int flags) {
 // Open |requested_filename| with |flags| if allowed by our policy.
 // Write the syscall return value (-errno) to |write_pickle| and append
 // a file descriptor to |opened_files| if relevant.
-void OpenFileForIPC(const BrokerPolicy& policy,
+void OpenFileForIPC(const BrokerCommandSet& allowed_command_set,
+                    const BrokerPolicy& policy,
                     const std::string& requested_filename,
                     int flags,
                     base::Pickle* write_pickle,
                     std::vector<int>* opened_files) {
-  DCHECK(write_pickle);
-  DCHECK(opened_files);
   const char* file_to_open = NULL;
   bool unlink_after_open = false;
-  const bool safe_to_open_file = policy.GetFileNameIfAllowedToOpen(
-      requested_filename.c_str(), flags, &file_to_open, &unlink_after_open);
-
-  if (safe_to_open_file) {
-    CHECK(file_to_open);
-    int opened_fd = sys_open(file_to_open, flags);
-    if (opened_fd < 0) {
-      write_pickle->WriteInt(-errno);
-    } else {
-      // Success.
-      if (unlink_after_open) {
-        unlink(file_to_open);
-      }
-      opened_files->push_back(opened_fd);
-      write_pickle->WriteInt(0);
-    }
-  } else {
+  if (!CommandOpenIsSafe(allowed_command_set, policy,
+                         requested_filename.c_str(), flags, &file_to_open,
+                         &unlink_after_open)) {
     write_pickle->WriteInt(-policy.denied_errno());
+    return;
   }
+
+  CHECK(file_to_open);
+  int opened_fd = sys_open(file_to_open, flags);
+  if (opened_fd < 0) {
+    write_pickle->WriteInt(-errno);
+    return;
+  }
+
+  if (unlink_after_open)
+    unlink(file_to_open);
+
+  opened_files->push_back(opened_fd);
+  write_pickle->WriteInt(0);
 }
 
 // Perform access(2) on |requested_filename| with mode |mode| if allowed by our
 // policy. Write the syscall return value (-errno) to |write_pickle|.
-void AccessFileForIPC(const BrokerPolicy& policy,
+void AccessFileForIPC(const BrokerCommandSet& allowed_command_set,
+                      const BrokerPolicy& policy,
                       const std::string& requested_filename,
                       int mode,
                       base::Pickle* write_pickle) {
-  DCHECK(write_pickle);
   const char* file_to_access = NULL;
-  const bool safe_to_access_file = policy.GetFileNameIfAllowedToAccess(
-      requested_filename.c_str(), mode, &file_to_access);
-
-  if (safe_to_access_file) {
-    CHECK(file_to_access);
-    int access_ret = access(file_to_access, mode);
-    int access_errno = errno;
-    if (!access_ret)
-      write_pickle->WriteInt(0);
-    else
-      write_pickle->WriteInt(-access_errno);
-  } else {
+  if (!CommandAccessIsSafe(allowed_command_set, policy,
+                           requested_filename.c_str(), mode, &file_to_access)) {
     write_pickle->WriteInt(-policy.denied_errno());
+    return;
   }
+
+  CHECK(file_to_access);
+  if (access(file_to_access, mode) < 0) {
+    write_pickle->WriteInt(-errno);
+    return;
+  }
+
+  write_pickle->WriteInt(0);
 }
 
 // Perform stat(2) on |requested_filename| and marshal the result to
 // |write_pickle|.
-void StatFileForIPC(const BrokerPolicy& policy,
-                    IPCCommand command_type,
+void StatFileForIPC(const BrokerCommandSet& allowed_command_set,
+                    const BrokerPolicy& policy,
+                    BrokerCommand command_type,
                     const std::string& requested_filename,
                     base::Pickle* write_pickle) {
-  DCHECK(command_type == COMMAND_STAT || command_type == COMMAND_STAT64);
   const char* file_to_access = nullptr;
-  if (!policy.GetFileNameIfAllowedToAccess(requested_filename.c_str(), F_OK,
-                                           &file_to_access)) {
+  if (!CommandStatIsSafe(allowed_command_set, policy,
+                         requested_filename.c_str(), &file_to_access)) {
     write_pickle->WriteInt(-policy.denied_errno());
     return;
   }
+  CHECK(file_to_access);
   if (command_type == COMMAND_STAT) {
     struct stat sb;
     if (stat(file_to_access, &sb) < 0) {
@@ -121,6 +120,7 @@ void StatFileForIPC(const BrokerPolicy& policy,
     write_pickle->WriteInt(0);
     write_pickle->WriteData(reinterpret_cast<char*>(&sb), sizeof(sb));
   } else {
+    DCHECK(command_type == COMMAND_STAT64);
     struct stat64 sb;
     if (stat64(file_to_access, &sb) < 0) {
       write_pickle->WriteInt(-errno);
@@ -133,17 +133,16 @@ void StatFileForIPC(const BrokerPolicy& policy,
 
 // Perform rename(2) on |old_filename| to |new_filename| and marshal the
 // result to |write_pickle|.
-void RenameFileForIPC(const BrokerPolicy& policy,
+void RenameFileForIPC(const BrokerCommandSet& allowed_command_set,
+                      const BrokerPolicy& policy,
                       const std::string& old_filename,
                       const std::string& new_filename,
                       base::Pickle* write_pickle) {
-  bool ignore;
   const char* old_file_to_access = nullptr;
   const char* new_file_to_access = nullptr;
-  if (!policy.GetFileNameIfAllowedToOpen(old_filename.c_str(), O_RDWR,
-                                         &old_file_to_access, &ignore) ||
-      !policy.GetFileNameIfAllowedToOpen(new_filename.c_str(), O_RDWR,
-                                         &new_file_to_access, &ignore)) {
+  if (!CommandRenameIsSafe(allowed_command_set, policy, old_filename.c_str(),
+                           new_filename.c_str(), &old_file_to_access,
+                           &new_file_to_access)) {
     write_pickle->WriteInt(-policy.denied_errno());
     return;
   }
@@ -155,13 +154,13 @@ void RenameFileForIPC(const BrokerPolicy& policy,
 }
 
 // Perform readlink(2) on |filename| using a buffer of MAX_PATH bytes.
-void ReadlinkFileForIPC(const BrokerPolicy& policy,
+void ReadlinkFileForIPC(const BrokerCommandSet& allowed_command_set,
+                        const BrokerPolicy& policy,
                         const std::string& filename,
                         base::Pickle* write_pickle) {
-  bool ignore;
   const char* file_to_access = nullptr;
-  if (!policy.GetFileNameIfAllowedToOpen(filename.c_str(), O_RDONLY,
-                                         &file_to_access, &ignore)) {
+  if (!CommandReadlinkIsSafe(allowed_command_set, policy, filename.c_str(),
+                             &file_to_access)) {
     write_pickle->WriteInt(-policy.denied_errno());
     return;
   }
@@ -177,7 +176,8 @@ void ReadlinkFileForIPC(const BrokerPolicy& policy,
 
 // Handle a |command_type| request contained in |iter| and write the reply
 // to |write_pickle|, adding any files opened to |opened_files|.
-bool HandleRemoteCommand(const BrokerPolicy& policy,
+bool HandleRemoteCommand(const BrokerCommandSet& allowed_command_set,
+                         const BrokerPolicy& policy,
                          base::PickleIterator iter,
                          base::Pickle* write_pickle,
                          std::vector<int>* opened_files) {
@@ -191,7 +191,8 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
       int flags = 0;
       if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
         return false;
-      AccessFileForIPC(policy, requested_filename, flags, write_pickle);
+      AccessFileForIPC(allowed_command_set, policy, requested_filename, flags,
+                       write_pickle);
       break;
     }
     case COMMAND_OPEN: {
@@ -199,8 +200,8 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
       int flags = 0;
       if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
         return false;
-      OpenFileForIPC(policy, requested_filename, flags, write_pickle,
-                     opened_files);
+      OpenFileForIPC(allowed_command_set, policy, requested_filename, flags,
+                     write_pickle, opened_files);
       break;
     }
     case COMMAND_STAT:
@@ -208,7 +209,8 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
       std::string requested_filename;
       if (!iter.ReadString(&requested_filename))
         return false;
-      StatFileForIPC(policy, static_cast<IPCCommand>(command_type),
+      StatFileForIPC(allowed_command_set, policy,
+                     static_cast<BrokerCommand>(command_type),
                      requested_filename, write_pickle);
       break;
     }
@@ -217,14 +219,15 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
       std::string new_filename;
       if (!iter.ReadString(&old_filename) || !iter.ReadString(&new_filename))
         return false;
-      RenameFileForIPC(policy, old_filename, new_filename, write_pickle);
+      RenameFileForIPC(allowed_command_set, policy, old_filename, new_filename,
+                       write_pickle);
       break;
     }
     case COMMAND_READLINK: {
       std::string filename;
       if (!iter.ReadString(&filename))
         return false;
-      ReadlinkFileForIPC(policy, filename, write_pickle);
+      ReadlinkFileForIPC(allowed_command_set, policy, filename, write_pickle);
       break;
     }
     default:
@@ -237,11 +240,13 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
 }  // namespace
 
 BrokerHost::BrokerHost(const BrokerPolicy& broker_policy,
+                       const BrokerCommandSet& allowed_command_set,
                        BrokerChannel::EndPoint ipc_channel)
-    : broker_policy_(broker_policy), ipc_channel_(std::move(ipc_channel)) {}
+    : broker_policy_(broker_policy),
+      allowed_command_set_(allowed_command_set),
+      ipc_channel_(std::move(ipc_channel)) {}
 
-BrokerHost::~BrokerHost() {
-}
+BrokerHost::~BrokerHost() {}
 
 // Handle a request on the IPC channel ipc_channel_.
 // A request should have a file descriptor attached on which we will reply and
@@ -272,8 +277,8 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   base::PickleIterator iter(pickle);
   base::Pickle write_pickle;
   std::vector<int> opened_files;
-  bool result =
-      HandleRemoteCommand(broker_policy_, iter, &write_pickle, &opened_files);
+  bool result = HandleRemoteCommand(allowed_command_set_, broker_policy_, iter,
+                                    &write_pickle, &opened_files);
 
   if (result) {
     CHECK_LE(write_pickle.size(), kMaxMessageLength);

@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/gpu/features.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "services/service_manager/embedder/set_process_title.h"
@@ -202,11 +203,10 @@ void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {
 
 std::vector<BrokerFilePermission> FilePermissionsForGpu(
     const service_manager::SandboxSeccompBPF::Options& options) {
-  std::vector<BrokerFilePermission> permissions;
-
   // All GPU process policies need this file brokered out.
   static const char kDriRcPath[] = "/etc/drirc";
-  permissions.push_back(BrokerFilePermission::ReadOnly(kDriRcPath));
+  std::vector<BrokerFilePermission> permissions = {
+      BrokerFilePermission::ReadOnly(kDriRcPath)};
 
   if (IsChromeOS()) {
     if (UseV4L2Codec())
@@ -320,6 +320,18 @@ bool LoadLibrariesForGpu(
   return true;
 }
 
+sandbox::syscall_broker::BrokerCommandSet CommandSetForGPU(
+    const service_manager::SandboxLinux::Options& options) {
+  sandbox::syscall_broker::BrokerCommandSet command_set;
+  command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
+  command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
+  if (IsChromeOS() && options.use_amd_specific_policies) {
+    command_set.set(sandbox::syscall_broker::COMMAND_READLINK);
+    command_set.set(sandbox::syscall_broker::COMMAND_STAT);
+  }
+  return command_set;
+}
+
 bool BrokerProcessPreSandboxHook(
     service_manager::BPFBasePolicy* policy,
     service_manager::SandboxLinux::Options options) {
@@ -334,10 +346,9 @@ bool BrokerProcessPreSandboxHook(
 
 bool GpuProcessPreSandboxHook(service_manager::BPFBasePolicy* policy,
                               service_manager::SandboxLinux::Options options) {
-  auto* instance = service_manager::SandboxLinux::GetInstance();
-  instance->StartBrokerProcess(policy, FilePermissionsForGpu(options),
-                               base::BindOnce(BrokerProcessPreSandboxHook),
-                               options);
+  service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
+      policy, CommandSetForGPU(options), FilePermissionsForGpu(options),
+      base::BindOnce(BrokerProcessPreSandboxHook), options);
 
   if (!LoadLibrariesForGpu(options))
     return false;

@@ -480,12 +480,13 @@ bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
 
 void SandboxLinux::StartBrokerProcess(
     BPFBasePolicy* client_sandbox_policy,
+    const sandbox::syscall_broker::BrokerCommandSet& allowed_command_set,
     std::vector<sandbox::syscall_broker::BrokerFilePermission> permissions,
     PreSandboxHook broker_side_hook,
     const Options& options) {
   // Leaked at shutdown, so use bare |new|.
   broker_process_ = new sandbox::syscall_broker::BrokerProcess(
-      BPFBasePolicy::GetFSDeniedErrno(), permissions);
+      BPFBasePolicy::GetFSDeniedErrno(), allowed_command_set, permissions);
 
   // The initialization callback will perform generic initialization and then
   // call broker_sandboxer_callback.

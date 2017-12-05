@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
@@ -209,6 +210,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // vital to the process.
   void StartBrokerProcess(
       BPFBasePolicy* client_sandbox_policy,
+      const sandbox::syscall_broker::BrokerCommandSet& allowed_command_set,
       std::vector<sandbox::syscall_broker::BrokerFilePermission> permissions,
       PreSandboxHook broker_side_hook,
       const Options& options);

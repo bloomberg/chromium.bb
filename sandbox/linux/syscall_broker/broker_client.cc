@@ -17,7 +17,7 @@
 #include "base/posix/unix_domain_socket.h"
 #include "build/build_config.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
-#include "sandbox/linux/syscall_broker/broker_common.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 
 #if defined(OS_ANDROID) && !defined(MSG_CMSG_CLOEXEC)
@@ -32,7 +32,7 @@ namespace syscall_broker {
 // as arguments, currently open() and access().
 // Will return -errno like a real system call.
 // This function needs to be async signal safe.
-int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
+int BrokerClient::PathAndFlagsSyscall(BrokerCommand syscall_type,
                                       const char* pathname,
                                       int flags) const {
   int recvmsg_flags = 0;
@@ -56,13 +56,14 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
   // IPC.
   if (fast_check_in_client_) {
     if (syscall_type == COMMAND_OPEN &&
-        !broker_policy_.GetFileNameIfAllowedToOpen(
-            pathname, flags, NULL /* file_to_open */,
-            NULL /* unlink_after_open */)) {
+        !CommandOpenIsSafe(allowed_command_set_, broker_policy_, pathname,
+                           flags, NULL /* file_to_open */,
+                           NULL /* unlink_after_open */)) {
       return -broker_policy_.denied_errno();
     }
     if (syscall_type == COMMAND_ACCESS &&
-        !broker_policy_.GetFileNameIfAllowedToAccess(pathname, flags, NULL)) {
+        !CommandAccessIsSafe(allowed_command_set_, broker_policy_, pathname,
+                             flags, NULL)) {
       return -broker_policy_.denied_errno();
     }
   }
@@ -122,15 +123,16 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
 
 BrokerClient::BrokerClient(const BrokerPolicy& broker_policy,
                            BrokerChannel::EndPoint ipc_channel,
+                           const BrokerCommandSet& allowed_command_set,
                            bool fast_check_in_client,
                            bool quiet_failures_for_tests)
     : broker_policy_(broker_policy),
       ipc_channel_(std::move(ipc_channel)),
+      allowed_command_set_(allowed_command_set),
       fast_check_in_client_(fast_check_in_client),
       quiet_failures_for_tests_(quiet_failures_for_tests) {}
 
-BrokerClient::~BrokerClient() {
-}
+BrokerClient::~BrokerClient() {}
 
 int BrokerClient::Access(const char* pathname, int mode) const {
   return PathAndFlagsSyscall(COMMAND_ACCESS, pathname, mode);
@@ -148,7 +150,7 @@ int BrokerClient::Stat64(const char* pathname, struct stat64* sb) {
   return StatFamilySyscall(COMMAND_STAT64, pathname, sb, sizeof(*sb));
 }
 
-int BrokerClient::StatFamilySyscall(IPCCommand syscall_type,
+int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
                                     const char* pathname,
                                     void* result_ptr,
                                     size_t expected_result_size) const {

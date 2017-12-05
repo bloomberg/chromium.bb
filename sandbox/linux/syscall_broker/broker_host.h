@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 
 namespace sandbox {
 
@@ -22,6 +23,7 @@ class BrokerHost {
   enum class RequestStatus { LOST_CLIENT = 0, SUCCESS, FAILURE };
 
   BrokerHost(const BrokerPolicy& broker_policy,
+             const BrokerCommandSet& allowed_command_set,
              BrokerChannel::EndPoint ipc_channel);
   ~BrokerHost();
 
@@ -29,6 +31,7 @@ class BrokerHost {
 
  private:
   const BrokerPolicy& broker_policy_;
+  const BrokerCommandSet allowed_command_set_;
   const BrokerChannel::EndPoint ipc_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerHost);

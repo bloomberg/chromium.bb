@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "sandbox/linux/syscall_broker/broker_common.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 
 namespace sandbox {
 namespace syscall_broker {

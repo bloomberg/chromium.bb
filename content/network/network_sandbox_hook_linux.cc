@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/network/network_sandbox_hook_linux.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 
 #include "base/rand_util.h"
 #include "base/sys_info.h"
@@ -13,13 +14,19 @@ namespace content {
 
 bool NetworkPreSandboxHook(service_manager::BPFBasePolicy* policy,
                            service_manager::SandboxLinux::Options options) {
+  sandbox::syscall_broker::BrokerCommandSet command_set;
+  command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
+  command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
+  command_set.set(sandbox::syscall_broker::COMMAND_READLINK);
+  command_set.set(sandbox::syscall_broker::COMMAND_RENAME);
+  command_set.set(sandbox::syscall_broker::COMMAND_STAT);
+
   // TODO(tsepez): FIX THIS.
-  std::vector<BrokerFilePermission> file_permissions;
-  file_permissions.push_back(
-      BrokerFilePermission::ReadWriteCreateRecursive("/"));
+  std::vector<BrokerFilePermission> file_permissions = {
+      BrokerFilePermission::ReadWriteCreateRecursive("/")};
 
   service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
-      policy, std::move(file_permissions),
+      policy, command_set, std::move(file_permissions),
       service_manager::SandboxLinux::PreSandboxHook(), options);
 
   return true;
