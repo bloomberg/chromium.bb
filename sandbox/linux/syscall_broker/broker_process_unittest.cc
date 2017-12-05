@@ -26,6 +26,7 @@
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
+#include "build/build_config.h"
 #include "sandbox/linux/syscall_broker/broker_client.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/test_utils.h"
@@ -770,10 +771,12 @@ void TestStatHelper(bool fast_check_in_client) {
     EXPECT_NE(0u, static_cast<unsigned int>(sb.st_dev));
     EXPECT_NE(0u, static_cast<unsigned int>(sb.st_ino));
     EXPECT_NE(0u, static_cast<unsigned int>(sb.st_mode));
-    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_uid));
-    EXPECT_NE(0u, static_cast<unsigned int>(sb.st_gid));
     EXPECT_NE(0u, static_cast<unsigned int>(sb.st_blksize));
     EXPECT_NE(0u, static_cast<unsigned int>(sb.st_blocks));
+
+    // We are the ones that made the file.
+    EXPECT_EQ(geteuid(), sb.st_uid);
+    EXPECT_EQ(getegid(), sb.st_gid);
 
     // Wrote 12 bytes above which should fit in one block.
     EXPECT_EQ(12, sb.st_size);
