@@ -2772,6 +2772,8 @@ split_static_library("ui") {
       "views/page_info/non_accessible_image_view.h",
       "views/page_info/page_info_bubble_view.cc",
       "views/page_info/page_info_bubble_view.h",
+      "views/page_info/page_info_bubble_view_base.cc",
+      "views/page_info/page_info_bubble_view_base.h",
       "views/page_info/permission_selector_row.cc",
       "views/page_info/permission_selector_row.h",
       "views/page_info/permission_selector_row_observer.h",
