@@ -146,7 +146,7 @@ void LinkLoader::NotifyModuleLoadFinished(ModuleScript* module) {
   // Step 11. "If result is null, fire an event named error at the link element,
   // and return." [spec text]
   // Step 12. "Fire an event named load at the link element." [spec text]
-  if (!module || module->IsErrored())
+  if (!module)
     client_->LinkLoadingErrored();
   else
     client_->LinkLoaded();
