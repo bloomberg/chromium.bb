@@ -1632,12 +1632,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
 
-  // When running the GPU thread in-process, avoid optimistically starting it
-  // since creating the GPU thread races against creation of the one-and-only
-  // ChildProcess instance which is created by the renderer thread.
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr) &&
-      !established_gpu_channel && always_uses_gpu && !UsingInProcessGpu() &&
-      browser_is_viz_host) {
+      !established_gpu_channel && always_uses_gpu && browser_is_viz_host) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(
