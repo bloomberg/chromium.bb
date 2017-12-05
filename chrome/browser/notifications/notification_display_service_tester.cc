@@ -61,6 +61,21 @@ NotificationDisplayServiceTester::GetMetadataForNotification(
   return display_service_->GetMetadataForNotification(notification);
 }
 
+void NotificationDisplayServiceTester::SimulateClick(
+    NotificationHandler::Type notification_type,
+    const std::string& notification_id,
+    base::Optional<int> action_index,
+    base::Optional<base::string16> reply) {
+  display_service_->SimulateClick(notification_type, notification_id,
+                                  std::move(action_index), std::move(reply));
+}
+
+void NotificationDisplayServiceTester::SimulateSettingsClick(
+    NotificationHandler::Type notification_type,
+    const std::string& notification_id) {
+  display_service_->SimulateSettingsClick(notification_type, notification_id);
+}
+
 void NotificationDisplayServiceTester::RemoveNotification(
     NotificationHandler::Type type,
     const std::string& notification_id,
