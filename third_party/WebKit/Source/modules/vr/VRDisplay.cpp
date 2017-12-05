@@ -1035,9 +1035,11 @@ void VRDisplay::OnMagicWindowPose(device::mojom::blink::VRPosePtr pose) {
 
 void VRDisplay::OnPresentationProviderConnectionError() {
   vr_presentation_provider_.reset();
-  ForceExitPresent();
-  pending_vsync_ = false;
-  RequestVSync();
+  if (is_presenting_) {
+    ForceExitPresent();
+    pending_vsync_ = false;
+    RequestVSync();
+  }
 }
 
 ScriptedAnimationController& VRDisplay::EnsureScriptedAnimationController(

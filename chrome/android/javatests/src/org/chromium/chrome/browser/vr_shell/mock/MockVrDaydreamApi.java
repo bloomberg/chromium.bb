@@ -65,4 +65,9 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     public boolean getLaunchInVrCalled() {
         return mLaunchInVrCalled;
     }
+
+    @Override
+    public boolean bootsToVr() {
+        return false;
+    }
 }

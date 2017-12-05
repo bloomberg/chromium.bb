@@ -318,7 +318,9 @@ public class VrShellDelegate
      */
     public static int getVrSupportLevel(VrDaydreamApi daydreamApi,
             VrCoreVersionChecker versionChecker, Tab tabToShowInfobarIn) {
-        if (versionChecker == null || daydreamApi == null
+        // TODO(mthiesse, crbug.com/791090): Re-enable VR mode for devices that boot to VR once we
+        // support those devices.
+        if (versionChecker == null || daydreamApi == null || daydreamApi.bootsToVr()
                 || !isVrCoreCompatible(versionChecker, tabToShowInfobarIn)) {
             return VR_NOT_AVAILABLE;
         }
