@@ -231,8 +231,10 @@ UIColor* BackgroundColorIncognito() {
   [detailTextLabel setTextAlignment:_alignment];
 
   // The width must be positive for CGContextRef to be valid.
-  CGFloat labelWidth =
-      MAX(40, floorf(row.frame.size.width) - kTextCellLeadingPadding);
+  UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(row);
+  CGFloat labelWidth = MAX(
+      40, floorf(UIEdgeInsetsInsetRect(row.bounds, safeAreaInsets).size.width) -
+              kTextCellLeadingPadding);
   CGFloat labelHeight =
       match.hasAnswer ? kAnswerLabelHeight : kTextDetailLabelHeight;
   CGFloat answerImagePadding = kAnswerImageWidth + kAnswerImageRightPadding;
