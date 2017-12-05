@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"

@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"

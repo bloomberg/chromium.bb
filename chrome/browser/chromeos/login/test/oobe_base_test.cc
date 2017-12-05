@@ -212,11 +212,11 @@ content::WebUI* OobeBaseTest::GetLoginUI() {
   return LoginDisplayHost::default_host()->GetOobeUI()->web_ui();
 }
 
-WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
+LoginDisplayWebUI* OobeBaseTest::GetLoginDisplay() {
   ExistingUserController* controller =
       ExistingUserController::current_controller();
   CHECK(controller);
-  return static_cast<WebUILoginDisplay*>(controller->login_display());
+  return static_cast<LoginDisplayWebUI*>(controller->login_display());
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {

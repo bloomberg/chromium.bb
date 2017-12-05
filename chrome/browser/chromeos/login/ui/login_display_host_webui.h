@@ -44,7 +44,7 @@ namespace chromeos {
 
 class ArcKioskController;
 class DemoAppLauncher;
-class WebUILoginDisplay;
+class LoginDisplayWebUI;
 class WebUILoginView;
 
 // An implementation class for OOBE/login WebUI screen host.
@@ -242,7 +242,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   WebUILoginView* login_view_ = nullptr;
 
   // Login display we are using.
-  WebUILoginDisplay* webui_login_display_ = nullptr;
+  LoginDisplayWebUI* login_display_ = nullptr;
 
   // True if the login display is the current screen.
   bool is_showing_login_ = false;

@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
 #include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -169,7 +169,7 @@ void WebUIScreenLocker::LockScreen() {
   signin_screen_controller_.reset(
       new SignInScreenController(GetOobeUI(), this));
 
-  login_display_.reset(new WebUILoginDisplay(this));
+  login_display_.reset(new LoginDisplayWebUI(this));
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(screen_locker_->users(), false, true, false);
 
