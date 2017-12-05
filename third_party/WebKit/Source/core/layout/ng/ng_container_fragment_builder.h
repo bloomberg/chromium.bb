@@ -98,7 +98,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   NGContainerFragmentBuilder& AddInlineOutOfFlowChildCandidate(
       NGBlockNode,
       const NGLogicalOffset& child_line_offset,
-      TextDirection line_direction);
+      TextDirection line_direction,
+      LayoutObject* inline_container);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
       NGOutOfFlowPositionedDescendant);

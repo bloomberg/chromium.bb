@@ -228,7 +228,8 @@ void NGInlineLayoutAlgorithm::PlaceItems(
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
       container_builder_.AddInlineOutOfFlowChildCandidate(
           node, NGLogicalOffset(position, LayoutUnit()),
-          line_info->BaseDirection());
+          line_info->BaseDirection(),
+          box_states_->ContainingLayoutObjectForAbsolutePositionObjects());
       continue;
     } else {
       continue;
@@ -688,7 +689,7 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
                item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
       container_builder_.AddInlineOutOfFlowChildCandidate(
-          node, NGLogicalOffset(), Style().Direction());
+          node, NGLogicalOffset(), Style().Direction(), nullptr);
     }
 
     // Abort if we've found something that makes this a non-empty inline.
