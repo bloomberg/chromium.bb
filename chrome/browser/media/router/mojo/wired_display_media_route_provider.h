@@ -106,6 +106,9 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   // Sends the current list of sinks to each query in |sink_queries_|.
   void NotifySinkObservers();
 
+  // Notifies |media_router_| of the current sink availability.
+  void ReportSinkAvailability(const std::vector<MediaSinkInternal>& sinks);
+
   // Returns a list of available sinks. A display can be a sink if it is
   // secondary and does not mirror a primary display.
   std::vector<MediaSinkInternal> GetSinks() const;
