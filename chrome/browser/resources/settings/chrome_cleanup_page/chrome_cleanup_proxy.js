@@ -35,13 +35,13 @@ cr.define('settings', function() {
     setLogsUploadPermission(enabled) {}
 
     /**
-     * Notfies Chrome that the state of the details section changed.
+     * Notifies Chrome that the state of the details section changed.
      * @param {boolean} enabled
      */
     notifyShowDetails(enabled) {}
 
     /**
-     * Notfies Chrome that the "learn more" link was clicked.
+     * Notifies Chrome that the "learn more" link was clicked.
      */
     notifyLearnMoreClicked() {}
   }

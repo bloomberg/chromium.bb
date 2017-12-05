@@ -24,7 +24,7 @@ settings.FingerprintSetupStep = {
 var FLASH_DURATION_MS = 300;
 
 /**
- * The amount of millseconds after a successful but not completed scan before a
+ * The amount of milliseconds after a successful but not completed scan before a
  * message shows up telling the user to scan their finger again.
  * @const {number}
  */

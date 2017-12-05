@@ -33,7 +33,7 @@ Polymer({
     /** @private {string} Text for label describing the lid-closed behavior. */
     lidClosedLabel_: String,
 
-    /** @private {boolean} Whether the system posesses a lid. */
+    /** @private {boolean} Whether the system possesses a lid. */
     hasLid_: Boolean,
 
     /**

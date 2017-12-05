@@ -15,7 +15,7 @@ Polymer({
 
   properties: {
     /**
-     * If time zone auto detectoin is enabled.
+     * If time zone auto detection is enabled.
      */
     timeZoneAutoDetect: Boolean,
 

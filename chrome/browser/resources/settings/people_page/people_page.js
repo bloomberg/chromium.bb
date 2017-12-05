@@ -299,7 +299,7 @@ Polymer({
     // So that the navigation to the setting page could be finished before the
     // sign out if navigateToPreviousRoute() returns synchronously even the
     // browser is closed after the sign out. Otherwise, the navigation will be
-    // finshed during session restore if the browser is closed before the async
+    // finished during session restore if the browser is closed before the async
     // callback executed.
     listenOnce(this, 'signout-dialog-closed', () => {
       this.syncBrowserProxy_.signOut(deleteProfile);

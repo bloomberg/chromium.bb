@@ -1080,7 +1080,7 @@ Polymer({
     // Arc Vpn does not currently pass IP configuration to ChromeOS. IP address
     // property holds an internal IP address Android uses to talk to ChromeOS.
     // TODO(lgcheng@) Show correct IP address when we implement IP configuration
-    // correclty.
+    // correctly.
     if (this.isArcVpn_(networkProperties))
       return false;
 

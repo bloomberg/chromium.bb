@@ -4,7 +4,7 @@
 
 /**
  * @typedef {{
- *   tetherNostDeviceName: string,
+ *   tetherHostDeviceName: string,
  *   batteryPercentage: number,
  *   connectionStrength: number,
  *   isTetherHostCurrentlyOnWifi: boolean

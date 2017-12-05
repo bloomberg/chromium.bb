@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview settings-startup-url-entry represents a UI component that
- * displayes a URL that is loaded during startup. It includes a menu that allows
+ * displays a URL that is loaded during startup. It includes a menu that allows
  * the user to edit/remove the entry.
  */
 

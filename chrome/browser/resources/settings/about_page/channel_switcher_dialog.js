@@ -101,7 +101,7 @@ Polymer({
   },
 
   /**
-   * @param {boolean} changeChannel Whether the changeChannel button sholud be
+   * @param {boolean} changeChannel Whether the changeChannel button should be
    *     visible.
    * @param {boolean} changeChannelAndPowerwash Whether the
    *     changeChannelAndPowerwash button should be visible.
