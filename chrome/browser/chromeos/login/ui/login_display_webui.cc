@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -28,9 +28,9 @@
 
 namespace chromeos {
 
-// WebUILoginDisplay, public: --------------------------------------------------
+// LoginDisplayWebUI, public: --------------------------------------------------
 
-WebUILoginDisplay::~WebUILoginDisplay() {
+LoginDisplayWebUI::~LoginDisplayWebUI() {
   if (webui_handler_)
     webui_handler_->ResetSigninScreenHandlerDelegate();
   ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
@@ -40,15 +40,15 @@ WebUILoginDisplay::~WebUILoginDisplay() {
 
 // LoginDisplay implementation: ------------------------------------------------
 
-WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
+LoginDisplayWebUI::LoginDisplayWebUI(LoginDisplay::Delegate* delegate)
     : LoginDisplay(delegate) {}
 
-void WebUILoginDisplay::ClearAndEnablePassword() {
+void LoginDisplayWebUI::ClearAndEnablePassword() {
   if (webui_handler_)
     webui_handler_->ClearAndEnablePassword();
 }
 
-void WebUILoginDisplay::Init(const user_manager::UserList& users,
+void LoginDisplayWebUI::Init(const user_manager::UserList& users,
                              bool show_guest,
                              bool show_users,
                              bool allow_new_user) {
@@ -70,11 +70,11 @@ void WebUILoginDisplay::Init(const user_manager::UserList& users,
 
 // ---- User selection screen methods
 
-void WebUILoginDisplay::HandleGetUsers() {
+void LoginDisplayWebUI::HandleGetUsers() {
   SignInScreenController::Get()->SendUserList();
 }
 
-void WebUILoginDisplay::CheckUserStatus(const AccountId& account_id) {
+void LoginDisplayWebUI::CheckUserStatus(const AccountId& account_id) {
   SignInScreenController::Get()->CheckUserStatus(account_id);
 }
 
@@ -82,12 +82,12 @@ void WebUILoginDisplay::CheckUserStatus(const AccountId& account_id) {
 
 // ---- Not yet classified methods
 
-void WebUILoginDisplay::OnPreferencesChanged() {
+void LoginDisplayWebUI::OnPreferencesChanged() {
   if (webui_handler_)
     webui_handler_->OnPreferencesChanged();
 }
 
-void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
+void LoginDisplayWebUI::SetUIEnabled(bool is_enabled) {
   // TODO(nkostylev): Cleanup this condition,
   // see http://crbug.com/157885 and http://crbug.com/158255.
   // Allow this call only before user sign in or at lock screen.
@@ -103,7 +103,7 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
     host->GetWebUILoginView()->SetUIEnabled(is_enabled);
 }
 
-void WebUILoginDisplay::ShowError(int error_msg_id,
+void LoginDisplayWebUI::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
   VLOG(1) << "Show error, error_id: " << error_msg_id
@@ -155,47 +155,47 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
                             help_topic_id);
 }
 
-void WebUILoginDisplay::ShowErrorScreen(LoginDisplay::SigninError error_id) {
+void LoginDisplayWebUI::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   VLOG(1) << "Show error screen, error_id: " << error_id;
   if (!webui_handler_)
     return;
   webui_handler_->ShowErrorScreen(error_id);
 }
 
-void WebUILoginDisplay::ShowPasswordChangedDialog(bool show_password_error,
+void LoginDisplayWebUI::ShowPasswordChangedDialog(bool show_password_error,
                                                   const std::string& email) {
   if (webui_handler_)
     webui_handler_->ShowPasswordChangedDialog(show_password_error, email);
 }
 
-void WebUILoginDisplay::ShowSigninUI(const std::string& email) {
+void LoginDisplayWebUI::ShowSigninUI(const std::string& email) {
   if (webui_handler_)
     webui_handler_->ShowSigninUI(email);
 }
 
-void WebUILoginDisplay::ShowWhitelistCheckFailedError() {
+void LoginDisplayWebUI::ShowWhitelistCheckFailedError() {
   if (webui_handler_)
     webui_handler_->ShowWhitelistCheckFailedError();
 }
 
-void WebUILoginDisplay::ShowUnrecoverableCrypthomeErrorDialog() {
+void LoginDisplayWebUI::ShowUnrecoverableCrypthomeErrorDialog() {
   if (webui_handler_)
     webui_handler_->ShowUnrecoverableCrypthomeErrorDialog();
 }
 
-// WebUILoginDisplay, NativeWindowDelegate implementation: ---------------------
-gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
+// LoginDisplayWebUI, NativeWindowDelegate implementation: ---------------------
+gfx::NativeWindow LoginDisplayWebUI::GetNativeWindow() const {
   return parent_window();
 }
 
-// WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------
-void WebUILoginDisplay::CancelPasswordChangedFlow() {
+// LoginDisplayWebUI, SigninScreenHandlerDelegate implementation: --------------
+void LoginDisplayWebUI::CancelPasswordChangedFlow() {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->CancelPasswordChangedFlow();
 }
 
-void WebUILoginDisplay::CancelUserAdding() {
+void LoginDisplayWebUI::CancelUserAdding() {
   if (!UserAddingScreen::Get()->IsRunning()) {
     LOG(ERROR) << "User adding screen not running.";
     return;
@@ -203,146 +203,146 @@ void WebUILoginDisplay::CancelUserAdding() {
   UserAddingScreen::Get()->Cancel();
 }
 
-void WebUILoginDisplay::CompleteLogin(const UserContext& user_context) {
+void LoginDisplayWebUI::CompleteLogin(const UserContext& user_context) {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->CompleteLogin(user_context);
 }
 
-void WebUILoginDisplay::Login(const UserContext& user_context,
+void LoginDisplayWebUI::Login(const UserContext& user_context,
                               const SigninSpecifics& specifics) {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->Login(user_context, specifics);
 }
 
-void WebUILoginDisplay::MigrateUserData(const std::string& old_password) {
+void LoginDisplayWebUI::MigrateUserData(const std::string& old_password) {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->MigrateUserData(old_password);
 }
 
-void WebUILoginDisplay::LoadWallpaper(const AccountId& account_id) {
+void LoginDisplayWebUI::LoadWallpaper(const AccountId& account_id) {
   WallpaperManager::Get()->ShowUserWallpaper(account_id);
 }
 
-void WebUILoginDisplay::LoadSigninWallpaper() {
+void LoginDisplayWebUI::LoadSigninWallpaper() {
   WallpaperManager::Get()->ShowSigninWallpaper();
 }
 
-void WebUILoginDisplay::OnSigninScreenReady() {
+void LoginDisplayWebUI::OnSigninScreenReady() {
   SignInScreenController::Get()->OnSigninScreenReady();
 
   if (delegate_)
     delegate_->OnSigninScreenReady();
 }
 
-void WebUILoginDisplay::OnGaiaScreenReady() {
+void LoginDisplayWebUI::OnGaiaScreenReady() {
   if (delegate_)
     delegate_->OnGaiaScreenReady();
 }
 
-void WebUILoginDisplay::RemoveUser(const AccountId& account_id) {
+void LoginDisplayWebUI::RemoveUser(const AccountId& account_id) {
   SignInScreenController::Get()->RemoveUser(account_id);
 }
 
-void WebUILoginDisplay::ResyncUserData() {
+void LoginDisplayWebUI::ResyncUserData() {
   DCHECK(delegate_);
   if (delegate_)
     delegate_->ResyncUserData();
 }
 
-void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
+void LoginDisplayWebUI::ShowEnterpriseEnrollmentScreen() {
   if (delegate_)
     delegate_->OnStartEnterpriseEnrollment();
 }
 
-void WebUILoginDisplay::ShowEnableDebuggingScreen() {
+void LoginDisplayWebUI::ShowEnableDebuggingScreen() {
   if (delegate_)
     delegate_->OnStartEnableDebuggingScreen();
 }
 
-void WebUILoginDisplay::ShowKioskEnableScreen() {
+void LoginDisplayWebUI::ShowKioskEnableScreen() {
   if (delegate_)
     delegate_->OnStartKioskEnableScreen();
 }
 
-void WebUILoginDisplay::ShowKioskAutolaunchScreen() {
+void LoginDisplayWebUI::ShowKioskAutolaunchScreen() {
   if (delegate_)
     delegate_->OnStartKioskAutolaunchScreen();
 }
 
-void WebUILoginDisplay::ShowUpdateRequiredScreen() {
+void LoginDisplayWebUI::ShowUpdateRequiredScreen() {
   if (delegate_)
     delegate_->ShowUpdateRequiredScreen();
 }
 
-void WebUILoginDisplay::ShowWrongHWIDScreen() {
+void LoginDisplayWebUI::ShowWrongHWIDScreen() {
   if (delegate_)
     delegate_->ShowWrongHWIDScreen();
 }
 
-void WebUILoginDisplay::SetWebUIHandler(
+void LoginDisplayWebUI::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;
   SignInScreenController::Get()->SetWebUIHandler(webui_handler_);
 }
 
-void WebUILoginDisplay::ShowSigninScreenForCreds(const std::string& username,
+void LoginDisplayWebUI::ShowSigninScreenForCreds(const std::string& username,
                                                  const std::string& password) {
   if (webui_handler_)
     webui_handler_->ShowSigninScreenForCreds(username, password);
 }
 
-bool WebUILoginDisplay::IsShowGuest() const {
+bool LoginDisplayWebUI::IsShowGuest() const {
   return show_guest_;
 }
 
-bool WebUILoginDisplay::IsShowUsers() const {
+bool LoginDisplayWebUI::IsShowUsers() const {
   return show_users_;
 }
 
-bool WebUILoginDisplay::ShowUsersHasChanged() const {
+bool LoginDisplayWebUI::ShowUsersHasChanged() const {
   return show_users_changed_;
 }
 
-bool WebUILoginDisplay::IsAllowNewUser() const {
+bool LoginDisplayWebUI::IsAllowNewUser() const {
   return allow_new_user_;
 }
 
-bool WebUILoginDisplay::AllowNewUserChanged() const {
+bool LoginDisplayWebUI::AllowNewUserChanged() const {
   return allow_new_user_changed_;
 }
 
-bool WebUILoginDisplay::IsSigninInProgress() const {
+bool LoginDisplayWebUI::IsSigninInProgress() const {
   return delegate_->IsSigninInProgress();
 }
 
-bool WebUILoginDisplay::IsUserSigninCompleted() const {
+bool LoginDisplayWebUI::IsUserSigninCompleted() const {
   return is_signin_completed();
 }
 
-void WebUILoginDisplay::SetDisplayEmail(const std::string& email) {
+void LoginDisplayWebUI::SetDisplayEmail(const std::string& email) {
   if (delegate_)
     delegate_->SetDisplayEmail(email);
 }
 
-void WebUILoginDisplay::SetDisplayAndGivenName(const std::string& display_name,
+void LoginDisplayWebUI::SetDisplayAndGivenName(const std::string& display_name,
                                                const std::string& given_name) {
   if (delegate_)
     delegate_->SetDisplayAndGivenName(display_name, given_name);
 }
 
-void WebUILoginDisplay::Signout() {
+void LoginDisplayWebUI::Signout() {
   delegate_->Signout();
 }
 
-void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {
+void LoginDisplayWebUI::OnUserActivity(const ui::Event* event) {
   if (delegate_)
     delegate_->ResetAutoLoginTimer();
 }
 
-bool WebUILoginDisplay::IsUserWhitelisted(const AccountId& account_id) {
+bool LoginDisplayWebUI::IsUserWhitelisted(const AccountId& account_id) {
   DCHECK(delegate_);
   if (delegate_)
     return delegate_->IsUserWhitelisted(account_id);

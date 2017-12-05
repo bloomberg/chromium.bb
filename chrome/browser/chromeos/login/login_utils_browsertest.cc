@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
@@ -66,8 +66,8 @@ class LoginUtilsTest : public OobeBaseTest {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
     ASSERT_TRUE(controller);
-    WebUILoginDisplay* login_display =
-        static_cast<WebUILoginDisplay*>(controller->login_display());
+    LoginDisplayWebUI* login_display =
+        static_cast<LoginDisplayWebUI*>(controller->login_display());
     ASSERT_TRUE(login_display);
 
     login_display->ShowSigninScreenForCreds(username, "password");

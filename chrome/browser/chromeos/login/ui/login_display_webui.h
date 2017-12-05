@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_WEBUI_LOGIN_DISPLAY_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_WEBUI_LOGIN_DISPLAY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_WEBUI_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_WEBUI_H_
 
 #include <string>
 #include <vector>
@@ -23,13 +23,13 @@ class AccountId;
 namespace chromeos {
 
 // WebUI-based login UI implementation.
-class WebUILoginDisplay : public LoginDisplay,
+class LoginDisplayWebUI : public LoginDisplay,
                           public NativeWindowDelegate,
                           public SigninScreenHandlerDelegate,
                           public ui::UserActivityObserver {
  public:
-  explicit WebUILoginDisplay(LoginDisplay::Delegate* delegate);
-  ~WebUILoginDisplay() override;
+  explicit LoginDisplayWebUI(LoginDisplay::Delegate* delegate);
+  ~LoginDisplayWebUI() override;
 
   // LoginDisplay implementation:
   void ClearAndEnablePassword() override;
@@ -115,9 +115,9 @@ class WebUILoginDisplay : public LoginDisplay,
   // Reference to the WebUI handling layer for the login screen
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplay);
+  DISALLOW_COPY_AND_ASSIGN(LoginDisplayWebUI);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_WEBUI_LOGIN_DISPLAY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_WEBUI_H_

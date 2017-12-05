@@ -47,7 +47,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
@@ -584,8 +584,8 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
 
 LoginDisplay* LoginDisplayHostWebUI::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
-  webui_login_display_ = new WebUILoginDisplay(delegate);
-  return webui_login_display_;
+  login_display_ = new LoginDisplayWebUI(delegate);
+  return login_display_;
 }
 
 gfx::NativeWindow LoginDisplayHostWebUI::GetNativeWindow() const {
@@ -722,17 +722,17 @@ void LoginDisplayHostWebUI::StartUserAdding(
   existing_user_controller_.reset(new chromeos::ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
-    signin_screen_controller_.reset(new SignInScreenController(
-        GetOobeUI(), webui_login_display_->delegate()));
+    signin_screen_controller_.reset(
+        new SignInScreenController(GetOobeUI(), login_display_->delegate()));
   }
 
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
   SetStatusAreaVisible(true);
   existing_user_controller_->Init(
       user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
-  CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), webui_login_display_,
-                                webui_login_display_);
+  CHECK(login_display_);
+  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), login_display_,
+                                login_display_);
 }
 
 void LoginDisplayHostWebUI::CancelUserAdding() {
@@ -787,8 +787,8 @@ void LoginDisplayHostWebUI::StartSignInScreen(
   existing_user_controller_.reset(new chromeos::ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
-    signin_screen_controller_.reset(new SignInScreenController(
-        GetOobeUI(), webui_login_display_->delegate()));
+    signin_screen_controller_.reset(
+        new SignInScreenController(GetOobeUI(), login_display_->delegate()));
   }
 
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
@@ -805,9 +805,8 @@ void LoginDisplayHostWebUI::StartSignInScreen(
   connector->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
 
-  CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(context, webui_login_display_,
-                                webui_login_display_);
+  CHECK(login_display_);
+  GetOobeUI()->ShowSigninScreen(context, login_display_, login_display_);
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
   BootTimesRecorder::Get()->RecordCurrentStats(
@@ -816,7 +815,7 @@ void LoginDisplayHostWebUI::StartSignInScreen(
 
 void LoginDisplayHostWebUI::OnPreferencesChanged() {
   if (is_showing_login_)
-    webui_login_display_->OnPreferencesChanged();
+    login_display_->OnPreferencesChanged();
 }
 
 void LoginDisplayHostWebUI::PrewarmAuthentication() {
