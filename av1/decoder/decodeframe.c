@@ -837,7 +837,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_LPF_SB
-  if (bsize == cm->sb_size) {
+  if (bsize == cm->sb_size && !USE_GUESS_LEVEL) {
     int filt_lvl;
     if (mi_row == 0 && mi_col == 0) {
       filt_lvl = aom_read_literal(r, 6, ACCT_STR);
@@ -1158,7 +1158,6 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
   struct loopfilter *lf = &cm->lf;
-#if !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
   lf->filter_level[0] = aom_rb_read_literal(rb, 6);
   lf->filter_level[1] = aom_rb_read_literal(rb, 6);
@@ -1167,9 +1166,12 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     lf->filter_level_v = aom_rb_read_literal(rb, 6);
   }
 #else
+#if CONFIG_LPF_SB
+  if (USE_GUESS_LEVEL) lf->filter_level = aom_rb_read_literal(rb, 6);
+#else
   lf->filter_level = aom_rb_read_literal(rb, 6);
-#endif
 #endif  // CONFIG_LPF_SB
+#endif
   lf->sharpness_level = aom_rb_read_literal(rb, 3);
 
   // Read in loop filter deltas applied at the MB level based on mode or ref

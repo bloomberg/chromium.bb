@@ -473,7 +473,6 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
         int lvl =
             search_filter_level(sd, cpi, 1, NULL, mi_row, mi_col, last_lvl);
 #endif
-        if (USE_LOOP_FILTER_SUPERBLOCK) lvl = FAKE_FILTER_LEVEL;
 
         av1_loop_filter_sb_level_init(cm, mi_row, mi_col, lvl);
 

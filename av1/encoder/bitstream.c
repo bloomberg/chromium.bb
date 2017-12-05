@@ -2370,7 +2370,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
 #if CONFIG_LPF_SB
   // send filter level for each superblock (64x64)
-  if (bsize == cm->sb_size) {
+  if (bsize == cm->sb_size && !USE_GUESS_LEVEL) {
     if (mi_row == 0 && mi_col == 0) {
       aom_write_literal(w, cm->mi[0].mbmi.filt_lvl, 6);
       cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl = 0;
@@ -2661,7 +2661,6 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   struct loopfilter *lf = &cm->lf;
 
 // Encode the loop filter level and type
-#if !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
   aom_wb_write_literal(wb, lf->filter_level[0], 6);
   aom_wb_write_literal(wb, lf->filter_level[1], 6);
@@ -2670,9 +2669,12 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
     aom_wb_write_literal(wb, lf->filter_level_v, 6);
   }
 #else
+#if CONFIG_LPF_SB
+  if (USE_GUESS_LEVEL) aom_wb_write_literal(wb, lf->filter_level, 6);
+#else
   aom_wb_write_literal(wb, lf->filter_level, 6);
-#endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_LPF_SB
+#endif  // CONFIG_LOOPFILTER_LEVEL
   aom_wb_write_literal(wb, lf->sharpness_level, 3);
 
   // Write out loop filter deltas applied at the MB level based on mode or
