@@ -167,7 +167,7 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
 }
 
 int TestAXNodeWrapper::GetIndexInParent() const {
-  return -1;
+  return node_ ? node_->index_in_parent() : -1;
 }
 
 gfx::AcceleratedWidget
