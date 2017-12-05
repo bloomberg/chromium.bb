@@ -176,9 +176,12 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build73-b1--device2'),
          ('gpu_perftests', 'build73-b1--device2'),
-         ('angle_perftests', 'build73-b1--device4'),
          #  ('cc_perftests', 'build73-b1--device2'),  # crbug.com/721757
-        ]
+       ],
+       'perf_tests_with_args': [
+         ('angle_perftests', 'build73-b1--device4', ['--shard-timeout=180'],
+           'angle_perftests'),
+       ]
       }
     ])
   waterfall = add_tester(
