@@ -65,8 +65,7 @@ class PrivetRegisterOperationImpl
                     const base::DictionaryValue& value,
                     bool has_error) override;
 
-  void OnNeedPrivetToken(
-      const PrivetURLFetcher::TokenCallback& callback) override;
+  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
 
   PrivetHTTPClient* GetHTTPClient() override;
 
@@ -131,8 +130,7 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override;
-  void OnNeedPrivetToken(
-      const PrivetURLFetcher::TokenCallback& callback) override;
+  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
 
  private:
   PrivetHTTPClient* privet_client_;
@@ -170,8 +168,7 @@ class PrivetLocalPrintOperationImpl
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override;
-  void OnNeedPrivetToken(
-      const PrivetURLFetcher::TokenCallback& callback) override;
+  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
 
  private:
   typedef base::Callback<void(bool, const base::DictionaryValue* value)>
@@ -239,10 +236,10 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
       net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) override;
   void RefreshPrivetToken(
-      const PrivetURLFetcher::TokenCallback& token_callback) override;
+      PrivetURLFetcher::TokenCallback token_callback) override;
 
  private:
-  typedef std::vector<PrivetURLFetcher::TokenCallback> TokenCallbackVector;
+  using TokenCallbackVector = std::vector<PrivetURLFetcher::TokenCallback>;
 
   void OnPrivetInfoDone(const base::DictionaryValue* value);
 

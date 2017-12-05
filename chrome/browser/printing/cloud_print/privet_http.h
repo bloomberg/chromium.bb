@@ -61,7 +61,7 @@ class PrivetHTTPClient {
       PrivetURLFetcher::Delegate* delegate) = 0;
 
   virtual void RefreshPrivetToken(
-      const PrivetURLFetcher::TokenCallback& token_callback) = 0;
+      PrivetURLFetcher::TokenCallback token_callback) = 0;
 };
 
 class PrivetDataReadOperation {
