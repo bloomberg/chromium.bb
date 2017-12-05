@@ -1856,10 +1856,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
 
-#if CONFIG_EXT_SKIP
-// TODO(zoeliu): To work with JNT_COMP
-#endif  // CONFIG_EXT_SKIP
-
 #if CONFIG_JNT_COMP
   if (is_compound) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
