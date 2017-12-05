@@ -94,10 +94,6 @@ const char kTraceAppSource[] = "enable-trace-app-source";
 // the one received from update manifest.
 const char kEnableCrxHashCheck[] = "enable-crx-hash-check";
 
-// Whether to split content script injections into multiple tasks.
-const char kYieldBetweenContentScriptRuns[] =
-    "yield-between-content-script-runs";
-
 }  // namespace switches
 
 }  // namespace extensions

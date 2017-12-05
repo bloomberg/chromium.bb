@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -15,8 +16,8 @@
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/host_id.h"
 #include "extensions/renderer/async_scripts_run_info.h"
 #include "extensions/renderer/dom_activity_logger.h"
@@ -322,7 +323,8 @@ void ScriptInjection::InjectJs(
   } else {
     blink::WebLocalFrame::ScriptExecutionType option;
     if (injector_->script_type() == UserScript::CONTENT_SCRIPT &&
-        FeatureSwitch::yield_between_content_script_runs()->IsEnabled()) {
+        base::FeatureList::IsEnabled(
+            features::kYieldBetweenContentScriptRuns)) {
       switch (run_location_) {
         case UserScript::DOCUMENT_END:
         case UserScript::DOCUMENT_IDLE:
