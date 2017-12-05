@@ -214,7 +214,7 @@ TEST_F(UserEventServiceImplTest, SessionIdIsDifferent) {
 }
 
 TEST_F(UserEventServiceImplTest, FieldTrial) {
-  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_SERVICE,
+  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_EVENT_LOGGER,
                                          "trial", "group", 123);
   base::FieldTrialList::CreateFieldTrial("trial", "group");
   base::FieldTrialList::FindFullName("trial");

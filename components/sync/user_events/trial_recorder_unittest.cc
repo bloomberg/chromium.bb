@@ -47,7 +47,7 @@ void VerifyEvent(std::set<variations::VariationID> expected_variations,
 
 void SetupAndFinalizeTrial(const std::string& trial_name,
                            variations::VariationID id) {
-  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_SERVICE,
+  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_EVENT_LOGGER,
                                          trial_name, kGroup, id);
   base::FieldTrialList::CreateFieldTrial(trial_name, kGroup);
   base::FieldTrialList::FindFullName(trial_name);

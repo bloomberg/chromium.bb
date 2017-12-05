@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, FieldTrial) {
   const std::string group_name = "GroupName";
 
   ASSERT_TRUE(SetupSync());
-  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_SERVICE,
+  variations::AssociateGoogleVariationID(variations::CHROME_SYNC_EVENT_LOGGER,
                                          trial_name, group_name, 123);
   base::FieldTrialList::CreateFieldTrial(trial_name, group_name);
   base::FieldTrialList::FindFullName(trial_name);

@@ -37,7 +37,7 @@ base::TimeDelta GetFieldTrialDelay() {
 
 TrialRecorder::TrialRecorder(UserEventService* user_event_service)
     : user_event_service_(user_event_service),
-      variations_(variations::CHROME_SYNC_SERVICE,
+      variations_(variations::CHROME_SYNC_EVENT_LOGGER,
                   base::BindRepeating(&TrialRecorder::OnNewVariationId,
                                       base::Unretained(this))) {
   DCHECK(user_event_service_);

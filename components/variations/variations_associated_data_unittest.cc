@@ -166,21 +166,21 @@ TEST_F(VariationsAssociatedDataTest, CollectionsCoexist) {
   EXPECT_EQ(EMPTY_ID,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_true.get()));
   EXPECT_EQ(EMPTY_ID,
-            GetIDForTrial(CHROME_SYNC_SERVICE, trial_true.get()));
+            GetIDForTrial(CHROME_SYNC_EVENT_LOGGER, trial_true.get()));
 
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_true->trial_name(),
       default_name, TEST_VALUE_A);
   EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
   EXPECT_EQ(EMPTY_ID,
-            GetIDForTrial(CHROME_SYNC_SERVICE, trial_true.get()));
+            GetIDForTrial(CHROME_SYNC_EVENT_LOGGER, trial_true.get()));
 
-  AssociateGoogleVariationID(CHROME_SYNC_SERVICE, trial_true->trial_name(),
-      default_name, TEST_VALUE_A);
+  AssociateGoogleVariationID(CHROME_SYNC_EVENT_LOGGER, trial_true->trial_name(),
+                             default_name, TEST_VALUE_A);
   EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
   EXPECT_EQ(TEST_VALUE_A,
-            GetIDForTrial(CHROME_SYNC_SERVICE, trial_true.get()));
+            GetIDForTrial(CHROME_SYNC_EVENT_LOGGER, trial_true.get()));
 
   trial_true = CreateFieldTrial("d2", 10, default_name, &default_group_number);
   ASSERT_EQ(default_group_number, trial_true->group());
@@ -192,14 +192,14 @@ TEST_F(VariationsAssociatedDataTest, CollectionsCoexist) {
   EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_true.get()));
   EXPECT_EQ(EMPTY_ID,
-            GetIDForTrial(CHROME_SYNC_SERVICE, trial_true.get()));
+            GetIDForTrial(CHROME_SYNC_EVENT_LOGGER, trial_true.get()));
 
-  AssociateGoogleVariationID(CHROME_SYNC_SERVICE, trial_true->trial_name(),
-      default_name, TEST_VALUE_A);
+  AssociateGoogleVariationID(CHROME_SYNC_EVENT_LOGGER, trial_true->trial_name(),
+                             default_name, TEST_VALUE_A);
   EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES_TRIGGER, trial_true.get()));
   EXPECT_EQ(TEST_VALUE_A,
-            GetIDForTrial(CHROME_SYNC_SERVICE, trial_true.get()));
+            GetIDForTrial(CHROME_SYNC_EVENT_LOGGER, trial_true.get()));
 }
 
 }  // namespace variations
