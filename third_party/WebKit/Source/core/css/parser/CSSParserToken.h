@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/parser/AtRuleDescriptors.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/StringView.h"
 
@@ -145,6 +146,7 @@ class CORE_EXPORT CSSParserToken {
   bool HasStringBacking() const;
 
   CSSPropertyID ParseAsUnresolvedCSSPropertyID() const;
+  AtRuleDescriptorID ParseAsAtRuleDescriptorID() const;
 
   void Serialize(StringBuilder&) const;
 
@@ -156,14 +158,13 @@ class CORE_EXPORT CSSParserToken {
     value_is8_bit_ = string.Is8Bit();
     value_data_char_raw_ = string.Bytes();
   }
+  bool ValueDataCharRawEqual(const CSSParserToken& other) const;
+
   unsigned type_ : 6;                // CSSParserTokenType
   unsigned block_type_ : 2;          // BlockType
   unsigned numeric_value_type_ : 1;  // NumericValueType
   unsigned numeric_sign_ : 2;        // NumericSign
   unsigned unit_ : 7;                // CSSPrimitiveValue::UnitType
-
-  bool ValueDataCharRawEqual(const CSSParserToken& other) const;
-
   // value_... is an unpacked StringView so that we can pack it
   // tightly with the rest of this object for a smaller object size.
   bool value_is8_bit_ : 1;

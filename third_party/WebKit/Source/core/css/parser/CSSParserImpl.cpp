@@ -15,6 +15,7 @@
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleRuleNamespace.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/AtRuleDescriptorParser.h"
 #include "core/css/parser/CSSAtRuleID.h"
 #include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSLazyPropertyParserImpl.h"
@@ -898,8 +899,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
                                        const RangeOffset& decl_offset,
                                        StyleRule::RuleType rule_type) {
   DCHECK_EQ(range.Peek().GetType(), kIdentToken);
-  const CSSParserToken& token = range.ConsumeIncludingWhitespace();
-  CSSPropertyID unresolved_property = token.ParseAsUnresolvedCSSPropertyID();
+  const CSSParserToken& lhs = range.ConsumeIncludingWhitespace();
   if (range.Consume().GetType() != kColonToken)
     return;  // Parse error
 
@@ -919,16 +919,28 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
     }
   }
 
-  if (important &&
-      (rule_type == StyleRule::kFontFace || rule_type == StyleRule::kKeyframe))
-    return;
-
   size_t properties_count = parsed_properties_.size();
+
+  CSSPropertyID unresolved_property = CSSPropertyInvalid;
+  AtRuleDescriptorID atrule_id = AtRuleDescriptorID::Invalid;
+  if (rule_type == StyleRule::kFontFace) {
+    if (important)  // Invalid
+      return;
+    atrule_id = lhs.ParseAsAtRuleDescriptorID();
+    AtRuleDescriptorParser::ParseAtRule(atrule_id, range, *context_,
+                                        parsed_properties_);
+  } else {
+    unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID();
+  }
+
+  // @rules other than FontFace still handled with legacy code.
+  if (important && rule_type == StyleRule::kKeyframe)
+    return;
 
   if (unresolved_property == CSSPropertyVariable) {
     if (rule_type != StyleRule::kStyle && rule_type != StyleRule::kKeyframe)
       return;
-    AtomicString variable_name = token.Value().ToAtomicString();
+    AtomicString variable_name = lhs.Value().ToAtomicString();
     bool is_animation_tainted = rule_type == StyleRule::kKeyframe;
     ConsumeVariableValue(
         range.MakeSubRange(&range.Peek(), declaration_value_end), variable_name,

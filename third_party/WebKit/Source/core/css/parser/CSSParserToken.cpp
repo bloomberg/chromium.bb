@@ -90,6 +90,11 @@ CSSPropertyID CSSParserToken::ParseAsUnresolvedCSSPropertyID() const {
   return UnresolvedCSSPropertyID(Value());
 }
 
+AtRuleDescriptorID CSSParserToken::ParseAsAtRuleDescriptorID() const {
+  DCHECK_EQ(type_, static_cast<unsigned>(kIdentToken));
+  return AsAtRuleDescriptorID(Value());
+}
+
 CSSValueID CSSParserToken::Id() const {
   if (type_ != kIdentToken)
     return CSSValueInvalid;

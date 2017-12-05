@@ -49,6 +49,7 @@
 #include "core/css/RemoteFontFaceSource.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/StyleRule.h"
+#include "core/css/parser/AtRuleDescriptorParser.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -72,11 +73,12 @@ namespace blink {
 
 static const CSSValue* ParseCSSValue(const ExecutionContext* context,
                                      const String& value,
-                                     CSSPropertyID property_id) {
+                                     AtRuleDescriptorID descriptor_id) {
   CSSParserContext* parser_context =
       context->IsDocument() ? CSSParserContext::Create(*ToDocument(context))
                             : CSSParserContext::Create(*context);
-  return CSSParser::ParseFontFaceDescriptor(property_id, value, parser_context);
+  return AtRuleDescriptorParser::ParseFontFaceDescriptor(descriptor_id, value,
+                                                         *parser_context);
 }
 
 FontFace* FontFace::Create(ExecutionContext* context,
@@ -101,7 +103,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
                            const FontFaceDescriptors& descriptors) {
   FontFace* font_face = new FontFace(context, family, descriptors);
 
-  const CSSValue* src = ParseCSSValue(context, source, CSSPropertySrc);
+  const CSSValue* src = ParseCSSValue(context, source, AtRuleDescriptorID::Src);
   if (!src || !src->IsValueList())
     font_face->SetError(DOMException::Create(
         kSyntaxError, "The source provided ('" + source +
@@ -138,24 +140,30 @@ FontFace* FontFace::Create(Document* document,
 
   // Obtain the font-family property and the src property. Both must be defined.
   const CSSValue* family =
-      properties.GetPropertyCSSValue(CSSPropertyFontFamily);
+      properties.GetPropertyCSSValue(AtRuleDescriptorID::FontFamily);
   if (!family || (!family->IsFontFamilyValue() && !family->IsIdentifierValue()))
     return nullptr;
-  const CSSValue* src = properties.GetPropertyCSSValue(CSSPropertySrc);
+  const CSSValue* src = properties.GetPropertyCSSValue(AtRuleDescriptorID::Src);
   if (!src || !src->IsValueList())
     return nullptr;
 
   FontFace* font_face = new FontFace(document);
 
   if (font_face->SetFamilyValue(*family) &&
-      font_face->SetPropertyFromStyle(properties, CSSPropertyFontStyle) &&
-      font_face->SetPropertyFromStyle(properties, CSSPropertyFontWeight) &&
-      font_face->SetPropertyFromStyle(properties, CSSPropertyFontStretch) &&
-      font_face->SetPropertyFromStyle(properties, CSSPropertyUnicodeRange) &&
-      font_face->SetPropertyFromStyle(properties, CSSPropertyFontVariant) &&
       font_face->SetPropertyFromStyle(properties,
-                                      CSSPropertyFontFeatureSettings) &&
-      font_face->SetPropertyFromStyle(properties, CSSPropertyFontDisplay) &&
+                                      AtRuleDescriptorID::FontStyle) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::FontWeight) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::FontStretch) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::UnicodeRange) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::FontVariant) &&
+      font_face->SetPropertyFromStyle(
+          properties, AtRuleDescriptorID::FontFeatureSettings) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::FontDisplay) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
     font_face->InitCSSFontFace(document, src);
@@ -171,15 +179,20 @@ FontFace::FontFace(ExecutionContext* context,
                    const AtomicString& family,
                    const FontFaceDescriptors& descriptors)
     : ContextClient(context), family_(family), status_(kUnloaded) {
-  SetPropertyFromString(context, descriptors.style(), CSSPropertyFontStyle);
-  SetPropertyFromString(context, descriptors.weight(), CSSPropertyFontWeight);
-  SetPropertyFromString(context, descriptors.stretch(), CSSPropertyFontStretch);
+  SetPropertyFromString(context, descriptors.style(),
+                        AtRuleDescriptorID::FontStyle);
+  SetPropertyFromString(context, descriptors.weight(),
+                        AtRuleDescriptorID::FontWeight);
+  SetPropertyFromString(context, descriptors.stretch(),
+                        AtRuleDescriptorID::FontStretch);
   SetPropertyFromString(context, descriptors.unicodeRange(),
-                        CSSPropertyUnicodeRange);
-  SetPropertyFromString(context, descriptors.variant(), CSSPropertyFontVariant);
+                        AtRuleDescriptorID::UnicodeRange);
+  SetPropertyFromString(context, descriptors.variant(),
+                        AtRuleDescriptorID::FontVariant);
   SetPropertyFromString(context, descriptors.featureSettings(),
-                        CSSPropertyFontFeatureSettings);
-  SetPropertyFromString(context, descriptors.display(), CSSPropertyFontDisplay);
+                        AtRuleDescriptorID::FontFeatureSettings);
+  SetPropertyFromString(context, descriptors.display(),
+                        AtRuleDescriptorID::FontDisplay);
 }
 
 FontFace::~FontFace() = default;
@@ -215,52 +228,58 @@ String FontFace::display() const {
 void FontFace::setStyle(ExecutionContext* context,
                         const String& s,
                         ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyFontStyle, &exception_state);
+  SetPropertyFromString(context, s, AtRuleDescriptorID::FontStyle,
+                        &exception_state);
 }
 
 void FontFace::setWeight(ExecutionContext* context,
                          const String& s,
                          ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyFontWeight, &exception_state);
+  SetPropertyFromString(context, s, AtRuleDescriptorID::FontWeight,
+                        &exception_state);
 }
 
 void FontFace::setStretch(ExecutionContext* context,
                           const String& s,
                           ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyFontStretch, &exception_state);
+  SetPropertyFromString(context, s, AtRuleDescriptorID::FontStretch,
+                        &exception_state);
 }
 
 void FontFace::setUnicodeRange(ExecutionContext* context,
                                const String& s,
                                ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyUnicodeRange, &exception_state);
+  SetPropertyFromString(context, s, AtRuleDescriptorID::UnicodeRange,
+                        &exception_state);
 }
 
 void FontFace::setVariant(ExecutionContext* context,
                           const String& s,
                           ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyFontVariant, &exception_state);
+  SetPropertyFromString(context, s, AtRuleDescriptorID::FontVariant,
+                        &exception_state);
 }
 
 void FontFace::setFeatureSettings(ExecutionContext* context,
                                   const String& s,
                                   ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyFontFeatureSettings,
+  SetPropertyFromString(context, s, AtRuleDescriptorID::FontFeatureSettings,
                         &exception_state);
 }
 
 void FontFace::setDisplay(ExecutionContext* context,
                           const String& s,
                           ExceptionState& exception_state) {
-  SetPropertyFromString(context, s, CSSPropertyFontDisplay, &exception_state);
+  SetPropertyFromString(context, s, AtRuleDescriptorID::FontDisplay,
+                        &exception_state);
 }
 
 void FontFace::SetPropertyFromString(const ExecutionContext* context,
                                      const String& s,
-                                     CSSPropertyID property_id,
+                                     AtRuleDescriptorID descriptor_id,
                                      ExceptionState* exception_state) {
-  const CSSValue* value = ParseCSSValue(context, s, property_id);
-  if (value && SetPropertyValue(value, property_id))
+  const CSSValue* value = ParseCSSValue(context, s, descriptor_id);
+  if (value && SetPropertyValue(value, descriptor_id))
     return;
 
   String message = "Failed to set '" + s + "' as a property value.";
@@ -271,35 +290,35 @@ void FontFace::SetPropertyFromString(const ExecutionContext* context,
 }
 
 bool FontFace::SetPropertyFromStyle(const CSSPropertyValueSet& properties,
-                                    CSSPropertyID property_id) {
+                                    AtRuleDescriptorID property_id) {
   return SetPropertyValue(properties.GetPropertyCSSValue(property_id),
                           property_id);
 }
 
 bool FontFace::SetPropertyValue(const CSSValue* value,
-                                CSSPropertyID property_id) {
-  switch (property_id) {
-    case CSSPropertyFontStyle:
+                                AtRuleDescriptorID descriptor_id) {
+  switch (descriptor_id) {
+    case AtRuleDescriptorID::FontStyle:
       style_ = value;
       break;
-    case CSSPropertyFontWeight:
+    case AtRuleDescriptorID::FontWeight:
       weight_ = value;
       break;
-    case CSSPropertyFontStretch:
+    case AtRuleDescriptorID::FontStretch:
       stretch_ = value;
       break;
-    case CSSPropertyUnicodeRange:
+    case AtRuleDescriptorID::UnicodeRange:
       if (value && !value->IsValueList())
         return false;
       unicode_range_ = value;
       break;
-    case CSSPropertyFontVariant:
+    case AtRuleDescriptorID::FontVariant:
       variant_ = value;
       break;
-    case CSSPropertyFontFeatureSettings:
+    case AtRuleDescriptorID::FontFeatureSettings:
       feature_settings_ = value;
       break;
-    case CSSPropertyFontDisplay:
+    case AtRuleDescriptorID::FontDisplay:
       display_ = value;
       break;
     default:
