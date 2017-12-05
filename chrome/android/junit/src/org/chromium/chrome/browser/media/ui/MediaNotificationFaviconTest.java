@@ -20,7 +20,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.BaseSwitches;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
@@ -88,7 +87,8 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
 
         mTabHolder.simulateMediaSessionStateChanged(true, false);
         mTabHolder.simulateFaviconUpdated(mFavicon);
-        assertEquals(BuildInfo.isAtLeastO() ? null : mFavicon, getDisplayedIcon());
+        assertEquals(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? null : mFavicon,
+                getDisplayedIcon());
     }
 
     private Bitmap getDisplayedIcon() {
