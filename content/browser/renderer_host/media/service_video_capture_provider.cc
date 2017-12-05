@@ -20,28 +20,20 @@ class ServiceConnectorImpl
  public:
   ServiceConnectorImpl() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    // In unit test environments, there may not be any connector.
-    auto* connection = content::ServiceManagerConnection::GetForProcess();
-    if (!connection)
-      return;
-    auto* connector = connection->GetConnector();
-    if (!connector)
-      return;
-    connector_ = connector->Clone();
+    connector_ = content::ServiceManagerConnection::GetForProcess()
+                     ->GetConnector()
+                     ->Clone();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
   void BindFactoryProvider(
       video_capture::mojom::DeviceFactoryProviderPtr* provider) override {
-    if (!connector_) {
-      CHECK(false) << "Attempted to connect to the video capture service from "
-                      "a process that does not provide a "
-                      "ServiceManagerConnection";
-    }
     connector_->BindInterface(video_capture::mojom::kServiceName, provider);
   }
 
  private:
   std::unique_ptr<service_manager::Connector> connector_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // anonymous namespace
