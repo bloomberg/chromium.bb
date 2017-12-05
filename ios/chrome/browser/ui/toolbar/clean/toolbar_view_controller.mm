@@ -45,6 +45,7 @@
 @property(nonatomic, strong) ToolbarButton* contractButton;
 @property(nonatomic, assign) BOOL voiceSearchEnabled;
 @property(nonatomic, strong) MDCProgressView* progressBar;
+@property(nonatomic, strong) UIStackView* locationBarContainerStackView;
 // Background view, used to display the incognito NTP background color on the
 // toolbar.
 @property(nonatomic, strong) UIView* backgroundView;
@@ -85,6 +86,7 @@
 @synthesize contractButton = _contractButton;
 @synthesize voiceSearchEnabled = _voiceSearchEnabled;
 @synthesize progressBar = _progressBar;
+@synthesize locationBarContainerStackView = _locationBarContainerStackView;
 @synthesize expandedToolbarConstraints = _expandedToolbarConstraints;
 @synthesize topSafeAnchor = _topSafeAnchor;
 @synthesize regularToolbarConstraints = _regularToolbarConstraints;
@@ -188,7 +190,7 @@
       [self.buttonFactory.toolbarConfiguration backgroundColor];
 
   [self setUpToolbarStackView];
-  [self setUpToolbarContainerView];
+  [self setUpLocationBarContainerView];
   [self.view addSubview:self.stackView];
   [self.view addSubview:self.progressBar];
   [self setConstraints];
@@ -213,42 +215,27 @@
   self.stackView.distribution = UIStackViewDistributionFill;
 }
 
-// Sets up the LocationContainerView. This contains the locationBarView, and
-// other buttons like Voice Search, Bookmarks and Contract Toolbar.
-- (void)setUpToolbarContainerView {
-  if (self.locationBarView) {
-    [self.locationBarContainer addSubview:self.locationBarView];
-
-    // Bookmarks and Voice Search buttons will only be part of the Toolbar on
-    // iPad. On the other hand the contract button is only needed on non iPad
-    // devices, since iPad doesn't animate, thus it doesn't need to contract.
-    if (IsIPadIdiom()) {
-      [self.locationBarContainer addSubview:self.bookmarkButton];
-      [self.locationBarContainer addSubview:self.voiceSearchButton];
-    } else {
-      [self.locationBarContainer addSubview:self.contractButton];
-    }
-
-    // LocationBarView constraints.
-    NSLayoutConstraint* locationBarViewTrailingConstraint =
-        [self.locationBarView.trailingAnchor
-            constraintEqualToAnchor:self.locationBarContainer.trailingAnchor];
-    NSLayoutConstraint* locationBarViewTopConstraint =
-        [self.locationBarView.topAnchor
-            constraintEqualToAnchor:self.locationBarContainer.topAnchor];
-    [self.regularToolbarConstraints addObjectsFromArray:@[
-      locationBarViewTopConstraint, locationBarViewTrailingConstraint
-    ]];
-    NSArray* locationBarViewConstraints = @[
-      [self.locationBarView.leadingAnchor
-          constraintEqualToAnchor:self.locationBarContainer.leadingAnchor],
-      [self.locationBarView.bottomAnchor
-          constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
-      locationBarViewTrailingConstraint,
-      locationBarViewTopConstraint,
-    ];
-    [NSLayoutConstraint activateConstraints:locationBarViewConstraints];
+// Sets up the LocationContainerView. Which contains a StackView containing the
+// locationBarView, and other buttons like Voice Search, Bookmarks and Contract
+// Toolbar.
+- (void)setUpLocationBarContainerView {
+  self.locationBarContainerStackView =
+      [[UIStackView alloc] initWithArrangedSubviews:@[ self.locationBarView ]];
+  self.locationBarContainerStackView.translatesAutoresizingMaskIntoConstraints =
+      NO;
+  self.locationBarContainerStackView.spacing = kStackViewSpacing;
+  self.locationBarContainerStackView.distribution = UIStackViewDistributionFill;
+  // Bookmarks and Voice Search buttons will only be part of the Toolbar on
+  // iPad. On the other hand the contract button is only needed on non iPad
+  // devices, since iPad doesn't animate, thus it doesn't need to contract.
+  if (IsIPadIdiom()) {
+    [self.locationBarContainerStackView addArrangedSubview:self.bookmarkButton];
+    [self.locationBarContainerStackView
+        addArrangedSubview:self.voiceSearchButton];
+  } else {
+    [self.locationBarContainerStackView addArrangedSubview:self.contractButton];
   }
+  [self.locationBarContainer addSubview:self.locationBarContainerStackView];
 }
 
 - (void)setConstraints {
@@ -270,7 +257,7 @@
   ];
   [NSLayoutConstraint activateConstraints:progressBarConstraints];
 
-  // StackView constraints.
+  // StackView constraints. The main Toolbar StackView.
   NSArray* stackViewConstraints = @[
     [self.stackView.heightAnchor
         constraintEqualToConstant:kToolbarHeight - 2 * kVerticalMargin],
@@ -286,34 +273,23 @@
   [self.regularToolbarConstraints addObjectsFromArray:stackViewConstraints];
   [NSLayoutConstraint activateConstraints:stackViewConstraints];
 
-  // LocationBarContainer Buttons constraints.
-  NSArray* locationBarButtonConstraints;
-  if (IsIPadIdiom()) {
-    locationBarButtonConstraints = @[
-      [self.bookmarkButton.centerYAnchor
-          constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
-      [self.voiceSearchButton.centerYAnchor
-          constraintEqualToAnchor:self.locationBarContainer.centerYAnchor],
-      [self.voiceSearchButton.trailingAnchor
-          constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
-      [self.bookmarkButton.trailingAnchor
-          constraintEqualToAnchor:self.voiceSearchButton.leadingAnchor],
-    ];
-  } else {
-    NSLayoutConstraint* contractButtonTrailingConstraint =
-        [self.contractButton.trailingAnchor
-            constraintEqualToAnchor:self.locationBarContainer.trailingAnchor
-                           constant:-2 * kTrailingMargin];
-    [self.regularToolbarConstraints addObject:contractButtonTrailingConstraint];
-    locationBarButtonConstraints = @[
-      [self.contractButton.topAnchor constraintEqualToAnchor:self.topSafeAnchor
-                                                    constant:kVerticalMargin],
-      [self.contractButton.bottomAnchor
-          constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
-      contractButtonTrailingConstraint,
-    ];
-  }
-  [NSLayoutConstraint activateConstraints:locationBarButtonConstraints];
+  // LocationBarStackView constraints. The StackView inside the
+  // LocationBarContainer View.
+  NSLayoutConstraint* locationBarContainerStackViewTopConstraint =
+      [self.locationBarContainerStackView.topAnchor
+          constraintEqualToAnchor:self.locationBarContainer.topAnchor];
+  NSArray* locationBarViewStackViewConstraints = @[
+    [self.locationBarContainerStackView.bottomAnchor
+        constraintEqualToAnchor:self.locationBarContainer.bottomAnchor],
+    [self.locationBarContainerStackView.leadingAnchor
+        constraintEqualToAnchor:self.locationBarContainer.leadingAnchor],
+    [self.locationBarContainerStackView.trailingAnchor
+        constraintEqualToAnchor:self.locationBarContainer.trailingAnchor],
+    locationBarContainerStackViewTopConstraint,
+  ];
+  [self.regularToolbarConstraints
+      addObject:locationBarContainerStackViewTopConstraint];
+  [NSLayoutConstraint activateConstraints:locationBarViewStackViewConstraints];
 }
 
 #pragma mark - Components Setup
@@ -446,7 +422,6 @@
   self.buttonUpdater.forwardButton = self.forwardButton;
   self.buttonUpdater.voiceSearchButton = self.voiceSearchButton;
 
-  [self.regularToolbarConstraints addObjectsFromArray:buttonConstraints];
   [NSLayoutConstraint activateConstraints:buttonConstraints];
 }
 
@@ -502,20 +477,6 @@
   viewController.view.frame = subview.bounds;
   [subview addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
-}
-
-- (void)setLocationBarView:(UIView*)view {
-  if (_locationBarView == view) {
-    return;
-  }
-  view.translatesAutoresizingMaskIntoConstraints = NO;
-
-  if ([self isViewLoaded]) {
-    [_locationBarView removeFromSuperview];
-    [self.locationBarContainer addSubview:view];
-    AddSameConstraints(self.locationBarContainer, view);
-  }
-  _locationBarView = view;
 }
 
 #pragma mark - Trait Collection Changes
@@ -681,17 +642,33 @@
           constraintEqualToAnchor:self.view.leadingAnchor],
       [self.locationBarContainer.trailingAnchor
           constraintEqualToAnchor:self.view.trailingAnchor],
-      [self.locationBarView.topAnchor constraintEqualToAnchor:self.topSafeAnchor
-                                                     constant:kVerticalMargin],
-      [self.locationBarView.trailingAnchor
-          constraintEqualToAnchor:self.contractButton.leadingAnchor
-                         constant:-kTrailingMargin],
-      [self.contractButton.trailingAnchor
-          constraintEqualToAnchor:self.locationBarContainer.trailingAnchor
-                         constant:-kTrailingMargin],
+      [self.locationBarContainerStackView.topAnchor
+          constraintEqualToAnchor:self.topSafeAnchor
+                         constant:kVerticalMargin],
     ];
   }
   return _expandedToolbarConstraints;
+}
+
+- (UIView*)locationBarView {
+  if (!_locationBarView) {
+    _locationBarView = [[UIView alloc] initWithFrame:CGRectZero];
+    _locationBarView.translatesAutoresizingMaskIntoConstraints = NO;
+    [_locationBarView
+        setContentHuggingPriority:UILayoutPriorityDefaultLow
+                          forAxis:UILayoutConstraintAxisHorizontal];
+  }
+  return _locationBarView;
+}
+
+- (void)setLocationBarView:(UIView*)view {
+  if (_locationBarView == view) {
+    return;
+  }
+  view.translatesAutoresizingMaskIntoConstraints = NO;
+  [view setContentHuggingPriority:UILayoutPriorityDefaultLow
+                          forAxis:UILayoutConstraintAxisHorizontal];
+  _locationBarView = view;
 }
 
 #pragma mark - Private
