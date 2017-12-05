@@ -69,6 +69,9 @@ TEST_F(CrashKeyStringTest, FormatStackTrace64) {
 }
 #endif
 
+// In certain build configurations, StackTrace will produce an
+// empty result, which will cause the test to fail.
+#if !defined(OFFICIAL_BUILD) && !defined(NO_UNWIND_TABLES)
 TEST_F(CrashKeyStringTest, SetStackTrace) {
   static CrashKeyString<1024> key("test-trace");
 
@@ -78,6 +81,7 @@ TEST_F(CrashKeyStringTest, SetStackTrace) {
 
   EXPECT_TRUE(key.is_set());
 }
+#endif
 
 TEST_F(CrashKeyStringTest, BaseSupport) {
   static base::debug::CrashKeyString* crash_key =
