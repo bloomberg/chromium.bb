@@ -70,6 +70,7 @@ class CORE_EXPORT CSSSelectorParser {
   const AtomicString& DefaultNamespace() const;
   const AtomicString& DetermineNamespace(const AtomicString& prefix);
   void PrependTypeSelectorIfNeeded(const AtomicString& namespace_prefix,
+                                   bool has_element_name,
                                    const AtomicString& element_name,
                                    CSSParserSelector*);
   static std::unique_ptr<CSSParserSelector> AddSimpleSelectorToCompound(

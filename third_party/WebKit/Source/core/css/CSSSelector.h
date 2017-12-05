@@ -263,6 +263,7 @@ class CORE_EXPORT CSSSelector {
                                    : const_cast<CSSSelector*>(this + 1);
   }
 
+  static const AtomicString& UniversalSelectorAtom() { return g_null_atom; }
   const QualifiedName& TagQName() const;
   const AtomicString& Value() const;
   const AtomicString& SerializingValue() const;
