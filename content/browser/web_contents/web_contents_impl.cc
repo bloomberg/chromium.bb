@@ -104,7 +104,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
@@ -3422,11 +3421,6 @@ void WebContentsImpl::LoadStateChanged(
   }
 }
 
-void WebContentsImpl::DidGetResourceResponseStart(
-    const ResourceRequestDetails& details) {
-  SetNotWaitingForResponse();
-}
-
 void WebContentsImpl::NotifyWebContentsFocused(
     RenderWidgetHost* render_widget_host) {
   for (auto& observer : observers_)
@@ -3693,9 +3687,14 @@ void WebContentsImpl::ReadyToCommitNavigation(
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
 
+  if (navigation_handle->IsSameDocument())
+    return;
+
   controller_.ssl_manager()->DidStartResourceResponse(
       navigation_handle->GetURL(),
       net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
+
+  SetNotWaitingForResponse();
 }
 
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
@@ -4010,6 +4009,7 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
   }
 
   controller_.ssl_manager()->DidStartResourceResponse(url, cert_status);
+  SetNotWaitingForResponse();
 }
 
 #if defined(OS_ANDROID)

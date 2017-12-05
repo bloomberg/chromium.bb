@@ -84,7 +84,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
@@ -647,18 +646,6 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(
 
   if (delegate_)
     delegate_->OnResponseStarted(request, info->GetContext(), response);
-
-  // Don't notify WebContents observers for requests known to be
-  // downloads; they aren't really associated with the Webcontents.
-  // Note that not all downloads are known before content sniffing.
-  if (info->IsDownload())
-    return;
-
-  // Notify the observers on the UI thread.
-  std::unique_ptr<ResourceRequestDetails> detail(new ResourceRequestDetails(
-      request, !!request->ssl_info().cert));
-  loader_delegate_->DidGetResourceResponseStart(
-      info->GetWebContentsGetterForRequest(), std::move(detail));
 }
 
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {

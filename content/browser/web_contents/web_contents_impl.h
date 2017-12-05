@@ -100,7 +100,6 @@ struct ColorSuggestion;
 struct FaviconURL;
 struct LoadNotificationDetails;
 struct MHTMLGenerationParams;
-struct ResourceRequestDetails;
 
 namespace mojom {
 class CreateNewWindowParams;
@@ -210,10 +209,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                         const net::LoadStateWithParam& load_state,
                         uint64_t upload_position,
                         uint64_t upload_size);
-
-  // A response has been received for a resource request.
-  void DidGetResourceResponseStart(
-      const ResourceRequestDetails& details);
 
   // Notify observers that the web contents has been focused.
   void NotifyWebContentsFocused(RenderWidgetHost* render_widget_host);

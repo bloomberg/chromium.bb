@@ -374,7 +374,6 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
 
   main_test_rfh()->SendNavigateWithParams(&params);
 
-  EXPECT_TRUE(contents()->IsWaitingForResponse());
   contents()->UpdateTitle(main_test_rfh(),
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
                           base::i18n::LEFT_TO_RIGHT);
