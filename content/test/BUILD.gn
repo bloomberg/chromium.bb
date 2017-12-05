@@ -1548,7 +1548,6 @@ test("content_unittests") {
     "../renderer/loader/url_response_body_consumer_unittest.cc",
     "../renderer/loader/web_data_consumer_handle_impl_unittest.cc",
     "../renderer/loader/web_url_loader_impl_unittest.cc",
-    "../renderer/manifest/manifest_parser_unittest.cc",
     "../renderer/media/audio_ipc_factory_unittest.cc",
     "../renderer/media/audio_message_filter_unittest.cc",
     "../renderer/media/audio_renderer_mixer_manager_unittest.cc",

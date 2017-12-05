@@ -23,7 +23,6 @@ struct WebSize;
 class WebURLRequest;
 class WebView;
 class WebWidget;
-class WebURLResponse;
 }
 
 namespace device {
@@ -46,6 +45,7 @@ namespace content {
 class RenderFrame;
 class RendererGamepadProvider;
 class RenderView;
+struct Manifest;
 
 // Turn the browser process into layout test mode.
 void EnableBrowserLayoutTestMode();
@@ -98,10 +98,9 @@ void EnableWebTestProxyCreation(
     const WidgetProxyCreationCallback& widget_proxy_creation_callback,
     const FrameProxyCreationCallback& frame_proxy_creation_callback);
 
-typedef base::Callback<void(const blink::WebURLResponse& response,
-                            const std::string& data)> FetchManifestCallback;
-void FetchManifest(blink::WebView* view, const GURL& url,
-                   const FetchManifestCallback&);
+typedef base::OnceCallback<void(const GURL&, const Manifest&)>
+    FetchManifestCallback;
+void FetchManifest(blink::WebView* view, FetchManifestCallback callback);
 
 // Sets gamepad provider to be used for layout tests.
 void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider);

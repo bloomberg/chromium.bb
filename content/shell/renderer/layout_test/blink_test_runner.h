@@ -138,9 +138,7 @@ class BlinkTestRunner : public RenderViewObserver,
   bool AllowExternalPages() override;
   void FetchManifest(
       blink::WebView* view,
-      const GURL& url,
-      const base::Callback<void(const blink::WebURLResponse& response,
-                                const std::string& data)>& callback) override;
+      base::OnceCallback<void(const GURL&, const Manifest&)> callback) override;
   void SetPermission(const std::string& name,
                      const std::string& value,
                      const GURL& origin,

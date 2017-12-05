@@ -316,16 +316,15 @@ void TestRunnerForSpecificView::GetManifestThen(
 
   delegate()->FetchManifest(
       web_view(),
-      web_view()->MainFrame()->ToWebLocalFrame()->GetDocument().ManifestURL(),
-      base::Bind(&TestRunnerForSpecificView::GetManifestCallback,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(persistent_callback))));
+      base::BindOnce(&TestRunnerForSpecificView::GetManifestCallback,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(persistent_callback)));
 }
 
 void TestRunnerForSpecificView::GetManifestCallback(
     v8::UniquePersistent<v8::Function> callback,
-    const blink::WebURLResponse& response,
-    const std::string& data) {
+    const GURL& manifest_url,
+    const content::Manifest& manifest) {
   PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
 }
 
