@@ -148,18 +148,15 @@ void PrivetRegisterOperationImpl::Start() {
 void PrivetRegisterOperationImpl::Cancel() {
   url_fetcher_.reset();
 
-  if (ongoing_) {
-    // Owned by the message loop.
-    Cancelation* cancelation = new Cancelation(privet_client_, user_);
+  if (!ongoing_)
+    return;
 
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&PrivetRegisterOperationImpl::Cancelation::Cleanup,
-                       base::Owned(cancelation)),
-        base::TimeDelta::FromSeconds(kPrivetCancelationTimeoutSeconds));
-
-    ongoing_ = false;
-  }
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&PrivetRegisterOperationImpl::Cancelation::Cleanup,
+                     base::Owned(new Cancelation(privet_client_, user_))),
+      base::TimeDelta::FromSeconds(kPrivetCancelationTimeoutSeconds));
+  ongoing_ = false;
 }
 
 void PrivetRegisterOperationImpl::CompleteRegistration() {
@@ -496,14 +493,14 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
   url_fetcher_ =
       privet_client_->CreateURLFetcher(url, net::URLFetcher::POST, this);
 
-  if (!use_pdf_) {
-    url_fetcher_->SetUploadFilePath(kPrivetContentTypePWGRaster,
-                                    pwg_file_path_);
-  } else {
+  if (use_pdf_) {
     // TODO(noamsml): Move to file-based upload data?
     std::string data_str(reinterpret_cast<const char*>(data_->front()),
                          data_->size());
     url_fetcher_->SetUploadData(kPrivetContentTypePDF, data_str);
+  } else {
+    url_fetcher_->SetUploadFilePath(kPrivetContentTypePWGRaster,
+                                    pwg_file_path_);
   }
 
   url_fetcher_->Start();

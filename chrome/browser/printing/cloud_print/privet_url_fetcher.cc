@@ -146,51 +146,50 @@ void PrivetURLFetcher::SetByteRange(int start, int end) {
 
 void PrivetURLFetcher::Try() {
   tries_++;
-  if (tries_ <= max_retries_) {
-    DVLOG(1) << "Attempt: " << tries_;
-    url_fetcher_ =
-        net::URLFetcher::Create(url_, request_type_, this, traffic_annotation_);
-    data_use_measurement::DataUseUserData::AttachToFetcher(
-        url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
-
-    // Privet requests are relevant to hosts on local network only.
-    url_fetcher_->SetLoadFlags(
-        url_fetcher_->GetLoadFlags() | net::LOAD_BYPASS_PROXY |
-        net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES);
-    url_fetcher_->SetRequestContext(context_getter_.get());
-
-      std::string token = GetPrivetAccessToken();
-
-      if (token.empty())
-        token = kXPrivetEmptyToken;
-
-      url_fetcher_->AddExtraRequestHeader(
-          std::string(kXPrivetTokenHeaderPrefix) + token);
-
-    if (has_byte_range_) {
-      url_fetcher_->AddExtraRequestHeader(
-          MakeRangeHeader(byte_range_start_, byte_range_end_));
-    }
-
-    if (make_response_file_)
-      url_fetcher_->SaveResponseToTemporaryFile(GetFileTaskRunner());
-
-    // URLFetcher requires us to set upload data for POST requests.
-    if (request_type_ == net::URLFetcher::POST) {
-      if (!upload_file_path_.empty()) {
-        url_fetcher_->SetUploadFilePath(
-            upload_content_type_, upload_file_path_, 0 /*offset*/,
-            std::numeric_limits<uint64_t>::max() /*length*/,
-            GetFileTaskRunner());
-      } else {
-        url_fetcher_->SetUploadData(upload_content_type_, upload_data_);
-      }
-    }
-
-    url_fetcher_->Start();
-  } else {
+  if (tries_ > max_retries_) {
     delegate_->OnError(0, UNKNOWN_ERROR);
+    return;
   }
+
+  DVLOG(1) << "Attempt: " << tries_;
+  url_fetcher_ =
+      net::URLFetcher::Create(url_, request_type_, this, traffic_annotation_);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
+
+  // Privet requests are relevant to hosts on local network only.
+  url_fetcher_->SetLoadFlags(url_fetcher_->GetLoadFlags() |
+                             net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE |
+                             net::LOAD_DO_NOT_SEND_COOKIES);
+  url_fetcher_->SetRequestContext(context_getter_.get());
+
+  std::string token = GetPrivetAccessToken();
+  if (token.empty())
+    token = kXPrivetEmptyToken;
+
+  url_fetcher_->AddExtraRequestHeader(std::string(kXPrivetTokenHeaderPrefix) +
+                                      token);
+
+  if (has_byte_range_) {
+    url_fetcher_->AddExtraRequestHeader(
+        MakeRangeHeader(byte_range_start_, byte_range_end_));
+  }
+
+  if (make_response_file_)
+    url_fetcher_->SaveResponseToTemporaryFile(GetFileTaskRunner());
+
+  // URLFetcher requires us to set upload data for POST requests.
+  if (request_type_ == net::URLFetcher::POST) {
+    if (upload_file_path_.empty()) {
+      url_fetcher_->SetUploadData(upload_content_type_, upload_data_);
+    } else {
+      url_fetcher_->SetUploadFilePath(
+          upload_content_type_, upload_file_path_, 0 /*offset*/,
+          std::numeric_limits<uint64_t>::max() /*length*/, GetFileTaskRunner());
+    }
+  }
+
+  url_fetcher_->Start();
 }
 
 void PrivetURLFetcher::Start() {
