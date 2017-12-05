@@ -30,6 +30,14 @@ _CONFIG_STARTED = 'started'
 _CONFIG_MOBLAB_IMAGE = 'image_path_moblab'
 _CONFIG_DUT_IMAGE = 'image_path_dut'
 _CONFIG_MOBLAB_DISK = 'disk_path_moblab'
+# Some paths are stored as relative paths in the config so that we can freely
+# move around the workspace on disk. They're always used as absolute paths once
+# loaded, because absolute paths are easier to work with.
+_CONFIG_RELATIVE_PATH_KEYS = (
+    _CONFIG_MOBLAB_IMAGE,
+    _CONFIG_DUT_IMAGE,
+    _CONFIG_MOBLAB_DISK,
+)
 
 _CONFIG_MOBLAB_KVM_PID = 'kvm_pid_moblab'
 _CONFIG_DUT_KVM_PID = 'kvm_pid_dut'
@@ -240,14 +248,36 @@ class MoblabVm(object):
     if os.path.isfile(self._config_path):
       with open(self._config_path, 'r') as config_file:
         config_data = json.load(config_file)
+      self._ConfigRelativePathsToAbsolute(config_data,
+                                          os.path.dirname(self._config_path))
       config.update(config_data)
     return config
 
   def _Persist(self):
     """Dump our config to disk for later MoblabVm objects."""
+    # We do not want to modify config dict for the object.
+    config = dict(self._config)
+    self._ConfigAbsolutePathsToRelative(config,
+                                        os.path.dirname(self._config_path))
     with open(self._config_path, 'w') as config_file:
-      json.dump(self._config, config_file, sort_keys=True, indent=4,
+      json.dump(config, config_file, sort_keys=True, indent=4,
                 separators=(',', ': '))
+
+  def _ConfigRelativePathsToAbsolute(self, config_data, workspace_dir):
+    """Converts all the relative paths loaded from config to absolute paths."""
+    for key, relpath in config_data.iteritems():
+      if key not in _CONFIG_RELATIVE_PATH_KEYS:
+        continue
+      config_data[key] = os.path.realpath(os.path.join(workspace_dir, relpath))
+
+  def _ConfigAbsolutePathsToRelative(self, config_data, workspace_dir):
+    """Converts all absolute paths to relative paths for persisting on disk."""
+    workspace_dir = os.path.realpath(workspace_dir)
+    for key, abspath in config_data.iteritems():
+      if key not in _CONFIG_RELATIVE_PATH_KEYS:
+        continue
+      abspath = os.path.realpath(abspath)
+      config_data[key] = os.path.relpath(abspath, workspace_dir)
 
   def _Start(self):
     """Actually start the VM(s), without persisting the updated config."""

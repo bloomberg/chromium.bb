@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import mock
 import os
+import shutil
 import unittest
 
 from chromite.lib import cros_test_lib
@@ -60,24 +61,27 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     """
     # pylint:disable=protected-access
     self.bridge_name = 'network_bridge'
-
-    self.workspace = os.path.join(self.tempdir, 'workspace')
-    osutils.SafeMakedirs(self.workspace)
     self.moblab_from_path = os.path.join(self.tempdir, 'moblab_from')
+    self.dut_from_path = os.path.join(self.tempdir, 'dut_from')
+    self.moblab_tap_dev = 'moblabtap'
+    self.dut_tap_dev = 'duttap'
+    self._InitializeWorkspaceAttributes()
+
+  def _InitializeWorkspaceAttributes(self, workspace='workspace'):
+    """Initialize attributes related to workspace paths."""
+    # pylint:disable=protected-access
+    self.workspace = os.path.join(self.tempdir, workspace)
+    osutils.SafeMakedirs(self.workspace)
     self.moblab_workdir_path = os.path.join(self.workspace,
                                             moblab_vm._WORKSPACE_MOBLAB_DIR)
     self.moblab_image_path = os.path.join(self.moblab_workdir_path,
                                           'chromiumos_qemu_image.bin')
     self.moblab_disk_path = os.path.join(self.moblab_workdir_path, 'disk')
-    self.moblab_tap_dev = 'moblabtap'
     self.moblab_kvm_pid_path = os.path.join(self.moblab_workdir_path, 'kvmpid')
-
-    self.dut_from_path = os.path.join(self.tempdir, 'dut_from')
     self.dut_workdir_path = os.path.join(self.workspace,
                                          moblab_vm._WORKSPACE_DUT_DIR)
     self.dut_image_path = os.path.join(self.dut_workdir_path,
                                        'chromiumos_qemu_image.bin')
-    self.dut_tap_dev = 'duttap'
     self.dut_kvm_pid_path = os.path.join(self.dut_workdir_path, 'kvmpid')
 
   def testInstanceInitialization(self):
@@ -284,6 +288,14 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     vmsetup = moblab_vm.MoblabVm(self.workspace)
     self.assertFalse(vmsetup.running)
     self.assertFalse(vmsetup.dut_running)
+
+  def testSuccessfulStartAfterCreateAndMoveWorkspace(self):
+    """A successful call to .Start, without a dut attached."""
+    self.testSuccessfulCreateNoDutDir()
+    new_workspace = os.path.join(self.tempdir, 'new_workspace')
+    shutil.move(self.workspace, new_workspace)
+    self._InitializeWorkspaceAttributes(new_workspace)
+    self._testSuccessfulStartAfterCreate(False)
 
 
 class HelperFunctionsTestCase(unittest.TestCase):
