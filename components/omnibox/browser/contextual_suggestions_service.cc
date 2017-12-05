@@ -4,11 +4,11 @@
 
 #include "components/omnibox/browser/contextual_suggestions_service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -64,9 +64,9 @@ void AddVariationHeaders(const std::unique_ptr<net::URLFetcher>& fetcher) {
 //
 std::string FormatRequestBodyExperimentalService(
     const std::string& current_url) {
-  auto request = base::MakeUnique<base::DictionaryValue>();
-  auto url_list = base::MakeUnique<base::ListValue>();
-  auto url_entry = base::MakeUnique<base::DictionaryValue>();
+  auto request = std::make_unique<base::DictionaryValue>();
+  auto url_list = std::make_unique<base::ListValue>();
+  auto url_entry = std::make_unique<base::DictionaryValue>();
   url_entry->SetString("url", current_url);
   url_list->Append(std::move(url_entry));
   request->Set("urls", std::move(url_list));
@@ -298,7 +298,7 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   // Create the oauth2 token fetcher.
   const OAuth2TokenService::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};
-  token_fetcher_ = base::MakeUnique<AccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<AccessTokenFetcher>(
       "contextual_suggestions_service", signin_manager_, token_service_, scopes,
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(fetcher),

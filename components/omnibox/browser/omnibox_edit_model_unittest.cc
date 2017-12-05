@@ -5,9 +5,9 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 
 #include <stddef.h>
+
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -19,10 +19,10 @@
 class OmniboxEditModelTest : public testing::Test {
  public:
   void SetUp() override {
-    controller_ = base::MakeUnique<TestOmniboxEditController>();
-    view_ = base::MakeUnique<TestOmniboxView>(controller_.get());
-    model_ = base::MakeUnique<OmniboxEditModel>(
-        view_.get(), controller_.get(), base::MakeUnique<TestOmniboxClient>());
+    controller_ = std::make_unique<TestOmniboxEditController>();
+    view_ = std::make_unique<TestOmniboxView>(controller_.get());
+    model_ = std::make_unique<OmniboxEditModel>(
+        view_.get(), controller_.get(), std::make_unique<TestOmniboxClient>());
   }
 
   const TestOmniboxView& view() { return *view_; }

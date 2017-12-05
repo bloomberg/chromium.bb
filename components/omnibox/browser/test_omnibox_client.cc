@@ -4,10 +4,10 @@
 
 #include "components/omnibox/browser/test_omnibox_client.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -19,11 +19,11 @@
 
 TestOmniboxClient::TestOmniboxClient()
     : autocomplete_classifier_(
-          base::MakeUnique<AutocompleteController>(
+          std::make_unique<AutocompleteController>(
               CreateAutocompleteProviderClient(),
               nullptr,
               AutocompleteClassifier::DefaultOmniboxProviders()),
-          base::MakeUnique<TestSchemeClassifier>()) {}
+          std::make_unique<TestSchemeClassifier>()) {}
 
 TestOmniboxClient::~TestOmniboxClient() {
   autocomplete_classifier_.Shutdown();

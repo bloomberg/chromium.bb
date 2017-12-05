@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -964,7 +963,7 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
   data.SetURL("http://testsearch.com/?q={searchTerms}");
   TemplateURLService* template_url_service = client_->GetTemplateURLService();
   TemplateURL* template_url =
-      template_url_service->Add(base::MakeUnique<TemplateURL>(data));
+      template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   template_url_service->Load();
 
@@ -1194,7 +1193,7 @@ TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
   ExpectFormattedFullMatch("abc", L"https://www.abc.def.com/path", 12, 3);
   ExpectFormattedFullMatch("hij", L"https://www.hij.com/path", 12, 3);
 
-  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
   feature_list->InitWithFeatures(
       {omnibox::kUIExperimentHideSuggestionUrlScheme,
        omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains,

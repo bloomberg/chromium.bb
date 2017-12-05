@@ -5,6 +5,8 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -12,7 +14,6 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -245,7 +246,7 @@ AutocompleteController::AutocompleteController(
     // that would come with it.
     if (!ClipboardRecentContent::GetInstance()) {
       ClipboardRecentContent::SetInstance(
-          base::MakeUnique<ClipboardRecentContentGeneric>());
+          std::make_unique<ClipboardRecentContentGeneric>());
     }
 #endif
     // ClipboardRecentContent can be null in iOS tests.  For non-iOS, we

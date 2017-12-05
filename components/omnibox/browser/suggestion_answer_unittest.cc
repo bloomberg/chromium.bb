@@ -5,9 +5,9 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +35,7 @@ TEST(SuggestionAnswerTest, CopiesAreEqual) {
   SuggestionAnswer answer1;
   EXPECT_TRUE(answer1.Equals(SuggestionAnswer(answer1)));
 
-  auto answer2 = base::MakeUnique<SuggestionAnswer>();
+  auto answer2 = std::make_unique<SuggestionAnswer>();
   answer2->set_type(832345);
   EXPECT_TRUE(answer2->Equals(SuggestionAnswer(*answer2)));
 

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -35,28 +36,24 @@ namespace {
 std::unique_ptr<KeyedService> CreateTemplateURLService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return base::MakeUnique<TemplateURLService>(
-      profile->GetPrefs(),
-      std::unique_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
+  return std::make_unique<TemplateURLService>(
+      profile->GetPrefs(), std::make_unique<UIThreadSearchTermsData>(profile),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
           profile, ServiceAccessType::EXPLICIT_ACCESS),
-      std::unique_ptr<TemplateURLServiceClient>(
-          new ChromeTemplateURLServiceClient(
-              HistoryServiceFactory::GetForProfile(
-                  profile, ServiceAccessType::EXPLICIT_ACCESS))),
+      std::make_unique<ChromeTemplateURLServiceClient>(
+          HistoryServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS)),
       nullptr, nullptr, base::Closure());
 }
 
 std::unique_ptr<KeyedService> CreateAutocompleteClassifier(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return base::MakeUnique<AutocompleteClassifier>(
-      base::WrapUnique(new AutocompleteController(
-          base::WrapUnique(new ChromeAutocompleteProviderClient(profile)),
-
-          nullptr, AutocompleteClassifier::DefaultOmniboxProviders())),
-      std::unique_ptr<AutocompleteSchemeClassifier>(
-          new TestSchemeClassifier()));
+  return std::make_unique<AutocompleteClassifier>(
+      std::make_unique<AutocompleteController>(
+          std::make_unique<ChromeAutocompleteProviderClient>(profile), nullptr,
+          AutocompleteClassifier::DefaultOmniboxProviders()),
+      std::make_unique<TestSchemeClassifier>());
 }
 
 }  // namespace

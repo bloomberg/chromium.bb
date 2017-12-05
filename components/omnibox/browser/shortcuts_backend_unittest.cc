@@ -6,9 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,7 +102,7 @@ void ShortcutsBackendTest::SetSearchProvider() {
   data.SetKeyword(base::UTF8ToUTF16("foo"));
 
   TemplateURL* template_url =
-      template_url_service_->Add(base::MakeUnique<TemplateURL>(data));
+      template_url_service_->Add(std::make_unique<TemplateURL>(data));
   template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
 }
 
@@ -115,7 +116,7 @@ void ShortcutsBackendTest::SetUp() {
   base::FilePath shortcuts_database_path =
       profile_dir_.GetPath().Append(kShortcutsDatabaseName);
   backend_ = new ShortcutsBackend(
-      template_url_service_.get(), base::MakeUnique<SearchTermsData>(),
+      template_url_service_.get(), std::make_unique<SearchTermsData>(),
       history_service_.get(), shortcuts_database_path, false);
   ASSERT_TRUE(backend_.get());
   backend_->AddObserver(this);
