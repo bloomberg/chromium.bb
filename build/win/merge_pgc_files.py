@@ -56,9 +56,8 @@ def find_pgomgr(chrome_checkout_dir):
 
   # Always use the x64 version of pgomgr (the x86 one doesn't work on the bot's
   # environment).
-  if toolchain_data['version'] == '2015':
-    pgomgr_dir = os.path.join(toolchain_data['path'], 'VC', 'bin', 'amd64')
-  elif toolchain_data['version'] == '2017':
+  pgomgr_dir = None
+  if toolchain_data['version'] == '2017':
     vc_tools_root = vs_toolchain.FindVCToolsRoot()
     pgomgr_dir = os.path.join(vc_tools_root, 'HostX64', 'x64')
 
