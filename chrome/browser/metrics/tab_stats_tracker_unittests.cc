@@ -7,12 +7,8 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/power_monitor_test_base.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,32 +19,11 @@ namespace {
 
 using TabsStats = TabStatsDataStore::TabsStats;
 
-class TabStatsTrackerBrowserTest : public InProcessBrowserTest {
- public:
-  TabStatsTrackerBrowserTest() : tab_stats_tracker_(nullptr) {}
-
-  void SetUpOnMainThread() override {
-    tab_stats_tracker_ = TabStatsTracker::GetInstance();
-    ASSERT_TRUE(tab_stats_tracker_ != nullptr);
-  }
-
- protected:
-  TabStatsTracker* tab_stats_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStatsTrackerBrowserTest);
-};
-
 class TestTabStatsTracker : public TabStatsTracker {
  public:
   using UmaStatsReportingDelegate = TabStatsTracker::UmaStatsReportingDelegate;
 
-  explicit TestTabStatsTracker(PrefService* pref_service)
-      : TabStatsTracker(pref_service), pref_service_(pref_service) {
-    // Stop the timer to ensure that the stats don't get reported (and reset)
-    // while running the tests.
-    EXPECT_TRUE(timer()->IsRunning());
-    timer()->Stop();
-  }
+  explicit TestTabStatsTracker(PrefService* pref_service);
   ~TestTabStatsTracker() override {}
 
   // Helper functions to update the number of tabs/windows.
@@ -106,6 +81,20 @@ class TestTabStatsTracker : public TabStatsTracker {
   DISALLOW_COPY_AND_ASSIGN(TestTabStatsTracker);
 };
 
+class TestUmaStatsReportingDelegate
+    : public TestTabStatsTracker::UmaStatsReportingDelegate {
+ public:
+  TestUmaStatsReportingDelegate() {}
+
+ protected:
+  // Skip the check that ensures that there's at least one visible window as
+  // there's no window in the context of these tests.
+  bool IsChromeBackgroundedWithoutWindows() override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestUmaStatsReportingDelegate);
+};
+
 class TabStatsTrackerTest : public testing::Test {
  public:
   using UmaStatsReportingDelegate =
@@ -144,73 +133,22 @@ class TabStatsTrackerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(TabStatsTrackerTest);
 };
 
+TestTabStatsTracker::TestTabStatsTracker(PrefService* pref_service)
+    : TabStatsTracker(pref_service), pref_service_(pref_service) {
+  // Stop the timer to ensure that the stats don't get reported (and reset)
+  // while running the tests.
+  EXPECT_TRUE(timer()->IsRunning());
+  timer()->Stop();
+
+  reset_reporting_delegate(new TestUmaStatsReportingDelegate());
+}
+
 // Comparator for base::Bucket values.
 bool CompareHistogramBucket(const base::Bucket& l, const base::Bucket& r) {
   return l.min < r.min;
 }
 
-void EnsureTabStatsMatchExpectations(const TabsStats& expected,
-                                     const TabsStats& actual) {
-  EXPECT_EQ(expected.total_tab_count, actual.total_tab_count);
-  EXPECT_EQ(expected.total_tab_count_max, actual.total_tab_count_max);
-  EXPECT_EQ(expected.max_tab_per_window, actual.max_tab_per_window);
-  EXPECT_EQ(expected.window_count, actual.window_count);
-  EXPECT_EQ(expected.window_count_max, actual.window_count_max);
-}
-
 }  // namespace
-
-IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
-                       TabsAndWindowsAreCountedAccurately) {
-  // Assert that the |TabStatsTracker| instance is initialized during the
-  // creation of the main browser.
-  ASSERT_NE(static_cast<TabStatsTracker*>(nullptr), tab_stats_tracker_);
-
-  TabsStats expected_stats = {};
-
-  // There should be only one window with one tab at startup.
-  expected_stats.total_tab_count = 1;
-  expected_stats.total_tab_count_max = 1;
-  expected_stats.max_tab_per_window = 1;
-  expected_stats.window_count = 1;
-  expected_stats.window_count_max = 1;
-
-  EnsureTabStatsMatchExpectations(expected_stats,
-                                  tab_stats_tracker_->tab_stats());
-
-  // Add a tab and make sure that the counters get updated.
-  AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED);
-  ++expected_stats.total_tab_count;
-  ++expected_stats.total_tab_count_max;
-  ++expected_stats.max_tab_per_window;
-  EnsureTabStatsMatchExpectations(expected_stats,
-                                  tab_stats_tracker_->tab_stats());
-
-  browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
-  --expected_stats.total_tab_count;
-  EnsureTabStatsMatchExpectations(expected_stats,
-                                  tab_stats_tracker_->tab_stats());
-
-  Browser* browser = CreateBrowser(ProfileManager::GetActiveUserProfile());
-  ++expected_stats.total_tab_count;
-  ++expected_stats.window_count;
-  ++expected_stats.window_count_max;
-  EnsureTabStatsMatchExpectations(expected_stats,
-                                  tab_stats_tracker_->tab_stats());
-
-  AddTabAtIndexToBrowser(browser, 1, GURL("about:blank"),
-                         ui::PAGE_TRANSITION_TYPED, true);
-  ++expected_stats.total_tab_count;
-  ++expected_stats.total_tab_count_max;
-  EnsureTabStatsMatchExpectations(expected_stats,
-                                  tab_stats_tracker_->tab_stats());
-
-  CloseBrowserSynchronously(browser);
-  expected_stats.total_tab_count = 1;
-  expected_stats.window_count = 1;
-  EnsureTabStatsMatchExpectations(expected_stats,
-                                  tab_stats_tracker_->tab_stats());
-}
 
 TEST_F(TabStatsTrackerTest, OnResume) {
   // Makes sure that there's no sample initially.
