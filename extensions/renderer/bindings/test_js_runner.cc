@@ -12,9 +12,10 @@ namespace extensions {
 
 namespace {
 
-// NOTE(devlin): This isn't thread-safe. If we have multi-threaded unittests,
-// we'll need to expand this.
+// NOTE(devlin): These aren't thread-safe. If we have multi-threaded unittests,
+// we'll need to expand these.
 bool g_allow_errors = false;
+bool g_suspended = false;
 
 }  // namespace
 
@@ -40,6 +41,24 @@ TestJSRunner::AllowErrors::~AllowErrors() {
   g_allow_errors = false;
 }
 
+TestJSRunner::Suspension::Suspension() {
+  DCHECK(!g_suspended) << "Nested Suspension() blocks are not allowed.";
+  g_suspended = true;
+}
+
+TestJSRunner::Suspension::~Suspension() {
+  DCHECK(g_suspended);
+  g_suspended = false;
+  TestJSRunner* test_runner =
+      static_cast<TestJSRunner*>(JSRunner::GetInstanceForTesting());
+  DCHECK(test_runner);
+  test_runner->Flush();
+}
+
+TestJSRunner::PendingCall::PendingCall() {}
+TestJSRunner::PendingCall::~PendingCall() = default;
+TestJSRunner::PendingCall::PendingCall(PendingCall&& other) = default;
+
 TestJSRunner::TestJSRunner() {}
 TestJSRunner::TestJSRunner(const base::Closure& will_call_js)
     : will_call_js_(will_call_js) {}
@@ -49,6 +68,20 @@ void TestJSRunner::RunJSFunction(v8::Local<v8::Function> function,
                                  v8::Local<v8::Context> context,
                                  int argc,
                                  v8::Local<v8::Value> argv[]) {
+  if (g_suspended) {
+    // Script is suspended. Queue up the call and return.
+    v8::Isolate* isolate = context->GetIsolate();
+    PendingCall call;
+    call.isolate = isolate;
+    call.function.Reset(isolate, function);
+    call.context.Reset(isolate, context);
+    call.arguments.reserve(argc);
+    for (int i = 0; i < argc; ++i)
+      call.arguments.push_back(v8::Global<v8::Value>(isolate, argv[i]));
+    pending_calls_.push_back(std::move(call));
+    return;
+  }
+
   if (will_call_js_)
     will_call_js_.Run();
 
@@ -63,6 +96,8 @@ v8::MaybeLocal<v8::Value> TestJSRunner::RunJSFunctionSync(
     v8::Local<v8::Context> context,
     int argc,
     v8::Local<v8::Value> argv[]) {
+  // Note: deliberately circumvent g_suspension, since this should only be used
+  // in response to JS interaction.
   if (will_call_js_)
     will_call_js_.Run();
 
@@ -72,6 +107,23 @@ v8::MaybeLocal<v8::Value> TestJSRunner::RunJSFunctionSync(
     return result;
   }
   return RunFunctionOnGlobal(function, context, argc, argv);
+}
+
+void TestJSRunner::Flush() {
+  // Move pending_calls_ in case running any pending calls results in more calls
+  // into the JSRunner.
+  std::vector<PendingCall> calls = std::move(pending_calls_);
+  pending_calls_.clear();
+  for (auto& call : calls) {
+    v8::Isolate* isolate = call.isolate;
+    v8::Local<v8::Context> context = call.context.Get(isolate);
+    std::vector<v8::Local<v8::Value>> local_arguments;
+    local_arguments.reserve(call.arguments.size());
+    for (auto& arg : call.arguments)
+      local_arguments.push_back(arg.Get(isolate));
+    RunJSFunctionSync(call.function.Get(isolate), context,
+                      local_arguments.size(), local_arguments.data());
+  }
 }
 
 }  // namespace extensions
