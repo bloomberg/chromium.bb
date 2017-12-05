@@ -4,6 +4,8 @@
 
 #include "components/sync/user_events/user_event_service_impl.h"
 
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
@@ -43,6 +45,12 @@ std::unique_ptr<UserEventSpecifics> AsDetection(
 std::unique_ptr<UserEventSpecifics> AsTrial(
     std::unique_ptr<UserEventSpecifics> specifics) {
   specifics->mutable_field_trial_event();
+  return specifics;
+}
+
+std::unique_ptr<UserEventSpecifics> AsConsent(
+    std::unique_ptr<UserEventSpecifics> specifics) {
+  specifics->mutable_user_consent();
   return specifics;
 }
 
@@ -136,6 +144,13 @@ TEST_F(UserEventServiceImplTest, ShouldRecordNoHistory) {
   service.RecordUserEvent(WithNav(AsTest(Event())));
   EXPECT_EQ(0u, processor().put_multimap().size());
   service.RecordUserEvent(AsTest(Event()));
+}
+
+TEST_F(UserEventServiceImplTest, ShouldRecordUserConsentNoHistory) {
+  TestSyncService no_history_sync_service(true, false, ModelTypeSet());
+  UserEventServiceImpl service(&no_history_sync_service, MakeBridge());
+  service.RecordUserEvent(AsConsent(Event()));
+  // UserConsent recording doesn't need history sync to be enabled.
   EXPECT_EQ(1u, processor().put_multimap().size());
 }
 

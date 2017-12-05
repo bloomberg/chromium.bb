@@ -6,10 +6,14 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using sync_pb::UserEventSpecifics;
 
 namespace consent_auditor {
 
@@ -85,6 +89,10 @@ class ConsentAuditorTest : public testing::Test {
 
   PrefService* pref_service() const { return pref_service_.get(); }
 
+  syncer::FakeUserEventService* user_event_service() {
+    return user_event_service_.get();
+  }
+
  private:
   std::unique_ptr<ConsentAuditor> consent_auditor_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -150,6 +158,47 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
 
   // We still have two records.
   EXPECT_EQ(2u, consents->size());
+}
+
+TEST_F(ConsentAuditorTest, RecordingEnabled) {
+  consent_auditor()->RecordGaiaConsent("feature1", {}, {},
+                                       ConsentAuditor::ConsentStatus::GIVEN);
+  auto& events = user_event_service()->GetRecordedUserEvents();
+  EXPECT_EQ(1U, events.size());
+}
+
+TEST_F(ConsentAuditorTest, RecordingDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
+  consent_auditor()->RecordGaiaConsent("feature1", {}, {},
+                                       ConsentAuditor::ConsentStatus::GIVEN);
+  auto& events = user_event_service()->GetRecordedUserEvents();
+  EXPECT_EQ(0U, events.size());
+}
+
+TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
+  std::vector<int> kMessageIds = {12, 37, 42};
+  std::vector<std::string> kPlaceholders = {"OK.", "user@example.com"};
+  base::Time t1 = base::Time::Now();
+  consent_auditor()->RecordGaiaConsent("feature1", kMessageIds, kPlaceholders,
+                                       ConsentAuditor::ConsentStatus::GIVEN);
+  base::Time t2 = base::Time::Now();
+  auto& events = user_event_service()->GetRecordedUserEvents();
+  EXPECT_EQ(1U, events.size());
+  EXPECT_LE(t1.since_origin().InMicroseconds(), events[0].event_time_usec());
+  EXPECT_GE(t2.since_origin().InMicroseconds(), events[0].event_time_usec());
+  EXPECT_FALSE(events[0].has_navigation_id());
+  EXPECT_TRUE(events[0].has_user_consent());
+  auto& consent = events[0].user_consent();
+  EXPECT_EQ("feature1", consent.feature());
+  EXPECT_EQ(3, consent.consent_grd_ids_size());
+  EXPECT_EQ(12, consent.consent_grd_ids(0));
+  EXPECT_EQ(37, consent.consent_grd_ids(1));
+  EXPECT_EQ(42, consent.consent_grd_ids(2));
+  EXPECT_EQ(2, consent.placeholder_replacements_size());
+  EXPECT_EQ("OK.", consent.placeholder_replacements(0));
+  EXPECT_EQ("user@example.com", consent.placeholder_replacements(1));
+  EXPECT_EQ(kCurrentAppLocale, consent.locale());
 }
 
 }  // namespace consent_auditor
