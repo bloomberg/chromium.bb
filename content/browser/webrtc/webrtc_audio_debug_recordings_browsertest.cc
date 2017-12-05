@@ -93,9 +93,8 @@ class WebRtcAudioDebugRecordingsBrowserTest
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
-#elif (defined(OS_ANDROID) || defined(OS_WIN))
+#elif defined(OS_ANDROID)
 // Renderer crashes on Android M. https://crbug.com/535728.
-// Flaky on Windows. https://crbug.com/783790
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #else
 #define MAYBE_CallWithAudioDebugRecordings CallWithAudioDebugRecordings
