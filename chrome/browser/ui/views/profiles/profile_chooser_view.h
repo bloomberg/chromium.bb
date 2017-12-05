@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -155,7 +156,15 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void RemoveAccount();
 
   // Creates a header for signin and sync error surfacing for the user menu.
-  views::View* CreateSyncErrorViewIfNeeded();
+  views::View* CreateSyncErrorViewIfNeeded(const AvatarMenu::Item& avatar_item);
+
+  // Creates a view with a red HoverButton, which displays the profile icon
+  // associated with |avatar_item| and the strings associated with
+  // |title_string_id| and |subtitle_string_id|.
+  views::View* CreateDiceSyncErrorView(const AvatarMenu::Item& avatar_item,
+                                       sync_ui_util::AvatarSyncErrorType error,
+                                       int title_string_id,
+                                       int subtitle_string_id);
 
   bool ShouldShowGoIncognito() const;
 

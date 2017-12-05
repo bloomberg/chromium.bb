@@ -54,6 +54,14 @@ class HoverButton : public views::LabelButton {
   // non-empty subtitle.
   void SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior);
 
+  // Sets the text style of the title considering the color of the background.
+  // Passing |background_color| makes sure that the text color will not be
+  // changed to a color that is not readable on the specified background.
+  void SetTitleTextStyle(views::style::TextStyle text_style,
+                         SkColor background_color);
+
+  void SetSubtitleColor(SkColor color);
+
  protected:
   // views::LabelButton:
   void StateChanged(ButtonState old_state) override;

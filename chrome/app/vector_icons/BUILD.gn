@@ -77,6 +77,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "supervisor_account.icon",
     "supervisor_account_circle.icon",
     "sync_circle.icon",
+    "sync_error_circle.icon",
     "sync_problem.icon",
     "tab.icon",
     "tab_audio.1x.icon",
