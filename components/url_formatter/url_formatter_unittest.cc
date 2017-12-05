@@ -406,6 +406,19 @@ const IDNTestCase idn_cases[] = {
      L"123.com",
      false},
 
+    // wmhtb.com
+    {"xn--l1acpvx.com", L"\x0448\x043c\x043d\x0442\x044c.com", false},
+    // щмнть.com
+    {"xn--l1acpzs.com", L"\x0449\x043c\x043d\x0442\x044c.com", false},
+    // шмнтв.com
+    {"xn--b1atdu1a.com", L"\x0448\x043c\x043d\x0442\x0432.com", false},
+    // ഠട345.com
+    {"xn--345-jtke.com", L"\x0d20\x0d1f" L"345.com", false},
+
+    // At one point the skeleton of 'w' was 'vv', ensure that
+    // that it's treated as 'w'.
+    {"xn--wder-qqa.com", L"w\x00f3" L"der.com", false},
+
     // Mixed digits: the first two will also fail mixed script test
     // Latin + ASCII digit + Deva digit
     {"xn--asc1deva-j0q.co.in", L"asc1deva\x0967.co.in", false},
@@ -696,9 +709,6 @@ const IDNTestCase idn_cases[] = {
      true},
     // Can start with a RTL and end with AN
     {"xn--mgbjq0r.eg", L"\x062c\x0627\x0631\x0662.eg", true},
-    // At one point the skeleton of 'w' was 'vv', ensure that
-    // that it's treated as 'w'.
-    {"xn--wnderlist-58a.com", L"w\x00fanderlist.com", false},
 
     // Extremely rare Latin letters
     // Latin Ext B - Pinyin: ǔnion.com
