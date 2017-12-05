@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -41,7 +42,7 @@ class OmniboxPopupModelTest : public ::testing::Test {
  public:
   OmniboxPopupModelTest()
       : view_(&controller_),
-        model_(&view_, &controller_, base::MakeUnique<TestOmniboxClient>()),
+        model_(&view_, &controller_, std::make_unique<TestOmniboxClient>()),
         popup_model_(&popup_view_, &model_) {}
 
   OmniboxEditModel* model() { return &model_; }

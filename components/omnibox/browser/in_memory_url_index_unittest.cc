@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -278,7 +277,7 @@ void InMemoryURLIndexTest::SetUp() {
   }
 
   // Set up a simple template URL service with a default search engine.
-  template_url_service_ = base::MakeUnique<TemplateURLService>(
+  template_url_service_ = std::make_unique<TemplateURLService>(
       kTemplateURLData, arraysize(kTemplateURLData));
   TemplateURL* template_url = template_url_service_->GetTemplateURLForKeyword(
       base::ASCIIToUTF16(kDefaultTemplateURLKeyword));

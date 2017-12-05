@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/base_search_provider.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -92,7 +93,7 @@ class BaseSearchProviderTest : public testing::Test {
 TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   TemplateURLData data;
   data.SetURL("http://foo.com/url?bar={searchTerms}");
-  auto template_url = base::MakeUnique<TemplateURL>(data);
+  auto template_url = std::make_unique<TemplateURL>(data);
 
   TestBaseSearchProvider::MatchMap map;
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
@@ -178,7 +179,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
 TEST_F(BaseSearchProviderTest, MatchTailSuggestionProperly) {
   TemplateURLData data;
   data.SetURL("http://foo.com/url?bar={searchTerms}");
-  auto template_url = base::MakeUnique<TemplateURL>(data);
+  auto template_url = std::make_unique<TemplateURL>(data);
 
   AutocompleteInput autocomplete_input(
       base::ASCIIToUTF16("weather"), 7, metrics::OmniboxEventProto::BLANK,

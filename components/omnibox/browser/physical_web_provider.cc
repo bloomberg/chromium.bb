@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -267,7 +266,7 @@ void PhysicalWebProvider::ConstructQuerySuggestMatches(
   bookmarks::TitledUrlIndex index(nullptr);
   std::vector<std::unique_ptr<PhysicalWebNode>> nodes;
   for (const auto& metadata_item : *metadata_list) {
-    nodes.push_back(base::MakeUnique<PhysicalWebNode>(metadata_item));
+    nodes.push_back(std::make_unique<PhysicalWebNode>(metadata_item));
     index.Add(nodes.back().get());
   }
 

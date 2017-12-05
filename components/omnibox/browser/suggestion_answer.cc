@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -195,7 +196,7 @@ SuggestionAnswer::~SuggestionAnswer() {}
 // static
 std::unique_ptr<SuggestionAnswer> SuggestionAnswer::ParseAnswer(
     const base::DictionaryValue* answer_json) {
-  auto result = base::MakeUnique<SuggestionAnswer>();
+  auto result = std::make_unique<SuggestionAnswer>();
 
   const base::ListValue* lines_json;
   if (!answer_json->GetList(kAnswerJsonLines, &lines_json) ||
