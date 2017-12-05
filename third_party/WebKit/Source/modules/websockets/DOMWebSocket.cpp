@@ -755,8 +755,9 @@ void DOMWebSocket::DidClose(
                    code != WebSocketChannel::kCloseEventCodeAbnormalClosure;
   state_ = kClosed;
 
-  event_queue_->Dispatch(CloseEvent::Create(was_clean, code, reason));
   ReleaseChannel();
+
+  event_queue_->Dispatch(CloseEvent::Create(was_clean, code, reason));
 }
 
 void DOMWebSocket::RecordSendTypeHistogram(WebSocketSendType type) {
