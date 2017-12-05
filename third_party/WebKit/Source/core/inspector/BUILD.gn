@@ -226,9 +226,8 @@ jumbo_source_set("generated") {
 }
 
 action("protocol_convert_to_json") {
-  script = "ConvertProtocolToJSON.py"
+  script = _inspector_protocol_dir + "/ConvertProtocolToJSON.py"
   inputs = [
-    "ConvertProtocolToJSON.py",
     "browser_protocol.pdl",
   ]
   output_file = "$blink_core_output_dir/inspector/browser_protocol.json"

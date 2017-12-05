@@ -61,7 +61,9 @@ def parse(data):
         trimLine = line.strip()
 
         if trimLine.startswith('#'):
-            description += trimLine[1:]
+            if len(description):
+              description += '\n'
+            description += trimLine[2:]
             continue
         else:
             nukeDescription = True
@@ -168,11 +170,11 @@ def main(argv):
     input_file = open(file_name, "r")
     pdl_string = input_file.read()
     protocol = parse(pdl_string)
-    output_file = open(argv[0].replace('.pdl', '.json'), "w")
+    output_file = open(argv[0].replace('.pdl', '.json'), 'wb')
     json.dump(protocol, output_file, indent=4, separators=(',', ': '))
     output_file.close()
 
-    output_file = open(os.path.normpath(argv[1]), "w")
+    output_file = open(os.path.normpath(argv[1]), 'wb')
     json.dump(protocol, output_file, indent=4, separators=(',', ': '))
     output_file.close()
 

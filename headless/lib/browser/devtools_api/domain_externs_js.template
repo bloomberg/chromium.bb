@@ -43,7 +43,7 @@ chromium.DevTools.{{domain.domain}}.prototype.removeEventListener = function(id)
   {% if not "enum" in type %}{% continue %}{% endif %}
 /**
   {% if type.description %}
- * {{type.description}}
+ * {{type.description.replace('\n', '\n * ')}}
  *
   {% endif %}
  * @enum {string}
@@ -61,12 +61,12 @@ chromium.DevTools.{{domain.domain}}.{{type.id}} = {
   {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
 /**
   {% if type.description %}
- * {{type.description}}
+ * {{type.description.replace('\n', '\n * ')}}
  *
   {% endif %}
   {% for property in type.properties %}
     {% if property.description %}
- * {{property.name}}: {{property.description}}
+ * {{property.name}}: {{property.description.replace('\n', '\n *    ')}}
     {% endif %}
   {% endfor %}
  *
@@ -96,7 +96,7 @@ chromium.DevTools.{{domain.domain}}.{{type.id}};
 
 /**
   {% if command.description %}
-  * {{ command.description }}
+  * {{ command.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   {% if command.parameters|length > 0 %}
@@ -129,7 +129,7 @@ chromium.DevTools.Experimental{{domain.domain}}.prototype.{{method_name}} = func
 
 /**
   {% if event.description %}
-  * {{ event.description }}
+  * {{ event.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   * @param {{param_type}} listener
@@ -148,7 +148,7 @@ chromium.DevTools.Experimental{{domain.domain}}.prototype.on{{event.name | to_ti
 
 /**
   {% if command.description %}
-  * {{ command.description }}
+  * {{ command.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   {% if command.parameters|length > 0 %}
@@ -182,7 +182,7 @@ chromium.DevTools.{{domain.domain}}.prototype.{{method_name}} = function() {};
 
 /**
   {% if event.description %}
-  * {{ event.description }}
+  * {{ event.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   * @param {{param_type}} listener
