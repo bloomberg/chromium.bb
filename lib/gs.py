@@ -40,6 +40,8 @@ except (ImportError, RuntimeError):
   import mock
   ts_mon = mock.Mock()
 
+# This bucket has the allAuthenticatedUsers:READER ACL.
+AUTHENTICATION_BUCKET = 'gs://chromeos-authentication-bucket/'
 
 # Public path, only really works for files.
 PUBLIC_BASE_HTTPS_URL = 'https://storage.googleapis.com/'
@@ -618,9 +620,10 @@ class GSContext(object):
 
   def _TestGSLs(self):
     """Quick test of gsutil functionality."""
-    # "gsutil ls" lists the buckets you have access to, if you can auth
-    # with any permissions at all.
-    result = self.DoCommand(['ls'], retries=0, debug_level=logging.DEBUG,
+    # The bucket in question is readable by any authenticated account.
+    # If we can list it's contents, we have valid authentication.
+    cmd = ['ls', AUTHENTICATION_BUCKET]
+    result = self.DoCommand(cmd, retries=0, debug_level=logging.DEBUG,
                             redirect_stderr=True, error_code_ok=True)
 
     # Did we fail with an authentication error?

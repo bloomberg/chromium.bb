@@ -1603,20 +1603,24 @@ detail=A nonempty x-goog-project-id header is required for this request."""
   def setUp(self):
     self.boto_file = os.path.join(self.tempdir, 'boto_file')
     self.ctx = gs.GSContext(boto_file=self.boto_file)
+    self.auth_cmd = ['ls', gs.AUTHENTICATION_BUCKET]
 
   def testGSLsSkippableError(self):
     """Benign GS error."""
-    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_BENIGN)
+    self.gs_mock.AddCmdResult(self.auth_cmd,
+                              returncode=1, error=self.GS_LS_BENIGN)
     self.assertTrue(self.ctx._TestGSLs())
 
   def testGSLsAuthorizationError1(self):
     """GS authorization error 1."""
-    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR)
+    self.gs_mock.AddCmdResult(self.auth_cmd,
+                              returncode=1, error=self.GS_LS_ERROR)
     self.assertFalse(self.ctx._TestGSLs())
 
   def testGSLsError2(self):
     """GS authorization error 2."""
-    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR2)
+    self.gs_mock.AddCmdResult(self.auth_cmd,
+                              returncode=1, error=self.GS_LS_ERROR2)
     self.assertFalse(self.ctx._TestGSLs())
 
   def _WriteBotoFile(self, contents, *_args, **_kwargs):
@@ -1624,11 +1628,13 @@ detail=A nonempty x-goog-project-id header is required for this request."""
 
   def testInitGSLsFailButSuccess(self):
     """Invalid GS Config, but we config properly."""
-    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR)
+    self.gs_mock.AddCmdResult(self.auth_cmd,
+                              returncode=1, error=self.GS_LS_ERROR)
     self.ctx._InitBoto()
 
   def _AddLsConfigResult(self, side_effect=None):
-    self.gs_mock.AddCmdResult(['ls'], returncode=1, error=self.GS_LS_ERROR)
+    self.gs_mock.AddCmdResult(self.auth_cmd,
+                              returncode=1, error=self.GS_LS_ERROR)
     self.gs_mock.AddCmdResult(['config'], returncode=1, side_effect=side_effect)
 
   def testGSLsFailAndConfigError(self):
