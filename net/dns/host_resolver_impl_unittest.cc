@@ -1652,10 +1652,6 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
  protected:
   // testing::Test implementation:
   void SetUp() override {
-    AddDnsRule("nodomain", dns_protocol::kTypeA, MockDnsClientRule::NODOMAIN,
-               false);
-    AddDnsRule("nodomain", dns_protocol::kTypeAAAA, MockDnsClientRule::NODOMAIN,
-               false);
     AddDnsRule("nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL, false);
     AddDnsRule("nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL, false);
     AddDnsRule("ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
@@ -2690,37 +2686,6 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi) {
   EXPECT_TRUE(requests_[3]->HasOneAddress("::3", 80));
   EXPECT_TRUE(requests_[4]->HasOneAddress("1.0.0.1", 80));
   EXPECT_TRUE(requests_[5]->HasOneAddress("::2", 80));
-}
-
-TEST_F(HostResolverImplDnsTest, NotFoundTTL) {
-  CreateResolver();
-  set_fallback_to_proctask(false);
-  ChangeDnsConfig(CreateValidDnsConfig());
-  // NODATA
-  Request* request = CreateRequest("empty");
-  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
-  EXPECT_THAT(request->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
-  EXPECT_THAT(request->NumberOfAddresses(), 0);
-  HostCache::Key key(request->info().hostname(), ADDRESS_FAMILY_UNSPECIFIED, 0);
-  HostCache::EntryStaleness staleness;
-  const HostCache::Entry* cache_entry =
-      resolver_->GetHostCache()->Lookup(key, base::TimeTicks::Now());
-  EXPECT_TRUE(!!cache_entry);
-  EXPECT_TRUE(cache_entry->has_ttl());
-  EXPECT_THAT(cache_entry->ttl(), base::TimeDelta::FromSeconds(86400));
-
-  // NXDOMAIN
-  request = CreateRequest("nodomain");
-  EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
-  EXPECT_THAT(request->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
-  EXPECT_THAT(request->NumberOfAddresses(), 0);
-  HostCache::Key nxkey(request->info().hostname(), ADDRESS_FAMILY_UNSPECIFIED,
-                       0);
-  cache_entry =
-      resolver_->GetHostCache()->Lookup(nxkey, base::TimeTicks::Now());
-  EXPECT_TRUE(!!cache_entry);
-  EXPECT_TRUE(cache_entry->has_ttl());
-  EXPECT_THAT(cache_entry->ttl(), base::TimeDelta::FromSeconds(86400));
 }
 
 TEST_F(HostResolverImplTest, ResolveLocalHostname) {
