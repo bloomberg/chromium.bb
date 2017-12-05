@@ -5,6 +5,8 @@
 #ifndef UI_AURA_WINDOW_TREE_HOST_H_
 #define UI_AURA_WINDOW_TREE_HOST_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -168,6 +170,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(ui::KeyEvent* event) final;
+
+  // Returns the id of the display. Default implementation queries Screen.
+  virtual int64_t GetDisplayId();
 
   // Returns the EventSource responsible for dispatching events to the window
   // tree.
