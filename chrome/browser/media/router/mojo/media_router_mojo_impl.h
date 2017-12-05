@@ -296,6 +296,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     bool SetAvailabilityForProvider(MediaRouteProviderId provider_id,
                                     SinkAvailability availability);
 
+    // Returns true if the availability for the provider is not UNAVAILABLE.
+    bool IsAvailableForProvider(MediaRouteProviderId provider_id) const;
+
     // Returns true if there is a provider whose sink availability isn't
     // UNAVAILABLE.
     bool IsAvailable() const;
@@ -407,7 +410,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   std::string instance_id_;
 
   // The last reported sink availability from the media route providers.
-  ProviderSinkAvailability availability_;
+  ProviderSinkAvailability sink_availability_;
 
   // Bindings for Mojo pointers to |this| held by media route providers.
   mojo::BindingSet<mojom::MediaRouter> bindings_;

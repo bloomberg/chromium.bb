@@ -157,6 +157,39 @@ TEST_F(WiredDisplayMediaRouteProviderTest, GetDisplaysAsSinks) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(WiredDisplayMediaRouteProviderTest, NotifyOnDisplayChange) {
+  const std::string sink_id1 = GetSinkId(sink_display1_);
+  provider_pointer_->StartObservingMediaSinks(kPresentationSource);
+  base::RunLoop().RunUntilIdle();
+
+  // Add an external display. MediaRouter should be notified of the sink and the
+  // sink availability change.
+  provider_->set_all_displays({primary_display_, sink_display1_});
+  EXPECT_CALL(router_, OnSinkAvailabilityUpdated(
+                           MediaRouteProviderId::WIRED_DISPLAY,
+                           mojom::MediaRouter::SinkAvailability::PER_SOURCE));
+  EXPECT_CALL(router_,
+              OnSinksReceived(MediaRouteProviderId::WIRED_DISPLAY, _, _, _))
+      .WillOnce(WithArg<2>(
+          Invoke([&sink_id1](const std::vector<MediaSinkInternal>& sinks) {
+            EXPECT_EQ(sinks.size(), 1u);
+            EXPECT_EQ(sinks[0].sink().id(), sink_id1);
+          })));
+  provider_->OnDisplayAdded(sink_display1_);
+  base::RunLoop().RunUntilIdle();
+
+  // Remove the external display. MediaRouter should be notified of the lack of
+  // sinks.
+  provider_->set_all_displays({primary_display_});
+  EXPECT_CALL(router_, OnSinkAvailabilityUpdated(
+                           MediaRouteProviderId::WIRED_DISPLAY,
+                           mojom::MediaRouter::SinkAvailability::UNAVAILABLE));
+  EXPECT_CALL(router_, OnSinksReceived(MediaRouteProviderId::WIRED_DISPLAY, _,
+                                       IsEmpty(), _));
+  provider_->OnDisplayRemoved(sink_display1_);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(WiredDisplayMediaRouteProviderTest, NoSinksForNonPresentationSource) {
   EXPECT_CALL(router_,
               OnSinksReceived(kProviderId, kNonPresentationSource, _, _))
