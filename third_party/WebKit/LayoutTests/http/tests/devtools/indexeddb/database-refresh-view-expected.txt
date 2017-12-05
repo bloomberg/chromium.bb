@@ -18,28 +18,61 @@ Dumping IndexedDB tree:
             Index: testIndex
         Object store: testObjectStore2
             Index: testIndex
+Dumping ObjectStore data:
+    Object store: testObjectStore1
+            Number of entries: 0
+            Index: testIndex
+                Number of entries: 0
+    Object store: testObjectStore2
+            Number of entries: 0
+            Index: testIndex
+                Number of entries: 0
 Added testObjectStore1 entry.
 Dumping ObjectStore data:
     Object store: testObjectStore1
-            (no entries)
+            Number of entries: 0
+            Index: testIndex
+                Number of entries: 0
     Object store: testObjectStore2
-            (no entries)
+            Number of entries: 0
+            Index: testIndex
+                Number of entries: 0
 Refreshed database view.
 Dumping ObjectStore data:
     Object store: testObjectStore1
+            Number of entries: 1
             Key = testKey, value = [object Object]
+            Index: testIndex
+                Number of entries: 1
+                Key = testKey, value = [object Object]
     Object store: testObjectStore2
-            (no entries)
+            Number of entries: 0
+            Index: testIndex
+                Number of entries: 0
 Added testObjectStore2 entry.
 Dumping ObjectStore data:
     Object store: testObjectStore1
+            Number of entries: 1
             Key = testKey, value = [object Object]
+            Index: testIndex
+                Number of entries: 1
+                Key = testKey, value = [object Object]
     Object store: testObjectStore2
-            (no entries)
+            Number of entries: 0
+            Index: testIndex
+                Number of entries: 0
 Right-click refreshed database.
 Dumping ObjectStore data:
     Object store: testObjectStore1
+            Number of entries: 1
             Key = testKey, value = [object Object]
+            Index: testIndex
+                Number of entries: 1
+                Key = testKey, value = [object Object]
     Object store: testObjectStore2
+            Number of entries: 1
             Key = testKey2, value = [object Object]
+            Index: testIndex
+                Number of entries: 1
+                Key = testKey2, value = [object Object]
 
