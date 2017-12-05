@@ -538,14 +538,6 @@ bool MediaRouterMojoImpl::ProviderSinkAvailability::SetAvailabilityForProvider(
   }
 }
 
-bool MediaRouterMojoImpl::ProviderSinkAvailability::IsAvailableForProvider(
-    mojom::MediaRouteProvider::Id provider_id) const {
-  const auto& it = availabilities_.find(provider_id);
-  return it == availabilities_.end()
-             ? false
-             : it->second != SinkAvailability::UNAVAILABLE;
-}
-
 bool MediaRouterMojoImpl::ProviderSinkAvailability::IsAvailable() const {
   return overall_availability_ != SinkAvailability::UNAVAILABLE;
 }
@@ -586,11 +578,9 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
 
   // If sink availability is UNAVAILABLE or the query isn't new, then there is
   // no need to call MRPs.
-  if (is_new_query) {
-    for (const auto& provider : media_route_providers_) {
-      if (sink_availability_.IsAvailableForProvider(provider.first))
-        provider.second->StartObservingMediaSinks(source_id);
-    }
+  if (availability_.IsAvailable() && is_new_query) {
+    for (const auto& provider : media_route_providers_)
+      provider.second->StartObservingMediaSinks(source_id);
   }
   return true;
 }
@@ -601,8 +591,9 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
 
   const MediaSource::Id& source_id = observer->source().id();
   auto it = sinks_queries_.find(source_id);
-  if (it == sinks_queries_.end() || !it->second->HasObserver(observer))
+  if (it == sinks_queries_.end() || !it->second->HasObserver(observer)) {
     return;
+  }
 
   // If we are removing the final observer for the source, then stop
   // observing sinks for it.
@@ -612,8 +603,8 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
   if (!it->second->HasObservers()) {
     // Only ask MRPs to stop observing media sinks if there are sinks available.
     // Otherwise, the MRPs would have discarded the queries already.
-    for (const auto& provider : media_route_providers_) {
-      if (sink_availability_.IsAvailableForProvider(provider.first))
+    if (availability_.IsAvailable()) {
+      for (const auto& provider : media_route_providers_)
         provider.second->StopObservingMediaSinks(source_id);
     }
     sinks_queries_.erase(source_id);
@@ -762,15 +753,16 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
 void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
     MediaRouteProviderId provider_id,
     SinkAvailability availability) {
-  if (!sink_availability_.SetAvailabilityForProvider(provider_id, availability))
+  if (!availability_.SetAvailabilityForProvider(provider_id, availability))
     return;
 
-  if (availability != SinkAvailability::UNAVAILABLE) {
-    // Sinks are now available. Tell the MRP to start all sink queries again.
-    auto& provider = media_route_providers_[provider_id];
-    for (const auto& source_and_query : sinks_queries_)
-      provider->StartObservingMediaSinks(source_and_query.first);
-  } else if (!sink_availability_.IsAvailable()) {
+  if (availability_.IsAvailable()) {
+    // Sinks are now available. Tell MRPs to start all sink queries again.
+    for (const auto& source_and_query : sinks_queries_) {
+      for (const auto& provider : media_route_providers_)
+        provider.second->StartObservingMediaSinks(source_and_query.first);
+    }
+  } else {
     // Sinks are no longer available. MRPs have already removed all sink
     // queries.
     for (auto& source_and_query : sinks_queries_)
@@ -815,7 +807,7 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider(
     MediaRouteProviderId provider_id) {
   const auto& provider = media_route_providers_[provider_id];
   // Sink queries.
-  if (sink_availability_.IsAvailableForProvider(provider_id)) {
+  if (availability_.IsAvailable()) {
     for (const auto& it : sinks_queries_)
       provider->StartObservingMediaSinks(it.first);
   }
