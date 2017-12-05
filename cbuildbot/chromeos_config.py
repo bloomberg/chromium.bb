@@ -732,7 +732,7 @@ _toolchains_from_source = frozenset([
 
 _noimagetest_boards = _lakitu_boards | _loonix_boards | _termina_boards
 
-_nohwqual_boards = (_lakitu_boards | _loonix_boards
+_nohwqual_boards = (_lakitu_boards | _lassen_boards | _loonix_boards
                     | _termina_boards | _beaglebone_boards)
 
 _norootfs_verification_boards = frozenset([
@@ -1148,6 +1148,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'lassen',
       sync_chrome=False,
       chrome_sdk=False,
+      image_test=False,
   )
 
   site_config.AddTemplate(
