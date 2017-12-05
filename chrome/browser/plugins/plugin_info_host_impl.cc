@@ -164,11 +164,6 @@ PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
   allow_outdated_plugins_.MoveToThread(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
-  always_authorize_plugins_.Init(prefs::kPluginsAlwaysAuthorize,
-                                 profile->GetPrefs());
-  always_authorize_plugins_.MoveToThread(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
   run_all_flash_in_allow_mode_.Init(prefs::kRunAllFlashInAllowMode,
                                     profile->GetPrefs());
   run_all_flash_in_allow_mode_.MoveToThread(
@@ -180,7 +175,6 @@ PluginInfoHostImpl::Context::~Context() {}
 
 void PluginInfoHostImpl::Context::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  always_authorize_plugins_.Destroy();
   allow_outdated_plugins_.Destroy();
   run_all_flash_in_allow_mode_.Destroy();
 }
@@ -219,7 +213,6 @@ void PluginInfoHostImpl::DestructOnBrowserThread() const {
 void PluginInfoHostImpl::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
-  registry->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
   registry->RegisterBooleanPref(prefs::kRunAllFlashInAllowMode, false);
 }
 
@@ -373,7 +366,6 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
 
   // Check if the plugin is crashing too much.
   if (PluginService::GetInstance()->IsPluginUnstable(plugin.path) &&
-      !always_authorize_plugins_.GetValue() &&
       plugin_setting != CONTENT_SETTING_BLOCK && uses_default_content_setting) {
     *status = chrome::mojom::PluginStatus::kUnauthorized;
     return;

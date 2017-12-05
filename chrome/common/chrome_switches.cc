@@ -42,10 +42,6 @@ const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
 // Allows Web Push notifications that do not show a notification.
 const char kAllowSilentPush[] = "allow-silent-push";
 
-// Prevents Chrome from requiring authorization to run certain widely installed
-// but less commonly used plugins.
-const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
-
 // Specifies that the associated value should be launched in "application"
 // mode.
 const char kApp[]                           = "app";
