@@ -29,6 +29,16 @@ extra_trybots = [
     "mastername": "master.tryserver.chromium.android",
     "buildernames": ["android_optional_gpu_tests_rel"]
   },
+  # Include the ANGLE tryservers which run the WebGL conformance tests
+  # in some non-default configurations.
+  {
+    "mastername": "master.tryserver.chromium.angle",
+    "buildernames": ["linux_angle_rel_ng"]
+  },
+  {
+    "mastername": "master.tryserver.chromium.angle",
+    "buildernames": ["win_angle_rel_ng"]
+  },
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
