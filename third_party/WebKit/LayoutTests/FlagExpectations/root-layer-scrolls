@@ -3,7 +3,6 @@ crbug.com/417782 compositing/layer-creation/iframe-background-attachment-fixed.h
 crbug.com/417782 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/417782 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/417782 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
-crbug.com/417782 [ Linux Mac ] fast/dom/horizontal-scrollbar-when-dir-change.html [ Failure ]
 crbug.com/417782 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure ]
 crbug.com/417782 fast/dom/scroll-reveal-left-overflow.html [ Failure ]
 crbug.com/417782 fast/dom/scroll-reveal-top-overflow.html [ Failure ]
