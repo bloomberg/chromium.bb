@@ -28,7 +28,6 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -713,7 +712,7 @@ views::View* ProfileChooserView::CreateProfileChooserView(
       current_profile_view = CreateCurrentProfileView(item, false);
       if (!IsProfileChooser(view_mode_))
         current_profile_accounts = CreateCurrentProfileAccountsView(item);
-      sync_error_view = CreateSyncErrorViewIfNeeded();
+      sync_error_view = CreateSyncErrorViewIfNeeded(item);
     } else {
       other_profiles.push_back(i);
     }
@@ -732,8 +731,11 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     option_buttons_view = CreateOptionsView(false, avatar_menu);
   }
 
-  layout->StartRow(1, 0);
-  layout->AddView(current_profile_view);
+  if (!(signin::IsDiceEnabledForProfile(browser_->profile()->GetPrefs()) &&
+        sync_error_view)) {
+    layout->StartRow(1, 0);
+    layout->AddView(current_profile_view);
+  }
 
   if (!IsProfileChooser(view_mode_)) {
     DCHECK(current_profile_accounts);
@@ -758,7 +760,8 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   return view;
 }
 
-views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
+views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
+    const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(browser_->profile());
@@ -770,6 +773,12 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
     return nullptr;
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+
+  if (error != sync_ui_util::SUPERVISED_USER_AUTH_ERROR &&
+      signin::IsDiceEnabledForProfile(browser_->profile()->GetPrefs())) {
+    return CreateDiceSyncErrorView(avatar_item, error, button_string_id,
+                                   content_string_id);
+  }
 
   // Sets an overall horizontal layout.
   views::View* view = new views::View();
@@ -788,8 +797,8 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
 
   // Adds a vertical view to organize the error title, message, and button.
   views::View* vertical_view = new views::View();
-  const int small_vertical_spacing = provider->GetDistanceMetric(
-      DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+  const int small_vertical_spacing =
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   views::BoxLayout* vertical_layout = new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(), small_vertical_spacing);
   vertical_layout->set_cross_axis_alignment(
@@ -829,6 +838,42 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
   }
 
   view->AddChildView(vertical_view);
+  return view;
+}
+
+views::View* ProfileChooserView::CreateDiceSyncErrorView(
+    const AvatarMenu::Item& avatar_item,
+    sync_ui_util::AvatarSyncErrorType error,
+    int title_string_id,
+    int subtitle_string_id) {
+  // Creates a view containing a red hover button with a transparent border of
+  // width |kMenuEdgeMargin| around it. The hover button contains the profile
+  // photo, given by |avatar_item.icon|, badged with the sync-error icon. The
+  // title of the hover button describes the action to take and the subtitle
+  // gives more information about the error. A view has to be used here instead
+  // of hover_button->SetBorder() because the latter creates a border with the
+  // same color as the button.
+  views::View* view = new views::View();
+  view->SetLayoutManager(new views::FillLayout());
+  view->SetBorder(
+      views::CreateSolidBorder(kMenuEdgeMargin, SK_ColorTRANSPARENT));
+  auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
+      BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR, avatar_item.icon);
+  HoverButton* hover_button =
+      new HoverButton(this, std::move(current_profile_photo),
+                      l10n_util::GetStringUTF16(title_string_id),
+                      l10n_util::GetStringUTF16(subtitle_string_id));
+  hover_button->SetBackground(views::CreateSolidBackground(gfx::kGoogleRed700));
+  // The sync-error hover button is supposed to look similar to a default
+  // button, therefore the title should have the same style as the title of a
+  // default button.
+  hover_button->SetTitleTextStyle(views::style::STYLE_DIALOG_BUTTON_DEFAULT,
+                                  gfx::kGoogleRed700);
+  hover_button->SetSubtitleColor(SK_ColorWHITE);
+
+  view->AddChildView(hover_button);
+  sync_error_button_ = hover_button;
+  sync_error_button_->set_id(error);
   return view;
 }
 

@@ -99,11 +99,11 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   // more vertical spacing.
   constexpr int kLargeIconHeight = 20;
   const int icon_height = icon_view->GetPreferredSize().height();
+  const bool is_small_icon = icon_height <= kLargeIconHeight;
   int remaining_vert_spacing =
-      icon_height <= kLargeIconHeight
+      is_small_icon
           ? layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL)
-          : layout_provider->GetDistanceMetric(
-                views::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING);
+          : 12;
   const int total_height = icon_height + remaining_vert_spacing * 2;
 
   // If the padding given to the top and bottom of the HoverButton (i.e., on
@@ -115,14 +115,19 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       views::style::GetLineHeight(views::style::CONTEXT_LABEL,
                                   views::style::STYLE_PRIMARY) *
       num_labels;
-  if (combined_line_height > icon_view->GetPreferredSize().height())
+  if (combined_line_height > icon_height)
     remaining_vert_spacing = (total_height - combined_line_height) / 2;
 
   SetBorder(CreateBorderWithVerticalSpacing(remaining_vert_spacing));
 
   views::GridLayout* grid_layout = views::GridLayout::CreateAndInstall(this);
+  // Badging may make the icon slightly wider (but not taller). However, the
+  // layout should be the same whether or not the icon is badged, so allow the
+  // badged part of the icon to extend into the padding.
+  const int badge_spacing = icon_view->GetPreferredSize().width() - icon_height;
   const int icon_label_spacing = layout_provider->GetDistanceMetric(
-      views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+                                     views::DISTANCE_RELATED_LABEL_HORIZONTAL) -
+                                 badge_spacing;
 
   constexpr float kFixed = 0.f;
   constexpr float kStretchy = 1.f;
@@ -266,4 +271,14 @@ void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
                                 taken_width_);
   }
+}
+
+void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,
+                                    SkColor background_color) {
+  title_->SetDisplayedOnBackgroundColor(background_color);
+  title_->SetDefaultTextStyle(text_style);
+}
+
+void HoverButton::SetSubtitleColor(SkColor color) {
+  subtitle_->SetEnabledColor(color);
 }
