@@ -99,15 +99,16 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
-const int kButtonHeight = 32;
-const int kFixedAccountRemovalViewWidth = 280;
-const int kFixedMenuWidth = 240;
+constexpr int kButtonHeight = 32;
+constexpr int kFixedAccountRemovalViewWidth = 280;
+constexpr int kFixedMenuWidthPreDice = 240;
+constexpr int kFixedMenuWidthDice = 288;
 
 // Spacing between the edge of the material design user menu and the
 // top/bottom or left/right of the menu items.
-const int kMenuEdgeMargin = 16;
+constexpr int kMenuEdgeMargin = 16;
 
-const int kVerticalSpacing = 16;
+constexpr int kVerticalSpacing = 16;
 
 bool IsProfileChooser(profiles::BubbleViewMode mode) {
   return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
@@ -326,7 +327,11 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       browser_(browser),
       view_mode_(view_mode),
       gaia_service_type_(service_type),
-      access_point_(access_point) {
+      access_point_(access_point),
+      menu_width_(
+          signin::IsDiceEnabledForProfile(browser->profile()->GetPrefs())
+              ? kFixedMenuWidthDice
+              : kFixedMenuWidthPreDice) {
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.
   set_margins(gfx::Insets(0, 0, 2, 0));
@@ -473,7 +478,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
-      layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
+      layout = CreateSingleColumnLayout(this, menu_width_);
       sub_view = CreateProfileChooserView(avatar_menu);
       break;
   }
@@ -696,7 +701,7 @@ void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
 views::View* ProfileChooserView::CreateProfileChooserView(
     AvatarMenu* avatar_menu) {
   views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+  views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
   // Separate items into active and alternatives.
   Indexes other_profiles;
   views::View* sync_error_view = NULL;
@@ -880,6 +885,10 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
 views::View* ProfileChooserView::CreateCurrentProfileView(
     const AvatarMenu::Item& avatar_item,
     bool is_guest) {
+  if (!avatar_item.signed_in &&
+      signin::IsDiceEnabledForProfile(browser_->profile()->GetPrefs()))
+    return CreateDiceTurnOnSyncView();
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   views::View* view = new views::View();
@@ -956,7 +965,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     // Provide a hint to the layout manager by giving the promo text a maximum
     // width. This ensures it has the correct number of lines when determining
     // the initial Widget size.
-    promo->SetMaximumWidth(kFixedMenuWidth);
+    promo->SetMaximumWidth(menu_width_);
     extra_links_view->AddChildView(promo);
 
     signin_current_profile_button_ =
@@ -980,6 +989,44 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   return view;
 }
 
+views::View* ProfileChooserView::CreateDiceTurnOnSyncView() {
+  // Creates a view that holds an illustration and a promo, which includes a
+  // button. The illustration should slightly overlap with the promo at the
+  // bottom, therefore between_child_spacing of |view| is set to negative
+  // |kIllustrationPromoOverlap|. The illustration will be changed in the
+  // future, once the final asset is ready.
+  constexpr int kIllustrationPromoOverlap = 48;
+  views::View* view = new views::View();
+  view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, gfx::Insets(), -kIllustrationPromoOverlap));
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  views::ImageView* illustration = new views::ImageView();
+  illustration->SetImage(
+      *rb.GetNativeImageNamed(IDR_PROFILES_TURN_ON_SYNC_ILLUSTRATION)
+           .ToImageSkia());
+  view->AddChildView(illustration);
+
+  views::View* promo_button_view = new views::View();
+  promo_button_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin, kMenuEdgeMargin, kMenuEdgeMargin),
+      kMenuEdgeMargin));
+  views::Label* promo = new views::Label(
+      l10n_util::GetStringUTF16(IDS_PROFILES_TURN_ON_SYNC_PROMO));
+  promo->SetMultiLine(true);
+  promo->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  promo->SetMaximumWidth(menu_width_ - 2 * kMenuEdgeMargin);
+  promo_button_view->AddChildView(promo);
+
+  signin_current_profile_button_ =
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          this, l10n_util::GetStringUTF16(IDS_PROFILES_TURN_ON_SYNC_BUTTON));
+  promo_button_view->AddChildView(signin_current_profile_button_);
+  view->AddChildView(promo_button_view);
+  return view;
+}
+
 views::View* ProfileChooserView::CreateGuestProfileView() {
   gfx::Image guest_icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -1000,7 +1047,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
 
   views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+  views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
 
   const bool is_guest = browser_->profile()->IsGuestSession();
   const int kIconSize = 20;
@@ -1075,7 +1122,7 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
   views::View* view = new views::View();
   int horizontal_margin = kMenuEdgeMargin;
   views::GridLayout* layout =
-      CreateSingleColumnLayout(view, kFixedMenuWidth - 2 * horizontal_margin);
+      CreateSingleColumnLayout(view, menu_width_ - 2 * horizontal_margin);
   view->SetBorder(views::CreateEmptyBorder(0, horizontal_margin,
                                            kMenuEdgeMargin, horizontal_margin));
 
@@ -1096,7 +1143,7 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   views::View* view = new views::View();
   view->SetBackground(views::CreateSolidBackground(
       profiles::kAvatarBubbleAccountsBackgroundColor));
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
+  views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
 
   Profile* profile = browser_->profile();
   std::string primary_account =
@@ -1113,10 +1160,10 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
   CreateAccountButton(layout, primary_account, true,
-                      error_account_id == primary_account, kFixedMenuWidth);
+                      error_account_id == primary_account, menu_width_);
   for (size_t i = 0; i < accounts.size(); ++i)
     CreateAccountButton(layout, accounts[i], false,
-                        error_account_id == accounts[i], kFixedMenuWidth);
+                        error_account_id == accounts[i], menu_width_);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing =
