@@ -3550,13 +3550,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDownloadsForeground)},
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
-    // TODO(csharrison): Make this available on all platforms when the desktop
-    // UI is finished.
     {"enable-block-tab-unders", flag_descriptions::kBlockTabUndersName,
-     flag_descriptions::kBlockTabUndersDescription, kOsAndroid,
+     flag_descriptions::kBlockTabUndersDescription, kOsAll,
      FEATURE_VALUE_TYPE(TabUnderNavigationThrottle::kBlockTabUnders)},
-#endif  // defined(OS_ANDROID)
 
     {"top-sites-from-site-engagement",
      flag_descriptions::kTopSitesFromSiteEngagementName,
