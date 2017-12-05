@@ -13,6 +13,7 @@
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
 #include "platform/image-encoders/ImageEncoder.h"
 #include "platform/wtf/Vector.h"
@@ -40,6 +41,17 @@ class CORE_EXPORT CanvasAsyncBlobCreator
       double start_time,
       ExecutionContext*,
       ScriptPromiseResolver*);
+  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
+                                        const String& mime_type,
+                                        V8BlobCallback*,
+                                        double start_time,
+                                        ExecutionContext*);
+  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
+                                        const String& mime_type,
+                                        double start_time,
+                                        ExecutionContext*,
+                                        ScriptPromiseResolver*);
+
   void ScheduleAsyncBlobCreation(const double& quality);
   virtual ~CanvasAsyncBlobCreator();
   enum MimeType {
@@ -75,6 +87,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
  protected:
   CanvasAsyncBlobCreator(DOMUint8ClampedArray* data,
+                         scoped_refptr<StaticBitmapImage>,
                          MimeType,
                          const IntSize&,
                          V8BlobCallback*,
@@ -100,6 +113,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   void Dispose();
 
   Member<DOMUint8ClampedArray> data_;
+  scoped_refptr<StaticBitmapImage> image_;
   std::unique_ptr<ImageEncoder> encoder_;
   Vector<unsigned char> encoded_image_;
   int num_rows_completed_;
@@ -111,6 +125,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // Chrome metrics use
   double start_time_;
   double schedule_idle_task_start_time_;
+  bool static_bitmap_image_loaded_;
 
   ToBlobFunctionType function_type_;
 
@@ -127,6 +142,9 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;
+
+  void LoadStaticBitmapImage();
+  bool EncodeImage(const double&);
 
   // PNG, JPEG
   bool InitializeEncoder(double quality);
