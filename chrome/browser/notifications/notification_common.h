@@ -9,10 +9,6 @@
 #include "chrome/browser/notifications/notification_handler.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 class GURL;
 class Profile;
 
@@ -24,7 +20,8 @@ class NotificationCommon {
   enum Operation {
     CLICK = 0,
     CLOSE = 1,
-    SETTINGS = 2,
+    DISABLE_PERMISSION = 2,
+    SETTINGS = 3,
     OPERATION_MAX = SETTINGS
   };
 
@@ -37,10 +34,7 @@ class NotificationCommon {
   };
 
   // Open the Notification settings screen when clicking the right button.
-  // TODO(miguelg) have it take a Profile instead once NotificationObjectProxy
-  // is updated.
-  static void OpenNotificationSettings(
-      content::BrowserContext* browser_context);
+  static void OpenNotificationSettings(Profile* profile, const GURL& origin);
 };
 
 // Metadata for PERSISTENT notifications.

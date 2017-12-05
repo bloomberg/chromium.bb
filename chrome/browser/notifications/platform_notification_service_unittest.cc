@@ -18,7 +18,6 @@
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -340,8 +339,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
 
   Notification notification = service()->CreateNotificationFromData(
       profile_, origin, "id", notification_data, NotificationResources(),
-      new WebNotificationDelegate(NotificationHandler::Type::WEB_PERSISTENT,
-                                  profile_, "id", origin));
+      nullptr /* delegate */);
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
@@ -363,9 +361,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   notification = service()->CreateNotificationFromData(
       profile_,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
-      "id", notification_data, NotificationResources(),
-      new WebNotificationDelegate(NotificationHandler::Type::EXTENSION,
-                                  profile_, "id", origin));
+      "id", notification_data, NotificationResources(), nullptr /* delegate */);
   EXPECT_EQ("NotificationTest",
             base::UTF16ToUTF8(notification.context_message()));
 }

@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/strings/nullable_string16.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 
@@ -53,6 +54,13 @@ void NonPersistentNotificationHandler::OnClick(
   std::move(completed_closure).Run();
 }
 
-void NonPersistentNotificationHandler::OpenSettings(Profile* profile) {
-  NotificationCommon::OpenNotificationSettings(profile);
+void NonPersistentNotificationHandler::DisableNotifications(
+    Profile* profile,
+    const GURL& origin) {
+  DesktopNotificationProfileUtil::DenyPermission(profile, origin);
+}
+
+void NonPersistentNotificationHandler::OpenSettings(Profile* profile,
+                                                    const GURL& origin) {
+  NotificationCommon::OpenNotificationSettings(profile, origin);
 }
