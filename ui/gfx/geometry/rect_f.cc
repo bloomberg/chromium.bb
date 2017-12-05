@@ -5,18 +5,19 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 #include <algorithm>
-
-#if defined(OS_IOS)
-#include <CoreGraphics/CoreGraphics.h>
-#elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#endif
+#include <limits>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+
+#if defined(OS_IOS)
+#include <CoreGraphics/CoreGraphics.h>
+#elif defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace gfx {
 
@@ -47,8 +48,8 @@ void RectF::Inset(const InsetsF& insets) {
 
 void RectF::Inset(float left, float top, float right, float bottom) {
   origin_ += Vector2dF(left, top);
-  set_width(std::max(width() - left - right, static_cast<float>(0)));
-  set_height(std::max(height() - top - bottom, static_cast<float>(0)));
+  set_width(std::max(width() - left - right, 0.0f));
+  set_height(std::max(height() - top - bottom, 0.0f));
 }
 
 void RectF::Offset(float horizontal, float vertical) {
@@ -71,30 +72,27 @@ InsetsF RectF::InsetsFrom(const RectF& inner) const {
 }
 
 bool RectF::operator<(const RectF& other) const {
-  if (origin_ == other.origin_) {
-    if (width() == other.width()) {
-      return height() < other.height();
-    } else {
-      return width() < other.width();
-    }
-  } else {
+  if (origin_ != other.origin_)
     return origin_ < other.origin_;
-  }
+
+  if (width() == other.width())
+    return height() < other.height();
+  return width() < other.width();
 }
 
 bool RectF::Contains(float point_x, float point_y) const {
-  return (point_x >= x()) && (point_x < right()) && (point_y >= y()) &&
-         (point_y < bottom());
+  return point_x >= x() && point_x < right() && point_y >= y() &&
+         point_y < bottom();
 }
 
 bool RectF::Contains(const RectF& rect) const {
-  return (rect.x() >= x() && rect.right() <= right() && rect.y() >= y() &&
-          rect.bottom() <= bottom());
+  return rect.x() >= x() && rect.right() <= right() && rect.y() >= y() &&
+         rect.bottom() <= bottom();
 }
 
 bool RectF::Intersects(const RectF& rect) const {
-  return !(IsEmpty() || rect.IsEmpty() || rect.x() >= right() ||
-           rect.right() <= x() || rect.y() >= bottom() || rect.bottom() <= y());
+  return !IsEmpty() && !rect.IsEmpty() && rect.x() < right() &&
+         rect.right() > x() && rect.y() < bottom() && rect.bottom() > y();
 }
 
 void RectF::Intersect(const RectF& rect) {
@@ -108,8 +106,10 @@ void RectF::Intersect(const RectF& rect) {
   float rr = std::min(right(), rect.right());
   float rb = std::min(bottom(), rect.bottom());
 
-  if (rx >= rr || ry >= rb)
-    rx = ry = rr = rb = 0;  // non-intersecting
+  if (rx >= rr || ry >= rb) {
+    SetRect(0, 0, 0, 0);
+    return;
+  }
 
   SetRect(rx, ry, rr - rx, rb - ry);
 }
@@ -133,7 +133,7 @@ void RectF::Union(const RectF& rect) {
 void RectF::Subtract(const RectF& rect) {
   if (!Intersects(rect))
     return;
-  if (rect.Contains(*static_cast<const RectF*>(this))) {
+  if (rect.Contains(*this)) {
     SetRect(0, 0, 0, 0);
     return;
   }
@@ -212,7 +212,7 @@ float RectF::ManhattanInternalDistance(const RectF& rect) const {
   RectF c(*this);
   c.Union(rect);
 
-  static const float kEpsilon = std::numeric_limits<float>::epsilon();
+  static constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
   float x = std::max(0.f, c.width() - width() - rect.width() + kEpsilon);
   float y = std::max(0.f, c.height() - height() - rect.height() + kEpsilon);
   return x + y;
