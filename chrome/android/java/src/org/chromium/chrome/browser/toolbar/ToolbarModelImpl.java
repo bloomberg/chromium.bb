@@ -108,7 +108,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
 
     @Override
     public String getText() {
-        if (isBottomSheetOpen()) return "";
+        if (clearUrlForBottomSheetOpen()) return "";
 
         String displayText = super.getText();
 
@@ -199,7 +199,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
 
     @Override
     public boolean shouldShowSecurityIcon() {
-        return !isBottomSheetOpen() && getSecurityIconResource() != 0;
+        return !clearUrlForBottomSheetOpen() && getSecurityIconResource() != 0;
     }
 
     @Override
@@ -207,7 +207,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
         // Because is offline page is cleared a bit slower, we also ensure that connection security
         // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
         int securityLevel = getSecurityLevel();
-        return !isBottomSheetOpen() && isOfflinePage()
+        return !clearUrlForBottomSheetOpen() && isOfflinePage()
                 && (securityLevel == ConnectionSecurityLevel.NONE
                            || securityLevel == ConnectionSecurityLevel.HTTP_SHOW_WARNING);
     }
@@ -257,8 +257,9 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
         return 0;
     }
 
-    private boolean isBottomSheetOpen() {
+    private boolean clearUrlForBottomSheetOpen() {
         return mBottomSheet != null && mBottomSheet.isSheetOpen()
+                && mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN);
     }
 }
