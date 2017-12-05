@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace blink {
 
@@ -42,7 +43,6 @@ class HTMLMediaElement;
 class InspectedFrames;
 class InspectorDOMAgent;
 class InspectorSession;
-class InterfaceRegistry;
 class LocalFrame;
 class MediaControls;
 class Page;
@@ -76,7 +76,7 @@ class CORE_EXPORT CoreInitializer {
 
   // Called on startup to register Mojo interfaces that for control messages,
   // e.g. messages that are not routed to a specific frame.
-  virtual void RegisterInterfaces(InterfaceRegistry&) = 0;
+  virtual void RegisterInterfaces(service_manager::BinderRegistry&) = 0;
   // Methods defined in CoreInitializer and implemented by ModulesInitializer to
   // bypass the inverted dependency from core/ to modules/.
   // Mojo Interfaces registered with LocalFrame

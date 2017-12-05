@@ -3,5 +3,6 @@ include_rules = [
   "+v8",
   "+third_party/WebKit/public",
   "+gin/v8_initializer.h",
-  "+mojo/edk/embedder/embedder.h",
+  "+mojo/edk/embedder",
+  "+services/service_manager/public",
 ]

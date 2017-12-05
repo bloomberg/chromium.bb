@@ -79,6 +79,7 @@ _CONFIG = [
             # cetera, as well as generated Mojo bindings.
             'mojo::.+',
             '(?:.+::)?mojom::.+',
+            "service_manager::BinderRegistry",
             # TODO(dcheng): Remove this once Connector isn't needed in Blink
             # anymore.
             'service_manager::Connector',

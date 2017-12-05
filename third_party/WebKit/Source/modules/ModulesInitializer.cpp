@@ -83,6 +83,7 @@
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/mojo/MojoHelper.h"
+#include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -276,10 +277,12 @@ void ModulesInitializer::CollectAllGarbageForAnimationWorklet() const {
   AnimationWorkletThread::CollectAllGarbage();
 }
 
-void ModulesInitializer::RegisterInterfaces(InterfaceRegistry& registry) {
+void ModulesInitializer::RegisterInterfaces(
+    service_manager::BinderRegistry& registry) {
   DCHECK(Platform::Current());
-  registry.AddInterface(blink::CrossThreadBind(&WebDatabaseImpl::Create),
-                        Platform::Current()->GetIOTaskRunner());
+  registry.AddInterface(
+      ConvertToBaseCallback(blink::CrossThreadBind(&WebDatabaseImpl::Create)),
+      Platform::Current()->GetIOTaskRunner());
 }
 
 }  // namespace blink
