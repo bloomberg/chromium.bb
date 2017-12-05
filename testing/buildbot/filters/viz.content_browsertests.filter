@@ -83,3 +83,6 @@
 
 # OnGpuSwapBuffersCompletedInternal not called. http://crbug.com/791557
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
+
+# TODO: investigate flaky failure http://crbug.com/790683
+-SitePerProcessBrowserTest.CrossSiteIframeBlockedByXFrameOptionsOrCSP
