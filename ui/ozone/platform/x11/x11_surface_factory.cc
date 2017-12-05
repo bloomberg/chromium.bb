@@ -4,9 +4,8 @@
 
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
 
-#include <X11/Xlib.h>
-
 #include "base/memory/ptr_util.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
