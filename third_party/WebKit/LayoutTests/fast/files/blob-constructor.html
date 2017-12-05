@@ -5,95 +5,10 @@
 description("Test the Blob constructor.");
 var jsTestIsAsync = true;
 
-// Test the different ways you can construct a Blob.
-shouldBeTrue("(new Blob()) instanceof window.Blob");
-shouldBeTrue("(new Blob(undefined)) instanceof window.Blob");
-shouldBeTrue("(new Blob([])) instanceof window.Blob");
-shouldBeTrue("(new Blob(['hello'])) instanceof window.Blob");
-shouldBeTrue("(new Blob(['hello'], {})) instanceof window.Blob");
-shouldBeTrue("(new Blob(['hello'], {type:'text/html'})) instanceof window.Blob");
-shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'native'})) instanceof window.Blob");
-shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'transparent'})) instanceof window.Blob");
-
-// Test default sizes/types.
-shouldBe("(new Blob()).size", "0");
-shouldBe("(new Blob(undefined)).size", "0");
-shouldBeEqualToString("(new Blob()).type", "");
-shouldBeEqualToString("(new Blob(undefined)).type", "");
-
-// Test invalid blob parts.
-shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The provided value cannot be converted to a sequence."');
-shouldThrow("new Blob(0)", '"TypeError: Failed to construct \'Blob\': The provided value cannot be converted to a sequence."');
-shouldThrow("new Blob(null)", '"TypeError: Failed to construct \'Blob\': The provided value cannot be converted to a sequence."');
-
-// Test valid blob parts.
-shouldBeTrue("(new Blob([])) instanceof window.Blob");
-shouldBeTrue("(new Blob(['stringPrimitive'])) instanceof window.Blob");
-shouldBeTrue("(new Blob([String('stringObject')])) instanceof window.Blob");
-shouldBeTrue("(new Blob([new Blob])) instanceof window.Blob");
-shouldBeTrue("(new Blob([new Blob([new Blob])])) instanceof window.Blob");
-
-// Test some conversions to string in the parts array.
-shouldBe("(new Blob([12])).size", "2");
-shouldBe("(new Blob([[]])).size", "0");         // [].toString() is the empty string
-shouldBe("(new Blob([{}])).size", "15");;       // {}.toString() is the string "[object Object]"
-shouldBe("(new Blob([document])).size", "21");  // document.toString() is the string "[object HTMLDocument]"
-
-var toStringingObj = { toString: function() { return "A string"; } };
-shouldBe("(new Blob([toStringingObj])).size", "8");
-
-var throwingObj = { toString: function() { throw "Error"; } };
-shouldThrow("new Blob([throwingObj])", "'Error'");
-
-// Test some invalid property bags.
-shouldBeTrue("(new Blob([], {unknownKey:'value'})) instanceof window.Blob");    // Ignore invalid keys
-shouldThrow("new Blob([], {endings:'illegalValue'})", "'TypeError: Failed to construct \\'Blob\\': The provided value \\'illegalValue\\' is not a valid enum value of type NormalizeLineEndings.'");
-shouldThrow("new Blob([], {endings:throwingObj})", "'Error'");
-shouldThrow("new Blob([], {type:throwingObj})", "'Error'");
-
-// Test that order of property bag evaluation is lexigraphical
-var throwingObj1 = { toString: function() { throw "Error 1"; } };
-var throwingObj2 = { toString: function() { throw "Error 2"; } };
-shouldThrow("new Blob([], {endings:throwingObj1, type:throwingObj2})", "'Error 1'");
-shouldThrow("new Blob([], {type:throwingObj2, endings:throwingObj1})", "'Error 1'");
-shouldThrow("new Blob([], {type:throwingObj2, endings:'illegal'})", "'TypeError: Failed to construct \\'Blob\\': The provided value \\'illegal\\' is not a valid enum value of type NormalizeLineEndings.'");
-
-// Test non-ASCII type handling
-shouldBeEqualToString("new Blob([], {type:'hello\\u00EE'}).type", "");
-
-// Test non-printable-ASCII type handling
-shouldBeEqualToString("new Blob([], {type:'hello\\u001F'}).type", "");
-shouldBeEqualToString("new Blob([], {type:'hello\\u007F'}).type", "");
-
-// Test lowercasing of type
-shouldBeEqualToString("new Blob([], {type:'ABC/abc'}).type", "abc/abc");
-
-// Test non-parsable type
-shouldBeEqualToString("new Blob([], {type:'123ABCabc'}).type", "123abcabc");
-
-// Test various non-object literals being used as property bags.
-shouldBeTrue("(new Blob([], null)) instanceof window.Blob");
-shouldBeTrue("(new Blob([], undefined)) instanceof window.Blob");
-shouldThrow("(new Blob([], 123)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
-shouldThrow("(new Blob([], 123.4)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
-shouldThrow("(new Blob([], true)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
-shouldThrow("(new Blob([], 'abc')) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': parameter 2 (\\'options\\') is not an object.'");
-shouldBeTrue("(new Blob([], [])) instanceof window.Blob");
-shouldBeTrue("(new Blob([], /abc/)) instanceof window.Blob");
-shouldBeTrue("(new Blob([], function () {})) instanceof window.Blob");
-
-// Test that the type/size is correctly added to the Blob.
-shouldBe("(new Blob([], {type:'text/html'})).type", "'text/html'");
-shouldBe("(new Blob([], {type:'text/html'})).size", "0");
-shouldBe("(new Blob([], {type:'text/plain;charset=UTF-8'})).type", "'text/plain;charset=utf-8'");
-
 // Test that the File-specific lastModified is not set by the Blob constructor.
 shouldBe("(new Blob([])).lastModified", "undefined");
 shouldBe("(new Blob([], {})).lastModified", "undefined");
 shouldBe("(new Blob([], {lastModified: new Date()})).lastModified", "undefined");
-
-// Test the number of expected arguments in the Blob constructor.
-shouldBe("window.Blob.length", "0");
 
 // Test ArrayBufferView parameters.
 shouldBe("new Blob([new DataView(new ArrayBuffer(100))]).size", "100");
@@ -127,18 +42,6 @@ if (window.SharedArrayBuffer) {
   // Test SharedArrayBuffer parameters.
   shouldThrow("new Blob([new Uint8Array(new SharedArrayBuffer(4))])", '"TypeError: Failed to construct \'Blob\': The provided ArrayBufferView value must not be shared."');
 }
-
-// Custom iterators, converted via the bindings code to sequence<T>.
-function createIterable(iterations) {
-  return {
-    [Symbol.iterator]() {
-      var i = 0;
-      return {next: () => iterations[i++]};
-    },
-  };
-}
-shouldBe("new Blob(createIterable([{done:true}])).size", "0");
-shouldBe("new Blob(createIterable([{done:false, value:'string'},{done:true}])).size", "6");
 
 testNormalization();
 
