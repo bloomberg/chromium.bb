@@ -11,5 +11,9 @@ namespace features {
 const base::Feature kNativeCrxBindings{"NativeCrxBindings",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables splitting content script injections into multiple tasks.
+const base::Feature kYieldBetweenContentScriptRuns{
+    "YieldBetweenContentScriptRuns", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace extensions

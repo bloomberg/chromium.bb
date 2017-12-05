@@ -20,9 +20,6 @@ namespace {
 const char kLoadMediaRouterComponentExtensionFlag[] =
     "load-media-router-component-extension";
 
-const char kYieldBetweenContentScriptRunsFieldTrial[] =
-    "YieldBetweenContentScriptRuns";
-
 class CommonSwitches {
  public:
   CommonSwitches()
@@ -51,14 +48,11 @@ class CommonSwitches {
         load_media_router_component_extension(
             kLoadMediaRouterComponentExtensionFlag,
 #if defined(GOOGLE_CHROME_BUILD)
-            FeatureSwitch::DEFAULT_ENABLED),
+            FeatureSwitch::DEFAULT_ENABLED)
 #else
-            FeatureSwitch::DEFAULT_DISABLED),
+            FeatureSwitch::DEFAULT_DISABLED)
 #endif  // defined(GOOGLE_CHROME_BUILD)
-        yield_between_content_script_runs(
-            switches::kYieldBetweenContentScriptRuns,
-            kYieldBetweenContentScriptRunsFieldTrial,
-            FeatureSwitch::DEFAULT_DISABLED) {
+  {
   }
 
   FeatureSwitch force_dev_mode_highlighting;
@@ -73,7 +67,6 @@ class CommonSwitches {
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
   FeatureSwitch load_media_router_component_extension;
-  FeatureSwitch yield_between_content_script_runs;
 };
 
 base::LazyInstance<CommonSwitches>::DestructorAtExit g_common_switches =
@@ -104,9 +97,6 @@ FeatureSwitch* FeatureSwitch::trace_app_source() {
 }
 FeatureSwitch* FeatureSwitch::load_media_router_component_extension() {
   return &g_common_switches.Get().load_media_router_component_extension;
-}
-FeatureSwitch* FeatureSwitch::yield_between_content_script_runs() {
-  return &g_common_switches.Get().yield_between_content_script_runs;
 }
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,

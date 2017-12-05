@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -31,7 +32,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -143,19 +144,30 @@ enum class TestConfig {
 class ContentScriptApiTest : public ExtensionApiTest,
                              public testing::WithParamInterface<TestConfig> {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kYieldBetweenContentScriptRuns,
-        (GetParam() == TestConfig::kYieldBetweenContentScriptRunsEnabled)
-            ? "1"
-            : "0");
+  ContentScriptApiTest() {}
+  ~ContentScriptApiTest() override {}
+
+  void SetUp() override {
+    if (GetParam() == TestConfig::kYieldBetweenContentScriptRunsEnabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kYieldBetweenContentScriptRuns);
+    } else {
+      DCHECK_EQ(TestConfig::kDefault, GetParam());
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kYieldBetweenContentScriptRuns);
+    }
+    ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentScriptApiTest);
 };
 
 IN_PROC_BROWSER_TEST_P(ContentScriptApiTest, ContentScriptAllFrames) {
