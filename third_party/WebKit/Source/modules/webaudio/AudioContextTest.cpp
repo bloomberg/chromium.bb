@@ -8,7 +8,6 @@
 
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/webaudio/AudioWorkletThread.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioDevice.h"
@@ -94,7 +93,6 @@ class AudioContextTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    AudioWorkletThread::CreateSharedBackingThreadForTest();
     dummy_page_holder_ = DummyPageHolder::Create();
   }
 
