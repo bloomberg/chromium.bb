@@ -43,6 +43,8 @@ source_set("new_fullscreen_internal") {
   sources = [
     "fullscreen_controller.mm",
     "fullscreen_controller_factory.mm",
+    "fullscreen_mediator.h",
+    "fullscreen_mediator.mm",
     "fullscreen_model.h",
     "fullscreen_model.mm",
     "fullscreen_model_observer.h",
@@ -88,6 +90,7 @@ source_set("new_fullscreen_ui") {
 source_set("new_unit_tests") {
   testonly = true
   sources = [
+    "fullscreen_mediator_unittest.mm",
     "fullscreen_model_unittest.mm",
     "fullscreen_ui_updater_unittest.mm",
     "fullscreen_web_state_list_observer_unittest.mm",
