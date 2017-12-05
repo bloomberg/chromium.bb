@@ -220,10 +220,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_DELTA_AA
 #endif
 
-#ifndef SK_USE_LEGACY_INTERP_BLUR
-#define SK_USE_LEGACY_INTERP_BLUR
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_SMALLRECT_AA
 #define SK_SUPPORT_LEGACY_SMALLRECT_AA
 #endif
