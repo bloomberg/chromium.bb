@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
@@ -307,6 +308,26 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
     web_app_info.open_as_window = true;
 
     test_bookmark_app_ = InstallBookmarkApp(web_app_info);
+  }
+
+  // Installs a Bookmark App that immediately redirects to a URL with
+  // |target_host| and |target_path|.
+  const Extension* InstallImmediateRedirectingApp(
+      const std::string& target_host,
+      const std::string& target_path) {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    const GURL target_url =
+        embedded_test_server()->GetURL(target_host, target_path);
+
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = embedded_test_server()->GetURL(
+        kAppUrlHost, CreateServerRedirect(target_url));
+    web_app_info.scope = embedded_test_server()->GetURL(kAppUrlHost, "/");
+    web_app_info.title = base::UTF8ToUTF16("Redirecting Test app");
+    web_app_info.description = base::UTF8ToUTF16("Test description");
+    web_app_info.open_as_window = true;
+
+    return InstallBookmarkApp(web_app_info);
   }
 
   Browser* OpenTestBookmarkApp() {
@@ -888,19 +909,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
 
   GURL initial_url = initial_tab->GetLastCommittedURL();
 
-  // Install and launch an App that immediately redirects to an out-of-scope
-  // URL i.e. the launching page URL.
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = embedded_test_server()->GetURL(
-      kAppUrlHost, CreateServerRedirect(GetLaunchingPageURL()));
-  web_app_info.scope = embedded_test_server()->GetURL(kAppUrlHost, "/");
-  web_app_info.title = base::UTF8ToUTF16("Redirecting Test app");
-  web_app_info.description = base::UTF8ToUTF16("Test description");
-  web_app_info.open_as_window = true;
-
-  const Extension* redirecting_app = InstallBookmarkApp(web_app_info);
+  const Extension* redirecting_app =
+      InstallImmediateRedirectingApp(kLaunchingPageHost, kLaunchingPagePath);
 
   auto observer = GetTestNavigationObserver(GetLaunchingPageURL());
   LaunchAppBrowser(redirecting_app);
@@ -1260,6 +1270,45 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
       base::Bind(&ClickLinkAndWait,
                  browser()->tab_strip_model()->GetActiveWebContents(),
                  in_scope_url, LinkTarget::SELF, GetParam()));
+}
+
+// Tests that in-browser navigations with all the following characteristics
+// don't open a new app window or move the tab:
+//  1. Are to in-scope URLs
+//  2. Result in a AUTO_BOOKMARK transtion
+//  3. Redirect to another in-scope URL.
+//
+// Clicking on sites in the New Tab Page is one of the ways to trigger this
+// type of navigation.
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       AutoBookmarkInScopeRedirect) {
+  const Extension* app =
+      InstallImmediateRedirectingApp(kAppUrlHost, kInScopeUrlPath);
+
+  const GURL app_url = AppLaunchInfo::GetFullLaunchURL(app);
+  NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  TestTabActionDoesNotOpenAppWindow(
+      embedded_test_server()->GetURL(kAppUrlHost, kInScopeUrlPath),
+      base::Bind(&NavigateToURLWrapper, &params));
+}
+
+// Tests that in-browser navigations with all the following characteristics
+// don't open a new app window or move the tab:
+//  1. Are to in-scope URLs
+//  2. Result in a AUTO_BOOKMARK transtion
+//  3. Redirect to an out-of-scope URL.
+//
+// Clicking on sites in the New Tab Page is one of the ways to trigger this
+// type of navigation.
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       AutoBookmarkOutOfScopeRedirect) {
+  const Extension* app =
+      InstallImmediateRedirectingApp(kLaunchingPageHost, kLaunchingPagePath);
+
+  const GURL app_url = AppLaunchInfo::GetFullLaunchURL(app);
+  NavigateParams params(browser(), app_url, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  TestTabActionDoesNotOpenAppWindow(GetLaunchingPageURL(),
+                                    base::Bind(&NavigateToURLWrapper, &params));
 }
 
 // Tests that clicking links inside the app to in-scope URLs doesn't open new

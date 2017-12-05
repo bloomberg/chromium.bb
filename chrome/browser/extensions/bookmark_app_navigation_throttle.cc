@@ -139,15 +139,18 @@ BookmarkAppNavigationThrottle::ProcessNavigation(bool is_redirect) {
   //
   // TODO(crbug.com/789051): Possibly fall through to the logic below to
   // open target in app window, if it belongs to an app.
-  if (is_redirect &&
-      PageTransitionCoreTypeIs(transition_type,
-                               ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
-      GetAppForWindow() != GetTargetApp()) {
-    DVLOG(1) << "Out-of-scope navigation during launch. Opening in Chrome.";
-    Browser* browser = chrome::FindBrowserWithWebContents(
-        navigation_handle()->GetWebContents());
-    DCHECK(browser);
-    chrome::OpenInChrome(browser);
+  if (is_redirect && PageTransitionCoreTypeIs(
+                         transition_type, ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+    auto app_for_window = GetAppForWindow();
+    // If GetAppForWindow returned nullptr, we are already in the browser, so
+    // don't open a new tab.
+    if (app_for_window && app_for_window != GetTargetApp()) {
+      DVLOG(1) << "Out-of-scope navigation during launch. Opening in Chrome.";
+      Browser* browser = chrome::FindBrowserWithWebContents(
+          navigation_handle()->GetWebContents());
+      DCHECK(browser);
+      chrome::OpenInChrome(browser);
+    }
   }
 
   if (!PageTransitionCoreTypeIs(transition_type, ui::PAGE_TRANSITION_LINK) &&
