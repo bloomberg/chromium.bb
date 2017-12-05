@@ -5,8 +5,6 @@
 #include "platform/graphics/CanvasResourceProvider.h"
 
 #include "cc/paint/skia_paint_canvas.h"
-#include "components/viz/common/resources/single_release_callback.h"
-#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -47,48 +45,8 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
   bool IsAccelerated() const final { return true; }
 
-  bool CanPrepareTransferableResource() const final { return true; }
-
  protected:
-  virtual bool isOverlayCandidate() { return false; }
-
-  void TransferResource(CanvasResource* resource,
-                        GLenum target,
-                        viz::TransferableResource* out_resource) {
-    auto gl = ContextGL();
-    auto gr = GetGrContext();
-    DCHECK(gl && gr);
-
-    GLuint texture_id = resource->TextureId();
-    GLuint filter = UseNearestNeighbor() ? GL_NEAREST : GL_LINEAR;
-
-    gl->BindTexture(target, texture_id);
-    gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, GetGLFilter());
-    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, GetGLFilter());
-    gl->TexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    auto mailbox = resource->GpuMailbox();
-    gl->ProduceTextureDirectCHROMIUM(texture_id, target, mailbox.name);
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->ShallowFlushCHROMIUM();
-    gpu::SyncToken sync_token;
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-    *out_resource = viz::TransferableResource::MakeGLOverlay(
-        mailbox, filter, target, sync_token, gfx::Size(Size()),
-        isOverlayCandidate());
-    out_resource->color_space = ColorParams().GetStorageGfxColorSpace();
-
-    gl->BindTexture(target, 0);
-
-    // Because we are changing the texture binding without going through skia,
-    // we must dirty the context.
-    ResetSkiaTextureBinding();
-  }
-
-  scoped_refptr<CanvasResource> DoPrepareTransferableResource(
-      viz::TransferableResource* out_resource) override {
+  scoped_refptr<CanvasResource> ProduceFrame() override {
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -110,13 +68,10 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
       return nullptr;
     DCHECK(image->isTextureBacked());
 
-    scoped_refptr<CanvasResource> resource =
-        CanvasResource_Skia::Create(image, ContextProviderWrapper());
+    scoped_refptr<CanvasResource> resource = CanvasResource_Skia::Create(
+        image, ContextProviderWrapper(), CreateWeakPtr(), FilterQuality());
     if (!resource)
       return nullptr;
-
-    TransferResource(resource.get(), GL_TEXTURE_2D, out_resource);
-    image->getTexture()->textureParamsModified();
 
     return resource;
   }
@@ -162,15 +117,13 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
   virtual ~CanvasResourceProvider_Texture_GpuMemoryBuffer() {}
 
  protected:
-  bool isOverlayCandidate() override { return true; }
-
   scoped_refptr<CanvasResource> CreateResource() final {
-    return CanvasResource_GpuMemoryBuffer::Create(Size(), ColorParams(),
-                                                  ContextProviderWrapper());
+    return CanvasResource_GpuMemoryBuffer::Create(
+        Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
+        FilterQuality());
   }
 
-  scoped_refptr<CanvasResource> DoPrepareTransferableResource(
-      viz::TransferableResource* out_resource) final {
+  scoped_refptr<CanvasResource> ProduceFrame() final {
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -179,8 +132,7 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
     if (!output_resource) {
       // GpuMemoryBuffer creation failed, fallback to Texture resource
-      return CanvasResourceProvider_Texture::DoPrepareTransferableResource(
-          out_resource);
+      return CanvasResourceProvider_Texture::ProduceFrame();
     }
 
     auto gl = ContextGL();
@@ -205,7 +157,6 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
                             false /*unpackPremultiplyAlpha*/,
                             false /*unpackUnmultiplyAlpha*/);
 
-    TransferResource(output_resource.get(), target, out_resource);
     return output_resource;
   }
 };
@@ -229,11 +180,8 @@ class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
   bool IsValid() const final { return GetSkSurface(); }
   bool IsAccelerated() const final { return false; }
 
-  bool CanPrepareTransferableResource() const final { return false; }
-
  private:
-  scoped_refptr<CanvasResource> DoPrepareTransferableResource(
-      viz::TransferableResource* out_resource) final {
+  scoped_refptr<CanvasResource> ProduceFrame() final {
     NOTREACHED();  // Not directly compositable.
     return nullptr;
   }
@@ -384,7 +332,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::Snapshot() {
     // the compositor's behavior. Therefore, we must trigger copy-on-write
     // even though we are not technically writing to the texture, only to its
     // parameters.
-    // If this issue with readback affecting stat is ever fixed, then we'll
+    // If this issue with readback affecting state is ever fixed, then we'll
     // have to do this instead of triggering a copy-on-write:
     // static_cast<AcceleratedStaticBitmapImage*>(image.get())
     //   ->RetainOriginalSkImageForCopyOnWrite();
@@ -408,20 +356,6 @@ GrContext* CanvasResourceProvider::GetGrContext() const {
 
 void CanvasResourceProvider::FlushSkia() const {
   GetSkSurface()->flush();
-}
-
-static void ReleaseFrameResources(
-    base::WeakPtr<CanvasResourceProvider> resource_provider,
-    scoped_refptr<CanvasResource> resource,
-    const gpu::SyncToken& sync_token,
-    bool lost_resource) {
-  resource->SetSyncTokenForRelease(sync_token);
-  if (lost_resource) {
-    resource->Abandon();
-  }
-  if (resource_provider && !lost_resource && resource->IsRecycleable()) {
-    resource_provider->RecycleResource(std::move(resource));
-  }
 }
 
 void CanvasResourceProvider::RecycleResource(
@@ -449,38 +383,9 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
   return CreateResource();
 }
 
-bool CanvasResourceProvider::PrepareTransferableResource(
-    viz::TransferableResource* out_resource,
-    std::unique_ptr<viz::SingleReleaseCallback>* out_callback) {
-  DCHECK(CanPrepareTransferableResource());
-  scoped_refptr<CanvasResource> resource =
-      DoPrepareTransferableResource(out_resource);
-  if (!resource)
-    return false;
-  auto func = WTF::Bind(&ReleaseFrameResources, weak_ptr_factory_.GetWeakPtr(),
-                        WTF::Passed(std::move(resource)));
-  *out_callback = viz::SingleReleaseCallback::Create(
-      ConvertToBaseCallback(std::move(func)));
-  return true;
-}
-
 bool CanvasResourceProvider::IsGpuContextLost() const {
   auto gl = ContextGL();
   return !gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
-}
-
-GLenum CanvasResourceProvider::GetGLFilter() const {
-  return UseNearestNeighbor() ? GL_NEAREST : GL_LINEAR;
-}
-
-bool CanvasResourceProvider::UseNearestNeighbor() const {
-  return filter_quality_ == kNone_SkFilterQuality;
-}
-
-void CanvasResourceProvider::ResetSkiaTextureBinding() const {
-  GrContext* gr = GetGrContext();
-  if (gr)
-    gr->resetContext(kTextureBinding_GrGLBackendState);
 }
 
 void CanvasResourceProvider::ClearRecycledResources() {

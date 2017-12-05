@@ -4,8 +4,12 @@
 
 #include "platform/graphics/CanvasResource.h"
 
+#include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "platform/graphics/CanvasResourceProvider.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "public/platform/Platform.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -14,8 +18,12 @@
 namespace blink {
 
 CanvasResource::CanvasResource(
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
-    : context_provider_wrapper_(std::move(context_provider_wrapper)) {}
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality)
+    : context_provider_wrapper_(std::move(context_provider_wrapper)),
+      provider_(std::move(provider)),
+      filter_quality_(filter_quality) {}
 
 CanvasResource::~CanvasResource() {
   // Sync token should have been waited on in sub-class implementation of
@@ -56,22 +64,96 @@ void CanvasResource::WaitSyncTokenBeforeRelease() {
   sync_token_for_release_.Clear();
 }
 
+static void ReleaseFrameResources(
+    base::WeakPtr<CanvasResourceProvider> resource_provider,
+    scoped_refptr<CanvasResource> resource,
+    const gpu::SyncToken& sync_token,
+    bool lost_resource) {
+  resource->SetSyncTokenForRelease(sync_token);
+  if (lost_resource) {
+    resource->Abandon();
+  }
+  if (resource_provider && !lost_resource && resource->IsRecycleable()) {
+    resource_provider->RecycleResource(std::move(resource));
+  }
+}
+
+void CanvasResource::PrepareTransferableResource(
+    viz::TransferableResource* out_resource,
+    std::unique_ptr<viz::SingleReleaseCallback>* out_callback) {
+  // This should never be called on unaccelerated canvases (for now).
+  DCHECK(TextureId());
+
+  // Gpu compositing is a prerequisite for accelerated 2D canvas
+  // TODO: For WebGL to use this, we must add software composing support.
+  DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
+  auto gl = ContextGL();
+  DCHECK(gl);
+
+  GLuint filter =
+      filter_quality_ == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
+  GLenum target = TextureTarget();
+  GLint texture_id = TextureId();
+
+  gl->BindTexture(target, texture_id);
+  gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
+  gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, filter);
+  gl->TexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  gl->ProduceTextureDirectCHROMIUM(texture_id, target, GpuMailbox().name);
+  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->ShallowFlushCHROMIUM();
+  gpu::SyncToken sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+  *out_resource = viz::TransferableResource::MakeGLOverlay(
+      GpuMailbox(), filter, target, sync_token, gfx::Size(Size()),
+      IsOverlayCandidate());
+
+  gl->BindTexture(target, 0);
+
+  // Because we are changing the texture binding without going through skia,
+  // we must dirty the context.
+  GrContext* gr = GetGrContext();
+  if (gr)
+    gr->resetContext(kTextureBinding_GrGLBackendState);
+
+  scoped_refptr<CanvasResource> this_ref(this);
+  auto func = WTF::Bind(&ReleaseFrameResources, provider_,
+                        WTF::Passed(std::move(this_ref)));
+  *out_callback = viz::SingleReleaseCallback::Create(
+      ConvertToBaseCallback(std::move(func)));
+}
+
+GrContext* CanvasResource::GetGrContext() const {
+  if (!context_provider_wrapper_)
+    return nullptr;
+  return context_provider_wrapper_->ContextProvider()->GetGrContext();
+}
+
 // CanvasResource_Skia
 //==============================================================================
 
 CanvasResource_Skia::CanvasResource_Skia(
     sk_sp<SkImage> image,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
-    : CanvasResource(std::move(context_provider_wrapper)),
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality)
+    : CanvasResource(std::move(context_provider_wrapper),
+                     std::move(provider),
+                     filter_quality),
       image_(std::move(image)) {}
 
 scoped_refptr<CanvasResource_Skia> CanvasResource_Skia::Create(
     sk_sp<SkImage> image,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-        context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality) {
   scoped_refptr<CanvasResource_Skia> resource =
       AdoptRef(new CanvasResource_Skia(std::move(image),
-                                       std::move(context_provider_wrapper)));
+                                       std::move(context_provider_wrapper),
+                                       std::move(provider), filter_quality));
   if (resource->IsValid())
     return resource;
   return nullptr;
@@ -98,10 +180,26 @@ void CanvasResource_Skia::TearDown() {
   context_provider_wrapper_ = nullptr;
 }
 
+IntSize CanvasResource_Skia::Size() const {
+  return IntSize(image_->width(), image_->height());
+}
+
 GLuint CanvasResource_Skia::TextureId() const {
   DCHECK(image_->isTextureBacked());
   return skia::GrBackendObjectToGrGLTextureInfo(image_->getTextureHandle(true))
       ->fID;
+}
+
+GLenum CanvasResource_Skia::TextureTarget() const {
+  return GL_TEXTURE_2D;
+}
+
+void CanvasResource_Skia::PrepareTransferableResource(
+    viz::TransferableResource* out_resource,
+    std::unique_ptr<viz::SingleReleaseCallback>* out_callback) {
+  DCHECK(image_->isTextureBacked());
+  CanvasResource::PrepareTransferableResource(out_resource, out_callback);
+  image_->getTexture()->textureParamsModified();
 }
 
 // CanvasResource_GpuMemoryBuffer
@@ -110,8 +208,12 @@ GLuint CanvasResource_Skia::TextureId() const {
 CanvasResource_GpuMemoryBuffer::CanvasResource_GpuMemoryBuffer(
     const IntSize& size,
     const CanvasColorParams& color_params,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper)
-    : CanvasResource(std::move(context_provider_wrapper)),
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality)
+    : CanvasResource(std::move(context_provider_wrapper),
+                     provider,
+                     filter_quality),
       color_params_(color_params) {
   if (!context_provider_wrapper_)
     return;
@@ -150,15 +252,26 @@ CanvasResource_GpuMemoryBuffer::~CanvasResource_GpuMemoryBuffer() {
   TearDown();
 }
 
+GLenum CanvasResource_GpuMemoryBuffer::TextureTarget() const {
+  return GL_TEXTURE_RECTANGLE_ARB;
+}
+
+IntSize CanvasResource_GpuMemoryBuffer::Size() const {
+  return IntSize(gpu_memory_buffer_->GetSize().width(),
+                 gpu_memory_buffer_->GetSize().height());
+}
+
 scoped_refptr<CanvasResource_GpuMemoryBuffer>
 CanvasResource_GpuMemoryBuffer::Create(
     const IntSize& size,
     const CanvasColorParams& color_params,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-        context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality) {
   scoped_refptr<CanvasResource_GpuMemoryBuffer> resource =
       AdoptRef(new CanvasResource_GpuMemoryBuffer(size, color_params,
-                                                  context_provider_wrapper));
+                                                  context_provider_wrapper,
+                                                  provider, filter_quality));
   if (resource->IsValid())
     return resource;
   return nullptr;
