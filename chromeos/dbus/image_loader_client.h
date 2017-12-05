@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -32,6 +33,13 @@ class CHROMEOS_EXPORT ImageLoaderClient : public DBusClient {
   // successful).
   virtual void LoadComponent(const std::string& name,
                              DBusMethodCallback<std::string> callback) = 0;
+
+  // Mounts a component given the |name| and install path |path|, then returns
+  // the mount point (if call is successful).
+  virtual void LoadComponentAtPath(
+      const std::string& name,
+      const base::FilePath& path,
+      DBusMethodCallback<std::string> callback) = 0;
 
   // Requests the currently registered version of the given component |name|.
   virtual void RequestComponentVersion(

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/containers/flat_set.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
@@ -104,9 +104,17 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
 
-  void AddCompatibleCrOSComponent(const std::string& name);
+  // Saves the name and install path of a compatible component.
+  void SetCompatibleCrosComponentPath(const std::string& name,
+                                      const base::FilePath& path);
 
-  bool IsCompatibleCrOSComponent(const std::string& name);
+  // Checks if the current installed component is compatible given a component
+  // |name|. If compatible, sets |path| to be its installed path.
+  bool IsCompatibleCrosComponent(const std::string& name) const;
+
+  // Returns installed path of a compatible component given |name|. Returns an
+  // empty path if the component isn't compatible.
+  base::FilePath GetCompatibleCrosComponentPath(const std::string& name) const;
 
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient();
 
@@ -136,7 +144,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
-  base::flat_set<std::string> compatible_cros_components_;
+  // Maps from a compatible component name to its installed path.
+  base::flat_map<std::string, base::FilePath> compatible_cros_components_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::InputDeviceControllerClient>
