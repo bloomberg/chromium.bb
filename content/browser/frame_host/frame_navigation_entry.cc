@@ -8,7 +8,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
-#include "content/common/site_isolation_policy.h"
 
 namespace content {
 

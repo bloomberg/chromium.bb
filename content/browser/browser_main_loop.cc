@@ -84,6 +84,7 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
+#include "content/browser/site_isolation_policy.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
@@ -93,7 +94,6 @@
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/task_scheduler.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
@@ -913,8 +913,6 @@ int BrowserMainLoop::PreCreateThreads() {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   policy->AddIsolatedOrigins(SiteIsolationPolicy::GetIsolatedOrigins());
-  policy->AddIsolatedOrigins(
-      GetContentClient()->browser()->GetOriginsRequiringDedicatedProcess());
 
   return result_code_;
 }

@@ -62,7 +62,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -687,7 +686,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     default:
       NOTREACHED();
       break;
-  };
+  }
 
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
@@ -785,7 +784,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
     default:
       NOTREACHED();
       break;
-  };
+  }
 
   entry->set_started_from_context_menu(params.started_from_context_menu);
   LoadEntry(std::move(entry));

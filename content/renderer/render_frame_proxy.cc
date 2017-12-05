@@ -17,7 +17,6 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -715,4 +714,4 @@ void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
 }
 #endif
 
-}  // namespace
+}  // namespace content

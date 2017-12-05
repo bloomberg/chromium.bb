@@ -27,7 +27,6 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/site_instance.h"

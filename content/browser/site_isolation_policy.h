@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SITE_ISOLATION_POLICY_H_
-#define CONTENT_COMMON_SITE_ISOLATION_POLICY_H_
+#ifndef CONTENT_BROWSER_SITE_ISOLATION_POLICY_H_
+#define CONTENT_BROWSER_SITE_ISOLATION_POLICY_H_
 
 #include <vector>
 
@@ -36,19 +36,21 @@ class CONTENT_EXPORT SiteIsolationPolicy {
 
   // Returns the origins to isolate.  See also AreIsolatedOriginsEnabled.
   // This list applies globally to the whole browser in all profiles.
-  // TODO(lukasza): Make sure this list also includes the origins returned by
-  // ContentBrowserClient::GetOriginsRequiringDedicatedProcess.
   static std::vector<url::Origin> GetIsolatedOrigins();
 
  private:
   SiteIsolationPolicy();  // Not instantiable.
 
-  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, ParseIsolatedOrigins);
+  // Parses |arg| into a list of origins.
   static std::vector<url::Origin> ParseIsolatedOrigins(base::StringPiece arg);
+  FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, ParseIsolatedOrigins);
+
+  // Gets isolated origins from cmdline and/or from field trial param.
+  static std::vector<url::Origin> GetIsolatedOriginsFromEnvironment();
 
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicy);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_SITE_ISOLATION_POLICY_H_
+#endif  // CONTENT_BROWSER_SITE_ISOLATION_POLICY_H_
