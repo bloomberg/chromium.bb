@@ -35,5 +35,14 @@
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'native_layer',
+      'dependencies': [
+        'data/compiled_resources2.gyp:destination',
+        'data/compiled_resources2.gyp:measurement_system',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

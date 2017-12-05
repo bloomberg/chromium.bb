@@ -273,6 +273,23 @@ Polymer({
    */
   MONOCHROME_TYPES_: ['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'],
 
+  /** @private {!print_preview.NativeLayer} */
+  nativeLayer_: print_preview.NativeLayer.getInstance(),
+
+  /** @override */
+  attached: function() {
+    this.nativeLayer_.getInitialSettings().then(
+        this.onInitialSettingsSet_.bind(this));
+  },
+
+  /**
+   * @param {!print_preview.NativeInitialSettings} settings
+   * @private
+   */
+  onInitialSettingsSet_: function(settings) {
+    // Do nothing here for now.
+  },
+
   /**
    * Updates the availability of the settings sections.
    * @private

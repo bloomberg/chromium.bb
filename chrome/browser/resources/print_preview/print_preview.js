@@ -559,10 +559,7 @@ cr.define('print_preview', function() {
                     .PRINT_WITH_SETTINGS_COLLAPSED);
       }
       const destination = assert(this.destinationStore_.selectedDestination);
-      const whenPrintDone = this.nativeLayer_.print(
-          destination, this.printTicketStore_, this.documentInfo_,
-          this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
-          this.showSystemDialogBeforeNextPrint_);
+      const whenPrintDone = this.sendPrintRequest_(destination);
       if (this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW ||
           (destination.isLocal && !destination.isPrivet &&
            !destination.isExtension &&
@@ -598,6 +595,96 @@ cr.define('print_preview', function() {
 
       this.showSystemDialogBeforeNextPrint_ = false;
       return print_preview.PrintAttemptResult_.PRINTED;
+    },
+
+    /**
+     * @param {!print_preview.Destination} destination Destination to print to.
+     * @return {!Promise} Promise that resolves when print request is resolved
+     *     or rejected.
+     * @private
+     */
+    sendPrintRequest_: function(destination) {
+      const printTicketStore = this.printTicketStore_;
+      const documentInfo = this.documentInfo_;
+      assert(
+          printTicketStore.isTicketValid(),
+          'Trying to print when ticket is not valid');
+
+      assert(
+          !this.showSystemDialogBeforeNextPrint_ ||
+              (cr.isWindows && destination.isLocal),
+          'Implemented for Windows only');
+
+      // Note: update
+      // chrome/browser/ui/webui/print_preview/print_preview_handler_unittest.cc
+      // with any changes to ticket creation.
+      const ticket = {
+        mediaSize: printTicketStore.mediaSize.getValue(),
+        pageCount: printTicketStore.pageRange.getPageNumberSet().size,
+        landscape: printTicketStore.landscape.getValue(),
+        color: print_preview.PreviewGenerator.getNativeColorModel(
+            destination, printTicketStore.color),
+        headerFooterEnabled: false,  // Only used in print preview
+        marginsType: printTicketStore.marginsType.getValue(),
+        duplex: printTicketStore.duplex.getValue() ?
+            print_preview.PreviewGenerator.DuplexMode.LONG_EDGE :
+            print_preview.PreviewGenerator.DuplexMode.SIMPLEX,
+        copies: printTicketStore.copies.getValueAsNumber(),
+        collate: printTicketStore.collate.getValue(),
+        shouldPrintBackgrounds: printTicketStore.cssBackground.getValue(),
+        shouldPrintSelectionOnly: false,  // Only used in print preview
+        previewModifiable: documentInfo.isModifiable,
+        printToPDF: destination.id ==
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+        printWithCloudPrint: !destination.isLocal,
+        printWithPrivet: destination.isPrivet,
+        printWithExtension: destination.isExtension,
+        rasterizePDF: printTicketStore.rasterize.getValue(),
+        scaleFactor: printTicketStore.scaling.getValueAsNumber(),
+        dpiHorizontal: 'horizontal_dpi' in printTicketStore.dpi.getValue() ?
+            printTicketStore.dpi.getValue().horizontal_dpi :
+            0,
+        dpiVertical: 'vertical_dpi' in printTicketStore.dpi.getValue() ?
+            printTicketStore.dpi.getValue().vertical_dpi :
+            0,
+        deviceName: destination.id,
+        fitToPageEnabled: printTicketStore.fitToPage.getValue(),
+        pageWidth: documentInfo.pageSize.width,
+        pageHeight: documentInfo.pageSize.height,
+        showSystemDialog: this.showSystemDialogBeforeNextPrint_
+      };
+
+      if (!destination.isLocal) {
+        // We can't set cloudPrintID if the destination is "Print with Cloud
+        // Print" because the native system will try to print to Google Cloud
+        // Print with this ID instead of opening a Google Cloud Print dialog.
+        ticket.cloudPrintID = destination.id;
+      }
+
+      if (printTicketStore.marginsType.isCapabilityAvailable() &&
+          printTicketStore.marginsType.isValueEqual(
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
+        const customMargins = printTicketStore.customMargins.getValue();
+        const orientationEnum =
+            print_preview.ticket_items.CustomMarginsOrientation;
+        ticket.marginsCustom = {
+          marginTop: customMargins.get(orientationEnum.TOP),
+          marginRight: customMargins.get(orientationEnum.RIGHT),
+          marginBottom: customMargins.get(orientationEnum.BOTTOM),
+          marginLeft: customMargins.get(orientationEnum.LEFT)
+        };
+      }
+
+      if (destination.isPrivet || destination.isExtension) {
+        ticket.ticket = printTicketStore.createPrintTicket(destination);
+        ticket.capabilities = JSON.stringify(destination.capabilities);
+      }
+
+      if (this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW) {
+        ticket.OpenPDFInPreview = true;
+      }
+
+      return this.nativeLayer_.print(JSON.stringify(ticket));
     },
 
     /**

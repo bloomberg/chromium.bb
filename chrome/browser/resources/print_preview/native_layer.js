@@ -190,199 +190,31 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {!print_preview.Destination} destination Destination to print to.
-     * @param {!print_preview.ticket_items.Color} color Color ticket item.
-     * @return {number} Native layer color model.
-     * @private
-     */
-    getNativeColorModel_(destination, color) {
-      // For non-local printers native color model is ignored anyway.
-      const option = destination.isLocal ? color.getSelectedOption() : null;
-      const nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
-      if (isNaN(nativeColorModel)) {
-        return color.getValue() ? NativeLayer.ColorMode_.COLOR :
-                                  NativeLayer.ColorMode_.GRAY;
-      }
-      return nativeColorModel;
-    }
-
-    /**
      * Requests that a preview be generated. The following Web UI events may
      * be triggered in response:
      *   'print-preset-options',
      *   'page-count-ready',
      *   'page-layout-ready',
      *   'page-preview-ready'
-     * @param {!print_preview.Destination} destination Destination to print to.
-     * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
-     *     state of the print ticket.
-     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
-     * @param {boolean} generateDraft Tell the renderer to re-render.
-     * @param {number} requestId ID of the preview request.
+     * @param {string} printTicket JSON print ticket for the request.
+     * @param {number} pageCount Page count for the preview request, or -1 if
+     *     unknown (first request).
      * @return {!Promise<number>} Promise that resolves with the unique ID of
      *     the preview UI when the preview has been generated.
      */
-    getPreview(
-        destination, printTicketStore, documentInfo, generateDraft, requestId) {
-      assert(
-          printTicketStore.isTicketValidForPreview(),
-          'Trying to generate preview when ticket is not valid');
-
-      const ticket = {
-        'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
-        'mediaSize': printTicketStore.mediaSize.getValue(),
-        'landscape': printTicketStore.landscape.getValue(),
-        'color': this.getNativeColorModel_(destination, printTicketStore.color),
-        'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
-        'marginsType': printTicketStore.marginsType.getValue(),
-        'isFirstRequest': requestId == 0,
-        'requestID': requestId,
-        'previewModifiable': documentInfo.isModifiable,
-        'generateDraftData': generateDraft,
-        'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
-        'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
-        // NOTE: Even though the following fields don't directly relate to the
-        // preview, they still need to be included.
-        // e.g. printing::PrintSettingsFromJobSettings() still checks for them.
-        'collate': true,
-        'copies': 1,
-        'deviceName': destination.id,
-        'dpiHorizontal': 'horizontal_dpi' in printTicketStore.dpi.getValue() ?
-            printTicketStore.dpi.getValue().horizontal_dpi :
-            0,
-        'dpiVertical': 'vertical_dpi' in printTicketStore.dpi.getValue() ?
-            printTicketStore.dpi.getValue().vertical_dpi :
-            0,
-        'duplex': printTicketStore.duplex.getValue() ?
-            NativeLayer.DuplexMode.LONG_EDGE :
-            NativeLayer.DuplexMode.SIMPLEX,
-        'printToPDF': destination.id ==
-            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-        'printWithCloudPrint': !destination.isLocal,
-        'printWithPrivet': destination.isPrivet,
-        'printWithExtension': destination.isExtension,
-        'rasterizePDF': false,
-        'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
-        'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue()
-      };
-
-      // Set 'cloudPrintID' only if the destination is not local.
-      if (destination && !destination.isLocal) {
-        ticket['cloudPrintID'] = destination.id;
-      }
-
-      if (printTicketStore.marginsType.isCapabilityAvailable() &&
-          printTicketStore.marginsType.getValue() ==
-              print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
-        const customMargins = printTicketStore.customMargins.getValue();
-        const orientationEnum =
-            print_preview.ticket_items.CustomMarginsOrientation;
-        ticket['marginsCustom'] = {
-          'marginTop': customMargins.get(orientationEnum.TOP),
-          'marginRight': customMargins.get(orientationEnum.RIGHT),
-          'marginBottom': customMargins.get(orientationEnum.BOTTOM),
-          'marginLeft': customMargins.get(orientationEnum.LEFT)
-        };
-      }
-
-      return cr.sendWithPromise(
-          'getPreview', JSON.stringify(ticket),
-          requestId > 0 ? documentInfo.pageCount : -1);
+    getPreview(printTicket, pageCount) {
+      return cr.sendWithPromise('getPreview', printTicket, pageCount);
     }
 
     /**
      * Requests that the document be printed.
-     * @param {!print_preview.Destination} destination Destination to print to.
-     * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
-     *     state of the print ticket.
-     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
-     * @param {boolean=} opt_isOpenPdfInPreview Whether to open the PDF in the
-     *     system's preview application.
-     * @param {boolean=} opt_showSystemDialog Whether to open system dialog for
-     *     advanced settings.
+     * @param {string} printTicket The serialized print ticket for the print
+     *     job.
      * @return {!Promise} Promise that will resolve when the print request is
      *     finished or rejected.
      */
-    print(
-        destination, printTicketStore, documentInfo, opt_isOpenPdfInPreview,
-        opt_showSystemDialog) {
-      assert(
-          printTicketStore.isTicketValid(),
-          'Trying to print when ticket is not valid');
-
-      assert(
-          !opt_showSystemDialog || (cr.isWindows && destination.isLocal),
-          'Implemented for Windows only');
-
-      // Note: update
-      // chrome/browser/ui/webui/print_preview/print_preview_handler_unittest.cc
-      // with any changes to ticket creation.
-      const ticket = {
-        'mediaSize': printTicketStore.mediaSize.getValue(),
-        'pageCount': printTicketStore.pageRange.getPageNumberSet().size,
-        'landscape': printTicketStore.landscape.getValue(),
-        'color': this.getNativeColorModel_(destination, printTicketStore.color),
-        'headerFooterEnabled': false,  // Only used in print preview
-        'marginsType': printTicketStore.marginsType.getValue(),
-        'duplex': printTicketStore.duplex.getValue() ?
-            NativeLayer.DuplexMode.LONG_EDGE :
-            NativeLayer.DuplexMode.SIMPLEX,
-        'copies': printTicketStore.copies.getValueAsNumber(),
-        'collate': printTicketStore.collate.getValue(),
-        'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
-        'shouldPrintSelectionOnly': false,  // Only used in print preview
-        'previewModifiable': documentInfo.isModifiable,
-        'printToPDF': destination.id ==
-            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-        'printWithCloudPrint': !destination.isLocal,
-        'printWithPrivet': destination.isPrivet,
-        'printWithExtension': destination.isExtension,
-        'rasterizePDF': printTicketStore.rasterize.getValue(),
-        'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
-        'dpiHorizontal': 'horizontal_dpi' in printTicketStore.dpi.getValue() ?
-            printTicketStore.dpi.getValue().horizontal_dpi :
-            0,
-        'dpiVertical': 'vertical_dpi' in printTicketStore.dpi.getValue() ?
-            printTicketStore.dpi.getValue().vertical_dpi :
-            0,
-        'deviceName': destination.id,
-        'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
-        'pageWidth': documentInfo.pageSize.width,
-        'pageHeight': documentInfo.pageSize.height,
-        'showSystemDialog': opt_showSystemDialog
-      };
-
-      if (!destination.isLocal) {
-        // We can't set cloudPrintID if the destination is "Print with Cloud
-        // Print" because the native system will try to print to Google Cloud
-        // Print with this ID instead of opening a Google Cloud Print dialog.
-        ticket['cloudPrintID'] = destination.id;
-      }
-
-      if (printTicketStore.marginsType.isCapabilityAvailable() &&
-          printTicketStore.marginsType.isValueEqual(
-              print_preview.ticket_items.MarginsTypeValue.CUSTOM)) {
-        const customMargins = printTicketStore.customMargins.getValue();
-        const orientationEnum =
-            print_preview.ticket_items.CustomMarginsOrientation;
-        ticket['marginsCustom'] = {
-          'marginTop': customMargins.get(orientationEnum.TOP),
-          'marginRight': customMargins.get(orientationEnum.RIGHT),
-          'marginBottom': customMargins.get(orientationEnum.BOTTOM),
-          'marginLeft': customMargins.get(orientationEnum.LEFT)
-        };
-      }
-
-      if (destination.isPrivet || destination.isExtension) {
-        ticket['ticket'] = printTicketStore.createPrintTicket(destination);
-        ticket['capabilities'] = JSON.stringify(destination.capabilities);
-      }
-
-      if (opt_isOpenPdfInPreview) {
-        ticket['OpenPDFInPreview'] = true;
-      }
-
-      return cr.sendWithPromise('print', JSON.stringify(ticket));
+    print(printTicket) {
+      return cr.sendWithPromise('print', printTicket);
     }
 
     /** Requests that the current pending print request be cancelled. */
@@ -392,7 +224,7 @@ cr.define('print_preview', function() {
 
     /**
      * Sends the app state to be saved in the sticky settings.
-     * @param {string} appStateStr JSON string of the app state to persist
+     * @param {string} appStateStr JSON string of the app state to persist.
      */
     saveAppState(appStateStr) {
       chrome.send('saveAppState', [appStateStr]);
@@ -478,19 +310,6 @@ cr.define('print_preview', function() {
 
   /** @private {?print_preview.NativeLayer} */
   let currentInstance = null;
-
-  /**
-   * Constant values matching printing::DuplexMode enum.
-   * @enum {number}
-   */
-  NativeLayer.DuplexMode = {SIMPLEX: 0, LONG_EDGE: 1, UNKNOWN_DUPLEX_MODE: -1};
-
-  /**
-   * Enumeration of color modes used by Chromium.
-   * @enum {number}
-   * @private
-   */
-  NativeLayer.ColorMode_ = {GRAY: 1, COLOR: 2};
 
   /**
    * Version of the serialized state of the print preview.
