@@ -3508,7 +3508,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         (<ph name="RATING_COUNT">$1<ex>46</ex></ph>)
       </message>
       <message name="IDS_EXTENSION_PROMPT_RATING_ACCESSIBLE_TEXT" desc="The text read by a screen reader for the ratings section of an extension prompt, indicating to the user what the average rating for an extension is and how many times it has been rated. [ICU Syntax]">
-        Rated <ph name="AVERAGE_RATING">{0, number,0.0}<ex>3.2</ex></ph> by <ph name="NUMBER_OF_RATINGS">{1, plural, =1 {one user} other {# users}}<ex>400 users</ex></ph>.
+        {1, plural,
+          =1 {Rated <ph name="AVERAGE_RATING">{0, number,0.0}<ex>3.2</ex></ph> by one user.}
+          other{Rated <ph name="AVERAGE_RATING">{0, number,0.0}<ex>3.2</ex></ph> by # users.}}
       </message>
       <message name="IDS_EXTENSION_PROMPT_NO_RATINGS_ACCESSIBLE_TEXT" desc="The text read by a screen reader for the ratings section of an extension prompt when there haven't been any user ratings for the extension.">
         Not yet rated by any users.
