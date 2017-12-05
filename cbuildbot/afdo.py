@@ -538,7 +538,6 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
     afdo_cmd = [AFDO_GENERATE_LLVM_PROF,
                 '--binary=%s' % debug_sym,
                 '--profile=%s' % perf_afdo_path,
-                '--format=text',
                 '--out=%s' % afdo_path]
   else:
     afdo_cmd = [AFDO_GENERATE_GCOV_TOOL,
