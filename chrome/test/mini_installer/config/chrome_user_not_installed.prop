@@ -3,16 +3,23 @@
     "$LOCAL_APPDATA\\$CHROME_DIR\\Application": {"exists": false}
   },
   "RegistryEntries": {
-    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY\\Commands":
-        {"exists": "forbidden"},
-    "HKEY_CURRENT_USER\\$BINARIES_UPDATE_REGISTRY_SUBKEY":
-        {"exists": "forbidden"},
+    "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY\\Commands": {
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
+    },
+    "HKEY_CURRENT_USER\\$BINARIES_UPDATE_REGISTRY_SUBKEY": {
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
+    },
     "HKEY_CURRENT_USER\\$LAUNCHER_UPDATE_REGISTRY_SUBKEY": {
       "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
-      "exists": "forbidden"
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
     },
-    "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME":
-        {"exists": "forbidden"},
+    "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME": {
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
+    },
     "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME$USER_SPECIFIC_REGISTRY_SUFFIX": {
       "exists": "forbidden"
     }

@@ -7,6 +7,7 @@ import hashlib
 import os
 import string
 import win32api
+import win32file
 import win32com.client
 from win32com.shell import shell, shellcon
 import win32security
@@ -16,6 +17,13 @@ def _GetFileVersion(file_path):
   """Returns the file version of the given file."""
   return win32com.client.Dispatch('Scripting.FileSystemObject').GetFileVersion(
       file_path)
+
+
+def _GetFileBitness(file_path):
+  """Returns the bitness of the given file."""
+  if win32file.GetBinaryType(file_path) == win32file.SCS_32BIT_BINARY:
+    return '32'
+  return '64'
 
 
 def _GetProductName(file_path):
@@ -90,6 +98,7 @@ class VariableExpander:
         * $LOCAL_APPDATA: the unquoted path to the Local Application Data
             folder.
         * $MINI_INSTALLER: the unquoted path to the mini_installer.
+        * $MINI_INSTALLER_BITNESS: the bitness of the mini_installer.
         * $MINI_INSTALLER_FILE_VERSION: the file version of $MINI_INSTALLER.
         * $NEXT_VERSION_MINI_INSTALLER: the unquoted path to a mini_installer
             whose version is higher than $MINI_INSTALLER.
@@ -116,6 +125,7 @@ class VariableExpander:
                                                None, 0),
         'MINI_INSTALLER': mini_installer_abspath,
         'MINI_INSTALLER_FILE_VERSION': _GetFileVersion(mini_installer_abspath),
+        'MINI_INSTALLER_BITNESS': _GetFileBitness(mini_installer_abspath),
         'NEXT_VERSION_MINI_INSTALLER': next_version_mini_installer_abspath,
         'NEXT_VERSION_MINI_INSTALLER_FILE_VERSION': _GetFileVersion(
             next_version_mini_installer_abspath),

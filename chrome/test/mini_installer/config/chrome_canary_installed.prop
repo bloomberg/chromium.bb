@@ -20,8 +20,12 @@
     "HKEY_CURRENT_USER\\$CHROME_UPDATE_REGISTRY_SUBKEY_SXS": {
       "exists": "required",
       "values": {
-        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
-      }
+        "pv": {
+          "type": "SZ",
+          "data": "$MINI_INSTALLER_FILE_VERSION"
+        }
+      },
+      "wow_key": "KEY_WOW64_32KEY"
     },
     "HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME_SXS": {
       "exists": "required",
@@ -30,8 +34,12 @@
           "type": "SZ",
           "data": "\"$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --chrome-sxs --verbose-logging"
         },
-        "Version": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
-      }
+        "Version": {
+          "type": "SZ",
+          "data": "$MINI_INSTALLER_FILE_VERSION"
+        }
+      },
+      "wow_key": "KEY_WOW64_32KEY"
     },
     "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME_SXS$USER_SPECIFIC_REGISTRY_SUFFIX": {
       "exists": "forbidden"

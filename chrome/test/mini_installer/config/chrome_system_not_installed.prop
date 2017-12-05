@@ -4,15 +4,22 @@
   },
   "RegistryEntries": {
     "HKEY_LOCAL_MACHINE\\$CHROME_UPDATE_REGISTRY_SUBKEY": {
-      "exists": "forbidden"},
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
+    },
     "HKEY_LOCAL_MACHINE\\$BINARIES_UPDATE_REGISTRY_SUBKEY": {
-      "exists": "forbidden"},
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
+    },
     "HKEY_LOCAL_MACHINE\\$LAUNCHER_UPDATE_REGISTRY_SUBKEY": {
       "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
-      "exists": "forbidden"
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
     },
-    "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME":
-        {"exists": "forbidden"},
+    "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\$CHROME_LONG_NAME": {
+      "exists": "forbidden",
+      "wow_key": "KEY_WOW64_32KEY"
+    },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
       "exists": "forbidden"
     }
