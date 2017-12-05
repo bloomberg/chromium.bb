@@ -43,8 +43,7 @@ std::string GetSinkId(const Display& display) {
 
 const char kPresentationSource[] = "https://www.example.com/presentation";
 const char kNonPresentationSource[] = "not://a.valid.presentation/source";
-const mojom::MediaRouteProvider::Id kProviderId =
-    mojom::MediaRouteProvider::Id::WIRED_DISPLAY;
+const MediaRouteProviderId kProviderId = MediaRouteProviderId::WIRED_DISPLAY;
 
 }  // namespace
 
@@ -145,8 +144,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, GetDisplaysAsSinks) {
   const std::string sink_id1 = GetSinkId(sink_display1_);
   const std::string sink_id2 = GetSinkId(sink_display2_);
   EXPECT_CALL(router_,
-              OnSinksReceived(mojom::MediaRouteProvider::Id::WIRED_DISPLAY,
-                              kPresentationSource, _, IsEmpty()))
+              OnSinksReceived(kProviderId, kPresentationSource, _, IsEmpty()))
       .WillOnce(WithArg<2>(Invoke(
           [&sink_id1, &sink_id2](const std::vector<MediaSinkInternal>& sinks) {
             EXPECT_EQ(sinks.size(), 2u);

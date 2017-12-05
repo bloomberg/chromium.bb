@@ -53,7 +53,7 @@ void MediaRouterDesktop::OnUserGesture() {
 #endif
 }
 
-base::Optional<mojom::MediaRouteProvider::Id>
+base::Optional<MediaRouteProviderId>
 MediaRouterDesktop::GetProviderIdForPresentation(
     const std::string& presentation_id) {
   // TODO(takumif): Once the Android Media Router also uses MediaRouterMojoImpl,
@@ -61,7 +61,7 @@ MediaRouterDesktop::GetProviderIdForPresentation(
   if (presentation_id == kAutoJoinPresentationId ||
       base::StartsWith(presentation_id, kCastPresentationIdPrefix,
                        base::CompareCase::SENSITIVE)) {
-    return mojom::MediaRouteProvider::Id::EXTENSION;
+    return MediaRouteProviderId::EXTENSION;
   }
   return MediaRouterMojoImpl::GetProviderIdForPresentation(presentation_id);
 }
@@ -81,7 +81,7 @@ MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
 }
 
 void MediaRouterDesktop::RegisterMediaRouteProvider(
-    mojom::MediaRouteProvider::Id provider_id,
+    MediaRouteProviderId provider_id,
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   auto config = mojom::MediaRouteProviderConfig::New();
@@ -94,7 +94,7 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
 
   SyncStateToMediaRouteProvider(provider_id);
 
-  if (provider_id == mojom::MediaRouteProvider::Id::EXTENSION) {
+  if (provider_id == MediaRouteProviderId::EXTENSION) {
     RegisterExtensionMediaRouteProvider(std::move(media_route_provider_ptr));
   } else {
     media_route_provider_ptr.set_connection_error_handler(
@@ -201,7 +201,7 @@ void MediaRouterDesktop::InitializeExtensionMediaRouteProviderProxy() {
   extension_provider_proxy_ =
       std::make_unique<ExtensionMediaRouteProviderProxy>(
           context(), mojo::MakeRequest(&extension_provider_proxy_ptr));
-  media_route_providers_[mojom::MediaRouteProvider::Id::EXTENSION] =
+  media_route_providers_[MediaRouteProviderId::EXTENSION] =
       std::move(extension_provider_proxy_ptr);
 }
 
@@ -213,7 +213,7 @@ void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
       mojo::MakeRequest(&wired_display_provider_ptr),
       std::move(media_router_ptr), Profile::FromBrowserContext(context()));
   RegisterMediaRouteProvider(
-      mojom::MediaRouteProvider::Id::WIRED_DISPLAY,
+      MediaRouteProviderId::WIRED_DISPLAY,
       std::move(wired_display_provider_ptr),
       base::BindOnce([](const std::string& instance_id,
                         mojom::MediaRouteProviderConfigPtr config) {}));

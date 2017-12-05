@@ -497,6 +497,7 @@ function sinkToMojo_(sink) {
     'domain': sink.domain,
     'sinkId': sink.id,
     'iconType': sinkIconTypeToMojo(sink.iconType),
+    'provider_id': mediaRouterMojom.MediaRouteProvider.Id.EXTENSION,
   });
 }
 

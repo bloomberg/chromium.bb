@@ -178,12 +178,12 @@ MediaRouterMojoTest::~MediaRouterMojoTest() {}
 
 void MediaRouterMojoTest::RegisterExtensionProvider() {
   RegisterMediaRouteProvider(&mock_extension_provider_,
-                             mojom::MediaRouteProvider::Id::EXTENSION);
+                             MediaRouteProviderId::EXTENSION);
 }
 
 void MediaRouterMojoTest::RegisterWiredDisplayProvider() {
   RegisterMediaRouteProvider(&mock_wired_display_provider_,
-                             mojom::MediaRouteProvider::Id::WIRED_DISPLAY);
+                             MediaRouteProviderId::WIRED_DISPLAY);
 }
 
 void MediaRouterMojoTest::SetUp() {
@@ -199,9 +199,8 @@ void MediaRouterMojoTest::TearDown() {
   media_router_->Shutdown();
 }
 
-void MediaRouterMojoTest::ProvideTestRoute(
-    mojom::MediaRouteProvider::Id provider_id,
-    const MediaRoute::Id& route_id) {
+void MediaRouterMojoTest::ProvideTestRoute(MediaRouteProviderId provider_id,
+                                           const MediaRoute::Id& route_id) {
   if (!routes_observer_)
     routes_observer_ = std::make_unique<MediaRoutesObserver>(router(), kSource);
   MediaRoute route = CreateMediaRoute();
@@ -209,9 +208,8 @@ void MediaRouterMojoTest::ProvideTestRoute(
   router()->OnRoutesUpdated(provider_id, {route}, kSource, {});
 }
 
-void MediaRouterMojoTest::ProvideTestSink(
-    mojom::MediaRouteProvider::Id provider_id,
-    const MediaSink::Id& sink_id) {
+void MediaRouterMojoTest::ProvideTestSink(MediaRouteProviderId provider_id,
+                                          const MediaSink::Id& sink_id) {
   if (!sinks_observer_) {
     sinks_observer_ = std::make_unique<MockMediaSinksObserver>(
         router(), MediaSource(kSource), url::Origin::Create(GURL(kOrigin)));
@@ -219,7 +217,8 @@ void MediaRouterMojoTest::ProvideTestSink(
   }
 
   MediaSinkInternal test_sink;
-  test_sink.set_sink_id(sink_id);
+  test_sink.sink().set_sink_id(sink_id);
+  test_sink.sink().set_provider_id(provider_id);
   router()->OnSinksReceived(provider_id, kSource, {test_sink}, {});
 }
 
@@ -227,7 +226,7 @@ void MediaRouterMojoTest::TestCreateRoute() {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
                             false);
-  ProvideTestSink(mojom::MediaRouteProvider::Id::EXTENSION, kSinkId);
+  ProvideTestSink(MediaRouteProviderId::EXTENSION, kSinkId);
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -268,7 +267,7 @@ void MediaRouterMojoTest::TestJoinRoute(const std::string& presentation_id) {
   // is a route to join.
   std::vector<MediaRoute> routes;
   routes.push_back(route);
-  router()->OnRoutesUpdated(mojom::MediaRouteProvider::Id::EXTENSION, routes,
+  router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, routes,
                             std::string(), std::vector<std::string>());
   EXPECT_TRUE(router()->HasJoinableRoute());
 
@@ -308,7 +307,7 @@ void MediaRouterMojoTest::TestConnectRouteByRouteId() {
                             false);
   expected_route.set_incognito(false);
   MediaRoute route = CreateMediaRoute();
-  ProvideTestRoute(mojom::MediaRouteProvider::Id::EXTENSION, kRouteId);
+  ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -341,7 +340,7 @@ void MediaRouterMojoTest::TestConnectRouteByRouteId() {
 }
 
 void MediaRouterMojoTest::TestTerminateRoute() {
-  ProvideTestRoute(mojom::MediaRouteProvider::Id::EXTENSION, kRouteId);
+  ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   EXPECT_CALL(mock_extension_provider_, TerminateRouteInternal(kRouteId, _))
       .WillOnce(
           Invoke([](const std::string& route_id,
@@ -353,7 +352,7 @@ void MediaRouterMojoTest::TestTerminateRoute() {
 }
 
 void MediaRouterMojoTest::TestSendRouteMessage() {
-  ProvideTestRoute(mojom::MediaRouteProvider::Id::EXTENSION, kRouteId);
+  ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   EXPECT_CALL(mock_extension_provider_,
               SendRouteMessageInternal(kRouteId, kMessage, _))
       .WillOnce(
@@ -371,7 +370,7 @@ void MediaRouterMojoTest::TestSendRouteMessage() {
 }
 
 void MediaRouterMojoTest::TestSendRouteBinaryMessage() {
-  ProvideTestRoute(mojom::MediaRouteProvider::Id::EXTENSION, kRouteId);
+  ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   auto expected_binary_data = std::make_unique<std::vector<uint8_t>>(
       kBinaryMessage, kBinaryMessage + arraysize(kBinaryMessage));
   EXPECT_CALL(mock_extension_provider_,
@@ -394,7 +393,7 @@ void MediaRouterMojoTest::TestSendRouteBinaryMessage() {
 }
 
 void MediaRouterMojoTest::TestDetachRoute() {
-  ProvideTestRoute(mojom::MediaRouteProvider::Id::EXTENSION, kRouteId);
+  ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   EXPECT_CALL(mock_extension_provider_, DetachRoute(kRouteId));
   router()->DetachRoute(kRouteId);
   base::RunLoop().RunUntilIdle();
@@ -404,7 +403,7 @@ void MediaRouterMojoTest::TestSearchSinks() {
   std::string search_input("input");
   std::string domain("google.com");
   MediaSource media_source(kSource);
-  ProvideTestSink(mojom::MediaRouteProvider::Id::EXTENSION, kSinkId);
+  ProvideTestSink(MediaRouteProviderId::EXTENSION, kSinkId);
 
   EXPECT_CALL(mock_extension_provider_,
               SearchSinksInternal(kSinkId, kSource, _, _))
@@ -434,7 +433,7 @@ void MediaRouterMojoTest::TestCreateMediaRouteController() {
   MediaStatus media_status;
   media_status.title = "test title";
 
-  router()->OnRoutesUpdated(mojom::MediaRouteProvider::Id::EXTENSION,
+  router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION,
                             {CreateMediaRoute()}, std::string(),
                             std::vector<std::string>());
 
@@ -480,7 +479,7 @@ void MediaRouterMojoTest::TestCreateHangoutsMediaRouteController() {
 
   MediaRoute route = CreateMediaRoute();
   route.set_controller_type(RouteControllerType::kHangouts);
-  router()->OnRoutesUpdated(mojom::MediaRouteProvider::Id::EXTENSION, {route},
+  router()->OnRoutesUpdated(MediaRouteProviderId::EXTENSION, {route},
                             std::string(), std::vector<std::string>());
 
   EXPECT_CALL(mock_extension_provider_,
@@ -516,7 +515,7 @@ void MediaRouterMojoTest::TestCreateHangoutsMediaRouteController() {
 
 void MediaRouterMojoTest::RegisterMediaRouteProvider(
     mojom::MediaRouteProvider* provider,
-    mojom::MediaRouteProvider::Id provider_id) {
+    MediaRouteProviderId provider_id) {
   mojom::MediaRouteProviderPtr mojo_provider;
   provider_bindings_.AddBinding(provider, mojo::MakeRequest(&mojo_provider));
   media_router_->RegisterMediaRouteProvider(

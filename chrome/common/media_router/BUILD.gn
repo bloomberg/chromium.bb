@@ -23,6 +23,7 @@ static_library("router") {
     "issue.h",
     "media_route.cc",
     "media_route.h",
+    "media_route_provider_helper.h",
     "media_sink.cc",
     "media_sink.h",
     "media_source.cc",

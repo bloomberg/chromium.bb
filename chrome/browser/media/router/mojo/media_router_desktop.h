@@ -48,7 +48,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
  protected:
   // MediaRouterMojoImpl override:
-  base::Optional<mojom::MediaRouteProvider::Id> GetProviderIdForPresentation(
+  base::Optional<MediaRouteProviderId> GetProviderIdForPresentation(
       const std::string& presentation_id) override;
 
  private:
@@ -70,7 +70,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
   // mojom::MediaRouter implementation.
   void RegisterMediaRouteProvider(
-      mojom::MediaRouteProvider::Id provider_id,
+      MediaRouteProviderId provider_id,
       mojom::MediaRouteProviderPtr media_route_provider_ptr,
       mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) override;
 

@@ -9,22 +9,27 @@
 namespace media_router {
 
 TEST(MediaSinkTest, Equals) {
-  MediaSink sink1("sinkId", "Sink", SinkIconType::CAST);
+  MediaSink sink1("sinkId", "Sink", SinkIconType::CAST,
+                  MediaRouteProviderId::EXTENSION);
 
   // No name, same as sink1.
-  MediaSink sink2("sinkId", "", SinkIconType::CAST);
+  MediaSink sink2("sinkId", "", SinkIconType::CAST,
+                  MediaRouteProviderId::EXTENSION);
   EXPECT_TRUE(sink1.Equals(sink2));
 
   // Sink name is different from sink1's.
-  MediaSink sink3("sinkId", "Other Sink", SinkIconType::CAST);
+  MediaSink sink3("sinkId", "Other Sink", SinkIconType::CAST,
+                  MediaRouteProviderId::EXTENSION);
   EXPECT_TRUE(sink1.Equals(sink3));
 
   // Sink ID is diffrent from sink1's.
-  MediaSink sink4("otherSinkId", "Sink", SinkIconType::CAST);
+  MediaSink sink4("otherSinkId", "Sink", SinkIconType::CAST,
+                  MediaRouteProviderId::EXTENSION);
   EXPECT_FALSE(sink1.Equals(sink4));
 
   // Sink icon type is diffrent from sink1's.
-  MediaSink sink5("otherSinkId", "Sink", SinkIconType::GENERIC);
+  MediaSink sink5("otherSinkId", "Sink", SinkIconType::GENERIC,
+                  MediaRouteProviderId::EXTENSION);
   EXPECT_FALSE(sink1.Equals(sink5));
 }
 
