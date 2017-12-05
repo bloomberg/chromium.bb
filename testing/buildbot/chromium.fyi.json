@@ -3872,7 +3872,8 @@
       "content_browsertests",
       "content_shell",
       "gl_unittests",
-      "headless_shell"
+      "headless_shell",
+      "webkit_unit_tests"
     ],
     "gtest_tests": [
       {
@@ -4074,7 +4075,8 @@
       "content_unittests",
       "gl_unittests",
       "media_unittests",
-      "net_unittests"
+      "net_unittests",
+      "webkit_unit_tests"
     ],
     "gtest_tests": [
       {
@@ -4248,7 +4250,8 @@
       "gl_unittests",
       "headless_shell",
       "media_unittests",
-      "net_unittests"
+      "net_unittests",
+      "webkit_unit_tests"
     ],
     "gtest_tests": [
       {

@@ -37,18 +37,10 @@ TEST(NativeValueTraitsImplTest, IDLCallbackFunction) {
   DummyExceptionStateForTesting exception_state;
   v8::Local<v8::Function> function =
       v8::Function::New(scope.GetContext(), nullptr).ToLocalChecked();
-#if defined(OFFICIAL_BUILD)
-  // crbug.com/779820
-  // Official builds have an issue that stripts the CHECK strings despite that
-  // the strings are referenced in tests.
-  ASSERT_DEATH(NativeValueTraits<V8TestSequenceCallback>::NativeValue(
-                   scope.GetIsolate(), function, exception_state),
-               "");
-#else
-  ASSERT_DEATH(NativeValueTraits<V8TestSequenceCallback>::NativeValue(
-                   scope.GetIsolate(), function, exception_state),
-               "NativeValueTraits<CallbackFunctionBase>::NativeValue");
-#endif
+  ASSERT_DEATH_IF_SUPPORTED(
+      NativeValueTraits<V8TestSequenceCallback>::NativeValue(
+          scope.GetIsolate(), function, exception_state),
+      "");
 }
 
 void ThrowException(v8::Local<v8::Name>,
