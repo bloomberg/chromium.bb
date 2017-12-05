@@ -36,7 +36,7 @@ POLL_DELAY_SECONDS = 2 * 60
 TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to TBR.
-ROTATIONS_URL = 'http://chromium-build.appspot.com/p/chromium/all_rotations.js'
+ROTATIONS_URL = 'https://build.chromium.org/deprecated/chromium/all_rotations.js'
 
 _log = logging.getLogger(__file__)
 
