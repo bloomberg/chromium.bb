@@ -137,6 +137,17 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
     return flattener.GetRecordedDeltaHistogramNames().size();
   }
 
+  size_t GetIndependentHistogramCount() {
+    HistogramFlattenerDeltaRecorder flattener;
+    base::HistogramSnapshotManager snapshot_manager(&flattener);
+    SystemProfileProto profile_proto;
+    if (!provider()->ProvideIndependentMetrics(&profile_proto,
+                                               &snapshot_manager)) {
+      return 0;
+    }
+    return flattener.GetRecordedDeltaHistogramNames().size();
+  }
+
   void CreateGlobalHistograms(int histogram_count) {
     DCHECK_GT(kMaxCreateHistograms, histogram_count);
 
@@ -177,6 +188,8 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
 
   std::unique_ptr<base::PersistentHistogramAllocator>
   CreateMetricsFileWithHistograms(
+      const base::FilePath& file_path,
+      base::Time write_time,
       int histogram_count,
       const std::function<void(base::PersistentHistogramAllocator*)>&
           callback) {
@@ -190,14 +203,15 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
         base::GlobalHistogramAllocator::ReleaseForTesting();
     callback(histogram_allocator.get());
 
-    WriteMetricsFile(metrics_file(), histogram_allocator.get());
+    WriteMetricsFileAtTime(file_path, histogram_allocator.get(), write_time);
     return histogram_allocator;
   }
 
   std::unique_ptr<base::PersistentHistogramAllocator>
   CreateMetricsFileWithHistograms(int histogram_count) {
     return CreateMetricsFileWithHistograms(
-        histogram_count, [](base::PersistentHistogramAllocator* allocator) {});
+        metrics_file(), base::Time::Now(), histogram_count,
+        [](base::PersistentHistogramAllocator* allocator) {});
   }
 
   base::HistogramBase* GetCreatedHistogram(int index) {
@@ -467,6 +481,74 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
   EXPECT_TRUE(
       base::PathExists(metrics_files.GetPath().AppendASCII("_bar.pma")));
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("baz")));
+}
+
+TEST_P(FileMetricsProviderTest, AccessDirectoryWithInvalidFiles) {
+  ASSERT_FALSE(PathExists(metrics_file()));
+
+  // Create files starting with a timestamp a few minutes back.
+  base::Time base_time = base::Time::Now() - base::TimeDelta::FromMinutes(10);
+
+  base::ScopedTempDir metrics_files;
+  EXPECT_TRUE(metrics_files.CreateUniqueTempDir());
+
+  CreateMetricsFileWithHistograms(
+      metrics_files.GetPath().AppendASCII("h1.pma"),
+      base_time + base::TimeDelta::FromMinutes(1), 1,
+      [](base::PersistentHistogramAllocator* allocator) {
+        allocator->memory_allocator()->SetMemoryState(
+            base::PersistentMemoryAllocator::MEMORY_DELETED);
+      });
+
+  CreateMetricsFileWithHistograms(
+      metrics_files.GetPath().AppendASCII("h2.pma"),
+      base_time + base::TimeDelta::FromMinutes(2), 2,
+      [](base::PersistentHistogramAllocator* allocator) {
+        SystemProfileProto profile_proto;
+        SystemProfileProto::FieldTrial* trial = profile_proto.add_field_trial();
+        trial->set_name_id(123);
+        trial->set_group_id(456);
+
+        PersistentSystemProfile persistent_profile;
+        persistent_profile.RegisterPersistentAllocator(
+            allocator->memory_allocator());
+        persistent_profile.SetSystemProfile(profile_proto, true);
+      });
+
+  CreateMetricsFileWithHistograms(
+      metrics_files.GetPath().AppendASCII("h3.pma"),
+      base_time + base::TimeDelta::FromMinutes(3), 3,
+      [](base::PersistentHistogramAllocator* allocator) {
+        allocator->memory_allocator()->SetMemoryState(
+            base::PersistentMemoryAllocator::MEMORY_DELETED);
+      });
+
+  // Register the file and allow the "checker" task to run.
+  provider()->RegisterSource(FileMetricsProvider::Params(
+      metrics_files.GetPath(),
+      FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+      FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE, kMetricsName));
+
+  // No files yet.
+  EXPECT_EQ(0U, GetIndependentHistogramCount());
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h1.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h2.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h3.pma")));
+
+  // H1 should be skipped and H2 available.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(2U, GetIndependentHistogramCount());
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("h1.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h2.pma")));
+  EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("h3.pma")));
+
+  // Nothing else should be found.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(0U, GetIndependentHistogramCount());
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("h2.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("h3.pma")));
 }
 
 TEST_P(FileMetricsProviderTest, AccessTimeLimitedDirectory) {
@@ -807,7 +889,8 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsWithoutProfile) {
 TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsWithProfile) {
   ASSERT_FALSE(PathExists(metrics_file()));
   CreateMetricsFileWithHistograms(
-      2, [](base::PersistentHistogramAllocator* allocator) {
+      metrics_file(), base::Time::Now(), 2,
+      [](base::PersistentHistogramAllocator* allocator) {
         SystemProfileProto profile_proto;
         SystemProfileProto::FieldTrial* trial = profile_proto.add_field_trial();
         trial->set_name_id(123);
@@ -878,7 +961,8 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedFallbackMetricsWithoutProfile) {
 TEST_P(FileMetricsProviderTest, AccessEmbeddedFallbackMetricsWithProfile) {
   ASSERT_FALSE(PathExists(metrics_file()));
   CreateMetricsFileWithHistograms(
-      2, [](base::PersistentHistogramAllocator* allocator) {
+      metrics_file(), base::Time::Now(), 2,
+      [](base::PersistentHistogramAllocator* allocator) {
         SystemProfileProto profile_proto;
         SystemProfileProto::FieldTrial* trial = profile_proto.add_field_trial();
         trial->set_name_id(123);
@@ -923,7 +1007,8 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsFromDir) {
   std::vector<base::FilePath> file_names;
   for (int i = 0; i < file_count; ++i) {
     CreateMetricsFileWithHistograms(
-        2, [](base::PersistentHistogramAllocator* allocator) {
+        metrics_file(), base::Time::Now(), 2,
+        [](base::PersistentHistogramAllocator* allocator) {
           SystemProfileProto profile_proto;
           SystemProfileProto::FieldTrial* trial =
               profile_proto.add_field_trial();

@@ -367,6 +367,7 @@ void FileMetricsProvider::FinishedWithSource(SourceInfo* source,
       // the browser.
       if (result == ACCESS_RESULT_SUCCESS ||
           result == ACCESS_RESULT_NOT_MODIFIED ||
+          result == ACCESS_RESULT_MEMORY_DELETED ||
           result == ACCESS_RESULT_TOO_OLD) {
         DeleteFileWhenPossible(source->path);
       }
@@ -384,28 +385,39 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
   // This method has all state information passed in |sources| and is intended
   // to run on a worker thread rather than the UI thread.
   for (std::unique_ptr<SourceInfo>& source : *sources) {
-    AccessResult result = CheckAndMapMetricSource(source.get());
+    AccessResult result;
+    do {
+      result = CheckAndMapMetricSource(source.get());
 
-    // Some results are not reported in order to keep the dashboard clean.
-    if (result != ACCESS_RESULT_DOESNT_EXIST &&
-        result != ACCESS_RESULT_NOT_MODIFIED &&
-        result != ACCESS_RESULT_THIS_PID) {
-      RecordAccessResult(result);
-    }
+      // Some results are not reported in order to keep the dashboard clean.
+      if (result != ACCESS_RESULT_DOESNT_EXIST &&
+          result != ACCESS_RESULT_NOT_MODIFIED &&
+          result != ACCESS_RESULT_THIS_PID) {
+        RecordAccessResult(result);
+      }
 
-    // Metrics associated with internal profiles have to be fetched directly
-    // so just keep the mapping for use by the main thread.
-    if (source->association == ASSOCIATE_INTERNAL_PROFILE)
-      continue;
+      // If there are no files (or no more files) in this source, stop now.
+      if (result == ACCESS_RESULT_DOESNT_EXIST)
+        break;
 
-    // Mapping was successful. Merge it.
-    if (result == ACCESS_RESULT_SUCCESS) {
-      MergeHistogramDeltasFromSource(source.get());
-      DCHECK(source->read_complete);
-    }
+      // Mapping was successful. Merge it.
+      if (result == ACCESS_RESULT_SUCCESS) {
+        // Metrics associated with internal profiles have to be fetched directly
+        // so just keep the mapping for use by the main thread.
+        if (source->association == ASSOCIATE_INTERNAL_PROFILE)
+          break;
 
-    // All done with this source.
-    FinishedWithSource(source.get(), result);
+        MergeHistogramDeltasFromSource(source.get());
+        DCHECK(source->read_complete);
+      }
+
+      // All done with this source.
+      FinishedWithSource(source.get(), result);
+
+      // If it's a directory, keep trying until a file is successfully opened.
+      // When there are no more files, ACCESS_RESULT_DOESNT_EXIST will be
+      // returned and the loop will exit above.
+    } while (result != ACCESS_RESULT_SUCCESS && !source->directory.empty());
   }
 }
 
@@ -479,6 +491,13 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
   // Create an allocator for the mapped file. Ownership passes to the allocator.
   source->allocator = base::MakeUnique<base::PersistentHistogramAllocator>(
       std::move(memory_allocator));
+
+  // Check that an "independent" file has the necessary information present.
+  if (source->association == ASSOCIATE_INTERNAL_PROFILE &&
+      !PersistentSystemProfile::GetSystemProfile(
+          *source->allocator->memory_allocator(), nullptr)) {
+    return ACCESS_RESULT_NO_PROFILE;
+  }
 
   return ACCESS_RESULT_SUCCESS;
 }
