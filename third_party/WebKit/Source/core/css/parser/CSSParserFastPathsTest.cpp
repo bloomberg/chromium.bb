@@ -118,4 +118,45 @@ TEST(CSSParserFastPathsTest, ParseColorWithLargeAlpha) {
   EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
 }
 
+TEST(CSSParserFastPathsTest, ParseColorWithNewSyntax) {
+  CSSValue* value =
+      CSSParserFastPaths::ParseColor("rgba(0 0 0)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value = CSSParserFastPaths::ParseColor("rgba(0 0 0 / 1)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value = CSSParserFastPaths::ParseColor("rgba(0, 0, 0, 1)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value = CSSParserFastPaths::ParseColor("RGBA(0 0 0 / 1)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value = CSSParserFastPaths::ParseColor("RGB(0 0 0 / 1)", kHTMLStandardMode);
+  EXPECT_NE(nullptr, value);
+  EXPECT_TRUE(value->IsColorValue());
+  EXPECT_EQ(Color::kBlack, ToCSSColorValue(*value).Value());
+
+  value = CSSParserFastPaths::ParseColor("rgba(0 0 0 0)", kHTMLStandardMode);
+  EXPECT_EQ(nullptr, value);
+
+  value = CSSParserFastPaths::ParseColor("rgba(0, 0 0 1)", kHTMLStandardMode);
+  EXPECT_EQ(nullptr, value);
+
+  value =
+      CSSParserFastPaths::ParseColor("rgba(0, 0, 0 / 1)", kHTMLStandardMode);
+  EXPECT_EQ(nullptr, value);
+
+  value = CSSParserFastPaths::ParseColor("rgba(0 0 0, 1)", kHTMLStandardMode);
+  EXPECT_EQ(nullptr, value);
+}
+
 }  // namespace blink

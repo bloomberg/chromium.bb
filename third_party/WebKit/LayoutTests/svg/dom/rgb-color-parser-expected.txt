@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Parsed as blue: blue
 Parsed as rgb(0, 255, 0): rgb(0, 255, 0)
 Parsed as rgb(255, 255, 0): rgb(100%,100%,0%
-Failed to parse: rgba(100%,100%,0%
+Parsed as rgb(255, 255, 0): rgba(100%,100%,0%
 Failed to parse: rgb(100%,100%,r)
 Failed to parse: rgb (100%,100%,r)
 Failed to parse: rgb(100%, 1, 1)
