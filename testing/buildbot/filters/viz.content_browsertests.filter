@@ -3,7 +3,6 @@
 -CaptureScreenshotTest.*
 
 # FrameWatcher::WaitFrames times out http://crbug.com/785013
--CompositedScrollingBrowserTest.*
 -NonBlockingEventBrowserTest.*
 -TouchActionBrowserTest.*
 
