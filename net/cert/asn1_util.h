@@ -14,6 +14,13 @@ namespace net {
 
 namespace asn1 {
 
+// ExtractSubjectFromDERCert parses the DER encoded certificate in |cert| and
+// extracts the bytes of the X.501 Subject. On successful return, |subject_out|
+// is set to contain the Subject, pointing into |cert|.
+NET_EXPORT_PRIVATE bool ExtractSubjectFromDERCert(
+    base::StringPiece cert,
+    base::StringPiece* subject_out);
+
 // ExtractSPKIFromDERCert parses the DER encoded certificate in |cert| and
 // extracts the bytes of the SubjectPublicKeyInfo. On successful return,
 // |spki_out| is set to contain the SPKI, pointing into |cert|.

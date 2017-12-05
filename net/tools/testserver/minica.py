@@ -93,37 +93,14 @@ class RSA(object):
     return asn1.ToDER(asn1.SEQUENCE([self.m, self.e]))
 
 
-def Name(cn = None, c = None, o = None):
-  names = asn1.SEQUENCE([])
-
-  if cn is not None:
-    names.children.append(
-      asn1.SET([
-        asn1.SEQUENCE([
-          COMMON_NAME, cn,
-        ])
+def Name(cn):
+  return asn1.SEQUENCE([
+    asn1.SET([
+      asn1.SEQUENCE([
+        COMMON_NAME, cn,
       ])
-    )
-
-  if c is not None:
-    names.children.append(
-      asn1.SET([
-        asn1.SEQUENCE([
-          COUNTRY, c,
-        ])
-      ])
-    )
-
-  if o is not None:
-    names.children.append(
-      asn1.SET([
-        asn1.SEQUENCE([
-          ORGANIZATION, o,
-        ])
-      ])
-    )
-
-  return names
+    ])
+  ])
 
 
 # The private key and root certificate name are hard coded here:
@@ -225,10 +202,6 @@ def MakeCertificate(
   '''MakeCertificate returns a DER encoded certificate, signed by privkey.'''
   extensions = asn1.SEQUENCE([])
 
-  # Default subject name fields
-  c = "XX"
-  o = "Testing Org"
-
   if is_ca:
     # Root certificate.
     c = None
@@ -306,7 +279,7 @@ def MakeCertificate(
         asn1.UTCTime("100101060000Z"), # NotBefore
         asn1.UTCTime("321201060000Z"), # NotAfter
       ]),
-      Name(cn = subject_cn, c = c, o = o), # Subject
+      Name(cn = subject_cn), # Subject
       asn1.SEQUENCE([ # SubjectPublicKeyInfo
         asn1.SEQUENCE([ # Algorithm
           PUBLIC_KEY_RSA,

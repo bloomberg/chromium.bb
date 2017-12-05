@@ -575,6 +575,10 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->SetInteger("cert-serial", ssl_options_.cert_serial);
     }
 
+    if (!ssl_options_.cert_common_name.empty()) {
+      arguments->SetString("cert-common-name", ssl_options_.cert_common_name);
+    }
+
     // Check key exchange argument.
     std::unique_ptr<base::ListValue> key_exchange_values(new base::ListValue());
     GetKeyExchangesList(ssl_options_.key_exchanges, key_exchange_values.get());

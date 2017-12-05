@@ -15,10 +15,10 @@ namespace asn1 {
 namespace {
 
 // Parses input |in| which should point to the beginning of a Certificate, and
-// sets |*tbs_certificate| ready to parse the SubjectPublicKeyInfo. If parsing
+// sets |*tbs_certificate| ready to parse the Subject. If parsing
 // fails, this function returns false and |*tbs_certificate| is left in an
 // undefined state.
-bool SeekToSPKI(der::Input in, der::Parser* tbs_certificate) {
+bool SeekToSubject(der::Input in, der::Parser* tbs_certificate) {
   // From RFC 5280, section 4.1
   //    Certificate  ::=  SEQUENCE  {
   //      tbsCertificate       TBSCertificate,
@@ -65,10 +65,17 @@ bool SeekToSPKI(der::Input in, der::Parser* tbs_certificate) {
   // validity
   if (!tbs_certificate->SkipTag(der::kSequence))
     return false;
-  // subject
-  if (!tbs_certificate->SkipTag(der::kSequence))
-    return false;
   return true;
+}
+
+// Parses input |in| which should point to the beginning of a Certificate, and
+// sets |*tbs_certificate| ready to parse the SubjectPublicKeyInfo. If parsing
+// fails, this function returns false and |*tbs_certificate| is left in an
+// undefined state.
+bool SeekToSPKI(der::Input in, der::Parser* tbs_certificate) {
+  return SeekToSubject(in, tbs_certificate) &&
+         // Skip over Subject.
+         tbs_certificate->SkipTag(der::kSequence);
 }
 
 // Parses input |in| which should point to the beginning of a
@@ -141,6 +148,18 @@ bool SeekToExtensions(der::Input in,
 }
 
 }  // namespace
+
+bool ExtractSubjectFromDERCert(base::StringPiece cert,
+                               base::StringPiece* subject_out) {
+  der::Parser parser;
+  if (!SeekToSubject(der::Input(cert), &parser))
+    return false;
+  der::Input subject;
+  if (!parser.ReadRawTLV(&subject))
+    return false;
+  *subject_out = subject.AsStringPiece();
+  return true;
+}
 
 bool ExtractSPKIFromDERCert(base::StringPiece cert,
                             base::StringPiece* spki_out) {

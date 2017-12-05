@@ -45,6 +45,12 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
       const base::StringPiece& serial_number,
       const base::StringPiece& issuer_spki_hash) const;
 
+  // CheckSubject returns the information contained in the set for a given,
+  // encoded subject name and SPKI hash. The subject name is encoded as a DER
+  // X.501 Name (see https://tools.ietf.org/html/rfc5280#section-4.1.2.4).
+  Result CheckSubject(const base::StringPiece& asn1_subject,
+                      const base::StringPiece& spki_hash) const;
+
   // IsExpired returns true iff the current time is past the NotAfter time
   // specified in the CRLSet.
   bool IsExpired() const;
@@ -73,10 +79,16 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // IsExpired on the result will return true. If |issuer_spki| is not NULL,
   // the CRLSet will cover certificates issued by that SPKI. If |serial_number|
   // is not empty, then that big-endian serial number will be considered to
-  // have been revoked by |issuer_spki|.
-  static CRLSet* ForTesting(bool is_expired,
-                            const SHA256HashValue* issuer_spki,
-                            const std::string& serial_number);
+  // have been revoked by |issuer_spki|. If |common_name| is not empty then the
+  // CRLSet will consider certificates with a subject consisting only of that
+  // common name to be revoked unless they match an SPKI hash from
+  // |acceptable_spki_hashes_for_cn|.
+  static CRLSet* ForTesting(
+      bool is_expired,
+      const SHA256HashValue* issuer_spki,
+      const std::string& serial_number,
+      const std::string common_name,
+      const std::vector<std::string> acceptable_spki_hashes_for_cn);
 
  private:
   CRLSet();
@@ -98,6 +110,13 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // blocked_spkis_ contains the SHA256 hashes of SPKIs which are to be blocked
   // no matter where in a certificate chain they might appear.
   std::vector<std::string> blocked_spkis_;
+  // limited_subjects_ is a map from the SHA256 hash of an X.501 subject name
+  // to a list of allowed SPKI hashes for certificates with that subject name.
+  std::unordered_map<std::string, std::vector<std::string>> limited_subjects_;
+  // limited_subjects_ordered_ contains the keys of |limited_subjects_|,
+  // ordered in the same order as they were found when parsing. This allows
+  // exact reserialisation.
+  std::vector<std::string> limited_subjects_ordered_;
 };
 
 }  // namespace net

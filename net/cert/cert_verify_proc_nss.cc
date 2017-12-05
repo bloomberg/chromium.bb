@@ -294,8 +294,9 @@ CRLSetResult CheckRevocationWithCRLSet(const CERTCertList* cert_list,
     base::StringPiece der(reinterpret_cast<char*>(cert->derCert.data),
                           cert->derCert.len);
 
-    base::StringPiece spki;
-    if (!asn1::ExtractSPKIFromDERCert(der, &spki)) {
+    base::StringPiece spki, subject;
+    if (!asn1::ExtractSPKIFromDERCert(der, &spki) ||
+        !asn1::ExtractSubjectFromDERCert(der, &subject)) {
       NOTREACHED();
       error = true;
       continue;
@@ -308,6 +309,8 @@ CRLSetResult CheckRevocationWithCRLSet(const CERTCertList* cert_list,
 
     CRLSet::Result result = crl_set->CheckSPKI(spki_hash);
 
+    if (result != CRLSet::REVOKED)
+      result = crl_set->CheckSubject(subject, spki_hash);
     if (result != CRLSet::REVOKED && !issuer_spki_hash.empty())
       result = crl_set->CheckSerial(serial_number, issuer_spki_hash);
 

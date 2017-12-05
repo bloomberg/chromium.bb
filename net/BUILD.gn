@@ -2405,6 +2405,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/crlset_by_intermediate_serial.raw",
     "data/ssl/certificates/crlset_by_leaf_spki.raw",
     "data/ssl/certificates/crlset_by_root_serial.raw",
+    "data/ssl/certificates/crlset_by_subject.raw",
     "data/ssl/certificates/cross-signed-leaf.pem",
     "data/ssl/certificates/cross-signed-root-md5.pem",
     "data/ssl/certificates/cross-signed-root-sha256.pem",

@@ -375,6 +375,12 @@ bool HashSPKI(PCCERT_CONTEXT cert, std::string* hash) {
   return true;
 }
 
+bool GetSubject(PCCERT_CONTEXT cert, base::StringPiece* out_subject) {
+  base::StringPiece der_bytes(
+      reinterpret_cast<const char*>(cert->pbCertEncoded), cert->cbCertEncoded);
+  return asn1::ExtractSubjectFromDERCert(der_bytes, out_subject);
+}
+
 enum CRLSetResult {
   // Indicates an error happened while attempting to determine CRLSet status.
   // For example, if the certificate's SPKI could not be extracted.
@@ -422,18 +428,20 @@ CRLSetResult CheckRevocationWithCRLSet(CRLSet* crl_set,
   DCHECK(crl_set);
   DCHECK(subject_cert);
 
-  // Check to see if |subject_cert|'s SPKI is revoked. The actual revocation
-  // is handled by the SHA-256 hash of the SPKI, so compute that.
+  // Check to see if |subject_cert|'s SPKI or Subject is revoked.
   std::string subject_hash;
-  if (!HashSPKI(subject_cert, &subject_hash)) {
+  base::StringPiece subject_name;
+  if (!HashSPKI(subject_cert, &subject_hash) ||
+      !GetSubject(subject_cert, &subject_name)) {
     NOTREACHED();  // Indicates Windows accepted something irrecoverably bad.
     previous_hash->clear();
     return kCRLSetError;
   }
 
-  CRLSet::Result result = crl_set->CheckSPKI(subject_hash);
-  if (result == CRLSet::REVOKED)
+  if (crl_set->CheckSPKI(subject_hash) == CRLSet::REVOKED ||
+      crl_set->CheckSubject(subject_name, subject_hash) == CRLSet::REVOKED) {
     return kCRLSetRevoked;
+  }
 
   // If no issuer cert is provided, nor a hash of the issuer's SPKI, no
   // further checks can be done.
@@ -468,7 +476,7 @@ CRLSetResult CheckRevocationWithCRLSet(CRLSet* crl_set,
   }
 
   // Look up by serial & issuer SPKI.
-  result = crl_set->CheckSerial(serial, *issuer_hash);
+  const CRLSet::Result result = crl_set->CheckSerial(serial, *issuer_hash);
   if (result == CRLSet::REVOKED)
     return kCRLSetRevoked;
 

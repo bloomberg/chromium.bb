@@ -341,7 +341,8 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
   ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(der_bytes, &spki));
   SHA256HashValue spki_sha256;
   crypto::SHA256HashString(spki, spki_sha256.data, sizeof(spki_sha256.data));
-  scoped_refptr<CRLSet> crl_set(CRLSet::ForTesting(false, &spki_sha256, ""));
+  scoped_refptr<CRLSet> crl_set(
+      CRLSet::ForTesting(false, &spki_sha256, "", "", {}));
 
   CertVerifyResult verify_result;
   int flags = CertVerifier::VERIFY_EV_CERT;
