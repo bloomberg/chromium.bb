@@ -506,7 +506,25 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
           color_space_.matrix = VideoColorSpace::MatrixID::BT709;
           break;
       }
+
+      gfx::Size new_size(fhdr.frame_width, fhdr.frame_height);
+      if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
+          size_ != new_size) {
+        pending_config_changed_ = true;
+        DVLOG(1) << "Configuration changed from " << size_.ToString() << " to "
+                 << new_size.ToString();
+      }
+      size_ = new_size;
+
+      // Resolution changes can happen on any frame technically, so wait for a
+      // keyframe before signaling the config change.
+      if (fhdr.IsKeyframe() && pending_config_changed_) {
+        config_changed_ = true;
+        pending_config_changed_ = false;
+      }
     }
+    if (pending_config_changed_)
+      DVLOG(3) << "Deferring config change until next keyframe...";
     return true;
   }
   VideoColorSpace current_color_space(
@@ -519,6 +537,8 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
   }
 
  private:
+  gfx::Size size_;
+  bool pending_config_changed_ = false;
   VideoColorSpace color_space_;
   Vp9Parser parser_;
 };
