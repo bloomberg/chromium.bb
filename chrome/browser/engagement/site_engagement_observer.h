@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 
 namespace content {
 class WebContents;
@@ -17,22 +18,22 @@ class SiteEngagementService;
 
 class SiteEngagementObserver {
  public:
-  // Called when the engagement for |url| loaded in |web_contents| increases to
-  // |score|. |is_hidden| is true if the engagement occurred when |web_contents|
-  // was hidden (e.g. in the background). This method may be run on user input,
-  // so observers *must not* perform any expensive tasks here. |web_contents|
-  // may be null if the engagement has increased when |url| is not in a tab,
-  // e.g. from a notification interaction.
-  virtual void OnEngagementIncreased(content::WebContents* web_contents,
-                                     const GURL& url,
-                                     double score) {}
+  // Called when the engagement for |url| loaded in |web_contents| is changed
+  // to |score|, due to an event of type |type|. This method may be run on user
+  // input, so observers *must not* perform any expensive tasks here.
+  // |web_contents| may be null if the engagement has increased when |url| is
+  // not in a tab, e.g. from a notification interaction.
+  virtual void OnEngagementEvent(content::WebContents* web_contents,
+                                 const GURL& url,
+                                 double score,
+                                 SiteEngagementService::EngagementType type) {}
 
  protected:
   explicit SiteEngagementObserver(SiteEngagementService* service);
 
   SiteEngagementObserver();
 
-  ~SiteEngagementObserver();
+  virtual ~SiteEngagementObserver();
 
   // Returns the site engagement service which this object is observing.
   SiteEngagementService* GetSiteEngagementService() const;

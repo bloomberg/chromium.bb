@@ -258,7 +258,7 @@ void SiteEngagementScore::AddPoints(double points) {
     // Award bonus engagement for the first engagement of the day for a site.
     points += GetFirstDailyEngagementPoints();
     SiteEngagementMetrics::RecordEngagement(
-        SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT);
+        SiteEngagementService::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT);
   }
 
   double to_add = std::min(kMaxPoints - raw_score_,

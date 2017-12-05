@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "url/gurl.h"
 
 namespace mojom {
@@ -17,23 +18,6 @@ class SiteEngagementDetails;
 // Helper class managing the UMA histograms for the Site Engagement Service.
 class SiteEngagementMetrics {
  public:
-  // This is used to back a UMA histogram, so it should be treated as
-  // append-only. Any new values should be inserted immediately prior to
-  // ENGAGEMENT_LAST.
-  enum EngagementType {
-    ENGAGEMENT_NAVIGATION,
-    ENGAGEMENT_KEYPRESS,
-    ENGAGEMENT_MOUSE,
-    ENGAGEMENT_TOUCH_GESTURE,
-    ENGAGEMENT_SCROLL,
-    ENGAGEMENT_MEDIA_HIDDEN,
-    ENGAGEMENT_MEDIA_VISIBLE,
-    ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
-    ENGAGEMENT_FIRST_DAILY_ENGAGEMENT,
-    ENGAGEMENT_NOTIFICATION_INTERACTION,
-    ENGAGEMENT_LAST,
-  };
-
   static void RecordTotalSiteEngagement(double total_engagement);
   static void RecordTotalOriginsEngaged(int total_origins);
   static void RecordMeanEngagement(double mean_engagement);
@@ -43,7 +27,7 @@ class SiteEngagementMetrics {
   static void RecordOriginsWithMaxEngagement(int total_origins);
   static void RecordOriginsWithMaxDailyEngagement(int total_origins);
   static void RecordPercentOriginsWithMaxEngagement(double percentage);
-  static void RecordEngagement(EngagementType type);
+  static void RecordEngagement(SiteEngagementService::EngagementType type);
   static void RecordDaysSinceLastShortcutLaunch(int days);
   static void RecordScoreDecayedFrom(double score);
   static void RecordScoreDecayedTo(double score);
