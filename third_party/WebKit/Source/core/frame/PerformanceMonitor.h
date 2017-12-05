@@ -5,6 +5,7 @@
 #ifndef PerformanceMonitor_h
 #define PerformanceMonitor_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
@@ -40,8 +41,6 @@ class SourceLocation;
 class CORE_EXPORT PerformanceMonitor final
     : public GarbageCollectedFinalized<PerformanceMonitor>,
       public scheduler::TaskTimeObserver {
-  WTF_MAKE_NONCOPYABLE(PerformanceMonitor);
-
  public:
   enum Violation : size_t {
     kLongTask,
@@ -164,6 +163,8 @@ class CORE_EXPORT PerformanceMonitor final
               WTF::UnsignedWithZeroKeyHashTraits<size_t>>
       subscriptions_;
   bool bypass_long_compile_threshold_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
 };
 
 }  // namespace blink

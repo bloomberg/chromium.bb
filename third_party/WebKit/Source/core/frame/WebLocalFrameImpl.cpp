@@ -92,6 +92,7 @@
 #include <set>
 #include <utility>
 
+#include "base/macros.h"
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
@@ -261,13 +262,11 @@ HeapVector<ScriptSourceCode> CreateSourcesVector(
 // Simple class to override some of PrintContext behavior. Some of the methods
 // made virtual so that they can be overridden by ChromePluginPrintContext.
 class ChromePrintContext : public PrintContext {
-  WTF_MAKE_NONCOPYABLE(ChromePrintContext);
-
  public:
   explicit ChromePrintContext(LocalFrame* frame)
       : PrintContext(frame), printed_page_width_(0) {}
 
-  ~ChromePrintContext() override {}
+  ~ChromePrintContext() override = default;
 
   virtual void BeginPrintMode(float width, float height) {
     DCHECK(!printed_page_width_);
@@ -416,6 +415,8 @@ class ChromePrintContext : public PrintContext {
   // Set when printing.
   float printed_page_width_;
   float printed_page_height_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromePrintContext);
 };
 
 // Simple class to override some of PrintContext behavior. This is used when

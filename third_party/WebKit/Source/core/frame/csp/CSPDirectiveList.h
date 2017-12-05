@@ -5,6 +5,7 @@
 #ifndef CSPDirectiveList_h
 #define CSPDirectiveList_h
 
+#include "base/macros.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
@@ -28,8 +29,6 @@ typedef HeapVector<Member<SourceListDirective>> SourceListDirectiveVector;
 
 class CORE_EXPORT CSPDirectiveList
     : public GarbageCollectedFinalized<CSPDirectiveList> {
-  WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
-
  public:
   static CSPDirectiveList* Create(ContentSecurityPolicy*,
                                   const UChar* begin,
@@ -360,6 +359,8 @@ class CORE_EXPORT CSPDirectiveList
   bool use_reporting_api_;
 
   String eval_disabled_error_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(CSPDirectiveList);
 };
 
 }  // namespace blink

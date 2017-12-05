@@ -5,6 +5,7 @@
 #ifndef SourceListDirective_h
 #define SourceListDirective_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/CSPDirective.h"
 #include "core/frame/csp/CSPSource.h"
@@ -21,8 +22,6 @@ class ContentSecurityPolicy;
 class KURL;
 
 class CORE_EXPORT SourceListDirective final : public CSPDirective {
-  WTF_MAKE_NONCOPYABLE(SourceListDirective);
-
  public:
   SourceListDirective(const String& name,
                       const String& value,
@@ -137,6 +136,8 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   HashSet<String> nonces_;
   HashSet<CSPHashValue> hashes_;
   uint8_t hash_algorithms_used_;
+
+  DISALLOW_COPY_AND_ASSIGN(SourceListDirective);
 };
 
 }  // namespace blink

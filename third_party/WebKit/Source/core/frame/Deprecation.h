@@ -5,11 +5,11 @@
 #ifndef Deprecation_h
 #define Deprecation_h
 
+#include "base/macros.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/frame/UseCounter.h"
 #include "platform/wtf/BitVector.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -18,7 +18,6 @@ enum class FeaturePolicyFeature;
 
 class CORE_EXPORT Deprecation {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(Deprecation);
 
  public:
   Deprecation();
@@ -68,6 +67,8 @@ class CORE_EXPORT Deprecation {
 
   BitVector css_property_deprecation_bits_;
   unsigned mute_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(Deprecation);
 };
 
 }  // namespace blink

@@ -6,8 +6,9 @@
 #define DOMTimerCoordinator_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Time.h"
 
 namespace blink {
@@ -24,7 +25,6 @@ class WebTaskRunner;
 // which is used as a signal for throttling repetitive timers.
 class DOMTimerCoordinator {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(DOMTimerCoordinator);
 
  public:
   explicit DOMTimerCoordinator(scoped_refptr<WebTaskRunner>);
@@ -67,6 +67,8 @@ class DOMTimerCoordinator {
   int circular_sequential_id_;
   int timer_nesting_level_;
   scoped_refptr<WebTaskRunner> timer_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DOMTimerCoordinator);
 };
 
 }  // namespace blink

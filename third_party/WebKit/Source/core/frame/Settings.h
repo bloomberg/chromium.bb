@@ -29,6 +29,8 @@
 #define Settings_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/AddEventListenerOptionsDefaults.h"
@@ -52,7 +54,6 @@
 namespace blink {
 
 class CORE_EXPORT Settings {
-  WTF_MAKE_NONCOPYABLE(Settings);
   USING_FAST_MALLOC(Settings);
 
  public:
@@ -95,6 +96,8 @@ class CORE_EXPORT Settings {
   bool text_autosizing_enabled_ : 1;
 
   SETTINGS_MEMBER_VARIABLES
+
+  DISALLOW_COPY_AND_ASSIGN(Settings);
 };
 
 }  // namespace blink

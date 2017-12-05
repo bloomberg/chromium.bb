@@ -26,6 +26,7 @@
 #ifndef UseCounter_h
 #define UseCounter_h
 
+#include "base/macros.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
@@ -34,7 +35,6 @@
 #include "platform/heap/HeapAllocator.h"
 #include "platform/wtf/BitVector.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -63,7 +63,6 @@ class StyleSheetContents;
 // Changes on UseCounter are observable by UseCounter::Observer.
 class CORE_EXPORT UseCounter {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(UseCounter);
 
  public:
   enum Context {
@@ -175,6 +174,8 @@ class CORE_EXPORT UseCounter {
   BitVector animated_css_recorded_;
 
   HeapHashSet<Member<Observer>> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(UseCounter);
 };
 
 }  // namespace blink

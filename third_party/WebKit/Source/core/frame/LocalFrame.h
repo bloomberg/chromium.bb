@@ -30,6 +30,8 @@
 #define LocalFrame_h
 
 #include <memory>
+
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/WeakIdentifierMap.h"
@@ -421,7 +423,6 @@ DEFINE_TYPE_CASTS(LocalFrame,
 DECLARE_WEAK_IDENTIFIER_MAP(LocalFrame);
 
 class FrameNavigationDisabler {
-  WTF_MAKE_NONCOPYABLE(FrameNavigationDisabler);
   STACK_ALLOCATED();
 
  public:
@@ -430,6 +431,8 @@ class FrameNavigationDisabler {
 
  private:
   Member<LocalFrame> frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameNavigationDisabler);
 };
 
 // A helper class for attributing cost inside a scope to a LocalFrame, with
@@ -451,7 +454,6 @@ class FrameNavigationDisabler {
 // should be taken to ensure that it has an efficient fast path (for the common
 // case where we are not tracking this).
 class ScopedFrameBlamer {
-  WTF_MAKE_NONCOPYABLE(ScopedFrameBlamer);
   STACK_ALLOCATED();
 
  public:
@@ -465,6 +467,8 @@ class ScopedFrameBlamer {
   void LeaveContext();
 
   Member<LocalFrame> frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedFrameBlamer);
 };
 
 }  // namespace blink
