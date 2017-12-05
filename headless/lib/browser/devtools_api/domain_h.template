@@ -20,7 +20,7 @@
 {% macro command_decl(command) %}
   {% set method_name = command.name | sanitize_literal | to_title_case %}
   {% if command.description %}
-  // {{ command.description }}
+  // {{ command.description.replace('\n', '\n  // ') }}
   {% endif %}
   void {{method_name}}(std::unique_ptr<{{method_name}}Params> params, base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback = base::Callback<void(std::unique_ptr<{{method_name}}Result>)>());
   {# Generate convenience methods that take the required parameters directly. #}
@@ -59,7 +59,7 @@ class HEADLESS_EXPORT ExperimentalObserver {
   virtual ~ExperimentalObserver() {}
   {% for event in domain.events %}
     {% if event.description %}
-  // {{event.description}}
+  // {{event.description.replace('\n', '\n  // ')}}
     {% endif %}
   virtual void On{{event.name | to_title_case}}(const {{event.name | to_title_case}}Params& params) {}
   {% endfor %}
@@ -70,7 +70,7 @@ class HEADLESS_EXPORT Observer : public ExperimentalObserver {
   virtual ~Observer() {}
   {% for event in domain.events %}
     {% if event.description %}
-  // {% if event.experimental %}Experimental: {% endif %}{{event.description}}
+  // {% if event.experimental %}Experimental: {% endif %}{{event.description.replace('\n', '\n  // ')}}
     {% endif %}
   virtual void On{{event.name | to_title_case}}(const {{event.name | to_title_case}}Params& params) {% if event.experimental %}final {% endif %}{}
   {% endfor %}
@@ -78,7 +78,7 @@ class HEADLESS_EXPORT Observer : public ExperimentalObserver {
 {% endif %}
 
 {% if domain.description %}
-// {{domain.description}}
+// {{domain.description.replace('\n', '\n// ')}}
 {% endif %}
 class HEADLESS_EXPORT Domain {
  public:

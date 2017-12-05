@@ -23,7 +23,7 @@ namespace {{domain.domain | camelcase_to_hacker_style}} {
   {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
 
   {% if type.description %}
-// {{type.description}}
+// {{type.description.replace('\n', '\n// ')}}
   {% endif %}
 class HEADLESS_EXPORT {{type.id}} {
  public:
@@ -32,7 +32,7 @@ class HEADLESS_EXPORT {{type.id}} {
   {% for property in type.properties %}
 
   {% if property.description %}
-  // {{property.description}}
+  // {{property.description.replace('\n', '\n  // ')}}
   {% endif %}
     {% if property.optional %}
   bool Has{{property.name | to_title_case}}() const { return !!{{property.name | camelcase_to_hacker_style}}_; }

@@ -78,7 +78,7 @@ const {{domain.domain}} = chromium.DevTools.{{domain.domain}};
   {% if not "enum" in type %}{% continue %}{% endif %}
 /**
   {% if type.description %}
- * {{type.description}}
+ * {{type.description.replace('\n', '\n * ')}}
  *
   {% endif %}
  * @enum {string}
@@ -96,12 +96,12 @@ const {{domain.domain}} = chromium.DevTools.{{domain.domain}};
   {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
 /**
   {% if type.description %}
- * {{type.description}}
+ * {{type.description.replace('\n', '\n * ')}}
  *
   {% endif %}
   {% for property in type.properties %}
     {% if property.description %}
- * {{property.name}}: {{property.description}}
+ * {{property.name}}: {{property.description.replace('\n', '\n *   ')}}
     {% endif %}
   {% endfor %}
  *
@@ -131,7 +131,7 @@ const {{domain.domain}} = chromium.DevTools.{{domain.domain}};
 
 /**
   {% if command.description %}
-  * {{ command.description }}
+  * {{ command.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   {% if command.parameters|length > 0 %}
@@ -170,7 +170,7 @@ Experimental{{domain.domain}}.prototype.{{method_name}} = function() {
 
 /**
   {% if event.description %}
-  * {{ event.description }}
+  * {{ event.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   * @param {{param_type}} listener
@@ -192,7 +192,7 @@ Experimental{{domain.domain}}.prototype.on{{event.name | to_title_case}} = funct
 
 /**
   {% if command.description %}
-  * {{ command.description }}
+  * {{ command.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   {% if command.parameters|length > 0 %}
@@ -232,7 +232,7 @@ Experimental{{domain.domain}}.prototype.on{{event.name | to_title_case}} = funct
 
 /**
   {% if event.description %}
-  * {{ event.description }}
+  * {{ event.description.replace('\n', '\n * ') }}
   *
   {% endif %}
   * @param {{param_type}} listener
