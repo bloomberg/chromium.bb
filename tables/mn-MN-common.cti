@@ -1,8 +1,8 @@
 #
-#   Copyright (C) 2015,2017 Tsengel Maidar tsengel@digitalsunngo.org of Digital Sun Accessible Technology Development
-#  Copyright 2017 Tsengel Maidar EBraillesoftLLC
-#  Copyright (C) 2015 Sreeja sreeja.param@gmail.com
-#  Copyright (C) 2015 Dipendra Manocha d@saksham.org
+# Copyright (C) 2015,2017 Tsengel Maidar tsengel@digitalsunngo.org of Digital Sun Accessible Technology Development
+# Copyright (C) 2017 Tsengel Maidar EBraillesoftLLC
+# Copyright (C) 2015 Sreeja sreeja.param@gmail.com
+# Copyright (C) 2015 Dipendra Manocha d@saksham.org
 # Copyright (C) 2017 Angaragerdene angaragerdene.b@gmail.com
 #
 #  This file is part of liblouis.
@@ -25,9 +25,6 @@
 # This table contains braille codes and rules for Mongolian script.
 # Contributors: Dipendra Manocha, Sreeja, Tsengel, Angaragerdene
 # To report any bugs or any suggestion, please write to tsengel.braille.dev@gmail.com and angaragerdene.b@gmail.com
-
-include ru-ru.dis    # All display opcodes
-include en-ueb-g1.ctb
 
 # ----------- define all chars --------------------------------------
 
