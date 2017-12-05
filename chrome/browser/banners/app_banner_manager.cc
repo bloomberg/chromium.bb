@@ -289,8 +289,8 @@ void AppBannerManager::OnDidPerformInstallableCheck(
 
   // If we triggered the installability check on page load, then it's possible
   // we don't have enough engagement yet. If that's the case, return here but
-  // don't call Terminate(). We wait for OnEngagementIncreased to tell us that
-  // we should trigger.
+  // don't call Terminate(). We wait for OnEngagementEvent to tell us that we
+  // should trigger.
   if (!HasSufficientEngagement()) {
     UpdateState(State::PENDING_ENGAGEMENT);
     return;
@@ -457,9 +457,11 @@ void AppBannerManager::WebContentsDestroyed() {
   Terminate();
 }
 
-void AppBannerManager::OnEngagementIncreased(content::WebContents* contents,
-                                             const GURL& url,
-                                             double score) {
+void AppBannerManager::OnEngagementEvent(
+    content::WebContents* contents,
+    const GURL& url,
+    double score,
+    SiteEngagementService::EngagementType /*type*/) {
   // Only trigger a banner using site engagement if:
   //  1. engagement increased for the web contents which we are attached to; and
   //  2. there are no currently active media players; and

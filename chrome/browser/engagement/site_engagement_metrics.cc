@@ -127,8 +127,10 @@ void SiteEngagementMetrics::RecordPercentOriginsWithMaxEngagement(
                            percentage);
 }
 
-void SiteEngagementMetrics::RecordEngagement(EngagementType type) {
-  UMA_HISTOGRAM_ENUMERATION(kEngagementTypeHistogram, type, ENGAGEMENT_LAST);
+void SiteEngagementMetrics::RecordEngagement(
+    SiteEngagementService::EngagementType type) {
+  UMA_HISTOGRAM_ENUMERATION(kEngagementTypeHistogram, type,
+                            SiteEngagementService::ENGAGEMENT_LAST);
 }
 
 void SiteEngagementMetrics::RecordDaysSinceLastShortcutLaunch(int days) {

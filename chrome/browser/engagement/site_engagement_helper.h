@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -165,7 +164,7 @@ class SiteEngagementService::Helper
 
   // Ask the SiteEngagementService to record engagement via user input at the
   // current WebContents URL.
-  void RecordUserInput(SiteEngagementMetrics::EngagementType type);
+  void RecordUserInput(SiteEngagementService::EngagementType type);
 
   // Ask the SiteEngagementService to record engagement via media playing at the
   // current WebContents URL.
