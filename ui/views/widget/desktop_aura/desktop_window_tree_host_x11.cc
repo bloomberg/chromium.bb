@@ -1074,10 +1074,10 @@ void DesktopWindowTreeHostX11::SetWindowIcons(
   // All of this could be made much, much better.
   std::vector<unsigned long> data;
 
-  if (window_icon.HasRepresentation(1.0f))
+  if (!window_icon.isNull())
     SerializeImageRepresentation(window_icon.GetRepresentation(1.0f), &data);
 
-  if (app_icon.HasRepresentation(1.0f))
+  if (!app_icon.isNull())
     SerializeImageRepresentation(app_icon.GetRepresentation(1.0f), &data);
 
   if (!data.empty())
