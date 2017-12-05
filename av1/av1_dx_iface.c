@@ -171,9 +171,21 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   color_space = (aom_color_space_t)aom_rb_read_literal(rb, 5);
   rb->bit_offset += 5;  // Transfer function
 #else
-  color_space = (aom_color_space_t)aom_rb_read_literal(rb, 3);
+  color_space =
+      (aom_color_space_t)aom_rb_read_literal(rb, 3 + CONFIG_MONO_VIDEO);
 #endif
-  if (color_space != AOM_CS_SRGB) {
+  if (color_space == AOM_CS_SRGB) {
+    if (profile == PROFILE_1 || profile == PROFILE_3) {
+      rb->bit_offset += 1;  // unused
+    } else {
+      // RGB is only available in version 1.
+      return 0;
+    }
+#if CONFIG_MONO_VIDEO
+  } else if (color_space == AOM_CS_MONOCHROME) {
+    return 1;
+#endif  // CONFIG_MONO_VIDEO
+  } else {
     rb->bit_offset += 1;  // [16,235] (including xvycc) vs [0,255] range.
 
     if (profile == PROFILE_1 || profile == PROFILE_3) {
@@ -195,13 +207,6 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
 #else
     }
 #endif
-  } else {
-    if (profile == PROFILE_1 || profile == PROFILE_3) {
-      rb->bit_offset += 1;  // unused
-    } else {
-      // RGB is only available in version 1.
-      return 0;
-    }
   }
   return 1;
 }
@@ -514,9 +519,6 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     }
 #endif
     frame_worker_data->pbi->allow_lowbitdepth = ctx->cfg.allow_lowbitdepth;
-#if CONFIG_MONO_VIDEO
-    frame_worker_data->pbi->monochrome = ctx->cfg.monochrome;
-#endif
 
     // If decoding in serial mode, FrameWorker thread could create tile worker
     // thread or loopfilter thread.

@@ -74,10 +74,6 @@ static const arg_def_t flipuvarg =
     ARG_DEF(NULL, "flipuv", 0, "Flip the chroma planes in the output");
 static const arg_def_t rawvideo =
     ARG_DEF(NULL, "rawvideo", 0, "Output raw YUV frames");
-#if CONFIG_MONO_VIDEO
-static const arg_def_t monochrome = ARG_DEF(
-    NULL, "monochrome", 0, "Force monochrome output (constant chroma planes)");
-#endif
 static const arg_def_t noblitarg =
     ARG_DEF(NULL, "noblit", 0, "Don't process the decoded frames");
 static const arg_def_t progressarg =
@@ -127,9 +123,6 @@ static const arg_def_t *all_args[] = { &help,
                                        &use_i420,
                                        &flipuvarg,
                                        &rawvideo,
-#if CONFIG_MONO_VIDEO
-                                       &monochrome,
-#endif
                                        &noblitarg,
                                        &progressarg,
                                        &limitarg,
@@ -540,9 +533,6 @@ static int main_loop(int argc, const char **argv_) {
   int use_y4m = 1;
   int opt_yv12 = 0;
   int opt_i420 = 0;
-#if CONFIG_MONO_VIDEO
-  int opt_rawvideo = 0;
-#endif
   aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH, 0 };
 #if CONFIG_HIGHBITDEPTH
   unsigned int output_bit_depth = 0;
@@ -609,11 +599,6 @@ static int main_loop(int argc, const char **argv_) {
       opt_i420 = 1;
     } else if (arg_match(&arg, &rawvideo, argi)) {
       use_y4m = 0;
-#if CONFIG_MONO_VIDEO
-      opt_rawvideo = 1;
-    } else if (arg_match(&arg, &monochrome, argi)) {
-      cfg.monochrome = 1;
-#endif
     } else if (arg_match(&arg, &flipuvarg, argi)) {
       flipuv = 1;
     } else if (arg_match(&arg, &noblitarg, argi)) {
@@ -961,7 +946,7 @@ static int main_loop(int argc, const char **argv_) {
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_MONO_VIDEO
-      int num_planes = (opt_rawvideo && cfg.monochrome) ? 1 : 3;
+      int num_planes = (!use_y4m && img->cs == AOM_CS_MONOCHROME) ? 1 : 3;
 #else
       int num_planes = 3;
 #endif

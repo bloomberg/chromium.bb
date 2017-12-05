@@ -312,9 +312,6 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_MONO_VIDEO
-  RANGE_CHECK_HI(cfg, monochrome, 1);
-#endif  // CONFIG_MONO_VIDEO
 
 #if CONFIG_EXT_TILE
   if (cfg->large_scale_tile && extra_cfg->aq_mode)
@@ -383,12 +380,20 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     ERROR("Codec bit-depth 8 not supported in profile > 1");
   }
 #if CONFIG_COLORSPACE_HEADERS
+#if CONFIG_MONO_VIDEO
+  RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_MONOCHROME);
+#else
   RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_ICTCP);
+#endif  // CONFIG_MONO_VIDEO
   RANGE_CHECK(extra_cfg, transfer_function, AOM_TF_UNKNOWN, AOM_TF_HLG);
   RANGE_CHECK(extra_cfg, chroma_sample_position, AOM_CSP_UNKNOWN,
               AOM_CSP_COLOCATED);
 #else
+#if CONFIG_MONO_VIDEO
+  RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_MONOCHROME);
+#else
   RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_SRGB);
+#endif
 #endif
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
@@ -634,9 +639,6 @@ static aom_codec_err_t set_encoder_config(
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
-#if CONFIG_MONO_VIDEO
-  oxcf->monochrome = cfg->monochrome;
-#endif  // CONFIG_MONO_VIDEO
 
 #if CONFIG_MAX_TILE
   oxcf->tile_width_count = AOMMIN(cfg->tile_width_count, MAX_TILE_COLS);

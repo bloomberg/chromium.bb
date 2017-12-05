@@ -2370,9 +2370,33 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   cm->color_space = aom_rb_read_literal(rb, 5);
   cm->transfer_function = aom_rb_read_literal(rb, 5);
 #else
-  cm->color_space = aom_rb_read_literal(rb, 3);
+  cm->color_space = aom_rb_read_literal(rb, 3 + CONFIG_MONO_VIDEO);
 #endif
-  if (cm->color_space != AOM_CS_SRGB) {
+  if (cm->color_space == AOM_CS_SRGB) {
+    if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
+      // Note if colorspace is SRGB then 4:4:4 chroma sampling is assumed.
+      // 4:2:2 or 4:4:0 chroma sampling is not allowed.
+      cm->subsampling_y = cm->subsampling_x = 0;
+      if (aom_rb_read_bit(rb))
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Reserved bit set");
+    } else {
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "4:4:4 color not supported in profile 0 or 2");
+    }
+#if CONFIG_MONO_VIDEO
+  } else if (cm->color_space == AOM_CS_MONOCHROME) {
+    cm->color_range = AOM_CR_FULL_RANGE;
+    cm->subsampling_y = cm->subsampling_x = 1;
+#if CONFIG_COLORSPACE_HEADERS
+    cm->chroma_sample_position = AOM_CSP_UNKNOWN;
+#endif
+#if CONFIG_EXT_QM
+    cm->separate_uv_delta_q = 0;
+#endif
+    return;
+#endif  // CONFIG_MONO_VIDEO
+  } else {
     // [16,235] (including xvycc) vs [0,255] range
     cm->color_range = aom_rb_read_bit(rb);
     if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
@@ -2392,18 +2416,6 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
       cm->chroma_sample_position = aom_rb_read_literal(rb, 2);
     }
 #endif
-  } else {
-    if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
-      // Note if colorspace is SRGB then 4:4:4 chroma sampling is assumed.
-      // 4:2:2 or 4:4:0 chroma sampling is not allowed.
-      cm->subsampling_y = cm->subsampling_x = 0;
-      if (aom_rb_read_bit(rb))
-        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Reserved bit set");
-    } else {
-      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                         "4:4:4 color not supported in profile 0 or 2");
-    }
   }
 #if CONFIG_EXT_QM
   cm->separate_uv_delta_q = aom_rb_read_bit(rb);
@@ -2435,10 +2447,6 @@ void read_sequence_header(SequenceHeader *seq_params,
     seq_params->frame_id_length =
         aom_rb_read_literal(rb, 3) + seq_params->delta_frame_id_length + 1;
   }
-
-#if CONFIG_MONO_VIDEO
-  seq_params->monochrome = aom_rb_read_bit(rb);
-#endif  // CONFIG_MONO_VIDEO
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
@@ -3575,9 +3583,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
 #if CONFIG_MONO_VIDEO
-  // If the bit stream is monochrome, or the decoder is set to force a
-  // monochrome output, set the U and V buffers to a constant.
-  if (pbi->monochrome || cm->seq_params.monochrome) {
+  // If the bit stream is monochrome, set the U and V buffers to a constant.
+  if (av1_num_planes(cm) < 3) {
 #if CONFIG_HIGHBITDEPTH
     const int bytes_per_sample = cm->use_highbitdepth ? 2 : 1;
 #else

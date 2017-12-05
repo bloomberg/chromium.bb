@@ -1069,7 +1069,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   const int uv_dc_pred =
 #if CONFIG_MONO_VIDEO
-      !cm->seq_params.monochrome &&
+      av1_num_planes(cm) > 1 &&
 #endif
       mbmi->uv_mode == UV_DC_PRED;
   if (uv_dc_pred) {
@@ -3543,9 +3543,16 @@ static void write_bitdepth_colorspace_sampling(
   aom_wb_write_literal(wb, cm->color_space, 5);
   aom_wb_write_literal(wb, cm->transfer_function, 5);
 #else
-  aom_wb_write_literal(wb, cm->color_space, 3);
+  aom_wb_write_literal(wb, cm->color_space, 3 + CONFIG_MONO_VIDEO);
 #endif
-  if (cm->color_space != AOM_CS_SRGB) {
+  if (cm->color_space == AOM_CS_SRGB) {
+    assert(cm->profile == PROFILE_1 || cm->profile == PROFILE_3);
+    aom_wb_write_bit(wb, 0);  // unused
+#if CONFIG_MONO_VIDEO
+  } else if (cm->color_space == AOM_CS_MONOCHROME) {
+    return;
+#endif  // CONFIG_MONO_VIDEO
+  } else {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
     aom_wb_write_bit(wb, cm->color_range);
     if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
@@ -3561,10 +3568,8 @@ static void write_bitdepth_colorspace_sampling(
       aom_wb_write_literal(wb, cm->chroma_sample_position, 2);
     }
 #endif
-  } else {
-    assert(cm->profile == PROFILE_1 || cm->profile == PROFILE_3);
-    aom_wb_write_bit(wb, 0);  // unused
   }
+
 #if CONFIG_EXT_QM
   aom_wb_write_bit(wb, cm->separate_uv_delta_q);
 #endif
@@ -3611,10 +3616,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
         wb, seq_params->frame_id_length - seq_params->delta_frame_id_length - 1,
         3);
   }
-
-#if CONFIG_MONO_VIDEO
-  aom_wb_write_bit(wb, seq_params->monochrome);
-#endif  // CONFIG_MONO_VIDEO
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
