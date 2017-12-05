@@ -5,10 +5,11 @@
 <script src="../../resources/testdriver-vendor.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
-
-let matching_services = [heart_rate.uuid];
-let matching_name = 'Heart Rate Device';
-let matching_namePrefix = 'Heart';
+'use strict';
+const test_desc = 'Matches a filter if all present members match.';
+let matching_services = [health_thermometer.uuid];
+let matching_name = 'Health Thermometer';
+let matching_namePrefix = 'Health';
 
 let test_specs = [{
   filters: [{
@@ -48,21 +49,19 @@ let test_specs = [{
   }]
 }];
 
-bluetooth_test(() => {
-    return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
-      .then(() => {
-        let test_promises = Promise.resolve();
-        test_specs.forEach(args => {
-          test_promises = test_promises
-            .then(() => requestDeviceWithTrustedClick(args))
-            .then(device => {
-              // We always have access to the services in matching_services
-              // because we include them in a filter or in optionalServices.
-              assert_equals(device.name, matching_name);
-              assert_true(device.name.startsWith(matching_namePrefix));
-            });
+bluetooth_test(() => setUpHealthThermometerDevice()
+  .then(() => {
+    let test_promises = Promise.resolve();
+    test_specs.forEach(args => {
+      test_promises = test_promises
+        .then(() => requestDeviceWithTrustedClick(args))
+        .then(device => {
+          // We always have access to the services in matching_services
+          // because we include them in a filter or in optionalServices.
+          assert_equals(device.name, matching_name);
+          assert_true(device.name.startsWith(matching_namePrefix));
         });
-        return test_promises;
-      });
-}, 'Matches a filter if all present members match.');
+    });
+    return test_promises;
+}), test_desc);
 </script>
