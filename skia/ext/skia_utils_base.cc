@@ -9,6 +9,7 @@
 #include "base/pickle.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImageDeserializer.h"
+#include "third_party/skia/include/core/SkPixelSerializer.h"
 #include "third_party/skia/include/core/SkWriteBuffer.h"
 #include "third_party/skia/src/core/SkValidatingReadBuffer.h"
 
