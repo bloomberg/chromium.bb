@@ -33,6 +33,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasMetrics.h"
+#include "platform/graphics/CanvasResource.h"
 #include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -650,12 +651,11 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   if (!GetOrCreateResourceProvider())
     return false;
 
-  if (!resource_provider_->IsAccelerated()) {
-  }
-
   FlushRecording();
-  if (resource_provider_->PrepareTransferableResource(out_resource,
-                                                      out_release_callback)) {
+  scoped_refptr<CanvasResource> frame = resource_provider_->ProduceFrame();
+  if (frame) {
+    // Note frame is kept alive via a reference kept in out_release_callback.
+    frame->PrepareTransferableResource(out_resource, out_release_callback);
     out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
     return true;
   }
