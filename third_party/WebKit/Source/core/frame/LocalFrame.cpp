@@ -975,7 +975,7 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
   }
 
   DCHECK(GetSecurityContext()->GetSecurityOrigin());
-  SecurityOrigin& origin = *GetSecurityContext()->GetSecurityOrigin();
+  const SecurityOrigin& origin = *GetSecurityContext()->GetSecurityOrigin();
 
   // This is the normal case. A document can navigate its decendant frames,
   // or, more generally, a document can navigate a frame if the document is

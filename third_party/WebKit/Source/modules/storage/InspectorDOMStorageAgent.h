@@ -56,7 +56,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
                                   const String& old_value,
                                   const String& new_value,
                                   StorageType,
-                                  SecurityOrigin*);
+                                  const SecurityOrigin*);
 
  private:
   explicit InspectorDOMStorageAgent(Page*);
@@ -87,7 +87,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
       LocalFrame*&,
       StorageArea*&);
   std::unique_ptr<protocol::DOMStorage::StorageId> GetStorageId(
-      SecurityOrigin*,
+      const SecurityOrigin*,
       bool is_local_storage);
 
   Member<Page> page_;

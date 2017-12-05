@@ -117,7 +117,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this
   // origin.
   void SetAllowRuleAccessFromOrigin(
-      scoped_refptr<SecurityOrigin> allowed_origin);
+      scoped_refptr<const SecurityOrigin> allowed_origin);
 
   class RuleMutationScope {
     STACK_ALLOCATED();
@@ -173,7 +173,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;
 
-  scoped_refptr<SecurityOrigin> allow_rule_access_from_origin_;
+  scoped_refptr<const SecurityOrigin> allow_rule_access_from_origin_;
 
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;

@@ -231,7 +231,7 @@ KURL History::UrlForState(const String& url_string) {
 }
 
 bool History::CanChangeToUrl(const KURL& url,
-                             SecurityOrigin* document_origin,
+                             const SecurityOrigin* document_origin,
                              const KURL& document_url) {
   if (!url.IsValid())
     return false;
@@ -248,7 +248,8 @@ bool History::CanChangeToUrl(const KURL& url,
   if (!EqualIgnoringPathQueryAndFragment(url, document_url))
     return false;
 
-  scoped_refptr<SecurityOrigin> requested_origin = SecurityOrigin::Create(url);
+  scoped_refptr<const SecurityOrigin> requested_origin =
+      SecurityOrigin::Create(url);
   if (requested_origin->IsUnique() ||
       !requested_origin->IsSameSchemeHostPort(document_origin)) {
     return false;

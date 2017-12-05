@@ -58,7 +58,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
   // Steps 1 and 3.
   FetchParameters CreateFetchParameters(const KURL&,
-                                        SecurityOrigin*,
+                                        const SecurityOrigin*,
                                         const WTF::TextEncoding&,
                                         FetchParameters::DeferOption) const;
 

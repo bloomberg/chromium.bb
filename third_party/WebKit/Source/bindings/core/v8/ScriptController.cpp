@@ -78,7 +78,8 @@ void ScriptController::ClearForClose() {
   MainThreadDebugger::Instance()->DidClearContextsForFrame(GetFrame());
 }
 
-void ScriptController::UpdateSecurityOrigin(SecurityOrigin* security_origin) {
+void ScriptController::UpdateSecurityOrigin(
+    const SecurityOrigin* security_origin) {
   window_proxy_manager_->UpdateSecurityOrigin(security_origin);
 }
 

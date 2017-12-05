@@ -135,7 +135,7 @@ void MainThreadDebugger::DidClearContextsForFrame(LocalFrame* frame) {
 
 void MainThreadDebugger::ContextCreated(ScriptState* script_state,
                                         LocalFrame* frame,
-                                        SecurityOrigin* origin) {
+                                        const SecurityOrigin* origin) {
   DCHECK(IsMainThread());
   v8::HandleScope handles(script_state->GetIsolate());
   DOMWrapperWorld& world = script_state->World();

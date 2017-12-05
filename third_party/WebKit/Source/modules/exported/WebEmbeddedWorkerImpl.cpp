@@ -359,7 +359,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   // FIXME: this document's origin is pristine and without any extra privileges.
   // (crbug.com/254993)
-  SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideIndexedDBClientToWorker(worker_clients,

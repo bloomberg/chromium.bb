@@ -88,7 +88,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // Returns the security origin of the "fetch client settings object".
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   // This should be called only from ModuleScriptLoader.
-  virtual SecurityOrigin* GetSecurityOriginForFetch() = 0;
+  virtual const SecurityOrigin* GetSecurityOriginForFetch() = 0;
 
   virtual ScriptState* GetScriptState() = 0;
 

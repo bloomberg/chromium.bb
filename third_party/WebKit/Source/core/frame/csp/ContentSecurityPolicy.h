@@ -418,7 +418,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // experimental EmbeddingCSP feature
   // Please, see https://w3c.github.io/webappsec-csp/embedded/#origin-allowed.
   static bool ShouldEnforceEmbeddersPolicy(const ResourceResponse&,
-                                           SecurityOrigin*);
+                                           const SecurityOrigin*);
 
   static const char* GetDirectiveName(const DirectiveType&);
   static DirectiveType GetDirectiveType(const String& name);

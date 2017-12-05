@@ -84,7 +84,7 @@ WebFileSystem* DOMFileSystemBase::FileSystem() const {
   return platform->FileSystem();
 }
 
-SecurityOrigin* DOMFileSystemBase::GetSecurityOrigin() const {
+const SecurityOrigin* DOMFileSystemBase::GetSecurityOrigin() const {
   return context_->GetSecurityOrigin();
 }
 

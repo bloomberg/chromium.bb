@@ -46,7 +46,7 @@ class WebSocketHandleImpl : public WebSocketHandle,
   void Initialize(mojom::blink::WebSocketPtr) override;
   void Connect(const KURL&,
                const Vector<String>& protocols,
-               SecurityOrigin*,
+               const SecurityOrigin*,
                const KURL& site_for_cookies,
                const String& user_agent_override,
                WebSocketHandleClient*,

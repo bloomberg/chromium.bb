@@ -176,7 +176,7 @@ Response InspectorDOMStorageAgent::removeDOMStorageItem(
 }
 
 std::unique_ptr<protocol::DOMStorage::StorageId>
-InspectorDOMStorageAgent::GetStorageId(SecurityOrigin* security_origin,
+InspectorDOMStorageAgent::GetStorageId(const SecurityOrigin* security_origin,
                                        bool is_local_storage) {
   return protocol::DOMStorage::StorageId::create()
       .setSecurityOrigin(security_origin->ToRawString())
@@ -189,7 +189,7 @@ void InspectorDOMStorageAgent::DidDispatchDOMStorageEvent(
     const String& old_value,
     const String& new_value,
     StorageType storage_type,
-    SecurityOrigin* security_origin) {
+    const SecurityOrigin* security_origin) {
   if (!GetFrontend())
     return;
 

@@ -103,9 +103,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual bool IsContextThread() const { return true; }
 
-  // TODO(hiroshige): Make GetSecurityOrigin() return |const SecurityOrigin*|.
-  // crbug.com/779730
-  SecurityOrigin* GetSecurityOrigin();
+  const SecurityOrigin* GetSecurityOrigin();
   SecurityOrigin* GetMutableSecurityOrigin();
 
   ContentSecurityPolicy* GetContentSecurityPolicy();

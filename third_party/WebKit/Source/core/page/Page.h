@@ -135,7 +135,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   ViewportDescription GetViewportDescription() const;
 
   // Returns the plugin data associated with |main_frame_origin|.
-  PluginData* GetPluginData(SecurityOrigin* main_frame_origin);
+  PluginData* GetPluginData(const SecurityOrigin* main_frame_origin);
 
   // Refreshes the browser-side plugin cache.
   static void RefreshPlugins();

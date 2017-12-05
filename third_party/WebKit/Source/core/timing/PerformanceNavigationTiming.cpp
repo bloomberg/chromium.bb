@@ -116,7 +116,7 @@ AtomicString PerformanceNavigationTiming::initiatorType() const {
 
 bool PerformanceNavigationTiming::GetAllowRedirectDetails() const {
   ExecutionContext* context = GetFrame() ? GetFrame()->GetDocument() : nullptr;
-  SecurityOrigin* security_origin = nullptr;
+  const SecurityOrigin* security_origin = nullptr;
   if (context)
     security_origin = context->GetSecurityOrigin();
   if (!security_origin)

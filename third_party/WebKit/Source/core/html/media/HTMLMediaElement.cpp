@@ -1440,7 +1440,8 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
   return true;
 }
 
-bool HTMLMediaElement::IsMediaDataCORSSameOrigin(SecurityOrigin* origin) const {
+bool HTMLMediaElement::IsMediaDataCORSSameOrigin(
+    const SecurityOrigin* origin) const {
   // hasSingleSecurityOrigin() tells us whether the origin in the src is
   // the same as the actual request (i.e. after redirect).
   // didPassCORSAccessCheck() means it was a successful CORS-enabled fetch

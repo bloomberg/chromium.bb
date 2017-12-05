@@ -51,7 +51,7 @@ class PLATFORM_EXPORT BlobURL {
   STATIC_ONLY(BlobURL);
 
  public:
-  static KURL CreatePublicURL(SecurityOrigin*);
+  static KURL CreatePublicURL(const SecurityOrigin*);
   static String GetOrigin(const KURL&);
 
   static KURL CreateInternalStreamURL();

@@ -614,7 +614,7 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return kAbort;
 
-  scoped_refptr<SecurityOrigin> origin = options.security_origin;
+  scoped_refptr<const SecurityOrigin> origin = options.security_origin;
   params.MutableOptions().cors_flag =
       !origin || !origin->CanRequestNoSuborigin(params.Url());
 
@@ -1457,7 +1457,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     // service worker of the physical origin. This has the effect that, for now,
     // suborigins do not work with service workers. See
     // https://w3c.github.io/webappsec-suborigins/.
-    SecurityOrigin* source_origin = Context().GetSecurityOrigin();
+    const SecurityOrigin* source_origin = Context().GetSecurityOrigin();
     if (source_origin && source_origin->HasSuborigin())
       request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
 

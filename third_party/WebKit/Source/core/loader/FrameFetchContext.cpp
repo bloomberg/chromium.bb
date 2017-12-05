@@ -184,21 +184,22 @@ bool IsClientHintsAllowed(const KURL& url) {
 
 struct FrameFetchContext::FrozenState final
     : GarbageCollectedFinalized<FrozenState> {
-  FrozenState(ReferrerPolicy referrer_policy,
-              const String& outgoing_referrer,
-              const KURL& url,
-              scoped_refptr<SecurityOrigin> security_origin,
-              scoped_refptr<const SecurityOrigin> parent_security_origin,
-              const Optional<WebAddressSpace>& address_space,
-              const ContentSecurityPolicy* content_security_policy,
-              KURL site_for_cookies,
-              scoped_refptr<SecurityOrigin> requestor_origin,
-              scoped_refptr<SecurityOrigin> requestor_origin_for_frame_loading,
-              const ClientHintsPreferences& client_hints_preferences,
-              float device_pixel_ratio,
-              const String& user_agent,
-              bool is_main_frame,
-              bool is_svg_image_chrome_client)
+  FrozenState(
+      ReferrerPolicy referrer_policy,
+      const String& outgoing_referrer,
+      const KURL& url,
+      scoped_refptr<const SecurityOrigin> security_origin,
+      scoped_refptr<const SecurityOrigin> parent_security_origin,
+      const Optional<WebAddressSpace>& address_space,
+      const ContentSecurityPolicy* content_security_policy,
+      KURL site_for_cookies,
+      scoped_refptr<const SecurityOrigin> requestor_origin,
+      scoped_refptr<const SecurityOrigin> requestor_origin_for_frame_loading,
+      const ClientHintsPreferences& client_hints_preferences,
+      float device_pixel_ratio,
+      const String& user_agent,
+      bool is_main_frame,
+      bool is_svg_image_chrome_client)
       : referrer_policy(referrer_policy),
         outgoing_referrer(outgoing_referrer),
         url(url),
@@ -218,13 +219,13 @@ struct FrameFetchContext::FrozenState final
   const ReferrerPolicy referrer_policy;
   const String outgoing_referrer;
   const KURL url;
-  const scoped_refptr<SecurityOrigin> security_origin;
+  const scoped_refptr<const SecurityOrigin> security_origin;
   const scoped_refptr<const SecurityOrigin> parent_security_origin;
   const Optional<WebAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
-  const scoped_refptr<SecurityOrigin> requestor_origin;
-  const scoped_refptr<SecurityOrigin> requestor_origin_for_frame_loading;
+  const scoped_refptr<const SecurityOrigin> requestor_origin;
+  const scoped_refptr<const SecurityOrigin> requestor_origin_for_frame_loading;
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
@@ -810,7 +811,7 @@ void FrameFetchContext::SendImagePing(const KURL& url) {
   PingLoader::LoadImage(GetFrame(), url);
 }
 
-SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
+const SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
   if (IsDetached())
     return frozen_state_->security_origin.get();
   return document_ ? document_->GetSecurityOrigin() : nullptr;
@@ -1122,7 +1123,7 @@ String FrameFetchContext::GetUserAgent() const {
   return GetFrame()->Loader().UserAgent();
 }
 
-scoped_refptr<SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
+scoped_refptr<const SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
   if (IsDetached())
     return frozen_state_->requestor_origin;
 
@@ -1132,7 +1133,7 @@ scoped_refptr<SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {
   return GetSecurityOrigin();
 }
 
-scoped_refptr<SecurityOrigin>
+scoped_refptr<const SecurityOrigin>
 FrameFetchContext::GetRequestorOriginForFrameLoading() {
   if (IsDetached())
     return frozen_state_->requestor_origin;

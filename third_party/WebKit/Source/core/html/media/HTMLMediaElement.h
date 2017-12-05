@@ -299,7 +299,7 @@ class CORE_EXPORT HTMLMediaElement
 
   // Checks to see if current media data is CORS-same-origin as the
   // specified origin.
-  bool IsMediaDataCORSSameOrigin(SecurityOrigin*) const;
+  bool IsMediaDataCORSSameOrigin(const SecurityOrigin*) const;
 
   // Returns this media element is in a cross-origin frame.
   bool IsInCrossOriginFrame() const;

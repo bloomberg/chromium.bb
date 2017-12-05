@@ -191,9 +191,9 @@ void Performance::Trace(blink::Visitor* visitor) {
 }
 
 static bool CanAccessOrigin(Frame* frame1, Frame* frame2) {
-  SecurityOrigin* security_origin1 =
+  const SecurityOrigin* security_origin1 =
       frame1->GetSecurityContext()->GetSecurityOrigin();
-  SecurityOrigin* security_origin2 =
+  const SecurityOrigin* security_origin2 =
       frame2->GetSecurityContext()->GetSecurityOrigin();
   return security_origin1->CanAccess(security_origin2);
 }

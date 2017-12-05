@@ -72,7 +72,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Let |request| be |input|'s request, if |input| is a Request object,
   // and a new request otherwise."
 
-  scoped_refptr<SecurityOrigin> origin =
+  scoped_refptr<const SecurityOrigin> origin =
       ExecutionContext::From(script_state)->GetSecurityOrigin();
 
   // TODO(yhirano): Implement the following steps:

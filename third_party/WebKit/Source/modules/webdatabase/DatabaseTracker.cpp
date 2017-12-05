@@ -83,7 +83,7 @@ bool DatabaseTracker::CanEstablishDatabase(DatabaseContext* database_context,
   return success;
 }
 
-String DatabaseTracker::FullPathForDatabase(SecurityOrigin* origin,
+String DatabaseTracker::FullPathForDatabase(const SecurityOrigin* origin,
                                             const String& name,
                                             bool) {
   return String(Platform::Current()->DatabaseCreateOriginIdentifier(

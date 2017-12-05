@@ -124,8 +124,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   const KURL& SiteForCookies() const;
   void SetSiteForCookies(const KURL&);
 
-  scoped_refptr<SecurityOrigin> RequestorOrigin() const;
-  void SetRequestorOrigin(scoped_refptr<SecurityOrigin>);
+  scoped_refptr<const SecurityOrigin> RequestorOrigin() const;
+  void SetRequestorOrigin(scoped_refptr<const SecurityOrigin>);
 
   const AtomicString& HttpMethod() const;
   void SetHTTPMethod(const AtomicString&);
@@ -366,7 +366,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   double timeout_interval_;  // 0 is a magic value for platform default on
                              // platforms that have one.
   KURL site_for_cookies_;
-  scoped_refptr<SecurityOrigin> requestor_origin_;
+  scoped_refptr<const SecurityOrigin> requestor_origin_;
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
   scoped_refptr<EncodedFormData> http_body_;
@@ -430,7 +430,7 @@ struct CrossThreadResourceRequestData {
   mojom::FetchCacheMode cache_mode_;
   double timeout_interval_;
   KURL site_for_cookies_;
-  scoped_refptr<SecurityOrigin> requestor_origin_;
+  scoped_refptr<const SecurityOrigin> requestor_origin_;
 
   String http_method_;
   std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;

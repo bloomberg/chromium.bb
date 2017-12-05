@@ -191,7 +191,7 @@ class CORE_EXPORT HTMLCanvasElement final
                                                AccelerationHint,
                                                SnapshotReason,
                                                const FloatSize&) override;
-  bool WouldTaintOrigin(SecurityOrigin*) const override;
+  bool WouldTaintOrigin(const SecurityOrigin*) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsCanvasElement() const override { return true; }
   bool IsOpaque() const override;

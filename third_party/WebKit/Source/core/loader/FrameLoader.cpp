@@ -1088,7 +1088,7 @@ void FrameLoader::CommitProvisionalLoad() {
   // Check if the destination page is allowed to access the previous page's
   // timing information.
   if (frame_->GetDocument()) {
-    scoped_refptr<SecurityOrigin> security_origin =
+    scoped_refptr<const SecurityOrigin> security_origin =
         SecurityOrigin::Create(provisional_document_loader_->Url());
     provisional_document_loader_->GetTiming()
         .SetHasSameOriginAsPreviousDocument(

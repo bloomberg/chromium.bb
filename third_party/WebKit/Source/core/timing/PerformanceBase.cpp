@@ -55,7 +55,7 @@ namespace blink {
 
 namespace {
 
-SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
+const SecurityOrigin* GetSecurityOrigin(ExecutionContext* context) {
   if (context)
     return context->GetSecurityOrigin();
   return nullptr;
@@ -266,7 +266,7 @@ bool PerformanceBase::PassesTimingAllowCheck(
     const SecurityOrigin& initiator_security_origin,
     const AtomicString& original_timing_allow_origin,
     ExecutionContext* context) {
-  scoped_refptr<SecurityOrigin> resource_origin =
+  scoped_refptr<const SecurityOrigin> resource_origin =
       SecurityOrigin::Create(response.Url());
   if (resource_origin->IsSameSchemeHostPort(&initiator_security_origin))
     return true;
@@ -322,7 +322,7 @@ void PerformanceBase::AddResourceTiming(const ResourceTimingInfo& info) {
       !HasObserverFor(PerformanceEntry::kResource))
     return;
   ExecutionContext* context = GetExecutionContext();
-  SecurityOrigin* security_origin = GetSecurityOrigin(context);
+  const SecurityOrigin* security_origin = GetSecurityOrigin(context);
   if (!security_origin)
     return;
 

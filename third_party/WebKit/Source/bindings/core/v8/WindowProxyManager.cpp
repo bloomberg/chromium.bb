@@ -100,14 +100,14 @@ WindowProxy* WindowProxyManager::WindowProxyMaybeUninitialized(
 }
 
 void LocalWindowProxyManager::UpdateSecurityOrigin(
-    SecurityOrigin* security_origin) {
+    const SecurityOrigin* security_origin) {
   static_cast<LocalWindowProxy*>(window_proxy_.Get())
       ->UpdateSecurityOrigin(security_origin);
 
   for (auto& entry : isolated_worlds_) {
     auto* isolated_window_proxy =
         static_cast<LocalWindowProxy*>(entry.value.Get());
-    SecurityOrigin* isolated_security_origin =
+    const SecurityOrigin* isolated_security_origin =
         isolated_window_proxy->World().IsolatedWorldSecurityOrigin();
     isolated_window_proxy->UpdateSecurityOrigin(isolated_security_origin);
   }

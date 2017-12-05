@@ -83,7 +83,7 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
   TextTrackLoader(TextTrackLoaderClient&, Document&);
 
   void CueLoadTimerFired(TimerBase*);
-  void CorsPolicyPreventedLoad(SecurityOrigin*, const KURL&);
+  void CorsPolicyPreventedLoad(const SecurityOrigin*, const KURL&);
 
   Document& GetDocument() const { return *document_; }
 

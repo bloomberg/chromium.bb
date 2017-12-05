@@ -697,7 +697,7 @@ void Deprecation::CountDeprecation(const Document& document,
 void Deprecation::CountDeprecationCrossOriginIframe(const LocalFrame* frame,
                                                     WebFeature feature) {
   // Check to see if the frame can script into the top level document.
-  SecurityOrigin* security_origin =
+  const SecurityOrigin* security_origin =
       frame->GetSecurityContext()->GetSecurityOrigin();
   Frame& top = frame->Tree().Top();
   if (!security_origin->CanAccess(

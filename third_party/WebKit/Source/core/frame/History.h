@@ -88,7 +88,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
   explicit History(LocalFrame*);
 
   static bool CanChangeToUrl(const KURL&,
-                             SecurityOrigin*,
+                             const SecurityOrigin*,
                              const KURL& document_url);
 
   KURL UrlForState(const String& url);

@@ -20,7 +20,7 @@ WorkletModulatorImpl::WorkletModulatorImpl(
     scoped_refptr<ScriptState> script_state)
     : ModulatorImplBase(std::move(script_state)) {}
 
-SecurityOrigin* WorkletModulatorImpl::GetSecurityOriginForFetch() {
+const SecurityOrigin* WorkletModulatorImpl::GetSecurityOriginForFetch() {
   return ToWorkletGlobalScope(GetExecutionContext())->DocumentSecurityOrigin();
 }
 

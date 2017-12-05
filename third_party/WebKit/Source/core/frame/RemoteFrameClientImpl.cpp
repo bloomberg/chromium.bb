@@ -133,7 +133,7 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
 
 void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
-    scoped_refptr<SecurityOrigin> target,
+    scoped_refptr<const SecurityOrigin> target,
     LocalFrame* source_frame) const {
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(

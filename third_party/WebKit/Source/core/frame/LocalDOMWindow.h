@@ -281,7 +281,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void PostMessageTimerFired(PostMessageTimer*);
   void RemovePostMessageTimer(PostMessageTimer*);
   void DispatchMessageEventWithOriginCheck(
-      SecurityOrigin* intended_target_origin,
+      const SecurityOrigin* intended_target_origin,
       Event*,
       std::unique_ptr<SourceLocation>);
 
@@ -323,7 +323,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Protected DOMWindow overrides.
   void SchedulePostMessage(MessageEvent*,
-                           scoped_refptr<SecurityOrigin> target,
+                           scoped_refptr<const SecurityOrigin> target,
                            Document* source) override;
 
  private:

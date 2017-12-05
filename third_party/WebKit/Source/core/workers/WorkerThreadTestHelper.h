@@ -87,7 +87,7 @@ class WorkerThreadForTest : public WorkerThread {
   }
   void ClearWorkerBackingThread() override { worker_backing_thread_.reset(); }
 
-  void StartWithSourceCode(SecurityOrigin* security_origin,
+  void StartWithSourceCode(const SecurityOrigin* security_origin,
                            const String& source,
                            ParentFrameTaskRunners* parent_frame_task_runners,
                            WorkerClients* worker_clients = nullptr) {

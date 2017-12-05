@@ -322,7 +322,7 @@ Document* XMLHttpRequest::GetDocument() const {
   return ToDocument(GetExecutionContext());
 }
 
-SecurityOrigin* XMLHttpRequest::GetSecurityOrigin() const {
+const SecurityOrigin* XMLHttpRequest::GetSecurityOrigin() const {
   return isolated_world_security_origin_
              ? isolated_world_security_origin_.get()
              : GetExecutionContext()->GetSecurityOrigin();

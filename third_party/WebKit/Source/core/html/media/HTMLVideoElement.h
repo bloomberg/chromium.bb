@@ -124,7 +124,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                                SnapshotReason,
                                                const FloatSize&) override;
   bool IsVideoElement() const override { return true; }
-  bool WouldTaintOrigin(SecurityOrigin*) const override;
+  bool WouldTaintOrigin(const SecurityOrigin*) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   const KURL& SourceURL() const override { return currentSrc(); }
   bool IsHTMLVideoElement() const override { return true; }

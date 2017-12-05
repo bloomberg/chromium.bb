@@ -323,7 +323,7 @@ class MODULES_EXPORT BaseAudioContext
   virtual bool IsContextClosed() const { return is_cleared_; }
 
   // Get the security origin for this audio context.
-  SecurityOrigin* GetSecurityOrigin() const;
+  const SecurityOrigin* GetSecurityOrigin() const;
 
   // Get the PeriodicWave for the specified oscillator type.  The table is
   // initialized internally if necessary.

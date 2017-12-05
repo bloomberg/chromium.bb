@@ -166,7 +166,7 @@ class DedicatedWorkerMessagingProxyForTest
 
   Member<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
-  scoped_refptr<SecurityOrigin> security_origin_;
+  scoped_refptr<const SecurityOrigin> security_origin_;
 };
 
 class DedicatedWorkerTest : public PageTestBase {

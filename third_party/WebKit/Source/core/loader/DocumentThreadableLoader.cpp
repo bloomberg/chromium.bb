@@ -749,9 +749,10 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
   //
   // See https://fetch.spec.whatwg.org/#http-redirect-fetch.
   if (cors_flag_) {
-    scoped_refptr<SecurityOrigin> original_origin =
+    scoped_refptr<const SecurityOrigin> original_origin =
         SecurityOrigin::Create(original_url);
-    scoped_refptr<SecurityOrigin> new_origin = SecurityOrigin::Create(new_url);
+    scoped_refptr<const SecurityOrigin> new_origin =
+        SecurityOrigin::Create(new_url);
     if (!original_origin->IsSameSchemeHostPort(new_origin.get()))
       security_origin_ = SecurityOrigin::CreateUnique();
   }
@@ -1357,7 +1358,7 @@ bool DocumentThreadableLoader::IsAllowedRedirect(
   return !cors_flag_ && GetSecurityOrigin()->CanRequest(url);
 }
 
-SecurityOrigin* DocumentThreadableLoader::GetSecurityOrigin() const {
+const SecurityOrigin* DocumentThreadableLoader::GetSecurityOrigin() const {
   return security_origin_
              ? security_origin_.get()
              : loading_context_->GetFetchContext()->GetSecurityOrigin();

@@ -87,7 +87,7 @@ class CORE_EXPORT MixedContentChecker final {
       SecurityViolationReportingPolicy =
           SecurityViolationReportingPolicy::kReport);
 
-  static bool IsMixedContent(SecurityOrigin*, const KURL&);
+  static bool IsMixedContent(const SecurityOrigin*, const KURL&);
   static bool IsMixedFormAction(LocalFrame*,
                                 const KURL&,
                                 SecurityViolationReportingPolicy =

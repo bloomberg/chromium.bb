@@ -165,7 +165,7 @@ CanvasRenderingContext::ResolveContextTypeAliases(
 
 bool CanvasRenderingContext::WouldTaintOrigin(
     CanvasImageSource* image_source,
-    SecurityOrigin* destination_security_origin) {
+    const SecurityOrigin* destination_security_origin) {
   const KURL& source_url = image_source->SourceURL();
   bool has_url = (source_url.IsValid() && !source_url.IsAboutBlankURL());
 

@@ -43,7 +43,7 @@ class CORE_EXPORT ContentSettingsClient {
   void RequestFileSystemAccessAsync(std::unique_ptr<ContentSettingCallbacks>);
 
   // Controls whether access to File System is allowed.
-  bool AllowIndexedDB(const String& name, SecurityOrigin*);
+  bool AllowIndexedDB(const String& name, const SecurityOrigin*);
 
   // Controls whether scripts are allowed to execute.
   bool AllowScript(bool enabled_per_settings);
@@ -59,7 +59,7 @@ class CORE_EXPORT ContentSettingsClient {
 
   // Controls whether insecure scripts are allowed to execute for this frame.
   bool AllowRunningInsecureContent(bool enabled_per_settings,
-                                   SecurityOrigin*,
+                                   const SecurityOrigin*,
                                    const KURL&);
 
   // Controls whether HTML5 Web Storage is allowed for this frame.

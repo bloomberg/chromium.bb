@@ -253,7 +253,7 @@ base::Optional<CORSError> HandleRedirect(
     if (access_error)
       return access_error;
 
-    scoped_refptr<SecurityOrigin> last_origin =
+    scoped_refptr<const SecurityOrigin> last_origin =
         SecurityOrigin::Create(last_url);
     // Set request's origin to a globally unique identifier as specified in
     // the step 10 in https://fetch.spec.whatwg.org/#http-redirect-fetch.

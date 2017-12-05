@@ -281,7 +281,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   // (e.g. GrantUniversalAccess) that can be overriden in regular documents
   // via WebPreference by embedders. (crbug.com/254993)
   Document* document = shadow_page_->GetDocument();
-  SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
 
   WorkerClients* worker_clients = WorkerClients::Create();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(

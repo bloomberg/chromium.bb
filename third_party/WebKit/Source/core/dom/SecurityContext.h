@@ -54,9 +54,9 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
 
-  // TODO(hiroshige): Make GetSecurityOrigin() return |const SecurityOrigin*|.
-  // crbug.com/779730
-  SecurityOrigin* GetSecurityOrigin() const { return security_origin_.get(); }
+  const SecurityOrigin* GetSecurityOrigin() const {
+    return security_origin_.get();
+  }
   SecurityOrigin* GetMutableSecurityOrigin() { return security_origin_.get(); }
 
   ContentSecurityPolicy* GetContentSecurityPolicy() const {

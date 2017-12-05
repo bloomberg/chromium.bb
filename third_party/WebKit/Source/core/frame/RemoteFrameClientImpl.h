@@ -34,7 +34,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void Reload(FrameLoadType, ClientRedirectPolicy) override;
   unsigned BackForwardLength() override;
   void ForwardPostMessage(MessageEvent*,
-                          scoped_refptr<SecurityOrigin> target,
+                          scoped_refptr<const SecurityOrigin> target,
                           LocalFrame* source) const override;
   void FrameRectsChanged(const IntRect& frame_rect) override;
   void UpdateRemoteViewportIntersection(const IntRect&) override;

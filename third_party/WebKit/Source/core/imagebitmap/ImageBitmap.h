@@ -109,7 +109,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
                                                AccelerationHint,
                                                SnapshotReason,
                                                const FloatSize&) override;
-  bool WouldTaintOrigin(SecurityOrigin*) const override {
+  bool WouldTaintOrigin(const SecurityOrigin*) const override {
     return !image_->OriginClean();
   }
   void AdjustDrawRects(FloatRect* src_rect, FloatRect* dst_rect) const override;

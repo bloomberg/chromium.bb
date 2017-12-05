@@ -88,7 +88,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   FileSystemType GetType() const { return type_; }
   KURL RootURL() const { return filesystem_root_url_; }
   WebFileSystem* FileSystem() const;
-  SecurityOrigin* GetSecurityOrigin() const;
+  const SecurityOrigin* GetSecurityOrigin() const;
 
   // The clonable flag is used in the structured clone algorithm to test
   // whether the FileSystem API object is permitted to be cloned. It defaults

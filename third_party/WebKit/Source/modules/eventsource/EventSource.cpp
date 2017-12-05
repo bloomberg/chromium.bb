@@ -153,7 +153,7 @@ void EventSource::Connect() {
                      last_event_id_utf8.length()));
   }
 
-  SecurityOrigin* origin = execution_context.GetSecurityOrigin();
+  const SecurityOrigin* origin = execution_context.GetSecurityOrigin();
 
   ThreadableLoaderOptions options;
 

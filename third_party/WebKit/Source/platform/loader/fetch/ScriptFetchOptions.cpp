@@ -12,7 +12,7 @@ namespace blink {
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
 FetchParameters ScriptFetchOptions::CreateFetchParameters(
     const KURL& url,
-    SecurityOrigin* security_origin,
+    const SecurityOrigin* security_origin,
     const WTF::TextEncoding& encoding,
     FetchParameters::DeferOption defer) const {
   // Step 1. Let request be the result of creating a potential-CORS request

@@ -204,7 +204,7 @@ class CORE_EXPORT DocumentThreadableLoader final
   void LoadRequest(ResourceRequest&, ResourceLoaderOptions);
   bool IsAllowedRedirect(network::mojom::FetchRequestMode, const KURL&) const;
 
-  SecurityOrigin* GetSecurityOrigin() const;
+  const SecurityOrigin* GetSecurityOrigin() const;
 
   // Returns null if the loader is not associated with Document.
   // TODO(kinuko): Remove dependency to document.
@@ -227,7 +227,7 @@ class CORE_EXPORT DocumentThreadableLoader final
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag_;
   bool suborigin_force_credentials_;
-  scoped_refptr<SecurityOrigin> security_origin_;
+  scoped_refptr<const SecurityOrigin> security_origin_;
 
   // Set to true when the response data is given to a data consumer handle.
   bool is_using_data_consumer_handle_;

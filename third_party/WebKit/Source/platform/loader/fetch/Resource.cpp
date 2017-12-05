@@ -209,7 +209,7 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
  public:
   static Resource::CachedMetadataHandlerImpl* Create(
       Resource* resource,
-      SecurityOrigin* security_origin) {
+      const SecurityOrigin* security_origin) {
     return new ServiceWorkerResponseCachedMetadataHandler(resource,
                                                           security_origin);
   }
@@ -221,14 +221,15 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
 
  private:
   explicit ServiceWorkerResponseCachedMetadataHandler(Resource*,
-                                                      SecurityOrigin*);
+                                                      const SecurityOrigin*);
   String cache_storage_cache_name_;
-  scoped_refptr<SecurityOrigin> security_origin_;
+  scoped_refptr<const SecurityOrigin> security_origin_;
 };
 
 Resource::ServiceWorkerResponseCachedMetadataHandler::
-    ServiceWorkerResponseCachedMetadataHandler(Resource* resource,
-                                               SecurityOrigin* security_origin)
+    ServiceWorkerResponseCachedMetadataHandler(
+        Resource* resource,
+        const SecurityOrigin* security_origin)
     : CachedMetadataHandlerImpl(resource), security_origin_(security_origin) {}
 
 void Resource::ServiceWorkerResponseCachedMetadataHandler::Trace(

@@ -134,7 +134,7 @@ class CORE_EXPORT ScriptController final
   void ClearWindowProxy();
   void UpdateDocument();
 
-  void UpdateSecurityOrigin(SecurityOrigin*);
+  void UpdateSecurityOrigin(const SecurityOrigin*);
 
   void ClearForClose();
 

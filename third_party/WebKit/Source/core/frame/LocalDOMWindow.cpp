@@ -111,7 +111,7 @@ class PostMessageTimer final
  public:
   PostMessageTimer(LocalDOMWindow& window,
                    MessageEvent* event,
-                   scoped_refptr<SecurityOrigin> target_origin,
+                   scoped_refptr<const SecurityOrigin> target_origin,
                    std::unique_ptr<SourceLocation> location,
                    UserGestureToken* user_gesture_token)
       : PausableTimer(window.document(), TaskType::kPostedMessage),
@@ -125,7 +125,7 @@ class PostMessageTimer final
   }
 
   MessageEvent* Event() const { return event_; }
-  SecurityOrigin* TargetOrigin() const { return target_origin_.get(); }
+  const SecurityOrigin* TargetOrigin() const { return target_origin_.get(); }
   std::unique_ptr<SourceLocation> TakeLocation() {
     return std::move(location_);
   }
@@ -165,7 +165,7 @@ class PostMessageTimer final
 
   Member<MessageEvent> event_;
   Member<LocalDOMWindow> window_;
-  scoped_refptr<SecurityOrigin> target_origin_;
+  scoped_refptr<const SecurityOrigin> target_origin_;
   std::unique_ptr<SourceLocation> location_;
   scoped_refptr<UserGestureToken> user_gesture_token_;
   bool disposal_allowed_;
@@ -607,9 +607,10 @@ Navigator* LocalDOMWindow::navigator() const {
   return navigator_.Get();
 }
 
-void LocalDOMWindow::SchedulePostMessage(MessageEvent* event,
-                                         scoped_refptr<SecurityOrigin> target,
-                                         Document* source) {
+void LocalDOMWindow::SchedulePostMessage(
+    MessageEvent* event,
+    scoped_refptr<const SecurityOrigin> target,
+    Document* source) {
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
@@ -644,13 +645,13 @@ void LocalDOMWindow::RemovePostMessageTimer(PostMessageTimer* timer) {
 }
 
 void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
-    SecurityOrigin* intended_target_origin,
+    const SecurityOrigin* intended_target_origin,
     Event* event,
     std::unique_ptr<SourceLocation> location) {
   if (intended_target_origin) {
     // Check target origin now since the target document may have changed since
     // the timer was scheduled.
-    SecurityOrigin* security_origin = document()->GetSecurityOrigin();
+    const SecurityOrigin* security_origin = document()->GetSecurityOrigin();
     bool valid_target =
         intended_target_origin->IsSameSchemeHostPortAndSuborigin(
             security_origin);

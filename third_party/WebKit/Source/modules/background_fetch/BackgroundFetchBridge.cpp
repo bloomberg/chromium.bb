@@ -111,7 +111,7 @@ void BackgroundFetchBridge::AddRegistrationObserver(
   GetService()->AddRegistrationObserver(unique_id, std::move(observer));
 }
 
-SecurityOrigin* BackgroundFetchBridge::GetSecurityOrigin() {
+const SecurityOrigin* BackgroundFetchBridge::GetSecurityOrigin() {
   return GetSupplementable()->GetExecutionContext()->GetSecurityOrigin();
 }
 

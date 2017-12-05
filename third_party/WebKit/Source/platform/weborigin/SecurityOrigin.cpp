@@ -329,7 +329,8 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   if (IsUnique())
     return false;
 
-  scoped_refptr<SecurityOrigin> target_origin = SecurityOrigin::Create(url);
+  scoped_refptr<const SecurityOrigin> target_origin =
+      SecurityOrigin::Create(url);
 
   if (target_origin->IsUnique())
     return false;
@@ -593,13 +594,13 @@ bool SecurityOrigin::HasSuboriginAndShouldAllowCredentialsFor(
           Suborigin::SuboriginPolicyOptions::kUnsafeCredentials))
     return false;
 
-  scoped_refptr<SecurityOrigin> other = SecurityOrigin::Create(url);
+  scoped_refptr<const SecurityOrigin> other = SecurityOrigin::Create(url);
   return IsSameSchemeHostPort(other.get());
 }
 
 bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
-  scoped_refptr<SecurityOrigin> origin_a = SecurityOrigin::Create(a);
-  scoped_refptr<SecurityOrigin> origin_b = SecurityOrigin::Create(b);
+  scoped_refptr<const SecurityOrigin> origin_a = SecurityOrigin::Create(a);
+  scoped_refptr<const SecurityOrigin> origin_b = SecurityOrigin::Create(b);
   return origin_b->IsSameSchemeHostPort(origin_a.get());
 }
 

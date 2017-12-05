@@ -32,7 +32,7 @@ bool Policy::allowsFeature(const String& feature) const {
 }
 
 bool Policy::allowsFeature(const String& feature, const String& url) const {
-  const scoped_refptr<SecurityOrigin> origin =
+  const scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsUnique()) {
     document_->AddConsoleMessage(ConsoleMessage::Create(

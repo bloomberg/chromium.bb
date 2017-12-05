@@ -65,14 +65,14 @@ class PLATFORM_EXPORT AudioDestination
   AudioDestination(AudioIOCallback&,
                    unsigned number_of_output_channels,
                    const WebAudioLatencyHint&,
-                   scoped_refptr<SecurityOrigin>);
+                   scoped_refptr<const SecurityOrigin>);
   ~AudioDestination() override;
 
   static scoped_refptr<AudioDestination> Create(
       AudioIOCallback&,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint&,
-      scoped_refptr<SecurityOrigin>);
+      scoped_refptr<const SecurityOrigin>);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
   // invoked by the media renderer. This is never called after Stop() is called.

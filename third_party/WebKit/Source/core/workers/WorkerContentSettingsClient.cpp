@@ -59,7 +59,7 @@ bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
 
 bool WorkerContentSettingsClient::AllowRunningInsecureContent(
     bool enabled_per_settings,
-    SecurityOrigin* origin,
+    const SecurityOrigin* origin,
     const KURL& url) {
   if (client_) {
     return client_->AllowRunningInsecureContent(enabled_per_settings,
