@@ -273,18 +273,24 @@ cr.define('extensions', function() {
      * @return {string}
      * @private
      */
-    computeFirstInspectLabel_: function() {
+    computeFirstInspectTitle_: function() {
       // Note: theoretically, this wouldn't be called without any inspectable
       // views (because it's in a dom-if="!computeInspectViewsHidden_()").
       // However, due to the recycling behavior of iron list, it seems that
       // sometimes it can. Even when it is, the UI behaves properly, but we
       // need to handle the case gracefully.
-      if (this.data.views.length == 0)
-        return '';
-      let label = extensions.computeInspectableViewLabel(this.data.views[0]);
-      if (this.data.views.length > 1)
-        label += ',';
-      return label;
+      return this.data.views.length > 0 ?
+          extensions.computeInspectableViewLabel(this.data.views[0]) :
+          '';
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    computeFirstInspectLabel_: function() {
+      let label = this.computeFirstInspectTitle_();
+      return label && this.data.views.length > 1 ? label + ',' : label;
     },
 
     /**
