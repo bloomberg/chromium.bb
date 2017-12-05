@@ -38,7 +38,8 @@ namespace braille_display_private {
 
 namespace {
 
-const char kTestUserName[] = "owner@invalid.domain";
+constexpr char kTestUserName[] = "owner@invalid.domain";
+constexpr char kTestUserGaiaId[] = "0123456789";
 
 // Used to make ReadKeys return an error.
 brlapi_keyCode_t kErrorKeyCode = BRLAPI_KEY_MAX;
@@ -338,7 +339,8 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   std::unique_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
   // Log in.
   session_manager::SessionManager::Get()->CreateSession(
-      AccountId::FromUserEmail(kTestUserName), kTestUserName);
+      AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),
+      kTestUserName);
   g_browser_process->profile_manager()->GetProfile(
       ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
   session_manager::SessionManager::Get()->SessionStarted();

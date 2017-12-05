@@ -86,8 +86,10 @@ namespace {
 // Because policy is not needed in some tests it is better to use e-mails that
 // are definitely not enterprise. This lets us to avoid faking of policy fetch
 // procedure.
-const char kTestUser1[] = "test-user@gmail.com";
-const char kTestUser2[] = "test-user2@gmail.com";
+constexpr char kTestUser1[] = "test-user@gmail.com";
+constexpr char kTestUser1GaiaId[] = "1111111111";
+constexpr char kTestUser2[] = "test-user2@gmail.com";
+constexpr char kTestUser2GaiaId[] = "2222222222";
 
 policy::CloudPolicyStore* GetStoreForUser(const user_manager::User* user) {
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
@@ -302,10 +304,12 @@ class UserImageManagerTest : public LoginManagerTest,
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
-  const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
+  const AccountId test_account_id1_ =
+      AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId);
+  const AccountId test_account_id2_ =
+      AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId);
   const AccountId enterprise_account_id_ =
-      AccountId::FromUserEmail(kEnterpriseUser1);
+      AccountId::FromUserEmailGaiaId(kEnterpriseUser1, kEnterpriseUser1GaiaId);
   const cryptohome::Identification cryptohome_id_ =
       cryptohome::Identification(enterprise_account_id_);
 
@@ -314,7 +318,7 @@ class UserImageManagerTest : public LoginManagerTest,
 };
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveAndLoadUserImage) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(test_account_id1_);
 
   // Setup a user with JPEG image.
   run_loop_.reset(new base::RunLoop);
@@ -346,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveAndLoadUserImage) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserDefaultImageIndex) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(test_account_id1_);
 }
 
 // Verifies that SaveUserDefaultImageIndex() correctly sets and persists the
@@ -373,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserDefaultImageIndex) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImage) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(test_account_id1_);
 }
 
 // Verifies that SaveUserImage() correctly sets and persists the chosen user
@@ -414,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveUserImageFromFile) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(test_account_id1_);
 }
 
 // Verifies that SaveUserImageFromFile() correctly sets and persists the chosen
@@ -484,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
                        PRE_SaveUserImageFromProfileImage) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(test_account_id1_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -496,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
   ASSERT_TRUE(user);
 
   UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting();
-  LoginUser(test_account_id1_.GetUserEmail());
+  LoginUser(test_account_id1_);
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   SeedAccountTrackerService(test_account_id1_, profile);
 
@@ -530,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
                        PRE_ProfileImageDownloadDoesNotClobber) {
-  RegisterUser(test_account_id1_.GetUserEmail());
+  RegisterUser(test_account_id1_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -548,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
       default_user_image::kFirstDefaultImageIndex);
 
   UserImageManagerImpl::IgnoreProfileDataDownloadDelayForTesting();
-  LoginUser(test_account_id1_.GetUserEmail());
+  LoginUser(test_account_id1_);
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   SeedAccountTrackerService(test_account_id1_, profile);
 
@@ -667,7 +671,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
 };
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_SetAndClear) {
-  RegisterUser(enterprise_account_id_.GetUserEmail());
+  RegisterUser(enterprise_account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -680,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
       user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
   ASSERT_TRUE(user);
 
-  LoginUser(enterprise_account_id_.GetUserEmail());
+  LoginUser(enterprise_account_id_);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -758,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, DISABLED_SetAndClear) {
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PRE_PolicyOverridesUser) {
-  RegisterUser(enterprise_account_id_.GetUserEmail());
+  RegisterUser(enterprise_account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -770,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
       user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
   ASSERT_TRUE(user);
 
-  LoginUser(enterprise_account_id_.GetUserEmail());
+  LoginUser(enterprise_account_id_);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);
@@ -822,7 +826,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest,
                        PRE_UserDoesNotOverridePolicy) {
-  RegisterUser(enterprise_account_id_.GetUserEmail());
+  RegisterUser(enterprise_account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -834,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
       user_manager::UserManager::Get()->FindUser(enterprise_account_id_);
   ASSERT_TRUE(user);
 
-  LoginUser(enterprise_account_id_.GetUserEmail());
+  LoginUser(enterprise_account_id_);
   base::RunLoop().RunUntilIdle();
 
   policy::CloudPolicyStore* store = GetStoreForUser(user);

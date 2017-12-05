@@ -13,6 +13,8 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "google_apis/gaia/fake_gaia.h"
 
+class AccountId;
+
 namespace content {
 class WebContents;
 }  // namespace content
@@ -41,7 +43,7 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // Registers the user with the given |user_id| on the device.
   // This method should be called in PRE_* test.
   // TODO(dzhioev): Add the ability to register users without a PRE_* test.
-  void RegisterUser(const std::string& user_id);
+  void RegisterUser(const AccountId& account_id);
 
   // Set expected credentials for next login attempt.
   void SetExpectedCredentials(const UserContext& user_context);
@@ -57,10 +59,10 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   bool AddUserToSession(const UserContext& user_context);
 
   // Log in user with |user_id|. User should be registered using RegisterUser().
-  void LoginUser(const std::string& user_id);
+  void LoginUser(const AccountId& account_id);
 
   // Add user with |user_id| to session.
-  void AddUser(const std::string& user_id);
+  void AddUser(const AccountId& user_id);
 
   // Executes given JS |expression| in |web_contents_| and checks
   // that it is true.
@@ -81,7 +83,9 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // For your convenience, the e-mail addresses for users that have been set up
   // in this way are provided below.
   static const char kEnterpriseUser1[];
+  static const char kEnterpriseUser1GaiaId[];
   static const char kEnterpriseUser2[];
+  static const char kEnterpriseUser2GaiaId[];
 
  protected:
   FakeGaia fake_gaia_;

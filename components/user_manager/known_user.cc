@@ -526,8 +526,20 @@ void RemovePrefs(const AccountId& account_id) {
 }
 
 // Exported so tests can call this from other components.
-void RemovePrefsForTesting(const AccountId& account_id) {
-  RemovePrefs(account_id);
+void RemoveSetProfileEverInitializedPrefForTesting(
+    const AccountId& account_id) {
+  const base::DictionaryValue* prefs = nullptr;
+  if (!FindPrefs(account_id, &prefs))
+    return;
+
+  if (!prefs->HasKey(kProfileEverInitialized))
+    return;
+
+  std::unique_ptr<base::DictionaryValue> new_prefs(prefs->CreateDeepCopy());
+  if (!new_prefs->RemoveKey(kProfileEverInitialized))
+    return;
+
+  UpdatePrefs(account_id, *new_prefs, true);
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {

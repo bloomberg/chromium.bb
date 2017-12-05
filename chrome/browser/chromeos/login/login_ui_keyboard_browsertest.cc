@@ -24,9 +24,12 @@ namespace chromeos {
 
 namespace {
 
-const char kTestUser1[] = "test-user1@gmail.com";
-const char kTestUser2[] = "test-user2@gmail.com";
-const char kTestUser3[] = "test-user3@gmail.com";
+constexpr char kTestUser1[] = "test-user1@gmail.com";
+constexpr char kTestUser1GaiaId[] = "1111111111";
+constexpr char kTestUser2[] = "test-user2@gmail.com";
+constexpr char kTestUser2GaiaId[] = "2222222222";
+constexpr char kTestUser3[] = "test-user3@gmail.com";
+constexpr char kTestUser3GaiaId[] = "3333333333";
 
 void Append_en_US_InputMethods(std::vector<std::string>* out) {
   out->push_back("xkb:us::eng");
@@ -117,8 +120,8 @@ class LoginUIKeyboardTest : public chromeos::LoginManagerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenDefault) {
-  RegisterUser(kTestUser1);
-  RegisterUser(kTestUser2);
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
 
   StartupUtils::MarkOobeCompleted();
 }
@@ -137,8 +140,8 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenWithUsers) {
-  RegisterUser(kTestUser1);
-  RegisterUser(kTestUser2);
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
 
   InitUserLastInputMethod();
 
@@ -234,9 +237,9 @@ void LoginUIKeyboardTestWithUsersAndOwner::CheckGaiaKeyboard() {
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
                        PRE_CheckPODScreenKeyboard) {
-  RegisterUser(kTestUser1);
-  RegisterUser(kTestUser2);
-  RegisterUser(kTestUser3);
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser3, kTestUser3GaiaId));
 
   InitUserLastInputMethod();
 

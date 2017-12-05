@@ -42,19 +42,18 @@
 
 namespace chromeos {
 
-namespace {
-
-const char* const kTestUsers[] = {"test-user1@gmail.com",
-                                  "test-user2@gmail.com"};
-
-}  // namespace
-
 class PreferencesTest : public LoginManagerTest {
  public:
   PreferencesTest()
       : LoginManagerTest(true), input_settings_(nullptr), keyboard_(nullptr) {
+    struct {
+      const char* email;
+      const char* gaia_id;
+    } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
+                            {"test-user2@gmail.com", "2222222222"}};
     for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
-      test_users_.push_back(AccountId::FromUserEmail(kTestUsers[i]));
+      test_users_.push_back(AccountId::FromUserEmailGaiaId(
+          kTestUsers[i].email, kTestUsers[i].gaia_id));
     }
   }
 
@@ -198,8 +197,8 @@ class PreferencesServiceBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PreferencesTest, PRE_MultiProfiles) {
-  RegisterUser(test_users_[0].GetUserEmail());
-  RegisterUser(test_users_[1].GetUserEmail());
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -208,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
 
   // Add first user and init its preferences. Check that corresponding
   // settings has been changed.
-  LoginUser(test_users_[0].GetUserEmail());
+  LoginUser(test_users_[0]);
   const user_manager::User* user1 = user_manager->FindUser(test_users_[0]);
   PrefService* prefs1 =
       ProfileHelper::Get()->GetProfileByUserUnsafe(user1)->GetPrefs();
@@ -219,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   // Add second user and init its prefs with different values.
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(test_users_[1].GetUserEmail());
+  AddUser(test_users_[1]);
   content::RunAllPendingInMessageLoop();
   const user_manager::User* user2 = user_manager->FindUser(test_users_[1]);
   EXPECT_TRUE(user2->is_active());

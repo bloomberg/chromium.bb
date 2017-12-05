@@ -305,8 +305,10 @@ void SupervisedUserTestBase::JSSetTextField(const std::string& element_selector,
 }
 
 void SupervisedUserTestBase::PrepareUsers() {
-  RegisterUser(kTestManager);
-  RegisterUser(kTestOtherUser);
+  RegisterUser(
+      AccountId::FromUserEmailGaiaId(kTestManager, kTestManagerGaiaId));
+  RegisterUser(
+      AccountId::FromUserEmailGaiaId(kTestOtherUser, kTestOtherUserGaiaId));
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -351,8 +353,8 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
 
   // Next button is now enabled.
   JSExpect("!$('supervised-user-creation-next-button').disabled");
-  UserContext user_context(AccountId::FromUserEmailGaiaId(
-      kTestManager, GetGaiaIDForUserID(kTestManager)));
+  UserContext user_context(
+      AccountId::FromUserEmailGaiaId(kTestManager, kTestManagerGaiaId));
   user_context.SetKey(Key(kTestManagerPassword));
   SetExpectedCredentials(user_context);
 
@@ -435,7 +437,7 @@ void SupervisedUserTestBase::SigninAsSupervisedUser(
       ChromeUserManager::Get()->GetSupervisedUserManager())
       ->CheckForFirstRun(user->GetAccountId().GetUserEmail());
 
-  LoginUser(user->GetAccountId().GetUserEmail());
+  LoginUser(user->GetAccountId());
   if (check_homedir_calls)
     ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
@@ -453,7 +455,7 @@ void SupervisedUserTestBase::SigninAsManager(int user_index) {
   // Created supervised user have to be first in a list.
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetUsers().at(user_index);
-  LoginUser(user->GetAccountId().GetUserEmail());
+  LoginUser(user->GetAccountId());
   Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
   shared_settings_adapter_.reset(
       new SupervisedUsersSharedSettingsSyncTestAdapter(profile));

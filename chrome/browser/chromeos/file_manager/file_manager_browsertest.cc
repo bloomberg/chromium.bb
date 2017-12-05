@@ -627,7 +627,8 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   // Adds a new user for testing to the current session.
   void AddUser(const TestAccountInfo& info, bool log_in) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    const AccountId account_id(AccountId::FromUserEmail(info.email));
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId(info.email, info.gaia_id));
     if (log_in) {
       session_manager::SessionManager::Get()->CreateSession(account_id,
                                                             info.hash);

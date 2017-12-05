@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
-  RegisterUser(kTestUser);
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId));
   StartupUtils::MarkOobeCompleted();
   CrosSettings::Get()->SetBoolean(kAccountsPrefShowUserNamesOnSignIn, false);
 }

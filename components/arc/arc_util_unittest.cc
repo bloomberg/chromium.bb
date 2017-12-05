@@ -47,7 +47,7 @@ class ScopedArcFeature {
 class FakeUser : public user_manager::User {
  public:
   explicit FakeUser(user_manager::UserType user_type)
-      : User(AccountId::FromUserEmail("user@test.com")),
+      : User(AccountId::FromUserEmailGaiaId("user@test.com", "1234567890")),
         user_type_(user_type) {}
   ~FakeUser() override = default;
 
@@ -210,8 +210,9 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
   // An ephemeral user is a logged in user but unknown to UserManager when
   // ephemeral policy is set.
   fake_user_manager->SetEphemeralUsersEnabled(true);
-  fake_user_manager->UserLoggedIn(AccountId::FromUserEmail("test@test.com"),
-                                  "test@test.com-hash", false);
+  fake_user_manager->UserLoggedIn(
+      AccountId::FromUserEmailGaiaId("test@test.com", "9876543210"),
+      "test@test.com-hash", false);
   const user_manager::User* ephemeral_user = fake_user_manager->GetActiveUser();
   ASSERT_TRUE(ephemeral_user);
   ASSERT_TRUE(fake_user_manager->IsUserCryptohomeDataEphemeral(

@@ -21,7 +21,8 @@ namespace chromeos {
 
 namespace {
 
-const char kTestUser[] = "test-user@gmail.com";
+constexpr char kTestUser[] = "test-user@gmail.com";
+constexpr char kTestUserGaiaId[] = "1234567890";
 
 }  // namespace
 
@@ -37,7 +38,7 @@ class BrowserLoginTest : public chromeos::LoginManagerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
-  RegisterUser(kTestUser);
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   EXPECT_EQ(session_manager::SessionState::OOBE,
             session_manager::SessionManager::Get()->session_state());
   chromeos::StartupUtils::MarkOobeCompleted();
@@ -46,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
-  LoginUser(kTestUser);
+  LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
 

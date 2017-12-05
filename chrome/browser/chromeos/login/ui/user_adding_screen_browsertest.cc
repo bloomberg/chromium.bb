@@ -26,19 +26,23 @@
 
 using namespace testing;
 
-namespace {
-
-const char* const kTestUsers[] = {
-    "test-user1@gmail.com", "test-user2@gmail.com", "test-user3@gmail.com"};
-
-}  // anonymous namespace
-
 namespace chromeos {
 
 class UserAddingScreenTest : public LoginManagerTest,
                              public UserAddingScreen::Observer {
  public:
-  UserAddingScreenTest() : LoginManagerTest(false) {}
+  UserAddingScreenTest() : LoginManagerTest(false) {
+    struct {
+      const char* email;
+      const char* gaia_id;
+    } const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
+                            {"test-user2@gmail.com", "2222222222"},
+                            {"test-user3@gmail.com", "3333333333"}};
+    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
+      test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
+          kTestUsers[i].email, kTestUsers[i].gaia_id));
+    }
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
@@ -88,6 +92,8 @@ class UserAddingScreenTest : public LoginManagerTest,
 
   int user_adding_finished() { return user_adding_finished_; }
 
+  std::vector<AccountId> test_users_;
+
  private:
   int user_adding_started_ = 0;
   int user_adding_finished_ = 0;
@@ -99,9 +105,9 @@ class UserAddingScreenTest : public LoginManagerTest,
 };
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_CancelAdding) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
-  RegisterUser(kTestUsers[2]);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
+  RegisterUser(test_users_[2]);
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -111,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
 
-  LoginUser(kTestUsers[0]);
+  LoginUser(test_users_[0]);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
@@ -131,23 +137,22 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, CancelAdding) {
 
   EXPECT_TRUE(LoginDisplayHost::default_host() == nullptr);
   EXPECT_EQ(1u, user_manager::UserManager::Get()->GetLoggedInUsers().size());
-  EXPECT_EQ(kTestUsers[0], user_manager::UserManager::Get()
-                               ->GetActiveUser()
-                               ->GetAccountId()
-                               .GetUserEmail());
+  EXPECT_EQ(test_users_[0],
+            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_AddingSeveralUsers) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
-  RegisterUser(kTestUsers[2]);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
+  RegisterUser(test_users_[2]);
   StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session_manager::SessionManager::Get()->session_state());
-  LoginUser(kTestUsers[0]);
+
+  LoginUser(test_users_[0]);
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
 
@@ -159,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
     EXPECT_EQ(i, user_adding_started());
     EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
               session_manager::SessionManager::Get()->session_state());
-    AddUser(kTestUsers[i]);
+    AddUser(test_users_[i]);
     WaitUntilUserAddingFinishedOrCancelled();
     content::RunAllPendingInMessageLoop();
     EXPECT_EQ(i, user_adding_finished());
@@ -203,12 +208,12 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
                     MultiProfileUserController::kBehaviorUnrestricted);
   user_manager::UserList unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
-  EXPECT_EQ(kTestUsers[0], unlock_users[0]->GetAccountId().GetUserEmail());
+  EXPECT_EQ(test_users_[0], unlock_users[0]->GetAccountId());
 
   prefs1->SetBoolean(prefs::kEnableAutoScreenLock, false);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(1UL, unlock_users.size());
-  EXPECT_EQ(kTestUsers[0], unlock_users[0]->GetAccountId().GetUserEmail());
+  EXPECT_EQ(test_users_[0], unlock_users[0]->GetAccountId());
 
   // If all users have unrestricted policy then anyone can perform unlock.
   prefs1->SetString(prefs::kMultiProfileUserBehavior,
@@ -216,21 +221,21 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(3UL, unlock_users.size());
   for (int i = 0; i < 3; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
+    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
 
   // This preference doesn't affect list of unlock users.
   prefs2->SetBoolean(prefs::kEnableAutoScreenLock, true);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(3UL, unlock_users.size());
   for (int i = 0; i < 3; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
+    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
 
   // Now one of the users is unable to unlock.
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], false);
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
+    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
   SetUserCanLock(user_manager->GetLoggedInUsers()[2], true);
 
   // Now one of the users has not-allowed policy.
@@ -242,18 +247,18 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   unlock_users = user_manager->GetUnlockUsers();
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
-    EXPECT_EQ(kTestUsers[i], unlock_users[i]->GetAccountId().GetUserEmail());
+    EXPECT_EQ(test_users_[i], unlock_users[i]->GetAccountId());
 }
 
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
 // Trying to catch http://crbug.com/362153.
 IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
-  LoginUser(kTestUsers[0]);
+  LoginUser(test_users_[0]);
 
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();

@@ -42,7 +42,8 @@ using session_manager::SessionState;
 
 namespace {
 
-const char* kUser = "user@test.com";
+constexpr char kUser[] = "user@test.com";
+constexpr char kUserGaiaId[] = "0123456789";
 
 // Weak ptr to PolicyCertVerifier - object is freed in test destructor once
 // we've ensured the profile has been shut down.
@@ -207,12 +208,11 @@ class SessionControllerClientTest : public testing::Test {
   }
 
   // Add and log in a user to the session.
-  void UserAddedToSession(std::string user) {
-    const AccountId account_id(AccountId::FromUserEmail(user));
+  void UserAddedToSession(const AccountId& account_id) {
     user_manager()->AddUser(account_id);
     session_manager_.CreateSession(
-        account_id,
-        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(user));
+        account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+                        account_id.GetUserEmail()));
     session_manager_.SetSessionState(SessionState::ACTIVE);
   }
 
@@ -228,7 +228,8 @@ class SessionControllerClientTest : public testing::Test {
 
   // Adds a regular user with a profile.
   TestingProfile* InitForMultiProfile() {
-    const AccountId account_id(AccountId::FromUserEmail(kUser));
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
     const user_manager::User* user = user_manager()->AddUser(account_id);
 
     // Note that user profiles are created after user login in reality.
@@ -267,7 +268,8 @@ class SessionControllerClientTest : public testing::Test {
 
 // Make sure that cycling one user does not cause any harm.
 TEST_F(SessionControllerClientTest, CyclingOneUser) {
-  UserAddedToSession("firstuser@test.com");
+  UserAddedToSession(
+      AccountId::FromUserEmailGaiaId("firstuser@test.com", "1111111111"));
 
   EXPECT_EQ("firstuser@test.com", GetActiveUserEmail());
   SessionControllerClient::DoCycleActiveUser(ash::CycleUserDirection::NEXT);
@@ -284,11 +286,16 @@ TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
   client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
 
-  UserAddedToSession("firstuser@test.com");
-  UserAddedToSession("seconduser@test.com");
-  UserAddedToSession("thirduser@test.com");
-  user_manager()->SwitchActiveUser(
-      AccountId::FromUserEmail("firstuser@test.com"));
+  const AccountId first_user =
+      AccountId::FromUserEmailGaiaId("firstuser@test.com", "1111111111");
+  const AccountId second_user =
+      AccountId::FromUserEmailGaiaId("seconduser@test.com", "2222222222");
+  const AccountId third_user =
+      AccountId::FromUserEmailGaiaId("thirduser@test.com", "3333333333");
+  UserAddedToSession(first_user);
+  UserAddedToSession(second_user);
+  UserAddedToSession(third_user);
+  user_manager()->SwitchActiveUser(first_user);
   SessionControllerClient::FlushForTesting();
 
   // Cycle forward.
@@ -322,12 +329,14 @@ TEST_F(SessionControllerClientTest, MultiProfileDisallowedByUserPolicy) {
   TestingProfile* user_profile = InitForMultiProfile();
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
             SessionControllerClient::GetAddUserSessionPolicy());
 
-  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+  user_manager()->AddUser(
+      AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
 
@@ -342,9 +351,11 @@ TEST_F(SessionControllerClientTest, MultiProfileDisallowedByUserPolicy) {
 TEST_F(SessionControllerClientTest,
        MultiProfileDisallowedByPolicyCertificates) {
   InitForMultiProfile();
-  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+  user_manager()->AddUser(
+      AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
 
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
@@ -361,9 +372,11 @@ TEST_F(SessionControllerClientTest,
 TEST_F(SessionControllerClientTest,
        MultiProfileDisallowedByPrimaryUserCertificatesInMemory) {
   TestingProfile* user_profile = InitForMultiProfile();
-  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+  user_manager()->AddUser(
+      AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
 
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
@@ -397,11 +410,11 @@ TEST_F(SessionControllerClientTest,
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
-  AccountId account_id(AccountId::FromUserEmail(kUser));
+  AccountId account_id(AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   while (user_manager()->GetLoggedInUsers().size() <
          session_manager::kMaximumNumberOfUserSessions) {
-    account_id = AccountId::FromUserEmail("bb@b.b");
+    account_id = AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444");
     user_manager()->AddUser(account_id);
     user_manager()->LoginUser(account_id);
   }
@@ -417,9 +430,10 @@ TEST_F(SessionControllerClientTest,
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
-  UserAddedToSession("bb@b.b");
+  UserAddedToSession(AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS,
             SessionControllerClient::GetAddUserSessionPolicy());
 }
@@ -431,12 +445,14 @@ TEST_F(SessionControllerClientTest,
 
   EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
             SessionControllerClient::GetAddUserSessionPolicy());
-  const AccountId account_id(AccountId::FromUserEmail(kUser));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
   user_manager()->LoginUser(account_id);
   user_profile->GetPrefs()->SetString(
       prefs::kMultiProfileUserBehavior,
       chromeos::MultiProfileUserController::kBehaviorNotAllowed);
-  user_manager()->AddUser(AccountId::FromUserEmail("bb@b.b"));
+  user_manager()->AddUser(
+      AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
             SessionControllerClient::GetAddUserSessionPolicy());
 }
@@ -453,11 +469,12 @@ TEST_F(SessionControllerClientTest, SendUserSession) {
   EXPECT_EQ(0, session_controller.update_user_session_count());
 
   // Simulate login.
-  const AccountId account_id(AccountId::FromUserEmail("user@test.com"));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId("user@test.com", "5555555555"));
   user_manager()->AddUser(account_id);
   session_manager_.CreateSession(
       account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
-                      "user@test.com"));
+                      account_id.GetUserEmail()));
   session_manager_.SetSessionState(SessionState::ACTIVE);
   SessionControllerClient::FlushForTesting();
 
@@ -542,11 +559,12 @@ TEST_F(SessionControllerClientTest, UserPrefsChange) {
   SessionControllerClient::FlushForTesting();
 
   // Simulate login.
-  const AccountId account_id(AccountId::FromUserEmail("user@test.com"));
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId("user@test.com", "5555555555"));
   const user_manager::User* user = user_manager()->AddUser(account_id);
   session_manager_.CreateSession(
       account_id, chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
-                      "user@test.com"));
+                      account_id.GetUserEmail()));
   session_manager_.SetSessionState(SessionState::ACTIVE);
   SessionControllerClient::FlushForTesting();
 

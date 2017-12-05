@@ -159,9 +159,11 @@ WasUserHomeMinimalMigrationAttempted(const AccountId& account_id);
 
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
-// (with the exception of tests, so a test-only API is exposed).
 void RemovePrefs(const AccountId& account_id);
-void USER_MANAGER_EXPORT RemovePrefsForTesting(const AccountId& account_id);
+
+// Clears kProfileEverInitialized for a user.
+void USER_MANAGER_EXPORT
+RemoveSetProfileEverInitializedPrefForTesting(const AccountId& account_id);
 
 // Register known user prefs.
 void USER_MANAGER_EXPORT RegisterPrefs(PrefRegistrySimple* registry);

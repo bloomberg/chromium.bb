@@ -463,8 +463,8 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
   chromeos::WallpaperManager::Initialize();
   g_browser_process->local_state()->SetString(
       "PublicAccountPendingDataRemoval", user_email);
-  user_manager::UserManager::Get()->UserLoggedIn(
-      account_id, user_id_hash, true);
+  user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
+                                                 true);
 
   GURL google("http://www.google.com");
   NavigateAndCommit(google);

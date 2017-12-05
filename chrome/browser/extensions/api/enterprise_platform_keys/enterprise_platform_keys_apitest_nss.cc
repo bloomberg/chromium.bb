@@ -162,7 +162,8 @@ const char kTestExtensionID[] = "aecpbnckhoppanpmefllkdkohionpmig";
 const char kAffiliationID[] = "some-affiliation-id";
 const char kTestUserinfoToken[] = "fake-userinfo-token";
 
-using policy::affiliation_test_helper::kEnterpriseUser;
+using policy::affiliation_test_helper::kEnterpriseUserEmail;
+using policy::affiliation_test_helper::kEnterpriseUserGaiaId;
 
 enum SystemToken {
   SYSTEM_TOKEN_EXISTS,
@@ -196,7 +197,9 @@ class EnterprisePlatformKeysTest
     : public ExtensionApiTest,
       public ::testing::WithParamInterface<Params> {
  public:
-  EnterprisePlatformKeysTest() {
+  EnterprisePlatformKeysTest()
+      : account_id_(AccountId::FromUserEmailGaiaId(kEnterpriseUserEmail,
+                                                   kEnterpriseUserGaiaId)) {
     // Command line should not be tweaked as if user is already logged in.
     set_chromeos_user_ = false;
     // We log in without running browser.
@@ -268,7 +271,7 @@ class EnterprisePlatformKeysTest
       user_affiliation_ids.insert(kAffiliationID);
       policy::UserPolicyBuilder user_policy;
       policy::affiliation_test_helper::SetUserAffiliationIDs(
-          &user_policy, fake_session_manager_client, kEnterpriseUser,
+          &user_policy, fake_session_manager_client, account_id_.GetUserEmail(),
           user_affiliation_ids);
     }
 
@@ -291,7 +294,7 @@ class EnterprisePlatformKeysTest
     token_info.scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
     token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
     token_info.token = kTestUserinfoToken;
-    token_info.email = kEnterpriseUser;
+    token_info.email = account_id_.GetUserEmail();
     fake_gaia_.IssueOAuthToken(
         policy::affiliation_test_helper::kFakeRefreshToken,
         token_info);
@@ -305,7 +308,7 @@ class EnterprisePlatformKeysTest
 
     // This condition is not held in PRE_ test.
     if (!users->empty())
-      policy::affiliation_test_helper::LoginUser(kEnterpriseUser);
+      policy::affiliation_test_helper::LoginUser(account_id_);
 
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
       base::RunLoop loop;
@@ -419,6 +422,10 @@ class EnterprisePlatformKeysTest
         content::BrowserThread::UI, FROM_HERE, done_callback);
   }
 
+ protected:
+  const AccountId account_id_;
+
+ private:
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
   policy::MockConfigurationPolicyProvider policy_provider_;
@@ -429,7 +436,7 @@ class EnterprisePlatformKeysTest
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, PRE_Basic) {
-  policy::affiliation_test_helper::PreLoginUser(kEnterpriseUser);
+  policy::affiliation_test_helper::PreLoginUser(account_id_);
 }
 
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
