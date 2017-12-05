@@ -88,6 +88,7 @@
 #include "core/page/PrintContext.h"
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/SnapCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/BlockPaintInvalidator.h"
 #include "core/paint/FramePainter.h"
@@ -2621,6 +2622,10 @@ void LocalFrameView::PerformPostLayoutTasks() {
           this->GetScrollingCoordinator()) {
     scrolling_coordinator->NotifyGeometryChanged(this);
   }
+
+  if (SnapCoordinator* snap_coordinator =
+          frame_->GetDocument()->GetSnapCoordinator())
+    snap_coordinator->UpdateAllSnapContainerData();
 
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.

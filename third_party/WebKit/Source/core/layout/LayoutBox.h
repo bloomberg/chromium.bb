@@ -1142,6 +1142,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
 
+  LayoutPoint OffsetPoint(const Element* parent) const;
   LayoutUnit OffsetLeft(const Element*) const override;
   LayoutUnit OffsetTop(const Element*) const override;
 
