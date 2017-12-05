@@ -16,6 +16,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
@@ -26,7 +27,8 @@ namespace ui {
 
 namespace {
 
-void EmptyFlipCallback(gfx::SwapResult) {}
+void EmptyFlipCallback(gfx::SwapResult,
+                       const gfx::PresentationFeedback& feedback) {}
 
 }  // namespace
 
@@ -105,7 +107,8 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
 
   // Ignore requests with no planes to schedule.
   if (plane_list.empty()) {
-    std::move(callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
+                            gfx::PresentationFeedback());
     return true;
   }
 
@@ -115,7 +118,8 @@ bool HardwareDisplayController::ActualSchedulePageFlip(
               return l.z_order < r.z_order;
             });
   if (pending_planes.front().z_order < 0) {
-    std::move(callback).Run(gfx::SwapResult::SWAP_FAILED);
+    std::move(callback).Run(gfx::SwapResult::SWAP_FAILED,
+                            gfx::PresentationFeedback());
     return false;
   }
   scoped_refptr<PageFlipRequest> page_flip_request =

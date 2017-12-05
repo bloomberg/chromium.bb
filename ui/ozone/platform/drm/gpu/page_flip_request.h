@@ -13,13 +13,18 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
+
 namespace ui {
 
 class PageFlipRequest : public base::RefCounted<PageFlipRequest> {
  public:
   PageFlipRequest(int crtc_count, SwapCompletionOnceCallback callback);
 
-  void Signal(gfx::SwapResult result);
+  void Signal(gfx::SwapResult result,
+              const gfx::PresentationFeedback& feedback);
 
  private:
   friend class base::RefCounted<PageFlipRequest>;

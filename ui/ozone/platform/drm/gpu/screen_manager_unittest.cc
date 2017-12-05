@@ -21,8 +21,7 @@
 
 namespace {
 
-void EmptySwapCallback(gfx::SwapResult) {
-}
+void EmptySwapCallback(gfx::SwapResult, const gfx::PresentationFeedback&) {}
 
 // Create a basic mode for a 6x4 screen.
 const drmModeModeInfo kDefaultMode =

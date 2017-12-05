@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "base/bind.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
@@ -48,7 +49,8 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
         PLOG(ERROR) << "Cannot display plane on overlay: crtc=" << flip.crtc
                     << " plane=" << plane.plane;
         ret = false;
-        flip.crtc->SignalPageFlipRequest(gfx::SwapResult::SWAP_FAILED);
+        flip.crtc->SignalPageFlipRequest(gfx::SwapResult::SWAP_FAILED,
+                                         gfx::PresentationFeedback());
         break;
       }
     }
@@ -68,8 +70,9 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
                     << " framebuffer=" << flip.framebuffer;
         ret = false;
       }
-      flip.crtc->SignalPageFlipRequest(ret ? gfx::SwapResult::SWAP_ACK
-                                           : gfx::SwapResult::SWAP_FAILED);
+      flip.crtc->SignalPageFlipRequest(
+          ret ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED,
+          gfx::PresentationFeedback());
     }
   }
   // For each element in |old_plane_list|, if it hasn't been reclaimed (by

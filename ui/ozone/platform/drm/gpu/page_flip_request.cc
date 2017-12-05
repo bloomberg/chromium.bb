@@ -13,15 +13,15 @@ PageFlipRequest::PageFlipRequest(int crtc_count,
 PageFlipRequest::~PageFlipRequest() {
 }
 
-void PageFlipRequest::Signal(gfx::SwapResult result) {
+void PageFlipRequest::Signal(gfx::SwapResult result,
+                             const gfx::PresentationFeedback& feedback) {
   if (result == gfx::SwapResult::SWAP_FAILED)
     result_ = gfx::SwapResult::SWAP_FAILED;
   else if (result != gfx::SwapResult::SWAP_ACK)
     result_ = result;
 
-  if (!--crtc_count_) {
-    std::move(callback_).Run(result_);
-  }
+  if (!--crtc_count_)
+    std::move(callback_).Run(result_, feedback);
 }
 
 }  // namespace ui

@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/native_pixmap.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
@@ -42,7 +43,8 @@ class HardwareDisplayControllerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void PageFlipCallback(gfx::SwapResult);
+  void PageFlipCallback(gfx::SwapResult result,
+                        const gfx::PresentationFeedback& feedback);
 
  protected:
   std::unique_ptr<ui::HardwareDisplayController> controller_;
@@ -50,6 +52,7 @@ class HardwareDisplayControllerTest : public testing::Test {
 
   int page_flips_;
   gfx::SwapResult last_swap_result_;
+  gfx::PresentationFeedback last_presentation_feedback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayControllerTest);
@@ -74,9 +77,12 @@ void HardwareDisplayControllerTest::TearDown() {
   drm_ = nullptr;
 }
 
-void HardwareDisplayControllerTest::PageFlipCallback(gfx::SwapResult result) {
+void HardwareDisplayControllerTest::PageFlipCallback(
+    gfx::SwapResult result,
+    const gfx::PresentationFeedback& feedback) {
   page_flips_++;
   last_swap_result_ = result;
+  last_presentation_feedback_ = feedback;
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
