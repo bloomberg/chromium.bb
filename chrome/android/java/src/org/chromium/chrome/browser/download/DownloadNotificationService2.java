@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
@@ -455,7 +456,10 @@ public class DownloadNotificationService2 {
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
         // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
-        mNotificationManager.notify(id, notification);
+        // Disabling StrictMode to avoid violations (crbug.com/789134).
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            mNotificationManager.notify(id, notification);
+        }
     }
 
     private void updateNotification(int notificationId, Notification notification, ContentId id,
