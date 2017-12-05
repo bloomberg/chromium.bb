@@ -793,7 +793,6 @@
     },
 
     'tryserver.v8': {
-      'v8_android_chromium_gn_dbg': 'android_debug_bot',
       'v8_linux_blink_rel': 'release_trybot',
       'v8_linux_chromium_gn_rel': 'release_trybot',
     },
