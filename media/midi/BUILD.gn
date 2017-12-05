@@ -7,6 +7,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -214,4 +215,24 @@ test("midi_unittests") {
 
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
+}
+
+fuzzer_test("midi_webmidi_data_validator_fuzzer") {
+  sources = [
+    "midi_webmidi_data_validator_fuzzer.cc",
+  ]
+  seed_corpus = "fuzz/corpus"
+  deps = [
+    ":midi",
+  ]
+}
+
+fuzzer_test("midi_message_queue_fuzzer") {
+  sources = [
+    "midi_message_queue_fuzzer.cc",
+  ]
+  seed_corpus = "fuzz/corpus"
+  deps = [
+    ":midi",
+  ]
 }
