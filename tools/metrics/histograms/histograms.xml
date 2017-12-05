@@ -79957,6 +79957,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.ForceSigninVerificationRequest" enum="BooleanRequested">
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    The number profile load events that needs a force-sign-in verification
+    request. It's recorded when profile is loaded with an authentication token
+    and force-sign-in policy is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Signin.ForceSigninVerificationTime" units="ms">
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    Elapsed time of the force-sign-in verfication if it's finished. It includes
+    total network delay, retry delay and wait time due to no connection. The
+    verfication will not be recorded if it's not finished before profile is
+    signed out or removed from memory.
+  </summary>
+</histogram>
+
 <histogram name="Signin.InvestigatedScenario" enum="SigninInvestigatedScenario">
   <owner>skym@chromium.org</owner>
   <summary>
@@ -108614,6 +108633,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Signin Flow shown on android after Account Consistency flag was
              enabled."/>
   <affected-histogram name="Signin"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Signin.ForceSigninVerificationResult" separator=".">
+  <suffix name="Success" label="The authenticaion token is valid"/>
+  <suffix name="Failure"
+      label="The authenticaion token can not be verified due to persisten
+             error"/>
+  <affected-histogram name="Signin.ForceSigninVerificationTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Signin.ObsoleteActions" separator=".">

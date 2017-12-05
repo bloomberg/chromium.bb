@@ -7,6 +7,7 @@
 #include "chrome/browser/signin/force_signin_verifier.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -27,14 +28,24 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
 }  // namespace
 
+const char kForceSigninVerificationMetricsName[] =
+    "Signin.ForceSigninVerificationRequest";
+const char kForceSigninVerificationSuccessTimeMetricsName[] =
+    "Signin.ForceSigninVerificationTime.Success";
+const char kForceSigninVerificationFailureTimeMetricsName[] =
+    "Signin.ForceSigninVerificationTime.Failure";
+
 ForceSigninVerifier::ForceSigninVerifier(Profile* profile)
     : OAuth2TokenService::Consumer("force_signin_verifier"),
       has_token_verified_(false),
       backoff_entry_(&kBackoffPolicy),
+      creation_time_(base::TimeTicks::Now()),
       oauth2_token_service_(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
       signin_manager_(SigninManagerFactory::GetForProfile(profile)) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  UMA_HISTOGRAM_BOOLEAN(kForceSigninVerificationMetricsName,
+                        ShouldSendRequest());
   SendRequest();
 }
 
@@ -46,6 +57,8 @@ void ForceSigninVerifier::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationSuccessTimeMetricsName,
+                             base::TimeTicks::Now() - creation_time_);
   has_token_verified_ = true;
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   Cancel();
@@ -55,6 +68,8 @@ void ForceSigninVerifier::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   if (error.IsPersistentError()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationFailureTimeMetricsName,
+                               base::TimeTicks::Now() - creation_time_);
     has_token_verified_ = true;
     CloseAllBrowserWindows();
     net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
