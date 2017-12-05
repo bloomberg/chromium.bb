@@ -12,7 +12,43 @@ sky@chromium.org
 tansell@chromium.org
 thakis@chromium.org
 
-per-file chromium.android*.json=bpastene@chromium.org
+# TODO(crbug.com/662541):
+# These files are auto-generated and are being converted to the
+# new format using ./generate_buildbot_json.py. Until everything
+# is converted these files are locked down; make sure that one of the
+# people working on that process is approving things.
+#
+# Not planned for conversion yet:
+# chromium.clang
+# chromium.goma
+# chromium.fyi
+# chromium.perf*
+# chromium.webrtc*
+# client.v8*
+per-file chromium.json=set noparent
+per-file chromium.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.android*.json=set noparent
+per-file chromium.android*.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.angle*.json=set noparent
+per-file chromium.angle*.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.chrome.json=set noparent
+per-file chromium.chrome.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.linux.json=set noparent
+per-file chromium.linux.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.mac.json=set noparent
+per-file chromium.mac.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.memory.json=set noparent
+per-file chromium.memory.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.sandbox.json=set noparent
+per-file chromium.sandbox.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.swarm.json=set noparent
+per-file chromium.swarm.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.memory.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.webkit.json=set noparent
+per-file chromium.webkit.json=file://testing/buildbot/GENERATION_OWNERS
+per-file chromium.win.json=set noparent
+per-file chromium.win.json=file://testing/buildbot/GENERATION_OWNERS
+
 
 # For Site Isolation FYI tests:
 per-file chromium.fyi.json=creis@chromium.org
