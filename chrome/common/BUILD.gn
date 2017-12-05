@@ -322,8 +322,6 @@ static_library("common") {
       "extensions/extension_constants.h",
       "extensions/extension_metrics.cc",
       "extensions/extension_metrics.h",
-      "extensions/extension_process_policy.cc",
-      "extensions/extension_process_policy.h",
       "extensions/image_writer/image_writer_util_mac.cc",
       "extensions/image_writer/image_writer_util_mac.h",
       "extensions/manifest_handlers/app_icon_color_info.cc",

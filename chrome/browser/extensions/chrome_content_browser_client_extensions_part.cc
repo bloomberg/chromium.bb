@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
@@ -513,16 +512,6 @@ bool ChromeContentBrowserClientExtensionsPart::
   // Otherwise, swap BrowsingInstances when transitioning to/from Chrome Web
   // Store.
   return is_current_url_for_web_store != is_new_url_for_web_store;
-}
-
-// static
-bool ChromeContentBrowserClientExtensionsPart::ShouldSwapProcessesForRedirect(
-    content::BrowserContext* browser_context,
-    const GURL& current_url,
-    const GURL& new_url) {
-  return CrossesExtensionProcessBoundary(
-      ExtensionRegistry::Get(browser_context)->enabled_extensions(),
-      current_url, new_url, false);
 }
 
 // static

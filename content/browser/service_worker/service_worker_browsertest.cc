@@ -69,6 +69,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
@@ -2584,13 +2585,27 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   }
 }
 
+class ServiceWorkerSitePerProcessTest : public ServiceWorkerBrowserTest {
+ public:
+  ServiceWorkerSitePerProcessTest() {}
+  ~ServiceWorkerSitePerProcessTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSitePerProcessTest);
+};
+
 // Times out on CrOS and Linux. https://crbug.com/702256
 #if defined(ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_CrossSiteTransfer DISABLED_CrossSiteTransfer
+#define MAYBE_CrossSiteNavigation DISABLED_CrossSiteNavigation
 #else
-#define MAYBE_CrossSiteTransfer CrossSiteTransfer
+#define MAYBE_CrossSiteNavigation CrossSiteNavigation
 #endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, MAYBE_CrossSiteTransfer) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerSitePerProcessTest,
+                       MAYBE_CrossSiteNavigation) {
   StartServerAndNavigateToSetup();
   // The first page registers a service worker.
   const char kRegisterPageUrl[] = "/service_worker/cross_site_xfer.html";
@@ -2601,9 +2616,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, MAYBE_CrossSiteTransfer) {
 
   NavigateToURL(shell(), embedded_test_server()->GetURL(kRegisterPageUrl));
   ASSERT_EQ(kOKTitle1, title_watcher1.WaitAndGetTitle());
-
-  // Force process swapping behavior.
-  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
 
   // The second pages loads via the serviceworker including a subresource.
   const char kConfirmPageUrl[] =

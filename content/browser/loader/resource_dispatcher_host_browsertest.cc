@@ -541,7 +541,6 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CookiePolicy) {
       "http://localhost:%u/set_cookie.html", embedded_test_server()->port()));
   GURL url(embedded_test_server()->GetURL("/redirect?" + set_cookie_url));
 
-  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
   ShellNetworkDelegate::SetBlockThirdPartyCookies(true);
 
   CheckTitleTest(url, "cookie set");

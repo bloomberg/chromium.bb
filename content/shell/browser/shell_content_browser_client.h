@@ -26,8 +26,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   // Gets the current instance.
   static ShellContentBrowserClient* Get();
 
-  static void SetSwapProcessesForRedirect(bool swap);
-
   ShellContentBrowserClient();
   ~ShellContentBrowserClient() override;
 
@@ -66,9 +64,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
   net::NetLog* GetNetLog() override;
-  bool ShouldSwapProcessesForRedirect(BrowserContext* browser_context,
-                                      const GURL& current_url,
-                                      const GURL& new_url) override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
   void OpenURL(BrowserContext* browser_context,

@@ -1468,18 +1468,6 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
 #endif
 }
 
-bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
-    content::BrowserContext* browser_context,
-    const GURL& current_url,
-    const GURL& new_url) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return ChromeContentBrowserClientExtensionsPart::
-      ShouldSwapProcessesForRedirect(browser_context, current_url, new_url);
-#else
-  return false;
-#endif
-}
-
 bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return !url.SchemeIs(chrome::kChromeNativeScheme);
 }

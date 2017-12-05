@@ -84,7 +84,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
-#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

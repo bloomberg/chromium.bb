@@ -272,11 +272,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
-  // Force all future navigations to transfer. Note that this includes same-site
-  // navigiations which may cause double process swaps (via OpenURL and then via
-  // transfer). This test intentionally exercises that case.
-  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
-
   // Navigate to a page on A.com with entry replacement. This navigation is
   // cross-site, so the renderer will send it to the browser via OpenURL to give
   // to a new process. It will then be transferred into yet another process due
@@ -330,12 +325,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest,
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
   EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  // Force all future navigations to transfer. Note that this includes same-site
-  // navigiations which may cause double process swaps (via OpenURL and then via
-  // transfer). All navigations in this test are same-site, so it only swaps
-  // processes via request transfer.
-  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
 
   // Navigate in-process with entry replacement. It will then be transferred
   // into a new one due to the call above.
@@ -415,9 +404,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteTransferTest, NoLeakOnCrossSiteCancel) {
   // Navigate to a starting URL, so there is a history entry to replace.
   GURL url1 = embedded_test_server()->GetURL("/site_isolation/blank.html?1");
   EXPECT_TRUE(NavigateToURL(shell(), url1));
-
-  // Force all future navigations to transfer.
-  ShellContentBrowserClient::SetSwapProcessesForRedirect(true);
 
   NoTransferRequestDelegate no_transfer_request_delegate;
   WebContentsDelegate* old_delegate = shell()->web_contents()->GetDelegate();

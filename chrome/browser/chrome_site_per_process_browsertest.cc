@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -20,10 +21,14 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -31,6 +36,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -49,6 +55,42 @@
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
+
+using app_modal::JavaScriptAppModalDialog;
+
+namespace {
+
+class RedirectObserver : public content::WebContentsObserver {
+ public:
+  explicit RedirectObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        transition_(ui::PageTransition::PAGE_TRANSITION_LINK) {}
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->HasCommitted())
+      return;
+    transition_ = navigation_handle->GetPageTransition();
+    redirects_ = navigation_handle->GetRedirectChain();
+  }
+
+  void WebContentsDestroyed() override {
+    // Make sure we don't close the tab while the observer is in scope.
+    // See http://crbug.com/314036.
+    FAIL() << "WebContents closed during navigation (http://crbug.com/314036).";
+  }
+
+  ui::PageTransition transition() const { return transition_; }
+  const std::vector<GURL> redirects() const { return redirects_; }
+
+ private:
+  ui::PageTransition transition_;
+  std::vector<GURL> redirects_;
+
+  DISALLOW_COPY_AND_ASSIGN(RedirectObserver);
+};
+
+}  // namespace
 
 class ChromeSitePerProcessTest : public InProcessBrowserTest {
  public:
@@ -524,6 +566,74 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // The popup shouldn't be blocked.
   EXPECT_TRUE(popup_handle_is_valid);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+// Ensure that a transferred cross-process navigation does not generate
+// DidStopLoading events until the navigation commits.  If it did, then
+// ui_test_utils::NavigateToURL would proceed before the URL had committed.
+// http://crbug.com/243957.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       NoStopDuringTransferUntilCommit) {
+  GURL init_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), init_url);
+
+  // Navigate to a same-site page that redirects, causing a transfer.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Create a RedirectObserver that goes away before we close the tab.
+  {
+    RedirectObserver redirect_observer(contents);
+    GURL dest_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+    GURL redirect_url(embedded_test_server()->GetURL(
+        "c.com", "/server-redirect?" + dest_url.spec()));
+    ui_test_utils::NavigateToURL(browser(), redirect_url);
+
+    // We should immediately see the new committed entry.
+    EXPECT_FALSE(contents->GetController().GetPendingEntry());
+    EXPECT_EQ(dest_url,
+              contents->GetController().GetLastCommittedEntry()->GetURL());
+
+    // We should keep track of the original request URL, redirect chain, and
+    // page transition type during a transfer, since these are necessary for
+    // history autocomplete to work.
+    EXPECT_EQ(redirect_url, contents->GetController()
+                                .GetLastCommittedEntry()
+                                ->GetOriginalRequestURL());
+    EXPECT_EQ(2U, redirect_observer.redirects().size());
+    EXPECT_EQ(redirect_url, redirect_observer.redirects().at(0));
+    EXPECT_EQ(dest_url, redirect_observer.redirects().at(1));
+    EXPECT_TRUE(ui::PageTransitionCoreTypeIs(redirect_observer.transition(),
+                                             ui::PAGE_TRANSITION_TYPED));
+  }
+}
+
+// Tests that a cross-process redirect will only cause the beforeunload
+// handler to run once.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       SingleBeforeUnloadAfterRedirect) {
+  // Navigate to a page with a beforeunload handler.
+  GURL url(embedded_test_server()->GetURL("a.com", "/beforeunload.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::PrepContentsForBeforeUnloadTest(contents);
+
+  // Navigate to a URL that redirects to another process and approve the
+  // beforeunload dialog that pops up.
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  GURL dest_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "c.com", "/server-redirect?" + dest_url.spec()));
+  browser()->OpenURL(content::OpenURLParams(redirect_url, content::Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
+  JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_TRUE(alert->is_before_unload_dialog());
+  alert->native_dialog()->AcceptAppModalDialog();
+  nav_observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PrintIgnoredInUnloadHandler) {

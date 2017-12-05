@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_process_policy.h"
+#include "chrome/renderer/extensions/extension_process_policy.h"
 
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_builder.h"

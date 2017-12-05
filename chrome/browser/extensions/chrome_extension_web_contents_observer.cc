@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
-#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
