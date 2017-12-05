@@ -239,7 +239,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
     ScriptSourceCode source_code(GetElement()->TextFromChildren(),
                                  source_location_type_, document_url,
                                  StartingPosition());
-    return ClassicScript::Create(source_code, options_);
+    return ClassicScript::Create(source_code, options_, kSharableCrossOrigin);
   }
 
   DCHECK(GetResource()->IsLoaded());
@@ -247,7 +247,8 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
                         !streamer_->StreamingSuppressed();
   ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr,
                                GetResource());
-  return ClassicScript::Create(source_code, options_);
+  return ClassicScript::Create(source_code, options_,
+                               GetResource()->CalculateAccessControlStatus());
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {
