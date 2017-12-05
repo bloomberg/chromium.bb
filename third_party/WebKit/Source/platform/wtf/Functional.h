@@ -327,44 +327,13 @@ namespace WTF {
 #endif
 
 template <typename Signature>
-class Function;
+using Function = base::OnceCallback<Signature>;
 
-template <typename R, typename... Args>
-class Function<R(Args...)> {
-  USING_FAST_MALLOC(Function);
-
- public:
-  Function() {}
-  Function(base::Callback<R(Args...)> callback)
-      : callback_(std::move(callback)) {}
-  ~Function() {}
-
-  Function(const Function&) = delete;
-  Function& operator=(const Function&) = delete;
-
-  Function(Function&& other) : callback_(std::move(other.callback_)) {}
-
-  Function& operator=(Function&& other) {
-    callback_ = std::move(other.callback_);
-    return *this;
-  }
-
-  R Run(Args... args) && {
-    return std::move(callback_).Run(std::forward<Args>(args)...);
-  }
-
-  bool IsCancelled() const { return callback_.IsCancelled(); }
-  void Reset() { callback_.Reset(); }
-  explicit operator bool() const { return static_cast<bool>(callback_); }
-
-  friend base::OnceCallback<R(Args...)> ConvertToBaseCallback(
-      Function function) {
-    return std::move(function.callback_);
-  }
-
- private:
-  base::Callback<R(Args...)> callback_;
-};
+template <typename Signature>
+base::OnceCallback<Signature> ConvertToBaseCallback(
+    Function<Signature> function) {
+  return function;
+}
 
 template <typename Signature>
 class CrossThreadFunction;
@@ -418,15 +387,15 @@ Function<base::MakeUnboundRunType<FunctionType, BoundParameters...>> Bind(
                 "A bound argument uses a bad pattern.");
   using UnboundRunType =
       base::MakeUnboundRunType<FunctionType, BoundParameters...>;
-  auto cb =
-      base::Bind(function, std::forward<BoundParameters>(bound_parameters)...);
+  auto cb = base::BindOnce(function,
+                           std::forward<BoundParameters>(bound_parameters)...);
 #if DCHECK_IS_ON()
   using WrapperType =
-      ThreadCheckingCallbackWrapper<base::Callback<UnboundRunType>>;
-  cb = base::Bind(&WrapperType::Run,
-                  std::make_unique<WrapperType>(std::move(cb)));
+      ThreadCheckingCallbackWrapper<base::OnceCallback<UnboundRunType>>;
+  cb = base::BindOnce(&WrapperType::Run,
+                      std::make_unique<WrapperType>(std::move(cb)));
 #endif
-  return Function<UnboundRunType>(std::move(cb));
+  return cb;
 }
 
 template <typename FunctionType, typename... BoundParameters>
@@ -500,5 +469,7 @@ using WTF::CrossThreadUnretained;
 using WTF::Function;
 using WTF::CrossThreadFunction;
 using WTF::CrossThreadClosure;
+
+using WTF::ConvertToBaseCallback;
 
 #endif  // WTF_Functional_h
