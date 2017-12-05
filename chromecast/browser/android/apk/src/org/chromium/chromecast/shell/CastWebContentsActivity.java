@@ -51,7 +51,7 @@ public class CastWebContentsActivity extends Activity {
     private BroadcastReceiver mWindowDestroyedBroadcastReceiver;
     private BroadcastReceiver mScreenOffBroadcastReceiver;
     private FrameLayout mCastWebContentsLayout;
-    private AudioManager mAudioManager;
+    private CastAudioManager mAudioManager;
     private ContentViewRenderView mContentViewRenderView;
     private WindowAndroid mWindow;
     private ContentViewCore mContentViewCore;
@@ -334,7 +334,7 @@ public class CastWebContentsActivity extends Activity {
 
     @SuppressWarnings("deprecation")
     private void releaseStreamMuteIfNecessary() {
-        AudioManager audioManager = CastAudioManager.getAudioManager(this);
+        AudioManager audioManager = mAudioManager.getInternal();
         boolean isMuted = false;
         try {
             isMuted = (Boolean) audioManager.getClass()
