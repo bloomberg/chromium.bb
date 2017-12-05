@@ -1850,10 +1850,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int allow_hp = cm->allow_high_precision_mv;
   int_mv nearestmv[2], nearmv[2];
-  int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
+  int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES] = { { { 0 } } };
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
-  int mode_ctx = 0;
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #if CONFIG_EXT_WARPED_MOTION
   int pts_mv[SAMPLES_ARRAY_SIZE], pts_wm[SAMPLES_ARRAY_SIZE];
@@ -1865,8 +1864,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->uv_mode = UV_DC_PRED;
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
-
-  memset(ref_mvs, 0, sizeof(ref_mvs));
 
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
@@ -1933,6 +1930,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       }
     }
   }
+
+  int mode_ctx = 0;
 
   if (is_compound)
     mode_ctx = compound_inter_mode_ctx[mbmi->ref_frame[0]];
