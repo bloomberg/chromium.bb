@@ -140,7 +140,6 @@ def DetectVisualStudioPath():
   # build/toolchain/win/setup_toolchain.py as well.
   version_as_year = GetVisualStudioVersion()
   year_to_version = {
-      '2015': '14.0',
       '2017': '15.0',
   }
   if version_as_year not in year_to_version:
@@ -160,15 +159,6 @@ def DetectVisualStudioPath():
         r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community'):
       if path and os.path.exists(path):
         return path
-  else:
-    keys = [r'HKLM\Software\Microsoft\VisualStudio\%s' % version,
-            r'HKLM\Software\Wow6432Node\Microsoft\VisualStudio\%s' % version]
-    for key in keys:
-      path = _RegistryGetValue(key, 'InstallDir')
-      if not path:
-        continue
-      path = os.path.normpath(os.path.join(path, '..', '..'))
-      return path
 
   raise Exception(('Visual Studio Version %s (from GYP_MSVS_VERSION)'
                    ' not found.') % (version_as_year))
@@ -204,11 +194,11 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
-  # Copy the UCRT files needed by VS 2015 from the Windows SDK. This location
-  # includes the api-ms-win-crt-*.dll files that are not found in the Windows
-  # directory. These files are needed for component builds.
-  # If WINDOWSSDKDIR is not set use the default SDK path. This will be the case
-  # when DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
+  # Copy the UCRT files from the Windows SDK. This location includes the
+  # api-ms-win-crt-*.dll files that are not found in the Windows directory.
+  # These files are needed for component builds. If WINDOWSSDKDIR is not set
+  # use the default SDK path. This will be the case when
+  # DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
   win_sdk_dir = os.path.normpath(
       os.environ.get('WINDOWSSDKDIR',
                      'C:\\Program Files (x86)\\Windows Kits\\10'))
@@ -253,11 +243,7 @@ def _CopyPGORuntime(target_dir, target_cpu):
   env_version = GetVisualStudioVersion()
   # These dependencies will be in a different location depending on the version
   # of the toolchain.
-  if env_version == '2015':
-    pgo_x86_runtime_dir = os.path.join(os.environ.get('GYP_MSVS_OVERRIDE_PATH'),
-                                       'VC', 'bin')
-    pgo_x64_runtime_dir = os.path.join(pgo_x86_runtime_dir, 'amd64')
-  elif env_version == '2017':
+  if env_version == '2017':
     pgo_runtime_root = FindVCToolsRoot()
     assert pgo_runtime_root
     # There's no version of pgosweep.exe in HostX64/x86, so we use the copy
@@ -353,9 +339,6 @@ def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
   env_version = GetVisualStudioVersion()
-  if env_version == '2015':
-    # Update 3 final with 10.0.15063.468 SDK and no vctip.exe.
-    return ['f53e4598951162bad6330f7a167486c7ae5db1e5']
   if env_version == '2017':
     # VS 2017 Update 3.2 with 10.0.15063.468 SDK and patched setenv.cmd.
     return ['a9e1098bba66d2acccc377d5ee81265910f29272']
