@@ -63,4 +63,10 @@ public interface VrDaydreamApi {
      * Launch the stereoscopic, 3D VR launcher homescreen.
      */
     boolean launchVrHomescreen();
+
+    /**
+     * @return Whether this device boots directly into VR mode. May be used to detect standalone VR
+     * devices.
+     */
+    boolean bootsToVr();
 }
