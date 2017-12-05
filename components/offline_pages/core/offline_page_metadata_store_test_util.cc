@@ -30,7 +30,7 @@ int64_t GetPageCountSync(sql::Connection* db) {
 }  // namespace
 
 OfflinePageMetadataStoreTestUtil::OfflinePageMetadataStoreTestUtil(
-    scoped_refptr<base::TestSimpleTaskRunner> task_runner)
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
     : task_runner_(task_runner), store_ptr_(nullptr) {}
 
 OfflinePageMetadataStoreTestUtil::~OfflinePageMetadataStoreTestUtil() {}
@@ -54,7 +54,7 @@ void OfflinePageMetadataStoreTestUtil::BuildStoreInMemory() {
 void OfflinePageMetadataStoreTestUtil::DeleteStore() {
   store_.reset();
   store_ptr_ = nullptr;
-  task_runner_->RunUntilIdle();
+  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 std::unique_ptr<OfflinePageMetadataStoreSQL>

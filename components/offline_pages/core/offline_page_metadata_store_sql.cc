@@ -13,7 +13,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
@@ -21,12 +20,29 @@
 #include "sql/transaction.h"
 
 namespace offline_pages {
-
 namespace {
+
+// This enum is backed by a UMA histogram therefore its entries should not be
+// deleted or re-ordered and new ones should only be appended.
+// See enum definition with the same name in tools/metrics/histograms/enum.xml.
+enum OfflinePagesStoreEvent {
+  STORE_OPENED_FIRST_TIME = 0,
+  STORE_REOPENED = 1,
+  STORE_CLOSED = 2,
+  STORE_CLOSE_SKIPPED = 3,
+
+  // NOTE: always keep this entry at the end.
+  STORE_EVENT_COUNT
+};
 
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
 #define OFFLINE_PAGES_TABLE_NAME "offlinepages_v1"
+
+void ReportStoreEvent(OfflinePagesStoreEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.SQLStorage.StoreEvent", event,
+                            OfflinePagesStoreEvent::STORE_EVENT_COUNT);
+}
 
 bool CreateOfflinePagesTable(sql::Connection* db) {
   const char kSql[] = "CREATE TABLE IF NOT EXISTS " OFFLINE_PAGES_TABLE_NAME
@@ -360,6 +376,15 @@ bool InitDatabase(sql::Connection* db,
   return CreateSchema(db);
 }
 
+void CloseDatabaseSync(
+    sql::Connection* db,
+    scoped_refptr<base::SingleThreadTaskRunner> callback_runner,
+    base::OnceClosure callback) {
+  if (db)
+    db->Close();
+  callback_runner->PostTask(FROM_HERE, std::move(callback));
+}
+
 void RecordLoadResult(OfflinePageMetadataStore::LoadStatus status,
                       int32_t page_count) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.LoadStatus", status,
@@ -528,12 +553,16 @@ std::unique_ptr<OfflinePagesUpdateResult> RemoveOfflinePagesSync(
 
 }  // anonymous namespace
 
+// static
+constexpr base::TimeDelta OfflinePageMetadataStoreSQL::kClosingDelay;
+
 OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : background_task_runner_(std::move(background_task_runner)),
       in_memory_(true),
       state_(StoreState::NOT_LOADED),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this),
+      closing_weak_ptr_factory_(this) {}
 
 OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
@@ -542,7 +571,8 @@ OfflinePageMetadataStoreSQL::OfflinePageMetadataStoreSQL(
       in_memory_(false),
       db_file_path_(path.AppendASCII("OfflinePages.db")),
       state_(StoreState::NOT_LOADED),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this),
+      closing_weak_ptr_factory_(this) {}
 
 OfflinePageMetadataStoreSQL::~OfflinePageMetadataStoreSQL() {
   if (db_.get() &&
@@ -613,6 +643,17 @@ void OfflinePageMetadataStoreSQL::InitializeInternal(
   // TODO(fgorski): Set state to initializing/loading.
   DCHECK_EQ(state_, StoreState::NOT_LOADED);
 
+  if (!last_closing_time_.is_null()) {
+    ReportStoreEvent(OfflinePagesStoreEvent::STORE_REOPENED);
+    UMA_HISTOGRAM_CUSTOM_TIMES("OfflinePages.SQLStorage.TimeFromCloseToOpen",
+                               base::Time::Now() - last_closing_time_,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromMinutes(10),
+                               50 /* buckets */);
+  } else {
+    ReportStoreEvent(OfflinePagesStoreEvent::STORE_OPENED_FIRST_TIME);
+  }
+
   db_.reset(new sql::Connection());
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
@@ -628,12 +669,37 @@ void OfflinePageMetadataStoreSQL::OnInitializeInternalDone(
   // TODO(fgorski): DCHECK initialization is in progress, once we have a
   // relevant value for the store state.
   state_ = success ? StoreState::LOADED : StoreState::FAILED_LOADING;
+  if (state_ != StoreState::LOADED)
+    db_.reset();
 
   CHECK(!pending_command.is_null());
   std::move(pending_command).Run();
 
   if (state_ == StoreState::FAILED_LOADING)
     state_ = StoreState::NOT_LOADED;
+}
+
+void OfflinePageMetadataStoreSQL::CloseInternal() {
+  if (state_ != StoreState::LOADED) {
+    ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSE_SKIPPED);
+    return;
+  }
+
+  last_closing_time_ = base::Time::Now();
+  ReportStoreEvent(OfflinePagesStoreEvent::STORE_CLOSED);
+
+  state_ = StoreState::NOT_LOADED;
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &CloseDatabaseSync, db_.get(), base::ThreadTaskRunnerHandle::Get(),
+          base::BindOnce(&OfflinePageMetadataStoreSQL::CloseInternalDone,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(db_))));
+}
+
+void OfflinePageMetadataStoreSQL::CloseInternalDone(
+    std::unique_ptr<sql::Connection> db) {
+  db.reset();
 }
 
 }  // namespace offline_pages

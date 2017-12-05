@@ -13,7 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
@@ -441,6 +441,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM61();
 
   void PumpLoop();
+  void FastForwardBy(base::TimeDelta time_delta);
 
   void InitializeCallback(bool success);
   void GetOfflinePagesCallback(std::vector<OfflinePageItem> offline_pages);
@@ -459,6 +460,10 @@ class OfflinePageMetadataStoreTest : public testing::Test {
     return last_update_result_.get();
   }
 
+  base::TestMockTimeTaskRunner* task_runner() const {
+    return task_runner_.get();
+  }
+
  protected:
   CalledCallback last_called_callback_;
   Status last_status_;
@@ -467,14 +472,14 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   OfflinePageMetadataStoreFactory factory_;
 
   base::ScopedTempDir temp_directory_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
 OfflinePageMetadataStoreTest::OfflinePageMetadataStoreTest()
     : last_called_callback_(NONE),
       last_status_(STATUS_NONE),
-      task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
 }
@@ -483,6 +488,10 @@ OfflinePageMetadataStoreTest::~OfflinePageMetadataStoreTest() {}
 
 void OfflinePageMetadataStoreTest::PumpLoop() {
   task_runner_->RunUntilIdle();
+}
+
+void OfflinePageMetadataStoreTest::FastForwardBy(base::TimeDelta delta) {
+  task_runner_->FastForwardBy(delta);
 }
 
 void OfflinePageMetadataStoreTest::InitializeCallback(bool success) {
@@ -1134,6 +1143,30 @@ TEST_F(OfflinePageMetadataStoreTest, ResetStore) {
                           base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(STATUS_TRUE, last_status_);
+}
+
+TEST_F(OfflinePageMetadataStoreTest, StoreCloses) {
+  std::unique_ptr<OfflinePageMetadataStore> store(BuildStore());
+
+  PumpLoop();
+  EXPECT_TRUE(task_runner()->HasPendingTask());
+  EXPECT_LT(base::TimeDelta(), task_runner()->NextPendingTaskDelay());
+
+  FastForwardBy(OfflinePageMetadataStoreSQL::kClosingDelay);
+  PumpLoop();
+  EXPECT_EQ(StoreState::NOT_LOADED, store->state());
+
+  ClearResults();
+
+  // Ensure that next call to the store will actually reinitialize it.
+  store->GetOfflinePages(base::BindRepeating(
+      &OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+      base::Unretained(this)));
+  PumpLoop();
+
+  EXPECT_EQ(StoreState::LOADED, store->state());
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0U, offline_pages_.size());
 }
 
 }  // namespace

@@ -11,7 +11,7 @@
 namespace offline_pages {
 
 TestTaskRunner::TestTaskRunner(
-    scoped_refptr<base::TestSimpleTaskRunner> task_runner)
+    scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
     : task_runner_(task_runner) {}
 
 TestTaskRunner::~TestTaskRunner() {}

@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/simple_test_clock.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 
 namespace base {
@@ -26,7 +26,7 @@ namespace offline_pages {
 class OfflinePageMetadataStoreTestUtil {
  public:
   explicit OfflinePageMetadataStoreTestUtil(
-      scoped_refptr<base::TestSimpleTaskRunner> task_runner);
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner);
   ~OfflinePageMetadataStoreTestUtil();
 
   // Builds a new store in a temporary directory.
@@ -56,7 +56,7 @@ class OfflinePageMetadataStoreTestUtil {
  private:
   void RunUntilIdle();
 
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ScopedTempDir temp_directory_;
   // TODO(romax): Refactor the test util along with the similar one used in
   // Prefetching, to remove the ownership to the store. And clean up related

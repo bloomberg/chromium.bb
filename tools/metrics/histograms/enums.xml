@@ -30876,6 +30876,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Offline"/>
 </enum>
 
+<enum name="OfflinePagesStoreEvent">
+  <int value="0" label="Store opened for the first time"/>
+  <int value="1" label="Store reopened"/>
+  <int value="2" label="Store closed"/>
+  <int value="3" label="Store closing skipped"/>
+</enum>
+
 <enum name="OfflinePagesTabRestoreType">
   <int value="0" label="While online">
     Tab was successfully restored while the device was online. Can help assess

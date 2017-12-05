@@ -52,7 +52,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   OfflinePageModelTaskified(
       std::unique_ptr<OfflinePageMetadataStoreSQL> store,
       std::unique_ptr<ArchiveManager> archive_manager,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      std::unique_ptr<base::Clock> clock);
   ~OfflinePageModelTaskified() override;
 
   // TaskQueue::Delegate implementation.

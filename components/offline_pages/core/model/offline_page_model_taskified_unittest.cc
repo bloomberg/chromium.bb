@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -117,7 +117,7 @@ class OfflinePageModelTaskifiedTest
   }
 
   // Getters for private fields.
-  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
+  base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
   OfflinePageModelTaskified* model() { return model_.get(); }
   OfflinePageMetadataStoreSQL* store() { return store_test_util_.store(); }
   OfflinePageMetadataStoreTestUtil* store_test_util() {
@@ -146,7 +146,7 @@ class OfflinePageModelTaskifiedTest
   }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   std::unique_ptr<OfflinePageModelTaskified> model_;
   OfflinePageMetadataStoreTestUtil store_test_util_;
@@ -162,7 +162,8 @@ class OfflinePageModelTaskifiedTest
 };
 
 OfflinePageModelTaskifiedTest::OfflinePageModelTaskifiedTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
+    : task_runner_(new base::TestMockTimeTaskRunner(base::Time::Now(),
+                                                    base::TimeTicks::Now())),
       task_runner_handle_(task_runner_),
       store_test_util_(task_runner_) {}
 
@@ -205,7 +206,7 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
       base::ThreadTaskRunnerHandle::Get());
   model_ = base::MakeUnique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
-      base::ThreadTaskRunnerHandle::Get());
+      base::ThreadTaskRunnerHandle::Get(), task_runner_->GetMockClock());
   model_->AddObserver(this);
   ResetResults();
   EXPECT_EQ(0UL, model_->pending_archivers_.size());
@@ -1001,7 +1002,7 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
 
   // Rebuild the model in order to trigger consistency check.
   BuildModel();
-  PumpLoop();
+  task_runner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(0UL, test_util::GetFileCountInDirectory(temporary_dir_path()));
@@ -1013,32 +1014,29 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   // storage during model initialization so that we can check the time.
   BuildStore();
   BuildModel();
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
-  base::SimpleTestClock* clock_ptr = clock.get();
-  clock_ptr->SetNow(base::Time::Now());
-  SetTestingClock(std::move(clock));
+  SetTestingClock(task_runner()->GetMockClock());
 
   PumpLoop();
-  EXPECT_EQ(clock_ptr->Now(), last_clear_page_time());
+  EXPECT_EQ(task_runner()->Now(), last_clear_page_time());
 
   // Only 5 minutes passed and the last clear page time should not be changed
   // since the clear page will not be triggered.
-  clock_ptr->Advance(base::TimeDelta::FromMinutes(5));
+  const base::TimeDelta short_delta = base::TimeDelta::FromMinutes(5);
+  task_runner()->FastForwardBy(short_delta);
   auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
   int64_t offline_id = SavePageWithExpectedResult(
       kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
   PumpLoop();
-  EXPECT_EQ(clock_ptr->Now() - base::TimeDelta::FromMinutes(5),
-            last_clear_page_time());
+  EXPECT_EQ(task_runner()->Now() - short_delta, last_clear_page_time());
 
-  clock_ptr->Advance(base::TimeDelta::FromMinutes(30));
+  task_runner()->FastForwardBy(base::TimeDelta::FromMinutes(30));
   archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
   offline_id = SavePageWithExpectedResult(
       kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
       std::move(archiver), SavePageResult::SUCCESS);
   PumpLoop();
-  EXPECT_EQ(clock_ptr->Now(), last_clear_page_time());
+  EXPECT_EQ(task_runner()->Now(), last_clear_page_time());
 }
 
 }  // namespace offline_pages
