@@ -290,6 +290,52 @@ TEST_F(RuntimeHooksDelegateTest, SendMessageErrors) {
   send_message("'some id', 'some message', {}, {}");
 }
 
+TEST_F(RuntimeHooksDelegateTest, SendMessageWithTrickyOptions) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  SendMessageTester tester(ipc_message_sender(), script_context(), 0,
+                           "runtime");
+
+  MessageTarget self_target = MessageTarget::ForExtension(extension()->id());
+  constexpr char kStandardMessage[] = R"({"data":"hello"})";
+  {
+    // Even though we parse the message options separately, we do a conversion
+    // of the object passed into the API. This means that something subtle like
+    // this, which throws on the second access of a property, shouldn't trip us
+    // up.
+    constexpr char kTrickyConnectOptions[] =
+        R"({data: 'hello'},
+           {
+             get includeTlsChannelId() {
+               if (this.checkedOnce)
+                 throw new Error('tricked!');
+               this.checkedOnce = true;
+               return true;
+             }
+           })";
+    tester.TestSendMessage(kTrickyConnectOptions, kStandardMessage, self_target,
+                           true, SendMessageTester::CLOSED);
+  }
+  {
+    // A different form of trickiness: the options object doesn't have the
+    // includeTlsChannelId key (which is acceptable, since its optional), but
+    // any attempt to access the key on an object without a value for it results
+    // in an error. Our argument parsing code should protect us from this.
+    constexpr const char kMessWithObjectPrototype[] =
+        R"((function() {
+             Object.defineProperty(
+                 Object.prototype, 'includeTlsChannelId',
+                 { get() { throw new Error('tricked!'); } });
+           }))";
+    v8::Local<v8::Function> mess_with_proto =
+        FunctionFromString(context, kMessWithObjectPrototype);
+    RunFunction(mess_with_proto, context, 0, nullptr);
+    tester.TestSendMessage("{data: 'hello'}, {}", kStandardMessage, self_target,
+                           false, SendMessageTester::CLOSED);
+  }
+}
+
 class RuntimeHooksDelegateNativeMessagingTest
     : public RuntimeHooksDelegateTest {
  public:
