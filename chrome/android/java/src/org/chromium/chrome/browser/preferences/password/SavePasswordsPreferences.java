@@ -38,9 +38,7 @@ import org.chromium.ui.text.SpanApplier;
  * saving, to view saved passwords (just the username and URL), and to delete saved passwords.
  */
 public class SavePasswordsPreferences extends PreferenceFragment
-        implements OnPreferenceChangeListener, PasswordListObserver,
-        Preference.OnPreferenceClickListener {
-
+        implements PasswordListObserver, Preference.OnPreferenceClickListener {
     // Keys for name/password dictionaries.
     public static final String PASSWORD_LIST_URL = "url";
     public static final String PASSWORD_LIST_NAME = "name";
@@ -111,12 +109,6 @@ public class SavePasswordsPreferences extends PreferenceFragment
         mEmptyView.setKey(PREF_KEY_SAVED_PASSWORDS_NO_TEXT);
         mEmptyView.setOrder(ORDER_SAVED_PASSWORDS_NO_TEXT);
         getPreferenceScreen().addPreference(mEmptyView);
-    }
-
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        rebuildPasswordLists();
-        return true;
     }
 
     @Override
