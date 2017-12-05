@@ -38,7 +38,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
     UNKNOWN_ERROR,
   };
 
-  typedef base::Callback<void(const std::string& /*token*/)> TokenCallback;
+  using TokenCallback = base::OnceCallback<void(const std::string& /*token*/)>;
 
   class Delegate {
    public:
@@ -46,7 +46,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
     // If you do not implement this method for PrivetV1 callers, you will always
     // get a TOKEN_ERROR error when your token is invalid.
-    virtual void OnNeedPrivetToken(const TokenCallback& callback);
+    virtual void OnNeedPrivetToken(TokenCallback callback);
 
     // |response_code| is only needed for RESPONSE_CODE_ERROR.
     virtual void OnError(int response_code, ErrorType error) = 0;

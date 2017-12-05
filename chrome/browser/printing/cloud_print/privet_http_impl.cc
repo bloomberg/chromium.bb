@@ -218,8 +218,8 @@ void PrivetRegisterOperationImpl::OnParsedJson(
 }
 
 void PrivetRegisterOperationImpl::OnNeedPrivetToken(
-    const PrivetURLFetcher::TokenCallback& callback) {
-  privet_client_->RefreshPrivetToken(callback);
+    PrivetURLFetcher::TokenCallback callback) {
+  privet_client_->RefreshPrivetToken(std::move(callback));
 }
 
 void PrivetRegisterOperationImpl::SendRequest(const std::string& action) {
@@ -297,9 +297,8 @@ void PrivetRegisterOperationImpl::OnPrivetInfoDone(
 }
 
 void PrivetRegisterOperationImpl::StartInfoOperation() {
-  info_operation_ = privet_client_->CreateInfoOperation(
-      base::Bind(&PrivetRegisterOperationImpl::OnPrivetInfoDone,
-                 base::Unretained(this)));
+  info_operation_ = privet_client_->CreateInfoOperation(base::BindRepeating(
+      &PrivetRegisterOperationImpl::OnPrivetInfoDone, base::Unretained(this)));
   info_operation_->Start();
 }
 
@@ -369,8 +368,8 @@ void PrivetJSONOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
 }
 
 void PrivetJSONOperationImpl::OnNeedPrivetToken(
-    const PrivetURLFetcher::TokenCallback& callback) {
-  privet_client_->RefreshPrivetToken(callback);
+    PrivetURLFetcher::TokenCallback callback) {
+  privet_client_->RefreshPrivetToken(std::move(callback));
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -395,8 +394,8 @@ void PrivetLocalPrintOperationImpl::Start() {
   // We need to get the /info response so we can know which APIs are available.
   // TODO(noamsml): Use cached info when available.
   info_operation_ = privet_client_->CreateInfoOperation(
-      base::Bind(&PrivetLocalPrintOperationImpl::OnPrivetInfoDone,
-                 base::Unretained(this)));
+      base::BindRepeating(&PrivetLocalPrintOperationImpl::OnPrivetInfoDone,
+                          base::Unretained(this)));
   info_operation_->Start();
 
   started_ = true;
@@ -621,8 +620,8 @@ void PrivetLocalPrintOperationImpl::OnParsedJson(
 }
 
 void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
-    const PrivetURLFetcher::TokenCallback& callback) {
-  privet_client_->RefreshPrivetToken(callback);
+    PrivetURLFetcher::TokenCallback callback) {
+  privet_client_->RefreshPrivetToken(std::move(callback));
 }
 
 void PrivetLocalPrintOperationImpl::SetData(
@@ -722,35 +721,32 @@ std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
 }
 
 void PrivetHTTPClientImpl::RefreshPrivetToken(
-    const PrivetURLFetcher::TokenCallback& callback) {
-  token_callbacks_.push_back(callback);
+    PrivetURLFetcher::TokenCallback callback) {
+  token_callbacks_.push_back(std::move(callback));
 
-  if (!info_operation_) {
-    info_operation_ = CreateInfoOperation(
-        base::Bind(&PrivetHTTPClientImpl::OnPrivetInfoDone,
-                   base::Unretained(this)));
-    info_operation_->Start();
-  }
+  if (info_operation_)
+    return;
+
+  info_operation_ = CreateInfoOperation(base::BindRepeating(
+      &PrivetHTTPClientImpl::OnPrivetInfoDone, base::Unretained(this)));
+  info_operation_->Start();
 }
 
 void PrivetHTTPClientImpl::OnPrivetInfoDone(
     const base::DictionaryValue* value) {
   info_operation_.reset();
-  std::string token;
 
   // If this does not succeed, token will be empty, and an empty string
   // is our sentinel value, since empty X-Privet-Tokens are not allowed.
-  if (value) {
+  std::string token;
+  if (value)
     value->GetString(kPrivetInfoKeyToken, &token);
-  }
 
   TokenCallbackVector token_callbacks;
   token_callbacks_.swap(token_callbacks);
 
-  for (TokenCallbackVector::iterator i = token_callbacks.begin();
-       i != token_callbacks.end(); i++) {
-    i->Run(token);
-  }
+  for (auto& callback : token_callbacks)
+    std::move(callback).Run(token);
 }
 
 PrivetV1HTTPClientImpl::PrivetV1HTTPClientImpl(

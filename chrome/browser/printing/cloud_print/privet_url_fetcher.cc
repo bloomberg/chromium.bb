@@ -58,8 +58,7 @@ std::string MakeRangeHeader(int start, int end) {
 
 }  // namespace
 
-void PrivetURLFetcher::Delegate::OnNeedPrivetToken(
-    const TokenCallback& callback) {
+void PrivetURLFetcher::Delegate::OnNeedPrivetToken(TokenCallback callback) {
   OnError(0, TOKEN_ERROR);
 }
 

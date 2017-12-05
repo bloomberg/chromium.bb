@@ -1056,9 +1056,8 @@ class PrivetHttpWithServerTest : public ::testing::Test,
         "test", server_->host_port_pair(), context_getter_);
   }
 
-  void OnNeedPrivetToken(
-      const PrivetURLFetcher::TokenCallback& callback) override {
-    callback.Run("abc");
+  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override {
+    std::move(callback).Run("abc");
   }
 
   void OnError(int response_code, PrivetURLFetcher::ErrorType error) override {

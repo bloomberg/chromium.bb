@@ -55,9 +55,7 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
 
   MOCK_METHOD1(OnParsedJsonInternal, void(bool has_error));
 
-  virtual void OnNeedPrivetToken(
-      const PrivetURLFetcher::TokenCallback& callback) {
-  }
+  virtual void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) {}
 
   bool OnRawData(bool response_is_file,
                  const std::string& data,
