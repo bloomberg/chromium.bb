@@ -3,7 +3,6 @@
 -CaptureScreenshotTest.*
 
 # FrameWatcher::WaitFrames times out http://crbug.com/785013
--CompositedScrollingBrowserTest.*
 -NonBlockingEventBrowserTest.*
 -TouchActionBrowserTest.*
 
@@ -80,6 +79,9 @@
 
 # TODO: investigate flaky failure http://crbug.com/783434
 -GpuProcessHostBrowserTest.Shutdown
+
+# OnGpuSwapBuffersCompletedInternal not called. http://crbug.com/791557
+-MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
 
 # TODO: investigate flaky failure http://crbug.com/790683
 -SitePerProcessBrowserTest.CrossSiteIframeBlockedByXFrameOptionsOrCSP
