@@ -44,6 +44,18 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   const NotificationCommon::Metadata* GetMetadataForNotification(
       const message_center::Notification& notification);
 
+  // Simulates the notification identified by |notification_id| being clicked
+  // on, optionally with the given |action_index| and |reply|.
+  void SimulateClick(NotificationHandler::Type notification_type,
+                     const std::string& notification_id,
+                     base::Optional<int> action_index,
+                     base::Optional<base::string16> reply);
+
+  // Simulates a click on the settings button of the notification identified by
+  // |notification_id|.
+  void SimulateSettingsClick(NotificationHandler::Type notification_type,
+                             const std::string& notification_id);
+
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.
   // Will wait for the close event to complete. When |silent| is set, the
@@ -82,6 +94,12 @@ class StubNotificationDisplayService : public NotificationDisplayService {
     message_center::Notification notification;
     std::unique_ptr<NotificationCommon::Metadata> metadata;
   };
+
+  // Returns an iterator to the notification matching the given properties. If
+  // there is no notification that matches, returns the end() iterator.
+  std::vector<NotificationData>::iterator FindNotification(
+      NotificationHandler::Type notification_type,
+      const std::string& notification_id);
 
   base::RepeatingClosure notification_added_closure_;
   std::vector<NotificationData> notifications_;

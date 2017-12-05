@@ -384,11 +384,23 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestUserGesture) {
 
   {
     UserGestureCatcher catcher;
-    notification->ButtonClick(0);
+
+    // Action button event.
+    display_service_tester_->SimulateClick(
+        NotificationHandler::Type::EXTENSION, notification->id(),
+        0 /* action_index */, base::nullopt /* reply */);
     EXPECT_TRUE(catcher.GetNextResult());
-    notification->Click();
+
+    // Click event.
+    display_service_tester_->SimulateClick(
+        NotificationHandler::Type::EXTENSION, notification->id(),
+        base::nullopt /* action_index */, base::nullopt /* reply */);
     EXPECT_TRUE(catcher.GetNextResult());
-    notification->Close(true /* by_user */);
+
+    // Close event.
+    display_service_tester_->RemoveNotification(
+        NotificationHandler::Type::EXTENSION, notification->id(),
+        true /* by_user */, false /* silent */);
     EXPECT_TRUE(catcher.GetNextResult());
 
     // Note that |notification| no longer points to valid memory.
