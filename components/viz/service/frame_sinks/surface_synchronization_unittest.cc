@@ -14,7 +14,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using viz::test::MakeCompositorFrame;
 using testing::_;
 using testing::Eq;
 using testing::IsEmpty;
@@ -41,6 +40,18 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t parent_id) {
   return SurfaceId(
       frame_sink_id,
       LocalSurfaceId(parent_id, base::UnguessableToken::Deserialize(0, 1u)));
+}
+
+CompositorFrame MakeCompositorFrame(
+    std::vector<SurfaceId> activation_dependencies,
+    std::vector<SurfaceId> referenced_surfaces,
+    std::vector<TransferableResource> resource_list) {
+  return CompositorFrameBuilder()
+      .AddDefaultRenderPass()
+      .SetActivationDependencies(std::move(activation_dependencies))
+      .SetReferencedSurfaces(std::move(referenced_surfaces))
+      .SetTransferableResources(std::move(resource_list))
+      .Build();
 }
 
 }  // namespace
@@ -225,7 +236,7 @@ TEST_F(SurfaceSynchronizationTest, RootSurfaceReceivesReferences) {
 
   // Submit a CompositorFrame for the first display root surface.
   display_support().SubmitCompositorFrame(display_id_first.local_surface_id(),
-                                          MakeCompositorFrame());
+                                          MakeDefaultCompositorFrame());
 
   // A surface reference from the top-level root is added and there shouldn't be
   // a temporary reference.
@@ -236,7 +247,7 @@ TEST_F(SurfaceSynchronizationTest, RootSurfaceReceivesReferences) {
 
   // Submit a CompositorFrame for the second display root surface.
   display_support().SubmitCompositorFrame(display_id_second.local_surface_id(),
-                                          MakeCompositorFrame());
+                                          MakeDefaultCompositorFrame());
 
   // A surface reference from the top-level root to |display_id_second| should
   // be added and the reference to |display_root_first| removed.
@@ -272,7 +283,7 @@ TEST_F(SurfaceSynchronizationTest, BlockedOnTwo) {
   // Submit a CompositorFrame without any dependencies to |child_id1|.
   // parent_support should now only be blocked on |child_id2|.
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   EXPECT_TRUE(parent_surface()->has_deadline());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
@@ -283,7 +294,7 @@ TEST_F(SurfaceSynchronizationTest, BlockedOnTwo) {
   // Submit a CompositorFrame without any dependencies to |child_id2|.
   // parent_support should be activated.
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   EXPECT_FALSE(child_surface2()->has_deadline());
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
@@ -394,7 +405,7 @@ TEST_F(SurfaceSynchronizationTest, TwoBlockedOnOne) {
   // Submit a CompositorFrame without any dependencies to |child_id2|.
   // parent_support should be activated.
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   EXPECT_FALSE(child_surface2()->has_deadline());
 
@@ -498,7 +509,7 @@ TEST_F(SurfaceSynchronizationTest, NewFrameOverridesOldDependencies) {
 
   // Submit a CompositorFrame that has no dependencies.
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Verify that the CompositorFrame has been activated.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
@@ -518,7 +529,7 @@ TEST_F(SurfaceSynchronizationTest, OnlyActiveFramesAffectSurfaceReferences) {
   // DidReceiveCompositorFrameAck should call on immediate activation.
   EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(1);
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that the child surface is not blocked.
@@ -555,7 +566,7 @@ TEST_F(SurfaceSynchronizationTest, OnlyActiveFramesAffectSurfaceReferences) {
   // on activation.
   EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(2);
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that the child surface is not blocked.
@@ -663,7 +674,7 @@ TEST_F(SurfaceSynchronizationTest, DropStaleReferencesAfterActivation) {
   // and once for the now active parent CompositorFrame.
   EXPECT_CALL(support_client_, DidReceiveCompositorFrameAck(_)).Times(2);
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   testing::Mock::VerifyAndClearExpectations(&support_client_);
 
   // Verify that the child CompositorFrame activates immediately.
@@ -712,7 +723,7 @@ TEST_F(SurfaceSynchronizationTest, DropStaleReferencesAfterActivation) {
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
 
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Verify that the parent Surface has activated and no longer has a
   // pending CompositorFrame. Also verify that |child_id1| is no longer a
@@ -743,8 +754,10 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
 
-  CompositorFrame frame = MakeCompositorFrame();
-  frame.metadata.latency_info.push_back(info);
+  CompositorFrame frame = CompositorFrameBuilder()
+                              .AddDefaultRenderPass()
+                              .AddLatencyInfo(info)
+                              .Build();
 
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
                                          std::move(frame));
@@ -760,8 +773,10 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo info2;
   info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
 
-  CompositorFrame frame2 = MakeCompositorFrame();
-  frame2.metadata.latency_info.push_back(info2);
+  CompositorFrame frame2 = CompositorFrameBuilder()
+                               .AddDefaultRenderPass()
+                               .AddLatencyInfo(info2)
+                               .Build();
 
   parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
                                          std::move(frame2));
@@ -816,7 +831,7 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
 
-  CompositorFrame frame = MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   frame.metadata.latency_info.push_back(info);
 
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
@@ -841,7 +856,7 @@ TEST_F(SurfaceSynchronizationTest,
 
   // Submit a frame with a new local surface id.
   parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Verify that the new surface has an active frame only.
   Surface* surface = GetSurfaceForId(parent_id2);
@@ -894,7 +909,7 @@ TEST_F(SurfaceSynchronizationTest,
   ui::LatencyInfo info;
   info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
 
-  CompositorFrame frame = MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   frame.metadata.latency_info.push_back(info);
 
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
@@ -926,7 +941,7 @@ TEST_F(SurfaceSynchronizationTest,
 
   // Resolve the dependencies. The frame in parent's surface must become active.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_FALSE(surface->HasPendingFrame());
   EXPECT_TRUE(surface->HasActiveFrame());
 
@@ -969,7 +984,7 @@ TEST_F(SurfaceSynchronizationTest, ReturnResourcesWithAck) {
   EXPECT_CALL(support_client_,
               DidReceiveCompositorFrameAck(Eq(returned_resources)));
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 }
 
 // Verifies that if a surface is marked destroyed and a new frame arrives for
@@ -981,7 +996,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   // Create the child surface by submitting a frame to it.
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Verify that the child surface is created.
   Surface* surface = GetSurfaceForId(child_id);
@@ -1004,7 +1019,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   // destroyed.
   surface_observer().Reset();
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Verify that the surface that was marked destroyed is recovered and is being
   // used again.
@@ -1022,7 +1037,7 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
 
   // Submit the first frame. Creates the surface.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_NE(nullptr, GetSurfaceForId(child_id));
 
   // Add a reference from parent.
@@ -1033,7 +1048,7 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
 
   // Remove the reference from parant. This allows us to destroy the surface.
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Destroy the surface.
   child_support1().EvictCurrentSurface();
@@ -1044,7 +1059,7 @@ TEST_F(SurfaceSynchronizationTest, LocalSurfaceIdIsReusable) {
   // Submit another frame with the same local surface id. This should work fine
   // and a new surface must be created.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_NE(nullptr, GetSurfaceForId(child_id));
 }
 
@@ -1103,7 +1118,7 @@ TEST_F(SurfaceSynchronizationTest, DependencyTrackingGarbageCollection) {
   // Submitting a CompositorFrame will trigger garbage collection of the
   // |parent_id1| subtree. This should not crash.
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 }
 
 // This test verifies that a crash does not occur if garbage collection is
@@ -1189,7 +1204,7 @@ TEST_F(SurfaceSynchronizationTest, OnlyBlockOnEmbeddedSurfaces) {
   // Submitting a CompositorFrame with |parent_id2| so that the display
   // CompositorFrame can hold a reference to it.
   parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   display_support().SubmitCompositorFrame(
       display_id.local_surface_id(),
@@ -1211,7 +1226,7 @@ TEST_F(SurfaceSynchronizationTest, OnlyBlockOnEmbeddedSurfaces) {
   // Submitting a CompositorFrame with |parent_id2| should unblock the
   // display CompositorFrame.
   parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   EXPECT_FALSE(display_surface()->has_deadline());
   EXPECT_FALSE(display_surface()->HasPendingFrame());
@@ -1400,12 +1415,12 @@ TEST_F(SurfaceSynchronizationTest, IndependentDeadlines) {
   const SurfaceId arbitrary_id = MakeSurfaceId(kArbitraryFrameSink, 1);
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
 
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_FALSE(child_surface2()->HasPendingFrame());
   EXPECT_TRUE(child_surface2()->HasActiveFrame());
 
@@ -1588,7 +1603,7 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   EXPECT_FALSE(parent_surface()->has_deadline());
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
@@ -1640,7 +1655,7 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
 
   // Submitting a new CompositorFrame to the display should free the parent.
   display_support().SubmitCompositorFrame(display_id.local_surface_id(),
-                                          MakeCompositorFrame());
+                                          MakeDefaultCompositorFrame());
 
   frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
 
@@ -1744,9 +1759,9 @@ TEST_F(SurfaceSynchronizationTest, ActiveFrameIndex) {
   EXPECT_EQ(0u, parent_surface()->GetActiveFrameIndex());
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_EQ(3u, parent_surface()->GetActiveFrameIndex());
 }
@@ -1763,7 +1778,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -1809,7 +1824,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   // Submit a child CompositorFrame to a new SurfaceId and verify that
   // GetLatestInFlightSurface returns the right surface.
   child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Verify that there is a temporary reference for child_id2 and there is
   // a reference from the parent to child_id1.
@@ -1844,7 +1859,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithBogusFallback) {
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -1878,7 +1893,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceDifferentFrameSinkIds) {
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -1889,13 +1904,13 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceDifferentFrameSinkIds) {
   // that if the fallback and primary differ in FrameSinkId then
   // GetLatestInFlightSurface will always return the specified fallback.
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
 
   // Submit a child CompositorFrame without a different FrameSinkId and verify
   // that if the fallback and primary differ in FrameSinkId then
   // GetLatestInFlightSurface will always return the specified fallback.
   child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
-                                         MakeCompositorFrame());
+                                         MakeDefaultCompositorFrame());
   EXPECT_EQ(GetSurfaceForId(child_id1),
             GetLatestInFlightSurface(parent_id.frame_sink_id(), child_id2,
                                      child_id1));

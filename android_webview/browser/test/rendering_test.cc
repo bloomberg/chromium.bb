@@ -118,13 +118,9 @@ content::SynchronousCompositor* RenderingTest::ActiveCompositor() const {
 }
 
 std::unique_ptr<viz::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
-  auto compositor_frame = std::make_unique<viz::CompositorFrame>(
-      viz::test::MakeEmptyCompositorFrame());
-  std::unique_ptr<viz::RenderPass> root_pass(viz::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
-  root_pass->SetNew(1, viewport, viewport, gfx::Transform());
-  compositor_frame->render_pass_list.push_back(std::move(root_pass));
-  return compositor_frame;
+  return std::make_unique<viz::CompositorFrame>(
+      viz::CompositorFrameBuilder().AddRenderPass(viewport, viewport).Build());
 }
 
 std::unique_ptr<viz::CompositorFrame> RenderingTest::ConstructFrame(

@@ -4,42 +4,126 @@
 
 #include "components/viz/test/compositor_frame_helpers.h"
 
-#include "components/viz/common/quads/compositor_frame.h"
-
 namespace viz {
-namespace test {
+namespace {
 
-CompositorFrame MakeCompositorFrame(const gfx::Size& size) {
-  CompositorFrame frame = MakeEmptyCompositorFrame();
+constexpr gfx::Rect kDefaultOutputRect(20, 20);
+constexpr gfx::Rect kDefaultDamageRect(0, 0);
+
+}  // namespace
+
+CompositorFrameBuilder::CompositorFrameBuilder() : frame_(base::in_place) {
+  frame_->metadata.begin_frame_ack =
+      BeginFrameAck(BeginFrameArgs::kManualSourceId,
+                    BeginFrameArgs::kStartingFrameNumber, true);
+  frame_->metadata.device_scale_factor = 1.f;
+}
+
+CompositorFrameBuilder::~CompositorFrameBuilder() = default;
+
+CompositorFrame CompositorFrameBuilder::Build() {
+  CompositorFrame temp_frame(std::move(frame_.value()));
+  frame_.reset();
+  return temp_frame;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::AddDefaultRenderPass() {
+  return AddRenderPass(kDefaultOutputRect, kDefaultDamageRect);
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::AddRenderPass(
+    const gfx::Rect& output_rect,
+    const gfx::Rect& damage_rect) {
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
-  pass->SetNew(1, gfx::Rect(size), gfx::Rect(), gfx::Transform());
-  frame.render_pass_list.push_back(std::move(pass));
-  return frame;
+  pass->SetNew(next_render_pass_id_++, output_rect, damage_rect,
+               gfx::Transform());
+  frame_->render_pass_list.push_back(std::move(pass));
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::AddRenderPass(
+    std::unique_ptr<RenderPass> render_pass) {
+  // Give the render pass a unique id if one hasn't been assigned.
+  if (render_pass->id == 0)
+    render_pass->id = next_render_pass_id_++;
+  frame_->render_pass_list.push_back(std::move(render_pass));
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetRenderPassList(
+    RenderPassList render_pass_list) {
+  DCHECK(frame_->render_pass_list.empty());
+  frame_->render_pass_list = std::move(render_pass_list);
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::AddTransferableResource(
+    TransferableResource resource) {
+  frame_->resource_list.push_back(std::move(resource));
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetTransferableResources(
+    std::vector<TransferableResource> resource_list) {
+  DCHECK(frame_->resource_list.empty());
+  frame_->resource_list = std::move(resource_list);
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetBeginFrameAck(
+    const BeginFrameAck& ack) {
+  frame_->metadata.begin_frame_ack = ack;
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetDeviceScaleFactor(
+    float device_scale_factor) {
+  frame_->metadata.device_scale_factor = device_scale_factor;
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::AddLatencyInfo(
+    ui::LatencyInfo latency_info) {
+  frame_->metadata.latency_info.push_back(std::move(latency_info));
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetActivationDependencies(
+    std::vector<SurfaceId> activation_dependencies) {
+  frame_->metadata.activation_dependencies = std::move(activation_dependencies);
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetReferencedSurfaces(
+    std::vector<SurfaceId> referenced_surfaces) {
+  frame_->metadata.referenced_surfaces = std::move(referenced_surfaces);
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetFrameToken(
+    uint32_t frame_token) {
+  frame_->metadata.frame_token = frame_token;
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetContentSourceId(
+    uint32_t content_source_id) {
+  frame_->metadata.content_source_id = content_source_id;
+  return *this;
+}
+
+CompositorFrameBuilder& CompositorFrameBuilder::SetPresentationToken(
+    uint32_t presentation_token) {
+  frame_->metadata.presentation_token = presentation_token;
+  return *this;
+}
+
+CompositorFrame MakeDefaultCompositorFrame() {
+  return CompositorFrameBuilder().AddDefaultRenderPass().Build();
 }
 
 CompositorFrame MakeEmptyCompositorFrame() {
-  CompositorFrame frame;
-  frame.metadata.begin_frame_ack.source_id = BeginFrameArgs::kManualSourceId;
-  frame.metadata.begin_frame_ack.sequence_number =
-      BeginFrameArgs::kStartingFrameNumber;
-  frame.metadata.begin_frame_ack.has_damage = true;
-  frame.metadata.device_scale_factor = 1;
-  return frame;
+  return CompositorFrameBuilder().Build();
 }
 
-CompositorFrame MakeCompositorFrame(
-    std::vector<SurfaceId> activation_dependencies,
-    std::vector<SurfaceId> referenced_surfaces,
-    std::vector<TransferableResource> resource_list) {
-  CompositorFrame compositor_frame = test::MakeCompositorFrame();
-  compositor_frame.metadata.begin_frame_ack = BeginFrameAck(0, 1, true);
-  compositor_frame.metadata.activation_dependencies =
-      std::move(activation_dependencies);
-  compositor_frame.metadata.referenced_surfaces =
-      std::move(referenced_surfaces);
-  compositor_frame.resource_list = std::move(resource_list);
-  return compositor_frame;
-}
-
-}  // namespace test
 }  // namespace viz

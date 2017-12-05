@@ -92,7 +92,7 @@ class VideoDetectorTest : public testing::Test {
 
     root_frame_sink_ = CreateFrameSink();
     root_frame_sink_->SubmitCompositorFrame(
-        local_surface_id_allocator_.GenerateId(), test::MakeCompositorFrame());
+        local_surface_id_allocator_.GenerateId(), MakeDefaultCompositorFrame());
   }
 
  protected:
@@ -120,7 +120,7 @@ class VideoDetectorTest : public testing::Test {
   }
 
   void SubmitRootFrame() {
-    CompositorFrame frame = test::MakeCompositorFrame();
+    CompositorFrame frame = MakeDefaultCompositorFrame();
     RenderPass* render_pass = frame.render_pass_list.back().get();
     SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
@@ -182,10 +182,10 @@ class VideoDetectorTest : public testing::Test {
 
  private:
   CompositorFrame MakeDamagedCompositorFrame(const gfx::Rect& damage) {
-    constexpr gfx::Size kFrameSinkSize = gfx::Size(10000, 10000);
-    CompositorFrame frame = test::MakeCompositorFrame(kFrameSinkSize);
-    frame.render_pass_list.back()->damage_rect = damage;
-    return frame;
+    constexpr gfx::Rect kFrameSinkRect(10000, 10000);
+    return CompositorFrameBuilder()
+        .AddRenderPass(kFrameSinkRect, damage)
+        .Build();
   }
 
   FrameSinkManagerImpl frame_sink_manager_;

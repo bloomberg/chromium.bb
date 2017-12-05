@@ -257,10 +257,11 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   auto support =
       CreateCompositorFrameSinkSupport(kParentFrameSink, true /* is_root */);
 
-  CompositorFrame compositor_frame(
-      test::MakeCompositorFrame({child_id1}, std::vector<SurfaceId>(),
-                                std::vector<TransferableResource>()));
-  compositor_frame.metadata.frame_token = frame_token1;
+  CompositorFrame compositor_frame = CompositorFrameBuilder()
+                                         .AddDefaultRenderPass()
+                                         .SetFrameToken(frame_token1)
+                                         .SetActivationDependencies({child_id1})
+                                         .Build();
   support->SubmitCompositorFrame(parent_id1.local_surface_id(),
                                  std::move(compositor_frame));
 

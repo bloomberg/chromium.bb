@@ -316,7 +316,7 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
 TEST_F(SurfaceHittestTest, Hittest_RenderPassDrawQuad) {
   // Create a CompositorFrame with two RenderPasses.
   gfx::Rect root_rect(300, 300);
-  CompositorFrame root_frame = test::MakeCompositorFrame();
+  CompositorFrame root_frame = MakeDefaultCompositorFrame();
   RenderPassList& render_pass_list = root_frame.render_pass_list;
 
   // Create a child RenderPass.

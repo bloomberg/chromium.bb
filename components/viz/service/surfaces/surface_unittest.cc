@@ -25,7 +25,8 @@ constexpr bool kIsRoot = true;
 constexpr bool kNeedsSyncPoints = true;
 
 TEST(SurfaceTest, PresentationCallback) {
-  const gfx::Size kSurfaceSize(300, 300);
+  constexpr gfx::Size kSurfaceSize(300, 300);
+  constexpr gfx::Rect kDamageRect(0, 0);
   const LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
 
   FrameSinkManagerImpl frame_sink_manager;
@@ -34,8 +35,11 @@ TEST(SurfaceTest, PresentationCallback) {
       &client, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
       kNeedsSyncPoints);
   {
-    CompositorFrame frame = test::MakeCompositorFrame(kSurfaceSize);
-    frame.metadata.presentation_token = 1;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
+            .SetPresentationToken(1)
+            .Build();
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
@@ -43,8 +47,11 @@ TEST(SurfaceTest, PresentationCallback) {
   {
     // Replaces previous frame. The previous frame with token 1 will be
     // discarded.
-    CompositorFrame frame = test::MakeCompositorFrame(kSurfaceSize);
-    frame.metadata.presentation_token = 2;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
+            .SetPresentationToken(2)
+            .Build();
     EXPECT_CALL(client, DidDiscardCompositorFrame(1)).Times(1);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -53,8 +60,10 @@ TEST(SurfaceTest, PresentationCallback) {
   {
     // Submits a frame with token 3 and different size. This frame with token 3
     // will be discarded immediately.
-    CompositorFrame frame = test::MakeCompositorFrame(gfx::Size(400, 400));
-    frame.metadata.presentation_token = 3;
+    CompositorFrame frame = CompositorFrameBuilder()
+                                .AddRenderPass(gfx::Rect(400, 400), kDamageRect)
+                                .SetPresentationToken(3)
+                                .Build();
     EXPECT_CALL(client, DidDiscardCompositorFrame(3)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
@@ -62,9 +71,12 @@ TEST(SurfaceTest, PresentationCallback) {
   {
     // Submits a frame with token 4 and different scale factor, this frame with
     // token 4 will be discarded immediately.
-    CompositorFrame frame = test::MakeCompositorFrame(kSurfaceSize);
-    frame.metadata.device_scale_factor = 2;
-    frame.metadata.presentation_token = 4;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(kSurfaceSize), kDamageRect)
+            .SetDeviceScaleFactor(2.f)
+            .SetPresentationToken(4)
+            .Build();
     EXPECT_CALL(client, DidDiscardCompositorFrame(4)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
@@ -85,7 +97,8 @@ TEST(SurfaceTest, SurfaceLifetime) {
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
+  support->SubmitCompositorFrame(local_surface_id,
+                                 MakeDefaultCompositorFrame());
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
   frame_sink_manager.surface_manager()->GarbageCollectSurfaces();
@@ -118,7 +131,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   Surface* surface = surface_manager->GetSurfaceForId(surface_id);
   ASSERT_TRUE(!!surface);
@@ -132,7 +145,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
 
   int max_frame = 3, start_id = 200;
   for (int i = 0; i < max_frame; ++i) {
-    CompositorFrame frame = test::MakeEmptyCompositorFrame();
+    CompositorFrame frame = CompositorFrameBuilder().Build();
     frame.render_pass_list.push_back(RenderPass::Create());
     frame.render_pass_list.back()->id = i * 3 + start_id;
     frame.render_pass_list.push_back(RenderPass::Create());
