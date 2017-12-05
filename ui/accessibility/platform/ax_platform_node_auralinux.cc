@@ -104,19 +104,8 @@ static gint ax_platform_node_auralinux_get_index_in_parent(
   ui::AXPlatformNodeAuraLinux* obj =
     AtkObjectToAXPlatformNodeAuraLinux(atk_object);
 
-  if (!obj || !obj->GetParent())
+  if (!obj)
     return -1;
-
-  AtkObject* obj_parent = obj->GetParent();
-
-  unsigned child_count = atk_object_get_n_accessible_children(obj_parent);
-  for (unsigned index = 0; index < child_count; index++) {
-    AtkObject* child = atk_object_ref_accessible_child(obj_parent, index);
-    bool atk_object_found = child == atk_object;
-    g_object_unref(child);
-    if (atk_object_found)
-      return index;
-  }
 
   return obj->GetIndexInParent();
 }
@@ -1086,7 +1075,10 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(ui::AXEvent event_type) {
 }
 
 int AXPlatformNodeAuraLinux::GetIndexInParent() {
-  return 0;
+  if (!GetParent())
+    return -1;
+
+  return delegate_->GetIndexInParent();
 }
 
 void AXPlatformNodeAuraLinux::SetExtentsRelativeToAtkCoordinateType(
