@@ -1113,6 +1113,19 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 }
 
 LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
+  if (const NGPhysicalBoxFragment* box_fragment =
+          EnclosingBlockFlowFragmentOf(*this)) {
+    NGPhysicalOffsetRect result;
+    NGInlineFragmentIterator children(*box_fragment, this);
+    for (const auto& child : children) {
+      NGPhysicalOffsetRect child_rect =
+          child.fragment->VisualRectWithContents();
+      child_rect.offset += child.offset_to_container_box;
+      result.Unite(child_rect);
+    }
+    return result.ToLayoutRect();
+  }
+
   if (!AlwaysCreateLineBoxes())
     return CulledInlineVisualOverflowBoundingBox();
 
