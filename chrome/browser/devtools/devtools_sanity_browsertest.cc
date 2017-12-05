@@ -1838,8 +1838,9 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
   CloseDevToolsWindow();
 }
 
+// Flaky on multiple platforms. See http://crbug.com/432444
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       PauseInSharedWorkerInitialization) {
+                       DISABLED_PauseInSharedWorkerInitialization) {
   ASSERT_TRUE(spawned_test_server()->Start());
   GURL url = spawned_test_server()->GetURL(kReloadSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
