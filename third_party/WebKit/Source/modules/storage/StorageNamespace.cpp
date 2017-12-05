@@ -42,7 +42,7 @@ StorageNamespace::StorageNamespace(
 
 StorageNamespace::~StorageNamespace() {}
 
-StorageArea* StorageNamespace::LocalStorageArea(SecurityOrigin* origin) {
+StorageArea* StorageNamespace::LocalStorageArea(const SecurityOrigin* origin) {
   DCHECK(IsMainThread());
   static std::unique_ptr<WebStorageNamespace> local_storage_namespace = nullptr;
   if (!local_storage_namespace)
@@ -54,7 +54,7 @@ StorageArea* StorageNamespace::LocalStorageArea(SecurityOrigin* origin) {
       kLocalStorage);
 }
 
-StorageArea* StorageNamespace::GetStorageArea(SecurityOrigin* origin) {
+StorageArea* StorageNamespace::GetStorageArea(const SecurityOrigin* origin) {
   return StorageArea::Create(
       WTF::WrapUnique(
           web_storage_namespace_->CreateStorageArea(WebSecurityOrigin(origin))),

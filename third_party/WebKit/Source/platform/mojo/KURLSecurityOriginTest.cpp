@@ -74,7 +74,7 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
   }
 
   // Test basic Origin serialization.
-  scoped_refptr<SecurityOrigin> non_unique =
+  scoped_refptr<const SecurityOrigin> non_unique =
       SecurityOrigin::Create("http", "www.google.com", 80);
   scoped_refptr<const SecurityOrigin> output;
   EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
@@ -83,11 +83,11 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
   EXPECT_FALSE(output->HasSuborigin());
   EXPECT_FALSE(output->IsUnique());
 
-  scoped_refptr<SecurityOrigin> unique = SecurityOrigin::CreateUnique();
+  scoped_refptr<const SecurityOrigin> unique = SecurityOrigin::CreateUnique();
   EXPECT_TRUE(proxy->BounceOrigin(unique, &output));
   EXPECT_TRUE(output->IsUnique());
 
-  scoped_refptr<SecurityOrigin> with_sub_origin =
+  scoped_refptr<const SecurityOrigin> with_sub_origin =
       SecurityOrigin::Create("http", "www.google.com", 80, "suborigin");
   EXPECT_TRUE(proxy->BounceOrigin(with_sub_origin, &output));
   EXPECT_TRUE(with_sub_origin->IsSameSchemeHostPortAndSuborigin(output.get()));

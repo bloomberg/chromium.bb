@@ -89,7 +89,7 @@ class Database final : public ScriptWrappable {
   bool Opened();
   bool IsNew() const { return new_; }
 
-  SecurityOrigin* GetSecurityOrigin() const;
+  const SecurityOrigin* GetSecurityOrigin() const;
   String StringIdentifier() const;
   String DisplayName() const;
   unsigned EstimatedSize() const;
@@ -178,8 +178,8 @@ class Database final : public ScriptWrappable {
     return context_thread_security_origin_->ToString() + "::" + name_;
   }
 
-  scoped_refptr<SecurityOrigin> context_thread_security_origin_;
-  scoped_refptr<SecurityOrigin> database_thread_security_origin_;
+  scoped_refptr<const SecurityOrigin> context_thread_security_origin_;
+  scoped_refptr<const SecurityOrigin> database_thread_security_origin_;
   Member<DatabaseContext>
       database_context_;  // Associated with m_executionContext.
   // TaskRunnerHelper::get is not thread-safe, so we save WebTaskRunner for

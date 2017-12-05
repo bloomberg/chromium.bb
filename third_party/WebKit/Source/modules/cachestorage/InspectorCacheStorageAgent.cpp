@@ -86,7 +86,7 @@ ProtocolResponse ParseCacheId(const String& id,
 ProtocolResponse AssertCacheStorage(
     const String& security_origin,
     std::unique_ptr<WebServiceWorkerCacheStorage>* result) {
-  scoped_refptr<SecurityOrigin> sec_origin =
+  scoped_refptr<const SecurityOrigin> sec_origin =
       SecurityOrigin::CreateFromString(security_origin);
 
   // Cache Storage API is restricted to trustworthy origins.
@@ -583,7 +583,7 @@ void InspectorCacheStorageAgent::Trace(blink::Visitor* visitor) {
 void InspectorCacheStorageAgent::requestCacheNames(
     const String& security_origin,
     std::unique_ptr<RequestCacheNamesCallback> callback) {
-  scoped_refptr<SecurityOrigin> sec_origin =
+  scoped_refptr<const SecurityOrigin> sec_origin =
       SecurityOrigin::CreateFromString(security_origin);
 
   // Cache Storage API is restricted to trustworthy origins.

@@ -26,7 +26,7 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
                 "CORSHandlingByResourceFetcher should be an enum");
 
   ResourceLoaderOptions original;
-  scoped_refptr<SecurityOrigin> security_origin =
+  scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString("http://www.google.com");
   original.security_origin = security_origin;
   original.initiator_info.name = AtomicString("xmlhttprequest");

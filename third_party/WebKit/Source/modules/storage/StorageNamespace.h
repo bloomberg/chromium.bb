@@ -43,9 +43,9 @@ class MODULES_EXPORT StorageNamespace {
   explicit StorageNamespace(std::unique_ptr<WebStorageNamespace>);
   ~StorageNamespace();
 
-  static StorageArea* LocalStorageArea(SecurityOrigin*);
+  static StorageArea* LocalStorageArea(const SecurityOrigin*);
 
-  StorageArea* GetStorageArea(SecurityOrigin*);
+  StorageArea* GetStorageArea(const SecurityOrigin*);
   bool IsSameNamespace(const WebStorageNamespace& session_namespace) const;
 
  private:

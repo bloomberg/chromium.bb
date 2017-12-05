@@ -67,7 +67,7 @@ class LocalWindowProxy final : public WindowProxy {
 
   // Update the security origin of a document
   // (e.g., after setting docoument.domain).
-  void UpdateSecurityOrigin(SecurityOrigin*);
+  void UpdateSecurityOrigin(const SecurityOrigin*);
 
  private:
   LocalWindowProxy(v8::Isolate*, LocalFrame&, scoped_refptr<DOMWrapperWorld>);
@@ -89,7 +89,7 @@ class LocalWindowProxy final : public WindowProxy {
   // DOMWindow object. Also does some more Window-specific initialization.
   void SetupWindowPrototypeChain();
 
-  void SetSecurityToken(SecurityOrigin*);
+  void SetSecurityToken(const SecurityOrigin*);
 
   // Triggers updates of objects that are associated with a Document:
   // - the activity logger

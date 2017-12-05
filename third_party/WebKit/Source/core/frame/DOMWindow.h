@@ -116,7 +116,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   explicit DOMWindow(Frame&);
 
   virtual void SchedulePostMessage(MessageEvent*,
-                                   scoped_refptr<SecurityOrigin> target,
+                                   scoped_refptr<const SecurityOrigin> target,
                                    Document* source) = 0;
 
   void DisconnectFromFrame() { frame_ = nullptr; }

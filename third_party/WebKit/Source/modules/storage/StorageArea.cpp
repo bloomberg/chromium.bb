@@ -160,7 +160,7 @@ void StorageArea::DispatchLocalStorageEvent(
     const String& key,
     const String& old_value,
     const String& new_value,
-    SecurityOrigin* security_origin,
+    const SecurityOrigin* security_origin,
     const KURL& page_url,
     WebStorageArea* source_area_instance) {
   // Iterate over all pages that have a StorageNamespaceController supplement.
@@ -209,7 +209,7 @@ void StorageArea::DispatchSessionStorageEvent(
     const String& key,
     const String& old_value,
     const String& new_value,
-    SecurityOrigin* security_origin,
+    const SecurityOrigin* security_origin,
     const KURL& page_url,
     const WebStorageNamespace& session_namespace,
     WebStorageArea* source_area_instance) {

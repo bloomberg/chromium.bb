@@ -258,12 +258,12 @@ void ResourceRequest::SetSiteForCookies(const KURL& site_for_cookies) {
   site_for_cookies_ = site_for_cookies;
 }
 
-scoped_refptr<SecurityOrigin> ResourceRequest::RequestorOrigin() const {
+scoped_refptr<const SecurityOrigin> ResourceRequest::RequestorOrigin() const {
   return requestor_origin_;
 }
 
 void ResourceRequest::SetRequestorOrigin(
-    scoped_refptr<SecurityOrigin> requestor_origin) {
+    scoped_refptr<const SecurityOrigin> requestor_origin) {
   requestor_origin_ = std::move(requestor_origin);
 }
 

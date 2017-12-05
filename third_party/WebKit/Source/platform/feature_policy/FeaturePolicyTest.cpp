@@ -62,11 +62,11 @@ class FeaturePolicyTest : public ::testing::Test {
   ~FeaturePolicyTest() {
   }
 
-  scoped_refptr<SecurityOrigin> origin_a_ =
+  scoped_refptr<const SecurityOrigin> origin_a_ =
       SecurityOrigin::CreateFromString(ORIGIN_A);
-  scoped_refptr<SecurityOrigin> origin_b_ =
+  scoped_refptr<const SecurityOrigin> origin_b_ =
       SecurityOrigin::CreateFromString(ORIGIN_B);
-  scoped_refptr<SecurityOrigin> origin_c_ =
+  scoped_refptr<const SecurityOrigin> origin_c_ =
       SecurityOrigin::CreateFromString(ORIGIN_C);
 
   url::Origin expected_url_origin_a_ = url::Origin::Create(GURL(ORIGIN_A));

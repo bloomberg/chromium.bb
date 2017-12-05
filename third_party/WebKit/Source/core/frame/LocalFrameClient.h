@@ -174,7 +174,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // The indicated security origin has run active content (such as a script)
   // from an insecure source.  Note that the insecure content can spread to
   // other frames in the same origin.
-  virtual void DidRunInsecureContent(SecurityOrigin*, const KURL&) = 0;
+  virtual void DidRunInsecureContent(const SecurityOrigin*, const KURL&) = 0;
   virtual void DidDetectXSS(const KURL&, bool did_block_entire_page) = 0;
   virtual void DidDispatchPingLoader(const KURL&) = 0;
 

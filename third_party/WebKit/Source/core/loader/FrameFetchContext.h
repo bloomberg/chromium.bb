@@ -137,7 +137,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool UpdateTimingInfoForIFrameNavigation(ResourceTimingInfo*) override;
   void SendImagePing(const KURL&) override;
 
-  SecurityOrigin* GetSecurityOrigin() const override;
+  const SecurityOrigin* GetSecurityOrigin() const override;
 
   void PopulateResourceRequest(Resource::Type,
                                const ClientHintsPreferences&,
@@ -223,8 +223,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   ContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
-  scoped_refptr<SecurityOrigin> GetRequestorOrigin();
-  scoped_refptr<SecurityOrigin> GetRequestorOriginForFrameLoading();
+  scoped_refptr<const SecurityOrigin> GetRequestorOrigin();
+  scoped_refptr<const SecurityOrigin> GetRequestorOriginForFrameLoading();
   ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,

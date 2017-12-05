@@ -981,7 +981,7 @@ Vector<String> Database::TableNames() {
   return result;
 }
 
-SecurityOrigin* Database::GetSecurityOrigin() const {
+const SecurityOrigin* Database::GetSecurityOrigin() const {
   if (!GetExecutionContext())
     return nullptr;
   if (GetExecutionContext()->IsContextThread())

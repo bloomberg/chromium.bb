@@ -294,7 +294,7 @@ void ContentSecurityPolicy::DidReceiveHeader(
 
 bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
     const ResourceResponse& response,
-    SecurityOrigin* parent_origin) {
+    const SecurityOrigin* parent_origin) {
   if (response.Url().IsEmpty() || response.Url().ProtocolIsAbout() ||
       response.Url().ProtocolIsData() || response.Url().ProtocolIs("blob") ||
       response.Url().ProtocolIs("filesystem")) {
@@ -308,7 +308,7 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
   header = header.StripWhiteSpace();
   if (header == "*")
     return true;
-  if (scoped_refptr<SecurityOrigin> child_origin =
+  if (scoped_refptr<const SecurityOrigin> child_origin =
           SecurityOrigin::CreateFromString(header)) {
     return parent_origin->CanAccess(child_origin.get());
   }
@@ -412,7 +412,7 @@ void ContentSecurityPolicy::SetOverrideURLForSelf(const KURL& url) {
   // before we bind to an execution context (for 'frame-ancestor' resolution,
   // for example). This CSPSource will be overwritten when we bind this object
   // to an execution context.
-  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(url);
+  scoped_refptr<const SecurityOrigin> origin = SecurityOrigin::Create(url);
   self_protocol_ = origin->Protocol();
   self_source_ =
       new CSPSource(this, self_protocol_, origin->Host(), origin->Port(),

@@ -24,8 +24,9 @@ bool ContentSettingsClient::AllowDatabase(const String& name,
   return true;
 }
 
-bool ContentSettingsClient::AllowIndexedDB(const String& name,
-                                           SecurityOrigin* security_origin) {
+bool ContentSettingsClient::AllowIndexedDB(
+    const String& name,
+    const SecurityOrigin* security_origin) {
   if (client_)
     return client_->AllowIndexedDB(name, WebSecurityOrigin(security_origin));
   return true;
@@ -92,7 +93,7 @@ bool ContentSettingsClient::AllowStorage(StorageType type) {
 
 bool ContentSettingsClient::AllowRunningInsecureContent(
     bool enabled_per_settings,
-    SecurityOrigin* origin,
+    const SecurityOrigin* origin,
     const KURL& url) {
   if (client_) {
     return client_->AllowRunningInsecureContent(enabled_per_settings,

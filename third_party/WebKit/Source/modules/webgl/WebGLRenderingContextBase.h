@@ -1429,21 +1429,21 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function for tex{Sub}Image2D to make sure image is ready and
   // wouldn't taint Origin.
 
-  bool ValidateHTMLImageElement(SecurityOrigin*,
+  bool ValidateHTMLImageElement(const SecurityOrigin*,
                                 const char* function_name,
                                 HTMLImageElement*,
                                 ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure canvas is ready and
   // wouldn't taint Origin.
-  bool ValidateHTMLCanvasElement(SecurityOrigin*,
+  bool ValidateHTMLCanvasElement(const SecurityOrigin*,
                                  const char* function_name,
                                  HTMLCanvasElement*,
                                  ExceptionState&);
 
   // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't
   // taint Origin.
-  bool ValidateHTMLVideoElement(SecurityOrigin*,
+  bool ValidateHTMLVideoElement(const SecurityOrigin*,
                                 const char* function_name,
                                 HTMLVideoElement*,
                                 ExceptionState&);
@@ -1581,7 +1581,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                const IntRect&,
                                GLint);
 
-  void TexImageHelperHTMLImageElement(SecurityOrigin*,
+  void TexImageHelperHTMLImageElement(const SecurityOrigin*,
                                       TexImageFunctionID,
                                       GLenum,
                                       GLint,
@@ -1597,7 +1597,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLint,
                                       ExceptionState&);
 
-  void TexImageHelperHTMLCanvasElement(SecurityOrigin*,
+  void TexImageHelperHTMLCanvasElement(const SecurityOrigin*,
                                        TexImageFunctionID,
                                        GLenum,
                                        GLint,
@@ -1613,7 +1613,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        GLint,
                                        ExceptionState&);
 
-  void TexImageHelperHTMLVideoElement(SecurityOrigin*,
+  void TexImageHelperHTMLVideoElement(const SecurityOrigin*,
                                       TexImageFunctionID,
                                       GLenum,
                                       GLint,

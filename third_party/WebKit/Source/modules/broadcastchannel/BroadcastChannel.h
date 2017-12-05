@@ -62,7 +62,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   // Called when the mojo binding disconnects.
   void OnError();
 
-  scoped_refptr<SecurityOrigin> origin_;
+  scoped_refptr<const SecurityOrigin> origin_;
   String name_;
 
   mojo::AssociatedBinding<mojom::blink::BroadcastChannelClient> binding_;

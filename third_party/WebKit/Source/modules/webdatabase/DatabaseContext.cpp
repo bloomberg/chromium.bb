@@ -178,7 +178,7 @@ bool DatabaseContext::AllowDatabaseAccess() const {
   return ToDocument(GetExecutionContext())->IsActive();
 }
 
-SecurityOrigin* DatabaseContext::GetSecurityOrigin() const {
+const SecurityOrigin* DatabaseContext::GetSecurityOrigin() const {
   return GetExecutionContext()->GetSecurityOrigin();
 }
 

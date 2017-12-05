@@ -107,7 +107,7 @@ struct ResourceLoaderOptions {
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag;
 
-  scoped_refptr<SecurityOrigin> security_origin;
+  scoped_refptr<const SecurityOrigin> security_origin;
   String content_security_policy_nonce;
   IntegrityMetadataSet integrity_metadata;
   ParserDisposition parser_disposition;
@@ -162,7 +162,7 @@ struct CrossThreadResourceLoaderOptionsData {
 
   CORSHandlingByResourceFetcher cors_handling_by_resource_fetcher;
   bool cors_flag;
-  scoped_refptr<SecurityOrigin> security_origin;
+  scoped_refptr<const SecurityOrigin> security_origin;
 
   String content_security_policy_nonce;
   IntegrityMetadataSet integrity_metadata;

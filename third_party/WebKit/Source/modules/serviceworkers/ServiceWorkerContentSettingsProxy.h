@@ -22,7 +22,7 @@ class ServiceWorkerContentSettingsProxy final
       mojom::blink::WorkerContentSettingsProxyPtrInfo host_info);
   ~ServiceWorkerContentSettingsProxy() override;
 
-  void SetSecurityOrigin(scoped_refptr<blink::SecurityOrigin>);
+  void SetSecurityOrigin(scoped_refptr<const blink::SecurityOrigin>);
 
   // WebContentSettingsClient overrides.
   // Asks the browser process about the settings.

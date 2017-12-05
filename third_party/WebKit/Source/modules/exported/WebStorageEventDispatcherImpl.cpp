@@ -45,7 +45,7 @@ void WebStorageEventDispatcher::DispatchLocalStorageEvent(
     const WebURL& origin,
     const WebURL& page_url,
     WebStorageArea* source_area_instance) {
-  scoped_refptr<SecurityOrigin> security_origin =
+  scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::Create(origin);
   StorageArea::DispatchLocalStorageEvent(key, old_value, new_value,
                                          security_origin.get(), page_url,
@@ -60,7 +60,7 @@ void WebStorageEventDispatcher::DispatchSessionStorageEvent(
     const WebURL& page_url,
     const WebStorageNamespace& session_namespace,
     WebStorageArea* source_area_instance) {
-  scoped_refptr<SecurityOrigin> security_origin =
+  scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::Create(origin);
   StorageArea::DispatchSessionStorageEvent(
       key, old_value, new_value, security_origin.get(), page_url,

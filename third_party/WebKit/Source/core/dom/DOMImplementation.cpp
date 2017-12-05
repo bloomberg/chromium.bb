@@ -241,7 +241,8 @@ Document* DOMImplementation::createDocument(const String& type,
     // init.frame()->tree().top()->securityContext() returns nullptr.
     // For that reason, the origin must be retrieved directly from init.url().
     if (init.GetFrame()->IsMainFrame()) {
-      scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(init.Url());
+      scoped_refptr<const SecurityOrigin> origin =
+          SecurityOrigin::Create(init.Url());
       plugin_data = init.GetFrame()->GetPage()->GetPluginData(origin.get());
     } else {
       plugin_data =

@@ -162,7 +162,7 @@ void DOMWindow::postMessage(scoped_refptr<SerializedScriptValue> message,
 
   // Compute the target origin.  We need to do this synchronously in order
   // to generate the SyntaxError exception correctly.
-  scoped_refptr<SecurityOrigin> target;
+  scoped_refptr<const SecurityOrigin> target;
   if (target_origin == "/") {
     if (!source_document)
       return;

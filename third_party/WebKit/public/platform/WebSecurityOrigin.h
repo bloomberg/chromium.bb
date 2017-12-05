@@ -107,11 +107,11 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT bool CanAccessPasswordManager() const;
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebSecurityOrigin(scoped_refptr<SecurityOrigin>);
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin(scoped_refptr<const SecurityOrigin>);
   BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(
-      scoped_refptr<SecurityOrigin>);
-  BLINK_PLATFORM_EXPORT operator scoped_refptr<SecurityOrigin>() const;
-  BLINK_PLATFORM_EXPORT SecurityOrigin* Get() const;
+      scoped_refptr<const SecurityOrigin>);
+  BLINK_PLATFORM_EXPORT operator scoped_refptr<const SecurityOrigin>() const;
+  BLINK_PLATFORM_EXPORT const SecurityOrigin* Get() const;
 #endif
   // TODO(mkwst): A number of properties don't survive a round-trip
   // ('document.domain', for instance).  We'll need to fix that for OOPI-enabled
@@ -132,7 +132,7 @@ class WebSecurityOrigin {
       int port,
       const WebString& suborigin);
 
-  WebPrivatePtr<SecurityOrigin> private_;
+  WebPrivatePtr<const SecurityOrigin> private_;
 };
 
 }  // namespace blink

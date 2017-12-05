@@ -33,7 +33,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   // CanvasImageSource
   bool IsCSSImageValue() const final { return true; }
   bool WouldTaintOrigin(
-      SecurityOrigin* destination_security_origin) const final {
+      const SecurityOrigin* destination_security_origin) const final {
     return true;
   }
   FloatSize ElementSize(const FloatSize& default_object_size) const final;

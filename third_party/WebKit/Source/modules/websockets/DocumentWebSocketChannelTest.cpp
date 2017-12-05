@@ -89,7 +89,7 @@ class MockWebSocketHandle : public WebSocketHandle {
   MOCK_METHOD7(Connect,
                void(const KURL&,
                     const Vector<String>&,
-                    SecurityOrigin*,
+                    const SecurityOrigin*,
                     const KURL&,
                     const String&,
                     WebSocketHandleClient*,
@@ -208,7 +208,7 @@ MATCHER_P(KURLEq,
 
 TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   Vector<String> protocols;
-  scoped_refptr<SecurityOrigin> origin;
+  scoped_refptr<const SecurityOrigin> origin;
 
   Checkpoint checkpoint;
   {

@@ -75,7 +75,7 @@ class DatabaseManager {
                          DatabaseError&,
                          String& error_message);
 
-  String FullPathForDatabase(SecurityOrigin*,
+  String FullPathForDatabase(const SecurityOrigin*,
                              const String& name,
                              bool create_if_does_not_exist = true);
 

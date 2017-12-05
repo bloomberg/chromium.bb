@@ -60,7 +60,7 @@ class CORE_EXPORT CanvasImageSource {
   // a CanvasPattern is "origin clean", and that pattern may be used on
   // another canvas, which may not be already tainted.
   virtual bool WouldTaintOrigin(
-      SecurityOrigin* destination_security_origin) const = 0;
+      const SecurityOrigin* destination_security_origin) const = 0;
 
   virtual bool IsCSSImageValue() const { return false; }
   virtual bool IsVideoElement() const { return false; }

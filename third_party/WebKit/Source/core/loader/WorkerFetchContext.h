@@ -64,7 +64,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:
-  SecurityOrigin* GetSecurityOrigin() const override;
+  const SecurityOrigin* GetSecurityOrigin() const override;
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
       scoped_refptr<WebTaskRunner>) override;

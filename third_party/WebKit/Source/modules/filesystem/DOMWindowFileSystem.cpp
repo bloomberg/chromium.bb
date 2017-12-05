@@ -92,7 +92,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
   if (!document)
     return;
 
-  SecurityOrigin* security_origin = document->GetSecurityOrigin();
+  const SecurityOrigin* security_origin = document->GetSecurityOrigin();
   KURL completed_url = document->CompleteURL(url);
   if (!security_origin->CanAccessFileSystem() ||
       !security_origin->CanRequest(completed_url)) {

@@ -44,7 +44,7 @@ QuotaTracker& QuotaTracker::Instance() {
 }
 
 void QuotaTracker::GetDatabaseSizeAndSpaceAvailableToOrigin(
-    SecurityOrigin* origin,
+    const SecurityOrigin* origin,
     const String& database_name,
     unsigned long long* database_size,
     unsigned long long* space_available) {

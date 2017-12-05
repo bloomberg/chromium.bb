@@ -124,20 +124,20 @@ bool WebSecurityOrigin::CanAccessPasswordManager() const {
   return private_->CanAccessPasswordManager();
 }
 
-WebSecurityOrigin::WebSecurityOrigin(scoped_refptr<SecurityOrigin> origin)
+WebSecurityOrigin::WebSecurityOrigin(scoped_refptr<const SecurityOrigin> origin)
     : private_(std::move(origin)) {}
 
 WebSecurityOrigin& WebSecurityOrigin::operator=(
-    scoped_refptr<SecurityOrigin> origin) {
+    scoped_refptr<const SecurityOrigin> origin) {
   private_ = std::move(origin);
   return *this;
 }
 
-WebSecurityOrigin::operator scoped_refptr<SecurityOrigin>() const {
+WebSecurityOrigin::operator scoped_refptr<const SecurityOrigin>() const {
   return private_.Get();
 }
 
-SecurityOrigin* WebSecurityOrigin::Get() const {
+const SecurityOrigin* WebSecurityOrigin::Get() const {
   return private_.Get();
 }
 

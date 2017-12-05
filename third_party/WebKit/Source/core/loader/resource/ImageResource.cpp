@@ -105,7 +105,7 @@ class ImageResource::ImageResourceInfoImpl final
            resource_->ShouldReloadBrokenPlaceholder();
   }
   bool IsAccessAllowed(
-      SecurityOrigin* security_origin,
+      const SecurityOrigin* security_origin,
       DoesCurrentFrameHaveSingleSecurityOrigin
           does_current_frame_has_single_security_origin) const override {
     return resource_->IsAccessAllowed(
@@ -656,7 +656,7 @@ void ImageResource::MultipartDataReceived(const char* bytes, size_t size) {
 }
 
 bool ImageResource::IsAccessAllowed(
-    SecurityOrigin* security_origin,
+    const SecurityOrigin* security_origin,
     ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin
         does_current_frame_has_single_security_origin) const {
   if (GetCORSStatus() == CORSStatus::kServiceWorkerOpaque)

@@ -79,7 +79,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   const KURL& Url() const override { return execution_context_->Url(); }
 
-  SecurityOrigin* GetSecurityOrigin() const override {
+  const SecurityOrigin* GetSecurityOrigin() const override {
     return execution_context_->GetSecurityOrigin();
   }
   const SecurityOrigin* GetParentSecurityOrigin() const override {

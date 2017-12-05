@@ -148,10 +148,11 @@ class PLATFORM_EXPORT FetchParameters {
   }
   // Configures the request to use the "cors" mode and the credentials mode
   // specified by the crossOrigin attribute.
-  void SetCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
+  void SetCrossOriginAccessControl(const SecurityOrigin*,
+                                   CrossOriginAttributeValue);
   // Configures the request to use the "cors" mode and the specified
   // credentials mode.
-  void SetCrossOriginAccessControl(SecurityOrigin*,
+  void SetCrossOriginAccessControl(const SecurityOrigin*,
                                    network::mojom::FetchCredentialsMode);
   OriginRestriction GetOriginRestriction() const { return origin_restriction_; }
   void SetOriginRestriction(OriginRestriction restriction) {

@@ -209,7 +209,7 @@ class PLATFORM_EXPORT FetchContext
   virtual void AddWarningConsoleMessage(const String&, LogSource) const;
   virtual void AddErrorConsoleMessage(const String&, LogSource) const;
 
-  virtual SecurityOrigin* GetSecurityOrigin() const { return nullptr; }
+  virtual const SecurityOrigin* GetSecurityOrigin() const { return nullptr; }
 
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to

@@ -151,7 +151,8 @@ static void MeasureStricterVersionOfIsMixedContent(Frame& frame,
   // What about other "secure" contexts the SchemeRegistry knows about? We'll
   // use this method to measure the occurrence of non-webby mixed content to
   // make sure we're not breaking the world without realizing it.
-  SecurityOrigin* origin = frame.GetSecurityContext()->GetSecurityOrigin();
+  const SecurityOrigin* origin =
+      frame.GetSecurityContext()->GetSecurityOrigin();
   if (MixedContentChecker::IsMixedContent(origin, url)) {
     if (origin->Protocol() != "https") {
       UseCounter::Count(
@@ -173,7 +174,7 @@ bool RequestIsSubframeSubresource(Frame* frame,
 }
 
 // static
-bool MixedContentChecker::IsMixedContent(SecurityOrigin* security_origin,
+bool MixedContentChecker::IsMixedContent(const SecurityOrigin* security_origin,
                                          const KURL& url) {
   if (!SchemeRegistry::ShouldTreatURLSchemeAsRestrictingMixedContent(
           security_origin->Protocol()))
@@ -328,7 +329,7 @@ bool MixedContentChecker::ShouldBlockFetch(
   LocalFrameClient* client = frame->Client();
   ContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
-  SecurityOrigin* security_origin =
+  const SecurityOrigin* security_origin =
       mixed_frame->GetSecurityContext()->GetSecurityOrigin();
   bool allowed = false;
 
@@ -523,7 +524,7 @@ bool MixedContentChecker::ShouldBlockWebSocket(
   ContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
   LocalFrameClient* client = frame->Client();
-  SecurityOrigin* security_origin =
+  const SecurityOrigin* security_origin =
       mixed_frame->GetSecurityContext()->GetSecurityOrigin();
   bool allowed = false;
 

@@ -106,7 +106,7 @@ class CORE_EXPORT ImageResourceContent final
 
   // Redirecting methods to Resource.
   const KURL& Url() const;
-  bool IsAccessAllowed(SecurityOrigin*);
+  bool IsAccessAllowed(const SecurityOrigin*);
   const ResourceResponse& GetResponse() const;
   Optional<ResourceError> GetResourceError() const;
   // DEPRECATED: ImageResourceContents consumers shouldn't need to worry about

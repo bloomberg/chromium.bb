@@ -63,7 +63,7 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
 
   bool AllowDatabaseAccess() const;
 
-  SecurityOrigin* GetSecurityOrigin() const;
+  const SecurityOrigin* GetSecurityOrigin() const;
   bool IsContextThread() const;
 
  private:

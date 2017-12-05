@@ -1212,7 +1212,7 @@ void UseCounter::CountIfFeatureWouldBeBlockedByFeaturePolicy(
     WebFeature blocked_cross_origin,
     WebFeature blocked_same_origin) {
   // Get the origin of the top-level document
-  SecurityOrigin* topOrigin =
+  const SecurityOrigin* topOrigin =
       frame.Tree().Top().GetSecurityContext()->GetSecurityOrigin();
 
   // Check if this frame is same-origin with the top-level

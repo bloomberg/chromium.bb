@@ -251,7 +251,7 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
   };
 
   for (const char* url : insecure_urls) {
-    scoped_refptr<SecurityOrigin> origin =
+    scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(url);
     EXPECT_FALSE(origin->IsPotentiallyTrustworthy());
     SecurityPolicy::AddOriginTrustworthyWhiteList(*origin);
@@ -274,9 +274,9 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
   };
   for (const TestCase& test : insecure_urls_with_inner_origin) {
     // Actually origins of both URLs should be same.
-    scoped_refptr<SecurityOrigin> origin1 =
+    scoped_refptr<const SecurityOrigin> origin1 =
         SecurityOrigin::CreateFromString(test.url);
-    scoped_refptr<SecurityOrigin> origin2 =
+    scoped_refptr<const SecurityOrigin> origin2 =
         SecurityOrigin::CreateFromString(test.another_url_in_origin);
 
     EXPECT_FALSE(origin1->IsPotentiallyTrustworthy());

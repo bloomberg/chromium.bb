@@ -195,7 +195,7 @@ Database* DatabaseManager::OpenDatabase(ExecutionContext* context,
   return database;
 }
 
-String DatabaseManager::FullPathForDatabase(SecurityOrigin* origin,
+String DatabaseManager::FullPathForDatabase(const SecurityOrigin* origin,
                                             const String& name,
                                             bool create_if_does_not_exist) {
   return DatabaseTracker::Tracker().FullPathForDatabase(

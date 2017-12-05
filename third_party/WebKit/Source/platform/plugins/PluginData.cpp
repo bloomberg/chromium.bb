@@ -83,7 +83,7 @@ void PluginData::RefreshBrowserSidePluginCache() {
                                      &builder);
 }
 
-void PluginData::UpdatePluginList(SecurityOrigin* main_frame_origin) {
+void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
   ResetPluginData();
   main_frame_origin_ = main_frame_origin;
   PluginListBuilder builder(&plugins_);

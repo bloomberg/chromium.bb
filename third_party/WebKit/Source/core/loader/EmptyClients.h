@@ -309,7 +309,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   bool NavigateBackForward(int offset) const override { return false; }
   void DidDisplayInsecureContent() override {}
   void DidContainInsecureFormAction() override {}
-  void DidRunInsecureContent(SecurityOrigin*, const KURL&) override {}
+  void DidRunInsecureContent(const SecurityOrigin*, const KURL&) override {}
   void DidDetectXSS(const KURL&, bool) override {}
   void DidDispatchPingLoader(const KURL&) override {}
   void DidDisplayContentWithCertificateErrors(const KURL&) override {}
@@ -437,7 +437,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void Reload(FrameLoadType, ClientRedirectPolicy) override {}
   unsigned BackForwardLength() override { return 0; }
   void ForwardPostMessage(MessageEvent*,
-                          scoped_refptr<SecurityOrigin> target,
+                          scoped_refptr<const SecurityOrigin> target,
                           LocalFrame* source_frame) const override {}
   void FrameRectsChanged(const IntRect& frame_rect) override {}
   void UpdateRemoteViewportIntersection(

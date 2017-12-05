@@ -57,7 +57,7 @@ class CORE_EXPORT WorkerContentSettingsClient final
   bool RequestFileSystemAccessSync();
   bool AllowIndexedDB(const WebString& name);
   bool AllowRunningInsecureContent(bool enabled_per_settings,
-                                   SecurityOrigin*,
+                                   const SecurityOrigin*,
                                    const KURL&);
 
   static const char* SupplementName();

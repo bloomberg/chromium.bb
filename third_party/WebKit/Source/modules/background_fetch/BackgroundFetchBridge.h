@@ -87,7 +87,7 @@ class BackgroundFetchBridge final
 
   // Returns the security origin for the Service Worker registration this bridge
   // is servicing, which is to be included in the Mojo calls.
-  SecurityOrigin* GetSecurityOrigin();
+  const SecurityOrigin* GetSecurityOrigin();
 
   // Returns an initialized BackgroundFetchServicePtr. A connection will be
   // established after the first call to this method.

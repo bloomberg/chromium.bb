@@ -69,7 +69,8 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
     return;
   }
 
-  SecurityOrigin* security_origin = execution_context->GetSecurityOrigin();
+  const SecurityOrigin* security_origin =
+      execution_context->GetSecurityOrigin();
   if (security_origin->IsUnique()) {
     ExecutionContext::From(script_state)
         ->GetTaskRunner(TaskType::kMiscPlatformAPI)

@@ -303,7 +303,7 @@ void Page::RefreshPlugins() {
   PluginData::RefreshBrowserSidePluginCache();
 }
 
-PluginData* Page::GetPluginData(SecurityOrigin* main_frame_origin) {
+PluginData* Page::GetPluginData(const SecurityOrigin* main_frame_origin) {
   if (!plugin_data_)
     plugin_data_ = PluginData::Create();
 

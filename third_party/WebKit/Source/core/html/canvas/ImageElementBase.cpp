@@ -72,7 +72,7 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
 }
 
 bool ImageElementBase::WouldTaintOrigin(
-    SecurityOrigin* destination_security_origin) const {
+    const SecurityOrigin* destination_security_origin) const {
   return CachedImage() &&
          !CachedImage()->IsAccessAllowed(destination_security_origin);
 }

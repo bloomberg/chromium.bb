@@ -44,8 +44,8 @@ class FetchRequestData final
   const KURL& Url() const { return url_; }
   WebURLRequest::RequestContext Context() const { return context_; }
   void SetContext(WebURLRequest::RequestContext context) { context_ = context; }
-  scoped_refptr<SecurityOrigin> Origin() { return origin_; }
-  void SetOrigin(scoped_refptr<SecurityOrigin> origin) {
+  scoped_refptr<const SecurityOrigin> Origin() { return origin_; }
+  void SetOrigin(scoped_refptr<const SecurityOrigin> origin) {
     origin_ = std::move(origin);
   }
   bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
@@ -108,7 +108,7 @@ class FetchRequestData final
   Member<FetchHeaderList> header_list_;
   // FIXME: Support m_skipServiceWorkerFlag;
   WebURLRequest::RequestContext context_;
-  scoped_refptr<SecurityOrigin> origin_;
+  scoped_refptr<const SecurityOrigin> origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
   bool same_origin_data_url_flag_;
   // |m_referrer| consists of referrer string and referrer policy.

@@ -60,7 +60,7 @@ TEST(MixedContentCheckerTest, IsMixedContent) {
                                       << ", Target: " << test.target
                                       << ", Expectation: " << test.expectation);
     KURL origin_url(NullURL(), test.origin);
-    scoped_refptr<SecurityOrigin> security_origin(
+    scoped_refptr<const SecurityOrigin> security_origin(
         SecurityOrigin::Create(origin_url));
     KURL target_url(NullURL(), test.target);
     EXPECT_EQ(test.expectation, MixedContentChecker::IsMixedContent(

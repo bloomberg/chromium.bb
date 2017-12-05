@@ -263,7 +263,8 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
   request.SetHTTPHeaderField(HTTPNames::Ping_To,
                              AtomicString(destination_url.GetString()));
-  scoped_refptr<SecurityOrigin> ping_origin = SecurityOrigin::Create(ping_url);
+  scoped_refptr<const SecurityOrigin> ping_origin =
+      SecurityOrigin::Create(ping_url);
   if (ProtocolIs(frame->GetDocument()->Url().GetString(), "http") ||
       frame->GetDocument()->GetSecurityOrigin()->CanAccess(ping_origin.get())) {
     request.SetHTTPHeaderField(

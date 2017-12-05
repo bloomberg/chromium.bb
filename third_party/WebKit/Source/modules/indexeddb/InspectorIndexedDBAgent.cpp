@@ -197,7 +197,7 @@ class ExecutableWithDatabase
       : script_state_(script_state) {}
   virtual ~ExecutableWithDatabase() {}
   void Start(IDBFactory* idb_factory,
-             SecurityOrigin*,
+             const SecurityOrigin*,
              const String& database_name) {
     OpenDatabaseCallback<RequestCallback>* open_callback =
         OpenDatabaseCallback<RequestCallback>::Create(this);

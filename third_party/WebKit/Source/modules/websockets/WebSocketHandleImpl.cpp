@@ -47,7 +47,7 @@ void WebSocketHandleImpl::Initialize(mojom::blink::WebSocketPtr websocket) {
 
 void WebSocketHandleImpl::Connect(const KURL& url,
                                   const Vector<String>& protocols,
-                                  SecurityOrigin* origin,
+                                  const SecurityOrigin* origin,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
                                   WebSocketHandleClient* client,

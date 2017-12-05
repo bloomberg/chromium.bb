@@ -216,7 +216,7 @@ void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
   return global_scope_->AddConsoleMessage(message);
 }
 
-SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
+const SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
   return global_scope_->GetSecurityOrigin();
 }
 

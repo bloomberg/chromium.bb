@@ -89,8 +89,9 @@ WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
 
 AudioWorkletMessagingProxy* AudioWorklet::GetMessagingProxy() {
   return GetNumberOfGlobalScopes() == 0
-      ? nullptr
-      : static_cast<AudioWorkletMessagingProxy*>(FindAvailableGlobalScope());
+             ? nullptr
+             : static_cast<AudioWorkletMessagingProxy*>(
+                   FindAvailableGlobalScope());
 }
 
 void AudioWorklet::Trace(blink::Visitor* visitor) {

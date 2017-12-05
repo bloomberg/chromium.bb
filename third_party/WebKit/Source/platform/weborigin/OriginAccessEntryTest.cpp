@@ -71,7 +71,7 @@ TEST(OriginAccessEntryTest, PublicSuffixListTest) {
   ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
   platform->SetPublicSuffix("com");
 
-  scoped_refptr<SecurityOrigin> origin =
+  scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("http://www.google.com");
   OriginAccessEntry entry1("http", "google.com",
                            OriginAccessEntry::kAllowSubdomains);
@@ -145,7 +145,7 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest) {
   for (const auto& test : inputs) {
     SCOPED_TRACE(::testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin);
-    scoped_refptr<SecurityOrigin> origin_to_test =
+    scoped_refptr<const SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kAllowSubdomains);
@@ -197,7 +197,7 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTest) {
   platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
-    scoped_refptr<SecurityOrigin> origin_to_test =
+    scoped_refptr<const SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kAllowRegisterableDomains);
@@ -253,7 +253,7 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTestWithDottedSuffix) {
   platform->SetPublicSuffix("appspot.com");
 
   for (const auto& test : inputs) {
-    scoped_refptr<SecurityOrigin> origin_to_test =
+    scoped_refptr<const SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kAllowRegisterableDomains);
@@ -306,7 +306,7 @@ TEST(OriginAccessEntryTest, DisallowSubdomainsTest) {
   for (const auto& test : inputs) {
     SCOPED_TRACE(::testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin);
-    scoped_refptr<SecurityOrigin> origin_to_test =
+    scoped_refptr<const SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kDisallowSubdomains);
@@ -365,7 +365,7 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
   for (const auto& test : inputs) {
     SCOPED_TRACE(::testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin);
-    scoped_refptr<SecurityOrigin> origin_to_test =
+    scoped_refptr<const SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
     OriginAccessEntry entry1(test.protocol, test.host,
                              OriginAccessEntry::kAllowSubdomains);
