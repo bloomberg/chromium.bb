@@ -32,8 +32,11 @@ class WebPlugin;
 struct WebPluginParams;
 struct WebSize;
 class WebURLRequest;
-class WebURLResponse;
 class WebView;
+}
+
+namespace content {
+struct Manifest;
 }
 
 namespace device {
@@ -250,9 +253,8 @@ class WebTestDelegate {
   // Fetch the manifest for a given WebView from the given url.
   virtual void FetchManifest(
       blink::WebView* view,
-      const GURL& url,
-      const base::Callback<void(const blink::WebURLResponse& response,
-                                const std::string& data)>& callback) = 0;
+      base::OnceCallback<void(const GURL&, const content::Manifest&)>
+          callback) = 0;
 
   // Sends a message to the LayoutTestPermissionManager in order for it to
   // update its database.

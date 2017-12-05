@@ -23,8 +23,7 @@ namespace content {
 ManifestManager::ManifestManager(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       may_have_manifest_(false),
-      manifest_dirty_(true),
-      weak_factory_(this) {}
+      manifest_dirty_(true) {}
 
 ManifestManager::~ManifestManager() {
   if (fetcher_)
@@ -85,30 +84,6 @@ void ManifestManager::DidChangeManifest() {
   manifest_dirty_ = true;
   manifest_url_ = GURL();
   manifest_debug_info_ = nullptr;
-
-  if (!render_frame()->IsMainFrame())
-    return;
-
-  if (weak_factory_.HasWeakPtrs())
-    return;
-
-  // Changing the manifest URL can trigger multiple notifications; the manifest
-  // URL update may involve removing the old manifest link before adding the new
-  // one, triggering multiple calls to DidChangeManifest(). Coalesce changes
-  // during a single event loop task to avoid sending spurious notifications to
-  // the browser.
-  //
-  // During document load, coalescing is disabled to maintain relative ordering
-  // of this notification and the favicon URL reporting.
-  if (!render_frame()->GetWebFrame()->IsLoading()) {
-    render_frame()
-        ->GetTaskRunner(blink::TaskType::kUnspecedLoading)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&ManifestManager::ReportManifestChange,
-                                  weak_factory_.GetWeakPtr()));
-    return;
-  }
-  ReportManifestChange();
 }
 
 void ManifestManager::DidCommitProvisionalLoad(
@@ -149,6 +124,7 @@ void ManifestManager::OnManifestFetchComplete(
     const GURL& document_url,
     const blink::WebURLResponse& response,
     const std::string& data) {
+  fetcher_.reset();
   if (response.IsNull() && data.empty()) {
     manifest_debug_info_ = nullptr;
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_UNSPECIFIED_REASON);
@@ -162,7 +138,6 @@ void ManifestManager::OnManifestFetchComplete(
   ManifestParser parser(data_piece, response_url, document_url);
   parser.Parse();
 
-  fetcher_.reset();
   manifest_debug_info_ = blink::mojom::ManifestDebugInfo::New();
   manifest_debug_info_->raw_manifest = data;
   parser.TakeErrors(&manifest_debug_info_->errors);
@@ -219,23 +194,5 @@ void ManifestManager::BindToRequest(
 }
 
 void ManifestManager::OnDestruct() {}
-
-void ManifestManager::ReportManifestChange() {
-  auto manifest_url =
-      render_frame()->GetWebFrame()->GetDocument().ManifestURL();
-  if (manifest_url.IsNull()) {
-    GetManifestChangeObserver().ManifestUrlChanged(base::nullopt);
-  } else {
-    GetManifestChangeObserver().ManifestUrlChanged(GURL(manifest_url));
-  }
-}
-
-mojom::ManifestUrlChangeObserver& ManifestManager::GetManifestChangeObserver() {
-  if (!manifest_change_observer_) {
-    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        &manifest_change_observer_);
-  }
-  return *manifest_change_observer_;
-}
 
 }  // namespace content

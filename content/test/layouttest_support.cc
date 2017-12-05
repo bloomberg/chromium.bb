@@ -30,7 +30,6 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
-#include "content/renderer/fetchers/manifest_fetcher.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/layout_test_dependencies.h"
@@ -243,29 +242,10 @@ void EnableWebTestProxyCreation(
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
 
-void FetchManifestDoneCallback(std::unique_ptr<ManifestFetcher> fetcher,
-                               const FetchManifestCallback& callback,
-                               const blink::WebURLResponse& response,
-                               const std::string& data) {
-  // |fetcher| will be autodeleted here as it is going out of scope.
-  callback.Run(response, data);
-}
-
-void FetchManifest(blink::WebView* view, const GURL& url,
-                   const FetchManifestCallback& callback) {
-  ManifestFetcher* fetcher = new ManifestFetcher(url);
-  std::unique_ptr<ManifestFetcher> autodeleter(fetcher);
-
-  // Start is called on fetcher which is also bound to the callback.
-  // A raw pointer is used instead of a scoped_ptr as base::Passes passes
-  // ownership and thus nulls the scoped_ptr. On MSVS this happens before
-  // the call to Start, resulting in a crash.
-  CHECK(view->MainFrame()->IsWebLocalFrame())
-      << "This function cannot be called if the main frame is not a "
-         "local frame.";
-  fetcher->Start(view->MainFrame()->ToWebLocalFrame(), false,
-                 base::Bind(&FetchManifestDoneCallback,
-                            base::Passed(&autodeleter), callback));
+void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
+  RenderFrameImpl::FromWebFrame(view->MainFrame())
+      ->GetManifestManager()
+      .RequestManifest(std::move(callback));
 }
 
 void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider) {

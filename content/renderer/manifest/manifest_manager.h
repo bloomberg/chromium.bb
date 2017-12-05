@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/manifest_observer.mojom.h"
 #include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -73,9 +72,6 @@ class ManifestManager : public RenderFrameObserver,
                                const std::string& data);
   void ResolveCallbacks(ResolveState state);
 
-  void ReportManifestChange();
-  mojom::ManifestUrlChangeObserver& GetManifestChangeObserver();
-
   std::unique_ptr<ManifestFetcher> fetcher_;
 
   // Whether the RenderFrame may have an associated Manifest. If true, the frame
@@ -96,13 +92,9 @@ class ManifestManager : public RenderFrameObserver,
   // Current Manifest debug information.
   blink::mojom::ManifestDebugInfoPtr manifest_debug_info_;
 
-  mojom::ManifestUrlChangeObserverAssociatedPtr manifest_change_observer_;
-
   std::vector<InternalRequestManifestCallback> pending_callbacks_;
 
   mojo::BindingSet<blink::mojom::ManifestManager> bindings_;
-
-  base::WeakPtrFactory<ManifestManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestManager);
 };

@@ -116,6 +116,7 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/weburlresponse_extradata_impl.h"
+#include "content/renderer/manifest/manifest_change_notifier.h"
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_ipc_factory.h"
@@ -1354,6 +1355,11 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #endif
 
   manifest_manager_ = std::make_unique<ManifestManager>(this);
+  if (IsMainFrame()) {
+    // Manages its own lifetime.
+    new ManifestChangeNotifier(this);
+  }
+
   memset(&peak_memory_metrics_, 0,
          sizeof(RenderThreadImpl::RendererMemoryMetrics));
 }
