@@ -212,5 +212,28 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/smbprovider/proto_bindings/directory_entry.pb.cc',
       ]
     },
+    {
+      'target_name': 'system_api-vm_concierge-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/vm_concierge',
+        'proto_out_dir': 'include/vm_concierge/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/service.proto',
+      ],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-vm_concierge-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-vm_concierge-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/vm_concierge/proto_bindings/service.pb.cc',
+      ]
+    },
   ]
 }

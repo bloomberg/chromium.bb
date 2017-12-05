@@ -1,0 +1,89 @@
+// Copyright 2017 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+// This file defines messages used for starting, stopping, and managing VMs.
+package vm_tools.concierge;
+
+// Specification of the key components of a VM.
+message VirtualMachineSpec {
+  // Path to the kernel that should be used for the VM.
+  string kernel = 1;
+
+  // Path to the disk image that should be used as the root file system for
+  // the VM.
+  string rootfs = 2;
+}
+
+// Describes any additional disk images that should be mounted inside the VM.
+message DiskImage {
+  // Path to the disk image on the host.
+  string path = 1;
+
+  // Path where this disk image will be mounted inside the VM.
+  string mount_point = 2;
+
+  // The file system type for this disk image.
+  string fstype = 3;
+
+  // Any special flags to be used when mounting the file system.  Specified the
+  // same way as in mount(2).
+  uint64 flags = 4;
+
+  // Any additional data associated with the mount.
+  string data = 5;
+
+  // If true, the disk image will be mounted writable.
+  bool writable = 6;
+}
+
+// Information that must be included with every StartVm dbus message.
+message StartVmRequest {
+  // The VM that should be started.
+  VirtualMachineSpec vm = 1;
+
+  // Any additional disks that should be mounted inside the VM.
+  repeated DiskImage disks = 2;
+
+  // Path to a shared directory that will be mounted via NFS inside the VM.
+  string shared_directory = 3;
+
+  // The human-readable name to be assigned to this VM.
+  string name = 4;
+}
+
+// Information sent back by vm_concierge in response to a StartVm dbus message.
+message StartVmResponse {
+  // If true, the VM was started successfully.  |ipv4_address|, |pid|, and
+  // |cid| will have non-default values only if this is true.
+  bool success = 1;
+
+  // The IPv4 address assigned to the VM, in network byte order.
+  fixed32 ipv4_address = 2;
+
+  // The process ID of the main crosvm process for the VM.
+  int32 pid = 3;
+
+  // The virtual socket context id assigned to the VM.
+  int64 cid = 4;
+
+  // If the VM failed to start, the reason for the failure.
+  string failure_reason = 5;
+}
+
+// Information that must be included with every StopVm dbus message.
+message StopVmRequest {
+  // The name of the VM to be stopped.
+  string name = 1;
+}
+
+// Response sent back by vm_concierge when it receives a StopVm dbus message.
+message StopVmResponse {
+  // If true, the requested VM was stopped.
+  bool success = 1;
+
+  // The failure_reason if the requested VM could not be stopped.
+  string failure_reason = 2;
+}
