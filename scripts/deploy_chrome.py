@@ -208,7 +208,7 @@ class DeployChrome(object):
       raise DeployFailure(msg)
 
   def _MountRootfsAsWritable(self, error_code_ok=True):
-    """Mount the rootfs as writable.
+    """Mounts the rootfs as writable.
 
     If the command fails, and error_code_ok is True, and the target dir is not
     writable then this function sets self._target_dir_is_still_readonly.
@@ -224,7 +224,16 @@ class DeployChrome(object):
         not self.device.IsDirWritable(self.options.target_dir)):
       self._target_dir_is_still_readonly.set()
 
+  def _EnsureTargetDir(self):
+    """Ensures that the target directory exists on the remote device."""
+    target_dir = self.options.target_dir
+    # Any valid /opt directory should already exist so avoid the remote call.
+    if os.path.commonprefix([target_dir, '/opt']) == '/opt':
+      return
+    self.device.RunCommand(['mkdir', '-p', '--mode', '0775', target_dir])
+
   def _GetDeviceInfo(self):
+    """Returns the disk space used and available for the target diectory."""
     steps = [
         functools.partial(self._GetRemoteDirSize, self.options.target_dir),
         functools.partial(self._GetRemoteMountFree, self.options.target_dir)
@@ -319,8 +328,8 @@ class DeployChrome(object):
     logging.info('Mounting Chrome...')
 
     # Create directory if does not exist
-    self.device.RunCommand('mkdir -p --mode 0775 %s' % (
-        self.options.mount_dir,))
+    self.device.RunCommand(['mkdir', '-p', '--mode', '0775',
+                            self.options.mount_dir])
     # Umount the existing mount on mount_dir if present first
     self.device.RunCommand(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
                            {'dir': self.options.mount_dir})
@@ -342,8 +351,12 @@ class DeployChrome(object):
       self._PrepareStagingDir()
       return 0
 
+    # Ensure that the target directory exists before running parallel steps.
+    self._EnsureTargetDir()
+
     # Run setup steps in parallel. If any step fails, RunParallelSteps will
     # stop printing output at that point, and halt any running steps.
+    logging.info('Preparing device')
     steps = [self._GetDeviceInfo, self._CheckConnection,
              self._KillProcsIfNeeded, self._MountRootfsAsWritable,
              self._PrepareStagingDir]
@@ -540,7 +553,7 @@ def _PostParseCheck(options):
     gn_env = os.getenv('GN_ARGS')
     if gn_env is not None:
       options.gn_args = gn_helpers.FromGNArgs(gn_env)
-      logging.info('GN_ARGS taken from environment: %s', options.gn_args)
+      logging.debug('GN_ARGS taken from environment: %s', options.gn_args)
 
   if not options.staging_flags:
     use_env = os.getenv('USE')
