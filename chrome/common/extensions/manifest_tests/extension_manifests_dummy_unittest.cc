@@ -18,4 +18,10 @@ TEST_F(ChromeManifestTest, UnrecognizedKeyWarning) {
                            "Unrecognized manifest key 'unrecognized_key_1'.");
 }
 
+// Tests that using the deprecated "plugins" key causes an install warning.
+TEST_F(ChromeManifestTest, DeprecatedPluginsKey) {
+  LoadAndExpectWarning("deprecated_plugins_key.json",
+                       "Unrecognized manifest key 'plugins'.");
+}
+
 }  // namespace extensions

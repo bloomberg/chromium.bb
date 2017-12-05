@@ -163,9 +163,6 @@
       <message name="IDS_EXTENSION_LOAD_OPTIONS_PAGE_FAILED" desc="">
         Could not load options page '<ph name="OPTIONS_PAGE">$1<ex>page.html</ex></ph>'.
       </message>
-      <message name="IDS_EXTENSION_LOAD_PLUGIN_PATH_FAILED" desc="">
-        Could not load '<ph name="PLUGIN_PATH">$1<ex>/path/to/file</ex></ph>' for plugin.
-      </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.
       </message>

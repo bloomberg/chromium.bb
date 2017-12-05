@@ -185,10 +185,6 @@
     "documentation": "declare_permissions",
     "example": ["tabs"]
   },
-  "plugins": {
-    "documentation": "npapi",
-    "example": []
-  },
   "requirements": {
     "documentation": "manifest/requirements",
     "example": {}

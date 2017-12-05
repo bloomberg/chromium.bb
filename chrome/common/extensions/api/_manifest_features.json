@@ -207,10 +207,6 @@
     "channel": "stable",
     "extension_types": "all"
   },
-  "plugins": {
-    "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "hosted_app"]
-  },
   "requirements": {
     "channel": "stable",
     "extension_types": [
