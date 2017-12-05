@@ -25,6 +25,8 @@ const char kMake[] = "Chrome";
 const char kModel[] = "Inktastic Laser Magic";
 const char kMakeAndModel[] = "Chrome Inktastic Laser Magic";
 
+const char kGUID[] = "{4d8faf22-303f-46c6-ab30-352d47d6a8b9}";
+
 // PpdReference test data
 const char kEffectiveMakeAndModel[] = "PrintBlaster LazerInker 2000";
 
@@ -146,6 +148,19 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterBlankModel) {
 
   EXPECT_EQ(kMake, printer->manufacturer());
   EXPECT_EQ(kMake, printer->make_and_model());
+}
+
+TEST(PrinterTranslatorTest, BulkPrinterJson) {
+  base::DictionaryValue preference;
+  preference.SetString("guid", kGUID);
+  preference.SetString("display_name", kName);
+  preference.SetString("uri", kUri);
+  preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
+
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
+  EXPECT_TRUE(printer);
+
+  EXPECT_EQ(kGUID, printer->id());
 }
 
 }  // namespace chromeos
