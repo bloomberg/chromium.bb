@@ -404,6 +404,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'EditableTextListbox', function() {
  */
 TEST_F('CvoxEventWatcherUnitTest', 'EditableTextListboxUpdatingInput',
     function() {
+  cvox.ChromeVoxEditableTextBase.shouldSpeakInsertions = true;
   this.loadHtml('<div>' +
       '<button id="before">Before</button>' +
       '<label for="input">Query</label>' +

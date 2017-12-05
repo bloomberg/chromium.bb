@@ -111,6 +111,7 @@ CvoxEditableTextUnitTest.prototype = {
     cvox.ChromeVoxEditableTextBase.useIBeamCursor = true;
     cvox.ChromeVox.typingEcho = cvox.TypingEcho.CHARACTER_AND_WORD;
     cvox.ChromeVoxEditableTextBase.eventTypingEcho = false;
+    cvox.ChromeVoxEditableTextBase.shouldSpeakInsertions = true;
     cvox.ChromeVox.braille = new TestBraille();
 
     /** Simple mock. */

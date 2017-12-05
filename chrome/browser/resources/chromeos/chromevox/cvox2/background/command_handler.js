@@ -576,19 +576,6 @@ CommandHandler.onCommand = function(command) {
       var target = ChromeVoxState.instance.currentRange_.start.node.root;
       output.withString(target.docUrl || '').go();
       return false;
-    case 'copy':
-      window.setTimeout(function() {
-        var textarea = document.createElement('textarea');
-        document.body.appendChild(textarea);
-        textarea.focus();
-        document.execCommand('paste');
-        var clipboardContent = textarea.value;
-        textarea.remove();
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg('copy', [clipboardContent]), cvox.QueueMode.FLUSH);
-        ChromeVoxState.instance.pageSel_ = null;
-      }, 20);
-      return true;
     case 'toggleSelection':
       if (!ChromeVoxState.instance.pageSel_) {
         ChromeVoxState.instance.pageSel_ = ChromeVoxState.instance.currentRange;

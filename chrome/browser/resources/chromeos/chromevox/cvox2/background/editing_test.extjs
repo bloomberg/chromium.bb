@@ -126,7 +126,6 @@ TEST_F('EditingTest', 'TextButNoSelectionChange', function() {
           .expectBraille('text1 ed', {startIndex: 0, endIndex: 0})
           .call(input.setSelection.bind(input, 5, 5))
           .expectBraille('text2 ed', {startIndex: 5, endIndex: 5})
-          .expectSpeech('text2');
 
       mockFeedback.replay();
     });
