@@ -1524,14 +1524,15 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   if (Is3d())
     non_gpu_buffer_count += context_->ExternallyAllocatedBufferCountPerPixel();
 
-  int multiplier = ColorParams().BytesPerPixel() * width() * height();
-  CheckedNumeric<intptr_t> checked_usage = 0;
+  int bytes_per_pixel = ColorParams().BytesPerPixel();
 
   // Re-computation of gpu memory usage is only carried out when there is a
   // a change from acceleration to non-accleration or vice versa.
   if (gpu_buffer_count && !gpu_memory_usage_) {
     // Switch from non-acceleration mode to acceleration mode
-    checked_usage += multiplier * gpu_buffer_count;
+    CheckedNumeric<intptr_t> checked_usage = gpu_buffer_count * bytes_per_pixel;
+    checked_usage *= width();
+    checked_usage *= height();
     intptr_t gpu_memory_usage =
         checked_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
 
@@ -1548,7 +1549,11 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 
   // Recomputation of externally memory usage computation is carried out
   // in all cases.
-  checked_usage += multiplier * non_gpu_buffer_count;
+  CheckedNumeric<intptr_t> checked_usage =
+      non_gpu_buffer_count * bytes_per_pixel;
+  checked_usage *= width();
+  checked_usage *= height();
+  checked_usage += gpu_memory_usage_;
   intptr_t externally_allocated_memory =
       checked_usage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
   // Subtracting two intptr_t that are known to be positive will never
