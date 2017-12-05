@@ -1494,6 +1494,30 @@ first (or left) member of the pair is to be used in matching. If this
 is between replacement brackets it must be the only item. This is also
 valid in the action part.
 
+The brace actions, @code{@{name} and @code{@}name}, refer to named
+groupings. A grouping is created with the @opcoderef{grouping} and
+contains exactly two characters which represent the opening character
+and the matching closing character for a character grouping. The first
+operand is the grouping name, the second is the two (opening and
+closing) characters, and the third is the two dot patterns separated
+by a comma.
+
+Let's say that you'd like to define the opening and closing
+parentheses via multipass rules, and that you'd like to use dots
+123478 for the opening parenthesis and dots 145678 for the closing
+parenthesis. One way to do so is like this:
+
+@example
+grouping parentheses () 123478,145678
+noback correct @{parentheses @{parentheses
+noback correct @}parentheses @}parentheses
+@end example
+
+The references within the test part of the multipass rule match
+against the characters (the second operand) of the grouping rule, and
+the references within the action part replace with the dot patterns
+(the third operand) of the grouping.
+
 @item  @} (right brace)
 Name: the name of a grouping pair. The right brace indicates that the
 second (or right) member is to be used in matching. See the remarks on

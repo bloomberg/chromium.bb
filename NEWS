@@ -8,6 +8,10 @@ issues]].
 ** Bug fixes
 ** Braille table improvements
 ** Other changes
+*** Improved documentation
+- Extend the documentation on multipass opcodes. Thanks to Dave Mielke
+  and Christian Egli.
+
 ** Deprecation notice
 ** Backwards incompatible changes
 ** New, renamed or removed tables
