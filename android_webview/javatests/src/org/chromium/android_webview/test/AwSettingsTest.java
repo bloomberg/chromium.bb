@@ -1829,7 +1829,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @RetryOnFailure
     public void testDatabaseEnabled() throws Throwable {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
