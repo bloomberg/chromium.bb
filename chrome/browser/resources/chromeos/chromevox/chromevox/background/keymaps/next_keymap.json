@@ -753,15 +753,6 @@
       }
     },
     {
-      "command": "copy",
-      "sequence": {
-        "keys": {
-          "keyCode": [67],
-          "ctrlKey": [true]
-        }
-      }
-    },
-    {
       "command": "previousRow",
       "sequence": {
         "cvoxModifier": true,

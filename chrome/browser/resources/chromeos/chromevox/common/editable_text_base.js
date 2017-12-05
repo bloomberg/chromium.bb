@@ -195,6 +195,13 @@ cvox.ChromeVoxEditableTextBase.eventTypingEcho = false;
 
 
 /**
+ * @type {boolean} Whether insertions (i.e. changes of greater than one
+ * character) should be spoken.
+ */
+cvox.ChromeVoxEditableTextBase.shouldSpeakInsertions = false;
+
+
+/**
  * The maximum number of characters that are short enough to speak in response
  * to an event. For example, if the user selects "Hello", we will speak
  * "Hello, selected", but if the user selects 1000 characters, we will speak
@@ -619,6 +626,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
   var triggeredByUser = evt.triggeredByUser;
 
   if (insertedLen > 1) {
+    if (!cvox.ChromeVoxEditableTextBase.shouldSpeakInsertions)
+      return;
     utterance = inserted;
   } else if (insertedLen == 1) {
     if ((cvox.ChromeVox.typingEcho == cvox.TypingEcho.WORD ||

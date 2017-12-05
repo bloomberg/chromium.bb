@@ -526,7 +526,7 @@ AutomationNodeImpl.prototype = {
   },
 
   setSelection: function(startIndex, endIndex) {
-    if (this.role == 'textField' || this.role == 'textBox') {
+    if (this.state.editable) {
       this.performAction_('setSelection',
                           { focusNodeID: this.id,
                             anchorOffset: startIndex,

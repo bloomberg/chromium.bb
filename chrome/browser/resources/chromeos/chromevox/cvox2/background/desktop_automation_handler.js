@@ -440,10 +440,13 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onValueChanged: function(evt) {
-    // Delegate to the edit text handler if this is an editable but not richly
-    // editable which gets handled in text and text selection changed events.
-    if (evt.target.state[StateType.EDITABLE] &&
-        !evt.target.state[StateType.RICHLY_EDITABLE]) {
+    // Skip all unfocused text fields.
+    if (!evt.target.state[StateType.FOCUSED] &&
+        evt.target.state[StateType.EDITABLE])
+      return;
+
+    // Delegate to the edit text handler if this is an editable.
+    if (evt.target.state[StateType.EDITABLE]) {
       this.onEditableChanged_(evt);
       return;
     }

@@ -159,6 +159,13 @@ Background = function() {
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       this.onAccessibilityGesture_);
 
+  document.addEventListener('copy', this.onClipboardEvent_);
+  document.addEventListener('cut', this.onClipboardEvent_);
+  document.addEventListener('paste', this.onClipboardEvent_);
+
+  /** @private {boolean} */
+  this.preventPasteOutput_ = false;
+
   /**
    * Maps a non-desktop root automation node to a range position suitable for
    *     restoration.
@@ -732,6 +739,42 @@ Background.prototype = {
     var msg = {'message': 'USER_COMMAND', 'command': command};
     cvox.ExtensionBridge.send(msg);
     return true;
+  },
+
+  /**
+   * Detects various clipboard events and provides spoken output.
+   *
+   * Note that paste is explicitly skipped sometimes because during a copy or
+   * cut, the copied or cut text is retrieved by pasting into a fake text
+   * area. To prevent this from triggering paste output, this staste is tracked
+   * via a field.
+   * @param {!Event} evt
+   * @private
+   */
+  onClipboardEvent_: function(evt) {
+    var text = '';
+    if (evt.type == 'paste') {
+      if (this.preventPasteOutput_) {
+        this.preventPasteOutput_ = false;
+        return;
+      }
+      text = evt.clipboardData.getData('text');
+      cvox.ChromeVox.tts.speak(
+          Msgs.getMsg(evt.type, [text]), cvox.QueueMode.QUEUE);
+    } else if (evt.type == 'copy' || evt.type == 'cut') {
+      window.setTimeout(function() {
+        this.preventPasteOutput_ = true;
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        textarea.focus();
+        document.execCommand('paste');
+        var clipboardContent = textarea.value;
+        textarea.remove();
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg(evt.type, [clipboardContent]), cvox.QueueMode.FLUSH);
+        ChromeVoxState.instance.pageSel_ = null;
+      }.bind(this), 20);
+    }
   },
 
   /** @private */
