@@ -80,9 +80,10 @@ class ServiceWorkerHandleTest : public testing::Test {
     dispatcher_host_->Init(helper_->context_wrapper());
 
     const GURL pattern("http://www.example.com/");
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = pattern;
     registration_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(pattern), 1L,
-        helper_->context()->AsWeakPtr());
+        options, 1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
         GURL("http://www.example.com/service_worker.js"),

@@ -27,9 +27,10 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
 
   void AddObserver(ServiceWorkerContextObserver* observer) override;
   void RemoveObserver(ServiceWorkerContextObserver* observer) override;
-  void RegisterServiceWorker(const GURL& pattern,
-                             const GURL& script_url,
-                             ResultCallback callback) override;
+  void RegisterServiceWorker(
+      const GURL& script_url,
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      ResultCallback callback) override;
   void UnregisterServiceWorker(const GURL& pattern,
                                ResultCallback callback) override;
   bool StartingExternalRequest(int64_t service_worker_version_id,

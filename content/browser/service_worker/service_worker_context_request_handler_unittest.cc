@@ -67,9 +67,11 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
     scope_ = GURL("https://host/scope/");
     script_url_ = GURL("https://host/script.js");
     import_script_url_ = GURL("https://host/import.js");
-    registration_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(scope_), 1L,
-        context()->AsWeakPtr());
+
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope_;
+    registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
+        options, 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
                                         context()->storage()->NewVersionId(),
                                         context()->AsWeakPtr());

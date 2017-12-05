@@ -162,11 +162,10 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   void CreateServiceWorkerRegistration() {
     bool called = false;
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = GURL(kServiceWorkerPattern);
     embedded_worker_helper_->context()->RegisterServiceWorker(
-        GURL(kServiceWorkerScript),
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL(kServiceWorkerPattern)),
-        nullptr,
+        GURL(kServiceWorkerScript), options, nullptr,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &RegisterServiceWorkerCallback, &called, &sw_registration_id_)));
     base::RunLoop().RunUntilIdle();

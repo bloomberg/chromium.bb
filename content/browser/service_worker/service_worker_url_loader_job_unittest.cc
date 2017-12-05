@@ -493,10 +493,11 @@ class ServiceWorkerURLLoaderJobTest
     // Create an active service worker.
     storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
-    registration_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL("https://example.com/")),
-        storage()->NewRegistrationId(), helper_->context()->AsWeakPtr());
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = GURL("https://example.com/");
+    registration_ =
+        new ServiceWorkerRegistration(options, storage()->NewRegistrationId(),
+                                      helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"),
         storage()->NewVersionId(), helper_->context()->AsWeakPtr());

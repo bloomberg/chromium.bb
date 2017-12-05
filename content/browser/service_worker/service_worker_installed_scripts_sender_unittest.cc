@@ -176,9 +176,10 @@ class ServiceWorkerInstalledScriptsSenderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     pattern_ = GURL("http://www.example.com/test/");
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = pattern_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        blink::mojom::ServiceWorkerRegistrationOptions(pattern_), 1L,
-        context()->AsWeakPtr());
+        options, 1L, context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
         registration_.get(),
         GURL("http://www.example.com/test/service_worker.js"),

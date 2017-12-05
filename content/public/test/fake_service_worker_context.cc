@@ -20,9 +20,10 @@ void FakeServiceWorkerContext::RemoveObserver(
     ServiceWorkerContextObserver* observer) {
   NOTREACHED();
 }
-void FakeServiceWorkerContext::RegisterServiceWorker(const GURL& pattern,
-                                                     const GURL& script_url,
-                                                     ResultCallback callback) {
+void FakeServiceWorkerContext::RegisterServiceWorker(
+    const GURL& script_url,
+    const blink::mojom::ServiceWorkerRegistrationOptions& options,
+    ResultCallback callback) {
   NOTREACHED();
 }
 void FakeServiceWorkerContext::UnregisterServiceWorker(

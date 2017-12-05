@@ -132,6 +132,7 @@ class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
   void RegisterServiceWorker(
       const WebURL& pattern,
       const WebURL& script_url,
+      mojom::ServiceWorkerUpdateViaCache update_via_cache,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
       override {
     ADD_FAILURE()
@@ -305,11 +306,13 @@ class StubWebServiceWorkerProvider {
     void RegisterServiceWorker(
         const WebURL& pattern,
         const WebURL& script_url,
+        mojom::ServiceWorkerUpdateViaCache update_via_cache,
         std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
         override {
       owner_.register_call_count_++;
       owner_.register_scope_ = pattern;
       owner_.register_script_url_ = script_url;
+      owner_.update_via_cache_ = update_via_cache;
       registration_callbacks_to_delete_.push_back(std::move(callbacks));
     }
 
@@ -390,6 +393,34 @@ TEST_F(ServiceWorkerContainerTest,
     EXPECT_EQ(WebURL(KURL(NullURL(), "http://localhost/x/index.html")),
               stub_provider.GetRegistrationURL());
     EXPECT_EQ(mojom::ServiceWorkerUpdateViaCache::kImports,
+              stub_provider.UpdateViaCache());
+  }
+}
+
+TEST_F(ServiceWorkerContainerTest,
+       RegisterUnregister_UpdateViaCacheOptionDelegatesToProvider) {
+  SetPageURL("http://localhost/x/index.html");
+
+  StubWebServiceWorkerProvider stub_provider;
+  Provide(stub_provider.Provider());
+
+  ServiceWorkerContainer* container = ServiceWorkerContainer::Create(
+      GetExecutionContext(), GetNavigatorServiceWorker());
+
+  // register
+  {
+    ScriptState::Scope script_scope(GetScriptState());
+    RegistrationOptions options;
+    options.setUpdateViaCache("none");
+    container->registerServiceWorker(GetScriptState(), "/x/y/worker.js",
+                                     options);
+
+    EXPECT_EQ(1ul, stub_provider.RegisterCallCount());
+    EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")),
+              stub_provider.RegisterScope());
+    EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/worker.js")),
+              stub_provider.RegisterScriptURL());
+    EXPECT_EQ(mojom::ServiceWorkerUpdateViaCache::kNone,
               stub_provider.UpdateViaCache());
   }
 }

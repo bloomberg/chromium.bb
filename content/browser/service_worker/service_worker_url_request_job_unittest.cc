@@ -224,10 +224,10 @@ class ServiceWorkerURLRequestJobTest
     http_info->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
 
     // Create a registration and service worker version.
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = GURL("https://example.com/");
     registration_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL("https://example.com/")),
-        1L, helper_->context()->AsWeakPtr());
+        options, 1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());

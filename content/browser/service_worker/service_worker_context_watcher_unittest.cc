@@ -141,10 +141,11 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
     return helper_->context_wrapper();
   }
   int64_t RegisterServiceWorker(const GURL& scope, const GURL& script_url) {
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope;
     int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
     context()->RegisterServiceWorker(
-        script_url, blink::mojom::ServiceWorkerRegistrationOptions(scope),
-        nullptr /* provider_host */,
+        script_url, options, nullptr /* provider_host */,
         base::Bind(&DidRegisterServiceWorker, &registration_id));
     base::RunLoop().RunUntilIdle();
     return registration_id;

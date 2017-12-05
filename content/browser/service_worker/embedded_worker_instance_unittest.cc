@@ -171,9 +171,11 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
       loop.Run();
     }
     RegistrationAndVersionPair pair;
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope;
     pair.first = base::MakeRefCounted<ServiceWorkerRegistration>(
-        blink::mojom::ServiceWorkerRegistrationOptions(scope),
-        context()->storage()->NewRegistrationId(), context()->AsWeakPtr());
+        options, context()->storage()->NewRegistrationId(),
+        context()->AsWeakPtr());
     pair.second = base::MakeRefCounted<ServiceWorkerVersion>(
         pair.first.get(), script_url, context()->storage()->NewVersionId(),
         context()->AsWeakPtr());

@@ -178,9 +178,10 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    registration_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(scope), 1L,
-        context()->AsWeakPtr());
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope;
+    registration_ =
+        new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), script_url, 1L,
                                         context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;

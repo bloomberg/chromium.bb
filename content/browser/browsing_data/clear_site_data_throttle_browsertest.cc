@@ -251,11 +251,13 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     GURL js_url = https_server()->GetURL(origin, "/?file=worker.js");
 
     // Register the worker.
+    blink::mojom::ServiceWorkerRegistrationOptions options(
+        scope_url, blink::mojom::ServiceWorkerUpdateViaCache::kImports);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &ServiceWorkerContextWrapper::RegisterServiceWorker,
-            base::Unretained(service_worker_context), scope_url, js_url,
+            base::Unretained(service_worker_context), js_url, options,
             base::Bind(
                 &ClearSiteDataThrottleBrowserTest::AddServiceWorkerCallback,
                 base::Unretained(this))));

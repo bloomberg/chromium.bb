@@ -79,18 +79,21 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
     context_ = helper_->context();
     script_url_ = GURL("https://www.example.com/service_worker.js");
-    registration1_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL("https://www.example.com/")),
-        1L, context_->AsWeakPtr());
-    registration2_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL("https://www.example.com/example")),
-        2L, context_->AsWeakPtr());
-    registration3_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL("https://other.example.com/")),
-        3L, context_->AsWeakPtr());
+
+    blink::mojom::ServiceWorkerRegistrationOptions options1;
+    options1.scope = GURL("https://www.example.com/");
+    registration1_ =
+        new ServiceWorkerRegistration(options1, 1L, context_->AsWeakPtr());
+
+    blink::mojom::ServiceWorkerRegistrationOptions options2;
+    options2.scope = GURL("https://www.example.com/example");
+    registration2_ =
+        new ServiceWorkerRegistration(options2, 2L, context_->AsWeakPtr());
+
+    blink::mojom::ServiceWorkerRegistrationOptions options3;
+    options3.scope = GURL("https://other.example.com/");
+    registration3_ =
+        new ServiceWorkerRegistration(options3, 3L, context_->AsWeakPtr());
   }
 
   void TearDown() override {
@@ -141,7 +144,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       GURL worker_url) {
     blink::mojom::ServiceWorkerErrorType error =
         blink::mojom::ServiceWorkerErrorType::kUnknown;
-    auto options = blink::mojom::ServiceWorkerRegistrationOptions::New(pattern);
+    auto options = blink::mojom::ServiceWorkerRegistrationOptions::New();
+    options->scope = pattern;
     container_host->Register(
         worker_url, std::move(options),
         base::BindOnce([](blink::mojom::ServiceWorkerErrorType* out_error,
@@ -392,8 +396,8 @@ TEST_F(ServiceWorkerProviderHostTest, CrossSiteTransfer) {
 
   // Create a mock registration before creating the provider host which is in
   // the scope.
-  blink::mojom::ServiceWorkerRegistrationOptions options(
-      GURL("https://cross.example.com/"));
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = GURL("https://cross.example.com/");
   scoped_refptr<MockServiceWorkerRegistration> registration =
       new MockServiceWorkerRegistration(options, 4L,
                                         helper_->context()->AsWeakPtr());
