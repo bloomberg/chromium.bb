@@ -163,24 +163,6 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferMemoryTracker);
 };
 
-// FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
-// url_hash matches.
-void FastSetActiveURL(const GURL& url, size_t url_hash, GpuChannel* channel) {
-  // Leave the previously set URL in the empty case -- empty URLs are given by
-  // BlinkPlatformImpl::createOffscreenGraphicsContext3DProvider. Hopefully the
-  // onscreen context URL was set previously and will show up even when a crash
-  // occurs during offscreen command processing.
-  if (url.is_empty())
-    return;
-  static size_t g_last_url_hash = 0;
-  if (url_hash != g_last_url_hash) {
-    g_last_url_hash = url_hash;
-    DCHECK(channel && channel->gpu_channel_manager() &&
-           channel->gpu_channel_manager()->delegate());
-    channel->gpu_channel_manager()->delegate()->SetActiveURL(url);
-  }
-}
-
 // The first time polling a fence, delay some extra time to allow other
 // stubs to process some work, or else the timing of the fences could
 // allow a pattern of alternating fast and slow frames to occur.
@@ -218,6 +200,28 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
 
 }  // namespace
 
+// FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
+// url_hash matches.
+//
+// static
+void CommandBufferStub::FastSetActiveURL(const GURL& url,
+                                         size_t url_hash,
+                                         GpuChannel* channel) {
+  // Leave the previously set URL in the empty case -- empty URLs are given by
+  // BlinkPlatformImpl::createOffscreenGraphicsContext3DProvider. Hopefully the
+  // onscreen context URL was set previously and will show up even when a crash
+  // occurs during offscreen command processing.
+  if (url.is_empty())
+    return;
+  static size_t g_last_url_hash = 0;
+  if (url_hash != g_last_url_hash) {
+    g_last_url_hash = url_hash;
+    DCHECK(channel && channel->gpu_channel_manager() &&
+           channel->gpu_channel_manager()->delegate());
+    channel->gpu_channel_manager()->delegate()->SetActiveURL(url);
+  }
+}
+
 CommandBufferStub::CommandBufferStub(
     GpuChannel* channel,
     const GPUCreateCommandBufferConfig& init_params,
@@ -226,6 +230,8 @@ CommandBufferStub::CommandBufferStub(
     int32_t stream_id,
     int32_t route_id)
     : channel_(channel),
+      active_url_(init_params.active_url),
+      active_url_hash_(base::Hash(active_url_.possibly_invalid_spec())),
       initialized_(false),
       surface_handle_(init_params.surface_handle),
       use_virtualized_gl_context_(false),
@@ -236,8 +242,6 @@ CommandBufferStub::CommandBufferStub(
       last_flush_id_(0),
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
-      active_url_(init_params.active_url),
-      active_url_hash_(base::Hash(active_url_.possibly_invalid_spec())),
       wait_set_get_buffer_count_(0) {}
 
 CommandBufferStub::~CommandBufferStub() {
@@ -316,54 +320,6 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 
 bool CommandBufferStub::Send(IPC::Message* message) {
   return channel_->Send(message);
-}
-
-#if defined(OS_WIN)
-void CommandBufferStub::DidCreateAcceleratedSurfaceChildWindow(
-    SurfaceHandle parent_window,
-    SurfaceHandle child_window) {
-  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
-  gpu_channel_manager->delegate()->SendAcceleratedSurfaceCreatedChildWindow(
-      parent_window, child_window);
-}
-#endif
-
-void CommandBufferStub::DidSwapBuffersComplete(
-    SwapBuffersCompleteParams params) {
-  Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, params));
-}
-
-const gles2::FeatureInfo* CommandBufferStub::GetFeatureInfo() const {
-  return context_group_->feature_info();
-}
-
-const GpuPreferences& CommandBufferStub::GetGpuPreferences() const {
-  return context_group_->gpu_preferences();
-}
-
-void CommandBufferStub::SetSnapshotRequestedCallback(
-    const base::Closure& callback) {
-  snapshot_requested_callback_ = callback;
-}
-
-void CommandBufferStub::UpdateVSyncParameters(base::TimeTicks timebase,
-                                              base::TimeDelta interval) {
-  Send(new GpuCommandBufferMsg_UpdateVSyncParameters(route_id_, timebase,
-                                                     interval));
-}
-
-void CommandBufferStub::BufferPresented(
-    uint64_t swap_id,
-    const gfx::PresentationFeedback& feedback) {
-  Send(new GpuCommandBufferMsg_BufferPresented(route_id_, swap_id, feedback));
-}
-
-void CommandBufferStub::AddFilter(IPC::MessageFilter* message_filter) {
-  return channel_->AddFilter(message_filter);
-}
-
-int32_t CommandBufferStub::GetRouteID() const {
-  return route_id_;
 }
 
 bool CommandBufferStub::IsScheduled() {
@@ -537,308 +493,6 @@ void CommandBufferStub::Destroy() {
   command_buffer_.reset();
 }
 
-gpu::ContextResult CommandBufferStub::Initialize(
-    CommandBufferStub* share_command_buffer_stub,
-    const GPUCreateCommandBufferConfig& init_params,
-    std::unique_ptr<base::SharedMemory> shared_state_shm) {
-#if defined(OS_FUCHSIA)
-  // TODO(crbug.com/707031): Implement this.
-  NOTIMPLEMENTED();
-  LOG(ERROR) << "ContextResult::kFatalFailure: no fuchsia support";
-  return gpu::ContextResult::kFatalFailure;
-#else
-  TRACE_EVENT0("gpu", "CommandBufferStub::Initialize");
-  FastSetActiveURL(active_url_, active_url_hash_, channel_);
-
-  GpuChannelManager* manager = channel_->gpu_channel_manager();
-  DCHECK(manager);
-
-  if (share_command_buffer_stub) {
-    context_group_ = share_command_buffer_stub->context_group_;
-    DCHECK(context_group_->bind_generates_resource() ==
-           init_params.attribs.bind_generates_resource);
-  } else {
-    scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(manager->gpu_driver_bug_workarounds());
-    gpu::GpuMemoryBufferFactory* gmb_factory =
-        manager->gpu_memory_buffer_factory();
-    context_group_ = new gles2::ContextGroup(
-        manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
-        manager->mailbox_manager(),
-        new GpuCommandBufferMemoryTracker(
-            channel_, command_buffer_id_.GetUnsafeValue(),
-            init_params.attribs.context_type, channel_->task_runner()),
-        manager->shader_translator_cache(),
-        manager->framebuffer_completeness_cache(), feature_info,
-        init_params.attribs.bind_generates_resource, channel_->image_manager(),
-        gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-        manager->watchdog() /* progress_reporter */,
-        manager->gpu_feature_info(), manager->discardable_manager());
-  }
-
-#if defined(OS_MACOSX)
-  // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
-  // performance regressions when enabling FCM.
-  // http://crbug.com/180463
-  if (init_params.attribs.gpu_preference == gl::PreferIntegratedGpu)
-    use_virtualized_gl_context_ = true;
-#endif
-
-  use_virtualized_gl_context_ |=
-      context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
-
-  // MailboxManagerSync synchronization correctness currently depends on having
-  // only a single context. See crbug.com/510243 for details.
-  use_virtualized_gl_context_ |= manager->mailbox_manager()->UsesSync();
-
-  bool offscreen = (surface_handle_ == kNullSurfaceHandle);
-  gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
-  if (!default_surface) {
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "Failed to create default offscreen surface.";
-    return gpu::ContextResult::kFatalFailure;
-  }
-  // On low-spec Android devices, the default offscreen surface is
-  // RGB565, but WebGL rendering contexts still ask for RGBA8888 mode.
-  // That combination works for offscreen rendering, we can still use
-  // a virtualized context with the RGB565 backing surface since we're
-  // not drawing to that. Explicitly set that as the desired surface
-  // format to ensure it's treated as compatible where applicable.
-  gl::GLSurfaceFormat surface_format =
-      offscreen ? default_surface->GetFormat() : gl::GLSurfaceFormat();
-#if defined(OS_ANDROID)
-  if (init_params.attribs.red_size <= 5 &&
-      init_params.attribs.green_size <= 6 &&
-      init_params.attribs.blue_size <= 5 &&
-      init_params.attribs.alpha_size == 0) {
-    // We hit this code path when creating the onscreen render context
-    // used for compositing on low-end Android devices.
-    //
-    // TODO(klausw): explicitly copy rgba sizes? Currently the formats
-    // supported are only RGB565 and default (RGBA8888).
-    surface_format.SetRGB565();
-    DVLOG(1) << __FUNCTION__ << ": Choosing RGB565 mode.";
-  }
-
-  // We can only use virtualized contexts for onscreen command buffers if their
-  // config is compatible with the offscreen ones - otherwise MakeCurrent fails.
-  // Example use case is a client requesting an onscreen RGBA8888 buffer for
-  // fullscreen video on a low-spec device with RGB565 default format.
-  if (!surface_format.IsCompatible(default_surface->GetFormat()) && !offscreen)
-    use_virtualized_gl_context_ = false;
-#endif
-
-  command_buffer_ = std::make_unique<CommandBufferService>(
-      this, context_group_->transfer_buffer_manager());
-  decoder_.reset(gles2::GLES2Decoder::Create(
-      this, command_buffer_.get(), manager->outputter(), context_group_.get()));
-
-  sync_point_client_state_ =
-      channel_->sync_point_manager()->CreateSyncPointClientState(
-          CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
-
-  if (offscreen) {
-    // Do we want to create an offscreen rendering context suitable
-    // for directly drawing to a separately supplied surface? In that
-    // case, we must ensure that the surface used for context creation
-    // is compatible with the requested attributes. This is explicitly
-    // opt-in since some context such as for NaCl request custom
-    // attributes but don't expect to get their own surface, and not
-    // all surface factories support custom formats.
-    if (init_params.attribs.own_offscreen_surface) {
-      if (init_params.attribs.depth_size > 0) {
-        surface_format.SetDepthBits(init_params.attribs.depth_size);
-      }
-      if (init_params.attribs.samples > 0) {
-        surface_format.SetSamples(init_params.attribs.samples);
-      }
-      if (init_params.attribs.stencil_size > 0) {
-        surface_format.SetStencilBits(init_params.attribs.stencil_size);
-      }
-      // Currently, we can't separately control alpha channel for surfaces,
-      // it's generally enabled by default except for RGB565 and (on desktop)
-      // smaller-than-32bit formats.
-      //
-      // TODO(klausw): use init_params.attribs.alpha_size here if possible.
-    }
-    if (!surface_format.IsCompatible(default_surface->GetFormat())) {
-      DVLOG(1) << __FUNCTION__ << ": Hit the OwnOffscreenSurface path";
-      use_virtualized_gl_context_ = false;
-      surface_ = gl::init::CreateOffscreenGLSurfaceWithFormat(gfx::Size(),
-                                                              surface_format);
-      if (!surface_) {
-        LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
-        return gpu::ContextResult::kFatalFailure;
-      }
-    } else {
-      surface_ = default_surface;
-    }
-  } else {
-    switch (init_params.attribs.color_space) {
-      case gles2::COLOR_SPACE_UNSPECIFIED:
-        surface_format.SetColorSpace(
-            gl::GLSurfaceFormat::COLOR_SPACE_UNSPECIFIED);
-        break;
-      case gles2::COLOR_SPACE_SRGB:
-        surface_format.SetColorSpace(gl::GLSurfaceFormat::COLOR_SPACE_SRGB);
-        break;
-      case gles2::COLOR_SPACE_DISPLAY_P3:
-        surface_format.SetColorSpace(
-            gl::GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3);
-        break;
-    }
-    surface_ = ImageTransportSurface::CreateNativeSurface(
-        AsWeakPtr(), surface_handle_, surface_format);
-    if (!surface_ || !surface_->Initialize(surface_format)) {
-      surface_ = nullptr;
-      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
-      return gpu::ContextResult::kFatalFailure;
-    }
-    if (init_params.attribs.enable_swap_timestamps_if_supported &&
-        surface_->SupportsSwapTimestamps())
-      surface_->SetEnableSwapTimestamps();
-  }
-
-  if (context_group_->use_passthrough_cmd_decoder()) {
-    // When using the passthrough command decoder, only share with other
-    // contexts in the explicitly requested share group
-    if (share_command_buffer_stub) {
-      share_group_ = share_command_buffer_stub->share_group_;
-    } else {
-      share_group_ = new gl::GLShareGroup();
-    }
-  } else {
-    // When using the validating command decoder, always use the global share
-    // group
-    share_group_ = channel_->share_group();
-  }
-
-  // TODO(sunnyps): Should this use ScopedCrashKey instead?
-  base::debug::SetCrashKeyValue(crash_keys::kGPUGLContextIsVirtual,
-                                use_virtualized_gl_context_ ? "1" : "0");
-
-  scoped_refptr<gl::GLContext> context;
-  if (use_virtualized_gl_context_ && share_group_) {
-    context = share_group_->GetSharedContext(surface_.get());
-    if (!context) {
-      context = gl::init::CreateGLContext(
-          share_group_.get(), surface_.get(),
-          GenerateGLContextAttribs(init_params.attribs, context_group_.get()));
-      if (!context) {
-        // TODO(piman): This might not be fatal, we could recurse into
-        // CreateGLContext to get more info, tho it should be exceedingly
-        // rare and may not be recoverable anyway.
-        LOG(ERROR) << "ContextResult::kFatalFailure: "
-                      "Failed to create shared context for virtualization.";
-        return gpu::ContextResult::kFatalFailure;
-      }
-      // Ensure that context creation did not lose track of the intended share
-      // group.
-      DCHECK(context->share_group() == share_group_.get());
-      share_group_->SetSharedContext(surface_.get(), context.get());
-
-      // This needs to be called against the real shared context, not the
-      // virtual context created below.
-      manager->gpu_feature_info().ApplyToGLContext(context.get());
-    }
-    // This should be either:
-    // (1) a non-virtual GL context, or
-    // (2) a mock/stub context.
-    DCHECK(context->GetHandle() ||
-           gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
-           gl::GetGLImplementation() == gl::kGLImplementationStubGL);
-    context = base::MakeRefCounted<GLContextVirtual>(
-        share_group_.get(), context.get(), decoder_->AsWeakPtr());
-    if (!context->Initialize(surface_.get(),
-                             GenerateGLContextAttribs(init_params.attribs,
-                                                      context_group_.get()))) {
-      // The real context created above for the default offscreen surface
-      // might not be compatible with this surface.
-      context = nullptr;
-      // TODO(piman): This might not be fatal, we could recurse into
-      // CreateGLContext to get more info, tho it should be exceedingly
-      // rare and may not be recoverable anyway.
-      LOG(ERROR) << "ContextResult::kFatalFailure: "
-                    "Failed to initialize virtual GL context.";
-      return gpu::ContextResult::kFatalFailure;
-    }
-  } else {
-    context = gl::init::CreateGLContext(
-        share_group_.get(), surface_.get(),
-        GenerateGLContextAttribs(init_params.attribs, context_group_.get()));
-    if (!context) {
-      // TODO(piman): This might not be fatal, we could recurse into
-      // CreateGLContext to get more info, tho it should be exceedingly
-      // rare and may not be recoverable anyway.
-      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create context.";
-      return gpu::ContextResult::kFatalFailure;
-    }
-
-    manager->gpu_feature_info().ApplyToGLContext(context.get());
-  }
-
-  if (!context->MakeCurrent(surface_.get())) {
-    LOG(ERROR) << "ContextResult::kTransientFailure: "
-                  "Failed to make context current.";
-    return gpu::ContextResult::kTransientFailure;
-  }
-
-  if (!context->GetGLStateRestorer()) {
-    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder_->AsWeakPtr()));
-  }
-
-  if (!context_group_->has_program_cache() &&
-      !context_group_->feature_info()->workarounds().disable_program_cache) {
-    context_group_->set_program_cache(manager->program_cache());
-  }
-
-  // Initialize the decoder with either the view or pbuffer GLContext.
-  auto result = decoder_->Initialize(surface_, context, offscreen,
-                                     gpu::gles2::DisallowedFeatures(),
-                                     init_params.attribs);
-  if (result != gpu::ContextResult::kSuccess) {
-    DLOG(ERROR) << "Failed to initialize decoder.";
-    return result;
-  }
-
-  if (manager->gpu_preferences().enable_gpu_service_logging) {
-    decoder_->set_log_commands(true);
-  }
-
-  const size_t kSharedStateSize = sizeof(CommandBufferSharedState);
-  if (!shared_state_shm->Map(kSharedStateSize)) {
-    LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "Failed to map shared state buffer.";
-    return gpu::ContextResult::kFatalFailure;
-  }
-  command_buffer_->SetSharedStateBuffer(MakeBackingFromSharedMemory(
-      std::move(shared_state_shm), kSharedStateSize));
-
-  if (offscreen && !active_url_.is_empty())
-    manager->delegate()->DidCreateOffscreenContext(active_url_);
-
-  if (use_virtualized_gl_context_) {
-    // If virtualized GL contexts are in use, then real GL context state
-    // is in an indeterminate state, since the GLStateRestorer was not
-    // initialized at the time the GLContextVirtual was made current. In
-    // the case that this command decoder is the next one to be
-    // processed, force a "full virtual" MakeCurrent to be performed.
-    // Note that GpuChannel's initialization of the gpu::Capabilities
-    // expects the context to be left current.
-    context->ForceReleaseVirtuallyCurrent();
-    if (!context->MakeCurrent(surface_.get())) {
-      LOG(ERROR) << "ContextResult::kTransientFailure: "
-                    "Failed to make context current after initialization.";
-      return gpu::ContextResult::kTransientFailure;
-    }
-  }
-
-  manager->delegate()->DidCreateContextSuccessfully();
-  initialized_ = true;
-  return gpu::ContextResult::kSuccess;
-#endif  // defined(OS_FUCHSIA)
-}
-
 void CommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,
                                               int32_t stream_id,
                                               bool* succeeded) {
@@ -972,7 +626,6 @@ void CommandBufferStub::OnAsyncFlush(int32_t put_offset,
   TRACE_EVENT1("gpu", "CommandBufferStub::OnAsyncFlush", "put_offset",
                put_offset);
   DCHECK(command_buffer_);
-
   // We received this message out-of-order. This should not happen but is here
   // to catch regressions. Ignore the message.
   DVLOG_IF(0, flush_id - last_flush_id_ >= 0x8000000U)
@@ -1200,6 +853,13 @@ void CommandBufferStub::AddDestructionObserver(DestructionObserver* observer) {
 void CommandBufferStub::RemoveDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.RemoveObserver(observer);
+}
+
+gles2::MemoryTracker* CommandBufferStub::CreateMemoryTracker(
+    const GPUCreateCommandBufferConfig init_params) const {
+  return new GpuCommandBufferMemoryTracker(
+      channel_, command_buffer_id_.GetUnsafeValue(),
+      init_params.attribs.context_type, channel_->task_runner());
 }
 
 gles2::MemoryTracker* CommandBufferStub::GetMemoryTracker() const {

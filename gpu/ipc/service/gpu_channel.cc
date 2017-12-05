@@ -37,9 +37,11 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/raster_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
@@ -440,7 +442,7 @@ CommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
 bool GpuChannel::HasActiveWebGLContext() const {
   for (auto& kv : stubs_) {
     gles2::ContextType context_type =
-        kv.second->GetFeatureInfo()->context_type();
+        kv.second->context_group()->feature_info()->context_type();
     if (context_type == gles2::CONTEXT_TYPE_WEBGL1 ||
         context_type == gles2::CONTEXT_TYPE_WEBGL2) {
       return true;
@@ -617,12 +619,16 @@ void GpuChannel::OnCreateCommandBuffer(
     stream_sequences_[stream_id] = sequence_id;
   }
 
-  DVLOG(1) << "Should use raster decoder: "
-           << (gpu_channel_manager_->gpu_preferences().enable_raster_decoder &&
-               init_params.attribs.enable_oop_rasterization);
+  std::unique_ptr<CommandBufferStub> stub;
+  if (gpu_channel_manager_->gpu_preferences().enable_raster_decoder &&
+      init_params.attribs.enable_oop_rasterization) {
+    stub = std::make_unique<RasterCommandBufferStub>(
+        this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
+  } else {
+    stub = std::make_unique<GLES2CommandBufferStub>(
+        this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
+  }
 
-  auto stub = std::make_unique<CommandBufferStub>(
-      this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   auto stub_result =
       stub->Initialize(share_group, init_params, std::move(shared_state_shm));
   if (stub_result != gpu::ContextResult::kSuccess) {
