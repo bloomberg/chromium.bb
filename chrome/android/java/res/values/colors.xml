@@ -206,5 +206,6 @@
     <color name="modern_toolbar_bg">@color/white_alpha_90</color>
     <color name="google_blue_500_alpha_38_opaque">#B7D1FB</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
+    <color name="bottom_system_nav_color">@android:color/white</color>
 
 </resources>
