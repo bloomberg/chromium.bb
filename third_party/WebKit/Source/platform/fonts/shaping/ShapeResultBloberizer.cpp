@@ -32,12 +32,11 @@ void ShapeResultBloberizer::CommitPendingRun() {
   if (pending_glyphs_.IsEmpty())
     return;
 
-  const auto pending_rotation = GetBlobRotation(pending_canvas_rotation_);
-  if (pending_rotation != builder_rotation_) {
+  if (pending_canvas_rotation_ != builder_rotation_) {
     // The pending run rotation doesn't match the current blob; start a new
     // blob.
     CommitPendingBlob();
-    builder_rotation_ = pending_rotation;
+    builder_rotation_ = pending_canvas_rotation_;
   }
 
   PaintFont run_font;
@@ -73,15 +72,6 @@ const ShapeResultBloberizer::BlobBuffer& ShapeResultBloberizer::Blobs() {
   DCHECK_EQ(builder_run_count_, 0u);
 
   return blobs_;
-}
-
-// TODO(drott) crbug.com/788725: Try to merge BlobRotation and
-// CanvasRotationInVertical.
-ShapeResultBloberizer::BlobRotation ShapeResultBloberizer::GetBlobRotation(
-    const CanvasRotationInVertical canvas_rotation) {
-  return canvas_rotation == CanvasRotationInVertical::kRegular
-             ? BlobRotation::kNoRotation
-             : BlobRotation::kCCWRotation;
 }
 
 float ShapeResultBloberizer::FillGlyphs(
