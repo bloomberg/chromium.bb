@@ -272,9 +272,9 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
 <div id="dashboard">
   <div>
     <span class="fix-width">Query</span>
-    <button id="button_unexpected_fail" onclick="javascript:Query.query('Unexpected failures', Filters.unexpectedFailure, true)">
-      Unexpected Failure
-      <span id="count_unexpected_fail"></span>
+    <button id="button_regressions" onclick="javascript:Query.query('Regressions', Filters.regression, true)">
+      Regressions
+      <span id="count_regressions"></span>
     </button>
     <button onclick="javascript:Query.query('Unexpected passes', Filters.unexpectedPass, true)">
       Unexpected Pass
@@ -400,8 +400,7 @@ class Traversal {
         this.resultCounts[node.actualFinal]++;
         action(node, path, this);
       }
-    }
-    else {
+    } else {
       for (let p of node.keys())
         this._helper(node.get(p), path + "/" + p, filter, action);
     }
@@ -416,11 +415,10 @@ const PathParserGlobals = {
 class PathParser {
   constructor(path) {
     this.path = path;
-    let [href, dir, file] = path.match("/(.*)/(.*)");
-    this.dir = dir;
-    this.file = file;
-    let tmp;
-    [tmp, this.basename, this.extension] = file.match(/(.*)\.(\w+)/);
+    let href;
+    [href, this.dir, this.file] = path.match("/(.*/)?(.*)");
+    this.dir = this.dir || "";
+    [, this.basename, this.extension] = this.file.match(/(.*)\.(\w+)/);
     this.testHref = this.testBaseHref() + href.replace(/\/virtual\/[^\/]*/, "");
   }
 
@@ -430,7 +428,7 @@ class PathParser {
   }
 
   resultLink(resultName) {
-    return this.dir + "/" + this.basename + resultName;
+    return this.dir + this.basename + resultName;
   }
 
   repaintOverlayLink() {
@@ -485,7 +483,7 @@ const Report = {
     let html = `
     <div class='expect' tabindex='0' data-id='${test.expectId}'>
       <div class='details'></div>${Report.printFlag(test)}
-     ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+     ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
     </div>`;
     traversal.html.push(html);
   },
@@ -541,7 +539,7 @@ const Report = {
     let key = test[key_title];
     let html = ""
       + `${Report.printFlag(test)}`
-      + pathParser.dir + "/"
+      + pathParser.dir
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
       + pathParser.file + "</a>";
     html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
@@ -851,7 +849,7 @@ const Filters = {
   unexpectedPass: test => {
     return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
   },
-  unexpectedFailure: test => {
+  regression: test => {
     if (Filters.containsPass(test.actualMap))
       return false;
     if (test.expectedMap.has("NEEDSMANUALREBASELINE")
@@ -873,7 +871,7 @@ const Filters = {
           return false;
         break;
       case "MISSING":
-        return false;
+        break;
       default:
         console.error("Unexpected test result", est.actualMap.keys().next().value);
       }
@@ -903,8 +901,8 @@ const GUI = {
     GUI.printSummary(globalResults);
     GUI.initEvents();
     PathParser.initGlobals(results);
-    // Show unexpected failures on startup.
-    document.querySelector("#button_unexpected_fail").click();
+    // Show regressions on startup.
+    document.querySelector("#button_regressions").click();
   },
 
   convertToMap: function(o) {
@@ -1146,7 +1144,7 @@ const GUI = {
     let singleLine = "";
     new Traversal(globalResults.tests).traverse(Query.lastReport.filter, (_, path) => {
       let pathParser = new PathParser(path);
-      singleLine += pathParser.dir + "/" + pathParser.file + " ";
+      singleLine += pathParser.dir + pathParser.file + " ";
     });
     let pre = document.createElement("pre");
     pre.setAttribute("style", "overflow: hidden; color: white; height: 1px");
@@ -1174,7 +1172,7 @@ const GUI = {
     // Initialize query counts.
     let counts = {
       "count_unexpected_pass": 0,
-      "count_unexpected_fail": 0,
+      "count_regressions": 0,
       "count_testexpectations": 0,
       "count_flaky": 0,
       "count_all": 0,
@@ -1184,13 +1182,17 @@ const GUI = {
       counts.count_all++;
       if (Filters.unexpectedPass(test))
         counts.count_unexpected_pass++;
-      if (Filters.unexpectedFailure(test))
-        counts.count_unexpected_fail++;
+      if (Filters.regression(test))
+        counts.count_regressions++;
       if (Filters.notpass(test))
         counts.count_testexpectations++;
       if (Filters.flaky(test))
         counts.count_flaky++;
     });
+    console.assert(
+        counts.count_regressions == fullResults.num_regressions,
+        "Numbers of regressions mismatch: in fullResult:" + fullResults.num_regressions +
+        " filtered:" + counts.count_regressions);
     for (let p in counts)
       document.querySelector("#" + p).innerText = counts[p];
 
