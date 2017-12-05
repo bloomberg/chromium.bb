@@ -424,6 +424,14 @@ void Surface::SetFrame(SurfaceFrameType type) {
     delegate_->OnSetFrame(type);
 }
 
+void Surface::SetParent(Surface* parent, const gfx::Point& position) {
+  TRACE_EVENT2("exo", "Surface::SetParent", "parent", !!parent, "position",
+               position.ToString());
+
+  if (delegate_)
+    delegate_->OnSetParent(parent, position);
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 

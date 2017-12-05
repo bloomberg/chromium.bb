@@ -402,21 +402,7 @@ void ShellSurface::SetParent(ShellSurface* parent) {
   TRACE_EVENT1("exo", "ShellSurface::SetParent", "parent",
                parent ? base::UTF16ToASCII(parent->title_) : "null");
 
-  if (parent_) {
-    parent_->RemoveObserver(this);
-    if (widget_)
-      wm::RemoveTransientChild(parent_, widget_->GetNativeWindow());
-  }
-  parent_ = parent ? parent->GetWidget()->GetNativeWindow() : nullptr;
-  if (parent_) {
-    parent_->AddObserver(this);
-    if (widget_)
-      wm::AddTransientChild(parent_, widget_->GetNativeWindow());
-  }
-
-  // If |parent_| is set effects the ability to maximize the window.
-  if (widget_)
-    widget_->OnSizeConstraintsChanged();
+  SetParentWindow(parent ? parent->GetWidget()->GetNativeWindow() : nullptr);
 }
 
 void ShellSurface::Activate() {
@@ -769,6 +755,39 @@ void ShellSurface::OnSetFrame(SurfaceFrameType type) {
       frame_enabled_ = false;
       shadow_bounds_ = gfx::Rect();
       break;
+  }
+}
+
+void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
+  views::Widget* parent_widget =
+      parent ? views::Widget::GetTopLevelWidgetForNativeView(parent->window())
+             : nullptr;
+  if (parent_widget) {
+    // Set parent window if using default container and the container itself
+    // is not the parent.
+    if (container_ == ash::kShellWindowId_DefaultContainer)
+      SetParentWindow(parent_widget->GetNativeWindow());
+
+    if (resizer_)
+      return;
+
+    origin_ = position;
+    views::View::ConvertPointToScreen(
+        parent_widget->widget_delegate()->GetContentsView(), &origin_);
+
+    if (!widget_)
+      return;
+
+    gfx::Rect widget_bounds = widget_->GetWindowBoundsInScreen();
+    gfx::Rect new_widget_bounds(origin_, widget_bounds.size());
+    if (new_widget_bounds != widget_bounds) {
+      base::AutoReset<bool> auto_ignore_window_bounds_changes(
+          &ignore_window_bounds_changes_, true);
+      widget_->SetBounds(new_widget_bounds);
+      UpdateSurfaceBounds();
+    }
+  } else {
+    SetParentWindow(nullptr);
   }
 }
 
@@ -1142,7 +1161,7 @@ bool ShellSurface::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellSurface, private:
+// ShellSurface, protected:
 
 void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   DCHECK(enabled());
@@ -1395,49 +1414,6 @@ bool ShellSurface::IsResizing() const {
          ash::WindowResizer::kBoundsChange_Resizes;
 }
 
-gfx::Rect ShellSurface::GetVisibleBounds() const {
-  // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  if (!geometry_.IsEmpty())
-    return geometry_;
-
-  return root_surface() ? gfx::Rect(root_surface()->content_size())
-                        : gfx::Rect();
-}
-
-gfx::Point ShellSurface::GetSurfaceOrigin() const {
-  DCHECK(bounds_mode_ == BoundsMode::SHELL || resize_component_ == HTCAPTION);
-
-  gfx::Rect visible_bounds = GetVisibleBounds();
-  gfx::Rect client_bounds =
-      widget_->non_client_view()->frame_view()->GetBoundsForClientView();
-  switch (resize_component_) {
-    case HTCAPTION:
-      if (bounds_mode_ == BoundsMode::CLIENT)
-        return origin_ + origin_offset_ - visible_bounds.OffsetFromOrigin();
-
-      return gfx::Point() + origin_offset_ - visible_bounds.OffsetFromOrigin();
-    case HTBOTTOM:
-    case HTRIGHT:
-    case HTBOTTOMRIGHT:
-      return gfx::Point() - visible_bounds.OffsetFromOrigin();
-    case HTTOP:
-    case HTTOPRIGHT:
-      return gfx::Point(0, client_bounds.height() - visible_bounds.height()) -
-             visible_bounds.OffsetFromOrigin();
-    case HTLEFT:
-    case HTBOTTOMLEFT:
-      return gfx::Point(client_bounds.width() - visible_bounds.width(), 0) -
-             visible_bounds.OffsetFromOrigin();
-    case HTTOPLEFT:
-      return gfx::Point(client_bounds.width() - visible_bounds.width(),
-                        client_bounds.height() - visible_bounds.height()) -
-             visible_bounds.OffsetFromOrigin();
-    default:
-      NOTREACHED();
-      return gfx::Point();
-  }
-}
-
 void ShellSurface::UpdateWidgetBounds() {
   DCHECK(widget_);
 
@@ -1577,8 +1553,7 @@ void ShellSurface::UpdateShadow() {
   }
 }
 
-void ShellSurface::UpdateBackdrop() {
-}
+void ShellSurface::UpdateBackdrop() {}
 
 gfx::Point ShellSurface::GetMouseLocation() const {
   aura::Window* const root_window = widget_->GetNativeWindow()->GetRootWindow();
@@ -1597,6 +1572,70 @@ void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
   bool movement_disabled = bounds_mode_ != BoundsMode::SHELL;
   widget_->set_movement_disabled(movement_disabled);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ShellSurface, private:
+
+gfx::Rect ShellSurface::GetVisibleBounds() const {
+  // Use |geometry_| if set, otherwise use the visual bounds of the surface.
+  if (!geometry_.IsEmpty())
+    return geometry_;
+
+  return root_surface() ? gfx::Rect(root_surface()->content_size())
+                        : gfx::Rect();
+}
+
+gfx::Point ShellSurface::GetSurfaceOrigin() const {
+  DCHECK(bounds_mode_ == BoundsMode::SHELL || resize_component_ == HTCAPTION);
+
+  gfx::Rect visible_bounds = GetVisibleBounds();
+  gfx::Rect client_bounds =
+      widget_->non_client_view()->frame_view()->GetBoundsForClientView();
+  switch (resize_component_) {
+    case HTCAPTION:
+      if (bounds_mode_ == BoundsMode::CLIENT)
+        return origin_ + origin_offset_ - visible_bounds.OffsetFromOrigin();
+
+      return gfx::Point() + origin_offset_ - visible_bounds.OffsetFromOrigin();
+    case HTBOTTOM:
+    case HTRIGHT:
+    case HTBOTTOMRIGHT:
+      return gfx::Point() - visible_bounds.OffsetFromOrigin();
+    case HTTOP:
+    case HTTOPRIGHT:
+      return gfx::Point(0, client_bounds.height() - visible_bounds.height()) -
+             visible_bounds.OffsetFromOrigin();
+    case HTLEFT:
+    case HTBOTTOMLEFT:
+      return gfx::Point(client_bounds.width() - visible_bounds.width(), 0) -
+             visible_bounds.OffsetFromOrigin();
+    case HTTOPLEFT:
+      return gfx::Point(client_bounds.width() - visible_bounds.width(),
+                        client_bounds.height() - visible_bounds.height()) -
+             visible_bounds.OffsetFromOrigin();
+    default:
+      NOTREACHED();
+      return gfx::Point();
+  }
+}
+
+void ShellSurface::SetParentWindow(aura::Window* parent) {
+  if (parent_) {
+    parent_->RemoveObserver(this);
+    if (widget_)
+      wm::RemoveTransientChild(parent_, widget_->GetNativeWindow());
+  }
+  parent_ = parent;
+  if (parent_) {
+    parent_->AddObserver(this);
+    if (widget_)
+      wm::AddTransientChild(parent_, widget_->GetNativeWindow());
+  }
+
+  // If |parent_| is set effects the ability to maximize the window.
+  if (widget_)
+    widget_->OnSizeConstraintsChanged();
 }
 
 }  // namespace exo

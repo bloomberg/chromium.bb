@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_EXO_SURFACE_DELEGATE_H_
 #define COMPONENTS_EXO_SURFACE_DELEGATE_H_
 
+#include "ui/gfx/geometry/point.h"
+
 namespace exo {
+class Surface;
 
 // Frame types that can be used to decorate a surface.
 enum class SurfaceFrameType { NONE, NORMAL, SHADOW };
@@ -20,8 +23,12 @@ class SurfaceDelegate {
   // double-buffered state should be synchronized with parent surface.
   virtual bool IsSurfaceSynchronized() const = 0;
 
-  // Called when surface was requested specific frame type.
+  // Called when surface was requested to use a specific frame type.
   virtual void OnSetFrame(SurfaceFrameType type) = 0;
+
+  // Called when a new "parent" was requested for this surface. |position|
+  // is the initial position of surface relative to origin of parent.
+  virtual void OnSetParent(Surface* parent, const gfx::Point& position) = 0;
 
  protected:
   virtual ~SurfaceDelegate() {}

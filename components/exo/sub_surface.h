@@ -52,6 +52,7 @@ class SubSurface : public SurfaceDelegate, public SurfaceObserver {
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
   void OnSetFrame(SurfaceFrameType type) override {}
+  void OnSetParent(Surface* parent, const gfx::Point& position) override {}
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

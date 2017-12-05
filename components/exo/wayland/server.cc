@@ -1141,6 +1141,16 @@ wl_output_transform OutputTransform(display::Display::Rotation rotation) {
 
 class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
  public:
+  class ScaleObserver : public base::SupportsWeakPtr<ScaleObserver> {
+   public:
+    ScaleObserver() {}
+
+    virtual void OnDisplayScalesChanged(const display::Display& display) = 0;
+
+   protected:
+    virtual ~ScaleObserver() {}
+  };
+
   explicit WaylandPrimaryDisplayObserver(wl_resource* output_resource)
       : output_resource_(output_resource) {
     display::Screen::GetScreen()->AddObserver(this);
@@ -1149,6 +1159,13 @@ class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
   ~WaylandPrimaryDisplayObserver() override {
     display::Screen::GetScreen()->RemoveObserver(this);
   }
+
+  void SetScaleObserver(base::WeakPtr<ScaleObserver> scale_observer) {
+    scale_observer_ = scale_observer;
+    SendDisplayMetrics();
+  }
+
+  bool HasScaleObserver() const { return !!scale_observer_; }
 
   // Overridden from display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -1201,6 +1218,9 @@ class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
         output_resource_, WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
         bounds.width(), bounds.height(), static_cast<int>(60000));
 
+    if (HasScaleObserver())
+      scale_observer_->OnDisplayScalesChanged(display);
+
     if (wl_resource_get_version(output_resource_) >=
         WL_OUTPUT_DONE_SINCE_VERSION) {
       wl_output_send_done(output_resource_);
@@ -1209,6 +1229,8 @@ class WaylandPrimaryDisplayObserver : public display::DisplayObserver {
 
   // The output resource associated with the display.
   wl_resource* const output_resource_;
+
+  base::WeakPtr<ScaleObserver> scale_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandPrimaryDisplayObserver);
 };
@@ -2418,6 +2440,11 @@ class AuraSurface : public SurfaceObserver {
       surface_->SetFrame(type);
   }
 
+  void SetParent(AuraSurface* parent, const gfx::Point& position) {
+    if (surface_)
+      surface_->SetParent(parent ? parent->surface_ : nullptr, position);
+  }
+
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override {
     surface->RemoveSurfaceObserver(this);
@@ -2449,8 +2476,59 @@ void aura_surface_set_frame(wl_client* client, wl_resource* resource,
   GetUserDataAs<AuraSurface>(resource)->SetFrame(ToSurfaceFrameType(type));
 }
 
+void aura_surface_set_parent(wl_client* client,
+                             wl_resource* resource,
+                             wl_resource* parent_resource,
+                             int32_t x,
+                             int32_t y) {
+  GetUserDataAs<AuraSurface>(resource)->SetParent(
+      parent_resource ? GetUserDataAs<AuraSurface>(parent_resource) : nullptr,
+      gfx::Point(x, y));
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
-    aura_surface_set_frame};
+    aura_surface_set_frame, aura_surface_set_parent};
+
+////////////////////////////////////////////////////////////////////////////////
+// aura_output_interface:
+
+class AuraOutput : public WaylandPrimaryDisplayObserver::ScaleObserver {
+ public:
+  explicit AuraOutput(wl_resource* resource) : resource_(resource) {}
+
+  // Overridden from WaylandPrimaryDisplayObserver::ScaleObserver:
+  void OnDisplayScalesChanged(const display::Display& display) override {
+    display::DisplayManager* display_manager =
+        ash::Shell::Get()->display_manager();
+    if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
+      display::ManagedDisplayMode active_mode;
+      bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
+                                                           &active_mode);
+      DCHECK(rv);
+      const display::ManagedDisplayInfo& display_info =
+          display_manager->GetDisplayInfo(display.id());
+      for (auto& mode : display_info.display_modes()) {
+        uint32_t flags = 0;
+        if (mode.is_default())
+          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
+        if (active_mode.IsEquivalent(mode))
+          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
+
+        zaura_output_send_scale(resource_, flags, mode.ui_scale() * 1000);
+      }
+    } else {
+      zaura_output_send_scale(resource_,
+                              ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT |
+                                  ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED,
+                              ZAURA_OUTPUT_SCALE_FACTOR_1000);
+    }
+  }
+
+ private:
+  wl_resource* const resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(AuraOutput);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_shell_interface:
@@ -2468,22 +2546,47 @@ void aura_shell_get_aura_surface(wl_client* client,
     return;
   }
 
-  wl_resource* aura_surface_resource =
-      wl_resource_create(client, &zaura_surface_interface, 1, id);
+  wl_resource* aura_surface_resource = wl_resource_create(
+      client, &zaura_surface_interface, wl_resource_get_version(resource), id);
 
   SetImplementation(aura_surface_resource, &aura_surface_implementation,
                     std::make_unique<AuraSurface>(surface));
 }
 
+void aura_shell_get_aura_output(wl_client* client,
+                                wl_resource* resource,
+                                uint32_t id,
+                                wl_resource* output_resource) {
+  WaylandPrimaryDisplayObserver* display_observer =
+      GetUserDataAs<WaylandPrimaryDisplayObserver>(output_resource);
+  if (display_observer->HasScaleObserver()) {
+    wl_resource_post_error(
+        resource, ZAURA_SHELL_ERROR_AURA_OUTPUT_EXISTS,
+        "an aura output object for that output already exists");
+    return;
+  }
+
+  wl_resource* aura_output_resource = wl_resource_create(
+      client, &zaura_output_interface, wl_resource_get_version(resource), id);
+
+  auto aura_output = std::make_unique<AuraOutput>(aura_output_resource);
+  display_observer->SetScaleObserver(aura_output->AsWeakPtr());
+
+  SetImplementation(aura_output_resource, nullptr, std::move(aura_output));
+}
+
 const struct zaura_shell_interface aura_shell_implementation = {
-    aura_shell_get_aura_surface};
+    aura_shell_get_aura_surface, aura_shell_get_aura_output};
+
+const uint32_t aura_shell_version = 2;
 
 void bind_aura_shell(wl_client* client,
                      void* data,
                      uint32_t version,
                      uint32_t id) {
   wl_resource* resource =
-      wl_resource_create(client, &zaura_shell_interface, 1, id);
+      wl_resource_create(client, &zaura_shell_interface,
+                         std::min(version, aura_shell_version), id);
 
   wl_resource_set_implementation(resource, &aura_shell_implementation,
                                  nullptr, nullptr);
@@ -4405,8 +4508,8 @@ Server::Server(Display* display)
                    display_, bind_alpha_compositing);
   wl_global_create(wl_display_.get(), &zcr_remote_shell_v1_interface,
                    remote_shell_version, display_, bind_remote_shell);
-  wl_global_create(wl_display_.get(), &zaura_shell_interface, 1, display_,
-                   bind_aura_shell);
+  wl_global_create(wl_display_.get(), &zaura_shell_interface,
+                   aura_shell_version, display_, bind_aura_shell);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v2_interface, 1, display_,

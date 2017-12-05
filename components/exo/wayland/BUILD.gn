@@ -296,6 +296,20 @@ executable("wayland_blur_client") {
   ]
 }
 
+executable("wayland_info_client") {
+  sources = [
+    "clients/info.cc",
+  ]
+
+  deps = [
+    ":client_support",
+    "//base",
+    "//build/config:exe_and_shlib_deps",
+    "//third_party/wayland:wayland_client",
+    "//ui/gfx/geometry",
+  ]
+}
+
 test("wayland_client_perftests") {
   sources = [
     "../../../ash/test/ash_test_suite.cc",
