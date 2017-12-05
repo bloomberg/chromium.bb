@@ -318,11 +318,26 @@ struct PartitionPage {
   }
 
   ALWAYS_INLINE size_t get_raw_size() const;
+  ALWAYS_INLINE void set_raw_size(size_t size);
 
   ALWAYS_INLINE void Reset();
 
   // TODO(ajwong): Can this be made private?  https://crbug.com/787153
   BASE_EXPORT static PartitionPage* get_sentinel_page();
+
+  // Page State accessors.
+  // Note that it's only valid to call these functions on pages found on one of
+  // the page lists. Specifically, you can't call these functions on full pages
+  // that were detached from the active list.
+  //
+  // This restriction provides the flexibity for some of the status fields to
+  // be repurposed when a page is taken off a list. See the negation of
+  // |num_allocated_slots| when a full page is removed from the active list
+  // for an example of such repurposing.
+  ALWAYS_INLINE bool is_active() const;
+  ALWAYS_INLINE bool is_full() const;
+  ALWAYS_INLINE bool is_empty() const;
+  ALWAYS_INLINE bool is_decommitted() const;
 };
 static_assert(sizeof(PartitionPage) <= kPageMetadataSize,
               "PartitionPage must be able to fit in a metadata slot");
@@ -431,6 +446,8 @@ struct PartitionDirectMapExtent {
   PartitionDirectMapExtent* prev_extent;
   PartitionBucket* bucket;
   size_t map_size;  // Mapped size, not including guard pages and meta-data.
+
+  ALWAYS_INLINE static PartitionDirectMapExtent* FromPage(PartitionPage* page);
 };
 
 struct BASE_EXPORT PartitionRootBase {
@@ -457,8 +474,10 @@ struct BASE_EXPORT PartitionRootBase {
 
   // Pubic API
 
-  // gOomHandlingFunction is invoked when ParitionAlloc hits OutOfMemory.
+  // gOomHandlingFunction is invoked when PartitionAlloc hits OutOfMemory.
   static void (*gOomHandlingFunction)();
+
+  ALWAYS_INLINE static PartitionRootBase* FromPage(PartitionPage* page);
 };
 
 enum PartitionPurgeFlags {
@@ -767,7 +786,8 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
   return 0;
 }
 
-ALWAYS_INLINE PartitionRootBase* PartitionPageToRoot(PartitionPage* page) {
+ALWAYS_INLINE PartitionRootBase* PartitionRootBase::FromPage(
+    PartitionPage* page) {
   PartitionSuperPageExtentEntry* extent_entry =
       reinterpret_cast<PartitionSuperPageExtentEntry*>(
           reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
@@ -775,7 +795,7 @@ ALWAYS_INLINE PartitionRootBase* PartitionPageToRoot(PartitionPage* page) {
 }
 
 ALWAYS_INLINE bool PartitionPage::IsPointerValid(PartitionPage* page) {
-  PartitionRootBase* root = PartitionPageToRoot(page);
+  PartitionRootBase* root = PartitionRootBase::FromPage(page);
   return root->inverted_self == ~reinterpret_cast<uintptr_t>(root);
 }
 
