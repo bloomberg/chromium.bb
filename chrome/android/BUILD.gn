@@ -645,6 +645,7 @@ if (enable_vr) {
       "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_arch_lifecycle_common_java",
+      "//third_party/android_tools:android_support_annotations_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//third_party/android_tools:android_support_v7_recyclerview_java",
       "//third_party/custom_tabs_client:custom_tabs_support_java",
@@ -744,7 +745,9 @@ template("chrome_shared_library") {
     if (enable_vr) {
       # Ensure libgvr static library appears before gcc library in linking order.
       # See https://crbug.com/704305 for details.
-      libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+      libs = [
+        "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+      ]
     }
 
     if (use_order_profiling) {
@@ -960,7 +963,9 @@ if (!android_64bit_target_cpu ||
     if (enable_vr) {
       # Ensure libgvr static library appears before gcc library in linking order.
       # See https://crbug.com/704305 for details.
-      libs = [ "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a" ]
+      libs = [
+        "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+      ]
     }
 
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
