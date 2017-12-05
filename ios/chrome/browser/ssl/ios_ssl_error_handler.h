@@ -21,6 +21,12 @@ namespace web {
 class WebState;
 }  // namespace web
 
+// Default delay in seconds before displaying the SSL interstitial.
+// - If a "captive portal detected" result arrives during this time,
+//   a captive portal interstitial is displayed.
+// - Otherwise, an SSL interstitial is displayed.
+extern const int64_t kSSLInterstitialDelayInSeconds;
+
 // This class is responsible for deciding what type of interstitial to show for
 // an SSL validation error.
 class IOSSSLErrorHandler : public web::WebStateUserData<IOSSSLErrorHandler> {

@@ -30,11 +30,7 @@ DEFINE_WEB_STATE_USER_DATA_KEY(IOSSSLErrorHandler);
 const char kSessionDetectionResultHistogram[] =
     "CaptivePortal.Session.DetectionResult";
 
-// Default delay in milliseconds before displaying the SSL interstitial.
-// - If a "captive portal detected" result arrives during this time,
-//   a captive portal interstitial is displayed.
-// - Otherwise, an SSL interstitial is displayed.
-const int64_t kInterstitialDelayInMilliseconds = 3000;
+const int64_t kSSLInterstitialDelayInSeconds = 3;
 
 using captive_portal::CaptivePortalDetector;
 
@@ -102,10 +98,9 @@ void IOSSSLErrorHandler::StartHandlingError() {
 
   // Default to presenting the SSL interstitial if Captive Portal detection
   // takes too long.
-  timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds), this,
-      &IOSSSLErrorHandler::ShowSSLInterstitial);
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kSSLInterstitialDelayInSeconds),
+               this, &IOSSSLErrorHandler::ShowSSLInterstitial);
 }
 
 void IOSSSLErrorHandler::HandleCaptivePortalDetectionResult(
