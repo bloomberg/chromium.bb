@@ -173,10 +173,11 @@ void OffTheRecordProfileImpl::Init() {
   set_is_guest_profile(
       profile_->GetPath() == ProfileManager::GetGuestProfilePath());
 
+  // Always crash when incognito is not available.
   // Guest profiles may always be OTR. Check IncognitoModePrefs otherwise.
-  DCHECK(profile_->IsGuestSession() ||
-         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
-             IncognitoModePrefs::DISABLED);
+  CHECK(profile_->IsGuestSession() ||
+        IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+            IncognitoModePrefs::DISABLED);
 
 #if !defined(OS_ANDROID)
   TrackZoomLevelsFromParent();
