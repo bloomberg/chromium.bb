@@ -7,17 +7,9 @@
 
 
   await self.runtime.loadModulePromise('color_picker');
-  var colorElement = document.createElement('div');
-  var contentElement = document.createElement('div');
-  var overlay = new ColorPicker.ContrastOverlay(colorElement, contentElement);
-  var svg = colorElement.firstChild;
-  TestRunner.assertTrue(svg != null);
-  TestRunner.assertEquals(svg.tagName, 'svg');
-  var path = svg.firstChild;
-  TestRunner.assertTrue(path != null);
-  TestRunner.assertEquals(path.tagName, 'path');
-  overlay._width = 100;
-  overlay._height = 100;
+  var contrastInfo = new ColorPicker.ContrastInfo();
+  var contrastLineBuilder = new ColorPicker.ContrastRatioLineBuilder(contrastInfo);
+  TestRunner.assertTrue(contrastLineBuilder != null);
 
   var colorPairs = [
     // Boring black on white
@@ -31,22 +23,22 @@
   ];
 
   function logLineForColorPair(fgColorString, bgColorString) {
-    var contrastInfo = {
+    var contrastInfoData = {
       backgroundColors: [bgColorString],
       computedFontSize: '16px',
       computedFontWeight: '400',
       computedBodyFontSize: '16px'
     };
-    overlay.setContrastInfo(contrastInfo);
+    contrastInfo.update(contrastInfoData);
     var fgColor = Common.Color.parse(fgColorString);
-    overlay.setColor(fgColor.hsva(), 'rgba(255, 255, 255, 1)');
-    overlay._drawContrastRatioLine();
-    var d = path.getAttribute('d');
+    contrastInfo.setColor(fgColor.hsva(), fgColorString);
+    var d = contrastLineBuilder.drawContrastRatioLine(100, 100);
+
     TestRunner.addResult('');
     TestRunner.addResult(
         'For fgColor ' + fgColorString + ', bgColor ' + bgColorString + ', path was' + (d.length ? '' : ' empty.'));
     if (d.length)
-      TestRunner.addResult(path.getAttribute('d'));
+      TestRunner.addResult(d);
   }
 
   for (var pair of colorPairs)
