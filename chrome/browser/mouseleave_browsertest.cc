@@ -86,6 +86,9 @@ class MouseLeaveTest : public InProcessBrowserTest {
 // OS_MACOSX: Missing automation provider support: http://crbug.com/45892.
 // OS_LINUX: http://crbug.com/133361.
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
+#elif defined(OS_WIN) && !defined(NDEBUG)
+// Flaky on Win debug; see https://crbug.com/419468.
+#define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #else
 #define MAYBE_TestOnMouseOut TestOnMouseOut
 #endif
