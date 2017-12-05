@@ -244,35 +244,32 @@ class LastDownloadFinderTest : public testing::Test {
   history::DownloadRow CreateTestDownloadRow(
       const base::FilePath::CharType* file_path) {
     base::Time now(base::Time::Now());
-    return history::DownloadRow(
-        base::FilePath(file_path), base::FilePath(file_path),
-        std::vector<GURL>(1, GURL("http://www.google.com")),  // url_chain
-        GURL("http://referrer.example.com/"),                 // referrer
-        GURL("http://site-url.example.com/"),        // site instance URL
-        GURL("http://tab-url.example.com/"),         // tab URL
-        GURL("http://tab-referrer.example.com/"),    // tab referrer URL
-        std::string(),                               // HTTP method
-        "application/octet-stream",                  // mime_type
-        "application/octet-stream",                  // original_mime_type
-        now - base::TimeDelta::FromMinutes(10),      // start
-        now - base::TimeDelta::FromMinutes(9),       // end
-        std::string(),                               // etag
-        std::string(),                               // last_modified
-        47LL,                                        // received
-        47LL,                                        // total
-        history::DownloadState::COMPLETE,            // download_state
-        history::DownloadDangerType::NOT_DANGEROUS,  // danger_type
-        history::ToHistoryDownloadInterruptReason(
-            content::DOWNLOAD_INTERRUPT_REASON_NONE),  // interrupt_reason,
-        std::string(),                                 // hash
-        download_id_++,                                // id
-        base::GenerateGUID(),                          // GUID
-        false,                                         // download_opened
-        now - base::TimeDelta::FromMinutes(5),         // last_access_time
-        false,                                         // transient
-        std::string(),                                 // ext_id
-        std::string(),                                 // ext_name
-        std::vector<history::DownloadSliceInfo>());    // download_slice_info
+
+    history::DownloadRow row;
+    row.current_path = base::FilePath(file_path);
+    row.target_path = base::FilePath(file_path);
+    row.url_chain.push_back(GURL("http://www.google.com/"));
+    row.referrer_url = GURL("http://referrer.example.com/");
+    row.site_url = GURL("http://site-url.example.com/");
+    row.tab_url = GURL("http://tab-url.example.com/");
+    row.tab_referrer_url = GURL("http://tab-referrer.example.com/");
+    row.mime_type = "application/octet-stream";
+    row.original_mime_type = "application/octet-stream";
+    row.start_time = now - base::TimeDelta::FromMinutes(10);
+    row.end_time = now - base::TimeDelta::FromMinutes(9);
+    row.received_bytes = 47;
+    row.total_bytes = 47;
+    row.state = history::DownloadState::COMPLETE;
+    row.danger_type = history::DownloadDangerType::NOT_DANGEROUS;
+    row.interrupt_reason = history::ToHistoryDownloadInterruptReason(
+        content::DOWNLOAD_INTERRUPT_REASON_NONE);
+    row.id = download_id_++;
+    row.guid = base::GenerateGUID();
+    row.opened = false;
+    row.last_access_time = now - base::TimeDelta::FromMinutes(5);
+    row.transient = false;
+
+    return row;
   }
 
  private:

@@ -65,19 +65,15 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
 
   static DownloadHistoryData* Get(content::DownloadItem* item) {
     base::SupportsUserData::Data* data = item->GetUserData(kKey);
-    return (data == NULL) ? NULL :
-      static_cast<DownloadHistoryData*>(data);
+    return static_cast<DownloadHistoryData*>(data);
   }
 
   static const DownloadHistoryData* Get(const content::DownloadItem* item) {
     const base::SupportsUserData::Data* data = item->GetUserData(kKey);
-    return (data == NULL) ? NULL
-                          : static_cast<const DownloadHistoryData*>(data);
+    return static_cast<const DownloadHistoryData*>(data);
   }
 
-  explicit DownloadHistoryData(content::DownloadItem* item)
-      : state_(NOT_PERSISTED),
-        was_restored_from_history_(false) {
+  explicit DownloadHistoryData(content::DownloadItem* item) {
     item->SetUserData(kKey, base::WrapUnique(this));
   }
 
@@ -107,9 +103,9 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
  private:
   static const char kKey[];
 
-  PersistenceState state_;
+  PersistenceState state_ = NOT_PERSISTED;
   std::unique_ptr<history::DownloadRow> info_;
-  bool was_restored_from_history_;
+  bool was_restored_from_history_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryData);
 };
@@ -129,21 +125,38 @@ history::DownloadRow GetDownloadRow(
   }
 #endif
 
-  return history::DownloadRow(
-      item->GetFullPath(), item->GetTargetFilePath(), item->GetUrlChain(),
-      item->GetReferrerUrl(), item->GetSiteUrl(), item->GetTabUrl(),
-      item->GetTabReferrerUrl(),
-      std::string(),  // HTTP method (not available yet)
-      item->GetMimeType(), item->GetOriginalMimeType(), item->GetStartTime(),
-      item->GetEndTime(), item->GetETag(), item->GetLastModifiedTime(),
-      item->GetReceivedBytes(), item->GetTotalBytes(),
-      history::ToHistoryDownloadState(item->GetState()),
-      history::ToHistoryDownloadDangerType(item->GetDangerType()),
-      history::ToHistoryDownloadInterruptReason(item->GetLastReason()),
-      std::string(),  // Hash value (not available yet)
-      history::ToHistoryDownloadId(item->GetId()), item->GetGuid(),
-      item->GetOpened(), item->GetLastAccessTime(), item->IsTransient(),
-      by_ext_id, by_ext_name, history::GetHistoryDownloadSliceInfos(*item));
+  history::DownloadRow download;
+  download.current_path = item->GetFullPath();
+  download.target_path = item->GetTargetFilePath();
+  download.url_chain = item->GetUrlChain();
+  download.referrer_url = item->GetReferrerUrl();
+  download.site_url = item->GetSiteUrl();
+  download.tab_url = item->GetTabUrl();
+  download.tab_referrer_url = item->GetTabReferrerUrl();
+  download.http_method = std::string();  // HTTP method not available yet.
+  download.mime_type = item->GetMimeType();
+  download.original_mime_type = item->GetOriginalMimeType();
+  download.start_time = item->GetStartTime();
+  download.end_time = item->GetEndTime();
+  download.etag = item->GetETag();
+  download.last_modified = item->GetLastModifiedTime();
+  download.received_bytes = item->GetReceivedBytes();
+  download.total_bytes = item->GetTotalBytes();
+  download.state = history::ToHistoryDownloadState(item->GetState());
+  download.danger_type =
+      history::ToHistoryDownloadDangerType(item->GetDangerType());
+  download.interrupt_reason =
+      history::ToHistoryDownloadInterruptReason(item->GetLastReason());
+  download.hash = std::string();  // Hash value not available yet.
+  download.id = history::ToHistoryDownloadId(item->GetId());
+  download.guid = item->GetGuid();
+  download.opened = item->GetOpened();
+  download.last_access_time = item->GetLastAccessTime();
+  download.transient = item->IsTransient();
+  download.by_ext_id = by_ext_id;
+  download.by_ext_name = by_ext_name;
+  download.download_slice_info = history::GetHistoryDownloadSliceInfos(*item);
+  return download;
 }
 
 enum class ShouldUpdateHistoryResult {
@@ -340,7 +353,7 @@ void DownloadHistory::MaybeAddToHistory(content::DownloadItem* item) {
     return;
 
   data->SetState(DownloadHistoryData::PERSISTING);
-  if (data->info() == NULL) {
+  if (data->info() == nullptr) {
     // Keep the info here regardless of whether the item is in progress so that,
     // when ItemAdded() calls OnDownloadUpdated(), it can decide whether to
     // Update the db and/or clear the info.
