@@ -62,6 +62,7 @@
 67DF,	C6,	Radeon RX 570 Series
 67DF,	C7,	AMD Radeon (TM) RX 480 Graphics
 67DF,	CF,	AMD Radeon (TM) RX 470 Graphics
+67DF,	D7,	Radeon(TM) RX 470 Graphics
 67DF,	E3,	Radeon RX Series
 67DF,	E7,	Radeon RX 580 Series
 67DF,	EF,	Radeon RX 570 Series
@@ -84,13 +85,16 @@
 67EF,	C5,	AMD Radeon (TM) RX 460 Graphics
 67EF,	C7,	AMD Radeon (TM) RX Graphics
 67EF,	CF,	AMD Radeon (TM) RX 460 Graphics
+67EF,	E0,	Radeon RX 560 Series
 67EF,	E1,	Radeon RX Series
 67EF,	E3,	Radeon RX Series
-67EF,	E7,	Radeon RX Series
+67EF,	E5,	Radeon RX 560 Series
 67EF,	EF,	AMD Radeon (TM) RX Graphics
-67EF,	FF,	Radeon RX Series
+67EF,	FF,	Radeon(TM) RX 460 Graphics
 67FF,	C0,	AMD Radeon (TM) RX Graphics
 67FF,	C1,	AMD Radeon (TM) RX Graphics
+67FF,	CF,	Radeon RX 560 Series
+67FF,	EF,	Radeon RX 560 Series
 67FF,	FF,	Radeon RX 550 Series
 6800,	0,	AMD Radeon HD 7970M
 6801,	0,	AMD Radeon(TM) HD8970M
@@ -122,6 +126,25 @@
 6837,	0,	AMD Radeon HD7700 Series
 683D,	0,	AMD Radeon HD 7700 Series
 683F,	0,	AMD Radeon HD 7700 Series
+6860,	00,	Radeon Instinct MI25
+6860,	01,	Radeon Pro V320
+6860,	02,	Radeon Instinct MI25
+6860,	03,	Radeon Pro V340
+6860,	04,	Radeon Instinct MI25x2
+6861,	00,	Radeon(TM) Pro WX9100
+6862,	00,	Radeon Pro SSG
+6863,	00,	Radeon Vega Frontier Edition
+6864,	03,	Radeon Pro V340
+6864,	04,	Instinct MI25x2
+6868,	00,	Radeon(TM) Pro WX8100
+686C,	00,	GLXT (Radeon Instinct MI25) MxGPU VFID
+686C,	01,	GLXT (Radeon Pro V320) MxGPU
+686C,	02,	GLXT (Radeon Instinct MI25) MxGPU
+686C,	03,	GLXT (Radeon Pro V340) MxGPU
+686C,	04,	GLXT (Radeon Instinct MI25x2) MxGPU
+687F,	C0,	Radeon RX Vega
+687F,	C1,	Radeon RX Vega
+687F,	C3,	Radeon RX Vega
 6900,	0,	AMD Radeon R7 M260
 6900,	81,	AMD Radeon (TM) R7 M360
 6900,	83,	AMD Radeon (TM) R7 M340
@@ -139,8 +162,12 @@
 6939,	F0,	AMD Radeon R9 200 Series
 6939,	0,	AMD Radeon R9 200 Series
 6939,	F1,	AMD Radeon (TM) R9 380 Series
+6980,	00,	Radeon Pro WX3100
 6985,	00,	AMD Radeon Pro WX3100
+6987,	80,	AMD Embedded Radeon E9171
 6995,	00,	AMD Radeon Pro WX2100
+6997,	00,	Radeon Pro WX2100
+699F,	81,	AMD Embedded Radeon E9170 Series
 699F,	C0,	Radeon 500 Series
 699F,	C3,	Radeon 500 Series
 699F,	C7,	Radeon RX 550 Series
