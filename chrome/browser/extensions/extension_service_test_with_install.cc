@@ -320,14 +320,13 @@ void ExtensionServiceTestWithInstall::UpdateExtension(
   EXPECT_FALSE(base::PathExists(path));
 }
 
-void ExtensionServiceTestWithInstall::UninstallExtension(const std::string& id,
-                                                         bool use_helper) {
-  UninstallExtension(id, use_helper, Extension::ENABLED);
+void ExtensionServiceTestWithInstall::UninstallExtension(
+    const std::string& id) {
+  UninstallExtension(id, Extension::ENABLED);
 }
 
 void ExtensionServiceTestWithInstall::UninstallExtension(
     const std::string& id,
-    bool use_helper,
     Extension::State expected_state) {
   // Verify that the extension is installed.
   base::FilePath extension_path = extensions_install_dir().AppendASCII(id);
@@ -340,13 +339,8 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
   // once it's uninstalled.
   std::string extension_id = id;
   // Uninstall it.
-  if (use_helper) {
-    EXPECT_TRUE(ExtensionService::UninstallExtensionHelper(
-        service(), id, extensions::UNINSTALL_REASON_FOR_TESTING));
-  } else {
-    EXPECT_TRUE(service()->UninstallExtension(
-        id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr));
-  }
+  EXPECT_TRUE(service()->UninstallExtension(
+      id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr));
   --expected_extensions_count_;
 
   // We should get an unload notification.

@@ -100,10 +100,11 @@ std::string SyncExtensionHelper::InstallExtension(
 
 void SyncExtensionHelper::UninstallExtension(
     Profile* profile, const std::string& name) {
-  ExtensionService::UninstallExtensionHelper(
-      extensions::ExtensionSystem::Get(profile)->extension_service(),
-      crx_file::id_util::GenerateId(name),
-      extensions::UNINSTALL_REASON_SYNC);
+  extensions::ExtensionSystem::Get(profile)
+      ->extension_service()
+      ->UninstallExtension(crx_file::id_util::GenerateId(name),
+                           extensions::UNINSTALL_REASON_SYNC,
+                           nullptr /* error */);
 }
 
 std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(
