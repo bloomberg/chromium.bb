@@ -296,6 +296,7 @@ public class MediaRouterIntegrationTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
+    @RetryOnFailure
     public void testFailCreateRoute() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Factory.sProvider.setCreateRouteErrorMessage("Unknown sink");
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_PAGE));
