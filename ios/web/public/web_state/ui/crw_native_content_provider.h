@@ -40,6 +40,15 @@ class WebState;
                                withError:(NSError*)error
                                   isPost:(BOOL)isPost;
 
+// Returns an autoreleased controller for driving a native view contained
+// within the web content area for unhandled content at |URL|. |webState|
+// triggered the navigation to |URL|.
+// TODO(crbug.com/791806) DEPRECATED! Clients must use web::DownloadController
+// for renderer initiated downloads.
+- (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)URL
+                                                  webState:
+                                                      (web::WebState*)webState;
+
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_PROVIDER_H_

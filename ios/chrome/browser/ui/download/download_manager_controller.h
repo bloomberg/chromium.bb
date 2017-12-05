@@ -23,9 +23,10 @@ class WebState;
 
 // Initializes a controller for content from |url| using |webState| to provide
 // the context to open a controller that allows the user to install Google Drive
-// if they don't have it installed.
+// if they don't have it installed. Present UI from |baseViewController|.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                     downloadURL:(const GURL&)url;
+                     downloadURL:(const GURL&)url
+              baseViewController:(UIViewController*)baseViewController;
 
 // Starts loading the data for the file at the url passed into the
 // initializer. This should only be called once, immediately after

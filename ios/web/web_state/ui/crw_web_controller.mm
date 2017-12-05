@@ -2955,11 +2955,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
         ![MIMEType isEqualToString:@"application/vnd.apple.pkpass"]) {
       // This block is executed to handle legacy download navigation.
       const GURL errorGURL = net::GURLWithNSURL(errorURL);
-      if (errorGURL.is_valid() &&
-          [_delegate respondsToSelector:@selector
-                     (controllerForUnhandledContentAtURL:)]) {
+      if (errorGURL.is_valid()) {
         id<CRWNativeContent> controller =
-            [_delegate controllerForUnhandledContentAtURL:errorGURL];
+            [_nativeProvider controllerForUnhandledContentAtURL:errorGURL
+                                                       webState:self.webState];
         if (controller) {
           [self loadCompleteWithSuccess:NO forNavigation:navigation];
           [self removeWebView];
