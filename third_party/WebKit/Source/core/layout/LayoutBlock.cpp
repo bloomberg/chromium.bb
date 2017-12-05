@@ -314,7 +314,7 @@ void LayoutBlock::AddChildBeforeDescendant(LayoutObject* new_child,
     // Insert the child into the anonymous block box instead of here.
     if (new_child->IsInline() || new_child->IsFloatingOrOutOfFlowPositioned() ||
         before_descendant->Parent()->SlowFirstChild() != before_descendant)
-      before_descendant->Parent()->AddChild(new_child, before_descendant);
+      before_descendant_container->AddChild(new_child, before_descendant);
     else
       AddChild(new_child, before_descendant->Parent());
     return;

@@ -21,7 +21,27 @@ using ::testing::Return;
 class LayoutObjectTest : public RenderingTest {
  public:
   LayoutObjectTest() : RenderingTest(EmptyLocalFrameClient::Create()) {}
+
+ protected:
+  template <bool should_have_wrapper>
+  void ExpectAnonymousInlineWrapperFor(Node*);
 };
+
+template <bool should_have_wrapper>
+void LayoutObjectTest::ExpectAnonymousInlineWrapperFor(Node* node) {
+  ASSERT_TRUE(node);
+  EXPECT_TRUE(node->IsTextNode());
+  LayoutObject* text_layout = node->GetLayoutObject();
+  ASSERT_TRUE(text_layout);
+  LayoutObject* text_parent = text_layout->Parent();
+  ASSERT_TRUE(text_parent);
+  if (should_have_wrapper) {
+    EXPECT_TRUE(text_parent->IsAnonymous());
+    EXPECT_TRUE(text_parent->IsInline());
+  } else {
+    EXPECT_FALSE(text_parent->IsAnonymous());
+  }
+}
 
 TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   SetBodyInnerHTML("<div id='div' style='position: fixed'>test</div>");
@@ -437,6 +457,72 @@ TEST_F(LayoutObjectTest, LocationInBackingAndSelectionVisualRect) {
   EXPECT_EQ(LayoutRect(), object->FirstFragment().VisualRect());
   EXPECT_EQ(LayoutPoint(), object->FirstFragment().LocationInBacking());
   EXPECT_EQ(LayoutRect(), object->SelectionVisualRect());
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsInlineWrapper) {
+  SetBodyInnerHTML("<div id='div' style='display:contents;color:pink'>A</div>");
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+  Node* text = div->firstChild();
+  ASSERT_TRUE(text);
+  ExpectAnonymousInlineWrapperFor<true>(text);
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsNoInlineWrapper) {
+  SetBodyInnerHTML("<div id='div' style='display:contents'>A</div>");
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+  Node* text = div->firstChild();
+  ASSERT_TRUE(text);
+  ExpectAnonymousInlineWrapperFor<false>(text);
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsAddInlineWrapper) {
+  SetBodyInnerHTML("<div id='div' style='display:contents'>A</div>");
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+  Node* text = div->firstChild();
+  ASSERT_TRUE(text);
+  ExpectAnonymousInlineWrapperFor<false>(text);
+
+  div->SetInlineStyleProperty(CSSPropertyColor, "pink");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ExpectAnonymousInlineWrapperFor<true>(text);
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsRemoveInlineWrapper) {
+  SetBodyInnerHTML("<div id='div' style='display:contents;color:pink'>A</div>");
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+  Node* text = div->firstChild();
+  ASSERT_TRUE(text);
+  ExpectAnonymousInlineWrapperFor<true>(text);
+
+  div->RemoveInlineStyleProperty(CSSPropertyColor);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ExpectAnonymousInlineWrapperFor<false>(text);
+}
+
+TEST_F(LayoutObjectTest, DisplayContentsWrapperPerTextNode) {
+  // This test checks the current implementation; that text node siblings do not
+  // share inline wrappers. Doing so requires code to handle all situations
+  // where text nodes are no longer layout tree siblings by splitting wrappers,
+  // and merge wrappers when text nodes become layout tree siblings.
+  SetBodyInnerHTML(
+      "<div id='div' style='display:contents;color:pink'>A<!-- -->B</div>");
+  Element* div = GetDocument().getElementById("div");
+  ASSERT_TRUE(div);
+  Node* text1 = div->firstChild();
+  ASSERT_TRUE(text1);
+  Node* text2 = div->lastChild();
+  ASSERT_TRUE(text2);
+  EXPECT_NE(text1, text2);
+
+  ExpectAnonymousInlineWrapperFor<true>(text1);
+  ExpectAnonymousInlineWrapperFor<true>(text2);
+
+  EXPECT_NE(text1->GetLayoutObject()->Parent(),
+            text2->GetLayoutObject()->Parent());
 }
 
 }  // namespace blink

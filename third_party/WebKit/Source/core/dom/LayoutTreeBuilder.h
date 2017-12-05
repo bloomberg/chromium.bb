@@ -75,7 +75,19 @@ class LayoutTreeBuilder {
         layout_object_parent_->GetNode()->NeedsAttach())
       return nullptr;
 
-    return LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*node_);
+    LayoutObject* next =
+        LayoutTreeBuilderTraversal::NextSiblingLayoutObject(*node_);
+
+    // If a text node is wrapped in an anonymous inline for display:contents
+    // (see CreateInlineWrapperForDisplayContents()), use the wrapper as the
+    // next layout object. Otherwise we would need to add code to various
+    // AddChild() implementations to walk up the tree to find the correct
+    // layout tree parent/siblings.
+    if (next && next->IsText() && next->Parent()->IsAnonymous() &&
+        next->Parent()->IsInline()) {
+      return next->Parent();
+    }
+    return next;
   }
 
   Member<NodeType> node_;
@@ -110,8 +122,12 @@ class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
                            ComputedStyle* style_from_parent)
       : LayoutTreeBuilder(text, layout_parent), style_(style_from_parent) {}
 
-  scoped_refptr<ComputedStyle> style_;
   void CreateLayoutObject();
+
+ private:
+  LayoutObject* CreateInlineWrapperForDisplayContentsIfNeeded();
+
+  scoped_refptr<ComputedStyle> style_;
 };
 
 }  // namespace blink

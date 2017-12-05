@@ -2906,10 +2906,6 @@ crbug.com/786249 http/tests/inspector-protocol/network/response-interception-req
 # ====== Begin of display: contents tests ======
 
 crbug.com/181374 external/wpt/css/css-display/display-contents-dynamic-table-001-inline.html [ Failure ]
-crbug.com/717460 external/wpt/css/css-display/display-contents-first-letter-002.html [ Failure ]
-crbug.com/706316 external/wpt/css/css-display/display-contents-first-line-002.html [ Failure ]
-crbug.com/713019 external/wpt/css/css-display/display-contents-line-height.html [ Failure ]
-crbug.com/709808 external/wpt/css/css-display/display-contents-text-inherit.html [ Failure ]
 
 # ====== End of display: contents tests ======
 
