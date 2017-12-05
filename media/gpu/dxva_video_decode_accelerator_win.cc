@@ -1721,7 +1721,7 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
       use_dx11_ && gl::GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_keyed_mutex");
 
   if (!use_dx11_ ||
-      !gl::g_driver_egl.ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 ||
+      !gl::g_driver_egl.ext.b_EGL_ANGLE_stream_producer_d3d_texture ||
       !gl::g_driver_egl.ext.b_EGL_KHR_stream ||
       !gl::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
       !gl::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {

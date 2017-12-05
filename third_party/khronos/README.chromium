@@ -34,7 +34,7 @@ EGL/eglplatform.h
  - Added EGLNative*Type for native linux framebuffers.
 EGL/eglext.h
  - Added support for EGL_EXT_image_flush_external extension
- - Added support for EGL_ANGLE_stream_producer_d3d_texture_nv12
+ - Added support for EGL_ANGLE_stream_producer_d3d_texture
 KHR/khrplatform.h
  - Modified KHRONOS_APICALL
 DEPS

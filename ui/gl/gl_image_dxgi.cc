@@ -242,7 +242,7 @@ bool CopyingGLImageDXGI::Initialize() {
       EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE, 0, EGL_NONE,
   };
 
-  EGLBoolean result = eglStreamPostD3DTextureNV12ANGLE(
+  EGLBoolean result = eglStreamPostD3DTextureANGLE(
       egl_display, stream_, static_cast<void*>(decoder_copy_texture_.Get()),
       frame_attributes);
   if (!result)

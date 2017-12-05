@@ -64,8 +64,7 @@ typedef EGLSurface(GL_BINDING_CALL* eglCreatePixmapSurfaceProc)(
 typedef EGLStreamKHR(GL_BINDING_CALL* eglCreateStreamKHRProc)(
     EGLDisplay dpy,
     const EGLint* attrib_list);
-typedef EGLBoolean(
-    GL_BINDING_CALL* eglCreateStreamProducerD3DTextureNV12ANGLEProc)(
+typedef EGLBoolean(GL_BINDING_CALL* eglCreateStreamProducerD3DTextureANGLEProc)(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list);
@@ -232,7 +231,7 @@ typedef EGLBoolean(GL_BINDING_CALL* eglStreamConsumerGLTextureExternalKHRProc)(
 typedef EGLBoolean(GL_BINDING_CALL* eglStreamConsumerReleaseKHRProc)(
     EGLDisplay dpy,
     EGLStreamKHR stream);
-typedef EGLBoolean(GL_BINDING_CALL* eglStreamPostD3DTextureNV12ANGLEProc)(
+typedef EGLBoolean(GL_BINDING_CALL* eglStreamPostD3DTextureANGLEProc)(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     void* texture,
@@ -266,7 +265,7 @@ struct ExtensionsEGL {
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
   bool b_EGL_ANGLE_program_cache_control;
   bool b_EGL_ANGLE_query_surface_pointer;
-  bool b_EGL_ANGLE_stream_producer_d3d_texture_nv12;
+  bool b_EGL_ANGLE_stream_producer_d3d_texture;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
   bool b_EGL_CHROMIUM_sync_control;
   bool b_EGL_EXT_image_flush_external;
@@ -296,8 +295,8 @@ struct ProcsEGL {
   eglCreatePbufferSurfaceProc eglCreatePbufferSurfaceFn;
   eglCreatePixmapSurfaceProc eglCreatePixmapSurfaceFn;
   eglCreateStreamKHRProc eglCreateStreamKHRFn;
-  eglCreateStreamProducerD3DTextureNV12ANGLEProc
-      eglCreateStreamProducerD3DTextureNV12ANGLEFn;
+  eglCreateStreamProducerD3DTextureANGLEProc
+      eglCreateStreamProducerD3DTextureANGLEFn;
   eglCreateSyncKHRProc eglCreateSyncKHRFn;
   eglCreateWindowSurfaceProc eglCreateWindowSurfaceFn;
   eglDestroyContextProc eglDestroyContextFn;
@@ -349,7 +348,7 @@ struct ProcsEGL {
   eglStreamConsumerGLTextureExternalKHRProc
       eglStreamConsumerGLTextureExternalKHRFn;
   eglStreamConsumerReleaseKHRProc eglStreamConsumerReleaseKHRFn;
-  eglStreamPostD3DTextureNV12ANGLEProc eglStreamPostD3DTextureNV12ANGLEFn;
+  eglStreamPostD3DTextureANGLEProc eglStreamPostD3DTextureANGLEFn;
   eglSurfaceAttribProc eglSurfaceAttribFn;
   eglSwapBuffersProc eglSwapBuffersFn;
   eglSwapBuffersWithDamageKHRProc eglSwapBuffersWithDamageKHRFn;
@@ -408,7 +407,7 @@ class GL_EXPORT EGLApi {
                                               const EGLint* attrib_list) = 0;
   virtual EGLStreamKHR eglCreateStreamKHRFn(EGLDisplay dpy,
                                             const EGLint* attrib_list) = 0;
-  virtual EGLBoolean eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+  virtual EGLBoolean eglCreateStreamProducerD3DTextureANGLEFn(
       EGLDisplay dpy,
       EGLStreamKHR stream,
       EGLAttrib* attrib_list) = 0;
@@ -556,7 +555,7 @@ class GL_EXPORT EGLApi {
       EGLStreamKHR stream) = 0;
   virtual EGLBoolean eglStreamConsumerReleaseKHRFn(EGLDisplay dpy,
                                                    EGLStreamKHR stream) = 0;
-  virtual EGLBoolean eglStreamPostD3DTextureNV12ANGLEFn(
+  virtual EGLBoolean eglStreamPostD3DTextureANGLEFn(
       EGLDisplay dpy,
       EGLStreamKHR stream,
       void* texture,
@@ -596,8 +595,8 @@ class GL_EXPORT EGLApi {
 #define eglCreatePixmapSurface \
   ::gl::g_current_egl_context->eglCreatePixmapSurfaceFn
 #define eglCreateStreamKHR ::gl::g_current_egl_context->eglCreateStreamKHRFn
-#define eglCreateStreamProducerD3DTextureNV12ANGLE \
-  ::gl::g_current_egl_context->eglCreateStreamProducerD3DTextureNV12ANGLEFn
+#define eglCreateStreamProducerD3DTextureANGLE \
+  ::gl::g_current_egl_context->eglCreateStreamProducerD3DTextureANGLEFn
 #define eglCreateSyncKHR ::gl::g_current_egl_context->eglCreateSyncKHRFn
 #define eglCreateWindowSurface \
   ::gl::g_current_egl_context->eglCreateWindowSurfaceFn
@@ -665,8 +664,8 @@ class GL_EXPORT EGLApi {
   ::gl::g_current_egl_context->eglStreamConsumerGLTextureExternalKHRFn
 #define eglStreamConsumerReleaseKHR \
   ::gl::g_current_egl_context->eglStreamConsumerReleaseKHRFn
-#define eglStreamPostD3DTextureNV12ANGLE \
-  ::gl::g_current_egl_context->eglStreamPostD3DTextureNV12ANGLEFn
+#define eglStreamPostD3DTextureANGLE \
+  ::gl::g_current_egl_context->eglStreamPostD3DTextureANGLEFn
 #define eglSurfaceAttrib ::gl::g_current_egl_context->eglSurfaceAttribFn
 #define eglSwapBuffers ::gl::g_current_egl_context->eglSwapBuffersFn
 #define eglSwapBuffersWithDamageKHR \

@@ -142,8 +142,8 @@ void DriverEGL::InitializeExtensionBindings() {
       HasExtension(extensions, "EGL_ANGLE_program_cache_control");
   ext.b_EGL_ANGLE_query_surface_pointer =
       HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
-  ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 =
-      HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture_nv12");
+  ext.b_EGL_ANGLE_stream_producer_d3d_texture =
+      HasExtension(extensions, "EGL_ANGLE_stream_producer_d3d_texture");
   ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle =
       HasExtension(extensions, "EGL_ANGLE_surface_d3d_texture_2d_share_handle");
   ext.b_EGL_CHROMIUM_sync_control =
@@ -181,10 +181,10 @@ void DriverEGL::InitializeExtensionBindings() {
         GetGLProcAddress("eglCreateStreamKHR"));
   }
 
-  if (ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12) {
-    fn.eglCreateStreamProducerD3DTextureNV12ANGLEFn =
-        reinterpret_cast<eglCreateStreamProducerD3DTextureNV12ANGLEProc>(
-            GetGLProcAddress("eglCreateStreamProducerD3DTextureNV12ANGLE"));
+  if (ext.b_EGL_ANGLE_stream_producer_d3d_texture) {
+    fn.eglCreateStreamProducerD3DTextureANGLEFn =
+        reinterpret_cast<eglCreateStreamProducerD3DTextureANGLEProc>(
+            GetGLProcAddress("eglCreateStreamProducerD3DTextureANGLE"));
   }
 
   if (ext.b_EGL_KHR_image || ext.b_EGL_KHR_image_base) {
@@ -319,10 +319,10 @@ void DriverEGL::InitializeExtensionBindings() {
             GetGLProcAddress("eglStreamConsumerReleaseKHR"));
   }
 
-  if (ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12) {
-    fn.eglStreamPostD3DTextureNV12ANGLEFn =
-        reinterpret_cast<eglStreamPostD3DTextureNV12ANGLEProc>(
-            GetGLProcAddress("eglStreamPostD3DTextureNV12ANGLE"));
+  if (ext.b_EGL_ANGLE_stream_producer_d3d_texture) {
+    fn.eglStreamPostD3DTextureANGLEFn =
+        reinterpret_cast<eglStreamPostD3DTextureANGLEProc>(
+            GetGLProcAddress("eglStreamPostD3DTextureANGLE"));
   }
 
   if (ext.b_EGL_KHR_swap_buffers_with_damage) {
@@ -417,12 +417,12 @@ EGLStreamKHR EGLApiBase::eglCreateStreamKHRFn(EGLDisplay dpy,
   return driver_->fn.eglCreateStreamKHRFn(dpy, attrib_list);
 }
 
-EGLBoolean EGLApiBase::eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+EGLBoolean EGLApiBase::eglCreateStreamProducerD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list) {
-  return driver_->fn.eglCreateStreamProducerD3DTextureNV12ANGLEFn(dpy, stream,
-                                                                  attrib_list);
+  return driver_->fn.eglCreateStreamProducerD3DTextureANGLEFn(dpy, stream,
+                                                              attrib_list);
 }
 
 EGLSyncKHR EGLApiBase::eglCreateSyncKHRFn(EGLDisplay dpy,
@@ -716,13 +716,13 @@ EGLBoolean EGLApiBase::eglStreamConsumerReleaseKHRFn(EGLDisplay dpy,
   return driver_->fn.eglStreamConsumerReleaseKHRFn(dpy, stream);
 }
 
-EGLBoolean EGLApiBase::eglStreamPostD3DTextureNV12ANGLEFn(
+EGLBoolean EGLApiBase::eglStreamPostD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     void* texture,
     const EGLAttrib* attrib_list) {
-  return driver_->fn.eglStreamPostD3DTextureNV12ANGLEFn(dpy, stream, texture,
-                                                        attrib_list);
+  return driver_->fn.eglStreamPostD3DTextureANGLEFn(dpy, stream, texture,
+                                                    attrib_list);
 }
 
 EGLBoolean EGLApiBase::eglSurfaceAttribFn(EGLDisplay dpy,
@@ -857,14 +857,14 @@ EGLStreamKHR TraceEGLApi::eglCreateStreamKHRFn(EGLDisplay dpy,
   return egl_api_->eglCreateStreamKHRFn(dpy, attrib_list);
 }
 
-EGLBoolean TraceEGLApi::eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+EGLBoolean TraceEGLApi::eglCreateStreamProducerD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list) {
   TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::eglCreateStreamProducerD3DTextureNV12ANGLE")
-  return egl_api_->eglCreateStreamProducerD3DTextureNV12ANGLEFn(dpy, stream,
-                                                                attrib_list);
+      "gpu", "TraceGLAPI::eglCreateStreamProducerD3DTextureANGLE")
+  return egl_api_->eglCreateStreamProducerD3DTextureANGLEFn(dpy, stream,
+                                                            attrib_list);
 }
 
 EGLSyncKHR TraceEGLApi::eglCreateSyncKHRFn(EGLDisplay dpy,
@@ -1220,15 +1220,15 @@ EGLBoolean TraceEGLApi::eglStreamConsumerReleaseKHRFn(EGLDisplay dpy,
   return egl_api_->eglStreamConsumerReleaseKHRFn(dpy, stream);
 }
 
-EGLBoolean TraceEGLApi::eglStreamPostD3DTextureNV12ANGLEFn(
+EGLBoolean TraceEGLApi::eglStreamPostD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     void* texture,
     const EGLAttrib* attrib_list) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "TraceGLAPI::eglStreamPostD3DTextureNV12ANGLE")
-  return egl_api_->eglStreamPostD3DTextureNV12ANGLEFn(dpy, stream, texture,
-                                                      attrib_list);
+                                "TraceGLAPI::eglStreamPostD3DTextureANGLE")
+  return egl_api_->eglStreamPostD3DTextureANGLEFn(dpy, stream, texture,
+                                                  attrib_list);
 }
 
 EGLBoolean TraceEGLApi::eglSurfaceAttribFn(EGLDisplay dpy,
@@ -1420,14 +1420,14 @@ EGLStreamKHR DebugEGLApi::eglCreateStreamKHRFn(EGLDisplay dpy,
   return result;
 }
 
-EGLBoolean DebugEGLApi::eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+EGLBoolean DebugEGLApi::eglCreateStreamProducerD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list) {
-  GL_SERVICE_LOG("eglCreateStreamProducerD3DTextureNV12ANGLE"
+  GL_SERVICE_LOG("eglCreateStreamProducerD3DTextureANGLE"
                  << "(" << dpy << ", " << stream << ", "
                  << static_cast<const void*>(attrib_list) << ")");
-  EGLBoolean result = egl_api_->eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+  EGLBoolean result = egl_api_->eglCreateStreamProducerD3DTextureANGLEFn(
       dpy, stream, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
@@ -1965,16 +1965,16 @@ EGLBoolean DebugEGLApi::eglStreamConsumerReleaseKHRFn(EGLDisplay dpy,
   return result;
 }
 
-EGLBoolean DebugEGLApi::eglStreamPostD3DTextureNV12ANGLEFn(
+EGLBoolean DebugEGLApi::eglStreamPostD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     void* texture,
     const EGLAttrib* attrib_list) {
-  GL_SERVICE_LOG("eglStreamPostD3DTextureNV12ANGLE"
+  GL_SERVICE_LOG("eglStreamPostD3DTextureANGLE"
                  << "(" << dpy << ", " << stream << ", "
                  << static_cast<const void*>(texture) << ", "
                  << static_cast<const void*>(attrib_list) << ")");
-  EGLBoolean result = egl_api_->eglStreamPostD3DTextureNV12ANGLEFn(
+  EGLBoolean result = egl_api_->eglStreamPostD3DTextureANGLEFn(
       dpy, stream, texture, attrib_list);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;

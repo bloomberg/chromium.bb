@@ -1895,9 +1895,9 @@ EGL_FUNCTIONS = [
                  'extensions': ['EGL_KHR_stream'] }],
   'arguments': 'EGLDisplay dpy, const EGLint* attrib_list' },
 { 'return_type': 'EGLBoolean',
-    'versions': [{'name': 'eglCreateStreamProducerD3DTextureNV12ANGLE',
+    'versions': [{'name': 'eglCreateStreamProducerD3DTextureANGLE',
                   'extensions':
-                      ['EGL_ANGLE_stream_producer_d3d_texture_nv12']}],
+                      ['EGL_ANGLE_stream_producer_d3d_texture']}],
   'arguments':
       'EGLDisplay dpy, EGLStreamKHR stream, EGLAttrib* attrib_list', },
 { 'return_type': 'EGLSyncKHR',
@@ -2120,9 +2120,9 @@ EGL_FUNCTIONS = [
   'arguments':
       'EGLDisplay dpy, EGLStreamKHR stream', },
 { 'return_type': 'EGLBoolean',
-    'versions': [{ 'name': 'eglStreamPostD3DTextureNV12ANGLE',
+    'versions': [{ 'name': 'eglStreamPostD3DTextureANGLE',
                    'extensions':
-                       ['EGL_ANGLE_stream_producer_d3d_texture_nv12']}],
+                       ['EGL_ANGLE_stream_producer_d3d_texture']}],
   'arguments':
       'EGLDisplay dpy, EGLStreamKHR stream, void* texture, '
       'const EGLAttrib* attrib_list', },
