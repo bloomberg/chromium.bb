@@ -1,5 +1,20 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 3.5.0 (2018-03-05)
+For a detailed list of all the changes refer to [[https://github.com/liblouis/liblouis/milestone/15?closed=1][the list of closed
+issues]].
+
+** New features
+** Bug fixes
+** Braille table improvements
+** Other changes
+** Deprecation notice
+** Backwards incompatible changes
+** New, renamed or removed tables
+*** New
+*** Renamed
+*** Removed
+
 * Noteworthy changes in release 3.4.0 (2017-12-04)
 This release brings together a lot of work by lots of different
 people. Probably the most prominent fix is the work on output
