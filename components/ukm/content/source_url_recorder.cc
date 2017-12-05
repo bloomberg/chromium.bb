@@ -41,6 +41,8 @@ class SourceUrlRecorderWebContentsObserver
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+  ukm::SourceId GetLastCommittedSourceId();
+
  private:
   explicit SourceUrlRecorderWebContentsObserver(
       content::WebContents* web_contents);
@@ -53,12 +55,15 @@ class SourceUrlRecorderWebContentsObserver
   // Map from navigation ID to the initial URL for that navigation.
   base::flat_map<int64_t, GURL> pending_navigations_;
 
+  int64_t last_committed_source_id_;
+
   DISALLOW_COPY_AND_ASSIGN(SourceUrlRecorderWebContentsObserver);
 };
 
 SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      last_committed_source_id_(ukm::kInvalidSourceId) {}
 
 void SourceUrlRecorderWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -86,6 +91,14 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
   if (it == pending_navigations_.end())
     return;
 
+  DCHECK(navigation_handle->IsInMainFrame());
+  DCHECK(!navigation_handle->IsSameDocument());
+
+  if (navigation_handle->HasCommitted()) {
+    last_committed_source_id_ = ukm::ConvertToSourceId(
+        navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  }
+
   GURL initial_url = std::move(it->second);
   pending_navigations_.erase(it);
 
@@ -94,6 +107,10 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
     return;
 
   MaybeRecordUrl(navigation_handle, initial_url);
+}
+
+ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId() {
+  return last_committed_source_id_;
 }
 
 void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
@@ -134,6 +151,12 @@ namespace ukm {
 void InitializeSourceUrlRecorderForWebContents(
     content::WebContents* web_contents) {
   SourceUrlRecorderWebContentsObserver::CreateForWebContents(web_contents);
+}
+
+SourceId GetSourceIdForWebContentsDocument(content::WebContents* web_contents) {
+  SourceUrlRecorderWebContentsObserver* obs =
+      SourceUrlRecorderWebContentsObserver::FromWebContents(web_contents);
+  return obs ? obs->GetLastCommittedSourceId() : kInvalidSourceId;
 }
 
 }  // namespace ukm
