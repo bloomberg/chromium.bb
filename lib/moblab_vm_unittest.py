@@ -61,8 +61,10 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     # pylint:disable=protected-access
     self.bridge_name = 'network_bridge'
 
+    self.workspace = os.path.join(self.tempdir, 'workspace')
+    osutils.SafeMakedirs(self.workspace)
     self.moblab_from_path = os.path.join(self.tempdir, 'moblab_from')
-    self.moblab_workdir_path = os.path.join(self.tempdir,
+    self.moblab_workdir_path = os.path.join(self.workspace,
                                             moblab_vm._WORKSPACE_MOBLAB_DIR)
     self.moblab_image_path = os.path.join(self.moblab_workdir_path,
                                           'chromiumos_qemu_image.bin')
@@ -71,7 +73,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     self.moblab_kvm_pid_path = os.path.join(self.moblab_workdir_path, 'kvmpid')
 
     self.dut_from_path = os.path.join(self.tempdir, 'dut_from')
-    self.dut_workdir_path = os.path.join(self.tempdir,
+    self.dut_workdir_path = os.path.join(self.workspace,
                                          moblab_vm._WORKSPACE_DUT_DIR)
     self.dut_image_path = os.path.join(self.dut_workdir_path,
                                        'chromiumos_qemu_image.bin')
@@ -80,7 +82,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
 
   def testInstanceInitialization(self):
     """Sanity check attributes before using the instance for anything."""
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     self.assertFalse(vmsetup.initialized)
     self.assertFalse(vmsetup.running)
     self.assertFalse(vmsetup.dut_running)
@@ -91,7 +93,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
         self.moblab_workdir_path, 'chromiumos_qemu_image.bin')
     self._mock_create_moblab_disk.return_value = self.moblab_disk_path
 
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Create(self.moblab_from_path)
     self._mock_create_vm_image.assert_called_once_with(
         self.moblab_from_path, self.moblab_workdir_path)
@@ -110,7 +112,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     self._mock_create_moblab_disk.return_value = os.path.join(
         self.moblab_workdir_path, 'disk')
 
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Create(self.moblab_from_path, self.dut_from_path)
     self.assertEqual(
         self._mock_create_vm_image.call_args_list,
@@ -129,7 +131,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
 
   def testCreateNoCreateVmRaisesWhenSourceImageMissing(self):
     """A call to .Create w/o create_vm_images expects source image to exist."""
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     with self.assertRaises(moblab_vm.SetupError):
       vmsetup.Create(self.moblab_from_path, create_vm_images=False)
 
@@ -141,7 +143,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
                                    'chromiumos_qemu_image.bin'),
                       'fake_image')
 
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Create(self.moblab_from_path, create_vm_images=False)
     self.assertEqual(self._mock_create_vm_image.call_count, 0)
     self._mock_create_moblab_disk.assert_called_once_with(
@@ -152,7 +154,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
 
   def testStartWithoutCreateRaises(self):
     """Calling .Start before .Create is an error."""
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     with self.assertRaises(moblab_vm.StartError):
       vmsetup.Start()
 
@@ -183,7 +185,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
 
     # Create a new moblabvm instance. MoblabVm persists everything to disk an
     # must work seamlessly across instance discards.
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Start()
     self.assertTrue(vmsetup.initialized)
     self.assertTrue(vmsetup.running)
@@ -233,11 +235,11 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
                                                      self.dut_tap_dev])
     self._mock_start_kvm.side_effect = iter([self.moblab_kvm_pid_path,
                                              self.dut_kvm_pid_path])
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Start()
 
     # Verify .Stop releases global resources.
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Stop()
     self.assertEqual(self._mock_stop_kvm.call_args_list,
                      [mock.call(self.dut_kvm_pid_path),
@@ -249,7 +251,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
                      [mock.call(self.bridge_name)])
 
     # Verify that final state is persisted across instance discards.
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     self.assertFalse(vmsetup.running)
     self.assertFalse(vmsetup.dut_running)
 
@@ -263,12 +265,12 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
                                                      self.dut_tap_dev])
     self._mock_start_kvm.side_effect = iter([self.moblab_kvm_pid_path,
                                              _TestException])
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     with self.assertRaises(_TestException):
       vmsetup.Start()
 
     # Verify .Stop releases global resources.
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     vmsetup.Stop()
     self.assertEqual(self._mock_stop_kvm.call_args_list,
                      [mock.call(self.moblab_kvm_pid_path)])
@@ -279,7 +281,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
                      [mock.call(self.bridge_name)])
 
     # Verify that final state is persisted across instance discards.
-    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
     self.assertFalse(vmsetup.running)
     self.assertFalse(vmsetup.dut_running)
 
