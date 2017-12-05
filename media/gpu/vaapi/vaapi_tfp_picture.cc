@@ -72,7 +72,8 @@ bool VaapiTFPPicture::Initialize() {
 bool VaapiTFPPicture::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (format != gfx::BufferFormat::BGRX_8888 &&
-      format != gfx::BufferFormat::BGRA_8888) {
+      format != gfx::BufferFormat::BGRA_8888 &&
+      format != gfx::BufferFormat::RGBX_8888) {
     DLOG(ERROR) << "Unsupported format";
     return false;
   }
