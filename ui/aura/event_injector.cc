@@ -45,11 +45,21 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
 
   if (env->mode() == Env::Mode::LOCAL)
     return host->event_sink()->OnEventFromSource(event);
-  if (!window_server_ptr_) {
-    env->window_tree_client_->connector()->BindInterface(
-        ui::mojom::kServiceName, &window_server_ptr_);
+
+  if (event->IsLocatedEvent()) {
+    // The ui-service expects events coming in to have a location matching the
+    // root location. The non-ui-service code does this by way of
+    // OnEventFromSource() ending up in LocatedEvent::UpdateForRootTransform(),
+    // which reset the root_location to match the location.
+    event->AsLocatedEvent()->set_location_f(
+        event->AsLocatedEvent()->root_location_f());
   }
-  window_server_ptr_->DispatchEvent(
+
+  if (!remote_event_dispatcher_) {
+    env->window_tree_client_->connector()->BindInterface(
+        ui::mojom::kServiceName, &remote_event_dispatcher_);
+  }
+  remote_event_dispatcher_->DispatchEvent(
       host->GetDisplayId(), MapEvent(*event),
       base::Bind([](bool result) { DCHECK(result); }));
   return ui::EventDispatchDetails();

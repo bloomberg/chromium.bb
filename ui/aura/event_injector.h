@@ -28,7 +28,7 @@ class AURA_EXPORT EventInjector {
   ui::EventDispatchDetails Inject(WindowTreeHost* host, ui::Event* event);
 
  private:
-  ui::mojom::RemoteEventDispatcherPtr window_server_ptr_;
+  ui::mojom::RemoteEventDispatcherPtr remote_event_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(EventInjector);
 };
