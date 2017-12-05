@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -81,6 +82,10 @@ gfx::VSyncProvider* GbmSurfaceless::GetVSyncProvider() {
   return vsync_provider_.get();
 }
 
+bool GbmSurfaceless::SupportsPresentationCallback() {
+  return true;
+}
+
 bool GbmSurfaceless::SupportsAsyncSwap() {
   return true;
 }
@@ -103,12 +108,12 @@ gfx::SwapResult GbmSurfaceless::PostSubBuffer(
 void GbmSurfaceless::SwapBuffersAsync(
     const SwapCompletionCallback& completion_callback,
     const PresentationCallback& presentation_callback) {
-  // TODO(penghuang): Provide useful presentation feedback.
-  // https://crbug.com/776877
   TRACE_EVENT0("drm", "GbmSurfaceless::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
     completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
+    // Notify the caller, the buffer is never presented on a screen.
+    presentation_callback.Run(gfx::PresentationFeedback());
     return;
   }
 
@@ -117,9 +122,9 @@ void GbmSurfaceless::SwapBuffersAsync(
   glFlush();
   unsubmitted_frames_.back()->Flush();
 
-  SwapCompletionCallback surface_swap_callback =
+  auto surface_swap_callback =
       base::Bind(&GbmSurfaceless::SwapCompleted, weak_factory_.GetWeakPtr(),
-                 completion_callback);
+                 completion_callback, presentation_callback);
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->callback = surface_swap_callback;
@@ -145,6 +150,8 @@ void GbmSurfaceless::SwapBuffersAsync(
   EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
   if (!fence) {
     completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
+    // Notify the caller, the buffer is never presented on a screen.
+    presentation_callback.Run(gfx::PresentationFeedback());
     return;
   }
 
@@ -230,11 +237,12 @@ void GbmSurfaceless::SubmitFrame() {
     if (!frame->ScheduleOverlayPlanes(widget_)) {
       // |callback| is a wrapper for SwapCompleted(). Call it to properly
       // propagate the failed state.
-      frame->callback.Run(gfx::SwapResult::SWAP_FAILED);
+      std::move(frame->callback)
+          .Run(gfx::SwapResult::SWAP_FAILED, gfx::PresentationFeedback());
       return;
     }
 
-    window_->SchedulePageFlip(planes_, frame->callback);
+    window_->SchedulePageFlip(planes_, std::move(frame->callback));
     planes_.clear();
   }
 }
@@ -252,9 +260,13 @@ void GbmSurfaceless::FenceRetired(PendingFrame* frame) {
   SubmitFrame();
 }
 
-void GbmSurfaceless::SwapCompleted(const SwapCompletionCallback& callback,
-                                   gfx::SwapResult result) {
-  callback.Run(result);
+void GbmSurfaceless::SwapCompleted(
+    const SwapCompletionCallback& completion_callback,
+    const PresentationCallback& presentation_callback,
+    gfx::SwapResult result,
+    const gfx::PresentationFeedback& feedback) {
+  completion_callback.Run(result);
+  presentation_callback.Run(feedback);
   swap_buffers_pending_ = false;
   if (result == gfx::SwapResult::SWAP_FAILED) {
     last_swap_buffers_result_ = false;

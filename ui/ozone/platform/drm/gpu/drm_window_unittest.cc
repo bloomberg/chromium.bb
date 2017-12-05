@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
@@ -68,9 +69,11 @@ class DrmWindowTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void OnSwapBuffers(gfx::SwapResult result) {
+  void OnSwapBuffers(gfx::SwapResult result,
+                     const gfx::PresentationFeedback& feedback) {
     on_swap_buffers_count_++;
     last_swap_buffers_result_ = result;
+    last_presentation_feedback_ = feedback;
   }
 
  protected:
@@ -82,6 +85,7 @@ class DrmWindowTest : public testing::Test {
 
   int on_swap_buffers_count_;
   gfx::SwapResult last_swap_buffers_result_;
+  gfx::PresentationFeedback last_presentation_feedback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DrmWindowTest);
@@ -181,10 +185,12 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   EXPECT_EQ(1, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
             last_swap_buffers_result_);
+  EXPECT_EQ(gfx::PresentationFeedback(), last_presentation_feedback_);
 
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
       base::Bind(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(2, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);
+  EXPECT_EQ(gfx::PresentationFeedback(), last_presentation_feedback_);
 }

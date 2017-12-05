@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -193,7 +194,8 @@ void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
     bool result = window->SchedulePageFlip(planes, std::move(callback));
     CHECK(result) << "DrmThread::SchedulePageFlip failed.";
   } else {
-    std::move(callback).Run(gfx::SwapResult::SWAP_ACK);
+    std::move(callback).Run(gfx::SwapResult::SWAP_ACK,
+                            gfx::PresentationFeedback());
   }
 }
 

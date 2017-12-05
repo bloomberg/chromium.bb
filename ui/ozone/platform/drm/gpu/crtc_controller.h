@@ -18,6 +18,10 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager.h"
 #include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
+
 namespace ui {
 
 class DrmDevice;
@@ -72,7 +76,8 @@ class CrtcController : public base::SupportsWeakPtr<CrtcController> {
   // Called if the page flip event wasn't scheduled (ie: page flip fails). This
   // will then signal the request such that the caller doesn't wait for the
   // event forever.
-  void SignalPageFlipRequest(gfx::SwapResult result);
+  void SignalPageFlipRequest(gfx::SwapResult result,
+                             const gfx::PresentationFeedback& feedback);
 
   // Called when the page flip event occurred. The event is provided by the
   // kernel when a VBlank event finished. This allows the controller to

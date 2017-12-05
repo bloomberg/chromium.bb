@@ -51,6 +51,17 @@ struct PresentationFeedback {
   uint32_t flags = 0;
 };
 
+inline bool operator==(const PresentationFeedback& lhs,
+                       const PresentationFeedback& rhs) {
+  return lhs.timestamp == rhs.timestamp && lhs.interval == rhs.interval &&
+         lhs.flags == rhs.flags;
+}
+
+inline bool operator!=(const PresentationFeedback& lhs,
+                       const PresentationFeedback& rhs) {
+  return !(lhs == rhs);
+}
+
 }  // namespace gfx
 
 #endif  // UI_GFX_PRESENTAION_FEEDBACK_H_

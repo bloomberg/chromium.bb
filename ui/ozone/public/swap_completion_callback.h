@@ -8,9 +8,14 @@
 #include "base/callback.h"
 #include "ui/gfx/swap_result.h"
 
+namespace gfx {
+struct PresentationFeedback;
+}  // namespace gfx
+
 namespace ui {
 
-using SwapCompletionOnceCallback = base::OnceCallback<void(gfx::SwapResult)>;
+using SwapCompletionOnceCallback =
+    base::OnceCallback<void(gfx::SwapResult, const gfx::PresentationFeedback&)>;
 
 }  // namespace ui
 
