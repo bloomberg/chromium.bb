@@ -185,7 +185,7 @@
     Always use mirroring
   </message>
   <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_FULLSCREEN_VIDEOS_DROPDOWN_TITLE" desc="The title for a toggle setting to choose whether fullscreen videos should always be mirrored (played locally and remotely), or played only remotely.">
-    Show fullscreen videos on:
+    Show fullscreen videos on
   </message>
   <message name="IDS_MEDIA_ROUTER_ROUTE_DETAILS_FULLSCREEN_VIDEOS_BOTH_SCREENS" desc="Settings option to play fullscreen videos both locally and remotely.">
     Both screens

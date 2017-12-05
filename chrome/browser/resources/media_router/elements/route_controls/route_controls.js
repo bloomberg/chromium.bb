@@ -12,6 +12,20 @@ Polymer({
 
   properties: {
     /**
+     * Set of possible options for playing fullscreen videos when mirroring.
+     * @private {!Object}
+     */
+    FullscreenVideoOption_: {
+      type: Object,
+      value: {
+        // Play on remote screen only.
+        REMOTE_SCREEN: 'remote_screen',
+        // Play on both remote and local screens.
+        BOTH_SCREENS: 'both_screens'
+      }
+    },
+
+    /**
      * The current time displayed in seconds, before formatting.
      * @private {number}
      */
@@ -371,8 +385,16 @@ Polymer({
     }
     this.hangoutsLocalPresent_ = !!newRouteStatus.hangoutsExtraData &&
         newRouteStatus.hangoutsExtraData.localPresent;
-    this.mediaRemotingEnabled_ = !!newRouteStatus.mirroringExtraData &&
-        newRouteStatus.mirroringExtraData.mediaRemotingEnabled;
+    if (newRouteStatus.mirroringExtraData) {
+      // Manually update the selected value on the
+      // mirroring-fullscreen-video-dropdown dropbox.
+      // TODO(imcheng): Avoid doing this by wrapping the dropbox in a Polymer
+      // template, or introduce <paper-dropdown-menu> to the Polymer library.
+      this.$['mirroring-fullscreen-video-dropdown'].value =
+          newRouteStatus.mirroringExtraData.mediaRemotingEnabled ?
+          this.FullscreenVideoOption_.REMOTE_SCREEN :
+          this.FullscreenVideoOption_.BOTH_SCREENS;
+    }
   },
 
   /**
@@ -446,13 +468,16 @@ Polymer({
   },
 
   /**
-   * Called when the "always use mirroring" box is changed by the user.
-   * @param {!Event} e "always use mirroring" paper-checkbox's change event
+   * Called when the value on the mirroring-fullscreen-video-dropdown dropdown
+   * menu changes.
+   * @param {!Event} e
    * @private
    */
-  onMediaRemotingEnabledChange_: function(e) {
-    this.mediaRemotingEnabled_ = !e.target.checked;
-    media_router.browserApi.setMediaRemotingEnabled(this.mediaRemotingEnabled_);
+  onFullscreenVideoDropdownChange_: function(e) {
+    /** @const */ var dropdownValue =
+        this.$['mirroring-fullscreen-video-dropdown'].value;
+    media_router.browserApi.setMediaRemotingEnabled(
+        dropdownValue == this.FullscreenVideoOption_.REMOTE_SCREEN);
   },
 
   /**

@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
@@ -7,6 +8,7 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="route_controls.css">
   <template>
+    <style include="md-select"></style>
     <div id="media-controls">
       <div class="ellipsis" id="route-description"
            title="[[routeDescription_]]">
@@ -81,14 +83,22 @@
             </paper-checkbox>
           </div>
         </div>
-        <div id="media-remoting-enabled-controls"
+        <div id="mirroring-fullscreen-video-controls"
              hidden="[[!routeStatus.mirroringExtraData]]">
-          <paper-checkbox
-              checked="[[!mediaRemotingEnabled_]]"
-              id="always-use-mirroring-checkbox"
-              on-change="onMediaRemotingEnabledChange_">
-            <span>[[i18n('alwaysUseMirroringTitle')]]</span>
-          </paper-checkbox>
+          [[i18n('fullscreenVideosDropdownTitle')]]
+          <span class="md-select-wrapper">
+            <select class="md-select"
+                    id="mirroring-fullscreen-video-dropdown"
+                    on-change="onFullscreenVideoDropdownChange_">
+                <option value="[[FullscreenVideoOption_.REMOTE_SCREEN]]">
+                  [[i18n('fullscreenVideosRemoteScreen')]]
+                </option>
+                <option value="[[FullscreenVideoOption_.BOTH_SCREENS]]">
+                  [[i18n('fullscreenVideosBothScreens')]]
+                </option>
+            </select>
+            <span class="md-select-underline"></span>
+          </span>
         </div>
       </div>
     </div>

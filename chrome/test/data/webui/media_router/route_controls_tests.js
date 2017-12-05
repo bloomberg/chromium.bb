@@ -273,24 +273,29 @@ cr.define('route_controls', function() {
       });
 
       test('set media remoting enabled', function(done) {
-        assertElementHidden('media-remoting-enabled-controls');
+        assertElementHidden('mirroring-fullscreen-video-controls');
         let routeStatus = createRouteStatus();
         controls.routeStatus = routeStatus;
-        assertElementHidden('media-remoting-enabled-controls');
+        assertElementHidden('mirroring-fullscreen-video-controls');
 
         routeStatus = createRouteStatus();
         routeStatus.mirroringExtraData = {mediaRemotingEnabled: true};
         controls.routeStatus = routeStatus;
-        assertElementShown('media-remoting-enabled-controls');
-        assertFalse(controls.$$('#always-use-mirroring-checkbox').checked);
+        assertElementShown('mirroring-fullscreen-video-controls');
+        assertEquals(controls.FullscreenVideoOption_.REMOTE_SCREEN,
+            controls.$$('#mirroring-fullscreen-video-dropdown').value);
 
         document.addEventListener('mock-set-media-remoting-enabled',
             function(e) {
+              assertFalse(e.detail.enabled);
               done();
             });
 
-        MockInteractions.tap(controls.$$('#always-use-mirroring-checkbox'));
-        assertTrue(controls.$$('#always-use-mirroring-checkbox').checked);
+        // Simulate changing the dropdown menu value.
+        controls.$$('#mirroring-fullscreen-video-dropdown').value =
+            controls.FullscreenVideoOption_.BOTH_SCREENS;
+        controls.$$('#mirroring-fullscreen-video-dropdown').dispatchEvent(
+            new Event('change'));
       });
 
       test('hangouts local present mode', function(done) {

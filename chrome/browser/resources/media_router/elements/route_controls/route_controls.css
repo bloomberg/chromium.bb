@@ -84,12 +84,9 @@ paper-checkbox {
 }
 
 #hangouts-local-present-controls {
-  -webkit-font-smoothing: antialiased;
-  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   display: inline-block;
   float: right;
-  font-family: 'Roboto', 'Noto', sans-serif;
   padding-top: 10.5px;
   white-space: nowrap;
 }
@@ -105,16 +102,14 @@ paper-checkbox {
   width: 249px;
 }
 
-#always-use-mirroring-checkbox {
-  --paper-checkbox-vertical-align: middle;
-  --paper-checkbox-label-spacing: 10%;
-  padding: 0.3em 0 0.3em 0;
-  width: 100%;
-}
-
-#media-remoting-enabled-controls {
+#mirroring-fullscreen-video-controls {
   display: inline-block;
   font-size: 0.8em;
-  margin: 2px 8px;
-  width: 100%;
+  margin: 15px 8px 3px 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#mirroring-fullscreen-video-dropdown {
+  width: auto;
 }
