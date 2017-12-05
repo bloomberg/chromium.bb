@@ -81,6 +81,8 @@ readingListCollectionViewController:
 // Reloads all the data.
 - (void)reloadData;
 
++ (NSString*)accessibilityIdentifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_CONTROLLER_H_
