@@ -178,7 +178,7 @@ public class WebApkUma {
      * Chrome does not have that permission.
      */
     public static void recordAndroidRuntimePermissionDeniedInWebApk(final String[] permissions) {
-        recordPermissionUma("WebApk.Permission.ChromePermissionDenied", permissions);
+        recordPermissionUma("WebApk.Permission.ChromePermissionDenied2", permissions);
     }
 
     private static void recordPermissionUma(String permissionUmaName, final String[] permissions) {
