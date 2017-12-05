@@ -390,11 +390,11 @@ public class LocationBarPhone extends LocationBarLayout {
 
     @Override
     public void backKeyPressed() {
-        super.backKeyPressed();
-
         if (mCloseSheetOnBackButton) {
             mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
         }
         mCloseSheetOnBackButton = false;
+
+        super.backKeyPressed();
     }
 }
