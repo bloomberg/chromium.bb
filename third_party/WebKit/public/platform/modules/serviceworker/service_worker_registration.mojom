@@ -23,7 +23,7 @@ enum ServiceWorkerUpdateViaCache {
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 struct ServiceWorkerRegistrationOptions {
   url.mojom.Url scope;
-  // TODO(yuryu): Other values will be added as they are supported later.
+  ServiceWorkerUpdateViaCache update_via_cache = kImports;
 };
 
 // Describes a ServiceWorkerRegistration:

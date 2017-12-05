@@ -364,9 +364,10 @@ class ServiceWorkerStorageTest : public testing::Test {
   scoped_refptr<ServiceWorkerRegistration> CreateLiveRegistrationAndVersion(
       const GURL& scope,
       const GURL& script) {
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope;
     auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-        blink::mojom::ServiceWorkerRegistrationOptions(scope),
-        storage()->NewRegistrationId(), context()->AsWeakPtr());
+        options, storage()->NewRegistrationId(), context()->AsWeakPtr());
     auto version = base::MakeRefCounted<ServiceWorkerVersion>(
         registration.get(), script, storage()->NewVersionId(),
         context()->AsWeakPtr());
@@ -638,10 +639,11 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             GetAllRegistrationsInfos(&all_registrations));
 
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
-          kRegistrationId, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(options, kRegistrationId,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
@@ -721,10 +723,11 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   resources.push_back(ResourceRecord(2, kResource2, kResource2Size));
 
   // Store something.
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
-          kRegistrationId, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(options, kRegistrationId,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kResource1, kVersionId, context()->AsWeakPtr());
   live_version->set_fetch_handler_existence(
@@ -838,9 +841,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // Trying to update a unstored registration to active should fail.
   scoped_refptr<ServiceWorkerRegistration> unstored_registration =
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
-          kRegistrationId + 1, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(options, kRegistrationId + 1,
+                                    context()->AsWeakPtr());
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             UpdateToActiveState(unstored_registration));
   unstored_registration = nullptr;
@@ -888,10 +890,11 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
   // Create an unstored registration.
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
-          kRegistrationId, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(options, kRegistrationId,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
       live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
@@ -1831,10 +1834,11 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   const GURL kScript("https://valid.example.com/script.js");
   const int64_t kRegistrationId = 1;
   const int64_t kVersionId = 1;
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(kScope),
-          kRegistrationId, context()->AsWeakPtr());
+      new ServiceWorkerRegistration(options, kRegistrationId,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), kScript, kVersionId, context()->AsWeakPtr());
 

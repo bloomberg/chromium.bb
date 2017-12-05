@@ -34,6 +34,7 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "public/platform/modules/serviceworker/service_worker_registration.mojom-shared.h"
 
 #include <memory>
 
@@ -102,9 +103,12 @@ class WebServiceWorkerProvider {
 
   // For ServiceWorkerContainer#register(). Requests the embedder to register a
   // service worker.
+  // TODO(yuryu): Use the blink::mojom::RegistrationOptions type after Onion
+  // Soup.
   virtual void RegisterServiceWorker(
       const WebURL& pattern,
       const WebURL& script_url,
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) {}
   // For ServiceWorkerContainer#getRegistration(). Requests the embedder to
   // return a registration.

@@ -1433,9 +1433,10 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   if (registration)
     return registration;
 
-  registration = new ServiceWorkerRegistration(
-      blink::mojom::ServiceWorkerRegistrationOptions(data.scope),
-      data.registration_id, context_);
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = data.scope;
+  registration =
+      new ServiceWorkerRegistration(options, data.registration_id, context_);
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
   if (pending_deletions_.find(data.registration_id) !=

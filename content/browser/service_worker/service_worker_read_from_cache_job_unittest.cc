@@ -91,10 +91,10 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     run_loop.Run();
 
     // Populate a registration in the storage.
-    registration_ = new ServiceWorkerRegistration(
-        blink::mojom::ServiceWorkerRegistrationOptions(
-            GURL("http://example.com/scope")),
-        kRegistrationId, context()->AsWeakPtr());
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = GURL("http://example.com/scope");
+    registration_ = new ServiceWorkerRegistration(options, kRegistrationId,
+                                                  context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(registration_.get(), main_script_.url,
                                         kVersionId, context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> resources;

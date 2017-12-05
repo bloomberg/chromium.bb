@@ -81,8 +81,8 @@ class ServiceWorkerDataPipeReaderTest
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     mock_url_request_job_ =
         std::make_unique<MockServiceWorkerURLRequestJob>(this);
-    blink::mojom::ServiceWorkerRegistrationOptions options(
-        GURL("https://example.com/"));
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = GURL("https://example.com/");
     registration_ = new ServiceWorkerRegistration(
         options, 1L, helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(

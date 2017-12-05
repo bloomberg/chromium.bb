@@ -287,9 +287,10 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
     return;
   }
 
-  set_registration(new ServiceWorkerRegistration(
-      blink::mojom::ServiceWorkerRegistrationOptions(pattern_), registration_id,
-      context_));
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = pattern_;
+  set_registration(
+      new ServiceWorkerRegistration(options, registration_id, context_));
   AddRegistrationToMatchingProviderHosts(registration());
   UpdateAndContinue();
 }

@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_usage_info.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -81,8 +82,8 @@ class ServiceWorkerContext {
   virtual void AddObserver(ServiceWorkerContextObserver* observer) = 0;
   virtual void RemoveObserver(ServiceWorkerContextObserver* observer) = 0;
 
-  // Equivalent to calling navigator.serviceWorker.register(script_url, {scope:
-  // scope}). |callback| is passed true when the JS promise is fulfilled or
+  // Equivalent to calling navigator.serviceWorker.register(script_url,
+  // options). |callback| is passed true when the JS promise is fulfilled or
   // false when the JS promise is rejected.
   //
   // The registration can fail if:
@@ -93,9 +94,10 @@ class ServiceWorkerContext {
   //
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
-  virtual void RegisterServiceWorker(const GURL& scope,
-                                     const GURL& script_url,
-                                     ResultCallback callback) = 0;
+  virtual void RegisterServiceWorker(
+      const GURL& script_url,
+      const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      ResultCallback callback) = 0;
 
   // Equivalent to calling ServiceWorkerRegistration#unregister on the
   // registration for |scope|. |callback| is passed true when the JS promise is

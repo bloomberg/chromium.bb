@@ -115,9 +115,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   base::RunLoop run_loop;
-  GetServiceWorkerContext()->RegisterServiceWorker(
+  blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL("/"),
-      embedded_test_server()->GetURL("/service_worker.js"),
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  GetServiceWorkerContext()->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/service_worker.js"), options,
       base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -139,9 +141,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   Browser* incognito = CreateIncognitoBrowser();
 
   base::RunLoop run_loop;
-  GetServiceWorkerContext()->RegisterServiceWorker(
+  blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL("/"),
-      embedded_test_server()->GetURL("/service_worker.js"),
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  GetServiceWorkerContext()->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/service_worker.js"), options,
       base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -166,9 +170,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                                  CONTENT_SETTING_BLOCK);
 
   base::RunLoop run_loop;
-  GetServiceWorkerContext()->RegisterServiceWorker(
+  blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL("/"),
-      embedded_test_server()->GetURL("/service_worker.js"),
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  GetServiceWorkerContext()->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/service_worker.js"), options,
       base::Bind(&ExpectResultAndRun<bool>, false, run_loop.QuitClosure()));
   run_loop.Run();
 }
@@ -687,9 +693,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest,
             "self.onfetch = function(e) {};");
   InitializeServer();
   base::RunLoop run_loop;
-  GetServiceWorkerContext()->RegisterServiceWorker(
+  blink::mojom::ServiceWorkerRegistrationOptions options(
       embedded_test_server()->GetURL("/scope/"),
-      embedded_test_server()->GetURL("/sw.js"),
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  GetServiceWorkerContext()->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/sw.js"), options,
       base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
   RunNavigationHintTest("/scope/",

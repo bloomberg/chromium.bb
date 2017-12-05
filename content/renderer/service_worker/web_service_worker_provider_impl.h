@@ -44,6 +44,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   void RegisterServiceWorker(
       const blink::WebURL& web_pattern,
       const blink::WebURL& web_script_url,
+      blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) override;
   void GetRegistration(
       const blink::WebURL& web_document_url,

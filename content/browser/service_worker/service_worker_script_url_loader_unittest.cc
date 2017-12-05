@@ -164,9 +164,10 @@ class ServiceWorkerScriptURLLoaderTest : public testing::Test {
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
   // called before DoRequest().
   void SetUpRegistration(const GURL& script_url, const GURL& scope) {
+    blink::mojom::ServiceWorkerRegistrationOptions options;
+    options.scope = scope;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        blink::mojom::ServiceWorkerRegistrationOptions(scope), 1L,
-        helper_->context()->AsWeakPtr());
+        options, 1L, helper_->context()->AsWeakPtr());
     version_ = base::MakeRefCounted<ServiceWorkerVersion>(
         registration_.get(), script_url, 1L, helper_->context()->AsWeakPtr());
     version_->SetStatus(ServiceWorkerVersion::NEW);

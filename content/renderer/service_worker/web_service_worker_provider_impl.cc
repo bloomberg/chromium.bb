@@ -75,6 +75,7 @@ void WebServiceWorkerProviderImpl::SetClient(
 void WebServiceWorkerProviderImpl::RegisterServiceWorker(
     const WebURL& web_pattern,
     const WebURL& web_script_url,
+    blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks) {
   DCHECK(callbacks);
 
@@ -102,7 +103,8 @@ void WebServiceWorkerProviderImpl::RegisterServiceWorker(
   TRACE_EVENT_ASYNC_BEGIN2(
       "ServiceWorker", "WebServiceWorkerProviderImpl::RegisterServiceWorker",
       this, "Scope", pattern.spec(), "Script URL", script_url.spec());
-  auto options = blink::mojom::ServiceWorkerRegistrationOptions::New(pattern);
+  auto options = blink::mojom::ServiceWorkerRegistrationOptions::New(
+      pattern, update_via_cache);
   context_->container_host()->Register(
       script_url, std::move(options),
       base::BindOnce(&WebServiceWorkerProviderImpl::OnRegistered,
