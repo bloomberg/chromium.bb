@@ -268,7 +268,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
 
     @Override
     public String getSourceId() {
-        return mSource.getUrn();
+        return mSource.getSourceId();
     }
 
     @Override
