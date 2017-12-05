@@ -192,6 +192,12 @@ public class ChildProcessLauncherHelper {
             } else {
                 // We only support sandboxed utility processes now.
                 assert ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType);
+
+                // Remove sandbox restriction on network service process.
+                if (ContentSwitches.NETWORK_SANDBOX_TYPE.equals(ContentSwitches.getSwitchValue(
+                            commandLine, ContentSwitches.SWITCH_SERVICE_SANDBOX_TYPE))) {
+                    sandboxed = false;
+                }
             }
         }
 

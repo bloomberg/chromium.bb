@@ -71,6 +71,12 @@ public abstract class ContentSwitches {
     // Native switch kHostResolverRules
     public static final String HOST_RESOLVER_RULES = "host-resolver-rules";
 
+    // Native switch kServiceSandboxType
+    public static final String SWITCH_SERVICE_SANDBOX_TYPE = "service-sandbox-type";
+
+    // Native switch value kNetworkSandbox
+    public static final String NETWORK_SANDBOX_TYPE = "network";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 
