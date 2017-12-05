@@ -1,11 +1,13 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/elements-panel-shadow-selection-on-refresh.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that elements panel preserves selected shadow DOM node on page refresh.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.navigatePromise('../resources/elements-panel-shadow-selection-on-refresh.html');
+
   TestRunner.runTestSuite([
     function setup(next) {
       Common.settingForTest('showUAShadowDOM').set(true);
@@ -28,21 +30,4 @@ function test() {
   function isClosedShadowRoot(node) {
     return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that elements panel preserves selected shadow DOM node on page refresh.
-</p>
-<span id="hostElement"></span><span id="closedHostElement"></span>
-<script>
-var root = document.getElementById("hostElement").createShadowRoot();
-root.innerHTML = "<input type='text'>";
-var closedRoot = document.getElementById("closedHostElement").attachShadow({mode: 'closed'});
-closedRoot.innerHTML = "<button></button>";
-</script>
-</body>
-</html>
+})();

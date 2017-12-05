@@ -1,22 +1,14 @@
-Tests that iframe content is available after iframe's load event fired. See bug 76552.
-
+Tests that iframe content is available after iframe's load event fired. See http://webkit.org/b/76552
 
 
 
 After frame navigate
 - <html>
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/iframe-load-event-iframe.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
     - <body>
-        - <p>
-              "\nTests that iframe content is available after iframe's load event fired. See "
-              <a href="http://webkit.org/b/76552">bug 76552</a>
-              ".\n"
-          </p>
-        - <iframe id="myframe" src="resources/iframe-load-event-iframe-2.html" onload="runTest()">
+        - <iframe src="resources/iframe-load-event-iframe-2.html" id="myframe" name>
             - #document
                 - <html>
                       <head></head>

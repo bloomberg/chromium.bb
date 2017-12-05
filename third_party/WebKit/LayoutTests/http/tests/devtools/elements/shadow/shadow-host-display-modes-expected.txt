@@ -1,6 +1,5 @@
 Tests that distributed nodes and their updates are correctly shown in different shadow host display modes.
 
-oldest distributed text
 ========= Original ========
 - <div id="shadowHost">
       <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
