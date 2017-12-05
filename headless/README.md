@@ -136,7 +136,8 @@ Bug tracker: [Internals>Headless](https://bugs.chromium.org/p/chromium/issues/li
 * [Deterministic page loading for Blink](https://docs.google.com/document/d/19s2g4fPP9p9qmMZvwPX8uDGbb-39rgR9k56B4B-ueG8/edit#)
 * [Crash dumps for Headless Chrome](https://docs.google.com/document/d/1l6AGOOBLk99PaAKoZQW_DVhM8FQ6Fut27lD938CRbTM/edit)
 * [Runtime headless mode for Chrome](https://docs.google.com/document/d/1aIJUzQr3eougZQp90bp4mqGr5gY6hdUice8UPa-Ys90/edit#)
-* [Virtual Time in Blink](https://docs.google.com/document/d/1y9kdt_zezt7pbey6uzvt1dgklwc1ob_vy4nzo1zbqmo/edit#heading=h.tn3gd1y9ifml)
+* [Virtual Time in
+  Blink](https://docs.google.com/document/d/1y9KDT_ZEzT7pBeY6uzVt1dgKlwc1OB_vY4NZO1zBQmo/edit?usp=sharing)
 * [Headless Chrome architecture](https://docs.google.com/document/d/11zIkKkLBocofGgoTeeyibB2TZ_k7nR78v7kNelCatUE/edit)
 * [Headless Chrome C++ DevTools API](https://docs.google.com/document/d/1rlqcp8nk-ZQvldNJWdbaMbwfDbJoOXvahPCDoPGOwhQ/edit#heading=h.ng2bxb15li9a)
 * [Session isolation in Headless Chrome](https://docs.google.com/document/d/1XAKvrxtSEoe65vNghSWC5S3kJ--z2Zpt2UWW1Fi8GiM/edit)
