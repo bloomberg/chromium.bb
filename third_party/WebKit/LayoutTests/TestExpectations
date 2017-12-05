@@ -3636,7 +3636,7 @@ crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-inactive-p
 crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789567 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789478 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
-crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure ]
+crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure Timeout ]
 # Sheriff failures 2017-11-30
 crbug.com/789921 [ Win7 ] media/video-controls-overflow-menu-last-button-visible.html [ Pass Failure ]
 crbug.com/789111 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
