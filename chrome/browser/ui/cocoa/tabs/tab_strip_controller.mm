@@ -93,7 +93,6 @@ const CGFloat kLastPinnedTabSpacing = 2.0;
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 10.0;
 
-// Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
@@ -410,6 +409,10 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
 @synthesize leadingIndentForControls = leadingIndentForControls_;
 @synthesize trailingIndentForControls = trailingIndentForControls_;
+
++ (CGFloat)tabAnimationDuration {
+  return kAnimationDuration;
+}
 
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView

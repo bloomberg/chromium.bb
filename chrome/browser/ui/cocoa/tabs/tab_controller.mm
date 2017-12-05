@@ -19,6 +19,7 @@
 #import "chrome/browser/ui/cocoa/sprite_view.h"
 #import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "extensions/common/extension.h"
@@ -317,20 +318,31 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 }
 
 - (void)updateIconViewFrameWithAnimation:(BOOL)shouldAnimate {
-  NSRect iconViewFrame = [iconView_ frame];
+  static const CGFloat kPinnedTabLeadingPadding =
+      std::floor((kPinnedTabWidth - gfx::kFaviconSize) / 2.0);
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
 
-  if ([self pinned]) {
-    // Center the icon.
-    iconViewFrame.origin.x =
-        std::floor(([TabController pinnedTabWidth] - gfx::kFaviconSize) / 2.0);
-  } else {
-    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
-    iconViewFrame.origin.x =
-        isRTL ? kInitialTabWidth - kTabLeadingPadding - gfx::kFaviconSize
-              : kTabLeadingPadding;
-  }
+  // Determine the padding between the iconView and the tab edge.
+  CGFloat leadingPadding =
+      [self pinned] ? kPinnedTabLeadingPadding : kTabLeadingPadding;
 
-  if (shouldAnimate) {
+  NSRect iconViewFrame;
+  iconViewFrame.origin.x = isRTL ? NSWidth([[self tabView] frame]) -
+                                       leadingPadding - gfx::kFaviconSize
+                                 : leadingPadding;
+
+  // As long as the iconView gets repeatedly created and destroyed we have to
+  // initialize the other struct values. Once the iconView gets created a single
+  // time per tab we can rely on the values that get set in -init (and remove
+  // these lines).
+  iconViewFrame.origin.y = kTabElementYOrigin;
+  iconViewFrame.size = NSMakeSize(gfx::kFaviconSize, gfx::kFaviconSize);
+
+  // The iconView animation looks funky in RTL so don't allow it.
+  if (shouldAnimate && !isRTL) {
+    // Animate at the same rate as the tab changes shape.
+    [[NSAnimationContext currentContext]
+        setDuration:[TabStripController tabAnimationDuration]];
     [[iconView_ animator] setFrame:iconViewFrame];
   } else {
     [iconView_ setFrame:iconViewFrame];
@@ -465,24 +477,7 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 
     [iconView_ setImage:image withToastAnimation:animate];
 
-    if ([self pinned]) {
-      NSRect appIconFrame = [iconView_ frame];
-
-      const CGFloat tabWidth = [TabController pinnedTabWidth];
-
-      // Center the icon.
-      appIconFrame.origin = NSMakePoint(
-          std::floor((tabWidth - gfx::kFaviconSize) / 2.0), kTabElementYOrigin);
-      [iconView_ setFrame:appIconFrame];
-    } else {
-      const CGFloat tabWidth = NSWidth([[self tabView] frame]);
-      const CGFloat iconOrigin =
-          isRTL ? tabWidth - gfx::kFaviconSize - kTabLeadingPadding
-                : kTabLeadingPadding;
-      NSRect iconFrame = NSMakeRect(iconOrigin, kTabElementYOrigin,
-                                    gfx::kFaviconSize, gfx::kFaviconSize);
-      [iconView_ setFrame:iconFrame];
-    }
+    [self updateIconViewFrameWithAnimation:NO];
   }
 
   [self updateAttentionIndicator];
