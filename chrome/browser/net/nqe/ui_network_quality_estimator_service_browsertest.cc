@@ -110,16 +110,6 @@ class UINetworkQualityEstimatorServiceBrowserTest
     // EffectiveConnectionType.
     Profile* profile = ProfileManager::GetActiveUserProfile();
 
-    bool network_id_available = true;
-    if (net::NetworkChangeNotifier::GetConnectionType() ==
-            net::NetworkChangeNotifier::CONNECTION_UNKNOWN ||
-        net::NetworkChangeNotifier::GetConnectionType() ==
-            net::NetworkChangeNotifier::CONNECTION_NONE ||
-        net::NetworkChangeNotifier::GetConnectionType() ==
-            net::NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
-      network_id_available = false;
-    }
-
     UINetworkQualityEstimatorService* nqe_service =
         UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
     ASSERT_NE(nullptr, nqe_service);
@@ -133,10 +123,9 @@ class UINetworkQualityEstimatorServiceBrowserTest
       EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
                 nqe_service->GetEffectiveConnectionType());
 
-      // Prefs are written only if the network id was available, and persistent
-      // caching was enabled.
-      EXPECT_NE(network_id_available,
-                histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
+      // Prefs are written only if persistent caching was enabled.
+      EXPECT_FALSE(
+          histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
       histogram_tester.ExpectTotalCount("NQE.Prefs.ReadCount", 0);
 
       // NetworkQualityEstimator should not be notified of change in prefs.
@@ -151,9 +140,9 @@ class UINetworkQualityEstimatorServiceBrowserTest
       EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                 nqe_service->GetEffectiveConnectionType());
 
-      // Prefs are written only if the network id was available.
-      EXPECT_NE(network_id_available,
-                histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
+      // Prefs are written even if the network id was unavailable.
+      EXPECT_FALSE(
+          histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
       histogram_tester.ExpectTotalCount("NQE.Prefs.ReadCount", 0);
 
       // NetworkQualityEstimator should not be notified of change in prefs.
@@ -164,20 +153,24 @@ class UINetworkQualityEstimatorServiceBrowserTest
     std::map<net::nqe::internal::NetworkID,
              net::nqe::internal::CachedNetworkQuality>
         read_prefs = nqe_service->ForceReadPrefsForTesting();
-    EXPECT_EQ(network_id_available ? 1u : 0u, read_prefs.size());
-    if (network_id_available) {
-      // Verify that the cached network quality was written correctly.
-      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-                read_prefs.begin()->second.effective_connection_type());
-      if (net::NetworkChangeNotifier::GetConnectionType() ==
-          net::NetworkChangeNotifier::CONNECTION_ETHERNET) {
-        // Verify that the network ID was written correctly.
-        net::nqe::internal::NetworkID ethernet_network_id(
-            net::NetworkChangeNotifier::CONNECTION_ETHERNET, std::string(),
-            INT32_MIN);
-        EXPECT_EQ(ethernet_network_id, read_prefs.begin()->first);
+    // Number of entries must be between 1 and 2. It's possible that 2 entries
+    // are added if the connection type is unknown to network quality estimator
+    // at the time of startup, and shortly after it receives a notification
+    // about the change in the connection type.
+    EXPECT_LE(1u, read_prefs.size());
+    EXPECT_GE(2u, read_prefs.size());
+
+    // Verify that the cached network quality was written correctly.
+    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
+              read_prefs.begin()->second.effective_connection_type());
+    if (net::NetworkChangeNotifier::GetConnectionType() ==
+        net::NetworkChangeNotifier::CONNECTION_ETHERNET) {
+      // Verify that the network ID was written correctly.
+      net::nqe::internal::NetworkID ethernet_network_id(
+          net::NetworkChangeNotifier::CONNECTION_ETHERNET, std::string(),
+          INT32_MIN);
+      EXPECT_EQ(ethernet_network_id, read_prefs.begin()->first);
       }
-    }
   }
 
  private:
