@@ -293,24 +293,7 @@
     'machines': {
       'Fuchsia ARM64': {
         'additional_compile_targets': [
-          'base_unittests',
-          'content_unittests',
-          'crypto_unittests',
-          'gl_unittests',
-          'headless_shell',
-          'ipc_tests',
-          'media_unittests',
-          'mojo_common_unittests',
-          'mojo_js_unittests',
-          'mojo_public_bindings_unittests',
-          'mojo_public_system_unittests',
-          'mojo_system_unittests',
-          'net_unittests',
-          'service_manager_unittests',
-          'skia_unittests',
-          'sql_unittests',
-          'ui_base_unittests',
-	  'webkit_unit_tests',
+          'gn_all',
         ],
       },
       'Fuchsia ARM64 Cast Audio': {
@@ -364,22 +347,7 @@
       },
       'Fuchsia x64': {
         'additional_compile_targets': [
-          'base_unittests',
-          'content_browsertests',
-          'content_shell',
-          'gl_unittests',
-          'headless_shell',
-          'ipc_tests',
-          'media_unittests',
-          'mojo_common_unittests',
-          'mojo_js_unittests',
-          'mojo_public_bindings_unittests',
-          'mojo_public_system_unittests',
-          'mojo_system_unittests',
-          'net_unittests',
-          'service_manager_unittests',
-          'ui_base_unittests',
-	  'webkit_unit_tests',
+          'gn_all',
         ],
         'swarming': {
           'dimension_sets': [

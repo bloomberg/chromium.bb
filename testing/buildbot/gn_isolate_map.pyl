@@ -387,10 +387,6 @@
     "label": "//content/public/android:content_junit_tests",
     "type": "junit_test",
   },
-  "content_shell": {
-    "label": "//content/shell:content_shell",
-    "type": "raw",
-  },
   "content_shell_crash_test": {
     "label": "//content/shell:content_shell_crash_test",
     "type": "script",
@@ -530,6 +526,10 @@
     "label_type": "group",
     "type": "windowed_test_launcher",
     "executable": "gl_unittests",
+  },
+  "gn_all": {
+    "label": "//:gn_all",
+    "type": "additional_compile_target",
   },
   "gn_unittests": {
     "label": "//tools/gn:gn_unittests",
