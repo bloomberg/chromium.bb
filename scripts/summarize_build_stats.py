@@ -329,6 +329,18 @@ class CLStatsEngine(object):
     rejection_counts = [0] * (good_patch_count - len(good_patch_rejections))
     rejection_counts += [len(x) for x in good_patch_rejections.values()]
 
+    # Count how many times good patches were exonerated
+    total_exonerations = 0
+    unique_exonerations = 0
+    for good_rejected_patch in good_patch_rejections.keys():
+      print('Examining %s' % str(good_rejected_patch))
+      actions = self.claction_history.GetCLOrPatchActions(good_rejected_patch)
+      actions = [a for a in actions
+                 if a.action == constants.CL_ACTION_EXONERATED]
+      if actions:
+        unique_exonerations += 1
+        total_exonerations += len(actions)
+
     # Break down the frequency of how many times each patch is rejected.
     good_patch_rejection_breakdown = []
     if rejection_counts:
@@ -381,6 +393,8 @@ class CLStatsEngine(object):
         'good_patch_rejections_90': numpy.percentile(rejection_counts, 90),
         'good_patch_rejections_95': numpy.percentile(rejection_counts, 95),
         'good_patch_rejections_99': numpy.percentile(rejection_counts, 99),
+        'total_exonerations': total_exonerations,
+        'unique_exonerations': unique_exonerations,
         'false_rejection_rate': false_rejection_rate,
         'median_handling_time': numpy.median(patch_handle_times),
         'patch_handling_time': patch_handle_times,
@@ -630,10 +644,11 @@ Pre-cq times available on <a href="http://shortn/_ZP8ivoYPUZ">monarch history</a
 The slowest passing slaves (accounting for CQ self-destruct, relevance detection, and history-aware-submit logic) are available as a <A href="http://shortn/_RBQNer8DDk">monarch history</A>.
 
 
-<h2>False rejections</h2>
+<h2>False rejections and Exonerations thereof</h2>
 <p>
 The pre-CQ + CQ <b>incorrectly rejected [{patch_flake_rejections}] unique changes a total of [{false_rejection_total}] times</b> this week. (Pre-CQ:[{false_rejection_pre_cq}]; CQ: [{false_rejection_cq}])<br>
 The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ is [{false_rejection_rate[combined]:.2f}]%. (Pre-CQ:[{false_rejection_rate[pre-cq]:.2f}]%; CQ: [{false_rejection_rate[cq]:.2f}])<br>
+The CL exonerated <b>[{unique_exonerations}] unique good changes a total of [{total_exonerations}] times this week</b> saving the need for the developer to CQ+1.
 
 
 </p>
