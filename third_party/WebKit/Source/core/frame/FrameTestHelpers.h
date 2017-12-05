@@ -35,6 +35,8 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+
+#include "base/macros.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/Settings.h"
 #include "platform/WebTaskRunner.h"
@@ -210,8 +212,6 @@ class TestWebViewClient : public WebViewClient {
 // Convenience class for handling the lifetime of a WebView and its associated
 // mainframe in tests.
 class WebViewHelper {
-  WTF_MAKE_NONCOPYABLE(WebViewHelper);
-
  public:
   WebViewHelper();
   ~WebViewHelper();
@@ -277,6 +277,8 @@ class WebViewHelper {
   // Non-null if the WebViewHelper owns the TestWebViewClient.
   std::unique_ptr<TestWebViewClient> owned_test_web_view_client_;
   TestWebViewClient* test_web_view_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewHelper);
 };
 
 // Minimal implementation of WebFrameClient needed for unit tests that load

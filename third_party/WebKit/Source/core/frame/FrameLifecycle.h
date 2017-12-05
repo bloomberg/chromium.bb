@@ -5,13 +5,11 @@
 #ifndef FrameLifecycle_h
 #define FrameLifecycle_h
 
-#include "platform/wtf/Noncopyable.h"
+#include "base/macros.h"
 
 namespace blink {
 
 class FrameLifecycle {
-  WTF_MAKE_NONCOPYABLE(FrameLifecycle);
-
  public:
   enum State {
     kAttached,
@@ -26,6 +24,8 @@ class FrameLifecycle {
 
  private:
   State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameLifecycle);
 };
 
 }  // namespace blink

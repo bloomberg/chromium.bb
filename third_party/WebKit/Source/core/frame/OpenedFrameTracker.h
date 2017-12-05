@@ -5,8 +5,8 @@
 #ifndef OpenedFrameTracker_h
 #define OpenedFrameTracker_h
 
+#include "base/macros.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -16,8 +16,6 @@ class WebFrame;
 // Due to layering restrictions, we need to hide the implementation, since
 // public/web/ cannot depend on wtf/.
 class OpenedFrameTracker {
-  WTF_MAKE_NONCOPYABLE(OpenedFrameTracker);
-
  public:
   OpenedFrameTracker();
   ~OpenedFrameTracker();
@@ -35,6 +33,8 @@ class OpenedFrameTracker {
 
  private:
   WTF::HashSet<WebFrame*> opened_frames_;
+
+  DISALLOW_COPY_AND_ASSIGN(OpenedFrameTracker);
 };
 
 }  // namespace blink
