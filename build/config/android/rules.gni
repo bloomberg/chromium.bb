@@ -188,27 +188,24 @@ if (enable_java_templates) {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
-    assert(defined(invoker.sources))
-    assert(defined(invoker.jni_package))
-    jni_package = invoker.jni_package
-    base_output_dir = "${target_gen_dir}/${target_name}"
-    package_output_dir = "${base_output_dir}/${jni_package}"
-    jni_output_dir = "${package_output_dir}/jni"
+    _base_output_dir = "${target_gen_dir}/${target_name}"
+    _package_output_dir = "${_base_output_dir}/${invoker.jni_package}"
+    _jni_output_dir = "${_package_output_dir}/jni"
 
     if (defined(invoker.jni_generator_include)) {
-      jni_generator_include = invoker.jni_generator_include
+      _jni_generator_include = invoker.jni_generator_include
     } else {
-      jni_generator_include =
+      _jni_generator_include =
           "//base/android/jni_generator/jni_generator_helper.h"
     }
 
-    foreach_target_name = "${target_name}__jni_gen"
-    action_foreach(foreach_target_name) {
+    _foreach_target_name = "${target_name}__jni_gen"
+    action_foreach(_foreach_target_name) {
       script = "//base/android/jni_generator/jni_generator.py"
       depfile = "$target_gen_dir/$target_name.{{source_name_part}}.d"
       sources = invoker.sources
       outputs = [
-        "${jni_output_dir}/{{source_name_part}}_jni.h",
+        "${_jni_output_dir}/{{source_name_part}}_jni.h",
       ]
 
       args = [
@@ -217,9 +214,9 @@ if (enable_java_templates) {
         "--input_file={{source}}",
         "--ptr_type=long",
         "--output_dir",
-        rebase_path(jni_output_dir, root_build_dir),
+        rebase_path(_jni_output_dir, root_build_dir),
         "--includes",
-        rebase_path(jni_generator_include, jni_output_dir),
+        rebase_path(_jni_generator_include, _jni_output_dir),
       ]
 
       if (enable_profiling) {
@@ -229,11 +226,11 @@ if (enable_java_templates) {
 
     config("jni_includes_${target_name}") {
       # TODO(cjhopman): #includes should probably all be relative to
-      # base_output_dir. Remove that from this config once the includes are
+      # _base_output_dir. Remove that from this config once the includes are
       # updated.
       include_dirs = [
-        base_output_dir,
-        package_output_dir,
+        _base_output_dir,
+        _package_output_dir,
       ]
     }
 
@@ -247,7 +244,7 @@ if (enable_java_templates) {
       if (!defined(public_deps)) {
         public_deps = []
       }
-      public_deps += [ ":$foreach_target_name" ]
+      public_deps += [ ":$_foreach_target_name" ]
       public_configs = [ ":jni_includes_${target_name}" ]
     }
   }
@@ -276,62 +273,55 @@ if (enable_java_templates) {
   #     jni_package = "foo"
   #   }
   template("generate_jar_jni") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
-    assert(defined(invoker.classes))
-    assert(defined(invoker.jni_package))
-
     if (defined(invoker.jar_file)) {
-      jar_file = invoker.jar_file
+      _jar_file = invoker.jar_file
     } else {
-      jar_file = android_sdk_jar
+      _jar_file = android_sdk_jar
     }
 
-    jni_package = invoker.jni_package
-    base_output_dir = "${target_gen_dir}/${target_name}/${jni_package}"
-    jni_output_dir = "${base_output_dir}/jni"
+    _base_output_dir = "${target_gen_dir}/${target_name}/${invoker.jni_package}"
+    _jni_output_dir = "${_base_output_dir}/jni"
 
     if (defined(invoker.jni_generator_include)) {
-      jni_generator_include = invoker.jni_generator_include
+      _jni_generator_include = invoker.jni_generator_include
     } else {
-      jni_generator_include =
+      _jni_generator_include =
           "//base/android/jni_generator/jni_generator_helper.h"
     }
 
     # TODO(cjhopman): make jni_generator.py support generating jni for multiple
     # .class files from a .jar.
-    jni_actions = []
-    foreach(class, invoker.classes) {
-      _classname_list = []
-      _classname_list = process_file_template([ class ], "{{source_name_part}}")
-      classname = _classname_list[0]
-      jni_target_name = "${target_name}__jni_${classname}"
-      jni_actions += [ ":$jni_target_name" ]
-      action(jni_target_name) {
+    _jni_actions = []
+    foreach(_class, invoker.classes) {
+      _classname = get_path_info(_class, "name")
+      _jni_target_name = "${target_name}__jni_${_classname}"
+      _jni_actions += [ ":$_jni_target_name" ]
+      action(_jni_target_name) {
         # The sources aren't compiled so don't check their dependencies.
         check_includes = false
         depfile = "$target_gen_dir/$target_name.d"
         script = "//base/android/jni_generator/jni_generator.py"
-        sources = [
-          jar_file,
+        inputs = [
+          _jar_file,
         ]
         outputs = [
-          "${jni_output_dir}/${classname}_jni.h",
+          "${_jni_output_dir}/${_classname}_jni.h",
         ]
 
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
           "--jar_file",
-          rebase_path(jar_file, root_build_dir),
+          rebase_path(_jar_file, root_build_dir),
           "--input_file",
-          class,
+          _class,
           "--ptr_type=long",
           "--output_dir",
-          rebase_path(jni_output_dir, root_build_dir),
+          rebase_path(_jni_output_dir, root_build_dir),
           "--includes",
-          rebase_path(jni_generator_include, jni_output_dir),
+          rebase_path(_jni_generator_include, _jni_output_dir),
         ]
 
         if (enable_profiling) {
@@ -341,7 +331,7 @@ if (enable_java_templates) {
     }
 
     config("jni_includes_${target_name}") {
-      include_dirs = [ base_output_dir ]
+      include_dirs = [ _base_output_dir ]
     }
 
     group(target_name) {
@@ -352,7 +342,7 @@ if (enable_java_templates) {
                                "public_deps",
                                "visibility",
                              ])
-      public_deps += jni_actions
+      public_deps += _jni_actions
       public_configs = [ ":jni_includes_${target_name}" ]
     }
   }
@@ -461,34 +451,24 @@ if (enable_java_templates) {
 
     _apply_gcc_target_name = "${target_name}__apply_gcc"
     _base_gen_dir = "${target_gen_dir}/${target_name}/java_cpp_template"
-
-    if (defined(invoker.package_path)) {
-      package_path = invoker.package_path
-    } else {
-      # TODO(jbudorick): Back this out once all clients have been switched to
-      # package_path.
-      assert(defined(invoker.package_name))
-      package_path = invoker.package_name
-    }
+    _package_path = invoker.package_path
 
     action_foreach(_apply_gcc_target_name) {
       forward_variables_from(invoker,
                              [
                                "deps",
+                               "inputs",
                                "public_deps",
                                "data_deps",
                              ])
       script = "//build/android/gyp/gcc_preprocess.py"
-      if (defined(invoker.inputs)) {
-        inputs = invoker.inputs + []
-      }
       depfile =
           "${target_gen_dir}/${invoker.target_name}_{{source_name_part}}.d"
 
       sources = invoker.sources
 
       outputs = [
-        "$_base_gen_dir/${package_path}/{{source_name_part}}.java",
+        "$_base_gen_dir/${_package_path}/{{source_name_part}}.java",
       ]
 
       args = [
@@ -502,10 +482,10 @@ if (enable_java_templates) {
       ]
 
       if (defined(invoker.defines)) {
-        foreach(def, invoker.defines) {
+        foreach(_def, invoker.defines) {
           args += [
             "--defines",
-            def,
+            _def,
           ]
         }
       }
@@ -546,12 +526,8 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("java_cpp_enum") {
+    set_sources_assignment_filter([])
     action(target_name) {
-      # The sources aren't compiled so don't check their dependencies.
-      check_includes = false
-      set_sources_assignment_filter([])
-
-      assert(defined(invoker.sources))
       forward_variables_from(invoker,
                              [
                                "sources",
@@ -559,6 +535,8 @@ if (enable_java_templates) {
                                "visibility",
                              ])
 
+      # The sources aren't compiled so don't check their dependencies.
+      check_includes = false
       script = "//build/android/gyp/java_cpp_enum.py"
       depfile = "$target_gen_dir/$target_name.d"
 
@@ -591,11 +569,7 @@ if (enable_java_templates) {
   #     output = "$target_gen_dir/AndroidManifest.xml"
   #   }
   template("jinja_template") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-
-    assert(defined(invoker.input))
-    assert(defined(invoker.output))
 
     action(target_name) {
       forward_variables_from(invoker,
@@ -604,7 +578,7 @@ if (enable_java_templates) {
                                "deps",
                              ])
 
-      sources = [
+      inputs = [
         invoker.input,
       ]
       script = "//build/android/gyp/jinja_template.py"
@@ -625,8 +599,7 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
       ]
       if (defined(invoker.variables)) {
-        variables = invoker.variables
-        args += [ "--variables=${variables}" ]
+        args += [ "--variables=${invoker.variables}" ]
       }
     }
   }
@@ -653,19 +626,13 @@ if (enable_java_templates) {
   #     variables = ["color=red"]
   #   }
   template("jinja_template_resources") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-
-    assert(defined(invoker.resources))
-    assert(defined(invoker.res_dir))
-
-    _base_path = "$target_gen_dir/$target_name"
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
     _resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-    _build_config = _base_path + ".build_config"
+    _build_config = "$target_gen_dir/$target_name.build_config"
 
     write_build_config("${target_name}__build_config") {
       build_config = _build_config
@@ -678,7 +645,7 @@ if (enable_java_templates) {
 
     action("${target_name}__template") {
       forward_variables_from(invoker, [ "deps" ])
-      sources = invoker.resources
+      inputs = invoker.resources
       script = "//build/android/gyp/jinja_template.py"
       depfile = "$target_gen_dir/$target_name.d"
 
@@ -686,9 +653,9 @@ if (enable_java_templates) {
         _resources_zip,
       ]
 
-      rebased_resources = rebase_path(invoker.resources, root_build_dir)
+      _rebased_resources = rebase_path(invoker.resources, root_build_dir)
       args = [
-        "--inputs=${rebased_resources}",
+        "--inputs=${_rebased_resources}",
         "--inputs-base-dir",
         rebase_path(invoker.res_dir, root_build_dir),
         "--outputs-zip",
@@ -893,7 +860,6 @@ if (enable_java_templates) {
   #   renaming_destinations = [ "renamed/asset2.png" ]
   # }
   template("android_assets") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
     _build_config = "$target_gen_dir/$target_name.build_config"
@@ -987,56 +953,44 @@ if (enable_java_templates) {
   #    grd_file = "foo_strings.grd"
   #  }
   template("java_strings_grd") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-
-    base_path = "$target_gen_dir/$target_name"
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-    build_config = base_path + ".build_config"
+    _resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
+    _build_config = "$target_gen_dir/$target_name.build_config"
 
     write_build_config("${target_name}__build_config") {
       type = "android_resources"
+      build_config = _build_config
+      resources_zip = _resources_zip
     }
 
-    # Put grit files into this subdirectory of target_gen_dir.
-    extra_output_path = target_name + "_grit_output"
+    _grit_target_name = "${target_name}__grit"
+    _grit_output_dir = "$target_gen_dir/${target_name}_grit_output"
 
-    grit_target_name = "${target_name}__grit"
-    grit_output_dir = "$target_gen_dir/$extra_output_path"
-
-    grit(grit_target_name) {
+    grit(_grit_target_name) {
       forward_variables_from(invoker, [ "deps" ])
       grit_flags = [
         "-E",
         "ANDROID_JAVA_TAGGED_ONLY=false",
       ]
-      output_dir = grit_output_dir
+      output_dir = _grit_output_dir
       resource_ids = ""
       source = invoker.grd_file
       outputs = invoker.outputs
     }
 
-    # This needs to get outputs from grit's internal target, not the final
-    # source_set.
-    generate_strings_outputs = get_target_outputs(":${grit_target_name}_grit")
+    zip(target_name) {
+      base_dir = _grit_output_dir
 
-    zip("${target_name}__zip") {
-      base_dir = grit_output_dir
-      inputs = generate_strings_outputs
-      output = resources_zip
+      # This needs to get outputs from grit's internal target, not the final
+      # source_set.
+      inputs = get_target_outputs(":${_grit_target_name}_grit")
+      output = _resources_zip
       deps = [
-        ":$grit_target_name",
-      ]
-    }
-
-    group(target_name) {
-      public_deps = [
-        ":${target_name}__build_config",
-        ":${target_name}__zip",
+        ":$_grit_target_name",
       ]
     }
   }
@@ -1058,44 +1012,33 @@ if (enable_java_templates) {
   #    ]
   #  }
   template("java_strings_grd_prebuilt") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-
-    base_path = "$target_gen_dir/$target_name"
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-    build_config = base_path + ".build_config"
+    _resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
+    _build_config = "$target_gen_dir/$target_name.build_config"
+    _build_config_target_name = "${target_name}__build_config"
 
-    build_config_target_name = "${target_name}__build_config"
-    zip_target_name = "${target_name}__zip"
-    final_target_name = target_name
-
-    write_build_config(build_config_target_name) {
+    write_build_config(_build_config_target_name) {
       type = "android_resources"
+      build_config = _build_config
+      resources_zip = _resources_zip
     }
 
-    zip(zip_target_name) {
-      visibility = [ ":$final_target_name" ]
+    zip(target_name) {
+      forward_variables_from(invoker, [ "visibility" ])
 
       base_dir = invoker.grit_output_dir
       inputs = rebase_path(invoker.generated_files, ".", base_dir)
-      output = resources_zip
+      output = _resources_zip
       deps = [
-        ":$build_config_target_name",
+        ":$_build_config_target_name",
       ]
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
-    }
-
-    group(final_target_name) {
-      forward_variables_from(invoker, [ "visibility" ])
-      public_deps = [
-        ":$zip_target_name",
-      ]
     }
   }
 
@@ -1135,8 +1078,6 @@ if (enable_java_templates) {
   #     main_class = "org.chromium.foo.FooMain"
   #   }
   template("java_binary") {
-    set_sources_assignment_filter([])
-
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
       supports_android = false
@@ -1169,7 +1110,6 @@ if (enable_java_templates) {
   #     deps = [ ":bar_java" ]
   #   }
   template("junit_binary") {
-    set_sources_assignment_filter([])
     testonly = true
 
     _java_binary_target_name = "${target_name}__java_binary"
@@ -1333,7 +1273,6 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("java_library") {
-    set_sources_assignment_filter([])
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
     }
@@ -1366,7 +1305,6 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("java_prebuilt") {
-    set_sources_assignment_filter([])
     java_prebuilt_impl(target_name) {
       forward_variables_from(invoker, "*")
     }
@@ -1487,7 +1425,9 @@ if (enable_java_templates) {
         if (defined(invoker.proguard_config_exclusions)) {
           _rebased_proguard_config_exclusions =
               rebase_path(invoker.proguard_config_exclusions, root_build_dir)
-          args += [ "--proguard-config-exclusions=$_rebased_proguard_config_exclusions" ]
+          args += [
+            "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
+          ]
         }
       }
     } else {
@@ -1610,7 +1550,6 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_library") {
-    set_sources_assignment_filter([])
     assert(!defined(invoker.jar_path),
            "android_library does not support a custom jar path")
 
@@ -1645,7 +1584,6 @@ if (enable_java_templates) {
   #     will be packaged into the resulting .dex.jar file.
   #   dex_path: location at which the output file will be put
   template("android_standalone_library") {
-    set_sources_assignment_filter([])
     deps_dex(target_name) {
       forward_variables_from(invoker,
                              [
@@ -1680,7 +1618,6 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_java_prebuilt") {
-    set_sources_assignment_filter([])
     java_prebuilt_impl(target_name) {
       forward_variables_from(invoker, "*")
       supports_android = true
@@ -1781,7 +1718,6 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_apk") {
-    set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
 
     assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
@@ -1926,7 +1862,9 @@ if (enable_java_templates) {
         _native_libs_deps += [ "//build/android:cpplib_stripped" ]
       }
       if (_secondary_abi_shared_libraries_is_valid) {
-        _secondary_abi_native_libs_deps += [ "//build/android:cpplib_stripped($android_secondary_abi_toolchain)" ]
+        _secondary_abi_native_libs_deps += [
+          "//build/android:cpplib_stripped($android_secondary_abi_toolchain)",
+        ]
       }
     }
 
@@ -2318,7 +2256,9 @@ if (enable_java_templates) {
         if (defined(invoker.proguard_config_exclusions)) {
           _rebased_proguard_config_exclusions =
               rebase_path(invoker.proguard_config_exclusions, root_build_dir)
-          args += [ "--proguard-config-exclusions=$_rebased_proguard_config_exclusions" ]
+          args += [
+            "--proguard-config-exclusions=$_rebased_proguard_config_exclusions",
+          ]
         }
 
         if (defined(invoker.apk_under_test)) {
@@ -2908,12 +2848,6 @@ if (enable_java_templates) {
       }
     }
 
-    # TODO: Delete once recipes no longer use this target.
-    group("${target_name}_run") {
-      public_deps = [
-        ":${invoker.target_name}",
-      ]
-    }
     group("${target_name}_incremental") {
       public_deps = [
         ":$_incremental_test_runner_target_name",
@@ -2970,7 +2904,6 @@ if (enable_java_templates) {
     }
 
     android_apk(target_name) {
-      set_sources_assignment_filter([])
       data_deps = []
       deps = []
       forward_variables_from(invoker, "*")
@@ -3032,55 +2965,54 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_aidl") {
-    set_sources_assignment_filter([])
-    forward_variables_from(invoker, [ "testonly" ])
-
-    srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
-    aidl_path = "${android_sdk_build_tools}/aidl"
-    framework_aidl = "$android_sdk/framework.aidl"
-
     action(target_name) {
+      set_sources_assignment_filter([])
+      forward_variables_from(invoker, [ "testonly" ])
+
       script = "//build/android/gyp/aidl.py"
       sources = invoker.sources
 
-      imports = [ framework_aidl ]
+      _srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
+      _aidl_path = "${android_sdk_build_tools}/aidl"
+      _framework_aidl = "$android_sdk/framework.aidl"
+      _imports = [ _framework_aidl ]
       if (defined(invoker.interface_file)) {
         assert(invoker.interface_file != "")
-        imports += [ invoker.interface_file ]
+        _imports += [ invoker.interface_file ]
       }
 
-      inputs = [ aidl_path ] + imports
+      inputs = [ _aidl_path ] + _imports
 
       depfile = "${target_gen_dir}/${target_name}.d"
       outputs = [
-        srcjar_path,
+        _srcjar_path,
       ]
-      rebased_imports = rebase_path(imports, root_build_dir)
+      _rebased_imports = rebase_path(_imports, root_build_dir)
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--aidl-path",
-        rebase_path(aidl_path, root_build_dir),
-        "--imports=$rebased_imports",
+        rebase_path(_aidl_path, root_build_dir),
+        "--imports=$_rebased_imports",
         "--srcjar",
-        rebase_path(srcjar_path, root_build_dir),
+        rebase_path(_srcjar_path, root_build_dir),
       ]
       if (defined(invoker.import_include) && invoker.import_include != []) {
         # TODO(cjhopman): aidl supports creating a depfile. We should be able to
         # switch to constructing a depfile for the overall action from that
         # instead of having all the .java files in the include paths as inputs.
-        rebased_import_paths = []
-        foreach(import_path, invoker.import_include) {
+        _rebased_import_paths = []
+        foreach(_import_path, invoker.import_include) {
           _rebased_import_path = []
-          _rebased_import_path += rebase_path([ import_path ], root_build_dir)
-          rebased_import_paths += _rebased_import_path
+          _rebased_import_path = [ rebase_path(_import_path, root_build_dir) ]
+          _rebased_import_paths += _rebased_import_path
           _java_files_build_rel = []
           _java_files_build_rel = exec_script("//build/android/gyp/find.py",
                                               _rebased_import_path,
                                               "list lines")
           inputs += rebase_path(_java_files_build_rel, ".", root_build_dir)
         }
-        args += [ "--includes=$rebased_import_paths" ]
+        args += [ "--includes=$_rebased_import_paths" ]
       }
       args += rebase_path(sources, root_build_dir)
     }
@@ -3132,7 +3064,7 @@ if (enable_java_templates) {
     _template_name = target_name
 
     action("${_template_name}__protoc_java") {
-      srcjar_path = "$target_gen_dir/$target_name.srcjar"
+      _srcjar_path = "$target_gen_dir/$target_name.srcjar"
       script = "//build/protoc_java.py"
 
       deps = [
@@ -3145,7 +3077,7 @@ if (enable_java_templates) {
       sources = invoker.sources
       depfile = "$target_gen_dir/$target_name.d"
       outputs = [
-        srcjar_path,
+        _srcjar_path,
       ]
       args = [
                "--depfile",
@@ -3155,7 +3087,7 @@ if (enable_java_templates) {
                "--proto-path",
                rebase_path(_proto_path, root_build_dir),
                "--srcjar",
-               rebase_path(srcjar_path, root_build_dir),
+               rebase_path(_srcjar_path, root_build_dir),
              ] + rebase_path(sources, root_build_dir)
       if (_generate_lite) {
         args += [ "--lite" ]
