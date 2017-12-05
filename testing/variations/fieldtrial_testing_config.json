@@ -2377,17 +2377,19 @@
     "OmniboxBundledExperimentV1": [
         {
             "platforms": [
-                "android"
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
             ],
             "experiments": [
                 {
-                    "name": "Dev_Android_ClipboardProvider_Enabled",
-                    "params": {
-                        "PhysicalWebAfterTyping": "true",
-                        "PhysicalWebZeroSuggest": "true"
-                    },
+                    "name": "HideSuggestionUrlSchemeAndTrivialSubdomains",
                     "enable_features": [
-                        "OmniboxEnableClipboardProvider"
+                        "OmniboxUIExperimentHideSuggestionUrlScheme",
+                        "OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains"
                     ]
                 }
             ]
