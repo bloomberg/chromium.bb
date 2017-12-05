@@ -25,9 +25,7 @@ namespace autofill {
 namespace {
 
 const char* const kFieldTypes[] = {
-  "text",
-  "tel",
-  "number",
+    "text", "tel", "number",
 };
 
 }  // namespace
@@ -258,6 +256,38 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
     field.label = ASCIIToUTF16("Phone Number");
     field.name = ASCIIToUTF16("PhoneNumber");
     field.max_length = 10;
+    list_.push_back(
+        std::make_unique<AutofillField>(field, ASCIIToUTF16("phone")));
+
+    AutofillScanner scanner(list_);
+    field_ = Parse(&scanner);
+    ASSERT_NE(nullptr, field_.get());
+    field_->AddClassifications(&field_candidates_map_);
+    CheckField("country", PHONE_HOME_COUNTRY_CODE);
+    CheckField("phone", PHONE_HOME_CITY_AND_NUMBER);
+  }
+}
+
+TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumberWithLongerMaxLength) {
+  // Phone in format <country code>:3 - <city and number>:14
+  // The |maxlength| is considered, otherwise it's too broad.
+  FormFieldData field;
+
+  for (const char* field_type : kFieldTypes) {
+    Clear();
+
+    field.form_control_type = field_type;
+    field.label = ASCIIToUTF16("Phone Number");
+    field.name = ASCIIToUTF16("CountryCode");
+    field.max_length = 3;
+    list_.push_back(
+        std::make_unique<AutofillField>(field, ASCIIToUTF16("country")));
+
+    // Verify if websites expect a longer formatted number like:
+    // (514)-123-1234, autofill is able to classify correctly.
+    field.label = ASCIIToUTF16("Phone Number");
+    field.name = ASCIIToUTF16("PhoneNumber");
+    field.max_length = 14;
     list_.push_back(
         std::make_unique<AutofillField>(field, ASCIIToUTF16("phone")));
 

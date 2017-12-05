@@ -42,6 +42,8 @@ class PhoneField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, CountryAndCityAndPhoneNumber);
+  FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest,
+                           CountryAndCityAndPhoneNumberWithLongerMaxLength);
 
   // This is for easy description of the possible parsing paths of the phone
   // fields.
