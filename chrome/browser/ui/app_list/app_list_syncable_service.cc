@@ -137,9 +137,9 @@ bool IsUnRemovableDefaultApp(const std::string& id) {
 }
 
 void UninstallExtension(ExtensionService* service, const std::string& id) {
-  if (service) {
-    ExtensionService::UninstallExtensionHelper(
-        service, id, extensions::UNINSTALL_REASON_SYNC);
+  if (service && service->GetInstalledExtension(id)) {
+    service->UninstallExtension(id, extensions::UNINSTALL_REASON_SYNC,
+                                nullptr /* error */);
   }
 }
 

@@ -279,33 +279,6 @@ void ExtensionService::OnExternalProviderUpdateComplete(
   external_install_manager_->UpdateExternalExtensionAlert();
 }
 
-// static
-// This function is used to uninstall an extension via sync.  The LOG statements
-// within this function are used to inform the user if the uninstall cannot be
-// done.
-bool ExtensionService::UninstallExtensionHelper(
-    ExtensionService* extensions_service,
-    const std::string& extension_id,
-    extensions::UninstallReason reason) {
-  // We can't call UninstallExtension with an invalid extension ID.
-  if (!extensions_service->GetInstalledExtension(extension_id)) {
-    LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
-                 << "id: " << extension_id;
-    return false;
-  }
-
-  // The following call to UninstallExtension will not allow an uninstall of a
-  // policy-controlled extension.
-  base::string16 error;
-  if (!extensions_service->UninstallExtension(extension_id, reason, &error)) {
-    LOG(WARNING) << "Cannot uninstall extension with id " << extension_id
-                 << ": " << error;
-    return false;
-  }
-
-  return true;
-}
-
 ExtensionService::ExtensionService(Profile* profile,
                                    const base::CommandLine* command_line,
                                    const base::FilePath& install_directory,

@@ -183,12 +183,6 @@ class ExtensionService
       public UpgradeObserver,
       public extensions::ExtensionRegistrar::Delegate {
  public:
-  // Attempts to uninstall an extension from a given ExtensionService. Returns
-  // true iff the target extension exists.
-  static bool UninstallExtensionHelper(ExtensionService* extensions_service,
-                                       const std::string& extension_id,
-                                       extensions::UninstallReason reason);
-
   // Constructor stores pointers to |profile| and |extension_prefs| but
   // ownership remains at caller.
   ExtensionService(Profile* profile,

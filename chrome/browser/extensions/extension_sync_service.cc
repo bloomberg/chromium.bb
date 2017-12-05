@@ -349,9 +349,19 @@ void ExtensionSyncService::ApplySyncData(
 
   // Handle uninstalls first.
   if (extension_sync_data.uninstalled()) {
-    if (!ExtensionService::UninstallExtensionHelper(
-            extension_service(), id, extensions::UNINSTALL_REASON_SYNC)) {
-      LOG(WARNING) << "Could not uninstall extension " << id << " for sync";
+    base::string16 error;
+    bool uninstalled = true;
+    if (!extension) {
+      error = base::ASCIIToUTF16("Unknown extension");
+      uninstalled = false;
+    } else {
+      uninstalled = extension_service()->UninstallExtension(
+          id, extensions::UNINSTALL_REASON_SYNC, &error);
+    }
+
+    if (!uninstalled) {
+      LOG(WARNING) << "Failed to uninstall extension with id '" << id
+                   << "' from sync: " << error;
     }
     return;
   }

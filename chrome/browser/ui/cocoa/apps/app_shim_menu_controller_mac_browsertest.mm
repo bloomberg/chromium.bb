@@ -258,10 +258,9 @@ IN_PROC_BROWSER_TEST_F(AppShimMenuControllerBrowserTest,
   [app_1_window makeMainWindow];
 
   CheckHasAppMenus(app_1_);
-  ExtensionService::UninstallExtensionHelper(
-      extension_service(),
-      app_1_->id(),
-      extensions::UNINSTALL_REASON_FOR_TESTING);
+  extension_service()->UninstallExtension(
+      app_1_->id(), extensions::UNINSTALL_REASON_FOR_TESTING,
+      nullptr /* nullptr */);
 
   // OSX will send NSWindowWillResignMainNotification when a main window is
   // closed.
