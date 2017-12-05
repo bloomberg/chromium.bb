@@ -650,10 +650,14 @@ static INLINE void od_transpose8x8_epi32(__m256i *r0, __m256i *r1, __m256i *r2,
   *r7 = _mm256_permute2x128_si256(x, y, 1 | (3 << 4));
 }
 
-static INLINE void od_transpose_pack8x8_epi32(__m256i *rr0, __m256i *rr1,
-                                              __m256i *rr2, __m256i *rr3,
-                                              __m256i rr4, __m256i rr5,
-                                              __m256i rr6, __m256i rr7) {
+/* Packs two blocks of 4x8 32-bit words into 16-bit words and returns the
+   transpose of each packed into the high and low halves of each register. */
+static INLINE void od_transpose_pack4x8x2_epi32(__m256i *out0, __m256i *out1,
+                                                __m256i *out2, __m256i *out3,
+                                                __m256i rr0, __m256i rr1,
+                                                __m256i rr2, __m256i rr3,
+                                                __m256i rr4, __m256i rr5,
+                                                __m256i rr6, __m256i rr7) {
   __m256i a;
   __m256i b;
   __m256i c;
@@ -662,14 +666,14 @@ static INLINE void od_transpose_pack8x8_epi32(__m256i *rr0, __m256i *rr1,
   __m256i x;
   __m256i y;
   __m256i z;
-  /* rr0: r47 r46 r45 r44 r07 r06 r05 r04 | r43 r42 r41 r40 r03 r02 r01 r00 */
-  a = _mm256_packs_epi32(*rr0, rr4);
-  /* rr1: r57 r56 r55 r54 r17 r16 r15 r14 | r53 r52 r51 r50 r13 r12 r11 r10 */
-  b = _mm256_packs_epi32(*rr1, rr5);
-  /* rr2: r67 r66 r65 r64 r27 r26 r25 r24 | r63 r62 r61 r60 r23 r22 r21 r20 */
-  c = _mm256_packs_epi32(*rr2, rr6);
-  /* rr3: r77 r76 r75 r74 r37 r36 r35 r34 | r73 r72 r71 r70 r33 r32 r31 r30 */
-  d = _mm256_packs_epi32(*rr3, rr7);
+  /* a: r47 r46 r45 r44 r07 r06 r05 r04 | r43 r42 r41 r40 r03 r02 r01 r00 */
+  a = _mm256_packs_epi32(rr0, rr4);
+  /* b: r57 r56 r55 r54 r17 r16 r15 r14 | r53 r52 r51 r50 r13 r12 r11 r10 */
+  b = _mm256_packs_epi32(rr1, rr5);
+  /* c: r67 r66 r65 r64 r27 r26 r25 r24 | r63 r62 r61 r60 r23 r22 r21 r20 */
+  c = _mm256_packs_epi32(rr2, rr6);
+  /* d: r77 r76 r75 r74 r37 r36 r35 r34 | r73 r72 r71 r70 r33 r32 r31 r30 */
+  d = _mm256_packs_epi32(rr3, rr7);
   /* w: r17 r07 r16 r06 r15 r05 r14 r04 | r13 r03 r12 r02 r11 r01 r10 r00 */
   w = _mm256_unpacklo_epi16(a, b);
   /* x: r57 r47 r56 r46 r55 r45 r54 r44 | r53 r43 r52 r42 r51 r41 r50 r40 */
@@ -686,14 +690,30 @@ static INLINE void od_transpose_pack8x8_epi32(__m256i *rr0, __m256i *rr1,
   c = _mm256_unpacklo_epi32(x, z);
   /* d: r77 r67 r57 r47 r76 r66 r56 r46 | r73 r63 r53 r43 r72 r62 r52 r42 */
   d = _mm256_unpackhi_epi32(x, z);
-  /* w: r74 r64 r54 r44 r34 r24 r14 r04 | r70 r60 r50 r40 r30 r20 r10 r00 */
-  w = _mm256_unpacklo_epi64(a, c);
-  /* x: r75 r65 r55 r45 r35 r25 r15 r05 | r71 r61 r51 r41 r31 r21 r11 r01 */
-  x = _mm256_unpackhi_epi64(a, c);
-  /* y: r76 r66 r56 r46 r36 r26 r16 r06 | r72 r62 r52 r42 r32 r22 r12 r02 */
-  y = _mm256_unpacklo_epi64(b, d);
-  /* z: r77 r67 r57 r47 r37 r27 r17 r07 | r73 r63 r53 r43 r33 r23 r13 r03 */
-  z = _mm256_unpackhi_epi64(b, d);
+  /* out0: r74 r64 r54 r44 r34 r24 r14 r04 | r70 r60 r50 r40 r30 r20 r10 r00 */
+  *out0 = _mm256_unpacklo_epi64(a, c);
+  /* out1: r75 r65 r55 r45 r35 r25 r15 r05 | r71 r61 r51 r41 r31 r21 r11 r01 */
+  *out1 = _mm256_unpackhi_epi64(a, c);
+  /* out2: r76 r66 r56 r46 r36 r26 r16 r06 | r72 r62 r52 r42 r32 r22 r12 r02 */
+  *out2 = _mm256_unpacklo_epi64(b, d);
+  /* out3: r77 r67 r57 r47 r37 r27 r17 r07 | r73 r63 r53 r43 r33 r23 r13 r03 */
+  *out3 = _mm256_unpackhi_epi64(b, d);
+}
+
+static INLINE void od_transpose_pack8x8_epi32(__m256i *rr0, __m256i *rr1,
+                                              __m256i *rr2, __m256i *rr3,
+                                              __m256i rr4, __m256i rr5,
+                                              __m256i rr6, __m256i rr7) {
+  __m256i w;
+  __m256i x;
+  __m256i y;
+  __m256i z;
+  /* w: r74 r64 r54 r44 r34 r24 r14 r04 | r70 r60 r50 r40 r30 r20 r10 r00
+     x: r75 r65 r55 r45 r35 r25 r15 r05 | r71 r61 r51 r41 r31 r21 r11 r01
+     y: r76 r66 r56 r46 r36 r26 r16 r06 | r72 r62 r52 r42 r32 r22 r12 r02
+     z: r77 r67 r57 r47 r37 r27 r17 r07 | r73 r63 r53 r43 r33 r23 r13 r03 */
+  od_transpose_pack4x8x2_epi32(&w, &x, &y, &z, *rr0, *rr1, *rr2, *rr3, rr4, rr5,
+                               rr6, rr7);
   /* rr0: r71 r61 r51 r41 r31 r21 r11 r01 | r70 r60 r50 r40 r30 r20 r10 r00 */
   *rr0 = _mm256_permute2x128_si256(w, x, 0 | (2 << 4));
   /* rr1: r73 r63 r53 r43 r33 r23 r13 r03 | r72 r62 r52 r42 r32 r22 r12 r02 */
@@ -702,6 +722,49 @@ static INLINE void od_transpose_pack8x8_epi32(__m256i *rr0, __m256i *rr1,
   *rr2 = _mm256_permute2x128_si256(w, x, 1 | (3 << 4));
   /* rr3: r77 r67 r57 r47 r37 r27 r17 r07 r76 r66 r56 r46 r36 r26 r16 r06 */
   *rr3 = _mm256_permute2x128_si256(y, z, 1 | (3 << 4));
+}
+
+static INLINE void od_transpose_pack8x16_epi32(
+    __m256i *ss0, __m256i *ss1, __m256i *ss2, __m256i *ss3, __m256i *ss4,
+    __m256i *ss5, __m256i *ss6, __m256i *ss7, __m256i ss8, __m256i ss9,
+    __m256i ssa, __m256i ssb, __m256i ssc, __m256i ssd, __m256i sse,
+    __m256i ssf) {
+  __m256i a;
+  __m256i b;
+  __m256i c;
+  __m256i d;
+  __m256i e;
+  __m256i f;
+  __m256i g;
+  __m256i h;
+  /* ss0: s74 s64 s54 s44 s34 s24 s14 s04 | s70 s60 s50 s40 s30 s20 s10 s00
+     ss2: s75 s65 s55 s45 s35 s25 s15 s05 | s71 s61 s51 s41 s31 s21 s11 s01
+     ss4: s76 s66 s56 s46 s36 s26 s16 s06 | s72 s62 s52 s42 s32 s22 s12 s02
+     ss6: s77 s67 s57 s47 s37 s27 s17 s07 | s73 s63 s53 s43 s33 s23 s13 s03 */
+  od_transpose_pack4x8x2_epi32(&a, &b, &c, &d, *ss0, *ss1, *ss2, *ss3, *ss4,
+                               *ss5, *ss6, *ss7);
+  /* ss8: sf4 se4 sd4 sc4 sb4 sa4 s94 s84 | sf0 se0 sd0 sc0 sb0 sa0 s90 s80
+     ssa: sf5 se5 sd5 sc5 sb5 sa5 s95 s85 | sf1 se1 sd1 sc1 sb1 sa1 s91 s81
+     ssc: sf6 se6 sd6 sc6 sb6 sa6 s96 s86 | sf2 se2 sd2 sc2 sb2 sa2 s92 s82
+     sse: sf7 se7 sd7 sc7 sb7 sa7 s97 s87 | sf3 se3 sd3 sc3 sb3 sa3 s93 s83 */
+  od_transpose_pack4x8x2_epi32(&e, &f, &g, &h, ss8, ss9, ssa, ssb, ssc, ssd,
+                               sse, ssf);
+  /* ss0: sf0 se0 sd0 sc0 sb0 sa0 s90 s80 | s70 s60 s50 s40 s30 s20 s10 s00 */
+  *ss0 = _mm256_permute2x128_si256(a, e, 0 | (2 << 4));
+  /* ss1: sf1 se1 sd1 sc1 sb1 sa1 s91 s81 | s71 s61 s51 s41 s31 s21 s11 s01 */
+  *ss1 = _mm256_permute2x128_si256(b, f, 0 | (2 << 4));
+  /* ss2: sf2 se2 sd2 sc2 sb2 sa2 s92 s82 | s72 s62 s52 s42 s32 s22 s12 s02 */
+  *ss2 = _mm256_permute2x128_si256(c, g, 0 | (2 << 4));
+  /* ss3: sf3 se3 sd3 sc3 sb3 sa3 s93 s83 | s73 s63 s53 s43 s33 s23 s13 s03 */
+  *ss3 = _mm256_permute2x128_si256(d, h, 0 | (2 << 4));
+  /* ss4: sf4 se4 sd4 sc4 sb4 sa4 s94 s84 | s74 s64 s54 s44 s34 s24 s14 s04 */
+  *ss4 = _mm256_permute2x128_si256(a, e, 1 | (3 << 4));
+  /* ss5: sf5 se5 sd5 sc5 sb5 sa5 s95 s85 | s75 s65 s55 s45 s35 s25 s15 s05 */
+  *ss5 = _mm256_permute2x128_si256(b, f, 1 | (3 << 4));
+  /* ss6: rf6 re6 rd6 rc6 rb6 ra6 r96 r82 | r76 r66 r56 r46 r36 r26 r16 r06 */
+  *ss6 = _mm256_permute2x128_si256(c, g, 1 | (3 << 4));
+  /* ss7: rf7 re7 rd7 rc7 rb7 ra7 r97 r87 | r77 r67 r57 r47 r37 r27 r17 r07 */
+  *ss7 = _mm256_permute2x128_si256(d, h, 1 | (3 << 4));
 }
 
 #undef OD_KERNEL
@@ -1124,6 +1187,210 @@ static void od_col_iidtx8_add_hbd_avx2(unsigned char *output_pixels,
   od_col_iidtx_add_hbd_avx2(output_pixels, output_stride, 8, cols, in, bd);
 }
 
+typedef void (*od_tx16_kernel8_epi16)(__m128i *s0, __m128i *s4, __m128i *s2,
+                                      __m128i *s6, __m128i *s1, __m128i *s5,
+                                      __m128i *s3, __m128i *s7, __m128i *s8,
+                                      __m128i *s9, __m128i *sa, __m128i *sb,
+                                      __m128i *sc, __m128i *sd, __m128i *se,
+                                      __m128i *sf);
+
+typedef void (*od_tx16_mm256_kernel)(__m256i *s0, __m256i *s4, __m256i *s2,
+                                     __m256i *s6, __m256i *s1, __m256i *s5,
+                                     __m256i *s3, __m256i *s7, __m256i *s8,
+                                     __m256i *s9, __m256i *sa, __m256i *sb,
+                                     __m256i *sc, __m256i *sd, __m256i *se,
+                                     __m256i *sf);
+
+static void od_row_tx16_avx2(int16_t *out, int rows, const tran_low_t *in,
+#if CONFIG_RECT_TX_EXT
+                             od_tx16_kernel8_epi16 kernel8_epi16,
+#endif
+                             od_tx16_mm256_kernel kernel8_epi32) {
+#if CONFIG_RECT_TX_EXT
+  if (rows <= 4) {
+    __m128i s0;
+    __m128i s1;
+    __m128i s2;
+    __m128i s3;
+    __m128i s4;
+    __m128i s5;
+    __m128i s6;
+    __m128i s7;
+    __m128i s8;
+    __m128i s9;
+    __m128i sa;
+    __m128i sb;
+    __m128i sc;
+    __m128i sd;
+    __m128i se;
+    __m128i sf;
+    od_load_buffer_4x4_epi32(&s0, &s1, &s8, &s9, in);
+    od_load_buffer_4x4_epi32(&s2, &s3, &sa, &sb, in + 16);
+    od_load_buffer_4x4_epi32(&s4, &s5, &sc, &sd, in + 32);
+    od_load_buffer_4x4_epi32(&s6, &s7, &se, &sf, in + 48);
+    /*TODO(any): Merge this transpose with coefficient scanning.*/
+    od_transpose_pack8x4(&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7);
+    od_transpose_pack8x4(&s8, &s9, &sa, &sb, &sc, &sd, &se, &sf);
+    kernel8_epi16(&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7, &s8, &s9, &sa, &sb,
+                  &sc, &sd, &se, &sf);
+    od_transpose4x8(&s0, s8, &s4, sc, &s2, sa, &s6, se);
+    od_transpose4x8(&s1, s9, &s5, sd, &s3, sb, &s7, sf);
+    od_store_buffer_4x4_epi16(out, s0, s1);
+    od_store_buffer_4x4_epi16(out + 16, s4, s5);
+    od_store_buffer_4x4_epi16(out + 32, s2, s3);
+    od_store_buffer_4x4_epi16(out + 48, s6, s7);
+    return;
+  }
+#endif  // CONFIG_RECT_TX_EXT
+  {
+    int r;
+    /* 8 or more rows requires 32-bit precision.
+       TODO(any): If the column TX is IDTX, then we can still use 16 bits. */
+    for (r = 0; r < rows; r += 8) {
+      __m256i ss0;
+      __m256i ss1;
+      __m256i ss2;
+      __m256i ss3;
+      __m256i ss4;
+      __m256i ss5;
+      __m256i ss6;
+      __m256i ss7;
+      __m256i ss8;
+      __m256i ss9;
+      __m256i ssa;
+      __m256i ssb;
+      __m256i ssc;
+      __m256i ssd;
+      __m256i sse;
+      __m256i ssf;
+      od_load_buffer_8x4_epi32(&ss0, &ss8, &ss1, &ss9, in + r * 16);
+      od_load_buffer_8x4_epi32(&ss2, &ssa, &ss3, &ssb, in + r * 16 + 32);
+      od_load_buffer_8x4_epi32(&ss4, &ssc, &ss5, &ssd, in + r * 16 + 64);
+      od_load_buffer_8x4_epi32(&ss6, &sse, &ss7, &ssf, in + r * 16 + 96);
+      od_transpose8x8_epi32(&ss0, &ss1, &ss2, &ss3, &ss4, &ss5, &ss6, &ss7);
+      od_transpose8x8_epi32(&ss8, &ss9, &ssa, &ssb, &ssc, &ssd, &sse, &ssf);
+      kernel8_epi32(&ss0, &ss1, &ss2, &ss3, &ss4, &ss5, &ss6, &ss7, &ss8, &ss9,
+                    &ssa, &ssb, &ssc, &ssd, &sse, &ssf);
+      od_transpose_pack8x16_epi32(&ss0, &ss8, &ss4, &ssc, &ss2, &ssa, &ss6,
+                                  &sse, ss1, ss9, ss5, ssd, ss3, ssb, ss7, ssf);
+      od_store_buffer_2x16_epi16(out + r * 16, ss0, ss8);
+      od_store_buffer_2x16_epi16(out + r * 16 + 32, ss4, ssc);
+      od_store_buffer_2x16_epi16(out + r * 16 + 64, ss2, ssa);
+      od_store_buffer_2x16_epi16(out + r * 16 + 96, ss6, sse);
+    }
+  }
+}
+
+static void od_col_tx16_add_hbd_avx2(unsigned char *output_pixels,
+                                     int output_stride, int cols,
+                                     const int16_t *in, int bd,
+                                     od_tx16_kernel8_epi16 kernel8_epi16,
+                                     od_tx16_mm256_kernel kernel16_epi16) {
+  __m128i s0;
+  __m128i s1;
+  __m128i s2;
+  __m128i s3;
+  __m128i s4;
+  __m128i s5;
+  __m128i s6;
+  __m128i s7;
+  __m128i s8;
+  __m128i s9;
+  __m128i sa;
+  __m128i sb;
+  __m128i sc;
+  __m128i sd;
+  __m128i se;
+  __m128i sf;
+#if CONFIG_RECT_TX_EXT
+  if (cols <= 4) {
+    od_load_buffer_4x4_epi16(&s0, &s1, &s2, &s3, in);
+    od_load_buffer_4x4_epi16(&s4, &s5, &s6, &s7, in + 16);
+    od_load_buffer_4x4_epi16(&s8, &s9, &sa, &sb, in + 32);
+    od_load_buffer_4x4_epi16(&sc, &sd, &se, &sf, in + 48);
+    kernel8_epi16(&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7, &s8, &s9, &sa, &sb,
+                  &sc, &sd, &se, &sf);
+    od_add_store_buffer_hbd_4x4_epi16(output_pixels, output_stride, s0, s8, s4,
+                                      sc, bd);
+    od_add_store_buffer_hbd_4x4_epi16(output_pixels + 4 * output_stride,
+                                      output_stride, s2, sa, s6, se, bd);
+    od_add_store_buffer_hbd_4x4_epi16(output_pixels + 8 * output_stride,
+                                      output_stride, s1, s9, s5, sd, bd);
+    od_add_store_buffer_hbd_4x4_epi16(output_pixels + 12 * output_stride,
+                                      output_stride, s3, sb, s7, sf, bd);
+    return;
+  }
+#endif  // CONFIG_RECT_TX_EXT
+  if (cols <= 8) {
+    od_load_buffer_8x4_epi16(&s0, &s1, &s2, &s3, in, cols);
+    od_load_buffer_8x4_epi16(&s4, &s5, &s6, &s7, in + 32, cols);
+    od_load_buffer_8x4_epi16(&s8, &s9, &sa, &sb, in + 64, cols);
+    od_load_buffer_8x4_epi16(&sc, &sd, &se, &sf, in + 96, cols);
+    kernel8_epi16(&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7, &s8, &s9, &sa, &sb,
+                  &sc, &sd, &se, &sf);
+    od_add_store_buffer_hbd_8x4_epi16(output_pixels, output_stride, s0, s8, s4,
+                                      sc, bd);
+    od_add_store_buffer_hbd_8x4_epi16(output_pixels + 4 * output_stride,
+                                      output_stride, s2, sa, s6, se, bd);
+    od_add_store_buffer_hbd_8x4_epi16(output_pixels + 8 * output_stride,
+                                      output_stride, s1, s9, s5, sd, bd);
+    od_add_store_buffer_hbd_8x4_epi16(output_pixels + 12 * output_stride,
+                                      output_stride, s3, sb, s7, sf, bd);
+  } else {
+    __m256i ss0;
+    __m256i ss1;
+    __m256i ss2;
+    __m256i ss3;
+    __m256i ss4;
+    __m256i ss5;
+    __m256i ss6;
+    __m256i ss7;
+    __m256i ss8;
+    __m256i ss9;
+    __m256i ssa;
+    __m256i ssb;
+    __m256i ssc;
+    __m256i ssd;
+    __m256i sse;
+    __m256i ssf;
+    int c;
+    for (c = 0; c < cols; c += 16) {
+      od_load_buffer_16x4_epi16(&ss0, &ss1, &ss2, &ss3, in + c, cols);
+      od_load_buffer_16x4_epi16(&ss4, &ss5, &ss6, &ss7, in + 4 * cols + c,
+                                cols);
+      od_load_buffer_16x4_epi16(&ss8, &ss9, &ssa, &ssb, in + 8 * cols + c,
+                                cols);
+      od_load_buffer_16x4_epi16(&ssc, &ssd, &sse, &ssf, in + 12 * cols + c,
+                                cols);
+      kernel16_epi16(&ss0, &ss1, &ss2, &ss3, &ss4, &ss5, &ss6, &ss7, &ss8, &ss9,
+                     &ssa, &ssb, &ssc, &ssd, &sse, &ssf);
+      od_add_store_buffer_hbd_16x4_epi16(output_pixels, output_stride, ss0, ss8,
+                                         ss4, ssc, bd);
+      od_add_store_buffer_hbd_16x4_epi16(output_pixels + 4 * output_stride,
+                                         output_stride, ss2, ssa, ss6, sse, bd);
+      od_add_store_buffer_hbd_16x4_epi16(output_pixels + 8 * output_stride,
+                                         output_stride, ss1, ss9, ss5, ssd, bd);
+      od_add_store_buffer_hbd_16x4_epi16(output_pixels + 12 * output_stride,
+                                         output_stride, ss3, ssb, ss7, ssf, bd);
+    }
+  }
+}
+
+static void od_row_idct16_avx2(int16_t *out, int rows, const tran_low_t *in) {
+  od_row_tx16_avx2(out, rows, in,
+#if CONFIG_RECT_TX_EXT
+                   od_idct16_kernel8_epi16,
+#endif
+                   od_idct16_kernel8_epi32);
+}
+
+static void od_col_idct16_add_hbd_avx2(unsigned char *output_pixels,
+                                       int output_stride, int cols,
+                                       const int16_t *in, int bd) {
+  od_col_tx16_add_hbd_avx2(output_pixels, output_stride, cols, in, bd,
+                           od_idct16_kernel8_epi16, od_idct16_kernel16_epi16);
+}
+
 typedef void (*daala_row_itx)(int16_t *out, int rows, const tran_low_t *in);
 typedef void (*daala_col_itx_add)(unsigned char *output_pixels,
                                   int output_stride, int cols,
@@ -1137,7 +1404,7 @@ static const daala_row_itx TX_ROW_MAP[TX_SIZES][TX_TYPES] = {
   { od_row_idct8_avx2, od_row_idst8_avx2, od_row_flip_idst8_avx2,
     od_row_iidtx8_avx2 },
   // 16-point transforms
-  { NULL, NULL, NULL, NULL },
+  { od_row_idct16_avx2, NULL, NULL, NULL },
   // 32-point transforms
   { NULL, NULL, NULL, NULL },
 #if CONFIG_TX64X64
@@ -1171,7 +1438,7 @@ static const daala_col_itx_add TX_COL_MAP[2][TX_SIZES][TX_TYPES] = {
       { od_col_idct8_add_hbd_avx2, od_col_idst8_add_hbd_avx2,
         od_col_flip_idst8_add_hbd_avx2, od_col_iidtx8_add_hbd_avx2 },
       // 16-point transforms
-      { NULL, NULL, NULL, NULL },
+      { od_col_idct16_add_hbd_avx2, NULL, NULL, NULL },
       // 32-point transforms
       { NULL, NULL, NULL, NULL },
 #if CONFIG_TX64X64
