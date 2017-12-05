@@ -7,8 +7,10 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +28,10 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#endif
+
 class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
  public:
   TabUnderBlockerBrowserTest() {}
@@ -41,6 +47,18 @@ class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
   static std::string GetError(const GURL& blocked_url) {
     return base::StringPrintf(kBlockTabUnderFormatMessage,
                               blocked_url.spec().c_str());
+  }
+
+  bool IsUiShownForUrl(content::WebContents* web_contents, const GURL& url) {
+// TODO(csharrison): Implement android checking when crbug.com/611756 is
+// resolved.
+#if defined(OS_ANDROID)
+    return false;
+#else
+    return base::ContainsValue(
+        FramebustBlockTabHelper::FromWebContents(web_contents)->blocked_urls(),
+        url);
+#endif
   }
 
  private:
@@ -84,6 +102,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
   // technique.
   EXPECT_TRUE(content::ExecuteScript(opener, "var a = 0;"));
   EXPECT_EQ(expected_error, console_observer.message());
+  EXPECT_TRUE(IsUiShownForUrl(opener, cross_origin_url));
 }
 
 IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
@@ -121,4 +140,5 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   // Round trip to the renderer to ensure the message would have been sent.
   EXPECT_TRUE(content::ExecuteScript(opener, "var a = 0;"));
   EXPECT_TRUE(console_observer.message().empty());
+  EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
 }
