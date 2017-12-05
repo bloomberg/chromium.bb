@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
 
@@ -17,8 +18,9 @@
 FullscreenController::FullscreenController()
     : broadcaster_([[ChromeBroadcaster alloc] init]),
       model_(base::MakeUnique<FullscreenModel>()),
-      bridge_([[ChromeBroadcastOberverBridge alloc]
-          initWithObserver:model_.get()]) {
+      bridge_(
+          [[ChromeBroadcastOberverBridge alloc] initWithObserver:model_.get()]),
+      mediator_(base::MakeUnique<FullscreenMediator>(this, model_.get())) {
   DCHECK(broadcaster_);
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastContentScrollOffset:)];
@@ -33,14 +35,12 @@ FullscreenController::FullscreenController()
 FullscreenController::~FullscreenController() = default;
 
 void FullscreenController::AddObserver(FullscreenControllerObserver* observer) {
-  // TODO(crbug.com/785671): Use FullscreenControllerObserverManager to keep
-  // track of observers.
+  mediator_->AddObserver(observer);
 }
 
 void FullscreenController::RemoveObserver(
     FullscreenControllerObserver* observer) {
-  // TODO(crbug.com/785671): Use FullscreenControllerObserverManager to keep
-  // track of observers.
+  mediator_->RemoveObserver(observer);
 }
 
 bool FullscreenController::IsEnabled() const {
@@ -56,6 +56,7 @@ void FullscreenController::DecrementDisabledCounter() {
 }
 
 void FullscreenController::Shutdown() {
+  mediator_->Disconnect();
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastContentScrollOffset:)];
   [broadcaster_ removeObserver:bridge_

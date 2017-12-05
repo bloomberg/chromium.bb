@@ -14,6 +14,7 @@
 @class ChromeBroadcaster;
 @class ChromeBroadcastOberverBridge;
 class FullscreenControllerObserver;
+class FullscreenMediator;
 class FullscreenModel;
 class FullscreenWebStateListObserver;
 
@@ -59,6 +60,8 @@ class FullscreenController : public KeyedService {
   std::unique_ptr<FullscreenModel> model_;
   // The bridge used to forward brodcasted UI to |model_|.
   __strong ChromeBroadcastOberverBridge* bridge_ = nil;
+  // Object that manages sending signals to FullscreenControllerObservers.
+  std::unique_ptr<FullscreenMediator> mediator_;
   // A WebStateListObserver that updates |model_| for WebStateList changes.
   std::unique_ptr<FullscreenWebStateListObserver> web_state_list_observer_;
 
