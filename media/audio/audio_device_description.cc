@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "media/audio/audio_device_description.h"
+
+#include <utility>
+
+#include "base/logging.h"
 #include "media/base/localized_strings.h"
 
 namespace media {
@@ -17,6 +20,12 @@ const char AudioDeviceDescription::kLoopbackWithMuteDeviceId[] =
 bool AudioDeviceDescription::IsDefaultDevice(const std::string& device_id) {
   return device_id.empty() ||
          device_id == AudioDeviceDescription::kDefaultDeviceId;
+}
+
+// static
+bool AudioDeviceDescription::IsCommunicationsDevice(
+    const std::string& device_id) {
+  return device_id == AudioDeviceDescription::kCommunicationsDeviceId;
 }
 
 // static
@@ -52,9 +61,29 @@ std::string AudioDeviceDescription::GetCommunicationsDeviceName() {
 #endif
 }
 
-AudioDeviceDescription::AudioDeviceDescription(const std::string& device_name,
-                                               const std::string& unique_id,
-                                               const std::string& group_id)
-    : device_name(device_name), unique_id(unique_id), group_id(group_id) {}
+// static
+std::string AudioDeviceDescription::GetDefaultDeviceName(
+    const std::string& real_device_name) {
+  DCHECK(!real_device_name.empty());
+  // TODO(guidou): Put the names together in a localized manner.
+  // http://crbug.com/788767
+  return GetDefaultDeviceName() + " - " + real_device_name;
+}
+
+// static
+std::string AudioDeviceDescription::GetCommunicationsDeviceName(
+    const std::string& real_device_name) {
+  DCHECK(!real_device_name.empty());
+  // TODO(guidou): Put the names together in a localized manner.
+  // http://crbug.com/788767
+  return GetCommunicationsDeviceName() + " - " + real_device_name;
+}
+
+AudioDeviceDescription::AudioDeviceDescription(std::string device_name,
+                                               std::string unique_id,
+                                               std::string group_id)
+    : device_name(std::move(device_name)),
+      unique_id(std::move(unique_id)),
+      group_id(std::move(group_id)) {}
 
 }  // namespace media

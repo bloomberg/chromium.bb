@@ -60,6 +60,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
       const AudioParameters& params,
       const std::string& device_id,
       const LogCallback& log_callback) override;
+
+  std::string GetDefaultInputDeviceID() override;
   std::string GetDefaultOutputDeviceID() override;
 
   // Used to track destruction of input and output streams.
@@ -177,6 +179,8 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // TODO(henrika): possibly extend the scheme to also take input streams into
   // account.
   bool IncreaseIOBufferSizeIfPossible(AudioDeviceID device_id);
+
+  std::string GetDefaultDeviceID(bool is_input);
 
   std::unique_ptr<AudioDeviceListenerMac> output_device_listener_;
 

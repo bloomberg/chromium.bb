@@ -99,6 +99,10 @@ class MockAudioManager : public AudioManager {
       const std::string& device_id) override;
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
+  std::string GetDefaultInputDeviceID() override;
+  std::string GetDefaultOutputDeviceID() override;
+  std::string GetCommunicationsInputDeviceID() override;
+  std::string GetCommunicationsOutputDeviceID() override;
 
  private:
   AudioParameters input_params_;

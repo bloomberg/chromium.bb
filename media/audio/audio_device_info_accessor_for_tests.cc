@@ -61,4 +61,24 @@ std::string AudioDeviceInfoAccessorForTests::GetAssociatedOutputDeviceID(
   return audio_manager_->GetAssociatedOutputDeviceID(input_device_id);
 }
 
+std::string AudioDeviceInfoAccessorForTests::GetDefaultInputDeviceID() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  return audio_manager_->GetDefaultInputDeviceID();
+}
+
+std::string AudioDeviceInfoAccessorForTests::GetDefaultOutputDeviceID() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  return audio_manager_->GetDefaultOutputDeviceID();
+}
+
+std::string AudioDeviceInfoAccessorForTests::GetCommunicationsInputDeviceID() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  return audio_manager_->GetCommunicationsInputDeviceID();
+}
+
+std::string AudioDeviceInfoAccessorForTests::GetCommunicationsOutputDeviceID() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  return audio_manager_->GetCommunicationsOutputDeviceID();
+}
+
 }  // namespace media

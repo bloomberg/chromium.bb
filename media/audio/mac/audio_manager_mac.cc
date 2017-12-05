@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -790,8 +791,18 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
 
 std::string AudioManagerMac::GetDefaultOutputDeviceID() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return GetDefaultDeviceID(false /* is_input */);
+}
+
+std::string AudioManagerMac::GetDefaultInputDeviceID() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return GetDefaultDeviceID(true /* is_input */);
+}
+
+std::string AudioManagerMac::GetDefaultDeviceID(bool is_input) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   AudioDeviceID device_id = kAudioObjectUnknown;
-  if (!GetDefaultOutputDevice(&device_id))
+  if (!GetDefaultDevice(&device_id, is_input))
     return std::string();
 
   const AudioObjectPropertyAddress property_address = {

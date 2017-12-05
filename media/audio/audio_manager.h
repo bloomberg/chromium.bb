@@ -252,6 +252,15 @@ class MEDIA_EXPORT AudioManager {
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) = 0;
 
+  // These functions return the ID of the default/communications audio
+  // input/output devices respectively.
+  // Implementations that do not support this functionality should return an
+  // empty string.
+  virtual std::string GetDefaultInputDeviceID() = 0;
+  virtual std::string GetDefaultOutputDeviceID() = 0;
+  virtual std::string GetCommunicationsInputDeviceID() = 0;
+  virtual std::string GetCommunicationsOutputDeviceID() = 0;
+
  private:
   friend class AudioSystemHelper;
 

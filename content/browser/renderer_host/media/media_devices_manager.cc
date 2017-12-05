@@ -49,23 +49,23 @@ std::string GetLogMessageString(MediaDeviceType device_type,
   return output_string;
 }
 
-media::AudioDeviceDescriptions GetFakeAudioDevices(bool is_input) {
-  media::AudioDeviceDescriptions result;
+MediaDeviceInfoArray GetFakeAudioDevices(bool is_input) {
+  MediaDeviceInfoArray result;
   if (is_input) {
-    result.emplace_back("Fake Default Audio Input",
-                        media::AudioDeviceDescription::kDefaultDeviceId,
-                        "fake_group_audio_1");
-    result.emplace_back("Fake Audio Input 1", "fake_audio_input_1",
-                        "fake_group_audio_1");
-    result.emplace_back("Fake Audio Input 2", "fake_audio_input_2",
+    result.emplace_back(media::AudioDeviceDescription::kDefaultDeviceId,
+                        "Fake Default Audio Input",
+                        "fake_group_audio_input_default");
+    result.emplace_back("fake_audio_input_1", "Fake Audio Input 1",
+                        "fake_group_audio_input_1");
+    result.emplace_back("fake_audio_input_2", "Fake Audio Input 2",
                         "fake_group_audio_input_2");
   } else {
-    result.emplace_back("Fake Default Audio Output",
-                        media::AudioDeviceDescription::kDefaultDeviceId,
-                        "fake_group_audio_1");
-    result.emplace_back("Fake Audio Output 1", "fake_audio_output_1",
-                        "fake_group_audio_1");
-    result.emplace_back("Fake Audio Output 2", "fake_audio_output_2",
+    result.emplace_back(media::AudioDeviceDescription::kDefaultDeviceId,
+                        "Fake Default Audio Output",
+                        "fake_group_audio_output_default");
+    result.emplace_back("fake_audio_output_1", "Fake Audio Output 1",
+                        "fake_group_audio_output_1");
+    result.emplace_back("fake_audio_output_2", "Fake Audio Output 2",
                         "fake_group_audio_output_2");
   }
 
@@ -339,7 +339,7 @@ void MediaDevicesManager::EnumerateAudioDevices(bool is_input) {
       is_input ? MEDIA_DEVICE_TYPE_AUDIO_INPUT : MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
   if (use_fake_devices_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&MediaDevicesManager::AudioDevicesEnumerated,
+        FROM_HERE, base::BindOnce(&MediaDevicesManager::DevicesEnumerated,
                                   weak_factory_.GetWeakPtr(), type,
                                   GetFakeAudioDevices(is_input)));
     return;
@@ -365,56 +365,10 @@ void MediaDevicesManager::AudioDevicesEnumerated(
     media::AudioDeviceDescriptions device_descriptions) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto it_default_device =
-      std::find_if(device_descriptions.begin(), device_descriptions.end(),
-                   [](const media::AudioDeviceDescription& description) {
-                     return media::AudioDeviceDescription::IsDefaultDevice(
-                         description.unique_id);
-                   });
-
-  auto it_real_default_device = device_descriptions.end();
-  if (it_default_device != device_descriptions.end()) {
-    // Find the real device that maps to the default device by finding
-    // coincidence in the group ID.
-    // This approach works only when the following is true:
-    // * group ID is properly supported so that the default device has the
-    //   same group ID as some real device.
-    // * For input devices, the default device has an associated output device.
-    // * There is only one device with the same group ID of the default device.
-    // TODO(guidou): Get the real ID of the default input device from
-    // media::AudioSystem when the functionality becomes available.
-    // http://crbug.com/788758
-    for (auto it = device_descriptions.begin(); it != device_descriptions.end();
-         ++it) {
-      if (it->group_id == it_default_device->group_id &&
-          !media::AudioDeviceDescription::IsDefaultDevice(it->unique_id)) {
-        if (it_real_default_device != device_descriptions.end()) {
-          // If there is more than one real device with the same group ID as the
-          // default device, the exact mapping cannot be found.
-          it_real_default_device = device_descriptions.end();
-          break;
-        } else {
-          it_real_default_device = it;
-        }
-      }
-    }
-  }
-
   MediaDeviceInfoArray snapshot;
   for (const media::AudioDeviceDescription& description : device_descriptions) {
-    if (it_real_default_device != device_descriptions.end() &&
-        media::AudioDeviceDescription::IsDefaultDevice(description.unique_id)) {
-      // TODO(guidou): Make the concatenation of the default and real device
-      // labels in a properly localized manner. http://crbug.com/788767
-      snapshot.emplace_back(
-          description.unique_id,
-          description.device_name + " - " + it_real_default_device->device_name,
-          description.group_id);
-    } else {
-      snapshot.emplace_back(description);
-    }
+    snapshot.emplace_back(description);
   }
-
   DevicesEnumerated(type, snapshot);
 }
 
