@@ -298,7 +298,7 @@ Polymer({
   onSaveNewPassphraseTap_: function(e) {
     assert(this.creatingNewPassphrase_);
 
-    // Ignore events on irrevelant elements or with irrelevant keys.
+    // Ignore events on irrelevant elements or with irrelevant keys.
     if (e.target.tagName != 'PAPER-BUTTON' && e.target.tagName != 'PAPER-INPUT')
       return;
     if (e.type == 'keypress' && e.key != 'Enter')

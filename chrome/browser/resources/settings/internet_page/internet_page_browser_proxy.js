@@ -19,7 +19,7 @@ cr.define('settings', function() {
   /** @interface */
   class InternetPageBrowserProxy {
     /**
-     *  Shows configuration of connnected external VPN network.
+     *  Shows configuration of connected external VPN network.
      *  @param {string} guid
      */
     showNetworkConfigure(guid) {}

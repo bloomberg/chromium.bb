@@ -44,7 +44,7 @@ cr.define('settings', function() {
     initializeImportDialog() {}
 
     /**
-     * Starts importing data for the specificed source browser profile. The C++
+     * Starts importing data for the specified source browser profile. The C++
      * responds with the 'import-data-status-changed' WebUIListener event.
      * @param {number} sourceBrowserProfileIndex
      */

@@ -148,7 +148,7 @@ Polymer({
   },
 
   /**
-   * Handles writting the appropriate message to |problemMessage_|.
+   * Handles writing the appropriate message to |problemMessage_|.
    * @private
    * @param {string} messageId
    * @param {chrome.quickUnlockPrivate.CredentialRequirements} requirements
