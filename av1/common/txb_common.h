@@ -508,15 +508,20 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
 
 static INLINE int get_eob_ctx(const int coeff_idx,  // raster order
                               const TX_SIZE txs_ctx, const TX_TYPE tx_type) {
-  int offset = 0;
   (void)tx_type;
 
-  if (txs_ctx == TX_4X4) return offset + av1_coeff_band_4x4[coeff_idx];
-  if (txs_ctx == TX_8X8) return offset + av1_coeff_band_8x8[coeff_idx];
-  if (txs_ctx == TX_16X16) return offset + av1_coeff_band_16x16[coeff_idx];
-  if (txs_ctx == TX_32X32) return offset + av1_coeff_band_32x32[coeff_idx];
+  if (txs_ctx == TX_4X4) return av1_coeff_band_4x4[coeff_idx];
+  if (txs_ctx == TX_8X8) return av1_coeff_band_8x8[coeff_idx];
+  if (txs_ctx == TX_16X16) return av1_coeff_band_16x16[coeff_idx];
+  if (txs_ctx == TX_32X32) return av1_coeff_band_32x32[coeff_idx];
 
-  assert(0);
+#if CONFIG_TX64X64
+  // Since TX64X64 use 32x32 coeff buffer, so it share the same coeff_band with
+  // TX32X32
+  if (txs_ctx == TX_64X64) return av1_coeff_band_32x32[coeff_idx];
+#endif  // CONFIG_TX64X64
+
+  assert(0 && "Invalid value of txs_ctx");
   return 0;
 }
 
