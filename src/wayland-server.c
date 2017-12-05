@@ -300,6 +300,13 @@ wl_resource_post_error(struct wl_resource *resource,
 	client->error = 1;
 }
 
+static void
+destroy_client_with_error(struct wl_client *client, const char *reason)
+{
+	wl_log("%s (pid %u)\n", reason, client->ucred.pid);
+	wl_client_destroy(client);
+}
+
 static int
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
@@ -314,15 +321,21 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	int opcode, size, since;
 	int len;
 
-	if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
+	if (mask & WL_EVENT_HANGUP) {
 		wl_client_destroy(client);
+		return 1;
+	}
+
+	if (mask & WL_EVENT_ERROR) {
+		destroy_client_with_error(client, "socket error");
 		return 1;
 	}
 
 	if (mask & WL_EVENT_WRITABLE) {
 		len = wl_connection_flush(connection);
 		if (len < 0 && errno != EAGAIN) {
-			wl_client_destroy(client);
+			destroy_client_with_error(
+			    client, "failed to flush client connection");
 			return 1;
 		} else if (len >= 0) {
 			wl_event_source_fd_update(client->source,
@@ -334,7 +347,8 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	if (mask & WL_EVENT_READABLE) {
 		len = wl_connection_read(connection);
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
-			wl_client_destroy(client);
+			destroy_client_with_error(
+			    client, "failed to read client connection");
 			return 1;
 		}
 	}
@@ -418,8 +432,10 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		len = wl_connection_pending_input(connection);
 	}
 
-	if (client->error)
-		wl_client_destroy(client);
+	if (client->error) {
+		destroy_client_with_error(client,
+					  "error in client communication");
+	}
 
 	return 1;
 }
