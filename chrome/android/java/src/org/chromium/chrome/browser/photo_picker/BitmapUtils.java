@@ -6,8 +6,12 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.os.Build;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 
 /**
  * A collection of utility functions for dealing with bitmaps.
@@ -15,15 +19,17 @@ import java.io.FileDescriptor;
 class BitmapUtils {
     /**
      * Takes a |bitmap| and returns a square thumbnail of |size|x|size| from the center of the
-     * bitmap specified.
+     * bitmap specified, rotating it according to the Exif information, if needed (on Nougat and
+     * up only).
      * @param bitmap The bitmap to adjust.
      * @param size The desired size (width and height).
+     * @param descriptor The file descriptor to read the Exif information from.
      * @return The new bitmap thumbnail.
      */
-    private static Bitmap sizeBitmap(Bitmap bitmap, int size) {
+    private static Bitmap sizeBitmap(Bitmap bitmap, int size, FileDescriptor descriptor) {
         // TODO(finnur): Investigate options that require fewer bitmaps to be created.
         bitmap = ensureMinSize(bitmap, size);
-        bitmap = cropToSquare(bitmap, size);
+        bitmap = rotateAndCropToSquare(bitmap, size, descriptor);
         return bitmap;
     }
 
@@ -44,7 +50,7 @@ class BitmapUtils {
 
         if (bitmap == null) return null;
 
-        return sizeBitmap(bitmap, size);
+        return sizeBitmap(bitmap, size, descriptor);
     }
 
     /**
@@ -91,12 +97,31 @@ class BitmapUtils {
     }
 
     /**
-     * Crops a |bitmap| to a certain square |size|
+     * Crops a |bitmap| to a certain square |size| and rotates it according to the Exif information,
+     * if needed (on Nougat and up only).
      * @param bitmap The bitmap to crop.
      * @param size The size desired (width and height).
      * @return The resulting (square) bitmap.
      */
-    private static Bitmap cropToSquare(Bitmap bitmap, int size) {
+    private static Bitmap rotateAndCropToSquare(
+            Bitmap bitmap, int size, FileDescriptor descriptor) {
+        Matrix matrix = new Matrix();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                ExifInterface exif = new ExifInterface(descriptor);
+                int rotation = exif.getAttributeInt(
+                        ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                if (rotation == ExifInterface.ORIENTATION_ROTATE_90) {
+                    matrix.postRotate(90);
+                } else if (rotation == ExifInterface.ORIENTATION_ROTATE_180) {
+                    matrix.postRotate(180);
+                } else if (rotation == ExifInterface.ORIENTATION_ROTATE_270) {
+                    matrix.postRotate(270);
+                }
+            } catch (IOException e) {
+            }
+        }
+
         int x = 0;
         int y = 0;
         int width = bitmap.getWidth();
@@ -105,7 +130,7 @@ class BitmapUtils {
 
         if (width > size) x = (width - size) / 2;
         if (height > size) y = (height - size) / 2;
-        return Bitmap.createBitmap(bitmap, x, y, size, size);
+        return Bitmap.createBitmap(bitmap, x, y, size, size, matrix, true);
     }
 
     /**
