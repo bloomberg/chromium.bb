@@ -20,6 +20,7 @@
 @interface CocoaTestHelperWindow : NSWindow {
  @private
   BOOL pretendIsKeyWindow_;
+  BOOL pretendIsOccluded_;
   BOOL useDefaultConstraints_;
 }
 
@@ -41,11 +42,17 @@
 // Set value to return for -isKeyWindow.
 - (void)setPretendIsKeyWindow:(BOOL)isKeyWindow;
 
+// Set value to return for -occlusionState and posts a
+// NSWindowDidChangeOcclusionStateNotification.
+- (void)setPretendIsOccluded:(BOOL)isOccluded;
+
 // Whether to use or ignore the default contraints for window sizing and
 // placement.
 - (void)setUseDefaultConstraints:(BOOL)useDefaultConstraints;
 
 - (BOOL)isKeyWindow;
+
+- (NSWindowOcclusionState)occlusionState;
 
 @end
 

@@ -66,12 +66,23 @@ void NOINLINE ForceSystemLeaks() {
   pretendIsKeyWindow_ = flag;
 }
 
+- (void)setPretendIsOccluded:(BOOL)flag {
+  pretendIsOccluded_ = flag;
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidChangeOcclusionStateNotification
+                    object:self];
+}
+
 - (void)setUseDefaultConstraints:(BOOL)useDefaultConstraints {
   useDefaultConstraints_ = useDefaultConstraints;
 }
 
 - (BOOL)isKeyWindow {
   return pretendIsKeyWindow_;
+}
+
+- (NSWindowOcclusionState)occlusionState {
+  return pretendIsOccluded_ ? 0 : NSWindowOcclusionStateVisible;
 }
 
 - (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen*)screen {
