@@ -183,8 +183,8 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
     located_event->set_root_location_f(location);
   }
   DispatchEventFromNativeUiEvent(
-      native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
-                               base::Unretained(delegate_)));
+      native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                                   base::Unretained(delegate_)));
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 

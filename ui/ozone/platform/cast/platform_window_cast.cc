@@ -52,8 +52,8 @@ bool PlatformWindowCast::CanDispatchEvent(const ui::PlatformEvent& ne) {
 uint32_t PlatformWindowCast::DispatchEvent(
     const ui::PlatformEvent& native_event) {
   DispatchEventFromNativeUiEvent(
-      native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
-                               base::Unretained(delegate_)));
+      native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                                   base::Unretained(delegate_)));
 
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
