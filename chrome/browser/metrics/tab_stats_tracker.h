@@ -85,6 +85,12 @@ class TabStatsTracker : public TabStripModelObserver,
     return reporting_delegate_.get();
   }
 
+  // Reset the |reporting_delegate_| object to |reporting_delegate|, for testing
+  // purposes.
+  void reset_reporting_delegate(UmaStatsReportingDelegate* reporting_delegate) {
+    reporting_delegate_.reset(reporting_delegate);
+  }
+
   // Reset the DailyEvent object to |daily_event|, for testing purposes.
   void reset_daily_event(DailyEvent* daily_event) {
     daily_event_.reset(daily_event);
@@ -148,13 +154,18 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   static const char kMaxWindowsInADayHistogramName[];
 
   UmaStatsReportingDelegate() {}
-  ~UmaStatsReportingDelegate() {}
+  virtual ~UmaStatsReportingDelegate() {}
 
   // Called at resume from sleep/hibernate.
   void ReportTabCountOnResume(size_t tab_count);
 
   // Called once per day to report the metrics.
   void ReportDailyMetrics(const TabStatsDataStore::TabsStats& tab_stats);
+
+ protected:
+  // Checks if Chrome is running in background with no visible windows, virtual
+  // for unittesting.
+  virtual bool IsChromeBackgroundedWithoutWindows();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UmaStatsReportingDelegate);

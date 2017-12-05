@@ -158,10 +158,8 @@ void TabStatsTracker::UmaStatsReportingDelegate::ReportTabCountOnResume(
     size_t tab_count) {
   // Don't report the number of tabs on resume if Chrome is running in
   // background with no visible window.
-  if (g_browser_process && g_browser_process->background_mode_manager()
-                               ->IsBackgroundWithoutWindows()) {
+  if (IsChromeBackgroundedWithoutWindows())
     return;
-  }
   UMA_HISTOGRAM_COUNTS_10000(kNumberOfTabsOnResumeHistogramName, tab_count);
 }
 
@@ -178,6 +176,15 @@ void TabStatsTracker::UmaStatsReportingDelegate::ReportDailyMetrics(
                              tab_stats.max_tab_per_window);
   UMA_HISTOGRAM_COUNTS_10000(kMaxWindowsInADayHistogramName,
                              tab_stats.window_count_max);
+}
+
+bool TabStatsTracker::UmaStatsReportingDelegate::
+    IsChromeBackgroundedWithoutWindows() {
+  if (g_browser_process && g_browser_process->background_mode_manager()
+                               ->IsBackgroundWithoutWindows()) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace metrics
