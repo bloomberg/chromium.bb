@@ -398,7 +398,7 @@ class WebLocalFrame : public WebFrame {
 
   // Call the function with the given receiver and arguments, bypassing
   // canExecute().
-  virtual v8::Local<v8::Value> CallFunctionEvenIfScriptDisabled(
+  virtual v8::MaybeLocal<v8::Value> CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>,
       v8::Local<v8::Value>,
       int argc,

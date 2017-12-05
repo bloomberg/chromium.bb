@@ -270,9 +270,14 @@ PP_Var CallDeprecatedInternal(PP_Var var,
     return PP_MakeUndefined();
   }
 
-  v8::Local<v8::Value> result = frame->CallFunctionEvenIfScriptDisabled(
-      function.As<v8::Function>(), recv, argc, converted_args.get());
-  ScopedPPVar result_var = try_catch.FromV8(result);
+  ScopedPPVar result_var;
+  v8::Local<v8::Value> result;
+  if (frame
+          ->CallFunctionEvenIfScriptDisabled(function.As<v8::Function>(), recv,
+                                             argc, converted_args.get())
+          .ToLocal(&result)) {
+    result_var = try_catch.FromV8(result);
+  }
 
   if (try_catch.HasException())
     return PP_MakeUndefined();
