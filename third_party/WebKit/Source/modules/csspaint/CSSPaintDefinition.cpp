@@ -14,9 +14,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/PaintGeneratedImage.h"
-#include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -99,10 +97,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   }
 
   PaintRenderingContext2D* rendering_context = PaintRenderingContext2D::Create(
-      ImageBuffer::Create(WTF::WrapUnique(new RecordingImageBufferSurface(
-          container_size, RecordingImageBufferSurface::kDisallowFallback,
-          color_params))),
-      context_settings_, zoom);
+      container_size, color_params, context_settings_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
   StylePropertyMapReadonly* style_map =
       FilteredComputedStylePropertyMap::Create(layout_object.GetNode(),
@@ -130,8 +125,8 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
     return nullptr;
   }
 
-  return PaintGeneratedImage::Create(
-      rendering_context->GetImageBuffer()->GetRecord(), container_size);
+  return PaintGeneratedImage::Create(rendering_context->GetRecord(),
+                                     container_size);
 }
 
 void CSSPaintDefinition::MaybeCreatePaintInstance() {

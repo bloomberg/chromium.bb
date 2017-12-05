@@ -224,8 +224,11 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual int Width() const = 0;
   virtual int Height() const = 0;
 
-  virtual bool HasImageBuffer() const = 0;
-  virtual ImageBuffer* GetImageBuffer() const = 0;
+  virtual bool HasImageBuffer() const { return false; }
+  virtual ImageBuffer* GetImageBuffer() const {
+    NOTREACHED();
+    return nullptr;
+  };
 
   virtual bool ParseColorOrCurrentColor(Color&,
                                         const String& color_string) const = 0;
@@ -369,6 +372,11 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual void DidInvokeGPUReadbackInCurrentFrame() {}
 
   virtual bool IsPaint2D() const { return false; }
+  virtual void WillOverwriteCanvas() {
+    if (HasImageBuffer()) {
+      GetImageBuffer()->WillOverwriteCanvas();
+    }
+  }
 
  private:
   void RealizeSaves();

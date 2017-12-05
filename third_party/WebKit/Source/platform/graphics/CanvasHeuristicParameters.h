@@ -25,42 +25,9 @@ enum {
   // containing layer is the object of a paint invalidation.
   kExpensiveOverdrawThreshold = 10,
 
-  kExpensivePathPointCount = 50,
-
-  kSVGImageSourcesAreExpensive = 1,
-
-  kConcavePathsAreExpensive = 1,
-
   kComplexClipsAreExpensive = 1,
 
   kBlurredShadowsAreExpensive = 1,
-
-  // Heuristic: When drawing a source image that has more pixels than
-  // the destination canvas by the following factor or more, the draw
-  // is considered expensive.
-  kExpensiveImageSizeRatio = 4,
-
-  // Display list fallback heuristic parameters
-  //============================================
-
-  // Frames ending with more than this number of levels remaining
-  // on the state stack at the end of a frame are too expensive to
-  // remain in display list mode. This criterion is motivated by an
-  // O(N) cost in carying over state from one frame to the next when
-  // in display list mode. The value of this parameter should be high
-  // enough to almost never kick in other than for cases with unmatched
-  // save()/restore() calls are low enough to kick in before state
-  // management becomes measurably expensive.
-  kExpensiveRecordingStackDepth = 50,
-
-  // GPU vs. display list heuristic parameters
-  //===========================================
-
-  // Pixel count beyond which we should always prefer to use display
-  // lists. Rationale: The allocation of large textures for canvas
-  // tends to starve the compositor, and increase the probability of
-  // failure of subsequent allocations required for double buffering.
-  kPreferDisplayListOverGpuSizeThreshold = 8096 * 4096,
 
   // Disable Acceleration heuristic parameters
   //===========================================

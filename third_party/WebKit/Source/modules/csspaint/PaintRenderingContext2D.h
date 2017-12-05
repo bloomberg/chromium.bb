@@ -10,7 +10,6 @@
 #include "modules/canvas/canvas2d/BaseRenderingContext2D.h"
 #include "modules/csspaint/PaintRenderingContext2DSettings.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/graphics/ImageBuffer.h"
 
 namespace blink {
 
@@ -25,10 +24,11 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
  public:
   static PaintRenderingContext2D* Create(
-      std::unique_ptr<ImageBuffer> image_buffer,
+      const IntSize& container_size,
+      const CanvasColorParams& color_params,
       const PaintRenderingContext2DSettings& context_settings,
       float zoom) {
-    return new PaintRenderingContext2D(std::move(image_buffer),
+    return new PaintRenderingContext2D(container_size, color_params,
                                        context_settings, zoom);
   }
 
@@ -36,8 +36,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
     ScriptWrappable::Trace(visitor);
     BaseRenderingContext2D::Trace(visitor);
   }
-
-  // BaseRenderingContext2D
 
   // PaintRenderingContext2D doesn't have any pixel readback so the origin
   // is always clean, and unable to taint it.
@@ -50,16 +48,13 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   int Width() const final;
   int Height() const final;
 
-  bool HasImageBuffer() const final { return image_buffer_.get(); }
-  ImageBuffer* GetImageBuffer() const final { return image_buffer_.get(); }
-
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
   PaintCanvas* DrawingCanvas() const final;
   PaintCanvas* ExistingDrawingCanvas() const final;
   void DisableDeferral(DisableDeferralReason) final {}
 
-  void DidDraw(const SkIRect& dirty_rect) final;
+  void DidDraw(const SkIRect&) final;
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
@@ -72,16 +67,27 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   // PaintRenderingContext2D cannot lose it's context.
   bool isContextLost() const final { return false; }
 
+  sk_sp<PaintRecord> GetRecord();
+
  protected:
   bool IsPaint2D() const override { return true; }
+  void WillOverwriteCanvas() override;
 
  private:
-  PaintRenderingContext2D(std::unique_ptr<ImageBuffer>,
+  PaintRenderingContext2D(const IntSize& container_size,
+                          const CanvasColorParams&,
                           const PaintRenderingContext2DSettings&,
                           float zoom);
 
-  std::unique_ptr<ImageBuffer> image_buffer_;
+  void InitializePaintRecorder();
+  PaintCanvas* Canvas() const;
+
+  std::unique_ptr<PaintRecorder> paint_recorder_;
+  sk_sp<PaintRecord> previous_frame_;
+  IntSize container_size_;
+  const CanvasColorParams& color_params_;
   PaintRenderingContext2DSettings context_settings_;
+  bool did_record_draw_commands_in_paint_recorder_;
 };
 
 }  // namespace blink

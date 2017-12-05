@@ -47,8 +47,6 @@ A `CSSPaintValue` can generate an image from the method `CSSPaintImageGenerator#
 calls through to `CSSPaintDefinition#paint` which actually invokes the javascript paint method.
 This method returns the `PaintGeneratedImage`.
 
-The `PaintRecord` is produced from a `RecordingImageBufferSurface`.
-
 ### Style Invalidation
 
 The `CSSPaintDefinition` keeps a list of both native and custom properties it will invalidate on.
