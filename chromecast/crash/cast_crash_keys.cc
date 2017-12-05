@@ -63,15 +63,6 @@ size_t RegisterCastCrashKeys() {
       {"killed_process_origin_lock", ::crash_keys::kSmallSize},
       {"site_isolation_mode", ::crash_keys::kSmallSize},
 
-      // Temporary for https://crbug.com/626802.
-      {"newframe_routing_id", ::crash_keys::kSmallSize},
-      {"newframe_proxy_id", ::crash_keys::kSmallSize},
-      {"newframe_opener_id", ::crash_keys::kSmallSize},
-      {"newframe_parent_id", ::crash_keys::kSmallSize},
-      {"newframe_widget_id", ::crash_keys::kSmallSize},
-      {"newframe_widget_hidden", ::crash_keys::kSmallSize},
-      {"newframe_replicated_origin", ::crash_keys::kSmallSize},
-
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
 

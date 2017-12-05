@@ -139,15 +139,6 @@ size_t RegisterCrashKeysHelper() {
       {"killed_process_origin_lock", kSmallSize},
       {"site_isolation_mode", kSmallSize},
 
-      // Temporary for https://crbug.com/626802.
-      {"newframe_routing_id", kSmallSize},
-      {"newframe_proxy_id", kSmallSize},
-      {"newframe_opener_id", kSmallSize},
-      {"newframe_parent_id", kSmallSize},
-      {"newframe_widget_id", kSmallSize},
-      {"newframe_widget_hidden", kSmallSize},
-      {"newframe_replicated_origin", kSmallSize},
-
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", kMediumSize},
 
