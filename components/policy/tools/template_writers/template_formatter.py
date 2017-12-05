@@ -11,6 +11,7 @@ import codecs
 import collections
 import optparse
 import os
+import re
 import sys
 
 import writer_configuration
@@ -40,25 +41,27 @@ Members:
   is_per_language: Whether one file per language should be emitted.
   encoding: Encoding of the output file.
   language_map: Optional language mapping for file paths.
+  force_windows_line_ending: Forces output file to use Windows line ending.
 '''
 WriterDesc = collections.namedtuple(
-    'WriterDesc', ['type', 'is_per_language', 'encoding', 'language_map'])
+    'WriterDesc', ['type', 'is_per_language', 'encoding', 'language_map',
+                   'force_windows_line_ending'])
 
 
 _WRITER_DESCS = [
-  WriterDesc('adm', True, 'utf-16', None),
-  WriterDesc('adml', True, 'utf-16', None),
-  WriterDesc('admx', False, 'utf-16', None),
-  WriterDesc('google_adml', True, 'utf-8', None),
-  WriterDesc('google_admx', False, 'utf-8', None),
-  WriterDesc('chromeos_adml', True, 'utf-8', None),
-  WriterDesc('chromeos_admx', False, 'utf-8', None),
-  WriterDesc('android_policy', False, 'utf-8', None),
-  WriterDesc('reg', False, 'utf-16', None),
-  WriterDesc('doc', True, 'utf-8', None),
-  WriterDesc('json', False, 'utf-8', None),
-  WriterDesc('plist', False, 'utf-8', None),
-  WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap)
+  WriterDesc('adm', True, 'utf-16', None, True),
+  WriterDesc('adml', True, 'utf-16', None, True),
+  WriterDesc('admx', False, 'utf-16', None, True),
+  WriterDesc('google_adml', True, 'utf-8', None, True),
+  WriterDesc('google_admx', False, 'utf-8', None, True),
+  WriterDesc('chromeos_adml', True, 'utf-8', None, True),
+  WriterDesc('chromeos_admx', False, 'utf-8', None, True),
+  WriterDesc('android_policy', False, 'utf-8', None, False),
+  WriterDesc('reg', False, 'utf-16', None, False),
+  WriterDesc('doc', True, 'utf-8', None, False),
+  WriterDesc('json', False, 'utf-8', None, False),
+  WriterDesc('plist', False, 'utf-8', None, False),
+  WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap, False)
 ]
 
 
@@ -198,6 +201,11 @@ def main(argv):
         # Run the template writer on th policy data.
         writer = GetWriter(writer_desc.type, config)
         output_data = policy_generator.GetTemplateText(writer)
+        # Make sure the file uses Windows line endings if needed.  This is
+        # important here because codecs.open() opens files in binary more and
+        # will not do line ending conversion.
+        if writer_desc.force_windows_line_ending:
+          output_data = re.sub(r'([^\r])\n', r'\1\r\n', output_data)
 
         # Make output directory if it doesn't exist yet.
         output_dir = os.path.split(output_path)[0]
