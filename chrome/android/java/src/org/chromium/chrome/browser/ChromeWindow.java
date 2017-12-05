@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**
@@ -28,7 +29,8 @@ public class ChromeWindow extends ActivityWindowAndroid {
     @Override
     protected void logUMAOnRequestPermissionDenied(String permission) {
         Activity activity = getActivity().get();
-        if (activity != null && ((ChromeActivity) activity).didFinishNativeInitialization()) {
+        if (activity instanceof WebApkActivity
+                && ((ChromeActivity) activity).didFinishNativeInitialization()) {
             WebApkUma.recordAndroidRuntimePermissionDeniedInWebApk(new String[] {permission});
         }
     }
