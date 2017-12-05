@@ -35,6 +35,16 @@
           "object": "InlineTextBox '\n'",
           "rect": [48, 198, 10, 10],
           "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [18, 228, 10, 10],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [18, 208, 10, 10],
+          "reason": "appeared"
         }
       ]
     }

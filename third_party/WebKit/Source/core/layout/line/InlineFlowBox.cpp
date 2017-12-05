@@ -219,7 +219,7 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
           child->GetLineLayoutItem().StyleRef(IsFirstLineStyle());
       if (child_style.LetterSpacing() < 0 || child_style.TextShadow() ||
           child_style.GetTextEmphasisMark() != TextEmphasisMark::kNone ||
-          child_style.TextStrokeWidth())
+          child_style.TextStrokeWidth() || child->IsLineBreak())
         child->ClearKnownToHaveNoOverflow();
     } else if (child->GetLineLayoutItem().IsAtomicInlineLevel()) {
       LineLayoutBox box = LineLayoutBox(child->GetLineLayoutItem());
@@ -1210,19 +1210,22 @@ void InlineFlowBox::ComputeOverflow(
 
     if (curr->GetLineLayoutItem().IsText()) {
       InlineTextBox* text = ToInlineTextBox(curr);
-      LineLayoutText rt = text->GetLineLayoutItem();
-      if (rt.IsBR())
-        continue;
       LayoutRect text_box_overflow(text->LogicalFrameRect());
-      if (text_box_data_map.IsEmpty()) {
-        // An empty glyph map means that we're computing overflow without
-        // a layout, so calculate the glyph overflow on the fly.
-        GlyphOverflowAndFallbackFontsMap glyph_overflow_for_text;
-        ComputeGlyphOverflow(text, rt, glyph_overflow_for_text);
-        AddTextBoxVisualOverflow(text, glyph_overflow_for_text,
-                                 text_box_overflow);
+      if (text->IsLineBreak()) {
+        text_box_overflow.SetWidth(
+            LayoutUnit(text_box_overflow.Width() + text->NewlineSpaceWidth()));
       } else {
-        AddTextBoxVisualOverflow(text, text_box_data_map, text_box_overflow);
+        if (text_box_data_map.IsEmpty()) {
+          // An empty glyph map means that we're computing overflow without
+          // a layout, so calculate the glyph overflow on the fly.
+          GlyphOverflowAndFallbackFontsMap glyph_overflow_for_text;
+          ComputeGlyphOverflow(text, text->GetLineLayoutItem(),
+                               glyph_overflow_for_text);
+          AddTextBoxVisualOverflow(text, glyph_overflow_for_text,
+                                   text_box_overflow);
+        } else {
+          AddTextBoxVisualOverflow(text, text_box_data_map, text_box_overflow);
+        }
       }
       logical_visual_overflow.Unite(text_box_overflow);
     } else if (curr->GetLineLayoutItem().IsLayoutInline()) {
