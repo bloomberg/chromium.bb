@@ -23,7 +23,7 @@ void FakeDeviceTest::SetUp() {
 
   requestable_settings_.requested_format = fake_device_first_supported_format_;
   requestable_settings_.resolution_change_policy =
-      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+      media::ResolutionChangePolicy::FIXED_RESOLUTION;
   requestable_settings_.power_line_frequency =
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 

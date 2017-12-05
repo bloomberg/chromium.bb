@@ -96,13 +96,13 @@ bool VideoCaptureFormat::ComparePixelFormatPreference(
 }
 
 VideoCaptureParams::VideoCaptureParams()
-    : resolution_change_policy(RESOLUTION_POLICY_FIXED_RESOLUTION),
+    : resolution_change_policy(ResolutionChangePolicy::FIXED_RESOLUTION),
       power_line_frequency(PowerLineFrequency::FREQUENCY_DEFAULT) {}
 
 bool VideoCaptureParams::IsValid() const {
   return requested_format.IsValid() &&
-         resolution_change_policy >= RESOLUTION_POLICY_FIXED_RESOLUTION &&
-         resolution_change_policy <= RESOLUTION_POLICY_LAST &&
+         resolution_change_policy >= ResolutionChangePolicy::FIXED_RESOLUTION &&
+         resolution_change_policy <= ResolutionChangePolicy::LAST &&
          power_line_frequency >= PowerLineFrequency::FREQUENCY_DEFAULT &&
          power_line_frequency <= PowerLineFrequency::FREQUENCY_MAX;
 }
@@ -121,11 +121,11 @@ VideoCaptureParams::SuggestConstraints() const {
   // policy.
   gfx::Size min_frame_size;
   switch (resolution_change_policy) {
-    case RESOLUTION_POLICY_FIXED_RESOLUTION:
+    case ResolutionChangePolicy::FIXED_RESOLUTION:
       min_frame_size = max_frame_size;
       break;
 
-    case RESOLUTION_POLICY_FIXED_ASPECT_RATIO: {
+    case ResolutionChangePolicy::FIXED_ASPECT_RATIO: {
       // TODO(miu): This is a place-holder until "min constraints" are plumbed-
       // in from the MediaStream framework.  http://crbug.com/473336
       constexpr int kMinLines = 180;
@@ -146,7 +146,7 @@ VideoCaptureParams::SuggestConstraints() const {
       break;
     }
 
-    case RESOLUTION_POLICY_ANY_WITHIN_LIMIT:
+    case ResolutionChangePolicy::ANY_WITHIN_LIMIT:
       if (!max_frame_size.IsEmpty())
         min_frame_size = gfx::Size(2, 2);
       break;
@@ -156,7 +156,7 @@ VideoCaptureParams::SuggestConstraints() const {
 
   return SuggestedConstraints{
       min_frame_size, max_frame_size,
-      resolution_change_policy == RESOLUTION_POLICY_FIXED_ASPECT_RATIO};
+      resolution_change_policy == ResolutionChangePolicy::FIXED_ASPECT_RATIO};
 }
 
 }  // namespace media

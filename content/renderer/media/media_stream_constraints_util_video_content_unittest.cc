@@ -2024,7 +2024,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
     // Resolution can be adjusted.
-    EXPECT_EQ(media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
+    EXPECT_EQ(media::ResolutionChangePolicy::ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
   }
@@ -2034,7 +2034,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(kDefaultScreenCastWidth, result.Width());
     EXPECT_EQ(kDefaultScreenCastHeight, result.Height());
     // Default policy for tab capture is fixed resolution.
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+    EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
   }
@@ -2047,7 +2047,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(470, result.Height());
     // Resolution can be adjusted because ideal was used to select the
     // resolution.
-    EXPECT_EQ(media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
+    EXPECT_EQ(media::ResolutionChangePolicy::ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
     CheckTrackAdapterSettingsEqualsFormatDefaultAspectRatio(result);
   }
@@ -2058,7 +2058,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     auto result = SelectSettings();
     EXPECT_EQ(640, result.Width());
     EXPECT_EQ(480, result.Height());
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+    EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
     EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio);
@@ -2071,7 +2071,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     auto result = SelectSettings();
     EXPECT_EQ(1000, result.Width());
     EXPECT_EQ(500, result.Height());
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+    EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
     EXPECT_EQ(1000.0 / 500.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(1000.0 / 500.0, result.track_adapter_settings().max_aspect_ratio);
@@ -2084,7 +2084,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     auto result = SelectSettings();
     EXPECT_EQ(630, result.Width());
     EXPECT_EQ(470, result.Height());
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_RESOLUTION,
+    EXPECT_EQ(media::ResolutionChangePolicy::FIXED_RESOLUTION,
               result.ResolutionChangePolicy());
     EXPECT_EQ(630.0 / 470.0, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(630.0 / 470.0, result.track_adapter_settings().max_aspect_ratio);
@@ -2101,7 +2101,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(600, result.Height());
     // When the aspect ratio of the max resolution equals the aspect ratio of
     // the min resolution, the algorithm sets fixed aspect ratio policy.
-    EXPECT_EQ(media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO,
+    EXPECT_EQ(media::ResolutionChangePolicy::FIXED_ASPECT_RATIO,
               result.ResolutionChangePolicy());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -2116,7 +2116,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(600, result.Height());
     // When the aspect ratio of the max resolution differs from the aspect ratio
     // of the min resolution, the algorithm sets any-within-limit policy.
-    EXPECT_EQ(media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
+    EXPECT_EQ(media::ResolutionChangePolicy::ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
     CheckTrackAdapterSettingsEqualsFormat(result);
   }
@@ -2128,7 +2128,7 @@ TEST_F(MediaStreamConstraintsUtilVideoContentTest, ResolutionChangePolicy) {
     EXPECT_EQ(4000, result.Width());
     EXPECT_EQ(4000, result.Height());
     // Only specifying a maximum resolution allows resolution adjustment.
-    EXPECT_EQ(media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT,
+    EXPECT_EQ(media::ResolutionChangePolicy::ANY_WITHIN_LIMIT,
               result.ResolutionChangePolicy());
     EXPECT_EQ(1.0 / 4000, result.track_adapter_settings().min_aspect_ratio);
     EXPECT_EQ(4000.0, result.track_adapter_settings().max_aspect_ratio);

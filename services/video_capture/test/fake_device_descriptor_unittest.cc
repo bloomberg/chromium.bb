@@ -88,7 +88,7 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
   arbitrary_requested_settings.requested_format.frame_size.SetSize(640, 480);
   arbitrary_requested_settings.requested_format.frame_rate = 15;
   arbitrary_requested_settings.resolution_change_policy =
-      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+      media::ResolutionChangePolicy::FIXED_RESOLUTION;
   arbitrary_requested_settings.power_line_frequency =
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
