@@ -10,29 +10,55 @@ import "media/mojo/interfaces/media_types.mojom";
 import "mojo/common/unguessable_token.mojom";
 
 // Identifies a CommandBufferStub. MediaGpuChannelManager is responsible
-// for minting |channel_token| objects.
+// for minting |channel_token| values.
 struct CommandBufferId {
   mojo.common.mojom.UnguessableToken channel_token;
   int32 route_id;
 };
 
+interface VideoFrameHandleReleaser {
+  // Signals that the VideoFrame identified by |release_token| should be
+  // released. |release_sync_token| indicates the last use of the VideoFrame
+  // (in a GPU command buffer) by the client.
+  //
+  // TODO(sandersd): Do we need release notification for non-texture
+  // VideoFrames? If so, |release_sync_token| should be optional.
+  ReleaseVideoFrame(mojo.common.mojom.UnguessableToken release_token,
+                    gpu.mojom.SyncToken release_sync_token);
+};
+
 [Native]
 struct OverlayInfo;
 
+// A Mojo equivalent of media::VideoDecoder. In practice, this is used for
+// hardware decode offloading; in this case the client is a <video> tag running
+// in a renderer, and the implementation is running in the GPU process.
 interface VideoDecoder {
   // Initialize the decoder. This must be called before any other method.
   //
-  // |command_buffer_id|, when present, identifies a CommandBufferStub that
-  // the decoder can use for GL operations. Implementations that require GL will
-  // fail Initialize() if |command_buffer_id| is not provided.
+  // |client| provides asynchronous client methods to the VideoDecoder, such
+  // as delivery of decoded VideoFrame outputs.
   //
-  // |decoder_buffer_pipe| will be used to transfer encoded data for each
+  // When a VideoFrame is delivered to |client|, the VideoDecoder may continue
+  // to retain a reference to the VideoFrame. In this case a |release_token| is
+  // included. The client shall use |video_frame_handle_releaser| to signal
+  // that the retained VideoFrame should be released (even after the
+  // VideoDecoder is torn down). This enables ordinary VideoFrames in the client
+  // process to depend on resources held by the service, without significantly
+  // complicating VideoFrame serialization.
+  //
+  // |decoder_buffer_pipe| is used to transfer the encoded data for each
   // DecoderBuffer.
+  //
+  // |command_buffer_id|, when present, identifies a CommandBufferStub that
+  // the VideoDecoder can use for GL operations. Implementations that require GL
+  // will fail Initialize() if |command_buffer_id| is not provided.
   //
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
   Construct(associated VideoDecoderClient client,
             associated MediaLog media_log,
+            VideoFrameHandleReleaser& video_frame_handle_releaser,
             handle<data_pipe_consumer> decoder_buffer_pipe,
             CommandBufferId? command_buffer_id);
 
@@ -75,26 +101,20 @@ interface VideoDecoder {
   // is a pending Initialize() request.
   Reset() => ();
 
-  // Inform the decoder that the client is finished with a frame.
-  // |release_sync_token| is a (possibly empty) sync point after which the
-  // frame's backing textures will be safe to overwrite.
-  OnReleaseMailbox(mojo.common.mojom.UnguessableToken release_token,
-                   gpu.mojom.SyncToken release_sync_token);
-
   // Inform the decoder that new OverlayInfo is available.
   OnOverlayInfoChanged(OverlayInfo overlay_info);
 };
 
 interface VideoDecoderClient {
-  // Output a decoded frame. Frames must be output in presentation order.
+  // Output a decoded frame. Frames are output in presentation order.
   //
-  // When |can_read_without_stalling| is false, preroll is disabled. This is
-  // necessary if the decoder cannot guarantee that it can output another frame,
-  // for example if output buffers are limited or configuration changes require
-  // the return of all outstanding frames.
+  // When |can_read_without_stalling| is false, preroll should be disabled. This
+  // is necessary if the decoder cannot guarantee that it can output another
+  // frame, for example if output buffers are limited or configuration changes
+  // require the return of all outstanding frames.
   //
-  // If |release_token| is provided, the client shall call OnReleaseMailbox()
-  // when it is finished using the frame.
+  // If |release_token| is provided, the client shall call
+  // VideoFrameHandleReleaser::Release() when it is finished using |frame|.
   OnVideoFrameDecoded(VideoFrame frame,
                       bool can_read_without_stalling,
                       mojo.common.mojom.UnguessableToken? release_token);

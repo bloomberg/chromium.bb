@@ -20,10 +20,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace gpu {
-struct SyncToken;
-}
-
 namespace service_manager {
 class Connector;
 namespace mojom {
@@ -39,18 +35,11 @@ class CdmFactory;
 class MediaLog;
 class RendererFactory;
 class VideoDecoder;
-class VideoFrame;
 class VideoRendererSink;
 struct CdmHostFilePath;
 
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
-  // Similar to VideoFrame::ReleaseMailboxCB for now.
-  using ReleaseMailboxCB = base::OnceCallback<void(const gpu::SyncToken&)>;
-
-  using OutputWithReleaseMailboxCB =
-      base::Callback<void(ReleaseMailboxCB, const scoped_refptr<VideoFrame>&)>;
-
   // Called before the host application is scheduled to quit.
   // The application message loop is still valid at this point, so all clean
   // up tasks requiring the message loop must be completed before returning.
@@ -67,13 +56,10 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // TODO(sandersd): |output_cb| should not be required.
-  // See https://crbug.com/733828.
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
-      OutputWithReleaseMailboxCB output_cb,
       RequestOverlayInfoCB request_overlay_info_cb);
 
   // Returns the output sink used for rendering audio on |audio_device_id|.
