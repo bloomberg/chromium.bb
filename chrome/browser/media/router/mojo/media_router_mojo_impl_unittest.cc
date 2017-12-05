@@ -143,18 +143,12 @@ class MediaRouterMojoImplTest : public MediaRouterMojoTest {
         expected_count);
   }
 
-  MediaRouterMojoImpl* SetTestingFactoryAndUse() override {
-    return static_cast<MediaRouterMojoImpl*>(
-        MediaRouterFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), &CreateMediaRouter));
+  std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() override {
+    return std::unique_ptr<MediaRouterMojoImpl>(
+        new MediaRouterMojoImpl(profile()));
   }
 
  private:
-  static std::unique_ptr<KeyedService> CreateMediaRouter(
-      content::BrowserContext* context) {
-    return std::unique_ptr<KeyedService>(new MediaRouterMojoImpl(context));
-  }
-
   base::HistogramTester histogram_tester_;
 };
 

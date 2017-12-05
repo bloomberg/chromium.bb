@@ -364,17 +364,18 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
           << __func__ << ": route does not support controller: " << route_id;
       return nullptr;
     case RouteControllerType::kGeneric:
-      route_controller = new MediaRouteController(route_id, context_);
+      route_controller = new MediaRouteController(route_id, context_, this);
       break;
     case RouteControllerType::kHangouts:
-      route_controller = new HangoutsMediaRouteController(route_id, context_);
+      route_controller =
+          new HangoutsMediaRouteController(route_id, context_, this);
       break;
     case RouteControllerType::kMirroring:
       // TODO(imcheng): Remove this check when remoting is default enabled.
       route_controller =
           base::FeatureList::IsEnabled(features::kMediaRemoting)
-              ? new MirroringMediaRouteController(route_id, context_)
-              : new MediaRouteController(route_id, context_);
+              ? new MirroringMediaRouteController(route_id, context_, this)
+              : new MediaRouteController(route_id, context_, this);
       break;
   }
   DCHECK(route_controller);

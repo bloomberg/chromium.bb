@@ -18,6 +18,7 @@ bool MediaRouterEnabled(content::BrowserContext* context);
 
 #if !defined(OS_ANDROID)
 
+extern const base::Feature kEnableDialLocalDiscovery;
 extern const base::Feature kEnableCastDiscovery;
 extern const base::Feature kEnableCastLocalMedia;
 

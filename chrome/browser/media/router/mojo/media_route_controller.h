@@ -97,7 +97,8 @@ class MediaRouteController
   // |mojo_media_controller_|. |media_router_| will be notified when the
   // MediaRouteController is destroyed via DetachRouteController().
   MediaRouteController(const MediaRoute::Id& route_id,
-                       content::BrowserContext* context);
+                       content::BrowserContext* context,
+                       MediaRouter* router);
 
   // Initializes the Mojo interfaces/bindings in this MediaRouteController.
   // This should only be called when the Mojo interfaces/bindings are not bound.
@@ -203,7 +204,8 @@ class HangoutsMediaRouteController : public MediaRouteController {
   static HangoutsMediaRouteController* From(MediaRouteController* controller);
 
   HangoutsMediaRouteController(const MediaRoute::Id& route_id,
-                               content::BrowserContext* context);
+                               content::BrowserContext* context,
+                               MediaRouter* router);
 
   // MediaRouteController
   RouteControllerType GetType() const override;
@@ -235,7 +237,8 @@ class MirroringMediaRouteController : public MediaRouteController {
   static MirroringMediaRouteController* From(MediaRouteController* controller);
 
   MirroringMediaRouteController(const MediaRoute::Id& route_id,
-                                content::BrowserContext* context);
+                                content::BrowserContext* context,
+                                MediaRouter* router);
 
   // MediaRouteController
   RouteControllerType GetType() const override;

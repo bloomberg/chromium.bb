@@ -244,7 +244,8 @@ class MockMediaController : public mojom::MediaController,
 class MockMediaRouteController : public MediaRouteController {
  public:
   MockMediaRouteController(const MediaRoute::Id& route_id,
-                           content::BrowserContext* context);
+                           content::BrowserContext* context,
+                           MediaRouter* router);
   MOCK_METHOD0(Play, void());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD1(Seek, void(base::TimeDelta time));
@@ -277,9 +278,8 @@ class MediaRouterMojoTest : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  // Set the MediaRouter instance to be used by the MediaRouterFactory and
-  // return it.
-  virtual MediaRouterMojoImpl* SetTestingFactoryAndUse() = 0;
+  // Creates a MediaRouterMojoImpl instance to be used for this test.
+  virtual std::unique_ptr<MediaRouterMojoImpl> CreateMediaRouter() = 0;
 
   // Notify media router that the provider provides a route or a sink.
   // Need to be called after the provider is registered.
@@ -308,7 +308,7 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   const std::string& extension_id() const { return extension_->id(); }
 
-  MediaRouterMojoImpl* router() const { return media_router_; }
+  MediaRouterMojoImpl* router() const { return media_router_.get(); }
 
   Profile* profile() { return &profile_; }
 
@@ -326,7 +326,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;
   TestingProfile profile_;
-  MediaRouterMojoImpl* media_router_ = nullptr;
+  std::unique_ptr<MediaRouterMojoImpl> media_router_;
   mojo::BindingSet<mojom::MediaRouteProvider> provider_bindings_;
   std::unique_ptr<MediaRoutesObserver> routes_observer_;
   std::unique_ptr<MockMediaSinksObserver> sinks_observer_;

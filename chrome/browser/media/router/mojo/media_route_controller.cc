@@ -36,11 +36,12 @@ void MediaRouteController::Observer::InvalidateController() {
 void MediaRouteController::Observer::OnControllerInvalidated() {}
 
 MediaRouteController::MediaRouteController(const MediaRoute::Id& route_id,
-                                           content::BrowserContext* context)
+                                           content::BrowserContext* context,
+                                           MediaRouter* router)
     : route_id_(route_id),
       request_manager_(
           EventPageRequestManagerFactory::GetApiForBrowserContext(context)),
-      media_router_(MediaRouterFactory::GetApiForBrowserContext(context)),
+      media_router_(router),
       binding_(this) {
   DCHECK(media_router_);
   DCHECK(request_manager_);
@@ -167,8 +168,9 @@ HangoutsMediaRouteController* HangoutsMediaRouteController::From(
 
 HangoutsMediaRouteController::HangoutsMediaRouteController(
     const MediaRoute::Id& route_id,
-    content::BrowserContext* context)
-    : MediaRouteController(route_id, context) {}
+    content::BrowserContext* context,
+    MediaRouter* router)
+    : MediaRouteController(route_id, context, router) {}
 
 HangoutsMediaRouteController::~HangoutsMediaRouteController() {}
 
@@ -217,8 +219,9 @@ MirroringMediaRouteController* MirroringMediaRouteController::From(
 
 MirroringMediaRouteController::MirroringMediaRouteController(
     const MediaRoute::Id& route_id,
-    content::BrowserContext* context)
-    : MediaRouteController(route_id, context),
+    content::BrowserContext* context,
+    MediaRouter* router)
+    : MediaRouteController(route_id, context, router),
       prefs_(Profile::FromBrowserContext(context)->GetPrefs()) {
   DCHECK(prefs_);
   media_remoting_enabled_ =

@@ -57,16 +57,16 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   friend class MediaRouterFactory;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, TestProvideSinks);
 
-  enum class FirewallCheck {
-    // Skips the firewall check for the benefit of unit tests so they do not
-    // have to depend on the system's firewall configuration.
-    SKIP_FOR_TESTING,
-    // Perform the firewall check (default).
-    RUN,
-  };
+  // This constructor performs a firewall check on Windows and is not suitable
+  // for use in unit tests; instead use the constructor below.
+  explicit MediaRouterDesktop(content::BrowserContext* context);
 
-  MediaRouterDesktop(content::BrowserContext* context,
-                     FirewallCheck check_firewall = FirewallCheck::RUN);
+  // Used by tests only. This constructor skips the firewall check so unit tests
+  // do not have to depend on the system's firewall configuration.
+  MediaRouterDesktop(
+      content::BrowserContext* context,
+      std::unique_ptr<DialMediaSinkService> dial_media_sink_service,
+      std::unique_ptr<CastMediaSinkService> cast_media_sink_service);
 
   // mojom::MediaRouter implementation.
   void RegisterMediaRouteProvider(
