@@ -47,7 +47,9 @@ class PersistentSystemProfile {
       const base::PersistentMemoryAllocator& memory_allocator);
 
   // Retrieves the system profile from a persistent memory allocator. Returns
-  // true if a profile was successfully retrieved.
+  // true if a profile was successfully retrieved. If null is passed for the
+  // |system_profile|, only a basic check for the existance of one will be
+  // done.
   static bool GetSystemProfile(
       const base::PersistentMemoryAllocator& memory_allocator,
       SystemProfileProto* system_profile);

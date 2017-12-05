@@ -361,6 +361,9 @@ bool PersistentSystemProfile::GetSystemProfile(
       return false;
   } while (type != kSystemProfileProto);
 
+  if (!system_profile)
+    return true;
+
   if (!system_profile->ParseFromString(record))
     return false;
 

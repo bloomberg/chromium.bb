@@ -222,6 +222,9 @@ class FileMetricsProvider : public MetricsProvider,
     // The file was skipped because it's being written by this process.
     ACCESS_RESULT_THIS_PID,
 
+    // The file had no embedded system profile.
+    ACCESS_RESULT_NO_PROFILE,
+
     ACCESS_RESULT_MAX
   };
 
