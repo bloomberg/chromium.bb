@@ -306,7 +306,8 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan,
   {
     curradv = gr_slot_origin_X(gr_seg_first_slot(seg));
     clusters[0].advance = gr_seg_advance_X(seg) - curradv;
-  }
+  } else
+    clusters[0].advance = 0;
   for (is = gr_seg_first_slot (seg), ic = 0; is; is = gr_slot_next_in_segment (is), ic++)
   {
     unsigned int before = gr_slot_before (is);
@@ -331,8 +332,10 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan,
       c->num_glyphs = 0;
       if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
         c->advance = curradv - gr_slot_origin_X(is);
-      else
-        clusters[ci].advance = gr_slot_origin_X(is) - curradv;
+      else {
+        c->advance = 0;
+        clusters[ci].advance += gr_slot_origin_X(is) - curradv;
+      }
       ci++;
       curradv = gr_slot_origin_X(is);
     }
@@ -345,7 +348,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan,
   if (HB_DIRECTION_IS_BACKWARD(buffer->props.direction))
     clusters[ci].advance += curradv;
   else
-    clusters[ci].advance = gr_seg_advance_X(seg) - curradv;
+    clusters[ci].advance += gr_seg_advance_X(seg) - curradv;
   ci++;
 
   for (unsigned int i = 0; i < ci; ++i)
@@ -410,6 +413,8 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan,
 
   if (feats) gr_featureval_destroy (feats);
   gr_seg_destroy (seg);
+
+  buffer->unsafe_to_break_all();
 
   return true;
 }
