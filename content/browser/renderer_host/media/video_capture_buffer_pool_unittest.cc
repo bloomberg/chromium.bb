@@ -37,9 +37,9 @@ struct PixelFormatAndStorage {
 };
 
 static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
-    {media::PIXEL_FORMAT_I420, media::PIXEL_STORAGE_CPU},
-    {media::PIXEL_FORMAT_ARGB, media::PIXEL_STORAGE_CPU},
-    {media::PIXEL_FORMAT_Y16, media::PIXEL_STORAGE_CPU},
+    {media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU},
+    {media::PIXEL_FORMAT_ARGB, media::VideoPixelStorage::CPU},
+    {media::PIXEL_FORMAT_Y16, media::VideoPixelStorage::CPU},
 };
 
 static const int kTestBufferPoolSize = 3;

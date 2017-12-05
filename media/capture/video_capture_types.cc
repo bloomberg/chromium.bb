@@ -23,7 +23,7 @@ static VideoPixelFormat const kSupportedCapturePixelFormats[] = {
 VideoCaptureFormat::VideoCaptureFormat()
     : frame_rate(0.0f),
       pixel_format(PIXEL_FORMAT_UNKNOWN),
-      pixel_storage(PIXEL_STORAGE_CPU) {}
+      pixel_storage(VideoPixelStorage::CPU) {}
 
 VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
                                        float frame_rate,
@@ -31,7 +31,7 @@ VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
     : frame_size(frame_size),
       frame_rate(frame_rate),
       pixel_format(pixel_format),
-      pixel_storage(PIXEL_STORAGE_CPU) {}
+      pixel_storage(VideoPixelStorage::CPU) {}
 
 VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
                                        float frame_rate,
@@ -72,7 +72,7 @@ std::string VideoCaptureFormat::ToString(const VideoCaptureFormat& format) {
 std::string VideoCaptureFormat::PixelStorageToString(
     VideoPixelStorage storage) {
   switch (storage) {
-    case PIXEL_STORAGE_CPU:
+    case VideoPixelStorage::CPU:
       return "CPU";
   }
   NOTREACHED() << "Invalid VideoPixelStorage provided: "

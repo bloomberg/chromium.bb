@@ -79,7 +79,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                              media::VideoPixelStorage storage,
                              int frame_feedback_id) override {
     EXPECT_TRUE(format == media::PIXEL_FORMAT_I420 &&
-                storage == media::PIXEL_STORAGE_CPU);
+                storage == media::VideoPixelStorage::CPU);
     DoReserveOutputBuffer();
     return Buffer();
   }
@@ -103,7 +103,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                                    media::VideoPixelStorage storage,
                                    int frame_feedback_id) override {
     EXPECT_TRUE(format == media::PIXEL_FORMAT_I420 &&
-                storage == media::PIXEL_STORAGE_CPU);
+                storage == media::VideoPixelStorage::CPU);
     DoResurrectLastOutputBuffer();
     return Buffer();
   }

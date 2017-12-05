@@ -33,8 +33,8 @@ scoped_refptr<VideoFrame> InterprocessFramePool::ReserveVideoFrame(
 
   BufferId ignored;  // Not applicable to this buffer pool use case.
   const BufferId buffer_id = buffer_pool_->ReserveForProducer(
-      size, format, media::PIXEL_STORAGE_CPU, 0 /* unused: frame_feedback_id */,
-      &ignored);
+      size, format, media::VideoPixelStorage::CPU,
+      0 /* unused: frame_feedback_id */, &ignored);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId) {
     return nullptr;
   }
@@ -48,7 +48,7 @@ scoped_refptr<VideoFrame> InterprocessFramePool::ResurrectLastVideoFrame(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const BufferId buffer_id = buffer_pool_->ResurrectLastForProducer(
-      expected_size, expected_format, media::PIXEL_STORAGE_CPU);
+      expected_size, expected_format, media::VideoPixelStorage::CPU);
   if (buffer_id != resurrectable_buffer_id_ ||
       buffer_id == VideoCaptureBufferPool::kInvalidId) {
     return nullptr;

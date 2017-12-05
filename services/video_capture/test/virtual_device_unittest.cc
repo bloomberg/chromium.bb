@@ -27,7 +27,7 @@ const gfx::Size kTestFrameSize = {640 /* width */, 480 /* height */};
 const media::VideoPixelFormat kTestPixelFormat =
     media::VideoPixelFormat::PIXEL_FORMAT_I420;
 const media::VideoPixelStorage kTestPixelStorage =
-    media::VideoPixelStorage::PIXEL_STORAGE_CPU;
+    media::VideoPixelStorage::CPU;
 
 }  // anonymous namespace
 

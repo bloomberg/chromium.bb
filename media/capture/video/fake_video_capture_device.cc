@@ -575,7 +575,7 @@ void ClientBufferFrameDeliverer::PaintAndDeliverNextFrame(
       capture_buffer.handle_provider->GetHandleForInProcessAccess();
   DCHECK(buffer_access->data()) << "Buffer has NO backing memory";
 
-  DCHECK_EQ(PIXEL_STORAGE_CPU, device_state()->format.pixel_storage);
+  DCHECK_EQ(VideoPixelStorage::CPU, device_state()->format.pixel_storage);
 
   uint8_t* data_ptr = buffer_access->data();
   memset(data_ptr, 0, buffer_access->mapped_size());

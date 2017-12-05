@@ -156,7 +156,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   const float kFrameRate = 30.0f;
   const gfx::Size kFrameSize(1280, 720);
   const media::VideoPixelFormat kPixelFormat = media::PIXEL_FORMAT_I420;
-  const media::VideoPixelStorage kPixelStorage = media::PIXEL_STORAGE_CPU;
+  const media::VideoPixelStorage kPixelStorage = media::VideoPixelStorage::CPU;
   const media::VideoCaptureFormat capture_format(kFrameSize, kFrameRate,
                                                  kPixelFormat, kPixelStorage);
   const std::string expected_string = base::StringPrintf(

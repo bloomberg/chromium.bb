@@ -21,11 +21,10 @@ namespace media {
 typedef int VideoCaptureSessionId;
 
 // Storage type for the pixels.
-// TODO(mcasas): http://crbug.com/504160 Consider making this an enum class.
-// TODO(chfremer): Extend or remove this enum.
-enum VideoPixelStorage {
-  PIXEL_STORAGE_CPU,
-  PIXEL_STORAGE_MAX = PIXEL_STORAGE_CPU,
+// TODO(chfremer): https://crbug.com/788798 Extend or remove this enum.
+enum class VideoPixelStorage {
+  CPU,
+  MAX = CPU,
 };
 
 // Policies for capture devices that have source content that varies in size.
