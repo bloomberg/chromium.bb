@@ -77,8 +77,8 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
     user_manager_->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
     file_system_provider_service_ = Service::Get(profile_);
-    file_system_provider_service_->SetExtensionProviderForTesting(
-        std::make_unique<FakeExtensionProvider>());
+    file_system_provider_service_->RegisterProvider(
+        FakeExtensionProvider::Create(kExtensionId));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

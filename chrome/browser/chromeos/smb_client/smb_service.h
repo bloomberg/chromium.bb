@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SMB_CLIENT_SMB_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_SMB_CLIENT_SMB_SERVICE_H_
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -33,18 +35,19 @@ class SmbService : public KeyedService, public ProviderInterface {
   // file_system_provider::Service::MountFileSystem().
   base::File::Error Mount(const file_system_provider::MountOptions& options);
 
-  // ProviderInterface overrides
+  // ProviderInterface overrides.
   std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
       Profile* profile,
       const ProvidedFileSystemInfo& file_system_info) override;
-  bool GetCapabilities(Profile* profile,
-                       const ProviderId& provider_id,
-                       Capabilities& result) override;
+  const Capabilities& GetCapabilities() const override;
+  const ProviderId& GetId() const override;
 
  private:
   Service* GetProviderService() const;
 
   Profile* profile_;
+  ProviderId provider_id_;
+  Capabilities capabilities_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

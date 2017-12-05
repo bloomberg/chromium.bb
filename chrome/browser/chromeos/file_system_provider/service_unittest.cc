@@ -42,8 +42,8 @@ namespace chromeos {
 namespace file_system_provider {
 namespace {
 
-const ProviderId kProviderId =
-    ProviderId::CreateFromExtensionId("mbflcebpggnecokmikipoihdbecnjfoj");
+const extensions::ExtensionId kExtensionId = "mbflcebpggnecokmikipoihdbecnjfoj";
+const ProviderId kProviderId = ProviderId::CreateFromExtensionId(kExtensionId);
 const char kDisplayName[] = "Camera Pictures";
 const ProviderId kCustomProviderId =
     ProviderId::CreateFromNativeId("custom provider id");
@@ -54,53 +54,34 @@ const ProviderId kCustomProviderId =
 const char kFileSystemId[] = "camera/pictures/id .!@#$%^&*()_+";
 
 // Creates a fake extension with the specified |extension_id|.
+// TODO(mtomasz): Use the extension builder.
 scoped_refptr<extensions::Extension> CreateFakeExtension(
     const std::string& extension_id) {
   base::DictionaryValue manifest;
   std::string error;
   manifest.SetKey(extensions::manifest_keys::kVersion, base::Value("1.0.0.0"));
   manifest.SetKey(extensions::manifest_keys::kName, base::Value("unused"));
-  return extensions::Extension::Create(base::FilePath(),
-                                       extensions::Manifest::UNPACKED,
-                                       manifest,
-                                       extensions::Extension::NO_FLAGS,
-                                       extension_id,
-                                       &error);
+
+  std::unique_ptr<base::ListValue> permissions_list(new base::ListValue());
+  permissions_list->AppendString("fileSystemProvider");
+  manifest.Set(extensions::manifest_keys::kPermissions,
+               std::move(permissions_list));
+
+  std::unique_ptr<base::DictionaryValue> capabilities(
+      new base::DictionaryValue);
+  capabilities->SetString("source", "network");
+  manifest.Set(extensions::manifest_keys::kFileSystemProviderCapabilities,
+               std::move(capabilities));
+
+  scoped_refptr<extensions::Extension> extension =
+      extensions::Extension::Create(
+          base::FilePath(), extensions::Manifest::UNPACKED, manifest,
+          extensions::Extension::NO_FLAGS, extension_id, &error);
+  EXPECT_TRUE(extension) << error;
+  return extension;
 }
 
 }  // namespace
-
-class FakeDefaultExtensionProvider : public FakeExtensionProvider {
- public:
-  std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
-      Profile* profile,
-      const ProvidedFileSystemInfo& file_system_info) override {
-    called_default_factory = true;
-    return std::make_unique<FakeProvidedFileSystem>(file_system_info);
-  }
-
-  static bool called_default_factory;
-};
-bool FakeDefaultExtensionProvider::called_default_factory = false;
-
-class FakeNativeProvider : public ProviderInterface {
- public:
-  // ProviderInterface overrides
-  std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
-      Profile* profile,
-      const ProvidedFileSystemInfo& file_system_info) override {
-    called_custom_factory = true;
-    return std::make_unique<FakeProvidedFileSystem>(file_system_info);
-  }
-  bool GetCapabilities(Profile* profile,
-                       const ProviderId& provider_id,
-                       Capabilities& result) override {
-    result = Capabilities(false, false, false, extensions::SOURCE_NETWORK);
-    return true;
-  }
-  static bool called_custom_factory;
-};
-bool FakeNativeProvider::called_custom_factory = false;
 
 class FileSystemProviderServiceTest : public testing::Test {
  protected:
@@ -119,13 +100,7 @@ class FileSystemProviderServiceTest : public testing::Test {
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager_));
     extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
-
     service_.reset(new Service(profile_, extension_registry_.get()));
-
-    service_->SetExtensionProviderForTesting(
-        std::make_unique<FakeExtensionProvider>());
-
-    extension_ = CreateFakeExtension(kProviderId.GetExtensionId());
 
     registry_ = new FakeRegistry;
     // Passes ownership to the service instance.
@@ -147,38 +122,14 @@ class FileSystemProviderServiceTest : public testing::Test {
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
   std::unique_ptr<Service> service_;
-  scoped_refptr<extensions::Extension> extension_;
   FakeRegistry* registry_;  // Owned by Service.
   Watcher fake_watcher_;
-  bool called_default_factory_;
-  bool called_custom_factory_;
 };
-
-TEST_F(FileSystemProviderServiceTest, RegisterFileSystemProvider) {
-  service_->RegisterNativeProvider(kCustomProviderId,
-                                   std::make_unique<FakeNativeProvider>());
-  service_->SetExtensionProviderForTesting(
-      std::make_unique<FakeDefaultExtensionProvider>());
-
-  FakeNativeProvider::called_custom_factory = false;
-  FakeDefaultExtensionProvider::called_default_factory = false;
-
-  EXPECT_EQ(base::File::FILE_OK,
-            service_->MountFileSystem(
-                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
-
-  EXPECT_TRUE(FakeDefaultExtensionProvider::called_default_factory);
-
-  EXPECT_EQ(base::File::FILE_OK,
-            service_->MountFileSystem(
-                kCustomProviderId, MountOptions(kFileSystemId, kDisplayName)));
-
-  EXPECT_TRUE(FakeNativeProvider::called_custom_factory);
-}
 
 TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
@@ -210,6 +161,7 @@ TEST_F(FileSystemProviderServiceTest,
        MountFileSystem_WritableAndSupportsNotifyTag) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   MountOptions options(kFileSystemId, kDisplayName);
   options.writable = true;
@@ -231,6 +183,7 @@ TEST_F(FileSystemProviderServiceTest,
 TEST_F(FileSystemProviderServiceTest, MountFileSystem_UniqueIds) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
@@ -253,6 +206,7 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_UniqueIds) {
 TEST_F(FileSystemProviderServiceTest, MountFileSystem_StressTest) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   const size_t kMaxFileSystems = 16;
   for (size_t i = 0; i < kMaxFileSystems; ++i) {
@@ -284,6 +238,8 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
+
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
                 kProviderId, MountOptions(kFileSystemId, kDisplayName)));
@@ -310,13 +266,18 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
 
+  scoped_refptr<extensions::Extension> extension =
+      CreateFakeExtension(kExtensionId);
+  extension_registry_->AddEnabled(extension);
+  service_->OnExtensionLoaded(profile_, extension.get());
+
   EXPECT_EQ(base::File::FILE_OK,
             service_->MountFileSystem(
                 kProviderId, MountOptions(kFileSystemId, kDisplayName)));
   ASSERT_EQ(1u, observer.mounts.size());
 
   // Directly call the observer's method.
-  service_->OnExtensionUnloaded(profile_, extension_.get(),
+  service_->OnExtensionUnloaded(profile_, extension.get(),
                                 extensions::UnloadedExtensionReason::DISABLE);
 
   ASSERT_EQ(1u, observer.unmounts.size());
@@ -336,6 +297,7 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
 TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   const ProviderId kWrongProviderId =
       ProviderId::CreateFromExtensionId("helloworldhelloworldhelloworldhe");
@@ -377,8 +339,12 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
 
   EXPECT_EQ(0u, observer.mounts.size());
 
+  scoped_refptr<extensions::Extension> extension =
+      CreateFakeExtension(kExtensionId);
+  extension_registry_->AddEnabled(extension);
+
   // Directly call the observer's method.
-  service_->OnExtensionLoaded(profile_, extension_.get());
+  service_->OnExtensionLoaded(profile_, extension.get());
 
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());
@@ -419,6 +385,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
 TEST_F(FileSystemProviderServiceTest, DoNotRememberNonPersistent) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   EXPECT_FALSE(registry_->file_system_info());
   EXPECT_FALSE(registry_->watchers());
@@ -437,6 +404,7 @@ TEST_F(FileSystemProviderServiceTest, DoNotRememberNonPersistent) {
 TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   EXPECT_FALSE(registry_->file_system_info());
   EXPECT_FALSE(registry_->watchers());
@@ -462,6 +430,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnMount) {
 TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   {
     EXPECT_FALSE(registry_->file_system_info());
@@ -491,6 +460,7 @@ TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountOnShutdown) {
 TEST_F(FileSystemProviderServiceTest, RememberFileSystem_OnUnmountByUser) {
   LoggingObserver observer;
   service_->AddObserver(&observer);
+  service_->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
   {
     EXPECT_FALSE(registry_->file_system_info());

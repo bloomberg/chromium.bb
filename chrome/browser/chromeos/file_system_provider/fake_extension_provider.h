@@ -10,23 +10,35 @@
 #include "chrome/browser/chromeos/file_system_provider/extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
+#include "extensions/common/extension_id.h"
 
 class Profile;
 
 namespace chromeos {
 namespace file_system_provider {
 
-class ProvidedFileSystemInfo;
-
-class FakeExtensionProvider : public ExtensionProvider {
+class FakeExtensionProvider : public ProviderInterface {
  public:
-  FakeExtensionProvider();
   ~FakeExtensionProvider() override {}
 
-  // ExtensionProvider override.
+  // Returns a fake provider instance for the specified extension. The extension
+  // doesn't have to exist.
+  static std::unique_ptr<ProviderInterface> Create(
+      const extensions::ExtensionId& extension_id);
+
+  // ProviderInterface overrides.
   std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
       Profile* profile,
       const ProvidedFileSystemInfo& file_system_info) override;
+  const Capabilities& GetCapabilities() const override;
+  const ProviderId& GetId() const override;
+
+ protected:
+  FakeExtensionProvider(const extensions::ExtensionId& extension_id,
+                        const Capabilities& capabilities);
+
+  ProviderId provider_id_;
+  Capabilities capabilities_;
 };
 
 }  // namespace file_system_provider

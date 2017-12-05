@@ -61,6 +61,11 @@ bool ProviderId::operator==(const ProviderId& other) const {
   return type_ == other.GetType() && internal_id_ == other.GetIdUnsafe();
 }
 
+bool ProviderId::operator<(const ProviderId& other) const {
+  return std::tie(type_, internal_id_) <
+         std::tie(other.type_, other.internal_id_);
+}
+
 MountOptions::MountOptions()
     : writable(false),
       supports_notify_tag(false),
