@@ -26,10 +26,32 @@
   <template>
     <style include=
         "iron-flex cr-hidden-style cr-icons action-link paper-button-style">
+      .bounded-text,
+      .multiline-clippable-text,
+      .clippable-flex-text {
+        /** Ensure that the text does not overflow its container. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .bounded-text,
+      .clippable-flex-text {
+        white-space: nowrap;
+      }
+
+      .clipppable-flex-text {
+        /**
+         * These labels can be arbitrarily long. We want to ensure that these
+         * shrink, rather than the neighboring content.
+         */
+        flex-shrink: 1;
+      }
+
       #icon-wrapper {
         align-self: flex-start;
         display: flex;
         padding: 6px;
+        position: relative;
       }
 
       #icon {
@@ -53,15 +75,16 @@
 
       #main {
         display: flex;
-        flex-grow: 1;
+        flex: 1;
         padding: 16px 20px 17px;
       }
 
       #content {
         -webkit-margin-start: 24px;
         display: flex;
+        flex: 1;
         flex-direction: column;
-        width: 100%;
+        overflow: hidden;
       }
 
       #name-and-version {
@@ -73,9 +96,13 @@
         -webkit-margin-end: 8px;
       }
 
-      #description,
+      #description {
+        flex: 1;
+      }
+
       #warnings {
-        flex-grow: 1;
+        color: var(--google-red-700);
+        flex: 1;
         margin-bottom: 8px;
       }
 
@@ -89,11 +116,25 @@
         font-weight: 400;
       }
 
+      #extension-id {
+        flex-shrink: 0;
+      }
+
+      #inspect-views {
+        display: flex;
+        white-space: nowrap;
+      }
+
+      #inspect-views > span {
+        -webkit-margin-end: 4px;
+      }
+
       #button-strip {
         /* Avoid ripple from overlapping container. */
         -webkit-margin-end: 20px;
         border-top: var(--cr-separator-line);
         box-sizing: border-box;
+        flex-shrink: 0;
         height: var(--cr-section-min-height);
         padding-bottom: 8px;
         padding-top: 8px;
@@ -106,10 +147,6 @@
       #learn-more-link {
         color: var(--google-blue-700);
         text-decoration: none;
-      }
-
-      #icon-wrapper {
-        position: relative;
       }
 
       #source-indicator {
@@ -155,10 +192,6 @@
         -webkit-margin-end: 12px;
       }
 
-      #warnings {
-        color: var(--google-red-700);
-      }
-
       #blacklisted-warning:empty {
         display: none;
       }
@@ -192,13 +225,18 @@
           </paper-tooltip>
         </template>
         <div id="content">
-          <div id="name-and-version" class="layout horizontal center">
-            <div id="name">[[data.name]]</div>
-            <span id="version" hidden$="[[!inDevMode]]">
-              [[data.version]]
-            </span>
+          <!--Note: We wrap inspect-views in a div so that the outer div
+              doesn't shrink (because it's not display: flex).-->
+          <div>
+            <div id="name-and-version" class="layout horizontal center">
+              <div id="name" class="clippable-flex-text">[[data.name]]</div>
+              <span id="version" hidden$="[[!inDevMode]]">
+                [[data.version]]
+              </span>
+            </div>
           </div>
-          <div id="description" hidden$="[[hasWarnings_(data.*)]]">
+          <div id="description" class="multiline-clippable-text"
+              hidden$="[[hasWarnings_(data.*)]]">
             [[data.description]]
           </div>
           <template is="dom-if" if="[[hasWarnings_(data.*)]]">
@@ -221,19 +259,25 @@
             </div>
           </template>
           <template is="dom-if" if="[[inDevMode]]">
-            <div id="extension-id">[[data.id]]</div>
+            <div id="extension-id" class="bounded-text">[[data.id]]</div>
             <template is="dom-if"
                 if="[[!computeInspectViewsHidden_(data.views)]]">
-              <div id="inspect-views">
-                <span>$i18n{itemInspectViews}</span>
-                <a is="action-link" on-tap="onInspectTap_">
-                  [[computeFirstInspectLabel_(data.views)]]
-                </a>
-                <a is="action-link"
-                    hidden$="[[computeExtraViewsHidden_(data.views)]]"
-                    on-tap="onExtraInspectTap_">
-                  [[computeExtraInspectLabel_(data.views)]]
-                </a>
+              <!--Note: We wrap inspect-views in a div so that the outer div
+                  doesn't shrink (because it's not display: flex).-->
+              <div>
+                <div id="inspect-views">
+                  <span>$i18n{itemInspectViews}</span>
+                  <a class="clippable-flex-text" is="action-link"
+                      title="[[computeFirstInspectTitle_(data.views)]]"
+                      on-tap="onInspectTap_">
+                    [[computeFirstInspectLabel_(data.views)]]
+                  </a>
+                  <a is="action-link"
+                      hidden$="[[computeExtraViewsHidden_(data.views)]]"
+                      on-tap="onExtraInspectTap_">
+                    [[computeExtraInspectLabel_(data.views)]]
+                  </a>
+                </div>
               </div>
             </template>
           </template>
