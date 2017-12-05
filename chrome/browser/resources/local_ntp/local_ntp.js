@@ -535,7 +535,7 @@ function registerKeyHandler(element, keycode, handler) {
 function handlePostMessage(event) {
   var cmd = event.data.cmd;
   var args = event.data;
-  if (cmd == 'loaded') {
+  if (cmd === 'loaded') {
     tilesAreLoaded = true;
     if (configData.isGooglePage && !$('one-google-loader')) {
       // Load the OneGoogleBar script. It'll create a global variable name "og"
@@ -550,11 +550,19 @@ function handlePostMessage(event) {
         injectOneGoogleBar(og);
       };
     }
-  } else if (cmd == 'tileBlacklisted') {
+  } else if (cmd === 'tileBlacklisted') {
     showNotification();
     lastBlacklistedTile = args.tid;
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
+  } else if (cmd === 'resizeDoodle') {
+    let width = args.width || null;
+    let height = args.height || null;
+    let duration = args.duration || '0s';
+    let iframe = $(IDS.LOGO_DOODLE_IFRAME);
+    iframe.style.transition = 'width ' + duration + ', height ' + duration;
+    iframe.style.width = width;
+    iframe.style.height = height;
   }
 }
 
