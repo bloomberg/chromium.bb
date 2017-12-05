@@ -550,9 +550,7 @@ static int ClampRGBComponent(const CSSPrimitiveValue& value) {
   return clampTo<int>(result, 0, 255);
 }
 
-static bool ParseRGBParameters(CSSParserTokenRange& range,
-                               RGBA32& result,
-                               bool parse_alpha) {
+static bool ParseRGBParameters(CSSParserTokenRange& range, RGBA32& result) {
   DCHECK(range.Peek().FunctionId() == CSSValueRgb ||
          range.Peek().FunctionId() == CSSValueRgba);
   CSSParserTokenRange args = ConsumeFunction(range);
@@ -564,21 +562,37 @@ static bool ParseRGBParameters(CSSParserTokenRange& range,
   const bool is_percent = color_parameter->IsPercentage();
   int color_array[3];
   color_array[0] = ClampRGBComponent(*color_parameter);
+  bool requires_commas = false;
   for (int i = 1; i < 3; i++) {
-    if (!ConsumeCommaIncludingWhitespace(args))
+    if (ConsumeCommaIncludingWhitespace(args)) {
+      if (i != 1 && !requires_commas)
+        return false;
+      requires_commas = true;
+    } else if (requires_commas ||
+               (&args.Peek() - 1)->GetType() != kWhitespaceToken) {
       return false;
+    }
     color_parameter = is_percent ? ConsumePercent(args, kValueRangeAll)
                                  : ConsumeInteger(args);
     if (!color_parameter)
       return false;
     color_array[i] = ClampRGBComponent(*color_parameter);
   }
-  if (parse_alpha) {
-    if (!ConsumeCommaIncludingWhitespace(args))
-      return false;
+
+  bool comma_consumed = ConsumeCommaIncludingWhitespace(args);
+  bool slash_consumed = ConsumeSlashIncludingWhitespace(args);
+  if ((comma_consumed && !requires_commas) ||
+      (slash_consumed && requires_commas))
+    return false;
+  if (comma_consumed || slash_consumed) {
     double alpha;
-    if (!ConsumeNumberRaw(args, alpha))
-      return false;
+    if (!ConsumeNumberRaw(args, alpha)) {
+      CSSPrimitiveValue* alpha_percent = ConsumePercent(args, kValueRangeAll);
+      if (!alpha_percent)
+        return false;
+      else
+        alpha = alpha_percent->GetDoubleValue() / 100.0f;
+    }
     // W3 standard stipulates a 2.55 alpha value multiplication factor.
     int alpha_component =
         static_cast<int>(lroundf(clampTo<double>(alpha, 0.0, 1.0) * 255.0f));
@@ -665,7 +679,7 @@ static bool ParseColorFunction(CSSParserTokenRange& range, RGBA32& result) {
     return false;
   CSSParserTokenRange color_range = range;
   if ((function_id <= CSSValueRgba &&
-       !ParseRGBParameters(color_range, result, function_id == CSSValueRgba)) ||
+       !ParseRGBParameters(color_range, result)) ||
       (function_id >= CSSValueHsl &&
        !ParseHSLParameters(color_range, result, function_id == CSSValueHsla)))
     return false;

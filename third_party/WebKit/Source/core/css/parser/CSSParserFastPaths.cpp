@@ -267,6 +267,8 @@ template <typename CharacterType>
 static bool ParseColorIntOrPercentage(const CharacterType*& string,
                                       const CharacterType* end,
                                       const char terminator,
+                                      bool& should_whitespace_terminate,
+                                      bool is_first_value,
                                       CSSPrimitiveValue::UnitType& expect,
                                       int& value) {
   const CharacterType* current = string;
@@ -328,8 +330,21 @@ static bool ParseColorIntOrPercentage(const CharacterType*& string,
 
   while (current != end && IsHTMLSpace<CharacterType>(*current))
     current++;
-  if (current == end || *current++ != terminator)
+
+  if (current == end || *current != terminator) {
+    if (!should_whitespace_terminate ||
+        !IsHTMLSpace<CharacterType>(*(current - 1))) {
+      return false;
+    }
+  } else if (should_whitespace_terminate && is_first_value) {
+    should_whitespace_terminate = false;
+  } else if (should_whitespace_terminate) {
     return false;
+  }
+
+  if (!should_whitespace_terminate)
+    current++;
+
   // Clamp negative values at zero.
   value = negative ? 0 : static_cast<int>(local_value);
   string = current;
@@ -409,26 +424,16 @@ static inline bool ParseAlphaValue(const CharacterType*& string,
 }
 
 template <typename CharacterType>
-static inline bool MightBeRGBA(const CharacterType* characters,
-                               unsigned length) {
-  if (length < 5)
-    return false;
-  return characters[4] == '(' &&
-         IsASCIIAlphaCaselessEqual(characters[0], 'r') &&
-         IsASCIIAlphaCaselessEqual(characters[1], 'g') &&
-         IsASCIIAlphaCaselessEqual(characters[2], 'b') &&
-         IsASCIIAlphaCaselessEqual(characters[3], 'a');
-}
-
-template <typename CharacterType>
-static inline bool MightBeRGB(const CharacterType* characters,
-                              unsigned length) {
+static inline bool MightBeRGBOrRGBA(const CharacterType* characters,
+                                    unsigned length) {
   if (length < 4)
     return false;
-  return characters[3] == '(' &&
-         IsASCIIAlphaCaselessEqual(characters[0], 'r') &&
+  return IsASCIIAlphaCaselessEqual(characters[0], 'r') &&
          IsASCIIAlphaCaselessEqual(characters[1], 'g') &&
-         IsASCIIAlphaCaselessEqual(characters[2], 'b');
+         IsASCIIAlphaCaselessEqual(characters[2], 'b') &&
+         (characters[3] == '(' ||
+          (IsASCIIAlphaCaselessEqual(characters[3], 'a') &&
+           characters[4] == '('));
 }
 
 template <typename CharacterType>
@@ -446,45 +451,58 @@ static bool FastParseColorInternal(RGBA32& rgb,
       return true;
   }
 
-  // Try rgba() syntax.
-  if (MightBeRGBA(characters, length)) {
-    const CharacterType* current = characters + 5;
+  // rgb() and rgba() have the same syntax
+  if (MightBeRGBOrRGBA(characters, length)) {
+    int length_to_add = IsASCIIAlphaCaselessEqual(characters[3], 'a') ? 5 : 4;
+    const CharacterType* current = characters + length_to_add;
     const CharacterType* end = characters + length;
     int red;
     int green;
     int blue;
     int alpha;
+    bool should_have_alpha = false;
+    bool should_whitespace_terminate = true;
+    bool no_whitespace_check = false;
 
-    if (!ParseColorIntOrPercentage(current, end, ',', expect, red))
+    if (!ParseColorIntOrPercentage(current, end, ',',
+                                   should_whitespace_terminate,
+                                   true /* is_first_value */, expect, red))
       return false;
-    if (!ParseColorIntOrPercentage(current, end, ',', expect, green))
+    if (!ParseColorIntOrPercentage(current, end, ',',
+                                   should_whitespace_terminate,
+                                   false /* is_first_value */, expect, green))
       return false;
-    if (!ParseColorIntOrPercentage(current, end, ',', expect, blue))
-      return false;
-    if (!ParseAlphaValue(current, end, ')', alpha))
-      return false;
-    if (current != end)
-      return false;
-    rgb = MakeRGBA(red, green, blue, alpha);
-    return true;
-  }
+    if (!ParseColorIntOrPercentage(current, end, ',', no_whitespace_check,
+                                   false /* is_first_value */, expect, blue)) {
+      // Might have slash as separator
+      if (ParseColorIntOrPercentage(current, end, '/', no_whitespace_check,
+                                    false /* is_first_value */, expect, blue)) {
+        if (!should_whitespace_terminate)
+          return false;
+        should_have_alpha = true;
+      }
+      // Might not have alpha
+      else if (!ParseColorIntOrPercentage(
+                   current, end, ')', no_whitespace_check,
+                   false /* is_first_value */, expect, blue))
+        return false;
+    } else {
+      if (should_whitespace_terminate)
+        return false;
+      should_have_alpha = true;
+    }
 
-  // Try rgb() syntax.
-  if (MightBeRGB(characters, length)) {
-    const CharacterType* current = characters + 4;
-    const CharacterType* end = characters + length;
-    int red;
-    int green;
-    int blue;
-    if (!ParseColorIntOrPercentage(current, end, ',', expect, red))
-      return false;
-    if (!ParseColorIntOrPercentage(current, end, ',', expect, green))
-      return false;
-    if (!ParseColorIntOrPercentage(current, end, ')', expect, blue))
-      return false;
-    if (current != end)
-      return false;
-    rgb = MakeRGB(red, green, blue);
+    if (should_have_alpha) {
+      if (!ParseAlphaValue(current, end, ')', alpha))
+        return false;
+      if (current != end)
+        return false;
+      rgb = MakeRGBA(red, green, blue, alpha);
+    } else {
+      if (current != end)
+        return false;
+      rgb = MakeRGB(red, green, blue);
+    }
     return true;
   }
 

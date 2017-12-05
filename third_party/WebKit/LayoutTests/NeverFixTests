@@ -1800,21 +1800,13 @@ external/wpt/css/css-color/lch-006.html [ WontFix ]
 external/wpt/css/css-color/lch-007.html [ WontFix ]
 
 # New rgb() and rgba() syntax not supported. https://crbug.com/788707
-external/wpt/css/css-color/rgb-001.html [ WontFix ]
 external/wpt/css/css-color/rgb-002.html [ WontFix ]
-external/wpt/css/css-color/rgb-003.html [ WontFix ]
 external/wpt/css/css-color/rgb-004.html [ WontFix ]
-external/wpt/css/css-color/rgb-005.html [ WontFix ]
 external/wpt/css/css-color/rgb-006.html [ WontFix ]
-external/wpt/css/css-color/rgb-007.html [ WontFix ]
 external/wpt/css/css-color/rgb-008.html [ WontFix ]
-external/wpt/css/css-color/rgba-001.html [ WontFix ]
 external/wpt/css/css-color/rgba-002.html [ WontFix ]
-external/wpt/css/css-color/rgba-003.html [ WontFix ]
 external/wpt/css/css-color/rgba-004.html [ WontFix ]
-external/wpt/css/css-color/rgba-005.html [ WontFix ]
 external/wpt/css/css-color/rgba-006.html [ WontFix ]
-external/wpt/css/css-color/rgba-007.html [ WontFix ]
 external/wpt/css/css-color/rgba-008.html [ WontFix ]
 
 # Failures on the initial import of css-color. Test suite had many other bugs,

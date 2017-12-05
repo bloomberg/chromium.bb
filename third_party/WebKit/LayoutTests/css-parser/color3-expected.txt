@@ -62,11 +62,11 @@ PASS colorTest.parseColor("rgb(0, 0, light)") is "parse error"
 PASS colorTest.parseColor("rgb()") is "parse error"
 PASS colorTest.parseColor("rgb(0)") is "parse error"
 PASS colorTest.parseColor("rgb(0, 0)") is "parse error"
-PASS colorTest.parseColor("rgb(0, 0, 0, 0)") is "parse error"
+FAIL colorTest.parseColor("rgb(0, 0, 0, 0)") should be parse error. Was rgba(0, 0, 0, 0).
 PASS colorTest.parseColor("rgb(0%)") is "parse error"
 PASS colorTest.parseColor("rgb(0%, 0%)") is "parse error"
-PASS colorTest.parseColor("rgb(0%, 0%, 0%, 0%)") is "parse error"
-PASS colorTest.parseColor("rgb(0%, 0%, 0%, 0)") is "parse error"
+FAIL colorTest.parseColor("rgb(0%, 0%, 0%, 0%)") should be parse error. Was rgba(0, 0, 0, 0).
+FAIL colorTest.parseColor("rgb(0%, 0%, 0%, 0)") should be parse error. Was rgba(0, 0, 0, 0).
 PASS colorTest.parseColor("rgba(0, 0, 0, 0)") is "rgba(0, 0, 0, 0)"
 PASS colorTest.parseColor("rgba(204, 0, 102, 0.3)") is "rgba(204, 0, 102, 0.3)"
 PASS colorTest.parseColor("RGBA(255, 255, 255, 0)") is "rgba(255, 255, 255, 0)"
@@ -86,7 +86,7 @@ PASS colorTest.parseColor("rgba(0%, 20%, 100%, 0.42)") is "rgba(0, 51, 255, 0.42
 PASS colorTest.parseColor("rgba(0%, 20%, 100%, 0)") is "rgba(0, 51, 255, 0)"
 PASS colorTest.parseColor("rgba(0%, 20%, 100%, -0.1)") is "rgba(0, 51, 255, 0)"
 PASS colorTest.parseColor("rgba(0%, 20%, 100%, -139)") is "rgba(0, 51, 255, 0)"
-PASS colorTest.parseColor("rgba(255, 255, 255, 0%)") is "parse error"
+FAIL colorTest.parseColor("rgba(255, 255, 255, 0%)") should be parse error. Was rgba(255, 255, 255, 0).
 PASS colorTest.parseColor("rgba(10%, 50%, 0, 1)") is "parse error"
 PASS colorTest.parseColor("rgba(255, 50%, 0%, 1)") is "parse error"
 PASS colorTest.parseColor("rgba(0, 0, 0 0)") is "parse error"
@@ -94,12 +94,12 @@ PASS colorTest.parseColor("rgba(0, 0, 0, 0deg)") is "parse error"
 PASS colorTest.parseColor("rgba(0, 0, 0, light)") is "parse error"
 PASS colorTest.parseColor("rgba()") is "parse error"
 PASS colorTest.parseColor("rgba(0)") is "parse error"
-PASS colorTest.parseColor("rgba(0, 0, 0)") is "parse error"
+FAIL colorTest.parseColor("rgba(0, 0, 0)") should be parse error. Was rgb(0, 0, 0).
 PASS colorTest.parseColor("rgba(0, 0, 0, 0, 0)") is "parse error"
 PASS colorTest.parseColor("rgba(0%)") is "parse error"
 PASS colorTest.parseColor("rgba(0%, 0%)") is "parse error"
-PASS colorTest.parseColor("rgba(0%, 0%, 0%)") is "parse error"
-PASS colorTest.parseColor("rgba(0%, 0%, 0%, 0%)") is "parse error"
+FAIL colorTest.parseColor("rgba(0%, 0%, 0%)") should be parse error. Was rgb(0, 0, 0).
+FAIL colorTest.parseColor("rgba(0%, 0%, 0%, 0%)") should be parse error. Was rgba(0, 0, 0, 0).
 PASS colorTest.parseColor("rgba(0%, 0%, 0%, 0%, 0%)") is "parse error"
 PASS colorTest.parseColor("HSL(0, 0%, 0%)") is "rgb(0, 0, 0)"
 PASS colorTest.parseColor("hsL(0, 100%, 50%)") is "rgb(255, 0, 0)"
