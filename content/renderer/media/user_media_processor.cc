@@ -456,7 +456,14 @@ void UserMediaProcessor::SetupVideoInput() {
       GetUserMediaRequestFailed(result, failed_constraint_name);
       return;
     }
-    SelectVideoContentSettings();
+    base::PostTaskAndReplyWithResult(
+        worker_task_runner_.get(), FROM_HERE,
+        base::Bind(&SelectSettingsVideoContentCapture,
+                   current_request_info_->web_request().VideoConstraints(),
+                   video_controls.stream_source),
+        base::Bind(&UserMediaProcessor::FinalizeSelectVideoContentSettings,
+                   weak_factory_.GetWeakPtr(),
+                   current_request_info_->web_request()));
   }
 }
 
@@ -506,12 +513,13 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
   GenerateStreamForCurrentRequestInfo();
 }
 
-void UserMediaProcessor::SelectVideoContentSettings() {
+void UserMediaProcessor::FinalizeSelectVideoContentSettings(
+    const blink::WebUserMediaRequest& web_request,
+    const VideoCaptureSettings& settings) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(current_request_info_);
-  VideoCaptureSettings settings = SelectSettingsVideoContentCapture(
-      current_request_info_->web_request().VideoConstraints(),
-      current_request_info_->stream_controls()->video.stream_source);
+  if (!IsCurrentRequestInfo(web_request))
+    return;
+
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());
