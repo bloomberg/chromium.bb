@@ -2,23 +2,45 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""This script helps to generate code coverage report.
 
-"""Script to generate Clang source based code coverage report.
+  It uses Clang Source-based Code Coverage -
+  https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 
-  NOTE: This script must be called from the root of checkout, and because it
-  requires building with gn arg "is_component_build=false", the build is not
-  compatible with sanitizer flags (such as "is_asan" and "is_msan") and flag
-  "optimize_for_fuzzing".
+  In order to generate code coverage report, you need to first build the target
+  program with "use_clang_coverage=true" GN flag.
 
-  Example usages:
-  python tools/code_coverage/coverage.py crypto_unittests url_unittests
-  -b out/Coverage -o out/report -c 'out/Coverage/crypto_unittests'
-  -c 'out/Coverage/url_unittests --gtest_filter=URLParser.PathURL'
-  # Generate code coverage report for crypto_unittests and url_unittests and
-  # all generated artifacts are stored in out/report. For url_unittests, only
-  # run test URLParser.PathURL.
+  It is recommended to set "is_component_build=false" flag explicitly in GN
+  configuration because:
+  1. It is incompatible with other sanitizer flags (like "is_asan", "is_msan")
+     and others like "optimize_for_fuzzing".
+  2. If it is not set explicitly, "is_debug" overrides it to true.
 
-  For more options, please refer to tools/coverage/coverage.py -h for help.
+  Example usage:
+
+  python tools/code_coverage/coverage.py crypto_unittests url_unittests \\
+    -b out/coverage -o out/report -c 'out/coverage/crypto_unittests' \\
+    -c 'out/coverage/url_unittests --gtest_filter=URLParser.PathURL'
+
+  The command above generates code coverage report for crypto_unittests and
+  url_unittests and all generated artifacts are stored in out/report.
+  For url_unittests, it only runs the test URLParser.PathURL.
+
+  If you are building a fuzz target, you need to add "use_libfuzzer=true" GN
+  flag as well.
+
+  Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
+
+  python tools/code_coverage/coverage.py \\
+    -b out/coverage -o out/report \\
+    -c 'out/coverage/pdfium_fuzzer -runs=<runs> <corpus_dir>'
+
+  where:
+    <corpus_dir> - directory containing samples files for this format.
+    <runs> - number of times to fuzz target function. Should be 0 when you just
+             want to see the coverage on corpus and don't want to fuzz at all.
+
+  For more options, please refer to tools/code_coverage/coverage.py -h.
 """
 
 from __future__ import print_function
@@ -31,14 +53,16 @@ import subprocess
 import threading
 import urllib2
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir,
-                             os.path.pardir, 'tools', 'clang', 'scripts'))
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'tools',
+        'clang', 'scripts'))
 
 import update as clang_update
 
 # Absolute path to the root of the checkout.
-SRC_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             os.path.pardir, os.path.pardir))
+SRC_ROOT_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
 
 # Absolute path to the code coverage tools binary.
 LLVM_BUILD_DIR = clang_update.LLVM_BUILD_DIR
@@ -71,12 +95,24 @@ CLANG_COVERAGE_BUILD_ARG = 'use_clang_coverage'
 GTEST_TARGET_NAMES = None
 
 
+def _GetPlatform():
+  """Returns current running platform."""
+  if sys.platform == 'win32' or sys.platform == 'cygwin':
+    return 'win'
+  if sys.platform.startswith('linux'):
+    return 'linux'
+  else:
+    assert sys.platform == 'darwin'
+    return 'mac'
+
+
 # TODO(crbug.com/759794): remove this function once tools get included to
 # Clang bundle:
 # https://chromium-review.googlesource.com/c/chromium/src/+/688221
 def DownloadCoverageToolsIfNeeded():
   """Temporary solution to download llvm-profdata and llvm-cov tools."""
-  def _GetRevisionFromStampFile(stamp_file_path):
+
+  def _GetRevisionFromStampFile(stamp_file_path, platform):
     """Returns a pair of revision number by reading the build stamp file.
 
     Args:
@@ -89,16 +125,29 @@ def DownloadCoverageToolsIfNeeded():
       return 0, 0
 
     with open(stamp_file_path) as stamp_file:
-      revision_stamp_data = stamp_file.readline().strip().split('-')
-    return int(revision_stamp_data[0]), int(revision_stamp_data[1])
+      for stamp_file_line in stamp_file.readlines():
+        if ',' in stamp_file_line:
+          package_version, target_os = stamp_file_line.rstrip().split(',')
+        else:
+          package_version = stamp_file_line.rstrip()
+          target_os = ''
 
+        if target_os and platform != target_os:
+          continue
+
+        clang_revision_str, clang_sub_revision_str = package_version.split('-')
+        return int(clang_revision_str), int(clang_sub_revision_str)
+
+    assert False, 'Coverage is only supported on target_os - linux, mac.'
+
+  platform = _GetPlatform()
   clang_revision, clang_sub_revision = _GetRevisionFromStampFile(
-      clang_update.STAMP_FILE)
+      clang_update.STAMP_FILE, platform)
 
   coverage_revision_stamp_file = os.path.join(
       os.path.dirname(clang_update.STAMP_FILE), 'cr_coverage_revision')
   coverage_revision, coverage_sub_revision = _GetRevisionFromStampFile(
-      coverage_revision_stamp_file)
+      coverage_revision_stamp_file, platform)
 
   if (coverage_revision == clang_revision and
       coverage_sub_revision == clang_sub_revision):
@@ -109,12 +158,10 @@ def DownloadCoverageToolsIfNeeded():
   coverage_tools_file = 'llvm-code-coverage-%s.tgz' % package_version
 
   # The code bellow follows the code from tools/clang/scripts/update.py.
-  if sys.platform == 'win32' or sys.platform == 'cygwin':
-    coverage_tools_url = clang_update.CDS_URL + '/Win/' + coverage_tools_file
-  elif sys.platform == 'darwin':
+  if platform == 'mac':
     coverage_tools_url = clang_update.CDS_URL + '/Mac/' + coverage_tools_file
   else:
-    assert sys.platform.startswith('linux')
+    assert platform == 'linux'
     coverage_tools_url = (
         clang_update.CDS_URL + '/Linux_x64/' + coverage_tools_file)
 
@@ -123,7 +170,7 @@ def DownloadCoverageToolsIfNeeded():
                                    clang_update.LLVM_BUILD_DIR)
     print('Coverage tools %s unpacked' % package_version)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
-      file_handle.write(package_version)
+      file_handle.write('%s,%s' % (package_version, platform))
       file_handle.write('\n')
   except urllib2.URLError:
     raise Exception(
@@ -147,12 +194,13 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path):
   # [[-object BIN]] [SOURCES]
   # NOTE: For object files, the first one is specified as a positional argument,
   # and the rest are specified as keyword argument.
-  subprocess_cmd = [LLVM_COV_PATH, 'show', '-format=html',
-                    '-output-dir={}'.format(OUTPUT_DIR),
-                    '-instr-profile={}'.format(profdata_file_path),
-                    binary_paths[0]]
-  subprocess_cmd.extend(['-object=' + binary_path
-                         for binary_path in binary_paths[1:]])
+  subprocess_cmd = [
+      LLVM_COV_PATH, 'show', '-format=html',
+      '-output-dir={}'.format(OUTPUT_DIR),
+      '-instr-profile={}'.format(profdata_file_path), binary_paths[0]
+  ]
+  subprocess_cmd.extend(
+      ['-object=' + binary_path for binary_path in binary_paths[1:]])
 
   subprocess.check_call(subprocess_cmd)
 
@@ -170,8 +218,8 @@ def _CreateCoverageProfileDataForTargets(targets, commands, jobs_count=None):
     A relative path to the generated profdata file.
   """
   _BuildTargets(targets, jobs_count)
-  profraw_file_paths = _GetProfileRawDataPathsByExecutingCommands(targets,
-                                                                  commands)
+  profraw_file_paths = _GetProfileRawDataPathsByExecutingCommands(
+      targets, commands)
   profdata_file_path = _CreateCoverageProfileDataFromProfRawData(
       profraw_file_paths)
 
@@ -190,6 +238,7 @@ def _BuildTargets(targets, jobs_count):
 
 
   """
+
   def _IsGomaConfigured():
     """Returns True if goma is enabled in the gn build args.
 
@@ -243,14 +292,12 @@ def _GetProfileRawDataPathsByExecutingCommands(targets, commands):
 
   # Assert one target/command generates at least one profraw data file.
   for target in targets:
-    assert any(os.path.basename(profraw_file).startswith(target) for
-               profraw_file in profraw_file_paths), ('Running target: %s '
-                                                     'failed to generate any '
-                                                     'profraw data file, '
-                                                     'please make sure the '
-                                                     'binary exists and is '
-                                                     'properly instrumented.'
-                                                     % target)
+    assert any(
+        os.path.basename(profraw_file).startswith(target)
+        for profraw_file in profraw_file_paths), (
+            'Running target: %s failed to generate any profraw data file, '
+            'please make sure the binary exists and is properly instrumented.' %
+            target)
 
   return profraw_file_paths
 
@@ -268,8 +315,8 @@ def _ExecuteCommand(target, command):
     # generated code coverage data correctly.
     command += ' --test-launcher-jobs=1'
 
-  expected_profraw_file_name = os.extsep.join([target, '%p',
-                                               PROFRAW_FILE_EXTENSION])
+  expected_profraw_file_name = os.extsep.join(
+      [target, '%p', PROFRAW_FILE_EXTENSION])
   expected_profraw_file_path = os.path.join(OUTPUT_DIR,
                                             expected_profraw_file_name)
   output_file_name = os.extsep.join([target + '_output', 'txt'])
@@ -277,9 +324,10 @@ def _ExecuteCommand(target, command):
 
   print('Running command: "%s", the output is redirected to "%s"' %
         (command, output_file_path))
-  output = subprocess.check_output(command.split(),
-                                   env={'LLVM_PROFILE_FILE':
-                                        expected_profraw_file_path})
+  output = subprocess.check_output(
+      command.split(), env={
+          'LLVM_PROFILE_FILE': expected_profraw_file_path
+      })
   with open(output_file_path, 'w') as output_file:
     output_file.write(output)
 
@@ -301,8 +349,9 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
 
   profdata_file_path = os.path.join(OUTPUT_DIR, PROFDATA_FILE_NAME)
   try:
-    subprocess_cmd = [LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path,
-                      '-sparse=true']
+    subprocess_cmd = [
+        LLVM_PROFDATA_PATH, 'merge', '-o', profdata_file_path, '-sparse=true'
+    ]
     subprocess_cmd.extend(profraw_file_paths)
     subprocess.check_call(subprocess_cmd)
   except subprocess.CalledProcessError as error:
@@ -336,11 +385,11 @@ def _IsTargetGTestTarget(target):
   global GTEST_TARGET_NAMES
   if GTEST_TARGET_NAMES is None:
     output = subprocess.check_output(['gn', 'refs', BUILD_DIR, 'testing/gtest'])
-    list_of_gtest_targets = [gtest_target
-                             for gtest_target in output.splitlines()
-                             if gtest_target]
-    GTEST_TARGET_NAMES = set([gtest_target.split(':')[1]
-                              for gtest_target in list_of_gtest_targets])
+    list_of_gtest_targets = [
+        gtest_target for gtest_target in output.splitlines() if gtest_target
+    ]
+    GTEST_TARGET_NAMES = set(
+        [gtest_target.split(':')[1] for gtest_target in list_of_gtest_targets])
 
   return target in GTEST_TARGET_NAMES
 
@@ -353,9 +402,9 @@ def _ValidateCommandsAreRelativeToSrcRoot(commands):
                                                'directory: "%s". Please make '
                                                'sure the command: "%s" is '
                                                'relative to the root of the '
-                                               'checkout.'
-                                               %(binary_path, BUILD_DIR,
-                                                 command))
+                                               'checkout.' %
+                                               (binary_path, BUILD_DIR,
+                                                command))
 
 
 def _ValidateBuildingWithClangCoverage():
@@ -364,8 +413,8 @@ def _ValidateBuildingWithClangCoverage():
 
   if (CLANG_COVERAGE_BUILD_ARG not in build_args or
       build_args[CLANG_COVERAGE_BUILD_ARG] != 'true'):
-    assert False, ('\'{} = true\' is required in args.gn.').format(
-        CLANG_COVERAGE_BUILD_ARG)
+    assert False, ('\'{} = true\' is required in args.gn.'
+                  ).format(CLANG_COVERAGE_BUILD_ARG)
 
 
 def _ParseArgsGnFile():
@@ -403,29 +452,41 @@ def _ParseCommandArguments():
   arg_parser = argparse.ArgumentParser()
   arg_parser.usage = __doc__
 
-  arg_parser.add_argument('-b', '--build-dir', type=str, required=True,
-                          help='The build directory, the path needs to be '
-                               'relative to the root of the checkout.')
+  arg_parser.add_argument(
+      '-b',
+      '--build-dir',
+      type=str,
+      required=True,
+      help='The build directory, the path needs to be relative to the root of '
+      'the checkout.')
 
-  arg_parser.add_argument('-o', '--output-dir', type=str, required=True,
-                          help='Output directory for generated artifacts.')
+  arg_parser.add_argument(
+      '-o',
+      '--output-dir',
+      type=str,
+      required=True,
+      help='Output directory for generated artifacts.')
 
-  arg_parser.add_argument('-c', '--command', action='append',
-                          required=True,
-                          help='Commands used to run test targets, one test '
-                               'target needs one and only one command, when '
-                               'specifying commands, one should assume the '
-                               'current working directory is the root of the '
-                               'checkout.')
+  arg_parser.add_argument(
+      '-c',
+      '--command',
+      action='append',
+      required=True,
+      help='Commands used to run test targets, one test target needs one and '
+      'only one command, when specifying commands, one should assume the '
+      'current working directory is the root of the checkout.')
 
-  arg_parser.add_argument('-j', '--jobs', type=int, default=None,
-                          help='Run N jobs to build in parallel. If not '
-                               'specified, a default value will be derived '
-                               'based on CPUs availability. Please refer to '
-                               '\'ninja -h\' for more details.')
+  arg_parser.add_argument(
+      '-j',
+      '--jobs',
+      type=int,
+      default=None,
+      help='Run N jobs to build in parallel. If not specified, a default value '
+      'will be derived based on CPUs availability. Please refer to '
+      '\'ninja -h\' for more details.')
 
-  arg_parser.add_argument('targets', nargs='+',
-                          help='The names of the test targets to run.')
+  arg_parser.add_argument(
+      'targets', nargs='+', help='The names of the test targets to run.')
 
   args = arg_parser.parse_args()
   return args
@@ -433,9 +494,11 @@ def _ParseCommandArguments():
 
 def Main():
   """Execute tool commands."""
+  assert _GetPlatform() in ['linux', 'mac'], (
+      'Coverage is only supported on linux and mac platforms.')
   assert os.path.abspath(os.getcwd()) == SRC_ROOT_PATH, ('This script must be '
                                                          'called from the root '
-                                                         'of checkout')
+                                                         'of checkout.')
   DownloadCoverageToolsIfNeeded()
 
   args = _ParseCommandArguments()
@@ -447,17 +510,16 @@ def Main():
   assert len(args.targets) == len(args.command), ('Number of targets must be '
                                                   'equal to the number of test '
                                                   'commands.')
-  assert os.path.exists(BUILD_DIR), ('Build directory: {} doesn\'t exist. '
-                                     'Please run "gn gen" to generate.').format(
-                                         BUILD_DIR)
+  assert os.path.exists(BUILD_DIR), (
+      'Build directory: {} doesn\'t exist. '
+      'Please run "gn gen" to generate.').format(BUILD_DIR)
   _ValidateBuildingWithClangCoverage()
   _ValidateCommandsAreRelativeToSrcRoot(args.command)
   if not os.path.exists(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
 
-  profdata_file_path = _CreateCoverageProfileDataForTargets(args.targets,
-                                                            args.command,
-                                                            args.jobs)
+  profdata_file_path = _CreateCoverageProfileDataForTargets(
+      args.targets, args.command, args.jobs)
 
   binary_paths = [_GetBinaryPath(command) for command in args.command]
   _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path)
@@ -465,6 +527,7 @@ def Main():
       os.path.join(OUTPUT_DIR, 'index.html'))
   print('\nCode coverage profile data is created as: %s' % profdata_file_path)
   print('index file for html report is generated as: %s' % html_index_file_path)
+
 
 if __name__ == '__main__':
   sys.exit(Main())
