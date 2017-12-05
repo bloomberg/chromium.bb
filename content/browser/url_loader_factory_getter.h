@@ -38,7 +38,6 @@ class URLLoaderFactoryGetter
 
   // Overrides the network URLLoaderFactory for subsequent requests. Passing a
   // null pointer will restore the default behavior.
-  // This is called on the UI thread.
   CONTENT_EXPORT void SetNetworkFactoryForTesting(
       mojom::URLLoaderFactory* test_factory);
 
@@ -54,7 +53,6 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT ~URLLoaderFactoryGetter();
   void InitializeOnIOThread(mojom::URLLoaderFactoryPtrInfo network_factory,
                             mojom::URLLoaderFactoryPtrInfo blob_factory);
-  void SetTestNetworkFactoryOnIOThread(mojom::URLLoaderFactory* test_factory);
 
   // Only accessed on IO thread.
   mojom::URLLoaderFactoryPtr network_factory_;
