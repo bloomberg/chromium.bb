@@ -337,14 +337,14 @@ function eventPromise(target, type, options) {
 // of each of event listeners. Otherwise throws an error.
 function assert_promise_event_order_(should_be_first, object, func, event, num_listeners) {
   let order = [];
-  let event_promises = []
+  let event_promises = [];
   for (let i = 0; i < num_listeners; i++) {
     event_promises.push(new Promise(resolve => {
       let event_listener = (e) => {
         object.removeEventListener(event, event_listener);
         order.push('event');
         resolve(e.target.value);
-      }
+      };
       object.addEventListener(event, event_listener);
     }));
   }
@@ -439,7 +439,7 @@ class EventCatcher {
     let event_listener = () => {
       object.removeEventListener(event, event_listener);
       this.eventFired = true;
-    }
+    };
     object.addEventListener(event, event_listener);
   }
 }
@@ -499,6 +499,17 @@ function setUpPreconnectedDevice({
     }));
 }
 
+// Returns a FakePeripheral that corresponds to a simulated pre-connected device
+// called 'Health Thermometer'. The device has two known serviceUUIDs:
+// 'generic_access' and 'health_thermometer'.
+function setUpHealthThermometerDevice() {
+  return setUpPreconnectedDevice({
+    address: '09:09:09:09:09:09',
+    name: 'Health Thermometer',
+    knownServiceUUIDs: ['generic_access', 'health_thermometer'],
+  });
+}
+
 // Returns an array containing two FakePeripherals corresponding
 // to the simulated devices.
 function setUpHealthThermometerAndHeartRateDevices() {
@@ -514,6 +525,18 @@ function setUpHealthThermometerAndHeartRateDevices() {
        name: 'Heart Rate',
        knownServiceUUIDs: ['generic_access', 'heart_rate'],
      })]));
+}
+
+// Returns the same fake peripheral as setUpHealthThermometerDevice() except
+// that connecting to the peripheral will succeed.
+function setUpConnectableHealthThermometerDevice() {
+  let fake_peripheral;
+  return setUpHealthThermometerDevice()
+    .then(_ => fake_peripheral = _)
+    .then(() => fake_peripheral.setNextGATTConnectionResponse({
+      code: HCI_SUCCESS,
+    }))
+    .then(() => fake_peripheral);
 }
 
 // Returns an object containing a BluetoothDevice discovered using |options|,
@@ -678,39 +701,36 @@ function getConnectedHealthThermometerDevice(options) {
 // connected to it and discovered its services.
 function getHealthThermometerDeviceWithServicesDiscovered(options) {
   let device, fake_peripheral, fakes;
-  return setUpPreconnectedDevice({
-    address: '09:09:09:09:09:09',
-    name: 'Health Thermometer',
-    knownServiceUUIDs: ['generic_access', 'health_thermometer'],
-  })
+  let iframe = document.createElement('iframe');
+  return setUpConnectableHealthThermometerDevice()
     .then(_ => fake_peripheral = _)
-    .then(() => fake_peripheral.setNextGATTConnectionResponse({
-      code: HCI_SUCCESS,
-    }))
+    .then(() => populateHealthThermometerFakes(fake_peripheral))
+    .then(_ => fakes = _)
     .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
       code: HCI_SUCCESS,
     }))
-    .then(() => populateHealthThermometerFakes(fake_peripheral))
-    .then(_ => fakes = _)
+    .then(() => new Promise(resolve => {
+      iframe.src = '../../../resources/bluetooth/health-thermometer-iframe.html';
+      document.body.appendChild(iframe);
+      iframe.addEventListener('load', resolve);
+    }))
     .then(() => new Promise((resolve, reject) => {
-      let iframe = document.createElement('iframe');
+      callWithTrustedClick(() => {
+        iframe.contentWindow.postMessage({
+          type: 'DiscoverServices',
+          options: options
+        }, '*');
+      });
+
       function messageHandler(messageEvent) {
-        if (messageEvent.data === 'Ready') {
-          callWithTrustedClick(() => iframe.contentWindow.postMessage({
-            type: 'DiscoverServices',
-            options: options
-          }, '*'));
-        } else if (messageEvent.data === 'DiscoveryComplete') {
+        if (messageEvent.data == 'DiscoveryComplete') {
           window.removeEventListener('message', messageHandler);
           resolve();
         } else {
-          reject(new Error(`Unexpected message: {messageEvent.data}`));
+          reject(new Error(`Unexpected message: ${messageEvent.data}`));
         }
       }
       window.addEventListener('message', messageHandler);
-      iframe.src =
-          '../../../resources/bluetooth/health-thermometer-iframe.html';
-      document.body.appendChild(iframe);
     }))
     .then(() => requestDeviceWithTrustedClick(options))
     .then(_ => device = _)
@@ -799,18 +819,14 @@ function getHIDDevice(options) {
             }));
         });
     });
-};
+}
 
 // Similar to getHealthThermometerDevice() except the device
 // is not connected and thus its services have not been
 // discovered.
 function getDiscoveredHealthThermometerDevice(
   options = {filters: [{services: ['health_thermometer']}]}) {
-  return setUpPreconnectedDevice({
-    address: '09:09:09:09:09:09',
-    name: 'Health Thermometer',
-    knownServiceUUIDs: ['generic_access', 'health_thermometer'],
-  })
+  return setUpHealthThermometerDevice()
   .then(fake_peripheral => {
     return requestDeviceWithTrustedClick(options)
       .then(device => ({
