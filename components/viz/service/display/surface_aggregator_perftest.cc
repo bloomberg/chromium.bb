@@ -62,14 +62,14 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       auto pass = RenderPass::Create();
       pass->output_rect = gfx::Rect(0, 0, 1, 2);
 
-      CompositorFrame frame = test::MakeEmptyCompositorFrame();
+      CompositorFrameBuilder frame_builder;
 
       auto* sqs = pass->CreateAndAppendSharedQuadState();
       for (int j = 0; j < num_textures; j++) {
         TransferableResource resource;
         resource.id = j;
         resource.is_software = true;
-        frame.resource_list.push_back(resource);
+        frame_builder.AddTransferableResource(resource);
 
         auto* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
         const gfx::Rect rect(0, 0, 1, 2);
@@ -99,9 +99,9 @@ class SurfaceAggregatorPerfTest : public testing::Test {
             base::nullopt, SK_ColorWHITE, false);
       }
 
-      frame.render_pass_list.push_back(std::move(pass));
+      frame_builder.AddRenderPass(std::move(pass));
       child_supports[i]->SubmitCompositorFrame(local_surface_id,
-                                               std::move(frame));
+                                               frame_builder.Build());
     }
 
     auto root_support = CompositorFrameSinkSupport::Create(
@@ -110,7 +110,6 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     timer_.Reset();
     do {
       auto pass = RenderPass::Create();
-      CompositorFrame frame = test::MakeEmptyCompositorFrame();
 
       auto* sqs = pass->CreateAndAppendSharedQuadState();
       auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
@@ -127,7 +126,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       else
         pass->damage_rect = gfx::Rect(0, 0, 1, 1);
 
-      frame.render_pass_list.push_back(std::move(pass));
+      CompositorFrame frame =
+          CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
       root_support->SubmitCompositorFrame(
           LocalSurfaceId(num_surfaces + 1, kArbitraryToken), std::move(frame));

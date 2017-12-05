@@ -79,8 +79,8 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
                      SK_ColorGREEN, force_anti_aliasing_off);
 
-  auto root_frame = test::MakeCompositorFrame();
-  root_frame.render_pass_list.push_back(std::move(pass));
+  auto root_frame =
+      CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
   LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
@@ -131,8 +131,8 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
     color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
                        SK_ColorYELLOW, force_anti_aliasing_off);
 
-    auto root_frame = test::MakeCompositorFrame();
-    root_frame.render_pass_list.push_back(std::move(pass));
+    auto root_frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
     support_->SubmitCompositorFrame(root_local_surface_id,
                                     std::move(root_frame));
@@ -152,8 +152,8 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
     color_quad->SetNew(pass->shared_quad_state_list.back(), rect, rect,
                        SK_ColorBLUE, force_anti_aliasing_off);
 
-    auto child_frame = test::MakeCompositorFrame();
-    child_frame.render_pass_list.push_back(std::move(pass));
+    auto child_frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
     child_support->SubmitCompositorFrame(child_local_surface_id,
                                          std::move(child_frame));
@@ -226,8 +226,8 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                right_child_id, base::nullopt, SK_ColorWHITE,
                                false);
 
-    auto root_frame = test::MakeCompositorFrame();
-    root_frame.render_pass_list.push_back(std::move(pass));
+    auto root_frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
     support_->SubmitCompositorFrame(root_local_surface_id,
                                     std::move(root_frame));
@@ -254,8 +254,8 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
         pass->shared_quad_state_list.back(), gfx::Rect(0, 100, 100, 100),
         gfx::Rect(0, 100, 100, 100), SK_ColorBLUE, force_anti_aliasing_off);
 
-    auto child_frame = test::MakeCompositorFrame();
-    child_frame.render_pass_list.push_back(std::move(pass));
+    auto child_frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
     left_support->SubmitCompositorFrame(left_child_local_id,
                                         std::move(child_frame));
@@ -282,8 +282,8 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
         pass->shared_quad_state_list.back(), gfx::Rect(0, 100, 100, 100),
         gfx::Rect(0, 100, 100, 100), SK_ColorGREEN, force_anti_aliasing_off);
 
-    auto child_frame = test::MakeCompositorFrame();
-    child_frame.render_pass_list.push_back(std::move(pass));
+    auto child_frame =
+        CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
     right_support->SubmitCompositorFrame(right_child_local_id,
                                          std::move(child_frame));

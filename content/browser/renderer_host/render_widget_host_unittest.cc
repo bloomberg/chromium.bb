@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
@@ -259,22 +260,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 };
 
 namespace  {
-
-viz::CompositorFrame MakeCompositorFrame(float scale_factor, gfx::Size size) {
-  viz::CompositorFrame frame;
-  frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
-
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-  pass->SetNew(1, gfx::Rect(size), gfx::Rect(), gfx::Transform());
-  frame.render_pass_list.push_back(std::move(pass));
-  if (!size.IsEmpty()) {
-    viz::TransferableResource resource;
-    resource.id = 1;
-    frame.resource_list.push_back(std::move(resource));
-  }
-  return frame;
-}
 
 // RenderWidgetHostProcess -----------------------------------------------------
 
@@ -1733,7 +1718,6 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
 // Test that the rendering timeout for newly loaded content fires
 // when enough time passes without receiving a new compositor frame.
 TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
 
@@ -1743,8 +1727,10 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   // Start the timer and immediately send a CompositorFrame with the
   // content_source_id of the new page. The timeout shouldn't fire.
   host_->StartNewContentRenderingTimeout(5);
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.content_source_id = 5;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetContentSourceId(5)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1757,8 +1743,10 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   // Start the timer but receive frames only from the old page. The timer
   // should fire.
   host_->StartNewContentRenderingTimeout(10);
-  frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.content_source_id = 9;
+  frame = viz::CompositorFrameBuilder()
+              .AddDefaultRenderPass()
+              .SetContentSourceId(9)
+              .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1770,8 +1758,10 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
 
   // Send a CompositorFrame with content_source_id of the new page before we
   // attempt to start the timer. The timer shouldn't fire.
-  frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.content_source_id = 7;
+  frame = viz::CompositorFrameBuilder()
+              .AddDefaultRenderPass()
+              .SetContentSourceId(7)
+              .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   host_->StartNewContentRenderingTimeout(7);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1795,7 +1785,6 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
 // This tests that a compositor frame received with a stale content source ID
 // in its metadata is properly discarded.
 TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
 
@@ -1805,9 +1794,11 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
 
   {
     // First swap a frame with an invalid ID.
-    viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-    frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
-    frame.metadata.content_source_id = 99;
+    auto frame = viz::CompositorFrameBuilder()
+                     .AddDefaultRenderPass()
+                     .SetBeginFrameAck(viz::BeginFrameAck(0, 1, true))
+                     .SetContentSourceId(99)
+                     .Build();
     host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr,
                                  0);
     EXPECT_FALSE(
@@ -1820,8 +1811,10 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
 
   {
     // Test with a valid content ID as a control.
-    viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-    frame.metadata.content_source_id = 100;
+    auto frame = viz::CompositorFrameBuilder()
+                     .AddDefaultRenderPass()
+                     .SetContentSourceId(100)
+                     .Build();
     host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr,
                                  0);
     EXPECT_TRUE(
@@ -1833,8 +1826,10 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // We also accept frames with higher content IDs, to cover the case where
     // the browser process receives a compositor frame for a new page before
     // the corresponding DidCommitProvisionalLoad (it's a race).
-    viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-    frame.metadata.content_source_id = 101;
+    auto frame = viz::CompositorFrameBuilder()
+                     .AddDefaultRenderPass()
+                     .SetContentSourceId(101)
+                     .Build();
     host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr,
                                  0);
     EXPECT_TRUE(
@@ -2707,7 +2702,6 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
 // queue the messages until the frame arrives and then process them.
 TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   const uint32_t frame_token = 99;
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
@@ -2721,8 +2715,10 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   EXPECT_EQ(1u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
@@ -2732,7 +2728,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
 // messages immedtiately.
 TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   const uint32_t frame_token = 99;
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages;
@@ -2741,8 +2736,10 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2758,7 +2755,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
 TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 100;
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
@@ -2779,14 +2775,18 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   EXPECT_EQ(2u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token1;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token1)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(1u, host_->queued_messages_.size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 
-  frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token2;
+  frame = viz::CompositorFrameBuilder()
+              .AddDefaultRenderPass()
+              .SetFrameToken(frame_token2)
+              .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
@@ -2797,7 +2797,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
 TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 100;
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
@@ -2808,14 +2807,18 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token1;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token1)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token2;
+  frame = viz::CompositorFrameBuilder()
+              .AddDefaultRenderPass()
+              .SetFrameToken(frame_token2)
+              .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2836,7 +2839,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
 TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 100;
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
@@ -2857,8 +2859,10 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   EXPECT_EQ(2u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token2;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token2)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
@@ -2870,7 +2874,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   const uint32_t frame_token1 = 99;
   const uint32_t frame_token2 = 50;
   const uint32_t frame_token3 = 30;
-  const gfx::Size frame_size(50, 50);
   const viz::LocalSurfaceId local_surface_id(1,
                                              base::UnguessableToken::Create());
   std::vector<IPC::Message> messages1;
@@ -2892,8 +2895,10 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
   host_->Init();
 
-  viz::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token2;
+  auto frame = viz::CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetFrameToken(frame_token2)
+                   .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2909,8 +2914,10 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   EXPECT_EQ(1u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  frame = MakeCompositorFrame(1.f, frame_size);
-  frame.metadata.frame_token = frame_token3;
+  frame = viz::CompositorFrameBuilder()
+              .AddDefaultRenderPass()
+              .SetFrameToken(frame_token3)
+              .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());

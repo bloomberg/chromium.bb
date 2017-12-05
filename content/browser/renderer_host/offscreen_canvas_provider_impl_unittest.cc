@@ -14,6 +14,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_host_frame_sink_client.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -67,23 +68,6 @@ class StubOffscreenCanvasSurfaceClient
 
   DISALLOW_COPY_AND_ASSIGN(StubOffscreenCanvasSurfaceClient);
 };
-
-// Create a CompositorFrame suitable to send over IPC.
-viz::CompositorFrame MakeCompositorFrame() {
-  viz::CompositorFrame frame;
-  frame.metadata.begin_frame_ack.source_id =
-      viz::BeginFrameArgs::kManualSourceId;
-  frame.metadata.begin_frame_ack.sequence_number =
-      viz::BeginFrameArgs::kStartingFrameNumber;
-  frame.metadata.device_scale_factor = 1.0f;
-
-  auto render_pass = viz::RenderPass::Create();
-  render_pass->id = 1;
-  render_pass->output_rect = gfx::Rect(100, 100);
-  frame.render_pass_list.push_back(std::move(render_pass));
-
-  return frame;
-}
 
 // Creates a closure that sets |error_variable| true when run.
 base::Closure ConnectionErrorClosure(bool* error_variable) {
@@ -180,7 +164,7 @@ TEST_F(OffscreenCanvasProviderImplTest,
   // Renderer submits a CompositorFrame with |local_id|.
   const viz::LocalSurfaceId local_id(1, base::UnguessableToken::Create());
   compositor_frame_sink->SubmitCompositorFrame(
-      local_id, MakeCompositorFrame(), nullptr,
+      local_id, viz::MakeDefaultCompositorFrame(), nullptr,
       base::TimeTicks::Now().since_origin().InMicroseconds());
 
   RunUntilIdle();

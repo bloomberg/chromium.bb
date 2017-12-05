@@ -153,8 +153,10 @@ class DisplayTest : public testing::Test {
  protected:
   void SubmitCompositorFrame(RenderPassList* pass_list,
                              const LocalSurfaceId& local_surface_id) {
-    CompositorFrame frame = test::MakeCompositorFrame();
-    pass_list->swap(frame.render_pass_list);
+    CompositorFrame frame = CompositorFrameBuilder()
+                                .SetRenderPassList(std::move(*pass_list))
+                                .Build();
+    pass_list->clear();
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
@@ -361,17 +363,14 @@ TEST_F(DisplayTest, DisplayDamaged) {
   // Pass has no damage, so shouldn't be swapped, but latency info should be
   // saved for next swap.
   {
-    pass = RenderPass::Create();
-    pass->output_rect = gfx::Rect(0, 0, 100, 100);
-    pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = 1u;
-
-    pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame = test::MakeCompositorFrame();
-    pass_list.swap(frame.render_pass_list);
-    frame.metadata.latency_info.push_back(ui::LatencyInfo());
+    constexpr gfx::Rect kOutputRect(0, 0, 100, 100);
+    constexpr gfx::Rect kDamageRect(10, 10, 0, 0);
+    CompositorFrame frame = CompositorFrameBuilder()
+                                .AddRenderPass(kOutputRect, kDamageRect)
+                                .AddLatencyInfo(ui::LatencyInfo())
+                                .Build();
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
@@ -392,17 +391,13 @@ TEST_F(DisplayTest, DisplayDamaged) {
     display_->Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler_->swapped);
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
-
-    pass = RenderPass::Create();
-    pass->output_rect = gfx::Rect(0, 0, 200, 200);
-    pass->damage_rect = gfx::Rect(10, 10, 10, 10);
-    pass->id = 1u;
-
-    pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame = test::MakeCompositorFrame();
-    pass_list.swap(frame.render_pass_list);
+    constexpr gfx::Rect kOutputRect(0, 0, 200, 200);
+    constexpr gfx::Rect kDamageRect(10, 10, 10, 10);
+    CompositorFrame frame = CompositorFrameBuilder()
+                                .AddRenderPass(kOutputRect, kDamageRect)
+                                .Build();
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
@@ -481,17 +476,14 @@ TEST_F(DisplayTest, MaxLatencyInfoCap) {
   // This is the same as LatencyInfo::kMaxLatencyInfoNumber.
   const size_t max_latency_info_count = 100;
   for (size_t i = 0; i <= max_latency_info_count; ++i) {
-    pass = RenderPass::Create();
-    pass->output_rect = gfx::Rect(0, 0, 100, 100);
-    pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = 1u;
-
-    pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
 
-    CompositorFrame frame = test::MakeCompositorFrame();
-    pass_list.swap(frame.render_pass_list);
-    frame.metadata.latency_info.push_back(ui::LatencyInfo());
+    constexpr gfx::Rect kOutputRect(0, 0, 100, 100);
+    constexpr gfx::Rect kDamageRect(10, 10, 0, 0);
+    CompositorFrame frame = CompositorFrameBuilder()
+                                .AddRenderPass(kOutputRect, kDamageRect)
+                                .AddLatencyInfo(ui::LatencyInfo())
+                                .Build();
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
@@ -671,7 +663,7 @@ TEST_F(DisplayTest, DrawOcclusionWithNonCoveringDrawQuad) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 100, 100);
   gfx::Rect rect3(25, 25, 50, 100);
@@ -834,7 +826,7 @@ TEST_F(DisplayTest, CompositorFrameWithOverlapDrawQuad) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 50, 50);
   gfx::Rect rect3(50, 50, 50, 25);
@@ -966,7 +958,7 @@ TEST_F(DisplayTest, CompositorFrameWithTransformer) {
 
   // Rect 2, 3, 4 are contained in rect 1 only after applying the scale matrix.
   // They are repetition of the test case above.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 100, 100);
   gfx::Rect rect3(50, 50, 100, 50);
@@ -1145,7 +1137,7 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
 
   SkMScalar epsilon = float(0.000000001);
@@ -1257,7 +1249,7 @@ TEST_F(DisplayTest, CompositorFrameWithNegativeScaleTransform) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
 
   gfx::Transform negative_scale;
@@ -1381,7 +1373,7 @@ TEST_F(DisplayTest, CompositorFrameWithRotation) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 2 is inside rect 1 initially.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(75, 75, 10, 10);
 
@@ -1455,7 +1447,7 @@ TEST_F(DisplayTest, CompositorFrameWithPerspective) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 2 is inside rect 1 initially.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(10, 10, 1, 1);
 
@@ -1528,7 +1520,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpacityChange) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 10, 10);
 
@@ -1593,7 +1585,7 @@ TEST_F(DisplayTest, CompositorFrameWithOpaquenessChange) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(25, 25, 10, 10);
 
@@ -1659,7 +1651,7 @@ TEST_F(DisplayTest, CompositorFrameWithTranslateTransformer) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 2 is outside rect 1 initially.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(120, 120, 10, 10);
 
@@ -1735,7 +1727,7 @@ TEST_F(DisplayTest, CompositorFrameWithCombinedSharedQuadState) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(100, 0, 60, 60);
   gfx::Rect rect3(10, 10, 120, 30);
@@ -1798,7 +1790,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(100, 0, 60, 60);
 
@@ -1872,7 +1864,7 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
   display_->Initialize(&client, manager_.surface_manager());
 
   // rect 3 is inside of combined rect of rect 1 and rect 2.
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
 
   std::unique_ptr<RenderPass> render_pass2 = RenderPass::Create();
@@ -1941,7 +1933,7 @@ TEST_F(DisplayTest, CompositorFrameWithClip) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 25, 25);
   gfx::Rect clip_rect(0, 0, 60, 60);
@@ -2019,7 +2011,7 @@ TEST_F(DisplayTest, CompositorFrameWithCopyRequest) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 50, 25, 25);
 
@@ -2065,7 +2057,7 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(50, 0, 100, 100);
   gfx::Rect rect3(0, 0, 25, 25);
@@ -2243,7 +2235,7 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
 
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect rect1(0, 0, 50, 50);
   gfx::Rect rect2(50, 0, 50, 50);
@@ -2314,7 +2306,7 @@ TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  CompositorFrame frame = test::MakeCompositorFrame();
+  CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect1(0, 0, 100, 100);
   gfx::Rect rect2(10, 10, 50, 50);
   gfx::Rect rect3(0, 0, 10, 10);
@@ -2437,8 +2429,11 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   const gfx::Size sub_surface_size(32, 32);
 
   {
-    CompositorFrame frame = test::MakeCompositorFrame(sub_surface_size);
-    frame.metadata.presentation_token = 1;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
+            .SetPresentationToken(1)
+            .Build();
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     // TODO(penghuang): Verify DidDiscardCompositorFrame() is called when
     // GLSurface presentation callback is implemented.
@@ -2487,8 +2482,12 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   }
 
   {
-    CompositorFrame frame = test::MakeCompositorFrame(sub_surface_size);
-    frame.metadata.presentation_token = 2;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
+            .SetPresentationToken(2)
+            .Build();
+
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     EXPECT_CALL(sub_client, DidDiscardCompositorFrame(2)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
@@ -2498,8 +2497,12 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   }
 
   {
-    CompositorFrame frame = test::MakeCompositorFrame(sub_surface_size);
-    frame.metadata.presentation_token = 3;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
+            .SetPresentationToken(3)
+            .Build();
+
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
