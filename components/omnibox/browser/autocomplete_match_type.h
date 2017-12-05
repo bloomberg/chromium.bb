@@ -70,10 +70,13 @@ struct AutocompleteMatchType {
   // whose text is |match_text| and which may have friendly descriptive text in
   // |additional_descriptive_text_|. The accessibility label describes the
   // match for use in a screenreader or other assistive technology.
+  // The |label_prefix_length| is an optional out param that provides the number
+  // of characters in the label that were added before the actual match_text.
   static base::string16 ToAccessibilityLabel(
       AutocompleteMatchType::Type type,
       const base::string16& match_text,
-      const base::string16& additional_descriptive_text);
+      const base::string16& additional_descriptive_text,
+      int* label_prefix_length = nullptr);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_MATCH_TYPE_H_

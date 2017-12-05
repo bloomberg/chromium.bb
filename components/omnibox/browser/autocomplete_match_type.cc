@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -44,10 +45,21 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
   return strings[type];
 }
 
+static const wchar_t kAccessibilityLabelPrefixEndSentinal[] =
+    L"\uFFFC";  // Embedded object character.
+
+static int AccessibilityLabelPrefixLength(base::string16 accessibility_label) {
+  const base::string16 sentinal =
+      base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
+  auto length = accessibility_label.find(sentinal);
+  return length == base::string16::npos ? 0 : static_cast<int>(length);
+}
+
 base::string16 AutocompleteMatchType::ToAccessibilityLabel(
     AutocompleteMatchType::Type type,
     const base::string16& match_text,
-    const base::string16& additional_descriptive_text) {
+    const base::string16& additional_descriptive_text,
+    int* label_prefix_length) {
   // Types with a message ID of zero get |text| returned as-is.
   static constexpr int message_ids[] = {
       0,                             // URL_WHAT_YOU_TYPED
@@ -86,22 +98,35 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
   };
   static_assert(arraysize(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");
+
+  if (label_prefix_length)
+    *label_prefix_length = 0;
+
   int message = message_ids[type];
   if (!message)
     return match_text;
 
+  const base::string16 sentinal =
+      base::WideToUTF16(kAccessibilityLabelPrefixEndSentinal);
   switch (message) {
     case IDS_ACC_AUTOCOMPLETE_SEARCH_HISTORY:
     case IDS_ACC_AUTOCOMPLETE_SEARCH:
     case IDS_ACC_AUTOCOMPLETE_SUGGESTED_SEARCH:
       // Additional descriptive text NOT relevant.
-      return l10n_util::GetStringFUTF16(message_ids[type], match_text);
+      if (label_prefix_length)
+        *label_prefix_length = AccessibilityLabelPrefixLength(
+            l10n_util::GetStringFUTF16(message, sentinal));
+      return l10n_util::GetStringFUTF16(message, match_text);
 
     case IDS_ACC_AUTOCOMPLETE_HISTORY:
     case IDS_ACC_AUTOCOMPLETE_BOOKMARK:
     case IDS_ACC_AUTOCOMPLETE_CLIPBOARD:
       // Additional descriptive text relevant.
-      return l10n_util::GetStringFUTF16(message_ids[type], match_text,
+      if (label_prefix_length)
+        *label_prefix_length =
+            AccessibilityLabelPrefixLength(l10n_util::GetStringFUTF16(
+                message, sentinal, additional_descriptive_text));
+      return l10n_util::GetStringFUTF16(message, match_text,
                                         additional_descriptive_text);
     default:
       break;
