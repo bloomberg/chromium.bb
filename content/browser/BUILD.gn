@@ -1562,6 +1562,8 @@ jumbo_source_set("browser") {
     "shared_worker/worker_storage_partition.h",
     "site_instance_impl.cc",
     "site_instance_impl.h",
+    "site_isolation_policy.cc",
+    "site_isolation_policy.h",
     "speech/speech_recognition_dispatcher_host.cc",
     "speech/speech_recognition_dispatcher_host.h",
     "speech/speech_recognition_manager_impl.cc",
