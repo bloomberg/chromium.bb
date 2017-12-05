@@ -27,7 +27,6 @@
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
-#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -376,10 +375,7 @@ bool NotificationsApiFunction::CreateNotification(
       base::UTF8ToUTF16(extension_->name()), extension_->url(),
       message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                  extension_->id()),
-      optional_fields,
-      new WebNotificationDelegate(NotificationHandler::Type::EXTENSION,
-                                  GetProfile(), notification_id,
-                                  extension_->url()));
+      optional_fields, nullptr /* delegate */);
 
   // Apply the "requireInteraction" flag. The value defaults to false.
   notification.set_never_timeout(options->require_interaction &&

@@ -116,7 +116,7 @@ void StubNotificationDisplayService::SimulateSettingsClick(
     iter->notification.delegate()->SettingsClick();
   } else {
     DCHECK(handler);
-    handler->OpenSettings(profile_);
+    handler->OpenSettings(profile_, iter->notification.origin_url());
   }
 }
 

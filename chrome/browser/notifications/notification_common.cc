@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/notification_common.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -28,18 +29,17 @@ const PersistentNotificationMetadata* PersistentNotificationMetadata::From(
 }
 
 // static
-void NotificationCommon::OpenNotificationSettings(
-    content::BrowserContext* browser_context) {
-#if defined(OS_ANDROID)
-  // Android settings are opened directly from Java
-  NOTIMPLEMENTED();
-#elif defined(OS_CHROMEOS)
-  chrome::ShowContentSettingsExceptionsForProfile(
-      Profile::FromBrowserContext(browser_context),
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+void NotificationCommon::OpenNotificationSettings(Profile* profile,
+                                                  const GURL& origin) {
+// TODO(peter): Use the |origin| to direct the user to a more appropriate
+// settings page to toggle permission.
+
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Android settings are handled through Java. Chrome OS settings are handled
+  // through the tray's setting panel.
+  NOTREACHED();
 #else
-  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      Profile::FromBrowserContext(browser_context));
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile);
   chrome::ShowContentSettingsExceptions(browser_displayer.browser(),
                                         CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 #endif

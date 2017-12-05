@@ -36,28 +36,56 @@ class PassThroughDelegate : public message_center::NotificationDelegate {
     DCHECK_NE(notification_type, NotificationHandler::Type::TRANSIENT);
   }
 
+  void SettingsClick() override {
+    NotificationDisplayServiceFactory::GetForProfile(profile_)
+        ->ProcessNotificationOperation(
+            NotificationCommon::SETTINGS, notification_type_,
+            notification_.origin_url(), notification_.id(), base::nullopt,
+            base::nullopt, base::nullopt /* by_user */);
+  }
+
+  void DisableNotification() override {
+    NotificationDisplayServiceFactory::GetForProfile(profile_)
+        ->ProcessNotificationOperation(
+            NotificationCommon::DISABLE_PERMISSION, notification_type_,
+            notification_.origin_url(), notification_.id(),
+            base::nullopt /* action_index */, base::nullopt /* reply */,
+            base::nullopt /* by_user */);
+  }
+
   void Close(bool by_user) override {
     NotificationDisplayServiceFactory::GetForProfile(profile_)
         ->ProcessNotificationOperation(
             NotificationCommon::CLOSE, notification_type_,
-            notification_.origin_url(), notification_.id(), base::nullopt,
-            base::nullopt, by_user);
+            notification_.origin_url(), notification_.id(),
+            base::nullopt /* action_index */, base::nullopt /* reply */,
+            by_user);
   }
 
   void Click() override {
     NotificationDisplayServiceFactory::GetForProfile(profile_)
         ->ProcessNotificationOperation(
             NotificationCommon::CLICK, notification_type_,
-            notification_.origin_url(), notification_.id(), base::nullopt,
-            base::nullopt, base::nullopt);
+            notification_.origin_url(), notification_.id(),
+            base::nullopt /* action_index */, base::nullopt /* reply */,
+            base::nullopt /* by_user */);
   }
 
-  void ButtonClick(int button_index) override {
+  void ButtonClick(int action_index) override {
     NotificationDisplayServiceFactory::GetForProfile(profile_)
         ->ProcessNotificationOperation(
             NotificationCommon::CLICK, notification_type_,
-            notification_.origin_url(), notification_.id(), button_index,
-            base::nullopt, base::nullopt);
+            notification_.origin_url(), notification_.id(), action_index,
+            base::nullopt /* reply */, base::nullopt /* by_user */);
+  }
+
+  void ButtonClickWithReply(int action_index,
+                            const base::string16& reply) override {
+    NotificationDisplayServiceFactory::GetForProfile(profile_)
+        ->ProcessNotificationOperation(
+            NotificationCommon::CLICK, notification_type_,
+            notification_.origin_url(), notification_.id(), action_index, reply,
+            base::nullopt /* by_user */);
   }
 
  protected:

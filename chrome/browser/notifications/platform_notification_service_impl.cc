@@ -19,7 +19,6 @@
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
-#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -358,9 +357,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
 
   message_center::Notification notification = CreateNotificationFromData(
       profile, origin, notification_id, notification_data,
-      notification_resources,
-      new WebNotificationDelegate(NotificationHandler::Type::WEB_NON_PERSISTENT,
-                                  profile, notification_id, origin));
+      notification_resources, nullptr /* delegate */);
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
       NotificationHandler::Type::WEB_NON_PERSISTENT, notification);
@@ -386,9 +383,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
 
   message_center::Notification notification = CreateNotificationFromData(
       profile, origin, notification_id, notification_data,
-      notification_resources,
-      new WebNotificationDelegate(NotificationHandler::Type::WEB_PERSISTENT,
-                                  profile, notification_id, origin));
+      notification_resources, nullptr /* delegate */);
   auto metadata = std::make_unique<PersistentNotificationMetadata>();
   metadata->service_worker_scope = service_worker_scope;
 

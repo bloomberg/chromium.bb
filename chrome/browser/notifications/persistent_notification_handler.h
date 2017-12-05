@@ -27,7 +27,8 @@ class PersistentNotificationHandler : public NotificationHandler {
                const base::Optional<int>& action_index,
                const base::Optional<base::string16>& reply,
                base::OnceClosure completed_closure) override;
-  void OpenSettings(Profile* profile) override;
+  void DisableNotifications(Profile* profile, const GURL& origin) override;
+  void OpenSettings(Profile* profile, const GURL& origin) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PersistentNotificationHandler);

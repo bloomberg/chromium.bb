@@ -16,6 +16,10 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "ui/message_center/notification.h"
 
+namespace content {
+class BrowserContext;
+}
+
 class Profile;
 
 // Implementation of the NotificationDisplayService interface that can be used

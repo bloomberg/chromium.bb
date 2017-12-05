@@ -104,8 +104,11 @@ void NotificationDisplayService::ProcessNotificationOperation(
       handler->OnClose(profile_, origin, notification_id, by_user.value(),
                        std::move(completed_closure));
       break;
+    case NotificationCommon::DISABLE_PERMISSION:
+      handler->DisableNotifications(profile_, origin);
+      break;
     case NotificationCommon::SETTINGS:
-      handler->OpenSettings(profile_);
+      handler->OpenSettings(profile_, origin);
       break;
   }
 }
