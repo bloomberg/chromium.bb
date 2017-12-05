@@ -21,10 +21,6 @@ class CONTENT_EXPORT LoaderDelegateImpl : public LoaderDelegate {
       const net::LoadStateWithParam& load_state,
       uint64_t upload_position,
       uint64_t upload_size) override;
-  void LogResourceRequestTime(base::TimeTicks timestamp,
-                              int render_process_id,
-                              int render_frame_id,
-                              const GURL& url) override;
 };
 
 }  // namespace content

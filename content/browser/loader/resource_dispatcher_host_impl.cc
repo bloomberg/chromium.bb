@@ -819,18 +819,6 @@ void ResourceDispatcherHostImpl::OnRequestResourceInternal(
     mojom::URLLoaderClientPtr url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
-  // When logging time-to-network only care about main frame and non-transfer
-  // navigations.
-  // PlzNavigate: this log happens from NavigationRequest::OnRequestStarted
-  // instead.
-  if (request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME &&
-      request_data.transferred_request_request_id == -1 &&
-      !IsBrowserSideNavigationEnabled() && loader_delegate_) {
-    loader_delegate_->LogResourceRequestTime(TimeTicks::Now(),
-                                             requester_info->child_id(),
-                                             request_data.render_frame_id,
-                                             request_data.url);
-  }
   BeginRequest(requester_info, request_id, request_data, is_sync_load,
                SyncLoadResultCallback(), routing_id, std::move(mojo_request),
                std::move(url_loader_client), traffic_annotation);
