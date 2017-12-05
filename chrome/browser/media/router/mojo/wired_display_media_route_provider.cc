@@ -68,7 +68,6 @@ WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
     : binding_(this, std::move(request)),
       media_router_(std::move(media_router)) {
   display::Screen::GetScreen()->AddObserver(this);
-  ReportSinkAvailability(GetSinks());
 }
 
 WiredDisplayMediaRouteProvider::~WiredDisplayMediaRouteProvider() {
@@ -265,7 +264,6 @@ void WiredDisplayMediaRouteProvider::NotifyRouteObservers() const {
 void WiredDisplayMediaRouteProvider::NotifySinkObservers() {
   std::vector<MediaSinkInternal> sinks = GetSinks();
   device_count_metrics_.RecordDeviceCountsIfNeeded(sinks.size(), sinks.size());
-  ReportSinkAvailability(sinks);
   for (const auto& sink_query : sink_queries_)
     media_router_->OnSinksReceived(kProviderId, sink_query, sinks, {});
 }
@@ -290,14 +288,6 @@ std::vector<Display> WiredDisplayMediaRouteProvider::GetAvailableDisplays()
   });
   std::sort(displays.begin(), displays.end(), CompareDisplayBounds);
   return displays;
-}
-
-void WiredDisplayMediaRouteProvider::ReportSinkAvailability(
-    const std::vector<MediaSinkInternal>& sinks) {
-  mojom::MediaRouter::SinkAvailability sink_availability =
-      sinks.empty() ? mojom::MediaRouter::SinkAvailability::UNAVAILABLE
-                    : mojom::MediaRouter::SinkAvailability::PER_SOURCE;
-  media_router_->OnSinkAvailabilityUpdated(kProviderId, sink_availability);
 }
 
 }  // namespace media_router
