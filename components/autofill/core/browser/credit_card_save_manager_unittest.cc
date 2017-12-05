@@ -68,6 +68,12 @@ using UkmDeveloperEngagementType = ukm::builders::Autofill_DeveloperEngagement;
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
 const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
 
+std::string NextYear() {
+  base::Time::Exploded now;
+  base::Time::Now().LocalExplode(&now);
+  return std::to_string(now.year + 1);
+}
+
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
@@ -557,8 +563,7 @@ class TestCreditCardSaveManager : public CreditCardSaveManager {
   DISALLOW_COPY_AND_ASSIGN(TestCreditCardSaveManager);
 };
 
-// Fails on all platforms. http://crbug.com/790996
-class DISABLED_CreditCardSaveManagerTest : public testing::Test {
+class CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
@@ -707,7 +712,7 @@ class DISABLED_CreditCardSaveManagerTest : public testing::Test {
     // Edit the data, and submit.
     form.fields[1].value = ASCIIToUTF16("4111111111111111");
     form.fields[2].value = ASCIIToUTF16("11");
-    form.fields[3].value = ASCIIToUTF16("2017");
+    form.fields[3].value = ASCIIToUTF16(NextYear());
     EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
     FormSubmitted(form);
   }
@@ -797,7 +802,7 @@ class DISABLED_CreditCardSaveManagerTest : public testing::Test {
 #else
 #define MAYBE_ImportFormDataCreditCardHTTPS ImportFormDataCreditCardHTTPS
 #endif
-TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) {
+TEST_F(CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) {
   TestSaveCreditCards(true);
 }
 
@@ -808,7 +813,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) 
 #else
 #define MAYBE_ImportFormDataCreditCardHTTP ImportFormDataCreditCardHTTP
 #endif
-TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
+TEST_F(CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
   TestSaveCreditCards(false);
 }
 
@@ -821,7 +826,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
 #define MAYBE_CreditCardSavedWhenAutocompleteOff \
   CreditCardSavedWhenAutocompleteOff
 #endif
-TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
+TEST_F(CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, false, false);
@@ -835,14 +840,14 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, MAYBE_CreditCardSavedWhenAutocomplete
   // Edit the data, and submit.
   form.fields[1].value = ASCIIToUTF16("4111111111111111");
   form.fields[2].value = ASCIIToUTF16("11");
-  form.fields[3].value = ASCIIToUTF16("2017");
+  form.fields[3].value = ASCIIToUTF16(NextYear());
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(form);
 }
 
 // Tests that credit card data are not saved when CC number does not pass the
 // Luhn test.
-TEST_F(DISABLED_CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
+TEST_F(CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
@@ -854,12 +859,12 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, InvalidCreditCardNumberIsNotSaved) {
   ASSERT_FALSE(autofill::IsValidCreditCardNumber(ASCIIToUTF16(card)));
   form.fields[1].value = ASCIIToUTF16(card);
   form.fields[2].value = ASCIIToUTF16("11");
-  form.fields[3].value = ASCIIToUTF16("2017");
+  form.fields[3].value = ASCIIToUTF16(NextYear());
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(form);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
+TEST_F(CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_enabled(false);
 
@@ -880,7 +885,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -894,7 +899,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, CreditCardDisabledDoesNotSave) {
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
   personal_data_.ClearCreditCards();
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -919,7 +924,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -945,7 +950,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard) {
       "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestCVCEnabled_DoesNotTrigger) {
   EnableAutofillUpstreamRequestCvcIfMissingExperiment();
 
@@ -971,7 +976,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
@@ -981,7 +986,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   EXPECT_TRUE(credit_card_save_manager_->GetActiveExperiments().empty());
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
   personal_data_.ClearCreditCards();
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1008,7 +1013,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16(card_number);
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   FormSubmitted(credit_card_form);
@@ -1025,14 +1030,14 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCardAndSaveCopy) {
   EXPECT_EQ(base::ASCIIToUTF16("1111"), saved_card->LastFourDigits());
   EXPECT_EQ(kVisaCard, saved_card->network());
   EXPECT_EQ(11, saved_card->expiration_month());
-  EXPECT_EQ(2017, saved_card->expiration_year());
+  EXPECT_EQ(std::stoi(NextYear()), saved_card->expiration_year());
   EXPECT_EQ(server_id, saved_card->server_id());
   EXPECT_EQ(CreditCard::FULL_SERVER_CARD, saved_card->record_type());
   EXPECT_EQ(base::ASCIIToUTF16(card_number), saved_card->number());
 #endif
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(false);
 
@@ -1053,7 +1058,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1067,7 +1072,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_FeatureNotEnabled) {
   histogram_tester.ExpectTotalCount("Autofill.CardUploadDecisionMetric", 0);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1091,7 +1096,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // CVC MISSING
 
   base::HistogramTester histogram_tester;
@@ -1108,7 +1113,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcUnavailable) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_VALUE_NOT_FOUND);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1129,7 +1134,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("1234");
 
   base::HistogramTester histogram_tester;
@@ -1146,7 +1151,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CvcInvalidLength) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::INVALID_CVC_VALUE);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -1190,7 +1195,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // CVC MISSING
   credit_card_form.fields[5].value = ASCIIToUTF16("123");
 
@@ -1208,7 +1213,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_MultipleCvcFields) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
   // Remove the profiles that were created in the TestPersonalDataManager
@@ -1248,7 +1253,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
 
   base::HistogramTester histogram_tester;
 
@@ -1264,7 +1269,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoCvcFieldOnForm) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_FIELD_NOT_FOUND);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_InvalidCvcInNonCvcField) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1307,7 +1312,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("1234");
 
   base::HistogramTester histogram_tester;
@@ -1324,7 +1329,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::CVC_FIELD_NOT_FOUND);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInNonCvcField) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1367,7 +1372,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1386,7 +1391,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
       AutofillMetrics::FOUND_POSSIBLE_CVC_VALUE_IN_NON_CVC_FIELD);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnForm_CvcInAddressField) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1429,7 +1434,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1454,7 +1459,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
 #define MAYBE_UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc \
   UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc
 #endif
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        MAYBE_UploadCreditCard_NoCvcFieldOnForm_UserEntersCvc) {
   EnableAutofillUpstreamRequestCvcIfMissingExperiment();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1496,7 +1501,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
 
   base::HistogramTester histogram_tester;
 
@@ -1519,7 +1524,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
       1 /* expected_num_matching_entries */);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoCvcFieldOnFormExperimentOff) {
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1560,7 +1565,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
 
   base::HistogramTester histogram_tester;
 
@@ -1579,7 +1584,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
 // kAutofillUpstreamShowNewUi and kAutofillUpstreamShowGoogleLogo flags are
 // currently not available on Android.
 #if !defined(OS_ANDROID)
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_AddNewUiFlagStateToRequestIfExperimentOn) {
   EnableAutofillUpstreamShowNewUiExperiment();
   personal_data_.ClearAutofillProfiles();
@@ -1602,7 +1607,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   // Confirm upload happened and the new UI flag was sent in the request.
@@ -1613,7 +1618,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
               UnorderedElementsAre(kAutofillUpstreamShowNewUi.name));
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddNewUiFlagStateToRequestIfExperimentOff) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1635,7 +1640,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   // Confirm upload happened and the new UI flag was not sent in the request.
@@ -1645,7 +1650,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   EXPECT_TRUE(credit_card_save_manager_->GetActiveExperiments().empty());
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_AddShowGoogleLogoFlagStateToRequestIfExperimentOn) {
   EnableAutofillUpstreamShowGoogleLogoExperiment();
   personal_data_.ClearAutofillProfiles();
@@ -1668,7 +1673,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   // Confirm upload happened and the show Google logo flag was sent in the
@@ -1680,7 +1685,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
               UnorderedElementsAre(kAutofillUpstreamShowGoogleLogo.name));
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddShowGoogleLogoFlagStateToRequestIfExpOff) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1702,7 +1707,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   // Confirm upload happened and the show Google logo flag was not sent in the
@@ -1714,7 +1719,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
 }
 #endif
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1729,7 +1734,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) 
   credit_card_form.fields[0].value = ASCIIToUTF16("Bob Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1747,7 +1752,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoProfileAvailable) 
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS_PROFILE);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfile) {
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
@@ -1775,7 +1780,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfil
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1797,7 +1802,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoRecentlyUsedProfil
       "Autofill.HasModifiedProfile.CreditCardFormSubmission", false, 1);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_CvcUnavailableAndNoProfileAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
@@ -1813,7 +1818,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("");  // CVC MISSING
 
   base::HistogramTester histogram_tester;
@@ -1838,7 +1843,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
                1 /* expected_num_matching_entries */);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1859,7 +1864,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   // Edit the data, but don't include a name, and submit.
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1876,7 +1881,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoNameAvailable) {
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1907,7 +1912,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1925,7 +1930,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesConflict) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhitespace) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -1951,7 +1956,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhite
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -1967,7 +1972,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesDiscardWhite
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_ZipCodesDiscardWhitespace_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -1995,7 +2000,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2013,7 +2018,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
                                  AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMatch) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2042,7 +2047,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMa
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2059,7 +2064,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_ZipCodesHavePrefixMa
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2087,7 +2092,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) 
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2104,7 +2109,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) 
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleInitial) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2132,7 +2137,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleIniti
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo W. Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2150,7 +2155,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleIniti
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_CCFormHasMiddleInitial_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2180,7 +2185,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo W. Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2200,7 +2205,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCForm) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2225,7 +2230,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCF
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2242,7 +2247,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NoMiddleInitialInCCF
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NoMiddleInitialInCCForm_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2269,7 +2274,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2286,7 +2291,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2306,7 +2311,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName)
   credit_card_form.fields[0].value = ASCIIToUTF16("John Quincy Adams");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2323,7 +2328,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormHasMiddleName)
       histogram_tester, AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_CCFormHasMiddleName_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2345,7 +2350,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("John Quincy Adams");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2365,7 +2370,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleName) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2385,7 +2390,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleN
   credit_card_form.fields[0].value = ASCIIToUTF16("John Adams");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2404,7 +2409,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_CCFormRemovesMiddleN
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest,
+TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_CCFormRemovesMiddleName_ComparatorEnabled) {
   EnableAutofillUpstreamUseAutofillProfileComparator();
   personal_data_.ClearAutofillProfiles();
@@ -2426,7 +2431,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   credit_card_form.fields[0].value = ASCIIToUTF16("John Adams");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2446,7 +2451,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest,
   ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2475,7 +2480,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Bob Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2494,7 +2499,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_NamesHaveToMatch) {
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
@@ -2527,7 +2532,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Master Blaster");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2542,7 +2547,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_IgnoreOldProfiles) {
                                  AutofillMetrics::UPLOAD_OFFERED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) {
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
   test_clock.SetNow(kArbitraryTime);
@@ -2574,7 +2579,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) 
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2590,7 +2595,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_LogPreviousUseDate) 
       /*expected_count=*/1);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
+TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
 
@@ -2615,7 +2620,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) 
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   base::HistogramTester histogram_tester;
@@ -2634,7 +2639,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, UploadCreditCard_UploadDetailsFails) 
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
+TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   EnableAutofillOfferLocalSaveIfServerCardManuallyEnteredExperiment();
 
   personal_data_.ClearAutofillProfiles();
@@ -2666,7 +2671,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   // The local save prompt should be shown.
@@ -2675,7 +2680,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard) {
   EXPECT_FALSE(credit_card_save_manager_->credit_card_was_uploaded());
 }
 
-TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
+TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
   personal_data_.ClearAutofillProfiles();
   credit_card_save_manager_->set_credit_card_upload_enabled(true);
   credit_card_save_manager_->SetAppLocale("en-US");
@@ -2705,7 +2710,7 @@ TEST_F(DISABLED_CreditCardSaveManagerTest, DuplicateMaskedCreditCard_ExperimentO
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
   credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
   credit_card_form.fields[2].value = ASCIIToUTF16("11");
-  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
   // The local save prompt should not be shown because the experiment is off.
