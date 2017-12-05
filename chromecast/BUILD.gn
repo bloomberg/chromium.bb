@@ -557,6 +557,7 @@ if (is_android) {
     output = "$root_gen_dir/chromecast/android/${target_name}.h"
     exception_files = jni_exception_files
   }
+
   android_assets("cast_shell_apk_assets") {
     assert(v8_use_external_startup_data)
 
@@ -565,10 +566,28 @@ if (is_android) {
     ]
 
     deps = [
+      ":cast_shell_apk_locale_assets",
       ":cast_shell_pak",
       "//third_party/icu:icu_assets",
       "//v8:v8_external_startup_data_assets",
     ]
+    disable_compression = true
+  }
+
+  android_assets("cast_shell_apk_locale_assets") {
+    renaming_sources = []
+    renaming_destinations = []
+
+    foreach(locale, cast_locales) {
+      renaming_sources += [ "$root_out_dir/chromecast_locales/${locale}.pak" ]
+      renaming_destinations += [ "stored-locales/${locale}.pak" ]
+    }
+
+    deps = [
+      ":chromecast_locales_pak",
+    ]
+
+    treat_as_locale_paks = true
     disable_compression = true
   }
 
