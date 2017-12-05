@@ -92,8 +92,7 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
-    service->SetExtensionProviderForTesting(
-        std::make_unique<FakeExtensionProvider>());
+    service->RegisterProvider(FakeExtensionProvider::Create(kExtensionId));
 
     const base::File::Error result = service->MountFileSystem(
         kProviderId, MountOptions(kFileSystemId, "Testing File System"));

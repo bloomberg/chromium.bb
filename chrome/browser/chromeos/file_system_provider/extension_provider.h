@@ -6,30 +6,55 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_EXTENSION_PROVIDER_H_
 
 #include <memory>
+#include <string>
 
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
+#include "extensions/common/extension_id.h"
 
 class Profile;
+
+namespace extensions {
+class ExtensionRegistry;
+}  // namespace extensions
 
 namespace chromeos {
 namespace file_system_provider {
 
-class ProvidedFileSystemInfo;
-class ProviderId;
+// Holds information for a providing extension.
+struct ProvidingExtensionInfo {
+  ProvidingExtensionInfo();
+  ~ProvidingExtensionInfo();
+
+  extensions::ExtensionId extension_id;
+  std::string name;
+  extensions::FileSystemProviderCapabilities capabilities;
+};
 
 class ExtensionProvider : public ProviderInterface {
  public:
-  ExtensionProvider();
   ~ExtensionProvider() override {}
+
+  // Returns a provider instance for the specified extension. If the extension
+  // cannot be a providing extension, returns nullptr.
+  static std::unique_ptr<ProviderInterface> Create(
+      extensions::ExtensionRegistry* registry,
+      const extensions::ExtensionId& extension_id);
 
   // ProviderInterface overrides.
   std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
       Profile* profile,
       const ProvidedFileSystemInfo& file_system_info) override;
-  bool GetCapabilities(Profile* profile,
-                       const ProviderId& provider_id,
-                       Capabilities& result) override;
+  const Capabilities& GetCapabilities() const override;
+  const ProviderId& GetId() const override;
+
+ private:
+  ExtensionProvider(const extensions::ExtensionId& extension_id,
+                    const ProvidingExtensionInfo& info);
+
+  ProviderId provider_id_;
+  Capabilities capabilities_;
 };
 
 }  // namespace file_system_provider

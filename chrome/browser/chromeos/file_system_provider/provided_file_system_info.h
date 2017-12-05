@@ -46,6 +46,7 @@ class ProviderId {
   ProviderType GetType() const;
 
   bool operator==(const ProviderId& other) const;
+  bool operator<(const ProviderId& other) const;
 
  private:
   ProviderId(const std::string& internal_id, ProviderType provider_type);

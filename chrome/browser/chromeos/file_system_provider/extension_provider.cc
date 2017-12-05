@@ -11,7 +11,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
-#include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
@@ -23,12 +22,10 @@ namespace {
 
 // Returns boolean indicating success. result->capabilities contains the
 // capabilites of the extension.
-bool GetProvidingExtensionInfo(const std::string& extension_id,
+bool GetProvidingExtensionInfo(const extensions::ExtensionId& extension_id,
                                ProvidingExtensionInfo* result,
-                               Profile* profile) {
+                               extensions::ExtensionRegistry* registry) {
   DCHECK(result);
-  extensions::ExtensionRegistry* const registry =
-      extensions::ExtensionRegistry::Get(profile);
   DCHECK(registry);
 
   const extensions::Extension* const extension = registry->GetExtensionById(
@@ -50,6 +47,22 @@ bool GetProvidingExtensionInfo(const std::string& extension_id,
 
 }  // namespace
 
+ProvidingExtensionInfo::ProvidingExtensionInfo() = default;
+
+ProvidingExtensionInfo::~ProvidingExtensionInfo() = default;
+
+// static
+std::unique_ptr<ProviderInterface> ExtensionProvider::Create(
+    extensions::ExtensionRegistry* registry,
+    const extensions::ExtensionId& extension_id) {
+  ProvidingExtensionInfo info;
+  if (!GetProvidingExtensionInfo(extension_id, &info, registry))
+    return nullptr;
+
+  return std::unique_ptr<ProviderInterface>(
+      new ExtensionProvider(extension_id, info));
+}
+
 std::unique_ptr<ProvidedFileSystemInterface>
 ExtensionProvider::CreateProvidedFileSystem(
     Profile* profile,
@@ -59,24 +72,23 @@ ExtensionProvider::CreateProvidedFileSystem(
       std::make_unique<ProvidedFileSystem>(profile, file_system_info));
 }
 
-bool ExtensionProvider::GetCapabilities(Profile* profile,
-                                        const ProviderId& provider_id,
-                                        Capabilities& result) {
-  ProvidingExtensionInfo providing_extension_info;
-
-  // TODO(baileyberro): Change this so error is not swallowed once
-  // bug is resolved (crrev.com/c/767629).
-  bool success = GetProvidingExtensionInfo(provider_id.GetExtensionId(),
-                                           &providing_extension_info, profile);
-
-  result = Capabilities(providing_extension_info.capabilities.configurable(),
-                        providing_extension_info.capabilities.watchable(),
-                        providing_extension_info.capabilities.multiple_mounts(),
-                        providing_extension_info.capabilities.source());
-  return success;
+const Capabilities& ExtensionProvider::GetCapabilities() const {
+  return capabilities_;
 }
 
-ExtensionProvider::ExtensionProvider() {}
+const ProviderId& ExtensionProvider::GetId() const {
+  return provider_id_;
+}
+
+ExtensionProvider::ExtensionProvider(
+    const extensions::ExtensionId& extension_id,
+    const ProvidingExtensionInfo& info)
+    : provider_id_(ProviderId::CreateFromExtensionId(extension_id)) {
+  capabilities_.configurable = info.capabilities.configurable();
+  capabilities_.watchable = info.capabilities.watchable();
+  capabilities_.multiple_mounts = info.capabilities.multiple_mounts();
+  capabilities_.source = info.capabilities.source();
+}
 
 }  // namespace file_system_provider
 }  // namespace chromeos

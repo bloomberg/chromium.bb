@@ -12,19 +12,18 @@ using chromeos::file_system_provider::Service;
 namespace chromeos {
 namespace smb_client {
 
-file_system_provider::ProviderId kSmbProviderId =
-    ProviderId::CreateFromNativeId("smb");
-
-SmbService::SmbService(Profile* profile) : profile_(profile) {
-  GetProviderService()->RegisterNativeProvider(
-      kSmbProviderId, std::make_unique<SmbService>(profile));
+SmbService::SmbService(Profile* profile)
+    : profile_(profile),
+      provider_id_(ProviderId::CreateFromNativeId("smb")),
+      capabilities_(false, false, false, extensions::SOURCE_NETWORK) {
+  GetProviderService()->RegisterProvider(std::make_unique<SmbService>(profile));
 }
 
 SmbService::~SmbService() {}
 
 base::File::Error SmbService::Mount(
     const file_system_provider::MountOptions& options) {
-  return GetProviderService()->MountFileSystem(kSmbProviderId, options);
+  return GetProviderService()->MountFileSystem(provider_id_, options);
 }
 
 Service* SmbService::GetProviderService() const {
@@ -39,11 +38,12 @@ SmbService::CreateProvidedFileSystem(
   return std::make_unique<SmbFileSystem>(file_system_info);
 }
 
-bool SmbService::GetCapabilities(Profile* profile,
-                                 const ProviderId& provider_id,
-                                 Capabilities& result) {
-  result = Capabilities(false, false, false, extensions::SOURCE_NETWORK);
-  return true;
+const Capabilities& SmbService::GetCapabilities() const {
+  return capabilities_;
+}
+
+const ProviderId& SmbService::GetId() const {
+  return provider_id_;
 }
 
 }  // namespace smb_client

@@ -12,12 +12,20 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 namespace chromeos {
 namespace file_system_provider {
+
+// static
+std::unique_ptr<ProviderInterface> FakeExtensionProvider::Create(
+    const extensions::ExtensionId& extension_id) {
+  Capabilities default_capabilities(false, false, false,
+                                    extensions::SOURCE_NETWORK);
+  return std::unique_ptr<ProviderInterface>(
+      new FakeExtensionProvider(extension_id, default_capabilities));
+}
 
 // Factory callback, to be used in Service::SetFileSystemFactory(). The
 // |event_router| argument can be NULL.
@@ -29,7 +37,19 @@ FakeExtensionProvider::CreateProvidedFileSystem(
   return std::make_unique<FakeProvidedFileSystem>(file_system_info);
 }
 
-FakeExtensionProvider::FakeExtensionProvider() {}
+const Capabilities& FakeExtensionProvider::GetCapabilities() const {
+  return capabilities_;
+}
+
+const ProviderId& FakeExtensionProvider::GetId() const {
+  return provider_id_;
+}
+
+FakeExtensionProvider::FakeExtensionProvider(
+    const extensions::ExtensionId& extension_id,
+    const Capabilities& capabilities)
+    : provider_id_(ProviderId::CreateFromExtensionId(extension_id)),
+      capabilities_(capabilities) {}
 
 }  // namespace file_system_provider
 }  // namespace chromeos
