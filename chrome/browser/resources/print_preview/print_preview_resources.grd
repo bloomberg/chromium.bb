@@ -29,6 +29,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_MODEL_JS"
                  file="new/model.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NATIVE_LAYER_HTML"
+                 file="native_layer.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NATIVE_LAYER_JS"
+                 file="native_layer.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_DATA_DESTINATION_HTML"
                  file="data/destination.html"
                  type="chrome_html" />

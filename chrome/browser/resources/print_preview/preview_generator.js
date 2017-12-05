@@ -189,10 +189,84 @@ cr.define('print_preview', function() {
       this.generateDraft_ = this.documentInfo_.isModifiable;
       return {
         id: this.inFlightRequestId_,
-        request: this.nativeLayer_.getPreview(
-            this.destinationStore_.selectedDestination, this.printTicketStore_,
-            this.documentInfo_, this.generateDraft_, this.inFlightRequestId_),
+        request: this.getPreview_(),
       };
+    }
+
+    /**
+     * @return {!Promise} Promise that resolves when the preview has been
+     *     generated.
+     * @private
+     */
+    getPreview_() {
+      const printTicketStore = this.printTicketStore_;
+      const destination = assert(this.destinationStore_.selectedDestination);
+
+      assert(
+          printTicketStore.isTicketValidForPreview(),
+          'Trying to generate preview when ticket is not valid');
+
+      const ticket = {
+        pageRange: printTicketStore.pageRange.getDocumentPageRanges(),
+        mediaSize: printTicketStore.mediaSize.getValue(),
+        landscape: printTicketStore.landscape.getValue(),
+        color: PreviewGenerator.getNativeColorModel(
+            destination, printTicketStore.color),
+        headerFooterEnabled: printTicketStore.headerFooter.getValue(),
+        marginsType: printTicketStore.marginsType.getValue(),
+        isFirstRequest: this.inFlightRequestId_ == 0,
+        requestID: this.inFlightRequestId_,
+        previewModifiable: this.documentInfo_.isModifiable,
+        generateDraftData: this.generateDraft_,
+        fitToPageEnabled: printTicketStore.fitToPage.getValue(),
+        scaleFactor: printTicketStore.scaling.getValueAsNumber(),
+        // NOTE: Even though the following fields dont directly relate to the
+        // preview, they still need to be included.
+        // e.g. printing::PrintSettingsFromJobSettings() still checks for them.
+        collate: true,
+        copies: 1,
+        deviceName: destination.id,
+        dpiHorizontal: 'horizontal_dpi' in printTicketStore.dpi.getValue() ?
+            printTicketStore.dpi.getValue().horizontal_dpi :
+            0,
+        dpiVertical: 'vertical_dpi' in printTicketStore.dpi.getValue() ?
+            printTicketStore.dpi.getValue().vertical_dpi :
+            0,
+        duplex: printTicketStore.duplex.getValue() ?
+            PreviewGenerator.DuplexMode.LONG_EDGE :
+            PreviewGenerator.DuplexMode.SIMPLEX,
+        printToPDF: destination.id ==
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+        printWithCloudPrint: !destination.isLocal,
+        printWithPrivet: destination.isPrivet,
+        printWithExtension: destination.isExtension,
+        rasterizePDF: false,
+        shouldPrintBackgrounds: printTicketStore.cssBackground.getValue(),
+        shouldPrintSelectionOnly: printTicketStore.selectionOnly.getValue()
+      };
+
+      // Set 'cloudPrintID' only if the destination is not local.
+      if (destination && !destination.isLocal) {
+        ticket.cloudPrintID = destination.id;
+      }
+
+      if (printTicketStore.marginsType.isCapabilityAvailable() &&
+          printTicketStore.marginsType.getValue() ==
+              print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+        const customMargins = printTicketStore.customMargins.getValue();
+        const orientationEnum =
+            print_preview.ticket_items.CustomMarginsOrientation;
+        ticket.marginsCustom = {
+          marginTop: customMargins.get(orientationEnum.TOP),
+          marginRight: customMargins.get(orientationEnum.RIGHT),
+          marginBottom: customMargins.get(orientationEnum.BOTTOM),
+          marginLeft: customMargins.get(orientationEnum.LEFT)
+        };
+      }
+
+      const pageCount =
+          this.inFlightRequestId_ > 0 ? this.documentInfo_.pageCount : -1;
+      return this.nativeLayer_.getPreview(JSON.stringify(ticket), pageCount);
     }
 
     /**
@@ -408,6 +482,35 @@ cr.define('print_preview', function() {
     // Dispatched when the current print preview request fails.
     FAIL: 'print_preview.PreviewGenerator.FAIL'
   };
+
+  /**
+   * Enumeration of color modes used by Chromium.
+   * @enum {number}
+   */
+  PreviewGenerator.ColorMode = {GRAY: 1, COLOR: 2};
+
+  /**
+   * @param {!print_preview.Destination} destination Destination to print to.
+   * @param {!print_preview.ticket_items.Color} color Color ticket item.
+   * @return {number} Native color model.
+   */
+  PreviewGenerator.getNativeColorModel = function(destination, color) {
+    // For non-local printers native color model is ignored anyway.
+    const option = destination.isLocal ? color.getSelectedOption() : null;
+    const nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
+    if (isNaN(nativeColorModel)) {
+      return color.getValue() ? PreviewGenerator.ColorMode.COLOR :
+                                PreviewGenerator.ColorMode.GRAY;
+    }
+    return nativeColorModel;
+  };
+
+  /**
+   * Constant values matching printing::DuplexMode enum.
+   * @enum {number}
+   */
+  PreviewGenerator
+      .DuplexMode = {SIMPLEX: 0, LONG_EDGE: 1, UNKNOWN_DUPLEX_MODE: -1};
 
   // Export
   return {PreviewGenerator: PreviewGenerator};
