@@ -9,8 +9,7 @@
 
 namespace chrome_pdf {
 
-Timer::Timer(int delay_in_milliseconds)
-    : delay_(delay_in_milliseconds), callback_factory_(this) {
+Timer::Timer(base::TimeDelta delay) : delay_(delay), callback_factory_(this) {
   PostCallback();
 }
 
@@ -19,7 +18,8 @@ Timer::~Timer() = default;
 void Timer::PostCallback() {
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&Timer::TimerProc);
-  pp::Module::Get()->core()->CallOnMainThread(delay_, callback, 0);
+  pp::Module::Get()->core()->CallOnMainThread(delay_.InMilliseconds(), callback,
+                                              0);
 }
 
 void Timer::TimerProc(int32_t /*result*/) {
