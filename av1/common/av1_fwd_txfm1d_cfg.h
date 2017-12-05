@@ -117,7 +117,7 @@ static const int8_t fwd_stage_range_idx_64[1] = { 0 };
 // cos bit
 static const int8_t fwd_cos_bit_col_dct_64[12] = { 13, 13, 13, 13, 13, 13,
                                                    13, 13, 13, 13, 13, 13 };
-static const int8_t fwd_cos_bit_row_dct_64[12] = { 13, 13, 13, 12, 11, 10,
+static const int8_t fwd_cos_bit_row_dct_64[12] = { 13, 13, 12, 11, 10, 10,
                                                    10, 10, 10, 10, 10, 10 };
 
 //  ---------------- row config fwd_dct_4 ----------------
