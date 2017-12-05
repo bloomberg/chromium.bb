@@ -130,6 +130,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       select_all_on_mouse_release_(false),
       select_all_on_gesture_tap_(false),
       latency_histogram_state_(NOT_ACTIVE),
+      friendly_suggestion_text_prefix_length_(0),
       scoped_observer_(this) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
@@ -481,6 +482,10 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
   if (save_original_selection)
     saved_temporary_selection_ = GetSelectedRange();
 
+  friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
+      match.type, display_text, match.description,
+      &friendly_suggestion_text_prefix_length_);
+
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
 }
@@ -516,10 +521,20 @@ void OmniboxViewViews::OnRevertTemporaryText() {
   // warranted.
 }
 
+void OmniboxViewViews::ClearAccessibilityLabel() {
+  friendly_suggestion_text_.clear();
+  friendly_suggestion_text_prefix_length_ = 0;
+}
+
 void OmniboxViewViews::OnBeforePossibleChange() {
   // Record our state.
   GetState(&state_before_change_);
   ime_composing_before_change_ = IsIMEComposing();
+
+  // User is editing or traversing the text, as opposed to moving
+  // through suggestions. Clear the accessibility label
+  // so that the screen reader reports the raw text in the field.
+  ClearAccessibilityLabel();
 }
 
 bool OmniboxViewViews::OnAfterPossibleChange(bool allow_keyword_ui_change) {
@@ -722,7 +737,20 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
 void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_TEXT_FIELD;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
-  node_data->SetValue(GetText());
+  node_data->AddStringAttribute(ui::AX_ATTR_AUTO_COMPLETE, "both");
+  if (friendly_suggestion_text_.empty()) {
+    // While user edits text, use the exact text displayed in the omnibox.
+    node_data->SetValue(GetText());
+  } else {
+    // While user navigates omnibox suggestions, use the current editable
+    // text decorated with additional friendly labelling text, such as the
+    // title of the page and the type of autocomplete, for example:
+    // "Google https://google.com location from history".
+    // The edited text is always a substring of the friendly label, so that
+    // users can navigate to specific characters in the friendly version using
+    // Braille display routing keys or other assistive technologies.
+    node_data->SetValue(friendly_suggestion_text_);
+  }
   node_data->html_attributes.push_back(std::make_pair("type", "url"));
 
   base::string16::size_type entry_start;
@@ -735,8 +763,12 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   } else {
     GetSelectionBounds(&entry_start, &entry_end);
   }
-  node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, entry_start);
-  node_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, entry_end);
+  node_data->AddIntAttribute(
+      ui::AX_ATTR_TEXT_SEL_START,
+      entry_start + friendly_suggestion_text_prefix_length_);
+  node_data->AddIntAttribute(
+      ui::AX_ATTR_TEXT_SEL_END,
+      entry_end + friendly_suggestion_text_prefix_length_);
 
   if (popup_window_mode_) {
     node_data->AddIntAttribute(ui::AX_ATTR_RESTRICTION,
@@ -763,6 +795,16 @@ bool OmniboxViewViews::HandleAccessibleAction(
     InsertOrReplaceText(action_data.value);
     TextChanged();
     return true;
+  } else if (action_data.action == ui::AX_ACTION_SET_SELECTION) {
+    // Adjust for friendly text inserted at the start of the url.
+    ui::AXActionData set_selection_action_data;
+    set_selection_action_data.action = ui::AX_ACTION_SET_SELECTION;
+    set_selection_action_data.anchor_node_id = action_data.anchor_node_id;
+    set_selection_action_data.focus_offset =
+        action_data.focus_offset - friendly_suggestion_text_prefix_length_;
+    set_selection_action_data.anchor_offset =
+        action_data.anchor_offset - friendly_suggestion_text_prefix_length_;
+    return Textfield::HandleAccessibleAction(set_selection_action_data);
   }
 
   return Textfield::HandleAccessibleAction(action_data);
@@ -849,6 +891,8 @@ void OmniboxViewViews::OnBlur() {
     // The location bar needs to repaint without a focus ring.
     location_bar_view_->SchedulePaint();
   }
+
+  ClearAccessibilityLabel();
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
