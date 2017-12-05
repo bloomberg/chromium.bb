@@ -81,6 +81,7 @@
 #include "modules/peerconnection/RTCTrackEvent.h"
 #include "modules/peerconnection/RTCVoidRequestImpl.h"
 #include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
+#include "modules/peerconnection/testing/InternalsRTCPeerConnection.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
@@ -113,6 +114,9 @@ namespace {
 
 const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
+
+// For testing: Keep track of number of existing PeerConnections.
+int g_peer_connection_counter = 0;
 
 bool ThrowExceptionIfSignalingStateClosed(
     RTCPeerConnection::SignalingState state,
@@ -500,6 +504,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
   // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the
   // assert in the destructor.
 
+  g_peer_connection_counter++;
   if (!document->GetFrame()) {
     closed_ = true;
     stopped_ = true;
@@ -539,6 +544,7 @@ RTCPeerConnection::~RTCPeerConnection() {
   // We are assuming that a wrapper is always created when RTCPeerConnection is
   // created.
   DCHECK(closed_ || stopped_);
+  g_peer_connection_counter--;
 }
 
 void RTCPeerConnection::Dispose() {
@@ -1767,6 +1773,10 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   PausableObject::Trace(visitor);
   MediaStreamObserver::Trace(visitor);
+}
+
+int RTCPeerConnection::PeerConnectionCount() {
+  return g_peer_connection_counter;
 }
 
 }  // namespace blink
