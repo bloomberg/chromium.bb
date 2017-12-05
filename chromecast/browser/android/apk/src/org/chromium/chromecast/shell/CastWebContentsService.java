@@ -93,6 +93,9 @@ public class CastWebContentsService extends Service {
     }
 
     // Sets webContents to be the currently displayed webContents.
+    // TODO(thoren): Notification.Builder(Context) is deprecated in O. Use the (Context, String)
+    // constructor when CastWebContentsService starts supporting O.
+    @SuppressWarnings("deprecation")
     private void showWebContents(WebContents webContents) {
         if (DEBUG) Log.d(TAG, "showWebContents");
 

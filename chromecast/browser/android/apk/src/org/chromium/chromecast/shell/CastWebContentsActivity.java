@@ -123,8 +123,8 @@ public class CastWebContentsActivity extends Activity {
     protected void handleIntent(Intent intent) {
         // Do not load the WebContents if we are simply bringing the same
         // activity to the foreground.
-        if (intent.getData() == null || mInstanceId == intent.getData().getPath()) {
-          return;
+        if (intent.getData() == null || mInstanceId.equals(intent.getData().getPath())) {
+            return;
         }
 
         intent.setExtrasClassLoader(WebContents.class.getClassLoader());
@@ -357,7 +357,7 @@ public class CastWebContentsActivity extends Activity {
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (currentInstanceId == mInstanceId) {
+                if (currentInstanceId.equals(mInstanceId)) {
                     Log.d(TAG, "Finishing.");
                     finish();
                 }
