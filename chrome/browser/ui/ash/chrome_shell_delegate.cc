@@ -261,16 +261,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     AccessibilityManager::Get()->PlaySpokenFeedbackToggleCountdown(tick_count);
   }
 
-  void PlayEarcon(int sound_key) override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->PlayEarcon(
-        sound_key, chromeos::PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
-  }
-
-  base::TimeDelta PlayShutdownSound() const override {
-    return AccessibilityManager::Get()->PlayShutdownSound();
-  }
-
   void HandleAccessibilityGesture(ui::AXGesture gesture) override {
     AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
   }

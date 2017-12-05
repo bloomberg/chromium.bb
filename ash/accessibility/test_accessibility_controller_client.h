@@ -7,6 +7,7 @@
 
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
@@ -20,15 +21,24 @@ class TestAccessibilityControllerClient
   TestAccessibilityControllerClient();
   ~TestAccessibilityControllerClient() override;
 
+  static constexpr base::TimeDelta kShutdownSoundDuration =
+      base::TimeDelta::FromMilliseconds(1000);
+
   mojom::AccessibilityControllerClientPtr CreateInterfacePtrAndBind();
 
   // mojom::AccessibilityControllerClient:
   void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert) override;
+  void PlayEarcon(int32_t sound_key) override;
+  void PlayShutdownSound(PlayShutdownSoundCallback callback) override;
+
+  int32_t GetPlayedEarconAndReset();
 
   mojom::AccessibilityAlert last_a11y_alert() const { return last_a11y_alert_; }
 
  private:
   mojom::AccessibilityAlert last_a11y_alert_ = mojom::AccessibilityAlert::NONE;
+
+  int32_t sound_key_ = -1;
 
   mojo::Binding<mojom::AccessibilityControllerClient> binding_;
 

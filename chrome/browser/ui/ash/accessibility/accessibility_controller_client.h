@@ -16,8 +16,6 @@ class AccessibilityControllerClient
   AccessibilityControllerClient();
   ~AccessibilityControllerClient() override;
 
-  static AccessibilityControllerClient* Get();
-
   // Initializes and connects to ash.
   void Init();
 
@@ -26,13 +24,11 @@ class AccessibilityControllerClient
 
   // ash::mojom::AccessibilityControllerClient:
   void TriggerAccessibilityAlert(ash::mojom::AccessibilityAlert alert) override;
+  void PlayEarcon(int32_t sound_key) override;
+  void PlayShutdownSound(PlayShutdownSoundCallback callback) override;
 
   // Flushes the mojo pipe to ash.
   void FlushForTesting();
-
-  ash::mojom::AccessibilityAlert last_a11y_alert_for_test() const {
-    return last_a11y_alert_for_test_;
-  }
 
  private:
   // Binds this object to its mojo interface and sets it as the ash client.
@@ -44,9 +40,6 @@ class AccessibilityControllerClient
   // AccessibilityController interface in ash. Holding the interface pointer
   // keeps the pipe alive to receive mojo return values.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
-
-  ash::mojom::AccessibilityAlert last_a11y_alert_for_test_ =
-      ash::mojom::AccessibilityAlert::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerClient);
 };

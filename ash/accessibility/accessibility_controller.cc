@@ -123,6 +123,17 @@ void AccessibilityController::TriggerAccessibilityAlert(
     client_->TriggerAccessibilityAlert(alert);
 }
 
+void AccessibilityController::PlayEarcon(int32_t sound_key) {
+  if (client_)
+    client_->PlayEarcon(sound_key);
+}
+
+void AccessibilityController::PlayShutdownSound(
+    base::OnceCallback<void(base::TimeDelta)> callback) {
+  if (client_)
+    client_->PlayShutdownSound(std::move(callback));
+}
+
 void AccessibilityController::SetClient(
     mojom::AccessibilityControllerClientPtr client) {
   client_ = std::move(client);

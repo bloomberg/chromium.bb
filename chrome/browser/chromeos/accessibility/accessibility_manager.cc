@@ -101,11 +101,11 @@ namespace chromeos {
 namespace {
 
 // When this flag is set, system sounds will not be played.
-const char kAshDisableSystemSounds[] = "ash-disable-system-sounds";
+constexpr char kAshDisableSystemSounds[] = "ash-disable-system-sounds";
 
-static chromeos::AccessibilityManager* g_accessibility_manager = NULL;
+static chromeos::AccessibilityManager* g_accessibility_manager = nullptr;
 
-static BrailleController* g_braille_controller_for_test = NULL;
+static BrailleController* g_braille_controller_for_test = nullptr;
 
 BrailleController* GetBrailleController() {
   if (g_braille_controller_for_test)
@@ -537,7 +537,7 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(kAshDisableSystemSounds))
     return false;
-  if (option == PlaySoundOption::SPOKEN_FEEDBACK_ENABLED &&
+  if (option == PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED &&
       !IsSpokenFeedbackEnabled()) {
     return false;
   }
@@ -1250,8 +1250,10 @@ void AccessibilityManager::SetBrailleControllerForTest(
 }
 
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {
-  if (!PlayEarcon(SOUND_SHUTDOWN, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED))
+  if (!PlayEarcon(SOUND_SHUTDOWN,
+                  PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED)) {
     return base::TimeDelta();
+  }
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 
@@ -1446,6 +1448,7 @@ void AccessibilityManager::PostLoadChromeVox() {
 void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
+
   // Clear the accessibility focus ring.
   ash::AccessibilityFocusRingController::GetInstance()->SetFocusRing(
       std::vector<gfx::Rect>(),
