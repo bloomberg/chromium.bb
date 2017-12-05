@@ -16,8 +16,8 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(const char*)
-DECLARE_UI_CLASS_PROPERTY_TYPE(int)
+DEFINE_UI_CLASS_PROPERTY_TYPE(const char*)
+DEFINE_UI_CLASS_PROPERTY_TYPE(int)
 
 namespace {
 
@@ -40,7 +40,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
 
 }  // namespace
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(TestProperty*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(TestProperty*);
 
 namespace ui {
 namespace test {

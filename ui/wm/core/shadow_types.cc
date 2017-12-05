@@ -6,7 +6,7 @@
 
 #include "ui/base/class_property.h"
 
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_CORE_EXPORT, ::wm::ShadowElevation);
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_CORE_EXPORT, ::wm::ShadowElevation);
 
 namespace wm {
 

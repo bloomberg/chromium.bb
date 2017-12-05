@@ -22,11 +22,11 @@
 
 // See aura_constants.cc for bool, int32_t, int64_t, std::string, gfx::Rect,
 // base::string16, uint32_t (via SkColor), and gfx::ImageSkia.
-DECLARE_UI_CLASS_PROPERTY_TYPE(uint8_t)
-DECLARE_UI_CLASS_PROPERTY_TYPE(uint16_t)
-DECLARE_UI_CLASS_PROPERTY_TYPE(uint64_t)
-DECLARE_UI_CLASS_PROPERTY_TYPE(int8_t)
-DECLARE_UI_CLASS_PROPERTY_TYPE(int16_t)
+DEFINE_UI_CLASS_PROPERTY_TYPE(uint8_t)
+DEFINE_UI_CLASS_PROPERTY_TYPE(uint16_t)
+DEFINE_UI_CLASS_PROPERTY_TYPE(uint64_t)
+DEFINE_UI_CLASS_PROPERTY_TYPE(int8_t)
+DEFINE_UI_CLASS_PROPERTY_TYPE(int16_t)
 
 namespace aura {
 

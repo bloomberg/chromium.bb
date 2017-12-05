@@ -7,8 +7,8 @@
 #include "ash/wm/window_state.h"
 #include "ui/gfx/geometry/rect.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::wm::WindowState*);
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::wm::WindowState*);
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);
 
 namespace ash {
 

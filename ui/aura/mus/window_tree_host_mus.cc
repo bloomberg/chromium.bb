@@ -19,7 +19,7 @@
 #include "ui/events/event.h"
 #include "ui/platform_window/stub/stub_window.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(aura::WindowTreeHostMus*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(aura::WindowTreeHostMus*);
 
 namespace aura {
 

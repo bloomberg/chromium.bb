@@ -7,7 +7,7 @@
 #include "ui/base/class_property.h"
 #include "ui/views/view.h"
 
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::View*);
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::View*);
 
 namespace views {
 

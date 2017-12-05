@@ -20,7 +20,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::DetachedTitleAreaRendererForClient*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::DetachedTitleAreaRendererForClient*);
 
 namespace ash {
 namespace {

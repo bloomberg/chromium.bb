@@ -7,7 +7,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::WorkspaceEventHandlerMash*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::WorkspaceEventHandlerMash*);
 
 namespace {
 

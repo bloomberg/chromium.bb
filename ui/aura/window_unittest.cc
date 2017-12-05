@@ -53,7 +53,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/skia_util.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(const char*)
+DEFINE_UI_CLASS_PROPERTY_TYPE(const char*)
 
 namespace {
 
@@ -109,7 +109,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DeletionTestProperty,
 
 }  // namespace
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*);
 
 namespace aura {
 namespace test {

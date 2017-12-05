@@ -41,9 +41,9 @@
 #include "ui/wm/core/wm_core_switches.h"
 #include "ui/wm/public/animation_host.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationType)
-DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationTransition)
-DECLARE_UI_CLASS_PROPERTY_TYPE(float)
+DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationType)
+DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::WindowVisibilityAnimationTransition)
+DEFINE_UI_CLASS_PROPERTY_TYPE(float)
 
 namespace wm {
 namespace {
