@@ -9,6 +9,7 @@
   "incognito": "split",
   "permissions": [
     "<all_urls>",
+    "metricsPrivate",
     "resourcesPrivate"
   ],
   "mime_types": [
