@@ -50,20 +50,23 @@ class DialMediaSinkService {
   // |dial_sink_added_cb_sequence|: The sequence |dial_sink_added_cb| is
   // invoked on, or nullptr if the callback is null.
   // Both callbacks may be invoked after |this| is destroyed.
-  void Start(const OnSinksDiscoveredCallback& sink_discovery_cb,
-             const OnDialSinkAddedCallback& dial_sink_added_cb,
-             const scoped_refptr<base::SequencedTaskRunner>&
-                 dial_sink_added_cb_sequence);
+  // Marked virtual for tests.
+  virtual void Start(const OnSinksDiscoveredCallback& sink_discovery_cb,
+                     const OnDialSinkAddedCallback& dial_sink_added_cb,
+                     const scoped_refptr<base::SequencedTaskRunner>&
+                         dial_sink_added_cb_sequence);
 
   // Forces the sink discovery callback to be invoked with the current list of
   // sinks. This method can only be called after |Start()|.
-  void ForceSinkDiscoveryCallback();
+  // Marked virtual for tests.
+  virtual void ForceSinkDiscoveryCallback();
 
   // Initiates discovery immediately in response to a user gesture
   // (i.e., opening the Media Router dialog). This method can only be called
   // after |Start()|.
   // TODO(imcheng): Rename to ManuallyInitiateDiscovery() or similar.
-  void OnUserGesture();
+  // Marked virtual for tests.
+  virtual void OnUserGesture();
 
  private:
   friend class DialMediaSinkServiceTest;

@@ -53,16 +53,19 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   // |sink_discovery_cb|: Callback to invoke when the list of discovered sinks
   // has been updated. The callback is invoked on the UI thread and may be
   // invoked after |this| is destroyed.
-  void Start(const OnSinksDiscoveredCallback& sinks_discovered_cb);
+  // Marked virtual for tests.
+  virtual void Start(const OnSinksDiscoveredCallback& sinks_discovered_cb);
 
   // Forces the sink discovery callback to be invoked with the current list of
   // sinks.
-  void ForceSinkDiscoveryCallback();
+  // Marked virtual for tests.
+  virtual void ForceSinkDiscoveryCallback();
 
   // Initiates discovery immediately in response to a user gesture
   // (i.e., opening the Media Router dialog).
   // TODO(imcheng): Rename to ManuallyInitiateDiscovery() or similar.
-  void OnUserGesture();
+  // Marked virtual for tests.
+  virtual void OnUserGesture();
 
   // Marked virtual for tests.
   virtual std::unique_ptr<CastMediaSinkServiceImpl> CreateImpl(

@@ -207,8 +207,11 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterWebUITest {
     return dict_value;
   }
 
+  MockMediaRouter* router() { return &router_; }
+
  protected:
   std::unique_ptr<content::TestWebUI> web_ui_;
+  MockMediaRouter router_;
   std::unique_ptr<MockMediaRouterUI> mock_media_router_ui_;
   std::unique_ptr<TestMediaRouterWebUIMessageHandler> handler_;
   const std::string provider_extension_id_;
@@ -619,8 +622,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnRouteDetailsOpenedAndClosed) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, OnMediaCommandsReceived) {
-  auto controller =
-      base::MakeRefCounted<MockMediaRouteController>("routeId", profile());
+  auto controller = base::MakeRefCounted<MockMediaRouteController>(
+      "routeId", profile(), router());
   EXPECT_CALL(*mock_media_router_ui_, GetMediaRouteController())
       .WillRepeatedly(Return(controller.get()));
   MediaStatus status;
@@ -657,8 +660,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnMediaCommandsReceived) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, OnSetMediaRemotingEnabled) {
-  auto controller =
-      base::MakeRefCounted<MirroringMediaRouteController>("routeId", profile());
+  auto controller = base::MakeRefCounted<MirroringMediaRouteController>(
+      "routeId", profile(), router());
   EXPECT_CALL(*mock_media_router_ui_, GetMediaRouteController())
       .WillRepeatedly(Return(controller.get()));
 
@@ -669,8 +672,8 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnSetMediaRemotingEnabled) {
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, OnInvalidMediaCommandsReceived) {
-  auto controller =
-      base::MakeRefCounted<MockMediaRouteController>("routeId", profile());
+  auto controller = base::MakeRefCounted<MockMediaRouteController>(
+      "routeId", profile(), router());
   EXPECT_CALL(*mock_media_router_ui_, GetMediaRouteController())
       .WillRepeatedly(Return(controller.get()));
 
