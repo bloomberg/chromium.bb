@@ -116,7 +116,13 @@ _CONFIG = [
             'third_party/WebKit/Source/modules/vr/',
             'third_party/WebKit/Source/modules/webgl/',
         ],
-        'allowed': ['gpu::gles2::GLES2Interface'],
+        # These modules need access to GL drawing, cross-process image
+        # transport, and related interfaces.
+        'allowed': [
+            'gfx::GpuMemoryBufferHandle',
+            'gpu::gles2::GLES2Interface',
+            'gpu::MailboxHolder',
+        ],
     },
     {
         'paths': [
