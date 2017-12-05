@@ -25,7 +25,8 @@ OpenVRRenderLoop::~OpenVRRenderLoop() {
 }
 
 void OpenVRRenderLoop::SubmitFrame(int16_t frame_index,
-                                   const gpu::MailboxHolder& mailbox) {
+                                   const gpu::MailboxHolder& mailbox,
+                                   base::TimeDelta time_waited) {
   NOTREACHED();
 }
 

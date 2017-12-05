@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 
+#include <algorithm>
 #include <chrono>
 #include <limits>
 #include <utility>
@@ -25,11 +26,9 @@
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/vr/assets.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/pose_util.h"
-#include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -173,10 +172,12 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       binding_(this),
       browser_(browser_interface),
       keyboard_delegate_(keyboard_delegate),
-      fps_meter_(new vr::FPSMeter()),
-      webvr_js_time_(new vr::SlidingTimeDeltaAverage(kWebVRSlidingAverageSize)),
-      webvr_render_time_(
-          new vr::SlidingTimeDeltaAverage(kWebVRSlidingAverageSize)),
+      fps_meter_(),
+      webvr_js_time_(kWebVRSlidingAverageSize),
+      webvr_render_time_(kWebVRSlidingAverageSize),
+      webvr_js_wait_time_(kWebVRSlidingAverageSize),
+      webvr_acquire_time_(kWebVRSlidingAverageSize),
+      webvr_submit_time_(kWebVRSlidingAverageSize),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
@@ -311,7 +312,8 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
 }
 
 void VrShellGl::SubmitFrame(int16_t frame_index,
-                            const gpu::MailboxHolder& mailbox) {
+                            const gpu::MailboxHolder& mailbox,
+                            base::TimeDelta time_waited) {
   TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
 
   // submit_client_ could be null when we exit presentation, if there were
@@ -330,6 +332,16 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
 
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
       base::TimeTicks::Now();
+
+  // The JavaScript wait time is supplied externally and not trustworthy. Clamp
+  // to a reasonable range to avoid math errors.
+  if (time_waited < base::TimeDelta())
+    time_waited = base::TimeDelta();
+  if (time_waited > base::TimeDelta::FromSeconds(1))
+    time_waited = base::TimeDelta::FromSeconds(1);
+  webvr_js_wait_time_.AddSample(time_waited);
+  TRACE_COUNTER1("gpu", "WebVR JS wait (ms)",
+                 webvr_js_wait_time_.GetAverage().InMilliseconds());
 
   // Swapping twice on a Surface without calling updateTexImage in
   // between can lose frames, so don't draw+swap if we already have
@@ -847,7 +859,9 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     return;
 
   TRACE_EVENT_BEGIN0("gpu", "VrShellGl::AcquireFrame");
+  base::TimeTicks acquire_start = base::TimeTicks::Now();
   acquired_frame_ = swap_chain_->AcquireFrame();
+  webvr_acquire_time_.AddSample(base::TimeTicks::Now() - acquire_start);
   TRACE_EVENT_END0("gpu", "VrShellGl::AcquireFrame");
   if (!acquired_frame_)
     return;
@@ -995,8 +1009,13 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
 
   gvr::Mat4f mat;
   TransformToGvrMat(head_pose, &mat);
-  acquired_frame_.Submit(*buffer_viewport_list_, mat);
-  CHECK(!acquired_frame_);
+  {
+    TRACE_EVENT0("gpu", "VrShellGl::SubmitToGvr");
+    base::TimeTicks submit_start = base::TimeTicks::Now();
+    acquired_frame_.Submit(*buffer_viewport_list_, mat);
+    webvr_submit_time_.AddSample(base::TimeTicks::Now() - submit_start);
+    CHECK(!acquired_frame_);
+  }
 
   // No need to swap buffers for surfaceless rendering.
   if (!surfaceless_rendering_) {
@@ -1019,15 +1038,15 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
         webvr_time_pose_[frame_index % kPoseRingBufferSize];
     base::TimeTicks js_submit_time =
         webvr_time_js_submit_[frame_index % kPoseRingBufferSize];
-    webvr_js_time_->AddSample(js_submit_time - pose_time);
-    webvr_render_time_->AddSample(now - js_submit_time);
+    webvr_js_time_.AddSample(js_submit_time - pose_time);
+    webvr_render_time_.AddSample(now - js_submit_time);
   }
 
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
-  fps_meter_->AddFrame(base::TimeTicks::Now());
-  DVLOG(1) << "fps: " << fps_meter_->GetFPS();
-  TRACE_COUNTER1("gpu", "WebVR FPS", fps_meter_->GetFPS());
+  fps_meter_.AddFrame(base::TimeTicks::Now());
+  DVLOG(1) << "fps: " << fps_meter_.GetFPS();
+  TRACE_COUNTER1("gpu", "WebVR FPS", fps_meter_.GetFPS());
 }
 
 bool VrShellGl::ShouldDrawWebVr() {
@@ -1224,14 +1243,17 @@ base::TimeDelta VrShellGl::GetPredictedFrameTime() {
   // If we aim to submit at vsync, that frame will start scanning out
   // one vsync later. Add a half frame to split the difference between
   // left and right eye.
-  base::TimeDelta js_time = webvr_js_time_->GetAverageOrDefault(frame_interval);
+  base::TimeDelta js_time = webvr_js_time_.GetAverageOrDefault(frame_interval);
   base::TimeDelta render_time =
-      webvr_render_time_->GetAverageOrDefault(frame_interval);
+      webvr_render_time_.GetAverageOrDefault(frame_interval);
   base::TimeDelta overhead_time = frame_interval * 3 / 2;
   base::TimeDelta expected_frame_time = js_time + render_time + overhead_time;
   TRACE_COUNTER2("gpu", "WebVR frame time (ms)", "javascript",
                  js_time.InMilliseconds(), "rendering",
                  render_time.InMilliseconds());
+  TRACE_COUNTER2("gpu", "GVR frame time (ms)", "acquire",
+                 webvr_acquire_time_.GetAverage().InMilliseconds(), "submit",
+                 webvr_submit_time_.GetAverage().InMilliseconds());
   TRACE_COUNTER1("gpu", "WebVR pose prediction (ms)",
                  expected_frame_time.InMilliseconds());
   return expected_frame_time;
