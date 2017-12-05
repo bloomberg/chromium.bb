@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/x11/gl_surface_glx_ozone.h"
 
-#include <X11/Xlib.h>
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

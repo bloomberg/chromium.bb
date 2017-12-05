@@ -5,14 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_X11_X11_CURSOR_FACTORY_OZONE_H_
 #define UI_OZONE_PLATFORM_X11_X11_CURSOR_FACTORY_OZONE_H_
 
-#include <X11/X.h>
-
 #include <map>
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/platform_window/x11/x11_cursor_ozone.h"
 
