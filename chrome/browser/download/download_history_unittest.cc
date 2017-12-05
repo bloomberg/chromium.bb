@@ -40,20 +40,13 @@ using testing::_;
 
 namespace {
 
-typedef DownloadHistory::IdSet IdSet;
-typedef std::vector<history::DownloadRow> InfoVector;
-typedef testing::StrictMock<content::MockDownloadItem> StrictMockDownloadItem;
+using IdSet = DownloadHistory::IdSet;
+using InfoVector = std::vector<history::DownloadRow>;
+using StrictMockDownloadItem = testing::StrictMock<content::MockDownloadItem>;
 
 class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
  public:
-  FakeHistoryAdapter()
-    : DownloadHistory::HistoryAdapter(NULL),
-      slow_create_download_(false),
-      fail_create_download_(false),
-      should_commit_immediately_(false) {
-  }
-
-  ~FakeHistoryAdapter() override {}
+  FakeHistoryAdapter() : DownloadHistory::HistoryAdapter(nullptr) {}
 
   void QueryDownloads(
       const history::HistoryService::DownloadQueryCallback& callback) override {
@@ -170,9 +163,9 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   }
 
  private:
-  bool slow_create_download_;
-  bool fail_create_download_;
-  bool should_commit_immediately_;
+  bool slow_create_download_ = false;
+  bool fail_create_download_ = false;
+  bool should_commit_immediately_ = false;
   base::Closure create_download_callback_;
   history::DownloadRow update_download_;
   std::unique_ptr<InfoVector> expect_query_downloads_;
@@ -193,14 +186,10 @@ class TestDownloadHistoryObserver : public DownloadHistory::Observer {
 class DownloadHistoryTest : public testing::Test {
  public:
   // Generic callback that receives a pointer to a StrictMockDownloadItem.
-  typedef base::Callback<void(content::MockDownloadItem*)> DownloadItemCallback;
+  using DownloadItemCallback = base::Callback<void(content::MockDownloadItem*)>;
 
   DownloadHistoryTest()
-      : manager_(new content::MockDownloadManager()),
-        history_(NULL),
-        manager_observer_(NULL),
-        download_created_index_(0) {}
-  ~DownloadHistoryTest() override {}
+      : manager_(std::make_unique<content::MockDownloadManager>()) {}
 
  protected:
   void TearDown() override { download_history_.reset(); }
@@ -334,135 +323,98 @@ class DownloadHistoryTest : public testing::Test {
                      const char* referrer_string,
                      content::DownloadItem::DownloadState state,
                      history::DownloadRow* info) {
-    GURL url(url_string);
-    GURL referrer(referrer_string);
-    std::vector<GURL> url_chain;
-    url_chain.push_back(url);
-    InitItem(base::GenerateGUID(), static_cast<uint32_t>(items_.size() + 1),
-             base::FilePath(path), base::FilePath(path), url_chain, referrer,
-             GURL("http://example.com"), GURL("http://example.com/tab-url"),
-             GURL("http://example.com/tab-referrer-url"),
-             "application/octet-stream", "application/octet-stream",
-             (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
-             (base::Time::Now() - base::TimeDelta::FromMinutes(1)), "Etag",
-             "abc", 100, 100, state,
-             content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-             content::DOWNLOAD_INTERRUPT_REASON_NONE, false, base::Time::Now(),
-             false, std::string(), std::string(),
-             std::vector<content::DownloadItem::ReceivedSlice>(), info);
-  }
-
-  void InitItem(
-      const std::string& guid,
-      uint32_t id,
-      const base::FilePath& current_path,
-      const base::FilePath& target_path,
-      const std::vector<GURL>& url_chain,
-      const GURL& referrer,
-      const GURL& site_url,
-      const GURL& tab_url,
-      const GURL& tab_referrer_url,
-      const std::string& mime_type,
-      const std::string& original_mime_type,
-      base::Time start_time,
-      base::Time end_time,
-      const std::string& etag,
-      const std::string& last_modified,
-      int64_t received_bytes,
-      int64_t total_bytes,
-      content::DownloadItem::DownloadState state,
-      content::DownloadDangerType danger_type,
-      content::DownloadInterruptReason interrupt_reason,
-      bool opened,
-      base::Time last_access_time,
-      bool transient,
-      const std::string& by_extension_id,
-      const std::string& by_extension_name,
-      const std::vector<content::DownloadItem::ReceivedSlice>& received_slices,
-      history::DownloadRow* info) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     size_t index = items_.size();
     items_.push_back(base::MakeUnique<StrictMockDownloadItem>());
 
-    info->current_path = current_path;
-    info->target_path = target_path;
-    info->url_chain = url_chain;
-    info->referrer_url = referrer;
-    info->site_url = site_url;
-    info->tab_url = tab_url;
-    info->tab_referrer_url = tab_referrer_url;
-    info->mime_type = mime_type;
-    info->original_mime_type = original_mime_type;
-    info->start_time = start_time;
-    info->end_time = end_time;
-    info->etag = etag;
-    info->last_modified = last_modified;
-    info->received_bytes = received_bytes;
-    info->total_bytes = total_bytes;
-    info->state = history::ToHistoryDownloadState(state);
-    info->danger_type = history::ToHistoryDownloadDangerType(danger_type);
-    info->interrupt_reason =
-        history::ToHistoryDownloadInterruptReason(interrupt_reason);
-    info->id = history::ToHistoryDownloadId(id);
-    info->guid = guid;
-    info->opened = opened;
-    info->last_access_time = last_access_time;
-    info->transient = transient;
-    info->by_ext_id = by_extension_id;
-    info->by_ext_name = by_extension_name;
+    base::Time now = base::Time::Now();
 
-    EXPECT_CALL(item(index), GetId()).WillRepeatedly(Return(id));
-    EXPECT_CALL(item(index), GetGuid()).WillRepeatedly(ReturnRefOfCopy(guid));
+    info->current_path = base::FilePath(path);
+    info->target_path = base::FilePath(path);
+    info->url_chain.push_back(GURL(url_string));
+    info->referrer_url = GURL(referrer_string);
+    info->site_url = GURL("http://example.com");
+    info->tab_url = GURL("http://example.com/tab-url");
+    info->tab_referrer_url = GURL("http://example.com/tab-referrer-url");
+    info->mime_type = "application/octet-stream";
+    info->original_mime_type = "application/octet-stream";
+    info->start_time = now - base::TimeDelta::FromMinutes(10);
+    info->end_time = now - base::TimeDelta::FromMinutes(1);
+    info->etag = "Etag";
+    info->last_modified = "abc";
+    info->received_bytes = 100;
+    info->total_bytes = 100;
+    info->state = history::ToHistoryDownloadState(state);
+    info->danger_type = history::ToHistoryDownloadDangerType(
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+    info->interrupt_reason = history::ToHistoryDownloadInterruptReason(
+        content::DOWNLOAD_INTERRUPT_REASON_NONE);
+    info->id =
+        history::ToHistoryDownloadId(static_cast<uint32_t>(items_.size() + 1));
+    info->guid = base::GenerateGUID();
+    info->opened = false;
+    info->last_access_time = now;
+    info->transient = false;
+
+    EXPECT_CALL(item(index), GetId()).WillRepeatedly(Return(info->id));
+    EXPECT_CALL(item(index), GetGuid())
+        .WillRepeatedly(ReturnRefOfCopy(info->guid));
     EXPECT_CALL(item(index), GetFullPath())
-        .WillRepeatedly(ReturnRefOfCopy(current_path));
+        .WillRepeatedly(ReturnRefOfCopy(info->current_path));
     EXPECT_CALL(item(index), GetTargetFilePath())
-        .WillRepeatedly(ReturnRefOfCopy(target_path));
-    DCHECK_LE(1u, url_chain.size());
+        .WillRepeatedly(ReturnRefOfCopy(info->target_path));
+    DCHECK_LE(1u, info->url_chain.size());
     EXPECT_CALL(item(index), GetURL())
-        .WillRepeatedly(ReturnRefOfCopy(url_chain[0]));
+        .WillRepeatedly(ReturnRefOfCopy(info->url_chain[0]));
     EXPECT_CALL(item(index), GetUrlChain())
-        .WillRepeatedly(ReturnRefOfCopy(url_chain));
-    EXPECT_CALL(item(index), GetMimeType()).WillRepeatedly(Return(mime_type));
-    EXPECT_CALL(item(index), GetOriginalMimeType()).WillRepeatedly(Return(
-        original_mime_type));
+        .WillRepeatedly(ReturnRefOfCopy(info->url_chain));
+    EXPECT_CALL(item(index), GetMimeType())
+        .WillRepeatedly(Return(info->mime_type));
+    EXPECT_CALL(item(index), GetOriginalMimeType())
+        .WillRepeatedly(Return(info->original_mime_type));
     EXPECT_CALL(item(index), GetReferrerUrl())
-        .WillRepeatedly(ReturnRefOfCopy(referrer));
+        .WillRepeatedly(ReturnRefOfCopy(info->referrer_url));
     EXPECT_CALL(item(index), GetSiteUrl())
-        .WillRepeatedly(ReturnRefOfCopy(site_url));
+        .WillRepeatedly(ReturnRefOfCopy(info->site_url));
     EXPECT_CALL(item(index), GetTabUrl())
-        .WillRepeatedly(ReturnRefOfCopy(tab_url));
+        .WillRepeatedly(ReturnRefOfCopy(info->tab_url));
     EXPECT_CALL(item(index), GetTabReferrerUrl())
-        .WillRepeatedly(ReturnRefOfCopy(tab_referrer_url));
-    EXPECT_CALL(item(index), GetStartTime()).WillRepeatedly(Return(start_time));
-    EXPECT_CALL(item(index), GetEndTime()).WillRepeatedly(Return(end_time));
-    EXPECT_CALL(item(index), GetETag()).WillRepeatedly(ReturnRefOfCopy(etag));
+        .WillRepeatedly(ReturnRefOfCopy(info->tab_referrer_url));
+    EXPECT_CALL(item(index), GetStartTime())
+        .WillRepeatedly(Return(info->start_time));
+    EXPECT_CALL(item(index), GetEndTime())
+        .WillRepeatedly(Return(info->end_time));
+    EXPECT_CALL(item(index), GetETag())
+        .WillRepeatedly(ReturnRefOfCopy(info->etag));
     EXPECT_CALL(item(index), GetLastModifiedTime())
-        .WillRepeatedly(ReturnRefOfCopy(last_modified));
+        .WillRepeatedly(ReturnRefOfCopy(info->last_modified));
     EXPECT_CALL(item(index), GetReceivedBytes())
-        .WillRepeatedly(Return(received_bytes));
+        .WillRepeatedly(Return(info->received_bytes));
     EXPECT_CALL(item(index), GetReceivedSlices())
-        .WillRepeatedly(ReturnRefOfCopy(received_slices));
+        .WillRepeatedly(ReturnRefOfCopy(
+            std::vector<content::DownloadItem::ReceivedSlice>()));
     EXPECT_CALL(item(index), GetTotalBytes())
-        .WillRepeatedly(Return(total_bytes));
+        .WillRepeatedly(Return(info->total_bytes));
     EXPECT_CALL(item(index), GetState()).WillRepeatedly(Return(state));
     EXPECT_CALL(item(index), GetDangerType())
-        .WillRepeatedly(Return(danger_type));
+        .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     EXPECT_CALL(item(index), GetLastReason())
-        .WillRepeatedly(Return(interrupt_reason));
-    EXPECT_CALL(item(index), GetOpened()).WillRepeatedly(Return(opened));
+        .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_NONE));
+    EXPECT_CALL(item(index), GetOpened()).WillRepeatedly(Return(info->opened));
     EXPECT_CALL(item(index), GetLastAccessTime())
-        .WillRepeatedly(Return(last_access_time));
-    EXPECT_CALL(item(index), IsTransient()).WillRepeatedly(Return(transient));
+        .WillRepeatedly(Return(info->last_access_time));
+    EXPECT_CALL(item(index), IsTransient())
+        .WillRepeatedly(Return(info->transient));
     EXPECT_CALL(item(index), GetTargetDisposition())
         .WillRepeatedly(
             Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
-    EXPECT_CALL(manager(), GetDownload(id))
+    EXPECT_CALL(manager(), GetDownload(info->id))
         .WillRepeatedly(Return(&item(index)));
     EXPECT_CALL(item(index), IsTemporary()).WillRepeatedly(Return(false));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    new extensions::DownloadedByExtension(
-        &item(index), by_extension_id, by_extension_name);
+    new extensions::DownloadedByExtension(&item(index), info->by_ext_id,
+                                          info->by_ext_name);
 #endif
 
     info->download_slice_info = history::GetHistoryDownloadSliceInfos(
@@ -486,10 +438,10 @@ class DownloadHistoryTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
-  FakeHistoryAdapter* history_;
+  FakeHistoryAdapter* history_ = nullptr;
   std::unique_ptr<DownloadHistory> download_history_;
-  content::DownloadManager::Observer* manager_observer_;
-  size_t download_created_index_;
+  content::DownloadManager::Observer* manager_observer_ = nullptr;
+  size_t download_created_index_ = 0;
   DownloadItemCallback pre_on_create_handler_;
   DownloadItemCallback post_on_create_handler_;
 

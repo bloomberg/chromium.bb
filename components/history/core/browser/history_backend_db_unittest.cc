@@ -818,17 +818,35 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
   base::Time end_time(start_time + base::TimeDelta::FromHours(1));
   base::Time last_access_time;
 
-  DownloadRow download_A(
-      base::FilePath(FILE_PATH_LITERAL("/path/1")),
-      base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com"),
-      GURL("http://example.com/tab-url"),
-      GURL("http://example.com/tab-referrer"), "GET", "mime/type",
-      "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
-      100, 1000, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
-      kTestDownloadInterruptReasonCrash, "hash-value1", 1,
-      "FE672168-26EF-4275-A149-FEC25F6A75F9", false, last_access_time, true,
-      "extension-id", "extension-name", std::vector<DownloadSliceInfo>());
+  DownloadRow download_A;
+  download_A.current_path = base::FilePath(FILE_PATH_LITERAL("/path/1"));
+  download_A.target_path = base::FilePath(FILE_PATH_LITERAL("/path/2"));
+  download_A.url_chain = url_chain;
+  download_A.referrer_url = GURL("http://example.com/referrer");
+  download_A.site_url = GURL("http://example.com");
+  download_A.tab_url = GURL("http://example.com/tab-url");
+  download_A.tab_referrer_url = GURL("http://example.com/tab-referrer");
+  download_A.http_method = "GET";
+  download_A.mime_type = "mime/type";
+  download_A.original_mime_type = "original/mime-type";
+  download_A.start_time = start_time;
+  download_A.end_time = end_time;
+  download_A.etag = "etag1";
+  download_A.last_modified = "last_modified_1";
+  download_A.received_bytes = 100;
+  download_A.total_bytes = 1000;
+  download_A.state = DownloadState::INTERRUPTED;
+  download_A.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download_A.interrupt_reason = kTestDownloadInterruptReasonCrash;
+  download_A.hash = "hash-value1";
+  download_A.id = 1;
+  download_A.guid = "FE672168-26EF-4275-A149-FEC25F6A75F9";
+  download_A.opened = false;
+  download_A.last_access_time = last_access_time;
+  download_A.transient = true;
+  download_A.by_ext_id = "extension-id";
+  download_A.by_ext_name = "extension-name";
+
   ASSERT_TRUE(db_->CreateDownload(download_A));
 
   url_chain.push_back(GURL("http://example.com/d"));
@@ -837,17 +855,34 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
   base::Time end_time2(end_time + base::TimeDelta::FromHours(10));
   base::Time last_access_time2(start_time2 + base::TimeDelta::FromHours(5));
 
-  DownloadRow download_B(
-      base::FilePath(FILE_PATH_LITERAL("/path/3")),
-      base::FilePath(FILE_PATH_LITERAL("/path/4")), url_chain,
-      GURL("http://example.com/referrer2"), GURL("http://2.example.com"),
-      GURL("http://example.com/tab-url2"),
-      GURL("http://example.com/tab-referrer2"), "POST", "mime/type2",
-      "original/mime-type2", start_time2, end_time2, "etag2", "last_modified_2",
-      1001, 1001, DownloadState::COMPLETE, DownloadDangerType::DANGEROUS_FILE,
-      kTestDownloadInterruptReasonNone, std::string(), 2,
-      "b70f3869-7d75-4878-acb4-4caf7026d12b", false, last_access_time2, true,
-      "extension-id", "extension-name", std::vector<DownloadSliceInfo>());
+  DownloadRow download_B;
+  download_B.current_path = base::FilePath(FILE_PATH_LITERAL("/path/3"));
+  download_B.target_path = base::FilePath(FILE_PATH_LITERAL("/path/4"));
+  download_B.url_chain = url_chain;
+  download_B.referrer_url = GURL("http://example.com/referrer2");
+  download_B.site_url = GURL("http://2.example.com");
+  download_B.tab_url = GURL("http://example.com/tab-url2");
+  download_B.tab_referrer_url = GURL("http://example.com/tab-referrer2");
+  download_B.http_method = "POST";
+  download_B.mime_type = "mime/type2";
+  download_B.original_mime_type = "original/mime-type2";
+  download_B.start_time = start_time2;
+  download_B.end_time = end_time2;
+  download_B.etag = "etag2";
+  download_B.last_modified = "last_modified_2";
+  download_B.received_bytes = 1001;
+  download_B.total_bytes = 1001;
+  download_B.state = DownloadState::COMPLETE;
+  download_B.danger_type = DownloadDangerType::DANGEROUS_FILE;
+  download_B.interrupt_reason = kTestDownloadInterruptReasonNone;
+  download_B.id = 2;
+  download_B.guid = "b70f3869-7d75-4878-acb4-4caf7026d12b";
+  download_B.opened = false;
+  download_B.last_access_time = last_access_time2;
+  download_B.transient = true;
+  download_B.by_ext_id = "extension-id";
+  download_B.by_ext_name = "extension-name";
+
   ASSERT_TRUE(db_->CreateDownload(download_B));
 
   EXPECT_EQ(2u, db_->CountDownloads());
@@ -878,17 +913,34 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndUpdate_VolatileFields) {
   base::Time end_time(start_time + base::TimeDelta::FromHours(1));
   base::Time last_access_time(start_time + base::TimeDelta::FromHours(5));
 
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("/path/1")),
-      base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com"),
-      GURL("http://example.com/tab-url"),
-      GURL("http://example.com/tab-referrer"), "GET", "mime/type",
-      "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
-      100, 1000, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
-      3, "some-hash-value", 1, "FE672168-26EF-4275-A149-FEC25F6A75F9", false,
-      last_access_time, false, "extension-id", "extension-name",
-      std::vector<DownloadSliceInfo>());
+  DownloadRow download;
+  download.current_path = base::FilePath(FILE_PATH_LITERAL("/path/1"));
+  download.target_path = base::FilePath(FILE_PATH_LITERAL("/path/2"));
+  download.url_chain = url_chain;
+  download.referrer_url = GURL("http://example.com/referrer");
+  download.site_url = GURL("http://example.com");
+  download.tab_url = GURL("http://example.com/tab-url");
+  download.tab_referrer_url = GURL("http://example.com/tab-referrer");
+  download.http_method = "GET";
+  download.mime_type = "mime/type";
+  download.original_mime_type = "original/mime-type";
+  download.start_time = start_time;
+  download.end_time = end_time;
+  download.etag = "etag1";
+  download.last_modified = "last_modified_1";
+  download.received_bytes = 100;
+  download.total_bytes = 1000;
+  download.state = DownloadState::INTERRUPTED;
+  download.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download.interrupt_reason = 3;
+  download.hash = "some-hash-value";
+  download.id = 1;
+  download.guid = "FE672168-26EF-4275-A149-FEC25F6A75F9";
+  download.opened = false;
+  download.last_access_time = last_access_time;
+  download.transient = false;
+  download.by_ext_id = "extension-id";
+  download.by_ext_name = "extension-name";
   db_->CreateDownload(download);
 
   download.current_path =
@@ -995,17 +1047,26 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
 TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
   CreateBackendAndDatabase();
   base::Time now(base::Time::Now());
-  std::vector<GURL> url_chain;
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("foo-path")),
-      base::FilePath(FILE_PATH_LITERAL("foo-path")), url_chain,
-      GURL(std::string()), GURL(std::string()), GURL(std::string()),
-      GURL(std::string()), std::string(), "application/octet-stream",
-      "application/octet-stream", now, now, std::string(), std::string(), 0,
-      512, DownloadState::COMPLETE, DownloadDangerType::NOT_DANGEROUS,
-      kTestDownloadInterruptReasonNone, std::string(), 1,
-      "05AF6C8E-E4E0-45D7-B5CE-BC99F7019918", 0, now, false, "by_ext_id",
-      "by_ext_name", std::vector<DownloadSliceInfo>());
+
+  DownloadRow download;
+  download.current_path = base::FilePath(FILE_PATH_LITERAL("foo-path"));
+  download.target_path = base::FilePath(FILE_PATH_LITERAL("foo-path"));
+  download.mime_type = "application/octet-stream";
+  download.original_mime_type = "application/octet-stream";
+  download.start_time = now;
+  download.end_time = now;
+  download.received_bytes = 0;
+  download.total_bytes = 512;
+  download.state = DownloadState::COMPLETE;
+  download.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download.interrupt_reason = kTestDownloadInterruptReasonNone;
+  download.id = 1;
+  download.guid = "05AF6C8E-E4E0-45D7-B5CE-BC99F7019918";
+  download.opened = 0;
+  download.last_access_time = now;
+  download.transient = false;
+  download.by_ext_id = "by_ext_id";
+  download.by_ext_name = "by_ext_name";
 
   // Creating records without any urls should fail.
   EXPECT_FALSE(db_->CreateDownload(download));
@@ -1114,28 +1175,38 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
 TEST_F(HistoryBackendDBTest, CreateAndUpdateDownloadingSlice) {
   CreateBackendAndDatabase();
 
-  std::vector<GURL> url_chain;
-  url_chain.push_back(GURL("http://example.com/a"));
+  DownloadRow download;
+  download.current_path = base::FilePath(FILE_PATH_LITERAL("/path/1"));
+  download.target_path = base::FilePath(FILE_PATH_LITERAL("/path/2"));
+  download.url_chain.push_back(GURL("http://example.com/a"));
+  download.referrer_url = GURL("http://example.com/referrer");
+  download.site_url = GURL("http://example.com");
+  download.tab_url = GURL("http://example.com/tab-url");
+  download.tab_referrer_url = GURL("http://example.com/tab-referrer");
+  download.http_method = "GET";
+  download.mime_type = "mime/type";
+  download.original_mime_type = "original/mime-type";
+  download.start_time = base::Time::Now();
+  download.end_time = download.start_time + base::TimeDelta::FromHours(1);
+  download.etag = "etag1";
+  download.last_modified = "last_modified_1";
+  download.received_bytes = 10;
+  download.total_bytes = 1500;
+  download.state = DownloadState::INTERRUPTED;
+  download.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download.interrupt_reason = kTestDownloadInterruptReasonCrash;
+  download.hash = "hash-value1";
+  download.id = 1;
+  download.guid = "FE672168-26EF-4275-A149-FEC25F6A75F9";
+  download.opened = false;
+  download.last_access_time =
+      download.start_time + base::TimeDelta::FromHours(5);
+  download.transient = false;
+  download.by_ext_id = "extension-id";
+  download.by_ext_name = "extension-name";
+  download.download_slice_info.push_back(
+      DownloadSliceInfo(download.id, 500, download.received_bytes));
 
-  DownloadId id = 1;
-  std::vector<DownloadSliceInfo> slice_info;
-  int64_t received = 10;
-  slice_info.push_back(DownloadSliceInfo(id, 500, received));
-  base::Time start_time(base::Time::Now());
-  base::Time end_time(start_time + base::TimeDelta::FromHours(1));
-  base::Time last_access_time(start_time + base::TimeDelta::FromHours(5));
-
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("/path/1")),
-      base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com"),
-      GURL("http://example.com/tab-url"),
-      GURL("http://example.com/tab-referrer"), "GET", "mime/type",
-      "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
-      received, 1500, DownloadState::INTERRUPTED,
-      DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonCrash,
-      "hash-value1", id, "FE672168-26EF-4275-A149-FEC25F6A75F9", false,
-      last_access_time, false, "extension-id", "extension-name", slice_info);
   ASSERT_TRUE(db_->CreateDownload(download));
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);
@@ -1154,28 +1225,41 @@ TEST_F(HistoryBackendDBTest, CreateAndUpdateDownloadingSlice) {
 TEST_F(HistoryBackendDBTest, UpdateDownloadWithNewSlice) {
   CreateBackendAndDatabase();
 
-  std::vector<GURL> url_chain;
-  url_chain.push_back(GURL("http://example.com/a"));
+  DownloadRow download;
+  download.current_path = base::FilePath(FILE_PATH_LITERAL("/path/1"));
+  download.target_path = base::FilePath(FILE_PATH_LITERAL("/path/2"));
+  download.url_chain.push_back(GURL("http://example.com/a"));
+  download.referrer_url = GURL("http://example.com/referrer");
+  download.site_url = GURL("http://example.com");
+  download.tab_url = GURL("http://example.com/tab-url");
+  download.tab_referrer_url = GURL("http://example.com/tab-referrer");
+  download.http_method = "GET";
+  download.mime_type = "mime/type";
+  download.original_mime_type = "original/mime-type";
+  download.start_time = base::Time::Now();
+  download.end_time = download.start_time + base::TimeDelta::FromHours(1);
+  download.etag = "etag1";
+  download.last_modified = "last_modified_1";
+  download.received_bytes = 0;
+  download.total_bytes = 1500;
+  download.state = DownloadState::INTERRUPTED;
+  download.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download.interrupt_reason = kTestDownloadInterruptReasonCrash;
+  download.hash = "hash-value1";
+  download.id = 1;
+  download.guid = "FE672168-26EF-4275-A149-FEC25F6A75F9";
+  download.opened = false;
+  download.last_access_time =
+      download.start_time + base::TimeDelta::FromHours(5);
+  download.transient = true;
+  download.by_ext_id = "extension-id";
+  download.by_ext_name = "extension-name";
 
-  DownloadId id = 1;
-  base::Time start_time(base::Time::Now());
-  base::Time end_time(start_time + base::TimeDelta::FromHours(1));
-  base::Time last_access_time(start_time + base::TimeDelta::FromHours(5));
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("/path/1")),
-      base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com"),
-      GURL("http://example.com/tab-url"),
-      GURL("http://example.com/tab-referrer"), "GET", "mime/type",
-      "original/mime-type", start_time, end_time, "etag1", "last_modified_1", 0,
-      1500, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
-      kTestDownloadInterruptReasonCrash, "hash-value1", id,
-      "FE672168-26EF-4275-A149-FEC25F6A75F9", false, last_access_time, true,
-      "extension-id", "extension-name", std::vector<DownloadSliceInfo>());
   ASSERT_TRUE(db_->CreateDownload(download));
 
   // Add a new slice and call UpdateDownload().
-  download.download_slice_info.push_back(DownloadSliceInfo(id, 500, 100));
+  download.download_slice_info.push_back(
+      DownloadSliceInfo(download.id, 500, 100));
   ASSERT_TRUE(db_->UpdateDownload(download));
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);
@@ -1186,32 +1270,45 @@ TEST_F(HistoryBackendDBTest, UpdateDownloadWithNewSlice) {
 TEST_F(HistoryBackendDBTest, DownloadSliceDeletedIfEmpty) {
   CreateBackendAndDatabase();
 
-  std::vector<GURL> url_chain;
-  url_chain.push_back(GURL("http://example.com/a"));
-
-  DownloadId id = 1;
-  std::vector<DownloadSliceInfo> slice_info;
-  int64_t received = 10;
-  slice_info.push_back(DownloadSliceInfo(id, 0, received));
-  slice_info.push_back(DownloadSliceInfo(id, 500, received));
-  slice_info.push_back(DownloadSliceInfo(id, 100, received));
+  DownloadRow download;
+  download.current_path = base::FilePath(FILE_PATH_LITERAL("/path/1"));
+  download.target_path = base::FilePath(FILE_PATH_LITERAL("/path/2"));
+  download.url_chain.push_back(GURL("http://example.com/a"));
+  download.referrer_url = GURL("http://example.com/referrer");
+  download.site_url = GURL("http://example.com");
+  download.tab_url = GURL("http://example.com/tab-url");
+  download.tab_referrer_url = GURL("http://example.com/tab-referrer");
+  download.http_method = "GET";
+  download.mime_type = "mime/type";
+  download.original_mime_type = "original/mime-type";
+  download.start_time = base::Time::Now();
+  download.end_time = download.start_time + base::TimeDelta::FromHours(1);
+  download.etag = "etag1";
+  download.last_modified = "last_modified_1";
+  download.received_bytes = 10;
+  download.total_bytes = 1500;
+  download.state = DownloadState::INTERRUPTED;
+  download.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download.interrupt_reason = kTestDownloadInterruptReasonCrash;
+  download.hash = "hash-value1";
+  download.id = 1;
+  download.guid = "FE672168-26EF-4275-A149-FEC25F6A75F9";
+  download.opened = false;
+  download.last_access_time =
+      download.start_time + base::TimeDelta::FromHours(5);
+  download.transient = true;
+  download.by_ext_id = "extension-id";
+  download.by_ext_name = "extension-name";
+  download.download_slice_info.push_back(
+      DownloadSliceInfo(download.id, 0, download.received_bytes));
+  download.download_slice_info.push_back(
+      DownloadSliceInfo(download.id, 500, download.received_bytes));
+  download.download_slice_info.push_back(
+      DownloadSliceInfo(download.id, 100, download.received_bytes));
   // The empty slice will not be inserted.
-  slice_info.push_back(DownloadSliceInfo(id, 1500, 0));
-  base::Time start_time(base::Time::Now());
-  base::Time end_time(start_time + base::TimeDelta::FromHours(1));
-  base::Time last_access_time(start_time + base::TimeDelta::FromHours(5));
+  download.download_slice_info.push_back(
+      DownloadSliceInfo(download.id, 1500, 0));
 
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("/path/1")),
-      base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com"),
-      GURL("http://example.com/tab-url"),
-      GURL("http://example.com/tab-referrer"), "GET", "mime/type",
-      "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
-      received, 1500, DownloadState::INTERRUPTED,
-      DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonCrash,
-      "hash-value1", id, "FE672168-26EF-4275-A149-FEC25F6A75F9", false,
-      last_access_time, true, "extension-id", "extension-name", slice_info);
   ASSERT_TRUE(db_->CreateDownload(download));
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);

@@ -2009,8 +2009,8 @@ bool HistoryBackend::SetFaviconBitmaps(favicon_base::FaviconID icon_id,
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
-  typedef std::pair<scoped_refptr<base::RefCountedBytes>, gfx::Size>
-      PNGEncodedBitmap;
+  using PNGEncodedBitmap =
+      std::pair<scoped_refptr<base::RefCountedBytes>, gfx::Size>;
   std::vector<PNGEncodedBitmap> to_add;
   for (size_t i = 0; i < bitmaps.size(); ++i) {
     scoped_refptr<base::RefCountedBytes> bitmap_data(new base::RefCountedBytes);

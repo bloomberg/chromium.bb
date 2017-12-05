@@ -125,20 +125,31 @@ bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
                                            const std::string& guid,
                                            DownloadState state,
                                            base::Time time) {
-  std::vector<GURL> url_chain;
-  url_chain.push_back(GURL("foo-url"));
-
-  DownloadRow download(
-      base::FilePath(FILE_PATH_LITERAL("current-path")),
-      base::FilePath(FILE_PATH_LITERAL("target-path")), url_chain,
-      GURL("http://referrer.example.com/"), GURL("http://site-url.example.com"),
-      GURL("http://tab-url.example.com/"),
-      GURL("http://tab-referrer-url.example.com/"), std::string(),
-      "application/vnd.oasis.opendocument.text", "application/octet-stream",
-      time, time, std::string(), std::string(), 0, 512, state,
-      DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonNone,
-      std::string(), id, guid, false, time, true, "by_ext_id", "by_ext_name",
-      std::vector<DownloadSliceInfo>());
+  DownloadRow download;
+  download.current_path = base::FilePath(FILE_PATH_LITERAL("current-path"));
+  download.target_path = base::FilePath(FILE_PATH_LITERAL("target-path"));
+  download.url_chain.push_back(GURL("foo-url"));
+  download.referrer_url = GURL("http://referrer.example.com/");
+  download.site_url = GURL("http://site-url.example.com");
+  download.tab_url = GURL("http://tab-url.example.com/");
+  download.tab_referrer_url = GURL("http://tab-referrer-url.example.com/");
+  download.http_method = std::string();
+  download.mime_type = "application/vnd.oasis.opendocument.text";
+  download.original_mime_type = "application/octet-stream";
+  download.start_time = time;
+  download.end_time = time;
+  download.received_bytes = 0;
+  download.total_bytes = 512;
+  download.state = state;
+  download.danger_type = DownloadDangerType::NOT_DANGEROUS;
+  download.interrupt_reason = kTestDownloadInterruptReasonNone;
+  download.id = id;
+  download.guid = guid;
+  download.opened = false;
+  download.last_access_time = time;
+  download.transient = true;
+  download.by_ext_id = "by_ext_id";
+  download.by_ext_name = "by_ext_name";
   return db_->CreateDownload(download);
 }
 

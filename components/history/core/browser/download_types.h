@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& stream, DownloadDangerType danger_type);
 // of a DownloadRow into the DownloadDatabase. The values must not be changed
 // as they are saved to disk in the database. They have no meaning for the
 // history component.
-typedef int32_t DownloadInterruptReason;
+using DownloadInterruptReason = int32_t;
 
 // Utility functions to convert between int and DownloadInterruptReason for
 // serialization to the download database.
@@ -52,7 +52,7 @@ int DownloadInterruptReasonToInt(DownloadInterruptReason interrupt_reason);
 // DownloadId represents the id of a DownloadRow into the DownloadDatabase.
 // The value is controlled by the embedder except for the reserved id
 // kInvalidDownloadId.
-typedef uint32_t DownloadId;
+using DownloadId = uint32_t;
 
 // Utility functions to convert between int and DownloadId for
 // serialization to the download database.

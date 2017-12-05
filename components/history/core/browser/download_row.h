@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_slice_info.h"
 #include "components/history/core/browser/download_types.h"
 #include "url/gurl.h"
@@ -23,37 +24,11 @@ namespace history {
 // DownloadDatabase through the HistoryService.
 struct DownloadRow {
   DownloadRow();
-  DownloadRow(const base::FilePath& current_path,
-              const base::FilePath& target_path,
-              const std::vector<GURL>& url_chain,
-              const GURL& referrer_url,
-              const GURL& site_url,
-              const GURL& tab_url,
-              const GURL& tab_referrer_url,
-              const std::string& http_method,
-              const std::string& mime_type,
-              const std::string& original_mime_type,
-              base::Time start,
-              base::Time end,
-              const std::string& etag,
-              const std::string& last_modified,
-              int64_t received,
-              int64_t total,
-              DownloadState download_state,
-              DownloadDangerType danger_type,
-              DownloadInterruptReason interrupt_reason,
-              const std::string& hash,
-              DownloadId id,
-              const std::string& guid,
-              bool download_opened,
-              base::Time last_access,
-              bool transient,
-              const std::string& ext_id,
-              const std::string& ext_name,
-              const std::vector<DownloadSliceInfo>& download_slice_info);
   DownloadRow(const DownloadRow& other);
+  DownloadRow(DownloadRow&& other);
   ~DownloadRow();
 
+  DownloadRow& operator=(const DownloadRow&);
   bool operator==(const DownloadRow&) const;
 
   // The current path to the download (potentially different from final if
@@ -106,20 +81,20 @@ struct DownloadRow {
   std::string last_modified;
 
   // The number of bytes received (so far).
-  int64_t received_bytes;
+  int64_t received_bytes = 0;
 
   // The total number of bytes in the download. Is not changed by
   // UpdateDownload().
-  int64_t total_bytes;
+  int64_t total_bytes = 0;
 
   // The current state of the download.
-  DownloadState state;
+  DownloadState state = DownloadState::IN_PROGRESS;
 
   // Whether and how the download is dangerous.
-  DownloadDangerType danger_type;
+  DownloadDangerType danger_type = DownloadDangerType::NOT_DANGEROUS;
 
   // The reason the download was interrupted, if state == kStateInterrupted.
-  DownloadInterruptReason interrupt_reason;
+  DownloadInterruptReason interrupt_reason = 0;
 
   // The raw SHA-256 hash of the complete or partial download contents. Not hex
   // encoded.
@@ -128,20 +103,20 @@ struct DownloadRow {
   // The id of the download in the database. Is not changed by UpdateDownload().
   // Note: This field should be considered deprecated in favor of |guid| below.
   // See http://crbug.com/593020.
-  DownloadId id;
+  DownloadId id = kInvalidDownloadId;
 
   // The GUID of the download in the database. Not changed by UpdateDownload().
   std::string guid;
 
   // Whether this download has ever been opened from the browser.
-  bool opened;
+  bool opened = false;
 
   // The time when the download was last accessed.
   base::Time last_access_time;
 
   // Whether this download is transient. Transient items are cleaned up after
   // completion and not shown in the UI.
-  bool transient;
+  bool transient = false;
 
   // The id and name of the extension that created this download.
   std::string by_ext_id;
