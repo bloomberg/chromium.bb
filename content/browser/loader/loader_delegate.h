@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_states.h"
@@ -39,11 +38,6 @@ class CONTENT_EXPORT LoaderDelegate {
       uint64_t upload_position,
       uint64_t upload_size) = 0;
 
-  // Called when the network stack started handling the navigation request.
-  virtual void LogResourceRequestTime(base::TimeTicks timestamp,
-                                      int render_process_id,
-                                      int render_frame_id,
-                                      const GURL& url) = 0;
 };
 
 }  // namespace content
