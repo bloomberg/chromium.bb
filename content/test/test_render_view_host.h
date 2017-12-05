@@ -131,7 +131,11 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void reset_did_change_compositor_frame_sink() {
     did_change_compositor_frame_sink_ = false;
   }
-
+#if defined(USE_AURA)
+  void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
+                     base::OnceCallback<void(const base::UnguessableToken&)>
+                         callback) override {}
+#endif
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;

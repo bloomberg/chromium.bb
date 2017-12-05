@@ -546,9 +546,11 @@ void RenderWidgetHostViewBase::EmbedChildFrameRendererWindowTreeClient(
 }
 
 void RenderWidgetHostViewBase::OnChildFrameDestroyed(int routing_id) {
-  DCHECK(render_widget_window_tree_client_);
   pending_embeds_.erase(routing_id);
-  render_widget_window_tree_client_->DestroyFrame(routing_id);
+  // Tests may not create |render_widget_window_tree_client_| (tests don't
+  // necessarily create RenderWidgetHostViewAura).
+  if (render_widget_window_tree_client_)
+    render_widget_window_tree_client_->DestroyFrame(routing_id);
 }
 #endif
 
@@ -569,8 +571,10 @@ void RenderWidgetHostViewBase::OnDidScheduleEmbed(
   if (iter == pending_embeds_.end() || iter->second != embed_id)
     return;
   pending_embeds_.erase(iter);
-  DCHECK(render_widget_window_tree_client_);
-  render_widget_window_tree_client_->Embed(routing_id, token);
+  // Tests may not create |render_widget_window_tree_client_| (tests don't
+  // necessarily create RenderWidgetHostViewAura).
+  if (render_widget_window_tree_client_)
+    render_widget_window_tree_client_->Embed(routing_id, token);
 }
 
 void RenderWidgetHostViewBase::ScheduleEmbed(
