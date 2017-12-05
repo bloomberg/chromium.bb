@@ -445,7 +445,7 @@ TEST_P(HpackEncoderTest, PseudoHeadersFirst) {
 }
 
 TEST_P(HpackEncoderTest, CookieToCrumbs) {
-  test::HpackEncoderPeer peer(NULL);
+  test::HpackEncoderPeer peer(nullptr);
   std::vector<SpdyStringPiece> out;
 
   // Leading and trailing whitespace is consumed. A space after ';' is consumed.
@@ -479,7 +479,7 @@ TEST_P(HpackEncoderTest, CookieToCrumbs) {
 }
 
 TEST_P(HpackEncoderTest, DecomposeRepresentation) {
-  test::HpackEncoderPeer peer(NULL);
+  test::HpackEncoderPeer peer(nullptr);
   std::vector<SpdyStringPiece> out;
 
   peer.DecomposeRepresentation("", &out);
