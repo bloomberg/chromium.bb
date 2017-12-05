@@ -279,7 +279,6 @@ config-updater (gce_wimpy)
 == chromeos_release ==
 reef-android-nyc-pre-flight-branch (gce_beefy)
 samus-chrome-pre-flight-branch (gce_beefy)
-veyron_tiger-android-mnc-pre-flight-branch (gce_beefy)
 
 == chromiumos ==
 amd64-generic-asan (baremetal)
@@ -2719,7 +2718,6 @@ veyron_speedy-release-afdo-use-tryjob (gce_beefy)
 veyron_speedy-release-tryjob (gce_beefy)
 veyron_speedy-unittest-stress (gce_beefy)
 veyron_speedy-wificell-pre-cq (gce_beefy)
-veyron_tiger-android-mnc-pre-flight-branch-tryjob (gce_beefy)
 veyron_tiger-chrome-pfq-tryjob (gce_beefy)
 veyron_tiger-chromium-pfq-tryjob (gce_beefy)
 veyron_tiger-compile-only-pre-cq (gce_beefy)

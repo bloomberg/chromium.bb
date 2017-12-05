@@ -61322,34 +61322,6 @@
         ],
         "vm_tests": []
     },
-    "veyron_tiger-android-mnc-pre-flight-branch": {
-        "_template": "pre_flight_branch",
-        "android_import_branch": "git_mnc-dr-arc-dev",
-        "android_package": "android-container",
-        "android_rev": "latest_release",
-        "boards": [
-            "veyron_tiger"
-        ],
-        "display_label": "mnc_android_pfq",
-        "sync_chrome": true,
-        "vm_tests_override": null
-    },
-    "veyron_tiger-android-mnc-pre-flight-branch-tryjob": {
-        "_template": "pre_flight_branch",
-        "active_waterfall": "chromiumos.tryserver",
-        "android_import_branch": "git_mnc-dr-arc-dev",
-        "android_package": "android-container",
-        "android_rev": "latest_release",
-        "boards": [
-            "veyron_tiger"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests_override": null,
-        "push_overlays": null,
-        "sync_chrome": true,
-        "vm_tests_override": null
-    },
     "veyron_tiger-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
