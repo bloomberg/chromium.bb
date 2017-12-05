@@ -643,8 +643,19 @@ bool ArgumentSpec::ParseArgumentToObject(
 
   if (out_value)
     *out_value = std::move(result);
-  if (v8_out_value)
-    *v8_out_value = convert_to_v8 ? v8_result.Build() : object;
+
+  if (v8_out_value) {
+    if (convert_to_v8) {
+      v8::Local<v8::Object> converted = v8_result.Build();
+      // We set the object's prototype to Null() so that handlers avoid
+      // triggering any tricky getters or setters on Object.prototype.
+      CHECK(converted->SetPrototype(context, v8::Null(context->GetIsolate()))
+                .ToChecked());
+      *v8_out_value = converted;
+    } else {
+      *v8_out_value = object;
+    }
+  }
 
   return true;
 }
