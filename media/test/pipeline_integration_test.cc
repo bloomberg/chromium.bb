@@ -833,10 +833,8 @@ TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
   Stop();
 }
 
-// The test is flaky, see https://crbug.com/788387.
-TEST_F(PipelineIntegrationTest,
-       DISABLED_ReinitRenderersWhileVideoTrackIsDisabled) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
+TEST_F(PipelineIntegrationTest, ReinitRenderersWhileVideoTrackIsDisabled) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed | kNoClockless));
   Play();
 
   // These get triggered every time playback is resumed.
