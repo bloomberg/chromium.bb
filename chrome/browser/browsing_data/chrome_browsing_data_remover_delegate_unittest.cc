@@ -1223,6 +1223,39 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveHistoryForLastHour) {
   EXPECT_TRUE(tester.HistoryContainsURL(kOrigin2));
 }
 
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveHistoryForOlderThan30Days) {
+  RemoveHistoryTester tester;
+  ASSERT_TRUE(tester.Init(GetProfile()));
+
+  base::Time older_than_29days =
+      base::Time::Now() - base::TimeDelta::FromDays(29);
+  base::Time older_than_30days =
+      base::Time::Now() - base::TimeDelta::FromDays(30);
+  base::Time older_than_31days =
+      base::Time::Now() - base::TimeDelta::FromDays(31);
+
+  tester.AddHistory(kOrigin1, base::Time::Now());
+  tester.AddHistory(kOrigin2, older_than_29days);
+  tester.AddHistory(kOrigin3, older_than_31days);
+
+  ASSERT_TRUE(tester.HistoryContainsURL(kOrigin1));
+  ASSERT_TRUE(tester.HistoryContainsURL(kOrigin2));
+  ASSERT_TRUE(tester.HistoryContainsURL(kOrigin3));
+
+  BlockUntilBrowsingDataRemoved(
+      base::Time(), older_than_30days,
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
+
+  EXPECT_EQ(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+            GetRemovalMask());
+  EXPECT_EQ(content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+            GetOriginTypeMask());
+
+  EXPECT_TRUE(tester.HistoryContainsURL(kOrigin1));
+  EXPECT_TRUE(tester.HistoryContainsURL(kOrigin2));
+  EXPECT_FALSE(tester.HistoryContainsURL(kOrigin3));
+}
+
 // This should crash (DCHECK) in Debug, but death tests don't work properly
 // here.
 // TODO(msramek): To make this testable, the refusal to delete history should

@@ -66,7 +66,7 @@ void HistoryCounter::Count() {
   local_counting_finished_ = false;
 
   history_service_->GetHistoryCount(
-      GetPeriodStart(), base::Time::Max(),
+      GetPeriodStart(), GetPeriodEnd(),
       base::Bind(&HistoryCounter::OnGetLocalHistoryCount,
                  weak_ptr_factory_.GetWeakPtr()),
       &cancelable_task_tracker_);
