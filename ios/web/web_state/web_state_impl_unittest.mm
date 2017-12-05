@@ -18,6 +18,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/load_committed_details.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
@@ -770,6 +771,55 @@ TEST_F(WebStateImplTest, CreatedWithOpener) {
   std::unique_ptr<WebState> web_state_with_opener =
       WebState::Create(params_with_opener);
   EXPECT_TRUE(web_state_with_opener->HasOpener());
+}
+
+// Tests that WebStateObserver::FaviconUrlUpdated is called for same-document
+// navigations.
+TEST_F(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
+  auto observer = std::make_unique<TestWebStateObserver>(web_state_.get());
+
+  // No callback if icons has not been fetched yet.
+  FakeNavigationContext context;
+  context.SetIsSameDocument(true);
+  web_state_->OnNavigationFinished(&context);
+  EXPECT_FALSE(observer->update_favicon_url_candidates_info());
+
+  // Callback is called when icons were fetched.
+  observer = base::MakeUnique<TestWebStateObserver>(web_state_.get());
+  web::FaviconURL favicon_url(GURL("https://chromium.test/"),
+                              web::FaviconURL::IconType::kTouchIcon,
+                              {gfx::Size(5, 6)});
+  web_state_->OnFaviconUrlUpdated({favicon_url});
+  EXPECT_TRUE(observer->update_favicon_url_candidates_info());
+
+  // Callback is now called after same-document navigation.
+  observer = std::make_unique<TestWebStateObserver>(web_state_.get());
+  web_state_->OnNavigationFinished(&context);
+  ASSERT_TRUE(observer->update_favicon_url_candidates_info());
+  ASSERT_EQ(1U,
+            observer->update_favicon_url_candidates_info()->candidates.size());
+  const web::FaviconURL& actual_favicon_url =
+      observer->update_favicon_url_candidates_info()->candidates[0];
+  EXPECT_EQ(favicon_url.icon_url, actual_favicon_url.icon_url);
+  EXPECT_EQ(favicon_url.icon_type, actual_favicon_url.icon_type);
+  ASSERT_EQ(favicon_url.icon_sizes.size(),
+            actual_favicon_url.icon_sizes.size());
+  EXPECT_EQ(favicon_url.icon_sizes[0].width(),
+            actual_favicon_url.icon_sizes[0].width());
+  EXPECT_EQ(favicon_url.icon_sizes[0].height(),
+            actual_favicon_url.icon_sizes[0].height());
+
+  // Document change navigation does not call callback.
+  observer = std::make_unique<TestWebStateObserver>(web_state_.get());
+  context.SetIsSameDocument(false);
+  web_state_->OnNavigationFinished(&context);
+  EXPECT_FALSE(observer->update_favicon_url_candidates_info());
+
+  // Previous candidates were invalidated by the document change. No callback
+  // if icons has not been fetched yet.
+  context.SetIsSameDocument(true);
+  web_state_->OnNavigationFinished(&context);
+  EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 }
 
 }  // namespace web
