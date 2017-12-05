@@ -1,0 +1,50 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("download") {
+  sources = [
+    "pass_kit_tab_helper.h",
+    "pass_kit_tab_helper.mm",
+    "pass_kit_tab_helper_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/web/public",
+    "//ios/web/public/download",
+  ]
+
+  libs = [ "PassKit.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "pass_kit_tab_helper_unittest.mm",
+  ]
+  deps = [
+    ":test_support",
+    "//base/test:test_support",
+    "//ios/chrome/browser/download",
+    "//ios/chrome/test/fakes",
+    "//ios/web/public/test/fakes",
+    "//net",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "pass_kit_test_util.cc",
+    "pass_kit_test_util.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}

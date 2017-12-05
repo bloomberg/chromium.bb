@@ -141,6 +141,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/content_suggestions:unit_tests",
     "//ios/chrome/browser/crash_report:unit_tests",
     "//ios/chrome/browser/device_sharing:unit_tests",
+    "//ios/chrome/browser/download:unit_tests",
     "//ios/chrome/browser/drag_and_drop:unit_tests",
     "//ios/chrome/browser/favicon:unit_tests",
     "//ios/chrome/browser/find_in_page:unit_tests",

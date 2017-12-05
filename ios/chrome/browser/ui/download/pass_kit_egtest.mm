@@ -5,11 +5,9 @@
 #import <EarlGrey/EarlGrey.h>
 #import <PassKit/PassKit.h>
 
-#include "base/base_paths.h"
-#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/path_service.h"
 #import "ios/chrome/app/main_controller.h"
+#include "ios/chrome/browser/download/pass_kit_test_util.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -31,24 +29,11 @@ using chrome_test_util::GetMainController;
 
 namespace {
 
-const char kPKFilePath[] = "ios/testing/data/http_server_files/generic.pkpass";
-
 // Returns matcher for PassKit error infobar.
 id<GREYMatcher> PassKitErrorInfobar() {
   using l10n_util::GetNSStringWithFixup;
   NSString* label = GetNSStringWithFixup(IDS_IOS_GENERIC_PASSKIT_ERROR);
   return grey_accessibilityLabel(label);
-}
-
-// Returns the content of test pkpass file.
-std::string GetTestPass() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_MODULE, &path);
-  path = path.Append(FILE_PATH_LITERAL(kPKFilePath));
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  char pass_kit_data[file.GetLength()];
-  file.ReadAtCurrentPos(pass_kit_data, file.GetLength());
-  return std::string(pass_kit_data, file.GetLength());
 }
 
 // PassKit landing page and download request handler.
@@ -66,7 +51,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     result->set_content("corrupted");
   } else if (request.GetURL().path() == "/good") {
     result->AddCustomHeader("Content-Type", "application/vnd.apple.pkpass");
-    result->set_content(GetTestPass());
+    result->set_content(testing::GetTestPass());
   }
 
   return result;
