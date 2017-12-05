@@ -6,6 +6,7 @@
 #define PDF_TIMER_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace chrome_pdf {
@@ -15,7 +16,7 @@ namespace chrome_pdf {
 // base::MessageLoop, on which it is based.
 class Timer {
  public:
-  explicit Timer(int delay_in_milliseconds);
+  explicit Timer(base::TimeDelta delay);
   virtual ~Timer();
 
   virtual void OnTimer() = 0;
@@ -24,7 +25,7 @@ class Timer {
   void PostCallback();
   void TimerProc(int32_t result);
 
-  int delay_;
+  const base::TimeDelta delay_;
   pp::CompletionCallbackFactory<Timer> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Timer);
