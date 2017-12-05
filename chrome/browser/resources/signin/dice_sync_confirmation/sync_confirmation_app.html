@@ -1,0 +1,149 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="signin_shared_css.html">
+<link rel="import" href="sync_confirmation_browser_proxy.html">
+
+<dom-module id="sync-confirmation-app">
+  <template>
+    <style include="signin-dialog-shared">
+      :host {
+        display: block;
+        width: 512px;
+      }
+
+      paper-button {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      #undoButton {
+        -webkit-margin-start: 16px;
+      }
+
+<if expr="is_macosx or is_linux">
+      /* This works together with the button-flip in signin-dialog-shared. */
+      #undoButton {
+        -webkit-margin-end: 16px;
+        -webkit-margin-start: 0;
+      }
+</if>
+
+      #illustration-container {
+        /* TODO(scottchen): should be taller once illustration is made. */
+        height: 20px;
+        width: 100%;
+      }
+
+      #heading {
+        border-bottom: 1px solid var(--paper-grey-50);
+        color: var(--paper-grey-800);
+        font-weight: normal;
+        margin-bottom: 40px;
+        padding-bottom: 5px;
+        text-align: center;
+      }
+
+      .message-container {
+        color: var(--paper-grey-800);
+        display: flex;
+        line-height: 20px;
+        margin-bottom: 16px;
+        padding: 0 24px;
+      }
+
+      .footer::before {
+        border-top: 1px solid var(--paper-grey-300);
+        content: '';
+        display: block;
+        height: 1;
+        margin: 24px 0 24px 56px;
+      }
+
+      .footer .message-container {
+        color: var(--paper-grey-600);
+      }
+
+      .logo {
+        -webkit-margin-end: 16px;
+        background-size: cover;
+        flex-shrink: 0;
+        height: 16px;
+        margin-top: 2px;
+        position: relative;
+        width: 16px;
+      }
+
+      #personalize-logo {
+        fill: var(--google-blue-700);
+        /* Need the following rules to adjust for white spacing in the svg. */
+        -webkit-margin-end: 14px;
+        height: 18px;
+        width: 18px;
+      }
+
+      #sync-logo-container {
+        align-items: center;
+        background: green;
+        border-radius: 50%;
+        display: flex;
+      }
+
+      #sync-logo-container iron-icon {
+        fill: white;
+        height: 12px;
+        margin: auto;
+        width: 12px;
+      }
+
+      #googleg-logo {
+        background-image: -webkit-image-set(url(./images/ic_google.png) 1x,
+                                            url(./images/ic_google_2x.png) 2x);
+      }
+    </style>
+    <div id="illustration-container"></div>
+    <h1 id="heading">$i18n{syncConfirmationTitle}</h1>
+    <div class="message-container">
+      <!-- Container needed to contain the icon in a green circle. -->
+      <div id="sync-logo-container" class="logo">
+        <iron-icon icon="notification:sync" class="logo">
+        </iron-icon>
+      </div>
+      <div>$i18n{syncConfirmationChromeSyncBody}</div>
+    </div>
+    <div class="message-container">
+      <iron-icon icon="image:assistant" id="personalize-logo" class="logo">
+      </iron-icon>
+      <div>$i18n{syncConfirmationPersonalizeServicesBody}</div>
+    </div>
+    <div class="message-container">
+      <div id="googleg-logo" class="logo"></div>
+      <div>$i18n{syncConfirmationGoogleServicesBody}</div>
+    </div>
+    <div class="footer">
+      <div class="message-container">
+        <iron-icon icon="icons:settings" class="logo"></iron-icon>
+        <div>$i18nRaw{syncConfirmationSyncSettingsLinkBody}</div>
+      </div>
+      <div class="message-container">
+        <div class="logo"><!-- Spacer to line up with other texts --></div>
+        <div>$i18n{syncConfirmationSyncSettingsDescription}</div>
+      </div>
+    </div>
+    <div class="action-container">
+      <paper-button class="primary-action" id="confirmButton" on-tap="onConfirm_">
+        $i18n{syncConfirmationConfirmLabel}
+      </paper-button>
+      <paper-button class="secondary-action" id="undoButton" on-tap="onUndo_">
+        $i18n{syncConfirmationUndoLabel}
+      </paper-button>
+    </div>
+  </template>
+  <script src="sync_confirmation_app.js"></script>
+</dom-module>

@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -25,6 +26,9 @@ namespace {
 
 // Width of the different dialogs that make up the signin flow.
 const int kModalDialogWidth = 448;
+
+// Width of the confirmation dialog with DICE.
+const int kModalDialogWidthForDice = 512;
 
 // Height of the tab-modal dialog displaying the password-separated signin
 // flow. It matches the dimensions of the server content the dialog displays.
@@ -41,6 +45,15 @@ CGFloat GetSyncConfirmationDialogPreferredHeight(Profile* profile) {
   // dialog and thus it has the same preferred size.
   return profile->IsSyncAllowed() ? kSyncConfirmationDialogHeight
                                   : kSigninErrorDialogHeight;
+}
+
+int GetSyncConfirmationDialogPreferredWidth(Profile* profile) {
+  // With DICE profiles, we show a different sync confirmation dialog which
+  // uses a different width.
+  return signin::IsDiceEnabledForProfile(profile->GetPrefs()) &&
+                 profile->IsSyncAllowed()
+             ? kModalDialogWidthForDice
+             : kModalDialogWidth;
 }
 
 }  // namespace
@@ -105,7 +118,8 @@ SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
     Browser* browser) {
   return CreateDialogWebContents(
       browser, chrome::kChromeUISyncConfirmationURL,
-      GetSyncConfirmationDialogPreferredHeight(browser->profile()));
+      GetSyncConfirmationDialogPreferredHeight(browser->profile()),
+      GetSyncConfirmationDialogPreferredWidth(browser->profile()));
 }
 
 // static
@@ -113,14 +127,17 @@ std::unique_ptr<content::WebContents>
 SigninViewControllerDelegateMac::CreateSigninErrorWebContents(
     Browser* browser) {
   return CreateDialogWebContents(browser, chrome::kChromeUISigninErrorURL,
-                                 kSigninErrorDialogHeight);
+                                 kSigninErrorDialogHeight, base::nullopt);
 }
 
 // static
 std::unique_ptr<content::WebContents>
-SigninViewControllerDelegateMac::CreateDialogWebContents(Browser* browser,
-                                                         const std::string& url,
-                                                         int dialog_height) {
+SigninViewControllerDelegateMac::CreateDialogWebContents(
+    Browser* browser,
+    const std::string& url,
+    int dialog_height,
+    base::Optional<int> opt_width) {
+  int dialog_width = opt_width.value_or(kModalDialogWidth);
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContents::Create(
           content::WebContents::CreateParams(browser->profile())));
@@ -133,7 +150,7 @@ SigninViewControllerDelegateMac::CreateDialogWebContents(Browser* browser,
   web_dialog_ui->InitializeMessageHandlerWithBrowser(browser);
 
   NSView* webview = web_contents->GetNativeView();
-  [webview setFrameSize:NSMakeSize(kModalDialogWidth, dialog_height)];
+  [webview setFrameSize:NSMakeSize(dialog_width, dialog_height)];
 
   return web_contents;
 }
@@ -158,7 +175,7 @@ void SigninViewControllerDelegateMac::PerformClose() {
 
 void SigninViewControllerDelegateMac::ResizeNativeView(int height) {
   if (!window_) {
-    window_frame_.size = NSMakeSize(kModalDialogWidth, height);
+    window_frame_.size = NSMakeSize(window_frame_.size.width, height);
     DisplayModal();
   }
 }
@@ -238,7 +255,8 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
       SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
           browser),
       browser,
-      NSMakeRect(0, 0, kModalDialogWidth,
+      NSMakeRect(0, 0,
+                 GetSyncConfirmationDialogPreferredWidth(browser->profile()),
                  GetSyncConfirmationDialogPreferredHeight(browser->profile())),
       ui::MODAL_TYPE_WINDOW, true /* wait_for_size */);
 }
