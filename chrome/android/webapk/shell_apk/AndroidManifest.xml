@@ -10,6 +10,7 @@
     android:versionName="{{{version_name}}}" >
 
     <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+    {{{raw_manifest_tags}}}
 
     <uses-sdk
         android:minSdkVersion="16"
