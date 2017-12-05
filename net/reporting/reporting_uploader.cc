@@ -47,7 +47,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
 
   void StartUpload(const GURL& url,
                    const std::string& json,
-                   const Callback& callback) override {
+                   UploadCallback callback) override {
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("reporting", R"(
         semantics {
@@ -95,7 +95,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     // Have to grab the unique_ptr* first to ensure request.get() happens
     // before std::move(request).
     std::unique_ptr<Upload>* upload = &uploads_[request.get()];
-    *upload = std::make_unique<Upload>(std::move(request), callback);
+    *upload = std::make_unique<Upload>(std::move(request), std::move(callback));
   }
 
   // URLRequest::Delegate implementation:
@@ -140,7 +140,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
     int response_code = headers ? headers->response_code() : 0;
     Outcome outcome = ResponseCodeToOutcome(response_code);
 
-    upload->second.Run(outcome);
+    std::move(upload->second).Run(outcome);
 
     request->Cancel();
   }
@@ -152,7 +152,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
   }
 
  private:
-  using Upload = std::pair<std::unique_ptr<URLRequest>, Callback>;
+  using Upload = std::pair<std::unique_ptr<URLRequest>, UploadCallback>;
 
   const URLRequestContext* context_;
   std::map<const URLRequest*, std::unique_ptr<Upload>> uploads_;

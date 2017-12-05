@@ -32,15 +32,14 @@ namespace {
 
 class PendingUploadImpl : public TestReportingUploader::PendingUpload {
  public:
-  PendingUploadImpl(
-      const GURL& url,
-      const std::string& json,
-      const ReportingUploader::Callback& callback,
-      const base::Callback<void(PendingUpload*)>& complete_callback)
+  PendingUploadImpl(const GURL& url,
+                    const std::string& json,
+                    ReportingUploader::UploadCallback callback,
+                    base::OnceCallback<void(PendingUpload*)> complete_callback)
       : url_(url),
         json_(json),
-        callback_(callback),
-        complete_callback_(complete_callback) {}
+        callback_(std::move(callback)),
+        complete_callback_(std::move(complete_callback)) {}
 
   ~PendingUploadImpl() override = default;
 
@@ -52,16 +51,16 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
   }
 
   void Complete(ReportingUploader::Outcome outcome) override {
-    callback_.Run(outcome);
+    std::move(callback_).Run(outcome);
     // Deletes |this|.
-    complete_callback_.Run(this);
+    std::move(complete_callback_).Run(this);
   }
 
  private:
   GURL url_;
   std::string json_;
-  ReportingUploader::Callback callback_;
-  base::Callback<void(PendingUpload*)> complete_callback_;
+  ReportingUploader::UploadCallback callback_;
+  base::OnceCallback<void(PendingUpload*)> complete_callback_;
 };
 
 void ErasePendingUpload(
@@ -98,9 +97,10 @@ TestReportingUploader::~TestReportingUploader() = default;
 
 void TestReportingUploader::StartUpload(const GURL& url,
                                         const std::string& json,
-                                        const Callback& callback) {
+                                        UploadCallback callback) {
   pending_uploads_.push_back(std::make_unique<PendingUploadImpl>(
-      url, json, callback, base::Bind(&ErasePendingUpload, &pending_uploads_)));
+      url, json, std::move(callback),
+      base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
 }
 
 TestReportingDelegate::TestReportingDelegate() = default;

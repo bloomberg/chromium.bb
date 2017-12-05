@@ -97,8 +97,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void StartTimer() {
     timer_->Start(FROM_HERE, policy().delivery_interval,
-                  base::Bind(&ReportingDeliveryAgentImpl::OnTimerFired,
-                             base::Unretained(this)));
+                  base::BindRepeating(&ReportingDeliveryAgentImpl::OnTimerFired,
+                                      base::Unretained(this)));
   }
 
   void OnTimerFired() {
@@ -160,9 +160,9 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
       uploader()->StartUpload(
           endpoint, json,
-          base::Bind(&ReportingDeliveryAgentImpl::OnUploadComplete,
-                     weak_factory_.GetWeakPtr(),
-                     std::make_unique<Delivery>(endpoint, reports)));
+          base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
+                         weak_factory_.GetWeakPtr(),
+                         std::make_unique<Delivery>(endpoint, reports)));
     }
   }
 

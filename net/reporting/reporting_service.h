@@ -63,7 +63,7 @@ class NET_EXPORT ReportingService {
   // ReportingBrowsingDataRemover for more details.
   virtual void RemoveBrowsingData(
       int data_type_mask,
-      base::Callback<bool(const GURL&)> origin_filter) = 0;
+      base::RepeatingCallback<bool(const GURL&)> origin_filter) = 0;
 
  protected:
   ReportingService() {}

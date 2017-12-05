@@ -65,9 +65,9 @@ class TestUploadCallback {
  public:
   TestUploadCallback() : called_(false), waiting_(false) {}
 
-  ReportingUploader::Callback callback() {
-    return base::Bind(&TestUploadCallback::OnUploadComplete,
-                      base::Unretained(this));
+  ReportingUploader::UploadCallback callback() {
+    return base::BindOnce(&TestUploadCallback::OnUploadComplete,
+                          base::Unretained(this));
   }
 
   void WaitForCall() {
@@ -104,8 +104,8 @@ class TestUploadCallback {
 };
 
 TEST_F(ReportingUploaderTest, Upload) {
-  server_.RegisterRequestMonitor(base::Bind(&CheckUpload));
-  server_.RegisterRequestHandler(base::Bind(&ReturnResponse, HTTP_OK));
+  server_.RegisterRequestMonitor(base::BindRepeating(&CheckUpload));
+  server_.RegisterRequestHandler(base::BindRepeating(&ReturnResponse, HTTP_OK));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -114,7 +114,7 @@ TEST_F(ReportingUploaderTest, Upload) {
 }
 
 TEST_F(ReportingUploaderTest, Success) {
-  server_.RegisterRequestHandler(base::Bind(&ReturnResponse, HTTP_OK));
+  server_.RegisterRequestHandler(base::BindRepeating(&ReturnResponse, HTTP_OK));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -137,7 +137,7 @@ TEST_F(ReportingUploaderTest, NetworkError1) {
 }
 
 TEST_F(ReportingUploaderTest, NetworkError2) {
-  server_.RegisterRequestHandler(base::Bind(&ReturnInvalidResponse));
+  server_.RegisterRequestHandler(base::BindRepeating(&ReturnInvalidResponse));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -149,7 +149,7 @@ TEST_F(ReportingUploaderTest, NetworkError2) {
 
 TEST_F(ReportingUploaderTest, ServerError) {
   server_.RegisterRequestHandler(
-      base::Bind(&ReturnResponse, HTTP_INTERNAL_SERVER_ERROR));
+      base::BindRepeating(&ReturnResponse, HTTP_INTERNAL_SERVER_ERROR));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -160,7 +160,8 @@ TEST_F(ReportingUploaderTest, ServerError) {
 }
 
 TEST_F(ReportingUploaderTest, RemoveEndpoint) {
-  server_.RegisterRequestHandler(base::Bind(&ReturnResponse, HTTP_GONE));
+  server_.RegisterRequestHandler(
+      base::BindRepeating(&ReturnResponse, HTTP_GONE));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -199,8 +200,10 @@ std::unique_ptr<test_server::HttpResponse> CheckRedirect(
 
 TEST_F(ReportingUploaderTest, FollowHttpsRedirect) {
   bool followed = false;
-  server_.RegisterRequestHandler(base::Bind(&ReturnRedirect, kRedirectPath));
-  server_.RegisterRequestHandler(base::Bind(&CheckRedirect, &followed));
+  server_.RegisterRequestHandler(
+      base::BindRepeating(&ReturnRedirect, kRedirectPath));
+  server_.RegisterRequestHandler(
+      base::BindRepeating(&CheckRedirect, &followed));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -215,11 +218,13 @@ TEST_F(ReportingUploaderTest, DontFollowHttpRedirect) {
   bool followed = false;
 
   test_server::EmbeddedTestServer http_server_;
-  http_server_.RegisterRequestHandler(base::Bind(&CheckRedirect, &followed));
+  http_server_.RegisterRequestHandler(
+      base::BindRepeating(&CheckRedirect, &followed));
   ASSERT_TRUE(http_server_.Start());
 
   const GURL target = http_server_.GetURL(kRedirectPath);
-  server_.RegisterRequestHandler(base::Bind(&ReturnRedirect, target.spec()));
+  server_.RegisterRequestHandler(
+      base::BindRepeating(&ReturnRedirect, target.spec()));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback callback;
@@ -236,15 +241,15 @@ void CheckNoCookie(const test_server::HttpRequest& request) {
 }
 
 TEST_F(ReportingUploaderTest, DontSendCookies) {
-  server_.RegisterRequestMonitor(base::Bind(&CheckNoCookie));
-  server_.RegisterRequestHandler(base::Bind(&ReturnResponse, HTTP_OK));
+  server_.RegisterRequestMonitor(base::BindRepeating(&CheckNoCookie));
+  server_.RegisterRequestHandler(base::BindRepeating(&ReturnResponse, HTTP_OK));
   ASSERT_TRUE(server_.Start());
 
   ResultSavingCookieCallback<bool> cookie_callback;
   context_.cookie_store()->SetCookieWithOptionsAsync(
       server_.GetURL("/"), "foo=bar", CookieOptions(),
-      base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                 base::Unretained(&cookie_callback)));
+      base::BindRepeating(&ResultSavingCookieCallback<bool>::Run,
+                          base::Unretained(&cookie_callback)));
   cookie_callback.WaitUntilDone();
   ASSERT_TRUE(cookie_callback.result());
 
@@ -265,7 +270,7 @@ std::unique_ptr<test_server::HttpResponse> SendCookie(
 }
 
 TEST_F(ReportingUploaderTest, DontSaveCookies) {
-  server_.RegisterRequestHandler(base::Bind(&SendCookie));
+  server_.RegisterRequestHandler(base::BindRepeating(&SendCookie));
   ASSERT_TRUE(server_.Start());
 
   TestUploadCallback upload_callback;
@@ -276,8 +281,8 @@ TEST_F(ReportingUploaderTest, DontSaveCookies) {
   GetCookieListCallback cookie_callback;
   context_.cookie_store()->GetCookieListWithOptionsAsync(
       server_.GetURL("/"), CookieOptions(),
-      base::Bind(&GetCookieListCallback::Run,
-                 base::Unretained(&cookie_callback)));
+      base::BindRepeating(&GetCookieListCallback::Run,
+                          base::Unretained(&cookie_callback)));
   cookie_callback.WaitUntilDone();
 
   EXPECT_TRUE(cookie_callback.cookies().empty());
@@ -302,7 +307,7 @@ std::unique_ptr<test_server::HttpResponse> ReturnCacheableResponse(
 TEST_F(ReportingUploaderTest, DontCacheResponse) {
   int request_count = 0;
   server_.RegisterRequestHandler(
-      base::Bind(&ReturnCacheableResponse, &request_count));
+      base::BindRepeating(&ReturnCacheableResponse, &request_count));
   ASSERT_TRUE(server_.Start());
 
   {
