@@ -4347,6 +4347,8 @@ parse_modeline(const char *s, drmModeModeInfo *mode)
 	char vsync[16];
 	float fclock;
 
+	memset(mode, 0, sizeof *mode);
+
 	mode->type = DRM_MODE_TYPE_USERDEF;
 	mode->hskew = 0;
 	mode->vscan = 0;
