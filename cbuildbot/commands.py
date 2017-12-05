@@ -753,7 +753,8 @@ def RunHWTestSuite(
     debug=True,
     subsystems=frozenset(),
     skip_duts_check=False,
-    job_keyvals=None):
+    job_keyvals=None,
+    test_args=None):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -787,6 +788,7 @@ def RunHWTestSuite(
                 testing purposes.
     skip_duts_check: If True, skip minimum available DUTs check.
     job_keyvals: A dict of job keyvals to be inject to suite control file.
+    test_args: A dict of test parameters to be inject to suite control file.
 
   Returns:
     An instance of named tuple HWTestSuiteResult, the first element is the
@@ -811,7 +813,8 @@ def RunHWTestSuite(
         offload_failures_only=offload_failures_only,
         subsystems=subsystems,
         skip_duts_check=skip_duts_check,
-        job_keyvals=job_keyvals)
+        job_keyvals=job_keyvals,
+        test_args=test_args)
     swarming_args = _CreateSwarmingArgs(build, suite, board, priority,
                                         timeout_mins)
     running_json_dump_flag = False
@@ -934,7 +937,8 @@ def _GetRunSuiteArgs(
     offload_failures_only=None,
     subsystems=frozenset(),
     skip_duts_check=False,
-    job_keyvals=None):
+    job_keyvals=None,
+    test_args=None):
   """Get a list of args for run_suite.
 
   Args:
@@ -1010,6 +1014,9 @@ def _GetRunSuiteArgs(
 
   if job_keyvals:
     args += ['--job_keyvals', repr(job_keyvals)]
+
+  if test_args:
+    args += ['--test_args', repr(test_args)]
 
   return args
 
