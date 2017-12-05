@@ -100,7 +100,14 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
   VerifyFeedbackAppLaunch();
 }
 
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ShowLoginFeedback DISABLED_ShowLoginFeedback
+#else
+#define MAYBE_ShowLoginFeedback ShowLoginFeedback
+#endif
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -122,9 +129,16 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
   EXPECT_TRUE(bool_result);
 }
 
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_AnonymousUser DISABLED_AnonymousUser
+#else
+#define MAYBE_AnonymousUser AnonymousUser
+#endif
 // Tests that there's an option in the email drop down box with a value
 // 'anonymous_user'.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -153,9 +167,16 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
   EXPECT_TRUE(bool_result);
 }
 
+// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
+// See crbug.com/757243.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ExtraDiagnostics DISABLED_ExtraDiagnostics
+#else
+#define MAYBE_ExtraDiagnostics ExtraDiagnostics
+#endif
 // Ensures that when extra diagnostics are provided with feedback, they are
 // injected properly in the system information.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, ExtraDiagnostics) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
