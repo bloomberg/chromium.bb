@@ -258,6 +258,10 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             }
         });
 
+        mView.addOnLayoutChangeListener(
+                (View view, int left, int top, int right, int bottom, int oldLeft, int oldTop,
+                        int oldRight, int oldBottom) -> { updateLogoTransition(); });
+
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
