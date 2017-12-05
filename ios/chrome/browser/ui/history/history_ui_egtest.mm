@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
@@ -118,15 +117,6 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
 // Matcher for the Copy URL option in the context menu.
 id<GREYMatcher> CopyUrlButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_CONTEXT_COPY);
-}
-// Matcher for the clear cookies cell on the clear browsing data panel.
-id<GREYMatcher> ClearCookiesButton() {
-  return grey_accessibilityID(kClearCookiesCellId);
-}
-// Matcher for the clear cache cell on the clear browsing data panel.
-id<GREYMatcher> ClearCacheButton() {
-  return grey_allOf(grey_accessibilityID(kClearCacheCellId),
-                    grey_sufficientlyVisible(), nil);
 }
 // Matcher for the clear browsing data button on the clear browsing data panel.
 id<GREYMatcher> ClearBrowsingDataButton() {
@@ -323,9 +313,9 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
 
   // Uncheck "Cookies, Site Data" and "Cached Images and Files," which are
   // checked by default, and press "Clear Browsing Data"
-  [[EarlGrey selectElementWithMatcher:ClearCookiesButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCookiesButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:ClearCacheButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ClearCacheButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:ClearBrowsingDataButton()]
       performAction:grey_tap()];
