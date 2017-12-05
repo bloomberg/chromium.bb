@@ -35,8 +35,8 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
+#include "core/css/parser/AtRuleDescriptors.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -149,10 +149,10 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   void InitCSSFontFace(const unsigned char* data, size_t);
   void SetPropertyFromString(const ExecutionContext*,
                              const String&,
-                             CSSPropertyID,
+                             AtRuleDescriptorID,
                              ExceptionState* = nullptr);
-  bool SetPropertyFromStyle(const CSSPropertyValueSet&, CSSPropertyID);
-  bool SetPropertyValue(const CSSValue*, CSSPropertyID);
+  bool SetPropertyFromStyle(const CSSPropertyValueSet&, AtRuleDescriptorID);
+  bool SetPropertyValue(const CSSValue*, AtRuleDescriptorID);
   bool SetFamilyValue(const CSSValue&);
   ScriptPromise FontStatusPromise(ScriptState*);
   void RunCallbacks();

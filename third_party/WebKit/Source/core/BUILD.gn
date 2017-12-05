@@ -466,7 +466,9 @@ action("generated_testing_idls_internal_runtime_flags") {
 css_properties("make_core_generated_computed_style_initial_values") {
   script = "../build/scripts/core/style/make_computed_style_initial_values.py"
   in_files = [ "css/ComputedStyleExtraFields.json5" ]
-  other_inputs = [ "../build/scripts/core/style/templates/ComputedStyleInitialValues.h.tmpl" ]
+  other_inputs = [
+    "../build/scripts/core/style/templates/ComputedStyleInitialValues.h.tmpl",
+  ]
   outputs = [
     "$blink_core_output_dir/style/ComputedStyleInitialValues.h",
   ]
@@ -530,7 +532,9 @@ css_properties("make_core_generated_css_property_baseclass") {
 css_properties("make_core_generated_css_longhand_property_classes") {
   script = "../build/scripts/core/css/properties/make_css_property_headers.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
-  other_inputs = [ "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl" ]
+  other_inputs = [
+    "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl",
+  ]
   outputs = [
     "$blink_core_output_dir/css/properties/longhands/AlignItems.h",
     "$blink_core_output_dir/css/properties/longhands/AlignOrJustifyContent.h",
@@ -754,7 +758,9 @@ css_properties("make_core_generated_css_longhand_property_classes") {
 css_properties("make_core_generated_css_shorthand_property_classes") {
   script = "../build/scripts/core/css/properties/make_css_property_headers.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
-  other_inputs = [ "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl" ]
+  other_inputs = [
+    "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl",
+  ]
   outputs = [
     "$blink_core_output_dir/css/properties/shorthands/Animation.h",
     "$blink_core_output_dir/css/properties/shorthands/Background.h",
@@ -830,6 +836,23 @@ css_properties("make_core_generated_css_property_names") {
   outputs = [
     "$blink_core_output_dir/CSSPropertyNames.cpp",
     "$blink_core_output_dir/CSSPropertyNames.h",
+  ]
+}
+
+code_generator("make_core_generated_atrule_names") {
+  script = "../build/scripts/core/css/parser/make_atrule_names.py"
+  json_inputs = [ "css/parser/AtRuleNames.json5" ]
+  templates = [
+    "../build/scripts/core/css/parser/templates/AtRuleDescriptors.cpp.tmpl",
+    "../build/scripts/core/css/parser/templates/AtRuleDescriptors.h.tmpl",
+  ]
+  outputs = [
+    "$blink_core_output_dir/css/parser/AtRuleDescriptors.cpp",
+    "$blink_core_output_dir/css/parser/AtRuleDescriptors.h",
+  ]
+  other_args = [
+    "--gperf",
+    gperf_exe,
   ]
 }
 
@@ -1228,6 +1251,7 @@ action_foreach("make_core_generated_bison") {
 # All sources declared as outputs from these targets will be compiled into one
 # target.
 targets_generating_sources = [
+  ":make_core_generated_atrule_names",
   ":make_core_generated_bison",
   ":make_core_generated_css_primitive_value_unit_trie",
   ":make_core_generated_computed_style_initial_values",
@@ -1237,6 +1261,7 @@ targets_generating_sources = [
   ":make_core_generated_css_longhand_property_classes",
   ":make_core_generated_css_shorthand_property_classes",
   ":make_core_generated_css_property_names",
+  ":make_core_generated_css_value_id_mappings",
   ":make_core_generated_cssom_types",
   ":make_core_generated_event_factory",
   ":make_core_generated_event_names",
