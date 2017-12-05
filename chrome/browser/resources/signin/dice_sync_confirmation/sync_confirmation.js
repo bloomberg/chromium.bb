@@ -5,62 +5,25 @@
 cr.define('sync.confirmation', function() {
   'use strict';
 
-  function onConfirm(e) {
-    chrome.send('confirm');
-  }
-
-  function onUndo(e) {
-    chrome.send('undo');
-  }
-
-  function onGoToSettings(e) {
-    chrome.send('goToSettings');
-  }
-
   function initialize() {
-    document.addEventListener('keydown', onKeyDown);
-    $('confirmButton').addEventListener('click', onConfirm);
-    $('undoButton').addEventListener('click', onUndo);
-    if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('settingsLink').addEventListener('click', onGoToSettings);
-      $('profile-picture').addEventListener('load', onPictureLoaded);
-      $('syncDisabledDetails').hidden = true;
-    } else {
-      $('syncConfirmationDetails').hidden = true;
-    }
-
+    const syncConfirmationBrowserProxy =
+        sync.confirmation.SyncConfirmationBrowserProxyImpl.getInstance();
     // Prefer using |document.body.offsetHeight| instead of
     // |document.body.scrollHeight| as it returns the correct height of the
     // even when the page zoom in Chrome is different than 100%.
-    chrome.send('initializedWithSize', [document.body.offsetHeight]);
+    syncConfirmationBrowserProxy.initializedWithSize(
+        [document.body.offsetHeight]);
   }
 
   function clearFocus() {
     document.activeElement.blur();
   }
 
-  function setUserImageURL(url) {
-    if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('profile-picture').src = url;
-    }
-  }
-
-  function onPictureLoaded(e) {
-    if (loadTimeData.getBoolean('isSyncAllowed')) {
-      $('picture-container').classList.add('loaded');
-    }
-  }
-
-  function onKeyDown(e) {
-    // If the currently focused element isn't something that performs an action
-    // on "enter" being pressed and the user hits "enter", perform the default
-    // action of the dialog, which is "OK, Got It".
-    if (e.key == 'Enter' &&
-        !/^(A|PAPER-(BUTTON|CHECKBOX))$/.test(document.activeElement.tagName)) {
-      $('confirmButton').click();
-      e.preventDefault();
-    }
-  }
+  // The C++ handler calls out to this Javascript function, so it needs to
+  // exist in the namespace. However, this version of the sync confirmation
+  // doesn't use a user image, so we do not need to actually implement this.
+  // TODO(scottchen): make the C++ handler not call this at all.
+  function setUserImageURL() {}
 
   return {
     clearFocus: clearFocus,

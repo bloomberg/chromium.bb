@@ -38,6 +38,7 @@
         '<(DEPTH)/chrome/browser/resources/print_preview/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/print_preview/new/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/settings/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/signin/dice_sync_confirmation/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/webapks/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/welcome/dice_welcome/compiled_resources2.gyp:*',
         '<(DEPTH)/ui/file_manager/compiled_resources2.gyp:*',

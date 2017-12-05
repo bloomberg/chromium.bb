@@ -62,6 +62,10 @@ cr.define('sync.confirmation', function() {
     }
   }
 
+  // TODO(scottchen): clearFocus and setUserImageURL are called directly by the
+  // C++ handler. C++ handlers should not be calling JS functions by name
+  // anymore. They should be firing events with FireWebuiListener and have the
+  // page itself decide whether to listen or not listen to the event.
   return {
     clearFocus: clearFocus,
     initialize: initialize,

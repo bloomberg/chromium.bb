@@ -83,7 +83,8 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
   static std::unique_ptr<content::WebContents> CreateDialogWebContents(
       Browser* browser,
       const std::string& url,
-      int dialog_height);
+      int dialog_height,
+      base::Optional<int> dialog_width);
 
   // The constrained window opened by this delegate to display signin flow
   // content.
