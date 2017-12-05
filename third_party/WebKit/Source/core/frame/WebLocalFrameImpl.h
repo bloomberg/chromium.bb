@@ -133,7 +133,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       bool user_gesture,
       ScriptExecutionType,
       WebScriptExecutionCallback*) override;
-  v8::Local<v8::Value> CallFunctionEvenIfScriptDisabled(
+  v8::MaybeLocal<v8::Value> CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>,
       v8::Local<v8::Value>,
       int argc,

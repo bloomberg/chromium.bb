@@ -539,9 +539,15 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
   v8::Local<v8::Object> global = v8_context()->Global();
   if (!web_frame_)
     return handle_scope.Escape(function->Call(global, argc, argv));
-  return handle_scope.Escape(
-      v8::Local<v8::Value>(web_frame_->CallFunctionEvenIfScriptDisabled(
-          function, global, argc, argv)));
+
+  v8::MaybeLocal<v8::Value> result =
+      web_frame_->CallFunctionEvenIfScriptDisabled(function, global, argc,
+                                                   argv);
+
+  // TODO(devlin): Stop coercing this to a v8::Local.
+  v8::Local<v8::Value> coerced_result;
+  ignore_result(result.ToLocal(&coerced_result));
+  return handle_scope.Escape(coerced_result);
 }
 
 }  // namespace extensions
