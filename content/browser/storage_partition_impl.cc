@@ -1017,11 +1017,6 @@ void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
   bluetooth_allowed_devices_map_->Clear();
 }
 
-void StoragePartitionImpl::SetNetworkFactoryForTesting(
-    mojom::URLLoaderFactory* test_factory) {
-  url_loader_factory_getter_->SetNetworkFactoryForTesting(test_factory);
-}
-
 BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
 }

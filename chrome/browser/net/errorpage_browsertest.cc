@@ -50,6 +50,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -59,6 +60,7 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
@@ -197,80 +199,6 @@ void AddInterceptorForURL(const GURL& url,
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(url,
                                                           std::move(handler));
 }
-
-void SetNetworkFactoryForTesting(Browser* browser,
-                                 content::mojom::URLLoaderFactory* factory) {
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-
-  auto* storage_partition = content::BrowserContext::GetDefaultStoragePartition(
-      web_contents->GetBrowserContext());
-  storage_partition->SetNetworkFactoryForTesting(factory);
-}
-
-// An url loader that fails a configurable number of requests, then succeeds
-// all requests after that, keeping count of failures and successes.
-class FailFirstNRequestsURLLoaderFactory
-    : public content::mojom::URLLoaderFactory {
- public:
-  explicit FailFirstNRequestsURLLoaderFactory(int32_t requests_to_fail,
-                                              int32_t* requests,
-                                              int32_t* failures)
-      : requests_(requests),
-        failures_(failures),
-        requests_to_fail_(requests_to_fail) {}
-
-  // content::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(content::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const content::ResourceRequest& url_request,
-                            content::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    (*requests_)++;
-    if (*failures_ < requests_to_fail_) {
-      (*failures_)++;
-      network::URLLoaderCompletionStatus status;
-      status.error_code = net::ERR_CONNECTION_RESET;
-      client->OnComplete(status);
-    } else {
-      std::string headers = URLRequestTestJob::test_headers();
-      net::HttpResponseInfo info;
-      info.headers =
-          new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-              URLRequestTestJob::test_headers().c_str(),
-              URLRequestTestJob::test_headers().length()));
-      content::ResourceResponseHead response;
-      response.headers = info.headers;
-      response.headers->GetMimeType(&response.mime_type);
-      client->OnReceiveResponse(response, base::nullopt, nullptr);
-
-      std::string body = URLRequestTestJob::test_data_1();
-      uint32_t bytes_written = body.size();
-      mojo::DataPipe data_pipe;
-      data_pipe.producer_handle->WriteData(body.data(), &bytes_written,
-                                           MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-      client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
-      network::URLLoaderCompletionStatus status;
-      status.error_code = net::OK;
-      client->OnComplete(status);
-    }
-  }
-
-  void Clone(content::mojom::URLLoaderFactoryRequest factory) override {
-    NOTREACHED();
-  }
-
- private:
-  int32_t* requests_;
-  int32_t* failures_;
-  int32_t requests_to_fail_;
-
-  DISALLOW_COPY_AND_ASSIGN(FailFirstNRequestsURLLoaderFactory);
-};
 
 // TODO(dougt): FailFirstNRequestsInterceptor can be removed as soon as the
 // Network Service is the only code path.
@@ -418,6 +346,14 @@ std::unique_ptr<net::test_server::HttpResponse> Return500WithBinaryBody(
   return std::unique_ptr<net::test_server::HttpResponse>(
       new net::test_server::RawHttpResponse("HTTP/1.1 500 Server Sad :(",
                                             "\x01"));
+}
+
+content::StoragePartition* GetStoragePartition(Browser* browser) {
+  return browser->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetMainFrame()
+      ->GetProcess()
+      ->GetStoragePartition();
 }
 
 class ErrorPageTest : public InProcessBrowserTest {
@@ -1164,21 +1100,53 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
   }
 
-  void RemoveInterceptor() {
-    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      SetNetworkFactoryForTesting(browser(), nullptr);
-    }
-  }
+  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
 
   void InstallInterceptor(const GURL& url, int32_t requests_to_fail) {
     requests_ = failures_ = 0;
 
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      url_loader_factory_ =
-          std::make_unique<FailFirstNRequestsURLLoaderFactory>(
-              requests_to_fail, &requests_, &failures_);
+      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+          base::BindRepeating(
+              [](int32_t requests_to_fail, int32_t* requests, int32_t* failures,
+                 content::URLLoaderInterceptor::RequestParams* params) {
+                (*requests)++;
+                if (*failures < requests_to_fail) {
+                  (*failures)++;
+                  network::URLLoaderCompletionStatus status;
+                  status.error_code = net::ERR_CONNECTION_RESET;
+                  params->client->OnComplete(status);
+                  return true;
+                }
 
-      SetNetworkFactoryForTesting(browser(), url_loader_factory_.get());
+                std::string headers = URLRequestTestJob::test_headers();
+                net::HttpResponseInfo info;
+                info.headers = new net::HttpResponseHeaders(
+                    net::HttpUtil::AssembleRawHeaders(
+                        URLRequestTestJob::test_headers().c_str(),
+                        URLRequestTestJob::test_headers().length()));
+                content::ResourceResponseHead response;
+                response.headers = info.headers;
+                response.headers->GetMimeType(&response.mime_type);
+                params->client->OnReceiveResponse(response, base::nullopt,
+                                                  nullptr);
+
+                std::string body = URLRequestTestJob::test_data_1();
+                uint32_t bytes_written = body.size();
+                mojo::DataPipe data_pipe;
+                data_pipe.producer_handle->WriteData(
+                    body.data(), &bytes_written,
+                    MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+                params->client->OnStartLoadingResponseBody(
+                    std::move(data_pipe.consumer_handle));
+
+                network::URLLoaderCompletionStatus status;
+                status.error_code = net::OK;
+                params->client->OnComplete(status);
+                return true;
+              },
+              requests_to_fail, &requests_, &failures_),
+          GetStoragePartition(browser()));
     } else {
       std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
           new FailFirstNRequestsInterceptor(requests_to_fail, &requests_,
@@ -1215,7 +1183,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
   int32_t interceptor_failures() const { return failures_; }
 
  private:
-  std::unique_ptr<FailFirstNRequestsURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   int32_t requests_;
   int32_t failures_;
 };
@@ -1237,7 +1205,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, MAYBE_AutoReload) {
   // this becomes racey.
   EXPECT_EQ(kRequestsToFail, interceptor_failures());
   EXPECT_EQ(kRequestsToFail + 1, interceptor_requests());
-  RemoveInterceptor();
 }
 
 IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
@@ -1264,7 +1231,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
   EXPECT_FALSE(IsDisplayingText(
       browser(), l10n_util::GetStringUTF8(
                      IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER)));
-  RemoveInterceptor();
 }
 
 // Make sure that a same document navigation does not cause issues with the
@@ -1298,50 +1264,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
 
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(3, interceptor_requests());
-  RemoveInterceptor();
 }
-
-// A url loader that fails matching requests with net::ERR_ADDRESS_UNREACHABLE,
-// otherwise it passes the request to a default loader.
-class AddressUnreachableURLLoaderFactory
-    : public content::mojom::URLLoaderFactory {
- public:
-  AddressUnreachableURLLoaderFactory(content::mojom::URLLoaderFactory* loader,
-                                     const GURL& url)
-      : default_loader_(loader), url_(url) {}
-
-  // content::mojom::URLLoaderFactory implementation.
-  void CreateLoaderAndStart(content::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const content::ResourceRequest& url_request,
-                            content::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    if (url_ == url_request.url) {
-      network::URLLoaderCompletionStatus status;
-
-      status.error_code = net::ERR_ADDRESS_UNREACHABLE;
-      client->OnComplete(status);
-      return;
-    }
-
-    default_loader_->CreateLoaderAndStart(
-        std::move(request), routing_id, request_id, options, url_request,
-        std::move(client), traffic_annotation);
-  }
-
-  void Clone(content::mojom::URLLoaderFactoryRequest factory) override {
-    NOTREACHED();
-  }
-
- private:
-  content::mojom::URLLoaderFactory* default_loader_;
-  GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressUnreachableURLLoaderFactory);
-};
 
 // TODO(dougt): AddressUnreachableInterceptor can be removed as soon as the
 // Network Service is the only code path.
@@ -1373,18 +1296,18 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      content::WebContents* web_contents =
-          browser()->tab_strip_model()->GetActiveWebContents();
-      auto* storage_partition =
-          content::BrowserContext::GetDefaultStoragePartition(
-              web_contents->GetBrowserContext());
-      content::mojom::URLLoaderFactory* default_network_factory =
-          storage_partition->GetURLLoaderFactoryForBrowserProcess();
+      url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+          base::BindRepeating(
+              [](content::URLLoaderInterceptor::RequestParams* params) {
+                if (params->url_request.url != google_util::LinkDoctorBaseURL())
+                  return false;
 
-      url_loader_factory_ =
-          std::make_unique<AddressUnreachableURLLoaderFactory>(
-              default_network_factory, google_util::LinkDoctorBaseURL());
-      SetNetworkFactoryForTesting(browser(), url_loader_factory_.get());
+                network::URLLoaderCompletionStatus status;
+                status.error_code = net::ERR_ADDRESS_UNREACHABLE;
+                params->client->OnComplete(status);
+                return true;
+              }),
+          GetStoragePartition(browser()));
     } else {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -1394,7 +1317,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
 
   void TearDownOnMainThread() override {
     if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-      SetNetworkFactoryForTesting(browser(), nullptr);
+      url_loader_interceptor_.reset();
     } else {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -1423,7 +1346,7 @@ class ErrorPageNavigationCorrectionsFailTest : public ErrorPageTest {
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
-  std::unique_ptr<AddressUnreachableURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 // Make sure that when corrections fail to load, the network error page is
