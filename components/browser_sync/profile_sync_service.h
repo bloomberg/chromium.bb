@@ -393,9 +393,12 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   // Similar to above but with a callback that will be invoked on completion.
   void OnGaiaAccountsInCookieUpdatedWithCallback(
       const std::vector<gaia::ListedAccount>& accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error,
       const base::Closure& callback);
+
+  // Returns true if currently signed in account is not present in the list of
+  // accounts from cookie jar.
+  bool HasCookieJarMismatch(
+      const std::vector<gaia::ListedAccount>& cookie_jar_accounts);
 
   // Get the sync status code.
   SyncStatusSummary QuerySyncStatusSummary();
