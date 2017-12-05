@@ -159,13 +159,28 @@ group("gn_all") {
 
   if (!is_ios) {
     deps += [
+      "//cc:cc_unittests",
+      "//components/policy:policy_templates",
+      "//content/shell:content_shell",
+      "//content/test:content_browsertests",
+      "//content/test:content_perftests",
+      "//content/test:content_unittests",
+      "//gpu:gpu_unittests",
+      "//gpu/ipc/service:gpu_ipc_service_unittests",
+      "//ipc:ipc_tests",
       "//media:media_unittests",
+      "//media/midi:midi_unittests",
+      "//media/mojo:media_mojo_unittests",
       "//mojo",
       "//mojo/common:mojo_common_unittests",
       "//mojo/edk/system:mojo_system_unittests",
       "//mojo/edk/test:mojo_public_bindings_unittests",
       "//mojo/edk/test:mojo_public_system_unittests",
+      "//net:net_perftests",
+      "//third_party/WebKit/Source/controller:webkit_unit_tests",
+      "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
       "//ui/gl:gl_unittests",
+      "//url/ipc:url_ipc_unittests",
     ]
   }
 
@@ -178,38 +193,19 @@ group("gn_all") {
 
   if (!is_ios && !is_fuchsia) {
     deps += [
-      "//cc:cc_unittests",
       "//chrome/test:telemetry_perf_unittests",
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
-      "//components/policy:policy_templates",
       "//components/viz:viz_perftests",
       "//components/viz:viz_unittests",
       "//components/viz/common:viz_benchmark",
-      "//content/shell:content_shell",
-      "//content/test:content_browsertests",
-      "//content/test:content_perftests",
-      "//content/test:content_unittests",
       "//device:device_unittests",
       "//google_apis/gcm:mcs_probe",
-      "//gpu:gpu_unittests",
-      "//gpu/ipc/service:gpu_ipc_service_unittests",
-      "//ipc:ipc_tests",
       "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
-      "//media/midi:midi_unittests",
-      "//media/mojo:media_mojo_unittests",
-      "//mojo",
-      "//mojo/common:mojo_common_unittests",
-      "//mojo/edk/system:mojo_system_unittests",
-      "//mojo/edk/test:mojo_public_bindings_unittests",
-      "//mojo/edk/test:mojo_public_system_unittests",
-      "//net:net_perftests",
       "//storage:storage_unittests",
-      "//third_party/WebKit/Source/controller:webkit_unit_tests",
       "//third_party/WebKit/Source/platform:blink_platform_unittests",
       "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
-      "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
       "//third_party/angle/src/tests:angle_end2end_tests",
       "//third_party/angle/src/tests:angle_unittests",
       "//third_party/angle/src/tests:angle_white_box_tests",
@@ -220,7 +216,6 @@ group("gn_all") {
       "//ui/events:events_unittests",
       "//ui/latency:latency_unittests",
       "//ui/touch_selection:ui_touch_selection_unittests",
-      "//url/ipc:url_ipc_unittests",
       "//v8:gn_all",
     ]
   } else if (is_ios) {
@@ -263,9 +258,15 @@ group("gn_all") {
     deps += [
       "//ui/ozone",
       "//ui/ozone:ozone_unittests",
-      "//ui/ozone/demo",
-      "//ui/ozone/gl:ozone_gl_unittests",
     ]
+
+    # TODO(crbug.com/766360): These require a working GL implementation.
+    if (!is_fuchsia) {
+      deps += [
+        "//ui/ozone/demo",
+        "//ui/ozone/gl:ozone_gl_unittests",
+      ]
+    }
   }
 
   if (use_x11 || ozone_platform_x11) {
@@ -734,7 +735,11 @@ group("gn_all") {
   }
 
   if (is_fuchsia) {
-    deps += [ "//headless" ]
+    deps += [
+      "//headless",
+      "//headless:headless_shell",
+      "//headless:headless_tests",
+    ]
   }
 }
 

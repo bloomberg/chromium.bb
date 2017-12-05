@@ -3869,11 +3869,7 @@
   },
   "Fuchsia": {
     "additional_compile_targets": [
-      "content_browsertests",
-      "content_shell",
-      "gl_unittests",
-      "headless_shell",
-      "webkit_unit_tests"
+      "gn_all"
     ],
     "gtest_tests": [
       {
@@ -4070,13 +4066,7 @@
   },
   "Fuchsia (dbg)": {
     "additional_compile_targets": [
-      "content_browsertests",
-      "content_shell",
-      "content_unittests",
-      "gl_unittests",
-      "media_unittests",
-      "net_unittests",
-      "webkit_unit_tests"
+      "gn_all"
     ],
     "gtest_tests": [
       {
@@ -4244,14 +4234,7 @@
   },
   "Fuchsia ARM64": {
     "additional_compile_targets": [
-      "content_browsertests",
-      "content_shell",
-      "content_unittests",
-      "gl_unittests",
-      "headless_shell",
-      "media_unittests",
-      "net_unittests",
-      "webkit_unit_tests"
+      "gn_all"
     ],
     "gtest_tests": [
       {
