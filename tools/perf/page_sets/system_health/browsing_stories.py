@@ -475,8 +475,7 @@ class PinterestDesktopStory(_MediaBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
   def _Login(self, action_runner):
-    pinterest_login.LoginDesktopAccount(action_runner, 'googletest',
-                                        self.credentials_path)
+    pinterest_login.LoginDesktopAccount(action_runner, 'googletest')
 
   def _ViewMediaItem(self, action_runner, index):
     super(PinterestDesktopStory, self)._ViewMediaItem(action_runner, index)
@@ -892,8 +891,7 @@ class FacebookScrollMobileStory(_InfiniteScrollStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
   def _Login(self, action_runner):
-    facebook_login.LoginWithMobileSite(
-        action_runner, 'facebook3', self.credentials_path)
+    facebook_login.LoginWithMobileSite(action_runner, 'facebook3')
 
 
 class FlickrDesktopStory(_InfiniteScrollStory):

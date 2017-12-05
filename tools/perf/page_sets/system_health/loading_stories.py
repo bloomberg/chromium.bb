@@ -288,8 +288,7 @@ class _LoadGmailBaseStory(_LoadingStory):
   ABSTRACT_STORY = True
 
   def _Login(self, action_runner):
-    google_login.LoginGoogleAccount(action_runner, 'googletest',
-                                    self.credentials_path)
+    google_login.LoginGoogleAccount(action_runner, 'googletest')
 
     # Navigating to https://mail.google.com immediately leads to an infinite
     # redirection loop due to a bug in WPR (see
@@ -333,7 +332,7 @@ class LoadDropboxStory(_LoadingStory):
   URL = 'https://www.dropbox.com'
 
   def _Login(self, action_runner):
-    dropbox_login.LoginAccount(action_runner, 'dropbox', self.credentials_path)
+    dropbox_login.LoginAccount(action_runner, 'dropbox')
 
 
 class LoadWeatherStory(_LoadingStory):
@@ -348,8 +347,7 @@ class LoadDriveStory(_LoadingStory):
   TAGS = [story_tags.JAVASCRIPT_HEAVY]
 
   def _Login(self, action_runner):
-    google_login.LoginGoogleAccount(action_runner, 'googletest',
-                                    self.credentials_path)
+    google_login.LoginGoogleAccount(action_runner, 'googletest')
 
 
 ################################################################################

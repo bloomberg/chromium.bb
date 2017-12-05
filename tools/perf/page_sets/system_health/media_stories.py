@@ -65,8 +65,7 @@ class GooglePlayMusicDesktopStory(_MediaStory):
   NAVIGATE_SELECTOR = '.description.tooltip.fade-out'
 
   def _Login(self, action_runner):
-    google_login.LoginGoogleAccount(action_runner, 'googletest',
-                                    self.credentials_path)
+    google_login.LoginGoogleAccount(action_runner, 'googletest')
 
   def _NavigateToMedia(self, action_runner):
     # Clicks on Today's top hits.
@@ -107,7 +106,7 @@ class PandoraDesktopStory(_MediaStory):
   SEARCH_SELECTOR = '.searchInput'
 
   def _Login(self, action_runner):
-    pandora_login.LoginAccount(action_runner, 'pandora', self.credentials_path)
+    pandora_login.LoginAccount(action_runner, 'pandora')
 
   def _NavigateToMedia(self, action_runner):
     pass  # Audio autoplays on Pandora, no need to search.
