@@ -9,7 +9,7 @@
 
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
   var indexedDBModel;
-  var withoutIndexedDBURL = 'http://localhost:8000/inspector/indexeddb/resources/without-indexed-db.html';
+  var withoutIndexedDBURL = 'http://localhost:8000/devtools/indexeddb/resources/without-indexed-db.html';
   var originalURL = 'http://127.0.0.1:8000/devtools/indexeddb/resources-panel.js';
   var databaseName = 'testDatabase';
   var objectStoreName = 'testObjectStore';

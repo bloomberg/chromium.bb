@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
+<script>
+
+async function test() {
+  let indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
+  indexedDBModel._throttler._timeout = 0;
+
+  ApplicationTestRunner.dumpIndexedDBTree();
+  let promise = InspectorTest.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, '_addIndexedDB');
+  await ApplicationTestRunner.createDatabaseAsync('database1');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, '_addIndexedDB');
+  await ApplicationTestRunner.createDatabaseAsync('database2');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, 'update');
+  await ApplicationTestRunner.createObjectStoreAsync('database1', 'objectStore1', 'index1');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, 'update');
+  await ApplicationTestRunner.createObjectStoreAsync('database1', 'objectStore2', 'index2');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, 'update');
+  await ApplicationTestRunner.createObjectStoreIndexAsync('database1', 'objectStore1', 'index3');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, '_indexRemoved');
+  await ApplicationTestRunner.deleteObjectStoreIndexAsync('database1', 'objectStore1', 'index3');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IDBObjectStoreTreeElement.prototype, 'update');
+  await ApplicationTestRunner.deleteObjectStoreAsync('database1', 'objectStore2');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, 'setExpandable');
+  await ApplicationTestRunner.deleteDatabaseAsync('database1');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+
+  promise = InspectorTest.addSnifferPromise(Resources.IndexedDBTreeElement.prototype, 'setExpandable');
+  await ApplicationTestRunner.deleteDatabaseAsync('database2');
+  await promise;
+  ApplicationTestRunner.dumpIndexedDBTree();
+  InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the IndexedDB database list live updates.</p>
+</body>
+</html>

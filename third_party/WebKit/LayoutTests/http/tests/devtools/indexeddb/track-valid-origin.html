@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
+<script>
+
+async function test() {
+  let indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
+  let invalidOrigins = ['http', 'test://fake', 'test://fake.origin.com', 'chrome://test'];
+  let validOrigins = ['http://fake.origin.com', 'https://fake.origin.com'];
+
+  InspectorTest.addResult('Invalid Origins:');
+  invalidOrigins.map(origin => {
+    InspectorTest.addResult(origin + ", valid = " + indexedDBModel._isValidSecurityOrigin(origin));
+  });
+  InspectorTest.addResult('\nValid Origins:');
+  validOrigins.map(origin => {
+    InspectorTest.addResult(origin + ", valid = " + indexedDBModel._isValidSecurityOrigin(origin));
+  });
+  InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that IndexedDB live update only tracks valid security origins.</p>
+</body>
+</html>
