@@ -222,6 +222,10 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
   return dispatch_details;
 }
 
+int64_t WindowTreeHost::GetDisplayId() {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window()).id();
+}
+
 void WindowTreeHost::Show() {
   // Ensure that compositor has been properly initialized, see InitCompositor()
   // and InitHost().

@@ -9,8 +9,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 
@@ -51,9 +49,8 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
     env->window_tree_client_->connector()->BindInterface(
         ui::mojom::kServiceName, &window_server_ptr_);
   }
-  display::Screen* screen = display::Screen::GetScreen();
   window_server_ptr_->DispatchEvent(
-      screen->GetDisplayNearestWindow(host->window()).id(), MapEvent(*event),
+      host->GetDisplayId(), MapEvent(*event),
       base::Bind([](bool result) { DCHECK(result); }));
   return ui::EventDispatchDetails();
 }

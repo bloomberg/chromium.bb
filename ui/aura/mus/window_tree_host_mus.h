@@ -109,6 +109,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform {
   void MoveCursorToScreenLocationInPixels(
       const gfx::Point& location_in_pixels) override;
   gfx::Transform GetRootTransformForLocalEventCoordinates() const override;
+  int64_t GetDisplayId() override;
 
  private:
   int64_t display_id_;

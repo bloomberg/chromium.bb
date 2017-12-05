@@ -244,4 +244,8 @@ gfx::Transform WindowTreeHostMus::GetRootTransformForLocalEventCoordinates()
   return transform;
 }
 
+int64_t WindowTreeHostMus::GetDisplayId() {
+  return display_id_;
+}
+
 }  // namespace aura
