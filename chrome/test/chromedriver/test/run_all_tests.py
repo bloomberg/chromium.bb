@@ -201,22 +201,22 @@ def main():
       os.environ['CHROME_DEVEL_SANDBOX'] = '/opt/chromium/chrome_sandbox'
 
     # Linux64 build numbers
-    elif util.isLinux():
-      versions['63'] = '508578'
-      versions['62'] = '499100'
-      versions['61'] = '488595'
+    elif util.IsLinux():
+          versions['63'] = '508578'
+          versions['62'] = '499100'
+          versions['61'] = '488595'
 
     # Mac build numbers
-    elif util.isMac():
-      versions['63'] = '508578'
-      versions['62'] = '499098'
-      versions['61'] = '488595'
+    elif util.IsMac():
+          versions['63'] = '508578'
+          versions['62'] = '499098'
+          versions['61'] = '488595'
 
     # Windows build numbers
-    elif util.isWindows():
-      versions['63'] = '508578'
-      versions['62'] = '499101'
-      versions['61'] = '488595'
+    elif util.IsWindows():
+          versions['63'] = '508578'
+          versions['62'] = '499101'
+          versions['61'] = '488595'
 
     code = 0
     for version, revision in versions.iteritems():
