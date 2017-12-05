@@ -27,22 +27,18 @@
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
-#include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;
 struct GpuCommandBufferMsg_CreateImage_Params;
-
-namespace gl {
-class GLShareGroup;
-}
 
 namespace gpu {
 struct Mailbox;
@@ -56,7 +52,6 @@ class GPU_EXPORT CommandBufferStub
       public IPC::Sender,
       public CommandBufferServiceClient,
       public gles2::GLES2DecoderClient,
-      public ImageTransportSurfaceDelegate,
       public base::SupportsWeakPtr<CommandBufferStub> {
  public:
   class DestructionObserver {
@@ -80,10 +75,10 @@ class GPU_EXPORT CommandBufferStub
   // This must leave the GL context associated with the newly-created
   // CommandBufferStub current, so the GpuChannel can initialize
   // the gpu::Capabilities.
-  gpu::ContextResult Initialize(
+  virtual gpu::ContextResult Initialize(
       CommandBufferStub* share_group,
       const GPUCreateCommandBufferConfig& init_params,
-      std::unique_ptr<base::SharedMemory> shared_state_shm);
+      std::unique_ptr<base::SharedMemory> shared_state_shm) = 0;
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -102,24 +97,6 @@ class GPU_EXPORT CommandBufferStub
   bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
-
-// ImageTransportSurfaceDelegate implementation:
-#if defined(OS_WIN)
-  void DidCreateAcceleratedSurfaceChildWindow(
-      SurfaceHandle parent_window,
-      SurfaceHandle child_window) override;
-#endif
-  void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
-  const gles2::FeatureInfo* GetFeatureInfo() const override;
-  const GpuPreferences& GetGpuPreferences() const override;
-  void SetSnapshotRequestedCallback(const base::Closure& callback) override;
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override;
-  void BufferPresented(uint64_t swap_id,
-                       const gfx::PresentationFeedback& feedback) override;
-
-  void AddFilter(IPC::MessageFilter* message_filter) override;
-  int32_t GetRouteID() const override;
 
   gles2::MemoryTracker* GetMemoryTracker() const;
 
@@ -145,6 +122,48 @@ class GPU_EXPORT CommandBufferStub
   void RemoveDestructionObserver(DestructionObserver* observer);
 
   void MarkContextLost();
+
+  scoped_refptr<gles2::ContextGroup> context_group() { return context_group_; }
+  scoped_refptr<gl::GLShareGroup> share_group() { return share_group_; }
+
+ protected:
+  // FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
+  // url_hash matches.
+  static void FastSetActiveURL(const GURL& url,
+                               size_t url_hash,
+                               GpuChannel* channel);
+
+  gles2::MemoryTracker* CreateMemoryTracker(
+      const GPUCreateCommandBufferConfig init_params) const;
+
+  // The lifetime of objects of this class is managed by a GpuChannel. The
+  // GpuChannels destroy all the CommandBufferStubs that they own when
+  // they are destroyed. So a raw pointer is safe.
+  GpuChannel* const channel_;
+
+  GURL active_url_;
+  size_t active_url_hash_;
+
+  // The group of contexts that share namespaces with this context.
+  scoped_refptr<gles2::ContextGroup> context_group_;
+
+  bool initialized_;
+  const SurfaceHandle surface_handle_;
+  bool use_virtualized_gl_context_;
+
+  std::unique_ptr<CommandBufferService> command_buffer_;
+  std::unique_ptr<gles2::GLES2Decoder> decoder_;
+
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<SyncPointClientState> sync_point_client_state_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
+
+  const CommandBufferId command_buffer_id_;
+  const SequenceId sequence_id_;
+  const int32_t stream_id_;
+  const int32_t route_id_;
+
+  base::Closure snapshot_requested_callback_;
 
  private:
   GpuMemoryManager* GetMemoryManager() const;
@@ -207,28 +226,7 @@ class GPU_EXPORT CommandBufferStub
   static void SetContextGpuFeatureInfo(gl::GLContext* context,
                                        const GpuFeatureInfo& gpu_feature_info);
 
-  // The lifetime of objects of this class is managed by a GpuChannel. The
-  // GpuChannels destroy all the CommandBufferStubs that they own when
-  // they are destroyed. So a raw pointer is safe.
-  GpuChannel* const channel_;
-
-  // The group of contexts that share namespaces with this context.
-  scoped_refptr<gles2::ContextGroup> context_group_;
-
-  bool initialized_;
-  const SurfaceHandle surface_handle_;
-  bool use_virtualized_gl_context_;
-  const CommandBufferId command_buffer_id_;
-  const SequenceId sequence_id_;
-  const int32_t stream_id_;
-  const int32_t route_id_;
   uint32_t last_flush_id_;
-
-  std::unique_ptr<CommandBufferService> command_buffer_;
-  std::unique_ptr<gles2::GLES2Decoder> decoder_;
-  scoped_refptr<SyncPointClientState> sync_point_client_state_;
-  scoped_refptr<gl::GLSurface> surface_;
-  scoped_refptr<gl::GLShareGroup> share_group_;
 
   base::ObserverList<DestructionObserver> destruction_observers_;
 
@@ -237,11 +235,6 @@ class GPU_EXPORT CommandBufferStub
   base::TimeTicks process_delayed_work_time_;
   uint32_t previous_processed_num_;
   base::TimeTicks last_idle_time_;
-
-  base::Closure snapshot_requested_callback_;
-
-  GURL active_url_;
-  size_t active_url_hash_;
 
   std::unique_ptr<WaitForCommandState> wait_for_token_;
   std::unique_ptr<WaitForCommandState> wait_for_get_offset_;
