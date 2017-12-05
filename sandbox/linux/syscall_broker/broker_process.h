@@ -14,6 +14,7 @@
 #include "base/pickle.h"
 #include "base/process/process.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 #include "sandbox/sandbox_export.h"
 
@@ -36,9 +37,16 @@ class BrokerFilePermission;
 // 4. Use open_broker.Open() to open files.
 class SANDBOX_EXPORT BrokerProcess {
  public:
+  // Handler to be used with a bpf_dsl Trap() function to forward system calls
+  // to the methods below.
+  static intptr_t SIGSYS_Handler(const arch_seccomp_data& args,
+                                 void* aux_broker_process);
+
   // |denied_errno| is the error code returned when methods such as Open()
   // or Access() are invoked on a file which is not in the whitelist (EACCESS
-  // would be a typical value). |permissions| describes the whitelisted set
+  // would be a typical value).  |allowed_command_mask| is a bitwise-or of
+  // kBrokerCommand*Mask constants from broker_command.h that further restrict
+  // the syscalls to execute. |permissions| describes the whitelisted set
   // of files the broker is is allowed to access. |fast_check_in_client|
   // controls whether doomed requests are first filtered on the client side
   // before being proxied. Apart from tests, this should always be true since
@@ -50,6 +58,7 @@ class SANDBOX_EXPORT BrokerProcess {
   // don't use it.
   BrokerProcess(
       int denied_errno,
+      const syscall_broker::BrokerCommandSet& allowed_command_set,
       const std::vector<syscall_broker::BrokerFilePermission>& permissions,
       bool fast_check_in_client = true,
       bool quiet_failures_for_tests = false);
@@ -62,37 +71,33 @@ class SANDBOX_EXPORT BrokerProcess {
   // after fork() returns.
   bool Init(const base::Callback<bool(void)>& broker_process_init_callback);
 
-  // Can be used in place of access(). Will be async signal safe.
+  // Return the PID of the child created by Init().
+  int broker_pid() const { return broker_pid_; }
+
+  // The following methods are used in place of the equivalently-named
+  // syscalls by the trap handler. They, in turn, forward the call onto
+  // |broker_client_| for further processing. They will all be async signal
+  // safe. They all return -errno on errors.
+
+  // Can be used in place of access().
   // X_OK will always return an error in practice since the broker process
   // doesn't support execute permissions.
-  // It's similar to the access() system call and will return -errno on errors.
   int Access(const char* pathname, int mode) const;
 
-  // Can be used in place of open(). Will be async signal safe.
+  // Can be used in place of open()
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
-  // It's similar to the open() system call and will return -errno on errors.
   int Open(const char* pathname, int flags) const;
 
-  // Can be used in place of stat()/stat64(). Will be async signal safe.
-  // It's similar to the stat() system call and will return -errno on errors.
+  // Can be used in place of stat()/stat64().
   int Stat(const char* pathname, struct stat* sb) const;
   int Stat64(const char* pathname, struct stat64* sb) const;
 
-  // Can be used in place of rename(). Will be async signal safe.
-  // It's similar to the rename() system call and will return -errno on errors.
+  // Can be used in place of rename().
   int Rename(const char* oldpath, const char* newpath) const;
 
-  // Can be used in place of readlink(). Will be async signal safe.
-  // It's similar to the read() system call and will return -errno on errors.
+  // Can be used in place of readlink().
   int Readlink(const char* path, char* buf, size_t bufsize) const;
-
-  int broker_pid() const { return broker_pid_; }
-
-  // Handler to be used with a bpf_dsl Trap() function to forward system calls
-  // to the methods above.
-  static intptr_t SIGSYS_Handler(const arch_seccomp_data& args,
-                                 void* aux_broker_process);
 
  private:
   friend class BrokerProcessTestHelper;
@@ -102,10 +107,11 @@ class SANDBOX_EXPORT BrokerProcess {
   void CloseChannel();
 
   bool initialized_;  // Whether we've been through Init() yet.
+  pid_t broker_pid_;  // The PID of the broker (child) created in Init().
   const bool fast_check_in_client_;
   const bool quiet_failures_for_tests_;
-  pid_t broker_pid_;  // The PID of the broker (child).
-  syscall_broker::BrokerPolicy broker_policy_;  // Access policy to enforce.
+  syscall_broker::BrokerCommandSet allowed_command_set_;
+  syscall_broker::BrokerPolicy broker_policy_;  // File access whitelist.
   std::unique_ptr<syscall_broker::BrokerClient> broker_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcess);

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
-#include "sandbox/linux/syscall_broker/broker_common.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 
 namespace sandbox {
 
@@ -36,6 +36,7 @@ class BrokerClient {
   // |quiet_failures_for_tests| to false unless you are writing tests.
   BrokerClient(const BrokerPolicy& policy,
                BrokerChannel::EndPoint ipc_channel,
+               const BrokerCommandSet& allowed_command_set,
                bool fast_check_in_client,
                bool quiet_failures_for_tests);
   ~BrokerClient();
@@ -72,17 +73,18 @@ class BrokerClient {
   int GetIPCDescriptor() const { return ipc_channel_.get(); }
 
  private:
-  int PathAndFlagsSyscall(IPCCommand syscall_type,
+  int PathAndFlagsSyscall(BrokerCommand syscall_type,
                           const char* pathname,
                           int flags) const;
 
-  int StatFamilySyscall(IPCCommand syscall_type,
+  int StatFamilySyscall(BrokerCommand syscall_type,
                         const char* pathname,
                         void* result_ptr,
                         size_t expected_result_size) const;
 
   const BrokerPolicy& broker_policy_;
   const BrokerChannel::EndPoint ipc_channel_;
+  const BrokerCommandSet allowed_command_set_;
   const bool fast_check_in_client_;  // Whether to forward a request that we
                                      // know will be denied to the broker. (Used
                                      // for tests).
