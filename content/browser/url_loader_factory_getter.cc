@@ -40,18 +40,9 @@ mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetBlobFactory() {
 
 void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
     mojom::URLLoaderFactory* test_factory) {
-  if (content::BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread(test_factory);
-  } else {
-    // Since the URLLoaderFactory pointers are bound on the IO thread, and this
-    // method is called on the UI thread, we are not able to unbind and return
-    // the old value. As such this class keeps two separate pointers, one for
-    // test.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread,
-                       this, test_factory));
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!test_factory_ || !test_factory);
+  test_factory_ = test_factory;
 }
 
 URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
@@ -61,12 +52,6 @@ void URLLoaderFactoryGetter::InitializeOnIOThread(
     mojom::URLLoaderFactoryPtrInfo blob_factory) {
   network_factory_.Bind(std::move(network_factory));
   blob_factory_.Bind(std::move(blob_factory));
-}
-
-void URLLoaderFactoryGetter::SetTestNetworkFactoryOnIOThread(
-    mojom::URLLoaderFactory* test_factory) {
-  DCHECK(!test_factory_ || !test_factory);
-  test_factory_ = test_factory;
 }
 
 }  // namespace content
