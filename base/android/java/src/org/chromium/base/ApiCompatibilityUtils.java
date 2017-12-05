@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.PowerManager;
@@ -445,6 +446,8 @@ public class ApiCompatibilityUtils {
 
     /**
      * @see android.content.res.Resources#getDrawable(int id).
+     * TODO(ltian): use {@link AppCompatResources} to parse drawable to prevent fail on
+     * {@link VectorDrawable}. (http://crbug.com/792129)
      */
     @SuppressWarnings("deprecation")
     public static Drawable getDrawable(Resources res, int id) throws NotFoundException {
