@@ -86,7 +86,8 @@ class ProxyAuthOnUserBoardScreenTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
                        PRE_ProxyAuthDialogOnUserBoardScreen) {
-  RegisterUser("test-user@gmail.com");
+  RegisterUser(
+      AccountId::FromUserEmailGaiaId("test-user@gmail.com", "1234567890"));
   StartupUtils::MarkOobeCompleted();
 }
 

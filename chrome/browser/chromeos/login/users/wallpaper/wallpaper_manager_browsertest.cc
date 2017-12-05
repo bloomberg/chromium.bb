@@ -54,15 +54,17 @@ namespace chromeos {
 
 namespace {
 
-int kLargeWallpaperWidth = 256;
-int kLargeWallpaperHeight = chromeos::kLargeWallpaperMaxHeight;
-int kSmallWallpaperWidth = 256;
-int kSmallWallpaperHeight = chromeos::kSmallWallpaperMaxHeight;
+constexpr int kLargeWallpaperWidth = 256;
+const int kLargeWallpaperHeight = chromeos::kLargeWallpaperMaxHeight;
+constexpr int kSmallWallpaperWidth = 256;
+const int kSmallWallpaperHeight = chromeos::kSmallWallpaperMaxHeight;
 
-const char kTestUser1[] = "test1@domain.com";
-const char kTestUser1Hash[] = "test1@domain.com-hash";
-const char kTestUser2[] = "test2@domain.com";
-const char kTestUser2Hash[] = "test2@domain.com-hash";
+constexpr char kTestUser1[] = "test1@domain.com";
+constexpr char kTestUser1GaiaId[] = "0000000001";
+constexpr char kTestUser1Hash[] = "test1@domain.com-hash";
+constexpr char kTestUser2[] = "test2@domain.com";
+constexpr char kTestUser2GaiaId[] = "0000000002";
+constexpr char kTestUser2Hash[] = "test2@domain.com-hash";
 
 // Helper function to get wallpaper files id.
 wallpaper::WallpaperFilesId GetFilesId(const AccountId& account_id) {
@@ -206,8 +208,10 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   // wallpaper images.
   std::unique_ptr<base::ScopedTempDir> wallpaper_dir_;
 
-  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
-  const AccountId test_account_id2_ = AccountId::FromUserEmail(kTestUser2);
+  const AccountId test_account_id1_ =
+      AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId);
+  const AccountId test_account_id2_ =
+      AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId);
 
   const wallpaper::WallpaperFilesId test_account1_wallpaper_files_id_ =
       wallpaper::WallpaperFilesId::FromString(kTestUser1Hash);

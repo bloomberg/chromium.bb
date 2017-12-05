@@ -19,8 +19,10 @@
 
 namespace {
 
-const char kTestUser1[] = "test-user1@gmail.com";
-const char kTestUser2[] = "test-user2@gmail.com";
+constexpr char kTestUser1[] = "test-user1@gmail.com";
+constexpr char kTestUser1GaiaId[] = "1111111111";
+constexpr char kTestUser2[] = "test-user2@gmail.com";
+constexpr char kTestUser2GaiaId[] = "2222222222";
 
 void NotCalledDbCallback(net::NSSCertDatabase* db) { ASSERT_TRUE(false); }
 
@@ -164,8 +166,8 @@ class NSSContextChromeOSBrowserTest : public chromeos::LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, PRE_TwoUsers) {
   // Initialization for ChromeOS multi-profile test infrastructure.
-  RegisterUser(kTestUser1);
-  RegisterUser(kTestUser2);
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
+  RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -173,9 +175,11 @@ IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, TwoUsers) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
   // Log in first user and get their DB.
-  LoginUser(kTestUser1);
+  const AccountId account_id1(
+      AccountId::FromUserEmailGaiaId(kTestUser1, kTestUser1GaiaId));
+  LoginUser(account_id1);
   Profile* profile1 = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
-      user_manager->FindUser(AccountId::FromUserEmail(kTestUser1)));
+      user_manager->FindUser(account_id1));
   ASSERT_TRUE(profile1);
 
   DBTester tester1(profile1);
@@ -185,11 +189,14 @@ IN_PROC_BROWSER_TEST_F(NSSContextChromeOSBrowserTest, TwoUsers) {
   UserAddingFinishObserver observer;
   chromeos::UserAddingScreen::Get()->Start();
   base::RunLoop().RunUntilIdle();
-  AddUser(kTestUser2);
+
+  const AccountId account_id2(
+      AccountId::FromUserEmailGaiaId(kTestUser2, kTestUser2GaiaId));
+  AddUser(account_id2);
   observer.WaitUntilUserAddingFinishedOrCancelled();
 
   Profile* profile2 = chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(
-      user_manager->FindUser(AccountId::FromUserEmail(kTestUser2)));
+      user_manager->FindUser(account_id2));
   ASSERT_TRUE(profile2);
 
   DBTester tester2(profile2);

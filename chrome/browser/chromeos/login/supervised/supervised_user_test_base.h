@@ -23,12 +23,14 @@
 
 namespace chromeos {
 
-const char kTestManager[] = "test-manager@gmail.com";
-const char kTestOtherUser[] = "test-user@gmail.com";
+constexpr char kTestManager[] = "test-manager@gmail.com";
+constexpr char kTestManagerGaiaId[] = "0001110001";
+constexpr char kTestOtherUser[] = "test-user@gmail.com";
+constexpr char kTestOtherUserGaiaId[] = "0002220001";
 
-const char kTestManagerPassword[] = "password";
-const char kTestSupervisedUserDisplayName[] = "John Doe";
-const char kTestSupervisedUserPassword[] = "simplepassword";
+constexpr char kTestManagerPassword[] = "password";
+constexpr char kTestSupervisedUserDisplayName[] = "John Doe";
+constexpr char kTestSupervisedUserPassword[] = "simplepassword";
 
 class SupervisedUsersSyncTestAdapter {
  public:

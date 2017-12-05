@@ -51,13 +51,14 @@ namespace chromeos {
 
 namespace {
 
-const char kTestUserName[] = "owner@invalid.domain";
+constexpr char kTestUserName[] = "owner@invalid.domain";
+constexpr char kTestUserGaiaId[] = "9876543210";
 
-const int kTestAutoclickDelayMs = 2000;
+constexpr int kTestAutoclickDelayMs = 2000;
 
 // Test user name for supervised user. The domain part must be matched with
 // user_manager::kSupervisedUserDomain.
-const char kTestSupervisedUserName[] = "test@locally-managed.localhost";
+constexpr char kTestSupervisedUserName[] = "test@locally-managed.localhost";
 
 class MockAccessibilityObserver {
  public:
@@ -303,7 +304,8 @@ class AccessibilityManagerTest : public InProcessBrowserTest {
 
   MockBrailleController braille_controller_;
 
-  const AccountId test_account_id_ = AccountId::FromUserEmail(kTestUserName);
+  const AccountId test_account_id_ =
+      AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId);
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManagerTest);
 };
@@ -640,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
 
 class AccessibilityManagerUserTypeTest
     : public AccessibilityManagerTest,
-      public ::testing::WithParamInterface<const char*> {
+      public ::testing::WithParamInterface<AccountId> {
  protected:
   AccessibilityManagerUserTypeTest() {}
   virtual ~AccessibilityManagerUserTypeTest() {}
@@ -652,9 +654,10 @@ class AccessibilityManagerUserTypeTest
 INSTANTIATE_TEST_CASE_P(
     UserTypeInstantiation,
     AccessibilityManagerUserTypeTest,
-    ::testing::Values(kTestUserName,
-                      user_manager::GuestAccountId().GetUserEmail().c_str(),
-                      kTestSupervisedUserName));
+    ::testing::Values(AccountId::FromUserEmailGaiaId(kTestUserName,
+                                                     kTestUserGaiaId),
+                      user_manager::GuestAccountId(),
+                      AccountId::FromUserEmail(kTestSupervisedUserName)));
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
                        EnableOnLoginScreenAndLogin) {
@@ -678,7 +681,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   EXPECT_TRUE(IsMonoAudioEnabled());
 
   // Logs in.
-  const AccountId account_id = AccountId::FromUserEmail(GetParam());
+  const AccountId account_id = GetParam();
   auto* session_manager = session_manager::SessionManager::Get();
   session_manager->CreateSession(account_id, account_id.GetUserEmail());
 
@@ -711,7 +714,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   // Logs in.
-  const AccountId account_id = AccountId::FromUserEmail(GetParam());
+  const AccountId account_id = GetParam();
   auto* session_manager = session_manager::SessionManager::Get();
   session_manager->CreateSession(account_id, account_id.GetUserEmail());
   StartUserSession(account_id);

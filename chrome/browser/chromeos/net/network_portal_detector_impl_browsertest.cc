@@ -25,6 +25,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
@@ -50,9 +51,10 @@ const char* const kNotificationMetric =
 const char* const kUserActionMetric =
     NetworkPortalNotificationController::kUserActionMetric;
 
-const char kTestUser[] = "test-user@gmail.com";
-const char kWifiServicePath[] = "/service/wifi";
-const char kWifiGuid[] = "wifi";
+constexpr char kTestUser[] = "test-user@gmail.com";
+constexpr char kTestUserGaiaId[] = "1234567890";
+constexpr char kWifiServicePath[] = "/service/wifi";
+constexpr char kWifiGuid[] = "wifi";
 
 void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
@@ -110,7 +112,11 @@ class NetworkPortalDetectorImplBrowserTest
       public captive_portal::CaptivePortalDetectorTestBase {
  public:
   NetworkPortalDetectorImplBrowserTest()
-      : LoginManagerTest(false), network_portal_detector_(NULL) {}
+      : LoginManagerTest(false),
+        test_account_id_(
+            AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId)),
+        network_portal_detector_(NULL) {}
+
   ~NetworkPortalDetectorImplBrowserTest() override {}
 
   void SetUpOnMainThread() override {
@@ -163,6 +169,9 @@ class NetworkPortalDetectorImplBrowserTest
         ->GetDialogForTesting();
   }
 
+ protected:
+  AccountId test_account_id_;
+
  private:
   NetworkPortalDetectorImpl* network_portal_detector_;
 
@@ -171,7 +180,7 @@ class NetworkPortalDetectorImplBrowserTest
 
 IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        PRE_InSessionDetection) {
-  RegisterUser(kTestUser);
+  RegisterUser(test_account_id_);
   StartupUtils::MarkOobeCompleted();
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy()->Id());
 }
@@ -187,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   EnumHistogramChecker action_checker(
       kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, NULL);
 
-  LoginUser(kTestUser);
+  LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
   // User connects to wifi.
@@ -250,7 +259,7 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
   EnumHistogramChecker action_checker(
       kUserActionMetric, Controller::USER_ACTION_METRIC_COUNT, nullptr);
 
-  LoginUser(kTestUser);
+  LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
 
   SetIgnoreNoNetworkForTesting();
@@ -292,7 +301,7 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
 
 IN_PROC_BROWSER_TEST_P(NetworkPortalDetectorImplBrowserTestIgnoreProxy,
                        PRE_TestWithPreference) {
-  RegisterUser(kTestUser);
+  RegisterUser(test_account_id_);
   StartupUtils::MarkOobeCompleted();
   EXPECT_EQ(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, strategy()->Id());
 }

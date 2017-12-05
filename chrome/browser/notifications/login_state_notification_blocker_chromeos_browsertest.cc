@@ -22,9 +22,6 @@ using namespace testing;
 
 namespace {
 
-const char* kTestUsers[] = {"test-user@gmail.com",
-                            "test-user1@gmail.com"};
-
 class UserAddingFinishObserver : public chromeos::UserAddingScreen::Observer {
  public:
   UserAddingFinishObserver() {
@@ -64,7 +61,18 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
       public message_center::MessageCenterObserver {
  public:
   LoginStateNotificationBlockerChromeOSBrowserTest()
-      : chromeos::LoginManagerTest(false) {}
+      : chromeos::LoginManagerTest(false) {
+    struct {
+      const char* email;
+      const char* gaia_id;
+    } const kTestUsers[] = {{"test-user@gmail.com", "1110001111"},
+                            {"test-user1@gmail.com", "1111111111"}};
+    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
+      test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
+          kTestUsers[i].email, kTestUsers[i].gaia_id));
+    }
+  }
+
   ~LoginStateNotificationBlockerChromeOSBrowserTest() override {}
 
   void SetUpOnMainThread() override {
@@ -127,6 +135,8 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
     return new_count == initial_count + 1;
   }
 
+  std::vector<AccountId> test_users_;
+
  private:
   int state_changed_count_ = 0;
 
@@ -138,8 +148,8 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        PRE_BaseTest) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -147,10 +157,10 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        BaseTest) {
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-notifier");
-  notifier_id.profile_id = kTestUsers[0];
+  notifier_id.profile_id = test_users_[0].GetUserEmail();
 
   // Logged in as a normal user.
-  LoginUser(kTestUsers[0]);
+  LoginUser(test_users_[0]);
 
   // One state change from LoginStateNotificationBloker plus one state change
   // for the InactiveUserNotificationBlocker.
@@ -174,8 +184,8 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
                        PRE_AlwaysAllowedNotifier) {
-  RegisterUser(kTestUsers[0]);
-  RegisterUser(kTestUsers[1]);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -185,10 +195,10 @@ IN_PROC_BROWSER_TEST_F(LoginStateNotificationBlockerChromeOSBrowserTest,
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierDisplay);
-  notifier_id.profile_id = kTestUsers[0];
+  notifier_id.profile_id = test_users_[0].GetUserEmail();
 
   // Logged in as a normal user.
-  LoginUser(kTestUsers[0]);
+  LoginUser(test_users_[0]);
 
   // One state change from LoginStateNotificationBloker plus one state change
   // for the InactiveUserNotificationBlocker.

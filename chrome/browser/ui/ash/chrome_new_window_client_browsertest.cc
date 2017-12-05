@@ -17,8 +17,10 @@
 
 namespace {
 
-const char kTestUserName1[] = "test1@test.com";
-const char kTestUserName2[] = "test2@test.com";
+constexpr char kTestUserName1[] = "test1@test.com";
+constexpr char kTestUser1GaiaId[] = "1111111111";
+constexpr char kTestUserName2[] = "test2@test.com";
+constexpr char kTestUser2GaiaId[] = "2222222222";
 
 void CreateAndStartUserSession(const AccountId& account_id) {
   using chromeos::ProfileHelper;
@@ -45,7 +47,8 @@ using ChromeNewWindowClientBrowserTest = InProcessBrowserTest;
 // should open a new window.
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
                        NewWindowForActiveWindowProfileTest) {
-  CreateAndStartUserSession(AccountId::FromUserEmail(kTestUserName1));
+  CreateAndStartUserSession(
+      AccountId::FromUserEmailGaiaId(kTestUserName1, kTestUser1GaiaId));
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
   Browser* browser1 = CreateBrowser(profile1);
   // The newly created window should be created for the current active profile.
@@ -53,7 +56,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
   EXPECT_EQ(GetLastActiveBrowser()->profile(), profile1);
 
   // Login another user and make sure the current active user changes.
-  CreateAndStartUserSession(AccountId::FromUserEmail(kTestUserName2));
+  CreateAndStartUserSession(
+      AccountId::FromUserEmailGaiaId(kTestUserName2, kTestUser2GaiaId));
   Profile* profile2 = ProfileManager::GetActiveUserProfile();
   EXPECT_NE(profile1, profile2);
 
@@ -84,7 +88,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest, IncognitoDisabled) {
-  CreateAndStartUserSession(AccountId::FromUserEmail(kTestUserName1));
+  CreateAndStartUserSession(
+      AccountId::FromUserEmailGaiaId(kTestUserName1, kTestUser2GaiaId));
   Profile* profile = ProfileManager::GetActiveUserProfile();
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 

@@ -68,16 +68,17 @@ namespace {
 // NOTE: Root dir for drive file system is set by Chrome's drive implementation,
 // but the test will have to make sure the mount point is added before
 // starting a test extension using WaitUntilDriveMountPointIsAdded().
-const char kLocalMountPointName[] = "local";
-const char kRestrictedMountPointName[] = "restricted";
+constexpr char kLocalMountPointName[] = "local";
+constexpr char kRestrictedMountPointName[] = "restricted";
 
 // Default file content for the test files.
-const char kTestFileContent[] = "This is some test content.";
+constexpr char kTestFileContent[] = "This is some test content.";
 
 // User account email and directory hash for secondary account for multi-profile
 // sensitive test cases.
-const char kSecondProfileAccount[] = "profile2@test.com";
-const char kSecondProfileHash[] = "fileBrowserApiTestProfile2";
+constexpr char kSecondProfileAccount[] = "profile2@test.com";
+constexpr char kSecondProfileGiaId[] = "9876543210";
+constexpr char kSecondProfileHash[] = "fileBrowserApiTestProfile2";
 
 class FakeSelectFileDialog : public ui::SelectFileDialog {
  public:
@@ -503,7 +504,9 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     base::FilePath user_data_directory;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     session_manager::SessionManager::Get()->CreateSession(
-        AccountId::FromUserEmail(kSecondProfileAccount), kSecondProfileHash);
+        AccountId::FromUserEmailGaiaId(kSecondProfileAccount,
+                                       kSecondProfileGiaId),
+        kSecondProfileHash);
     // Set up the secondary profile.
     base::FilePath profile_dir =
         user_data_directory.Append(

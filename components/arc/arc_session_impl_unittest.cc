@@ -27,6 +27,7 @@ namespace arc {
 namespace {
 
 constexpr char kFakeGmail[] = "user@gmail.com";
+constexpr char kFakeGmailGaiaId[] = "1234567890";
 
 class FakeDelegate : public ArcSessionImpl::Delegate {
  public:
@@ -127,13 +128,15 @@ class ArcSessionImplTest : public testing::Test {
     GetSessionManagerClient()->set_arc_available(true);
 
     // Create a user and set it as the primary user.
-    const AccountId account_id = AccountId::FromUserEmail(kFakeGmail);
+    const AccountId account_id =
+        AccountId::FromUserEmailGaiaId(kFakeGmail, kFakeGmailGaiaId);
     const user_manager::User* user = GetUserManager()->AddUser(account_id);
     GetUserManager()->UserLoggedIn(account_id, user->username_hash(), false);
   }
 
   ~ArcSessionImplTest() override {
-    GetUserManager()->RemoveUserFromList(AccountId::FromUserEmail(kFakeGmail));
+    GetUserManager()->RemoveUserFromList(
+        AccountId::FromUserEmailGaiaId(kFakeGmail, kFakeGmailGaiaId));
     chromeos::DBusThreadManager::Shutdown();
   }
 

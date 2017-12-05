@@ -9,6 +9,8 @@
 #include <string>
 #include "components/policy/core/common/cloud/policy_builder.h"
 
+class AccountId;
+
 namespace base {
 class CommandLine;
 }  // namespace base
@@ -87,19 +89,21 @@ void SetUserAffiliationIDs(
     const std::string& user_email,
     const std::set<std::string>& user_affiliation_ids);
 
-// Registers the user with the given |user_id| on the device and marks OOBE
+// Registers the user with the given |account_id| on the device and marks OOBE
 // as completed. This method should be called in PRE_* test.
-void PreLoginUser(const std::string& user_id);
+void PreLoginUser(const AccountId& account_id);
 
-// Log in user with |user_id|. User should be registered using PreLoginUser().
-void LoginUser(const std::string& user_id);
+// Log in user with |account_id|. User should be registered using
+// PreLoginUser().
+void LoginUser(const AccountId& user_id);
 
 // Set necessary for login command line switches. Execute it in
 // SetUpCommandLine().
 void AppendCommandLineSwitchesForLoginManager(base::CommandLine* command_line);
 
 extern const char kFakeRefreshToken[];
-extern const char kEnterpriseUser[];
+extern const char kEnterpriseUserEmail[];
+extern const char kEnterpriseUserGaiaId[];
 
 }  // namespace affiliation_test_helper
 

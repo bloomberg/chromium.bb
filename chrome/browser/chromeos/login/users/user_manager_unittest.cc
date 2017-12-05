@@ -150,11 +150,11 @@ class UserManagerTest : public testing::Test {
   }
 
   const AccountId owner_account_id_at_invalid_domain_ =
-      AccountId::FromUserEmail("owner@invalid.domain");
+      AccountId::FromUserEmailGaiaId("owner@invalid.domain", "1234567890");
   const AccountId account_id0_at_invalid_domain_ =
-      AccountId::FromUserEmail("user0@invalid.domain");
+      AccountId::FromUserEmailGaiaId("user0@invalid.domain", "0123456789");
   const AccountId account_id1_at_invalid_domain_ =
-      AccountId::FromUserEmail("user1@invalid.domain");
+      AccountId::FromUserEmailGaiaId("user1@invalid.domain", "9012345678");
 
  protected:
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
@@ -282,7 +282,8 @@ TEST_F(UserManagerTest, ProfileInitializedMigration) {
 
   // Clear the stored user data - when UserManager loads again, it should
   // migrate existing users by setting session_initialized to true for them.
-  user_manager::known_user::RemovePrefsForTesting((*users)[0]->GetAccountId());
+  user_manager::known_user::RemoveSetProfileEverInitializedPrefForTesting(
+      (*users)[0]->GetAccountId());
   ResetUserManager();
   users = &user_manager::UserManager::Get()->GetUsers();
   ASSERT_EQ(1U, users->size());

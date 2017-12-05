@@ -209,12 +209,13 @@ class ProfileManagerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
   // Helper function to register an user with id |user_id| and create profile
   // with a correct path.
-  void RegisterUser(const std::string& user_id) {
+  void RegisterUser(const AccountId& account_id) {
     chromeos::ProfileHelper* profile_helper = chromeos::ProfileHelper::Get();
     const std::string user_id_hash =
-        profile_helper->GetUserIdHashByUserIdForTesting(user_id);
-    user_manager::UserManager::Get()->UserLoggedIn(
-        AccountId::FromUserEmail(user_id), user_id_hash, false);
+        profile_helper->GetUserIdHashByUserIdForTesting(
+            account_id.GetUserEmail());
+    user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
+                                                   false);
     g_browser_process->profile_manager()->GetProfile(
         profile_helper->GetProfilePathByUserIdHash(user_id_hash));
   }
@@ -280,8 +281,10 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   EXPECT_EQ(expected_default.value(),
             profile_manager->GetInitialProfileDir().value());
 
-  const char kTestUserName[] = "test-user@example.com";
-  const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
+  constexpr char kTestUserName[] = "test-user@example.com";
+  constexpr char kTestUserGaiaId[] = "0123456789";
+  const AccountId test_account_id(
+      AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId));
   chromeos::FakeChromeUserManager* user_manager =
       new chromeos::FakeChromeUserManager();
   user_manager::ScopedUserManager enabler(base::WrapUnique(user_manager));
@@ -322,10 +325,11 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
 
   // User signs in but user profile loading has not started.
   const std::string user_id = "test-user@example.com";
+  const std::string gaia_id = "0123456789";
   const std::string user_id_hash =
       ProfileHelper::Get()->GetUserIdHashByUserIdForTesting(user_id);
   user_manager::UserManager::Get()->UserLoggedIn(
-      AccountId::FromUserEmail(user_id), user_id_hash, false);
+      AccountId::FromUserEmailGaiaId(user_id, gaia_id), user_id_hash, false);
 
   // Sign-in profile should be returned at this stage. Otherwise, login code
   // ends up in an invalid state. Strange things as in http://crbug.com/728683
@@ -608,9 +612,17 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     session_type_ = extensions::ScopedCurrentFeatureSessionType(
         extensions::GetCurrentFeatureSessionType());
 
-    RegisterUser(user_manager::kGuestUserName);
+    RegisterUser(GetFakeUserManager()->GetGuestAccountId());
 #endif
   }
+
+ private:
+#if defined(OS_CHROMEOS)
+  chromeos::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<chromeos::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
+#endif
 };
 
 TEST_F(ProfileManagerGuestTest, GetLastUsedProfileAllowedByPolicy) {
@@ -758,7 +770,8 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
   // On CrOS, profile returned by GetLastUsedProfile is a sign-in profile that
   // is forced to be incognito. That's why we need to create at least one user
   // to get a regular profile.
-  RegisterUser("test-user@example.com");
+  RegisterUser(
+      AccountId::FromUserEmailGaiaId("test-user@example.com", "1234567890"));
 #endif
 
   Profile* profile = profile_manager->GetLastUsedProfileAllowedByPolicy();

@@ -167,8 +167,10 @@ class SystemTrayClientClockTest : public chromeos::LoginManagerTest {
   SystemTrayClientClockTest()
       : LoginManagerTest(false /* should_launch_browser */),
         // Use consumer emails to avoid having to fake a policy fetch.
-        account_id1_(AccountId::FromUserEmail("user1@gmail.com")),
-        account_id2_(AccountId::FromUserEmail("user2@gmail.com")) {}
+        account_id1_(
+            AccountId::FromUserEmailGaiaId("user1@gmail.com", "1111111111")),
+        account_id2_(
+            AccountId::FromUserEmailGaiaId("user2@gmail.com", "2222222222")) {}
 
   ~SystemTrayClientClockTest() override = default;
 
@@ -190,8 +192,8 @@ class SystemTrayClientClockTest : public chromeos::LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest,
                        PRE_TestMultiProfile24HourClock) {
-  RegisterUser(account_id1_.GetUserEmail());
-  RegisterUser(account_id2_.GetUserEmail());
+  RegisterUser(account_id1_);
+  RegisterUser(account_id2_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -205,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, TestMultiProfile24HourClock) {
   ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api.get());
 
   // Login a user with a 24-hour clock.
-  LoginUser(account_id1_.GetUserEmail());
+  LoginUser(account_id1_);
   SetupUserProfile(account_id1_, true /* use_24_hour_clock */);
   bool is_24_hour = false;
   wait_for.Is24HourClock(&is_24_hour);
@@ -214,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, TestMultiProfile24HourClock) {
   // Add a user with a 12-hour clock.
   chromeos::UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
-  AddUser(account_id2_.GetUserEmail());
+  AddUser(account_id2_);
   SetupUserProfile(account_id2_, false /* use_24_hour_clock */);
   wait_for.Is24HourClock(&is_24_hour);
   EXPECT_FALSE(is_24_hour);

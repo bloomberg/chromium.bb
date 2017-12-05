@@ -32,6 +32,9 @@
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/known_user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
@@ -41,8 +44,9 @@ namespace policy {
 
 namespace affiliation_test_helper {
 
-const char kFakeRefreshToken[] = "fake-refresh-token";
-const char kEnterpriseUser[] = "testuser@example.com";
+constexpr char kFakeRefreshToken[] = "fake-refresh-token";
+constexpr char kEnterpriseUserEmail[] = "testuser@example.com";
+constexpr char kEnterpriseUserGaiaId[] = "01234567890";
 
 void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
   const AccountId account_id =
@@ -97,21 +101,24 @@ void SetUserAffiliationIDs(
       cryptohome::Identification(account_id), user_policy->GetBlob());
 }
 
-void PreLoginUser(const std::string& user_id) {
+void PreLoginUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
-  users_pref->AppendIfNotPresent(base::MakeUnique<base::Value>(user_id));
+  users_pref->AppendIfNotPresent(
+      base::MakeUnique<base::Value>(account_id.GetUserEmail()));
+  if (user_manager::UserManager::IsInitialized())
+    user_manager::known_user::SetProfileEverInitialized(account_id, false);
+
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-void LoginUser(const std::string& user_id) {
+void LoginUser(const AccountId& account_id) {
   chromeos::test::UserSessionManagerTestApi session_manager_test_api(
       chromeos::UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
-  chromeos::UserContext user_context(
-      AccountId::FromUserEmailGaiaId(user_id, "gaia-id-" + user_id));
+  chromeos::UserContext user_context(account_id);
   user_context.SetKey(chromeos::Key("password"));
-  if (user_id == kEnterpriseUser) {
+  if (account_id.GetUserEmail() == kEnterpriseUserEmail) {
     user_context.SetRefreshToken(kFakeRefreshToken);
   }
   chromeos::ExistingUserController* controller =
@@ -130,7 +137,8 @@ void LoginUser(const std::string& user_id) {
     if ((*it)->GetAccountId() == user_context.GetAccountId())
       return;
   }
-  ADD_FAILURE() << user_id << " was not added via PreLoginUser()";
+  ADD_FAILURE() << account_id.Serialize()
+                << " was not added via PreLoginUser()";
 }
 
 void AppendCommandLineSwitchesForLoginManager(base::CommandLine* command_line) {

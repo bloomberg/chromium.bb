@@ -25,14 +25,22 @@ namespace chromeos {
 
 namespace {
 
-const char kTestUser1[] = "test-user1@gmail.com";
-const char kTestUser2[] = "test-user2@gmail.com";
+struct {
+  const char* email;
+  const char* gaia_id;
+} const kTestUsers[] = {{"test-user1@gmail.com", "1111111111"},
+                        {"test-user2@gmail.com", "2222222222"}};
 
 }  // namespace
 
 class LoginUITest : public chromeos::LoginManagerTest {
  public:
   LoginUITest() : LoginManagerTest(false) {
+    for (size_t i = 0; i < arraysize(kTestUsers); ++i) {
+      test_users_.emplace_back(AccountId::FromUserEmailGaiaId(
+          kTestUsers[i].email, kTestUsers[i].gaia_id));
+    }
+
     screenshot_testing_ = new ScreenshotTestingMixin;
     screenshot_testing_->IgnoreArea(areas::kClockArea);
     screenshot_testing_->IgnoreArea(areas::kFirstUserpod);
@@ -42,12 +50,14 @@ class LoginUITest : public chromeos::LoginManagerTest {
   ~LoginUITest() override {}
 
  protected:
+  std::vector<AccountId> test_users_;
+
   ScreenshotTestingMixin* screenshot_testing_;
 };
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_LoginUIVisible) {
-  RegisterUser(kTestUser1);
-  RegisterUser(kTestUser2);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
   StartupUtils::MarkOobeCompleted();
 }
 
@@ -58,10 +68,14 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, LoginUIVisible) {
   JSExpect(
       "document.querySelectorAll('.pod:not(#user-pod-template)').length == 2");
 
-  JSExpect("document.querySelectorAll('.pod:not(#user-pod-template)')[0]"
-           ".user.emailAddress == '" + std::string(kTestUser1) + "'");
-  JSExpect("document.querySelectorAll('.pod:not(#user-pod-template)')[1]"
-           ".user.emailAddress == '" + std::string(kTestUser2) + "'");
+  JSExpect(
+      "document.querySelectorAll('.pod:not(#user-pod-template)')[0]"
+      ".user.emailAddress == '" +
+      test_users_[0].GetUserEmail() + "'");
+  JSExpect(
+      "document.querySelectorAll('.pod:not(#user-pod-template)')[1]"
+      ".user.emailAddress == '" +
+      test_users_[1].GetUserEmail() + "'");
   screenshot_testing_->RunScreenshotTesting("LoginUITest-LoginUIVisible");
 }
 
@@ -83,8 +97,8 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, OobeNoExceptions) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_LoginNoExceptions) {
-  RegisterUser(kTestUser1);
-  RegisterUser(kTestUser2);
+  RegisterUser(test_users_[0]);
+  RegisterUser(test_users_[1]);
   StartupUtils::MarkOobeCompleted();
 }
 

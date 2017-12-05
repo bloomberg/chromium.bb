@@ -37,6 +37,7 @@ namespace {
 constexpr char kGaiaUrl[] = "https://accounts.google.com";
 constexpr char kChromeConnectedHeader[] = "X-Chrome-Connected";
 constexpr char kUserEmail[] = "user@gmail.com";
+constexpr char kUserGaiaId[] = "1234567890";
 
 void CheckRequestHeader(net::URLRequest* url_request,
                         const char* header_name,
@@ -95,7 +96,7 @@ class ChromeOsMirrorAccountConsistencyTest : public chromeos::LoginManagerTest {
 
   ChromeOsMirrorAccountConsistencyTest()
       : LoginManagerTest(false),
-        account_id_(AccountId::FromUserEmail(kUserEmail)) {}
+        account_id_(AccountId::FromUserEmailGaiaId(kUserEmail, kUserGaiaId)) {}
 
   const AccountId account_id_;
 
@@ -105,7 +106,7 @@ class ChromeOsMirrorAccountConsistencyTest : public chromeos::LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
                        PRE_TestMirrorRequestChromeOsChildAccount) {
-  RegisterUser(account_id_.GetUserEmail());
+  RegisterUser(account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -115,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   // On Chrome OS this is false.
   ASSERT_FALSE(signin::IsAccountConsistencyMirrorEnabled());
   // Child user.
-  LoginUser(account_id_.GetUserEmail());
+  LoginUser(account_id_);
 
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
   ASSERT_EQ(user, user_manager::UserManager::Get()->GetPrimaryUser());
@@ -144,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
                        PRE_TestMirrorRequestChromeOsNotChildAccount) {
-  RegisterUser(account_id_.GetUserEmail());
+  RegisterUser(account_id_);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
@@ -154,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   // On Chrome OS this is false.
   ASSERT_FALSE(signin::IsAccountConsistencyMirrorEnabled());
   // Not a child user.
-  LoginUser(account_id_.GetUserEmail());
+  LoginUser(account_id_);
 
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
   ASSERT_EQ(user, user_manager::UserManager::Get()->GetPrimaryUser());
