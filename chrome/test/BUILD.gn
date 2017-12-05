@@ -666,7 +666,10 @@ test("browser_tests") {
       "../browser/sessions/tab_restore_browsertest.cc",
       "../browser/site_details_browsertest.cc",
       "../browser/thumbnails/thumbnail_browsertest.cc",
+      "../browser/ui/blocked_content/popup_blocker_browsertest.cc",
+      "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
+      "../browser/ui/blocked_content/tab_under_blocker_browsertest.cc",
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.
@@ -4354,9 +4357,6 @@ if (is_android) {
       "../browser/renderer_host/site_per_process_text_input_browsertest.cc",
       "../browser/site_per_process_interactive_browsertest.cc",
       "../browser/ui/autofill/autofill_popup_controller_interactive_uitest.cc",
-      "../browser/ui/blocked_content/popup_blocker_browsertest.cc",
-      "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
-      "../browser/ui/blocked_content/tab_under_blocker_browsertest.cc",
       "../browser/ui/browser_command_controller_interactive_browsertest.cc",
       "../browser/ui/browser_focus_uitest.cc",
       "../browser/ui/cocoa/apps/app_shim_menu_controller_mac_interactive_uitest.mm",
