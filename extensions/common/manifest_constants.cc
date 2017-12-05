@@ -130,9 +130,6 @@ const char kPlatformAppBackground[] = "app.background";
 const char kPlatformAppBackgroundPage[] = "app.background.page";
 const char kPlatformAppBackgroundScripts[] = "app.background.scripts";
 const char kPlatformAppContentSecurityPolicy[] = "app.content_security_policy";
-const char kPlugins[] = "plugins";
-const char kPluginsPath[] = "path";
-const char kPluginsPublic[] = "public";
 const char kPublicKey[] = "key";
 const char kRemoveButton[] = "remove_button";
 const char kRequirements[] = "requirements";
@@ -603,12 +600,6 @@ const char kInvalidPermissions[] =
     "Invalid value for 'permissions'.";
 const char kInvalidPermissionScheme[] =
     "Invalid scheme for 'permissions[*]'.";
-const char kInvalidPlugins[] =
-    "Invalid value for 'plugins'.";
-const char kInvalidPluginsPath[] =
-    "Invalid value for 'plugins[*].path'.";
-const char kInvalidPluginsPublic[] =
-    "Invalid value for 'plugins[*].public'.";
 const char kInvalidRequirement[] =
     "Invalid value for requirement \"*\"";
 const char kInvalidRequirements[] =

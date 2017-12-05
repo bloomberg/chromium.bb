@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/common/socket_permission_request.h"

@@ -196,8 +196,6 @@ if (enable_extensions) {
       "manifest_handlers/options_page_info.h",
       "manifest_handlers/permissions_parser.cc",
       "manifest_handlers/permissions_parser.h",
-      "manifest_handlers/plugins_handler.cc",
-      "manifest_handlers/plugins_handler.h",
       "manifest_handlers/requirements_info.cc",
       "manifest_handlers/requirements_info.h",
       "manifest_handlers/sandboxed_page_info.cc",
