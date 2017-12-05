@@ -28,8 +28,7 @@ class KeyMobileSitesSmoothPage(page_module.Page):
     if name == '':
       name = url
     super(KeyMobileSitesSmoothPage, self).__init__(
-        url=url, page_set=page_set, name=name,
-        credentials_path='data/credentials.json', tags=tags,
+        url=url, page_set=page_set, name=name, tags=tags,
         shared_page_state_class=shared_page_state.SharedMobilePageState)
     self.action_on_load_complete = action_on_load_complete
 

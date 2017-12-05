@@ -16,12 +16,10 @@ def _DeterministicPerformanceCounters():
 
 class GooglePages(page_module.Page):
   def __init__(self, url, page_set, shared_page_state_class,
-               name='', credentials=None):
+               name=''):
     super(GooglePages, self).__init__(
         url=url, page_set=page_set, name=name,
-        credentials_path='data/credentials.json',
         shared_page_state_class=shared_page_state_class)
-    self.credentials = credentials
     self.script_to_evaluate_on_commit = _DeterministicPerformanceCounters()
 
 
@@ -35,8 +33,7 @@ class GmailPage(GooglePages):
         name='https://mail.google.com/mail/')
 
   def RunNavigateSteps(self, action_runner):
-    google_login.LoginGoogleAccount(action_runner, 'google',
-                                    self.credentials_path)
+    google_login.LoginGoogleAccount(action_runner, 'google')
     super(GmailPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'

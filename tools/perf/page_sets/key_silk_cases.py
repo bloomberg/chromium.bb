@@ -19,7 +19,7 @@ class KeySilkCasesPage(page_module.Page):
     if not name.startswith('http'):
       name = url.split('/')[-1]
     super(KeySilkCasesPage, self).__init__(
-        url=url, page_set=page_set, credentials_path = 'data/credentials.json',
+        url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
         name=name)
     self._run_no_page_interactions = run_no_page_interactions
@@ -466,8 +466,6 @@ class Page22(KeySilkCasesPage):
     super(Page22, self).__init__(
       url='http://plus.google.com/app/basic/stream',
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
-
-    self.credentials = 'google'
 
   def RunNavigateSteps(self, action_runner):
     super(Page22, self).RunNavigateSteps(action_runner)

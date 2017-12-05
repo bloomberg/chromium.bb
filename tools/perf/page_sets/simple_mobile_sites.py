@@ -13,7 +13,6 @@ class SimplePage(page_module.Page):
         url=url,
         page_set=page_set,
         shared_page_state_class=shared_page_state.Shared10InchTabletPageState,
-        credentials_path='data/credentials.json',
         name=url)
 
   def RunNavigateSteps(self, action_runner):

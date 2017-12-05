@@ -13,7 +13,7 @@ class KeyMobileSitesPage(page_module.Page):
     super(KeyMobileSitesPage, self).__init__(
         url=url, page_set=page_set, name=name,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
-        credentials_path='data/credentials.json', tags=tags)
+        tags=tags)
 
 
 class CapitolVolkswagenPage(KeyMobileSitesPage):

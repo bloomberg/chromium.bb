@@ -11,7 +11,6 @@ class Typical10MobilePage(page_module.Page):
   def __init__(self, url, page_set, name=''):
     super(Typical10MobilePage, self).__init__(
         url=url, page_set=page_set, name=name,
-        credentials_path = 'data/credentials.json',
         shared_page_state_class=shared_page_state.SharedMobilePageState)
 
   def RunPageInteractions(self, action_runner):

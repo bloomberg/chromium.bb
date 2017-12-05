@@ -7,14 +7,12 @@ from telemetry import story
 
 
 class SimplePage(page_module.Page):
-  def __init__(self, url, page_set, credentials='', name=''):
+  def __init__(self, url, page_set, name=''):
     if name == '':
       name = url
     super(SimplePage, self).__init__(
         url, page_set=page_set, name=name,
-        credentials_path='data/credentials.json',
         shared_page_state_class=shared_page_state.SharedDesktopPageState)
-    self.credentials = credentials
 
   def RunPageInteractions(self, action_runner):
     pass
@@ -34,8 +32,7 @@ class Gmail(SimplePage):
   def __init__(self, page_set):
     super(Gmail, self).__init__(
       url='https://mail.google.com/mail/',
-      page_set=page_set,
-      credentials='google')
+      page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
     super(Gmail, self).RunNavigateSteps(action_runner)
@@ -48,8 +45,7 @@ class GoogleCalendar(SimplePage):
   def __init__(self, page_set):
     super(GoogleCalendar, self).__init__(
       url='https://www.google.com/calendar/',
-      page_set=page_set,
-      credentials='google')
+      page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
     super(GoogleCalendar, self).RunNavigateSteps(action_runner)
@@ -67,8 +63,7 @@ class Youtube(SimplePage):
   def __init__(self, page_set):
     super(Youtube, self).__init__(
       url='http://www.youtube.com',
-      page_set=page_set,
-      credentials='google')
+      page_set=page_set)
 
   def RunNavigateSteps(self, action_runner):
     super(Youtube, self).RunNavigateSteps(action_runner)
@@ -80,7 +75,6 @@ class Facebook(SimplePage):
     super(Facebook, self).__init__(
       url='https://www.facebook.com/barackobama',
       page_set=page_set,
-      credentials='facebook2',
       name='Facebook')
 
   def RunNavigateSteps(self, action_runner):
