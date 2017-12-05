@@ -165,6 +165,9 @@ class WebContents;
 
 @property(assign, nonatomic) TabView* hoveredTab;
 
+// Time (in seconds) in which tabs animate to their final position.
++ (CGFloat)tabAnimationDuration;
+
 // Initialize the controller with a view and browser that contains
 // everything else we'll need. |switchView| is the view whose contents get
 // "switched" every time the user switches tabs. The children of this view
