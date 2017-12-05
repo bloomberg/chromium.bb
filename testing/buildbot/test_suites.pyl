@@ -151,6 +151,12 @@
     'cast_graphics_unittests': {},
   },
 
+  'check_network_annotations_script': {
+    'check_network_annotations': {
+      'script': 'check_network_annotations.py',
+    },
+  },
+
   'chromium_gtests': {
     'base_unittests': {},
     'blink_heap_unittests': {},

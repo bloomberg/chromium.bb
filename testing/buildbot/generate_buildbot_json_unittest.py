@@ -30,7 +30,7 @@ FOO_GTESTS_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'swarming': {
           'dimension_sets': [
@@ -52,7 +52,7 @@ COMPOSITION_GTEST_SUITE_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'gtest_tests': 'composition_tests',
@@ -67,7 +67,7 @@ FOO_ISOLATED_SCRIPTS_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'isolated_scripts': 'composition_tests',
@@ -82,7 +82,7 @@ FOO_SCRIPT_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'scripts': 'foo_scripts',
@@ -97,7 +97,7 @@ FOO_JUNIT_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'junit_tests': 'composition_tests',
@@ -112,7 +112,7 @@ FOO_CTS_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'cts_tests': 'foo_cts_tests',
@@ -127,7 +127,7 @@ FOO_INSTRUMENTATION_TEST_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'instrumentation_tests': 'composition_tests',
@@ -142,7 +142,7 @@ UNKNOWN_TEST_SUITE_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'gtest_tests': 'baz_tests',
@@ -157,7 +157,7 @@ UNKNOWN_TEST_SUITE_TYPE_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'testers': {
+    'machines': {
       'Fake Tester': {
         'test_suites': {
           'gtest_tests': 'foo_tests',
@@ -173,14 +173,12 @@ ANDROID_WATERFALL = """\
 [
   {
     'name': 'chromium.test',
-    'builders': {
+    'machines': {
       'Android Builder': {
         'additional_compile_targets': [
           'bar_test',
         ],
       },
-    },
-    'testers': {
       'Fake Android K Tester': {
         'additional_compile_targets': [
           'bar_test',

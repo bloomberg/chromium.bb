@@ -11,7 +11,7 @@
 [
   {
     'name': 'chromium.android',
-    'builders': {
+    'machines': {
       'Android ASAN (dbg)': {
         'additional_compile_targets': [
           'all',
@@ -53,8 +53,6 @@
           'cast_shell_apk',
         ],
       },
-    },
-    'testers': {
       'Android Cronet ARMv6 Builder': {
         'test_suites': {
           'gtest_tests': 'cronet_gtests',
@@ -291,7 +289,7 @@
   },
   {
     'name': 'chromium.linux',
-    'builders': {
+    'machines': {
       'Android Arm64 Builder (dbg)': {
         'additional_compile_targets': [
           'all',
@@ -352,12 +350,9 @@
         'additional_compile_targets': [
           'all'
         ],
-        'scripts': [
-          {
-            'name': 'check_network_annotations',
-            'script': 'check_network_annotations.py'
-          }
-        ]
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        }
       },
       'Linux Builder (dbg)': {
         'additional_compile_targets': [
@@ -370,8 +365,6 @@
           'sync_integration_tests'
         ]
       },
-    },
-    'testers': {
       'Android Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
@@ -472,14 +465,12 @@
   },
   {
     'name': 'chromium.mac',
-    'builders': {
+    'machines': {
       'Mac Builder': {
         'additional_compile_targets': [
           'pdf_fuzzers',
         ],
       },
-    },
-    'testers': {
       'Mac10.10 Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -515,17 +506,14 @@
   },
   {
     'name': 'chromium.win',
-    'builders': {
+    'machines': {
       'Win Builder': {
         'additional_compile_targets': [
           'pdf_fuzzers'
         ],
-        'scripts': [
-          {
-            'name': 'check_network_annotations',
-            'script': 'check_network_annotations.py'
-          }
-        ]
+        'test_suites': {
+          'scripts': 'check_network_annotations_script',
+        },
       },
       'WinMSVC64': {
         'additional_compile_targets': [
@@ -536,9 +524,7 @@
         'additional_compile_targets': [
           'all',
         ],
-      }
-    },
-    'testers': {
+      },
       'Win 7 Tests x64 (1)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
