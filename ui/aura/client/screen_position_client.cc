@@ -7,7 +7,7 @@
 #include "ui/base/class_property.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(aura::client::ScreenPositionClient*)
+DEFINE_UI_CLASS_PROPERTY_TYPE(aura::client::ScreenPositionClient*)
 
 namespace aura {
 namespace client {

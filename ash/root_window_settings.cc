@@ -9,7 +9,7 @@
 #include "ui/base/class_property.h"
 #include "ui/display/types/display_constants.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::RootWindowSettings*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::RootWindowSettings*);
 
 namespace ash {
 

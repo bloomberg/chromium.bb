@@ -25,7 +25,7 @@
 
 using std::make_pair;
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::Shadow*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::Shadow*);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(::wm::Shadow, kShadowLayerKey, nullptr);
 
 namespace wm {

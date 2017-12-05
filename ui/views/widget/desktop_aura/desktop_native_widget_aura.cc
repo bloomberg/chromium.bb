@@ -62,8 +62,8 @@
 #include "ui/base/win/shell.h"
 #endif
 
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
-                                      views::DesktopNativeWidgetAura*);
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
+                                       views::DesktopNativeWidgetAura*);
 
 namespace views {
 

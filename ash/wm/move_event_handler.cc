@@ -15,7 +15,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::MoveEventHandler*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::MoveEventHandler*);
 
 namespace {
 

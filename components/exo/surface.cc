@@ -46,7 +46,7 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(exo::Surface*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*);
 
 namespace exo {
 namespace {

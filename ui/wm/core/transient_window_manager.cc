@@ -21,7 +21,7 @@
 
 using aura::Window;
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(::wm::TransientWindowManager*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(::wm::TransientWindowManager*);
 
 namespace wm {
 namespace {

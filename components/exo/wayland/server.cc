@@ -117,7 +117,7 @@
 #include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
 #endif
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(wl_resource*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(wl_resource*);
 
 namespace exo {
 namespace wayland {

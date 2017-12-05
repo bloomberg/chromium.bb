@@ -6,7 +6,7 @@
 
 #include "ui/base/class_property.h"
 
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AX_EXPORT, AXRole)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AX_EXPORT, AXRole)
 
 namespace ui {
 

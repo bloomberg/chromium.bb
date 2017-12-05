@@ -18,7 +18,7 @@
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
 
 namespace {
 

@@ -7,7 +7,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(wm::ActivationClient*)
+DEFINE_UI_CLASS_PROPERTY_TYPE(wm::ActivationClient*)
 
 namespace wm {
 

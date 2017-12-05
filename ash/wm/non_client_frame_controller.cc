@@ -39,7 +39,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameController*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameController*);
 
 namespace ash {
 namespace {
