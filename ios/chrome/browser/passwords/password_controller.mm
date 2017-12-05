@@ -478,7 +478,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // TODO(crbug.com/418827): Fix this by passing in more data from the JS side.
   id completionHandler = ^(BOOL found, const autofill::PasswordForm& form) {
     PasswordController* strongSelf = weakSelf;
-    if (strongSelf && ![strongSelf isWebStateDestroyed]) {
+    if (strongSelf && ![strongSelf isWebStateDestroyed] &&
+        strongSelf.passwordManager) {
       strongSelf.passwordManager->OnPasswordFormSubmitted(
           strongSelf.passwordManagerDriver, form);
     }
