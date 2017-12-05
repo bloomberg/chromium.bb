@@ -168,7 +168,13 @@ IN_PROC_BROWSER_TEST_F(RealServiceProcessControlBrowserTest,
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
+// Flaky on Windows. crbug.com/791791
+#if defined(OS_WIN)
+#define MAYBE_LaunchAndIPC DISABLED_LaunchAndIPC
+#else
+#define MAYBE_LaunchAndIPC LaunchAndIPC
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_LaunchAndIPC) {
   LaunchServiceProcessControl(true);
 
   // Make sure we are connected to the service process.
@@ -184,7 +190,14 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndReconnect) {
+// Flaky on Windows. crbug.com/791791
+#if defined(OS_WIN)
+#define MAYBE_LaunchAndReconnect DISABLED_LaunchAndReconnect
+#else
+#define MAYBE_LaunchAndReconnect LaunchAndReconnect
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_LaunchAndReconnect) {
   LaunchServiceProcessControl(true);
 
   // Make sure we are connected to the service process.
