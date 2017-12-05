@@ -92,3 +92,7 @@ class PixelExpectations(GpuTestExpectations):
         ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
+
+    # Failing on NVIDIA Shield TV; not sure why yet.
+    self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
+              ['android', 'nvidia'], bug=791733)
