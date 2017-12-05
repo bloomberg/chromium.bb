@@ -35,7 +35,7 @@ using ClearStorageResult = ClearStorageTask::ClearStorageResult;
 
 namespace {
 
-const base::TimeDelta kInitialingTaskDelay = base::TimeDelta::FromSeconds(20);
+const base::TimeDelta kInitializingTaskDelay = base::TimeDelta::FromSeconds(20);
 // The time that the storage cleanup will be triggered again since the last
 // one.
 const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(30);
@@ -95,12 +95,13 @@ SavePageResult AddPageResultToSavePageResult(AddPageResult add_page_result) {
 OfflinePageModelTaskified::OfflinePageModelTaskified(
     std::unique_ptr<OfflinePageMetadataStoreSQL> store,
     std::unique_ptr<ArchiveManager> archive_manager,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    std::unique_ptr<base::Clock> clock)
     : store_(std::move(store)),
       archive_manager_(std::move(archive_manager)),
       policy_controller_(new ClientPolicyController()),
       task_queue_(this),
-      clock_(new base::DefaultClock()),
+      clock_(std::move(clock)),
       weak_ptr_factory_(this) {
   CreateArchivesDirectoryIfNeeded();
   PostClearLegacyTemporaryPagesTask();
@@ -364,7 +365,7 @@ void OfflinePageModelTaskified::PostClearLegacyTemporaryPagesTask() {
       FROM_HERE,
       base::Bind(&OfflinePageModelTaskified::ClearLegacyTemporaryPages,
                  weak_ptr_factory_.GetWeakPtr()),
-      kInitialingTaskDelay);
+      kInitializingTaskDelay);
 }
 
 void OfflinePageModelTaskified::ClearLegacyTemporaryPages() {
@@ -382,7 +383,7 @@ void OfflinePageModelTaskified::PostClearCachedPagesTask(bool is_initializing) {
         FROM_HERE,
         base::Bind(&OfflinePageModelTaskified::PostClearCachedPagesTask,
                    weak_ptr_factory_.GetWeakPtr(), false),
-        kInitialingTaskDelay);
+        kInitializingTaskDelay);
   }
 
   // If not enough time has passed, do not post the task.
@@ -417,7 +418,7 @@ void OfflinePageModelTaskified::PostCheckMetadataConsistencyTask(
         FROM_HERE,
         base::Bind(&OfflinePageModelTaskified::PostCheckMetadataConsistencyTask,
                    weak_ptr_factory_.GetWeakPtr(), false),
-        kInitialingTaskDelay);
+        kInitializingTaskDelay);
     return;
   }
 

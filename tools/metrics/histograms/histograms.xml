@@ -54596,6 +54596,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.SQLStorage.StoreEvent"
+    enum="OfflinePagesStoreEvent">
+  <owner>fgorski@chromium.org</owner>
+  <summary>
+    Used as a counter to track different events related to offline page store
+    inner working.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.SQLStorage.TimeFromCloseToOpen" units="ms">
+  <owner>fgorski@chromium.org</owner>
+  <summary>
+    Tracks the time between store closing and reopening again. The store is
+    meant to close itself after a period of inactivity. We are trying to assess
+    how much time the store is unloaded from memory vs. time it is loaded and
+    not used. This event will be reported when the store is opened after being
+    closed within the same lifetime of Chrome.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.TabRestore" enum="OfflinePagesTabRestoreType">
   <owner>carlosk@chromium.org</owner>
   <summary>

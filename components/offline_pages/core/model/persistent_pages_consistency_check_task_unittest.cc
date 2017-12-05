@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -47,7 +47,7 @@ class PersistentPagesConsistencyCheckTaskTest : public testing::Test {
   const base::FilePath& persistent_dir() { return persistent_dir_.GetPath(); }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
 
   OfflinePageMetadataStoreTestUtil store_test_util_;
@@ -62,7 +62,7 @@ class PersistentPagesConsistencyCheckTaskTest : public testing::Test {
 
 PersistentPagesConsistencyCheckTaskTest::
     PersistentPagesConsistencyCheckTaskTest()
-    : task_runner_(new base::TestSimpleTaskRunner()),
+    : task_runner_(new base::TestMockTimeTaskRunner()),
       task_runner_handle_(task_runner_),
       store_test_util_(task_runner_),
       runner_(task_runner_),
