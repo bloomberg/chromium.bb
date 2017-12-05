@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/common/time.mojom";
 import "url/mojo/url.mojom";
 
 interface ReportingServiceProxy {
@@ -20,12 +21,14 @@ interface ReportingServiceProxy {
   //
   // (See //third_party/WebKit/Source/core/frame/DeprecationReport.h.)
   QueueDeprecationReport(url.mojom.Url url,
+                         string id,
+                         mojo.common.mojom.Time anticipatedRemoval,
                          string message,
                          string source_file,
                          int32 line_number,
                          int32 column_number);
 
-  // Attempts to queue a Deprecation report using the Reporting API.
+  // Attempts to queue a CSP Violation report using the Reporting API.
   //
   // (See //third_party/WebKit/Source/core/events/SecurityPolicyViolationEvent.h.)
   QueueCspViolationReport(url.mojom.Url url,
