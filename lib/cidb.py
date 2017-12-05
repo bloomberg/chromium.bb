@@ -632,11 +632,14 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   """Connection to a Continuous Integration database."""
 
   # The buildbucket_id is the request id inserted by pre-cq-launcher when
-  # it launches by a pre-cq, not the pre-cq-launcher builder buildbucket_id
+  # it launches by a pre-cq, not the pre-cq-launcher builder buildbucket_id.
+  # A LEFT JOIN is used below because some clActionTable entries do not
+  # reference any builds.
   _SQL_FETCH_ACTIONS = (
       'SELECT c.id, b.id, action, c.reason, build_config, '
       'change_number, patch_number, change_source, timestamp, c.buildbucket_id,'
-      ' status FROM clActionTable c JOIN buildTable b ON build_id = b.id ')
+      ' status FROM clActionTable c LEFT JOIN buildTable b ON build_id = b.id ')
+
   _SQL_FETCH_MESSAGES = (
       'SELECT build_id, build_config, waterfall, builder_name, build_number, '
       'message_type, message_subtype, message_value, timestamp, board FROM '
