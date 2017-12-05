@@ -17,7 +17,7 @@ namespace net {
 void ReportingBrowsingDataRemover::RemoveBrowsingData(
     ReportingCache* cache,
     int data_type_mask,
-    base::Callback<bool(const GURL&)> origin_filter) {
+    base::RepeatingCallback<bool(const GURL&)> origin_filter) {
   bool remove_reports = (data_type_mask & DATA_TYPE_REPORTS) != 0;
   bool remove_clients = (data_type_mask & DATA_TYPE_CLIENTS) != 0;
 

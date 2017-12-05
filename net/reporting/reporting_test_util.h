@@ -68,7 +68,7 @@ class TestReportingUploader : public ReportingUploader {
   // ReportingUploader implementation:
   void StartUpload(const GURL& url,
                    const std::string& json,
-                   const Callback& callback) override;
+                   UploadCallback callback) override;
 
  private:
   std::vector<std::unique_ptr<PendingUpload>> pending_uploads_;
