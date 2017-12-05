@@ -4,9 +4,8 @@
 
 #include "gpu/vulkan/tests/native_window.h"
 
-#include <X11/Xlib.h>
-
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace gpu {
@@ -15,7 +14,7 @@ gfx::AcceleratedWidget CreateNativeWindow(const gfx::Rect& bounds) {
   XDisplay* display = gfx::GetXDisplay();
   XSetWindowAttributes swa;
   swa.event_mask = StructureNotifyMask | ExposureMask;
-  swa.override_redirect = True;
+  swa.override_redirect = x11::True;
   XID window = XCreateWindow(
       display, RootWindow(display, DefaultScreen(display)),  // parent
       bounds.x(), bounds.y(), bounds.width(), bounds.height(),
