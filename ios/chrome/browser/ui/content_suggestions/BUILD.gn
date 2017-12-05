@@ -25,6 +25,7 @@ source_set("content_suggestions") {
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
     "content_suggestions_view_controller_audience.h",
+    "ntp_home_consumer.h",
   ]
   deps = [
     ":content_suggestions_constant",

@@ -15,20 +15,20 @@ namespace ntp_snippets {
 class ContentSuggestionsService;
 }
 
-namespace web {
-class WebState;
-}
-
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ContentSuggestionsHeaderViewController;
 @class ContentSuggestionsMediator;
 @class ContentSuggestionsMetricsRecorder;
 @class ContentSuggestionsViewController;
+@protocol LogoVendor;
 @protocol OmniboxFocuser;
+@protocol NTPHomeConsumer;
 @class NTPHomeMetrics;
+class TemplateURLService;
 @protocol SnackbarCommands;
 @protocol UrlLoader;
+class WebStateList;
 
 // Mediator for the NTP Home panel, handling the interactions with the
 // suggestions.
@@ -37,23 +37,34 @@ class WebState;
                ContentSuggestionsGestureCommands,
                ContentSuggestionsHeaderViewControllerDelegate>
 
-// The web state associated with this NTP.
-@property(nonatomic, assign) web::WebState* webState;
+- (nullable instancetype)
+initWithWebStateList:(nonnull WebStateList*)webStateList
+  templateURLService:(nonnull TemplateURLService*)templateURLService
+          logoVendor:(nonnull id<LogoVendor>)logoVendor
+    NS_DESIGNATED_INITIALIZER;
+
+- (nullable instancetype)init NS_UNAVAILABLE;
+
 // Dispatcher.
-@property(nonatomic, weak) id<BrowserCommands, SnackbarCommands, UrlLoader>
-    dispatcher;
+@property(nonatomic, weak, nullable)
+    id<BrowserCommands, SnackbarCommands, UrlLoader>
+        dispatcher;
 // Suggestions service used to get the suggestions.
-@property(nonatomic, assign)
+@property(nonatomic, assign, nonnull)
     ntp_snippets::ContentSuggestionsService* suggestionsService;
 // Recorder for the metrics related to ContentSuggestions.
-@property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
+@property(nonatomic, strong, nullable)
+    ContentSuggestionsMetricsRecorder* metricsRecorder;
 // Recorder for the metrics related to the NTP.
-@property(nonatomic, strong) NTPHomeMetrics* NTPMetrics;
+@property(nonatomic, strong, nullable) NTPHomeMetrics* NTPMetrics;
 // View Controller displaying the suggestions.
-@property(nonatomic, weak)
+@property(nonatomic, weak, nullable)
     ContentSuggestionsViewController* suggestionsViewController;
 // Mediator for the ContentSuggestions.
-@property(nonatomic, weak) ContentSuggestionsMediator* suggestionsMediator;
+@property(nonatomic, strong, nonnull)
+    ContentSuggestionsMediator* suggestionsMediator;
+// Consumer for this mediator.
+@property(nonatomic, weak, nullable) id<NTPHomeConsumer> consumer;
 
 // Inits the mediator.
 - (void)setUp;

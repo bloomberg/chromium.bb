@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_tablet_ntp_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/modal_ntp.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
