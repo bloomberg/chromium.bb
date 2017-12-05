@@ -82,8 +82,6 @@ net_configs = [
   ":net_internal_config",
   "//build/config:precompiled_headers",
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  "//build/config/compiler:no_size_t_to_int_warning",
   "//build/config/compiler:wexit_time_destructors",
 ]
 
@@ -2309,7 +2307,6 @@ static_library("http_server") {
     "server/web_socket_encoder.h",
   ]
   configs += [
-    "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
   ]
   deps = [
@@ -2326,9 +2323,6 @@ if (!is_ios) {
       "tools/dump_cache/dump_files.cc",
       "tools/dump_cache/dump_files.h",
     ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
     deps = [
       ":net",
@@ -2667,9 +2661,6 @@ static_library("test_support") {
 
   configs += [
     "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   public_deps = [
@@ -2776,7 +2767,6 @@ if (use_v8_in_net) {
     defines = [ "NET_IMPLEMENTATION" ]
 
     configs += [
-      "//build/config/compiler:no_size_t_to_int_warning",
       "//build/config/compiler:wexit_time_destructors",
       "//v8:external_startup_data",
     ]
@@ -2841,8 +2831,6 @@ if (!is_ios && !is_android) {
       "tools/cert_verify_tool/verify_using_path_builder.h",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       ":test_support",
@@ -2862,8 +2850,6 @@ if (!is_ios && !is_android) {
       "tools/crash_cache/crash_cache.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       ":test_support",
@@ -2879,8 +2865,6 @@ if (!is_ios && !is_android) {
       "tools/crl_set_dump/crl_set_dump.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -2895,8 +2879,6 @@ if (!is_ios && !is_android) {
       "tools/dns_fuzz_stub/dns_fuzz_stub.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -2926,8 +2908,6 @@ if (!is_ios && !is_android) {
       "tools/get_server_time/get_server_time.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -2944,8 +2924,6 @@ if (!is_ios && !is_android) {
       "spdy/core/fuzzing/hpack_example_generator.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       "//base",
@@ -2991,8 +2969,6 @@ if (!is_ios && !is_android) {
       "tools/stress_cache/stress_cache.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":net",
       ":test_support",
@@ -3007,8 +2983,6 @@ if (!is_ios && !is_android) {
       "tools/tld_cleanup/tld_cleanup.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       "//base",
       "//base:i18n",
@@ -5334,9 +5308,6 @@ test("net_unittests") {
 
   configs += [
     "//build/config:precompiled_headers",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
   defines = []
 
@@ -5767,8 +5738,6 @@ if (!is_ios && !is_proto_quic) {
       "url_request/url_request_quic_perftest.cc",
     ]
 
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
     deps = [
       ":extras",
       ":net",
