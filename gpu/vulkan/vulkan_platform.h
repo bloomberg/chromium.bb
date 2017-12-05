@@ -21,10 +21,11 @@ extern "C" {
 #define VK_USE_PLATFORM_ANDROID_KHR
 #endif
 
-// This section below is taken from <vulkan/vulkan.h>
+// This section below is taken from <vulkan/vulkan.h>, with an include
+// of <X11/Xlib.h> replaced with an include of "ui/gfx/x/x11.h"
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 #define VK_KHR_xlib_surface 1
-#include <X11/Xlib.h>
+#include "ui/gfx/x/x11.h"
 
 #define VK_KHR_XLIB_SURFACE_SPEC_VERSION 6
 #define VK_KHR_XLIB_SURFACE_EXTENSION_NAME "VK_KHR_xlib_surface"
