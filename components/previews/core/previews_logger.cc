@@ -223,18 +223,20 @@ void PreviewsLogger::OnNewBlacklistedHost(const std::string& host,
 
 void PreviewsLogger::OnUserBlacklistedStatusChange(bool blacklisted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  user_blacklisted_status_ = blacklisted;
   for (auto& observer : observer_list_) {
     observer.OnUserBlacklistedStatusChange(blacklisted);
   }
-  user_blacklisted_status_ = blacklisted;
 }
 
 void PreviewsLogger::OnBlacklistCleared(base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blacklisted_hosts_.clear();
+  navigations_logs_.clear();
+  decisions_logs_.clear();
   for (auto& observer : observer_list_) {
     observer.OnBlacklistCleared(time);
   }
-  blacklisted_hosts_.clear();
 }
 
 void PreviewsLogger::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
