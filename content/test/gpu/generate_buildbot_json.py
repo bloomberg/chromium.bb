@@ -1423,38 +1423,6 @@ COMMON_GTESTS = {
     ],
     'linux_args': [ '--no-xvfb' ]
   },
-  # Until the media-only tests are extracted from content_unittests,
-  # and audio_unittests and content_unittests can be run on the commit
-  # queue with --require-audio-hardware-for-testing, run them only on
-  # the FYI waterfall.
-  #
-  # Note that the transition to the Chromium recipe has forced the
-  # removal of the --require-audio-hardware-for-testing flag for the
-  # time being. See crbug.com/574942.
-  'audio_unittests': {
-    'tester_configs': [
-      {
-        'predicate': Predicates.FYI_AND_OPTIONAL,
-      }
-    ],
-    # Don't run these tests on Android.
-    'disabled_tester_configs': [
-      {
-        'names': [
-          'Linux Ozone (Intel)',
-        ],
-      },
-      {
-        'os_types': ['android'],
-      },
-    ],
-    'args': ['--use-gpu-in-tests']
-  },
-  # TODO(kbr): content_unittests is killing the Linux GPU swarming
-  # bots. crbug.com/582094 . It's not useful now anyway until audio
-  # hardware is deployed on the swarming bots, so stop running it
-  # everywhere.
-  # 'content_unittests': {},
   'gl_tests': {
     'disabled_tester_configs': [
       {
