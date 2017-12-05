@@ -65,7 +65,6 @@ class SystemHealthStory(page.Page):
     super(SystemHealthStory, self).__init__(
         shared_page_state_class=_SystemHealthSharedState,
         page_set=story_set, name=self.NAME, url=self.URL, tags=tags,
-        credentials_path='../data/credentials.json',
         grouping_keys={'case': case, 'group': group},
         platform_specific=self.PLATFORM_SPECIFIC,
         extra_browser_args=extra_browser_args)

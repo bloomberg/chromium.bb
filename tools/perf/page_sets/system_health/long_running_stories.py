@@ -49,8 +49,7 @@ class _LongRunningGmailBase(_LongRunningStory):
   ABSTRACT_STORY = True
 
   def _Login(self, action_runner):
-    google_login.LoginGoogleAccount(action_runner, 'googletest',
-                                    self.credentials_path)
+    google_login.LoginGoogleAccount(action_runner, 'googletest')
 
     # Navigating to https://mail.google.com immediately leads to an infinite
     # redirection loop due to a bug in WPR (see
