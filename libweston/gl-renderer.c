@@ -2083,7 +2083,7 @@ import_dmabuf(struct gl_renderer *gr,
 	return image;
 }
 
-static bool
+static void
 gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
 				int **formats, int *num_formats)
 {
@@ -2095,25 +2095,24 @@ gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
 	if (!gr->has_dmabuf_import_modifiers ||
 	    !gr->query_dmabuf_formats(gr->egl_display, 0, NULL, &num)) {
 		*num_formats = 0;
-		return false;
+		return;
 	}
 
 	*formats = calloc(num, sizeof(int));
 	if (*formats == NULL) {
 		*num_formats = 0;
-		return false;
+		return;
 	}
 	if (!gr->query_dmabuf_formats(gr->egl_display, num, *formats, &num)) {
 		*num_formats = 0;
 		free(*formats);
-		return false;
+		return;
 	}
 
 	*num_formats = num;
-	return true;
 }
 
-static bool
+static void
 gl_renderer_query_dmabuf_modifiers(struct weston_compositor *wc, int format,
 					uint64_t **modifiers,
 					int *num_modifiers)
@@ -2127,23 +2126,22 @@ gl_renderer_query_dmabuf_modifiers(struct weston_compositor *wc, int format,
 		!gr->query_dmabuf_modifiers(gr->egl_display, format, 0, NULL,
 					    NULL, &num)) {
 		*num_modifiers = 0;
-		return false;
+		return;
 	}
 
 	*modifiers = calloc(num, sizeof(uint64_t));
 	if (*modifiers == NULL) {
 		*num_modifiers = 0;
-		return false;
+		return;
 	}
 	if (!gr->query_dmabuf_modifiers(gr->egl_display, format,
 				num, *modifiers, NULL, &num)) {
 		*num_modifiers = 0;
 		free(*modifiers);
-		return false;
+		return;
 	}
 
 	*num_modifiers = num;
-	return true;
 }
 
 static bool
