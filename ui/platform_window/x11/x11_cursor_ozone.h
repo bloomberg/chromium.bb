@@ -5,13 +5,12 @@
 #ifndef UI_PLATFORM_WINDOW_X11_X11_CURSOR_OZONE_H_
 #define UI_PLATFORM_WINDOW_X11_X11_CURSOR_OZONE_H_
 
-#include <X11/X.h>
-
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/platform_window/x11/x11_window_export.h"
 
 class SkBitmap;
@@ -43,7 +42,7 @@ class X11_WINDOW_EXPORT X11CursorOzone
   X11CursorOzone();
   ~X11CursorOzone();
 
-  ::Cursor xcursor_ = None;
+  ::Cursor xcursor_ = x11::None;
 
   DISALLOW_COPY_AND_ASSIGN(X11CursorOzone);
 };

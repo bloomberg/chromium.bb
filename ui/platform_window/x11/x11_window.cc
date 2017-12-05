@@ -4,15 +4,12 @@
 
 #include "ui/platform_window/x11/x11_window.h"
 
-#include <X11/extensions/XInput2.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {

@@ -4,13 +4,12 @@
 
 #include "ui/platform_window/x11/x11_window_ozone.h"
 
-#include <X11/Xlib.h>
-
 #include "base/bind.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/platform_window/x11/x11_cursor_ozone.h"
 #include "ui/platform_window/x11/x11_window_manager_ozone.h"
 
@@ -50,7 +49,7 @@ void X11WindowOzone::SetCursor(PlatformCursor cursor) {
 }
 
 void X11WindowOzone::CheckCanDispatchNextPlatformEvent(XEvent* xev) {
-  handle_next_event_ = xwindow() == None ? false : IsEventForXWindow(*xev);
+  handle_next_event_ = xwindow() == x11::None ? false : IsEventForXWindow(*xev);
 }
 
 void X11WindowOzone::PlatformEventDispatchFinished() {
