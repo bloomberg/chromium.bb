@@ -49,20 +49,6 @@ std::string FormatPhoneNumber(const std::string& phone_number,
       format);
 }
 
-// Checks whether the given number |jphone_number| is a possible number by using
-// i18n::phonenumbers::PhoneNumberUtil::IsPossibleNumber.
-bool IsPossibleNumberImpl(const std::string& phone_number,
-                          const std::string& country_code) {
-  PhoneNumber parsed_number;
-  PhoneNumberUtil* phone_number_util = PhoneNumberUtil::GetInstance();
-  if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
-      PhoneNumberUtil::NO_PARSING_ERROR) {
-    return false;
-  }
-
-  return phone_number_util->IsPossibleNumber(parsed_number);
-}
-
 }  // namespace
 
 // Formats the given number |jphone_number| for the given country
@@ -101,7 +87,7 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForResponse(
 
 // Checks whether the given number |jphone_number| is a possible number for a
 // given country |jcountry_code| by using
-// i18n::phonenumbers::PhoneNumberUtil::IsPossibleNumber.
+// i18n::phonenumbers::PhoneNumberUtil::IsPossibleNumberForString.
 jboolean JNI_PhoneNumberUtil_IsPossibleNumber(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,
@@ -113,7 +99,8 @@ jboolean JNI_PhoneNumberUtil_IsPossibleNumber(
                                     g_browser_process->GetApplicationLocale())
                               : ConvertJavaStringToUTF8(env, jcountry_code);
 
-  return IsPossibleNumberImpl(phone_number, country_code);
+  return PhoneNumberUtil::GetInstance()->IsPossibleNumberForString(
+      phone_number, country_code);
 }
 
 }  // namespace autofill
