@@ -139,6 +139,9 @@ class Surface final : public ui::PropertyHandler {
   // Request that surface should have the specified frame type.
   void SetFrame(SurfaceFrameType type);
 
+  // Request "parent" for surface.
+  void SetParent(Surface* parent, const gfx::Point& position);
+
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the
   // current state. Commit() is not guaranteed to be synchronous. See

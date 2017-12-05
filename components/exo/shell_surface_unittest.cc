@@ -149,6 +149,15 @@ TEST_F(ShellSurfaceTest, SetParent) {
   EXPECT_EQ(
       parent_shell_surface->GetWidget()->GetNativeWindow(),
       wm::GetTransientParent(shell_surface->GetWidget()->GetNativeWindow()));
+
+  // Use OnSetParent to move shell surface to 10, 10.
+  gfx::Point parent_origin =
+      parent_shell_surface->GetWidget()->GetWindowBoundsInScreen().origin();
+  shell_surface->OnSetParent(
+      parent_surface.get(),
+      gfx::PointAtOffsetFromOrigin(gfx::Point(10, 10) - parent_origin));
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256),
+            shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
 
 TEST_P(ShellSurfaceBoundsModeTest, Maximize) {
