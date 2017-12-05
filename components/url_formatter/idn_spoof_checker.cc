@@ -133,15 +133,31 @@ IDNSpoofChecker::IDNSpoofChecker() {
 
   // Used for diacritics-removal before the skeleton calculation. Add
   // "ł > l; ø > o; đ > d" that are not handled by "NFD; Nonspacing mark
-  // removal; NFC". On top of that, supplement the Unicode confusable list by
-  // replacing {U+043A (к), U+0138(ĸ), U+03BA(κ)}, U+04CF (ӏ) and U+043F(п) by
-  // 'k', 'l' and 'n', respectively.
+  // removal; NFC".
   // TODO(jshin): Revisit "ł > l; ø > o" mapping.
   UParseError parse_error;
-  transliterator_.reset(icu::Transliterator::createFromRules(
+  diacritic_remover_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("DropAcc"),
       icu::UnicodeString("::NFD; ::[:Nonspacing Mark:] Remove; ::NFC;"
-                         " ł > l; ø > o; đ > d; ӏ > l; [кĸκ] > k; п > n;"),
+                         " ł > l; ø > o; đ > d;"),
+      UTRANS_FORWARD, parse_error, status));
+
+  // Supplement the Unicode confusable list by the following mapping.
+  //   - U+04CF (ӏ) => l
+  //   - {U+043A (к), U+0138(ĸ), U+03BA(κ)} => k
+  //   - U+043F(п) => n
+  //   - {U+0185 (ƅ), U+044C (ь)} => b
+  //   - U+0432 (в) => b
+  //   - U+043C (м) => m
+  //   - U+043D (н) => h
+  //   - U+0442 (т) => t
+  //   - {U+0448 (ш), U+0449 (щ)} => w
+  //   - U+0D1F (ട) => s
+  extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
+      UNICODE_STRING_SIMPLE("ExtraConf"),
+      icu::UnicodeString(
+          "ӏ > l; [кĸκ] > k; п > n; [ƅь] > b; в > b; м > m; н > h; "
+          "т > t; [шщ] > w; ട > s;"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "
@@ -270,7 +286,8 @@ bool IDNSpoofChecker::SimilarToTopDomains(base::StringPiece16 hostname) {
   // attached to non-LGC characters are already blocked.
   if (lgc_letters_n_ascii_.span(ustr_host, 0, USET_SPAN_CONTAINED) ==
       ustr_host.length())
-    transliterator_.get()->transliterate(ustr_host);
+    diacritic_remover_.get()->transliterate(ustr_host);
+  extra_confusable_mapper_.get()->transliterate(ustr_host);
 
   UErrorCode status = U_ZERO_ERROR;
   icu::UnicodeString ustr_skeleton;
@@ -279,8 +296,7 @@ bool IDNSpoofChecker::SimilarToTopDomains(base::StringPiece16 hostname) {
   if (U_FAILURE(status))
     return false;
   std::string skeleton;
-  ustr_skeleton.toUTF8String(skeleton);
-  return LookupMatchInTopDomains(skeleton);
+  return LookupMatchInTopDomains(ustr_skeleton.toUTF8String(skeleton));
 }
 
 bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(

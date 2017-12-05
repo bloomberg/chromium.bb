@@ -67,7 +67,8 @@ class IDNSpoofChecker {
   icu::UnicodeSet cyrillic_letters_;
   icu::UnicodeSet cyrillic_letters_latin_alike_;
   icu::UnicodeSet lgc_letters_n_ascii_;
-  std::unique_ptr<icu::Transliterator> transliterator_;
+  std::unique_ptr<icu::Transliterator> diacritic_remover_;
+  std::unique_ptr<icu::Transliterator> extra_confusable_mapper_;
 
   IDNSpoofChecker(const IDNSpoofChecker&) = delete;
   void operator=(const IDNSpoofChecker&) = delete;
