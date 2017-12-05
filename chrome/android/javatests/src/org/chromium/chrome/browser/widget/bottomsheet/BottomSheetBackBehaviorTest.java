@@ -22,7 +22,9 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
@@ -157,7 +159,9 @@ public class BottomSheetBackBehaviorTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/792107")
     @SmallTest
+    @RetryOnFailure
     public void testBackButton_backButtonOpensSheetAndShowsToolbar()
             throws ExecutionException, InterruptedException, TimeoutException {
         final Tab tab = launchNewTabFromChrome("about:blank");
