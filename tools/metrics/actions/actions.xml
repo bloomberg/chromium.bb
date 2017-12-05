@@ -17519,6 +17519,36 @@ should be able to be added at any place in this file.
   <description>User unmuted site via the tab strip.</description>
 </action>
 
+<action name="SplitView_DoubleTapDividerSwapWindows">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the user double tapped on the split divider to swap windows in
+    tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="SplitView_EndSplitView">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the user ended split view mode in tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="SplitView_ResizeWindows">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the user dragged the split divider to resize the windows in
+    tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="SplitView_SnapWindow">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when a window was just snapped in tablet mode on Chrome OS.
+  </description>
+</action>
+
 <action name="StackedTab_DragActiveTab">
   <owner>bruthig@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>
@@ -18541,6 +18571,22 @@ should be able to be added at any place in this file.
   <owner>sammiequon@chromium.org</owner>
   <description>
     User tapped the shelf back button in tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="Tablet_LongPressOverviewButtonEnterSplitView">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the user long pressed the overview button to enter split view
+    in tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="Tablet_LongPressOverviewButtonExitSplitView">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Recorded when the user long pressed the overview button to exit split view
+    in tablet mode on Chrome OS.
   </description>
 </action>
 

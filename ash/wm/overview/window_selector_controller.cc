@@ -20,6 +20,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 
 namespace ash {
 
@@ -165,6 +166,8 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     // in overview mode. To work around this set |active_window| before exiting
     // split view.
     wm::ActivateWindow(active_window);
+    base::RecordAction(
+        base::UserMetricsAction("Tablet_LongPressOverviewButtonExitSplitView"));
     return;
   }
 
@@ -187,6 +190,8 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     // mode.
     split_view_controller->SnapWindow(active_window, SplitViewController::LEFT);
     ToggleOverview();
+    base::RecordAction(base::UserMetricsAction(
+        "Tablet_LongPressOverviewButtonEnterSplitView"));
     return;
   }
 
@@ -219,6 +224,8 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
   window_selector_->SetBoundsForWindowGridsInScreen(
       split_view_controller->GetSnappedWindowBoundsInScreen(
           window, SplitViewController::RIGHT));
+  base::RecordAction(
+      base::UserMetricsAction("Tablet_LongPressOverviewButtonEnterSplitView"));
 }
 
 std::vector<aura::Window*>

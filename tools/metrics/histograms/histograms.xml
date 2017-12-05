@@ -3346,6 +3346,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.SplitView.TimeInSplitView" units="ms">
+  <owner>xdai@chromium.org</owner>
+  <summary>
+    The amount of time that the user spent in split view mode. The time is
+    measured from the moment a window is snapped to one side of the screen to
+    when split view mode is ended.
+  </summary>
+</histogram>
+
 <histogram name="Ash.StationaryTouchDuration" units="seconds">
   <obsolete>
     Deprecated 02/2017 due to lack of usage.

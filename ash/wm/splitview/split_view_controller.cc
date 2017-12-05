@@ -23,6 +23,8 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -151,6 +153,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     default_snap_position_ = snap_position;
     split_view_divider_ =
         std::make_unique<SplitViewDivider>(this, window->GetRootWindow());
+    splitview_start_time_ = base::Time::Now();
   }
 
   State previous_state = state_;
@@ -189,6 +192,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     window->parent()->StackChildBelow(stacking_target, window);
 
   NotifySplitViewStateChanged(previous_state, state_);
+  base::RecordAction(base::UserMetricsAction("SplitView_SnapWindow"));
 }
 
 void SplitViewController::SwapWindows() {
@@ -202,6 +206,9 @@ void SplitViewController::SwapWindows() {
 
   SnapWindow(new_left_window, LEFT);
   SnapWindow(new_right_window, RIGHT);
+
+  base::RecordAction(
+      base::UserMetricsAction("SplitView_DoubleTapDividerSwapWindows"));
 }
 
 aura::Window* SplitViewController::GetDefaultSnappedWindow() {
@@ -271,6 +278,7 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   is_resizing_ = true;
   split_view_divider_->UpdateDividerBounds(is_resizing_);
   previous_event_location_ = location_in_screen;
+  base::RecordAction(base::UserMetricsAction("SplitView_ResizeWindows"));
 }
 
 void SplitViewController::Resize(const gfx::Point& location_in_screen) {
@@ -358,6 +366,9 @@ void SplitViewController::EndSplitView() {
   NotifySplitViewStateChanged(previous_state, state_);
 
   Shell::Get()->NotifySplitViewModeEnded();
+  base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
+  UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInSplitView",
+                           base::Time::Now() - splitview_start_time_);
 }
 
 void SplitViewController::AddObserver(Observer* observer) {
