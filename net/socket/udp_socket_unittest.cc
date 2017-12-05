@@ -34,6 +34,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "net/android/network_change_notifier_factory_android.h"
+#include "net/base/network_change_notifier.h"
 #endif
 
 #if defined(OS_IOS)
@@ -734,6 +736,11 @@ TEST_F(UDPSocketTest, SetDSCP) {
 TEST_F(UDPSocketTest, TestBindToNetwork) {
   UDPSocket socket(DatagramSocket::RANDOM_BIND, base::Bind(&PrivilegedRand),
                    NULL, NetLogSource());
+#if defined(OS_ANDROID)
+  NetworkChangeNotifierFactoryAndroid ncn_factory;
+  NetworkChangeNotifier::DisableForTest ncn_disable_for_test;
+  std::unique_ptr<NetworkChangeNotifier> ncn(ncn_factory.CreateInstance());
+#endif
   ASSERT_EQ(OK, socket.Open(ADDRESS_FAMILY_IPV4));
   // Test unsuccessful binding, by attempting to bind to a bogus NetworkHandle.
   int rv = socket.BindToNetwork(65536);
@@ -767,12 +774,11 @@ TEST_F(UDPSocketTest, TestBindToNetwork) {
         socket.BindToNetwork(NetworkChangeNotifier::kInvalidNetworkHandle));
 
     // Test successful binding, if possible.
-    if (NetworkChangeNotifier::AreNetworkHandlesSupported()) {
-      NetworkChangeNotifier::NetworkHandle network_handle =
-          NetworkChangeNotifier::GetDefaultNetwork();
-      if (network_handle != NetworkChangeNotifier::kInvalidNetworkHandle) {
-        EXPECT_EQ(OK, socket.BindToNetwork(network_handle));
-      }
+    EXPECT_TRUE(NetworkChangeNotifier::AreNetworkHandlesSupported());
+    NetworkChangeNotifier::NetworkHandle network_handle =
+        NetworkChangeNotifier::GetDefaultNetwork();
+    if (network_handle != NetworkChangeNotifier::kInvalidNetworkHandle) {
+      EXPECT_EQ(OK, socket.BindToNetwork(network_handle));
     }
   }
 #endif
