@@ -109,7 +109,7 @@ class HpackHeaderTableTest : public ::testing::Test {
       EXPECT_EQ(0, distance(begin, end));
 
       const HpackEntry* entry = table_.TryAddEntry(it->name(), it->value());
-      EXPECT_NE(entry, static_cast<HpackEntry*>(NULL));
+      EXPECT_NE(entry, static_cast<HpackEntry*>(nullptr));
     }
 
     for (size_t i = 0; i != entries.size(); ++i) {
@@ -225,7 +225,7 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
   EXPECT_EQ(entry7, table_.GetByName("key-2"));
   EXPECT_EQ(entry2->name(),
             table_.GetByName(first_static_entry->name())->name());
-  EXPECT_EQ(NULL, table_.GetByName("not-present"));
+  EXPECT_EQ(nullptr, table_.GetByName("not-present"));
 
   // Querying by name & value returns the lowest-index matching entry among
   // static entries, and the highest-index one among dynamic entries.
@@ -238,8 +238,8 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
                                      first_static_entry->value()));
   EXPECT_EQ(entry2,
             table_.GetByNameAndValue(first_static_entry->name(), "Value Four"));
-  EXPECT_EQ(NULL, table_.GetByNameAndValue("key-1", "Not Present"));
-  EXPECT_EQ(NULL, table_.GetByNameAndValue("not-present", "Value One"));
+  EXPECT_EQ(nullptr, table_.GetByNameAndValue("key-1", "Not Present"));
+  EXPECT_EQ(nullptr, table_.GetByNameAndValue("not-present", "Value One"));
 
   // Evict |entry1|. Queries for its name & value now return the static entry.
   // |entry2| remains queryable.
@@ -252,7 +252,7 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
 
   // Evict |entry2|. Queries by its name & value are not found.
   peer_.Evict(1);
-  EXPECT_EQ(NULL,
+  EXPECT_EQ(nullptr,
             table_.GetByNameAndValue(first_static_entry->name(), "Value Four"));
 }
 
@@ -394,7 +394,7 @@ TEST_F(HpackHeaderTableTest, TryAddTooLargeEntry) {
 
   const HpackEntry* new_entry =
       table_.TryAddEntry(long_entry.name(), long_entry.value());
-  EXPECT_EQ(new_entry, static_cast<HpackEntry*>(NULL));
+  EXPECT_EQ(new_entry, static_cast<HpackEntry*>(nullptr));
   EXPECT_EQ(0u, peer_.dynamic_entries().size());
 }
 

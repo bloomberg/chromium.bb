@@ -43,7 +43,7 @@ HpackHeaderTable::~HpackHeaderTable() = default;
 
 const HpackEntry* HpackHeaderTable::GetByIndex(size_t index) {
   if (index == 0) {
-    return NULL;
+    return nullptr;
   }
   index -= 1;
   if (index < static_entries_.size()) {
@@ -57,7 +57,7 @@ const HpackEntry* HpackHeaderTable::GetByIndex(size_t index) {
     }
     return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 const HpackEntry* HpackHeaderTable::GetByName(SpdyStringPiece name) {
@@ -77,7 +77,7 @@ const HpackEntry* HpackHeaderTable::GetByName(SpdyStringPiece name) {
       return result;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 const HpackEntry* HpackHeaderTable::GetByNameAndValue(SpdyStringPiece name,
@@ -99,7 +99,7 @@ const HpackEntry* HpackHeaderTable::GetByNameAndValue(SpdyStringPiece name,
       return result;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 size_t HpackHeaderTable::IndexOf(const HpackEntry* entry) const {
@@ -192,7 +192,7 @@ const HpackEntry* HpackHeaderTable::TryAddEntry(SpdyStringPiece name,
     // Entire table has been emptied, but there's still insufficient room.
     DCHECK(dynamic_entries_.empty());
     DCHECK_EQ(0u, size_);
-    return NULL;
+    return nullptr;
   }
   dynamic_entries_.push_front(HpackEntry(name, value,
                                          false,  // is_static
