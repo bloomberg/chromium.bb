@@ -51,6 +51,19 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
                                       std::move(callback)));
   }
 
+  void LoadComponentAtPath(const std::string& name,
+                           const base::FilePath& path,
+                           DBusMethodCallback<std::string> callback) override {
+    dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
+                                 imageloader::kLoadComponentAtPath);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(name);
+    writer.AppendString(path.value());
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&ImageLoaderClientImpl::OnStringMethod,
+                                      std::move(callback)));
+  }
+
   void RemoveComponent(const std::string& name,
                        DBusMethodCallback<bool> callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
