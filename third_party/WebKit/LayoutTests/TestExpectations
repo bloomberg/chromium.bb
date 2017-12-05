@@ -2963,6 +2963,13 @@ crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-it
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
+# New failure when importing css-variables:
+crbug.com/791525 external/wpt/css/css-variables/variable-generated-content-dynamic-001.html [ Failure ]
+crbug.com/791529 external/wpt/css/css-variables/variable-transitions-from-no-value.html [ Skip ]
+crbug.com/791529 external/wpt/css/css-variables/variable-transitions-to-no-value.html [ Skip ]
+crbug.com/791529 external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
+crbug.com/791529 external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
+
 crbug.com/739367 [ Win ] virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Timeout ]
 
 # Feature Policy changes fullscreen behaviour, tests need updating

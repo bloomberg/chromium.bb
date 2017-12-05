@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL color assert_equals: expected "rgb(0, 0, 0)" but got "rgb(0, 0, 255)"
+FAIL font-size assert_equals: expected "16px" but got "25px"
+FAIL font-weight assert_equals: expected "400" but got "900"
+PASS position
+FAIL nested color assert_equals: expected "rgb(0, 0, 0)" but got "rgb(0, 0, 255)"
+PASS abspos
+Harness: the test ran to completion.
+

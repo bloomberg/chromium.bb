@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+FAIL target1 undefined assert_equals: expected "--var:  var1;" but got "--var: var1;"
+PASS target2 undefined
+PASS target3 undefined
+PASS target4 undefined
+PASS target5 undefined
+PASS target6 undefined
+PASS target7 undefined
+FAIL target8 undefined assert_equals: expected "color:  var(--prop);" but got "color: var(--prop);"
+FAIL target9 undefined assert_equals: expected "margin-top: 10px; margin-right: ; margin-bottom: ; margin-left: ;" but got "margin-right: ; margin-bottom: ; margin-left: ; margin-top: 10px;"
+PASS target10 undefined
+Harness: the test ran to completion.
+
