@@ -61,12 +61,17 @@ void SecurityContext::EnforceSandboxFlags(SandboxFlags mask) {
   ApplySandboxFlags(mask);
 }
 
-void SecurityContext::ApplySandboxFlags(SandboxFlags mask) {
+void SecurityContext::ApplySandboxFlags(SandboxFlags mask,
+                                        bool is_potentially_trustworthy) {
   sandbox_flags_ |= mask;
 
   if (IsSandboxed(kSandboxOrigin) && GetSecurityOrigin() &&
       !GetSecurityOrigin()->IsUnique()) {
-    SetSecurityOrigin(SecurityOrigin::CreateUnique());
+    scoped_refptr<SecurityOrigin> security_origin =
+        SecurityOrigin::CreateUnique();
+    security_origin->SetUniqueOriginIsPotentiallyTrustworthy(
+        is_potentially_trustworthy);
+    SetSecurityOrigin(std::move(security_origin));
     DidUpdateSecurityOrigin();
   }
 }
