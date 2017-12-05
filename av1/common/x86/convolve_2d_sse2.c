@@ -451,6 +451,24 @@ void av1_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
       src += src_stride;
       dst += dst_stride;
     }
+  } else if (!(w % 4)) {
+    for (i = 0; i < h; ++i) {
+      for (j = 0; j < w; j += 4) {
+        const __m128i d8 = _mm_cvtsi32_si128(*(const int *)&src[j]);
+        const __m128i d16_0 = _mm_unpacklo_epi8(d8, zero);
+        __m128i d32_0 = _mm_unpacklo_epi16(d16_0, zero);
+
+        d32_0 = _mm_sll_epi32(d32_0, left_shift);
+        __m128i *const p = (__m128i *)&dst[j];
+        if (do_average) {
+          _mm_storeu_si128(p, _mm_add_epi32(_mm_loadu_si128(p), d32_0));
+        } else {
+          _mm_storeu_si128(p, d32_0);
+        }
+      }
+      src += src_stride;
+      dst += dst_stride;
+    }
   } else {
     for (i = 0; i < h; ++i) {
       for (j = 0; j < w; j += 2) {
