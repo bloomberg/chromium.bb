@@ -274,7 +274,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                              BorderLeft());
   }
 
-  virtual LayoutRectOutsets PaddingOutsets() const {
+  LayoutRectOutsets PaddingOutsets() const {
     return LayoutRectOutsets(PaddingTop(), PaddingRight(), PaddingBottom(),
                              PaddingLeft());
   }
