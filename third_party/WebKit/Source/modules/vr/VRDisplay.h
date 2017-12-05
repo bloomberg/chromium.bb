@@ -123,6 +123,40 @@ class VRDisplay final : public EventTargetWithInlineData,
   VRController* Controller();
 
  private:
+  // Specifies how submitFrame should transport frame data for the presenting
+  // VR device, set by ConfigurePresentationPathForDisplay().
+  enum class FrameTransport {
+    // Invalid default value. Must be changed to a valid choice before starting
+    // presentation.
+    kUninitialized,
+
+    // Command buffer CHROMIUM_texture_mailbox. Used by the Android Surface
+    // rendering path.
+    kMailbox,
+
+    // A TextureHandle as extracted from a GpuMemoryBufferHandle. Used with
+    // DXGI texture handles for OpenVR on Windows.
+    kTextureHandle,
+  };
+
+  // Some implementations need to synchronize submitting with the completion of
+  // the previous frame, i.e. the Android surface path needs to wait to avoid
+  // lost frames in the transfer surface and to avoid overstuffed buffers. The
+  // strategy choice here indicates at which point in the submission process
+  // it should wait. NO_WAIT means to skip this wait entirely. For example,
+  // the OpenVR render pipeline doesn't overlap frames, so the previous
+  // frame is already guaranteed complete.
+  enum class WaitPrevStrategy {
+    kUninitialized,
+    kNoWait,
+    kBeforeBitmap,
+    kAfterBitmap,
+  };
+
+  bool ConfigurePresentationPathForDisplay();
+  void WaitForPreviousTransfer();
+  WTF::TimeDelta WaitForPreviousRenderToFinish();
+
   void OnPresentComplete(bool);
 
   void OnConnected();
@@ -203,6 +237,9 @@ class VRDisplay final : public EventTargetWithInlineData,
   // Used to keep the image alive until the next frame if using
   // waitForPreviousTransferToFinish.
   scoped_refptr<Image> previous_image_;
+
+  FrameTransport frame_transport_method_ = FrameTransport::kUninitialized;
+  WaitPrevStrategy wait_for_previous_render_ = WaitPrevStrategy::kUninitialized;
 
   TraceWrapperMember<ScriptedAnimationController>
       scripted_animation_controller_;

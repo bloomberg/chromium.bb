@@ -65,7 +65,7 @@ class MockVRPresentationProvider {
     this.binding_.bind(request);
   }
 
-  submitFrame(frameId, mailboxHolder) {
+  submitFrame(frameId, mailboxHolder, timeWaited) {
     // Trigger the submit completion callbacks here. WARNING: The
     // Javascript-based mojo mocks are *not* re-entrant.  In the current
     // default implementation, Javascript calls display.submitFrame, and the

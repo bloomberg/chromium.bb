@@ -131,7 +131,8 @@ interface VRPresentationProvider {
   // no mapping.
   GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time, int16 frame_id,
                  VSyncStatus status);
-  SubmitFrame(int16 frame_id, gpu.mojom.MailboxHolder mailbox_holder);
+  SubmitFrame(int16 frame_id, gpu.mojom.MailboxHolder mailbox_holder,
+              mojo.common.mojom.TimeDelta time_waited);
 
   // TODO(https://crbug.com/676224): Support preprocessing of mojom files, since
   // this is Windows only.

@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -33,7 +34,8 @@ class OpenVRRenderLoop : public base::Thread, mojom::VRPresentationProvider {
 
   // VRPresentationProvider overrides:
   void SubmitFrame(int16_t frame_index,
-                   const gpu::MailboxHolder& mailbox) override;
+                   const gpu::MailboxHolder& mailbox,
+                   base::TimeDelta time_waited) override;
   void SubmitFrameWithTextureHandle(int16_t frame_index,
                                     mojo::ScopedHandle texture_handle) override;
   void UpdateLayerBounds(int16_t frame_id,

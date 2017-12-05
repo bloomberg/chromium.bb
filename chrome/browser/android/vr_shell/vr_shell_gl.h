@@ -20,7 +20,9 @@
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
+#include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "device/vr/vr_service.mojom.h"
@@ -161,7 +163,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // VRPresentationProvider
   void GetVSync(GetVSyncCallback callback) override;
   void SubmitFrame(int16_t frame_index,
-                   const gpu::MailboxHolder& mailbox) override;
+                   const gpu::MailboxHolder& mailbox,
+                   base::TimeDelta time_waited) override;
   void SubmitFrameWithTextureHandle(int16_t frame_index,
                                     mojo::ScopedHandle texture_handle) override;
   void UpdateLayerBounds(int16_t frame_index,
@@ -252,10 +255,24 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // Attributes for gesture detection while holding app button.
   gfx::Vector3dF controller_start_direction_;
 
-  std::unique_ptr<vr::FPSMeter> fps_meter_;
+  vr::FPSMeter fps_meter_;
 
-  std::unique_ptr<vr::SlidingTimeDeltaAverage> webvr_js_time_;
-  std::unique_ptr<vr::SlidingTimeDeltaAverage> webvr_render_time_;
+  // JS time is from SendVSync (pose time) to incoming JS submitFrame.
+  vr::SlidingTimeDeltaAverage webvr_js_time_;
+
+  // Render time is from JS submitFrame to estimated render completion.
+  // This is an estimate when submitting incomplete frames to GVR.
+  // If submitFrame blocks, that means the previous frame wasn't done
+  // rendering yet.
+  vr::SlidingTimeDeltaAverage webvr_render_time_;
+
+  // JS wait time is spent waiting for the previous frame to complete
+  // rendering, as reported from the Renderer via mojo.
+  vr::SlidingTimeDeltaAverage webvr_js_wait_time_;
+
+  // GVR acquire/submit times for scheduling heuristics.
+  vr::SlidingTimeDeltaAverage webvr_acquire_time_;
+  vr::SlidingTimeDeltaAverage webvr_submit_time_;
 
   gfx::Point3F pointer_start_;
 
