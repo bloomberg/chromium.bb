@@ -43,7 +43,7 @@
     },
     'android_infra': {
       'filepath': 'build/config/android/' \
-                  'build/android/' \
+                  '|build/android/' \
                   '|testing/android/' \
                   '|tools/android/'
     },
