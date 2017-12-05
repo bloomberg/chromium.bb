@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/extension_id.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,7 +63,7 @@ class FakeEventRouter : public extensions::EventRouter {
   // Handles an event which would normally be routed to an extension. Instead
   // replies with a hard coded response.
   void DispatchEventToExtension(
-      const std::string& extension_id,
+      const extensions::ExtensionId& extension_id,
       std::unique_ptr<extensions::Event> event) override {
     ASSERT_TRUE(file_system_);
     std::string file_system_id;

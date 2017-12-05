@@ -16,7 +16,8 @@ ProviderId::ProviderId(const std::string& internal_id,
 ProviderId::ProviderId() : type_(INVALID) {}
 
 // static
-ProviderId ProviderId::CreateFromExtensionId(const std::string& extension_id) {
+ProviderId ProviderId::CreateFromExtensionId(
+    const extensions::ExtensionId& extension_id) {
   return ProviderId(extension_id, EXTENSION);
 }
 
@@ -25,7 +26,7 @@ ProviderId ProviderId::CreateFromNativeId(const std::string& native_id) {
   return ProviderId(native_id, NATIVE);
 }
 
-const std::string& ProviderId::GetExtensionId() const {
+const extensions::ExtensionId& ProviderId::GetExtensionId() const {
   CHECK_EQ(EXTENSION, type_);
   return internal_id_;
 }
@@ -111,7 +112,7 @@ ProvidedFileSystemInfo::ProvidedFileSystemInfo(
 }
 
 ProvidedFileSystemInfo::ProvidedFileSystemInfo(
-    const std::string& extension_id,
+    const extensions::ExtensionId& extension_id,
     const MountOptions& mount_options,
     const base::FilePath& mount_path,
     bool configurable,

@@ -24,6 +24,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -321,8 +322,9 @@ std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
 
 // TODO(mtomasz): Refactor providers into per-filesystem, enabling this code
 // duplication to be removed.
-bool Service::GetProvidingExtensionInfo(const std::string& extension_id,
-                                        ProvidingExtensionInfo* result) const {
+bool Service::GetProvidingExtensionInfo(
+    const extensions::ExtensionId& extension_id,
+    ProvidingExtensionInfo* result) const {
   DCHECK(result);
   extensions::ExtensionRegistry* const registry =
       extensions::ExtensionRegistry::Get(profile_);

@@ -34,6 +34,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest_constants.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +57,7 @@ const char kFileSystemId[] = "camera/pictures/id .!@#$%^&*()_+";
 // Creates a fake extension with the specified |extension_id|.
 // TODO(mtomasz): Use the extension builder.
 scoped_refptr<extensions::Extension> CreateFakeExtension(
-    const std::string& extension_id) {
+    const extensions::ExtensionId& extension_id) {
   base::DictionaryValue manifest;
   std::string error;
   manifest.SetKey(extensions::manifest_keys::kVersion, base::Value("1.0.0.0"));

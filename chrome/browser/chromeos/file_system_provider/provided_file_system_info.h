@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
+#include "extensions/common/extension_id.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -36,11 +37,12 @@ class ProviderId {
   enum ProviderType : uint32_t { EXTENSION, NATIVE, INVALID };
   ProviderId();
 
-  static ProviderId CreateFromExtensionId(const std::string& extension_id);
+  static ProviderId CreateFromExtensionId(
+      const extensions::ExtensionId& extension_id);
   static ProviderId CreateFromNativeId(const std::string& native_id);
 
   const std::string& GetIdUnsafe() const;
-  const std::string& GetExtensionId() const;
+  const extensions::ExtensionId& GetExtensionId() const;
   const std::string& GetNativeId() const;
   std::string ToString() const;
   ProviderType GetType() const;
@@ -67,7 +69,7 @@ class ProvidedFileSystemInfo {
                          bool watchable,
                          extensions::FileSystemProviderSource source);
 
-  ProvidedFileSystemInfo(const std::string& extension_id,
+  ProvidedFileSystemInfo(const extensions::ExtensionId& extension_id,
                          const MountOptions& mount_options,
                          const base::FilePath& mount_path,
                          bool configurable,
