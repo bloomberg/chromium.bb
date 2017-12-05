@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -46,6 +47,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "printing/features/features.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
@@ -84,7 +86,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #else  // !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/settings/printing_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
 #include "chrome/browser/ui/webui/settings/system_handler.h"
@@ -95,6 +96,10 @@
 #elif defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/ui/webui/settings/native_certificates_handler.h"
 #endif  // defined(USE_NSS_CERTS)
+
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings/printing_handler.h"
+#endif
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -186,6 +191,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(base::MakeUnique<DefaultBrowserHandler>(web_ui));
   AddSettingsPageUIHandler(base::MakeUnique<ManageProfileHandler>(profile));
   AddSettingsPageUIHandler(base::MakeUnique<SystemHandler>());
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING) && !defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(base::MakeUnique<PrintingHandler>());
 #endif
 

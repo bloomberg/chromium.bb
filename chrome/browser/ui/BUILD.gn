@@ -1556,12 +1556,6 @@ split_static_library("ui") {
     if (use_cras) {
       defines += [ "USE_CRAS" ]
     }
-  } else if (!is_android) {
-    # !is_chromeos && !is_android
-    sources += [
-      "webui/settings/printing_handler.cc",
-      "webui/settings/printing_handler.h",
-    ]
   }
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
@@ -3576,6 +3570,12 @@ split_static_library("ui") {
       "//components/printing/browser",
       "//printing",
     ]
+    if (!is_chromeos && !is_android) {
+      sources += [
+        "webui/settings/printing_handler.cc",
+        "webui/settings/printing_handler.h",
+      ]
+    }
     if (use_cups) {
       configs += [ "//printing:cups" ]
     }
