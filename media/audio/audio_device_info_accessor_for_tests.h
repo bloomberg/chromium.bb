@@ -38,6 +38,14 @@ class AudioDeviceInfoAccessorForTests {
 
   std::string GetAssociatedOutputDeviceID(const std::string& input_device_id);
 
+  std::string GetDefaultInputDeviceID();
+
+  std::string GetDefaultOutputDeviceID();
+
+  std::string GetCommunicationsInputDeviceID();
+
+  std::string GetCommunicationsOutputDeviceID();
+
  private:
   AudioManager* const audio_manager_;
 

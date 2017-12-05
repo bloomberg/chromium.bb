@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -180,6 +181,36 @@ const AudioNode kUSBCameraMic(true,
                               0);
 #endif  // defined(USE_CRAS)
 
+const char kRealDefaultInputDeviceID[] = "input3";
+const char kRealDefaultOutputDeviceID[] = "output4";
+const char kRealCommunicationsInputDeviceID[] = "input2";
+const char kRealCommunicationsOutputDeviceID[] = "output2";
+
+void CheckDescriptionLabels(const AudioDeviceDescriptions& descriptions,
+                            const std::string& real_default_id,
+                            const std::string& real_communications_id) {
+  std::string real_default_label;
+  std::string real_communications_label;
+  for (const auto& description : descriptions) {
+    if (description.unique_id == real_default_id)
+      real_default_label = description.device_name;
+    else if (description.unique_id == real_communications_id)
+      real_communications_label = description.device_name;
+  }
+
+  for (const auto& description : descriptions) {
+    if (AudioDeviceDescription::IsDefaultDevice(description.unique_id)) {
+      EXPECT_TRUE(base::EndsWith(description.device_name, real_default_label,
+                                 base::CompareCase::SENSITIVE));
+    } else if (description.unique_id ==
+               AudioDeviceDescription::kCommunicationsDeviceId) {
+      EXPECT_TRUE(base::EndsWith(description.device_name,
+                                 real_communications_label,
+                                 base::CompareCase::SENSITIVE));
+    }
+  }
+}
+
 }  // namespace
 
 // Test fixture which allows us to override the default enumeration API on
@@ -258,8 +289,9 @@ class AudioManagerTest : public ::testing::Test {
       AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
 
       // The first device in the list should always be the default device.
-      EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(),
-                it->device_name);
+      EXPECT_TRUE(base::StartsWith(
+          it->device_name, AudioDeviceDescription::GetDefaultDeviceName(),
+          base::CompareCase::SENSITIVE));
       EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
                 it->unique_id);
       ++it;
@@ -600,7 +632,18 @@ class TestAudioManager : public FakeAudioManager {
                    AudioLogFactory* audio_log_factory)
       : FakeAudioManager(std::move(audio_thread), audio_log_factory) {}
 
-  std::string GetDefaultOutputDeviceID() override { return "output4"; }
+  std::string GetDefaultInputDeviceID() override {
+    return kRealDefaultInputDeviceID;
+  }
+  std::string GetDefaultOutputDeviceID() override {
+    return kRealDefaultOutputDeviceID;
+  }
+  std::string GetCommunicationsInputDeviceID() override {
+    return kRealCommunicationsInputDeviceID;
+  }
+  std::string GetCommunicationsOutputDeviceID() override {
+    return kRealCommunicationsOutputDeviceID;
+  }
 
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_id) override {
@@ -657,6 +700,29 @@ TEST_F(AudioManagerTest, GroupId) {
   EXPECT_NE(inputs[1].group_id, outputs[2].group_id);
   EXPECT_NE(inputs[2].group_id, outputs[3].group_id);
   EXPECT_NE(inputs[1].group_id, outputs[3].group_id);
+}
+
+TEST_F(AudioManagerTest, DefaultCommunicationsLabelsContainRealLabels) {
+  CreateAudioManagerForTesting<TestAudioManager>();
+  std::string default_input_id =
+      device_info_accessor_->GetDefaultInputDeviceID();
+  EXPECT_EQ(default_input_id, kRealDefaultInputDeviceID);
+  std::string default_output_id =
+      device_info_accessor_->GetDefaultOutputDeviceID();
+  EXPECT_EQ(default_output_id, kRealDefaultOutputDeviceID);
+  std::string communications_input_id =
+      device_info_accessor_->GetCommunicationsInputDeviceID();
+  EXPECT_EQ(communications_input_id, kRealCommunicationsInputDeviceID);
+  std::string communications_output_id =
+      device_info_accessor_->GetCommunicationsOutputDeviceID();
+  EXPECT_EQ(communications_output_id, kRealCommunicationsOutputDeviceID);
+  AudioDeviceDescriptions inputs;
+  device_info_accessor_->GetAudioInputDeviceDescriptions(&inputs);
+  CheckDescriptionLabels(inputs, default_input_id, communications_input_id);
+
+  AudioDeviceDescriptions outputs;
+  device_info_accessor_->GetAudioOutputDeviceDescriptions(&outputs);
+  CheckDescriptionLabels(outputs, default_output_id, communications_output_id);
 }
 
 TEST_F(AudioManagerTest, AudioDebugRecording) {

@@ -103,6 +103,19 @@ std::string MockAudioManager::GetAssociatedOutputDeviceID(
              : get_associated_output_device_id_cb_.Run(input_device_id);
 }
 
+std::string MockAudioManager::GetDefaultInputDeviceID() {
+  return std::string();
+}
+std::string MockAudioManager::GetDefaultOutputDeviceID() {
+  return std::string();
+}
+std::string MockAudioManager::GetCommunicationsInputDeviceID() {
+  return std::string();
+}
+std::string MockAudioManager::GetCommunicationsOutputDeviceID() {
+  return std::string();
+}
+
 std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
     AudioLogFactory::AudioComponent component) {
   return nullptr;
