@@ -98,16 +98,16 @@ bool D3D11PictureBuffer::Init(
       EGL_NONE,
   };
 
-  result = eglCreateStreamProducerD3DTextureNV12ANGLE(egl_display, stream_,
-                                                      producer_attributes);
+  result = eglCreateStreamProducerD3DTextureANGLE(egl_display, stream_,
+                                                  producer_attributes);
 
   EGLAttrib frame_attributes[] = {
       EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE, level_, EGL_NONE,
   };
 
-  result = eglStreamPostD3DTextureNV12ANGLE(egl_display, stream_,
-                                            static_cast<void*>(texture.Get()),
-                                            frame_attributes);
+  result = eglStreamPostD3DTextureANGLE(egl_display, stream_,
+                                        static_cast<void*>(texture.Get()),
+                                        frame_attributes);
   RETURN_ON_FAILURE(result, "Could not post texture", false);
   result = eglStreamConsumerAcquireKHR(egl_display, stream_);
   RETURN_ON_FAILURE(result, "Could not post acquire stream", false);

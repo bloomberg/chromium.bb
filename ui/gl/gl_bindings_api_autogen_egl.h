@@ -48,7 +48,7 @@ EGLSurface eglCreatePixmapSurfaceFn(EGLDisplay dpy,
                                     const EGLint* attrib_list) override;
 EGLStreamKHR eglCreateStreamKHRFn(EGLDisplay dpy,
                                   const EGLint* attrib_list) override;
-EGLBoolean eglCreateStreamProducerD3DTextureNV12ANGLEFn(
+EGLBoolean eglCreateStreamProducerD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     EGLAttrib* attrib_list) override;
@@ -186,7 +186,7 @@ EGLBoolean eglStreamConsumerGLTextureExternalKHRFn(
     EGLStreamKHR stream) override;
 EGLBoolean eglStreamConsumerReleaseKHRFn(EGLDisplay dpy,
                                          EGLStreamKHR stream) override;
-EGLBoolean eglStreamPostD3DTextureNV12ANGLEFn(
+EGLBoolean eglStreamPostD3DTextureANGLEFn(
     EGLDisplay dpy,
     EGLStreamKHR stream,
     void* texture,

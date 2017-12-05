@@ -476,8 +476,8 @@ bool EGLStreamPictureBuffer::Initialize() {
       EGL_NONE,
   };
 
-  result = eglCreateStreamProducerD3DTextureNV12ANGLE(egl_display, stream_,
-                                                      producer_attributes);
+  result = eglCreateStreamProducerD3DTextureANGLE(egl_display, stream_,
+                                                  producer_attributes);
   RETURN_ON_FAILURE(result, "Could not create stream producer", false);
   return true;
 }
@@ -526,7 +526,7 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
       EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE, subresource, EGL_NONE,
   };
 
-  EGLBoolean result = eglStreamPostD3DTextureNV12ANGLE(
+  EGLBoolean result = eglStreamPostD3DTextureANGLE(
       egl_display, stream_, static_cast<void*>(dx11_decoding_texture_.Get()),
       frame_attributes);
   RETURN_ON_FAILURE(result, "Could not post texture", false);
@@ -597,8 +597,8 @@ bool EGLStreamDelayedCopyPictureBuffer::Initialize(
       EGL_NONE,
   };
 
-  result = eglCreateStreamProducerD3DTextureNV12ANGLE(egl_display, stream_,
-                                                      producer_attributes);
+  result = eglCreateStreamProducerD3DTextureANGLE(egl_display, stream_,
+                                                  producer_attributes);
   RETURN_ON_FAILURE(result, "Could not create stream producer", false);
   scoped_refptr<gl::CopyingGLImageDXGI> copying_image_ =
       base::MakeRefCounted<gl::CopyingGLImageDXGI>(
@@ -716,8 +716,8 @@ bool EGLStreamCopyPictureBuffer::Initialize(
       EGL_NONE,
   };
 
-  result = eglCreateStreamProducerD3DTextureNV12ANGLE(egl_display, stream_,
-                                                      producer_attributes);
+  result = eglCreateStreamProducerD3DTextureANGLE(egl_display, stream_,
+                                                  producer_attributes);
   RETURN_ON_FAILURE(result, "Could not create stream producer", false);
 
   DCHECK(decoder.use_keyed_mutex_);
@@ -797,7 +797,7 @@ bool EGLStreamCopyPictureBuffer::CopySurfaceComplete(
 
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
-  EGLBoolean result = eglStreamPostD3DTextureNV12ANGLE(
+  EGLBoolean result = eglStreamPostD3DTextureANGLE(
       egl_display, stream_, static_cast<void*>(angle_copy_texture_.Get()),
       frame_attributes);
   RETURN_ON_FAILURE(result, "Could not post stream", false);
