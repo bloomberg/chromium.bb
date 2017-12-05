@@ -804,7 +804,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
     std::map<ProcessID, Count>& counts_per_process = result->second;
 
     --counts_per_process[render_process_host_id];
-    DCHECK(counts_per_process[render_process_host_id] >= 0);
+    DCHECK_GE(counts_per_process[render_process_host_id], 0);
 
     if (counts_per_process[render_process_host_id] == 0)
       counts_per_process.erase(render_process_host_id);
@@ -1057,8 +1057,9 @@ void CopyFeatureSwitch(const base::CommandLine& src,
 }  // namespace
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
-RenderProcessHostImpl::CreateStoragePartitionServiceFunction
-    g_create_storage_partition = nullptr;
+
+base::LazyInstance<RenderProcessHostImpl::StoragePartitionServiceFactory>::Leaky
+    g_storage_partition_service_factory = LAZY_INSTANCE_INITIALIZER;
 
 base::MessageLoop* g_in_process_thread;
 
@@ -1389,9 +1390,9 @@ void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
   g_renderer_main_thread_factory = create;
 }
 
-void RenderProcessHostImpl::SetCreateStoragePartitionServiceFunction(
-    CreateStoragePartitionServiceFunction function) {
-  g_create_storage_partition = function;
+void RenderProcessHostImpl::SetStoragePartitionServiceFactoryForTesting(
+    StoragePartitionServiceFactory factory) {
+  g_storage_partition_service_factory.Get() = factory;
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
@@ -2034,8 +2035,8 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
     mojom::StoragePartitionServiceRequest request) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMojoLocalStorage)) {
-    if (g_create_storage_partition) {
-      g_create_storage_partition(this, std::move(request));
+    if (!(g_storage_partition_service_factory == nullptr)) {
+      g_storage_partition_service_factory.Get().Run(this, std::move(request));
       return;
     }
 

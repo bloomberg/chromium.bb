@@ -2,13 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/render_frame_message_filter.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/render_frame_message_filter.mojom.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -27,6 +35,16 @@
 #include "url/gurl.h"
 
 namespace content {
+
+namespace {
+
+mojom::RenderFrameMessageFilter* GetFilterForProcess(
+    RenderProcessHost* process) {
+  return static_cast<RenderProcessHostImpl*>(process)
+      ->render_frame_message_filter_for_testing();
+}
+
+}  // namespace
 
 class IsolatedOriginTest : public ContentBrowserTest {
  public:
@@ -854,7 +872,9 @@ class StoragePartitonInterceptor
       public RenderProcessHostObserver {
  public:
   StoragePartitonInterceptor(RenderProcessHostImpl* rph,
-                             mojom::StoragePartitionServiceRequest request) {
+                             mojom::StoragePartitionServiceRequest request,
+                             const url::Origin& origin_to_inject)
+      : origin_to_inject_(origin_to_inject) {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
@@ -893,9 +913,7 @@ class StoragePartitonInterceptor
   // security checks can be tested.
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request) override {
-    url::Origin mismatched_origin =
-        url::Origin::Create(GURL("http://abc.foo.com"));
-    GetForwardingInterface()->OpenLocalStorage(mismatched_origin,
+    GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
                                                std::move(request));
   }
 
@@ -904,27 +922,36 @@ class StoragePartitonInterceptor
   // calls can be forwarded to it.
   mojom::StoragePartitionService* storage_partition_service_;
 
+  url::Origin origin_to_inject_;
+
   DISALLOW_COPY_AND_ASSIGN(StoragePartitonInterceptor);
 };
 
 void CreateTestStoragePartitionService(
+    const url::Origin& origin_to_inject,
     RenderProcessHostImpl* rph,
     mojom::StoragePartitionServiceRequest request) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new StoragePartitonInterceptor(rph, std::move(request));
+  new StoragePartitonInterceptor(rph, std::move(request), origin_to_inject);
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an
 // origin outside of its isolated site.
-// TODO(nasko): Write a test to verify the opposite - any non-isolated renderer
-// process cannot access data of an isolated site.
-IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorageOriginEnforcement) {
-  RenderProcessHostImpl::SetCreateStoragePartitionServiceFunction(
-      CreateTestStoragePartitionService);
+IN_PROC_BROWSER_TEST_F(
+    IsolatedOriginTest,
+    LocalStorageOriginEnforcement_IsolatedAccessingNonIsolated) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(mismatched_origin));
+  RenderProcessHostImpl::SetStoragePartitionServiceFactoryForTesting(
+      base::BindRepeating(&CreateTestStoragePartitionService,
+                          mismatched_origin));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_url)));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
 
   content::RenderProcessHostWatcher crash_observer(
@@ -935,6 +962,120 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorageOriginEnforcement) {
   // false on all other platforms.
   ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
                               "localStorage.length;"));
+  crash_observer.Wait();
+}
+
+// Verify that a non-isolated renderer process cannot read localStorage of an
+// isolated origin.
+IN_PROC_BROWSER_TEST_F(
+    IsolatedOriginTest,
+    LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com", "/"));
+  auto isolated_origin = url::Origin::Create(isolated_url);
+  EXPECT_TRUE(policy->IsIsolatedOrigin(isolated_origin));
+  RenderProcessHostImpl::SetStoragePartitionServiceFactoryForTesting(
+      base::BindRepeating(&CreateTestStoragePartitionService, isolated_origin));
+
+  GURL non_isolated_url(
+      embedded_test_server()->GetURL("blah.bar.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_isolated_url));
+
+  content::RenderProcessHostWatcher crash_observer(
+      shell()->web_contents()->GetMainFrame()->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  // Use ignore_result here, since on Android the renderer process is
+  // terminated, but ExecuteScript still returns true. It properly returns
+  // false on all other platforms.
+  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
+                              "localStorage.length;"));
+  crash_observer.Wait();
+}
+
+// The RenderFrameMessageFilter should kill the renderer when cookies of an
+// isolated origin are accessed by another (possibly non-isolated, non-locked)
+// origin.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       GetCookieEnforcement_NonIsolatedAccessingIsolated) {
+  // Gather URLs and Origins used later in the test.
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com", "/"));
+  auto isolated_origin = url::Origin::Create(isolated_url);
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(policy->IsIsolatedOrigin(isolated_origin));
+  GURL non_isolated_url(
+      embedded_test_server()->GetURL("blah.bar.com", "/title2.html"));
+  auto non_isolated_origin = url::Origin::Create(non_isolated_url);
+  EXPECT_FALSE(policy->IsIsolatedOrigin(non_isolated_origin));
+
+  // Navigate to a non-isolated page and verify that it doesn't get origin lock
+  // (unless we are running with --site-per-process).
+  EXPECT_TRUE(NavigateToURL(shell(), non_isolated_url));
+  RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  GURL origin_lock = policy->GetOriginLock(main_frame->GetProcess()->GetID());
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_FALSE(origin_lock.is_empty());
+  else
+    EXPECT_TRUE(origin_lock.is_empty());
+
+  // Try to get cross-site cookies from the main frame's process and wait for it
+  // to be killed.
+  RenderProcessHostWatcher crash_observer(
+      main_frame->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     [](const GURL& cookie_url, RenderFrameHost* frame) {
+                       GetFilterForProcess(frame->GetProcess())
+                           ->GetCookies(
+                               frame->GetRoutingID(), cookie_url, cookie_url,
+                               base::BindOnce([](const std::string&) {}));
+                     },
+                     isolated_url, base::Unretained(main_frame)));
+  crash_observer.Wait();
+}
+
+// The RenderFrameMessageFilter should kill the renderer when cookies of an
+// isolated origin are set by another (possibly non-isolated, non-locked)
+// origin.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       SetCookieEnforcement_NonIsolatedAccessingIsolated) {
+  // Gather URLs and Origins used later in the test.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  auto isolated_origin = url::Origin::Create(isolated_url);
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_TRUE(policy->IsIsolatedOrigin(isolated_origin));
+  GURL non_isolated_url(
+      embedded_test_server()->GetURL("blah.bar.com", "/title2.html"));
+  auto non_isolated_origin = url::Origin::Create(non_isolated_url);
+  EXPECT_FALSE(policy->IsIsolatedOrigin(non_isolated_origin));
+
+  // Navigate to a non-isolated page and verify that it doesn't get origin lock.
+  EXPECT_TRUE(NavigateToURL(shell(), non_isolated_url));
+  RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  GURL origin_lock = policy->GetOriginLock(main_frame->GetProcess()->GetID());
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_FALSE(origin_lock.is_empty());
+  else
+    EXPECT_TRUE(origin_lock.is_empty());
+
+  // Try to get cross-site cookies from the main frame's process and wait for it
+  // to be killed.
+  RenderProcessHostWatcher crash_observer(
+      main_frame->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     [](const GURL& cookie_url, RenderFrameHost* frame) {
+                       GetFilterForProcess(frame->GetProcess())
+                           ->SetCookie(frame->GetRoutingID(), cookie_url,
+                                       cookie_url, "pwn=ed",
+                                       base::BindOnce(&base::DoNothing));
+                     },
+                     isolated_url, main_frame));
   crash_observer.Wait();
 }
 
