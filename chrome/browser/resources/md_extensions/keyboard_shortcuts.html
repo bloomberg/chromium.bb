@@ -20,17 +20,18 @@
       }
 
       .shortcut-card {
-        margin: 0 auto 16px auto;
-        max-width: var(--card-max-width);
-        min-width: var(--card-min-width);
-        width: 90%;
-      }
-
-      .shortcut-card {
         @apply --cr-primary-text;
         @apply --shadow-elevation-2dp;
         background-color: white;
+        margin: 0 auto 16px auto;
+        max-width: var(--card-max-width);
+        min-width: var(--card-min-width);
         padding-bottom: 8px;
+        width: 90%;
+      }
+
+      .shortcut-card:last-of-type {
+        margin-bottom: 64px;
       }
 
       #container {
