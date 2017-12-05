@@ -382,28 +382,32 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
     return exception_state.Reject(script_state);
   }
 
-  double start_time = WTF::MonotonicallyIncreasingTime();
-  String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
-      options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
-
-  ImageData* image_data = nullptr;
-  if (this->RenderingContext()) {
-    image_data = this->RenderingContext()->ToImageData(kSnapshotReasonUnknown);
-  }
-  if (!image_data) {
+  if (!this->context_) {
     exception_state.ThrowDOMException(
         kInvalidStateError, "OffscreenCanvas object has no rendering contexts");
     return exception_state.Reject(script_state);
   }
 
+  double start_time = WTF::MonotonicallyIncreasingTime();
+  String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
+      options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);
+
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-
-  CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
-      image_data->data(), encoding_mime_type, image_data->Size(), start_time,
-      ExecutionContext::From(script_state), resolver);
-
+  CanvasAsyncBlobCreator* async_creator = nullptr;
+  if (context_->Is3d() &&
+      !context_->CreationAttributes().premultipliedAlpha()) {
+    ImageData* image_data = context_->ToImageData(kSnapshotReasonUnknown);
+    async_creator = CanvasAsyncBlobCreator::Create(
+        image_data->data(), encoding_mime_type, image_data->Size(), start_time,
+        ExecutionContext::From(script_state), resolver);
+  } else {
+    scoped_refptr<StaticBitmapImage> snapshot =
+        context_->GetImage(kPreferNoAcceleration, kSnapshotReasonUnknown);
+    async_creator = CanvasAsyncBlobCreator::Create(
+        snapshot, encoding_mime_type, start_time,
+        ExecutionContext::From(script_state), resolver);
+  }
   async_creator->ScheduleAsyncBlobCreation(options.quality());
-
   return resolver->Promise();
 }
 

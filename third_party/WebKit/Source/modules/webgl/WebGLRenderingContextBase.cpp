@@ -764,27 +764,40 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
     SnapshotReason reason) const {
   if (!GetDrawingBuffer())
     return nullptr;
-
-  GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
-  IntSize size = ClampedCanvasSize();
-  std::unique_ptr<AcceleratedImageBufferSurface> surface =
-      std::make_unique<AcceleratedImageBufferSurface>(size, ColorParams());
-  if (!surface->IsValid())
-    return nullptr;
-  std::unique_ptr<ImageBuffer> buffer = ImageBuffer::Create(std::move(surface));
-  if (!buffer->CopyRenderingResultsFromDrawingBuffer(GetDrawingBuffer(),
-                                                     kBackBuffer)) {
-    // copyRenderingResultsFromDrawingBuffer is expected to always succeed
-    // because we've explicitly created an Accelerated surface and have already
-    // validated it.
-    NOTREACHED();
-    return nullptr;
+  // If on the main thread, directly access the drawing buffer and create the
+  // image snapshot.
+  if (IsMainThread()) {
+    GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
+    IntSize size = ClampedCanvasSize();
+    std::unique_ptr<AcceleratedImageBufferSurface> surface =
+        std::make_unique<AcceleratedImageBufferSurface>(size, ColorParams());
+    if (!surface->IsValid())
+      return nullptr;
+    std::unique_ptr<ImageBuffer> buffer =
+        ImageBuffer::Create(std::move(surface));
+    if (!buffer->CopyRenderingResultsFromDrawingBuffer(GetDrawingBuffer(),
+                                                       kBackBuffer)) {
+      // copyRenderingResultsFromDrawingBuffer is expected to always succeed
+      // because we've explicitly created an Accelerated surface and have
+      // already validated it.
+      NOTREACHED();
+      return nullptr;
+    }
+    return buffer->NewImageSnapshot(hint, reason);
   }
-  return buffer->NewImageSnapshot(hint, reason);
+
+  // If on a worker thread, create a copy from the drawing buffer and create
+  // the snapshot from the copy.
+  int width = GetDrawingBuffer()->Size().Width();
+  int height = GetDrawingBuffer()->Size().Height();
+  SkImageInfo image_info = SkImageInfo::Make(
+      width, height, kRGBA_8888_SkColorType,
+      CreationAttributes().alpha() ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+  return this->MakeImageSnapshot(image_info);
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::MakeImageSnapshot(
-    SkImageInfo& image_info) {
+    SkImageInfo& image_info) const {
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
       SharedGpuContext::ContextProviderWrapper();

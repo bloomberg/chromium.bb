@@ -59,6 +59,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -421,14 +422,43 @@ void ImageBuffer::OnCanvasDisposed() {
     surface_->SetCanvasResourceHost(nullptr);
 }
 
+const unsigned char* ImageDataBuffer::Pixels() const {
+  if (uses_pixmap_)
+    return static_cast<const unsigned char*>(pixmap_.addr());
+  return data_;
+}
+
+ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
+  image_bitmap_ = image;
+  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
+  if (skia_image->isTextureBacked()) {
+    skia_image = skia_image->makeNonTextureImage();
+    image_bitmap_ = StaticBitmapImage::Create(skia_image);
+  } else if (skia_image->isLazyGenerated()) {
+    // Call readPixels() to trigger decoding.
+    SkImageInfo info = SkImageInfo::MakeN32(1, 1, skia_image->alphaType());
+    std::unique_ptr<uint8_t[]> pixel(new uint8_t[info.bytesPerPixel()]());
+    skia_image->readPixels(info, pixel.get(), info.minRowBytes(), 1, 1);
+  }
+  bool peek_pixels = skia_image->peekPixels(&pixmap_);
+  DCHECK(peek_pixels);
+  uses_pixmap_ = true;
+  size_ = IntSize(image->width(), image->height());
+}
+
 bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {
-  SkImageInfo info =
-      SkImageInfo::Make(Width(), Height(), kRGBA_8888_SkColorType,
-                        kUnpremul_SkAlphaType, nullptr);
-  const size_t rowBytes = info.minRowBytes();
-  SkPixmap src(info, Pixels(), rowBytes);
+  SkPixmap src;
+  if (uses_pixmap_) {
+    src = pixmap_;
+  } else {
+    SkImageInfo info =
+        SkImageInfo::Make(Width(), Height(), kRGBA_8888_SkColorType,
+                          kUnpremul_SkAlphaType, nullptr);
+    const size_t rowBytes = info.minRowBytes();
+    src.reset(info, Pixels(), rowBytes);
+  }
 
   if (mime_type == "image/jpeg") {
     SkJpegEncoder::Options options;
