@@ -42,75 +42,7 @@ constexpr base::TimeDelta kLongTaskDiscardingThreshold =
 constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
     base::TimeDelta::FromMinutes(3);
 
-enum class FrameThrottlingState {
-  kVisible = 0,
-  kVisibleService = 1,
-  kHidden = 2,
-  kHiddenService = 3,
-  kBackground = 4,
-  kBackgroundExemptSelf = 5,
-  kBackgroundExemptOther = 6,
-
-  kCount = 7
-};
-
-enum class FrameOriginState {
-  kMainFrame = 0,
-  kSameOrigin = 1,
-  kCrossOrigin = 2,
-
-  kCount = 3
-};
-
-FrameThrottlingState GetFrameThrottlingState(
-    const WebFrameScheduler& frame_scheduler) {
-  if (frame_scheduler.IsPageVisible()) {
-    if (frame_scheduler.IsFrameVisible())
-      return FrameThrottlingState::kVisible;
-    return FrameThrottlingState::kHidden;
-  }
-
-  WebViewScheduler* web_view_scheduler = frame_scheduler.GetWebViewScheduler();
-  if (web_view_scheduler && web_view_scheduler->IsPlayingAudio()) {
-    if (frame_scheduler.IsFrameVisible())
-      return FrameThrottlingState::kVisibleService;
-    return FrameThrottlingState::kHiddenService;
-  }
-
-  if (frame_scheduler.IsExemptFromBudgetBasedThrottling())
-    return FrameThrottlingState::kBackgroundExemptSelf;
-
-  if (web_view_scheduler &&
-      web_view_scheduler->IsExemptFromBudgetBasedThrottling())
-    return FrameThrottlingState::kBackgroundExemptOther;
-
-  return FrameThrottlingState::kBackground;
-}
-
-FrameOriginState GetFrameOriginState(const WebFrameScheduler& frame_scheduler) {
-  if (frame_scheduler.GetFrameType() ==
-      WebFrameScheduler::FrameType::kMainFrame) {
-    return FrameOriginState::kMainFrame;
-  }
-  if (frame_scheduler.IsCrossOrigin())
-    return FrameOriginState::kCrossOrigin;
-  return FrameOriginState::kSameOrigin;
-}
-
 }  // namespace
-
-FrameType GetFrameType(WebFrameScheduler* frame_scheduler) {
-  if (!frame_scheduler)
-    return FrameType::kNone;
-  FrameThrottlingState throttling_state =
-      GetFrameThrottlingState(*frame_scheduler);
-  FrameOriginState origin_state = GetFrameOriginState(*frame_scheduler);
-  return static_cast<FrameType>(
-      static_cast<int>(FrameType::kSpecialCasesCount) +
-      static_cast<int>(origin_state) *
-          static_cast<int>(FrameThrottlingState::kCount) +
-      static_cast<int>(throttling_state));
-}
 
 RendererMetricsHelper::RendererMetricsHelper(
     RendererSchedulerImpl* renderer_scheduler,
@@ -164,7 +96,7 @@ RendererMetricsHelper::RendererMetricsHelper(
           DURATION_PER_QUEUE_TYPE_METRIC_NAME ".Visible"),
       hidden_music_per_queue_type_task_duration_reporter(
           DURATION_PER_QUEUE_TYPE_METRIC_NAME ".HiddenMusic"),
-      per_frame_type_duration_reporter(DURATION_PER_FRAME_TYPE_METRIC_NAME),
+      per_frame_status_duration_reporter(DURATION_PER_FRAME_TYPE_METRIC_NAME),
       per_task_type_duration_reporter(DURATION_PER_TASK_TYPE_METRIC_NAME),
       main_thread_task_duration_reporter(
           "RendererScheduler.TaskDurationPerThreadType"),
@@ -372,33 +304,33 @@ void RendererMetricsHelper::RecordTaskMetrics(MainThreadTaskQueue* queue,
                                                              duration);
   }
 
-  FrameType frame_type = GetFrameType(queue->GetFrameScheduler());
-  per_frame_type_duration_reporter.RecordTask(frame_type, duration);
-  UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME, frame_type,
-                            FrameType::kCount);
+  FrameStatus frame_status = GetFrameStatus(queue->GetFrameScheduler());
+  per_frame_status_duration_reporter.RecordTask(frame_status, duration);
+  UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME, frame_status,
+                            FrameStatus::kCount);
   if (duration >= base::TimeDelta::FromMilliseconds(16)) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan16ms",
-                              frame_type, FrameType::kCount);
+                              frame_status, FrameStatus::kCount);
   }
 
   if (duration >= base::TimeDelta::FromMilliseconds(50)) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan50ms",
-                              frame_type, FrameType::kCount);
+                              frame_status, FrameStatus::kCount);
   }
 
   if (duration >= base::TimeDelta::FromMilliseconds(100)) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan100ms",
-                              frame_type, FrameType::kCount);
+                              frame_status, FrameStatus::kCount);
   }
 
   if (duration >= base::TimeDelta::FromMilliseconds(150)) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan150ms",
-                              frame_type, FrameType::kCount);
+                              frame_status, FrameStatus::kCount);
   }
 
   if (duration >= base::TimeDelta::FromSeconds(1)) {
     UMA_HISTOGRAM_ENUMERATION(COUNT_PER_FRAME_METRIC_NAME ".LongerThan1s",
-                              frame_type, FrameType::kCount);
+                              frame_status, FrameStatus::kCount);
   }
 
   base::Optional<TaskType> task_type = task.task_type();

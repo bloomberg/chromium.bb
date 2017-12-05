@@ -54,7 +54,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     explicit Calculator(int steps_per_window);
     static const char* GetReportingMessageFromQueueType(
         MainThreadTaskQueue::QueueType queue_type);
-    static const char* GetReportingMessageFromFrameType(FrameType frame_type);
+    static const char* GetReportingMessageFromFrameStatus(
+        FrameStatus frame_status);
 
     void UpdateStatusFromTaskQueue(MainThreadTaskQueue* queue);
     void AddQueueingTime(base::TimeDelta queuing_time);
@@ -103,9 +104,9 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
         MainThreadTaskQueue::QueueType::kOther;
 
     // Variables to split Expected Queueing Time by frame type.
-    std::array<base::TimeDelta, static_cast<int>(FrameType::kCount)>
-        eqt_by_frame_type_;
-    FrameType current_frame_type_ = FrameType::kNone;
+    std::array<base::TimeDelta, static_cast<int>(FrameStatus::kCount)>
+        eqt_by_frame_status_;
+    FrameStatus current_frame_status_ = FrameStatus::kNone;
   };
 
   class State {

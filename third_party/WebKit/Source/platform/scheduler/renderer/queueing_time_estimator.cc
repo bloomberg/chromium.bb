@@ -140,52 +140,53 @@ const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromQueueType(
 }
 
 // static
-const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromFrameType(
-    FrameType frame_type) {
-  switch (frame_type) {
-    case FrameType::kMainFrameVisible:
-    case FrameType::kMainFrameVisibleService:
+const char*
+QueueingTimeEstimator::Calculator::GetReportingMessageFromFrameStatus(
+    FrameStatus frame_status) {
+  switch (frame_status) {
+    case FrameStatus::kMainFrameVisible:
+    case FrameStatus::kMainFrameVisibleService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "MainFrameVisible";
-    case FrameType::kMainFrameHidden:
-    case FrameType::kMainFrameHiddenService:
+    case FrameStatus::kMainFrameHidden:
+    case FrameStatus::kMainFrameHiddenService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "MainFrameHidden";
-    case FrameType::kMainFrameBackground:
-    case FrameType::kMainFrameBackgroundExemptSelf:
-    case FrameType::kMainFrameBackgroundExemptOther:
+    case FrameStatus::kMainFrameBackground:
+    case FrameStatus::kMainFrameBackgroundExemptSelf:
+    case FrameStatus::kMainFrameBackgroundExemptOther:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "MainFrameBackground";
-    case FrameType::kSameOriginVisible:
-    case FrameType::kSameOriginVisibleService:
+    case FrameStatus::kSameOriginVisible:
+    case FrameStatus::kSameOriginVisibleService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "SameOriginVisible";
-    case FrameType::kSameOriginHidden:
-    case FrameType::kSameOriginHiddenService:
+    case FrameStatus::kSameOriginHidden:
+    case FrameStatus::kSameOriginHiddenService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "SameOriginHidden";
-    case FrameType::kSameOriginBackground:
-    case FrameType::kSameOriginBackgroundExemptSelf:
-    case FrameType::kSameOriginBackgroundExemptOther:
+    case FrameStatus::kSameOriginBackground:
+    case FrameStatus::kSameOriginBackgroundExemptSelf:
+    case FrameStatus::kSameOriginBackgroundExemptOther:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "SameOriginBackground";
-    case FrameType::kCrossOriginVisible:
-    case FrameType::kCrossOriginVisibleService:
+    case FrameStatus::kCrossOriginVisible:
+    case FrameStatus::kCrossOriginVisibleService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "CrossOriginVisible";
-    case FrameType::kCrossOriginHidden:
-    case FrameType::kCrossOriginHiddenService:
+    case FrameStatus::kCrossOriginHidden:
+    case FrameStatus::kCrossOriginHiddenService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "CrossOriginHidden";
-    case FrameType::kCrossOriginBackground:
-    case FrameType::kCrossOriginBackgroundExemptSelf:
-    case FrameType::kCrossOriginBackgroundExemptOther:
+    case FrameStatus::kCrossOriginBackground:
+    case FrameStatus::kCrossOriginBackgroundExemptSelf:
+    case FrameStatus::kCrossOriginBackgroundExemptOther:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "CrossOriginBackground";
-    case FrameType::kNone:
-    case FrameType::kDetached:
+    case FrameStatus::kNone:
+    case FrameStatus::kDetached:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType.Other";
-    case FrameType::kCount:
+    case FrameStatus::kCount:
       NOTREACHED();
       return "";
   }
@@ -198,14 +199,16 @@ void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
   current_queue_type_ =
       queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kOther;
   WebFrameScheduler* scheduler = queue ? queue->GetFrameScheduler() : nullptr;
-  current_frame_type_ = scheduler ? GetFrameType(scheduler) : FrameType::kNone;
+  current_frame_status_ =
+      scheduler ? GetFrameStatus(scheduler) : FrameStatus::kNone;
 }
 
 void QueueingTimeEstimator::Calculator::AddQueueingTime(
     base::TimeDelta queueing_time) {
   step_expected_queueing_time_ += queueing_time;
   eqt_by_queue_type_[static_cast<int>(current_queue_type_)] += queueing_time;
-  eqt_by_frame_type_[static_cast<int>(current_frame_type_)] += queueing_time;
+  eqt_by_frame_status_[static_cast<int>(current_frame_status_)] +=
+      queueing_time;
 }
 
 void QueueingTimeEstimator::Calculator::EndStep(
@@ -231,9 +234,9 @@ void QueueingTimeEstimator::Calculator::EndStep(
         static_cast<MainThreadTaskQueue::QueueType>(i))] +=
         eqt_by_queue_type_[i];
   }
-  for (int i = 0; i < static_cast<int>(FrameType::kCount); ++i) {
-    delta_by_message[GetReportingMessageFromFrameType(
-        static_cast<FrameType>(i))] += eqt_by_frame_type_[i];
+  for (int i = 0; i < static_cast<int>(FrameStatus::kCount); ++i) {
+    delta_by_message[GetReportingMessageFromFrameStatus(
+        static_cast<FrameStatus>(i))] += eqt_by_frame_status_[i];
   }
   for (auto it : delta_by_message) {
     client->OnReportSplitExpectedQueueingTime(it.first,
@@ -241,7 +244,7 @@ void QueueingTimeEstimator::Calculator::EndStep(
   }
   std::fill(eqt_by_queue_type_.begin(), eqt_by_queue_type_.end(),
             base::TimeDelta());
-  std::fill(eqt_by_frame_type_.begin(), eqt_by_frame_type_.end(),
+  std::fill(eqt_by_frame_status_.begin(), eqt_by_frame_status_.end(),
             base::TimeDelta());
 }
 

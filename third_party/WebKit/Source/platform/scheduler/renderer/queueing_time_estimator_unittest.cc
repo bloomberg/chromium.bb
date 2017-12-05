@@ -52,9 +52,10 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
     return split_eqts_[QueueingTimeEstimator::Calculator::
                            GetReportingMessageFromQueueType(queue_type)];
   }
-  const std::vector<base::TimeDelta>& FrameTypeValues(FrameType frame_type) {
+  const std::vector<base::TimeDelta>& FrameStatusValues(
+      FrameStatus frame_status) {
     return split_eqts_[QueueingTimeEstimator::Calculator::
-                           GetReportingMessageFromFrameType(frame_type)];
+                           GetReportingMessageFromFrameStatus(frame_status)];
   }
 
  private:
@@ -916,7 +917,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
                                      base::TimeDelta::FromMilliseconds(1700),
                                      base::TimeDelta::FromMilliseconds(400),
                                      base::TimeDelta::FromMilliseconds(274)};
-  EXPECT_THAT(client.FrameTypeValues(FrameType::kNone),
+  EXPECT_THAT(client.FrameStatusValues(FrameStatus::kNone),
               ::testing::ElementsAreArray(expected_sums));
   expected = {{274, 1}, {400, 1}, {800, 1}, {900, 1}, {1700, 1}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByFrameType.Other", 5,
@@ -940,7 +941,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
 // Window 5: 400 ms tasks (which contribute 16) for each of the buckets except
 // other. Two 300 ms (each contributing 9) and one 800 ms tasks (contributes
 // 64) for the other bucket.
-TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
+TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   QueueingTimeEstimatorForTest estimator(&client,
                                          base::TimeDelta::FromSeconds(5), 5);
   time += base::TimeDelta::FromMilliseconds(5000);
@@ -1093,7 +1094,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
   estimator.OnTopLevelTaskCompleted(time);
 
   // End of window 5. Now check the vectors per frame type.
-  EXPECT_THAT(client.FrameTypeValues(FrameType::kMainFrameBackground),
+  EXPECT_THAT(client.FrameStatusValues(FrameStatus::kMainFrameBackground),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(800),
@@ -1105,7 +1106,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
       "RendererScheduler.ExpectedQueueingTimeByFrameType.MainFrameBackground",
       5, expected);
 
-  EXPECT_THAT(client.FrameTypeValues(FrameType::kMainFrameVisible),
+  EXPECT_THAT(client.FrameStatusValues(FrameStatus::kMainFrameVisible),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(800),
                                      base::TimeDelta::FromMilliseconds(900),
@@ -1117,19 +1118,19 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
       expected);
 
   struct FrameExpectation {
-    FrameType frame_type;
+    FrameStatus frame_status;
     std::string name;
   };
   FrameExpectation three_expected[] = {
-      {FrameType::kSameOriginVisible,
+      {FrameStatus::kSameOriginVisible,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.SameOriginVisible"},
-      {FrameType::kSameOriginHidden,
+      {FrameStatus::kSameOriginHidden,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.SameOriginHidden"},
-      {FrameType::kCrossOriginVisible,
+      {FrameStatus::kCrossOriginVisible,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.CrossOriginVisible"},
   };
   for (const auto& frame_expectation : three_expected) {
-    EXPECT_THAT(client.FrameTypeValues(frame_expectation.frame_type),
+    EXPECT_THAT(client.FrameStatusValues(frame_expectation.frame_status),
                 ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                        base::TimeDelta::FromMilliseconds(0),
                                        base::TimeDelta::FromMilliseconds(0),
@@ -1140,19 +1141,19 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
   }
 
   FrameExpectation more_expected[] = {
-      {FrameType::kMainFrameHidden,
+      {FrameStatus::kMainFrameHidden,
        "RendererScheduler.ExpectedQueueingTimeByFrameType."
        "MainFrameHidden"},
-      {FrameType::kSameOriginBackground,
+      {FrameStatus::kSameOriginBackground,
        "RendererScheduler.ExpectedQueueingTimeByFrameType."
        "SameOriginBackground"},
-      {FrameType::kCrossOriginHidden,
+      {FrameStatus::kCrossOriginHidden,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.CrossOriginHidden"},
-      {FrameType::kCrossOriginBackground,
+      {FrameStatus::kCrossOriginBackground,
        "RendererScheduler.ExpectedQueueingTimeByFrameType."
        "CrossOriginBackground"}};
   for (const auto& frame_expectation : more_expected) {
-    EXPECT_THAT(client.FrameTypeValues(frame_expectation.frame_type),
+    EXPECT_THAT(client.FrameStatusValues(frame_expectation.frame_status),
                 ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                        base::TimeDelta::FromMilliseconds(0),
                                        base::TimeDelta::FromMilliseconds(0),
@@ -1162,7 +1163,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
     TestHistogram(frame_expectation.name, 5, expected);
   }
 
-  EXPECT_THAT(client.FrameTypeValues(FrameType::kNone),
+  EXPECT_THAT(client.FrameStatusValues(FrameStatus::kNone),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
