@@ -95,7 +95,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   // An alternative way to drive sending data to the processor, that should be
   // called when a new encryption mechanism is ready.
-  void EncryptionAcceptedApplyUpdates();
+  void EncryptionAcceptedMaybeApplyUpdates();
 
   // Callback for when our contribution gets a response.
   void OnCommitResponse(CommitResponseDataList* response_list);

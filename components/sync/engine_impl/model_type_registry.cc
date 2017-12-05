@@ -296,7 +296,7 @@ void ModelTypeRegistry::OnPassphraseRequired(
 void ModelTypeRegistry::OnPassphraseAccepted() {
   for (const auto& worker : model_type_workers_) {
     if (encrypted_types_.Has(worker->GetModelType())) {
-      worker->EncryptionAcceptedApplyUpdates();
+      worker->EncryptionAcceptedMaybeApplyUpdates();
     }
   }
 }
