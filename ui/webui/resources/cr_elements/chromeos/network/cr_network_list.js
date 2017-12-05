@@ -113,9 +113,11 @@ Polymer({
    * @private
    */
   onItemAction_: function(item) {
-    if (item.hasOwnProperty('customItemName'))
+    if (item.hasOwnProperty('customItemName')) {
       this.fire('custom-item-selected', item);
-    else
+    } else {
       this.fire('selected', item);
+      this.focusRequested_ = true;
+    }
   },
 });
