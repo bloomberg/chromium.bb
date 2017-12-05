@@ -454,3 +454,15 @@ python crlsetutil.py -o ../certificates/crlset_by_intermediate_serial.raw \
   }
 }
 CRLSETBYINTERMEDIATESERIAL
+
+## Block a subject with a single-entry allowlist of SPKI hashes.
+python crlsetutil.py -o ../certificates/crlset_by_subject.raw \
+<<CRLSETBYSUBJECT
+{
+  "LimitedSubjects": {
+    "../certificates/root_ca_cert.pem": [
+      "../certificates/root_ca_cert.pem"
+    ]
+  }
+}
+CRLSETBYSUBJECT

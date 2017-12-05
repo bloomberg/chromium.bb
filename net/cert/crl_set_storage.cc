@@ -179,33 +179,79 @@ static bool ReadCRL(base::StringPiece* data, std::string* out_parent_spki_hash,
   return true;
 }
 
-// static
-bool CRLSetStorage::CopyBlockedSPKIsFromHeader(
-    CRLSet* crl_set,
-    base::DictionaryValue* header_dict) {
-  base::ListValue* blocked_spkis_list = NULL;
-  if (!header_dict->GetList("BlockedSPKIs", &blocked_spkis_list)) {
-    // BlockedSPKIs is optional, so it's fine if we don't find it.
+// CopyHashListFromHeader parses a list of base64-encoded, SHA-256 hashes from
+// the given |key| in |header_dict| and sets |*out| to the decoded values. It's
+// not an error if |key| is not found in |header_dict|.
+static bool CopyHashListFromHeader(base::DictionaryValue* header_dict,
+                                   const char* key,
+                                   std::vector<std::string>* out) {
+  base::ListValue* list = nullptr;
+  if (!header_dict->GetList(key, &list)) {
+    // Hash lists are optional so it's not an error if not present.
     return true;
   }
 
-  crl_set->blocked_spkis_.clear();
-  crl_set->blocked_spkis_.reserve(blocked_spkis_list->GetSize());
+  out->clear();
+  out->reserve(list->GetSize());
 
-  std::string spki_sha256_base64;
+  std::string sha256_base64;
 
-  for (size_t i = 0; i < blocked_spkis_list->GetSize(); ++i) {
-    spki_sha256_base64.clear();
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    sha256_base64.clear();
 
-    if (!blocked_spkis_list->GetString(i, &spki_sha256_base64))
+    if (!list->GetString(i, &sha256_base64))
       return false;
 
-    crl_set->blocked_spkis_.push_back(std::string());
-    if (!base::Base64Decode(spki_sha256_base64,
-                            &crl_set->blocked_spkis_.back())) {
-      crl_set->blocked_spkis_.pop_back();
+    out->push_back(std::string());
+    if (!base::Base64Decode(sha256_base64, &out->back())) {
+      out->pop_back();
       return false;
     }
+  }
+
+  return true;
+}
+
+// CopyHashToHashesMapFromHeader parse a map from base64-encoded, SHA-256
+// hashes to lists of the same, from the given |key| in |header_dict|. It
+// copies the map data into |out| (after base64-decoding) and writes the order
+// of map keys into |out_key_order|.
+static bool CopyHashToHashesMapFromHeader(
+    base::DictionaryValue* header_dict,
+    const char* key,
+    std::unordered_map<std::string, std::vector<std::string>>* out,
+    std::vector<std::string>* out_key_order) {
+  out->clear();
+  out_key_order->clear();
+
+  base::Value* const dict =
+      header_dict->FindKeyOfType(key, base::Value::Type::DICTIONARY);
+  if (dict == nullptr) {
+    // Maps are optional so it's not an error if not present.
+    return true;
+  }
+
+  for (const auto& i : dict->DictItems()) {
+    if (!i.second.is_list()) {
+      return false;
+    }
+
+    std::vector<std::string> allowed_spkis;
+    for (const auto& j : i.second.GetList()) {
+      allowed_spkis.push_back(std::string());
+      if (!j.is_string() ||
+          !base::Base64Decode(j.GetString(), &allowed_spkis.back())) {
+        return false;
+      }
+    }
+
+    std::string subject_hash;
+    if (!base::Base64Decode(i.first, &subject_hash)) {
+      return false;
+    }
+
+    out_key_order->push_back(subject_hash);
+    (*out)[subject_hash] = allowed_spkis;
   }
 
   return true;
@@ -356,8 +402,13 @@ bool CRLSetStorage::Parse(base::StringPiece data,
     crl_set->crls_index_by_issuer_[back_pair->first] = crl_index;
   }
 
-  if (!CopyBlockedSPKIsFromHeader(crl_set.get(), header_dict.get()))
+  if (!CopyHashListFromHeader(header_dict.get(), "BlockedSPKIs",
+                              &crl_set->blocked_spkis_) ||
+      !CopyHashToHashesMapFromHeader(header_dict.get(), "LimitedSubjects",
+                                     &crl_set->limited_subjects_,
+                                     &crl_set->limited_subjects_ordered_)) {
     return false;
+  }
 
   *out_crl_set = crl_set;
   return true;
@@ -403,8 +454,13 @@ bool CRLSetStorage::ApplyDelta(const CRLSet* in_crl_set,
   crl_set->sequence_ = static_cast<uint32_t>(sequence);
   crl_set->not_after_ = static_cast<uint64_t>(not_after);
 
-  if (!CopyBlockedSPKIsFromHeader(crl_set.get(), header_dict.get()))
+  if (!CopyHashListFromHeader(header_dict.get(), "BlockedSPKIs",
+                              &crl_set->blocked_spkis_) ||
+      !CopyHashToHashesMapFromHeader(header_dict.get(), "LimitedSubjects",
+                                     &crl_set->limited_subjects_,
+                                     &crl_set->limited_subjects_ordered_)) {
     return false;
+  }
 
   std::vector<uint8_t> crl_changes;
 
@@ -505,9 +561,41 @@ std::string CRLSetStorage::Serialize(const CRLSet* crl_set) {
       header += ",";
     header += "\"" + spki_hash_base64 + "\"";
   }
+
   header += "]";
   if (crl_set->not_after_ != 0)
     header += base::StringPrintf(",\"NotAfter\":%" PRIu64, crl_set->not_after_);
+
+  if (!crl_set->limited_subjects_ordered_.empty()) {
+    header += ",LimitedSubjects:{";
+    bool first = true;
+
+    for (const auto& i : crl_set->limited_subjects_ordered_) {
+      if (!first)
+        header += ",";
+      first = false;
+
+      std::string subject_hash_base64;
+      base::Base64Encode(i, &subject_hash_base64);
+      header += "\"" + subject_hash_base64 + "\":[";
+
+      bool first_hash = true;
+      for (const auto& j : crl_set->limited_subjects_.find(i)->second) {
+        if (!first_hash)
+          header += ",";
+        first_hash = false;
+
+        std::string spki_hash_base64;
+        base::Base64Encode(j, &spki_hash_base64);
+        header += "\"" + spki_hash_base64 + "\"";
+      }
+
+      header += "]";
+    }
+
+    header += "}";
+  }
+
   header += "}";
 
   size_t len = 2 /* header len */ + header.size();

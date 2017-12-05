@@ -13,10 +13,6 @@
 #include "net/base/net_export.h"
 #include "net/cert/crl_set.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace net {
 
 // Static helpers to save and load CRLSet.
@@ -42,12 +38,6 @@ class NET_EXPORT CRLSetStorage {
   // and serializing a CRLSet is a lossless operation - the resulting bytes
   // will be equal.
   static std::string Serialize(const CRLSet* crl_set);
-
- private:
-  // CopyBlockedSPKIsFromHeader sets |blocked_spkis_| to the list of values
-  // from "BlockedSPKIs" in |header_dict|.
-  static bool CopyBlockedSPKIsFromHeader(CRLSet* crl_set,
-                                         base::DictionaryValue* header_dict);
 };
 
 }  // namespace net
