@@ -395,7 +395,8 @@
       "service_manager_unittests",
       "skia_unittests",
       "sql_unittests",
-      "ui_base_unittests"
+      "ui_base_unittests",
+      "webkit_unit_tests"
     ]
   },
   "Fuchsia ARM64 Cast Audio": {
@@ -420,7 +421,8 @@
       "mojo_system_unittests",
       "net_unittests",
       "service_manager_unittests",
-      "ui_base_unittests"
+      "ui_base_unittests",
+      "webkit_unit_tests"
     ],
     "gtest_tests": [
       {
