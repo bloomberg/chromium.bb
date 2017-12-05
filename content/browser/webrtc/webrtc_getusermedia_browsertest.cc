@@ -435,27 +435,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                                   expected_result);
 }
 
-// Test fails under MSan, http://crbug.com/445745.
-// Flaky everywhere: https://crbug.com/789121.
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_TwoGetUserMediaAndVerifyFrameRate) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
-  NavigateToURL(shell(), url);
-
-  std::string constraints1 =
-      "{video: {mandatory: {minWidth:640 , minHeight: 480, "
-      "minFrameRate : 15, maxFrameRate : 15}}}";
-  std::string constraints2 =
-      "{video: {mandatory: {maxWidth:320 , maxHeight: 240,"
-      "minFrameRate : 7, maxFrameRate : 7}}}";
-
-  std::string command = "twoGetUserMediaAndVerifyFrameRate(" +
-      constraints1 + ',' + constraints2 + ", 15, 7)";
-  ExecuteJavascriptAndWaitForOk(command);
-}
-
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        GetUserMediaWithTooHighVideoConstraintsValues) {
   ASSERT_TRUE(embedded_test_server()->Start());

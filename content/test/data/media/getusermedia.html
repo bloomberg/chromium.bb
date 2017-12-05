@@ -279,42 +279,6 @@
     }
   }
 
-  // Calls GetUserMedia twice and verify that the frame rate is as expected for
-  // both streams.
-  function twoGetUserMediaAndVerifyFrameRate(constraints1,
-                                             constraints2,
-                                             expectedFrameRate1,
-                                             expectedFrameRate2) {
-    function frameRateValid(videoElementName, expectedFrameRate) {
-      return detectVideoPlaying(videoElementName)
-          .then(() => {
-            return validateFrameRate(videoElementName, expectedFrameRate)
-          });
-    }
-
-    navigator.mediaDevices.getUserMedia(constraints1)
-        .then(stream1 => {
-          $('local-view-1').srcObject = stream1;
-        })
-        .then(() => {
-          return navigator.mediaDevices.getUserMedia(constraints2)
-              .then(stream2 => {
-                $('local-view-2').srcObject = stream2;
-              });
-        })
-        .catch(failTest)
-        .then(() => {
-          return Promise.all([
-            frameRateValid('local-view-1', expectedFrameRate1),
-            frameRateValid('local-view-2', expectedFrameRate2),
-          ])
-        })
-        .catch(unexpectedFrameRateMsg => {
-          failTest(unexpectedFrameRateMsg);
-        })
-        .then(reportTestSuccess);
-  }
-
   function getUserMediaInIframeAndCloseInSuccessCb(constraints) {
     var iframe = document.createElement('iframe');
     iframe.onload = onIframeLoaded;
