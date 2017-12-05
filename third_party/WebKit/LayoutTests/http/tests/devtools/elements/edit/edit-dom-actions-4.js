@@ -1,11 +1,36 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/edit-dom-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that user can mutate DOM by means of elements panel.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+<div>
+    <div id="testEditInvisibleCharsAsHTML">
+        <div id="node-with-invisible-chars">A&#xA0;B&#x2002;C&#x2003;D&#x2009;E&#x200C;F&#x200D;G&#x200F;H&#x200E;I</div>
+    </div>
+
+    <div id="testEditScript">
+      <script id="node-to-edit-script">
+
+          var i = 0;
+          var j = 5;
+          for (; i < j; ++i) {
+              // Do nothing.
+          }
+
+      </script>
+    </div>
+
+    <div id="testEditSVG">
+        <svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="100">
+        </svg>
+    </div>
+</div>
+    `);
+
   // Save time on style updates.
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};
@@ -23,7 +48,9 @@ function test() {
         var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
         var treeElement = treeOutline.findTreeElement(node);
         treeOutline.toggleEditAsHTML(node);
-        TestRunner.deprecatedRunAfterPendingDispatches(step2);
+        TestRunner.deprecatedRunAfterPendingDispatches(() => {
+          self.runtime.extension(UI.TextEditorFactory).instance().then(step2);
+        });
 
         function step2() {
           var editor = treeElement._editing.editor;
@@ -33,7 +60,7 @@ function test() {
           event.isMetaOrCtrlForTest = true;
           editor.widget().element.dispatchEvent(event);
           TestRunner.deprecatedRunAfterPendingDispatches(
-              ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
+              ElementsTestRunner.expandElementsTree.bind(ElementsTestRunner, done));
         }
       }
     },
@@ -63,42 +90,9 @@ function test() {
           event.isMetaOrCtrlForTest = true;
           treeElement._editing.editor.widget().element.dispatchEvent(event);
           TestRunner.deprecatedRunAfterPendingDispatches(
-              ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
+              ElementsTestRunner.expandElementsTree.bind(ElementsTestRunner, done));
         }
       }
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that user can mutate DOM by means of elements panel.
-</p>
-
-<div>
-    <div id="testEditInvisibleCharsAsHTML">
-        <div id="node-with-invisible-chars">A&nbsp;B&ensp;C&emsp;D&thinsp;E&zwnj;F&zwj;G&rlm;H&lrm;I</div>
-    </div>
-
-    <div id="testEditScript">
-        <script id="node-to-edit-script">
-
-          var i = 0;
-          var j = 5;
-          for (; i < j; ++i) {
-              // Do nothing.
-          }
-
-        </script>
-    </div>
-
-    <div id="testEditSVG">
-        <svg id="node-to-edit-svg-attribute" xmlns:xlink="test" width="100">
-        </svg>
-    </div>
-</div>
-</body>
-</html>
+})();

@@ -1,18 +1,47 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function prepareTestTree()
-{
-    var template = document.querySelector("#testTree");
-    var testTreeContainer = document.querySelector("#testTreeContainer");
-    testTreeContainer.textContent = "";
-    testTreeContainer.appendChild(document.importNode(template.content, true));
-}
+(async function() {
+  TestRunner.addResult(`Tests that elements panel correctly updates selection on node removal.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <head>
+        <script>
+        function prepareTestTree()
+        {
+            var template = document.querySelector("#testTree");
+            var testTreeContainer = document.querySelector("#testTreeContainer");
+            testTreeContainer.textContent = "";
+            testTreeContainer.appendChild(document.importNode(template.content, true));
+        }
+        </script>
+      </head>
+      <body>
+      <template id="testTree">
+          <div class="left">
+              <div class="child1">
+              </div>
+              <div class="child2">
+                  <div class="child5">
+                  </div>
+                  <div class="child6">
+                  </div>
+                  <div class="child7">
+                  </div>
+                  <div class="child8">
+                  </div>
+              </div>
+              <div class="child3">
+              </div>
+          </div>
+      </template>
+      <div id="testTreeContainer">
+      </div>
+      </body>
+    `);
 
-function test() {
   function selectNode(className, callback) {
     var selector = '#testTreeContainer .' + className;
     ElementsTestRunner.querySelector(selector, gotNode);
@@ -136,31 +165,4 @@ function test() {
       }
     },
   ]);
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that elements panel correctly updates selection on node removal.</p>
-<template id="testTree">
-    <div class="left">
-        <div class="child1">
-        </div>
-        <div class="child2">
-            <div class="child5">
-            </div>
-            <div class="child6">
-            </div>
-            <div class="child7">
-            </div>
-            <div class="child8">
-            </div>
-        </div>
-        <div class="child3">
-        </div>
-    </div>
-</template>
-<div id="testTreeContainer">
-</div>
-</body>
-</html>
+})();

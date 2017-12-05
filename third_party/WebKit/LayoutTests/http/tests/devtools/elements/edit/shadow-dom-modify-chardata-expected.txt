@@ -1,7 +1,6 @@
 Tests that elements panel updates shadow dom tree structure upon typing.
 
 
-
 Running: testDumpInitial
 ========= Original ========
 - <div id="container">
