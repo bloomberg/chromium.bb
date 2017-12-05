@@ -18,6 +18,10 @@
 class Profile;
 class SigninManager;
 
+extern const char kForceSigninVerificationMetricsName[];
+extern const char kForceSigninVerificationSuccessTimeMetricsName[];
+extern const char kForceSigninVerificationFailureTimeMetricsName[];
+
 // ForceSigninVerifier will verify profile's auth token when profile is loaded
 // into memory by the first time via gaia server. It will retry on any transient
 // error.
@@ -70,6 +74,7 @@ class ForceSigninVerifier
   bool has_token_verified_;
   net::BackoffEntry backoff_entry_;
   base::OneShotTimer backoff_request_timer_;
+  base::TimeTicks creation_time_;
 
   OAuth2TokenService* oauth2_token_service_;
   SigninManager* signin_manager_;
