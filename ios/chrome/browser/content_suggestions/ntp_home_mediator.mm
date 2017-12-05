@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -24,12 +25,16 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation_item.h"
@@ -55,17 +60,33 @@ const char kBookmarkCommand[] = "bookmark";
 const char kRateThisAppCommand[] = "ratethisapp";
 }  // namespace
 
-@interface NTPHomeMediator ()<CRWWebStateObserver> {
+@interface NTPHomeMediator ()<CRWWebStateObserver,
+                              SearchEngineObserving,
+                              WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+  // Observes the WebStateList so that this mediator can update the UI when the
+  // active WebState changes.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  // Listen for default search engine changes.
+  std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
 }
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
+// The WebStateList that is being observed by this mediator.
+@property(nonatomic, assign, readonly) WebStateList* webStateList;
+// TemplateURL used to get the search engine.
+@property(nonatomic, assign) TemplateURLService* templateURLService;
+// Logo vendor to display the doodle on the NTP.
+@property(nonatomic, strong) id<LogoVendor> logoVendor;
+// The web state associated with this NTP.
+@property(nonatomic, assign) web::WebState* webState;
 
 @end
 
 @implementation NTPHomeMediator
 
 @synthesize webState = _webState;
+@synthesize consumer = _consumer;
 @synthesize dispatcher = _dispatcher;
 @synthesize suggestionsService = _suggestionsService;
 @synthesize NTPMetrics = _NTPMetrics;
@@ -73,6 +94,26 @@ const char kRateThisAppCommand[] = "ratethisapp";
 @synthesize suggestionsMediator = _suggestionsMediator;
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize metricsRecorder = _metricsRecorder;
+@synthesize logoVendor = _logoVendor;
+@synthesize templateURLService = _templateURLService;
+@synthesize webStateList = _webStateList;
+
+- (instancetype)initWithWebStateList:(WebStateList*)webStateList
+                  templateURLService:(TemplateURLService*)templateURLService
+                          logoVendor:(id<LogoVendor>)logoVendor {
+  self = [super init];
+  if (self) {
+    _webStateList = webStateList;
+    _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
+    _webStateList->AddObserver(_webStateListObserver.get());
+    _templateURLService = templateURLService;
+    // Listen for default search engine changes.
+    _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
+        self, self.templateURLService);
+    _logoVendor = logoVendor;
+  }
+  return self;
+}
 
 - (void)dealloc {
   if (_webState && _webStateObserver) {
@@ -86,13 +127,39 @@ const char kRateThisAppCommand[] = "ratethisapp";
   DCHECK(!_webStateObserver);
   DCHECK(self.suggestionsService);
 
+  [self.consumer setTabCount:self.webStateList->count()];
+  self.webState = self.webStateList->GetActiveWebState();
+
   _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
-  if (_webState) {
-    _webState->AddObserver(_webStateObserver.get());
+  if (self.webState) {
+    self.webState->AddObserver(_webStateObserver.get());
+    web::NavigationManager* navigationManager =
+        self.webState->GetNavigationManager();
+    [self.consumer setCanGoForward:navigationManager->CanGoForward()];
+    [self.consumer setCanGoBack:navigationManager->CanGoBack()];
   }
+
+  [self.consumer setLogoVendor:self.logoVendor];
+
+  self.templateURLService->Load();
+  [self searchEngineChanged];
+
+  // Set up notifications;
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:self.consumer
+                    selector:@selector(locationBarBecomesFirstResponder)
+                        name:kLocationBarBecomesFirstResponderNotification
+                      object:nil];
+  [defaultCenter addObserver:self.consumer
+                    selector:@selector(locationBarResignsFirstResponder)
+                        name:kLocationBarResignsFirstResponderNotification
+                      object:nil];
 }
 
 - (void)shutdown {
+  _webStateList->RemoveObserver(_webStateListObserver.get());
+  [[NSNotificationCenter defaultCenter] removeObserver:self.consumer];
+  _searchEngineObserver.reset();
   DCHECK(_webStateObserver);
   if (_webState) {
     _webState->RemoveObserver(_webStateObserver.get());
@@ -138,9 +205,8 @@ const char kRateThisAppCommand[] = "ratethisapp";
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
-  DCHECK_EQ(_webState, webState);
-  _webState->RemoveObserver(_webStateObserver.get());
-  _webState = nullptr;
+  DCHECK_EQ(self.webState, webState);
+  self.webState = nullptr;
 }
 
 #pragma mark - ContentSuggestionsCommands
@@ -236,7 +302,7 @@ const char kRateThisAppCommand[] = "ratethisapp";
   self.alertCoordinator = nil;
 }
 
-// TODO(crbug.com/761096) : Promo handling should be DRY and tested.
+// TODO(crbug.com/761096) : Promo handling should be tested.
 - (void)handlePromoTapped {
   NotificationPromoWhatsNew* notificationPromo =
       [self.suggestionsMediator notificationPromo];
@@ -363,6 +429,53 @@ const char kRateThisAppCommand[] = "ratethisapp";
 
 - (BOOL)isScrolledToTop {
   return self.suggestionsViewController.scrolledToTop;
+}
+
+#pragma mark - WebStateListObserving
+
+- (void)webStateList:(WebStateList*)webStateList
+    didInsertWebState:(web::WebState*)webState
+              atIndex:(int)index
+           activating:(BOOL)activating {
+  [self.consumer setTabCount:self.webStateList->count()];
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
+  [self.consumer setTabCount:self.webStateList->count()];
+}
+
+// If the actual webState associated with this mediator were passed in, this
+// would not be necessary.  However, since the active webstate can change when
+// the new tab page is created (and animated in), listen for changes here and
+// always display what's active.
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                 userAction:(BOOL)userAction {
+  if (newWebState) {
+    self.webState = newWebState;
+    web::NavigationManager* navigationManager =
+        newWebState->GetNavigationManager();
+    [self.consumer setCanGoForward:navigationManager->CanGoForward()];
+    [self.consumer setCanGoBack:navigationManager->CanGoBack()];
+  }
+}
+
+#pragma mark - SearchEngineObserving
+
+- (void)searchEngineChanged {
+  BOOL showLogo = NO;
+  const TemplateURL* defaultURL =
+      self.templateURLService->GetDefaultSearchProvider();
+  if (defaultURL) {
+    showLogo = defaultURL->GetEngineType(
+                   self.templateURLService->search_terms_data()) ==
+               SEARCH_ENGINE_GOOGLE;
+  }
+  [self.consumer setLogoIsShowing:showLogo];
 }
 
 #pragma mark - Private

@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
@@ -28,12 +29,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,7 +49,6 @@
     ContentSuggestionsViewController* suggestionsViewController;
 @property(nonatomic, strong)
     ContentSuggestionsMediator* contentSuggestionsMediator;
-@property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
 @property(nonatomic, strong)
     ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
 @property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
@@ -69,7 +70,6 @@
 @synthesize headerCollectionInteractionHandler =
     _headerCollectionInteractionHandler;
 @synthesize headerController = _headerController;
-@synthesize googleLandingMediator = _googleLandingMediator;
 @synthesize webStateList = _webStateList;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
@@ -104,21 +104,23 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
-  self.NTPMediator = [[NTPHomeMediator alloc] init];
+  self.NTPMediator = [[NTPHomeMediator alloc]
+      initWithWebStateList:self.webStateList
+        templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
+                               self.browserState)
+                logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
+                               self.browserState, self.dispatcher)];
 
-  self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
+  BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
+                                ->GetVoiceSearchProvider()
+                                ->IsVoiceSearchEnabled();
+  self.headerController = [[ContentSuggestionsHeaderViewController alloc]
+      initWithVoiceSearchEnabled:voiceSearchEnabled];
   self.headerController.dispatcher = self.dispatcher;
   self.headerController.commandHandler = self.NTPMediator;
   self.headerController.delegate = self.NTPMediator;
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
-
-  self.googleLandingMediator =
-      [[GoogleLandingMediator alloc] initWithBrowserState:self.browserState
-                                             webStateList:self.webStateList];
-  self.googleLandingMediator.consumer = self.headerController;
-  self.googleLandingMediator.dispatcher = self.dispatcher;
-  [self.googleLandingMediator setUp];
 
   favicon::LargeIconService* largeIconService =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
@@ -151,7 +153,7 @@
   self.suggestionsViewController.containsToolbar = YES;
   self.suggestionsViewController.dispatcher = self.dispatcher;
 
-  self.NTPMediator.webState = self.webStateList->GetActiveWebState();
+  self.NTPMediator.consumer = self.headerController;
   self.NTPMediator.dispatcher = self.dispatcher;
   self.NTPMediator.NTPMetrics =
       [[NTPHomeMetrics alloc] initWithBrowserState:self.browserState];
@@ -176,8 +178,6 @@
   self.NTPMediator = nil;
   self.contentSuggestionsMediator = nil;
   self.headerController = nil;
-  [self.googleLandingMediator shutdown];
-  self.googleLandingMediator = nil;
   _visible = NO;
 }
 

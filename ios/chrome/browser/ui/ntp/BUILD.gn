@@ -80,9 +80,6 @@ source_set("ntp_internal") {
   sources = [
     "centering_scrollview.h",
     "centering_scrollview.mm",
-    "google_landing_consumer.h",
-    "google_landing_mediator.h",
-    "google_landing_mediator.mm",
     "incognito_view.h",
     "incognito_view.mm",
     "incognito_view_controller.h",

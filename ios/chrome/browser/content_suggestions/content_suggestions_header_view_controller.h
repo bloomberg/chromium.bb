@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
-#import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
@@ -28,9 +28,18 @@ class ReadingListModel;
 @interface ContentSuggestionsHeaderViewController
     : UIViewController<ContentSuggestionsHeaderControlling,
                        ContentSuggestionsHeaderProvider,
-                       GoogleLandingConsumer,
+                       NTPHomeConsumer,
                        ToolbarOwner,
                        LogoAnimationControllerOwnerOwner>
+
+// Whether |voiceSearchIsEnabled|.
+- (instancetype)initWithVoiceSearchEnabled:(BOOL)voiceSearchIsEnabled
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, OmniboxFocuser, UrlLoader>
