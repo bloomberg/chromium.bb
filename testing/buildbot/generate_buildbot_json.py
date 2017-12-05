@@ -432,8 +432,8 @@ class BBJSONGenerator(object):
 
   def link_waterfalls_to_test_suites(self):
     for waterfall in self.waterfalls:
-      for tester_name, tester in waterfall['testers'].iteritems():
-        for suite, value in tester['test_suites'].iteritems():
+      for tester_name, tester in waterfall['machines'].iteritems():
+        for suite, value in tester.get('test_suites', {}).iteritems():
           if not value in self.test_suites:
             # Hard / impossible to cover this in the unit test.
             raise self.unknown_test_suite(
@@ -461,16 +461,15 @@ class BBJSONGenerator(object):
 
   def generate_waterfall_json(self, waterfall):
     all_tests = {}
-    for builder, config in waterfall.get('builders', {}).iteritems():
-      all_tests[builder] = config
     generator_map = self.get_test_generator_map()
-    for name, config in waterfall['testers'].iteritems():
+    for name, config in waterfall['machines'].iteritems():
       tests = {}
+      # Copy only well-understood entries in the machine's configuration
+      # verbatim into the generated JSON.
       if 'additional_compile_targets' in config:
         tests['additional_compile_targets'] = config[
           'additional_compile_targets']
-      test_suites = config['test_suites']
-      for test_type, input_tests in test_suites.iteritems():
+      for test_type, input_tests in config.get('test_suites', {}).iteritems():
         if test_type not in generator_map:
           raise self.unknown_test_suite_type(
             test_type, name, waterfall['name']) # pragma: no cover
@@ -503,8 +502,8 @@ class BBJSONGenerator(object):
     suites_seen = set()
     generator_map = self.get_test_generator_map()
     for waterfall in self.waterfalls:
-      for bot_name, tester in waterfall['testers'].iteritems():
-        for suite_type, suite in tester['test_suites'].iteritems():
+      for bot_name, tester in waterfall['machines'].iteritems():
+        for suite_type, suite in tester.get('test_suites', {}).iteritems():
           if suite_type not in generator_map:
             raise self.unknown_test_suite_type(suite_type, bot_name,
                                                waterfall['name'])
@@ -530,7 +529,7 @@ class BBJSONGenerator(object):
     all_bots = set()
     missing_bots = set()
     for waterfall in self.waterfalls:
-      for bot_name, tester in waterfall['testers'].iteritems():
+      for bot_name, tester in waterfall['machines'].iteritems():
         all_bots.add(bot_name)
     for exception in self.exceptions.itervalues():
       for removal in exception.get('remove_from', []):
