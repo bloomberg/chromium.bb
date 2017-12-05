@@ -741,6 +741,7 @@ modules_testing_dependency_idl_files =
           "mediastream/testing/InternalsMediaStream.idl",
           "navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl",
           "peerconnection/testing/InternalsRTCCertificate.idl",
+          "peerconnection/testing/InternalsRTCPeerConnection.idl",
           "serviceworkers/testing/InternalsServiceWorker.idl",
           "speech/testing/InternalsSpeechSynthesis.idl",
           "vibration/testing/InternalsVibration.idl",

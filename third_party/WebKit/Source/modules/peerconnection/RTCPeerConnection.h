@@ -214,6 +214,9 @@ class MODULES_EXPORT RTCPeerConnection final
   // We keep the this object alive until either stopped or closed.
   bool HasPendingActivity() const final { return !closed_ && !stopped_; }
 
+  // For testing; exported to testing/InternalWebRTCPeerConnection
+  static int PeerConnectionCount();
+
   virtual void Trace(blink::Visitor*);
 
  private:
