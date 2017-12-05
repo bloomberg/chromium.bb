@@ -167,6 +167,15 @@ interface CookieManager {
       string name,
       CookieChangeNotification notification_pointer);
 
+  // Send a CookieChangeNotification over which notification
+  // for all cookie changes will be sent.  When a cookie associated with
+  // the CookieManager changes, a notification will be posted to the
+  // passed pointer.
+  //
+  // TODO(rdsmith): Should this have a filter to register for a lot of
+  // notifications at once?  Maybe combine with the deletion filter?
+  RequestGlobalNotifications(CookieChangeNotification notification_pointer);
+
   // Clone the interface for use somewhere else.  After this call,
   // requests to the same implementation may be posted to the other side
   // of the pipe new_interface was configured on.

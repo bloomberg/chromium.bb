@@ -54,6 +54,8 @@ class CONTENT_EXPORT CookieManager : public network::mojom::CookieManager {
                            const std::string& name,
                            network::mojom::CookieChangeNotificationPtr
                                notification_pointer) override;
+  void RequestGlobalNotifications(network::mojom::CookieChangeNotificationPtr
+                                      notification_pointer) override;
   void CloneInterface(
       network::mojom::CookieManagerRequest new_interface) override;
 

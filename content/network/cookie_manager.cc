@@ -208,6 +208,43 @@ void CookieManager::RequestNotification(
   notifications_registered_.push_back(std::move(notification_registration));
 }
 
+void CookieManager::RequestGlobalNotifications(
+    network::mojom::CookieChangeNotificationPtr notification_pointer) {
+  std::unique_ptr<NotificationRegistration> notification_registration(
+      std::make_unique<NotificationRegistration>());
+  notification_registration->notification_pointer =
+      std::move(notification_pointer);
+
+  notification_registration->subscription =
+      cookie_store_->AddCallbackForAllChanges(
+          base::Bind(&CookieManager::CookieChanged,
+                     // base::Unretained is safe as destruction of the
+                     // CookieManager will also destroy the
+                     // notifications_registered list (which this object will be
+                     // inserted into, below), which will destroy the
+                     // CookieChangedSubscription, unregistering the callback.
+                     base::Unretained(this),
+                     // base::Unretained is safe as destruction of the
+                     // NotificationRegistration will also destroy the
+                     // CookieChangedSubscription, unregistering the callback.
+                     base::Unretained(notification_registration.get())));
+
+  notification_registration->notification_pointer.set_connection_error_handler(
+      base::BindOnce(&CookieManager::NotificationPipeBroken,
+                     // base::Unretained is safe as destruction of the
+                     // CookieManager will also destroy the
+                     // notifications_registered list (which this object will be
+                     // inserted into, below), which will destroy the
+                     // notification_pointer, rendering this callback moot.
+                     base::Unretained(this),
+                     // base::Unretained is safe as destruction of the
+                     // NotificationRegistration will also destroy the
+                     // CookieChangedSubscription, unregistering the callback.
+                     base::Unretained(notification_registration.get())));
+
+  notifications_registered_.push_back(std::move(notification_registration));
+}
+
 void CookieManager::CookieChanged(NotificationRegistration* registration,
                                   const net::CanonicalCookie& cookie,
                                   net::CookieStore::ChangeCause cause) {
