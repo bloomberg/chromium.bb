@@ -342,6 +342,9 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (!success) {
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
+    // Async reading is not supported on some platforms, see
+    // http://crbug.com/788386.
+    ReadARGBPixelsSync(image);
     return;
   }
   // Let |image| fall out of scope after we are done reading.
