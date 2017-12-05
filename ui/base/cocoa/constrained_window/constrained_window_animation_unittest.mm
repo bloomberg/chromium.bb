@@ -48,7 +48,7 @@
 class ConstrainedWindowAnimationTest : public ui::CocoaTest {
  protected:
   ConstrainedWindowAnimationTest() : CocoaTest() {
-    delegate_.reset([ConstrainedWindowAnimationTestDelegate alloc]);
+    delegate_.reset([[ConstrainedWindowAnimationTestDelegate alloc] init]);
   }
 
   base::scoped_nsobject<ConstrainedWindowAnimationTestDelegate> delegate_;
