@@ -16,22 +16,20 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
- * Robolectric tests for {@link MediaSource} class.
+ * Robolectric tests for {@link CastMediaSource} class.
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class MediaSourceTest {
-
+public class CastMediaSourceTest {
     @Test
     @Feature({"MediaRouter"})
     public void testCorrectSourceId() {
-        final String sourceId =
-                "https://example.com/path?query"
+        final String sourceId = "https://example.com/path?query"
                 + "#__castAppId__=ABCD1234(video_out,audio_out)"
                 + "/__castClientId__=1234567890"
                 + "/__castAutoJoinPolicy__=tab_and_origin_scoped";
 
-        MediaSource source = MediaSource.from(sourceId);
+        CastMediaSource source = CastMediaSource.from(sourceId);
         assertNotNull(source);
         assertEquals("ABCD1234", source.getApplicationId());
 
@@ -43,38 +41,39 @@ public class MediaSourceTest {
         assertEquals("1234567890", source.getClientId());
         assertEquals("tab_and_origin_scoped", source.getAutoJoinPolicy());
 
-        assertEquals(sourceId, source.getUrn());
+        assertEquals(sourceId, source.getSourceId());
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testNoFragment() {
-        assertNull(MediaSource.from("https://example.com/path?query"));
+        assertNull(CastMediaSource.from("https://example.com/path?query"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testEmptyFragment() {
-        assertNull(MediaSource.from("https://example.com/path?query#"));
+        assertNull(CastMediaSource.from("https://example.com/path?query#"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testNoAppId() {
-        assertNull(MediaSource.from("https://example.com/path?query#fragment"));
+        assertNull(CastMediaSource.from("https://example.com/path?query#fragment"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testNoValidAppId() {
-        // Invalid app id needs to indicate no availability so {@link MediaSource} needs to be
+        // Invalid app id needs to indicate no availability so {@link CastMediaSource} needs to be
         // created.
-        MediaSource empty = MediaSource.from("https://example.com/path?query#__castAppId__=");
+        CastMediaSource empty =
+                CastMediaSource.from("https://example.com/path?query#__castAppId__=");
         assertNotNull(empty);
         assertEquals("", empty.getApplicationId());
 
-        MediaSource invalid = MediaSource.from(
-                "https://example.com/path?query#__castAppId__=INVALID-APP-ID");
+        CastMediaSource invalid =
+                CastMediaSource.from("https://example.com/path?query#__castAppId__=INVALID-APP-ID");
         assertNotNull(invalid);
         assertEquals("INVALID-APP-ID", invalid.getApplicationId());
     }
@@ -82,33 +81,35 @@ public class MediaSourceTest {
     @Test
     @Feature({"MediaRouter"})
     public void testNoCapabilitiesSuffix() {
-        assertNull(MediaSource.from("https://example.com/path?query#__castAppId__=A("));
+        assertNull(CastMediaSource.from("https://example.com/path?query#__castAppId__=A("));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testCapabilitiesEmpty() {
-        assertNull(MediaSource.from("https://example.com/path?query#__castAppId__=A()"));
+        assertNull(CastMediaSource.from("https://example.com/path?query#__castAppId__=A()"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testInvalidCapability() {
-        assertNull(MediaSource.from("https://example.com/path?query#__castAppId__=A(a)"));
-        assertNull(MediaSource.from("https://example.com/path?query#__castAppId__=A(video_in,b)"));
+        assertNull(CastMediaSource.from("https://example.com/path?query#__castAppId__=A(a)"));
+        assertNull(
+                CastMediaSource.from("https://example.com/path?query#__castAppId__=A(video_in,b)"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testInvalidAutoJoinPolicy() {
-        assertNull(MediaSource.from("https://example.com/path?query#__castAppId__=A"
+        assertNull(CastMediaSource.from("https://example.com/path?query#__castAppId__=A"
                 + "/__castAutoJoinPolicy__=invalidPolicy"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testOptionalParameters() {
-        MediaSource source = MediaSource.from("https://example.com/path?query#__castAppId__=A");
+        CastMediaSource source =
+                CastMediaSource.from("https://example.com/path?query#__castAppId__=A");
         assertNotNull(source);
         assertEquals("A", source.getApplicationId());
 
@@ -120,7 +121,7 @@ public class MediaSourceTest {
     @Test
     @Feature({"MediaRouter"})
     public void testBasicCastPresentationUrl() {
-        MediaSource source = MediaSource.from("cast:ABCD1234");
+        CastMediaSource source = CastMediaSource.from("cast:ABCD1234");
         assertNotNull(source);
         assertEquals("ABCD1234", source.getApplicationId());
         assertNull(source.getCapabilities());
@@ -131,7 +132,7 @@ public class MediaSourceTest {
     @Test
     @Feature({"MediaRouter"})
     public void testCastPresentationUrlWithParameters() {
-        MediaSource source = MediaSource.from("cast:ABCD1234?clientId=1234"
+        CastMediaSource source = CastMediaSource.from("cast:ABCD1234?clientId=1234"
                 + "&capabilities=video_out,audio_out"
                 + "&autoJoinPolicy=tab_and_origin_scoped");
         assertNotNull(source);
@@ -147,14 +148,14 @@ public class MediaSourceTest {
     @Test
     @Feature({"MediaRouter"})
     public void testCastPresentationUrlInvalidCapability() {
-        assertNull(MediaSource.from("cast:ABCD1234?clientId=1234"
+        assertNull(CastMediaSource.from("cast:ABCD1234?clientId=1234"
                 + "&capabilities=invalidCapability"));
     }
 
     @Test
     @Feature({"MediaRouter"})
     public void testCastPresentationUrlInvalidAutoJoinPolicy() {
-        assertNull(MediaSource.from("cast:ABCD1234?clientId=1234"
+        assertNull(CastMediaSource.from("cast:ABCD1234?clientId=1234"
                 + "&autoJoinPolicy=invalidPolicy"));
     }
 }

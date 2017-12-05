@@ -34,7 +34,7 @@ public class CastMediaRouteProviderTest {
     private static final String SUPPORTED_SOURCE = "cast:DEADBEEF";
 
     private static final String SUPPORTED_AUTOJOIN_SOURCE = "cast:DEADBEEF"
-            + "?clientId=12345&autoJoinPolicy=" + MediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED;
+            + "?clientId=12345&autoJoinPolicy=" + CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED;
 
     // TODO(crbug.com/672704): Android does not currently support 1-UA mode.
     private static final String UNSUPPORTED_SOURCE = "https://example.com";

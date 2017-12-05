@@ -166,7 +166,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     @Override
     public boolean supportsSource(String sourceId) {
-        return MediaSource.from(sourceId) != null;
+        return CastMediaSource.from(sourceId) != null;
     }
 
     @Override
@@ -178,7 +178,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             return;
         }
 
-        MediaSource source = MediaSource.from(sourceId);
+        MediaSource source = CastMediaSource.from(sourceId);
         if (source == null) {
             // If the source is invalid, report no devices available.
             onSinksReceived(sourceId, new ArrayList<MediaSink>());
@@ -218,7 +218,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     public void stopObservingMediaSinks(String sourceId) {
         if (mAndroidMediaRouter == null) return;
 
-        MediaSource source = MediaSource.from(sourceId);
+        MediaSource source = CastMediaSource.from(sourceId);
         if (source == null) return;
 
         String applicationId = source.getApplicationId();
@@ -247,7 +247,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             return;
         }
 
-        MediaSource source = MediaSource.from(sourceId);
+        MediaSource source = CastMediaSource.from(sourceId);
         if (source == null) {
             mManager.onRouteRequestError("Unsupported presentation URL", nativeRequestId);
             return;
@@ -270,15 +270,17 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         MediaSink sink = request.getSink();
         MediaSource source = request.getSource();
 
-        MediaRoute route = new MediaRoute(
-                sink.getId(), source.getUrn(), request.getPresentationId());
+        MediaRoute route =
+                new MediaRoute(sink.getId(), source.getSourceId(), request.getPresentationId());
         addRoute(route, request.getOrigin(), request.getTabId());
         mManager.onRouteCreated(route.id, route.sinkId, request.getNativeRequestId(), this, true);
 
-        if (source.getClientId() != null) {
-            ClientRecord clientRecord = mClientRecords.get(source.getClientId());
+        String clientId = ((CastMediaSource) source).getClientId();
+
+        if (clientId != null) {
+            ClientRecord clientRecord = mClientRecords.get(clientId);
             if (clientRecord != null) {
-                sendReceiverAction(clientRecord.routeId, sink, source.getClientId(), "cast");
+                sendReceiverAction(clientRecord.routeId, sink, clientId, "cast");
             }
         }
         request.start();
@@ -287,7 +289,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     @Override
     public void joinRoute(String sourceId, String presentationId, String origin, int tabId,
             int nativeRequestId) {
-        MediaSource source = MediaSource.from(sourceId);
+        CastMediaSource source = CastMediaSource.from(sourceId);
         if (source == null || source.getClientId() == null) {
             mManager.onRouteRequestError("Unsupported presentation URL", nativeRequestId);
             return;
@@ -420,10 +422,10 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         // Send a "disconnect_session" message to all the clients that match with the leaving
         // client's auto join policy.
         for (ClientRecord client : mClientRecords.values()) {
-            if ((MediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
+            if ((CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
                         && isSameOrigin(client.origin, leavingClient.origin)
                         && client.tabId == leavingClient.tabId)
-                    || (MediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
+                    || (CastMediaSource.AUTOJOIN_ORIGIN_SCOPED.equals(leavingClient.autoJoinPolicy)
                                && isSameOrigin(client.origin, leavingClient.origin))) {
                 onMessage(client.clientId,
                         buildInternalMessage("disconnect_session", -1, client.clientId, sessionId));
@@ -451,10 +453,10 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         mMessageHandler = new CastMessageHandler(this);
     }
 
-    private boolean canAutoJoin(MediaSource source, String origin, int tabId) {
-        if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_PAGE_SCOPED)) return false;
+    private boolean canAutoJoin(CastMediaSource source, String origin, int tabId) {
+        if (source.getAutoJoinPolicy().equals(CastMediaSource.AUTOJOIN_PAGE_SCOPED)) return false;
 
-        MediaSource currentSource = MediaSource.from(mSession.getSourceId());
+        CastMediaSource currentSource = CastMediaSource.from(mSession.getSourceId());
         if (!currentSource.getApplicationId().equals(source.getApplicationId())) return false;
 
         ClientRecord client = null;
@@ -467,17 +469,18 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         if (client == null) return false;
 
         boolean sameOrigin = isSameOrigin(origin, client.origin);
-        if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_ORIGIN_SCOPED)) {
+        if (source.getAutoJoinPolicy().equals(CastMediaSource.AUTOJOIN_ORIGIN_SCOPED)) {
             return sameOrigin;
-        } else if (source.getAutoJoinPolicy().equals(MediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED)) {
+        } else if (source.getAutoJoinPolicy().equals(
+                           CastMediaSource.AUTOJOIN_TAB_AND_ORIGIN_SCOPED)) {
             return sameOrigin && tabId == client.tabId;
         }
 
         return false;
     }
 
-    private boolean canJoinExistingSession(String presentationId, String origin, int tabId,
-            MediaSource source) {
+    private boolean canJoinExistingSession(
+            String presentationId, String origin, int tabId, CastMediaSource source) {
         if (AUTO_JOIN_PRESENTATION_ID.equals(presentationId)) {
             return canAutoJoin(source, origin, tabId);
         } else if (presentationId.startsWith(PRESENTATION_ID_SESSION_ID_PREFIX)) {
@@ -503,7 +506,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
     void addRoute(MediaRoute route, String origin, int tabId) {
         mRoutes.put(route.id, route);
 
-        MediaSource source = MediaSource.from(route.sourceId);
+        CastMediaSource source = CastMediaSource.from(route.sourceId);
         final String clientId = source.getClientId();
 
         if (clientId == null || mClientRecords.get(clientId) != null) return;
