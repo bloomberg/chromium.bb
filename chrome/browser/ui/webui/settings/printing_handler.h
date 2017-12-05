@@ -6,7 +6,17 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_PRINTING_HANDLER_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "printing/features/features.h"
+
+#if defined(OS_CHROMEOS)
+#error "Not for use on ChromeOS"
+#endif
+
+#if !BUILDFLAG(ENABLE_PRINTING)
+#error "Printing must be enabled"
+#endif
 
 namespace settings {
 
