@@ -370,6 +370,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // are still the only owner of this VideoFrame.
   void SetReleaseMailboxCB(const ReleaseMailboxCB& release_mailbox_cb);
 
+  // Tests whether a mailbox release callback is configured.
+  bool HasReleaseMailboxCB() const;
+
   // Adds a callback to be run when the VideoFrame is about to be destroyed.
   // The callback may be run from ANY THREAD, and so it is up to the client to
   // ensure thread safety.  Although read-only access to the members of this

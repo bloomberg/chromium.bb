@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_frame.h"
 #include "media/mojo/clients/mojo_media_log_service.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
@@ -23,6 +24,7 @@ namespace media {
 class GpuVideoAcceleratorFactories;
 class MediaLog;
 class MojoDecoderBufferWriter;
+class MojoVideoFrameHandleReleaser;
 
 // A VideoDecoder, for use in the renderer process, that proxies to a
 // mojom::VideoDecoder. It is assumed that the other side will be implemented by
@@ -68,9 +70,6 @@ class MojoVideoDecoder final : public VideoDecoder,
 
   void BindRemoteDecoder();
 
-  void OnReleaseMailbox(const base::UnguessableToken& release_token,
-                        const gpu::SyncToken& release_sync_token);
-
   // Forwards |overlay_info| to the remote decoder.
   void OnOverlayInfoChanged(const OverlayInfo& overlay_info);
 
@@ -83,6 +82,9 @@ class MojoVideoDecoder final : public VideoDecoder,
   // Used to pass the remote decoder from the constructor (on the main thread)
   // to Initialize() (on the media thread).
   mojom::VideoDecoderPtrInfo remote_decoder_info_;
+
+  // Manages VideoFrame destruction callbacks.
+  scoped_refptr<MojoVideoFrameHandleReleaser> mojo_video_frame_handle_releaser_;
 
   GpuVideoAcceleratorFactories* gpu_factories_ = nullptr;
 

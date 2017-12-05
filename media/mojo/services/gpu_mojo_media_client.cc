@@ -107,14 +107,13 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     mojom::CommandBufferIdPtr command_buffer_id,
-    OutputWithReleaseMailboxCB output_cb,
     RequestOverlayInfoCB request_overlay_info_cb) {
 #if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
   auto get_stub_cb =
       base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
   return base::MakeUnique<MediaCodecVideoDecoder>(
-      gpu_preferences_, std::move(output_cb), DeviceInfo::GetInstance(),
+      gpu_preferences_, DeviceInfo::GetInstance(),
       AVDACodecAllocator::GetInstance(gpu_task_runner_),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
@@ -125,8 +124,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
   return base::MakeUnique<D3D11VideoDecoder>(
       gpu_task_runner_,
       base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
-                 command_buffer_id->channel_token, command_buffer_id->route_id),
-      std::move(output_cb));
+                 command_buffer_id->channel_token,
+                 command_buffer_id->route_id));
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_{MEDIA_CODEC | D3D11}_VIDEO_DECODER)

@@ -798,6 +798,10 @@ void VideoFrame::SetReleaseMailboxCB(
   mailbox_holders_release_cb_ = release_mailbox_cb;
 }
 
+bool VideoFrame::HasReleaseMailboxCB() const {
+  return !mailbox_holders_release_cb_.is_null();
+}
+
 void VideoFrame::AddDestructionObserver(base::OnceClosure callback) {
   DCHECK(!callback.is_null());
   done_callbacks_.push_back(std::move(callback));
