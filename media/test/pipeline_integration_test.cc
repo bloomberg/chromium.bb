@@ -833,16 +833,9 @@ TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
   Stop();
 }
 
-// Disabled on Linux due to flaky DCHECK; see https://crbug.com/788387.
-#if defined(OS_LINUX)
-#define MAYBE_ReinitRenderersWhileVideoTrackIsDisabled \
-  DISABLED_ReinitRenderersWhileVideoTrackIsDisabled
-#else
-#define MAYBE_ReinitRenderersWhileVideoTrackIsDisabled \
-  ReinitRenderersWhileVideoTrackIsDisabled
-#endif
+// The test is flaky, see https://crbug.com/788387.
 TEST_F(PipelineIntegrationTest,
-       MAYBE_ReinitRenderersWhileVideoTrackIsDisabled) {
+       DISABLED_ReinitRenderersWhileVideoTrackIsDisabled) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
   Play();
 
