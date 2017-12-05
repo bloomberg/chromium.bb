@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.TileView.Style;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.test.util.browser.ChromeHome;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -64,8 +65,9 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@EnableFeatures({ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME, ChromeFeatureList.CHROME_HOME})
+@EnableFeatures(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)
 @DisableFeatures({ChromeFeatureList.NTP_MODERN_LAYOUT})
+@ChromeHome.Enable
 public class TileGroupUnitTest {
     private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;
@@ -73,6 +75,8 @@ public class TileGroupUnitTest {
 
     @Rule
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
+    @Rule
+    public TestRule mChromeHomeProcessor = new ChromeHome.Processor();
 
     @Mock
     private TileGroup.Observer mTileGroupObserver;
@@ -83,11 +87,15 @@ public class TileGroupUnitTest {
     private FakeImageFetcher mImageFetcher;
     private TileRenderer mTileRenderer;
 
+    public TileGroupUnitTest() {
+        // The ChromeHome.Processor rule needs an available context when it is applied.
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+    }
+
     @Before
     public void setUp() {
         CardsVariationParameters.setTestVariationParams(new HashMap<>());
         MockitoAnnotations.initMocks(this);
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         mImageFetcher = new FakeImageFetcher();
         mTileRenderer = new TileRenderer(
