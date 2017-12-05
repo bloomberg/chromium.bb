@@ -52,16 +52,17 @@ class PLATFORM_EXPORT CanvasResource_Skia final : public CanvasResource {
   static scoped_refptr<CanvasResource_Skia> Create(
       sk_sp<SkImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
-  virtual ~CanvasResource_Skia() { Abandon(); }
+  virtual ~CanvasResource_Skia() { TearDown(); }
 
   // Not recyclable: Skia handles texture recycling internally and bitmaps are
   // cheap to allocate.
   bool IsRecycleable() const final { return false; }
   bool IsValid() const final;
-  void Abandon() final;
+  void Abandon() final { TearDown(); }
   GLuint TextureId() const final;
 
  private:
+  void TearDown();
   CanvasResource_Skia(sk_sp<SkImage>,
                       base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
 
@@ -79,10 +80,11 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
   virtual ~CanvasResource_GpuMemoryBuffer();
   bool IsRecycleable() const final { return IsValid(); }
   bool IsValid() const { return context_provider_wrapper_ && image_id_; }
-  void Abandon() final;
+  void Abandon() final { TearDown(); }
   GLuint TextureId() const final { return texture_id_; }
 
  private:
+  void TearDown();
   CanvasResource_GpuMemoryBuffer(
       const IntSize&,
       const CanvasColorParams&,
