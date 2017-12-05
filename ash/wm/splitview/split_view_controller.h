@@ -11,6 +11,7 @@
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
@@ -279,6 +280,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // If the divider is currently being dragging.
   bool is_resizing_ = false;
+
+  // The time when splitview starts. Used for metric collection purpose.
+  base::Time splitview_start_time_;
 
   base::ObserverList<Observer> observers_;
 
