@@ -4,13 +4,11 @@
 
 #include "ui/platform_window/x11/x11_cursor_ozone.h"
 
-#include <X11/Xcursor/Xcursor.h>
-#include <X11/Xlib.h>
-
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"

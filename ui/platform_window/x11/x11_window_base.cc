@@ -4,11 +4,6 @@
 
 #include "ui/platform_window/x11/x11_window_base.h"
 
-#include <X11/extensions/XInput2.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
@@ -40,7 +35,7 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
                              const gfx::Rect& bounds)
     : delegate_(delegate),
       xdisplay_(gfx::GetXDisplay()),
-      xwindow_(None),
+      xwindow_(x11::None),
       xroot_window_(DefaultRootWindow(xdisplay_)),
       bounds_(bounds) {
   DCHECK(delegate_);
@@ -51,13 +46,13 @@ X11WindowBase::~X11WindowBase() {
 }
 
 void X11WindowBase::Destroy() {
-  if (xwindow_ == None)
+  if (xwindow_ == x11::None)
     return;
 
   // Stop processing events.
   XID xwindow = xwindow_;
   XDisplay* xdisplay = xdisplay_;
-  xwindow_ = None;
+  xwindow_ = x11::None;
   delegate_->OnClosed();
   // |this| might be deleted because of the above call.
 
@@ -69,7 +64,7 @@ void X11WindowBase::Create() {
 
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
-  swa.background_pixmap = None;
+  swa.background_pixmap = x11::None;
   swa.bit_gravity = NorthWestGravity;
   swa.override_redirect = UseTestConfigForPlatformWindows();
   xwindow_ =
@@ -146,7 +141,7 @@ void X11WindowBase::Create() {
 void X11WindowBase::Show() {
   if (window_mapped_)
     return;
-  if (xwindow_ == None)
+  if (xwindow_ == x11::None)
     Create();
 
   XMapWindow(xdisplay_, xwindow_);
@@ -171,7 +166,7 @@ void X11WindowBase::Close() {
 }
 
 void X11WindowBase::SetBounds(const gfx::Rect& bounds) {
-  if (xwindow_ != None) {
+  if (xwindow_ != x11::None) {
     XWindowChanges changes = {0};
     unsigned value_mask = 0;
 
@@ -220,7 +215,7 @@ void X11WindowBase::SetTitle(const base::string16& title) {
   XTextProperty xtp;
   char* c_utf8_str = const_cast<char*>(utf8str.c_str());
   if (Xutf8TextListToTextProperty(xdisplay_, &c_utf8_str, 1, XUTF8StringStyle,
-                                  &xtp) == Success) {
+                                  &xtp) == x11::Success) {
     XSetWMName(xdisplay_, xwindow_, &xtp);
     XFree(xtp.value);
   }
@@ -239,7 +234,7 @@ void X11WindowBase::Minimize() {}
 void X11WindowBase::Restore() {}
 
 void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
-  XWarpPointer(xdisplay_, None, xroot_window_, 0, 0, 0, 0,
+  XWarpPointer(xdisplay_, x11::None, xroot_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());
 }
 
@@ -250,7 +245,7 @@ PlatformImeController* X11WindowBase::GetPlatformImeController() {
 }
 
 bool X11WindowBase::IsEventForXWindow(const XEvent& xev) const {
-  return xwindow_ != None && FindXEventTarget(xev) == xwindow_;
+  return xwindow_ != x11::None && FindXEventTarget(xev) == xwindow_;
 }
 
 void X11WindowBase::ProcessXWindowEvent(XEvent* xev) {
@@ -298,7 +293,7 @@ void X11WindowBase::ProcessXWindowEvent(XEvent* xev) {
         XEvent reply_event = *xev;
         reply_event.xclient.window = xroot_window_;
 
-        XSendEvent(xdisplay_, reply_event.xclient.window, False,
+        XSendEvent(xdisplay_, reply_event.xclient.window, x11::False,
                    SubstructureRedirectMask | SubstructureNotifyMask,
                    &reply_event);
         XFlush(xdisplay_);
