@@ -599,6 +599,11 @@ if (aom_config("CONFIG_CONVOLVE_ROUND") eq "yes") {
   if (aom_config("CONFIG_JNT_COMP") eq "yes") {
     add_proto qw/void av1_jnt_convolve_2d/, "const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params";
     specialize qw/av1_jnt_convolve_2d sse4_1/;
+
+    if (aom_config("CONFIG_COMPOUND_ROUND") ne "yes") {
+      add_proto qw/void av1_jnt_convolve_2d_copy/, "const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst, int dst_stride, int w, int h, InterpFilterParams *filter_params_x, InterpFilterParams *filter_params_y, const int subpel_x_q4, const int subpel_y_q4, ConvolveParams *conv_params";
+      specialize qw/av1_jnt_convolve_2d_copy sse4_1/;
+    }
   }
 
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
