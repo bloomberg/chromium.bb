@@ -16,13 +16,19 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
 
  public:
   static CSSURLImageValue* Create(ScriptState* script_state,
-                                  const AtomicString& url) {
+                                  const AtomicString& url,
+                                  ExceptionState& exception_state) {
     const auto* execution_context = ExecutionContext::From(script_state);
     DCHECK(execution_context);
+    KURL parsed_url = execution_context->CompleteURL(url);
+    if (!parsed_url.IsValid()) {
+      exception_state.ThrowTypeError("Failed to parse URL from " + url);
+      return nullptr;
+    }
     // Use absolute URL for CSSImageValue but keep relative URL for
     // getter and serialization.
-    return new CSSURLImageValue(CSSImageValue::Create(
-        url, execution_context->CompleteURL(url), Referrer()));
+    return new CSSURLImageValue(
+        CSSImageValue::Create(url, parsed_url, Referrer()));
   }
   static CSSURLImageValue* Create(const CSSImageValue* image_value) {
     return new CSSURLImageValue(image_value);
