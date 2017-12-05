@@ -2609,12 +2609,13 @@ TEST_F(CommitToActiveTreePictureLayerImplTest,
 
   active_layer()->HighResTiling()->UpdateAllRequiredStateForTesting();
 
-  // High res tiling should have 64 tiles (4x16 tile grid).
-  EXPECT_EQ(64u, active_layer()->HighResTiling()->AllTilesForTesting().size());
+  // High res tiling should have 128 tiles (4x16 tile grid, plus another
+  // factor of 2 for half-width tiles).
+  EXPECT_EQ(128u, active_layer()->HighResTiling()->AllTilesForTesting().size());
 
-  // Visible viewport should be covered by 4 tiles.  No other
-  // tiles should be required for activation.
-  EXPECT_EQ(4u, NumberOfTilesRequired(active_layer()->HighResTiling()));
+  // Visible viewport should be covered by 8 tiles (4 high, half-width.
+  // No other tiles should be required for activation.
+  EXPECT_EQ(8u, NumberOfTilesRequired(active_layer()->HighResTiling()));
 }
 
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
@@ -5006,7 +5007,7 @@ TEST_F(TileSizeTest, TileSizes) {
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
   EXPECT_EQ(result.width(),
             MathUtil::UncheckedRoundUp(
-                2000 + 2 * PictureLayerTiling::kBorderTexels, 32));
+                1000 + 2 * PictureLayerTiling::kBorderTexels, 32));
   EXPECT_EQ(result.height(), 512);  // 500 + 2, 32-byte aligned.
 
   // Clamp and round-up, when smaller than viewport.
@@ -5028,12 +5029,6 @@ TEST_F(TileSizeTest, TileSizes) {
 }
 
 class HalfWidthTileTest : public PictureLayerImplTest {
- public:
-  LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings = PictureLayerImplTest::CreateSettings();
-    settings.use_half_width_tiles_for_gpu_rasterization = true;
-    return settings;
-  }
 };
 
 TEST_F(HalfWidthTileTest, TileSizes) {

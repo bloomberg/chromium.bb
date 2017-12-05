@@ -888,12 +888,9 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     default_tile_width += 2 * PictureLayerTiling::kBorderTexels;
     default_tile_height += 2 * PictureLayerTiling::kBorderTexels;
 
-    // Use half-width GPU tiles on low-end devices when the content width is
+    // Use half-width GPU tiles when the content width is
     // larger than the viewport width.
-    if (layer_tree_impl()
-            ->settings()
-            .use_half_width_tiles_for_gpu_rasterization &&
-        content_bounds.width() > viewport_width)
+    if (content_bounds.width() > viewport_width)
       default_tile_width /= 2;
 
     // Round GPU default tile sizes to a multiple of kGpuDefaultTileAlignment.

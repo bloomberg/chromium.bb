@@ -6597,7 +6597,7 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    EXPECT_EQ(10u, host_impl->resource_provider()->num_resources());
+    EXPECT_EQ(15u, host_impl->resource_provider()->num_resources());
     EndTest();
     return draw_result;
   }
