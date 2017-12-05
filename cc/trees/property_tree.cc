@@ -1352,16 +1352,22 @@ const gfx::ScrollOffset ScrollTree::current_scroll_offset(ElementId id) const {
 gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
     SyncedScrollOffset* scroll_offset) {
   DCHECK(property_trees()->is_active);
-  // TODO(miletus): Remove all this temporary flooring machinery when
-  // Blink fully supports fractional scrolls.
+  // TODO(flackr): We should pass the fractional scroll deltas when Blink fully
+  // supports fractional scrolls.
+  // TODO(flackr): We should ideally round the fractional scrolls in the same
+  // direction as the scroll will be snapped but for common cases this is
+  // equivalent to rounding to the nearest integer offset.
   gfx::ScrollOffset current_offset =
       scroll_offset->Current(/* is_active_tree */ true);
-  gfx::ScrollOffset current_delta = scroll_offset->Delta();
-  gfx::ScrollOffset floored_delta(floor(current_delta.x()),
-                                  floor(current_delta.y()));
-  gfx::ScrollOffset diff_delta = floored_delta - current_delta;
-  gfx::ScrollOffset tmp_offset = current_offset + diff_delta;
-  scroll_offset->SetCurrent(tmp_offset);
+  gfx::ScrollOffset rounded_offset =
+      gfx::ScrollOffset(roundf(current_offset.x()), roundf(current_offset.y()));
+  // The calculation of the difference from the rounded active base is to
+  // represent the integer delta that the main thread should know about.
+  gfx::ScrollOffset active_base = scroll_offset->ActiveBase();
+  gfx::ScrollOffset diff_active_base =
+      gfx::ScrollOffset(active_base.x() - roundf(active_base.x()),
+                        active_base.y() - roundf(active_base.y()));
+  scroll_offset->SetCurrent(rounded_offset + diff_active_base);
   gfx::ScrollOffset delta = scroll_offset->PullDeltaForMainThread();
   scroll_offset->SetCurrent(current_offset);
   return delta;
