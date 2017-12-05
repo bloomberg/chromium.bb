@@ -43,6 +43,8 @@ class TracingBackend(object):
     self._buffer_usage_reporting_interval = buffer_usage_reporting_interval
     self._included_categories = []
     self._excluded_categories = []
+    self._pending_read_ids = []
+    self._stream_handle = None
 
   def Connect(self):
     """Connect to cast_shell."""
@@ -63,7 +65,8 @@ class TracingBackend(object):
 
   def StartTracing(self,
                    custom_categories=None,
-                   record_continuously=False):
+                   record_continuously=False,
+                   systrace=True):
     """Begin a tracing session on device.
 
     Args:
@@ -77,8 +80,11 @@ class TracingBackend(object):
     req = {
         'method': 'Tracing.start',
         'params': {
-            'transferMode': 'ReportEvents',
+            'transferMode':
+                'ReturnAsStream' if systrace else 'ReportEvents',
             'traceConfig': {
+                'enableSystrace':
+                    systrace,
                 'recordMode':
                     'recordContinuously'
                     if record_continuously else 'recordUntilFull',
@@ -102,19 +108,19 @@ class TracingBackend(object):
     self._socket.settimeout(self._timeout)
     req = {'method': 'Tracing.end'}
     self._SendRequest(req)
-    while self._socket:
-      res = self._ReceiveResponse()
-      has_error = 'error' in res
-      if has_error:
-        logging.error('Tracing error: ' + str(res.get('error')))
-      if has_error or ('method' in res and self._HandleResponse(res)):
-        self._tracing_client = None
-        result = self._tracing_data
-        self._tracing_data = []
 
-        with open(output_file, 'w') as f:
-          json.dump(result, f)
-        return
+    with open(output_file, 'w') as f:
+      while self._socket:
+        res = self._ReceiveResponse()
+        has_error = 'error' in res
+        if has_error:
+          logging.error('Tracing error: ' + str(res.get('error')))
+        if has_error or self._HandleResponse(res, f):
+          self._tracing_client = None
+          if not self._stream_handle:
+            json.dump(self._tracing_data, f)
+          self._tracing_data = []
+          return
 
   def _SendRequest(self, req):
     """Sends request to remote devtools.
@@ -126,6 +132,7 @@ class TracingBackend(object):
     self._next_request_id += 1
     data = json.dumps(req)
     self._socket.send(data)
+    return req['id']
 
   def _ReceiveResponse(self):
     """Get response from remote devtools.
@@ -138,7 +145,21 @@ class TracingBackend(object):
       res = json.loads(data)
       return res
 
-  def _HandleResponse(self, res):
+  def _SendReadRequest(self):
+    """Sends a request to read the trace data stream."""
+    req = {
+      'method': 'IO.read',
+      'params': {
+        'handle': self._stream_handle,
+        'size': 32768,
+      }
+    }
+
+    # Send multiple reads to hide request latency.
+    while len(self._pending_read_ids) < 2:
+      self._pending_read_ids.append(self._SendRequest(req))
+
+  def _HandleResponse(self, res, output_file):
     """Handle response from remote devtools.
 
     Args:
@@ -146,6 +167,7 @@ class TracingBackend(object):
     """
     method = res.get('method')
     value = res.get('params', {}).get('value')
+    response_id = res.get('id', None)
     if 'Tracing.dataCollected' == method:
       if type(value) in [str, unicode]:
         self._tracing_data.append(value)
@@ -156,7 +178,20 @@ class TracingBackend(object):
     elif 'Tracing.bufferUsage' == method and self._tracing_client:
       self._tracing_client.BufferUsage(value)
     elif 'Tracing.tracingComplete' == method:
-      return True
+      self._stream_handle = res.get('params', {}).get('stream')
+      if self._stream_handle:
+        self._SendReadRequest()
+      else:
+        return True
+    elif response_id in self._pending_read_ids:
+      self._pending_read_ids.remove(response_id)
+      data = res.get('result', {}).get('data')
+      eof = res.get('result', {}).get('eof')
+      output_file.write(data.encode('utf-8'))
+      if eof:
+        return True
+      else:
+        self._SendReadRequest()
 
   def _ParseCustomCategories(self, custom_categories):
     """Parse a category filter into trace config format"""
@@ -189,7 +224,8 @@ class TracingBackendAndroid(object):
 
   def StartTracing(self,
                    custom_categories=None,
-                   record_continuously=False):
+                   record_continuously=False,
+                   systrace=True):
     """Begin a tracing session on device.
 
     Args:

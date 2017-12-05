@@ -70,6 +70,12 @@ def _CreateOptionParser():
            'and used as a ring buffer. If this option is omitted then '
            'recording stops when the trace buffer is full.',
       action='store_true')
+  tracing_opts.add_option(
+      '--systrace',
+      help='Enable system tracing.',
+      action='store_true',
+      dest='systrace',
+      default=False)
   parser.add_option_group(tracing_opts)
 
   output_options = optparse.OptionGroup(parser, 'Output options')
@@ -92,7 +98,7 @@ def main():
 
   with Connect(options) as tracing_backend:
     tracing_backend.StartTracing(options.category_filter,
-                                 options.record_continuously)
+                                 options.record_continuously, options.systrace)
     raw_input('Capturing trace. Press Enter to stop...')
     filepath = GetOutputFilePath(options)
     tracing_backend.StopTracing(filepath)
