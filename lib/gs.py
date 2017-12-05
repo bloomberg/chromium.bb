@@ -618,10 +618,18 @@ class GSContext(object):
 
   def _TestGSLs(self):
     """Quick test of gsutil functionality."""
+    # "gsutil ls" lists the buckets you have access to, if you can auth
+    # with any permissions at all.
     result = self.DoCommand(['ls'], retries=0, debug_level=logging.DEBUG,
                             redirect_stderr=True, error_code_ok=True)
-    return not (result.returncode == 1 and
-                any(e in result.error for e in self.AUTHORIZATION_ERRORS))
+
+    # Did we fail with an authentication error?
+    if (result.returncode == 1 and
+        any(e in result.error for e in self.AUTHORIZATION_ERRORS)):
+      logging.warning('gsutil authentication failure msg: %s', result.error)
+      return False
+
+    return True
 
   def _ConfigureBotoConfig(self):
     """Make sure we can access protected bits in GS."""
