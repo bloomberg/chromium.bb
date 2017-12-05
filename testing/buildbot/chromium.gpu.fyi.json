@@ -835,7 +835,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -866,7 +866,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -897,7 +897,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -928,7 +928,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -959,7 +959,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -991,7 +991,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1016,7 +1016,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1041,7 +1041,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1066,7 +1066,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1091,7 +1091,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1120,7 +1120,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1152,7 +1152,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1192,7 +1192,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1218,7 +1218,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1243,7 +1243,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -1269,7 +1269,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -2562,7 +2562,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }
@@ -2599,7 +2599,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "M",
+              "device_os": "MMB29Q",
               "device_type": "bullhead",
               "os": "Android"
             }

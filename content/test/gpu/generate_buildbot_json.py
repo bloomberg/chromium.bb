@@ -231,7 +231,7 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'device_type': 'bullhead',
-          'device_os': 'M',
+          'device_os': 'MMB29Q',
           'os': 'Android'
         },
       ],
@@ -733,7 +733,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'device_type': 'bullhead',
-          'device_os': 'M',
+          'device_os': 'MMB29Q',
           'os': 'Android'
         },
       ],
@@ -803,7 +803,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'device_type': 'bullhead',
-          'device_os': 'M',
+          'device_os': 'MMB29Q',
           'os': 'Android'
         },
       ],
@@ -1023,7 +1023,7 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'device_type': 'bullhead',
-          'device_os': 'M',
+          'device_os': 'MMB29Q',
           'os': 'Android'
         },
       ],
@@ -1153,7 +1153,7 @@ COMMON_GTESTS = {
           # Nexus 5X
           {
             'device_type': 'bullhead',
-            'device_os': 'M',
+            'device_os': 'MMB29Q',
             'os': 'Android'
           }
         ],
@@ -1193,7 +1193,7 @@ COMMON_GTESTS = {
           # Nexus 5X
           {
             'device_type': 'bullhead',
-            'device_os': 'M',
+            'device_os': 'MMB29Q',
             'os': 'Android'
           }
         ],
@@ -2276,11 +2276,13 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
+          # Nexus 5X
           {
             'device_type': 'bullhead',
-            'device_os': 'M',
+            'device_os': 'MMB29Q',
             'os': 'Android'
           },
+          # Nexus 6P
           {
             'device_type': 'angler',
             'device_os': 'M',
