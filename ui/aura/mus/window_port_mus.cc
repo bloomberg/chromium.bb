@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display.h"
@@ -401,7 +402,12 @@ void WindowPortMus::AllocateLocalSurfaceId() {
 }
 
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
-  return local_surface_id_;
+  if (switches::IsMusHostingViz())
+    return local_surface_id_;
+  if (window_->GetRootWindow() != window_)
+    return local_surface_id_;
+  return GetOrAllocateLocalSurfaceId(
+      window_->GetHost()->GetBoundsInPixels().size());
 }
 
 std::unique_ptr<WindowMusChangeData>

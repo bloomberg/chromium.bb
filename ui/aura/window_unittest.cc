@@ -35,6 +35,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -418,6 +419,11 @@ TEST_P(WindowTest, ContainsMouse) {
   EXPECT_TRUE(w_test_api.ContainsMouse());
   root->MoveCursorTo(gfx::Point(9, 10));
   EXPECT_FALSE(w_test_api.ContainsMouse());
+}
+
+// Tests that the root window gets a valid LocalSurfaceId.
+TEST_P(WindowTest, RootWindowHasValidLocalSurfaceId) {
+  EXPECT_TRUE(root_window()->GetLocalSurfaceId().is_valid());
 }
 
 // Test Window::ConvertPointToWindow() with transform to root_window.
