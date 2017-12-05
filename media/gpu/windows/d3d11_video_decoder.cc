@@ -46,7 +46,7 @@ namespace media {
 
 D3D11VideoDecoder::D3D11VideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-    base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb,
+    base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
     OutputWithReleaseMailboxCB output_cb)
     : impl_task_runner_(std::move(gpu_task_runner)), weak_factory_(this) {
   // We create |impl_| on the wrong thread, but we never use it here.

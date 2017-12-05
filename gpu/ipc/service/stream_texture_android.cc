@@ -26,7 +26,7 @@ using gles2::TextureManager;
 using gles2::TextureRef;
 
 // static
-bool StreamTexture::Create(GpuCommandBufferStub* owner_stub,
+bool StreamTexture::Create(CommandBufferStub* owner_stub,
                            uint32_t client_texture_id,
                            int stream_id) {
   GLES2Decoder* decoder = owner_stub->decoder();
@@ -55,7 +55,7 @@ bool StreamTexture::Create(GpuCommandBufferStub* owner_stub,
   return false;
 }
 
-StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
+StreamTexture::StreamTexture(CommandBufferStub* owner_stub,
                              int32_t route_id,
                              uint32_t texture_id)
     : surface_texture_(gl::SurfaceTexture::Create(texture_id)),

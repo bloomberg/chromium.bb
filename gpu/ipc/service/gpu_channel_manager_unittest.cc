@@ -45,7 +45,7 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
                                &result, &capabilities));
     EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
-    GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
+    CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
     EXPECT_TRUE(stub);
 
     channel_manager()->OnApplicationBackgroundedForTesting();

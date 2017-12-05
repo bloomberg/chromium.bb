@@ -42,7 +42,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
                              &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
-  GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
+  CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
   ASSERT_TRUE(stub);
 }
 
@@ -70,7 +70,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
                              &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
 
-  GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
+  CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
   EXPECT_FALSE(stub);
 }
 
@@ -94,7 +94,7 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
                              &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
-  GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
+  CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
   EXPECT_TRUE(stub);
 }
 
@@ -120,7 +120,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
                              &capabilities));
   EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
-  GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
+  CommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
   EXPECT_TRUE(stub);
 
   // Create second context in same share group but different stream.

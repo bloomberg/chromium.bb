@@ -28,13 +28,13 @@ if (is_component_build) {
 target(link_target_type, "ipc_service_sources") {
   visibility = [ "//gpu/*" ]
   sources = [
+    "command_buffer_stub.cc",
+    "command_buffer_stub.h",
     "gpu_channel.cc",
     "gpu_channel.h",
     "gpu_channel_manager.cc",
     "gpu_channel_manager.h",
     "gpu_channel_manager_delegate.h",
-    "gpu_command_buffer_stub.cc",
-    "gpu_command_buffer_stub.h",
     "gpu_config.h",
     "gpu_init.cc",
     "gpu_init.h",

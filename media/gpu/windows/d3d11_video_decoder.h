@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "gpu/ipc/service/gpu_command_buffer_stub.h"
+#include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
@@ -30,7 +30,7 @@ namespace media {
 class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
  public:
   D3D11VideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-                    base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb,
+                    base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
                     OutputWithReleaseMailboxCB output_cb);
   ~D3D11VideoDecoder() override;
 

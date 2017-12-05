@@ -203,8 +203,8 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
   } else if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
     // In this case we prefer to use RGB565 format instead of RGBA8888 if
     // possible.
-    // TODO(danakj): GpuCommandBufferStub constructor checks for alpha == 0 in
-    // order to enable 565, but it should avoid using 565 when -1s are
+    // TODO(danakj): CommandBufferStub constructor checks for alpha == 0
+    // in order to enable 565, but it should avoid using 565 when -1s are
     // specified
     // (IOW check that a <= 0 && rgb > 0 && rgb <= 565) then alpha should be
     // -1.

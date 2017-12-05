@@ -421,15 +421,15 @@ bool GpuChannel::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-void GpuChannel::OnCommandBufferScheduled(GpuCommandBufferStub* stub) {
+void GpuChannel::OnCommandBufferScheduled(CommandBufferStub* stub) {
   scheduler_->EnableSequence(stub->sequence_id());
 }
 
-void GpuChannel::OnCommandBufferDescheduled(GpuCommandBufferStub* stub) {
+void GpuChannel::OnCommandBufferDescheduled(CommandBufferStub* stub) {
   scheduler_->DisableSequence(stub->sequence_id());
 }
 
-GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
+CommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
   auto it = stubs_.find(route_id);
   if (it == stubs_.end())
     return nullptr;
@@ -486,7 +486,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
 
 void GpuChannel::HandleMessage(const IPC::Message& msg) {
   int32_t routing_id = msg.routing_id();
-  GpuCommandBufferStub* stub = LookupCommandBuffer(routing_id);
+  CommandBufferStub* stub = LookupCommandBuffer(routing_id);
 
   DCHECK(!stub || stub->IsScheduled());
 
@@ -536,9 +536,9 @@ void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
 }
 
 #if defined(OS_ANDROID)
-const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
+const CommandBufferStub* GpuChannel::GetOneStub() const {
   for (const auto& kv : stubs_) {
-    const GpuCommandBufferStub* stub = kv.second.get();
+    const CommandBufferStub* stub = kv.second.get();
     if (stub->decoder() && !stub->decoder()->WasContextLost())
       return stub;
   }
@@ -570,7 +570,7 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   int32_t share_group_id = init_params.share_group_id;
-  GpuCommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
+  CommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE) {
     LOG(ERROR) << "ContextResult::kFatalFailure: invalid share group id";
@@ -621,13 +621,13 @@ void GpuChannel::OnCreateCommandBuffer(
            << (gpu_channel_manager_->gpu_preferences().enable_raster_decoder &&
                init_params.attribs.enable_oop_rasterization);
 
-  auto stub = std::make_unique<GpuCommandBufferStub>(
+  auto stub = std::make_unique<CommandBufferStub>(
       this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   auto stub_result =
       stub->Initialize(share_group, init_params, std::move(shared_state_shm));
   if (stub_result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): failed to initialize "
-                   "GpuCommandBufferStub";
+                   "CommandBufferStub";
     *result = stub_result;
     return;
   }
@@ -646,7 +646,7 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   TRACE_EVENT1("gpu", "GpuChannel::OnDestroyCommandBuffer", "route_id",
                route_id);
 
-  std::unique_ptr<GpuCommandBufferStub> stub;
+  std::unique_ptr<CommandBufferStub> stub;
   auto it = stubs_.find(route_id);
   if (it != stubs_.end()) {
     stub = std::move(it->second);
