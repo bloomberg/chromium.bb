@@ -23,28 +23,28 @@
   <div id="one-google" class="hidden"></div>
 
   <div id="ntp-contents">
-    <div id="search">
-      <!-- Container for the logo, whether default or doodle. -->
-      <div id="logo">
-        <!-- The logo that is displayed in the absence of a doodle. -->
-        <div id="logo-default" title="Google"></div>
-        <!-- Logo displayed when theme prevents doodles. Doesn't fade. -->
-        <div id="logo-non-white" title="Google"></div>
-        <!-- A doodle, if any: its link and image. -->
-        <div id="logo-doodle">
-          <button id="logo-doodle-button">
-            <img id="logo-doodle-image"></img>
-          </button>
-          <iframe id="logo-doodle-iframe"></iframe>
-          <!-- A spinner, visible on dark-themed NTPs, prompting the doodle -->
-          <button id="logo-doodle-notifier">
-            <div class="outer ball0"><div class="inner"></div></div>
-            <div class="outer ball1"><div class="inner"></div></div>
-            <div class="outer ball2"><div class="inner"></div></div>
-            <div class="outer ball3"><div class="inner"></div></div>
-          </button>
-        </div>
+    <div id="logo">
+      <!-- The logo that is displayed in the absence of a doodle. -->
+      <div id="logo-default" title="Google"></div>
+      <!-- Logo displayed when theme prevents doodles. Doesn't fade. -->
+      <div id="logo-non-white" title="Google"></div>
+      <!-- A doodle, if any: its link and image. -->
+      <div id="logo-doodle">
+        <button id="logo-doodle-button">
+          <img id="logo-doodle-image"></img>
+        </button>
+        <iframe id="logo-doodle-iframe"></iframe>
+        <!-- A spinner, visible on dark-themed NTPs, prompting the doodle -->
+        <button id="logo-doodle-notifier">
+          <div class="outer ball0"><div class="inner"></div></div>
+          <div class="outer ball1"><div class="inner"></div></div>
+          <div class="outer ball2"><div class="inner"></div></div>
+          <div class="outer ball3"><div class="inner"></div></div>
+        </button>
       </div>
+    </div>
+
+    <div id="fakebox-container">
       <div id="fakebox">
         <div id="fakebox-text"></div>
         <input id="fakebox-input" autocomplete="off" tabindex="-1" type="url"
@@ -53,6 +53,7 @@
         <button id="fakebox-microphone" hidden></button>
       </div>
     </div>
+
     <div id="most-visited">
       <!-- The container for the tiles. The MV iframe goes in here. -->
       <div id="mv-tiles"></div>
