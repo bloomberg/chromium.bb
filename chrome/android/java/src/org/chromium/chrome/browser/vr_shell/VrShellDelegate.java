@@ -335,7 +335,7 @@ public class VrShellDelegate
     public static void maybeRegisterVrEntryHook(final ChromeActivity activity) {
         // Daydream is not supported on pre-N devices.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
-        if (!sChromeStarted) {
+        if (isVrEnabled() && !sChromeStarted) {
             nativeOnChromeStarted();
             sChromeStarted = true;
         }
