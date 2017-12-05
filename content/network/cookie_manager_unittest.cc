@@ -1422,6 +1422,96 @@ TEST_F(CookieManagerTest, Notification) {
             notifications[0].cause);
 }
 
+TEST_F(CookieManagerTest, GlobalNotifications) {
+  const std::string kExampleHost = "www.example.com";
+  const std::string kThisHost = "www.this.com";
+  const std::string kThisETLDP1 = "this.com";
+  const std::string kThatHost = "www.that.com";
+
+  network::mojom::CookieChangeNotificationPtr ptr;
+  network::mojom::CookieChangeNotificationRequest request(
+      mojo::MakeRequest(&ptr));
+
+  CookieChangeNotification notification(std::move(request));
+
+  cookie_service_client()->RequestGlobalNotifications(std::move(ptr));
+
+  std::vector<CookieChangeNotification::Notification> notifications;
+  notification.GetCurrentNotifications(&notifications);
+  EXPECT_EQ(0u, notifications.size());
+  notifications.clear();
+
+  // Confirm the right notification is seen from setting a cookie.
+  service_wrapper()->SetCanonicalCookie(
+      net::CanonicalCookie("Thing1", "val", kExampleHost, "/", base::Time(),
+                           base::Time(), base::Time(), /*secure=*/false,
+                           /*httponly=*/false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_MEDIUM),
+      true, true);
+
+  // Expect asynchrony
+  notification.GetCurrentNotifications(&notifications);
+  EXPECT_EQ(0u, notifications.size());
+  notifications.clear();
+
+  base::RunLoop().RunUntilIdle();
+  notification.GetCurrentNotifications(&notifications);
+  EXPECT_EQ(1u, notifications.size());
+  EXPECT_EQ("Thing1", notifications[0].cookie.Name());
+  EXPECT_EQ("val", notifications[0].cookie.Value());
+  EXPECT_EQ(kExampleHost, notifications[0].cookie.Domain());
+  EXPECT_EQ("/", notifications[0].cookie.Path());
+  EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
+            notifications[0].cause);
+  notifications.clear();
+
+  // Set two cookies in a row on different domains and confirm they are both
+  // signalled.
+  service_wrapper()->SetCanonicalCookie(
+      net::CanonicalCookie("Thing1", "val", kThisHost, "/", base::Time(),
+                           base::Time(), base::Time(), /*secure=*/false,
+                           /*httponly=*/false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_MEDIUM),
+      true, true);
+  service_wrapper()->SetCanonicalCookie(
+      net::CanonicalCookie("Thing2", "val", kThatHost, "/", base::Time(),
+                           base::Time(), base::Time(), /*secure=*/false,
+                           /*httponly=*/false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_MEDIUM),
+      true, true);
+
+  base::RunLoop().RunUntilIdle();
+  notification.GetCurrentNotifications(&notifications);
+  EXPECT_EQ(2u, notifications.size());
+  EXPECT_EQ("Thing1", notifications[0].cookie.Name());
+  EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
+            notifications[0].cause);
+  EXPECT_EQ("Thing2", notifications[1].cookie.Name());
+  EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
+            notifications[1].cause);
+  notifications.clear();
+
+  // Delete cookies matching one domain; should produce one notification.
+  network::mojom::CookieDeletionFilter filter;
+  filter.including_domains = std::vector<std::string>();
+  filter.including_domains->push_back(kThisETLDP1);
+  // If this test fails, it may indicate a problem which will lead to
+  // no notifications being generated and the test hanging, so assert.
+  ASSERT_EQ(1u, service_wrapper()->DeleteCookies(filter));
+
+  // The notification may already have arrived, or it may arrive in the future.
+  notification.WaitForSomeNotification();
+  notification.GetCurrentNotifications(&notifications);
+  ASSERT_EQ(1u, notifications.size());
+  EXPECT_EQ("Thing1", notifications[0].cookie.Name());
+  EXPECT_EQ(kThisHost, notifications[0].cookie.Domain());
+  EXPECT_EQ(network::mojom::CookieChangeCause::EXPLICIT,
+            notifications[0].cause);
+}
+
 // Confirm the service operates properly if a returned notification interface
 // is destroyed.
 TEST_F(CookieManagerTest, NotificationRequestDestroyed) {
