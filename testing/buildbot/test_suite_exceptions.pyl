@@ -23,9 +23,6 @@
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester',
-      # chromium.linux
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
     'modifications': {
       'Lollipop Tablet Tester': {
@@ -131,16 +128,6 @@
       'Win7 Tests (dbg)(1)',
     ],
     'modifications': {
-      'Android Tests': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
-      },
-      'Android Tests (dbg)': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'hard_timeout': 180,
@@ -205,9 +192,6 @@
   'cacheinvalidation_unittests': {
     'remove_from': [
       # Unclear why these largely aren't run on Android.
-      # chromium.linux:
-      'Android Tests',
-      'Android Tests (dbg)',
       # chromium.android:
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
@@ -263,9 +247,6 @@
   'cast_unittests': {
     'remove_from': [
       # Unclear why these largely aren't run on Android.
-      # chromium.linux:
-      'Android Tests',
-      'Android Tests (dbg)',
       # TODO(kbr): why are the cast unit tests not run on the Cast bots?!
       'Cast Audio Linux',
       'Cast Linux',
@@ -308,16 +289,6 @@
       'Marshmallow Phone Tester (rel)',
     ],
     'modifications': {
-      'Android Tests': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
-      'Android Tests (dbg)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,
@@ -363,9 +334,6 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
-      # chromium.linux
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
     'modifications': {
       'Lollipop Phone Tester': {
@@ -397,11 +365,6 @@
   },
   'chrome_sync_shell_test_apk': {
     'modifications': {
-      'Android Tests (dbg)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 2,
@@ -435,9 +398,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on "Android Tests
-      # (dbg)".
-      'Android Tests (dbg)',
     ],
   },
   'components_browsertests': {
@@ -638,8 +598,6 @@
       # TODO(kbr): these tests aren't run on Android except on one bot
       # on chromium.android.fyi, which might just be an accident.
       # Consider moving it to non_android_chromium_gtests.
-      'Android Tests',
-      'Android Tests (dbg)',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -707,9 +665,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -753,22 +708,12 @@
       'Linux Tests (dbg)(1)(32)',
     ],
   },
-  'gcm_unit_tests': {
-    'remove_from': [
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
-    ],
-  },
   'gfx_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -807,9 +752,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android or Cast.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
       'Linux Tests (dbg)(1)(32)',
@@ -870,9 +813,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android and Cast.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
       # chromium.win
@@ -1008,9 +949,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
   },
   'keyboard_unittests': {
@@ -1032,8 +970,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # On chromium.linux, unclear why these aren't run.
-      'Android Tests',
-      'Android Tests (dbg)',
       'Linux Tests',
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
@@ -1065,9 +1001,6 @@
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
     'modifications': {
       'Lollipop Tablet Tester': {
@@ -1148,9 +1081,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
   },
   'mojo_common_unittests': {
@@ -1324,9 +1254,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
   },
@@ -1341,9 +1269,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
     'modifications': {
@@ -1366,9 +1292,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # chromium.linux
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
     'modifications': {
       'Marshmallow 64 bit Tester': {
@@ -1390,9 +1313,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on 32-bit.
       'Linux Tests (dbg)(1)(32)',
     ],
   },
@@ -1407,9 +1328,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
     'modifications': {
       'Marshmallow 64 bit Tester': {
@@ -1461,9 +1379,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android and Cast.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
       'Linux Tests (dbg)(1)(32)',
@@ -1548,9 +1464,7 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android or Cast.
-      'Android Tests',
-      'Android Tests (dbg)',
+      # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
     ],
@@ -1620,17 +1534,6 @@
       'Marshmallow Tablet Tester': {
         'swarming': {
           'hard_timeout': 300,
-        },
-      },
-      # chromium.linux
-      'Android Tests': {
-        'swarming': {
-          'hard_timeout': 180,
-        },
-      },
-      'Android Tests (dbg)': {
-        'swarming': {
-          'hard_timeout': 180,
         },
       },
     },
@@ -1855,9 +1758,6 @@
       'Marshmallow Phone Tester (rel)',
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
-      # On chromium.linux, unclear why these aren't run on Android.
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
   },
   'views_unittests': {
@@ -1882,12 +1782,6 @@
     'key_removals': {
       # TODO(kbr): on Android, it looks like the absence of the
       # "merge" key is largely an accident.
-      'Android Tests': [
-        'merge',
-      ],
-      'Android Tests (dbg)': [
-        'merge',
-      ],
       'KitKat Phone Tester (dbg)': [
         'merge',
       ],
@@ -1927,9 +1821,6 @@
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'Nougat Phone Tester',
-      # chromium.linux
-      'Android Tests',
-      'Android Tests (dbg)',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -2070,8 +1961,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Android Tests',
-      'Android Tests (dbg)',
       'Cast Audio Linux',
       'Cast Linux',
       'Linux Tests (dbg)(1)',
@@ -2093,9 +1982,6 @@
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
       'Nougat Phone Tester',
-      # chromium.linux
-      'Android Tests',
-      'Android Tests (dbg)',
     ],
     'modifications': {
       'Lollipop Phone Tester': {
@@ -2142,8 +2028,6 @@
       'Marshmallow Tablet Tester',
       'Nougat Phone Tester',
       # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Android Tests',
-      'Android Tests (dbg)',
       'Cast Audio Linux',
       'Cast Linux',
       'Linux Tests (dbg)(1)',
