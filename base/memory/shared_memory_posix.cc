@@ -27,10 +27,6 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
-#include <sys/syscall.h>
-#endif
-
 #if defined(OS_ANDROID)
 #include "base/os_compat_android.h"
 #include "third_party/ashmem/ashmem.h"
@@ -86,42 +82,6 @@ bool SharedMemory::CreateAndMapAnonymous(size_t size) {
 
 #if !defined(OS_ANDROID)
 
-// TODO(crbug.com/789031): Remove #if once all ChromeOS builds support it.
-#if defined(__NR_memfd_create)
-bool CreateMemFDSharedMemory(const SharedMemoryCreateOptions& options,
-                             ScopedFD* fd,
-                             ScopedFD* readonly_fd,
-                             FilePath* path) {
-  static bool try_memfd_create = true;
-  // Avoid sending unnecessary system calls that are not supported.
-  // There's not guarantee of only trying this once, but the result should
-  // always be the same when the memfd_create call is not available.
-  if (!try_memfd_create)
-    return false;
-  fd->reset(syscall(__NR_memfd_create, path->BaseName().value().c_str(), 0));
-  if (!fd->is_valid()) {
-    if (errno == ENOSYS)
-      try_memfd_create = false;
-    else
-      DPLOG(ERROR) << "memfd(create) failed";
-    return false;
-  }
-
-  if (options.share_read_only) {
-    // memfd anonymous files do not support dropping write access for a
-    // single fd.
-    int fd_read_only = HANDLE_EINTR(dup(fd->get()));
-    readonly_fd->reset(fd_read_only);
-    if (!readonly_fd->is_valid()) {
-      DPLOG(ERROR) << "memfd(duplicate) failed";
-      fd->reset();
-      return false;
-    }
-  }
-  return true;
-}
-#endif  // defined(__NR_memfd_create)
-
 // Chromium mostly only uses the unique/private shmem as specified by
 // "name == L"". The exception is in the StatsTable.
 // TODO(jrg): there is no way to "clean up" all unused named shmem if
@@ -145,12 +105,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   ScopedFD readonly_fd;
   FilePath path;
   if (!options.name_deprecated || options.name_deprecated->empty()) {
-    bool result = false;
-#if defined(__NR_memfd_create)
-    result = CreateMemFDSharedMemory(options, &fd, &readonly_fd, &path);
-#endif  // defined(__NR_memfd_create)
-    if (!result)
-      result = CreateAnonymousSharedMemory(options, &fd, &readonly_fd, &path);
+    bool result =
+        CreateAnonymousSharedMemory(options, &fd, &readonly_fd, &path);
     if (!result)
       return false;
   } else {

@@ -373,12 +373,9 @@ TEST(SharedMemoryTest, GetReadOnlyHandle) {
   // pipe would transform it into read/write.
   SharedMemoryHandle handle = readonly_shmem.handle();
 
-#if defined(OS_ANDROID) || defined(__NR_memfd_create)
+#if defined(OS_ANDROID)
   // The "read-only" handle is still writable on Android:
   // http://crbug.com/320865
-  // When __NR_memfd_create is defined at build time, it indicates that the
-  // memfd_create syscall is most likely available. In this case there's not
-  // support for read only handles.
   (void)handle;
 #elif defined(OS_FUCHSIA)
   uintptr_t addr;
@@ -575,10 +572,8 @@ TEST(SharedMemoryTest, AnonymousExecutable) {
 // shared memory implementation. So the tests about file permissions are not
 // included on Android. Fuchsia does not use a file-backed shared memory
 // implementation.
-// In OS_LINUX, when memfd_create syscall is available (__NR_memfd_create is
-// defined) SharedMemory doesn't use files in its implementation.
 
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !defined(__NR_memfd_create)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 // Set a umask and restore the old mask on destruction.
 class ScopedUmaskSetter {
@@ -643,8 +638,7 @@ TEST(SharedMemoryTest, FilePermissionsNamed) {
   EXPECT_FALSE(shm_stat.st_mode & S_IRWXO);
   EXPECT_FALSE(shm_stat.st_mode & S_IRWXG);
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA) &&
-        // !defined(__NR_memfd_create)
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #endif  // defined(OS_POSIX)
 
