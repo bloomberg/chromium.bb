@@ -68,6 +68,7 @@ const char kLoadComponent[] = "LoadComponent";
 const char kLoadComponentAtPath[] = "LoadComponentAtPath";
 const char kGetComponentVersion[] = "GetComponentVersion";
 const char kRemoveComponent[] = "RemoveComponent";
+const char kUnmountComponent[] = "UnmountComponent";
 // Constants
 const char kBadResult[] = "";
 const char kTerminaComponentName[] = "cros-termina";
