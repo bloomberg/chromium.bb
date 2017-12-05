@@ -66,13 +66,13 @@ public class NotificationBuilderBaseTest {
 
         String origin = "https://example.com";
 
-        NotificationBuilderBase notificationBuilder = new NotificationBuilderBase(resources,
-                ChannelDefinitions.CHANNEL_ID_BROWSER) {
+        NotificationBuilderBase notificationBuilder = new NotificationBuilderBase(resources) {
             @Override
             public Notification build() {
                 return null;
             }
         };
+        notificationBuilder.setChannelId(ChannelDefinitions.CHANNEL_ID_BROWSER);
         Bitmap fromNullIcon = notificationBuilder.ensureNormalizedIcon(null, origin);
         Assert.assertNotNull(fromNullIcon);
         Assert.assertEquals(largeIconWidthPx, fromNullIcon.getWidth());
