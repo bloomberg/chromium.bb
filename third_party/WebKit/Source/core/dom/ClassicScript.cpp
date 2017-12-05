@@ -10,7 +10,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/AllowedByNosniff.h"
-#include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 
 namespace blink {
@@ -29,19 +28,8 @@ bool ClassicScript::CheckMIMETypeBeforeRunScript(
 
 void ClassicScript::RunScript(LocalFrame* frame,
                               const SecurityOrigin* security_origin) const {
-  const bool is_external_script = GetScriptSourceCode().GetResource();
-
-  AccessControlStatus access_control_status = kNotSharableCrossOrigin;
-  if (!is_external_script) {
-    access_control_status = kSharableCrossOrigin;
-  } else {
-    CHECK(GetScriptSourceCode().GetResource());
-    access_control_status =
-        GetScriptSourceCode().GetResource()->CalculateAccessControlStatus();
-  }
-
   frame->GetScriptController().ExecuteScriptInMainWorld(
-      GetScriptSourceCode(), FetchOptions(), access_control_status);
+      GetScriptSourceCode(), FetchOptions(), access_control_status_);
 }
 
 }  // namespace blink

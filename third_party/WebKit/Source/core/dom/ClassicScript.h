@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/CoreExport.h"
 #include "core/dom/Script.h"
+#include "core/loader/resource/ScriptResource.h"
+#include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/ScriptFetchOptions.h"
 
 namespace blink {
@@ -15,8 +17,10 @@ namespace blink {
 class CORE_EXPORT ClassicScript final : public Script {
  public:
   static ClassicScript* Create(const ScriptSourceCode& script_source_code,
-                               const ScriptFetchOptions& fetch_options) {
-    return new ClassicScript(script_source_code, fetch_options);
+                               const ScriptFetchOptions& fetch_options,
+                               AccessControlStatus access_control_status) {
+    return new ClassicScript(script_source_code, fetch_options,
+                             access_control_status);
   }
 
   void Trace(blink::Visitor*);
@@ -27,8 +31,11 @@ class CORE_EXPORT ClassicScript final : public Script {
 
  private:
   ClassicScript(const ScriptSourceCode& script_source_code,
-                const ScriptFetchOptions& fetch_options)
-      : Script(fetch_options), script_source_code_(script_source_code) {}
+                const ScriptFetchOptions& fetch_options,
+                AccessControlStatus access_control_status)
+      : Script(fetch_options),
+        script_source_code_(script_source_code),
+        access_control_status_(access_control_status) {}
 
   ScriptType GetScriptType() const override { return ScriptType::kClassic; }
   bool CheckMIMETypeBeforeRunScript(Document* context_document,
@@ -39,6 +46,7 @@ class CORE_EXPORT ClassicScript final : public Script {
   }
 
   const ScriptSourceCode script_source_code_;
+  const AccessControlStatus access_control_status_;
 };
 
 }  // namespace blink
