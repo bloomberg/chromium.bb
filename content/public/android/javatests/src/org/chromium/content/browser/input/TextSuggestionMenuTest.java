@@ -177,6 +177,18 @@ public class TextSuggestionMenuTest {
 
         mRule.commitText(textToCommit, 1);
 
+        // Wait for renderer to acknowledge commitText().
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                try {
+                    return DOMUtils.getNodeContents(webContents, "div").equals("hello world");
+                } catch (InterruptedException | TimeoutException e) {
+                    return false;
+                }
+            }
+        });
+
         DOMUtils.clickNode(cvc, "span");
         waitForMenuToShow(cvc);
 
