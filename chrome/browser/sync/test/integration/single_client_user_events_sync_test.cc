@@ -23,11 +23,18 @@ using sync_pb::CommitResponse;
 
 namespace {
 
-UserEventSpecifics CreateEvent(int microseconds) {
+UserEventSpecifics CreateTestEvent(int microseconds) {
   UserEventSpecifics specifics;
   specifics.set_event_time_usec(microseconds);
   specifics.set_navigation_id(microseconds);
   specifics.mutable_test_event();
+  return specifics;
+}
+
+UserEventSpecifics CreateUserConsent(int microseconds) {
+  UserEventSpecifics specifics;
+  specifics.set_event_time_usec(microseconds);
+  specifics.mutable_user_consent();
   return specifics;
 }
 
@@ -163,6 +170,12 @@ class SingleClientUserEventsSyncTest : public SyncTest {
     DisableVerifier();
   }
 
+  bool ExpectUserEvents(std::vector<UserEventSpecifics> expected_specifics) {
+    return UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
+                                    expected_specifics)
+        .Wait();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientUserEventsSyncTest);
 };
@@ -174,16 +187,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Sanity) {
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::USER_EVENTS).size());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
-  const UserEventSpecifics specifics = CreateEvent(0);
+  const UserEventSpecifics specifics = CreateTestEvent(0);
   event_service->RecordUserEvent(specifics);
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics})
-      .Wait();
+  EXPECT_TRUE(ExpectUserEvents({specifics}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
   ASSERT_TRUE(SetupSync());
-  const UserEventSpecifics specifics1 = CreateEvent(1);
-  const UserEventSpecifics specifics2 = CreateEvent(2);
+  const UserEventSpecifics specifics1 = CreateTestEvent(1);
+  const UserEventSpecifics specifics2 = CreateTestEvent(2);
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
 
@@ -193,29 +205,24 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetrySequential) {
 
   // This will block until we hit a TRANSIENT_ERROR, at which point we will
   // regain control and can switch back to SUCCESS.
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics1})
-      .Wait();
+  EXPECT_TRUE(ExpectUserEvents({specifics1}));
   GetFakeServer()->OverrideResponseType(
       base::Bind(&BounceType, CommitResponse::SUCCESS));
   // Because the fake server records commits even on failure, we are able to
   // verify that the commit for this event reached the server twice.
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
-                           {specifics1, specifics1})
-      .Wait();
+  EXPECT_TRUE(ExpectUserEvents({specifics1, specifics1}));
 
   // Only record |specifics2| after |specifics1| was successful to avoid race
   // conditions.
   event_service->RecordUserEvent(specifics2);
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
-                           {specifics1, specifics1, specifics2})
-      .Wait();
+  EXPECT_TRUE(ExpectUserEvents({specifics1, specifics1, specifics2}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
   ASSERT_TRUE(SetupSync());
   bool first = true;
-  const UserEventSpecifics specifics1 = CreateEvent(1);
-  const UserEventSpecifics specifics2 = CreateEvent(2);
+  const UserEventSpecifics specifics1 = CreateTestEvent(1);
+  const UserEventSpecifics specifics2 = CreateTestEvent(2);
   UserEventSpecifics retry_specifics;
 
   syncer::UserEventService* event_service =
@@ -229,36 +236,35 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, RetryParallel) {
 
   event_service->RecordUserEvent(specifics2);
   event_service->RecordUserEvent(specifics1);
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
-                           {specifics1, specifics2})
-      .Wait();
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
-                           {specifics1, specifics2, retry_specifics})
-      .Wait();
+  EXPECT_TRUE(ExpectUserEvents({specifics1, specifics2}));
+  EXPECT_TRUE(ExpectUserEvents({specifics1, specifics2, retry_specifics}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoHistory) {
-  const UserEventSpecifics specifics1 = CreateEvent(1);
-  const UserEventSpecifics specifics2 = CreateEvent(2);
-  const UserEventSpecifics specifics3 = CreateEvent(3);
+  const UserEventSpecifics testEvent1 = CreateTestEvent(1);
+  const UserEventSpecifics testEvent2 = CreateTestEvent(2);
+  const UserEventSpecifics testEvent3 = CreateTestEvent(3);
+  const UserEventSpecifics consent1 = CreateUserConsent(4);
+  const UserEventSpecifics consent2 = CreateUserConsent(5);
+
   ASSERT_TRUE(SetupSync());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
 
-  event_service->RecordUserEvent(specifics1);
+  event_service->RecordUserEvent(testEvent1);
+  event_service->RecordUserEvent(consent1);
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS));
-  event_service->RecordUserEvent(specifics2);
+  event_service->RecordUserEvent(testEvent2);
+  event_service->RecordUserEvent(consent2);
   ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::TYPED_URLS));
-  event_service->RecordUserEvent(specifics3);
+  event_service->RecordUserEvent(testEvent3);
 
-  // No |specifics2| because it was recorded while history was disabled.
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(),
-                           {specifics1, specifics3})
-      .Wait();
+  // No |testEvent2| because it was recorded while history was disabled.
+  EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1, consent2, testEvent3}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
-  const UserEventSpecifics specifics = CreateEvent(1);
+  const UserEventSpecifics specifics = CreateTestEvent(1);
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
   syncer::UserEventService* event_service =
@@ -267,32 +273,33 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, NoSessions) {
   event_service->RecordUserEvent(specifics);
 
   // PROXY_TABS shouldn't affect us in any way.
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics})
-      .Wait();
+  EXPECT_TRUE(ExpectUserEvents({specifics}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, Encryption) {
-  const UserEventSpecifics specifics1 = CreateEvent(1);
-  const UserEventSpecifics specifics2 = CreateEvent(2);
+  const UserEventSpecifics testEvent1 = CreateTestEvent(1);
+  const UserEventSpecifics testEvent2 = CreateTestEvent(2);
+  const UserEventSpecifics consent1 = CreateUserConsent(3);
+  const UserEventSpecifics consent2 = CreateUserConsent(4);
 
   ASSERT_TRUE(SetupSync());
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
-  event_service->RecordUserEvent(specifics1);
+  event_service->RecordUserEvent(testEvent1);
+  event_service->RecordUserEvent(consent1);
   ASSERT_TRUE(EnableEncryption(0));
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics1})
-      .Wait();
-  event_service->RecordUserEvent(specifics2);
+  EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1}));
+  event_service->RecordUserEvent(testEvent2);
+  event_service->RecordUserEvent(consent2);
 
-  // Just checking that we don't see specifics2 isn't very convincing yet,
+  // Just checking that we don't see testEvent2 isn't very convincing yet,
   // because it may simply not have reached the server yet. So lets send
   // something else through the system that we can wait on before checking.
   // Tab/SESSIONS data was picked fairly arbitrarily, note that we expect 2
   // entries, one for the window/header and one for the tab.
   sessions_helper::OpenTab(0, GURL("http://www.one.com/"));
-  ServerCountMatchStatusChecker(syncer::SESSIONS, 2);
-  UserEventEqualityChecker(GetSyncService(0), GetFakeServer(), {specifics1})
-      .Wait();
+  EXPECT_TRUE(ServerCountMatchStatusChecker(syncer::SESSIONS, 2).Wait());
+  EXPECT_TRUE(ExpectUserEvents({testEvent1, consent1, consent2}));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, FieldTrial) {

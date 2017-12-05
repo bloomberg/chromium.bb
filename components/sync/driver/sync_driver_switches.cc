@@ -45,6 +45,10 @@ const base::Feature kSyncUserEvents{"SyncUserEvents",
 const base::Feature kSyncUserFieldTrialEvents{"SyncUserFieldTrialEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Gates emission of UserConsent events.
+const base::Feature kSyncUserConsentEvents{"SyncUserConsentEvents",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Gates registration for user language detection events.
 const base::Feature kSyncUserLanguageDetectionEvents{
     "SyncUserLanguageDetectionEvents", base::FEATURE_DISABLED_BY_DEFAULT};
