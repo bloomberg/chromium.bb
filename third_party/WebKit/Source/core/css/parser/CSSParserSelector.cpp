@@ -73,7 +73,8 @@ bool CSSParserSelector::IsSimple() const {
     // Example:
     //     @namespace "http://www.w3.org/2000/svg";
     //     svg:not(:root) { ...
-    if (selector_->TagQName().LocalName() == g_star_atom)
+    if (selector_->TagQName().LocalName() ==
+        CSSSelector::UniversalSelectorAtom())
       return tag_history_->IsSimple();
   }
 

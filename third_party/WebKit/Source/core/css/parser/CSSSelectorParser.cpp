@@ -284,7 +284,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
   AtomicString namespace_prefix;
   AtomicString element_name;
   CSSSelector::PseudoType compound_pseudo_element = CSSSelector::kPseudoUnknown;
-  if (!ConsumeName(range, element_name, namespace_prefix)) {
+  const bool has_q_name = ConsumeName(range, element_name, namespace_prefix);
+  if (!has_q_name) {
     compound_selector = ConsumeSimpleSelector(range);
     if (!compound_selector)
       return nullptr;
@@ -333,7 +334,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
   // :not(), since a type selector will be prepended at the top level of the
   // selector if necessary. We need to propagate that context information here
   // to tell if we are at the top level.
-  PrependTypeSelectorIfNeeded(namespace_prefix, element_name,
+  PrependTypeSelectorIfNeeded(namespace_prefix, has_q_name, element_name,
                               compound_selector.get());
   return SplitCompoundAtImplicitShadowCrossingCombinator(
       std::move(compound_selector));
@@ -370,7 +371,7 @@ bool CSSSelectorParser::ConsumeName(CSSParserTokenRange& range,
     range.Consume();
   } else if (first_token.GetType() == kDelimiterToken &&
              first_token.Delimiter() == '*') {
-    name = g_star_atom;
+    name = CSSSelector::UniversalSelectorAtom();
     range.Consume();
   } else if (first_token.GetType() == kDelimiterToken &&
              first_token.Delimiter() == '|') {
@@ -385,13 +386,14 @@ bool CSSSelectorParser::ConsumeName(CSSParserTokenRange& range,
     return true;
   range.Consume();
 
-  namespace_prefix = name;
+  namespace_prefix =
+      name == CSSSelector::UniversalSelectorAtom() ? g_star_atom : name;
   const CSSParserToken& name_token = range.Consume();
   if (name_token.GetType() == kIdentToken) {
     name = name_token.Value().ToAtomicString();
   } else if (name_token.GetType() == kDelimiterToken &&
              name_token.Delimiter() == '*') {
-    name = g_star_atom;
+    name = CSSSelector::UniversalSelectorAtom();
   } else {
     name = g_null_atom;
     namespace_prefix = g_null_atom;
@@ -439,7 +441,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
   AtomicString attribute_name;
   if (!ConsumeName(block, attribute_name, namespace_prefix))
     return nullptr;
-  if (attribute_name == g_star_atom)
+  if (attribute_name == CSSSelector::UniversalSelectorAtom())
     return nullptr;
   block.ConsumeWhitespace();
 
@@ -799,14 +801,15 @@ const AtomicString& CSSSelectorParser::DetermineNamespace(
 
 void CSSSelectorParser::PrependTypeSelectorIfNeeded(
     const AtomicString& namespace_prefix,
+    bool has_q_name,
     const AtomicString& element_name,
     CSSParserSelector* compound_selector) {
-  if (element_name.IsNull() && DefaultNamespace() == g_star_atom &&
+  if (!has_q_name && DefaultNamespace() == g_star_atom &&
       !compound_selector->NeedsImplicitShadowCombinatorForMatching())
     return;
 
   AtomicString determined_element_name =
-      element_name.IsNull() ? g_star_atom : element_name;
+      !has_q_name ? CSSSelector::UniversalSelectorAtom() : element_name;
   AtomicString namespace_uri = DetermineNamespace(namespace_prefix);
   if (namespace_uri.IsNull()) {
     failed_parsing_ = true;
@@ -827,13 +830,15 @@ void CSSSelectorParser::PrependTypeSelectorIfNeeded(
   // (relation) on in the cases where there are no simple selectors preceding
   // the pseudo element.
   bool is_host_pseudo = compound_selector->IsHostPseudoSelector();
-  if (is_host_pseudo && element_name.IsNull() && namespace_prefix.IsNull())
+  if (is_host_pseudo && !has_q_name && namespace_prefix.IsNull())
     return;
   if (tag != AnyQName() || is_host_pseudo ||
       compound_selector->NeedsImplicitShadowCombinatorForMatching()) {
     compound_selector->PrependTagSelector(
-        tag, determined_prefix == g_null_atom &&
-                 determined_element_name == g_star_atom && !is_host_pseudo);
+        tag,
+        determined_prefix == g_null_atom &&
+            determined_element_name == CSSSelector::UniversalSelectorAtom() &&
+            !is_host_pseudo);
   }
 }
 

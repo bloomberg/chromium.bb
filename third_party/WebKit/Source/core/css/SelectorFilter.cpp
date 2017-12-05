@@ -136,7 +136,8 @@ static inline void CollectDescendantSelectorIdentifierHashes(
             selector.Value().Impl()->ExistingHash() * kClassAttributeSalt;
       break;
     case CSSSelector::kTag:
-      if (selector.TagQName().LocalName() != g_star_atom)
+      if (selector.TagQName().LocalName() !=
+          CSSSelector::UniversalSelectorAtom())
         (*hash++) = selector.TagQName().LocalName().Impl()->ExistingHash() *
                     kTagNameSalt;
       break;

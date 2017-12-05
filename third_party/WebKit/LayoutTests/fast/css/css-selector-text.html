@@ -30,6 +30,8 @@ function testSelectorRoundTrip(selector)
 }
 
 testSelectorRoundTrip('*');
+testSelectorRoundTrip('\\\\*');
+shouldBe("parseThenSerializeRule('\\\\2a { }')", "'\\\\* { }'");
 testSelectorRoundTrip('a');
 testSelectorRoundTrip('#a');
 testSelectorRoundTrip('.a');

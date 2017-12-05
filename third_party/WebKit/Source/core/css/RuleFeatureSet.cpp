@@ -383,7 +383,7 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
     const CSSSelector& selector,
     InvalidationSetFeatures& features) {
   if (selector.Match() == CSSSelector::kTag &&
-      selector.TagQName().LocalName() != g_star_atom) {
+      selector.TagQName().LocalName() != CSSSelector::UniversalSelectorAtom()) {
     features.tag_names.push_back(selector.TagQName().LocalName());
     return;
   }

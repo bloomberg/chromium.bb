@@ -95,7 +95,8 @@ static bool CheckPageSelectorComponents(const CSSSelector* selector,
        component = component->TagHistory()) {
     if (component->Match() == CSSSelector::kTag) {
       const AtomicString& local_name = component->TagQName().LocalName();
-      if (local_name != g_star_atom && local_name != page_name)
+      DCHECK_NE(local_name, CSSSelector::UniversalSelectorAtom());
+      if (local_name != page_name)
         return false;
     }
 

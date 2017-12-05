@@ -131,7 +131,7 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
     case kAttributeEnd:
       return 0x000100;
     case kTag:
-      if (TagQName().LocalName() == g_star_atom)
+      if (TagQName().LocalName() == UniversalSelectorAtom())
         return 0;
       return 0x000001;
     case kUnknown:
@@ -149,7 +149,7 @@ unsigned CSSSelector::SpecificityForPage() const {
        component = component->TagHistory()) {
     switch (component->match_) {
       case kTag:
-        s += TagQName().LocalName() == g_star_atom ? 0 : 4;
+        s += TagQName().LocalName() == UniversalSelectorAtom() ? 0 : 4;
         break;
       case kPagePseudoClass:
         switch (component->GetPseudoType()) {
@@ -664,26 +664,29 @@ bool CSSSelector::operator==(const CSSSelector& other) const {
 }
 
 static void SerializeIdentifierOrAny(const AtomicString& identifier,
+                                     const AtomicString& any,
                                      StringBuilder& builder) {
-  if (identifier != g_star_atom)
+  if (identifier != any)
     SerializeIdentifier(identifier, builder);
   else
-    builder.Append(identifier);
+    builder.Append(g_star_atom);
 }
 
 static void SerializeNamespacePrefixIfNeeded(const AtomicString& prefix,
+                                             const AtomicString& any,
                                              StringBuilder& builder) {
   if (prefix.IsNull())
     return;
-  SerializeIdentifierOrAny(prefix, builder);
+  SerializeIdentifierOrAny(prefix, any, builder);
   builder.Append('|');
 }
 
 const CSSSelector* CSSSelector::SerializeCompound(
     StringBuilder& builder) const {
   if (match_ == kTag && !tag_is_implicit_) {
-    SerializeNamespacePrefixIfNeeded(TagQName().Prefix(), builder);
-    SerializeIdentifierOrAny(TagQName().LocalName(), builder);
+    SerializeNamespacePrefixIfNeeded(TagQName().Prefix(), g_star_atom, builder);
+    SerializeIdentifierOrAny(TagQName().LocalName(), UniversalSelectorAtom(),
+                             builder);
   }
 
   for (const CSSSelector* simple_selector = this; simple_selector;
@@ -744,7 +747,7 @@ const CSSSelector* CSSSelector::SerializeCompound(
     } else if (simple_selector->IsAttributeSelector()) {
       builder.Append('[');
       SerializeNamespacePrefixIfNeeded(simple_selector->Attribute().Prefix(),
-                                       builder);
+                                       g_star_atom, builder);
       SerializeIdentifier(simple_selector->Attribute().LocalName(), builder);
       switch (simple_selector->match_) {
         case kAttributeExact:

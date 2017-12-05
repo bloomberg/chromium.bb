@@ -89,7 +89,8 @@ static bool MatchesTagName(const Element& element,
   if (tag_q_name == AnyQName())
     return true;
   const AtomicString& local_name = tag_q_name.LocalName();
-  if (local_name != g_star_atom && local_name != element.localName()) {
+  if (local_name != CSSSelector::UniversalSelectorAtom() &&
+      local_name != element.localName()) {
     if (element.IsHTMLElement() || !element.GetDocument().IsHTMLDocument())
       return false;
     // Non-html elements in html documents are normalized to their camel-cased
@@ -613,7 +614,7 @@ static bool AnyAttributeMatches(Element& element,
                                 const CSSSelector& selector) {
   const QualifiedName& selector_attr = selector.Attribute();
   // Should not be possible from the CSS grammar.
-  DCHECK_NE(selector_attr.LocalName(), g_star_atom);
+  DCHECK_NE(selector_attr.LocalName(), CSSSelector::UniversalSelectorAtom());
 
   // Synchronize the attribute in case it is lazy-computed.
   // Currently all lazy properties have a null namespace, so only pass
