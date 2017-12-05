@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/extension_id.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -18,7 +19,7 @@ namespace {
 // Default implementation for dispatching an event. Can be replaced for unit
 // tests by Operation::SetDispatchEventImplForTest().
 bool DispatchEventImpl(extensions::EventRouter* event_router,
-                       const std::string& extension_id,
+                       const extensions::ExtensionId& extension_id,
                        std::unique_ptr<extensions::Event> event) {
   if (!event_router->ExtensionHasEventListener(extension_id, event->event_name))
     return false;
