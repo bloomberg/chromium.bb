@@ -154,6 +154,13 @@ void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
 
 void UploadTraceToCrashServer(std::string file_contents,
                               std::string trigger_name) {
+  // Traces has been observed as small as 4k. Seems likely to be a bug. To
+  // account for all potentially too-small traces, we set the lower bounds to
+  // 512 bytes. The upper bounds is set to 300MB as an extra-high threshold,
+  // just in case something goes wrong.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("OutOfProcessHeapProfiling.UploadTrace.Size",
+                              file_contents.size(), 512, 300 * 1024 * 1024, 50);
+
   base::Value rules_list(base::Value::Type::LIST);
   base::Value rule(base::Value::Type::DICTIONARY);
   rule.SetKey("rule", base::Value("MEMLOG"));
@@ -488,6 +495,8 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
 
   auto finish_report_callback = base::BindOnce(
       [](std::string trigger_name, bool success, std::string trace) {
+        UMA_HISTOGRAM_BOOLEAN("OutOfProcessHeapProfiling.RecordTrace.Success",
+                              success);
         if (success) {
           UploadTraceToCrashServer(std::move(trace), std::move(trigger_name));
         }
@@ -549,10 +558,12 @@ void ProfilingProcessHost::RequestTraceWithHeapDump(
     DCHECK(!dump_process_for_tracing_callback_);
     dump_process_for_tracing_callback_ = std::move(stop_tracing_closure);
   } else {
-    // Wait 10 seconds, then end the trace.
+    // Wait 30 seconds, then end the trace. 10 seconds has been observed to not
+    // be sufficient time for the profiling service to dump its data to the
+    // trace.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, std::move(stop_tracing_closure),
-        base::TimeDelta::FromSeconds(10));
+        base::TimeDelta::FromSeconds(30));
   }
 }
 
