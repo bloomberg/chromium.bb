@@ -70,8 +70,23 @@ class BASE_I18N_EXPORT MessageArg {
 //   http://userguide.icu-project.org/formatparse/messages
 //   message_formatter_unittest.cc
 //   go/plurals inside Google.
-//   TODO(jshin): Document this API at sites.chromium.org and add a reference
-//   here.
+//   TODO(jshin): Document this API in md format docs.
+// Caveat:
+//   When plural/select/gender is used along with other format specifiers such
+//   as date or number, plural/select/gender should be at the top level. It's
+//   not an ICU restriction but a constraint imposed by Google's translation
+//   infrastructure. Message A does not work. It must be revised to Message B.
+//
+//     A.
+//       Rated <ph name="RATING">{0, number,0.0}<ex>3.2</ex></ph>
+//       by {1, plural, =1{a user} other{# users}}
+//
+//     B.
+//       {1, plural,
+//         =1{Rated <ph name="RATING">{0, number,0.0}<ex>3.2</ex></ph>
+//             by a user.}
+//         other{Rated <ph name="RATING">{0, number,0.0}<ex>3.2</ex></ph>
+//               by # users.}}
 
 class BASE_I18N_EXPORT MessageFormatter {
  public:
