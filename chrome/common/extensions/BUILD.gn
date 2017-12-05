@@ -26,7 +26,6 @@ group("test_features") {
 mojom("mojo_bindings") {
   sources = [
     "mojom/inline_install.mojom",
-    "removable_storage_writer.mojom",
   ]
 
   public_deps = [

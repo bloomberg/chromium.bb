@@ -47,6 +47,7 @@
         "proxy_resolver": [ "factory" ],
         "pdf_to_pwg_raster_converter": [ "converter" ],
         "preferences": [ "pref_client", "pref_control" ],
+        "removable_storage_writer": [ "removable_storage_writer" ],
         "ui": [
           "display_dev",
           "ime_registrar",

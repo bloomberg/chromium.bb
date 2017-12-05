@@ -7,14 +7,14 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "chrome/common/extensions/removable_storage_writer.mojom.h"
+#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
 #include "chrome/utility/image_writer/error_messages.h"
 
 namespace {
 
 bool IsTestDevice(const base::FilePath& device) {
   return device.AsUTF8Unsafe() ==
-         extensions::mojom::RemovableStorageWriter::kTestDevice;
+         chrome::mojom::RemovableStorageWriter::kTestDevice;
 }
 
 base::FilePath MakeTestDevicePath(const base::FilePath& image) {
@@ -32,7 +32,7 @@ ImageWriterHandler::~ImageWriterHandler() = default;
 void ImageWriterHandler::Write(
     const base::FilePath& image,
     const base::FilePath& device,
-    extensions::mojom::RemovableStorageWriterClientPtr client) {
+    chrome::mojom::RemovableStorageWriterClientPtr client) {
   client_ = std::move(client);
   client_.set_connection_error_handler(
       base::BindOnce(&ImageWriterHandler::Cancel, base::Unretained(this)));
@@ -67,7 +67,7 @@ void ImageWriterHandler::Write(
 void ImageWriterHandler::Verify(
     const base::FilePath& image,
     const base::FilePath& device,
-    extensions::mojom::RemovableStorageWriterClientPtr client) {
+    chrome::mojom::RemovableStorageWriterClientPtr client) {
   client_ = std::move(client);
   client_.set_connection_error_handler(
       base::BindOnce(&ImageWriterHandler::Cancel, base::Unretained(this)));
@@ -108,8 +108,12 @@ void ImageWriterHandler::SendSucceeded() {
 }
 
 void ImageWriterHandler::SendFailed(const std::string& error) {
-  client_->Complete(error);
-  client_.reset();
+  if (client_) {
+    // client_ may be null as the ImageWriter implementation may have reported
+    // an error already.
+    client_->Complete(error);
+    client_.reset();
+  }
 }
 
 void ImageWriterHandler::Cancel() {

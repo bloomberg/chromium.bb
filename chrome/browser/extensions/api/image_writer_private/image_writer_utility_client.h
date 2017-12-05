@@ -7,13 +7,19 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "chrome/common/extensions/removable_storage_writer.mojom.h"
-#include "content/public/browser/utility_process_mojo_client.h"
+#include "base/sequenced_task_runner.h"
+#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace extensions {
 namespace image_writer {
@@ -30,7 +36,10 @@ class ImageWriterUtilityClient
   using ImageWriterUtilityClientFactory =
       base::Callback<scoped_refptr<ImageWriterUtilityClient>()>;
 
-  static scoped_refptr<ImageWriterUtilityClient> Create();
+  // |connector| should be a fresh connector not yet bound to any thread.
+  static scoped_refptr<ImageWriterUtilityClient> Create(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      std::unique_ptr<service_manager::Connector> connector);
 
   static void SetFactoryForTesting(ImageWriterUtilityClientFactory* factory);
 
@@ -70,14 +79,16 @@ class ImageWriterUtilityClient
   friend class base::RefCountedThreadSafe<ImageWriterUtilityClient>;
   friend class ImageWriterUtilityClientTest;
 
-  ImageWriterUtilityClient();
+  ImageWriterUtilityClient(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      std::unique_ptr<service_manager::Connector> connector);
   virtual ~ImageWriterUtilityClient();
 
  private:
   class RemovableStorageWriterClientImpl;
 
-  void StartUtilityProcessIfNeeded();
-  void UtilityProcessError();
+  void BindServiceIfNeeded();
+  void OnConnectionError();
 
   void OperationProgress(int64_t progress);
   void OperationSucceeded();
@@ -89,9 +100,11 @@ class ImageWriterUtilityClient
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
 
-  std::unique_ptr<content::UtilityProcessMojoClient<
-      extensions::mojom::RemovableStorageWriter>>
-      utility_process_mojo_client_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  std::unique_ptr<service_manager::Connector> connector_;
+
+  chrome::mojom::RemovableStorageWriterPtr removable_storage_writer_;
 
   std::unique_ptr<RemovableStorageWriterClientImpl>
       removable_storage_writer_client_;

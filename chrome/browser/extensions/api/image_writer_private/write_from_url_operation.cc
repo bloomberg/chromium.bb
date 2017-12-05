@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -17,20 +18,24 @@ using content::BrowserThread;
 
 WriteFromUrlOperation::WriteFromUrlOperation(
     base::WeakPtr<OperationManager> manager,
+    std::unique_ptr<service_manager::Connector> connector,
     const ExtensionId& extension_id,
     net::URLRequestContextGetter* request_context,
     GURL url,
     const std::string& hash,
     const std::string& device_path,
     const base::FilePath& download_folder)
-    : Operation(manager, extension_id, device_path, download_folder),
+    : Operation(manager,
+                std::move(connector),
+                extension_id,
+                device_path,
+                download_folder),
       request_context_(request_context),
       url_(url),
       hash_(hash),
       download_continuation_() {}
 
-WriteFromUrlOperation::~WriteFromUrlOperation() {
-}
+WriteFromUrlOperation::~WriteFromUrlOperation() = default;
 
 void WriteFromUrlOperation::StartImpl() {
   DCHECK(IsRunningInCorrectSequence());

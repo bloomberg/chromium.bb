@@ -13,11 +13,23 @@
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/test_event_router.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
 
 namespace {
+
+class TestOperationManager : public OperationManager {
+ public:
+  explicit TestOperationManager(content::BrowserContext* context)
+      : OperationManager(context) {}
+
+ private:
+  std::unique_ptr<service_manager::Connector> CreateConnector() override {
+    return nullptr;
+  }
+};
 
 class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
  public:
@@ -56,7 +68,7 @@ class ImageWriterOperationManagerTest : public ImageWriterUnitTestBase {
 };
 
 TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
-  OperationManager manager(&test_profile_);
+  TestOperationManager manager(&test_profile_);
 
   manager.StartWriteFromFile(
       kDummyExtensionId,
@@ -82,7 +94,7 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
 }
 
 TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
-  OperationManager manager(&test_profile_);
+  TestOperationManager manager(&test_profile_);
 
   manager.DestroyPartitions(
       kDummyExtensionId,

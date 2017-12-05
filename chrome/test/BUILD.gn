@@ -879,6 +879,7 @@ test("browser_tests") {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/renderer",
+      "//chrome/services/removable_storage_writer:lib",
       "//components/autofill/content/browser:risk_proto",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
@@ -1653,9 +1654,7 @@ test("browser_tests") {
         ]
       }
       if (toolkit_views) {
-        sources -= [
-          "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
-        ]
+        sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
       }
       if (is_win || is_linux) {
         sources +=
@@ -1911,9 +1910,7 @@ test("browser_tests") {
       }
     }
     if (enable_mdns) {
-      sources += [
-        "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc",
-      ]
+      sources += [ "../browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc" ]
     }
     if (use_brlapi) {
       deps += [ "//build/linux/libbrlapi" ]
@@ -2978,9 +2975,7 @@ test("unit_tests") {
     }
 
     if (is_win) {
-      sources += [
-        "../browser/notifications/notification_platform_bridge_win_unittest.cc",
-      ]
+      sources += [ "../browser/notifications/notification_platform_bridge_win_unittest.cc" ]
     }
   }
 
@@ -3402,9 +3397,7 @@ test("unit_tests") {
           [ "../browser/extensions/external_registry_loader_win_unittest.cc" ]
     }
     if (is_chromeos) {
-      sources += [
-        "../browser/extensions/api/file_system/consent_provider_unittest.cc",
-      ]
+      sources += [ "../browser/extensions/api/file_system/consent_provider_unittest.cc" ]
     } else {
       sources += [
         "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
@@ -3634,9 +3627,7 @@ test("unit_tests") {
     ]
 
     if (is_mac && !mac_views_browser) {
-      sources += [
-        "../browser/ui/startup/session_crashed_infobar_delegate_unittest.cc",
-      ]
+      sources += [ "../browser/ui/startup/session_crashed_infobar_delegate_unittest.cc" ]
     }
   }
   if (enable_webrtc) {
@@ -4573,9 +4564,7 @@ if (is_android) {
           "../browser/ui/views/keyboard_access_browsertest.cc",
         ]
         if (!use_ozone) {
-          sources += [
-            "../browser/ui/libgtkui/select_file_dialog_interactive_uitest.cc",
-          ]
+          sources += [ "../browser/ui/libgtkui/select_file_dialog_interactive_uitest.cc" ]
           deps += [ "//build/config/linux/gtk" ]
         }
       }

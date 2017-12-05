@@ -10,11 +10,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/common/extensions/removable_storage_writer.mojom.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/removable_storage_writer/public/interfaces/constants.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_mojo_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
@@ -23,20 +23,24 @@ namespace image_writer {
 namespace {
 ImageWriterUtilityClient::ImageWriterUtilityClientFactory*
     g_factory_for_testing = nullptr;
+
+void DeleteInterfacePtr(chrome::mojom::RemovableStorageWriterPtr writer_ptr) {
+  // Just let the parameters go out of scope so they are deleted.
+}
 }  // namespace
 
 class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
-    : public extensions::mojom::RemovableStorageWriterClient {
+    : public chrome::mojom::RemovableStorageWriterClient {
  public:
   RemovableStorageWriterClientImpl(
       ImageWriterUtilityClient* owner,
-      extensions::mojom::RemovableStorageWriterClientPtr* interface)
+      chrome::mojom::RemovableStorageWriterClientPtr* interface)
       : binding_(this, mojo::MakeRequest(interface)),
         image_writer_utility_client_(owner) {
     base::AssertBlockingAllowed();
 
     binding_.set_connection_error_handler(
-        base::BindOnce(&ImageWriterUtilityClient::UtilityProcessError,
+        base::BindOnce(&ImageWriterUtilityClient::OnConnectionError,
                        image_writer_utility_client_));
   }
 
@@ -55,22 +59,37 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
     }
   }
 
-  mojo::Binding<extensions::mojom::RemovableStorageWriterClient> binding_;
+  mojo::Binding<chrome::mojom::RemovableStorageWriterClient> binding_;
   // |image_writer_utility_client_| owns |this|.
   ImageWriterUtilityClient* const image_writer_utility_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovableStorageWriterClientImpl);
 };
 
-ImageWriterUtilityClient::ImageWriterUtilityClient() = default;
+ImageWriterUtilityClient::ImageWriterUtilityClient(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    std::unique_ptr<service_manager::Connector> connector)
+    : task_runner_(task_runner), connector_(std::move(connector)) {}
 
-ImageWriterUtilityClient::~ImageWriterUtilityClient() = default;
+ImageWriterUtilityClient::~ImageWriterUtilityClient() {
+  // We could be running on a different TaskRunner (typically, the UI thread).
+  // Post to be safe.
+  task_runner_->DeleteSoon(FROM_HERE, std::move(connector_));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&DeleteInterfacePtr,
+                                        std::move(removable_storage_writer_)));
+}
 
 // static
-scoped_refptr<ImageWriterUtilityClient> ImageWriterUtilityClient::Create() {
+scoped_refptr<ImageWriterUtilityClient> ImageWriterUtilityClient::Create(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    std::unique_ptr<service_manager::Connector> connector) {
+  // connector_ can be null in unit-tests.
+  DCHECK(!connector || !connector->IsBound());
   if (g_factory_for_testing)
     return g_factory_for_testing->Run();
-  return base::WrapRefCounted(new ImageWriterUtilityClient());
+  return base::WrapRefCounted(
+      new ImageWriterUtilityClient(task_runner, std::move(connector)));
 }
 
 // static
@@ -91,14 +110,13 @@ void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
   success_callback_ = success_callback;
   error_callback_ = error_callback;
 
-  StartUtilityProcessIfNeeded();
+  BindServiceIfNeeded();
 
-  extensions::mojom::RemovableStorageWriterClientPtr client;
+  chrome::mojom::RemovableStorageWriterClientPtr client;
   removable_storage_writer_client_ =
-      base::MakeUnique<RemovableStorageWriterClientImpl>(this, &client);
+      std::make_unique<RemovableStorageWriterClientImpl>(this, &client);
 
-  utility_process_mojo_client_->service()->Write(source, target,
-                                                 std::move(client));
+  removable_storage_writer_->Write(source, target, std::move(client));
 }
 
 void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
@@ -113,14 +131,13 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
   success_callback_ = success_callback;
   error_callback_ = error_callback;
 
-  StartUtilityProcessIfNeeded();
+  BindServiceIfNeeded();
 
-  extensions::mojom::RemovableStorageWriterClientPtr client;
+  chrome::mojom::RemovableStorageWriterClientPtr client;
   removable_storage_writer_client_ =
-      base::MakeUnique<RemovableStorageWriterClientImpl>(this, &client);
+      std::make_unique<RemovableStorageWriterClientImpl>(this, &client);
 
-  utility_process_mojo_client_->service()->Verify(source, target,
-                                                  std::move(client));
+  removable_storage_writer_->Verify(source, target, std::move(client));
 }
 
 void ImageWriterUtilityClient::Cancel(const CancelCallback& cancel_callback) {
@@ -135,35 +152,27 @@ void ImageWriterUtilityClient::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ResetRequest();
-  utility_process_mojo_client_.reset();
+  removable_storage_writer_.reset();
 }
 
-void ImageWriterUtilityClient::StartUtilityProcessIfNeeded() {
+void ImageWriterUtilityClient::BindServiceIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (utility_process_mojo_client_)
+  if (removable_storage_writer_)
     return;
 
-  utility_process_mojo_client_ =
-      base::MakeUnique<content::UtilityProcessMojoClient<
-          extensions::mojom::RemovableStorageWriter>>(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_IMAGE_WRITER_NAME));
-  utility_process_mojo_client_->set_error_callback(
-      base::Bind(&ImageWriterUtilityClient::UtilityProcessError, this));
-
-  utility_process_mojo_client_->set_disable_sandbox();
-#if defined(OS_WIN)
-  utility_process_mojo_client_->set_run_elevated();
-#endif
-
-  utility_process_mojo_client_->Start();
+  connector_->BindInterface(chrome::mojom::kRemovableStorageWriterServiceName,
+                            mojo::MakeRequest(&removable_storage_writer_));
+  removable_storage_writer_.set_connection_error_handler(
+      base::Bind(&ImageWriterUtilityClient::OnConnectionError, this));
 }
 
-void ImageWriterUtilityClient::UtilityProcessError() {
+void ImageWriterUtilityClient::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  OperationFailed("Utility process crashed or failed.");
-  utility_process_mojo_client_.reset();
+  OperationFailed(
+      "Error with the connection to the RemovableStorageWriter service.");
+  removable_storage_writer_.reset();
 }
 
 void ImageWriterUtilityClient::OperationProgress(int64_t progress) {

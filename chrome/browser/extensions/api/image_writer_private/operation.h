@@ -28,6 +28,10 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace service_manager {
+class Connector;
+}
+
 namespace extensions {
 namespace image_writer {
 
@@ -59,6 +63,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
       base::OnceCallback<void(bool, const std::string&)>;
 
   Operation(base::WeakPtr<OperationManager> manager,
+            std::unique_ptr<service_manager::Connector> connector,
             const ExtensionId& extension_id,
             const std::string& device_path,
             const base::FilePath& download_folder);
@@ -208,6 +213,9 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
 
   // Runs all cleanup functions.
   void CleanUp();
+
+  // Connector to the service manager. Used and deleted on |task_runner_|.
+  std::unique_ptr<service_manager::Connector> connector_;
 
   // |stage_| and |progress_| are owned by the FILE thread, use |SetStage| and
   // |SetProgress| to update.  Progress should be in the interval [0,100]
