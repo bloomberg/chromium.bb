@@ -77,7 +77,7 @@ const base::Feature kCheckerImaging{"CheckerImaging",
 // Enables the compositing of fixed position content that is opaque and can
 // preserve LCD text.
 const base::Feature kCompositeOpaqueFixedPosition{
-    "CompositeOpaqueFixedPosition", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CompositeOpaqueFixedPosition", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the compositing of scrolling content that supports painting the
 // background with the foreground, such that LCD text will still be enabled.
