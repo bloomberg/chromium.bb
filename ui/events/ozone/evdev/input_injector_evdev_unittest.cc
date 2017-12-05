@@ -27,7 +27,7 @@ class EventObserver {
  public:
   void EventDispatchCallback(Event* event) {
     DispatchEventFromNativeUiEvent(
-        event, base::Bind(&EventObserver::OnEvent, base::Unretained(this)));
+        event, base::BindOnce(&EventObserver::OnEvent, base::Unretained(this)));
   }
 
   void OnEvent(Event* event) {

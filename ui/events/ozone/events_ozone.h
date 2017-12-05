@@ -32,7 +32,7 @@ class Event;
 //
 EVENTS_EXPORT void DispatchEventFromNativeUiEvent(
     const base::NativeEvent& native_event,
-    base::Callback<void(ui::Event*)> callback);
+    base::OnceCallback<void(ui::Event*)> callback);
 
 }  // namespace ui
 
