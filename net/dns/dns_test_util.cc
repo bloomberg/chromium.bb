@@ -94,7 +94,6 @@ class MockTransaction : public DnsTransaction,
  private:
   void Finish() {
     switch (result_.type) {
-      case MockDnsClientRule::NODOMAIN:
       case MockDnsClientRule::EMPTY:
       case MockDnsClientRule::OK: {
         std::string qname;
@@ -108,44 +107,34 @@ class MockTransaction : public DnsTransaction,
         dns_protocol::Header* header =
             reinterpret_cast<dns_protocol::Header*>(buffer);
         header->flags |= dns_protocol::kFlagResponse;
-        if (MockDnsClientRule::NODOMAIN == result_.type) {
-          header->flags |= base::HostToNet16(dns_protocol::kRcodeNXDOMAIN);
-        }
 
-        const uint16_t kPointerToQueryName =
-            static_cast<uint16_t>(0xc000 | sizeof(*header));
+        if (MockDnsClientRule::OK == result_.type) {
+          const uint16_t kPointerToQueryName =
+              static_cast<uint16_t>(0xc000 | sizeof(*header));
 
-        const uint32_t kTTL = 86400;  // One day.
+          const uint32_t kTTL = 86400;  // One day.
 
-        // Size of RDATA which is a IPv4 or IPv6 address.
-        if (MockDnsClientRule::OK == result_.type)
+          // Size of RDATA which is a IPv4 or IPv6 address.
           EXPECT_TRUE(result_.ip.IsValid());
-        size_t rdata_size = result_.ip.size();
+          size_t rdata_size = result_.ip.size();
 
-        // 12 is the sum of sizes of the compressed name reference, TYPE,
-        // CLASS, TTL and RDLENGTH.
-        size_t answer_size = 12 + rdata_size;
+          // 12 is the sum of sizes of the compressed name reference, TYPE,
+          // CLASS, TTL and RDLENGTH.
+          size_t answer_size = 12 + rdata_size;
 
-        // Write the answer using the expected IP address.
-        header->ancount =
-            base::HostToNet16(MockDnsClientRule::OK == result_.type ? 1 : 0);
-        base::BigEndianWriter writer(buffer + nbytes, answer_size);
-        writer.WriteU16(kPointerToQueryName);
-        writer.WriteU16(MockDnsClientRule::OK == result_.type
-                            ? qtype_
-                            : dns_protocol::kTypeSOA);
-        writer.WriteU16(dns_protocol::kClassIN);
-        writer.WriteU32(kTTL);
-        writer.WriteU16(static_cast<uint16_t>(rdata_size));
-        writer.WriteBytes(result_.ip.bytes().data(), rdata_size);
-        nbytes += answer_size;
-
-        EXPECT_TRUE(response.InitParse(nbytes, query));
-        if (MockDnsClientRule::NODOMAIN == result_.type) {
-          callback_.Run(this, ERR_NAME_NOT_RESOLVED, &response);
-        } else {
-          callback_.Run(this, OK, &response);
+          // Write the answer using the expected IP address.
+          header->ancount = base::HostToNet16(1);
+          base::BigEndianWriter writer(buffer + nbytes, answer_size);
+          writer.WriteU16(kPointerToQueryName);
+          writer.WriteU16(qtype_);
+          writer.WriteU16(dns_protocol::kClassIN);
+          writer.WriteU32(kTTL);
+          writer.WriteU16(static_cast<uint16_t>(rdata_size));
+          writer.WriteBytes(result_.ip.bytes().data(), rdata_size);
+          nbytes += answer_size;
         }
+        EXPECT_TRUE(response.InitParse(nbytes, query));
+        callback_.Run(this, OK, &response);
       } break;
       case MockDnsClientRule::FAIL:
         callback_.Run(this, ERR_NAME_NOT_RESOLVED, NULL);
