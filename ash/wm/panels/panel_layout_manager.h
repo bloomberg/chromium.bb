@@ -170,7 +170,8 @@ class ASH_EXPORT PanelLayoutManager
   void UpdateCallouts();
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  void OnKeyboardBoundsChanging(const gfx::Rect& keyboard_bounds) override;
+  void OnKeyboardWorkspaceOccludedBoundsChanging(
+      const gfx::Rect& keyboard_bounds) override;
   void OnKeyboardClosed() override;
 
   // Parent window associated with this layout manager.

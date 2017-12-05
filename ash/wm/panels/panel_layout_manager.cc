@@ -902,7 +902,7 @@ void PanelLayoutManager::UpdateCallouts() {
 ////////////////////////////////////////////////////////////////////////////////
 // keyboard::KeyboardControllerObserver implementation:
 
-void PanelLayoutManager::OnKeyboardBoundsChanging(
+void PanelLayoutManager::OnKeyboardWorkspaceOccludedBoundsChanging(
     const gfx::Rect& keyboard_bounds) {
   const gfx::Rect& parent_bounds = panel_container_->bounds();
   int available_space = parent_bounds.height() - keyboard_bounds.height();
