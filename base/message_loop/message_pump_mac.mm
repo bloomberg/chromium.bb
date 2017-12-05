@@ -8,6 +8,7 @@
 
 #include <limits>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -719,13 +720,13 @@ MessagePumpNSRunLoop::~MessagePumpNSRunLoop() {
 }
 
 void MessagePumpNSRunLoop::DoRun(Delegate* delegate) {
+  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
+
   while (keep_running_) {
     // NSRunLoop manages autorelease pools itself.
     [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
                              beforeDate:[NSDate distantFuture]];
   }
-
-  keep_running_ = true;
 }
 
 void MessagePumpNSRunLoop::Quit() {
@@ -789,6 +790,7 @@ MessagePumpNSApplication::~MessagePumpNSApplication() {
 }
 
 void MessagePumpNSApplication::DoRun(Delegate* delegate) {
+  AutoReset<bool> auto_reset_keep_running(&keep_running_, true);
   bool last_running_own_loop_ = running_own_loop_;
 
   // NSApp must be initialized by calling:
@@ -815,7 +817,6 @@ void MessagePumpNSApplication::DoRun(Delegate* delegate) {
         [NSApp sendEvent:event];
       }
     }
-    keep_running_ = true;
   }
 
   running_own_loop_ = last_running_own_loop_;

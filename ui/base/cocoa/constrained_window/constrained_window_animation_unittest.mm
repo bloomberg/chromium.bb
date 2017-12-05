@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_pump_mac.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
 // This class runs an animation for exactly two frames then end it.
@@ -15,7 +14,6 @@
     : NSObject<NSAnimationDelegate> {
  @private
   CGFloat frameCount_;
-  std::unique_ptr<base::MessagePumpNSRunLoop> message_pump_;
 }
 
 - (void)runAnimation:(NSAnimation*)animation;
@@ -23,12 +21,6 @@
 @end
 
 @implementation ConstrainedWindowAnimationTestDelegate
-
-- (id)init {
-  if ((self = [super init]))
-    message_pump_.reset(new base::MessagePumpNSRunLoop);
-  return self;
-}
 
 - (float)animation:(NSAnimation*)animation
     valueForProgress:(NSAnimationProgress)progress {
@@ -40,7 +32,6 @@
 
 - (void)animationDidEnd:(NSAnimation*)animation {
   EXPECT_EQ(2, frameCount_);
-  message_pump_->Quit();
 }
 
 - (void)runAnimation:(NSAnimation*)animation {
@@ -49,7 +40,7 @@
   [animation setDuration:600];
   [animation setDelegate:self];
   [animation startAnimation];
-  message_pump_->Run(NULL);
+  EXPECT_EQ(2, frameCount_);
 }
 
 @end
@@ -57,7 +48,7 @@
 class ConstrainedWindowAnimationTest : public ui::CocoaTest {
  protected:
   ConstrainedWindowAnimationTest() : CocoaTest() {
-    delegate_.reset([[ConstrainedWindowAnimationTestDelegate alloc] init]);
+    delegate_.reset([ConstrainedWindowAnimationTestDelegate alloc]);
   }
 
   base::scoped_nsobject<ConstrainedWindowAnimationTestDelegate> delegate_;
