@@ -80,6 +80,34 @@ a sledge hammer."</string>
 """
     self.assertEqual(output.strip(), expected.strip())
 
+
+  def testConflictingPlurals(self):
+    root = util.ParseGrdForUnittest(ur"""
+        <messages>
+          <message name="IDS_PLURALS" desc="A string using the ICU plural format">
+            {NUM_THINGS, plural,
+            =1 {Maybe I'll get one laser.}
+            one {Maybe I'll get one laser.}
+            other {Maybe I'll get # lasers.}}
+          </message>
+        </messages>
+        """)
+
+    buf = StringIO.StringIO()
+    build.RcBuilder.ProcessNode(root, DummyOutput('android', 'en'), buf)
+    output = buf.getvalue()
+    expected = ur"""
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<plurals name="plurals">
+  <item quantity="one">"Maybe I\'ll get one laser."</item>
+  <item quantity="other">"Maybe I\'ll get %d lasers."</item>
+</plurals>
+</resources>
+"""
+    self.assertEqual(output.strip(), expected.strip())
+
+
   def testTaggedOnly(self):
     root = util.ParseGrdForUnittest(ur"""
         <messages>
