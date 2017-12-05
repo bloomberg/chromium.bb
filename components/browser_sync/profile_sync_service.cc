@@ -1907,34 +1907,33 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
-  OnGaiaAccountsInCookieUpdatedWithCallback(accounts, signed_out_accounts,
-                                            error, base::Closure());
+  OnGaiaAccountsInCookieUpdatedWithCallback(accounts, base::Closure());
 }
 
 void ProfileSyncService::OnGaiaAccountsInCookieUpdatedWithCallback(
     const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
-    const GoogleServiceAuthError& error,
     const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsEngineInitialized())
     return;
 
-  bool cookie_jar_mismatch = true;
+  bool cookie_jar_mismatch = HasCookieJarMismatch(accounts);
   bool cookie_jar_empty = accounts.size() == 0;
-  std::string account_id = signin_->GetAccountIdToUse();
-
-  // Iterate through list of accounts, looking for current sync account.
-  for (const auto& account : accounts) {
-    if (account.id == account_id) {
-      cookie_jar_mismatch = false;
-      break;
-    }
-  }
 
   DVLOG(1) << "Cookie jar mismatch: " << cookie_jar_mismatch;
   DVLOG(1) << "Cookie jar empty: " << cookie_jar_empty;
   engine_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty, callback);
+}
+
+bool ProfileSyncService::HasCookieJarMismatch(
+    const std::vector<gaia::ListedAccount>& cookie_jar_accounts) {
+  std::string account_id = signin_->GetAccountIdToUse();
+  // Iterate through list of accounts, looking for current sync account.
+  for (const auto& account : cookie_jar_accounts) {
+    if (account.id == account_id)
+      return false;
+  }
+  return true;
 }
 
 void ProfileSyncService::AddProtocolEventObserver(

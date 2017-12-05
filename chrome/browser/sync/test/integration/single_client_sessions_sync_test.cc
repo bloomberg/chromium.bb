@@ -108,18 +108,19 @@ class SingleClientSessionsSyncTest : public SyncTest {
   // Simulates receiving list of accounts in the cookie jar from ListAccounts
   // endpoint. Adds |account_ids| into signed in accounts, notifies
   // ProfileSyncService and waits for change to propagate to sync engine.
-  void UpdateCookieJarAccountsAndWait(std::vector<std::string> account_ids) {
-    GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  void UpdateCookieJarAccountsAndWait(std::vector<std::string> account_ids,
+                                      bool expected_cookie_jar_mismatch) {
     std::vector<gaia::ListedAccount> accounts;
-    std::vector<gaia::ListedAccount> signed_out_accounts;
     for (const auto& account_id : account_ids) {
       gaia::ListedAccount signed_in_account;
       signed_in_account.id = account_id;
       accounts.push_back(signed_in_account);
     }
     base::RunLoop run_loop;
+    EXPECT_EQ(expected_cookie_jar_mismatch,
+              GetClient(0)->service()->HasCookieJarMismatch(accounts));
     GetClient(0)->service()->OnGaiaAccountsInCookieUpdatedWithCallback(
-        accounts, signed_out_accounts, error, run_loop.QuitClosure());
+        accounts, run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -376,9 +377,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
   EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
 }
 
-// Test is flaky. https://crbug.com/789129
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       DISABLED_CookieJarMismatch) {
+// TODO(pavely): This test is flaky. Report failures in
+// https://crbug.com/789129.
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -387,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
 
   // Simulate empty list of accounts in the cookie jar. This will record cookie
   // jar mismatch.
-  UpdateCookieJarAccountsAndWait({});
+  UpdateCookieJarAccountsAndWait({}, true);
   // The HistogramTester objects are scoped to allow more precise verification.
   {
     HistogramTester histogram_tester;
@@ -414,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   // want to block here and not create the HistogramTester below until we know
   // the cookie jar stats have been updated.
   UpdateCookieJarAccountsAndWait(
-      {GetClient(0)->service()->signin()->GetAuthenticatedAccountId()});
+      {GetClient(0)->service()->signin()->GetAuthenticatedAccountId()}, false);
 
   {
     HistogramTester histogram_tester;
