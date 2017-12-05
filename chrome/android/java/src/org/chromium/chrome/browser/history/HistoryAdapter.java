@@ -52,7 +52,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     private boolean mHasOtherFormsOfBrowsingData;
     private boolean mIsDestroyed;
-    private boolean mIsInitialized;
+    private boolean mAreHeadersInitialized;
     private boolean mIsLoadingItems;
     private boolean mIsSearching;
     private boolean mHasMorePotentialItems;
@@ -84,7 +84,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * Initializes the HistoryAdapter and loads the first set of browsing history items.
      */
     public void initialize() {
-        mIsInitialized = false;
+        mAreHeadersInitialized = false;
         mIsLoadingItems = true;
         mClearOnNextQueryComplete = true;
         mHistoryProvider.queryHistory(mQueryText);
@@ -224,9 +224,9 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             mClearOnNextQueryComplete = false;
         }
 
-        if (!mIsInitialized) {
-            if (items.size() > 0 && !mIsSearching) setHeaders();
-            mIsInitialized = true;
+        if (!mAreHeadersInitialized && items.size() > 0 && !mIsSearching) {
+            setHeaders();
+            mAreHeadersInitialized = true;
         }
 
         removeFooter();
@@ -337,7 +337,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         // Prevent from refreshing the recycler view if header visibility is not changed.
         if (mPrivacyDisclaimersVisible == shouldShowPrivacyDisclaimers) return;
         mPrivacyDisclaimersVisible = shouldShowPrivacyDisclaimers;
-        if (mIsInitialized) setHeaders();
+        if (mAreHeadersInitialized) setHeaders();
     }
 
     private void updateClearBrowsingDataButtonVisibility() {
@@ -349,7 +349,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         if (mClearBrowsingDataButtonVisible == shouldShowButton) return;
         mClearBrowsingDataButtonVisible = shouldShowButton;
         mPrivacyDisclaimerBottomSpace.setVisibility(shouldShowButton ? View.GONE : View.VISIBLE);
-        if (mIsInitialized) setHeaders();
+        if (mAreHeadersInitialized) setHeaders();
     }
 
     @VisibleForTesting
