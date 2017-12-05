@@ -139,11 +139,6 @@
     "label": "//ash:ash_unittests",
     "type": "windowed_test_launcher",
   },
-  "audio_unittests": {
-    "label": "//media:audio_unittests",
-    "type": "raw",
-    "args": [],
-  },
   "aura_unittests": {
     "label": "//ui/aura:aura_unittests",
     "type": "windowed_test_launcher",
