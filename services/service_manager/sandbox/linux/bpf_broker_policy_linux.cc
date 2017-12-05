@@ -21,11 +21,11 @@ ResultExpr BrokerProcessPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__NR_access)
     case __NR_access:
 #endif
-#if defined(__NR_open)
-    case __NR_open:
-#endif
 #if defined(__NR_faccessat)
     case __NR_faccessat:
+#endif
+#if defined(__NR_open)
+    case __NR_open:
 #endif
 #if defined(__NR_openat)
     case __NR_openat:
@@ -47,6 +47,12 @@ ResultExpr BrokerProcessPolicy::EvaluateSyscall(int sysno) const {
 #endif
 #if defined(__NR_newfstatat)
     case __NR_newfstatat:
+#endif
+#if defined(__NR_readlink)
+    case __NR_readlink:
+#endif
+#if defined(__NR_readlinkat)
+    case __NR_readlinkat:
 #endif
       return Allow();
     default:
