@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -55,8 +56,10 @@ class NewTabPageInterceptorTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NewTabPageInterceptorTest, NoInterception) {
-  GURL new_tab_url =
-      net::URLRequestMockHTTPJob::GetMockHttpsUrl("instant_extended.html");
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_test_server.Start());
+  GURL new_tab_url = https_test_server.GetURL("/instant_extended.html");
   ChangeDefaultSearchProvider("instant_extended.html");
 
   ui_test_utils::NavigateToURL(browser(), new_tab_url);
