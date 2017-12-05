@@ -783,9 +783,9 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   Document* document = frame->GetDocument();
 
   // Construct the deprecation report.
-  DeprecationReport* body =
-      new DeprecationReport(info.id, milestoneDate(info.anticipatedRemoval),
-                            info.message, SourceLocation::Capture());
+  double removalDate = milestoneDate(info.anticipatedRemoval);
+  DeprecationReport* body = new DeprecationReport(
+      info.id, removalDate, info.message, SourceLocation::Capture());
   Report* report = new Report("deprecation", document->Url().GetString(), body);
 
   // Send the deprecation report to any ReportingObservers.
@@ -796,9 +796,10 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   // Send the deprecation report to the Reporting API.
   mojom::blink::ReportingServiceProxyPtr service;
   frame->Client()->GetInterfaceProvider()->GetInterface(&service);
-  service->QueueDeprecationReport(document->Url(), info.message,
-                                  body->sourceFile(), body->lineNumber(),
-                                  body->columnNumber());
+  service->QueueDeprecationReport(document->Url(), info.id,
+                                  WTF::Time::FromDoubleT(removalDate),
+                                  info.message, body->sourceFile(),
+                                  body->lineNumber(), body->columnNumber());
 }
 
 // static
