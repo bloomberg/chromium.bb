@@ -41,6 +41,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -95,6 +96,11 @@ void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host) {
 aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
   CHECK(ash_host->AsWindowTreeHost());
   return ash_host->AsWindowTreeHost()->window();
+}
+
+bool ShouldUpdateMirrorWindowController() {
+  return aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL ||
+         !::switches::IsMusHostingViz();
 }
 
 }  // namespace
@@ -651,7 +657,7 @@ void WindowTreeHostManager::OnHostResized(aura::WindowTreeHost* host) {
   if (display_manager->UpdateDisplayBounds(display.id(),
                                            host->GetBoundsInPixels())) {
     // The window server controls mirroring in Mus, not Ash.
-    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+    if (ShouldUpdateMirrorWindowController())
       mirror_window_controller_->UpdateWindow();
     cursor_window_controller_->UpdateContainer();
   }
@@ -662,7 +668,7 @@ void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
   if (GetDisplayManager()->IsInMirrorMode() ||
       GetDisplayManager()->IsInUnifiedMode()) {
     // The window server controls mirroring in Mus, not Ash.
-    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+    if (ShouldUpdateMirrorWindowController())
       mirror_window_controller_->UpdateWindow(info_list);
     cursor_window_controller_->UpdateContainer();
   } else {
@@ -672,7 +678,7 @@ void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
 
 void WindowTreeHostManager::CloseMirroringDisplayIfNotNecessary() {
   // The window server controls mirroring in Mus, not Ash.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+  if (ShouldUpdateMirrorWindowController())
     mirror_window_controller_->CloseIfNotNecessary();
   // If cursor_compositing is enabled for large cursor, the cursor window is
   // always on the desktop display (the visible cursor on the non-desktop
