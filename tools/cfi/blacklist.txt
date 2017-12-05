@@ -168,8 +168,6 @@ src:*base/native_library_unittest.cc
 
 # chrome/browser/ui/views/frame/global_menu_bar_x11.cc
 fun:*GlobalMenuBarX11*
-# net/cert/cert_verify_proc_nss.cc
-fun:*CertVerifyProcNSS*VerifyInternalImpl*
 
 # third_party/skia/include/gpu/gl/GrGLFunctions.h
 fun:*GrGLFunction*
