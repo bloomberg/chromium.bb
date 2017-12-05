@@ -446,6 +446,7 @@ void av1_fwd_txfm2d_16x64_c(const int16_t *input, int32_t *output, int stride,
 #endif
   // Zero out the bottom 16x32 area.
   memset(output + 16 * 32, 0, 16 * 32 * sizeof(*output));
+  // Note: no repacking needed here.
 }
 
 void av1_fwd_txfm2d_64x16_c(const int16_t *input, int32_t *output, int stride,
@@ -457,6 +458,10 @@ void av1_fwd_txfm2d_64x16_c(const int16_t *input, int32_t *output, int stride,
   // Zero out right 32x16 area.
   for (int row = 0; row < 16; ++row) {
     memset(output + row * 64 + 32, 0, 32 * sizeof(*output));
+  }
+  // Re-pack non-zero coeffs in the first 32x16 indices.
+  for (int row = 1; row < 16; ++row) {
+    memcpy(output + row * 32, output + row * 64, 32 * sizeof(*output));
   }
 }
 #endif  // CONFIG_TX64X64

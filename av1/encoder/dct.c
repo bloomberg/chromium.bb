@@ -2666,6 +2666,7 @@ void av1_fht16x64_c(const int16_t *input, tran_low_t *output, int stride,
   }
   // Zero out the bottom 16x32 area.
   memset(output + 2 * n * n, 0, 2 * n * n * sizeof(*output));
+  // Note: no repacking needed here.
   // Note: overall scale factor of transform is 4 times unitary
 }
 
@@ -2719,6 +2720,10 @@ void av1_fht64x16_c(const int16_t *input, tran_low_t *output, int stride,
   // Zero out right 32x16 area.
   for (int row = 0; row < n; ++row) {
     memset(output + row * n4 + 2 * n, 0, 2 * n * sizeof(*output));
+  }
+  // Re-pack non-zero coeffs in the first 32x16 indices.
+  for (int row = 1; row < 16; ++row) {
+    memcpy(output + row * 32, output + row * 64, 32 * sizeof(*output));
   }
   // Note: overall scale factor of transform is 4 times unitary
 }

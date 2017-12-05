@@ -413,12 +413,27 @@ void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
 
 void av1_inv_txfm2d_add_16x64_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
+  // Remap 16x32 input into a modified 16x64 input by:
+  // - Copying over these values in top-left 16x32 locations.
+  // - Setting the rest of the locations to 0.
+  int32_t mod_input[16 * 64];
+  memcpy(mod_input, input, 16 * 32 * sizeof(*mod_input));
+  memset(mod_input + 16 * 32, 0, 16 * 32 * sizeof(*mod_input));
   int txfm_buf[16 * 64 + 64 + 64];
-  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X64, bd);
+  inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_16X64,
+                        bd);
 }
 
 void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
+  // Remap 32x16 input into a modified 64x16 by:
+  // - Copying over these values in top-left 32x16 locations.
+  // - Setting the rest of the locations to 0.
+  int32_t mod_input[64 * 16];
+  for (int row = 0; row < 16; ++row) {
+    memcpy(mod_input + row * 64, input + row * 32, 32 * sizeof(*mod_input));
+    memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
+  }
 #if CONFIG_TXMG
   int txfm_buf[16 * 64 + 64 + 64];
   int32_t rinput[16 * 64];
@@ -430,13 +445,14 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
   int h = tx_size_high[tx_size];
   int rw = h;
   int rh = w;
-  transpose_int32(rinput, rw, input, w, w, h);
+  transpose_int32(rinput, rw, mod_input, w, w, h);
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #else
   int txfm_buf[16 * 64 + 64 + 64];
-  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_64X16, bd);
+  inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X16,
+                        bd);
 #endif  // CONFIG_TXMG
 }
 #endif  // CONFIG_TX64X64
