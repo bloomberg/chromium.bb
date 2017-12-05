@@ -137,7 +137,7 @@ void DeviceOrientationEventPump::FireEvent() {
 
 void DeviceOrientationEventPump::DidStartIfPossible() {
   if (!absolute_ && !relative_orientation_sensor_.sensor &&
-      fall_back_to_absolute_orientation_sensor_) {
+      fall_back_to_absolute_orientation_sensor_ && sensor_provider_) {
     // When relative orientation sensor is not available fall back to using
     // the absolute orientation sensor but only on the first failure.
     fall_back_to_absolute_orientation_sensor_ = false;
