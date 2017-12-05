@@ -23,6 +23,11 @@ struct AV1_COMP;
 int av1_get_max_filter_level(const AV1_COMP *cpi);
 void av1_pick_filter_level(const struct yv12_buffer_config *sd,
                            struct AV1_COMP *cpi, LPF_PICK_METHOD method);
+#if CONFIG_LPF_SB
+int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
+                            int partial_frame, double *best_cost_ret,
+                            int mi_row, int mi_col, int last_lvl);
+#endif  // CONFIG_LPF_SB
 #ifdef __cplusplus
 }  // extern "C"
 #endif

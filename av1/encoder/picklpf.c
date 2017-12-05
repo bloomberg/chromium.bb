@@ -144,9 +144,9 @@ static int try_filter_superblock(const YV12_BUFFER_CONFIG *sd,
   return filt_err;
 }
 
-static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
-                               int partial_frame, double *best_cost_ret,
-                               int mi_row, int mi_col, int last_lvl) {
+int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
+                            int partial_frame, double *best_cost_ret,
+                            int mi_row, int mi_col, int last_lvl) {
   assert(partial_frame == 1);
   assert(last_lvl >= 0);
 
@@ -466,8 +466,13 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     // there're (FILT_BOUNDAR_OFFSET + 16) pixels.
     for (mi_row = 0; mi_row < cm->mi_rows; mi_row += MAX_MIB_SIZE) {
       for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
+#if CONFIG_LPF_SB
+        int lvl =
+            av1_search_filter_level(sd, cpi, 1, NULL, mi_row, mi_col, last_lvl);
+#else
         int lvl =
             search_filter_level(sd, cpi, 1, NULL, mi_row, mi_col, last_lvl);
+#endif
         if (USE_LOOP_FILTER_SUPERBLOCK) lvl = FAKE_FILTER_LEVEL;
 
         av1_loop_filter_sb_level_init(cm, mi_row, mi_col, lvl);

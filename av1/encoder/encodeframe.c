@@ -52,6 +52,9 @@
 #endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
+#if CONFIG_LPF_SB
+#include "av1/encoder/picklpf.h"
+#endif
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/segmentation.h"
@@ -3503,9 +3506,25 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #if CONFIG_LPF_SB
     if (USE_LOOP_FILTER_SUPERBLOCK) {
       // apply deblocking filtering right after each superblock is encoded.
-      const int guess_filter_lvl = FAKE_FILTER_LEVEL;
-      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, xd, guess_filter_lvl,
-                            0, 1, mi_row, mi_col);
+      int last_lvl;
+      if (mi_row == 0 && mi_col == 0) {
+        last_lvl = 0;
+      } else {
+        if (mi_col == 0) {
+          last_lvl =
+              cm->mi[(mi_row - MAX_MIB_SIZE) * cm->mi_stride].mbmi.filt_lvl;
+        } else {
+          last_lvl = cm->mi[mi_row * cm->mi_stride + mi_col - MAX_MIB_SIZE]
+                         .mbmi.filt_lvl;
+        }
+      }
+      const int filter_lvl = av1_search_filter_level(cpi->source, cpi, 1, NULL,
+                                                     mi_row, mi_col, last_lvl);
+      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, xd, filter_lvl, 0, 1,
+                            mi_row, mi_col);
+      // if filter_lvl is 0, we still need to set mi info
+      if (filter_lvl == 0)
+        av1_loop_filter_sb_level_init(cm, mi_row, mi_col, filter_lvl);
     }
 #endif  // CONFIG_LPF_SB
   }
@@ -3673,6 +3692,10 @@ static void encode_tiles(AV1_COMP *cpi) {
   int tile_col, tile_row;
 
   av1_init_tile_data(cpi);
+
+#if CONFIG_LPF_SB
+  cm->frame_to_show = get_frame_new_buffer(cm);
+#endif
 
   for (tile_row = 0; tile_row < cm->tile_rows; ++tile_row)
     for (tile_col = 0; tile_col < cm->tile_cols; ++tile_col)

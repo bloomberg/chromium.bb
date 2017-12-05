@@ -2295,7 +2295,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   // send filter level for each superblock (64x64)
   if (bsize == cm->sb_size) {
     if (mi_row == 0 && mi_col == 0) {
-      aom_write_literal(w, cm->mi_grid_visible[0]->mbmi.filt_lvl, 6);
+      aom_write_literal(w, cm->mi[0].mbmi.filt_lvl, 6);
       cm->mi_grid_visible[0]->mbmi.reuse_sb_lvl = 0;
       cm->mi_grid_visible[0]->mbmi.delta = 0;
       cm->mi_grid_visible[0]->mbmi.sign = 0;
