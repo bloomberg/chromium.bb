@@ -42,11 +42,6 @@ class GlobalDumpGraph {
     // if no such node exists in the provided |graph|.
     GlobalDumpGraph::Node* FindNode(base::StringPiece path);
 
-    // Returns an iterator which yields nodes in the nodes in this graph in
-    // post-order. That is, children and owners of nodes are returned before the
-    // node itself.
-    GlobalDumpGraph::PostOrderIterator VisitInDepthFirstPostOrder();
-
     base::ProcessId pid() const { return pid_; }
     GlobalDumpGraph* global_graph() const { return global_graph_; }
     GlobalDumpGraph::Node* root() const { return root_; }
@@ -179,7 +174,7 @@ class GlobalDumpGraph {
   // An iterator-esque class which yields nodes in a depth-first post order.
   class PostOrderIterator {
    public:
-    PostOrderIterator(Node* root);
+    PostOrderIterator(std::vector<Node*> root_nodes);
     PostOrderIterator(PostOrderIterator&& other);
     ~PostOrderIterator();
 
@@ -207,6 +202,11 @@ class GlobalDumpGraph {
   // Adds an edge in the dump graph with the given source and target nodes
   // and edge priority.
   void AddNodeOwnershipEdge(Node* owner, Node* owned, int priority);
+
+  // Returns an iterator which yields nodes in the nodes in this graph in
+  // post-order. That is, children and owners of nodes are returned before the
+  // node itself.
+  PostOrderIterator VisitInDepthFirstPostOrder();
 
   const GuidNodeMap& nodes_by_guid() const { return nodes_by_guid_; }
   GlobalDumpGraph::Process* shared_memory_graph() const {

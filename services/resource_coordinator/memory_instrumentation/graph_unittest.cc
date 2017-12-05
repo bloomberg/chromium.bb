@@ -9,9 +9,15 @@
 
 namespace memory_instrumentation {
 
+namespace {
+
 using base::trace_event::MemoryAllocatorDumpGuid;
 using Node = memory_instrumentation::GlobalDumpGraph::Node;
 using Process = memory_instrumentation::GlobalDumpGraph::Process;
+
+const MemoryAllocatorDumpGuid kEmptyGuid;
+
+}  // namespace
 
 TEST(GlobalDumpGraphTest, CreateContainerForProcess) {
   GlobalDumpGraph global_dump_graph;
@@ -41,39 +47,34 @@ TEST(GlobalDumpGraphTest, AddNodeOwnershipEdge) {
 
 TEST(GlobalDumpGraphTest, VisitInDepthFirstPostOrder) {
   GlobalDumpGraph graph;
-  Process* process = graph.shared_memory_graph();
-  Node* root = process->root();
+  Process* process_1 = graph.CreateGraphForProcess(1);
+  Process* process_2 = graph.CreateGraphForProcess(2);
 
-  Node c1(process, root);
-  Node c2(process, root);
-  Node c2_c1(process, &c2);
-  Node c2_c2(process, &c2);
-  Node c3(process, root);
-  Node c3_c1(process, &c3);
-  Node c3_c2(process, &c3);
+  Node* c1 = process_1->CreateNode(kEmptyGuid, "c1", false);
+  Node* c2 = process_1->CreateNode(kEmptyGuid, "c2", false);
+  Node* c2_c1 = process_1->CreateNode(kEmptyGuid, "c2/c1", false);
+  Node* c2_c2 = process_1->CreateNode(kEmptyGuid, "c2/c2", false);
 
-  root->InsertChild("c1", &c1);
-  root->InsertChild("c2", &c2);
-  root->InsertChild("c3", &c3);
-  c2.InsertChild("c1", &c2_c1);
-  c2.InsertChild("c2", &c2_c2);
-  c3.InsertChild("c1", &c3_c1);
-  c3.InsertChild("c2", &c3_c2);
+  Node* c3 = process_2->CreateNode(kEmptyGuid, "c3", false);
+  Node* c3_c1 = process_2->CreateNode(kEmptyGuid, "c3/c1", false);
+  Node* c3_c2 = process_2->CreateNode(kEmptyGuid, "c3/c2", false);
 
   // |c3_c2| owns |c2_c2|.
-  graph.AddNodeOwnershipEdge(&c3_c2, &c2_c2, 1);
+  graph.AddNodeOwnershipEdge(c3_c2, c2_c2, 1);
 
   // This method should always call owners and then children before the node
   // itself.
-  auto iterator = process->VisitInDepthFirstPostOrder();
-  ASSERT_EQ(iterator.next(), &c1);
-  ASSERT_EQ(iterator.next(), &c2_c1);
-  ASSERT_EQ(iterator.next(), &c3_c2);
-  ASSERT_EQ(iterator.next(), &c2_c2);
-  ASSERT_EQ(iterator.next(), &c2);
-  ASSERT_EQ(iterator.next(), &c3_c1);
-  ASSERT_EQ(iterator.next(), &c3);
-  ASSERT_EQ(iterator.next(), root);
+  auto iterator = graph.VisitInDepthFirstPostOrder();
+  ASSERT_EQ(iterator.next(), graph.shared_memory_graph()->root());
+  ASSERT_EQ(iterator.next(), c1);
+  ASSERT_EQ(iterator.next(), c2_c1);
+  ASSERT_EQ(iterator.next(), c3_c2);
+  ASSERT_EQ(iterator.next(), c2_c2);
+  ASSERT_EQ(iterator.next(), c2);
+  ASSERT_EQ(iterator.next(), process_1->root());
+  ASSERT_EQ(iterator.next(), c3_c1);
+  ASSERT_EQ(iterator.next(), c3);
+  ASSERT_EQ(iterator.next(), process_2->root());
   ASSERT_EQ(iterator.next(), nullptr);
 }
 
