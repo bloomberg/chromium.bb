@@ -14,8 +14,10 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -105,20 +107,35 @@ ReadingListModel* GetReadingListModel() {
   return model;
 }
 
+// Scroll to the top of the Reading List.
+void ScrollToTop() {
+  NSError* error = nil;
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          [ReadingListCollectionViewController
+                                              accessibilityIdentifier])]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)
+              error:&error];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 // Asserts the |button_id| button is not visible.
 void AssertButtonNotVisibleWithID(int button_id) {
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   button_id)]
-      assertWithMatcher:grey_notVisible()];
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::ButtonWithAccessibilityLabelId(button_id),
+              grey_ancestor(grey_kindOfClass([ReadingListToolbarButton class])),
+              nil)] assertWithMatcher:grey_notVisible()];
 }
 
 // Assert the |button_id| button is visible.
 void AssertButtonVisibleWithID(int button_id) {
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   button_id)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      selectElementWithMatcher:
+          grey_allOf(
+              chrome_test_util::ButtonWithAccessibilityLabelId(button_id),
+              grey_ancestor(grey_kindOfClass([ReadingListToolbarButton class])),
+              nil)] assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Taps the |button_id| button.
@@ -128,15 +145,22 @@ void TapButtonWithID(int button_id) {
                                    button_id)] performAction:grey_tap()];
 }
 
-// Performs |action| on the entry with the title |entryTitle|.
+// Performs |action| on the entry with the title |entryTitle|. The view can be
+// scrolled down to find the entry.
 void performActionOnEntry(const std::string& entryTitle,
                           id<GREYAction> action) {
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
-                         base::SysUTF8ToNSString(entryTitle)),
-                     grey_ancestor(grey_kindOfClass([ReadingListCell class])),
-                     grey_sufficientlyVisible(), nil)] performAction:action];
+  ScrollToTop();
+  id<GREYMatcher> matcher =
+      grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
+                     base::SysUTF8ToNSString(entryTitle)),
+                 grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                 grey_sufficientlyVisible(), nil);
+  [[[EarlGrey selectElementWithMatcher:matcher]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
+      onElementWithMatcher:grey_accessibilityID(
+                               [ReadingListCollectionViewController
+                                   accessibilityIdentifier])]
+      performAction:action];
 }
 
 // Taps the entry with the title |entryTitle|.
@@ -152,13 +176,18 @@ void LongPressEntry(const std::string& entryTitle) {
 
 // Asserts that the entry with the title |entryTitle| is visible.
 void AssertEntryVisible(const std::string& entryTitle) {
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [[EarlGrey
+  ScrollToTop();
+  [[[EarlGrey
       selectElementWithMatcher:
           grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                          base::SysUTF8ToNSString(entryTitle)),
                      grey_ancestor(grey_kindOfClass([ReadingListCell class])),
-                     nil)] assertWithMatcher:grey_sufficientlyVisible()];
+                     grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
+      onElementWithMatcher:grey_accessibilityID(
+                               [ReadingListCollectionViewController
+                                   accessibilityIdentifier])]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Asserts that all the entries are visible.
@@ -178,12 +207,22 @@ void AssertAllEntriesVisible() {
 // Asserts that the entry |title| is not visible.
 void AssertEntryNotVisible(std::string title) {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [[EarlGrey
+  ScrollToTop();
+  NSError* error;
+
+  [[[EarlGrey
       selectElementWithMatcher:
           grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                          base::SysUTF8ToNSString(title)),
                      grey_ancestor(grey_kindOfClass([ReadingListCell class])),
-                     nil)] assertWithMatcher:grey_notVisible()];
+                     grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100)
+      onElementWithMatcher:grey_accessibilityID(
+                               [ReadingListCollectionViewController
+                                   accessibilityIdentifier])]
+      assertWithMatcher:grey_notNil()
+                  error:&error];
+  GREYAssertNotNil(error, @"Entry is visible");
 }
 
 // Asserts |header| is visible.
