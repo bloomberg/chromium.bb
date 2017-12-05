@@ -876,4 +876,20 @@ TEST_F(BoxLayoutTest, OverlappingCrossMarginsAlignStart) {
   }
 }
 
+TEST_F(BoxLayoutTest, NegativeBetweenChildSpacing) {
+  BoxLayout* layout = new BoxLayout(BoxLayout::kVertical, gfx::Insets(), -10);
+  host_->SetLayoutManager(layout);
+  View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  host_->AddChildView(v1);
+  View* v2 = new StaticSizedView(gfx::Size(20, 15));
+  host_->AddChildView(v2);
+
+  EXPECT_EQ(25, layout->GetPreferredSize(host_.get()).height());
+  EXPECT_EQ(20, layout->GetPreferredSize(host_.get()).width());
+  host_->SetBounds(0, 0, 20, 25);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(0, 0, 20, 20), v1->bounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 20, 15), v2->bounds());
+}
+
 }  // namespace views

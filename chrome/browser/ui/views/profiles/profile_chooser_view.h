@@ -149,6 +149,10 @@ class ProfileChooserView : public content::WebContentsDelegate,
                            bool reauth_required,
                            int width);
 
+  // Creates the DICE UI view to turn on sync. It includes an illustration, a
+  // promo and a button.
+  views::View* CreateDiceTurnOnSyncView();
+
   // Creates a view to confirm account removal for |account_id_to_remove_|.
   views::View* CreateAccountRemovalView();
 
@@ -220,6 +224,8 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // The current access point of sign in.
   const signin_metrics::AccessPoint access_point_;
+
+  const int menu_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserView);
 };

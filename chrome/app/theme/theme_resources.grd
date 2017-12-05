@@ -312,6 +312,7 @@
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="common/profile_avatar_sun_cloud.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/profile_avatar_placeholder.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE" file="common/profile_avatar_placeholder_large.png" />
+      <structure type="chrome_scaled_image" name="IDR_PROFILES_TURN_ON_SYNC_ILLUSTRATION" file="common/turn_on_sync_illustration.png" />
 
       <!-- New style avatar button -->
       <if expr="is_win">
