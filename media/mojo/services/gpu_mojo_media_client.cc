@@ -62,7 +62,7 @@ std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
 
 #if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER) || \
     BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
-gpu::GpuCommandBufferStub* GetGpuCommandBufferStub(
+gpu::CommandBufferStub* GetCommandBufferStub(
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     base::UnguessableToken channel_token,
     int32_t route_id) {
@@ -111,7 +111,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     RequestOverlayInfoCB request_overlay_info_cb) {
 #if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
   auto get_stub_cb =
-      base::Bind(&GetGpuCommandBufferStub, media_gpu_channel_manager_,
+      base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
   return base::MakeUnique<MediaCodecVideoDecoder>(
       gpu_preferences_, std::move(output_cb), DeviceInfo::GetInstance(),
@@ -124,7 +124,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 #elif BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
   return base::MakeUnique<D3D11VideoDecoder>(
       gpu_task_runner_,
-      base::Bind(&GetGpuCommandBufferStub, media_gpu_channel_manager_,
+      base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id),
       std::move(output_cb));
 #else

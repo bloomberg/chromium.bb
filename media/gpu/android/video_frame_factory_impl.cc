@@ -14,8 +14,8 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
-#include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/scoped_callback_runner.h"
 #include "media/base/video_frame.h"
@@ -28,7 +28,7 @@
 namespace media {
 namespace {
 
-bool MakeContextCurrent(gpu::GpuCommandBufferStub* stub) {
+bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
   return stub && stub->decoder()->MakeCurrent();
 }
 

@@ -91,7 +91,7 @@ class GpuVideoEncodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
 GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
     int32_t host_route_id,
-    gpu::GpuCommandBufferStub* stub,
+    gpu::CommandBufferStub* stub,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : host_route_id_(host_route_id),
       stub_(stub),

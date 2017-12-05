@@ -18,7 +18,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/ipc/service/gpu_command_buffer_stub.h"
+#include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/base/android_overlay_mojo_factory.h"
@@ -37,14 +37,14 @@ class GpuVideoDecodeAccelerator
     : public IPC::Listener,
       public IPC::Sender,
       public VideoDecodeAccelerator::Client,
-      public gpu::GpuCommandBufferStub::DestructionObserver {
+      public gpu::CommandBufferStub::DestructionObserver {
  public:
   // Each of the arguments to the constructor must outlive this object.
   // |stub->decoder()| will be made current around any operation that touches
   // the underlying VDA so that it can make GL calls safely.
   GpuVideoDecodeAccelerator(
       int32_t host_route_id,
-      gpu::GpuCommandBufferStub* stub,
+      gpu::CommandBufferStub* stub,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const AndroidOverlayMojoFactoryCB& factory);
 
@@ -72,7 +72,7 @@ class GpuVideoDecodeAccelerator
   void NotifyResetDone() override;
   void NotifyError(VideoDecodeAccelerator::Error error) override;
 
-  // GpuCommandBufferStub::DestructionObserver implementation.
+  // CommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
 
   // Function to delegate sending to actual sender.
@@ -80,7 +80,7 @@ class GpuVideoDecodeAccelerator
 
   // Initialize VDAs from the set of VDAs supported for current platform until
   // one of them succeeds for given |config|. Send the |init_done_msg| when
-  // done. filter_ is passed to gpu::GpuCommandBufferStub channel only if the
+  // done. filter_ is passed to gpu::CommandBufferStub channel only if the
   // chosen VDA can decode on IO thread.
   bool Initialize(const VideoDecodeAccelerator::Config& config);
 
@@ -110,10 +110,10 @@ class GpuVideoDecodeAccelerator
   // Route ID to communicate with the host.
   const int32_t host_route_id_;
 
-  // Unowned pointer to the underlying gpu::GpuCommandBufferStub.  |this| is
+  // Unowned pointer to the underlying gpu::CommandBufferStub.  |this| is
   // registered as a DestuctionObserver of |stub_| and will self-delete when
   // |stub_| is destroyed.
-  gpu::GpuCommandBufferStub* const stub_;
+  gpu::CommandBufferStub* const stub_;
 
   // The underlying VideoDecodeAccelerator.
   std::unique_ptr<VideoDecodeAccelerator> video_decode_accelerator_;

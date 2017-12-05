@@ -9,7 +9,7 @@ import "media/mojo/interfaces/media_log.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/common/unguessable_token.mojom";
 
-// Identifies a GpuCommandBufferStub. MediaGpuChannelManager is responsible
+// Identifies a CommandBufferStub. MediaGpuChannelManager is responsible
 // for minting |channel_token| objects.
 struct CommandBufferId {
   mojo.common.mojom.UnguessableToken channel_token;
@@ -22,7 +22,7 @@ struct OverlayInfo;
 interface VideoDecoder {
   // Initialize the decoder. This must be called before any other method.
   //
-  // |command_buffer_id|, when present, identifies a GpuCommandBufferStub that
+  // |command_buffer_id|, when present, identifies a CommandBufferStub that
   // the decoder can use for GL operations. Implementations that require GL will
   // fail Initialize() if |command_buffer_id| is not provided.
   //

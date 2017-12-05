@@ -76,10 +76,10 @@ IPC_STRUCT_END()
 // These are messages from a renderer process to the GPU process.
 
 // Tells the GPU process to create a new command buffer. A corresponding
-// GpuCommandBufferStub is created.  if |surface_handle| is non-null, |size| is
-// ignored, and it will render directly to the native surface (only the browser
-// process is allowed to create those). Otherwise it will create an offscreen
-// backbuffer of dimensions |size|.
+// CommandBufferStub is created.  If |surface_handle| is non-null, |size|
+// is ignored, and it will render directly to the native surface (only the
+// browser process is allowed to create those). Otherwise it will create an
+// offscreen backbuffer of dimensions |size|.
 IPC_SYNC_MESSAGE_CONTROL3_2(GpuChannelMsg_CreateCommandBuffer,
                             GPUCreateCommandBufferConfig /* init_params */,
                             int32_t /* route_id */,
@@ -87,7 +87,7 @@ IPC_SYNC_MESSAGE_CONTROL3_2(GpuChannelMsg_CreateCommandBuffer,
                             gpu::ContextResult,
                             gpu::Capabilities /* capabilities */)
 
-// The CommandBufferProxy sends this to the GpuCommandBufferStub in its
+// The CommandBufferProxy sends this to the CommandBufferStub in its
 // destructor, so that the stub deletes the actual CommandBufferService
 // object that it's hosting.
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,

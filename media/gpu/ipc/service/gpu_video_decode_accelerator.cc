@@ -34,7 +34,7 @@ namespace media {
 
 namespace {
 static gl::GLContext* GetGLContext(
-    const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<gpu::CommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; no GLContext.";
     return nullptr;
@@ -44,7 +44,7 @@ static gl::GLContext* GetGLContext(
 }
 
 static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<gpu::CommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
@@ -58,7 +58,7 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
-static bool BindImage(const base::WeakPtr<gpu::GpuCommandBufferStub>& stub,
+static bool BindImage(const base::WeakPtr<gpu::CommandBufferStub>& stub,
                       uint32_t client_texture_id,
                       uint32_t texture_target,
                       const scoped_refptr<gl::GLImage>& image,
@@ -75,7 +75,7 @@ static bool BindImage(const base::WeakPtr<gpu::GpuCommandBufferStub>& stub,
 }
 
 static base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
-    const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<gpu::CommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; no GLES2Decoder.";
     return base::WeakPtr<gpu::gles2::GLES2Decoder>();
@@ -145,7 +145,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32_t host_route_id,
-    gpu::GpuCommandBufferStub* stub,
+    gpu::CommandBufferStub* stub,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const AndroidOverlayMojoFactoryCB& overlay_factory_cb)
     : host_route_id_(host_route_id),

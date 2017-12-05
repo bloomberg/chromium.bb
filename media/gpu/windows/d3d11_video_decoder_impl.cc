@@ -19,14 +19,14 @@ namespace media {
 
 namespace {
 
-static bool MakeContextCurrent(gpu::GpuCommandBufferStub* stub) {
+static bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
   return stub && stub->decoder()->MakeCurrent();
 }
 
 }  // namespace
 
 D3D11VideoDecoderImpl::D3D11VideoDecoderImpl(
-    base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb,
+    base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
     OutputWithReleaseMailboxCB output_cb)
     : get_stub_cb_(get_stub_cb),
       output_cb_(std::move(output_cb)),

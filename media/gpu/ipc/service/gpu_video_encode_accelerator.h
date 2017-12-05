@@ -16,7 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/ipc/service/gpu_command_buffer_stub.h"
+#include "gpu/ipc/service/command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -36,11 +36,11 @@ class GpuVideoEncodeAccelerator
     : public IPC::Listener,
       public IPC::Sender,
       public VideoEncodeAccelerator::Client,
-      public gpu::GpuCommandBufferStub::DestructionObserver {
+      public gpu::CommandBufferStub::DestructionObserver {
  public:
   GpuVideoEncodeAccelerator(
       int32_t host_route_id,
-      gpu::GpuCommandBufferStub* stub,
+      gpu::CommandBufferStub* stub,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuVideoEncodeAccelerator() override;
 
@@ -67,7 +67,7 @@ class GpuVideoEncodeAccelerator
                             base::TimeDelta timestamp) override;
   void NotifyError(VideoEncodeAccelerator::Error error) override;
 
-  // gpu::GpuCommandBufferStub::DestructionObserver implementation.
+  // gpu::CommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;
 
   // Static query for supported profiles.  This query calls the appropriate
@@ -120,10 +120,10 @@ class GpuVideoEncodeAccelerator
   // Route ID to communicate with the host.
   const uint32_t host_route_id_;
 
-  // Unowned pointer to the underlying gpu::GpuCommandBufferStub.  |this| is
+  // Unowned pointer to the underlying gpu::CommandBufferStub.  |this| is
   // registered as a DestuctionObserver of |stub_| and will self-delete when
   // |stub_| is destroyed.
-  gpu::GpuCommandBufferStub* const stub_;
+  gpu::CommandBufferStub* const stub_;
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
   std::unique_ptr<VideoEncodeAccelerator> encoder_;
