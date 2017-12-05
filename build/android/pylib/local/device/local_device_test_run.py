@@ -117,7 +117,8 @@ class LocalDeviceTestRun(test_run.TestRun):
         results = []
         while tries < self._env.max_tries and tests:
           logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
-          if tries > 0 and tries + 1 == self._env.max_tries:
+          if (tries > 0 and tries + 1 == self._env.max_tries and
+              self._env.recover_devices):
             logging.info(
                 'Attempting to recover devices prior to last test attempt.')
             self._env.parallel_devices.pMap(device_recovery.RecoverDevice, None)

@@ -98,6 +98,7 @@ class LocalDeviceEnvironment(environment.Environment):
     self._logcat_output_dir = args.logcat_output_dir
     self._logcat_output_file = args.logcat_output_file
     self._max_tries = 1 + args.num_retries
+    self._recover_devices = args.recover_devices
     self._skip_clear_data = args.skip_clear_data
     self._tool_name = args.tool
     self._trace_output = None
@@ -186,6 +187,10 @@ class LocalDeviceEnvironment(environment.Environment):
   @property
   def parallel_devices(self):
     return parallelizer.SyncParallelizer(self.devices)
+
+  @property
+  def recover_devices(self):
+    return self._recover_devices
 
   @property
   def skip_clear_data(self):
