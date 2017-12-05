@@ -17,10 +17,12 @@ extern const int kPartitionTableSize;
 // creating a dummy blank image which is then burned to the disk.
 class DestroyPartitionsOperation : public Operation {
  public:
-  DestroyPartitionsOperation(base::WeakPtr<OperationManager> manager,
-                             const ExtensionId& extension_id,
-                             const std::string& storage_unit_id,
-                             const base::FilePath& download_folder);
+  DestroyPartitionsOperation(
+      base::WeakPtr<OperationManager> manager,
+      std::unique_ptr<service_manager::Connector> connector,
+      const ExtensionId& extension_id,
+      const std::string& storage_unit_id,
+      const base::FilePath& download_folder);
   void StartImpl() override;
 
  private:

@@ -52,7 +52,10 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/media_gallery_util/media_gallery_util_service.h"
 #include "chrome/services/media_gallery_util/public/interfaces/constants.mojom.h"
+#include "chrome/services/removable_storage_writer/public/interfaces/constants.mojom.h"
+#include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
 #include "chrome/utility/extensions/extensions_handler.h"
+#include "extensions/utility/utility_handler.h"
 #if defined(OS_WIN)
 #include "chrome/services/wifi_util_win/public/interfaces/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
@@ -118,6 +121,17 @@ void CreateResourceUsageReporter(
 base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
     Leaky g_network_binder_creation_callback = LAZY_INSTANCE_INITIALIZER;
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void RegisterRemovableStorageWriterService(
+    ChromeContentUtilityClient::StaticServiceMap* services) {
+  service_manager::EmbeddedServiceInfo service_info;
+  service_info.factory =
+      base::Bind(&chrome::RemovableStorageWriterService::CreateService);
+  services->emplace(chrome::mojom::kRemovableStorageWriterServiceName,
+                    service_info);
+}
+#endif
+
 }  // namespace
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
@@ -155,8 +169,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
 
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::ExposeInterfacesToBrowser(registry.get(),
-                                        utility_process_running_elevated_);
   extensions::utility_handler::ExposeInterfacesToBrowser(
       registry.get(), utility_process_running_elevated_);
 #endif
@@ -194,6 +206,8 @@ void ChromeContentUtilityClient::RegisterServices(
     service_info.factory =
         base::Bind(&chrome::WifiUtilWinService::CreateService);
     services->emplace(chrome::mojom::kWifiUtilWinServiceName, service_info);
+
+    RegisterRemovableStorageWriterService(services);
 #endif
     return;
   }
@@ -265,7 +279,11 @@ void ChromeContentUtilityClient::RegisterServices(
     services->emplace(chrome::mojom::kMediaGalleryUtilServiceName,
                       service_info);
   }
+#if !defined(OS_WIN)
+  // On Windows the service is running elevated.
+  RegisterRemovableStorageWriterService(services);
 #endif
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_MUS)
   RegisterMashServices(services);

@@ -25,6 +25,7 @@ class OperationManager;
 class WriteFromUrlOperation : public Operation, public net::URLFetcherDelegate {
  public:
   WriteFromUrlOperation(base::WeakPtr<OperationManager> manager,
+                        std::unique_ptr<service_manager::Connector> connector,
                         const ExtensionId& extension_id,
                         net::URLRequestContextGetter* request_context,
                         GURL url,

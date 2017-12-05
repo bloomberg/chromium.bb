@@ -404,8 +404,10 @@ if (enable_basic_printing || enable_print_preview) {
 }
 
 if (enable_extensions) {
-  chrome_packaged_services +=
-      [ "//chrome/services/media_gallery_util:manifest" ]
+  chrome_packaged_services += [
+    "//chrome/services/media_gallery_util:manifest",
+    "//chrome/services/removable_storage_writer:manifest",
+  ]
 }
 
 if (is_chromeos) {

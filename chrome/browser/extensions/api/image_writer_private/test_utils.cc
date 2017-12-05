@@ -9,9 +9,11 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -86,7 +88,12 @@ SimulateProgressInfo::~SimulateProgressInfo() {}
 SimulateProgressInfo::SimulateProgressInfo(const SimulateProgressInfo&) =
     default;
 
-FakeImageWriterClient::FakeImageWriterClient() {}
+FakeImageWriterClient::FakeImageWriterClient()
+    : ImageWriterUtilityClient(
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
+          /*connector=*/nullptr) {}
 FakeImageWriterClient::~FakeImageWriterClient() {}
 
 void FakeImageWriterClient::SimulateProgressAndCompletion(

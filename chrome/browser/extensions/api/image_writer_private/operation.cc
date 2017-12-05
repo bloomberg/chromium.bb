@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/unzip_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -27,6 +28,7 @@ const int kMD5BufferSize = 1024;
 }  // namespace
 
 Operation::Operation(base::WeakPtr<OperationManager> manager,
+                     std::unique_ptr<service_manager::Connector> connector,
                      const ExtensionId& extension_id,
                      const std::string& device_path,
                      const base::FilePath& download_folder)
@@ -37,6 +39,7 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
 #else
       device_path_(device_path),
 #endif
+      connector_(std::move(connector)),
       stage_(image_writer_api::STAGE_UNKNOWN),
       progress_(0),
       download_folder_(download_folder),
@@ -44,7 +47,10 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
           base::CreateSequencedTaskRunnerWithTraits(blocking_task_traits())) {
 }
 
-Operation::~Operation() {}
+Operation::~Operation() {
+  // The connector_ is bound to the |task_runner_| and must be deleted there.
+  task_runner_->DeleteSoon(FROM_HERE, std::move(connector_));
+}
 
 void Operation::Cancel() {
   DCHECK(IsRunningInCorrectSequence());
@@ -192,7 +198,9 @@ void Operation::CompleteAndContinue(const base::Closure& continuation) {
 void Operation::StartUtilityClient() {
   DCHECK(IsRunningInCorrectSequence());
   if (!image_writer_client_.get()) {
-    image_writer_client_ = ImageWriterUtilityClient::Create();
+    // connector_ can be null in tests.
+    image_writer_client_ = ImageWriterUtilityClient::Create(
+        task_runner_, connector_ ? connector_->Clone() : nullptr);
     AddCleanUpFunction(base::BindOnce(&Operation::StopUtilityClient, this));
   }
 }

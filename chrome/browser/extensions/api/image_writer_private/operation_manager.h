@@ -86,6 +86,10 @@ class OperationManager : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<OperationManager>* GetFactoryInstance();
   static OperationManager* Get(content::BrowserContext* context);
 
+ protected:
+  // Overridden in test.
+  virtual std::unique_ptr<service_manager::Connector> CreateConnector();
+
  private:
   static const char* service_name() {
     return "OperationManager";

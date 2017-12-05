@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/test_url_request_interceptor.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -41,6 +42,7 @@ class WriteFromUrlOperationForTest : public WriteFromUrlOperation {
                                const std::string& hash,
                                const std::string& storage_unit_id)
       : WriteFromUrlOperation(manager,
+                              /*connector=*/nullptr,
                               extension_id,
                               request_context,
                               url,

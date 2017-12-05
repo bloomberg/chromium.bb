@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/test/base/testing_profile.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -41,7 +42,7 @@ TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
   scoped_refptr<DestroyPartitionsOperation> operation(
       new DestroyPartitionsOperation(
           manager.AsWeakPtr(),
-          kDummyExtensionId,
+          /*connector=*/nullptr, kDummyExtensionId,
           test_utils_.GetDevicePath().AsUTF8Unsafe(),
           base::FilePath(FILE_PATH_LITERAL("/var/tmp"))));
 

@@ -10,7 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "chrome/common/extensions/removable_storage_writer.mojom.h"
+#include "base/macros.h"
+#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
 #include "chrome/utility/image_writer/image_writer.h"
 
 namespace base {
@@ -26,10 +27,10 @@ class ImageWriterHandler {
 
   void Write(const base::FilePath& image,
              const base::FilePath& device,
-             extensions::mojom::RemovableStorageWriterClientPtr client);
+             chrome::mojom::RemovableStorageWriterClientPtr client);
   void Verify(const base::FilePath& image,
               const base::FilePath& device,
-              extensions::mojom::RemovableStorageWriterClientPtr client);
+              chrome::mojom::RemovableStorageWriterClientPtr client);
 
   // Methods for sending the different messages back to the |client_|.
   // Generally should be called by image_writer::ImageWriter.
@@ -44,8 +45,10 @@ class ImageWriterHandler {
   bool ShouldResetImageWriter(const base::FilePath& image,
                               const base::FilePath& device);
 
-  extensions::mojom::RemovableStorageWriterClientPtr client_;
+  chrome::mojom::RemovableStorageWriterClientPtr client_;
   std::unique_ptr<ImageWriter> image_writer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageWriterHandler);
 };
 
 }  // namespace image_writer

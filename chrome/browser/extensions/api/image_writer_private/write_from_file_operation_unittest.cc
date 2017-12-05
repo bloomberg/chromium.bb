@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
+
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
-#include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
 #include "chrome/test/base/testing_profile.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -38,12 +40,11 @@ class ImageWriterFromFileTest : public ImageWriterUnitTestBase {
 };
 
 TEST_F(ImageWriterFromFileTest, InvalidFile) {
-  scoped_refptr<WriteFromFileOperation> op =
-      new WriteFromFileOperation(manager_.AsWeakPtr(),
-                                 kDummyExtensionId,
-                                 test_utils_.GetImagePath(),
-                                 test_utils_.GetDevicePath().AsUTF8Unsafe(),
-                                 base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
+  scoped_refptr<WriteFromFileOperation> op = new WriteFromFileOperation(
+      manager_.AsWeakPtr(),
+      /*connector=*/nullptr, kDummyExtensionId, test_utils_.GetImagePath(),
+      test_utils_.GetDevicePath().AsUTF8Unsafe(),
+      base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
 
   base::DeleteFile(test_utils_.GetImagePath(), false);
 
@@ -67,12 +68,11 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
       base::BindOnce(&SetUpImageWriteClientProgressSimulation));
 #endif
 
-  scoped_refptr<WriteFromFileOperation> op =
-      new WriteFromFileOperation(manager_.AsWeakPtr(),
-                                 kDummyExtensionId,
-                                 test_utils_.GetImagePath(),
-                                 test_utils_.GetDevicePath().AsUTF8Unsafe(),
-                                 base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
+  scoped_refptr<WriteFromFileOperation> op = new WriteFromFileOperation(
+      manager_.AsWeakPtr(),
+      /*connector=*/nullptr, kDummyExtensionId, test_utils_.GetImagePath(),
+      test_utils_.GetDevicePath().AsUTF8Unsafe(),
+      base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
   EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
       .Times(AnyNumber());
