@@ -32,7 +32,7 @@ public class CastWebContentsService extends Service {
     private static final int CAST_NOTIFICATION_ID = 100;
 
     private String mInstanceId;
-    private AudioManager mAudioManager;
+    private CastAudioManager mAudioManager;
     private WindowAndroid mWindow;
     private ContentViewCore mContentViewCore;
     private ContentView mContentView;

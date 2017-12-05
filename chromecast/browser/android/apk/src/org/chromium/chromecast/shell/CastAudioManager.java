@@ -12,14 +12,41 @@ import android.media.AudioManager;
  * Muting and unmuting streams must be invoke on the same AudioManager instance.
  */
 public class CastAudioManager {
+    // TODO(sanfin): This class should encapsulate SDK-dependent implementation details of
+    // android.media.AudioManager.
+    private static CastAudioManager sInstance = null;
 
-    private static AudioManager sAudioManager = null;
-
-    public static AudioManager getAudioManager(Context context) {
-        if (sAudioManager == null) {
-            sAudioManager = (AudioManager) context.getApplicationContext()
-                .getSystemService(Context.AUDIO_SERVICE);
+    public static CastAudioManager getAudioManager(Context context) {
+        if (sInstance == null) {
+            sInstance = new CastAudioManager(
+                    (AudioManager) context.getApplicationContext().getSystemService(
+                            Context.AUDIO_SERVICE));
         }
-        return sAudioManager;
+        return sInstance;
+    }
+
+    private final AudioManager mAudioManager;
+
+    private CastAudioManager(AudioManager audioManager) {
+        mAudioManager = audioManager;
+    }
+
+    // TODO(sanfin): Use the AudioFocusRequest version on O and above.
+    @SuppressWarnings("deprecation")
+    public int requestAudioFocus(
+            AudioManager.OnAudioFocusChangeListener l, int streamType, int durationHint) {
+        return mAudioManager.requestAudioFocus(l, streamType, durationHint);
+    }
+
+    // TODO(sanfin): Use the AudioFocusRequest version on O and above.
+    @SuppressWarnings("deprecation")
+    public int abandonAudioFocus(AudioManager.OnAudioFocusChangeListener l) {
+        return mAudioManager.abandonAudioFocus(l);
+    }
+
+    // TODO(sanfin): Do not expose this. All needed AudioManager methods can be adapted with
+    // CastAudioManager.
+    public AudioManager getInternal() {
+        return mAudioManager;
     }
 }
