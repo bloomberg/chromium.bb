@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -97,11 +98,15 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 // a script resource. Verifies that the noscript tag is not evaluated and the
 // script resource is loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
+  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_url());
 
   // Verify loaded js resource but not css triggered by noscript tag.
   EXPECT_TRUE(noscript_js_requested());
   EXPECT_FALSE(noscript_css_requested());
+
+  // Verify info bar not presented via histogram check.
+  histogram_tester.ExpectTotalCount("Previews.InfoBarAction.NoScript", 0);
 }
 
 // This test class enables NoScriptPreviews but without OptimizationHints.
@@ -138,11 +143,15 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
 // script resource is not loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabled) {
+  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_url());
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
   EXPECT_FALSE(noscript_js_requested());
+
+  // Verify info bar presented via histogram check.
+  histogram_tester.ExpectUniqueSample("Previews.InfoBarAction.NoScript", 0, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
@@ -156,11 +165,15 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps) {
+  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), redirect_url());
 
   // Verify loaded noscript tag triggered css resource but not js one.
   EXPECT_TRUE(noscript_css_requested());
   EXPECT_FALSE(noscript_js_requested());
+
+  // Verify info bar presented via histogram check.
+  histogram_tester.ExpectUniqueSample("Previews.InfoBarAction.NoScript", 0, 1);
 }
 
 // This test class enables NoScriptPreviews with OptimizationHints.

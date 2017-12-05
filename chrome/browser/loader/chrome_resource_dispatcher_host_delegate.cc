@@ -812,14 +812,12 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
         // Clear https-only previews types.
         previews_state &= ~(content::NOSCRIPT_ON);
       }
-      if (previews_state != response->head.previews_state) {
-        // Update previews state in response to renderer.
-        response->head.previews_state = previews_state;
-        // Update previews state in nav data to UI.
-        ChromeNavigationData* data =
-            ChromeNavigationData::GetDataAndCreateIfNecessary(request);
-        data->set_previews_state(previews_state);
-      }
+      // Update previews state in response to renderer.
+      response->head.previews_state = previews_state;
+      // Update previews state in nav data to UI.
+      ChromeNavigationData* data =
+          ChromeNavigationData::GetDataAndCreateIfNecessary(request);
+      data->set_previews_state(previews_state);
     }
   }
 
