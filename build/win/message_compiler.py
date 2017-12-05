@@ -55,11 +55,12 @@ def main():
   env_pairs = open(env_file).read()[:-2].split('\0')
   env_dict = dict([item.split('=', 1) for item in env_pairs])
 
-  if input_file.endswith('.man'):
+  extension = os.path.splitext(input_file)[1]
+  if extension in ['.man', '.mc']:
     # For .man files, mc's output changed significantly from Version 10.0.15063
     # to Version 10.0.16299.  We should always have the output of the current
     # default SDK checked in and compare to that. Early out if a different SDK
-    # is active.
+    # is active. This also happens with .mc files.
     # TODO(thakis): Check in new baselines and compare to 16299 instead once
     # we use the 2017 Fall Creator's Update by default.
     mc_help = subprocess.check_output(['mc.exe', '/?'], env=env_dict,
