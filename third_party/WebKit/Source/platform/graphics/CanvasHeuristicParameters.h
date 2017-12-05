@@ -10,24 +10,12 @@ namespace blink {
 namespace CanvasHeuristicParameters {
 
 enum {
-  // Layer promotion heuristic parameters
+  // Disable Deferral overdraw parameters
   //======================================
 
-  // FIXME (crbug.com/463239):
-  // The Layer promotion heuristics should go away after slimming paint
-  // is completely phased in and display list canvases are modified to
-  // use a lightweight layering primitive instead of the
-  // SkCanvas::saveLayer.
-
   // Heuristic: Canvases that are overdrawn beyond this factor in a
-  // single frame are promoted to a direct composited layer so that
-  // their contents not be re-rasterized by the compositor when the
-  // containing layer is the object of a paint invalidation.
+  // single frame will be disabled deferral.
   kExpensiveOverdrawThreshold = 10,
-
-  kComplexClipsAreExpensive = 1,
-
-  kBlurredShadowsAreExpensive = 1,
 
   // Disable Acceleration heuristic parameters
   //===========================================
