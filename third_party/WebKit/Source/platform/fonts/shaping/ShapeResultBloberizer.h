@@ -6,6 +6,7 @@
 #define ShapeResultBloberizer_h
 
 #include "platform/PlatformExport.h"
+#include "platform/fonts/CanvasRotationInVertical.h"
 #include "platform/fonts/Glyph.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
@@ -60,7 +61,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
       CommitPendingRun();
       pending_font_data_ = font_data;
       pending_canvas_rotation_ = canvas_rotation;
-      DCHECK_EQ(GetBlobRotation(canvas_rotation), BlobRotation::kNoRotation);
+      DCHECK_EQ(canvas_rotation, CanvasRotationInVertical::kRegular);
     }
 
     pending_glyphs_.push_back(glyph);
@@ -80,7 +81,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
       pending_font_data_ = font_data;
       pending_canvas_rotation_ = canvas_rotation;
       pending_vertical_baseline_x_offset_ =
-          GetBlobRotation(canvas_rotation) == BlobRotation::kNoRotation
+          canvas_rotation == CanvasRotationInVertical::kRegular
               ? 0
               : font_data->GetFontMetrics().FloatAscent() -
                     font_data->GetFontMetrics().FloatAscent(
@@ -93,12 +94,11 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
     pending_offsets_.push_back(offset.Y());
   }
 
-  enum class BlobRotation { kNoRotation, kCCWRotation };
   struct BlobInfo {
-    BlobInfo(scoped_refptr<PaintTextBlob> b, BlobRotation r)
+    BlobInfo(scoped_refptr<PaintTextBlob> b, CanvasRotationInVertical r)
         : blob(std::move(b)), rotation(r) {}
     scoped_refptr<PaintTextBlob> blob;
-    BlobRotation rotation;
+    CanvasRotationInVertical rotation;
   };
 
   using BlobBuffer = Vector<BlobInfo, 16>;
@@ -142,7 +142,6 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   void CommitPendingBlob();
 
   bool HasPendingVerticalOffsets() const;
-  static BlobRotation GetBlobRotation(const CanvasRotationInVertical);
 
   const Font& font_;
   const float device_scale_factor_;
@@ -150,7 +149,8 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
 
   // Current text blob state.
   PaintTextBlobBuilder builder_;
-  BlobRotation builder_rotation_ = BlobRotation::kNoRotation;
+  CanvasRotationInVertical builder_rotation_ =
+      CanvasRotationInVertical::kRegular;
   size_t builder_run_count_ = 0;
 
   // Current run state.

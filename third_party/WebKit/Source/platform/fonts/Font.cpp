@@ -114,8 +114,7 @@ void DrawBlobs(PaintCanvas* canvas,
   for (const auto& blob_info : blobs) {
     DCHECK(blob_info.blob);
     PaintCanvasAutoRestore auto_restore(canvas, false);
-    if (blob_info.rotation ==
-        ShapeResultBloberizer::BlobRotation::kCCWRotation) {
+    if (blob_info.rotation == CanvasRotationInVertical::kRotateCanvasUpright) {
       canvas->save();
 
       SkMatrix m;
@@ -289,7 +288,7 @@ unsigned InterceptsFromBlobs(const ShapeResultBloberizer::BlobBuffer& blobs,
     // for a change in font. A TextBlob can contain runs with differing fonts
     // and the getTextBlobIntercepts method handles multiple fonts for us. For
     // upright in vertical blobs we currently have to bail, see crbug.com/655154
-    if (blob_info.rotation == ShapeResultBloberizer::BlobRotation::kCCWRotation)
+    if (blob_info.rotation == CanvasRotationInVertical::kRotateCanvasUpright)
       continue;
 
     SkScalar* offset_intercepts_buffer = nullptr;
