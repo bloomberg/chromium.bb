@@ -292,10 +292,12 @@ void PaintOpReader::Read(std::vector<PaintTypeface>* typefaces) {
         // implemented. So this should be a failure (ie |valid_| = false).
         break;
       case PaintTypeface::Type::kFontConfigInterfaceIdAndTtcIndex: {
-        int font_config_interface_id;
-        int ttc_index;
+        int font_config_interface_id = 0;
+        int ttc_index = 0;
         ReadSimple(&font_config_interface_id);
         ReadSimple(&ttc_index);
+        if (!valid_)
+          return;
         typeface = PaintTypeface::FromFontConfigInterfaceIdAndTtcIndex(
             font_config_interface_id, ttc_index);
         break;
@@ -312,8 +314,10 @@ void PaintOpReader::Read(std::vector<PaintTypeface>* typefaces) {
         ReadData(size, buffer.get());
         std::string filename(buffer.get(), size);
 
-        int ttc_index;
+        int ttc_index = 0;
         ReadSimple(&ttc_index);
+        if (!valid_)
+          return;
         typeface = PaintTypeface::FromFilenameAndTtcIndex(filename, ttc_index);
         break;
       }
@@ -329,12 +333,15 @@ void PaintOpReader::Read(std::vector<PaintTypeface>* typefaces) {
         ReadData(size, buffer.get());
         std::string family_name(buffer.get(), size);
 
-        int weight;
-        int width;
-        SkFontStyle::Slant slant;
+        int weight = 0;
+        int width = 0;
+        SkFontStyle::Slant slant = SkFontStyle::kUpright_Slant;
         ReadSimple(&weight);
         ReadSimple(&width);
         ReadSimple(&slant);
+        if (!valid_)
+          return;
+
         typeface = PaintTypeface::FromFamilyNameAndFontStyle(
             family_name, SkFontStyle(weight, width, slant));
         break;
@@ -502,7 +509,7 @@ void PaintOpReader::AlignMemory(size_t alignment) {
   // however, since it can be slow.
   size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
   if (padding > remaining_bytes_)
-    valid_ = false;
+    SetInvalid();
 
   memory_ += padding;
   remaining_bytes_ -= padding;
