@@ -261,6 +261,7 @@ void WebStateImpl::OnFormActivityRegistered(const FormActivityParams& params) {
 
 void WebStateImpl::OnFaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
+  cached_favicon_urls_ = candidates;
   for (auto& observer : observers_)
     observer.FaviconUrlUpdated(this, candidates);
 }
@@ -736,6 +737,19 @@ void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
 void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
   for (auto& observer : observers_)
     observer.DidFinishNavigation(this, context);
+
+  // Update cached_favicon_urls_.
+  if (!context->IsSameDocument()) {
+    // Favicons are not valid after document change. Favicon URLs will be
+    // refetched by CRWWebController and passed to OnFaviconUrlUpdated.
+    cached_favicon_urls_.clear();
+  } else if (!cached_favicon_urls_.empty()) {
+    // For same-document navigations favicon urls will not be refetched and
+    // WebStateObserver:FaviconUrlUpdated must use the cached results.
+    for (auto& observer : observers_) {
+      observer.FaviconUrlUpdated(this, cached_favicon_urls_);
+    }
+  }
 }
 
 #pragma mark - NavigationManagerDelegate implementation

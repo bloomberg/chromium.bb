@@ -79,7 +79,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Notifies the observers that a navigation has started.
   void OnNavigationStarted(web::NavigationContext* context);
 
-  // Notifies the observers that a navigation has finished.
+  // Notifies the observers that a navigation has finished. For same-document
+  // navigations notifies the observers about favicon URLs update using
+  // candidates received in OnFaviconUrlUpdated.
   void OnNavigationFinished(web::NavigationContext* context);
 
   // Called when page title was changed.
@@ -377,6 +379,12 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Cached session history when web usage is disabled. It is used to restore
   // history into WKWebView when web usage is re-enabled.
   base::scoped_nsobject<CRWSessionStorage> cached_session_storage_;
+
+  // Favicons URLs received in OnFaviconUrlUpdated.
+  // WebStateObserver:FaviconUrlUpdated must be called for same-document
+  // navigations, so this cache will be used to avoid running expensive favicon
+  // fetching JavaScript.
+  std::vector<web::FaviconURL> cached_favicon_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

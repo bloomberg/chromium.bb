@@ -60,8 +60,6 @@ class WebFaviconDriver : public web::WebStateObserver,
                    history::HistoryService* history_service);
 
   // web::WebStateObserver implementation.
-  void DidStartNavigation(web::WebState* web_state,
-                          web::NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
   void FaviconUrlUpdated(
@@ -75,9 +73,6 @@ class WebFaviconDriver : public web::WebStateObserver,
 
   // Image Fetcher used to fetch favicon.
   image_fetcher::IOSImageDataFetcherWrapper image_fetcher_;
-
-  // Caches the favicon URLs candidates for same-document navigations.
-  std::vector<favicon::FaviconURL> candidates_;
 
   // The WebState this instance is observing. Will be null after
   // WebStateDestroyed has been called.
