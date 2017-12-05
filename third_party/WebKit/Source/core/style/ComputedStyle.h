@@ -195,6 +195,10 @@ class ComputedStyle : public ComputedStyleBase,
   static scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
       const ComputedStyle& parent_style,
       EDisplay);
+  static scoped_refptr<ComputedStyle>
+  CreateInheritedDisplayContentsStyleIfNeeded(
+      const ComputedStyle& parent_style,
+      const ComputedStyle& layout_parent_style);
   CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
   static const ComputedStyle& InitialStyle() { return MutableInitialStyle(); }
   static void InvalidateInitialStyle();

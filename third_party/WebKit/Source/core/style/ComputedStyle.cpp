@@ -122,6 +122,18 @@ scoped_refptr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
   return new_style;
 }
 
+scoped_refptr<ComputedStyle>
+ComputedStyle::CreateInheritedDisplayContentsStyleIfNeeded(
+    const ComputedStyle& parent_style,
+    const ComputedStyle& layout_parent_style) {
+  if (&parent_style == &layout_parent_style)
+    return nullptr;
+  if (parent_style.InheritedEqual(layout_parent_style))
+    return nullptr;
+  return ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
+                                                        EDisplay::kInline);
+}
+
 scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
   return base::AdoptRef(new ComputedStyle(other));
 }
