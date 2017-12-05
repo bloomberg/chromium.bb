@@ -1,8 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 1.6.3
-Date: 20171026
+Version: 1.7.2
+Date: 20171204
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -19,12 +19,4 @@ for removed or added files and update our build recipes in BUILD.gn and
 harfbuzz.gyp accordingly, update the NEWS file from HarfBuzz' release notes, and
 bump the version numbers in README.chromium.
 
-Locally added #undef PAGE_SIZE to hb-set-private.hh to avoid a collision with
-#usr/include/asm/page.h as part of the Android NDK.
-
-Temporarily patched to original CoreText default font size 36.f that was used
-before to ease Blink reabaselining.
-
-Locally patching hb_set implementation back to the pre 1.6.1 implemention to see
-whether this addresses reports of performance regressions in issues 781794,
-782220.
+Locally patch hb-private.hh to silence unusued variable warnings in MSVC.

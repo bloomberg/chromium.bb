@@ -24,14 +24,10 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+#include "hb-debug.hh"
 #include "hb-ot-shape-complex-arabic-private.hh"
 #include "hb-ot-shape-private.hh"
-
-
-#ifndef HB_DEBUG_ARABIC
-#define HB_DEBUG_ARABIC (HB_DEBUG+0)
-#endif
-
+#include "hb-private.hh"
 
 /* buffer var allocations */
 #define arabic_shaping_action() complex_var_u8_0() /* arabic shaping action */
@@ -39,7 +35,8 @@
 #define HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH HB_BUFFER_SCRATCH_FLAG_COMPLEX0
 
 /* See:
- * https://github.com/behdad/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516 */
+ * https://github.com/harfbuzz/harfbuzz/commit/6e6f82b6f3dde0fc6c3c7d991d9ec6cfff57823d#commitcomment-14248516
+ */
 #define HB_ARABIC_GENERAL_CATEGORY_IS_WORD(gen_cat) \
 	(FLAG_UNSAFE (gen_cat) & \
 	 (FLAG (HB_UNICODE_GENERAL_CATEGORY_UNASSIGNED) | \
@@ -201,7 +198,7 @@ collect_features_arabic (hb_ot_shape_planner_t *plan)
    * pause for Arabic, not other scripts.
    *
    * A pause after calt is required to make KFGQPC Uthmanic Script HAFS
-   * work correctly.  See https://github.com/behdad/harfbuzz/issues/505
+   * work correctly.  See https://github.com/harfbuzz/harfbuzz/issues/505
    */
 
   map->add_gsub_pause (nuke_joiners);
@@ -563,8 +560,9 @@ apply_stch (const hb_ot_shape_plan_t *plan,
       }
       else
       {
-	hb_position_t x_offset = 0;
-	for (unsigned int k = end; k > start; k--)
+        buffer->unsafe_to_break(context, end);
+        hb_position_t x_offset = 0;
+        for (unsigned int k = end; k > start; k--)
 	{
 	  hb_position_t width = font->get_glyph_h_advance (info[k - 1].codepoint);
 
@@ -689,7 +687,6 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan,
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic =
 {
-  "arabic",
   collect_features_arabic,
   nullptr, /* override_features */
   data_create_arabic,

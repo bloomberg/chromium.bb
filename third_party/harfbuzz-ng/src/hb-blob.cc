@@ -29,6 +29,7 @@
 #define _POSIX_C_SOURCE 199309L
 #endif
 
+#include "hb-debug.hh"
 #include "hb-private.hh"
 
 #include "hb-object-private.hh"
@@ -42,12 +43,6 @@
 
 #include <stdio.h>
 #include <errno.h>
-
-
-
-#ifndef HB_DEBUG_BLOB
-#define HB_DEBUG_BLOB (HB_DEBUG+0)
-#endif
 
 
 struct hb_blob_t {

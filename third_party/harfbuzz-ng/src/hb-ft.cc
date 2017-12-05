@@ -27,6 +27,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+#include "hb-debug.hh"
 #include "hb-private.hh"
 
 #include "hb-ft.h"
@@ -36,12 +37,6 @@
 #include FT_ADVANCES_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_TRUETYPE_TABLES_H
-
-
-
-#ifndef HB_DEBUG_FT
-#define HB_DEBUG_FT (HB_DEBUG+0)
-#endif
 
 
 /* TODO:

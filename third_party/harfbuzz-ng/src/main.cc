@@ -38,6 +38,7 @@
 
 using namespace OT;
 
+const void* const OT::_hb_NullPool[HB_NULL_POOL_SIZE / sizeof(void*)] = {};
 
 int
 main (int argc, char **argv)
@@ -104,72 +105,73 @@ main (int argc, char **argv)
 	      (unsigned int) table.length);
 
       switch (table.tag) {
+        case HB_OT_TAG_GSUB:
+        case HB_OT_TAG_GPOS: {
+          const GSUBGPOS& g = *CastP<GSUBGPOS>(font_data + table.offset);
 
-      case GSUBGPOS::GSUBTag:
-      case GSUBGPOS::GPOSTag:
-	{
+          int num_scripts = g.get_script_count();
+          printf("    %d script(s) found in table\n", num_scripts);
+          for (int n_script = 0; n_script < num_scripts; n_script++) {
+            const Script& script = g.get_script(n_script);
+            printf("    Script %2d of %2d: %.4s\n", n_script, num_scripts,
+                   (const char*)g.get_script_tag(n_script));
 
-	const GSUBGPOS &g = *CastP<GSUBGPOS> (font_data + table.offset);
+            if (!script.has_default_lang_sys())
+              printf("      No default language system\n");
+            int num_langsys = script.get_lang_sys_count();
+            printf("      %d language system(s) found in script\n",
+                   num_langsys);
+            for (int n_langsys = script.has_default_lang_sys() ? -1 : 0;
+                 n_langsys < num_langsys; n_langsys++) {
+              const LangSys& langsys = n_langsys == -1
+                                           ? script.get_default_lang_sys()
+                                           : script.get_lang_sys(n_langsys);
+              if (n_langsys == -1)
+                printf("      Default Language System\n");
+              else
+                printf("      Language System %2d of %2d: %.4s\n", n_langsys,
+                       num_langsys,
+                       (const char*)script.get_lang_sys_tag(n_langsys));
+              if (!langsys.has_required_feature())
+                printf("        No required feature\n");
+              else
+                printf("        Required feature index: %d\n",
+                       langsys.get_required_feature_index());
 
-	int num_scripts = g.get_script_count ();
-	printf ("    %d script(s) found in table\n", num_scripts);
-	for (int n_script = 0; n_script < num_scripts; n_script++) {
-	  const Script &script = g.get_script (n_script);
-	  printf ("    Script %2d of %2d: %.4s\n", n_script, num_scripts,
-	          (const char *)g.get_script_tag(n_script));
+              int num_features = langsys.get_feature_count();
+              printf("        %d feature(s) found in language system\n",
+                     num_features);
+              for (int n_feature = 0; n_feature < num_features; n_feature++) {
+                printf("        Feature index %2d of %2d: %d\n", n_feature,
+                       num_features, langsys.get_feature_index(n_feature));
+              }
+            }
+          }
 
-	  if (!script.has_default_lang_sys())
-	    printf ("      No default language system\n");
-	  int num_langsys = script.get_lang_sys_count ();
-	  printf ("      %d language system(s) found in script\n", num_langsys);
-	  for (int n_langsys = script.has_default_lang_sys() ? -1 : 0; n_langsys < num_langsys; n_langsys++) {
-	    const LangSys &langsys = n_langsys == -1
-				   ? script.get_default_lang_sys ()
-				   : script.get_lang_sys (n_langsys);
-	    if (n_langsys == -1)
-	      printf ("      Default Language System\n");
-	    else
-	      printf ("      Language System %2d of %2d: %.4s\n", n_langsys, num_langsys,
-		      (const char *)script.get_lang_sys_tag (n_langsys));
-	    if (!langsys.has_required_feature ())
-	      printf ("        No required feature\n");
-	    else
-	      printf ("        Required feature index: %d\n",
-		      langsys.get_required_feature_index ());
+          int num_features = g.get_feature_count();
+          printf("    %d feature(s) found in table\n", num_features);
+          for (int n_feature = 0; n_feature < num_features; n_feature++) {
+            const Feature& feature = g.get_feature(n_feature);
+            int num_lookups = feature.get_lookup_count();
+            printf("    Feature %2d of %2d: %c%c%c%c\n", n_feature,
+                   num_features, HB_UNTAG(g.get_feature_tag(n_feature)));
 
-	    int num_features = langsys.get_feature_count ();
-	    printf ("        %d feature(s) found in language system\n", num_features);
-	    for (int n_feature = 0; n_feature < num_features; n_feature++) {
-	      printf ("        Feature index %2d of %2d: %d\n", n_feature, num_features,
-	              langsys.get_feature_index (n_feature));
-	    }
-	  }
-	}
+            printf("        %d lookup(s) found in feature\n", num_lookups);
+            for (int n_lookup = 0; n_lookup < num_lookups; n_lookup++) {
+              printf("        Lookup index %2d of %2d: %d\n", n_lookup,
+                     num_lookups, feature.get_lookup_index(n_lookup));
+            }
+          }
 
-	int num_features = g.get_feature_count ();
-	printf ("    %d feature(s) found in table\n", num_features);
-	for (int n_feature = 0; n_feature < num_features; n_feature++) {
-	  const Feature &feature = g.get_feature (n_feature);
-	  int num_lookups = feature.get_lookup_count ();
-	  printf ("    Feature %2d of %2d: %c%c%c%c\n", n_feature, num_features,
-	          HB_UNTAG(g.get_feature_tag(n_feature)));
+          int num_lookups = g.get_lookup_count();
+          printf("    %d lookup(s) found in table\n", num_lookups);
+          for (int n_lookup = 0; n_lookup < num_lookups; n_lookup++) {
+            const Lookup& lookup = g.get_lookup(n_lookup);
+            printf("    Lookup %2d of %2d: type %d, props 0x%04X\n", n_lookup,
+                   num_lookups, lookup.get_type(), lookup.get_props());
+          }
 
-	  printf ("        %d lookup(s) found in feature\n", num_lookups);
-	  for (int n_lookup = 0; n_lookup < num_lookups; n_lookup++) {
-	    printf ("        Lookup index %2d of %2d: %d\n", n_lookup, num_lookups,
-	            feature.get_lookup_index (n_lookup));
-	  }
-	}
-
-	int num_lookups = g.get_lookup_count ();
-	printf ("    %d lookup(s) found in table\n", num_lookups);
-	for (int n_lookup = 0; n_lookup < num_lookups; n_lookup++) {
-	  const Lookup &lookup = g.get_lookup (n_lookup);
-	  printf ("    Lookup %2d of %2d: type %d, props 0x%04X\n", n_lookup, num_lookups,
-	          lookup.get_type(), lookup.get_props());
-	}
-
-	}
+        }
 	break;
 
       case GDEF::tableTag:

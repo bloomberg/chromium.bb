@@ -554,7 +554,7 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
   unsigned int cluster = info[start].cluster;
 
   for (unsigned int i = start + 1; i < end; i++)
-    cluster = MIN (cluster, info[i].cluster);
+    cluster = MIN<unsigned int>(cluster, info[i].cluster);
 
   /* Extend end */
   while (end < len && info[end - 1].cluster == info[end].cluster)
@@ -585,7 +585,7 @@ hb_buffer_t::merge_out_clusters (unsigned int start,
   unsigned int cluster = out_info[start].cluster;
 
   for (unsigned int i = start + 1; i < end; i++)
-    cluster = MIN (cluster, out_info[i].cluster);
+    cluster = MIN<unsigned int>(cluster, out_info[i].cluster);
 
   /* Extend start */
   while (start && out_info[start - 1].cluster == out_info[start].cluster)
@@ -722,6 +722,7 @@ hb_buffer_create (void)
     return hb_buffer_get_empty ();
 
   buffer->max_len = HB_BUFFER_MAX_LEN_DEFAULT;
+  buffer->max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
 
   buffer->reset ();
 
@@ -741,22 +742,23 @@ hb_buffer_t *
 hb_buffer_get_empty (void)
 {
   static const hb_buffer_t _hb_buffer_nil = {
-    HB_OBJECT_HEADER_STATIC,
+      HB_OBJECT_HEADER_STATIC,
 
-    const_cast<hb_unicode_funcs_t *> (&_hb_unicode_funcs_nil),
-    HB_BUFFER_FLAG_DEFAULT,
-    HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
-    HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
-    HB_BUFFER_SCRATCH_FLAG_DEFAULT,
-    HB_BUFFER_MAX_LEN_DEFAULT,
+      const_cast<hb_unicode_funcs_t*>(&_hb_unicode_funcs_nil),
+      HB_BUFFER_FLAG_DEFAULT,
+      HB_BUFFER_CLUSTER_LEVEL_DEFAULT,
+      HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
+      HB_BUFFER_SCRATCH_FLAG_DEFAULT,
+      HB_BUFFER_MAX_LEN_DEFAULT,
+      HB_BUFFER_MAX_OPS_DEFAULT,
 
-    HB_BUFFER_CONTENT_TYPE_INVALID,
-    HB_SEGMENT_PROPERTIES_DEFAULT,
-    true, /* in_error */
-    true, /* have_output */
-    true  /* have_positions */
+      HB_BUFFER_CONTENT_TYPE_INVALID,
+      HB_SEGMENT_PROPERTIES_DEFAULT,
+      true, /* in_error */
+      true, /* have_output */
+      true  /* have_positions */
 
-    /* Zero is good enough for everything else. */
+      /* Zero is good enough for everything else. */
   };
 
   return const_cast<hb_buffer_t *> (&_hb_buffer_nil);
