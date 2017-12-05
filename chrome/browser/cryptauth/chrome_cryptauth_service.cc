@@ -215,8 +215,19 @@ ChromeCryptAuthService::ChromeCryptAuthService(
       device_manager_(std::move(device_manager)),
       profile_(profile),
       token_service_(token_service),
-      signin_manager_(signin_manager) {
+      signin_manager_(signin_manager),
+      weak_ptr_factory_(this) {
   gcm_manager_->StartListening();
+
+  registrar_.Init(profile_->GetPrefs());
+  registrar_.Add(prefs::kEasyUnlockAllowed,
+                 base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+#if defined(OS_CHROMEOS)
+  registrar_.Add(prefs::kInstantTetheringAllowed,
+                 base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+#endif  // defined(OS_CHROMEOS)
 
   if (!signin_manager_->IsAuthenticated()) {
     PA_LOG(INFO) << "Profile is not authenticated yet; "
@@ -235,7 +246,7 @@ ChromeCryptAuthService::ChromeCryptAuthService(
 
   // Profile is authenticated and there is a refresh token available for the
   // authenticated account id.
-  PerformEnrollmentAndDeviceSync();
+  PerformEnrollmentAndDeviceSyncIfPossible();
 }
 
 ChromeCryptAuthService::~ChromeCryptAuthService() {}
@@ -299,20 +310,26 @@ void ChromeCryptAuthService::GoogleSigninSucceeded(
     return;
   }
 
-  PerformEnrollmentAndDeviceSync();
+  PerformEnrollmentAndDeviceSyncIfPossible();
 }
 
 void ChromeCryptAuthService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (account_id == GetAccountId()) {
     token_service_->RemoveObserver(this);
-    PerformEnrollmentAndDeviceSync();
+    PerformEnrollmentAndDeviceSyncIfPossible();
   }
 }
 
-void ChromeCryptAuthService::PerformEnrollmentAndDeviceSync() {
+void ChromeCryptAuthService::PerformEnrollmentAndDeviceSyncIfPossible() {
   DCHECK(signin_manager_->IsAuthenticated());
   DCHECK(token_service_->RefreshTokenIsAvailable(GetAccountId()));
+
+  if (!IsEnrollmentAllowedByPolicy()) {
+    PA_LOG(INFO) << "CryptAuth enrollment is disabled by enterprise policy.";
+    return;
+  }
+
   if (enrollment_manager_->IsEnrollmentValid()) {
     device_manager_->Start();
   } else {
@@ -324,4 +341,22 @@ void ChromeCryptAuthService::PerformEnrollmentAndDeviceSync() {
   // Even if enrollment was valid, CryptAuthEnrollmentManager must be started in
   // order to schedule the next enrollment attempt.
   enrollment_manager_->Start();
+}
+
+bool ChromeCryptAuthService::IsEnrollmentAllowedByPolicy() {
+  // We allow CryptAuth enrollments if at least one of the features which
+  // depends on CryptAuth is enabled by enterprise policy.
+  PrefService* pref_service = profile_->GetPrefs();
+  bool is_allowed = pref_service->GetBoolean(prefs::kEasyUnlockAllowed);
+#if defined(OS_CHROMEOS)
+  is_allowed |= pref_service->GetBoolean(prefs::kInstantTetheringAllowed);
+#endif  // defined(OS_CHROMEOS)
+  return is_allowed;
+}
+
+void ChromeCryptAuthService::OnPrefsChanged() {
+  // Note: We only start the CryptAuth services if a feature was toggled on. In
+  // the inverse case, we simply leave the services running until the user logs
+  // off.
+  PerformEnrollmentAndDeviceSyncIfPossible();
 }
