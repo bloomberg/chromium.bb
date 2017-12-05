@@ -1,0 +1,573 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a .pyl, or "Python Literal", file. You can treat it just like a
+# .json file, with the following exceptions:
+# * all keys must be quoted (use single quotes, please);
+# * comments are allowed, using '#' syntax; and
+# * trailing commas are allowed.
+
+[
+  {
+    'name': 'chromium.android',
+    'builders': {
+      'Android ASAN (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Android Cronet Builder': {
+        'additional_compile_targets': [
+          'cronet_package',
+        ],
+      },
+      'Android MIPS Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Android arm Builder (dbg)': {
+        'additional_compile_targets': [
+          'dump_syms',
+          'microdump_stackwalk',
+        ],
+      },
+      'Android arm64 Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Android x64 Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Android x86 Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Cast Android (dbg)': {
+        'additional_compile_targets': [
+          'cast_shell_apk',
+        ],
+      },
+    },
+    'testers': {
+      'Android Cronet ARMv6 Builder': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+        'skip_merge_script': True,
+      },
+      'Android Cronet Builder (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+        'skip_merge_script': True,
+      },
+      'Android Cronet Builder Asan': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'use_swarming': False,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'Android Cronet KitKat Builder': {
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+        'skip_merge_script': True,
+      },
+      'Android WebView L (dbg)': {
+        'test_suites': {
+          'cts_tests': 'android_l_cts_tests',
+          'instrumentation_tests': 'system_webview_shell_instrumentation_tests',
+        },
+        'use_swarming': False,
+        'os_type': 'android',
+      },
+      'Android WebView M (dbg)': {
+        'test_suites': {
+          'cts_tests': 'android_m_cts_tests',
+          'instrumentation_tests': 'system_webview_and_webview_ui_instrumentation_tests',
+        },
+        'use_swarming': False,
+        'os_type': 'android',
+      },
+      'Android WebView N (dbg)': {
+        'test_suites': {
+          'cts_tests': 'android_n_cts_tests',
+          'instrumentation_tests': 'system_webview_shell_instrumentation_tests',
+        },
+        'use_swarming': False,
+        'os_type': 'android',
+      },
+      'KitKat Phone Tester (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'KitKat Phone Tester (rel)': {
+        'additional_compile_targets': [
+          'cronet_test_instrumentation_apk',
+          'monochrome_static_initializers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'isolated_scripts': 'telemetry_perf_unittests_isolated_scripts',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'KitKat Tablet Tester': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84Z',
+              'device_type': 'flo',
+            },
+          ],
+          'expiration': 10800,
+        },
+        'os_type': 'android',
+      },
+      'Lollipop Phone Tester': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'LMY48I',
+              'device_type': 'hammerhead',
+            },
+          ],
+          'expiration': 10800,
+          'hard_timeout': 960,
+        },
+        'os_type': 'android',
+      },
+      'Lollipop Tablet Tester': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'LMY49B',
+              'device_type': 'flo',
+            },
+          ],
+          'expiration': 10800,
+          # This is the most common hard_timeout on this device.
+          'hard_timeout': 120,
+        },
+        'os_type': 'android',
+      },
+      'Marshmallow 64 bit Tester': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+            },
+          ],
+          'hard_timeout': 960,
+        },
+        'os_type': 'android',
+      },
+      'Marshmallow Phone Tester (rel)': {
+        'additional_compile_targets': [
+          'monochrome_static_initializers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'isolated_scripts': 'telemetry_perf_unittests_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'Marshmallow Tablet Tester': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MRA58Z',
+              'device_type': 'flo',
+            },
+          ],
+          'expiration': 10800,
+        },
+        'os_type': 'android',
+      },
+      'Nougat Phone Tester': {
+        'test_suites': {
+          'gtest_tests': 'android_nougat_vr_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'android_devices': '1',
+              'device_os': 'NMF26U',
+              'device_type': 'marlin',
+            },
+          ],
+          'hard_timeout': 960,
+        },
+        'skip_output_links': True,
+        'os_type': 'android',
+      },
+    },
+  },
+  {
+    'name': 'chromium.linux',
+    'builders': {
+      'Android Arm64 Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Android Builder': {
+        'additional_compile_targets': [
+          'cronet_test_instrumentation_apk',
+          'monochrome_static_initializers',
+        ],
+      },
+      'Android Clang Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'Cast Android (dbg)': {
+        'additional_compile_targets': [
+          'cast_junit_test_lists',
+          'cast_shell_apk',
+          'cast_test_lists',
+        ],
+      },
+      'Fuchsia ARM64': {
+        'additional_compile_targets': [
+          'base_unittests',
+          'content_unittests',
+          'crypto_unittests',
+          'gl_unittests',
+          'headless_shell',
+          'ipc_tests',
+          'media_unittests',
+          'mojo_common_unittests',
+          'mojo_js_unittests',
+          'mojo_public_bindings_unittests',
+          'mojo_public_system_unittests',
+          'mojo_system_unittests',
+          'net_unittests',
+          'service_manager_unittests',
+          'skia_unittests',
+          'sql_unittests',
+          'ui_base_unittests',
+        ],
+      },
+      'Fuchsia ARM64 Cast Audio': {
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
+      },
+      'Fuchsia x64 Cast Audio': {
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
+      },
+      'Linux Builder': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'scripts': [
+          {
+            'name': 'check_network_annotations',
+            'script': 'check_network_annotations.py'
+          }
+        ]
+      },
+      'Linux Builder (dbg)': {
+        'additional_compile_targets': [
+          'all'
+        ]
+      },
+      'Linux Builder (dbg)(32)': {
+        'additional_compile_targets': [
+          'google_apis_unittests',
+          'sync_integration_tests'
+        ]
+      },
+    },
+    'testers': {
+      'Android Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'Android Tests (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+      'Cast Audio Linux': {
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_cast_audio_gtests',
+        },
+      },
+      'Cast Linux': {
+        'additional_compile_targets': [
+          'cast_shell',
+          'cast_test_lists',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_cast_video_gtests',
+        },
+      },
+      'Fuchsia x64': {
+        'additional_compile_targets': [
+          'base_unittests',
+          'content_browsertests',
+          'content_shell',
+          'gl_unittests',
+          'headless_shell',
+          'ipc_tests',
+          'media_unittests',
+          'mojo_common_unittests',
+          'mojo_js_unittests',
+          'mojo_public_bindings_unittests',
+          'mojo_public_system_unittests',
+          'mojo_system_unittests',
+          'net_unittests',
+          'service_manager_unittests',
+          'ui_base_unittests',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'fuchsia_gtests',
+        },
+      },
+      'Linux Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
+        },
+      },
+      'Linux Tests (dbg)(1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_isolated_scripts',
+        },
+      },
+      'Linux Tests (dbg)(1)(32)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.mac',
+    'builders': {
+      'Mac Builder': {
+        'additional_compile_targets': [
+          'pdf_fuzzers',
+        ],
+      },
+    },
+    'testers': {
+      'Mac10.10 Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+        },
+      },
+      'Mac10.11 Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+        },
+      },
+      'Mac10.12 Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+        },
+      },
+      'Mac10.9 Tests': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+          'scripts': 'chromium_scripts',
+        },
+      },
+      'Mac10.9 Tests (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.win',
+    'builders': {
+      'Win Builder': {
+        'additional_compile_targets': [
+          'pdf_fuzzers'
+        ],
+        'scripts': [
+          {
+            'name': 'check_network_annotations',
+            'script': 'check_network_annotations.py'
+          }
+        ]
+      },
+      'WinMSVC64': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'WinMSVC64 (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      }
+    },
+    'testers': {
+      'Win 7 Tests x64 (1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+        },
+      },
+      'Win10 Tests x64': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+        },
+      },
+      'Win7 (32) Tests': {
+        'test_suites': {
+          'gtest_tests': 'win7_32_bit_gtests',
+        }
+      },
+      'Win7 Tests (1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+          'scripts': 'chromium_scripts',
+        },
+      },
+      'Win7 Tests (dbg)(1)': {
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'chromium_isolated_scripts',
+        },
+      }
+    },
+  },
+]
