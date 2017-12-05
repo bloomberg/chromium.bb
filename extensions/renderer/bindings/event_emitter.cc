@@ -6,14 +6,22 @@
 
 #include <algorithm>
 
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/exception_handler.h"
-#include "extensions/renderer/bindings/js_runner.h"
 #include "gin/data_object_builder.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_context_data.h"
 
 namespace extensions {
+
+namespace {
+
+constexpr const char kEmitterKey[] = "emitter";
+constexpr const char kArgumentsKey[] = "arguments";
+constexpr const char kFilterKey[] = "filter";
+
+}  // namespace
 
 gin::WrapperInfo EventEmitter::kWrapperInfo = {gin::kEmbedderNativeGin};
 
@@ -43,8 +51,7 @@ gin::ObjectTemplateBuilder EventEmitter::GetObjectTemplateBuilder(
 void EventEmitter::Fire(v8::Local<v8::Context> context,
                         std::vector<v8::Local<v8::Value>>* args,
                         const EventFilteringInfo* filter) {
-  bool run_sync = false;
-  DispatchImpl(context, args, filter, run_sync, nullptr);
+  DispatchAsync(context, args, filter);
 }
 
 void EventEmitter::Invalidate(v8::Local<v8::Context> context) {
@@ -126,73 +133,162 @@ void EventEmitter::Dispatch(gin::Arguments* arguments) {
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   std::vector<v8::Local<v8::Value>> v8_args = arguments->GetAll();
 
-  // Dispatch() is called from JS, and sometimes expects a return value of an
-  // array with entries for each of the results of the listeners. Since this is
-  // directly from JS, we know it should be safe to call synchronously and use
-  // the return result, so we don't use Fire().
-  // TODO(devlin): It'd be nice to refactor anything expecting a result here so
-  // we don't have to have this special logic, especially since script could
-  // potentially tweak the result object through prototype manipulation (which
-  // also means we should never use this for security decisions).
-  bool run_sync = true;
-  std::vector<v8::Local<v8::Value>> listener_responses;
-  DispatchImpl(context, &v8_args, nullptr, run_sync, &listener_responses);
-
-  if (!listener_responses.size()) {
-    // Return nothing if there are no responses. This is the behavior of the
-    // current JS implementation.
-    return;
-  }
-
-  v8::Local<v8::Object> result;
-  {
-    v8::TryCatch try_catch(isolate);
-    try_catch.SetVerbose(true);
-    v8::Local<v8::Array> v8_responses =
-        v8::Array::New(isolate, listener_responses.size());
-    for (size_t i = 0; i < listener_responses.size(); ++i) {
-      // TODO(devlin): With more than 2^32 - 2 listeners, this can get nasty.
-      // We shouldn't reach that point, but it would be good to add enforcement.
-      CHECK(v8_responses->CreateDataProperty(context, i, listener_responses[i])
-                .ToChecked());
-    }
-
-    result = gin::DataObjectBuilder(isolate)
-                 .Set("results", v8_responses.As<v8::Value>())
-                 .Build();
-  }
-  arguments->Return(result);
+  // Since this is directly from JS, we know it should be safe to call
+  // synchronously and use the return result, so we don't use Fire().
+  arguments->Return(DispatchSync(context, &v8_args, nullptr));
 }
 
-void EventEmitter::DispatchImpl(v8::Local<v8::Context> context,
-                                std::vector<v8::Local<v8::Value>>* args,
-                                const EventFilteringInfo* filter,
-                                bool run_sync,
-                                std::vector<v8::Local<v8::Value>>* out_values) {
+v8::Local<v8::Value> EventEmitter::DispatchSync(
+    v8::Local<v8::Context> context,
+    std::vector<v8::Local<v8::Value>>* args,
+    const EventFilteringInfo* filter) {
   // Note that |listeners_| can be modified during handling.
   std::vector<v8::Local<v8::Function>> listeners =
       listeners_->GetListeners(filter, context);
 
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::TryCatch try_catch(isolate);
   JSRunner* js_runner = JSRunner::Get(context);
-  for (const auto& listener : listeners) {
-    if (run_sync) {
-      DCHECK(out_values);
-      v8::MaybeLocal<v8::Value> maybe_result = js_runner->RunJSFunctionSync(
-          listener, context, args->size(), args->data());
-      v8::Local<v8::Value> result;
-      if (maybe_result.ToLocal(&result) && !result->IsUndefined())
-        out_values->push_back(std::move(result));
-    } else {
-      js_runner->RunJSFunction(listener, context, args->size(), args->data());
-    }
+  v8::Isolate* isolate = context->GetIsolate();
 
-    if (try_catch.HasCaught()) {
+  // Gather results from each listener as we go along. This should only be
+  // called when running synchronous script is allowed, and some callers
+  // expect a return value of an array with entries for each of the results of
+  // the listeners.
+  // TODO(devlin): It'd be nice to refactor anything expecting a result here so
+  // we don't have to have this special logic, especially since script could
+  // potentially tweak the result object through prototype manipulation (which
+  // also means we should never use this for security decisions).
+  v8::Local<v8::Array> results = v8::Array::New(isolate);
+  uint32_t results_index = 0;
+
+  v8::TryCatch try_catch(isolate);
+  for (const auto& listener : listeners) {
+    // NOTE(devlin): Technically, any listener here could suspend JS execution
+    // (through e.g. calling alert() or print()). That should suspend this
+    // message loop as well (though a nested message loop will run). This is a
+    // bit ugly, but should hopefully be safe.
+    v8::Local<v8::Value> listener_result;
+    if (js_runner
+            ->RunJSFunctionSync(listener, context, args->size(), args->data())
+            .ToLocal(&listener_result)) {
+      if (!listener_result->IsUndefined()) {
+        CHECK(
+            results
+                ->CreateDataProperty(context, results_index++, listener_result)
+                .ToChecked());
+      }
+    } else {
+      DCHECK(try_catch.HasCaught());
       exception_handler_->HandleException(context, "Error in event handler",
                                           &try_catch);
+      try_catch.Reset();
     }
   }
+
+  // Only return a value if there's at least one response. This is the behavior
+  // of the current JS implementation.
+  v8::Local<v8::Value> return_value;
+  if (results_index > 0) {
+    return_value = gin::DataObjectBuilder(isolate)
+                       .Set("results", results.As<v8::Value>())
+                       .Build();
+  } else {
+    return_value = v8::Undefined(isolate);
+  }
+
+  return return_value;
+}
+
+void EventEmitter::DispatchAsync(v8::Local<v8::Context> context,
+                                 std::vector<v8::Local<v8::Value>>* args,
+                                 const EventFilteringInfo* filter) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  // In order to dispatch (potentially) asynchronously (such as when script is
+  // suspended), use a helper function to run once JS is allowed to run,
+  // currying in the necessary information about the arguments and filter.
+  // We do this (rather than simply queuing up each listener and running them
+  // asynchronously) for a few reasons:
+  // - It allows us to catch exceptions when the listener is running.
+  // - Listeners could be removed between the time the event is received and the
+  //   listeners are notified.
+  // - It allows us to group the listeners responses.
+
+  // We always set a filter id (rather than leaving filter undefined in the
+  // case of no filter being present) to avoid ever hitting the Object prototype
+  // chain when checking for it on the data value in DispatchAsyncHelper().
+  int filter_id = kInvalidFilterId;
+  if (filter) {
+    filter_id = next_filter_id_++;
+    pending_filters_.emplace(filter_id, *filter);
+  }
+
+  v8::Local<v8::Array> args_array = v8::Array::New(isolate, args->size());
+  for (size_t i = 0; i < args->size(); ++i) {
+    CHECK(args_array->CreateDataProperty(context, i, args->at(i)).ToChecked());
+  }
+
+  v8::Local<v8::Object> data =
+      gin::DataObjectBuilder(isolate)
+          .Set(kEmitterKey, GetWrapper(isolate).ToLocalChecked())
+          .Set(kArgumentsKey, args_array.As<v8::Value>())
+          .Set(kFilterKey, gin::ConvertToV8(isolate, filter_id))
+          .Build();
+  v8::Local<v8::Function> function;
+  // TODO(devlin): Function construction can fail in some weird cases (looking
+  // up the "prototype" property on parents, failing to instantiate properties
+  // on the function, etc). In *theory*, none of those apply here. Leave this as
+  // a CHECK for now to flush out any cases.
+  CHECK(v8::Function::New(context, &DispatchAsyncHelper, data)
+            .ToLocal(&function));
+
+  JSRunner::Get(context)->RunJSFunction(function, context, 0, nullptr);
+}
+
+// static
+void EventEmitter::DispatchAsyncHelper(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  if (!binding::IsContextValid(context))
+    return;
+
+  v8::Local<v8::Object> data = info.Data().As<v8::Object>();
+
+  v8::Local<v8::Value> emitter_value =
+      data->Get(context, gin::StringToSymbol(isolate, kEmitterKey))
+          .ToLocalChecked();
+  EventEmitter* emitter = nullptr;
+  gin::Converter<EventEmitter*>::FromV8(isolate, emitter_value, &emitter);
+  DCHECK(emitter);
+
+  v8::Local<v8::Value> filter_id_value =
+      data->Get(context, gin::StringToSymbol(isolate, kFilterKey))
+          .ToLocalChecked();
+  int filter_id = filter_id_value.As<v8::Int32>()->Value();
+  base::Optional<EventFilteringInfo> filter;
+  if (filter_id != kInvalidFilterId) {
+    auto filter_iter = emitter->pending_filters_.find(filter_id);
+    DCHECK(filter_iter != emitter->pending_filters_.end());
+    filter = std::move(filter_iter->second);
+    emitter->pending_filters_.erase(filter_iter);
+  }
+
+  v8::Local<v8::Value> arguments_value =
+      data->Get(context, gin::StringToSymbol(isolate, kArgumentsKey))
+          .ToLocalChecked();
+  DCHECK(arguments_value->IsArray());
+  v8::Local<v8::Array> arguments_array = arguments_value.As<v8::Array>();
+  std::vector<v8::Local<v8::Value>> arguments;
+  uint32_t arguments_count = arguments_array->Length();
+  arguments.reserve(arguments_count);
+  for (uint32_t i = 0; i < arguments_count; ++i)
+    arguments.push_back(arguments_array->Get(context, i).ToLocalChecked());
+
+  // We know that dispatching synchronously should be safe because this function
+  // was triggered by JS execution.
+  emitter->DispatchSync(context, &arguments,
+                        filter ? &filter.value() : nullptr);
 }
 
 }  // namespace extensions
