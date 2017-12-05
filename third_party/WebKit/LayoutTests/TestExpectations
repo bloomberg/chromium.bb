@@ -3606,6 +3606,9 @@ crbug.com/789921 [ Win7 ] media/video-controls-overflow-menu-last-button-visible
 crbug.com/789111 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
 crbug.com/790025 virtual/gpu-rasterization/images/image-hover-display-alt.html [ Failure Pass ]
 
+# Sheriff failures 2017-12-04
+crbug.com/667560 http/tests/devtools/elements/styles-4/inline-style-sourcemap.js [ Pass Failure ]
+
 # These tests fail often on Linux. https://crbug.com/790549
 crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-delegation.html [ Failure Pass Timeout ]
 crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure Pass Timeout ]
