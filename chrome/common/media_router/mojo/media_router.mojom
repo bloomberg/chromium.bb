@@ -40,6 +40,8 @@ struct MediaSink {
   string? domain;
   // The type of icon to show in the UI for this media sink.
   SinkIconType icon_type;
+  // The ID of the MediaRouteProvider that this sink belongs to.
+  MediaRouteProvider.Id provider_id;
   // This is currently only set by MediaRouter in OnSinksDiscovered().
   MediaSinkExtraData? extra_data;
 };
@@ -233,7 +235,8 @@ struct MediaRouteProviderConfig {
 // MediaRoutes associated with them. It notifies its observers (i.e.
 // MediaRouter) when there are changes related to sinks or routes.
 interface MediaRouteProvider {
-  // Each MediaRouteProvider is associated with a unique ID.
+  // Each MediaRouteProvider is associated with a unique ID. This enum must be
+  // kept in sync with MediaRouteProviderId in C++.
   enum Id {
     EXTENSION,
     WIRED_DISPLAY

@@ -283,9 +283,9 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   // Notify media router that the provider provides a route or a sink.
   // Need to be called after the provider is registered.
-  void ProvideTestRoute(mojom::MediaRouteProvider::Id provider_id,
+  void ProvideTestRoute(MediaRouteProviderId provider_id,
                         const MediaRoute::Id& route_id);
-  void ProvideTestSink(mojom::MediaRouteProvider::Id provider_id,
+  void ProvideTestSink(MediaRouteProviderId provider_id,
                        const MediaSink::Id& sink_id);
 
   // Register |mock_extension_provider_| or |mock_wired_display_provider_| with
@@ -321,7 +321,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   // Helper method for RegisterExtensionProvider() and
   // RegisterWiredDisplayProvider().
   void RegisterMediaRouteProvider(mojom::MediaRouteProvider* provider,
-                                  mojom::MediaRouteProvider::Id provider_id);
+                                  MediaRouteProviderId provider_id);
 
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;

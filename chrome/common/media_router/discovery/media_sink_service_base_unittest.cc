@@ -108,7 +108,7 @@ TEST_F(MediaSinkServiceBaseTest, TestOnDiscoveryComplete_RemovedOneSink) {
 TEST_F(MediaSinkServiceBaseTest, TestOnDiscoveryComplete_UpdatedOneSink) {
   std::vector<MediaSinkInternal> old_sinks = CreateDialMediaSinks();
   std::vector<MediaSinkInternal> new_sinks = CreateDialMediaSinks();
-  new_sinks[0].set_name("sink_name_4");
+  new_sinks[0].sink().set_name("sink_name_4");
   TestOnDiscoveryComplete(old_sinks, new_sinks);
 }
 

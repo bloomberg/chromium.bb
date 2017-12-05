@@ -102,10 +102,10 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
   std::unique_ptr<MockMediaSinksObserver> sinks_observer;
   std::unique_ptr<MockMediaRoutesObserver> routes_observer;
   std::unique_ptr<NullMessageObserver> messages_observer;
-  ProvideTestRoute(mojom::MediaRouteProvider::Id::EXTENSION, kRouteId);
+  ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
 
   router()->OnSinkAvailabilityUpdated(
-      mojom::MediaRouteProvider::Id::EXTENSION,
+      MediaRouteProviderId::EXTENSION,
       mojom::MediaRouter::SinkAvailability::PER_SOURCE);
   EXPECT_CALL(mock_extension_provider_,
               StartObservingMediaSinks(media_source.id()));
@@ -127,7 +127,8 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
 
 TEST_F(MediaRouterDesktopTest, TestProvideSinks) {
   std::vector<MediaSinkInternal> sinks;
-  MediaSink sink("sinkId", "sinkName", SinkIconType::CAST);
+  MediaSink sink("sinkId", "sinkName", SinkIconType::CAST,
+                 MediaRouteProviderId::EXTENSION);
   CastSinkExtraData extra_data;
   net::IPAddress ip_address;
   EXPECT_TRUE(ip_address.AssignFromIPLiteral("192.168.1.3"));

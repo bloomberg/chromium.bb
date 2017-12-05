@@ -82,17 +82,9 @@ class MediaSinkInternal {
   // Sorted by sink id.
   bool operator<(const MediaSinkInternal& other) const;
 
-  // Used by mojo.
-  void set_sink_id(const MediaSink::Id& sink_id) { sink_.set_sink_id(sink_id); }
-  void set_name(const std::string& name) { sink_.set_name(name); }
-  void set_description(const std::string& description) {
-    sink_.set_description(description);
-  }
-  void set_domain(const std::string& domain) { sink_.set_domain(domain); }
-  void set_icon_type(SinkIconType icon_type) { sink_.set_icon_type(icon_type); }
-
   void set_sink(const MediaSink& sink);
   const MediaSink& sink() const { return sink_; }
+  MediaSink& sink() { return sink_; }
 
   void set_dial_data(const DialSinkExtraData& dial_data);
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/optional.h"
+#include "chrome/common/media_router/media_route_provider_helper.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
 
 namespace U_ICU_NAMESPACE {
@@ -35,9 +36,11 @@ class MediaSink {
  public:
   using Id = std::string;
 
+  // TODO(takumif): Remove the default argument for |provider_id|.
   MediaSink(const MediaSink::Id& sink_id,
             const std::string& name,
-            const SinkIconType icon_type);
+            SinkIconType icon_type,
+            MediaRouteProviderId provider_id = MediaRouteProviderId::UNKNOWN);
   MediaSink(const MediaSink& other);
   MediaSink();
 
@@ -61,6 +64,11 @@ class MediaSink {
 
   void set_icon_type(SinkIconType icon_type) { icon_type_ = icon_type; }
   SinkIconType icon_type() const { return icon_type_; }
+
+  void set_provider_id(MediaRouteProviderId provider_id) {
+    provider_id_ = provider_id;
+  }
+  MediaRouteProviderId provider_id() const { return provider_id_; }
 
   // This method only compares IDs.
   bool Equals(const MediaSink& other) const;
@@ -96,6 +104,9 @@ class MediaSink {
 
   // The type of icon that corresponds with the MediaSink.
   SinkIconType icon_type_ = SinkIconType::GENERIC;
+
+  // The ID of the MediaRouteProvider that the MediaSink belongs to.
+  MediaRouteProviderId provider_id_ = MediaRouteProviderId::UNKNOWN;
 };
 
 }  // namespace media_router
