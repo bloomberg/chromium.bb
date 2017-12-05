@@ -2435,7 +2435,6 @@ crbug.com/788337 external/wpt/css/css-multicol/multicol-block-no-clip-001.xht [ 
 crbug.com/788337 external/wpt/css/css-multicol/multicol-block-no-clip-002.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-003.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-005.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-fill-auto.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-height-block-child-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-inherit-004.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-nested-column-rule-001.xht [ Failure ]
