@@ -17,11 +17,20 @@ function finishUp() {
     finishJSTest();
 }
 
-navigator.webkitGetUserMedia({audio: true,video: true},function (stream) {
-    var vidTrack = stream.getVideoTracks()[0];
-    vidTrack.onended = function () { };
-    }, function () {} );
-setTimeout(finishUp);
+navigator.webkitGetUserMedia({audio: false,video: true},
+    // success callback
+    function (stream) {
+        var vidTrack = stream.getVideoTracks()[0];
+        vidTrack.onended = function () {};
+        testPassed("getUserMedia returned with stream containing a valid video track");
+        finishUp();
+    },
+    // error callback
+    function () {
+        testFailed("getUserMedia returned with an error");
+        finishUp();
+    }
+);
 </script>
 </body>
 </html>
