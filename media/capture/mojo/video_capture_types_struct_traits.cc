@@ -33,11 +33,11 @@ EnumTraits<media::mojom::ResolutionChangePolicy,
            media::ResolutionChangePolicy>::ToMojom(media::ResolutionChangePolicy
                                                        input) {
   switch (input) {
-    case media::RESOLUTION_POLICY_FIXED_RESOLUTION:
+    case media::ResolutionChangePolicy::FIXED_RESOLUTION:
       return media::mojom::ResolutionChangePolicy::FIXED_RESOLUTION;
-    case media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO:
+    case media::ResolutionChangePolicy::FIXED_ASPECT_RATIO:
       return media::mojom::ResolutionChangePolicy::FIXED_ASPECT_RATIO;
-    case media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT:
+    case media::ResolutionChangePolicy::ANY_WITHIN_LIMIT:
       return media::mojom::ResolutionChangePolicy::ANY_WITHIN_LIMIT;
   }
   NOTREACHED();
@@ -51,13 +51,13 @@ bool EnumTraits<media::mojom::ResolutionChangePolicy,
               media::ResolutionChangePolicy* output) {
   switch (input) {
     case media::mojom::ResolutionChangePolicy::FIXED_RESOLUTION:
-      *output = media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+      *output = media::ResolutionChangePolicy::FIXED_RESOLUTION;
       return true;
     case media::mojom::ResolutionChangePolicy::FIXED_ASPECT_RATIO:
-      *output = media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+      *output = media::ResolutionChangePolicy::FIXED_ASPECT_RATIO;
       return true;
     case media::mojom::ResolutionChangePolicy::ANY_WITHIN_LIMIT:
-      *output = media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+      *output = media::ResolutionChangePolicy::ANY_WITHIN_LIMIT;
       return true;
   }
   NOTREACHED();

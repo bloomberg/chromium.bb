@@ -568,10 +568,10 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalViewSize() const {
   gfx::Size optimal_size = oracle_proxy_->max_frame_size();
 
   switch (capture_params_.resolution_change_policy) {
-    case media::RESOLUTION_POLICY_FIXED_RESOLUTION:
+    case media::ResolutionChangePolicy::FIXED_RESOLUTION:
       break;
-    case media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO:
-    case media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT: {
+    case media::ResolutionChangePolicy::FIXED_ASPECT_RATIO:
+    case media::ResolutionChangePolicy::ANY_WITHIN_LIMIT: {
       // If the max frame size is close to a common video aspect ratio, compute
       // a standard resolution for that aspect ratio.  For example, given
       // 1365x768, which is very close to 16:9, the optimal size would be

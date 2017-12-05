@@ -350,7 +350,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
-      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+      media::ResolutionChangePolicy::FIXED_RESOLUTION;
 
   capture_device_->AllocateAndStart(capture_params, std::move(client));
 
@@ -399,7 +399,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
-      media::RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+      media::ResolutionChangePolicy::FIXED_ASPECT_RATIO;
 
   capture_device_->AllocateAndStart(capture_params, std::move(client));
 
@@ -448,7 +448,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   capture_params.requested_format.frame_rate = kFrameRate;
   capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
   capture_params.resolution_change_policy =
-      media::RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+      media::ResolutionChangePolicy::ANY_WITHIN_LIMIT;
 
   capture_device_->AllocateAndStart(capture_params, std::move(client));
 

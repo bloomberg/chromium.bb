@@ -39,35 +39,35 @@ TEST(VideoCaptureTypesTest, SuggestsConstraints) {
 
   // Test: Fixed 1080p resolution.
   params.requested_format.frame_size = gfx::Size(1920, 1080);
-  params.resolution_change_policy = RESOLUTION_POLICY_FIXED_RESOLUTION;
+  params.resolution_change_policy = ResolutionChangePolicy::FIXED_RESOLUTION;
   ExpectEqualConstraints(SuggestedConstraints({gfx::Size(1920, 1080),
                                                gfx::Size(1920, 1080), false}),
                          params.SuggestConstraints());
 
   // Test: Max 1080p resolution, fixed aspect ratio.
   params.requested_format.frame_size = gfx::Size(1920, 1080);
-  params.resolution_change_policy = RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+  params.resolution_change_policy = ResolutionChangePolicy::FIXED_ASPECT_RATIO;
   ExpectEqualConstraints(
       SuggestedConstraints({gfx::Size(320, 180), gfx::Size(1920, 1080), true}),
       params.SuggestConstraints());
 
   // Test: Max 1080p resolution, any aspect ratio.
   params.requested_format.frame_size = gfx::Size(1920, 1080);
-  params.resolution_change_policy = RESOLUTION_POLICY_ANY_WITHIN_LIMIT;
+  params.resolution_change_policy = ResolutionChangePolicy::ANY_WITHIN_LIMIT;
   ExpectEqualConstraints(
       SuggestedConstraints({gfx::Size(2, 2), gfx::Size(1920, 1080), false}),
       params.SuggestConstraints());
 
   // Test: Odd-valued resolution, fixed aspect ratio.
   params.requested_format.frame_size = gfx::Size(999, 777);
-  params.resolution_change_policy = RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+  params.resolution_change_policy = ResolutionChangePolicy::FIXED_ASPECT_RATIO;
   ExpectEqualConstraints(
       SuggestedConstraints({gfx::Size(232, 180), gfx::Size(998, 776), true}),
       params.SuggestConstraints());
 
   // Test: Max resolution less the hard-coded 180-line minimum, fixed aspect.
   params.requested_format.frame_size = gfx::Size(160, 90);
-  params.resolution_change_policy = RESOLUTION_POLICY_FIXED_ASPECT_RATIO;
+  params.resolution_change_policy = ResolutionChangePolicy::FIXED_ASPECT_RATIO;
   ExpectEqualConstraints(
       SuggestedConstraints({gfx::Size(160, 90), gfx::Size(160, 90), true}),
       params.SuggestConstraints());
