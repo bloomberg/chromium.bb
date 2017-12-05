@@ -88,24 +88,24 @@ TEST(NetworkQualitiesPrefManager, Write) {
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
-  EXPECT_EQ(0u, prefs_delegate_ptr->write_count());
+  EXPECT_EQ(1u, prefs_delegate_ptr->write_count());
   // Network quality generated from the default observation must be written.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, prefs_delegate_ptr->write_count());
+  EXPECT_EQ(3u, prefs_delegate_ptr->write_count());
 
   estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);
   // Run a request so that effective connection type is recomputed, and
   // observers are notified of change in the network quality.
   estimator.RunOneRequest();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, prefs_delegate_ptr->write_count());
+  EXPECT_EQ(4u, prefs_delegate_ptr->write_count());
 
   estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
   // Run a request so that effective connection type is recomputed, and
   // observers are notified of change in the network quality..
   estimator.RunOneRequest();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, prefs_delegate_ptr->write_count());
+  EXPECT_EQ(5u, prefs_delegate_ptr->write_count());
 
   // Prefs should not be read again.
   EXPECT_EQ(1u, prefs_delegate_ptr->read_count());
@@ -126,7 +126,7 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
 
-  EXPECT_EQ(0u, manager.ForceReadPrefsForTesting().size());
+  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
 
   estimator.set_recent_effective_connection_type(
       EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
@@ -136,7 +136,7 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
   base::RunLoop().RunUntilIdle();
   // Verify that the observer was notified, and the updated network quality was
   // written to the prefs.
-  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
+  EXPECT_EQ(2u, manager.ForceReadPrefsForTesting().size());
 
   // Change the network ID.
   for (size_t i = 0; i < kMaxCacheSize; ++i) {
@@ -147,7 +147,7 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
     estimator.RunOneRequest();
     base::RunLoop().RunUntilIdle();
 
-    EXPECT_EQ(std::min(i + 2, kMaxCacheSize),
+    EXPECT_EQ(std::min(i + 3, kMaxCacheSize),
               manager.ForceReadPrefsForTesting().size());
   }
 
@@ -155,16 +155,26 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
       read_prefs = manager.ForceReadPrefsForTesting();
 
   // Verify the contents of the prefs.
+  size_t count_2g_entries = 0;
   for (std::map<nqe::internal::NetworkID,
                 nqe::internal::CachedNetworkQuality>::const_iterator it =
            read_prefs.begin();
        it != read_prefs.end(); ++it) {
+    if (it->first.type ==
+        NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN) {
+      continue;
+    }
     EXPECT_EQ(0u, it->first.id.find("test", 0u));
     EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_2G,
               it->first.type);
     EXPECT_EQ(EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
               it->second.effective_connection_type());
+    ++count_2g_entries;
   }
+
+  // At most one entry should be for the network with connection type
+  // NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN.
+  EXPECT_LE(kMaxCacheSize - 1, count_2g_entries);
 
   base::HistogramTester histogram_tester;
   estimator.OnPrefsRead(read_prefs);
@@ -186,7 +196,7 @@ TEST(NetworkQualitiesPrefManager, ClearPrefs) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
 
-  EXPECT_EQ(0u, manager.ForceReadPrefsForTesting().size());
+  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
 
   estimator.set_recent_effective_connection_type(
       EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
@@ -196,7 +206,7 @@ TEST(NetworkQualitiesPrefManager, ClearPrefs) {
   base::RunLoop().RunUntilIdle();
   // Verify that the observer was notified, and the updated network quality was
   // written to the prefs.
-  EXPECT_EQ(1u, manager.ForceReadPrefsForTesting().size());
+  EXPECT_EQ(2u, manager.ForceReadPrefsForTesting().size());
 
   // Prefs must be completely cleared.
   manager.ClearPrefs();

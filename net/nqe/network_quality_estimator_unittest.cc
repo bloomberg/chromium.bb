@@ -199,7 +199,8 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
-  histogram_tester.ExpectTotalCount("NQE.CachedNetworkQualityAvailable", 0);
+  histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
+                                      false, 2);
 
   base::TimeDelta rtt;
   int32_t kbps;
@@ -282,7 +283,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
   histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
-                                      false, 1);
+                                      false, 3);
   histogram_tester.ExpectTotalCount("NQE.RatioMedianRTT.WiFi", 0);
 
   histogram_tester.ExpectTotalCount("NQE.RTT.Percentile0.Unknown", 1);
@@ -306,7 +307,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, std::string());
   histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
-                                      false, 1);
+                                      false, 4);
 
   EXPECT_FALSE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_FALSE(
@@ -336,7 +337,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
   histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable", false,
-                                     1);
+                                     4);
 }
 
 // Tests that the network quality estimator writes and reads network quality
@@ -359,7 +360,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
 
     estimator.SimulateNetworkChange(connection_type, connection_id);
     histogram_tester.ExpectUniqueSample("NQE.CachedNetworkQualityAvailable",
-                                        false, 1);
+                                        false, 2);
 
     base::TimeDelta rtt;
     int32_t kbps;
@@ -399,7 +400,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
     EXPECT_FALSE(estimator.GetTransportRTT());
 
     histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable",
-                                       false, 1);
+                                       false, 2);
 
     // Add the observers before changing the network type.
     TestEffectiveConnectionTypeObserver observer;
@@ -447,7 +448,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
 
     histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable",
                                        true, 1);
-    histogram_tester.ExpectTotalCount("NQE.CachedNetworkQualityAvailable", 2);
+    histogram_tester.ExpectTotalCount("NQE.CachedNetworkQualityAvailable", 3);
     base::RunLoop().RunUntilIdle();
 
     // Verify that the cached network quality was read, and observers were
@@ -2439,13 +2440,13 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test");
   histogram_tester.ExpectBucketCount(
       "NQE.RTT.ObservationSource",
-      NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE, 0);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE, 1);
 
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
   histogram_tester.ExpectBucketCount(
       "NQE.RTT.ObservationSource",
-      NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE, 1);
+      NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE, 2);
 }
 
 #if defined(OS_IOS)
@@ -2908,7 +2909,7 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test3g");
   estimator.RunOneRequest();
-  EXPECT_EQ(2u, observer.get_notification_received_and_reset());
+  EXPECT_EQ(4u, observer.get_notification_received_and_reset());
   EXPECT_EQ("test3g", observer.network_id().id);
 
   estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_2G);

@@ -92,7 +92,7 @@ TEST(NetworkQualityStoreTest, TestCaching) {
   }
 
   {
-    // Entry will not be added for (Unknown, "").
+    // Entry will be added for (Unknown, "").
     nqe::internal::NetworkID network_id(
         NetworkChangeNotifier::CONNECTION_UNKNOWN, "", 0);
     nqe::internal::CachedNetworkQuality read_network_quality;
@@ -102,7 +102,7 @@ TEST(NetworkQualityStoreTest, TestCaching) {
                                       base::TimeDelta::FromSeconds(4), 4),
         EFFECTIVE_CONNECTION_TYPE_4G);
     network_quality_store.Add(network_id, set_network_quality);
-    EXPECT_FALSE(
+    EXPECT_TRUE(
         network_quality_store.GetById(network_id, &read_network_quality));
   }
 

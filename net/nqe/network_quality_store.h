@@ -68,9 +68,6 @@ class NET_EXPORT_PRIVATE NetworkQualityStore {
   void RemoveNetworkQualitiesCacheObserver(
       NetworkQualitiesCacheObserver* observer);
 
-  // Returns true if network quality for |network_id| can be cached.
-  bool EligibleForCaching(const NetworkID& network_id) const;
-
   // If |disable_offline_check| is set to true, the offline check is disabled
   // when storing the network quality.
   void DisableOfflineCheckForTesting(bool disable_offline_check);
@@ -99,10 +96,6 @@ class NET_EXPORT_PRIVATE NetworkQualityStore {
   // Observer list for changes in the cached network quality.
   base::ObserverList<NetworkQualitiesCacheObserver>
       network_qualities_cache_observer_list_;
-
-  // When set to true, disables the offline check when storing the network
-  // quality.
-  bool disable_offline_check_;
 
   base::ThreadChecker thread_checker_;
 

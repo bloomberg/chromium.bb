@@ -14,8 +14,7 @@ namespace nqe {
 
 namespace internal {
 
-NetworkQualityStore::NetworkQualityStore()
-    : disable_offline_check_(false), weak_ptr_factory_(this) {
+NetworkQualityStore::NetworkQualityStore() : weak_ptr_factory_(this) {
   static_assert(kMaximumNetworkQualityCacheSize > 0,
                 "Size of the network quality cache must be > 0");
   // This limit should not be increased unless the logic for removing the
@@ -39,9 +38,6 @@ void NetworkQualityStore::Add(
       EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return;
   }
-
-  if (!EligibleForCaching(network_id))
-    return;
 
   // Remove the entry from the map, if it is already present.
   cached_network_qualities_.erase(network_id);
@@ -134,24 +130,6 @@ void NetworkQualityStore::RemoveNetworkQualitiesCacheObserver(
     NetworkQualitiesCacheObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_qualities_cache_observer_list_.RemoveObserver(observer);
-}
-
-bool NetworkQualityStore::EligibleForCaching(
-    const NetworkID& network_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // |disable_offline_check_| forces caching of the network quality even if
-  // the network is set to offline.
-  return network_id.type == NetworkChangeNotifier::CONNECTION_ETHERNET ||
-         !network_id.id.empty() ||
-         (network_id.type == NetworkChangeNotifier::CONNECTION_NONE &&
-          disable_offline_check_);
-}
-
-void NetworkQualityStore::DisableOfflineCheckForTesting(
-    bool disable_offline_check) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  disable_offline_check_ = disable_offline_check;
 }
 
 void NetworkQualityStore::NotifyCacheObserverIfPresent(
