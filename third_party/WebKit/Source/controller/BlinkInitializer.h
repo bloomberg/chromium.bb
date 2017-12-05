@@ -11,7 +11,7 @@ namespace blink {
 
 class BlinkInitializer : public ModulesInitializer {
  public:
-  void RegisterInterfaces(InterfaceRegistry&) override;
+  void RegisterInterfaces(service_manager::BinderRegistry&) override;
   void OnClearWindowObjectInMainWorld(Document&,
                                       const Settings&) const override;
   void InitLocalFrame(LocalFrame&) const override;

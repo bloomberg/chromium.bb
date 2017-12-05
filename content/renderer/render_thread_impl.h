@@ -54,6 +54,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -70,7 +71,6 @@ namespace blink {
 namespace scheduler {
 class WebThreadBase;
 }
-class InterfaceRegistry;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 }
@@ -582,7 +582,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void InitializeWebKit(
       const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
-      blink::InterfaceRegistry* registry);
+      service_manager::BinderRegistry* registry);
 
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnGetAccessibilityTree();
