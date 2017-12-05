@@ -35,7 +35,9 @@ TEST_P(ParameterizedLayoutInlineTest, LinesBoundingBox) {
   LoadAhem();
   SetBodyInnerHTML(
       "<style>"
-      "* { font-family: Ahem; font-size: 13px; }"
+      "html { font-family: Ahem; font-size: 13px; }"
+      // LayoutNG requires box decorations at this moment. crbug.com/789390
+      "span { background-color: yellow; }"
       ".vertical { writing-mode: vertical-rl; }"
       "</style>"
       "<p><span id=ltr1>abc<br>xyz</span></p>"
