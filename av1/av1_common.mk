@@ -167,6 +167,7 @@ AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/convolve_2d_sse4.c
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/convolve_2d_avx2.c
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)
 AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/highbd_convolve_2d_ssse3.c
+AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/highbd_convolve_2d_avx2.c
 endif
 endif
 

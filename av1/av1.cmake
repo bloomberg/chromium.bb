@@ -312,6 +312,10 @@ if (CONFIG_CONVOLVE_ROUND)
       "${AOM_ROOT}/av1/common/x86/convolve_2d_avx2.c")
 
   if (CONFIG_HIGHBITDEPTH)
+    set(AOM_AV1_COMMON_INTRIN_AVX2
+        ${AOM_AV1_COMMON_INTRIN_AVX2}
+        "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_avx2.c")
+
     set(AOM_AV1_COMMON_INTRIN_SSSE3
         ${AOM_AV1_COMMON_INTRIN_SSSE3}
         "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_ssse3.c")

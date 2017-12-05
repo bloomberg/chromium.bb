@@ -48,6 +48,9 @@ TEST_P(AV1HighbdConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(3)); }
 INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdConvolve2DTest,
                         libaom_test::AV1HighbdConvolve2D::BuildParams(
                             av1_highbd_convolve_2d_ssse3));
+INSTANTIATE_TEST_CASE_P(
+    AVX2, AV1HighbdConvolve2DTest,
+    libaom_test::AV1HighbdConvolve2D::BuildParams(av1_highbd_convolve_2d_avx2));
 
 #endif
 
