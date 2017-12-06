@@ -172,4 +172,26 @@ void StylePropertyMap::remove(const String& property_name,
   RemoveProperty(property_id);
 }
 
+void StylePropertyMap::update(const ExecutionContext* execution_context,
+                              const String& property_name,
+                              V8UpdateFunction* update_function,
+                              ExceptionState& exception_state) {
+  CSSStyleValue* old_value = get(property_name, exception_state);
+  if (exception_state.HadException())
+    return;
+
+  const auto& new_value = update_function->Invoke(this, old_value);
+  if (new_value.IsNothing())
+    return;
+
+  HeapVector<CSSStyleValueOrString> new_value_vector;
+  new_value_vector.push_back(
+      CSSStyleValueOrString::FromCSSStyleValue(new_value.ToChecked()));
+
+  // FIXME(785132): We shouldn't need an execution_context here, but
+  // CSSUnsupportedStyleValue currently requires parsing.
+  set(execution_context, property_name, std::move(new_value_vector),
+      exception_state);
+}
+
 }  // namespace blink
