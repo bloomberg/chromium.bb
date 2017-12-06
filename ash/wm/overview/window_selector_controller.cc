@@ -21,6 +21,7 @@
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -155,16 +156,23 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
   auto* split_view_controller = Shell::Get()->split_view_controller();
   // Exit split view mode if we are already in it.
   if (split_view_controller->IsSplitViewModeActive()) {
-    aura::Window* active_window = split_view_controller->left_window()
-                                      ? split_view_controller->left_window()
-                                      : split_view_controller->right_window();
+    // In some cases the window returned by wm::GetActiveWindow will be an item
+    // in overview mode (maybe the overview mode text selection widget). The
+    // active window may also be a transient descendant of the left or right
+    // snapped window, in which we want to activate the transient window's
+    // ancestor (left or right snapped window). Manually set |active_window| as
+    // either the left or right window.
+    aura::Window* active_window = wm::GetActiveWindow();
+    while (::wm::GetTransientParent(active_window))
+      active_window = ::wm::GetTransientParent(active_window);
+    if (active_window != split_view_controller->left_window() &&
+        active_window != split_view_controller->right_window()) {
+      active_window = split_view_controller->GetDefaultSnappedWindow();
+    }
     DCHECK(active_window);
     split_view_controller->EndSplitView();
     if (IsSelecting())
       ToggleOverview();
-    // In some cases the window returned by wm::GetActiveWindow will be an item
-    // in overview mode. To work around this set |active_window| before exiting
-    // split view.
     wm::ActivateWindow(active_window);
     base::RecordAction(
         base::UserMetricsAction("Tablet_LongPressOverviewButtonExitSplitView"));
