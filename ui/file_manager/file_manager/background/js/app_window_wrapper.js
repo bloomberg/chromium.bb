@@ -296,7 +296,15 @@ SingletonAppWindowWrapper.prototype.launch =
   this.queue.run(function(nextStep) {
     this.window_.contentWindow.appState = appState;
     this.window_.contentWindow.appReopen = reopen;
-    this.window_.contentWindow.reload();
+    if (!this.window_.contentWindow.reload) {
+      // Currently the queue is not made to wait for window loading after
+      // creating window. Therefore contentWindow might not have the reload()
+      // function ready yet. This happens when launching the same app twice
+      // quickly. See crbug.com/789226.
+      console.error('Window reload requested before loaded. Skiping.');
+    } else {
+      this.window_.contentWindow.reload();
+    }
     if (opt_callback)
       opt_callback();
     nextStep();
