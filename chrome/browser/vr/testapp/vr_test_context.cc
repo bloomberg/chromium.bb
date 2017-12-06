@@ -91,6 +91,9 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   base::i18n::InitializeICU();
 
+  // TODO(cjgrant): Remove this when the keyboard is enabled by default.
+  base::FeatureList::InitializeInstance("VrBrowserKeyboard", "");
+
   text_input_delegate_ = base::MakeUnique<vr::TextInputDelegate>();
   keyboard_delegate_ = base::MakeUnique<vr::TestKeyboardDelegate>();
 
@@ -376,7 +379,6 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
             "if not truncated through some other means."),
         AutocompleteMatch::Type::VOICE_SUGGEST, GURL("http://www.test.com/")));
   }
-  model_->omnibox_input_active = true;
   ui_->SetOmniboxSuggestions(std::move(result));
 
   num_suggestions++;

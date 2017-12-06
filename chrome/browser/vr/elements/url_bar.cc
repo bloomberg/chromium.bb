@@ -9,12 +9,15 @@
 
 namespace vr {
 
-UrlBar::UrlBar(int preferred_width,
-               const base::Callback<void()>& back_button_callback,
-               const base::Callback<void(UiUnsupportedMode)>& failure_callback)
+UrlBar::UrlBar(
+    int preferred_width,
+    const base::RepeatingCallback<void()>& back_button_callback,
+    const base::RepeatingCallback<void()>& url_click_callback,
+    const base::RepeatingCallback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
       texture_(base::MakeUnique<UrlBarTexture>(failure_callback)),
       back_button_callback_(back_button_callback),
+      url_click_callback_(url_click_callback),
       failure_callback_(failure_callback) {}
 
 UrlBar::~UrlBar() = default;
@@ -38,20 +41,25 @@ void UrlBar::OnMove(const gfx::PointF& position) {
 
 void UrlBar::OnButtonDown(const gfx::PointF& position) {
   if (texture_->HitsBackButton(position))
-    down_ = true;
+    back_button_down_ = true;
   else if (texture_->HitsSecurityRegion(position))
     security_region_down_ = true;
+  else if (texture_->HitsUrlBar(position))
+    url_down_ = true;
   OnStateUpdated(position);
 }
 
 void UrlBar::OnButtonUp(const gfx::PointF& position) {
-  down_ = false;
   OnStateUpdated(position);
   if (can_go_back_ && texture_->HitsBackButton(position))
     back_button_callback_.Run();
   else if (security_region_down_ && texture_->HitsSecurityRegion(position))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledPageInfo);
+  else if (url_down_ && texture_->HitsUrlBar(position))
+    url_click_callback_.Run();
+  back_button_down_ = false;
   security_region_down_ = false;
+  url_down_ = false;
 }
 
 bool UrlBar::LocalHitTest(const gfx::PointF& position) const {
@@ -73,7 +81,7 @@ void UrlBar::SetColors(const UrlBarColors& colors) {
 
 void UrlBar::OnStateUpdated(const gfx::PointF& position) {
   const bool hovered = texture_->HitsBackButton(position);
-  const bool pressed = hovered ? down_ : false;
+  const bool pressed = hovered ? back_button_down_ : false;
 
   texture_->SetBackButtonHovered(hovered);
   texture_->SetBackButtonPressed(pressed);

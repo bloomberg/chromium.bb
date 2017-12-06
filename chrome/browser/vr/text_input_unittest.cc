@@ -133,6 +133,11 @@ TEST_F(TextInputSceneTest, InputFieldEdit) {
   EXPECT_EQ(info, *text_input_info_);
 }
 
+TEST_F(TextInputSceneTest, ClickOnTextGrabsFocus) {
+  EXPECT_CALL(*text_input_delegate_, RequestFocus(_));
+  text_input_->get_text_element()->OnButtonUp({0, 0});
+}
+
 TEST(TextInputTest, HintText) {
   UiScene scene;
 

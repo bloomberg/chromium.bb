@@ -67,7 +67,6 @@ const std::set<UiElementName> kHitTestableElements = {
     kAudioPermissionPromptBackplane,
     kUrlBar,
     kOmniboxContainer,
-    kOmniboxTextField,
     kLoadingIndicator,
     kWebVrTimeoutSpinner,
     kWebVrTimeoutMessage,
@@ -79,7 +78,7 @@ const std::set<UiElementName> kHitTestableElements = {
 const std::set<UiElementName> kSpecialHitTestableElements = {
     kCloseButton,        kWebVrTimeoutMessageButton,
     kVoiceSearchButton,  kSpeechRecognitionListeningCloseButton,
-    kOmniboxCloseButton,
+    kOmniboxCloseButton, kOmniboxTextField,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
