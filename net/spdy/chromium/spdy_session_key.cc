@@ -45,7 +45,7 @@ bool SpdySessionKey::operator<(const SpdySessionKey& other) const {
                   other.host_port_proxy_pair_.second);
 }
 
-bool SpdySessionKey::Equals(const SpdySessionKey& other) const {
+bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
   return privacy_mode_ == other.privacy_mode_ &&
       host_port_proxy_pair_.first.Equals(other.host_port_proxy_pair_.first) &&
       host_port_proxy_pair_.second == other.host_port_proxy_pair_.second;

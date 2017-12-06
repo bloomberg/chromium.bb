@@ -58,11 +58,6 @@ namespace test {
 class SpdyStreamTest;
 }
 
-// This value means that UnclaimedPushedStreamContainer::FindStream() has not
-// found any streams.
-// TODO(bnc): Move to Http2PushPromiseIndex.  https://crbug.com/791054
-const SpdyStreamId kNoPushedStreamFound = 0;
-
 // This is somewhat arbitrary and not really fixed, but it will always work
 // reasonably with ethernet. Chop the world into 2-packet chunks.  This is
 // somewhat arbitrary, but is reasonably small and ensures that we elicit
@@ -484,7 +479,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Http2PushPromiseIndex::Delegate implementation:
   bool ValidatePushedStream(const SpdySessionKey& key) const override;
-  void OnPushedStreamClaimed(const GURL& url) override;
+  void OnPushedStreamClaimed(const GURL& url, SpdyStreamId stream_id) override;
   base::WeakPtr<SpdySession> GetWeakPtrToSession() override;
 
   // Dumps memory allocation stats to |stats|. Sets |*is_session_active| to

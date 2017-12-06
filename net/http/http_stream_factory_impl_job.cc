@@ -928,9 +928,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   // connection this request can pool to.  If so, then go straight to using
   // that.
   if (CanUseExistingSpdySession()) {
-    existing_spdy_session_ =
-        session_->spdy_session_pool()->push_promise_index()->FindSession(
-            spdy_session_key_, origin_url_);
+    // TODO(bnc): Use outparam.  https://crbug.com/776415.
+    SpdyStreamId unused;
+    session_->spdy_session_pool()->push_promise_index()->FindSession(
+        spdy_session_key_, origin_url_, &existing_spdy_session_, &unused);
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
           session_->spdy_session_pool()->FindAvailableSession(
@@ -1205,9 +1206,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   // It is possible that a pushed stream has been opened by a server since last
   // time Job checked above.
   if (!existing_spdy_session_) {
-    existing_spdy_session_ =
-        session_->spdy_session_pool()->push_promise_index()->FindSession(
-            spdy_session_key_, origin_url_);
+    // TODO(bnc): Use outparam.  https://crbug.com/776415.
+    SpdyStreamId unused;
+    session_->spdy_session_pool()->push_promise_index()->FindSession(
+        spdy_session_key_, origin_url_, &existing_spdy_session_, &unused);
     // It is also possible that an HTTP/2 connection has been established since
     // last time Job checked above.
     if (!existing_spdy_session_) {

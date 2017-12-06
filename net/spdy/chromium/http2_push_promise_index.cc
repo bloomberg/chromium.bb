@@ -14,47 +14,57 @@ Http2PushPromiseIndex::~Http2PushPromiseIndex() {
   DCHECK(unclaimed_pushed_streams_.empty());
 }
 
-base::WeakPtr<SpdySession> Http2PushPromiseIndex::FindSession(
-    const SpdySessionKey& key,
-    const GURL& url) const {
+void Http2PushPromiseIndex::FindSession(const SpdySessionKey& key,
+                                        const GURL& url,
+                                        base::WeakPtr<SpdySession>* session,
+                                        SpdyStreamId* stream_id) const {
   DCHECK(!url.is_empty());
 
-  UnclaimedPushedStreamMap::const_iterator it =
-      unclaimed_pushed_streams_.lower_bound(std::make_pair(url, nullptr));
+  *session = nullptr;
+  *stream_id = kNoPushedStreamFound;
 
-  if (it == unclaimed_pushed_streams_.end() || it->first != url) {
-    return base::WeakPtr<SpdySession>();
-  }
+  auto it = unclaimed_pushed_streams_.lower_bound(
+      UnclaimedPushedStream{url, kNoPushedStreamFound, nullptr});
+
+  if (it == unclaimed_pushed_streams_.end() || it->url != url)
+    return;
 
   DCHECK(url.SchemeIsCryptographic());
-  while (it != unclaimed_pushed_streams_.end() && it->first == url) {
-    if (it->second->ValidatePushedStream(key)) {
-      it->second->OnPushedStreamClaimed(url);
-      return it->second->GetWeakPtrToSession();
+  while (it != unclaimed_pushed_streams_.end() && it->url == url) {
+    if (it->delegate->ValidatePushedStream(key)) {
+      *session = it->delegate->GetWeakPtrToSession();
+      *stream_id = it->stream_id;
+      it->delegate->OnPushedStreamClaimed(it->url, it->stream_id);
+      return;
     }
     ++it;
   }
-
-  return base::WeakPtr<SpdySession>();
 }
 
-void Http2PushPromiseIndex::RegisterUnclaimedPushedStream(const GURL& url,
-                                                          Delegate* delegate) {
+void Http2PushPromiseIndex::RegisterUnclaimedPushedStream(
+    const GURL& url,
+    SpdyStreamId stream_id,
+    Delegate* delegate) {
   DCHECK(!url.is_empty());
   DCHECK(url.SchemeIsCryptographic());
+  DCHECK(delegate);
 
-  unclaimed_pushed_streams_.insert(std::make_pair(url, delegate));
+  unclaimed_pushed_streams_.insert(
+      UnclaimedPushedStream{url, stream_id, delegate});
 }
 
 void Http2PushPromiseIndex::UnregisterUnclaimedPushedStream(
     const GURL& url,
+    SpdyStreamId stream_id,
     Delegate* delegate) {
   DCHECK(!url.is_empty());
   DCHECK(url.SchemeIsCryptographic());
+  DCHECK(delegate);
 
-  size_t result =
-      unclaimed_pushed_streams_.erase(std::make_pair(url, delegate));
-  DCHECK_EQ(1u, result);
+  size_t result = unclaimed_pushed_streams_.erase(
+      UnclaimedPushedStream{url, stream_id, delegate});
+  LOG_IF(DFATAL, result != 1)
+      << "Only a previously registered entry can be unregistered.";
 }
 
 }  // namespace net
