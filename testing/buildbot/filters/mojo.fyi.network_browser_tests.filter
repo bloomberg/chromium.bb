@@ -513,8 +513,6 @@
 -DeclarativeNetRequestBrowserTest.BlockRequests_Incognito/1
 -DeclarativeNetRequestBrowserTest.BlockRequests_MultipleExtensions/0
 -DeclarativeNetRequestBrowserTest.BlockRequests_MultipleExtensions/1
--DeclarativeNetRequestBrowserTest.BlockRequests_ResourceTypes/0
--DeclarativeNetRequestBrowserTest.BlockRequests_ResourceTypes/1
 -DeclarativeNetRequestBrowserTest.BlockRequests_Separator/0
 -DeclarativeNetRequestBrowserTest.BlockRequests_Separator/1
 -DeclarativeNetRequestBrowserTest.BlockRequests_UrlFilter/0
@@ -530,6 +528,10 @@
 -DeclarativeNetRequestBrowserTest.Whitelist/0
 -DeclarativeNetRequestBrowserTest.Whitelist/1
 -DeclarativeNetRequestBrowserTest_Packed.BrowserRestart/0
+-DeclarativeNetRequestResourceTypeBrowserTest.Test1/0
+-DeclarativeNetRequestResourceTypeBrowserTest.Test1/1
+-DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
+-DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
 -ExtensionWebRequestApiTest.DeclarativeSendMessage
 -ExtensionWebRequestApiTest.ExtensionRequests
 -ExtensionWebRequestApiTest.HostedAppRequest
