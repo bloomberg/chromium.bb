@@ -30,8 +30,11 @@
       }
   `);
 
-  TestRunner.evaluateInPage('var unused = document.body.offsetWidth;', function() {
-    PerformanceTestRunner.evaluateWithTimeline('performActions()', onTimelineRecorded);
+  TestRunner.evaluateInPage('var unused = document.body.offsetWidth;', async function() {
+    const records = await PerformanceTestRunner.evaluateWithTimeline('performActions()');
+    const layoutEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
+    UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
+    clickValueLink(layoutEvent, 'Layout root');
   });
 
   async function clickValueLink(event, row) {
@@ -44,12 +47,6 @@
         return;
       }
     }
-  }
-
-  function onTimelineRecorded(records) {
-    var layoutEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
-    UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
-    clickValueLink(layoutEvent, 'Layout root');
   }
 
   function onSelectedNodeChanged() {

@@ -73,17 +73,15 @@
     }
   ]);
 
-  function performActions(actions, next) {
+  async function performActions(actions, next) {
     var namesToDump = new Set(['FunctionCall', 'ConsoleTime', 'TimeStamp']);
     function dumpName(event, level) {
       if (namesToDump.has(event.name))
         TestRunner.addResult('----'.repeat(level) + '> ' + Timeline.TimelineUIUtils.eventTitle(event));
     }
-    function callback() {
-      PerformanceTestRunner.walkTimelineEventTree(dumpName);
-      next();
-    }
     UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-    PerformanceTestRunner.evaluateWithTimeline(actions, TestRunner.safeWrap(callback), true);
-  }
+    await PerformanceTestRunner.evaluateWithTimeline(actions);
+    PerformanceTestRunner.walkTimelineEventTree(dumpName);
+    next();
+}
 })();

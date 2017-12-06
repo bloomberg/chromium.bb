@@ -35,20 +35,18 @@
   `);
 
   Runtime.experiments.enableForTest('timelineInvalidationTracking');
-  PerformanceTestRunner.invokeAsyncWithTimeline('multipleStyleRecalcsAndDisplay', testMultipleStyleRecalcs);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('multipleStyleRecalcsAndDisplay');
 
-  function testMultipleStyleRecalcs() {
-    PerformanceTestRunner.dumpInvalidations(
-        TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first style recalc');
-    PerformanceTestRunner.dumpInvalidations(
-        TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second style recalc');
-    PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, 'first paint');
+  PerformanceTestRunner.dumpInvalidations(
+      TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first style recalc');
+  PerformanceTestRunner.dumpInvalidations(
+      TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second style recalc');
+  PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, 'first paint');
+  var thirdRecalc =
+      PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2);
+  TestRunner.assertTrue(thirdRecalc === undefined, 'There should be no additional style recalc records.');
+  var secondPaint = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint, 1);
+  TestRunner.assertTrue(secondPaint === undefined, 'There should be no additional paint records.');
 
-    var thirdRecalc =
-        PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2);
-    TestRunner.assertTrue(thirdRecalc === undefined, 'There should be no additional style recalc records.');
-    var secondPaint = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint, 1);
-    TestRunner.assertTrue(secondPaint === undefined, 'There should be no additional paint records.');
-    TestRunner.completeTest();
-  }
+  TestRunner.completeTest();
 })();

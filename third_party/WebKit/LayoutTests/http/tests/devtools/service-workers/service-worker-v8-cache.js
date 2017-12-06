@@ -27,19 +27,14 @@
   const scope = 'resources/v8-cache-iframe.html';
   const frameId = 'frame_id';
 
-  await new Promise(
-        (r) =>
-        PerformanceTestRunner.invokeAsyncWithTimeline(
-            'registerServiceWorkerAndwaitForActivated', r));
+  await PerformanceTestRunner.invokeAsyncWithTimeline('registerServiceWorkerAndwaitForActivated');
   TestRunner.addResult('--- Trace events while installing -------------');
   PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);
   TestRunner.addResult('-----------------------------------------------');
   await ApplicationTestRunner.waitForActivated(scope);
   await TestRunner.addIframe(scope, {id: frameId});
-  await new Promise(
-        (r) =>
-        PerformanceTestRunner.invokeAsyncWithTimeline('loadScript', r));
+  await PerformanceTestRunner.invokeAsyncWithTimeline('loadScript');
   TestRunner.addResult('--- Trace events while executing scripts ------');
   PerformanceTestRunner.printTimelineRecordsWithDetails(
       TimelineModel.TimelineModel.RecordType.CompileScript);

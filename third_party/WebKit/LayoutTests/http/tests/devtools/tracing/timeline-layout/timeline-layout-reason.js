@@ -32,13 +32,11 @@
       }
   `);
 
-  PerformanceTestRunner.evaluateWithTimeline('performActions()', onTimelineRecorded);
-  function onTimelineRecorded() {
-    var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
-    var initiator = TimelineModel.TimelineData.forEvent(event).initiator();
-    TestRunner.addResult(
-        'layout invalidated: ' + TimelineModel.TimelineData.forEvent(initiator).stackTrace[0].functionName);
-    TestRunner.addResult('layout forced: ' + TimelineModel.TimelineData.forEvent(event).stackTrace[0].functionName);
-    TestRunner.completeTest();
-  }
+  await PerformanceTestRunner.evaluateWithTimeline('performActions()');
+  var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
+  var initiator = TimelineModel.TimelineData.forEvent(event).initiator();
+  TestRunner.addResult(
+      'layout invalidated: ' + TimelineModel.TimelineData.forEvent(initiator).stackTrace[0].functionName);
+  TestRunner.addResult('layout forced: ' + TimelineModel.TimelineData.forEvent(event).stackTrace[0].functionName);
+  TestRunner.completeTest();
 })();

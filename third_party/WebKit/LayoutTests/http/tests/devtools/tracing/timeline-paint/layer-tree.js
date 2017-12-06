@@ -33,15 +33,11 @@
 
   UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('doActions', step1);
-  function step1() {
-    var frames = PerformanceTestRunner.timelineFrameModel().frames();
-    var lastFrame = PerformanceTestRunner.timelineFrameModel().frames().peekLast();
-    lastFrame.layerTree.layerTreePromise().then(TestRunner.safeWrap(layerTreeResolved));
-  }
+  await PerformanceTestRunner.invokeAsyncWithTimeline('doActions');
+  const frames = PerformanceTestRunner.timelineFrameModel().frames();
+  const lastFrame = PerformanceTestRunner.timelineFrameModel().frames().peekLast();
+  const layerTreeModel = await lastFrame.layerTree.layerTreePromise();
+  LayersTestRunner.dumpLayerTree(undefined, layerTreeModel.contentRoot());
 
-  function layerTreeResolved(layerTreeModel) {
-    LayersTestRunner.dumpLayerTree(undefined, layerTreeModel.contentRoot());
-    TestRunner.completeTest();
-  }
+  TestRunner.completeTest();
 })();

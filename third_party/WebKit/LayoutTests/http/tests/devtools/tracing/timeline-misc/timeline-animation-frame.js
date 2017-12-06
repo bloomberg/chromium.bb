@@ -22,12 +22,10 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function finish() {
-    PerformanceTestRunner.printTimelineRecordsWithDetails('RequestAnimationFrame');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('FireAnimationFrame');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('CancelAnimationFrame');
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.printTimelineRecordsWithDetails('RequestAnimationFrame');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('FireAnimationFrame');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('CancelAnimationFrame');
+  TestRunner.completeTest();
 })();

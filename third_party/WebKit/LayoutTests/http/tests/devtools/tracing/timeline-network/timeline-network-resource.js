@@ -23,20 +23,18 @@
   var requestId;
   var scriptUrl = 'timeline-network-resource.js';
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function finish() {
-    var model = PerformanceTestRunner.timelineModel();
-    model.mainThreadEvents().forEach(event => {
-      if (event.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
-        printSend(event);
-      else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse)
-        printReceive(event);
-      else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceFinish)
-        printFinish(event);
-    });
-    TestRunner.completeTest();
-  }
+  var model = PerformanceTestRunner.timelineModel();
+  model.mainThreadEvents().forEach(event => {
+    if (event.name === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
+      printSend(event);
+    else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse)
+      printReceive(event);
+    else if (event.name === TimelineModel.TimelineModel.RecordType.ResourceFinish)
+      printFinish(event);
+  });
+  TestRunner.completeTest();
 
   function printEvent(event) {
     TestRunner.addResult('');

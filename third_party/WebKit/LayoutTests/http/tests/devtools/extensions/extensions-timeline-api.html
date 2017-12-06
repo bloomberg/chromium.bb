@@ -15,7 +15,7 @@ InspectorTest.enableTimelineExtensionAndStart = function(callback) {
     setting.set(true);
     TestRunner.addResult(`Provider short display name: ${provider.shortDisplayName()}`);
     TestRunner.addResult(`Provider long display name: ${provider.longDisplayName()}`);
-    PerformanceTestRunner.startTimeline(callback);
+    PerformanceTestRunner.startTimeline().then(callback);
 }
 
 }
@@ -73,7 +73,7 @@ function extension_startTimeline(callback)
 
 function extension_stopTimeline(callback)
 {
-    evaluateOnFrontend("PerformanceTestRunner.stopTimeline(reply);", callback);
+    evaluateOnFrontend("PerformanceTestRunner.stopTimeline().then(reply);", callback);
 }
 
 function extension_dumpFlameChart(callback)

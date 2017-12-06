@@ -21,17 +21,15 @@
       }
   `);
 
-  PerformanceTestRunner.evaluateWithTimeline('performActions()', finish);
+  await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
-  function finish() {
-    PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
-      if (event.name !== TimelineModel.TimelineModel.RecordType.FunctionCall)
-        return;
-      var data = event.args['data'];
-      var scriptName = data.scriptName;
-      var scriptNameShort = scriptName.substring(scriptName.lastIndexOf('/') + 1);
-      TestRunner.addResult(`${event.name} ${scriptNameShort}: ${data.scriptLine}`);
-    });
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+    if (event.name !== TimelineModel.TimelineModel.RecordType.FunctionCall)
+      return;
+    var data = event.args['data'];
+    var scriptName = data.scriptName;
+    var scriptNameShort = scriptName.substring(scriptName.lastIndexOf('/') + 1);
+    TestRunner.addResult(`${event.name} ${scriptNameShort}: ${data.scriptLine}`);
+  });
+  TestRunner.completeTest();
 })();

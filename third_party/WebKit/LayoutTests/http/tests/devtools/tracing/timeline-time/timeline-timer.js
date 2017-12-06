@@ -27,14 +27,12 @@
   `);
 
   UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function finish() {
-    PerformanceTestRunner.printTimelineRecordsWithDetails('TimerInstall');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('TimerFire');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('TimerRemove');
-    PerformanceTestRunner.printTimelineRecords('FunctionCall');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('EvaluateScript');
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.printTimelineRecordsWithDetails('TimerInstall');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('TimerFire');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('TimerRemove');
+  PerformanceTestRunner.printTimelineRecords('FunctionCall');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('EvaluateScript');
+  TestRunner.completeTest();
 })();

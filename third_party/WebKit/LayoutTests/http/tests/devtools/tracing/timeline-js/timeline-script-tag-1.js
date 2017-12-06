@@ -17,24 +17,17 @@
   `);
 
   UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-  PerformanceTestRunner.startTimeline(step1);
-  function step1() {
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage('performActions()');
-  }
+  await PerformanceTestRunner.startTimeline();
+  TestRunner.evaluateInPage('performActions()');
+  await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+  await PerformanceTestRunner.stopTimeline();
 
-  function step2() {
-    PerformanceTestRunner.stopTimeline(step3);
-  }
-
-  function step3() {
-    PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
-      if (event.name === TimelineModel.TimelineModel.RecordType.EvaluateScript) {
-        PerformanceTestRunner.printTraceEventProperties(event);
-      } else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp) {
-        TestRunner.addResult(`----> ${Timeline.TimelineUIUtils.eventTitle(event)}`);
-      }
-    });
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+    if (event.name === TimelineModel.TimelineModel.RecordType.EvaluateScript) {
+      PerformanceTestRunner.printTraceEventProperties(event);
+    } else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp) {
+      TestRunner.addResult(`----> ${Timeline.TimelineUIUtils.eventTitle(event)}`);
+    }
+  });
+  TestRunner.completeTest();
 })();

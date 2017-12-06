@@ -32,10 +32,7 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('doActions', onRecordingDone);
-
-  function onRecordingDone() {
-    TestRunner.addResult('DONE');
-    TestRunner.completeTest();
-  }
+  await PerformanceTestRunner.invokeAsyncWithTimeline('doActions');
+  TestRunner.addResult('DONE');
+  TestRunner.completeTest();
 })();

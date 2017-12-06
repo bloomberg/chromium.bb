@@ -21,11 +21,9 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function finish() {
-    PerformanceTestRunner.printTimelineRecordsWithDetails('XHRReadyStateChange');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('XHRLoad');
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.printTimelineRecordsWithDetails('XHRReadyStateChange');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('XHRLoad');
+  TestRunner.completeTest();
 })();
