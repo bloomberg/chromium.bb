@@ -38,6 +38,8 @@ void HeadlessRenderTest::RunDevTooledTest() {
 
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->Enable(Sync());
+  devtools_client_->GetRuntime()->GetExperimental()->AddObserver(this);
+  devtools_client_->GetRuntime()->Enable(Sync());
 
   GURL url = GetPageUrl(devtools_client_.get());
 
@@ -148,6 +150,70 @@ void HeadlessRenderTest::OnFrameNavigated(
   frames_[params.GetFrame()->GetId()].push_back(params.GetFrame()->Clone());
 }
 
+void HeadlessRenderTest::OnConsoleAPICalled(
+    const runtime::ConsoleAPICalledParams& params) {
+  std::stringstream str;
+  switch (params.GetType()) {
+    case runtime::ConsoleAPICalledType::WARNING:
+      str << "W";
+      break;
+    case runtime::ConsoleAPICalledType::ASSERT:
+    case runtime::ConsoleAPICalledType::ERR:
+      str << "E";
+      break;
+    case runtime::ConsoleAPICalledType::DEBUG:
+      str << "D";
+      break;
+    case runtime::ConsoleAPICalledType::INFO:
+      str << "I";
+      break;
+    default:
+      str << "L";
+      break;
+  }
+  const auto& args = *params.GetArgs();
+  for (const auto& arg : args) {
+    str << " ";
+    if (arg->HasDescription()) {
+      str << arg->GetDescription();
+    } else if (arg->GetType() == runtime::RemoteObjectType::UNDEFINED) {
+      str << "undefined";
+    } else if (arg->HasValue()) {
+      const base::Value* v = arg->GetValue();
+      switch (v->type()) {
+        case base::Value::Type::NONE:
+          str << "null";
+          break;
+        case base::Value::Type::BOOLEAN:
+          str << v->GetBool();
+          break;
+        case base::Value::Type::INTEGER:
+          str << v->GetInt();
+          break;
+        case base::Value::Type::DOUBLE:
+          str << v->GetDouble();
+          break;
+        case base::Value::Type::STRING:
+          str << v->GetString();
+          break;
+        default:
+          DCHECK(false);
+          break;
+      }
+    } else {
+      DCHECK(false);
+    }
+  }
+  console_log_.push_back(str.str());
+}
+
+void HeadlessRenderTest::OnExceptionThrown(
+    const runtime::ExceptionThrownParams& params) {
+  const runtime::ExceptionDetails* details = params.GetExceptionDetails();
+  js_exceptions_.push_back(details->GetText() + " " +
+                           details->GetException()->GetDescription());
+}
+
 void HeadlessRenderTest::OnRequest(const GURL& url,
                                    base::Closure complete_request) {
   complete_request.Run();
@@ -177,15 +243,24 @@ void HeadlessRenderTest::OnGetDomSnapshotDone(
     std::unique_ptr<dom_snapshot::GetSnapshotResult> result) {
   CHECK_EQ(DONE, state_);
   state_ = FINISHED;
+  CleanUp();
   FinishAsynchronousTest();
   VerifyDom(result.get());
 }
 
 void HeadlessRenderTest::HandleTimeout() {
   if (state_ != FINISHED) {
+    CleanUp();
     FinishAsynchronousTest();
     OnTimeout();
   }
+}
+
+void HeadlessRenderTest::CleanUp() {
+  devtools_client_->GetRuntime()->Disable(Sync());
+  devtools_client_->GetRuntime()->GetExperimental()->RemoveObserver(this);
+  devtools_client_->GetPage()->Disable(Sync());
+  devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
 }
 
 }  // namespace headless

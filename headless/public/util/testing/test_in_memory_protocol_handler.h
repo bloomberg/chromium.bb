@@ -65,6 +65,10 @@ class TestInMemoryProtocolHandler
     return urls_requested_;
   }
 
+  const std::vector<std::string>& methods_requested() const {
+    return methods_requested_;
+  }
+
  private:
   const Response* GetResponse(const std::string& url) const;
 
@@ -86,6 +90,7 @@ class TestInMemoryProtocolHandler
   HeadlessBrowserContext* headless_browser_context_;
   std::map<std::string, std::string> url_to_devtools_frame_id_;
   std::vector<std::string> urls_requested_;
+  std::vector<std::string> methods_requested_;
   RequestDeferrer* request_deferrer_;  // NOT OWNED.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 

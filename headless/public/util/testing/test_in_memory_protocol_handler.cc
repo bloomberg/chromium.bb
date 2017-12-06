@@ -21,14 +21,18 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
   void StartFetch(const Request* request,
                   ResultListener* result_listener) override {
     GURL url = request->GetURLRequest()->url();
-    if (request->GetURLRequest()->method() == "POST") {
+    const std::string& method = request->GetURLRequest()->method();
+    if (method == "POST" || method == "PUT") {
       request->GetPostData();
+    } else if (method == "GET") {
+      // Do nothing.
     } else {
-      DCHECK_EQ("GET", request->GetURLRequest()->method());
+      DCHECK(false) << "Method " << method << " is not supported. Probably.";
     }
 
     std::string devtools_frame_id = request->GetDevToolsFrameId();
     DCHECK_NE(devtools_frame_id, "") << " For url " << url;
+    protocol_handler_->methods_requested_.push_back(method);
     protocol_handler_->RegisterUrl(url.spec(), devtools_frame_id);
 
     if (protocol_handler_->request_deferrer()) {
