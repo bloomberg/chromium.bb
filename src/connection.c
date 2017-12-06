@@ -1273,8 +1273,29 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 	fprintf(stderr, ")\n");
 }
 
+static int
+wl_closure_close_fds(struct wl_closure *closure)
+{
+	int i;
+	struct argument_details arg;
+	const char *signature = closure->message->signature;
+
+	for (i = 0; i < closure->count; i++) {
+		signature = get_next_argument(signature, &arg);
+		if (arg.type == 'h' && closure->args[i].h != -1)
+			close(closure->args[i].h);
+	}
+
+	return 0;
+}
+
 void
 wl_closure_destroy(struct wl_closure *closure)
 {
+	/* wl_closure_destroy has free() semantics */
+	if (!closure)
+		return;
+
+	wl_closure_close_fds(closure);
 	free(closure);
 }
