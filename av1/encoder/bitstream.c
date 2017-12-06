@@ -1460,16 +1460,16 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     // First write idx to indicate current compound inter prediction mode group
     // Group A (0): jnt_comp, compound_average
     // Group B (1): interintra, compound_segment, wedge
-    int masked_compound_used = is_any_masked_compound_used(bsize);
-    masked_compound_used = masked_compound_used && cm->allow_masked_compound;
-
     if (has_second_ref(mbmi)) {
-      if (masked_compound_used) {
-        assert(mbmi->comp_group_idx == 0);
+      const int masked_compound_used =
+          is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
 
+      if (masked_compound_used) {
         const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
         aom_write_symbol(w, mbmi->comp_group_idx,
                          ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2);
+      } else {
+        assert(mbmi->comp_group_idx == 0);
       }
 
       if (mbmi->comp_group_idx == 0) {
@@ -1480,27 +1480,26 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         aom_write_symbol(w, mbmi->compound_idx,
                          ec_ctx->compound_index_cdf[comp_index_ctx], 2);
       } else {
+        assert(cpi->common.reference_mode != SINGLE_REFERENCE &&
+               is_inter_compound_mode(mbmi->mode) &&
+               mbmi->motion_mode == SIMPLE_TRANSLATION);
+        assert(masked_compound_used);
+        // compound_segment, wedge
         assert(mbmi->interinter_compound_type == COMPOUND_WEDGE ||
                mbmi->interinter_compound_type == COMPOUND_SEG);
-        // compound_segment, wedge
-        if (cpi->common.reference_mode != SINGLE_REFERENCE &&
-            is_inter_compound_mode(mbmi->mode) &&
-            mbmi->motion_mode == SIMPLE_TRANSLATION &&
-            is_any_masked_compound_used(bsize) && cm->allow_masked_compound) {
-          if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
-            aom_write_symbol(w, mbmi->interinter_compound_type - 1,
-                             ec_ctx->compound_type_cdf[bsize],
-                             COMPOUND_TYPES - 1);
 
-          if (is_interinter_compound_used(COMPOUND_WEDGE, bsize) &&
-              mbmi->interinter_compound_type == COMPOUND_WEDGE) {
-            aom_write_literal(w, mbmi->wedge_index,
-                              get_wedge_bits_lookup(bsize));
-            aom_write_bit(w, mbmi->wedge_sign);
-          }
-          if (mbmi->interinter_compound_type == COMPOUND_SEG) {
-            aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
-          }
+        if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
+          aom_write_symbol(w, mbmi->interinter_compound_type - 1,
+                           ec_ctx->compound_type_cdf[bsize],
+                           COMPOUND_TYPES - 1);
+
+        if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+          assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
+          aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
+          aom_write_bit(w, mbmi->wedge_sign);
+        } else {
+          assert(mbmi->interinter_compound_type == COMPOUND_SEG);
+          aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
         }
       }
     }

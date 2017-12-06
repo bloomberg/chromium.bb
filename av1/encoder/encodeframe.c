@@ -1125,7 +1125,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           else
             // This flag is also updated for 4x4 blocks
             rdc->single_ref_used_flag = 1;
-          if (is_comp_ref_allowed(mbmi->sb_type)) {
+          if (is_comp_ref_allowed(bsize)) {
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
             if (allow_update_cdf)
@@ -1237,31 +1237,39 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
               if (mbmi->mode == NEARESTMV) wm_ctx = 2;
             }
 
-            counts->motion_mode[wm_ctx][mbmi->sb_type][mbmi->motion_mode]++;
+            counts->motion_mode[wm_ctx][bsize][mbmi->motion_mode]++;
             if (allow_update_cdf)
-              update_cdf(fc->motion_mode_cdf[wm_ctx][mbmi->sb_type],
-                         mbmi->motion_mode, MOTION_MODES);
+              update_cdf(fc->motion_mode_cdf[wm_ctx][bsize], mbmi->motion_mode,
+                         MOTION_MODES);
 #else
-            counts->motion_mode[mbmi->sb_type][mbmi->motion_mode]++;
+            counts->motion_mode[bsize][mbmi->motion_mode]++;
             if (allow_update_cdf)
-              update_cdf(fc->motion_mode_cdf[mbmi->sb_type], mbmi->motion_mode,
+              update_cdf(fc->motion_mode_cdf[bsize], mbmi->motion_mode,
                          MOTION_MODES);
 #endif  // CONFIG_EXT_WARPED_MOTION
           } else if (motion_allowed == OBMC_CAUSAL) {
-            counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
+            counts->obmc[bsize][mbmi->motion_mode == OBMC_CAUSAL]++;
             if (allow_update_cdf)
-              update_cdf(fc->obmc_cdf[mbmi->sb_type],
-                         mbmi->motion_mode == OBMC_CAUSAL, 2);
+              update_cdf(fc->obmc_cdf[bsize], mbmi->motion_mode == OBMC_CAUSAL,
+                         2);
           }
         }
 
 #if CONFIG_JNT_COMP
         if (has_second_ref(mbmi)) {
-          const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
-          ++counts->comp_group_idx[comp_group_idx_ctx][mbmi->comp_group_idx];
-          if (allow_update_cdf)
-            update_cdf(fc->comp_group_idx_cdf[comp_group_idx_ctx],
-                       mbmi->comp_group_idx, 2);
+          assert(cm->reference_mode != SINGLE_REFERENCE &&
+                 is_inter_compound_mode(mbmi->mode) &&
+                 mbmi->motion_mode == SIMPLE_TRANSLATION);
+
+          const int masked_compound_used =
+              is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
+          if (masked_compound_used) {
+            const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
+            ++counts->comp_group_idx[comp_group_idx_ctx][mbmi->comp_group_idx];
+            if (allow_update_cdf)
+              update_cdf(fc->comp_group_idx_cdf[comp_group_idx_ctx],
+                         mbmi->comp_group_idx, 2);
+          }
 
           if (mbmi->comp_group_idx == 0) {
             const int comp_index_ctx = get_comp_index_context(cm, xd);
@@ -1269,23 +1277,19 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             if (allow_update_cdf)
               update_cdf(fc->compound_index_cdf[comp_index_ctx],
                          mbmi->compound_idx, 2);
-          }
-        }
-
-        if (cm->reference_mode != SINGLE_REFERENCE &&
-            is_inter_compound_mode(mbmi->mode) && mbmi->comp_group_idx &&
-            mbmi->motion_mode == SIMPLE_TRANSLATION) {
-          if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
-            counts->compound_interinter[bsize]
-                                       [mbmi->interinter_compound_type - 1]++;
-            if (allow_update_cdf)
-              update_cdf(fc->compound_type_cdf[bsize],
-                         mbmi->interinter_compound_type - 1,
-                         COMPOUND_TYPES - 1);
+          } else {
+            assert(masked_compound_used);
+            if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
+              counts->compound_interinter[bsize]
+                                         [mbmi->interinter_compound_type - 1]++;
+              if (allow_update_cdf)
+                update_cdf(fc->compound_type_cdf[bsize],
+                           mbmi->interinter_compound_type - 1,
+                           COMPOUND_TYPES - 1);
+            }
           }
         }
 #else   // CONFIG_JNT_COMP
-
         if (cm->reference_mode != SINGLE_REFERENCE &&
             is_inter_compound_mode(mbmi->mode) &&
             mbmi->motion_mode == SIMPLE_TRANSLATION) {

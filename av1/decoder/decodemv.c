@@ -2196,23 +2196,21 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_JNT_COMP
   // init
-  mbmi->comp_group_idx = 1;
+  mbmi->comp_group_idx = 0;
   mbmi->compound_idx = 1;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
 
-  // read idx to indicate current compound inter prediction mode group
-  int masked_compound_used = is_any_masked_compound_used(bsize);
-  masked_compound_used = masked_compound_used && cm->allow_masked_compound;
-
   if (has_second_ref(mbmi)) {
+    // Read idx to indicate current compound inter prediction mode group
+    const int masked_compound_used =
+        is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
+
     if (masked_compound_used) {
       const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
       mbmi->comp_group_idx = aom_read_symbol(
           r, ec_ctx->comp_group_idx_cdf[ctx_comp_group_idx], 2, ACCT_STR);
       if (xd->counts)
         ++xd->counts->comp_group_idx[ctx_comp_group_idx][mbmi->comp_group_idx];
-    } else {
-      mbmi->comp_group_idx = 0;
     }
 
     if (mbmi->comp_group_idx == 0) {
@@ -2222,44 +2220,33 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
       if (xd->counts)
         ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-
-      if (mbmi->compound_idx) mbmi->interinter_compound_type = COMPOUND_AVERAGE;
     } else {
+      assert(cm->reference_mode != SINGLE_REFERENCE &&
+             is_inter_compound_mode(mbmi->mode) &&
+             mbmi->motion_mode == SIMPLE_TRANSLATION);
+      assert(masked_compound_used);
+
       // compound_segment, wedge
-      mbmi->interinter_compound_type = COMPOUND_AVERAGE;
-      if (cm->reference_mode != SINGLE_REFERENCE &&
-          is_inter_compound_mode(mbmi->mode) &&
-          mbmi->motion_mode == SIMPLE_TRANSLATION
-#if CONFIG_EXT_SKIP
-          && !mbmi->skip_mode
-#endif  // CONFIG_EXT_SKIP
-          ) {
-        if (is_any_masked_compound_used(bsize)) {
-          if (cm->allow_masked_compound) {
-            if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
-              mbmi->interinter_compound_type =
-                  1 + aom_read_symbol(r, ec_ctx->compound_type_cdf[bsize],
-                                      COMPOUND_TYPES - 1, ACCT_STR);
-            else
-              mbmi->interinter_compound_type = COMPOUND_SEG;
+      if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
+        mbmi->interinter_compound_type =
+            1 + aom_read_symbol(r, ec_ctx->compound_type_cdf[bsize],
+                                COMPOUND_TYPES - 1, ACCT_STR);
+      else
+        mbmi->interinter_compound_type = COMPOUND_SEG;
 
-            if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
-              assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
-              mbmi->wedge_index =
-                  aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
-              mbmi->wedge_sign = aom_read_bit(r, ACCT_STR);
-            }
-            if (mbmi->interinter_compound_type == COMPOUND_SEG) {
-              mbmi->mask_type =
-                  aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
-            }
-          }
-        }
-
-        if (xd->counts)
-          xd->counts->compound_interinter[bsize]
-                                         [mbmi->interinter_compound_type - 1]++;
+      if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
+        assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
+        mbmi->wedge_index =
+            aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
+        mbmi->wedge_sign = aom_read_bit(r, ACCT_STR);
+      } else {
+        assert(mbmi->interinter_compound_type == COMPOUND_SEG);
+        mbmi->mask_type = aom_read_literal(r, MAX_SEG_MASK_BITS, ACCT_STR);
       }
+
+      if (xd->counts)
+        xd->counts
+            ->compound_interinter[bsize][mbmi->interinter_compound_type - 1]++;
     }
   }
 #else  // CONFIG_JNT_COMP
