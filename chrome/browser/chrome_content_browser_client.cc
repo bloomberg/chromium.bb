@@ -209,8 +209,6 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/bluetooth/adapter_factory.h"
-#include "device/bluetooth/public/interfaces/adapter.mojom.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "extensions/features/features.h"
@@ -3614,9 +3612,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
     frame_interfaces_parameterized_->AddInterface(
         base::Bind(&CreateWebUsbChooserService));
   }
-
-  frame_interfaces_->AddInterface<bluetooth::mojom::AdapterFactory>(
-      base::Bind(&bluetooth::AdapterFactory::Create));
 
   // Register mojo ContentTranslateDriver interface only for main frame.
   // Use feature to determine whether translate or language code handles

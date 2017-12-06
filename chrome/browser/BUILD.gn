@@ -1532,7 +1532,10 @@ split_static_library("browser") {
   libs = []
   ldflags = []
 
-  allow_circular_includes_from = [ "//chrome/browser/ui" ]
+  allow_circular_includes_from = [
+    "//chrome/browser/ui",
+    "//chrome/browser/ui/webui/bluetooth_internals",
+  ]
 
   public_deps = [
     "//base",
@@ -1566,6 +1569,7 @@ split_static_library("browser") {
     "//chrome/browser/safe_browsing",
     "//chrome/browser/ssl:proto",
     "//chrome/browser/ui",
+    "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
     "//components/about_handler",
@@ -1718,7 +1722,6 @@ split_static_library("browser") {
     "//crypto",
     "//crypto:platform",
     "//device/base",
-    "//device/bluetooth:mojo",
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
     "//device/vr/features",
@@ -4431,10 +4434,11 @@ grit("resources") {
     "//chrome/browser/engagement:mojo_bindings_js",
     "//chrome/browser/media:mojo_bindings_js",
     "//chrome/browser/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
+    "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings_js",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js",
-    "//device/bluetooth/public/interfaces:experimental_interfaces_js",
+    "//device/bluetooth/public/interfaces:deprecated_experimental_interfaces_js",
     "//device/bluetooth/public/interfaces:interfaces_js",
     "//url/mojo:url_mojom_gurl_js",
     "//url/mojo:url_mojom_origin_js",

@@ -204,8 +204,6 @@ split_static_library("ui") {
     "web_contents_sizer.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
-    "webui/bluetooth_internals/bluetooth_internals_ui.cc",
-    "webui/bluetooth_internals/bluetooth_internals_ui.h",
     "webui/chrome_web_ui_controller_factory.cc",
     "webui/chrome_web_ui_controller_factory.h",
     "webui/components_ui.cc",
@@ -319,6 +317,7 @@ split_static_library("ui") {
     "webui/version_ui.h",
   ]
 
+  allow_circular_includes_from = []
   defines = []
   libs = []
 
@@ -357,6 +356,7 @@ split_static_library("ui") {
     "//chrome/browser/engagement:mojo_bindings",
     "//chrome/browser/media:mojo_bindings",
     "//chrome/browser/safe_browsing",
+    "//chrome/browser/ui/webui/bluetooth_internals",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings",
@@ -468,7 +468,6 @@ split_static_library("ui") {
     "//content/public/common",
     "//crypto",
     "//device/base",
-    "//device/bluetooth/public/interfaces:experimental_interfaces",
     "//device/usb",
     "//extensions/features",
     "//media",
@@ -514,7 +513,8 @@ split_static_library("ui") {
     "//ui/web_dialogs",
     "//v8:v8_version",
   ]
-  allow_circular_includes_from = []
+  allow_circular_includes_from +=
+      [ "//chrome/browser/ui/webui/bluetooth_internals" ]
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     deps += [ "//chrome/browser/ui/webui/discards:mojo_bindings" ]
@@ -1538,7 +1538,7 @@ split_static_library("ui") {
       "//ui/chromeos/events",
       "//ui/keyboard:mojom",
     ]
-    allow_circular_includes_from = [ "//chrome/browser/chromeos" ]
+    allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 
     if (enable_rlz) {
       deps += [ "//chrome/browser:rlz" ]

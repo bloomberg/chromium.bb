@@ -116,6 +116,7 @@
       <include name="IDR_BLUETOOTH_INTERNALS_EXPANDABLE_LIST_JS" file="resources\bluetooth_internals\expandable_list.js" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_HTML" file="resources\bluetooth_internals\bluetooth_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_JS" file="resources\bluetooth_internals\bluetooth_internals.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\bluetooth_internals\bluetooth_internals.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_OBJECT_FIELDSET_JS" file="resources\bluetooth_internals\object_fieldset.js" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_SERVICE_LIST_JS" file="resources\bluetooth_internals\service_list.js" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_SIDEBAR_JS" file="resources\bluetooth_internals\sidebar.js" type="BINDATA" compress="gzip" />
