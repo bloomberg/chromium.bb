@@ -47,6 +47,7 @@ class ProfilingService : public service_manager::Service,
                           mojo::ScopedHandle memlog_pipe_receiver,
                           mojom::ProcessType process_type) override;
   void DumpProcessesForTracing(
+      bool keep_small_allocations,
       DumpProcessesForTracingCallback callback) override;
   void GetProfiledPids(GetProfiledPidsCallback callback) override;
 
@@ -61,6 +62,7 @@ class ProfilingService : public service_manager::Service,
       mojom::ProfilingServiceRequest request);
 
   void OnGetVmRegionsCompleteForDumpProcessesForTracing(
+      bool keep_small_allocations,
       mojom::ProfilingService::DumpProcessesForTracingCallback callback,
       bool success,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
