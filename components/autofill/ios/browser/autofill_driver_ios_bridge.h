@@ -14,6 +14,7 @@ struct FormData;
 class FormStructure;
 }
 
+// Interface used to pipe form data from AutofillDriverIOS to the embedder.
 @protocol AutofillDriverIOSBridge
 
 - (void)onFormDataFilled:(uint16_t)query_id
