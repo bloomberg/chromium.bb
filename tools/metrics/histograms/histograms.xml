@@ -13481,6 +13481,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch"
+    enum="BooleanSuccess">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Whether the warmup (or probe) URL was successfully fetched over a data saver
+    proxy.
+  </summary>
+</histogram>
+
 <histogram name="DataUsage.MatchingRulesCount.Invalid" units="count">
   <owner>bengr@chromium.org</owner>
   <owner>rajendrant@chromium.org</owner>
@@ -100763,6 +100772,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Previews.DataSavings"/>
   <affected-histogram name="Previews.DataSavingsPercent"/>
   <affected-histogram name="Previews.OriginalContentLength"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataSaverProxyTypes" separator=".">
+  <owner>tbansal@chromium.org</owner>
+  <suffix name="SecureProxy.Core"
+      label="Over a secure, core data saver proxy."/>
+  <suffix name="SecureProxy.NonCore"
+      label="Over a secure, non-core data saver proxy."/>
+  <suffix name="InsecureProxy.Core"
+      label="Over an insecure, core data saver proxy."/>
+  <suffix name="InsecureProxy.NonCore"
+      label="Over an insecure, non-core data saver proxy."/>
+  <affected-histogram
+      name="DataReductionProxy.WarmupURLFetcherCallback.SuccessfulFetch"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataUsageReportSubmissionBytes" separator=".">

@@ -35,6 +35,8 @@ class DataReductionProxyServer {
       const std::vector<DataReductionProxyServer>&
           data_reduction_proxy_servers);
 
+  bool IsCoreProxy() const;
+
   // Returns |proxy_type_| for verification by tests.
   ProxyServer_ProxyType GetProxyTypeForTesting() const;
 
