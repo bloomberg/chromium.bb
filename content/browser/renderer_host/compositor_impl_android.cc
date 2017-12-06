@@ -584,8 +584,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   settings.initial_debug_state.show_fps_counter =
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.single_thread_proxy_scheduler = true;
-  settings.resource_settings.buffer_to_texture_target_map =
-      CreateBufferToTextureTargetMap();
+  settings.resource_settings.texture_target_exception_list =
+      CreateBufferUsageAndFormatExceptionList();
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 

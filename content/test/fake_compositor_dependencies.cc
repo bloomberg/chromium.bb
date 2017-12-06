@@ -57,9 +57,9 @@ bool FakeCompositorDependencies::IsElasticOverscrollEnabled() {
   return true;
 }
 
-const viz::BufferToTextureTargetMap&
-FakeCompositorDependencies::GetBufferToTextureTargetMap() {
-  return buffer_to_texture_target_map_;
+const viz::BufferUsageAndFormatList&
+FakeCompositorDependencies::GetTextureTargetExceptionList() {
+  return texture_target_exception_list_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

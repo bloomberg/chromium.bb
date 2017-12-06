@@ -19,11 +19,11 @@ namespace viz {
 
 // |image_targets| is a map from every supported pair of GPU memory buffer
 // usage/format to its GL texture target.
-VIZ_HOST_EXPORT ResourceSettings
-CreateResourceSettings(const BufferToTextureTargetMap& image_targets);
+VIZ_HOST_EXPORT ResourceSettings CreateResourceSettings(
+    const BufferUsageAndFormatList& texture_target_exception_list);
 
-VIZ_HOST_EXPORT RendererSettings
-CreateRendererSettings(const BufferToTextureTargetMap& image_targets);
+VIZ_HOST_EXPORT RendererSettings CreateRendererSettings(
+    const BufferUsageAndFormatList& texture_target_exception_list);
 
 }  // namespace viz
 

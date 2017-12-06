@@ -10,11 +10,10 @@
 namespace viz {
 namespace {
 
-// Ensures that a map populated with various values can be serialized to/from
+// Ensures that a list populated with various values can be serialized to/from
 // string successfully.
-TEST(BufferToTextureTargetMapTest, SerializeRoundTrip) {
-  BufferToTextureTargetMap test_map;
-  uint32_t next_value = 0;
+TEST(BuffferUsageAndFormatList, SerializeRoundTrip) {
+  BufferUsageAndFormatList test_list;
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
        ++usage_idx) {
     gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
@@ -22,15 +21,14 @@ TEST(BufferToTextureTargetMapTest, SerializeRoundTrip) {
          format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
          ++format_idx) {
       gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      test_map.insert(BufferToTextureTargetMap::value_type(
-          BufferToTextureTargetKey(usage, format), next_value++));
+      test_list.push_back(std::make_pair(usage, format));
     }
   }
 
-  std::string serialized_map = BufferToTextureTargetMapToString(test_map);
-  BufferToTextureTargetMap deserialized_map =
-      StringToBufferToTextureTargetMap(serialized_map);
-  EXPECT_EQ(test_map, deserialized_map);
+  std::string serialized_list = BufferUsageAndFormatListToString(test_list);
+  BufferUsageAndFormatList deserialized_list =
+      StringToBufferUsageAndFormatList(serialized_list);
+  EXPECT_EQ(test_list, deserialized_list);
 }
 
 }  // namespace

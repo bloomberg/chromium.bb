@@ -24,8 +24,6 @@ class FakeResourceProvider : public ResourceProvider {
       bool high_bit_for_testing = false) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
-    resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     resource_settings.high_bit_for_testing = high_bit_for_testing;
     return base::WrapUnique(
         new FakeResourceProvider(context_provider, shared_bitmap_manager,
@@ -40,8 +38,6 @@ class FakeResourceProvider : public ResourceProvider {
       bool high_bit_for_testing = false) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
-    resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     resource_settings.high_bit_for_testing = high_bit_for_testing;
     return std::make_unique<LayerTreeResourceProvider>(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
@@ -54,8 +50,6 @@ class FakeResourceProvider : public ResourceProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
-    resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     return std::make_unique<DisplayResourceProvider>(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
         resource_settings);
@@ -68,8 +62,6 @@ class FakeResourceProvider : public ResourceProvider {
       bool high_bit_for_testing = false) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
-    resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     resource_settings.high_bit_for_testing = high_bit_for_testing;
     return base::WrapUnique(new FakeResourceProvider(
         context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,

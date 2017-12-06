@@ -29,7 +29,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   bool IsPartialRasterEnabled() override;
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
-  const viz::BufferToTextureTargetMap& GetBufferToTextureTargetMap() override;
+  const viz::BufferUsageAndFormatList& GetTextureTargetExceptionList() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -43,7 +43,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
  private:
   cc::TestTaskGraphRunner task_graph_runner_;
   blink::scheduler::FakeRendererScheduler renderer_scheduler_;
-  viz::BufferToTextureTargetMap buffer_to_texture_target_map_;
+  viz::BufferUsageAndFormatList texture_target_exception_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorDependencies);
 };

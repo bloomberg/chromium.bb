@@ -8,6 +8,7 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 
 namespace gpu {
@@ -163,6 +164,18 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
 
   NOTREACHED();
   return false;
+}
+
+uint32_t GetPlatformSpecificTextureTarget() {
+#if defined(OS_MACOSX)
+  return GL_TEXTURE_RECTANGLE_ARB;
+#elif defined(OS_ANDROID) || defined(OS_LINUX)
+  return GL_TEXTURE_EXTERNAL_OES;
+#elif defined(OS_WIN)
+  return GL_TEXTURE_2D;
+#else
+  return 0;
+#endif
 }
 
 }  // namespace gpu

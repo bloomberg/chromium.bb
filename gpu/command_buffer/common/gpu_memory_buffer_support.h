@@ -30,6 +30,9 @@ GPU_EXPORT bool IsImageSizeValidForGpuMemoryBufferFormat(
     const gfx::Size& size,
     gfx::BufferFormat format);
 
+// Returns the texture target to use with native GpuMemoryBuffers.
+GPU_EXPORT uint32_t GetPlatformSpecificTextureTarget();
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_BUFFER_SUPPORT_H_

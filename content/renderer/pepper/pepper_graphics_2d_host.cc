@@ -30,6 +30,8 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -232,15 +234,22 @@ bool PepperGraphics2DHost::Init(
   // image-backed textures for direct scanout (for use in overlays).
   RenderThreadImpl* rti = RenderThreadImpl::current();
   if (rti && rti->IsGpuMemoryBufferCompositorResourcesEnabled()) {
-    const auto& map = rti->GetBufferToTextureTargetMap();
-    auto target_it = map.find(viz::BufferToTextureTargetKey(
-        gfx::BufferUsage::SCANOUT, gfx::BufferFormat::BGRA_8888));
-    if (target_it != map.end())
-      scanout_texture_target_bgra_ = target_it->second;
-    target_it = map.find(viz::BufferToTextureTargetKey(
-        gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888));
-    if (target_it != map.end())
-      scanout_texture_target_rgba_ = target_it->second;
+    const auto& list = rti->GetTextureTargetExceptionList();
+    if (base::ContainsValue(
+            list, viz::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
+                                            gfx::BufferFormat::BGRA_8888))) {
+      scanout_texture_target_bgra_ = gpu::GetPlatformSpecificTextureTarget();
+    } else {
+      scanout_texture_target_bgra_ = GL_TEXTURE_2D;
+    }
+
+    if (base::ContainsValue(
+            list, viz::BufferUsageAndFormat(gfx::BufferUsage::SCANOUT,
+                                            gfx::BufferFormat::RGBA_8888))) {
+      scanout_texture_target_rgba_ = gpu::GetPlatformSpecificTextureTarget();
+    } else {
+      scanout_texture_target_rgba_ = GL_TEXTURE_2D;
+    }
   }
 
   return true;

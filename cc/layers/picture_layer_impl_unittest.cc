@@ -84,8 +84,6 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     settings.commit_to_active_tree = false;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
-    settings.resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     settings.enable_image_animations = true;
     return settings;
   }

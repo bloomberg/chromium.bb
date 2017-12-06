@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/gpu_switches.h"
 #include "ui/gl/gl_bindings.h"
@@ -86,36 +87,16 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   return configurations;
 }
 
-uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                               gfx::BufferUsage usage) {
+bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
+                                                gfx::BufferUsage usage) {
 #if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_ANDROID)
   GpuMemoryBufferConfigurationSet native_configurations =
       GetNativeGpuMemoryBufferConfigurations();
-  if (native_configurations.find(std::make_pair(format, usage)) ==
-      native_configurations.end()) {
-    return GL_TEXTURE_2D;
-  }
-
-  switch (GetNativeGpuMemoryBufferType()) {
-    case gfx::NATIVE_PIXMAP:
-    case gfx::ANDROID_HARDWARE_BUFFER:
-      // GPU memory buffers that are shared with the GL using EGLImages
-      // require TEXTURE_EXTERNAL_OES.
-      return GL_TEXTURE_EXTERNAL_OES;
-    case gfx::IO_SURFACE_BUFFER:
-      // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
-      return GL_TEXTURE_RECTANGLE_ARB;
-    case gfx::SHARED_MEMORY_BUFFER:
-    case gfx::EMPTY_BUFFER:
-      break;
-    case gfx::DXGI_SHARED_HANDLE:
-      return GL_TEXTURE_2D;
-  }
-  NOTREACHED();
-  return GL_TEXTURE_2D;
+  return native_configurations.find(std::make_pair(format, usage)) !=
+         native_configurations.end();
 #else  // defined(USE_OZONE) || defined(OS_MACOSX)
-  return GL_TEXTURE_2D;
+  return false;
 #endif
 }
 
