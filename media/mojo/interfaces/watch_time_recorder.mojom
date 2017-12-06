@@ -16,6 +16,7 @@ struct PlaybackProperties {
   VideoCodec video_codec;  // playbacks (HLS, remoting, etc).
   bool has_audio;          // Note: Due to the above, we also need these bools
   bool has_video;          // for audio and video presence.
+  bool is_background;      // Is report for playback in the background?
   bool is_mse;
   bool is_eme;
   bool is_embedded_media_experience;  // Playback from 'Downloads' on Android.
@@ -35,6 +36,9 @@ struct PlaybackProperties {
 //
 // Values will be recorded to UMA and UKM upon requesting finalization or the
 // destruction of the WatchTimeRecorder binding.
+//
+// Note: Not all values recorded by UKM are recorded by UMA. See implementations
+// for more details; specifically WatchTimeRecorder::ShouldReportToUma().
 //
 // Note: There are some UMA values that the WatchTimeRecorder will generate
 // based on the recorded keys and values. Such metrics will only be generated

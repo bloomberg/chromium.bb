@@ -2572,7 +2572,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       mojom::PlaybackProperties::New(
           pipeline_metadata_.audio_decoder_config.codec(),
           pipeline_metadata_.video_decoder_config.codec(),
-          pipeline_metadata_.has_audio, pipeline_metadata_.has_video,
+          pipeline_metadata_.has_audio, pipeline_metadata_.has_video, false,
           !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_,
           pipeline_metadata_.natural_size, top_origin, is_top_frame),
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,

@@ -25,26 +25,25 @@ namespace media {
 
 // Class for monitoring and reporting watch time in response to various state
 // changes during the playback of media. We record metrics for audio only
-// playbacks as well as audio+video playbacks of sufficient size.
+// playbacks as well as video only or audio+video playbacks of sufficient size.
 //
-// Watch time for our purposes is defined as the amount of elapsed media time
-// for audio only or audio+video media. A minimum of 7 seconds of unmuted media
-// must be watched to start watch time monitoring. Watch time is checked every 5
-// seconds from then on and reported to multiple buckets: All, MSE, SRC, EME,
-// AC, and battery.
+// Watch time for our purposes is defined as the amount of elapsed media time. A
+// minimum of 7 seconds of unmuted media must be watched to start watch time
+// monitoring. Watch time is checked every 5 seconds from then on and reported
+// to multiple buckets: All, MSE, SRC, EME, AC, and battery.
 //
-// Any one of paused, hidden (where this is video), or muted is sufficient to
-// stop watch time metric reports. Each of these has a hysteresis where if the
-// state change is undone within 5 seconds, the watch time will be counted as
-// uninterrupted.
+// Either of paused or muted is sufficient to stop watch time metric reports.
+// Each of these has a hysteresis where if the state change is undone within 5
+// seconds, the watch time will be counted as uninterrupted.
 //
-// If the media is audio+video, foreground watch time is logged to the normal
-// AudioVideo bucket, while background watch time goes to the specific
-// AudioVideo.Background bucket. As with other events, there is hysteresis on
-// change between the foreground and background.
+// There are both foreground and background buckets for watch time. E.g., when
+// media goes into the background foreground collection stops and background
+// collection starts. As with other events, there is hysteresis on change
+// between the foreground and background.
 //
-// Power events (on/off battery power) have a similar hysteresis, but unlike
-// the aforementioned properties, will not stop metric collection.
+// Power events (on/off battery power), native controls changes, or display type
+// changes have a similar hysteresis, but unlike the aforementioned properties,
+// will not stop metric collection.
 //
 // Each seek event will result in a new watch time metric being started and the
 // old metric finalized as accurately as possible.
@@ -76,10 +75,10 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
                     mojom::WatchTimeRecorderProvider* provider);
   ~WatchTimeReporter() override;
 
-  // These methods are used to ensure that watch time is only reported for
-  // media that is actually playing. They should be called whenever the media
-  // starts or stops playing for any reason. If the media is audio+video and
-  // currently hidden, OnPlaying() will start background watch time reporting.
+  // These methods are used to ensure that watch time is only reported for media
+  // that is actually playing. They should be called whenever the media starts
+  // or stops playing for any reason. If the media is currently hidden,
+  // OnPlaying() will start background watch time reporting.
   void OnPlaying();
   void OnPaused();
 
@@ -92,19 +91,14 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   // that is actually audible to the user. It should be called whenever the
   // volume changes.
   //
-  // Note: This does not catch all cases. E.g., headphones that are being
+  // Note: This does not catch all cases. E.g., headphones that are not being
   // listened too, or even OS level volume state.
   void OnVolumeChange(double volume);
 
-  // These methods are used to ensure that watch time is only reported for
-  // videos that are actually visible to the user. They should be called when
-  // the video is shown or hidden respectively. OnHidden() will start background
-  // watch time reporting if the media is audio+video.
-  //
-  // TODO(dalecurtis): At present, this is only called when the entire content
-  // window goes into the foreground or background respectively; i.e. it does
-  // not catch cases where the video is in the foreground but out of the view
-  // port. We need a method for rejecting out of view port videos.
+  // These methods are used to ensure that watch time is only reported for media
+  // that is actually visible to the user. They should be called when the media
+  // is shown or hidden respectively. OnHidden() will start background watch
+  // time reporting.
   void OnShown();
   void OnHidden();
 
