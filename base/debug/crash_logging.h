@@ -59,6 +59,19 @@ BASE_EXPORT void SetCrashKeyString(CrashKeyString* crash_key,
 // null.
 BASE_EXPORT void ClearCrashKeyString(CrashKeyString* crash_key);
 
+// A scoper that sets the specified key to value for the lifetime of the
+// object, and clears it on destruction.
+class BASE_EXPORT ScopedCrashKeyString {
+ public:
+  ScopedCrashKeyString(CrashKeyString* crash_key, base::StringPiece value);
+  ~ScopedCrashKeyString();
+
+ private:
+  CrashKeyString* const crash_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCrashKeyString);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // The following declarations are used to initialize the crash key system
 // in //base by providing implementations for the above functions.
