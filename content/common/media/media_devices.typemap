@@ -4,7 +4,13 @@
 
 mojom = "//third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom"
 public_headers = [ "//content/common/media/media_devices.h" ]
-traits_headers = [ "//content/common/media/media_devices_param_traits.h" ]
+traits_headers = [
+  "//content/common/media/media_devices_param_traits.h",
+  "//content/common/media/media_devices_typemap_traits.h",
+]
+sources = [
+  "//content/common/media/media_devices_typemap_traits.cc",
+]
 type_mappings = [
   "blink.mojom.MediaDeviceType=content::MediaDeviceType",
   "blink.mojom.MediaDeviceInfo=content::MediaDeviceInfo",
