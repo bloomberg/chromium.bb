@@ -21,8 +21,8 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns the AccountConsistencyService(s) and associates them with
-// browser states.
+// Singleton that creates the AccountConsistencyService(s) and associates those
+// services  with browser states.
 class AccountConsistencyServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:

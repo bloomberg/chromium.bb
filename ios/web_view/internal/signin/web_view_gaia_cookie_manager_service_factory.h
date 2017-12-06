@@ -21,8 +21,8 @@ namespace ios_web_view {
 
 class WebViewBrowserState;
 
-// Singleton that owns the GaiaCookieManagerService(s) and associates them with
-// browser states.
+// Singleton that owns the GaiaCookieManagerService(s) and associates those
+// services  with browser states.
 class WebViewGaiaCookieManagerServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:

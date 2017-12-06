@@ -21,7 +21,7 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-// Singleton that owns the PrerenderService and associates with with
+// Singleton that creates the PrerenderService and associates that service with
 // ios::ChromeBrowserState.
 class PrerenderServiceFactory : public BrowserStateKeyedServiceFactory {
  public:

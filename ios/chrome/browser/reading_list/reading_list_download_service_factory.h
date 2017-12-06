@@ -21,8 +21,8 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Singleton that owns the ReadingListDownloadService and associates it with
-// ios::ChromeBrowserState.
+// Singleton that creates the ReadingListDownloadService and associates that
+// service with ios::ChromeBrowserState.
 class ReadingListDownloadServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:

@@ -20,7 +20,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Singleton that owns the ReadingListModel and associates it with
+// Singleton that creates the ReadingListModel and associates that service with
 // ios::ChromeBrowserState.
 class ReadingListModelFactory : public BrowserStateKeyedServiceFactory {
  public:

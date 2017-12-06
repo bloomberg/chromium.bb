@@ -21,8 +21,8 @@ namespace ios {
 
 class ChromeBrowserState;
 
-// Singleton that owns the GaiaCookieManagerService(s) and associates them with
-// browser states.
+// Singleton that creates the GaiaCookieManagerService(s) and associates those
+// services with browser states.
 class GaiaCookieManagerServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   // Returns the instance of GaiaCookieManagerService associated with this
