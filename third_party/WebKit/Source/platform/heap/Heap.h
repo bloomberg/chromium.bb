@@ -511,6 +511,9 @@ class PLATFORM_EXPORT ThreadHeap {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
+  // Write barrier used after adding an object to the graph.
+  void WriteBarrier(const void* value);
+
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
   void PoisonAllHeaps();
@@ -536,6 +539,10 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void CommitCallbackStacks();
   void DecommitCallbackStacks();
+
+  // Fast write barrier assuming that incremental marking is running and
+  // |value| is not nullptr.
+  void WriteBarrierInternal(BasePage*, const void* value);
 
   ThreadState* thread_state_;
   ThreadHeapStats stats_;
@@ -567,6 +574,8 @@ class PLATFORM_EXPORT ThreadHeap {
 
   static ThreadHeap* main_thread_heap_;
 
+  template <typename T>
+  friend class Member;
   friend class ThreadState;
 };
 

@@ -76,6 +76,38 @@ TEST(IncrementalMarkingTest, NoWriteBarrierOnMarkedObject) {
   heap.DisableIncrementalMarkingBarrier();
 }
 
+TEST(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
+  Dummy* dummy = Dummy::Create();
+  HeapObjectHeader* dummy_header = HeapObjectHeader::FromPayload(dummy);
+
+  ThreadHeap& heap = ThreadState::Current()->Heap();
+  CallbackStack* marking_stack = heap.MarkingStack();
+  EXPECT_TRUE(marking_stack->IsEmpty());
+  marking_stack->Commit();
+  heap.EnableIncrementalMarkingBarrier();
+  EXPECT_FALSE(dummy_header->IsMarked());
+  heap.WriteBarrier(dummy);
+  EXPECT_TRUE(dummy_header->IsMarked());
+  EXPECT_FALSE(marking_stack->IsEmpty());
+  CallbackStack::Item* item = marking_stack->Pop();
+  EXPECT_EQ(dummy, item->Object());
+  heap.DisableIncrementalMarkingBarrier();
+  marking_stack->Decommit();
+}
+
+TEST(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
+  Dummy* dummy = Dummy::Create();
+  HeapObjectHeader* dummy_header = HeapObjectHeader::FromPayload(dummy);
+
+  ThreadHeap& heap = ThreadState::Current()->Heap();
+  CallbackStack* marking_stack = heap.MarkingStack();
+  EXPECT_TRUE(marking_stack->IsEmpty());
+  EXPECT_FALSE(dummy_header->IsMarked());
+  heap.WriteBarrier(dummy);
+  EXPECT_FALSE(dummy_header->IsMarked());
+  EXPECT_TRUE(marking_stack->IsEmpty());
+}
+
 namespace {
 
 class Mixin : public GarbageCollectedMixin {

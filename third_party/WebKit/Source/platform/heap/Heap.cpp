@@ -809,6 +809,31 @@ void ThreadHeap::DisableIncrementalMarkingBarrier() {
     arenas_[i]->DisableIncrementalMarkingBarrier();
 }
 
+void ThreadHeap::WriteBarrier(const void* value) {
+  if (!value || !ThreadState::Current()->IsIncrementalMarking())
+    return;
+
+  WriteBarrierInternal(PageFromObject(value), value);
+}
+
+void ThreadHeap::WriteBarrierInternal(BasePage* page, const void* value) {
+  DCHECK(ThreadState::Current()->IsIncrementalMarking());
+  DCHECK(page->IsIncrementalMarking());
+  DCHECK(value);
+  HeapObjectHeader* const header =
+      page->IsLargeObjectPage()
+          ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()
+          : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+                reinterpret_cast<Address>(const_cast<void*>(value)));
+  if (header->IsMarked())
+    return;
+
+  // Mark and push trace callback.
+  header->Mark();
+  PushTraceCallback(header->Payload(),
+                    ThreadHeap::GcInfo(header->GcInfoIndex())->trace_);
+}
+
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;
 
 }  // namespace blink
