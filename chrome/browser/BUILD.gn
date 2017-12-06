@@ -4762,6 +4762,15 @@ static_library("test_support") {
       "extensions/fake_safe_browsing_database_manager.h",
     ]
   }
+
+  if (has_spellcheck_panel) {
+    sources += [
+      "spellchecker/test/spellcheck_content_browser_client.cc",
+      "spellchecker/test/spellcheck_content_browser_client.h",
+      "spellchecker/test/spellcheck_mock_panel_host.cc",
+      "spellchecker/test/spellcheck_mock_panel_host.h",
+    ]
+  }
 }
 
 static_library("test_support_ui") {
