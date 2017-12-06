@@ -156,7 +156,8 @@ def _GetSymbolsMapping(dry_run, file_mapping, output_directory):
     if os.path.exists(exe_unstripped_path):
       symbols_mapping[target] = exe_unstripped_path
     elif os.path.exists(lib_unstripped_path):
-      symbols_mapping[target] = lib_unstripped_path
+      # TODO(wez): libraries are named by basename in stacks, not by path.
+      symbols_mapping[binary_name] = lib_unstripped_path
     else:
       symbols_mapping[target] = source
 
@@ -532,6 +533,7 @@ def _SymbolizeBacktrace(backtrace, file_mapping):
   # Group |backtrace| entries according to the associated binary, and locate
   # the path to the debug symbols for that binary, if any.
   batches = {}
+
   for entry in backtrace:
     debug_binary = _LookupDebugBinary(entry, file_mapping)
     if debug_binary:
