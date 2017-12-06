@@ -22,14 +22,11 @@
 #include "content/public/common/service_worker_modes.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
-#include "net/cert/ct_policy_status.h"
-#include "net/cert/signed_certificate_timestamp.h"
-#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_info.h"
-#include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/cors_error_status.h"
+#include "services/network/public/cpp/ssl_info_ipc_traits.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -50,26 +47,6 @@ namespace IPC {
 template <>
 struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<net::SSLInfo> {
-  typedef net::SSLInfo param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<net::HashValue> {
-  typedef net::HashValue param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -117,16 +94,6 @@ struct ParamTraits<scoped_refptr<content::ResourceRequestBody>> {
   static void Log(const param_type& p, std::string* l);
 };
 
-template <>
-struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
-  typedef scoped_refptr<net::ct::SignedCertificateTimestamp> param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
 }  // namespace IPC
 
 #endif  // INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
@@ -138,17 +105,6 @@ struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
 IPC_ENUM_TRAITS_MAX_VALUE( \
     net::HttpResponseInfo::ConnectionInfo, \
     net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS - 1)
-
-IPC_ENUM_TRAITS_MAX_VALUE(net::TokenBindingParam, net::TB_PARAM_ECDSAP256)
-IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
-                          net::SSLInfo::HANDSHAKE_FULL)
-IPC_ENUM_TRAITS_MAX_VALUE(
-    net::ct::CTPolicyCompliance,
-    net::ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE)
-IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPVerifyResult::ResponseStatus,
-                          net::OCSPVerifyResult::PARSE_RESPONSE_DATA_ERROR)
-IPC_ENUM_TRAITS_MAX_VALUE(net::OCSPRevocationStatus,
-                          net::OCSPRevocationStatus::UNKNOWN)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
                           network::mojom::FetchRequestMode::kLast)
@@ -236,13 +192,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(net::MutableNetworkTrafficAnnotationTag)
   IPC_STRUCT_TRAITS_MEMBER(unique_id_hash_code)
 IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(net::SignedCertificateTimestampAndStatus)
-  IPC_STRUCT_TRAITS_MEMBER(sct)
-  IPC_STRUCT_TRAITS_MEMBER(status)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(net::ct::SCTVerifyStatus, net::ct::SCT_STATUS_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(method)

@@ -8,7 +8,7 @@ public_headers =
 traits_headers = [ "//content/common/resource_messages.h" ]
 deps = [
   "//content:export",
-  "//net:net",
+  "//net",
   "//services/network/public/cpp",
   "//third_party/WebKit/public:blink_headers",
 ]
