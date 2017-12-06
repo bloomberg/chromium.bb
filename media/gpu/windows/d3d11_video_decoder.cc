@@ -46,8 +46,8 @@ namespace media {
 
 D3D11VideoDecoder::D3D11VideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-    base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
-    OutputWithReleaseMailboxCB output_cb)
+    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+    deprecated::OutputWithReleaseMailboxCB output_cb)
     : impl_task_runner_(std::move(gpu_task_runner)), weak_factory_(this) {
   // We create |impl_| on the wrong thread, but we never use it here.
   // Note that the output callback will hop to our thread, post the video
@@ -125,21 +125,22 @@ int D3D11VideoDecoder::GetMaxDecodeRequests() const {
 }
 
 void D3D11VideoDecoder::OutputWithThreadHoppingRelease(
-    OutputWithReleaseMailboxCB output_cb,
-    VideoFrame::ReleaseMailboxCB impl_thread_cb,
+    deprecated::OutputWithReleaseMailboxCB output_cb,
+    deprecated::ReleaseMailboxCB impl_thread_cb,
     const scoped_refptr<VideoFrame>& video_frame) {
   // Called on our thread to output a video frame.  Modify the release cb so
   // that it jumps back to the impl thread.
   output_cb.Run(
-      base::Bind(&D3D11VideoDecoder::OnMailboxReleased,
-                 weak_factory_.GetWeakPtr(), std::move(impl_thread_cb)),
+      base::BindOnce(&D3D11VideoDecoder::OnMailboxReleased,
+                     weak_factory_.GetWeakPtr(), std::move(impl_thread_cb)),
       video_frame);
 }
 
 void D3D11VideoDecoder::OnMailboxReleased(
-    VideoFrame::ReleaseMailboxCB impl_thread_cb,
+    deprecated::ReleaseMailboxCB impl_thread_cb,
     const gpu::SyncToken& token) {
-  impl_task_runner_->PostTask(FROM_HERE, base::Bind(impl_thread_cb, token));
+  impl_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(impl_thread_cb), token));
 }
 
 }  // namespace media

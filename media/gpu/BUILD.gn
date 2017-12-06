@@ -370,6 +370,9 @@ component("gpu") {
       "media_foundation_video_encode_accelerator_win.h",
       "windows/d3d11_h264_accelerator.cc",
       "windows/d3d11_h264_accelerator.h",
+      "windows/d3d11_picture_buffer.cc",
+      "windows/d3d11_picture_buffer.h",
+      "windows/init_guid.cc",
     ]
     configs += [
       # TODO(crbug.com/167187): Fix size_t to int truncations.

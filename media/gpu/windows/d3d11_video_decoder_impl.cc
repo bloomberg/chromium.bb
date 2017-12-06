@@ -12,6 +12,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -27,7 +28,7 @@ static bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
 
 D3D11VideoDecoderImpl::D3D11VideoDecoderImpl(
     base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
-    OutputWithReleaseMailboxCB output_cb)
+    deprecated::OutputWithReleaseMailboxCB output_cb)
     : get_stub_cb_(get_stub_cb),
       output_cb_(std::move(output_cb)),
       weak_factory_(this) {}
@@ -339,7 +340,7 @@ void D3D11VideoDecoderImpl::CreatePictureBuffers() {
     picture_buffers_[i]->Init(video_device_, out_texture, decoder_guid_);
 
     // Bind the image to each texture.
-    for (int texture_idx = 0; texture_idx < texture_refs.size();
+    for (size_t texture_idx = 0; texture_idx < texture_refs.size();
          texture_idx++) {
       texture_manager->SetLevelImage(texture_refs[texture_idx].get(),
                                      GL_TEXTURE_EXTERNAL_OES, 0,

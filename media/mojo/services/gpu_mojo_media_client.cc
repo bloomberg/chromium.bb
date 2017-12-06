@@ -123,9 +123,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 #elif BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
   return base::MakeUnique<D3D11VideoDecoder>(
       gpu_task_runner_,
-      base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
-                 command_buffer_id->channel_token,
-                 command_buffer_id->route_id));
+      base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
+                          command_buffer_id->channel_token,
+                          command_buffer_id->route_id),
+      std::move(output_cb));
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_{MEDIA_CODEC | D3D11}_VIDEO_DECODER)

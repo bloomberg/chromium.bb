@@ -29,9 +29,10 @@ namespace media {
 // now, it's easier to hop threads.
 class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
  public:
-  D3D11VideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-                    base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
-                    OutputWithReleaseMailboxCB output_cb);
+  D3D11VideoDecoder(
+      scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+      base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+      deprecated::OutputWithReleaseMailboxCB output_cb);
   ~D3D11VideoDecoder() override;
 
   // VideoDecoder implementation:
@@ -52,12 +53,12 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   // Call |output_cb| with a release cb that will hop back to the impl thread
   // to run |impl_thread_cb| when |video_frame| is released.
   void OutputWithThreadHoppingRelease(
-      OutputWithReleaseMailboxCB output_cb,
-      VideoFrame::ReleaseMailboxCB impl_thread_cb,
+      deprecated::OutputWithReleaseMailboxCB output_cb,
+      deprecated::ReleaseMailboxCB impl_thread_cb,
       const scoped_refptr<VideoFrame>& video_frame);
 
   // ReleaseCB that's run on our thread, but posts it to the impl thread.
-  void OnMailboxReleased(VideoFrame::ReleaseMailboxCB impl_thread_cb,
+  void OnMailboxReleased(deprecated::ReleaseMailboxCB impl_thread_cb,
                          const gpu::SyncToken& token);
 
   // The implementation, which we trampoline to the impl thread.
@@ -70,7 +71,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   // Task runner for |impl_|.  This must be the GPU main thread.
   scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
 
-  OutputWithReleaseMailboxCB output_cb_;
+  deprecated::OutputWithReleaseMailboxCB output_cb_;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
 
