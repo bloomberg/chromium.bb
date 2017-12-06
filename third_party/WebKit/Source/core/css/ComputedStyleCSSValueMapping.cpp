@@ -129,6 +129,14 @@ static CSSValueList* CreatePositionListForLayer(const CSSProperty& property,
   return position_list;
 }
 
+CSSValue* ComputedStyleCSSValueMapping::CurrentColorOrValidColor(
+    const ComputedStyle& style,
+    const StyleColor& color) {
+  // This function does NOT look at visited information, so that computed style
+  // doesn't expose that.
+  return CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
+}
+
 static CSSValue* ValueForFillSize(const FillSize& fill_size,
                                   const ComputedStyle& style) {
   if (fill_size.type == kContain)
@@ -1889,8 +1897,7 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForShadowData(
   CSSIdentifierValue* shadow_style =
       shadow.Style() == kNormal ? nullptr
                                 : CSSIdentifierValue::Create(CSSValueInset);
-  CSSValue* color =
-      CSSColorValue::Create(shadow.GetColor().Resolve(style.GetColor()).Rgb());
+  CSSValue* color = CurrentColorOrValidColor(style, shadow.GetColor());
   return CSSShadowValue::Create(x, y, blur, spread, shadow_style, color);
 }
 
@@ -2241,6 +2248,12 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       style.Direction(), style.GetWritingMode());
   DCHECK(!resolved_property.IDEquals(CSSPropertyInvalid));
   switch (resolved_property.PropertyID()) {
+    case CSSPropertyBackgroundColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBackgroundColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BackgroundColor());
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage: {
       CSSValueList* list = CSSValueList::CreateCommaSeparated();
@@ -2378,6 +2391,30 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       if (style.BorderImageSource())
         return style.BorderImageSource()->ComputedCSSValue();
       return CSSIdentifierValue::Create(CSSValueNone);
+    case CSSPropertyBorderTopColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderTopColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderTopColor());
+    case CSSPropertyBorderRightColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderRightColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderRightColor());
+    case CSSPropertyBorderBottomColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderBottomColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderBottomColor());
+    case CSSPropertyBorderLeftColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyBorderLeftColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.BorderLeftColor());
     case CSSPropertyBorderTopStyle:
       return CSSIdentifierValue::Create(style.BorderTopStyle());
     case CSSPropertyBorderRightStyle:
@@ -2425,8 +2462,21 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForShadowList(style.BoxShadow(), style, true);
     case CSSPropertyCaptionSide:
       return CSSIdentifierValue::Create(style.CaptionSide());
+    case CSSPropertyCaretColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyCaretColor).Rgb())
+                 : CurrentColorOrValidColor(
+                       style, style.CaretColor().IsAutoColor()
+                                  ? StyleColor::CurrentColor()
+                                  : style.CaretColor().ToStyleColor());
     case CSSPropertyClear:
       return CSSIdentifierValue::Create(style.Clear());
+    case CSSPropertyColor:
+      return CSSColorValue::Create(
+          allow_visited_style
+              ? style.VisitedDependentColor(CSSPropertyColor).Rgb()
+              : style.GetColor().Rgb());
     case CSSPropertyWebkitPrintColorAdjust:
       return CSSIdentifierValue::Create(style.PrintColorAdjust());
     case CSSPropertyColumnCount:
@@ -2440,6 +2490,12 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       if (style.HasNormalColumnGap())
         return CSSIdentifierValue::Create(CSSValueNormal);
       return ZoomAdjustedPixelValue(style.ColumnGap(), style);
+    case CSSPropertyColumnRuleColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyOutlineColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.ColumnRuleColor());
     case CSSPropertyColumnRuleStyle:
       return CSSIdentifierValue::Create(style.ColumnRuleStyle());
     case CSSPropertyColumnRuleWidth:
@@ -2833,6 +2889,12 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyOrphans:
       return CSSPrimitiveValue::Create(style.Orphans(),
                                        CSSPrimitiveValue::UnitType::kNumber);
+    case CSSPropertyOutlineColor:
+      return allow_visited_style
+                 ? CSSColorValue::Create(
+                       style.VisitedDependentColor(CSSPropertyOutlineColor)
+                           .Rgb())
+                 : CurrentColorOrValidColor(style, style.OutlineColor());
     case CSSPropertyOutlineOffset:
       return ZoomAdjustedPixelValue(style.OutlineOffset(), style);
     case CSSPropertyOutlineStyle:
@@ -2934,6 +2996,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForTextDecorationSkipInk(style.TextDecorationSkipInk());
     case CSSPropertyTextDecorationStyle:
       return ValueForTextDecorationStyle(style.TextDecorationStyle());
+    case CSSPropertyTextDecorationColor:
+      return CurrentColorOrValidColor(style, style.TextDecorationColor());
     case CSSPropertyTextJustify:
       return CSSIdentifierValue::Create(style.GetTextJustify());
     case CSSPropertyTextUnderlinePosition:
@@ -2941,6 +3005,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyWebkitTextDecorationsInEffect:
       return RenderTextDecorationFlagsToCSSValue(
           style.TextDecorationsInEffect());
+    case CSSPropertyWebkitTextFillColor:
+      return CurrentColorOrValidColor(style, style.TextFillColor());
+    case CSSPropertyWebkitTextEmphasisColor:
+      return CurrentColorOrValidColor(style, style.TextEmphasisColor());
     case CSSPropertyWebkitTextEmphasisPosition: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       switch (style.GetTextEmphasisPosition()) {
@@ -3009,6 +3077,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(CSSValueClip);
     case CSSPropertyWebkitTextSecurity:
       return CSSIdentifierValue::Create(style.TextSecurity());
+    case CSSPropertyWebkitTextStrokeColor:
+      return CurrentColorOrValidColor(style, style.TextStrokeColor());
     case CSSPropertyWebkitTextStrokeWidth:
       return ZoomAdjustedPixelValue(style.TextStrokeWidth(), style);
     case CSSPropertyTextTransform:
@@ -3296,6 +3366,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(style.RtlOrdering() == EOrder::kVisual
                                             ? CSSValueVisual
                                             : CSSValueLogical);
+    case CSSPropertyWebkitTapHighlightColor:
+      return CurrentColorOrValidColor(style, style.TapHighlightColor());
     case CSSPropertyWebkitUserDrag:
       return CSSIdentifierValue::Create(style.UserDrag());
     case CSSPropertyUserSelect:
@@ -3701,6 +3773,12 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         return CSSURIValue::Create(
             SerializeAsFragmentIdentifier(svg_style.MaskerResource()));
       return CSSIdentifierValue::Create(CSSValueNone);
+    case CSSPropertyFloodColor:
+      return CurrentColorOrValidColor(style, svg_style.FloodColor());
+    case CSSPropertyLightingColor:
+      return CurrentColorOrValidColor(style, svg_style.LightingColor());
+    case CSSPropertyStopColor:
+      return CurrentColorOrValidColor(style, svg_style.StopColor());
     case CSSPropertyFill:
       return AdjustSVGPaintForCurrentColor(
           svg_style.FillPaintType(), svg_style.FillPaintUri(),
@@ -3926,8 +4004,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyAll:
       return nullptr;
     default:
-      return resolved_property.CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      break;
   }
   NOTREACHED();
   return nullptr;

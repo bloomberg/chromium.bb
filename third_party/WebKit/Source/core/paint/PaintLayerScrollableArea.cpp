@@ -1072,10 +1072,10 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   Color old_background;
   if (old_style) {
     old_background =
-        old_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+        old_style->VisitedDependentColor(CSSPropertyBackgroundColor);
   }
   Color new_background =
-      Box().Style()->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+      Box().Style()->VisitedDependentColor(CSSPropertyBackgroundColor);
 
   if (new_background != old_background) {
     RecalculateScrollbarOverlayColorTheme(new_background);

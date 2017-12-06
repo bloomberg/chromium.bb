@@ -937,8 +937,7 @@ LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
 
         // The background color is painted into the last layer.
         if (!cur->Next()) {
-          Color background_color =
-              ResolveColor(GetCSSPropertyBackgroundColor());
+          Color background_color = ResolveColor(CSSPropertyBackgroundColor);
           if (!background_color.HasAlpha())
             layer_known_opaque = true;
         }
@@ -1667,7 +1666,7 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
 
   LayoutRect background_rect(BorderBoxRect());
 
-  Color background_color = ResolveColor(GetCSSPropertyBackgroundColor());
+  Color background_color = ResolveColor(CSSPropertyBackgroundColor);
   if (background_color.Alpha()) {
     painted_extent = background_rect;
     return true;

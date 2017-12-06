@@ -2940,7 +2940,7 @@ Color LocalFrameView::DocumentBackgroundColor() const {
   LayoutItem document_layout_object = GetLayoutViewItem();
   if (!document_layout_object.IsNull()) {
     result = result.Blend(
-        document_layout_object.ResolveColor(GetCSSPropertyBackgroundColor()));
+        document_layout_object.ResolveColor(CSSPropertyBackgroundColor));
   }
   return result;
 }

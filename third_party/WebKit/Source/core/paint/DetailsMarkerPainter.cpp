@@ -38,7 +38,7 @@ void DetailsMarkerPainter::Paint(const PaintInfo& paint_info,
 
   DrawingRecorder recorder(local_paint_info.context, layout_details_marker_,
                            local_paint_info.phase);
-  const Color color(layout_details_marker_.ResolveColor(GetCSSPropertyColor()));
+  const Color color(layout_details_marker_.ResolveColor(CSSPropertyColor));
   local_paint_info.context.SetFillColor(color);
 
   box_origin.Move(

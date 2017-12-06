@@ -90,7 +90,7 @@ static SVGPaintDescription RequestPaint(const LayoutObject& object,
     case SVG_PAINTTYPE_URI_CURRENTCOLOR:
       // The keyword `currentcolor` takes its value from the value of the
       // `color` property on the same element.
-      color = style.VisitedDependentColor(GetCSSPropertyColor());
+      color = style.VisitedDependentColor(CSSPropertyColor);
       has_color = true;
       break;
     case SVG_PAINTTYPE_RGBCOLOR:

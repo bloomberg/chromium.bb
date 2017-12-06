@@ -51,7 +51,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
   if (layout_table_cell_.BackgroundStolenForBeingBody())
     return;
 
-  Color c = background_object.ResolveColor(GetCSSPropertyBackgroundColor());
+  Color c = background_object.ResolveColor(CSSPropertyBackgroundColor);
   const FillLayer& bg_layer = background_object.StyleRef().BackgroundLayers();
   if (bg_layer.HasImage() || c.Alpha()) {
     // We have to clip here because the background would paint

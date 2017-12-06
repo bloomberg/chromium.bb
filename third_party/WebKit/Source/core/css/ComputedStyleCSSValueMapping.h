@@ -22,6 +22,7 @@ class Node;
 class PropertyRegistry;
 class ShadowData;
 class ShadowList;
+class StyleColor;
 
 class ComputedStyleCSSValueMapping {
   STATIC_ONLY(ComputedStyleCSSValueMapping);
@@ -41,6 +42,8 @@ class ComputedStyleCSSValueMapping {
   GetVariables(const ComputedStyle&);
 
  private:
+  static CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
+                                            const StyleColor&);
   static CSSValue* ValueForShadowData(const ShadowData&,
                                       const ComputedStyle&,
                                       bool use_spread);

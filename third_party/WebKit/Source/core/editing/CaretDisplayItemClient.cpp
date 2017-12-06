@@ -171,7 +171,7 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
   Color new_color;
   if (caret_position.AnchorNode()) {
     new_color = caret_position.AnchorNode()->GetLayoutObject()->ResolveColor(
-        GetCSSPropertyCaretColor());
+        CSSPropertyCaretColor);
   }
   if (new_color != color_) {
     needs_paint_invalidation_ = true;

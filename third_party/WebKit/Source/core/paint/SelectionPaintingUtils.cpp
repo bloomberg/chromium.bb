@@ -58,7 +58,7 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
 Color SelectionColor(const Document& document,
                      const ComputedStyle& style,
                      Node* node,
-                     const CSSProperty& color_property,
+                     CSSPropertyID color_property,
                      const GlobalPaintFlags global_paint_flags) {
   // If the element is unselectable, or we are only painting the selection,
   // don't override the foreground color with the selection foreground color.
@@ -95,7 +95,7 @@ Color SelectionPaintingUtils::SelectionBackgroundColor(
 
   if (scoped_refptr<ComputedStyle> pseudo_style =
           GetUncachedSelectionStyle(node)) {
-    return pseudo_style->VisitedDependentColor(GetCSSPropertyBackgroundColor())
+    return pseudo_style->VisitedDependentColor(CSSPropertyBackgroundColor)
         .BlendWithWhite();
   }
 
@@ -109,8 +109,7 @@ Color SelectionPaintingUtils::SelectionForegroundColor(
     const ComputedStyle& style,
     Node* node,
     const GlobalPaintFlags global_paint_flags) {
-  return SelectionColor(document, style, node,
-                        GetCSSPropertyWebkitTextFillColor(),
+  return SelectionColor(document, style, node, CSSPropertyWebkitTextFillColor,
                         global_paint_flags);
 }
 
@@ -120,8 +119,7 @@ Color SelectionPaintingUtils::SelectionEmphasisMarkColor(
     Node* node,
     const GlobalPaintFlags global_paint_flags) {
   return SelectionColor(document, style, node,
-                        GetCSSPropertyWebkitTextEmphasisColor(),
-                        global_paint_flags);
+                        CSSPropertyWebkitTextEmphasisColor, global_paint_flags);
 }
 
 TextPaintStyle SelectionPaintingUtils::SelectionPaintingStyle(
@@ -148,7 +146,7 @@ TextPaintStyle SelectionPaintingUtils::SelectionPaintingStyle(
       selection_style.stroke_color =
           uses_text_as_clip ? Color::kBlack
                             : pseudo_style->VisitedDependentColor(
-                                  GetCSSPropertyWebkitTextStrokeColor());
+                                  CSSPropertyWebkitTextStrokeColor);
       selection_style.stroke_width = pseudo_style->TextStrokeWidth();
       selection_style.shadow =
           uses_text_as_clip ? nullptr : pseudo_style->TextShadow();
