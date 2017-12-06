@@ -220,7 +220,7 @@ FontList::FontList(FontListImpl* impl) : impl_(impl) {}
 const scoped_refptr<FontListImpl>& FontList::GetDefaultImpl() {
   // SetDefaultFontDescription() must be called and the default font description
   // must be set earlier than any call of this function.
-  DCHECK(!(g_default_font_description == NULL))  // != is not overloaded.
+  DCHECK(g_default_font_description.IsCreated())
       << "SetDefaultFontDescription has not been called.";
 
   if (!g_default_impl_initialized) {

@@ -196,15 +196,14 @@ class LazyInstance {
         Traits::kRegisterOnExit ? OnExit : nullptr, this));
   }
 
-  bool operator==(Type* p) {
-    switch (subtle::NoBarrier_Load(&private_instance_)) {
-      case 0:
-        return p == NULL;
-      case internal::kLazyInstanceStateCreating:
-        return static_cast<void*>(p) == private_buf_;
-      default:
-        return p == instance();
-    }
+  // Returns true if the lazy instance has been created.  Unlike Get() and
+  // Pointer(), calling IsCreated() will not instantiate the object of Type.
+  bool IsCreated() {
+    // Return true (i.e. "created") if |private_instance_| is either being
+    // created right now (i.e. |private_instance_| has value of
+    // internal::kLazyInstanceStateCreating) or was already created (i.e.
+    // |private_instance_| has any other non-zero value).
+    return 0 != subtle::NoBarrier_Load(&private_instance_);
   }
 
   // MSVC gives a warning that the alignment expands the size of the

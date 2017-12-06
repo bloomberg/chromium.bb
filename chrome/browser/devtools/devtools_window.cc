@@ -429,7 +429,7 @@ content::WebContents* DevToolsWindow::GetInTabWebContents(
 // static
 DevToolsWindow* DevToolsWindow::GetInstanceForInspectedWebContents(
     WebContents* inspected_web_contents) {
-  if (!inspected_web_contents || g_instances == NULL)
+  if (!inspected_web_contents || !g_instances.IsCreated())
     return NULL;
   DevToolsWindows* instances = g_instances.Pointer();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
@@ -442,7 +442,7 @@ DevToolsWindow* DevToolsWindow::GetInstanceForInspectedWebContents(
 
 // static
 bool DevToolsWindow::IsDevToolsWindow(content::WebContents* web_contents) {
-  if (!web_contents || g_instances == NULL)
+  if (!web_contents || !g_instances.IsCreated())
     return false;
   DevToolsWindows* instances = g_instances.Pointer();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
@@ -958,7 +958,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
 // static
 DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
     DevToolsAgentHost* agent_host) {
-  if (!agent_host || g_instances == NULL)
+  if (!agent_host || !g_instances.IsCreated())
     return NULL;
   DevToolsWindows* instances = g_instances.Pointer();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
@@ -972,7 +972,7 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
 // static
 DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
     content::WebContents* web_contents) {
-  if (!web_contents || g_instances == NULL)
+  if (!web_contents || !g_instances.IsCreated())
     return NULL;
   DevToolsWindows* instances = g_instances.Pointer();
   for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();

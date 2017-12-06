@@ -31,13 +31,13 @@ void CrashDumpObserver::Create() {
   // If this DCHECK fails in a unit test then a previously executing
   // test that makes use of CrashDumpObserver forgot to create a
   // ShadowingAtExitManager.
-  DCHECK(g_instance == nullptr);
+  DCHECK(!g_instance.IsCreated());
   g_instance.Get();
 }
 
 // static
 CrashDumpObserver* CrashDumpObserver::GetInstance() {
-  DCHECK(!(g_instance == nullptr));
+  DCHECK(g_instance.IsCreated());
   return g_instance.Pointer();
 }
 

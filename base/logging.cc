@@ -815,7 +815,7 @@ LogMessage::~LogMessage() {
     str_newline.copy(str_stack, arraysize(str_stack));
     base::debug::Alias(str_stack);
 
-    if (!(log_assert_handler_stack == nullptr) &&
+    if (log_assert_handler_stack.IsCreated() &&
         !log_assert_handler_stack.Get().empty()) {
       LogAssertHandlerFunction log_assert_handler =
           log_assert_handler_stack.Get().top();

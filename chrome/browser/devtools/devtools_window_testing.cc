@@ -55,7 +55,7 @@ DevToolsWindowTesting* DevToolsWindowTesting::Get(DevToolsWindow* window) {
 
 // static
 DevToolsWindowTesting* DevToolsWindowTesting::Find(DevToolsWindow* window) {
-  if (g_instances == NULL)
+  if (!g_instances.IsCreated())
     return NULL;
   DevToolsWindowTestings* instances = g_instances.Pointer();
   for (DevToolsWindowTestings::iterator it(instances->begin());

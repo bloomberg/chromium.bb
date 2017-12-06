@@ -98,7 +98,7 @@ DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
 // static
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
     const std::string& id) {
-  if (g_devtools_instances == nullptr)
+  if (!g_devtools_instances.IsCreated())
     return nullptr;
   DevToolsMap::iterator it = g_devtools_instances.Get().find(id);
   if (it == g_devtools_instances.Get().end())
@@ -290,7 +290,7 @@ void DevToolsAgentHostImpl::InspectElement(
 
 // static
 void DevToolsAgentHost::DetachAllClients() {
-  if (g_devtools_instances == nullptr)
+  if (!g_devtools_instances.IsCreated())
     return;
 
   // Make a copy, since detaching may lead to agent destruction, which
