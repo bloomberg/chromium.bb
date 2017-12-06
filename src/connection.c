@@ -192,6 +192,12 @@ close_fds(struct wl_buffer *buffer, int max)
 	buffer->tail += size;
 }
 
+void
+wl_connection_close_fds_in(struct wl_connection *connection, int max)
+{
+	close_fds(&connection->fds_in, max);
+}
+
 int
 wl_connection_destroy(struct wl_connection *connection)
 {

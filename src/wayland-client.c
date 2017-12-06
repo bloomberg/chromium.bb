@@ -1353,8 +1353,16 @@ queue_event(struct wl_display *display, int len)
 	if (len < size)
 		return 0;
 
+	/* If our proxy is gone or a zombie, just eat the event (and any FDs,
+	 * if applicable). */
 	proxy = wl_map_lookup(&display->objects, id);
 	if (!proxy || wl_object_is_zombie(&display->objects, id)) {
+		struct wl_zombie *zombie = wl_map_lookup(&display->objects, id);
+
+		if (zombie)
+			wl_connection_close_fds_in(display->connection,
+						   zombie->fd_count[opcode]);
+
 		wl_connection_consume(display->connection, size);
 		return size;
 	}
