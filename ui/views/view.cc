@@ -1478,6 +1478,10 @@ void View::ScrollRectToVisible(const gfx::Rect& rect) {
   }
 }
 
+void View::ScrollViewToVisible() {
+  ScrollRectToVisible(GetLocalBounds());
+}
+
 int View::GetPageScrollIncrement(ScrollView* scroll_view,
                                  bool is_horizontal, bool is_positive) {
   return 0;
@@ -1797,6 +1801,7 @@ void View::OnBlur() {
 
 void View::Focus() {
   OnFocus();
+  ScrollViewToVisible();
 }
 
 void View::Blur() {

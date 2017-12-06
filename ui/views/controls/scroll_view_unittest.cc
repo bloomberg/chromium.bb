@@ -99,6 +99,8 @@ class FixedView : public View {
     SetBounds(x(), y(), pref.width(), pref.height());
   }
 
+  void SetFocus() { Focus(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FixedView);
 };
@@ -631,6 +633,34 @@ TEST_F(ScrollViewTest, ScrollRectToVisible) {
   // Scroll to the current y-location and 10x10; should do nothing.
   contents->ScrollRectToVisible(gfx::Rect(0, offset.y(), 10, 10));
   EXPECT_EQ(415 - viewport_height, test_api.CurrentOffset().y());
+}
+
+// Verifies that child scrolls into view when it's focused.
+TEST_F(ScrollViewTest, ScrollChildToVisibleOnFocus) {
+  ScrollViewTestApi test_api(&scroll_view_);
+  CustomView* contents = new CustomView;
+  scroll_view_.SetContents(contents);
+  contents->SetPreferredSize(gfx::Size(500, 1000));
+  FixedView* child = new FixedView;
+  child->SetPreferredSize(gfx::Size(10, 10));
+  child->SetPosition(gfx::Point(0, 405));
+  contents->AddChildView(child);
+
+  scroll_view_.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  scroll_view_.Layout();
+  EXPECT_EQ(gfx::Point(), test_api.IntegralViewOffset());
+
+  // Set focus to the child control. This should cause the control to scroll to
+  // y=405 height=10. Like the above test, this should make the y position of
+  // the content at (405 + 10) - viewport_height (scroll region bottom aligned).
+  child->SetFocus();
+  const int viewport_height = test_api.contents_viewport()->height();
+
+  // Expect there to be a horizontal scrollbar, making the viewport shorter.
+  EXPECT_EQ(100 - scroll_view_.GetScrollBarLayoutHeight(), viewport_height);
+
+  gfx::ScrollOffset offset = test_api.CurrentOffset();
+  EXPECT_EQ(415 - viewport_height, offset.y());
 }
 
 // Verifies ClipHeightTo() uses the height of the content when it is between the

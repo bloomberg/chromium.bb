@@ -1108,6 +1108,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the child view, such as Viewport, to override appropriately.
   virtual void ScrollRectToVisible(const gfx::Rect& rect);
 
+  // Scrolls the view's bounds or some subset thereof to be visible. By default
+  // this function calls ScrollRectToVisible(GetLocalBounds()).
+  virtual void ScrollViewToVisible();
+
   // The following methods are used by ScrollView to determine the amount
   // to scroll relative to the visible bounds of the view. For example, a
   // return value of 10 indicates the scrollview should scroll 10 pixels in
