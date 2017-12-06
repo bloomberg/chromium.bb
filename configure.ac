@@ -25,6 +25,7 @@ gl_tools_INIT
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AM_PROG_AR
 
 # Checks for libraries.
 AC_CHECK_LIB([yaml], [yaml_parser_initialize])
