@@ -33,8 +33,6 @@ namespace chromeos {
 namespace {
 
 const char kEolNotificationId[] = "chrome://product_eol";
-const SkColor kButtonIconColor = SkColorSetRGB(150, 150, 152);
-const SkColor kNotificationIconColor = SkColorSetRGB(219, 68, 55);
 
 // Buttons that appear in notifications.
 enum ButtonIndex {
@@ -145,35 +143,26 @@ void EolNotification::Update() {
 
   DCHECK_EQ(BUTTON_MORE_INFO, data.buttons.size());
   data.buttons.emplace_back(GetStringUTF16(IDS_EOL_MORE_INFO_BUTTON));
-  data.buttons.back().icon = gfx::Image(
-      CreateVectorIcon(vector_icons::kInfoOutlineIcon, kButtonIconColor));
 
   DCHECK_EQ(BUTTON_DISMISS, data.buttons.size());
   data.buttons.emplace_back(GetStringUTF16(IDS_EOL_DISMISS_BUTTON));
-  data.buttons.back().icon = gfx::Image(
-      CreateVectorIcon(vector_icons::kNotificationsOffIcon, kButtonIconColor));
 
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kEolNotificationId,
       GetStringUTF16(IDS_EOL_NOTIFICATION_TITLE),
-      GetStringUTF16(IDS_EOL_NOTIFICATION_EOL),
-      message_center::IsNewStyleNotificationEnabled()
-          ? gfx::Image()
-          : gfx::Image(CreateVectorIcon(kEolIcon, kNotificationIconColor)),
+      GetStringUTF16(IDS_EOL_NOTIFICATION_EOL), gfx::Image(),
       GetStringUTF16(IDS_EOL_NOTIFICATION_DISPLAY_SOURCE),
       GURL(kEolNotificationId),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kEolNotificationId),
       data, new EolNotificationDelegate(profile_));
 
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification.set_accent_color(
-        message_center::kSystemNotificationColorCriticalWarning);
-    notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-        kNotificationEndOfSupportIcon,
-        message_center::kSystemNotificationColorCriticalWarning)));
-    notification.set_vector_small_image(kNotificationEndOfSupportIcon);
-  }
+  notification.set_accent_color(
+      message_center::kSystemNotificationColorCriticalWarning);
+  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
+      kNotificationEndOfSupportIcon,
+      message_center::kSystemNotificationColorCriticalWarning)));
+  notification.set_vector_small_image(kNotificationEndOfSupportIcon);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, notification);

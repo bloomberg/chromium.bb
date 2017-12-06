@@ -251,7 +251,6 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DRIVE" file="cros/notification_drive.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_FINGERPRINT" file="cros/notification_fingerprint.png" />
         <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_ALERT" file="cros/captive_portal_icon.png" />
-        <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_NOTIFICATION" file="cros/notification_play_store.png" />
         <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_OPTIN_IN_PROGRESS_NOTIFICATION" file="cros/notification_play_store_optin_in_progress.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SCREENSHOT_ANNOTATE" file="cros/notification_screenshot_annotate.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SCREENSHOT_COPY_TO_CLIPBOARD" file="cros/notification_screenshot_copy_to_clipboard.png" />

@@ -34,7 +34,6 @@ aggregate_vector_icons("components_vector_icons") {
     "microphone.icon",
     "midi.icon",
     "notifications.icon",
-    "notifications_off.icon",
     "protocol_handler.icon",
     "reload.1x.icon",
     "reload.icon",

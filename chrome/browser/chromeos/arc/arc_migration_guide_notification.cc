@@ -85,30 +85,17 @@ void DoShowArcMigrationSuccessNotification(Profile* profile) {
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
 
-  std::unique_ptr<message_center::Notification> notification;
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification = message_center::Notification::CreateSystemNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
-        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
-        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-        gfx::Image(), base::string16(), GURL(), notifier_id,
-        message_center::RichNotificationData(),
-        scoped_refptr<message_center::NotificationDelegate>(
-            new ArcMigrationCompletedNotificationDelegate(profile)),
-        ash::kNotificationSettingsIcon,
-        message_center::SystemNotificationWarningLevel::NORMAL);
-  } else {
-    notification = std::make_unique<message_center::Notification>(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
-        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
-        l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-        gfx::Image(gfx::CreateVectorIcon(kArcMigrateEncryptionNotificationIcon,
-                                         gfx::kPlaceholderColor)),
-        base::string16(), GURL(), notifier_id,
-        message_center::RichNotificationData(),
-        scoped_refptr<message_center::NotificationDelegate>(
-            new ArcMigrationCompletedNotificationDelegate(profile)));
-  }
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
+          l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
+          l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
+          gfx::Image(), base::string16(), GURL(), notifier_id,
+          message_center::RichNotificationData(),
+          scoped_refptr<message_center::NotificationDelegate>(
+              new ArcMigrationCompletedNotificationDelegate(profile)),
+          ash::kNotificationSettingsIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification);
@@ -140,33 +127,17 @@ void ShowArcMigrationGuideNotification(Profile* profile) {
           : l10n_util::GetStringUTF16(
                 IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_MESSAGE);
 
-  std::unique_ptr<message_center::Notification> notification;
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification = message_center::Notification::CreateSystemNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
-        l10n_util::GetStringUTF16(
-            IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-        message, gfx::Image(), base::string16(), GURL(), notifier_id,
-        message_center::RichNotificationData(),
-        scoped_refptr<message_center::NotificationDelegate>(
-            new ArcMigrationGuideNotificationDelegate()),
-        ash::kNotificationSettingsIcon,
-        message_center::SystemNotificationWarningLevel::NORMAL);
-  } else {
-    message_center::RichNotificationData data;
-    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON)));
-    notification = std::make_unique<message_center::Notification>(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
-        l10n_util::GetStringUTF16(
-            IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
-        message,
-        gfx::Image(gfx::CreateVectorIcon(kArcMigrateEncryptionNotificationIcon,
-                                         gfx::kPlaceholderColor)),
-        base::string16(), GURL(), notifier_id, data,
-        scoped_refptr<message_center::NotificationDelegate>(
-            new ArcMigrationGuideNotificationDelegate()));
-  }
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kSuggestNotificationId,
+          l10n_util::GetStringUTF16(
+              IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_TITLE),
+          message, gfx::Image(), base::string16(), GURL(), notifier_id,
+          message_center::RichNotificationData(),
+          scoped_refptr<message_center::NotificationDelegate>(
+              new ArcMigrationGuideNotificationDelegate()),
+          ash::kNotificationSettingsIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification);

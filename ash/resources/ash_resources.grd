@@ -20,7 +20,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCALE" file="cros/status/status_locale.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR" file="cros/network/status_cellular_failed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN" file="cros/network/statusbar_vpn_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G" file="cros/network/notification_3g.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_DATASAVER" file="cros/network/notification_datasaver.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />

@@ -198,57 +198,33 @@ void CupsPrintJobNotification::UpdateNotificationTitle() {
 }
 
 void CupsPrintJobNotification::UpdateNotificationIcon() {
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    switch (print_job_->state()) {
-      case CupsPrintJob::State::STATE_WAITING:
-      case CupsPrintJob::State::STATE_STARTED:
-      case CupsPrintJob::State::STATE_PAGE_DONE:
-      case CupsPrintJob::State::STATE_SUSPENDED:
-      case CupsPrintJob::State::STATE_RESUMED:
-        notification_->set_accent_color(
-            message_center::kSystemNotificationColorNormal);
-        notification_->set_vector_small_image(kNotificationPrintingIcon);
-        break;
-      case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-        notification_->set_accent_color(
-            message_center::kSystemNotificationColorNormal);
-        notification_->set_vector_small_image(kNotificationPrintingDoneIcon);
-        break;
-      case CupsPrintJob::State::STATE_CANCELLED:
-      case CupsPrintJob::State::STATE_ERROR:
-        notification_->set_accent_color(
-            message_center::kSystemNotificationColorWarning);
-        notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
-      case CupsPrintJob::State::STATE_NONE:
-        break;
-    }
-    if (print_job_->state() != CupsPrintJob::State::STATE_NONE) {
-      notification_->set_small_image(gfx::Image(CreateVectorIcon(
-          notification_->vector_small_image(),
-          message_center::kSmallImageSizeMD, notification_->accent_color())));
-    }
-  } else {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    switch (print_job_->state()) {
-      case CupsPrintJob::State::STATE_WAITING:
-      case CupsPrintJob::State::STATE_STARTED:
-      case CupsPrintJob::State::STATE_PAGE_DONE:
-      case CupsPrintJob::State::STATE_SUSPENDED:
-      case CupsPrintJob::State::STATE_RESUMED:
-        notification_->set_icon(
-            bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_PRINTING));
-        break;
-      case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-        notification_->set_icon(
-            bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_DONE));
-        break;
-      case CupsPrintJob::State::STATE_CANCELLED:
-      case CupsPrintJob::State::STATE_ERROR:
-        notification_->set_icon(
-            bundle.GetImageNamed(IDR_PRINT_NOTIFICATION_ERROR));
-      case CupsPrintJob::State::STATE_NONE:
-        break;
-    }
+  switch (print_job_->state()) {
+    case CupsPrintJob::State::STATE_WAITING:
+    case CupsPrintJob::State::STATE_STARTED:
+    case CupsPrintJob::State::STATE_PAGE_DONE:
+    case CupsPrintJob::State::STATE_SUSPENDED:
+    case CupsPrintJob::State::STATE_RESUMED:
+      notification_->set_accent_color(
+          message_center::kSystemNotificationColorNormal);
+      notification_->set_vector_small_image(kNotificationPrintingIcon);
+      break;
+    case CupsPrintJob::State::STATE_DOCUMENT_DONE:
+      notification_->set_accent_color(
+          message_center::kSystemNotificationColorNormal);
+      notification_->set_vector_small_image(kNotificationPrintingDoneIcon);
+      break;
+    case CupsPrintJob::State::STATE_CANCELLED:
+    case CupsPrintJob::State::STATE_ERROR:
+      notification_->set_accent_color(
+          message_center::kSystemNotificationColorWarning);
+      notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
+    case CupsPrintJob::State::STATE_NONE:
+      break;
+  }
+  if (print_job_->state() != CupsPrintJob::State::STATE_NONE) {
+    notification_->set_small_image(gfx::Image(CreateVectorIcon(
+        notification_->vector_small_image(), message_center::kSmallImageSizeMD,
+        notification_->accent_color())));
   }
 }
 
