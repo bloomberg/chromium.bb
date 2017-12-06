@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_state.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_state.mojom";
 import "url/mojo/url.mojom";
 
 const int32 kInvalidServiceWorkerHandleId = -1;

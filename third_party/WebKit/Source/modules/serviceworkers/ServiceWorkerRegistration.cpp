@@ -18,7 +18,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include "public/platform/modules/serviceworker/service_worker_registration.mojom-blink.h"
+#include "third_party/WebKit/common/service_worker/service_worker_registration.mojom-blink.h"
 
 namespace blink {
 

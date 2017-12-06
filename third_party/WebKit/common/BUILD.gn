@@ -112,8 +112,16 @@ mojom("mojo_platform_bindings") {
     "blob/blob_registry.mojom",
     "clipboard/clipboard.mojom",
     "page/page_visibility_state.mojom",
+    "service_worker/navigation_preload_state.mojom",
+    "service_worker/service_worker.mojom",
     "service_worker/service_worker_client.mojom",
+    "service_worker/service_worker_error_type.mojom",
+    "service_worker/service_worker_event_status.mojom",
+    "service_worker/service_worker_object.mojom",
     "service_worker/service_worker_provider_type.mojom",
+    "service_worker/service_worker_registration.mojom",
+    "service_worker/service_worker_state.mojom",
+    "service_worker/service_worker_stream_handle.mojom",
   ]
 
   public_deps = [

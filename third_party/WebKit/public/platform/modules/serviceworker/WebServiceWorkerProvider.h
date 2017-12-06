@@ -34,7 +34,7 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "public/platform/modules/serviceworker/service_worker_registration.mojom-shared.h"
+#include "third_party/WebKit/common/service_worker/service_worker_registration.mojom-shared.h"
 
 #include <memory>
 

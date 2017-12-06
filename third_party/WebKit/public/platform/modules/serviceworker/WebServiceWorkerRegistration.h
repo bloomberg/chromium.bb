@@ -10,7 +10,7 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
-#include "public/platform/modules/serviceworker/service_worker_registration.mojom-shared.h"
+#include "third_party/WebKit/common/service_worker/service_worker_registration.mojom-shared.h"
 
 namespace blink {
 

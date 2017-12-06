@@ -6,7 +6,7 @@ module content.mojom;
 
 import "mojo/common/time.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom";
 
 [Native]
 struct ServiceWorkerResponse;

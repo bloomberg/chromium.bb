@@ -32,7 +32,7 @@
 #define WebServiceWorkerError_h
 
 #include "public/platform/WebString.h"
-#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
+#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-shared.h"
 
 namespace blink {
 

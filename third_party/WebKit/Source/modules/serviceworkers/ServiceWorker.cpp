@@ -41,7 +41,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
-#include "public/platform/modules/serviceworker/service_worker_state.mojom-blink.h"
+#include "third_party/WebKit/common/service_worker/service_worker_state.mojom-blink.h"
 
 namespace blink {
 

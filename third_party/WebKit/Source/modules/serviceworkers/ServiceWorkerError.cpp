@@ -29,7 +29,7 @@
  */
 
 #include "modules/serviceworkers/ServiceWorkerError.h"
-#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-blink.h"
+#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-blink.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ToV8ForCore.h"

@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom.h"
 
 namespace net {
 class IOBuffer;

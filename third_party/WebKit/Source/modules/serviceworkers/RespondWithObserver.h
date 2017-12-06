@@ -9,7 +9,7 @@
 #include "core/dom/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
+#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-shared.h"
 
 namespace blink {
 

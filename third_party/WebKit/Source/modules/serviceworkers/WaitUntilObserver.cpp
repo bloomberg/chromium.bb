@@ -15,7 +15,7 @@
 #include "platform/bindings/Microtask.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
-#include "public/platform/modules/serviceworker/service_worker_event_status.mojom-blink.h"
+#include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom-blink.h"
 #include "v8/include/v8.h"
 
 namespace blink {

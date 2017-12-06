@@ -11,7 +11,7 @@ import "mojo/common/time.mojom";
 import "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/WebKit/public/platform/modules/payments/payment_app.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_event_status.mojom";
 import "url/mojo/origin.mojom";
 import "url/mojo/url.mojom";
 

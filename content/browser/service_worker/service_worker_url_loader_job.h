@@ -21,7 +21,7 @@
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_stream_handle.mojom.h"
 
 namespace net {
 struct RedirectInfo;
