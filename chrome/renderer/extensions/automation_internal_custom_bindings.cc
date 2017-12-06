@@ -399,7 +399,6 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
                            base::Unretained(this)))
   ROUTE_FUNCTION(IsInteractPermitted);
   ROUTE_FUNCTION(GetSchemaAdditions);
-  ROUTE_FUNCTION(GetRoutingID);
   ROUTE_FUNCTION(StartCachingAccessibilityTrees);
   ROUTE_FUNCTION(DestroyAccessibilityTree);
   ROUTE_FUNCTION(AddTreeChangeObserver);
@@ -833,12 +832,6 @@ void AutomationInternalCustomBindings::IsInteractPermitted(
   CHECK(automation_info);
   args.GetReturnValue().Set(
       v8::Boolean::New(GetIsolate(), automation_info->interact));
-}
-
-void AutomationInternalCustomBindings::GetRoutingID(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  int routing_id = context()->GetRenderFrame()->GetRenderView()->GetRoutingID();
-  args.GetReturnValue().Set(v8::Integer::New(GetIsolate(), routing_id));
 }
 
 void AutomationInternalCustomBindings::StartCachingAccessibilityTrees(

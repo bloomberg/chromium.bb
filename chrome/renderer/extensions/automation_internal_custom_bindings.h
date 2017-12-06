@@ -70,9 +70,6 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   // chrome.automation namespace.
   void GetSchemaAdditions(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Get the routing ID for the extension.
-  void GetRoutingID(const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // This is called by automation_internal_custom_bindings.js to indicate
   // that an API was called that needs access to accessibility trees. This
   // enables the MessageFilter that allows us to listen to accessibility
