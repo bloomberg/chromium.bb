@@ -112,6 +112,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   Surface* GetCurrentSurfaceForTesting();
 
  private:
+  friend class FrameSinkManagerTest;
+
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              const FrameSinkId& frame_sink_id,
                              bool is_root,
