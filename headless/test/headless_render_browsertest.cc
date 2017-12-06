@@ -255,13 +255,8 @@ class JavaScriptOverrideTitle_JsDisabled
 };
 HEADLESS_RENDER_BROWSERTEST(JavaScriptOverrideTitle_JsDisabled);
 
-class JavaScriptConsoleErrors : public HeadlessRenderTest,
-                                public runtime::ExperimentalObserver {
+class JavaScriptConsoleErrors : public HeadlessRenderTest {
  private:
-  HeadlessDevToolsClient* client_;
-  std::vector<std::string> messages_;
-  bool log_called_ = false;
-
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     GetProtocolHandler()->InsertResponse(SOME_URL, HttpOk(R"|(
 <html>
@@ -287,34 +282,12 @@ class JavaScriptConsoleErrors : public HeadlessRenderTest,
   </body>
 </html>
 )|"));
-    client_ = client;
-    client_->GetRuntime()->GetExperimental()->AddObserver(this);
-    base::RunLoop run_loop;
-    client_->GetRuntime()->GetExperimental()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
-    run_loop.Run();
     return GURL(SOME_URL);
   }
 
-  void OnConsoleAPICalled(
-      const runtime::ConsoleAPICalledParams& params) override {
-    EXPECT_THAT(*params.GetArgs(), ElementsAre(RemoteString("Hello, Script!")));
-    log_called_ = true;
-  }
-
-  void OnExceptionThrown(
-      const runtime::ExceptionThrownParams& params) override {
-    const runtime::ExceptionDetails* details = params.GetExceptionDetails();
-    messages_.push_back(details->GetText() + " " +
-                        details->GetException()->GetDescription());
-  }
-
   void VerifyDom(GetSnapshotResult* dom_snapshot) override {
-    client_->GetRuntime()->GetExperimental()->Disable();
-    client_->GetRuntime()->GetExperimental()->RemoveObserver(this);
-    EXPECT_TRUE(log_called_);
-    EXPECT_THAT(messages_,
+    EXPECT_THAT(console_log_, ElementsAre("L Hello, Script!"));
+    EXPECT_THAT(js_exceptions_,
                 ElementsAre(StartsWith("Uncaught SyntaxError:"),
                             StartsWith("Uncaught ReferenceError: func1"),
                             StartsWith("Uncaught ReferenceError: func2"),
@@ -759,7 +732,7 @@ class RedirectAfterCompletion : public HeadlessRenderTest {
 };
 HEADLESS_RENDER_BROWSERTEST(RedirectAfterCompletion);
 
-class RedirectPostMethod : public HeadlessRenderTest {
+class Redirect307PostMethod : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
@@ -783,11 +756,225 @@ class RedirectPostMethod : public HeadlessRenderTest {
         GetProtocolHandler()->urls_requested(),
         ElementsAre("http://www.example.com/", "http://www.example.com/1",
                     "http://www.example.com/2"));
+    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+                ElementsAre("GET", "POST", "POST"));
     EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
                 NodeValue("Pass"));
   }
 };
-HEADLESS_RENDER_BROWSERTEST(RedirectPostMethod);
+HEADLESS_RENDER_BROWSERTEST(Redirect307PostMethod);
+
+class RedirectPostChain : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html>
+ <body onload='document.forms[0].submit();'>
+  <form action='1' method='post'>
+   <input name='foo' value='bar'>
+  </form>
+ </body>
+</html>
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         HttpRedirect(307, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2", HttpOk(R"|(
+<html>
+ <body onload='document.forms[0].submit();'>
+  <form action='3' method='post'>
+  </form>
+ </body>
+</html>
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/3",
+                                         HttpRedirect(307, "/4"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/4",
+                                         HttpOk("<p>Pass</p>"));
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2", "http://www.example.com/3",
+                    "http://www.example.com/4"));
+    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+                ElementsAre("GET", "POST", "POST", "POST", "POST"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectPostChain);
+
+class Redirect307PutMethod : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+ <html>
+  <head>
+   <script>
+    function doPut() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('PUT', 'http://www.example.com/1');
+      xhr.setRequestHeader('Content-Type', 'text/plain');
+      xhr.addEventListener('load', function() {
+        document.getElementById('content').textContent = this.responseText;
+      });
+      xhr.send('some data');
+    }
+   </script>
+  </head>
+  <body onload='doPut();'>
+   <p id="content"></p>
+  </body>
+ </html>
+ )|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         HttpRedirect(307, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
+                                         {"Pass", "text/plain"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2"));
+    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+                ElementsAre("GET", "PUT", "PUT"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(Redirect307PutMethod);
+
+class Redirect303PutGet : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html>
+ <head>
+  <script>
+   function doPut() {
+     var xhr = new XMLHttpRequest();
+     xhr.open('PUT', 'http://www.example.com/1');
+     xhr.setRequestHeader('Content-Type', 'text/plain');
+     xhr.addEventListener('load', function() {
+       document.getElementById('content').textContent = this.responseText;
+     });
+     xhr.send('some data');
+   }
+  </script>
+ </head>
+ <body onload='doPut();'>
+  <p id="content"></p>
+ </body>
+</html>
+)|"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/1",
+                                         HttpRedirect(303, "/2"));
+    GetProtocolHandler()->InsertResponse("http://www.example.com/2",
+                                         {"Pass", "text/plain"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(
+        GetProtocolHandler()->urls_requested(),
+        ElementsAre("http://www.example.com/", "http://www.example.com/1",
+                    "http://www.example.com/2"));
+    EXPECT_THAT(GetProtocolHandler()->methods_requested(),
+                ElementsAre("GET", "PUT", "GET"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(Redirect303PutGet);
+
+class RedirectBaseUrl : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://foo.com/",
+                                         HttpRedirect(302, "http://bar.com/"));
+    GetProtocolHandler()->InsertResponse("http://bar.com/",
+                                         HttpOk("<img src=\"pass\">"));
+    return GURL("http://foo.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://foo.com/", "http://bar.com/",
+                            "http://bar.com/pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectBaseUrl);
+
+class RedirectNonAsciiUrl : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    // "中文" is 0xE4 0xB8 0xAD, 0xE6 0x96 0x87
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        HttpRedirect(302, "http://www.example.com/中文"));
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/%E4%B8%AD%E6%96%87",
+        HttpRedirect(303, "http://www.example.com/pass#中文"));
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/pass#%E4%B8%AD%E6%96%87",
+        HttpOk("<p>Pass</p>"));
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/%C3%A4%C2%B8%C2%AD%C3%A6%C2%96%C2%87",
+        {"HTTP/1.1 500 Bad Response\r\nContent-Type: text/html\r\n\r\nFail"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/",
+                            "http://www.example.com/%E4%B8%AD%E6%96%87",
+                            "http://www.example.com/pass#%E4%B8%AD%E6%96%87"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectNonAsciiUrl);
+
+class RedirectEmptyUrl : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        {"HTTP/1.1 302 Found\r\nLocation: \r\n\r\n<!DOCTYPE html><p>Pass</p>"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/"));
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectEmptyUrl);
+
+class RedirectInvalidUrl : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        {"HTTP/1.1 302 Found\r\nLocation: http://\r\n\r\n"
+         "<!DOCTYPE html><p>Pass</p>"});
+    return GURL("http://www.example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(GetProtocolHandler()->urls_requested(),
+                ElementsAre("http://www.example.com/"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(RedirectInvalidUrl);
 
 class RedirectKeepsFragment : public HeadlessRenderTest {
  private:

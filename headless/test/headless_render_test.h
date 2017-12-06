@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/page.h"
+#include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/util/testing/test_in_memory_protocol_handler.h"
@@ -32,6 +33,7 @@ class GetSnapshotResult;
 class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
                            public HeadlessBrowserContext::Observer,
                            public page::ExperimentalObserver,
+                           public runtime::ExperimentalObserver,
                            public TestInMemoryProtocolHandler::RequestDeferrer {
  public:
   typedef std::pair<std::string, page::FrameScheduledNavigationReason> Redirect;
@@ -100,6 +102,11 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
       const page::FrameClearedScheduledNavigationParams& params) override;
   void OnFrameNavigated(const page::FrameNavigatedParams& params) override;
 
+  // runtime::ExperimentalObserver implementation:
+  void OnConsoleAPICalled(
+      const runtime::ConsoleAPICalledParams& params) override;
+  void OnExceptionThrown(const runtime::ExceptionThrownParams& params) override;
+
   // TestInMemoryProtocolHandler::RequestDeferrer
   void OnRequest(const GURL& url, base::Closure complete_request) override;
 
@@ -107,12 +114,15 @@ class HeadlessRenderTest : public HeadlessAsyncDevTooledBrowserTest,
   std::map<std::string, Redirect> unconfirmed_frame_redirects_;
   std::map<std::string, std::vector<std::unique_ptr<page::Frame>>> frames_;
   std::string main_frame_;
+  std::vector<std::string> console_log_;
+  std::vector<std::string> js_exceptions_;
 
  private:
   void HandleVirtualTimeExhausted();
   void OnGetDomSnapshotDone(
       std::unique_ptr<dom_snapshot::GetSnapshotResult> result);
   void HandleTimeout();
+  void CleanUp();
 
   enum State {
     INIT,       // Setting up the client, no navigation performed yet.
