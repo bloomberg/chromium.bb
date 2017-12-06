@@ -17,6 +17,7 @@ namespace device {
 class DEVICE_VR_EXPORT GvrDelegateProvider {
  public:
   GvrDelegateProvider() = default;
+  virtual bool ShouldDisableGvrDevice() = 0;
   virtual void SetDeviceId(unsigned int device_id) = 0;
   virtual void RequestWebVRPresent(mojom::VRSubmitFrameClientPtr submit_client,
                                    mojom::VRPresentationProviderRequest request,

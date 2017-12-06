@@ -357,6 +357,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
 java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
   sources = [
     "//chrome/browser/android/vr_shell/vr_core_info.h",
+    "//chrome/browser/android/vr_shell/vr_shell_delegate.h",
     "//chrome/browser/vr/ui_unsupported_mode.h",
   ]
 }
