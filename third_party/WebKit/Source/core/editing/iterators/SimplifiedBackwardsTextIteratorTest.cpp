@@ -27,10 +27,8 @@ class SimplifiedBackwardsTextIteratorTest : public EditingTestBase {
     const SelectionInDOMTree selection = SetSelectionTextToBody(selection_text);
     StringBuilder builder;
     bool is_first = true;
-    for (SimplifiedBackwardsTextIterator iterator(
-             EphemeralRange(selection.ComputeStartPosition(),
-                            selection.ComputeEndPosition()),
-             behavior);
+    for (SimplifiedBackwardsTextIterator iterator(selection.ComputeRange(),
+                                                  behavior);
          !iterator.AtEnd(); iterator.Advance()) {
       BackwardsTextBuffer buffer;
       iterator.CopyTextTo(&buffer);
