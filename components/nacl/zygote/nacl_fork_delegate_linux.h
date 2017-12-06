@@ -59,7 +59,7 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
     kNaClHelperUnused = 0,
     kNaClHelperMissing = 1,
     kNaClHelperBootstrapMissing = 2,
-    kNaClHelperValgrind = 3,
+    // kNaClHelperValgrind = 3,  // Running in valgrind no longer supported.
     kNaClHelperLaunchFailed = 4,
     kNaClHelperAckFailed = 5,
     kNaClHelperSuccess = 6,

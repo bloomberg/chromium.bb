@@ -27,7 +27,6 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_nonsfi_util.h"
 #include "components/nacl/common/nacl_paths.h"
@@ -210,8 +209,6 @@ void NaClForkDelegate::Init(const int sandboxdesc,
              !PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
                                &helper_bootstrap_exe)) {
     status_ = kNaClHelperBootstrapMissing;
-  } else if (RunningOnValgrind()) {
-    status_ = kNaClHelperValgrind;
   } else {
     base::CommandLine::StringVector argv_to_launch;
     {
