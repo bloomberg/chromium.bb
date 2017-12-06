@@ -268,3 +268,6 @@
 -WebViewTests/WebViewFocusTest.*
 -WebViewTests/WebViewSizeTest.*
 -WebViewTests/WebViewTest.*
+
+# crbug.com/792641 - Disable tests on mash during Wallpaper re-factoring
+-WallPaperPrivateApiTest.*
