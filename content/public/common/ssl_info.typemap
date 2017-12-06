@@ -4,9 +4,10 @@
 
 mojom = "//content/public/common/url_loader.mojom"
 public_headers = [ "//net/ssl/ssl_info.h" ]
-traits_headers = [ "//content/common/resource_messages.h" ]
+traits_headers = [ "//services/network/public/cpp/ssl_info_ipc_traits.h" ]
 deps = [
   "//content:export",
-  "//net:net",
+  "//net",
+  "//services/network/public/cpp",
 ]
 type_mappings = [ "content.mojom.SSLInfo=net::SSLInfo" ]
