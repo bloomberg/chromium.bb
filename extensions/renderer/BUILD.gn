@@ -404,7 +404,6 @@ source_set("unit_tests") {
     "scoped_web_frame.cc",
     "scoped_web_frame.h",
     "script_context_set_unittest.cc",
-    "script_context_unittest.cc",
     "utils_unittest.cc",
   ]
 
