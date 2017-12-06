@@ -100,6 +100,10 @@ class CORE_EXPORT ImageResource final
 
   bool ShouldShowPlaceholder() const;
 
+  // If the ImageResource came from a user agent CSS stylesheet then we should
+  // flag it so that it can persist beyond navigation.
+  void FlagAsUserAgentResource();
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -178,6 +182,8 @@ class CORE_EXPORT ImageResource final
   double last_flush_time_ = 0.;
 
   bool is_during_finish_as_error_ = false;
+
+  bool is_referenced_from_ua_stylesheet_ = false;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

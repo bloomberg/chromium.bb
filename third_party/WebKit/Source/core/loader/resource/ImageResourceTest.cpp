@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "core/loader/resource/MockImageResourceObserver.h"
+#include "platform/InstanceCounters.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/graphics/BitmapImage.h"
@@ -43,6 +44,7 @@
 #include "platform/loader/fetch/ResourceFinishObserver.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
+#include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/loader/testing/MockFetchContext.h"
 #include "platform/loader/testing/MockResourceClient.h"
 #include "platform/network/http_names.h"
@@ -1945,4 +1947,86 @@ TEST(ImageResourceTest, DeferredInvalidation) {
 }
 
 }  // namespace
+
+class ImageResourceCounterTest : public ::testing::Test {
+ public:
+  ImageResourceCounterTest() {}
+  ~ImageResourceCounterTest() {}
+
+  void CreateImageResource(const char* url_part, bool ua_resource) {
+    // Create a unique fake data url.
+    String url("data:image/png;base64,");
+    url.append(url_part);
+
+    // Setup the fetcher and request.
+    ResourceFetcher* fetcher = CreateFetcher();
+    KURL test_url(url);
+    ResourceRequest request = ResourceRequest(test_url);
+    FetchParameters fetch_params(request);
+    scheduler::FakeWebTaskRunner* task_runner =
+        static_cast<scheduler::FakeWebTaskRunner*>(
+            fetcher->Context().GetLoadingTaskRunner().get());
+    task_runner->SetTime(1);
+
+    // Mark it as coming from a UA stylesheet (if needed).
+    if (ua_resource) {
+      fetch_params.MutableOptions().initiator_info.name =
+          FetchInitiatorTypeNames::uacss;
+    }
+
+    // Fetch the ImageResource.
+    ImageResource::Fetch(fetch_params, fetcher);
+    task_runner->RunUntilIdle();
+  }
+
+  int GetResourceCount() const {
+    return InstanceCounters::CounterValue(InstanceCounters::kResourceCounter);
+  }
+
+  int GetUACSSResourceCount() const {
+    return InstanceCounters::CounterValue(
+        InstanceCounters::kUACSSResourceCounter);
+  }
+};
+
+TEST_F(ImageResourceCounterTest, InstanceCounters) {
+  // Get the current resource count.
+  int current_count = GetResourceCount();
+  int current_ua_count = GetUACSSResourceCount();
+
+  // Create a non-UA sourced image.
+  CreateImageResource("a", false);
+
+  // Check the instance counters have been updated.
+  EXPECT_EQ(++current_count, GetResourceCount());
+  EXPECT_EQ(current_ua_count, GetUACSSResourceCount());
+
+  // Create another non-UA sourced image.
+  CreateImageResource("b", false);
+
+  // Check the instance counters have been updated.
+  EXPECT_EQ(++current_count, GetResourceCount());
+  EXPECT_EQ(current_ua_count, GetUACSSResourceCount());
+}
+
+TEST_F(ImageResourceCounterTest, InstanceCounters_UserAgent) {
+  // Get the current resource count.
+  int current_count = GetResourceCount();
+  int current_ua_count = GetUACSSResourceCount();
+
+  // Create a non-UA sourced image.
+  CreateImageResource("c", false);
+
+  // Check the instance counters have been updated.
+  EXPECT_EQ(++current_count, GetResourceCount());
+  EXPECT_EQ(current_ua_count, GetUACSSResourceCount());
+
+  // Create a UA sourced image.
+  CreateImageResource("d", true);
+
+  // Check the instance counters have been updated.
+  EXPECT_EQ(++current_count, GetResourceCount());
+  EXPECT_EQ(++current_ua_count, GetUACSSResourceCount());
+}
+
 }  // namespace blink

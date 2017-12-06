@@ -30,14 +30,17 @@
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceInfo.h"
 #include "platform/Histogram.h"
+#include "platform/InstanceCounters.h"
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
+#include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
@@ -184,8 +187,14 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
     return nullptr;
   }
 
-  return ToImageResource(
+  ImageResource* resource = ToImageResource(
       fetcher->RequestResource(params, ImageResourceFactory(params)));
+
+  // If the fetch originated from user agent CSS we should mark it as a user
+  // agent resource.
+  if (params.Options().initiator_info.name == FetchInitiatorTypeNames::uacss)
+    resource->FlagAsUserAgentResource();
+  return resource;
 }
 
 bool ImageResource::CanReuse(const FetchParameters& params) const {
@@ -240,6 +249,9 @@ ImageResource::ImageResource(const ResourceRequest& resource_request,
 
 ImageResource::~ImageResource() {
   RESOURCE_LOADING_DVLOG(1) << "~ImageResource " << this;
+
+  if (is_referenced_from_ua_stylesheet_)
+    InstanceCounters::DecrementCounter(InstanceCounters::kUACSSResourceCounter);
 }
 
 void ImageResource::Trace(blink::Visitor* visitor) {
@@ -709,6 +721,14 @@ void ImageResource::UpdateImage(
     //    (b) after returning ImageResource::updateImage().
     DecodeError(all_data_received);
   }
+}
+
+void ImageResource::FlagAsUserAgentResource() {
+  if (is_referenced_from_ua_stylesheet_)
+    return;
+
+  InstanceCounters::IncrementCounter(InstanceCounters::kUACSSResourceCounter);
+  is_referenced_from_ua_stylesheet_ = true;
 }
 
 }  // namespace blink
