@@ -8,66 +8,107 @@
 
 namespace blink {
 
-const SquashingDisallowedReasonStringMap kSquashingDisallowedReasonStringMap[] =
-    {
-        {kSquashingDisallowedReasonScrollsWithRespectToSquashingLayer,
+namespace {
+
+struct SquashingDisallowedReasonStringMap {
+  SquashingDisallowedReasons reason;
+  const char* short_name;
+  const char* description;
+};
+
+constexpr SquashingDisallowedReasonStringMap
+    kSquashingDisallowedReasonsStringMap[] = {
+        {SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer,
          "scrollsWithRespectToSquashingLayer",
          "Cannot be squashed since this layer scrolls with respect to the "
          "squashing layer"},
-        {kSquashingDisallowedReasonSquashingSparsityExceeded,
+        {SquashingDisallowedReason::kSquashingSparsityExceeded,
          "squashingSparsityExceeded",
          "Cannot be squashed as the squashing layer would become too sparse"},
-        {kSquashingDisallowedReasonClippingContainerMismatch,
+        {SquashingDisallowedReason::kClippingContainerMismatch,
          "squashingClippingContainerMismatch",
          "Cannot be squashed because this layer has a different clipping "
          "container than the squashing layer"},
-        {kSquashingDisallowedReasonOpacityAncestorMismatch,
+        {SquashingDisallowedReason::kOpacityAncestorMismatch,
          "squashingOpacityAncestorMismatch",
          "Cannot be squashed because this layer has a different opacity "
          "ancestor than the squashing layer"},
-        {kSquashingDisallowedReasonTransformAncestorMismatch,
+        {SquashingDisallowedReason::kTransformAncestorMismatch,
          "squashingTransformAncestorMismatch",
          "Cannot be squashed because this layer has a different transform "
          "ancestor than the squashing layer"},
-        {kSquashingDisallowedReasonFilterMismatch,
+        {SquashingDisallowedReason::kFilterMismatch,
          "squashingFilterAncestorMismatch",
          "Cannot be squashed because this layer has a different filter "
          "ancestor than the squashing layer, or this layer has a filter"},
-        {kSquashingDisallowedReasonWouldBreakPaintOrder,
+        {SquashingDisallowedReason::kWouldBreakPaintOrder,
          "squashingWouldBreakPaintOrder",
          "Cannot be squashed without breaking paint order"},
-        {kSquashingDisallowedReasonSquashingVideoIsDisallowed,
+        {SquashingDisallowedReason::kSquashingVideoIsDisallowed,
          "squashingVideoIsDisallowed", "Squashing video is not supported"},
-        {kSquashingDisallowedReasonSquashedLayerClipsCompositingDescendants,
-         "squashedLayerClipsCompositingDescendants",
+        {SquashingDisallowedReason::kSquashedLayerClipsCompositingDescendants,
+         "squashedLayerClipsSquashingDisallowedDescendants",
          "Squashing a layer that clips composited descendants is not "
          "supported."},
-        {kSquashingDisallowedReasonSquashingLayoutEmbeddedContentIsDisallowed,
+        {SquashingDisallowedReason::kSquashingLayoutEmbeddedContentIsDisallowed,
          "squashingLayoutEmbeddedContentIsDisallowed",
          "Squashing a frame, iframe or plugin is not supported."},
-        {kSquashingDisallowedReasonSquashingBlendingIsDisallowed,
+        {SquashingDisallowedReason::kSquashingBlendingIsDisallowed,
          "squashingBlendingDisallowed",
          "Squashing a layer with blending is not supported."},
-        {kSquashingDisallowedReasonNearestFixedPositionMismatch,
+        {SquashingDisallowedReason::kNearestFixedPositionMismatch,
          "squashingNearestFixedPositionMismatch",
          "Cannot be squashed because this layer has a different nearest fixed "
          "position layer than the squashing layer"},
-        {kSquashingDisallowedReasonScrollChildWithCompositedDescendants,
+        {SquashingDisallowedReason::kScrollChildWithCompositedDescendants,
          "scrollChildWithCompositedDescendants",
          "Squashing a scroll child with composited descendants is not "
          "supported."},
-        {kSquashingDisallowedReasonSquashingLayerIsAnimating,
+        {SquashingDisallowedReason::kSquashingLayerIsAnimating,
          "squashingLayerIsAnimating",
          "Cannot squash into a layer that is animating."},
-        {kSquashingDisallowedReasonRenderingContextMismatch,
+        {SquashingDisallowedReason::kRenderingContextMismatch,
          "squashingLayerRenderingContextMismatch",
          "Cannot squash layers with different 3D contexts."},
-        {kSquashingDisallowedReasonFragmentedContent,
+        {SquashingDisallowedReason::kFragmentedContent,
          "SquashingDisallowedReasonFragmentedContent",
          "Cannot squash layers that are inside fragmentation contexts."},
 };
 
-const size_t kNumberOfSquashingDisallowedReasons =
-    WTF_ARRAY_LENGTH(kSquashingDisallowedReasonStringMap);
+}  // anonymous namespace
+
+Vector<const char*> SquashingDisallowedReason::ShortNames(
+    SquashingDisallowedReasons reasons) {
+#define V(name)                                                          \
+  static_assert(SquashingDisallowedReason::k##name ==                    \
+                    kSquashingDisallowedReasonsStringMap                 \
+                        [SquashingDisallowedReason::kE##name]            \
+                            .reason,                                     \
+                "kSquashingDisallowedReasonsStringMap needs update for " \
+                "SquashingDisallowedReason::k" #name);                   \
+  FOR_EACH_COMPOSITING_REASON(V)
+#undef V
+
+  Vector<const char*> result;
+  if (reasons == kNone)
+    return result;
+  for (auto& map : kSquashingDisallowedReasonsStringMap) {
+    if (reasons & map.reason)
+      result.push_back(map.short_name);
+  }
+  return result;
+}
+
+Vector<const char*> SquashingDisallowedReason::Descriptions(
+    SquashingDisallowedReasons reasons) {
+  Vector<const char*> result;
+  if (reasons == kNone)
+    return result;
+  for (auto& map : kSquashingDisallowedReasonsStringMap) {
+    if (reasons & map.reason)
+      result.push_back(map.description);
+  }
+  return result;
+}
 
 }  // namespace blink

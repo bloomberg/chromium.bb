@@ -415,15 +415,8 @@ Response InspectorLayerTreeAgent::compositingReasons(
     return response;
   CompositingReasons reasons_bitmask = graphics_layer->GetCompositingReasons();
   *reason_strings = Array<String>::create();
-  for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
-    if (!(reasons_bitmask & kCompositingReasonStringMap[i].reason))
-      continue;
-    (*reason_strings)->addItem(kCompositingReasonStringMap[i].short_name);
-#ifndef _NDEBUG
-    reasons_bitmask &= ~kCompositingReasonStringMap[i].reason;
-#endif
-  }
-  DCHECK(!reasons_bitmask);
+  for (const char* name : CompositingReason::ShortNames(reasons_bitmask))
+    (*reason_strings)->addItem(name);
   return Response::OK();
 }
 

@@ -90,8 +90,8 @@ PaintInvalidationReason LayoutHTMLCanvas::InvalidatePaint(
 
 CompositingReasons LayoutHTMLCanvas::AdditionalCompositingReasons() const {
   if (ToHTMLCanvasElement(GetNode())->ShouldBeDirectComposited())
-    return kCompositingReasonCanvas;
-  return kCompositingReasonNone;
+    return CompositingReason::kCanvas;
+  return CompositingReason::kNone;
 }
 
 void LayoutHTMLCanvas::StyleDidChange(StyleDifference diff,

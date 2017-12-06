@@ -124,9 +124,9 @@ using namespace HTMLNames;
 
 PaintLayerRareData::PaintLayerRareData()
     : enclosing_pagination_layer(nullptr),
-      potential_compositing_reasons_from_style(kCompositingReasonNone),
-      compositing_reasons(kCompositingReasonNone),
-      squashing_disallowed_reasons(kSquashingDisallowedReasonsNone),
+      potential_compositing_reasons_from_style(CompositingReason::kNone),
+      compositing_reasons(CompositingReason::kNone),
+      squashing_disallowed_reasons(SquashingDisallowedReason::kNone),
       grouped_mapping(nullptr) {}
 
 PaintLayerRareData::~PaintLayerRareData() {}
@@ -1101,11 +1101,11 @@ bool PaintLayer::HasNonIsolatedDescendantWithBlendMode() const {
 void PaintLayer::SetCompositingReasons(CompositingReasons reasons,
                                        CompositingReasons mask) {
   CompositingReasons old_reasons =
-      rare_data_ ? rare_data_->compositing_reasons : kCompositingReasonNone;
+      rare_data_ ? rare_data_->compositing_reasons : CompositingReason::kNone;
   if ((old_reasons & mask) == (reasons & mask))
     return;
   CompositingReasons new_reasons = (reasons & mask) | (old_reasons & ~mask);
-  if (rare_data_ || new_reasons != kCompositingReasonNone)
+  if (rare_data_ || new_reasons != CompositingReason::kNone)
     EnsureRareData().compositing_reasons = new_reasons;
 }
 
@@ -1113,10 +1113,10 @@ void PaintLayer::SetSquashingDisallowedReasons(
     SquashingDisallowedReasons reasons) {
   SquashingDisallowedReasons old_reasons =
       rare_data_ ? rare_data_->squashing_disallowed_reasons
-                 : kSquashingDisallowedReasonsNone;
+                 : SquashingDisallowedReason::kNone;
   if (old_reasons == reasons)
     return;
-  if (rare_data_ || reasons != kSquashingDisallowedReasonsNone)
+  if (rare_data_ || reasons != SquashingDisallowedReason::kNone)
     EnsureRareData().squashing_disallowed_reasons = reasons;
 }
 
@@ -3137,8 +3137,8 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   // means that the inline transform actually triggered assumed overlap in
   // the overlap map.
   if (diff.TransformChanged() &&
-      (!rare_data_ ||
-       !(rare_data_->compositing_reasons & kCompositingReasonInlineTransform)))
+      (!rare_data_ || !(rare_data_->compositing_reasons &
+                        CompositingReason::kInlineTransform)))
     return false;
 
   // We composite transparent Layers differently from non-transparent

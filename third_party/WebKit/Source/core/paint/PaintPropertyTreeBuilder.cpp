@@ -134,12 +134,12 @@ static bool UpdateScrollTranslation(
   if (auto* existing_scroll_translation = frame_view.ScrollTranslation()) {
     existing_scroll_translation->Update(
         std::move(parent), matrix, FloatPoint3D(), false, 0,
-        kCompositingReasonNone, CompositorElementId(), std::move(scroll));
+        CompositingReason::kNone, CompositorElementId(), std::move(scroll));
     return false;
   }
   frame_view.SetScrollTranslation(TransformPaintPropertyNode::Create(
       std::move(parent), matrix, FloatPoint3D(), false, 0,
-      kCompositingReasonNone, CompositorElementId(), std::move(scroll)));
+      CompositingReason::kNone, CompositorElementId(), std::move(scroll)));
   return true;
 }
 
@@ -472,22 +472,22 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForNonRootSVG() {
 
 static CompositingReasons CompositingReasonsForTransform(const LayoutBox& box) {
   const ComputedStyle& style = box.StyleRef();
-  CompositingReasons compositing_reasons = kCompositingReasonNone;
+  CompositingReasons compositing_reasons = CompositingReason::kNone;
   if (CompositingReasonFinder::RequiresCompositingForTransform(box))
-    compositing_reasons |= kCompositingReason3DTransform;
+    compositing_reasons |= CompositingReason::k3DTransform;
 
   if (CompositingReasonFinder::RequiresCompositingForTransformAnimation(style))
-    compositing_reasons |= kCompositingReasonActiveAnimation;
+    compositing_reasons |= CompositingReason::kActiveAnimation;
 
   if (style.HasWillChangeCompositingHint() &&
       !style.SubtreeWillChangeContents())
-    compositing_reasons |= kCompositingReasonWillChangeCompositingHint;
+    compositing_reasons |= CompositingReason::kWillChangeCompositingHint;
 
   if (box.HasLayer() && box.Layer()->Has3DTransformedDescendant()) {
     if (style.HasPerspective())
-      compositing_reasons |= kCompositingReasonPerspectiveWith3DDescendants;
+      compositing_reasons |= CompositingReason::kPerspectiveWith3DDescendants;
     if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3d)
-      compositing_reasons |= kCompositingReasonPreserve3DWith3DDescendants;
+      compositing_reasons |= CompositingReason::kPreserve3DWith3DDescendants;
   }
 
   return compositing_reasons;
@@ -510,7 +510,7 @@ static bool NeedsTransform(const LayoutObject& object) {
     return false;
   return object.StyleRef().HasTransform() || object.StyleRef().Preserves3D() ||
          CompositingReasonsForTransform(ToLayoutBox(object)) !=
-             kCompositingReasonNone;
+             CompositingReason::kNone;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
@@ -681,10 +681,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
       // We may begin to composite our subtree prior to an animation starts,
       // but a compositor element ID is only needed when an animation is
       // current.
-      CompositingReasons compositing_reasons = kCompositingReasonNone;
+      CompositingReasons compositing_reasons = CompositingReason::kNone;
       if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(
               style)) {
-        compositing_reasons = kCompositingReasonActiveAnimation;
+        compositing_reasons = CompositingReason::kActiveAnimation;
       }
 
       IntRect mask_clip;
@@ -726,7 +726,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         auto result = properties_->UpdateMask(
             properties_->Effect(), context_.current.transform, output_clip,
             mask_color_filter, CompositorFilterOperations(), 1.f,
-            SkBlendMode::kDstIn, kCompositingReasonNone,
+            SkBlendMode::kDstIn, CompositingReason::kNone,
             CompositorElementIdFromUniqueObjectId(
                 object_.UniqueId(), CompositorElementIdNamespace::kEffectMask));
         full_context_.force_subtree_update |= result.NewNodeCreated();
@@ -802,10 +802,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // current.
       CompositingReasons compositing_reasons =
           CompositingReasonFinder::RequiresCompositingForFilterAnimation(style)
-              ? kCompositingReasonActiveAnimation
-              : kCompositingReasonNone;
+              ? CompositingReason::kActiveAnimation
+              : CompositingReason::kNone;
       DCHECK(!style.HasCurrentFilterAnimation() ||
-             compositing_reasons != kCompositingReasonNone);
+             compositing_reasons != CompositingReason::kNone);
 
       auto result = properties_->UpdateFilter(
           context_.current_effect, context_.current.transform, output_clip,
@@ -1186,7 +1186,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       auto result = properties_->UpdateScrollTranslation(
           context_.current.transform, scroll_offset_matrix, FloatPoint3D(),
           context_.current.should_flatten_inherited_transform,
-          context_.current.rendering_context_id, kCompositingReasonNone,
+          context_.current.rendering_context_id, CompositingReason::kNone,
           CompositorElementId(), properties_->Scroll());
       full_context_.force_subtree_update |= result.NewNodeCreated();
     } else {

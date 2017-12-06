@@ -38,7 +38,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       CompositorFilterOperations filter,
       float opacity,
       SkBlendMode blend_mode,
-      CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
+      CompositingReasons direct_compositing_reasons = CompositingReason::kNone,
       const CompositorElementId& compositor_element_id = CompositorElementId(),
       const FloatPoint& paint_offset = FloatPoint()) {
     return base::AdoptRef(new EffectPaintPropertyNode(
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       CompositorFilterOperations filter,
       float opacity,
       SkBlendMode blend_mode,
-      CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
+      CompositingReasons direct_compositing_reasons = CompositingReason::kNone,
       const CompositorElementId& compositor_element_id = CompositorElementId(),
       const FloatPoint& paint_offset = FloatPoint()) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
@@ -132,11 +132,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   std::unique_ptr<JSONObject> ToJSON() const;
 
   bool HasDirectCompositingReasons() const {
-    return direct_compositing_reasons_ != kCompositingReasonNone;
+    return direct_compositing_reasons_ != CompositingReason::kNone;
   }
 
   bool RequiresCompositingForAnimation() const {
-    return direct_compositing_reasons_ & kCompositingReasonActiveAnimation;
+    return direct_compositing_reasons_ & CompositingReason::kActiveAnimation;
   }
 
   const CompositorElementId& GetCompositorElementId() const {

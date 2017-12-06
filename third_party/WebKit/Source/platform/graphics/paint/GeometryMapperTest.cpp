@@ -621,7 +621,7 @@ TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   auto effect = EffectPaintPropertyNode::Create(
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       ClipPaintPropertyNode::Root(), kColorFilterNone, filters, 1.0,
-      SkBlendMode::kSrcOver, kCompositingReasonNone, CompositorElementId(),
+      SkBlendMode::kSrcOver, CompositingReason::kNone, CompositorElementId(),
       FloatPoint(100, 100));
   local_state.SetEffect(effect);
 

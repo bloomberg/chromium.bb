@@ -247,8 +247,8 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 
 CompositingReasons LayoutEmbeddedContent::AdditionalCompositingReasons() const {
   if (RequiresAcceleratedCompositing())
-    return kCompositingReasonIFrame;
-  return kCompositingReasonNone;
+    return CompositingReason::kIFrame;
+  return CompositingReason::kNone;
 }
 
 void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,

@@ -35,7 +35,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       scoped_refptr<const ClipPaintPropertyNode> parent,
       scoped_refptr<const TransformPaintPropertyNode> local_transform_space,
       const FloatRoundedRect& clip_rect,
-      CompositingReasons direct_compositing_reasons = kCompositingReasonNone) {
+      CompositingReasons direct_compositing_reasons =
+          CompositingReason::kNone) {
     return base::AdoptRef(new ClipPaintPropertyNode(
         std::move(parent), std::move(local_transform_space), clip_rect,
         direct_compositing_reasons));
@@ -86,7 +87,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   std::unique_ptr<JSONObject> ToJSON() const;
 
   bool HasDirectCompositingReasons() const {
-    return direct_compositing_reasons_ != kCompositingReasonNone;
+    return direct_compositing_reasons_ != CompositingReason::kNone;
   }
 
  private:

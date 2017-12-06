@@ -127,7 +127,7 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
     const PaintLayer* layer,
     const CompositingLayerAssigner::SquashingState& squashing_state) {
   if (!squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree)
-    return kSquashingDisallowedReasonWouldBreakPaintOrder;
+    return SquashingDisallowedReason::kWouldBreakPaintOrder;
 
   DCHECK(squashing_state.has_most_recent_mapping);
   const PaintLayer& squashing_layer =
@@ -142,21 +142,23 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   // compositing/video/video-controls-layer-creation.html
   if (layer->GetLayoutObject().IsVideo() ||
       squashing_layer.GetLayoutObject().IsVideo())
-    return kSquashingDisallowedReasonSquashingVideoIsDisallowed;
+    return SquashingDisallowedReason::kSquashingVideoIsDisallowed;
 
   // Don't squash iframes, frames or plugins.
   // FIXME: this is only necessary because there is frame code that assumes that
   // composited frames are not squashed.
   if (layer->GetLayoutObject().IsLayoutEmbeddedContent() ||
-      squashing_layer.GetLayoutObject().IsLayoutEmbeddedContent())
-    return kSquashingDisallowedReasonSquashingLayoutEmbeddedContentIsDisallowed;
+      squashing_layer.GetLayoutObject().IsLayoutEmbeddedContent()) {
+    return SquashingDisallowedReason::
+        kSquashingLayoutEmbeddedContentIsDisallowed;
+  }
 
   if (SquashingWouldExceedSparsityTolerance(layer, squashing_state))
-    return kSquashingDisallowedReasonSquashingSparsityExceeded;
+    return SquashingDisallowedReason::kSquashingSparsityExceeded;
 
   if (layer->GetLayoutObject().Style()->HasBlendMode() ||
       squashing_layer.GetLayoutObject().Style()->HasBlendMode())
-    return kSquashingDisallowedReasonSquashingBlendingIsDisallowed;
+    return SquashingDisallowedReason::kSquashingBlendingIsDisallowed;
 
   // FIXME: this is not efficient, since it walks up the tree. We should store
   // these values on the CompositingInputsCache.
@@ -164,36 +166,36 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
       !squashing_layer.GetCompositedLayerMapping()->ContainingSquashedLayer(
           layer->ClippingContainer(),
           squashing_state.next_squashed_layer_index))
-    return kSquashingDisallowedReasonClippingContainerMismatch;
+    return SquashingDisallowedReason::kClippingContainerMismatch;
 
   // Composited descendants need to be clipped by a child containment graphics
   // layer, which would not be available if the layer is squashed (and therefore
   // has no CLM nor a child containment graphics layer).
   if (compositor_->ClipsCompositingDescendants(layer))
-    return kSquashingDisallowedReasonSquashedLayerClipsCompositingDescendants;
+    return SquashingDisallowedReason::kSquashedLayerClipsCompositingDescendants;
 
   if (layer->ScrollsWithRespectTo(&squashing_layer))
-    return kSquashingDisallowedReasonScrollsWithRespectToSquashingLayer;
+    return SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer;
 
   if (layer->ScrollParent() && layer->HasCompositingDescendant())
-    return kSquashingDisallowedReasonScrollChildWithCompositedDescendants;
+    return SquashingDisallowedReason::kScrollChildWithCompositedDescendants;
 
   if (layer->OpacityAncestor() != squashing_layer.OpacityAncestor())
-    return kSquashingDisallowedReasonOpacityAncestorMismatch;
+    return SquashingDisallowedReason::kOpacityAncestorMismatch;
 
   if (layer->TransformAncestor() != squashing_layer.TransformAncestor())
-    return kSquashingDisallowedReasonTransformAncestorMismatch;
+    return SquashingDisallowedReason::kTransformAncestorMismatch;
 
   if (layer->RenderingContextRoot() != squashing_layer.RenderingContextRoot())
-    return kSquashingDisallowedReasonRenderingContextMismatch;
+    return SquashingDisallowedReason::kRenderingContextMismatch;
 
   if (layer->HasFilterInducingProperty() ||
       layer->FilterAncestor() != squashing_layer.FilterAncestor())
-    return kSquashingDisallowedReasonFilterMismatch;
+    return SquashingDisallowedReason::kFilterMismatch;
 
   if (layer->NearestFixedPositionLayer() !=
       squashing_layer.NearestFixedPositionLayer())
-    return kSquashingDisallowedReasonNearestFixedPositionMismatch;
+    return SquashingDisallowedReason::kNearestFixedPositionMismatch;
   DCHECK_NE(layer->GetLayoutObject().Style()->GetPosition(), EPosition::kFixed);
 
   if ((squashing_layer.GetLayoutObject().Style()->SubtreeWillChangeContents() &&
@@ -203,12 +205,12 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
       squashing_layer.GetLayoutObject()
           .Style()
           ->ShouldCompositeForCurrentAnimations())
-    return kSquashingDisallowedReasonSquashingLayerIsAnimating;
+    return SquashingDisallowedReason::kSquashingLayerIsAnimating;
 
   if (layer->EnclosingPaginationLayer())
-    return kSquashingDisallowedReasonFragmentedContent;
+    return SquashingDisallowedReason::kFragmentedContent;
 
-  return kSquashingDisallowedReasonsNone;
+  return SquashingDisallowedReason::kNone;
 }
 
 void CompositingLayerAssigner::UpdateSquashingAssignment(
@@ -280,7 +282,7 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
         GetReasonsPreventingSquashing(layer, squashing_state);
     if (reasons_preventing_squashing) {
       layer->SetCompositingReasons(layer->GetCompositingReasons() |
-                                   kCompositingReasonSquashingDisallowed);
+                                   CompositingReason::kSquashingDisallowed);
       layer->SetSquashingDisallowedReasons(reasons_preventing_squashing);
     }
   }

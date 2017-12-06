@@ -5,44 +5,56 @@
 #ifndef SquashingDisallowedReasons_h
 #define SquashingDisallowedReasons_h
 
-#include <stdint.h>
 #include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
-enum SquashingDisallowedReason {
-  kSquashingDisallowedReasonsNone = 0,
-  kSquashingDisallowedReasonScrollsWithRespectToSquashingLayer = 1 << 0,
-  kSquashingDisallowedReasonSquashingSparsityExceeded = 1 << 1,
-  kSquashingDisallowedReasonClippingContainerMismatch = 1 << 2,
-  kSquashingDisallowedReasonOpacityAncestorMismatch = 1 << 3,
-  kSquashingDisallowedReasonTransformAncestorMismatch = 1 << 4,
-  kSquashingDisallowedReasonFilterMismatch = 1 << 5,
-  kSquashingDisallowedReasonWouldBreakPaintOrder = 1 << 6,
-  kSquashingDisallowedReasonSquashingVideoIsDisallowed = 1 << 7,
-  kSquashingDisallowedReasonSquashedLayerClipsCompositingDescendants = 1 << 8,
-  kSquashingDisallowedReasonSquashingLayoutEmbeddedContentIsDisallowed = 1 << 9,
-  kSquashingDisallowedReasonSquashingBlendingIsDisallowed = 1 << 10,
-  kSquashingDisallowedReasonNearestFixedPositionMismatch = 1 << 11,
-  kSquashingDisallowedReasonScrollChildWithCompositedDescendants = 1 << 12,
-  kSquashingDisallowedReasonSquashingLayerIsAnimating = 1 << 13,
-  kSquashingDisallowedReasonRenderingContextMismatch = 1 << 14,
-  kSquashingDisallowedReasonFragmentedContent = 1 << 15,
+using SquashingDisallowedReasons = unsigned;
+
+#define FOR_EACH_SQUASHING_DISALLOWED_REASON(V) \
+  V(ScrollsWithRespectToSquashingLayer)         \
+  V(SquashingSparsityExceeded)                  \
+  V(ClippingContainerMismatch)                  \
+  V(OpacityAncestorMismatch)                    \
+  V(TransformAncestorMismatch)                  \
+  V(FilterMismatch)                             \
+  V(WouldBreakPaintOrder)                       \
+  V(SquashingVideoIsDisallowed)                 \
+  V(SquashedLayerClipsCompositingDescendants)   \
+  V(SquashingLayoutEmbeddedContentIsDisallowed) \
+  V(SquashingBlendingIsDisallowed)              \
+  V(NearestFixedPositionMismatch)               \
+  V(ScrollChildWithCompositedDescendants)       \
+  V(SquashingLayerIsAnimating)                  \
+  V(RenderingContextMismatch)                   \
+  V(FragmentedContent)
+
+class PLATFORM_EXPORT SquashingDisallowedReason {
+ private:
+  // This contains ordinal values for squashing disallowed reasons and will be
+  // used to generate the squashing disallowed reason bits.
+  enum {
+#define V(name) kE##name,
+    FOR_EACH_SQUASHING_DISALLOWED_REASON(V)
+#undef V
+  };
+
+#define V(name) static_assert(kE##name < 32, "Should fit in 32 bits");
+  FOR_EACH_SQUASHING_DISALLOWED_REASON(V)
+#undef V
+
+ public:
+  static Vector<const char*> ShortNames(SquashingDisallowedReasons);
+  static Vector<const char*> Descriptions(SquashingDisallowedReasons);
+
+  enum : SquashingDisallowedReasons {
+    kNone = 0,
+#define V(name) k##name = 1u << kE##name,
+    FOR_EACH_SQUASHING_DISALLOWED_REASON(V)
+#undef V
+  };
 };
-
-typedef unsigned SquashingDisallowedReasons;
-
-struct SquashingDisallowedReasonStringMap {
-  STACK_ALLOCATED();
-  SquashingDisallowedReasons reason;
-  const char* short_name;
-  const char* description;
-};
-
-PLATFORM_EXPORT extern const SquashingDisallowedReasonStringMap
-    kSquashingDisallowedReasonStringMap[];
-PLATFORM_EXPORT extern const size_t kNumberOfSquashingDisallowedReasons;
 
 }  // namespace blink
 

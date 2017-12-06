@@ -339,12 +339,12 @@ bool Animation::PreCommit(
         // to that function for more details.
         //
         // In the CompositingRequirementsUpdater::UpdateRecursive, the
-        // (direct_reasons & kCompositingReasonActiveAnimation) can be non-zero
-        // which indicates that there is a compositor animation. However, the
-        // PaintLayerCompositor::CanBeComposited could still return false
-        // because the LocalFrameView is not visible. And in that case, the code
-        // path will get here because there is a compositor animation but it
-        // won't be composited. We have to account for this case.
+        // (direct_reasons & CompositingReason::kActiveAnimation) can be
+        // non-zero which indicates that there is a compositor animation.
+        // However, the PaintLayerCompositor::CanBeComposited could still return
+        // false because the LocalFrameView is not visible. And in that case,
+        // the code path will get here because there is a compositor animation
+        // but it won't be composited. We have to account for this case.
         if (failure_code.can_composite &&
             TimelineInternal()->GetDocument()->View()->IsVisible()) {
           is_non_composited_compositable_ = true;

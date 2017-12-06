@@ -637,7 +637,7 @@ class GraphicsLayer::LayersAsJSONArray {
     }
 
     if (!layer.transform_.IsIdentity() || layer.rendering_context3d_ ||
-        layer.GetCompositingReasons() & kCompositingReason3DTransform) {
+        layer.GetCompositingReasons() & CompositingReason::k3DTransform) {
       if (position != FloatPoint()) {
         // Output position offset as a transform.
         auto* position_translate_json = AddTransformJSON(transform_id);
@@ -797,29 +797,26 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
   if (flags &
       (kLayerTreeIncludesDebugInfo | kLayerTreeIncludesCompositingReasons)) {
     bool debug = flags & kLayerTreeIncludesDebugInfo;
-    std::unique_ptr<JSONArray> compositing_reasons_json = JSONArray::Create();
-    for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
-      if (debug_info_.GetCompositingReasons() &
-          kCompositingReasonStringMap[i].reason) {
-        compositing_reasons_json->PushString(
-            debug ? kCompositingReasonStringMap[i].description
-                  : kCompositingReasonStringMap[i].short_name);
-      }
+    {
+      std::unique_ptr<JSONArray> compositing_reasons_json = JSONArray::Create();
+      auto reasons = debug_info_.GetCompositingReasons();
+      auto names = debug ? CompositingReason::Descriptions(reasons)
+                         : CompositingReason::ShortNames(reasons);
+      for (const char* name : names)
+        compositing_reasons_json->PushString(name);
+      json->SetArray("compositingReasons", std::move(compositing_reasons_json));
     }
-    json->SetArray("compositingReasons", std::move(compositing_reasons_json));
-
-    std::unique_ptr<JSONArray> squashing_disallowed_reasons_json =
-        JSONArray::Create();
-    for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
-      if (debug_info_.GetSquashingDisallowedReasons() &
-          kSquashingDisallowedReasonStringMap[i].reason) {
-        squashing_disallowed_reasons_json->PushString(
-            debug ? kSquashingDisallowedReasonStringMap[i].description
-                  : kSquashingDisallowedReasonStringMap[i].short_name);
-      }
+    {
+      std::unique_ptr<JSONArray> squashing_disallowed_reasons_json =
+          JSONArray::Create();
+      auto reasons = debug_info_.GetSquashingDisallowedReasons();
+      auto names = debug ? SquashingDisallowedReason::Descriptions(reasons)
+                         : SquashingDisallowedReason::ShortNames(reasons);
+      for (const char* name : names)
+        squashing_disallowed_reasons_json->PushString(name);
+      json->SetArray("squashingDisallowedReasons",
+                     std::move(squashing_disallowed_reasons_json));
     }
-    json->SetArray("squashingDisallowedReasons",
-                   std::move(squashing_disallowed_reasons_json));
   }
 
   if (mask_layer_) {

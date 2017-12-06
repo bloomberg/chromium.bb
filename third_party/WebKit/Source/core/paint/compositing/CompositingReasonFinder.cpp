@@ -41,13 +41,13 @@ CompositingReasons CompositingReasonFinder::DirectReasons(
     const PaintLayer* layer,
     bool ignore_lcd_text) const {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return kCompositingReasonNone;
+    return CompositingReason::kNone;
 
   DCHECK_EQ(PotentialCompositingReasonsFromStyle(layer->GetLayoutObject()),
             layer->PotentialCompositingReasonsFromStyle());
   CompositingReasons style_determined_direct_compositing_reasons =
       layer->PotentialCompositingReasonsFromStyle() &
-      kCompositingReasonComboAllDirectStyleDeterminedReasons;
+      CompositingReason::kComboAllDirectStyleDeterminedReasons;
 
   return style_determined_direct_compositing_reasons |
          NonStyleDeterminedDirectReasons(layer, ignore_lcd_text);
@@ -70,33 +70,33 @@ CompositingReasons
 CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
     LayoutObject& layout_object) const {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return kCompositingReasonNone;
+    return CompositingReason::kNone;
 
-  CompositingReasons reasons = kCompositingReasonNone;
+  CompositingReasons reasons = CompositingReason::kNone;
 
   const ComputedStyle& style = layout_object.StyleRef();
 
   if (RequiresCompositingForTransform(layout_object))
-    reasons |= kCompositingReason3DTransform;
+    reasons |= CompositingReason::k3DTransform;
 
   if (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
-    reasons |= kCompositingReasonBackfaceVisibilityHidden;
+    reasons |= CompositingReason::kBackfaceVisibilityHidden;
 
   if (RequiresCompositingForAnimation(style))
-    reasons |= kCompositingReasonActiveAnimation;
+    reasons |= CompositingReason::kActiveAnimation;
 
   if (style.HasWillChangeCompositingHint() &&
       !style.SubtreeWillChangeContents())
-    reasons |= kCompositingReasonWillChangeCompositingHint;
+    reasons |= CompositingReason::kWillChangeCompositingHint;
 
   if (style.HasInlineTransform())
-    reasons |= kCompositingReasonInlineTransform;
+    reasons |= CompositingReason::kInlineTransform;
 
   if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3d)
-    reasons |= kCompositingReasonPreserve3DWith3DDescendants;
+    reasons |= CompositingReason::kPreserve3DWith3DDescendants;
 
   if (style.HasPerspective())
-    reasons |= kCompositingReasonPerspectiveWith3DDescendants;
+    reasons |= CompositingReason::kPerspectiveWith3DDescendants;
 
   // If the implementation of createsGroup changes, we need to be aware of that
   // in this part of code.
@@ -105,28 +105,28 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
          layout_object.CreatesGroup());
 
   if (style.HasMask())
-    reasons |= kCompositingReasonMaskWithCompositedDescendants;
+    reasons |= CompositingReason::kMaskWithCompositedDescendants;
 
   if (style.HasFilterInducingProperty())
-    reasons |= kCompositingReasonFilterWithCompositedDescendants;
+    reasons |= CompositingReason::kFilterWithCompositedDescendants;
 
   if (style.HasBackdropFilter())
-    reasons |= kCompositingReasonBackdropFilter;
+    reasons |= CompositingReason::kBackdropFilter;
 
   // See Layer::updateTransform for an explanation of why we check both.
   if (layout_object.HasTransformRelatedProperty() && style.HasTransform())
-    reasons |= kCompositingReasonTransformWithCompositedDescendants;
+    reasons |= CompositingReason::kTransformWithCompositedDescendants;
 
   if (layout_object.IsTransparent())
-    reasons |= kCompositingReasonOpacityWithCompositedDescendants;
+    reasons |= CompositingReason::kOpacityWithCompositedDescendants;
 
   if (style.HasBlendMode())
-    reasons |= kCompositingReasonBlendingWithCompositedDescendants;
+    reasons |= CompositingReason::kBlendingWithCompositedDescendants;
 
   if (layout_object.HasReflection())
-    reasons |= kCompositingReasonReflectionWithCompositedDescendants;
+    reasons |= CompositingReason::kReflectionWithCompositedDescendants;
 
-  DCHECK(!(reasons & ~kCompositingReasonComboAllStyleDeterminedReasons));
+  DCHECK(!(reasons & ~CompositingReason::kComboAllStyleDeterminedReasons));
   return reasons;
 }
 
@@ -142,37 +142,38 @@ bool CompositingReasonFinder::RequiresCompositingForTransform(
 CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
     const PaintLayer* layer,
     bool ignore_lcd_text) const {
-  CompositingReasons direct_reasons = kCompositingReasonNone;
+  CompositingReasons direct_reasons = CompositingReason::kNone;
   LayoutObject& layout_object = layer->GetLayoutObject();
 
   // TODO(chrishtr): remove this hammer in favor of something more targeted.
   // See crbug.com/749349.
   if (layer->ClipParent() && layer->GetLayoutObject().IsOutOfFlowPositioned())
-    direct_reasons |= kCompositingReasonOutOfFlowClipping;
+    direct_reasons |= CompositingReason::kOutOfFlowClipping;
 
   if (layer->NeedsCompositedScrolling())
-    direct_reasons |= kCompositingReasonOverflowScrollingTouch;
+    direct_reasons |= CompositingReason::kOverflowScrollingTouch;
 
   // When RLS is disabled, the root layer may be the root scroller but
   // the FrameView/Compositor handles its scrolling so there's no need to
   // composite it.
   if (RootScrollerUtil::IsGlobal(*layer) && !layer->IsScrolledByFrameView())
-    direct_reasons |= kCompositingReasonRootScroller;
+    direct_reasons |= CompositingReason::kRootScroller;
 
   // Composite |layer| if it is inside of an ancestor scrolling layer, but that
   // scrolling layer is not on the stacking context ancestor chain of |layer|.
   // See the definition of the scrollParent property in Layer for more detail.
   if (const PaintLayer* scrolling_ancestor = layer->AncestorScrollingLayer()) {
     if (scrolling_ancestor->NeedsCompositedScrolling() && layer->ScrollParent())
-      direct_reasons |= kCompositingReasonOverflowScrollingParent;
+      direct_reasons |= CompositingReason::kOverflowScrollingParent;
   }
 
   if (RequiresCompositingForScrollDependentPosition(layer, ignore_lcd_text))
-    direct_reasons |= kCompositingReasonScrollDependentPosition;
+    direct_reasons |= CompositingReason::kScrollDependentPosition;
 
   direct_reasons |= layout_object.AdditionalCompositingReasons();
 
-  DCHECK(!(direct_reasons & kCompositingReasonComboAllStyleDeterminedReasons));
+  DCHECK(
+      !(direct_reasons & CompositingReason::kComboAllStyleDeterminedReasons));
   return direct_reasons;
 }
 

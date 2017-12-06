@@ -14,7 +14,7 @@ TransformPaintPropertyNode* TransformPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(TransformPaintPropertyNode, root,
                     base::AdoptRef(new TransformPaintPropertyNode(
                         nullptr, TransformationMatrix(), FloatPoint3D(), false,
-                        0, kCompositingReasonNone, CompositorElementId(),
+                        0, CompositingReason::kNone, CompositorElementId(),
                         ScrollPaintPropertyNode::Root())));
   return root;
 }
@@ -45,9 +45,9 @@ std::unique_ptr<JSONObject> TransformPaintPropertyNode::ToJSON() const {
     json->SetString("renderingContextId",
                     String::Format("%x", rendering_context_id_));
   }
-  if (direct_compositing_reasons_ != kCompositingReasonNone) {
+  if (direct_compositing_reasons_ != CompositingReason::kNone) {
     json->SetString("directCompositingReasons",
-                    CompositingReasonsAsString(direct_compositing_reasons_));
+                    CompositingReason::ToString(direct_compositing_reasons_));
   }
   if (compositor_element_id_) {
     json->SetString("compositorElementId",

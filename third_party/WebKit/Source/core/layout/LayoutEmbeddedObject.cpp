@@ -149,8 +149,8 @@ ScrollResult LayoutEmbeddedObject::Scroll(ScrollGranularity granularity,
 
 CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
   if (RequiresAcceleratedCompositing())
-    return kCompositingReasonPlugin;
-  return kCompositingReasonNone;
+    return CompositingReason::kPlugin;
+  return CompositingReason::kNone;
 }
 
 LayoutReplaced* LayoutEmbeddedObject::EmbeddedReplacedContent() const {

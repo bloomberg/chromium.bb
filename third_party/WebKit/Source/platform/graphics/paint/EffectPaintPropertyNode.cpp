@@ -41,9 +41,9 @@ std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
     json->SetDouble("opacity", opacity_);
   if (blend_mode_ != SkBlendMode::kSrcOver)
     json->SetString("blendMode", SkBlendMode_Name(blend_mode_));
-  if (direct_compositing_reasons_ != kCompositingReasonNone) {
+  if (direct_compositing_reasons_ != CompositingReason::kNone) {
     json->SetString("directCompositingReasons",
-                    CompositingReasonsAsString(direct_compositing_reasons_));
+                    CompositingReason::ToString(direct_compositing_reasons_));
   }
   if (compositor_element_id_) {
     json->SetString("compositorElementId",
