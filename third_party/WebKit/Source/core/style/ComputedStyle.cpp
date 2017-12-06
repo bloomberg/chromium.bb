@@ -33,7 +33,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyEquality.h"
 #include "core/css/properties/CSSProperty.h"
-#include "core/css/properties/Longhand.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextAutosizer.h"
@@ -1425,11 +1424,11 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
         Vector<AppliedTextDecoration>, underline,
         (1, AppliedTextDecoration(
                 TextDecoration::kUnderline, ETextDecorationStyle::kSolid,
-                VisitedDependentColor(GetCSSPropertyTextDecorationColor()))));
+                VisitedDependentColor(CSSPropertyTextDecorationColor))));
     // Since we only have one of these in memory, just update the color before
     // returning.
     underline.at(0).SetColor(
-        VisitedDependentColor(GetCSSPropertyTextDecorationColor()));
+        VisitedDependentColor(CSSPropertyTextDecorationColor));
     return underline;
   }
   if (!AppliedTextDecorationsInternal()) {
@@ -1713,7 +1712,7 @@ void ComputedStyle::ApplyTextDecorations(
   // If there are any color changes or decorations set by this element, stop
   // using m_hasSimpleUnderline.
   Color current_text_decoration_color =
-      VisitedDependentColor(GetCSSPropertyTextDecorationColor());
+      VisitedDependentColor(CSSPropertyTextDecorationColor);
   if (HasSimpleUnderlineInternal() &&
       (GetTextDecoration() != TextDecoration::kNone ||
        current_text_decoration_color != parent_text_decoration_color)) {
@@ -1803,15 +1802,110 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   return visited_link ? VisitedLinkTextFillColor() : TextFillColor();
 }
 
-Color ComputedStyle::VisitedDependentColor(
-    const CSSProperty& color_property) const {
-  Color unvisited_color =
-      ToLonghand(color_property).ColorIncludingFallback(false, *this);
+Color ComputedStyle::ColorIncludingFallback(CSSPropertyID color_property,
+                                            bool visited_link) const {
+  StyleColor result(StyleColor::CurrentColor());
+  EBorderStyle border_style = EBorderStyle::kNone;
+  switch (color_property) {
+    case CSSPropertyBackgroundColor:
+      result = visited_link ? VisitedLinkBackgroundColor() : BackgroundColor();
+      break;
+    case CSSPropertyBorderLeftColor:
+      result = visited_link ? VisitedLinkBorderLeftColor() : BorderLeftColor();
+      border_style = BorderLeftStyle();
+      break;
+    case CSSPropertyBorderRightColor:
+      result =
+          visited_link ? VisitedLinkBorderRightColor() : BorderRightColor();
+      border_style = BorderRightStyle();
+      break;
+    case CSSPropertyBorderTopColor:
+      result = visited_link ? VisitedLinkBorderTopColor() : BorderTopColor();
+      border_style = BorderTopStyle();
+      break;
+    case CSSPropertyBorderBottomColor:
+      result =
+          visited_link ? VisitedLinkBorderBottomColor() : BorderBottomColor();
+      border_style = BorderBottomStyle();
+      break;
+    case CSSPropertyCaretColor: {
+      StyleAutoColor auto_color =
+          visited_link ? VisitedLinkCaretColor() : CaretColor();
+      // TODO(rego): We may want to adjust the caret color if it's the same than
+      // the background to ensure good visibility and contrast.
+      result = auto_color.IsAutoColor() ? StyleColor::CurrentColor()
+                                        : auto_color.ToStyleColor();
+      break;
+    }
+    case CSSPropertyColor:
+      result = visited_link ? VisitedLinkColor() : GetColor();
+      break;
+    case CSSPropertyOutlineColor:
+      result = visited_link ? VisitedLinkOutlineColor() : OutlineColor();
+      break;
+    case CSSPropertyColumnRuleColor:
+      result = visited_link ? VisitedLinkColumnRuleColor() : ColumnRuleColor();
+      break;
+    case CSSPropertyWebkitTextEmphasisColor:
+      result =
+          visited_link ? VisitedLinkTextEmphasisColor() : TextEmphasisColor();
+      break;
+    case CSSPropertyWebkitTextFillColor:
+      result = visited_link ? VisitedLinkTextFillColor() : TextFillColor();
+      break;
+    case CSSPropertyWebkitTextStrokeColor:
+      result = visited_link ? VisitedLinkTextStrokeColor() : TextStrokeColor();
+      break;
+    case CSSPropertyFloodColor:
+      result = FloodColor();
+      break;
+    case CSSPropertyLightingColor:
+      result = LightingColor();
+      break;
+    case CSSPropertyStopColor:
+      result = StopColor();
+      break;
+    case CSSPropertyWebkitTapHighlightColor:
+      result = TapHighlightColor();
+      break;
+    case CSSPropertyTextDecorationColor:
+      result = DecorationColorIncludingFallback(visited_link);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (!result.IsCurrentColor())
+    return result.GetColor();
+
+  // FIXME: Treating styled borders with initial color differently causes
+  // problems, see crbug.com/316559, crbug.com/276231
+  if (!visited_link && (border_style == EBorderStyle::kInset ||
+                        border_style == EBorderStyle::kOutset ||
+                        border_style == EBorderStyle::kRidge ||
+                        border_style == EBorderStyle::kGroove))
+    return Color(238, 238, 238);
+  return visited_link ? VisitedLinkColor() : GetColor();
+}
+
+Color ComputedStyle::VisitedDependentColor(CSSPropertyID color_property) const {
+  Color unvisited_color = ColorIncludingFallback(color_property, false);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
-  Color visited_color =
-      ToLonghand(color_property).ColorIncludingFallback(true, *this);
+  Color visited_color = ColorIncludingFallback(color_property, true);
+
+  // FIXME: Technically someone could explicitly specify the color transparent,
+  // but for now we'll just assume that if the background color is transparent
+  // that it wasn't set. Note that it's weird that we're returning unvisited
+  // info for a visited link, but given our restriction that the alpha values
+  // have to match, it makes more sense to return the unvisited background color
+  // if specified than it does to return black. This behavior matches what
+  // Firefox 4 does as well.
+  if (color_property == CSSPropertyBackgroundColor &&
+      visited_color == Color::kTransparent)
+    return unvisited_color;
 
   // Take the alpha from the unvisited color, but get the RGB values from the
   // visited color.
@@ -1871,8 +1965,8 @@ bool ComputedStyle::ColumnRuleEquivalent(
     const ComputedStyle& other_style) const {
   return ColumnRuleStyle() == other_style.ColumnRuleStyle() &&
          ColumnRuleWidth() == other_style.ColumnRuleWidth() &&
-         VisitedDependentColor(GetCSSPropertyColumnRuleColor()) ==
-             other_style.VisitedDependentColor(GetCSSPropertyColumnRuleColor());
+         VisitedDependentColor(CSSPropertyColumnRuleColor) ==
+             other_style.VisitedDependentColor(CSSPropertyColumnRuleColor);
 }
 
 TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
@@ -1953,21 +2047,19 @@ void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
   bool horizontal = IsHorizontalWritingMode();
 
   edges[kBSTop] = BorderEdge(
-      BorderTopWidth(), VisitedDependentColor(GetCSSPropertyBorderTopColor()),
+      BorderTopWidth(), VisitedDependentColor(CSSPropertyBorderTopColor),
       BorderTopStyle(), horizontal || include_logical_left_edge);
 
-  edges[kBSRight] =
-      BorderEdge(BorderRightWidth(),
-                 VisitedDependentColor(GetCSSPropertyBorderRightColor()),
-                 BorderRightStyle(), !horizontal || include_logical_right_edge);
+  edges[kBSRight] = BorderEdge(
+      BorderRightWidth(), VisitedDependentColor(CSSPropertyBorderRightColor),
+      BorderRightStyle(), !horizontal || include_logical_right_edge);
 
-  edges[kBSBottom] =
-      BorderEdge(BorderBottomWidth(),
-                 VisitedDependentColor(GetCSSPropertyBorderBottomColor()),
-                 BorderBottomStyle(), horizontal || include_logical_right_edge);
+  edges[kBSBottom] = BorderEdge(
+      BorderBottomWidth(), VisitedDependentColor(CSSPropertyBorderBottomColor),
+      BorderBottomStyle(), horizontal || include_logical_right_edge);
 
   edges[kBSLeft] = BorderEdge(
-      BorderLeftWidth(), VisitedDependentColor(GetCSSPropertyBorderLeftColor()),
+      BorderLeftWidth(), VisitedDependentColor(CSSPropertyBorderLeftColor),
       BorderLeftStyle(), !horizontal || include_logical_left_edge);
 }
 

@@ -32,7 +32,6 @@
 #include "core/CoreExport.h"
 #include "core/css/StyleAutoColor.h"
 #include "core/css/StyleColor.h"
-#include "core/css/properties/CSSProperty.h"
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/ComputedStyleInitialValues.h"
@@ -66,7 +65,6 @@ struct BorderEdge;
 class ContentData;
 class CounterDirectives;
 class CSSAnimationData;
-class FloodColor;
 class CSSTransitionData;
 class CSSVariableData;
 class FilterOperations;
@@ -87,28 +85,6 @@ class TransformationMatrix;
 class ContentData;
 
 typedef Vector<scoped_refptr<ComputedStyle>, 4> PseudoStyleCache;
-
-namespace CSSLonghand {
-
-class BackgroundColor;
-class BorderBottomColor;
-class BorderLeftColor;
-class BorderRightColor;
-class BorderTopColor;
-class CaretColor;
-class Color;
-class ColumnRuleColor;
-class FloodColor;
-class LightingColor;
-class OutlineColor;
-class StopColor;
-class TextDecorationColor;
-class WebkitTapHighlightColor;
-class WebkitTextEmphasisColor;
-class WebkitTextFillColor;
-class WebkitTextStrokeColor;
-
-}  // namespace CSSLonghand
 
 // ComputedStyle stores the computed value [1] for every CSS property on an
 // element and provides the interface between the style engine and the rest of
@@ -176,27 +152,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Used by CSS animations. We can't allow them to animate based off visited
   // colors.
   friend class CSSPropertyEquality;
-
-  // Accesses GetColor().
-  friend class ComputedStyleUtils;
-  // These get visited and unvisited colors separately.
-  friend class CSSLonghand::BackgroundColor;
-  friend class CSSLonghand::BorderBottomColor;
-  friend class CSSLonghand::BorderLeftColor;
-  friend class CSSLonghand::BorderRightColor;
-  friend class CSSLonghand::BorderTopColor;
-  friend class CSSLonghand::CaretColor;
-  friend class CSSLonghand::Color;
-  friend class CSSLonghand::ColumnRuleColor;
-  friend class CSSLonghand::FloodColor;
-  friend class CSSLonghand::LightingColor;
-  friend class CSSLonghand::OutlineColor;
-  friend class CSSLonghand::StopColor;
-  friend class CSSLonghand::TextDecorationColor;
-  friend class CSSLonghand::WebkitTapHighlightColor;
-  friend class CSSLonghand::WebkitTextEmphasisColor;
-  friend class CSSLonghand::WebkitTextFillColor;
-  friend class CSSLonghand::WebkitTextStrokeColor;
   // Editing has to only reveal unvisited info.
   friend class ApplyStyleCommand;
   // Editing has to only reveal unvisited info.
@@ -2196,15 +2151,16 @@ class ComputedStyle : public ComputedStyleBase,
     return ShadowListHasCurrentColor(BoxShadow());
   }
   bool HasBackground() const {
-    Color color = VisitedDependentColor(GetCSSPropertyBackgroundColor());
+    Color color = VisitedDependentColor(CSSPropertyBackgroundColor);
     if (color.Alpha())
       return true;
     return HasBackgroundImage();
   }
 
   // Color utility functions.
-  CORE_EXPORT Color
-  VisitedDependentColor(const CSSProperty& color_property) const;
+  // TODO(sashab): Rename this to just getColor(), and add a comment explaining
+  // how it works.
+  CORE_EXPORT Color VisitedDependentColor(CSSPropertyID color_property) const;
 
   // -webkit-appearance utility functions.
   bool HasAppearance() const { return Appearance() != kNoControlPart; }
@@ -2431,6 +2387,8 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
+  Color ColorIncludingFallback(CSSPropertyID color_property,
+                               bool visited_link) const;
 
   Color StopColor() const { return SvgStyle().StopColor(); }
   Color FloodColor() const { return SvgStyle().FloodColor(); }

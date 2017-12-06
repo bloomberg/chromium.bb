@@ -120,14 +120,13 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
     text_style.stroke_width = style.TextStrokeWidth();
     text_style.shadow = nullptr;
   } else {
-    text_style.current_color =
-        style.VisitedDependentColor(GetCSSPropertyColor());
+    text_style.current_color = style.VisitedDependentColor(CSSPropertyColor);
     text_style.fill_color =
-        style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor());
+        style.VisitedDependentColor(CSSPropertyWebkitTextFillColor);
     text_style.stroke_color =
-        style.VisitedDependentColor(GetCSSPropertyWebkitTextStrokeColor());
+        style.VisitedDependentColor(CSSPropertyWebkitTextStrokeColor);
     text_style.emphasis_mark_color =
-        style.VisitedDependentColor(GetCSSPropertyWebkitTextEmphasisColor());
+        style.VisitedDependentColor(CSSPropertyWebkitTextEmphasisColor);
     text_style.stroke_width = style.TextStrokeWidth();
     text_style.shadow = style.TextShadow();
 

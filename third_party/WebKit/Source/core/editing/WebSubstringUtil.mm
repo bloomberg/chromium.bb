@@ -113,15 +113,14 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
     }
     [attrs setObject:font forKey:NSFontAttributeName];
 
-    if (style->VisitedDependentColor(GetCSSPropertyColor()).Alpha())
-      [attrs
-          setObject:NsColor(style->VisitedDependentColor(GetCSSPropertyColor()))
-             forKey:NSForegroundColorAttributeName];
+    if (style->VisitedDependentColor(CSSPropertyColor).Alpha())
+      [attrs setObject:NsColor(style->VisitedDependentColor(CSSPropertyColor))
+                forKey:NSForegroundColorAttributeName];
     else
       [attrs removeObjectForKey:NSForegroundColorAttributeName];
-    if (style->VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha())
+    if (style->VisitedDependentColor(CSSPropertyBackgroundColor).Alpha())
       [attrs setObject:NsColor(style->VisitedDependentColor(
-                           GetCSSPropertyBackgroundColor()))
+                           CSSPropertyBackgroundColor))
                 forKey:NSBackgroundColorAttributeName];
     else
       [attrs removeObjectForKey:NSBackgroundColorAttributeName];

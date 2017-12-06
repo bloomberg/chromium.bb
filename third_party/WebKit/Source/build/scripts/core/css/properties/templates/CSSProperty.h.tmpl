@@ -10,7 +10,6 @@
 #define CSSProperty_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSValue.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
@@ -54,13 +53,6 @@ class CSSProperty {
   virtual bool IsEnabled() const { return true; }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
   virtual bool IsLayoutDependent(const ComputedStyle* style, LayoutObject* layout_object) const { return false; }
-  virtual const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
-                                                    const LayoutObject*,
-                                                    Node*,
-                                                    bool allow_visited_style) const {
-    NOTREACHED();
-    return nullptr;
-  }
   virtual const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection,
       WritingMode) const {

@@ -272,7 +272,7 @@ bool GetColorsFromRect(LayoutRect rect,
       continue;
 
     Color background_color =
-        style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+        style->VisitedDependentColor(CSSPropertyBackgroundColor);
     bool found_non_transparent_color = false;
     if (background_color.Alpha() != 0) {
       found_non_transparent_color = true;

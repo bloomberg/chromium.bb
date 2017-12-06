@@ -4,11 +4,9 @@
 
 #include "core/css/properties/longhands/Color.h"
 
-#include "core/css/CSSColorValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -18,25 +16,6 @@ const CSSValue* Color::ParseSingleValue(CSSParserTokenRange& range,
                                         const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeColor(
       range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
-}
-
-const blink::Color Color::ColorIncludingFallback(
-    bool visited_link,
-    const ComputedStyle& style) const {
-  StyleColor result =
-      visited_link ? style.VisitedLinkColor() : style.GetColor();
-  ;
-  return result.GetColor();
-}
-
-const CSSValue* Color::CSSValueFromComputedStyle(
-    const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
-    bool allow_visited_style) const {
-  return cssvalue::CSSColorValue::Create(
-      allow_visited_style ? style.VisitedDependentColor(*this).Rgb()
-                          : style.GetColor().Rgb());
 }
 
 }  // namespace CSSLonghand

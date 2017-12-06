@@ -123,12 +123,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t1->GetComputedStyle());
   ASSERT_TRUE(t2->GetComputedStyle());
   ASSERT_TRUE(t3->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t2->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t3->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t2->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   const unsigned initial_count = GetStyleEngine().StyleForElementCount();
 
@@ -151,13 +151,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t3->GetComputedStyle());
 
   // Important user rules override both regular and important author rules.
-  EXPECT_EQ(MakeRGB(0, 128, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(
-      MakeRGB(255, 255, 255),
-      t2->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t3->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t2->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   StyleSheetContents* blue_parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
@@ -177,15 +176,13 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t3->GetComputedStyle());
 
   // Only important user rules override previously set important user rules.
-  EXPECT_EQ(MakeRGB(0, 0, 255), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(
-      MakeRGB(255, 255, 255),
-      t2->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 255),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t2->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
   // Important user rules override inline author rules.
-  EXPECT_EQ(
-      MakeRGB(192, 192, 192),
-      t3->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(192, 192, 192),
+            t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   GetStyleEngine().RemoveInjectedSheet(green_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -195,13 +192,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t3->GetComputedStyle());
 
   // Regular user rules do not override author rules.
-  EXPECT_EQ(MakeRGB(0, 0, 255), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t2->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
-  EXPECT_EQ(
-      MakeRGB(192, 192, 192),
-      t3->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 255),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t2->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(192, 192, 192),
+            t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   GetStyleEngine().RemoveInjectedSheet(blue_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -209,12 +205,12 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t1->GetComputedStyle());
   ASSERT_TRUE(t2->GetComputedStyle());
   ASSERT_TRUE(t3->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t2->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t3->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t2->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   // @font-face rules
 
@@ -372,11 +368,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t7);
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 0, 0), t6->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
-  EXPECT_EQ(
-      MakeRGB(255, 255, 255),
-      t7->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   StyleSheetContents* custom_properties_parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
@@ -391,21 +386,19 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t6->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(
-      MakeRGB(255, 255, 255),
-      t7->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   GetStyleEngine().RemoveInjectedSheet(custom_properties_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 0, 0), t6->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
-  EXPECT_EQ(
-      MakeRGB(255, 255, 255),
-      t7->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   // Author style sheets
 
@@ -415,10 +408,10 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t9);
   ASSERT_TRUE(t8->GetComputedStyle());
   ASSERT_TRUE(t9->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t8->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t9->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   StyleSheetContents* parsed_author_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
@@ -437,20 +430,20 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(t9->GetComputedStyle());
 
   // Specificity works within author origin.
-  EXPECT_EQ(MakeRGB(0, 128, 0), t8->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t8->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
   // Important author rules do not override important inline author rules.
-  EXPECT_EQ(MakeRGB(0, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t9->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   GetStyleEngine().RemoveInjectedSheet(author_sheet_id);
   GetDocument().View()->UpdateAllLifecyclePhases();
   ASSERT_TRUE(t8->GetComputedStyle());
   ASSERT_TRUE(t9->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
-  EXPECT_EQ(MakeRGB(0, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t8->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t9->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(StyleEngineTest, TextToSheetCache) {
@@ -735,8 +728,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                  GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
@@ -748,8 +741,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
   EXPECT_EQ(1u, after_count - before_count);
 
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 128, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
@@ -761,8 +754,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 128, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
@@ -774,8 +767,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
   EXPECT_EQ(0u, after_count - before_count);
 
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 128, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
@@ -792,8 +785,8 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 0, 255), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 0, 255),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   CSSStyleSheet* sheet = ToCSSStyleSheet(GetDocument().StyleSheets().item(0));
   ASSERT_TRUE(sheet);
@@ -813,16 +806,16 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(255, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
   style_rule->style()->setProperty(&GetDocument(), "color", "green", "",
                                    ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->GetComputedStyle());
-  EXPECT_EQ(MakeRGB(0, 128, 0), t1->GetComputedStyle()->VisitedDependentColor(
-                                    GetCSSPropertyColor()));
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            t1->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
