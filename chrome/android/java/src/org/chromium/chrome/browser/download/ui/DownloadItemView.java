@@ -22,6 +22,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -29,13 +31,14 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.ui.UiUtils;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
  * The view for a downloaded item displayed in the Downloads list.
  */
 public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrapper>
-        implements ThumbnailProvider.ThumbnailRequest {
+        implements ThumbnailProvider.ThumbnailRequest, ListMenuButton.Delegate {
     private final int mMargin;
     private final int mMarginSubsection;
     private final int mIconBackgroundColor;
@@ -57,6 +60,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private View mLayoutCompleted;
     private TextView mFilenameCompletedView;
     private TextView mDescriptionCompletedView;
+    private ListMenuButton mMoreButton;
 
     // Controls for in-progress downloads.
     private View mLayoutInProgress;
@@ -93,6 +97,22 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         }
     }
 
+    // ListMenuButton.Delegate implementation.
+    @Override
+    public Item[] getItems() {
+        return new Item[] {new Item(getContext(), R.string.share, true),
+                new Item(getContext(), R.string.delete, true)};
+    }
+
+    @Override
+    public void onItemSelected(Item item) {
+        if (item.getTextId() == R.string.share) {
+            mItem.share();
+        } else if (item.getTextId() == R.string.delete) {
+            mItem.startRemove();
+        }
+    }
+
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -104,6 +124,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         mFilenameCompletedView = (TextView) findViewById(R.id.filename_completed_view);
         mDescriptionCompletedView = (TextView) findViewById(R.id.description_view);
+        mMoreButton = (ListMenuButton) findViewById(R.id.more);
 
         mFilenameInProgressView = (TextView) findViewById(R.id.filename_progress_view);
         mDownloadStatusView = (TextView) findViewById(R.id.status_view);
@@ -112,22 +133,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mPauseResumeButton = (TintedImageButton) findViewById(R.id.pause_button);
         mCancelButton = findViewById(R.id.cancel_button);
 
-        mPauseResumeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mItem.isPaused()) {
-                    mItem.resume();
-                } else if (!mItem.isComplete()) {
-                    mItem.pause();
-                }
+        mMoreButton.setDelegate(this);
+        mPauseResumeButton.setOnClickListener(view -> {
+            if (mItem.isPaused()) {
+                mItem.resume();
+            } else if (!mItem.isComplete()) {
+                mItem.pause();
             }
         });
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mItem.cancel();
-            }
-        });
+        mCancelButton.setOnClickListener(view -> mItem.cancel());
     }
 
     @Override
@@ -199,6 +213,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
         if (item.isComplete()) {
             showLayout(mLayoutCompleted);
+            mMoreButton.setVisibility(View.VISIBLE);
         } else {
             showLayout(mLayoutInProgress);
             mDownloadStatusView.setText(item.getStatusString());
@@ -235,6 +250,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                 ApiCompatibilityUtils.setMarginEnd(
                         (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), mMargin);
             }
+            mMoreButton.setVisibility(View.GONE);
         }
 
         setLongClickable(item.isComplete());
@@ -246,6 +262,12 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     public void setThumbnailBitmap(Bitmap thumbnail) {
         mThumbnailBitmap = thumbnail;
         updateIconView();
+    }
+
+    @Override
+    public void onSelectionStateChange(List<DownloadHistoryItemWrapper> selectedItems) {
+        super.onSelectionStateChange(selectedItems);
+        mMoreButton.setClickable(mItem.isInteractive());
     }
 
     @Override
@@ -310,6 +332,10 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
                     new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
             params.weight = 1;
             mLayoutContainer.addView(layoutToShow, params);
+
+            // Move the menu button to the back of mLayoutContainer.
+            mLayoutContainer.removeView(mMoreButton);
+            mLayoutContainer.addView(mMoreButton);
         }
     }
 }

@@ -42,6 +42,24 @@ public interface BackendProvider {
         void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord);
     }
 
+    /**
+     * Processes actions from the UI that require front end management before hitting the backend.
+     * This should eventually get merged into a proper delegate with other UI actions, but currently
+     * that is not possible.
+     */
+    public static interface UIDelegate {
+        /**
+         * Requests that {@code item} be deleted.  This might not hit the backend quiet yet if the
+         * user can undo the action.
+         */
+        void deleteItem(DownloadHistoryItemWrapper item);
+
+        /**
+         * Requests that {@code item} be shared.
+         */
+        void shareItem(DownloadHistoryItemWrapper item);
+    }
+
     /** Returns the {@link DownloadDelegate} that works with the Downloads backend. */
     DownloadDelegate getDownloadDelegate();
 
@@ -53,6 +71,9 @@ public interface BackendProvider {
 
     /** Returns the {@link SelectionDelegate} that tracks selected items. */
     SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate();
+
+    /** Returns the {@link UIDelegate} responsible for handling download system UI events. */
+    UIDelegate getUIDelegate();
 
     /** Destroys the BackendProvider. */
     void destroy();
