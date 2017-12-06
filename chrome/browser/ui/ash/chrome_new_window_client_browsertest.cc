@@ -28,7 +28,7 @@ void CreateAndStartUserSession(const AccountId& account_id) {
 
   const std::string user_id_hash =
       ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail());
-  SessionManager::Get()->CreateSession(account_id, user_id_hash);
+  SessionManager::Get()->CreateSession(account_id, user_id_hash, false);
   ProfileHelper::GetProfileByUserIdHashForTest(user_id_hash);
   SessionManager::Get()->SessionStarted();
 }

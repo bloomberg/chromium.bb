@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, Login) {
 
   // Logs in.
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->CreateSession(test_account_id_, kTestUserName, false);
 
   // Confirms that the features still disabled just after login.
   EXPECT_FALSE(IsLargeCursorEnabled());
@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, BrailleOnLoginScreen) {
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
   // Logs in.
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->CreateSession(test_account_id_, kTestUserName, false);
   StartUserSession(test_account_id_);
 
   // Confirms that the features are disabled just after login.
@@ -460,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TypePref) {
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ResumeSavedPref) {
   // Loads the profile of the user.
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->CreateSession(test_account_id_, kTestUserName, false);
 
   // Sets the pref to enable large cursor before login.
   SetLargeCursorEnabledPref(true);
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
 
   // Logs in.
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->CreateSession(test_account_id_, kTestUserName, false);
   StartUserSession(test_account_id_);
 
   EXPECT_FALSE(observer.observed());
@@ -578,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
 
   // Logs in.
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->CreateSession(test_account_id_, kTestUserName, false);
   StartUserSession(test_account_id_);
 
   EXPECT_FALSE(observer.observed());
@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
   // Logs in.
   const AccountId account_id = GetParam();
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(account_id, account_id.GetUserEmail());
+  session_manager->CreateSession(account_id, account_id.GetUserEmail(), false);
 
   // Confirms that the features are still enabled just after login.
   EXPECT_TRUE(IsLargeCursorEnabled());
@@ -716,7 +716,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
   // Logs in.
   const AccountId account_id = GetParam();
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(account_id, account_id.GetUserEmail());
+  session_manager->CreateSession(account_id, account_id.GetUserEmail(), false);
   StartUserSession(account_id);
   // This object watches for IME preference changes and reflects those in
   // the IME framework state.
@@ -762,7 +762,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest, BrailleWhenLoggedIn) {
 IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, AccessibilityMenuVisibility) {
   // Log in.
   auto* session_manager = session_manager::SessionManager::Get();
-  session_manager->CreateSession(test_account_id_, kTestUserName);
+  session_manager->CreateSession(test_account_id_, kTestUserName, false);
   StartUserSession(test_account_id_);
 
   // Confirms that the features are disabled.

@@ -163,7 +163,8 @@ class USER_MANAGER_EXPORT UserManager {
   // |username_hash| is used to identify homedir mount point.
   virtual void UserLoggedIn(const AccountId& account_id,
                             const std::string& username_hash,
-                            bool browser_restart) = 0;
+                            bool browser_restart,
+                            bool is_child) = 0;
 
   // Switches to active user identified by |account_id|. User has to be logged
   // in.
@@ -253,10 +254,8 @@ class USER_MANAGER_EXPORT UserManager {
   virtual std::string GetUserDisplayEmail(
       const AccountId& account_id) const = 0;
 
-  // Saves user's type for user |account_id| into local state preferences.
-  // Ignored If there is no such user.
-  virtual void SaveUserType(const AccountId& account_id,
-                            const UserType& user_type) = 0;
+  // Saves user's type for |user| into local state preferences.
+  virtual void SaveUserType(const User* user) = 0;
 
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
@@ -328,9 +327,6 @@ class USER_MANAGER_EXPORT UserManager {
       const gfx::ImageSkia& profile_image) = 0;
   virtual void NotifyUsersSignInConstraintsChanged() = 0;
 
-  // Changes the child status and notifies observers.
-  virtual void ChangeUserChildStatus(User* user, bool is_child) = 0;
-
   // Resets this profile to be regarded as if it has never been initialized
   // before. Used on profile wipe.
   virtual void ResetProfileEverInitialized(const AccountId& account_id) = 0;
@@ -379,6 +375,9 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if |account_id| is supervised.
   virtual bool IsSupervisedAccountId(const AccountId& account_id) const = 0;
 
+  virtual bool IsDeviceLocalAccountMarkedForRemoval(
+      const AccountId& account_id) const = 0;
+
   // Returns true when the browser has crashed and restarted during the current
   // user's session.
   virtual bool HasBrowserRestarted() const = 0;
@@ -398,6 +397,11 @@ class USER_MANAGER_EXPORT UserManager {
 
   // Returns true if |image_index| is a valid default user image index.
   virtual bool IsValidDefaultUserImageId(int image_index) const = 0;
+
+  UserType CalculateUserType(const AccountId& account_id,
+                             const User* user,
+                             bool browser_restart,
+                             bool is_child) const;
 
  protected:
   // Sets UserManager instance.

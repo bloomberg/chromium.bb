@@ -1203,7 +1203,8 @@ class MultiProfileDownloadNotificationTest
   void AddUser(const TestAccountInfo& info, bool log_in) {
     if (log_in) {
       session_manager::SessionManager::Get()->CreateSession(
-          AccountId::FromUserEmailGaiaId(info.email, info.gaia_id), info.hash);
+          AccountId::FromUserEmailGaiaId(info.email, info.gaia_id), info.hash,
+          false);
     }
     user_manager::UserManager::Get()->SaveUserDisplayName(
         AccountId::FromUserEmailGaiaId(info.email, info.gaia_id),

@@ -229,11 +229,12 @@ void ChromeSessionManager::SessionStarted() {
 
 void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,
                                               const std::string& user_id_hash,
-                                              bool browser_restart) {
+                                              bool browser_restart,
+                                              bool is_child) {
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   session_manager::SessionManager::NotifyUserLoggedIn(
-      user_account_id, user_id_hash, browser_restart);
+      user_account_id, user_id_hash, browser_restart, is_child);
   btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 }
 

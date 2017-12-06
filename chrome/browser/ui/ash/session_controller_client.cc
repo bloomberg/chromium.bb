@@ -330,10 +330,6 @@ void SessionControllerClient::OnUserImageChanged(const User& user) {
   SendUserSession(user);
 }
 
-void SessionControllerClient::OnChildStatusChanged(const User& user) {
-  SendUserSession(user);
-}
-
 // static
 bool SessionControllerClient::CanLockScreen() {
   return !UserManager::Get()->GetUnlockUsers().empty();

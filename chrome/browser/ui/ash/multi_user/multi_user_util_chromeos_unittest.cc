@@ -90,7 +90,7 @@ class MultiUserUtilTest : public AshTestBase {
     fake_user_manager_->UserLoggedIn(
         multi_user_util::GetAccountIdFromEmail(id),
         chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(id),
-        false /* browser_restart */);
+        false /* browser_restart */, false /* is_child */);
 
     return id;
   }

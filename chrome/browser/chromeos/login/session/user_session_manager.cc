@@ -986,7 +986,8 @@ void UserSessionManager::CreateUserSession(const UserContext& user_context,
   InitSessionRestoreStrategy();
   StoreUserContextDataBeforeProfileIsCreated();
   session_manager::SessionManager::Get()->CreateSession(
-      user_context_.GetAccountId(), user_context_.GetUserIDHash());
+      user_context_.GetAccountId(), user_context_.GetUserIDHash(),
+      user_context.GetUserType() == user_manager::USER_TYPE_CHILD);
 }
 
 void UserSessionManager::PreStartSession() {
@@ -1113,9 +1114,9 @@ void UserSessionManager::InitProfilePreferences(
     std::string account_id = signin_manager->GetAuthenticatedAccountId();
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
-    // Temporary hack due to user context and user being out of sync.
-    bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD ||
-                    user_context.GetUserType() == user_manager::USER_TYPE_CHILD;
+    bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
+    DCHECK(is_child ==
+           (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
     AccountTrackerServiceFactory::GetForProfile(profile)->SetIsChildAccount(
         account_id, is_child);
     VLOG(1) << "Seed SigninManagerBase with the authenticated account info"

@@ -506,7 +506,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     session_manager::SessionManager::Get()->CreateSession(
         AccountId::FromUserEmailGaiaId(kSecondProfileAccount,
                                        kSecondProfileGiaId),
-        kSecondProfileHash);
+        kSecondProfileHash, false);
     // Set up the secondary profile.
     base::FilePath profile_dir =
         user_data_directory.Append(

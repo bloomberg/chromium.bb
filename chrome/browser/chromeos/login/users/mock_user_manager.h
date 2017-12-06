@@ -34,7 +34,8 @@ class MockUserManager : public ChromeUserManager {
                      user_manager::UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const user_manager::UserList&(void));
   MOCK_CONST_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
-  MOCK_METHOD3(UserLoggedIn, void(const AccountId&, const std::string&, bool));
+  MOCK_METHOD4(UserLoggedIn,
+               void(const AccountId&, const std::string&, bool, bool));
   MOCK_METHOD1(SwitchActiveUser, void(const AccountId& account_id));
   MOCK_METHOD0(SessionStarted, void(void));
   MOCK_METHOD2(RemoveUser,

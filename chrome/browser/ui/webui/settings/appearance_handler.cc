@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace settings {
