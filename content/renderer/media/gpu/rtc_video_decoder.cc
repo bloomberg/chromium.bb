@@ -133,6 +133,12 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
   return decoder;
 }
 
+// static
+void RTCVideoDecoder::Destroy(webrtc::VideoDecoder* decoder,
+                              media::GpuVideoAcceleratorFactories* factories) {
+  factories->GetTaskRunner()->DeleteSoon(FROM_HERE, decoder);
+}
+
 int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
                                     int32_t /*numberOfCores*/) {
   DVLOG(2) << "InitDecode";
@@ -269,10 +275,6 @@ int32_t RTCVideoDecoder::RegisterDecodeCompleteCallback(
   base::AutoLock auto_lock(lock_);
   decode_complete_callback_ = callback;
   return WEBRTC_VIDEO_CODEC_OK;
-}
-
-const char* RTCVideoDecoder::ImplementationName() const {
-  return "RTCVideoDecoder";
 }
 
 int32_t RTCVideoDecoder::Release() {
