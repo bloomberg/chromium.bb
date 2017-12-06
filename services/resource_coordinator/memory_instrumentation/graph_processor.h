@@ -158,6 +158,54 @@ class GraphProcessor {
    * the order in which dumps are visited.
    */
   static void CalculateDumpOwnershipCoefficient(GlobalDumpGraph::Node* node);
+
+  /**
+   * Calculate cumulative owned and owning coefficients of a memory allocator
+   * dump from its (non-cumulative) owned and owning coefficients and the
+   * cumulative coefficients of its parent and/or owned dump.
+   *
+   * The cumulative coefficients represent the total effect of all
+   * (non-strict) ancestor ownerships on a memory allocator dump. The
+   * cumulative owned coefficient of a MAD can be calculated simply as:
+   *
+   *   cumulativeOwnedC(M) = ownedC(M) * cumulativeOwnedC(parent(M))
+   *
+   * This reflects the assumption that if a parent of a child MAD is
+   * (partially) owned, then the parent's owner also indirectly owns (a part
+   * of) the child MAD.
+   *
+   * The cumulative owning coefficient of a MAD depends on whether the MAD
+   * owns another dump:
+   *
+   *                           [if M doesn't own another MAD]
+   *                         / cumulativeOwningC(parent(M))
+   *   cumulativeOwningC(M) =
+   *                         \ [if M owns another MAD]
+   *                           owningC(M) * cumulativeOwningC(owned(M))
+   *
+   * The reasoning behind the first case is similar to the one for cumulative
+   * owned coefficient above. The only difference is that we don't need to
+   * include the dump's (non-cumulative) owning coefficient because it is
+   * implicitly 1.
+   *
+   * The formula for the second case is derived as follows: Since the MAD
+   * owns another dump, its memory is not included in its parent's not-owning
+   * sub-size and hence shouldn't be affected by the parent's corresponding
+   * cumulative coefficient. Instead, the MAD indirectly owns everything
+   * owned by its owned dump (and so it should be affected by the
+   * corresponding coefficient).
+   *
+   * Note that undefined coefficients (and coefficients of non-existent
+   * dumps) are implicitly assumed to be 1.
+   *
+   * This method assumes that (1) the size of the dump [see calculateSizes()],
+   * (2) the (non-cumulative) owned and owning coefficients of the dump [see
+   * the second step of calculateEffectiveSizes()], and (3) the cumulative
+   * coefficients of the dump's parent and owned MADs (if present)
+   * [depth-first pre-order traversal] have already been calculated.
+   */
+  static void CalculateDumpCumulativeOwnershipCoefficient(
+      GlobalDumpGraph::Node* node);
 };
 
 }  // namespace memory_instrumentation
