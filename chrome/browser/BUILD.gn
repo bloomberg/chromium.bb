@@ -4042,7 +4042,7 @@ split_static_library("browser") {
     ]
   }
 
-  if (!is_chrome_branded) {
+  if (!is_chrome_branded && !is_android) {
     sources += [
       "search/local_files_ntp_source.cc",
       "search/local_files_ntp_source.h",

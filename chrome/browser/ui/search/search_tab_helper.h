@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/common/search/instant_types.h"
@@ -20,6 +21,10 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
 
 namespace content {
 class WebContents;

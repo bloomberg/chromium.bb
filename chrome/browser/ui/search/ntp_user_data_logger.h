@@ -13,10 +13,15 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
 
 namespace content {
 class WebContents;

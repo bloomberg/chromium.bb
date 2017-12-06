@@ -6,7 +6,12 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_POLICY_IMPL_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
+
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
 
 namespace content {
 class WebContents;

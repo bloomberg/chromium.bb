@@ -14,8 +14,13 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
 #include "content/public/browser/url_data_source.h"
+
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
 
 struct OneGoogleBarData;
 class OneGoogleBarService;

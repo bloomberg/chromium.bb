@@ -24,6 +24,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
+
 class InstantIOContext;
 class InstantServiceObserver;
 class Profile;
@@ -113,9 +117,7 @@ class InstantService : public KeyedService,
   void NotifyAboutMostVisitedItems();
   void NotifyAboutThemeInfo();
 
-#if !defined(OS_ANDROID)
   void BuildThemeInfo();
-#endif
 
   Profile* const profile_;
 
