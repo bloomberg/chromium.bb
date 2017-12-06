@@ -16,8 +16,12 @@ java_library("errorprone_plugin_java") {
   # Necessary to avoid dependency cycle
   enable_errorprone = false
 
+  # TODO(agrieve): Make it so that you don't need to specify the full classpath
+  #     of annotation processors.
   deps = [
+    "//third_party/auto:auto_common_java",
     "//third_party/auto:auto_service_java",
     "//third_party/errorprone:errorprone_java",
+    "//third_party/guava:guava_java",
   ]
 }
