@@ -40,7 +40,8 @@ class BackgroundImageGeometry {
   BackgroundImageGeometry(const LayoutBoxModelObject&);
 
   void Calculate(const LayoutBoxModelObject* container,
-                 const GlobalPaintFlags,
+                 PaintPhase,
+                 GlobalPaintFlags,
                  const FillLayer&,
                  const LayoutRect& paint_rect);
 
@@ -106,6 +107,9 @@ class BackgroundImageGeometry {
   LayoutPoint GetOffsetForCell(const LayoutTableCell&, const LayoutBox&);
   LayoutSize GetBackgroundObjectDimensions(const LayoutTableCell&,
                                            const LayoutBox&);
+
+  LayoutRectOutsets ComputeDestRectAdjustment(const FillLayer&,
+                                              PaintPhase) const;
 
   const LayoutBoxModelObject& box_;
   const LayoutBoxModelObject& positioning_box_;

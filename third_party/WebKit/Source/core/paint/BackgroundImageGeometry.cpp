@@ -12,6 +12,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
+#include "core/style/BorderEdge.h"
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/LayoutRect.h"
 
@@ -510,29 +511,88 @@ BackgroundImageGeometry::BackgroundImageGeometry(
   }
 }
 
+LayoutRectOutsets BackgroundImageGeometry::ComputeDestRectAdjustment(
+    const FillLayer& fill_layer,
+    PaintPhase paint_phase) const {
+  LayoutRectOutsets dest_adjust;
+
+  // Attempt to shrink the destination rect if possible:
+  //
+  //   * for background-clip content-box/padding-box, we can restrict to the
+  //     respective box.
+  //
+  //   * for border-box, we can inset individual edges iff the border fully
+  //     obscures the background.
+  //
+  switch (fill_layer.Clip()) {
+    case EFillBox::kContent:
+      dest_adjust += positioning_box_.PaddingOutsets();
+    // fall through
+    case EFillBox::kPadding:
+      dest_adjust += positioning_box_.BorderBoxOutsets();
+      break;
+    case EFillBox::kBorder: {
+      // It it unsafe to shrink dest if the layer is not painted as part of a
+      // regular background phase (e.g. paint_phase == kMask) or in the presence
+      // of non-SrcOver compositing.
+      // Also, if coordinate_offset_by_paint_rect_ is set, we're dealing with a
+      // LayoutView - for which dest_rect is overflowing (expanded to cover the
+      // whole canvas).
+      if (!ShouldPaintSelfBlockBackground(paint_phase) ||
+          fill_layer.Composite() != CompositeOperator::kCompositeSourceOver ||
+          coordinate_offset_by_paint_rect_) {
+        break;
+      }
+
+      BorderEdge edges[4];
+      positioning_box_.StyleRef().GetBorderEdgeInfo(edges);
+      const auto border_outsets = positioning_box_.BorderBoxOutsets();
+      if (edges[kBSTop].ObscuresBackground())
+        dest_adjust.SetTop(border_outsets.Top());
+      if (edges[kBSRight].ObscuresBackground())
+        dest_adjust.SetRight(border_outsets.Right());
+      if (edges[kBSBottom].ObscuresBackground())
+        dest_adjust.SetBottom(border_outsets.Bottom());
+      if (edges[kBSLeft].ObscuresBackground())
+        dest_adjust.SetLeft(border_outsets.Left());
+    } break;
+    case EFillBox::kText:
+      break;
+  }
+
+  return dest_adjust;
+}
+
 void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
-                                        const GlobalPaintFlags flags,
+                                        PaintPhase paint_phase,
+                                        GlobalPaintFlags flags,
                                         const FillLayer& fill_layer,
                                         const LayoutRect& paint_rect) {
   LayoutRect positioning_area;
-  LayoutRectOutsets box_outset;
+  LayoutPoint box_offset;
   if (!ShouldUseFixedAttachment(fill_layer)) {
     if (coordinate_offset_by_paint_rect_ || cell_using_container_background_)
       positioning_area.SetSize(positioning_size_override_);
     else
       positioning_area = paint_rect;
+
+    LayoutRectOutsets box_outset;
     if (fill_layer.Origin() != EFillBox::kBorder) {
       box_outset = positioning_box_.BorderBoxOutsets();
       if (fill_layer.Origin() == EFillBox::kContent)
         box_outset += positioning_box_.PaddingOutsets();
     }
     positioning_area.Contract(box_outset);
-    SetDestRect(paint_rect);
 
-    if (coordinate_offset_by_paint_rect_) {
-      box_outset.SetLeft(box_outset.Left() - paint_rect.Location().X());
-      box_outset.SetTop(box_outset.Top() - paint_rect.Location().Y());
-    }
+    auto dest_rect = paint_rect;
+    auto dest_adjust = ComputeDestRectAdjustment(fill_layer, paint_phase);
+    dest_rect.Contract(dest_adjust);
+    SetDestRect(dest_rect);
+
+    box_offset = LayoutPoint(box_outset.Left() - dest_adjust.Left(),
+                             box_outset.Top() - dest_adjust.Top());
+    if (coordinate_offset_by_paint_rect_)
+      box_offset -= paint_rect.Location();
   } else {
     SetHasNonLocalGeometry();
     offset_in_background_ = LayoutPoint();
@@ -585,7 +645,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     SetPhaseX(
         TileSize().Width()
             ? LayoutUnit(roundf(TileSize().Width() -
-                                fmodf((computed_x_position + box_outset.Left()),
+                                fmodf((computed_x_position + box_offset.X()),
                                       TileSize().Width())))
             : LayoutUnit());
     SetSpaceSize(LayoutSize());
@@ -613,7 +673,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     SetPhaseY(
         TileSize().Height()
             ? LayoutUnit(roundf(TileSize().Height() -
-                                fmodf((computed_y_position + box_outset.Top()),
+                                fmodf((computed_y_position + box_offset.Y()),
                                       TileSize().Height())))
             : LayoutUnit());
     SetSpaceSize(LayoutSize());
@@ -621,14 +681,14 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
 
   if (background_repeat_x == EFillRepeat::kRepeatFill) {
     SetRepeatX(fill_layer, fill_tile_size.Width(), available_width,
-               unsnapped_available_width, box_outset.Left(),
+               unsnapped_available_width, box_offset.X(),
                offset_in_background_.X());
   } else if (background_repeat_x == EFillRepeat::kSpaceFill &&
              TileSize().Width() > LayoutUnit()) {
     LayoutUnit space = GetSpaceBetweenImageTiles(positioning_area_size.Width(),
                                                  TileSize().Width());
     if (space >= LayoutUnit())
-      SetSpaceX(space, available_width, box_outset.Left());
+      SetSpaceX(space, available_width, box_offset.X());
     else
       background_repeat_x = EFillRepeat::kNoRepeatFill;
   }
@@ -636,21 +696,21 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     LayoutUnit x_offset = fill_layer.BackgroundXOrigin() == kRightEdge
                               ? available_width - computed_x_position
                               : computed_x_position;
-    SetNoRepeatX(box_outset.Left() + x_offset);
+    SetNoRepeatX(box_offset.X() + x_offset);
     if (offset_in_background_.X() > TileSize().Width())
       SetDestRect(LayoutRect());
   }
 
   if (background_repeat_y == EFillRepeat::kRepeatFill) {
     SetRepeatY(fill_layer, fill_tile_size.Height(), available_height,
-               unsnapped_available_height, box_outset.Top(),
+               unsnapped_available_height, box_offset.Y(),
                offset_in_background_.Y());
   } else if (background_repeat_y == EFillRepeat::kSpaceFill &&
              TileSize().Height() > LayoutUnit()) {
     LayoutUnit space = GetSpaceBetweenImageTiles(positioning_area_size.Height(),
                                                  TileSize().Height());
     if (space >= LayoutUnit())
-      SetSpaceY(space, available_height, box_outset.Top());
+      SetSpaceY(space, available_height, box_offset.Y());
     else
       background_repeat_y = EFillRepeat::kNoRepeatFill;
   }
@@ -658,7 +718,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     LayoutUnit y_offset = fill_layer.BackgroundYOrigin() == kBottomEdge
                               ? available_height - computed_y_position
                               : computed_y_position;
-    SetNoRepeatY(box_outset.Top() + y_offset);
+    SetNoRepeatY(box_offset.Y() + y_offset);
     if (offset_in_background_.Y() > TileSize().Height())
       SetDestRect(LayoutRect());
   }
