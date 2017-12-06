@@ -524,6 +524,42 @@ wl_argument_from_va_list(const char *signature, union wl_argument *args,
 	}
 }
 
+static struct wl_closure *
+wl_closure_init(const struct wl_message *message, uint32_t size,
+                int *num_arrays, union wl_argument *args)
+{
+	struct wl_closure *closure;
+	int count;
+
+	count = arg_count_for_signature(message->signature);
+	if (count > WL_CLOSURE_MAX_ARGS) {
+		wl_log("too many args (%d)\n", count);
+		errno = EINVAL;
+		return NULL;
+	}
+
+	if (size) {
+		*num_arrays = wl_message_count_arrays(message);
+		closure = malloc(sizeof *closure + size +
+				 *num_arrays * sizeof(struct wl_array));
+	} else {
+		closure = malloc(sizeof *closure);
+	}
+
+	if (!closure) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	if (args)
+		memcpy(closure->args, args, count * sizeof *args);
+
+	closure->message = message;
+	closure->count = count;
+
+	return closure;
+}
+
 struct wl_closure *
 wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 		   union wl_argument *args,
@@ -535,20 +571,11 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 	const char *signature;
 	struct argument_details arg;
 
-	count = arg_count_for_signature(message->signature);
-	if (count > WL_CLOSURE_MAX_ARGS) {
-		wl_log("too many args (%d)\n", count);
-		errno = EINVAL;
+	closure = wl_closure_init(message, 0, NULL, args);
+	if (closure == NULL)
 		return NULL;
-	}
 
-	closure = malloc(sizeof *closure);
-	if (closure == NULL) {
-		errno = ENOMEM;
-		return NULL;
-	}
-
-	memcpy(closure->args, args, count * sizeof *args);
+	count = closure->count;
 
 	signature = message->signature;
 	for (i = 0; i < count; i++) {
@@ -593,8 +620,6 @@ wl_closure_marshal(struct wl_object *sender, uint32_t opcode,
 
 	closure->sender_id = sender->id;
 	closure->opcode = opcode;
-	closure->message = message;
-	closure->count = count;
 
 	return closure;
 
@@ -628,28 +653,19 @@ wl_connection_demarshal(struct wl_connection *connection,
 	uint32_t *p, *next, *end, length, id;
 	int fd;
 	char *s;
-	unsigned int i, count, num_arrays;
+	int i, count, num_arrays;
 	const char *signature;
 	struct argument_details arg;
 	struct wl_closure *closure;
 	struct wl_array *array_extra;
 
-	count = arg_count_for_signature(message->signature);
-	if (count > WL_CLOSURE_MAX_ARGS) {
-		wl_log("too many args (%d)\n", count);
-		errno = EINVAL;
+	closure = wl_closure_init(message, size, &num_arrays, NULL);
+	if (closure == NULL) {
 		wl_connection_consume(connection, size);
 		return NULL;
 	}
 
-	num_arrays = wl_message_count_arrays(message);
-	closure = malloc(sizeof *closure + size +
-			 num_arrays * sizeof(struct wl_array));
-	if (closure == NULL) {
-		errno = ENOMEM;
-		wl_connection_consume(connection, size);
-		return NULL;
-	}
+	count = closure->count;
 
 	array_extra = closure->extra;
 	p = (uint32_t *)(closure->extra + num_arrays);
@@ -784,9 +800,6 @@ wl_connection_demarshal(struct wl_connection *connection,
 			break;
 		}
 	}
-
-	closure->count = count;
-	closure->message = message;
 
 	wl_connection_consume(connection, size);
 
