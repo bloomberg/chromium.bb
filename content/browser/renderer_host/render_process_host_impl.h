@@ -13,10 +13,7 @@
 #include <queue>
 #include <set>
 #include <string>
-#include <utility>
-#include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -318,11 +315,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Allows external code to supply a function which creates a
   // StoragePartitionService. Used for supplying test versions of the
   // service.
-  using StoragePartitionServiceFactory = base::RepeatingCallback<void(
-      RenderProcessHostImpl* rph,
-      mojom::StoragePartitionServiceRequest request)>;
-  static void SetStoragePartitionServiceFactoryForTesting(
-      StoragePartitionServiceFactory factory);
+  using CreateStoragePartitionServiceFunction =
+      void (*)(RenderProcessHostImpl* rph,
+               mojom::StoragePartitionServiceRequest request);
+  static void SetCreateStoragePartitionServiceFunction(
+      CreateStoragePartitionServiceFunction function);
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();
