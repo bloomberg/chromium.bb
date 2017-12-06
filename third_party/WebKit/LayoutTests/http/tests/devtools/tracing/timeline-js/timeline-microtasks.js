@@ -26,12 +26,9 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
-
-  function finish() {
-    var event = PerformanceTestRunner.timelineModel().mainThreadEvents().find(
-        e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
-    PerformanceTestRunner.printTraceEventProperties(event);
-    TestRunner.completeTest();
-  }
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
+  const event = PerformanceTestRunner.timelineModel().mainThreadEvents().find(
+      e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
+  PerformanceTestRunner.printTraceEventProperties(event);
+  TestRunner.completeTest();
 })();

@@ -82,30 +82,21 @@
   `);
 
   TestRunner.runTestSuite([
-    function testStartStopTimeline(next) {
-      PerformanceTestRunner.evaluateWithTimeline('startStopTimeline()', allEventsReceived);
-
-      function allEventsReceived() {
-        printTimelineAndTimestampEvents();
-        next();
-      }
+    async function testStartStopTimeline(next) {
+      await PerformanceTestRunner.evaluateWithTimeline('startStopTimeline()');
+      printTimelineAndTimestampEvents();
+      next();
     },
 
-    function testStartStopMultiple(next) {
-      PerformanceTestRunner.evaluateWithTimeline('startStopMultiple()', allEventsReceived);
-
-      function allEventsReceived() {
-        printTimelineAndTimestampEvents();
-        next();
-      }
+    async function testStartStopMultiple(next) {
+      await PerformanceTestRunner.evaluateWithTimeline('startStopMultiple()');
+      printTimelineAndTimestampEvents();
+      next();
     },
 
-    function testStartMultipleStopInsideEvals(next) {
-      PerformanceTestRunner.startTimeline(step1);
-
-      function step1() {
-        TestRunner.evaluateInPage('startMultiple()', step2);
-      }
+    async function testStartMultipleStopInsideEvals(next) {
+      await PerformanceTestRunner.startTimeline();
+      TestRunner.evaluateInPage('startMultiple()', step2);
 
       function step2() {
         TestRunner.evaluateInPage('stopTwo()', step3);
@@ -115,41 +106,29 @@
         TestRunner.evaluateInPage('stopOne()', step4);
       }
 
-      function step4() {
-        PerformanceTestRunner.stopTimeline(finish);
-      }
-
-      function finish() {
+      async function step4() {
+        await PerformanceTestRunner.stopTimeline();
         printTimelineAndTimestampEvents();
         next();
       }
     },
 
-    function testStopUnknown(next) {
-      PerformanceTestRunner.evaluateWithTimeline('stopUnknown()', allEventsReceived);
-
-      function allEventsReceived() {
-        printTimelineAndTimestampEvents();
-        next();
-      }
+    async function testStopUnknown(next) {
+      await PerformanceTestRunner.evaluateWithTimeline('stopUnknown()');
+      printTimelineAndTimestampEvents();
+      next();
     },
 
-    function testStartFromPanel(next) {
-      PerformanceTestRunner.evaluateWithTimeline('startStopTimeline()', finish);
-
-      function finish() {
-        printTimelineAndTimestampEvents();
-        next();
-      }
+    async function testStartFromPanel(next) {
+      await PerformanceTestRunner.evaluateWithTimeline('startStopTimeline()');
+      printTimelineAndTimestampEvents();
+      next();
     },
 
-    function testStopFromPanel(next) {
-      PerformanceTestRunner.evaluateWithTimeline('startTimeline()', finish);
-
-      function finish() {
-        printTimelineAndTimestampEvents();
-        next();
-      }
+    async function testStopFromPanel(next) {
+      await PerformanceTestRunner.evaluateWithTimeline('startTimeline()');
+      printTimelineAndTimestampEvents();
+      next();
     }
   ]);
 

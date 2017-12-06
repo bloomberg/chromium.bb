@@ -24,15 +24,13 @@
 
   Runtime.experiments.enableForTest('timelineV8RuntimeCallStats');
   Runtime.experiments.enableForTest('timelineShowAllEvents');
-  PerformanceTestRunner.evaluateWithTimeline('performActions()', finish);
+  await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
-  function finish() {
-    var frame = PerformanceTestRunner.timelineModel()
-                    .mainThreadEvents()
-                    .filter(e => e.name === TimelineModel.TimelineModel.RecordType.JSFrame)
-                    .map(e => e.args['data']['callFrame'])
-                    .find(frame => frame.functionName === 'FunctionCallback' && frame.url === 'native V8Runtime');
-    TestRunner.assertTrue(!!frame, 'FunctionCallback frame not found');
-    TestRunner.completeTest();
-  }
+  var frame = PerformanceTestRunner.timelineModel()
+                  .mainThreadEvents()
+                  .filter(e => e.name === TimelineModel.TimelineModel.RecordType.JSFrame)
+                  .map(e => e.args['data']['callFrame'])
+                  .find(frame => frame.functionName === 'FunctionCallback' && frame.url === 'native V8Runtime');
+  TestRunner.assertTrue(!!frame, 'FunctionCallback frame not found');
+  TestRunner.completeTest();
 })();

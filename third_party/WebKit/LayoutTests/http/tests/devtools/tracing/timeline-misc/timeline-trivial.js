@@ -8,9 +8,7 @@
   await TestRunner.showPanel('timeline');
 
   /* This test seems silly, but originally it tickled bug 31080 */
-  function callback() {
-    TestRunner.addResult('Timeline started');
-    TestRunner.completeTest();
-  }
-  PerformanceTestRunner.startTimeline(callback);
+  await PerformanceTestRunner.startTimeline();
+  TestRunner.addResult('Timeline started');
+  TestRunner.completeTest();
 })();

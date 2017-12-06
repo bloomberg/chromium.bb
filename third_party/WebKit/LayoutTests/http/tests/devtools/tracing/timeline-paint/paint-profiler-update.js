@@ -36,25 +36,23 @@
   panel._captureLayersAndPicturesSetting.set(true);
   panel._onModeChanged();
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', onRecordingDone);
   var paintEvents = [];
-  function onRecordingDone() {
-    var events = PerformanceTestRunner.timelineModel()._mainThreadEvents;
-    for (var event of events) {
-      if (event.name === TimelineModel.TimelineModel.RecordType.Paint) {
-        paintEvents.push(event);
-        if (!TimelineModel.TimelineData.forEvent(event).picture)
-          TestRunner.addResult('Event without picture at ' + paintEvents.length);
-      }
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
+  var events = PerformanceTestRunner.timelineModel()._mainThreadEvents;
+  for (var event of events) {
+    if (event.name === TimelineModel.TimelineModel.RecordType.Paint) {
+      paintEvents.push(event);
+      if (!TimelineModel.TimelineData.forEvent(event).picture)
+        TestRunner.addResult('Event without picture at ' + paintEvents.length);
     }
-
-    if (paintEvents.length < 2)
-      throw new Error('FAIL: Expect at least two paint events');
-
-    TestRunner.addSniffer(
-        panel._flameChart._detailsView, '_appendDetailsTabsForTraceEventAndShowDetails', onRecordDetailsReady, false);
-    panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[0]));
   }
+
+  if (paintEvents.length < 2)
+    throw new Error('FAIL: Expect at least two paint events');
+
+  TestRunner.addSniffer(
+      panel._flameChart._detailsView, '_appendDetailsTabsForTraceEventAndShowDetails', onRecordDetailsReady, false);
+  panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[0]));
 
   function onRecordDetailsReady() {
     var updateCount = 0;

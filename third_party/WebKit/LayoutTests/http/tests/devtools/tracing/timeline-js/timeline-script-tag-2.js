@@ -16,18 +16,11 @@
       }
   `);
 
-  PerformanceTestRunner.startTimeline(step1);
-  function step1() {
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage('performActions()');
-  }
+  await PerformanceTestRunner.startTimeline();
+  TestRunner.evaluateInPage('performActions()');
+  await ConsoleTestRunner.waitUntilMessageReceivedPromise();
 
-  function step2() {
-    PerformanceTestRunner.stopTimeline(step3);
-  }
-
-  function step3() {
-    PerformanceTestRunner.printTimelineRecords('EvaluateScript');
-    TestRunner.completeTest();
-  }
+  await PerformanceTestRunner.stopTimeline();
+  PerformanceTestRunner.printTimelineRecords('EvaluateScript');
+  TestRunner.completeTest();
 })();

@@ -34,24 +34,22 @@
   Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
   TestRunner.runTestSuite([
-    function testLocalFrame(next) {
-      PerformanceTestRunner.invokeAsyncWithTimeline('display', function() {
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.Layout, 0, 'first layout invalidations');
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.Layout, 1, 'second layout invalidations');
-        next();
-      });
+    async function testLocalFrame(next) {
+      await PerformanceTestRunner.invokeAsyncWithTimeline('display');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.Layout, 0, 'first layout invalidations');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.Layout, 1, 'second layout invalidations');
+      next();
     },
 
-    function testSubframe(next) {
-      PerformanceTestRunner.invokeAsyncWithTimeline('updateSubframeAndDisplay', function() {
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.Layout, 0, 'first layout invalidations');
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.Layout, 1, 'second layout invalidations');
-        next();
-      });
+    async function testSubframe(next) {
+      await PerformanceTestRunner.invokeAsyncWithTimeline('updateSubframeAndDisplay');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.Layout, 0, 'first layout invalidations');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.Layout, 1, 'second layout invalidations');
+      next();
     }
   ]);
 })();

@@ -34,13 +34,11 @@
   `);
 
   UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
-  PerformanceTestRunner.evaluateWithTimeline('performActions()', callback);
+  await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
-  function callback() {
-    PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
-      if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
-        TestRunner.addResult(event.name);
-    });
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+    if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
+      TestRunner.addResult(event.name);
+  });
+  TestRunner.completeTest();
 })();

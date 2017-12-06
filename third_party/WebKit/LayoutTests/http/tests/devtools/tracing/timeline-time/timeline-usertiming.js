@@ -92,10 +92,9 @@
     });
   }
 
-  function performActions(actions, next) {
-    PerformanceTestRunner.evaluateWithTimeline(actions, _ => {
-      dumpUserTimings();
-      next();
-    });
+  async function performActions(actions, next) {
+    await PerformanceTestRunner.evaluateWithTimeline(actions);
+    dumpUserTimings();
+    next();
   }
 })();

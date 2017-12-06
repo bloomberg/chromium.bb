@@ -71,36 +71,33 @@
   Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
   TestRunner.runTestSuite([
-    function testLocalFrame(next) {
-      PerformanceTestRunner.invokeAsyncWithTimeline('changeStylesAndDisplay', function() {
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalculate styles');
-        next();
-      });
+    async function testLocalFrame(next) {
+      await PerformanceTestRunner.invokeAsyncWithTimeline('changeStylesAndDisplay');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalculate styles');
+      next();
     },
 
-    function multipleStyleRecalcs(next) {
-      PerformanceTestRunner.invokeAsyncWithTimeline('changeMultipleStylesAndDisplay', function() {
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalculate styles');
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second recalculate styles');
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, 'third recalculate styles');
-        next();
-      });
+    async function multipleStyleRecalcs(next) {
+      await PerformanceTestRunner.invokeAsyncWithTimeline('changeMultipleStylesAndDisplay');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalculate styles');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second recalculate styles');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, 'third recalculate styles');
+      next();
     },
 
-    function testSubframe(next) {
-      PerformanceTestRunner.invokeAsyncWithTimeline('changeMultipleSubframeStylesAndDisplay', function() {
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalculate styles');
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second recalculate styles');
-        PerformanceTestRunner.dumpInvalidations(
-            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, 'third recalculate styles');
-        next();
-      });
+    async function testSubframe(next) {
+      await PerformanceTestRunner.invokeAsyncWithTimeline('changeMultipleSubframeStylesAndDisplay');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalculate styles');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second recalculate styles');
+      PerformanceTestRunner.dumpInvalidations(
+          TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, 'third recalculate styles');
+      next();
     }
   ]);
 })();

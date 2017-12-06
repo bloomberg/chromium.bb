@@ -12,16 +12,14 @@
       </p>
     `);
 
-  PerformanceTestRunner.evaluateWithTimeline('(function() {})', processTracingEvents);
+  await PerformanceTestRunner.evaluateWithTimeline('(function() {})');
 
-  function processTracingEvents() {
-    PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
-      process.sortedThreads().forEach(function(thread) {
-        thread.events().forEach(processEvent);
-      });
+  PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
+    process.sortedThreads().forEach(function(thread) {
+      thread.events().forEach(processEvent);
     });
-    TestRunner.completeTest();
-  }
+  });
+  TestRunner.completeTest();
 
   function processEvent(event) {
     var metadataEvents = [

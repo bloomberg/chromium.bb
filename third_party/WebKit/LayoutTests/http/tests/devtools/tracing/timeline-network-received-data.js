@@ -24,16 +24,14 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', done);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function done() {
-    TestRunner.addResult('Script evaluated.');
-    var event = PerformanceTestRunner.findTimelineEvent('ResourceReceivedData');
-    if (event) {
-      var data = event.args['data'];
-      if (data && typeof data.encodedDataLength === 'number')
-        TestRunner.addResult('Resource received data has length, test passed.');
-    }
-    TestRunner.completeTest();
+  TestRunner.addResult('Script evaluated.');
+  var event = PerformanceTestRunner.findTimelineEvent('ResourceReceivedData');
+  if (event) {
+    var data = event.args['data'];
+    if (data && typeof data.encodedDataLength === 'number')
+      TestRunner.addResult('Resource received data has length, test passed.');
   }
+  TestRunner.completeTest();
 })();

@@ -23,9 +23,7 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', onTimelineRecorded);
-  function onTimelineRecorded() {
-    PerformanceTestRunner.printTimelineRecordsWithDetails('Layout');
-    TestRunner.completeTest();
-  }
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('Layout');
+  TestRunner.completeTest();
 })();

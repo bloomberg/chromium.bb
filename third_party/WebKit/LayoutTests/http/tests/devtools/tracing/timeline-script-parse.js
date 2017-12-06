@@ -21,14 +21,12 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function finish() {
-    const tracingModel = PerformanceTestRunner.tracingModel();
-    tracingModel.sortedProcesses().forEach(p => p.sortedThreads().forEach(t => t.events().forEach(event => {
-      if (event.name === TimelineModel.TimelineModel.RecordType.ParseScriptOnBackground)
-        PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
-    })));
-    TestRunner.completeTest();
-  }
+  const tracingModel = PerformanceTestRunner.tracingModel();
+  tracingModel.sortedProcesses().forEach(p => p.sortedThreads().forEach(t => t.events().forEach(event => {
+    if (event.name === TimelineModel.TimelineModel.RecordType.ParseScriptOnBackground)
+      PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
+  })));
+  TestRunner.completeTest();
 })();

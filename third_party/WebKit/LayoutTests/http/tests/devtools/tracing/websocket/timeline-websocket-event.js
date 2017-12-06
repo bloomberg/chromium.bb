@@ -14,13 +14,11 @@
       }
   `);
 
-  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
+  await PerformanceTestRunner.invokeAsyncWithTimeline('performActions');
 
-  function finish() {
-    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketCreate');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketSendHandshakeRequest');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketReceiveHandshakeResponse');
-    PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketDestroy');
-    TestRunner.completeTest();
-  }
+  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketCreate');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketSendHandshakeRequest');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketReceiveHandshakeResponse');
+  PerformanceTestRunner.printTimelineRecordsWithDetails('WebSocketDestroy');
+  TestRunner.completeTest();
 })();
