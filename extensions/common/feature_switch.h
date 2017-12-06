@@ -18,18 +18,14 @@ namespace extensions {
 
 // A switch that can turn a feature on or off. Typically controlled via
 // command-line switches but can be overridden, e.g., for testing.
-// Can also integrate with Finch's field trials.
 // A note about priority:
 // 1. If an override is present, the override state will be used.
 // 2. If there is no switch name, the default value will be used. This is
 //    because certain features are specifically designed *not* to be able to
-//    be turned off via command-line, so we can't consult it (or, by extension,
-//    the finch config).
+//    be turned off via command-line, so we can't consult it.
 // 3. If there is a switch name, and the switch is present in the command line,
 //    the command line value will be used.
-// 4. If there is a finch experiment associated and applicable to the machine,
-//    the finch value will be used.
-// 5. Otherwise, the default value is used.
+// 4. Otherwise, the default value is used.
 class FeatureSwitch {
  public:
   static FeatureSwitch* force_dev_mode_highlighting();
@@ -67,15 +63,8 @@ class FeatureSwitch {
   // by the default and override values.
   FeatureSwitch(const char* switch_name,
                 DefaultValue default_value);
-  FeatureSwitch(const char* switch_name,
-                const char* field_trial_name,
-                DefaultValue default_value);
   FeatureSwitch(const base::CommandLine* command_line,
                 const char* switch_name,
-                DefaultValue default_value);
-  FeatureSwitch(const base::CommandLine* command_line,
-                const char* switch_name,
-                const char* field_trial_name,
                 DefaultValue default_value);
 
   // Consider using ScopedOverride instead.
@@ -92,7 +81,6 @@ class FeatureSwitch {
 
   const base::CommandLine* command_line_;
   const char* switch_name_;
-  const char* field_trial_name_;
   bool default_value_;
   OverrideValue override_value_;
   mutable base::Optional<bool> cached_value_;
