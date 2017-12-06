@@ -20,24 +20,38 @@ config("bluetooth_config") {
   }
 }
 
-source_set("mojo") {
+# Experimental implementation not ready for production use yet. See
+# public/interfaces/README.md
+source_set("deprecated_experimental_mojo") {
   sources = [
     "//device/bluetooth/public/interfaces/connect_result_type_converter.h",
     "//device/bluetooth/public/interfaces/gatt_result_type_converter.h",
     "adapter.cc",
     "adapter.h",
-    "adapter_factory.cc",
-    "adapter_factory.h",
     "device.cc",
     "device.h",
     "discovery_session.cc",
     "discovery_session.h",
   ]
 
-  public_deps = [
+  deps = [
     ":bluetooth",
-    "//device/bluetooth/public/interfaces:experimental_interfaces",
+    "//device/bluetooth/public/interfaces:deprecated_experimental_interfaces",
     "//mojo/public/cpp/bindings",
+  ]
+
+  visibility = [
+    # Experimental implementation not ready for production use yet. See
+    # public/interfaces/README.md
+
+    # Single approved client:
+    "//chrome/browser/ui/webui/bluetooth_internals:*",
+
+    # Implementation tests
+    # Ideally only device_unittests, however android & fushia generate
+    # additional targets with modified names and copy deps. gn can not wildcard
+    # partial target names such as '//device:*device_unittests*'.
+    "//device:*",
   ]
 }
 

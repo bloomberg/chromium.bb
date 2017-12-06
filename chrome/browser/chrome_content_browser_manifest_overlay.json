@@ -68,7 +68,6 @@
           "blink::mojom::MediaDownloadInProductHelp",
           "blink::mojom::ShareService",
           "blink::mojom::TextSuggestionHost",
-          "bluetooth::mojom::AdapterFactory",
           "chrome::mojom::OpenSearchDocumentDescriptionHandler",
           "chrome::mojom::PrerenderCanceler",
           "contextual_search::mojom::ContextualSearchJsApiService",
@@ -86,6 +85,7 @@
 
           // TODO(beng): These should be moved to a separate capability.
           "media::mojom::MediaEngagementScoreDetailsProvider",
+          "mojom::BluetoothInternalsHandler",
           "mojom::DiscardsDetailsProvider",
           "mojom::InterventionsInternalsPageHandler",
           "mojom::OmniboxPageHandler",

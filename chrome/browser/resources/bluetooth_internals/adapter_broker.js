@@ -220,13 +220,13 @@ cr.define('adapter_broker', function() {
     if (adapterBroker)
       return Promise.resolve(adapterBroker);
 
-    var adapterFactory = new bluetooth.mojom.AdapterFactoryPtr;
+    var bluetoothInternalsHandler = new mojom.BluetoothInternalsHandlerPtr;
     Mojo.bindInterface(
-        bluetooth.mojom.AdapterFactory.name,
-        mojo.makeRequest(adapterFactory).handle);
+        mojom.BluetoothInternalsHandler.name,
+        mojo.makeRequest(bluetoothInternalsHandler).handle);
 
     // Get an Adapter service.
-    return adapterFactory.getAdapter().then(function(response) {
+    return bluetoothInternalsHandler.getAdapter().then(function(response) {
       if (!response.adapter.ptr.isBound()) {
         throw new Error('Bluetooth Not Supported on this platform.');
       }

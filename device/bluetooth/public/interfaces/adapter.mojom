@@ -102,7 +102,3 @@ interface AdapterClient {
   DeviceRemoved(DeviceInfo device);
 };
 
-interface AdapterFactory {
-  // Gets an Adapter interface. Returns null if Bluetooth is not supported.
-  GetAdapter() => (Adapter? adapter);
-};

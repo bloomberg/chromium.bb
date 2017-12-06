@@ -44,7 +44,9 @@ BluetoothInternalsTest.prototype = {
   preLoad: function() {
     /**
      * A test adapter factory proxy for the chrome://bluetooth-internals
-     * page.
+     * page.  Provides a fake BluetoothInternalsHandler::GetAdapter
+     * implementation and acts as a root of all Test*Proxies by containing an
+     * adapter member.
      */
     class TestAdapterFactoryProxy extends TestBrowserProxy {
       constructor() {
@@ -52,7 +54,7 @@ BluetoothInternalsTest.prototype = {
           'getAdapter',
         ]);
 
-        this.binding = new mojo.Binding(bluetooth.mojom.AdapterFactory, this);
+        this.binding = new mojo.Binding(mojom.BluetoothInternalsHandler, this);
         this.adapter = new TestAdapterProxy();
         this.adapterBinding_ = new mojo.Binding(bluetooth.mojom.Adapter,
                                                 this.adapter);
@@ -164,9 +166,9 @@ BluetoothInternalsTest.prototype = {
     }
 
     window.setupFn = () => {
-      this.adapterInterceptor = new MojoInterfaceInterceptor(
-          bluetooth.mojom.AdapterFactory.name);
-      this.adapterInterceptor.oninterfacerequest = (e) => {
+      this.bluetoothInternalsHandlerInterceptor = new MojoInterfaceInterceptor(
+          mojom.BluetoothInternalsHandler.name);
+      this.bluetoothInternalsHandlerInterceptor.oninterfacerequest = (e) => {
         this.adapterFactory = new TestAdapterFactoryProxy();
         this.adapterFactory.binding.bind(e.handle);
 
@@ -185,7 +187,7 @@ BluetoothInternalsTest.prototype = {
               ]);
             }, this);
       };
-      this.adapterInterceptor.start();
+      this.bluetoothInternalsHandlerInterceptor.start();
       this.setupResolver.resolve();
       return Promise.resolve();
     };

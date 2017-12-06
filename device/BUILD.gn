@@ -85,8 +85,8 @@ test("device_unittests") {
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//device/base/synchronization",
     "//device/bluetooth",
+    "//device/bluetooth:deprecated_experimental_mojo",
     "//device/bluetooth:mocks",
-    "//device/bluetooth:mojo",
     "//device/bluetooth/uribeacon",
     "//device/gamepad",
     "//device/gamepad:test_helpers",
@@ -129,12 +129,8 @@ test("device_unittests") {
 
     # Serial is supported in below platforms. See //device/servial/BUILD.gn
     if (is_win || is_linux || is_mac) {
-      sources += [
-        "serial/serial_io_handler_posix_unittest.cc",
-      ]
-      deps += [
-        "//device/serial",
-      ]
+      sources += [ "serial/serial_io_handler_posix_unittest.cc" ]
+      deps += [ "//device/serial" ]
     }
   }
 
