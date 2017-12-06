@@ -1923,14 +1923,11 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
 
 bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  RTCRtpSender* sender = static_cast<RTCRtpSender*>(web_sender);
-  if (!native_peer_connection_->RemoveTrack(sender->webrtc_sender()))
+  auto it = rtp_senders_.find(web_sender->Id());
+  DCHECK(it != rtp_senders_.end());
+  if (!it->second->RemoveFromPeerConnection(native_peer_connection_.get()))
     return false;
-  sender->OnRemoved();
-  // Make sure |rtp_senders_| is up-to-date. When |AddStream| and |RemoveStream|
-  // is implemented using |AddTrack| and |RemoveTrack|, add and remove
-  // |rtp_senders_| there. https://crbug.com/738929
-  GetSenders();
+  rtp_senders_.erase(it);
   return true;
 }
 

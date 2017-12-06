@@ -13,6 +13,7 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCRtpSender.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpsenderinterface.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
@@ -46,15 +47,9 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   uintptr_t Id() const override;
   blink::WebMediaStreamTrack Track() const override;
 
-  // Nulls the |Track|. Must be called when the webrtc layer sender is removed
-  // from the peer connection and the webrtc sender's track nulled so that this
-  // is made visible to upper layers.
-  // TODO(hbos): Make the "ReplaceTrack" and "RemoveTrack" interaction with
-  // webrtc layer part of this class as to not make the operation a two-step
-  // process. https://crbug.com/790007
-  void OnRemoved();
   webrtc::RtpSenderInterface* webrtc_sender() const;
   const webrtc::MediaStreamTrackInterface* webrtc_track() const;
+  bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc);
 
  private:
   class RTCRtpSenderInternal;
