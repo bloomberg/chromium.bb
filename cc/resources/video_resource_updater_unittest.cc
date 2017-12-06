@@ -726,6 +726,17 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleNV12) {
             resources.resources[0].mailbox_holder.texture_target);
   EXPECT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR,
             resources.resources[0].buffer_format);
+
+  video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_NV12, 1,
+                                                GL_TEXTURE_RECTANGLE_ARB);
+  resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::RGB_RESOURCE, resources.type);
+  EXPECT_EQ(1u, resources.resources.size());
+  EXPECT_EQ((GLenum)GL_TEXTURE_RECTANGLE_ARB,
+            resources.resources[0].mailbox_holder.texture_target);
+  EXPECT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR,
+            resources.resources[0].buffer_format);
+
   EXPECT_EQ(0, context3d_->TextureCreationCount());
 }
 
@@ -749,6 +760,16 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
             resources.resources[0].mailbox_holder.texture_target);
   // |updater| doesn't set |buffer_format| in this case.
   EXPECT_EQ(gfx::BufferFormat::RGBA_8888, resources.resources[0].buffer_format);
+
+  video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_NV12, 2,
+                                                GL_TEXTURE_RECTANGLE_ARB);
+  resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_EQ(2u, resources.resources.size());
+  EXPECT_EQ((GLenum)GL_TEXTURE_RECTANGLE_ARB,
+            resources.resources[0].mailbox_holder.texture_target);
+  EXPECT_EQ(gfx::BufferFormat::RGBA_8888, resources.resources[0].buffer_format);
+
   EXPECT_EQ(0, context3d_->TextureCreationCount());
 }
 

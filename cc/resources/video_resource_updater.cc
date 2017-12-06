@@ -38,7 +38,7 @@ namespace {
 const viz::ResourceFormat kRGBResourceFormat = viz::RGBA_8888;
 
 VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
-    GLuint format,
+    media::VideoPixelFormat format,
     GLuint target,
     int num_textures,
     gfx::BufferFormat* buffer_format,
@@ -67,22 +67,16 @@ VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
       return VideoFrameExternalResources::YUV_RESOURCE;
       break;
     case media::PIXEL_FORMAT_NV12:
-      switch (target) {
-        case GL_TEXTURE_EXTERNAL_OES:
-        case GL_TEXTURE_2D:
-          // Single plane textures can be sampled as RGB.
-          if (num_textures > 1) {
-            return VideoFrameExternalResources::YUV_RESOURCE;
-          } else {
-            *buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
-            return VideoFrameExternalResources::RGB_RESOURCE;
-          }
-        case GL_TEXTURE_RECTANGLE_ARB:
-          return VideoFrameExternalResources::RGB_RESOURCE;
-        default:
-          NOTREACHED();
-          break;
-      }
+      DCHECK(target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_2D ||
+             target == GL_TEXTURE_RECTANGLE_ARB)
+          << "Unsupported texture target " << std::hex << std::showbase
+          << target;
+      // Single plane textures can be sampled as RGB.
+      if (num_textures > 1)
+        return VideoFrameExternalResources::YUV_RESOURCE;
+
+      *buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+      return VideoFrameExternalResources::RGB_RESOURCE;
       break;
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_YV16:
@@ -886,8 +880,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   if (external_resources.type == VideoFrameExternalResources::RGB_RESOURCE)
     resource_color_space = resource_color_space.GetAsFullRangeRGB();
 
-  const size_t num_planes = media::VideoFrame::NumPlanes(video_frame->format());
-  for (size_t i = 0; i < num_planes; ++i) {
+  const size_t num_textures = video_frame->NumTextures();
+  for (size_t i = 0; i < num_textures; ++i) {
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
     if (mailbox_holder.mailbox.IsZero())
       break;
