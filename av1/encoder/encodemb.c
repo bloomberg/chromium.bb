@@ -18,6 +18,10 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
+#if CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
+
 #include "av1/common/idct.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
@@ -33,7 +37,6 @@
 #include "av1/common/daala_inv_txfm.h"
 #endif
 #include "av1/encoder/rd.h"
-#include "av1/encoder/tokenize.h"
 
 #if CONFIG_CFL
 #include "av1/common/cfl.h"
@@ -610,7 +613,11 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 }
 
 static void encode_block(int plane, int block, int blk_row, int blk_col,
-                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
+                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg,
+                         int mi_row, int mi_col, RUN_TYPE dry_run) {
+  (void)mi_row;
+  (void)mi_col;
+  (void)dry_run;
   struct encode_b_args *const args = arg;
   AV1_COMMON *cm = args->cm;
   MACROBLOCK *const x = args->x;
@@ -654,11 +661,25 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                 pd->dst.stride, p->eobs[block],
                                 cm->reduced_tx_set_used);
   }
+#if CONFIG_MISMATCH_DEBUG
+  if (dry_run == OUTPUT_ENABLED) {
+    int pixel_c, pixel_r;
+    int blk_w = block_size_wide[plane_bsize];
+    int blk_h = block_size_high[plane_bsize];
+    mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
+                    pd->subsampling_x, pd->subsampling_y);
+    mismatch_record_block_tx(dst, pd->dst.stride, plane, pixel_c, pixel_r,
+                             blk_w, blk_h);
+  }
+#endif
 }
 
 static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                               void *arg) {
+                               void *arg, int mi_row, int mi_col,
+                               RUN_TYPE dry_run) {
+  (void)mi_row;
+  (void)mi_col;
   struct encode_b_args *const args = arg;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -682,7 +703,8 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
       || pd->subsampling_x || pd->subsampling_y
 #endif  // DISABLE_VARTX_FOR_CHROMA
       ) {
-    encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
+    encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg,
+                 mi_row, mi_col, dry_run);
   } else {
     assert(tx_size < TX_SIZES_ALL);
     const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
@@ -702,7 +724,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         encode_block_inter(plane, block, offsetr, offsetc, plane_bsize, sub_txs,
-                           arg);
+                           arg, mi_row, mi_col, dry_run);
         block += step;
       }
     }
@@ -768,7 +790,8 @@ void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
 }
 
 void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
-                   int mi_col) {
+                   int mi_col, RUN_TYPE dry_run) {
+  (void)dry_run;
   MACROBLOCKD *const xd = &x->e_mbd;
   struct optimize_ctx ctx;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -841,7 +864,7 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
         for (blk_row = idy; blk_row < unit_height; blk_row += bh) {
           for (blk_col = idx; blk_col < unit_width; blk_col += bw) {
             encode_block_inter(plane, block, blk_row, blk_col, plane_bsize,
-                               max_tx_size, &arg);
+                               max_tx_size, &arg, mi_row, mi_col, dry_run);
             block += step;
           }
         }

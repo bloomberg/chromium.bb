@@ -68,9 +68,9 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
-#if CONFIG_BITSTREAM_DEBUG
+#if CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 #include "aom_util/debug_util.h"
-#endif  // CONFIG_BITSTREAM_DEBUG
+#endif  // CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 
 #if CONFIG_ENTROPY_STATS
 FRAME_COUNTS aggregate_fc;
@@ -5877,6 +5877,9 @@ static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #if !CONFIG_XIPHRC
 static void Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                         unsigned int *frame_flags) {
+#if CONFIG_MISMATCH_DEBUG
+  mismatch_move_frame_idx_w();
+#endif
   encode_frame_to_data_rate(cpi, size, dest, 0, frame_flags);
 
   // Do not do post-encoding update for those frames that do not have a spot in

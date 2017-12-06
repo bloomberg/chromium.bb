@@ -19,6 +19,12 @@
 extern "C" {
 #endif
 
+void bitstream_queue_set_frame_write(int frame_idx);
+int bitstream_queue_get_frame_write(void);
+void bitstream_queue_set_frame_read(int frame_idx);
+int bitstream_queue_get_frame_read(void);
+
+#if CONFIG_BITSTREAM_DEBUG
 /* This is a debug tool used to detect bitstream error. On encoder side, it
  * pushes each bit and probability into a queue before the bit is written into
  * the Arithmetic coder. On decoder side, whenever a bit is read out from the
@@ -35,10 +41,21 @@ void bitstream_queue_pop(int *result, aom_cdf_prob *cdf, int *nsymbs);
 void bitstream_queue_push(int result, const aom_cdf_prob *cdf, int nsymbs);
 void bitstream_queue_set_skip_write(int skip);
 void bitstream_queue_set_skip_read(int skip);
-void bitstream_queue_set_frame_write(int frame_idx);
-int bitstream_queue_get_frame_write(void);
-void bitstream_queue_set_frame_read(int frame_idx);
-int bitstream_queue_get_frame_read(void);
+#endif  // CONFIG_BITSTREAM_DEBUG
+
+#if CONFIG_MISMATCH_DEBUG
+void mismatch_move_frame_idx_w();
+void mismatch_move_frame_idx_r();
+void mismatch_reset_frame();
+void mismatch_record_block_pre(const uint8_t *src, int src_stride, int plane,
+                               int pixel_c, int pixel_r, int blk_w, int blk_h);
+void mismatch_record_block_tx(const uint8_t *src, int src_stride, int plane,
+                              int pixel_c, int pixel_r, int blk_w, int blk_h);
+void mismatch_check_block_pre(const uint8_t *src, int src_stride, int plane,
+                              int pixel_c, int pixel_r, int blk_w, int blk_h);
+void mismatch_check_block_tx(const uint8_t *src, int src_stride, int plane,
+                             int pixel_c, int pixel_r, int blk_w, int blk_h);
+#endif  // CONFIG_MISMATCH_DEBUG
 
 #ifdef __cplusplus
 }  // extern "C"

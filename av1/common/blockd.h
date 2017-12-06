@@ -470,6 +470,17 @@ static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
          block_size_allowed;
 }
 
+#if CONFIG_MISMATCH_DEBUG
+static INLINE void mi_to_pixel_loc(int *pixel_c, int *pixel_r, int mi_col,
+                                   int mi_row, int tx_blk_col, int tx_blk_row,
+                                   int subsampling_x, int subsampling_y) {
+  *pixel_c = ((mi_col >> subsampling_x) << MI_SIZE_LOG2) +
+             (tx_blk_col << tx_size_wide_log2[0]);
+  *pixel_r = ((mi_row >> subsampling_y) << MI_SIZE_LOG2) +
+             (tx_blk_row << tx_size_high_log2[0]);
+}
+#endif
+
 enum mv_precision { MV_PRECISION_Q3, MV_PRECISION_Q4 };
 
 struct buf_2d {

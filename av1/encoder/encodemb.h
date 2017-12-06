@@ -15,7 +15,7 @@
 #include "./aom_config.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/encoder/block.h"
-
+#include "av1/encoder/tokenize.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,7 +44,7 @@ typedef enum AV1_XFORM_QUANT {
 } AV1_XFORM_QUANT;
 
 void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
-                   int mi_col);
+                   int mi_col, RUN_TYPE dry_run);
 void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,

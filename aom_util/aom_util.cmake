@@ -14,14 +14,9 @@ set(AOM_AOM_UTIL_AOM_UTIL_CMAKE_ 1)
 set(AOM_UTIL_SOURCES
     "${AOM_ROOT}/aom_util/aom_thread.c"
     "${AOM_ROOT}/aom_util/aom_thread.h"
-    "${AOM_ROOT}/aom_util/endian_inl.h")
-
-if (CONFIG_BITSTREAM_DEBUG)
-  set(AOM_UTIL_SOURCES
-      ${AOM_UTIL_SOURCES}
-      "${AOM_ROOT}/aom_util/debug_util.c"
-      "${AOM_ROOT}/aom_util/debug_util.h")
-endif ()
+    "${AOM_ROOT}/aom_util/endian_inl.h"
+    "${AOM_ROOT}/aom_util/debug_util.c"
+    "${AOM_ROOT}/aom_util/debug_util.h")
 
 # Creates the aom_util build target and makes libaom depend on it. The libaom
 # target must exist before this function is called.

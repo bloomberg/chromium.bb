@@ -29,9 +29,9 @@
 #include "aom_scale/aom_scale.h"
 #include "aom_util/aom_thread.h"
 
-#if CONFIG_BITSTREAM_DEBUG
+#if CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 #include "aom_util/debug_util.h"
-#endif  // CONFIG_BITSTREAM_DEBUG
+#endif  // CONFIG_BITSTREAM_DEBUG || CONFIG_MISMATCH_DEBUG
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/cdef.h"
@@ -229,7 +229,10 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   aom_reader *r, MB_MODE_INFO *const mbmi,
                                   int plane, BLOCK_SIZE plane_bsize,
                                   int blk_row, int blk_col, int block,
-                                  TX_SIZE tx_size, int *eob_total) {
+                                  TX_SIZE tx_size, int *eob_total, int mi_row,
+                                  int mi_col) {
+  (void)mi_row;
+  (void)mi_col;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
   const int tx_row = blk_row >> (1 - pd->subsampling_y);
@@ -278,11 +281,20 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     ++cm->txb_count;
 #endif
 
-    inverse_transform_block(
-        xd, plane, tx_type, tx_size,
+    uint8_t *dst =
         &pd->dst
-             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]],
-        pd->dst.stride, max_scan_line, eob, cm->reduced_tx_set_used);
+             .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
+    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
+                            max_scan_line, eob, cm->reduced_tx_set_used);
+#if CONFIG_MISMATCH_DEBUG
+    int pixel_c, pixel_r;
+    int blk_w = block_size_wide[plane_bsize];
+    int blk_h = block_size_high[plane_bsize];
+    mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
+                    pd->subsampling_x, pd->subsampling_y);
+    mismatch_check_block_tx(dst, pd->dst.stride, plane, pixel_c, pixel_r, blk_w,
+                            blk_h);
+#endif
     *eob_total += eob;
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
@@ -302,7 +314,8 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
         decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize, offsetr,
-                              offsetc, block, sub_txs, eob_total);
+                              offsetc, block, sub_txs, eob_total, mi_row,
+                              mi_col);
         block += sub_step;
       }
     }
@@ -496,6 +509,21 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     if (mbmi->motion_mode == OBMC_CAUSAL) {
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
     }
+
+#if CONFIG_MISMATCH_DEBUG
+    for (int plane = 0; plane < 3; ++plane) {
+      const struct macroblockd_plane *pd = &xd->plane[plane];
+      int pixel_c, pixel_r;
+      mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, 0, 0,
+                      pd->subsampling_x, pd->subsampling_y);
+      if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                               pd->subsampling_y))
+        continue;
+      mismatch_check_block_pre(pd->dst.buf, pd->dst.stride, plane, pixel_c,
+                               pixel_r, pd->width, pd->height);
+    }
+#endif
+
     // Reconstruction
     if (!mbmi->skip) {
       int eobtotal = 0;
@@ -552,7 +580,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
               for (blk_col = col; blk_col < unit_width; blk_col += bw_var_tx) {
                 decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize,
                                       blk_row, blk_col, block, max_tx_size,
-                                      &eobtotal);
+                                      &eobtotal, mi_row, mi_col);
                 block += step;
               }
             }
@@ -3314,6 +3342,9 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 #endif
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
+#endif
+#if CONFIG_MISMATCH_DEBUG
+  mismatch_move_frame_idx_r();
 #endif
 
   for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {

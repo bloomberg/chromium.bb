@@ -85,6 +85,7 @@ set(CONFIG_WEBM_IO 1 CACHE NUMBER "Enables WebM support.")
 # Debugging flags.
 set(CONFIG_BITSTREAM_DEBUG 0 CACHE NUMBER "Bitstream debugging flag.")
 set(CONFIG_DEBUG 0 CACHE NUMBER "Debug build flag.")
+set(CONFIG_MISMATCH_DEBUG 0 CACHE NUMBER "Mismatch debugging flag.")
 
 # Testing flags.
 set(CONFIG_DECODE_PERF_TESTS 0 CACHE NUMBER "Enables decoder performance test.")
