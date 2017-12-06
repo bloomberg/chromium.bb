@@ -69,7 +69,6 @@ def main(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
   parser.add_option('--output', help='Output path for executable script.')
-  parser.add_option('--jar-path', help='Path to the main jar.')
   parser.add_option('--main-class',
       help='Name of the java class with the "main" entry point.')
   parser.add_option('--classpath', action='append', default=[],
@@ -86,7 +85,7 @@ def main(argv):
   else:
     noverify_flag = ''
 
-  classpath = [options.jar_path]
+  classpath = []
   for cp_arg in options.classpath:
     classpath += build_utils.ParseGnList(cp_arg)
 

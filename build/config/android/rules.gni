@@ -1052,11 +1052,11 @@ if (enable_java_templates) {
   #     will be included in the executable (and the javac classpath).
   #   classpath_deps: Deps that should added to the classpath for this target,
   #     but not linked into the apk (use this for annotation processors).
+  #   jar_path: Path to a prebuilt jar. Mutually exclusive with java_files &
+  #     srcjar_deps.
   #   java_files: List of .java files included in this library.
   #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
   #     will be added to java_files and be included in this library.
-  #   srcjars: List of srcjars to be included in this library, together with the
-  #     ones obtained from srcjar_deps.
   #   bypass_platform_checks: Disables checks about cross-platform (Java/Android)
   #     dependencies for this target. This will allow depending on an
   #     android_library target, for example.
@@ -1077,13 +1077,16 @@ if (enable_java_templates) {
   #     deps = [ ":bar_java" ]
   #     main_class = "org.chromium.foo.FooMain"
   #   }
+  #
+  #   java_binary("foo") {
+  #     jar_path = "lib/prebuilt.jar"
+  #     deps = [ ":bar_java" ]
+  #     main_class = "org.chromium.foo.FooMain"
+  #   }
   template("java_binary") {
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
-      supports_android = false
-      main_class = invoker.main_class
       is_java_binary = true
-      assert(is_java_binary)  # Mark as used.
     }
   }
 
@@ -1099,8 +1102,6 @@ if (enable_java_templates) {
   #   java_files: List of .java files included in this library.
   #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
   #     will be added to java_files and be included in this library.
-  #   srcjars: List of srcjars to be included in this library, together with the
-  #     ones obtained from srcjar_deps.
   #
   #   chromium_code: If true, extra analysis warning/errors will be enabled.
   #
@@ -1147,8 +1148,6 @@ if (enable_java_templates) {
       if (defined(_java_sources_file)) {
         java_sources_file = _java_sources_file
       }
-      _target_dir_name = get_label_info(":$target_name", "dir")
-      jar_path = "$root_out_dir/lib.java$_target_dir_name/$target_name.jar"
     }
 
     if (defined(invoker.classpath_deps)) {
@@ -1218,8 +1217,6 @@ if (enable_java_templates) {
   #   java_files: List of .java files included in this library.
   #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
   #     will be added to java_files and be included in this library.
-  #   srcjars: List of srcjars to be included in this library, together with the
-  #     ones obtained from srcjar_deps.
   #
   #   input_jars_paths: A list of paths to the jars that should be included
   #     in the classpath. These are in addition to library .jars that
@@ -1284,7 +1281,6 @@ if (enable_java_templates) {
   #   deps: Specifies the dependencies of this target. Java targets in this list
   #     will be added to the javac classpath.
   #   jar_path: Path to the prebuilt jar.
-  #   jar_dep: Target that builds jar_path (optional).
   #   main_class: When specified, a wrapper script is created within
   #     $root_build_dir/bin to launch the binary with the given class as the
   #     entrypoint.
@@ -1305,7 +1301,7 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("java_prebuilt") {
-    java_prebuilt_impl(target_name) {
+    java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
     }
   }
@@ -1496,8 +1492,6 @@ if (enable_java_templates) {
   #   java_files: List of .java files included in this library.
   #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
   #     will be added to java_files and be included in this library.
-  #   srcjars: List of srcjars to be included in this library, together with the
-  #     ones obtained from srcjar_deps.
   #
   #   input_jars_paths: A list of paths to the jars that should be included
   #     in the classpath. These are in addition to library .jars that
@@ -1550,16 +1544,13 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_library") {
-    assert(!defined(invoker.jar_path),
-           "android_library does not support a custom jar path")
-
-    if (defined(invoker.alternative_android_sdk_ijar)) {
-      assert(defined(invoker.alternative_android_sdk_ijar_dep))
-      assert(defined(invoker.alternative_android_sdk_jar))
-    }
-
     java_library_impl(target_name) {
       forward_variables_from(invoker, "*")
+
+      if (defined(alternative_android_sdk_ijar)) {
+        assert(defined(alternative_android_sdk_ijar_dep))
+        assert(defined(alternative_android_sdk_jar))
+      }
 
       supports_android = true
       requires_android = true
@@ -1618,11 +1609,8 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("android_java_prebuilt") {
-    java_prebuilt_impl(target_name) {
+    android_library(target_name) {
       forward_variables_from(invoker, "*")
-      supports_android = true
-      requires_android = true
-      strip_resource_classes = true
     }
   }
 
@@ -1732,6 +1720,7 @@ if (enable_java_templates) {
     _lib_dex_path = "$_base_path.dex.jar"
     _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
     _template_name = target_name
+    _emma_never_instrument = defined(invoker.testonly) && invoker.testonly
     if (defined(invoker.java_files)) {
       _java_sources_file = "$_base_path.sources"
     }
@@ -1953,7 +1942,6 @@ if (enable_java_templates) {
       _proguard_output_jar_path = "$_base_path.proguard.jar"
     }
 
-    _emma_never_instrument = defined(invoker.testonly) && invoker.testonly
     _incremental_allowed =
         !(defined(invoker.never_incremental) && invoker.never_incremental)
 
@@ -2187,7 +2175,7 @@ if (enable_java_templates) {
 
       android_manifest = _android_manifest
       srcjar_deps = _srcjar_deps
-      jar_path = _jar_path
+      final_jar_path = _jar_path
       dex_path = _lib_dex_path
       emma_never_instrument = _emma_never_instrument
       if (defined(_java_sources_file)) {

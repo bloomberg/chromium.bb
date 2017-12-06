@@ -926,7 +926,7 @@ action("extract_cronet_jars") {
   sources = []
   foreach(dep, deps) {
     sources += [ get_label_info(dep, "target_gen_dir") + "/" +
-                 get_label_info(dep, "name") + "__compile_java.javac.jar" ]
+                 get_label_info(dep, "name") + ".javac.jar" ]
   }
 
   _rebased_sources = rebase_path(sources, root_build_dir)
@@ -1232,8 +1232,8 @@ template("copy_java8_jars") {
   _deps = []
   foreach(dep, invoker.deps) {
     _dep_name = get_label_info(dep, "name")
-    _source_jar = get_label_info(dep, "target_gen_dir") + "/" + _dep_name +
-                  "__compile_java.javac.jar"
+    _source_jar =
+        get_label_info(dep, "target_gen_dir") + "/" + _dep_name + ".javac.jar"
     _output_jar = "$_package_dir/" + _dep_name + ".jar"
 
     # cronet_api.jar is a special case. Its file name is
@@ -1242,9 +1242,7 @@ template("copy_java8_jars") {
       _output_jar = "$_package_dir/" + "cronet_api.jar"
     }
 
-    _copy_dep = ":" + _dep_name + "__compile_java__javac"
     _copy_target_name = "${target_name}_${dep}"
-
     copy(_copy_target_name) {
       sources = [
         _source_jar,
@@ -1253,7 +1251,7 @@ template("copy_java8_jars") {
         _output_jar,
       ]
       deps = [
-        _copy_dep,
+        ":$_dep_name",
       ]
     }
     _deps += [ ":" + _copy_target_name ]

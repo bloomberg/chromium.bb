@@ -287,6 +287,8 @@ def main(argv):
 
   # java library options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
+  parser.add_option('--is-prebuilt', action='store_true',
+                    help='Whether the jar was compiled or pre-compiled.')
   parser.add_option('--java-sources-file', help='Path to .sources file')
   parser.add_option('--bundled-srcjars',
       help='GYP-list of .srcjars that have been included in this java_library.')
@@ -352,10 +354,9 @@ def main(argv):
     parser.error('\n'.join(build_utils.ParseGnList(options.fail)))
 
   required_options_map = {
-      'java_binary': ['build_config', 'jar_path'],
-      'junit_binary': ['build_config', 'jar_path'],
+      'java_binary': ['build_config'],
+      'junit_binary': ['build_config'],
       'java_library': ['build_config', 'jar_path'],
-      'java_prebuilt': ['build_config', 'jar_path'],
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
       'android_apk': ['build_config', 'jar_path', 'dex_path'],
@@ -369,11 +370,6 @@ def main(argv):
     raise Exception('Unknown type: <%s>' % options.type)
 
   build_utils.CheckOptions(options, parser, required_options)
-
-  # Java prebuilts are the same as libraries except for in gradle files.
-  is_java_prebuilt = options.type == 'java_prebuilt'
-  if is_java_prebuilt:
-    options.type = 'java_library'
 
   if options.type == 'java_library':
     if options.supports_android and not options.dex_path:
@@ -424,7 +420,7 @@ def main(argv):
 
   # Required for generating gradle files.
   if options.type == 'java_library':
-    deps_info['is_prebuilt'] = is_java_prebuilt
+    deps_info['is_prebuilt'] = bool(options.is_prebuilt)
     deps_info['gradle_treat_as_prebuilt'] = options.gradle_treat_as_prebuilt
 
   if options.android_manifest:
@@ -485,9 +481,10 @@ def main(argv):
 
   if options.type in (
       'java_binary', 'junit_binary', 'java_library', 'android_apk'):
-    deps_info['jar_path'] = options.jar_path
-    if options.type == 'android_apk' or options.supports_android:
-      deps_info['dex_path'] = options.dex_path
+    if options.jar_path:
+      deps_info['jar_path'] = options.jar_path
+      if options.type == 'android_apk' or options.supports_android:
+        deps_info['dex_path'] = options.dex_path
     if options.type == 'android_apk':
       deps_info['apk_path'] = options.apk_path
       deps_info['incremental_apk_path'] = options.incremental_apk_path
@@ -496,12 +493,10 @@ def main(argv):
       deps_info['non_native_packed_relocations'] = str(
           options.non_native_packed_relocations)
 
-  requires_javac_classpath = options.type in (
+  requires_classpath = options.type in (
       'java_binary', 'junit_binary', 'java_library', 'android_apk', 'dist_jar')
-  requires_full_classpath = (
-      options.type == 'java_prebuilt' or requires_javac_classpath)
 
-  if requires_javac_classpath:
+  if requires_classpath:
     # Classpath values filled in below (after applying tested_apk_config).
     config['javac'] = {}
 
@@ -600,7 +595,7 @@ def main(argv):
   if options.type in ['android_apk', 'deps_dex']:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]
 
-  if requires_javac_classpath:
+  if requires_classpath:
     extra_jars = []
     if options.extra_classpath_jars:
       extra_jars += build_utils.ParseGnList(options.extra_classpath_jars)
@@ -612,8 +607,7 @@ def main(argv):
           c['jar_path'] for c in classpath_deps.Direct('java_library')]
 
     javac_classpath = [c['jar_path'] for c in direct_library_deps]
-    if requires_full_classpath:
-      java_full_classpath = [c['jar_path'] for c in all_library_deps]
+    java_full_classpath = [c['jar_path'] for c in all_library_deps]
 
     if extra_jars:
       deps_info['extra_classpath_jars'] = extra_jars
@@ -693,15 +687,13 @@ def main(argv):
     dex_config = config['final_dex']
     dex_config['dependency_dex_files'] = deps_dex_files
 
-  if requires_javac_classpath:
+  if requires_classpath:
     config['javac']['classpath'] = javac_classpath
     javac_interface_classpath = [
         _AsInterfaceJar(p) for p in javac_classpath
         if p not in deps_info.get('extra_classpath_jars', [])]
     javac_interface_classpath += deps_info.get('extra_classpath_jars', [])
     config['javac']['interface_classpath'] = javac_interface_classpath
-
-  if requires_full_classpath:
     deps_info['java'] = {
       'full_classpath': java_full_classpath,
     }

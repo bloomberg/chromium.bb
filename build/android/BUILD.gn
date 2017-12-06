@@ -34,7 +34,9 @@ if (enable_java_templates) {
 
   java_prebuilt("sun_tools_java") {
     jar_path = sun_tools_jar_path
-    jar_dep = ":find_sun_tools_jar"
+    deps = [
+      ":find_sun_tools_jar",
+    ]
   }
 
   generate_interface_jar("android_ijar") {
