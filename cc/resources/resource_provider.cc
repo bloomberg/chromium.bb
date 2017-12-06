@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -176,8 +177,8 @@ ResourceProvider::ResourceProvider(
       next_id_(next_id),
       next_child_(1),
       lost_context_provider_(false),
-      buffer_to_texture_target_map_(
-          resource_settings.buffer_to_texture_target_map),
+      texture_target_exception_list_(
+          resource_settings.texture_target_exception_list),
       tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
   DCHECK(resource_settings.texture_id_allocation_chunk_size);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -298,9 +299,7 @@ bool ResourceProvider::IsGpuMemoryBufferFormatSupported(
     case viz::RGBA_8888:
     case viz::ETC1:
     case viz::RGBA_F16:
-      return buffer_to_texture_target_map_.find(
-                 viz::BufferToTextureTargetKey(usage, BufferFormat(format))) !=
-             buffer_to_texture_target_map_.end();
+      return true;
     // These formats have no BufferFormat equivalent.
     case viz::ALPHA_8:
     case viz::LUMINANCE_8:
@@ -1020,10 +1019,11 @@ GLenum ResourceProvider::GetImageTextureTarget(
     gfx::BufferUsage usage,
     viz::ResourceFormat format) const {
   gfx::BufferFormat buffer_format = BufferFormat(format);
-  auto found = buffer_to_texture_target_map_.find(
-      viz::BufferToTextureTargetKey(usage, buffer_format));
-  DCHECK(found != buffer_to_texture_target_map_.end());
-  return found->second;
+  bool found = std::find(texture_target_exception_list_.begin(),
+                         texture_target_exception_list_.end(),
+                         std::make_pair(usage, buffer_format)) !=
+               texture_target_exception_list_.end();
+  return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {

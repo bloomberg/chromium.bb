@@ -188,8 +188,8 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
     viz::CompositingModeReporterImpl* compositing_mode_reporter,
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
-      renderer_settings_(
-          viz::CreateRendererSettings(CreateBufferToTextureTargetMap())),
+      renderer_settings_(viz::CreateRendererSettings(
+          CreateBufferUsageAndFormatExceptionList())),
       resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       gpu_channel_factory_(gpu_channel_factory),

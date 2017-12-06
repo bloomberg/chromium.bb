@@ -99,8 +99,6 @@ static viz::ResourceSettings CreateResourceSettings(
       texture_id_allocation_chunk_size;
   resource_settings.use_gpu_memory_buffer_resources =
       kUseGpuMemoryBufferResources;
-  resource_settings.buffer_to_texture_target_map =
-      viz::DefaultBufferToTextureTargetMapForTesting();
   return resource_settings;
 }
 

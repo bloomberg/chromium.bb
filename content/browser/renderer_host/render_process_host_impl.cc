@@ -2447,7 +2447,8 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   command_line->AppendSwitchASCII(
       switches::kContentImageTextureTarget,
-      viz::BufferToTextureTargetMapToString(CreateBufferToTextureTargetMap()));
+      viz::BufferUsageAndFormatListToString(
+          CreateBufferUsageAndFormatExceptionList()));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

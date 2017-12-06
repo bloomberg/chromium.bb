@@ -19,7 +19,9 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
 #include "media/gpu/ipc/client/gpu_video_encode_accelerator_host.h"
@@ -56,7 +58,7 @@ GpuVideoAcceleratorFactoriesImpl::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    const viz::BufferToTextureTargetMap& image_texture_targets,
+    const viz::BufferUsageAndFormatList& texture_target_exception_list,
     bool enable_video_accelerator,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider) {
   RecordContextProviderPhaseUmaEnum(
@@ -64,7 +66,7 @@ GpuVideoAcceleratorFactoriesImpl::Create(
   return base::WrapUnique(new GpuVideoAcceleratorFactoriesImpl(
       std::move(gpu_channel_host), main_thread_task_runner, task_runner,
       context_provider, enable_gpu_memory_buffer_video_frames,
-      image_texture_targets, enable_video_accelerator,
+      texture_target_exception_list, enable_video_accelerator,
       std::move(unbound_vea_provider)));
 }
 
@@ -74,7 +76,7 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
-    const viz::BufferToTextureTargetMap& image_texture_targets,
+    const viz::BufferUsageAndFormatList& texture_target_exception_list,
     bool enable_video_accelerator,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider)
     : main_thread_task_runner_(main_thread_task_runner),
@@ -84,7 +86,7 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
       context_provider_(context_provider.get()),
       enable_gpu_memory_buffer_video_frames_(
           enable_gpu_memory_buffer_video_frames),
-      image_texture_targets_(image_texture_targets),
+      texture_target_exception_list_(texture_target_exception_list),
       video_accelerator_enabled_(enable_video_accelerator),
       gpu_memory_buffer_manager_(
           RenderThreadImpl::current()->GetGpuMemoryBufferManager()),
@@ -294,10 +296,13 @@ bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames()
 
 unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
     gfx::BufferFormat format) {
-  auto found = image_texture_targets_.find(viz::BufferToTextureTargetKey(
-      gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format));
-  DCHECK(found != image_texture_targets_.end());
-  return found->second;
+  auto it = std::find(texture_target_exception_list_.begin(),
+                      texture_target_exception_list_.end(),
+                      viz::BufferUsageAndFormat(
+                          gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, format));
+  if (it == texture_target_exception_list_.end())
+    return GL_TEXTURE_2D;
+  return gpu::GetPlatformSpecificTextureTarget();
 }
 
 media::GpuVideoAcceleratorFactories::OutputFormat

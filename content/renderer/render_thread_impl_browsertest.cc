@@ -215,8 +215,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
     cmd->AppendSwitchASCII(
         switches::kContentImageTextureTarget,
-        viz::BufferToTextureTargetMapToString(
-            viz::DefaultBufferToTextureTargetMapForTesting()));
+        viz::BufferUsageAndFormatListToString(viz::BufferUsageAndFormatList()));
 
     std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
         blink::scheduler::RendererScheduler::Create();

@@ -88,8 +88,6 @@ class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
   LayerTreeSettings CreateSettings() override {
     LayerTreeSettings settings;
     settings.create_low_res_tiling = true;
-    settings.resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
 
@@ -2150,8 +2148,6 @@ class TileManagerReadyToDrawTest : public TileManagerTest {
 
   LayerTreeSettings CreateSettings() override {
     LayerTreeSettings settings;
-    settings.resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
 
@@ -2427,8 +2423,6 @@ class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
     LayerTreeSettings settings;
     settings.commit_to_active_tree = false;
     settings.enable_checker_imaging = true;
-    settings.resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     settings.min_image_bytes_to_checker = 512 * 1024;
     return settings;
   }

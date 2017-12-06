@@ -860,8 +860,8 @@ void RenderThreadImpl::Init(
 
   std::string image_texture_target_string =
       command_line.GetSwitchValueASCII(switches::kContentImageTextureTarget);
-  buffer_to_texture_target_map_ =
-      viz::StringToBufferToTextureTargetMap(image_texture_target_string);
+  texture_target_exception_list_ =
+      viz::StringToBufferUsageAndFormatList(image_texture_target_string);
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
@@ -1515,7 +1515,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   gpu_factories_.push_back(GpuVideoAcceleratorFactoriesImpl::Create(
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
       media_task_runner, std::move(media_context_provider),
-      enable_gpu_memory_buffer_video_frames, buffer_to_texture_target_map_,
+      enable_gpu_memory_buffer_video_frames, texture_target_exception_list_,
       enable_video_accelerator, vea_provider.PassInterface()));
   return gpu_factories_.back().get();
 }
@@ -1655,9 +1655,9 @@ bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
 }
 
-const viz::BufferToTextureTargetMap&
-RenderThreadImpl::GetBufferToTextureTargetMap() {
-  return buffer_to_texture_target_map_;
+const viz::BufferUsageAndFormatList&
+RenderThreadImpl::GetTextureTargetExceptionList() {
+  return texture_target_exception_list_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -7,66 +7,43 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace viz {
 
-BufferToTextureTargetMap StringToBufferToTextureTargetMap(
+BufferUsageAndFormatList StringToBufferUsageAndFormatList(
     const std::string& str) {
-  BufferToTextureTargetMap map;
+  BufferUsageAndFormatList usage_format_list;
   std::vector<std::string> entries =
       base::SplitString(str, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& entry : entries) {
     std::vector<std::string> fields = base::SplitString(
         entry, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    CHECK_EQ(fields.size(), 3u);
+    CHECK_EQ(fields.size(), 2u);
     uint32_t usage = 0;
     uint32_t format = 0;
-    uint32_t target = 0;
     bool succeeded = base::StringToUint(fields[0], &usage) &&
-                     base::StringToUint(fields[1], &format) &&
-                     base::StringToUint(fields[2], &target);
+                     base::StringToUint(fields[1], &format);
     CHECK(succeeded);
     CHECK_LE(usage, static_cast<uint32_t>(gfx::BufferUsage::LAST));
     CHECK_LE(format, static_cast<uint32_t>(gfx::BufferFormat::LAST));
-    map.insert(BufferToTextureTargetMap::value_type(
-        BufferToTextureTargetKey(static_cast<gfx::BufferUsage>(usage),
-                                 static_cast<gfx::BufferFormat>(format)),
-        target));
+    usage_format_list.push_back(
+        std::make_pair(static_cast<gfx::BufferUsage>(usage),
+                       static_cast<gfx::BufferFormat>(format)));
   }
-  return map;
+  return usage_format_list;
 }
 
-std::string BufferToTextureTargetMapToString(
-    const BufferToTextureTargetMap& map) {
+std::string BufferUsageAndFormatListToString(
+    const BufferUsageAndFormatList& usage_format_list) {
   std::string str;
-  for (const auto& entry : map) {
+  for (const auto& entry : usage_format_list) {
     if (!str.empty())
       str += ";";
-    str += base::UintToString(static_cast<uint32_t>(entry.first.first));
+    str += base::UintToString(static_cast<uint32_t>(entry.first));
     str += ",";
-    str += base::UintToString(static_cast<uint32_t>(entry.first.second));
-    str += ",";
-    str += base::UintToString(entry.second);
+    str += base::UintToString(static_cast<uint32_t>(entry.second));
   }
   return str;
-}
-
-BufferToTextureTargetMap DefaultBufferToTextureTargetMapForTesting() {
-  BufferToTextureTargetMap image_targets;
-  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
-       ++usage_idx) {
-    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
-    for (int format_idx = 0;
-         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
-         ++format_idx) {
-      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      image_targets.insert(BufferToTextureTargetMap::value_type(
-          BufferToTextureTargetKey(usage, format), GL_TEXTURE_2D));
-    }
-  }
-
-  return image_targets;
 }
 
 }  // namespace viz

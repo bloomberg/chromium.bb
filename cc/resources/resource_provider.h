@@ -436,7 +436,7 @@ class CC_EXPORT ResourceProvider
   bool IsGLContextLost() const;
 
   std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
-  viz::BufferToTextureTargetMap buffer_to_texture_target_map_;
+  viz::BufferUsageAndFormatList texture_target_exception_list_;
 
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.

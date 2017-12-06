@@ -135,8 +135,6 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.enable_surface_synchronization = true;
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.resource_settings.texture_id_allocation_chunk_size = 1;
-    settings.resource_settings.buffer_to_texture_target_map =
-        viz::DefaultBufferToTextureTargetMapForTesting();
     return settings;
   }
 

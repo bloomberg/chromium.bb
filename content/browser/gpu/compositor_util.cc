@@ -22,6 +22,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
@@ -399,8 +400,8 @@ std::vector<std::string> GetDriverBugWorkarounds() {
   return GpuDataManagerImpl::GetInstance()->GetDriverBugWorkarounds();
 }
 
-viz::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
-  viz::BufferToTextureTargetMap image_targets;
+viz::BufferUsageAndFormatList CreateBufferUsageAndFormatExceptionList() {
+  viz::BufferUsageAndFormatList usage_format_list;
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
        ++usage_idx) {
     gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
@@ -408,11 +409,11 @@ viz::BufferToTextureTargetMap CreateBufferToTextureTargetMap() {
          format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
          ++format_idx) {
       gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      uint32_t target = gpu::GetImageTextureTarget(format, usage);
-      image_targets[std::make_pair(usage, format)] = target;
+      if (gpu::GetImageNeedsPlatformSpecificTextureTarget(format, usage))
+        usage_format_list.push_back(std::make_pair(usage, format));
     }
   }
-  return image_targets;
+  return usage_format_list;
 }
 
 }  // namespace content

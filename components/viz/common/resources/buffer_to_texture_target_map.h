@@ -7,30 +7,27 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace viz {
-// A map of GPU Memory Buffer usage/format to GL texture target.
-using BufferToTextureTargetKey = std::pair<gfx::BufferUsage, gfx::BufferFormat>;
-using BufferToTextureTargetMap = std::map<BufferToTextureTargetKey, uint32_t>;
+// A pair containing GPU Memory Buffer usage and format.
+using BufferUsageAndFormat = std::pair<gfx::BufferUsage, gfx::BufferFormat>;
+using BufferUsageAndFormatList = std::vector<BufferUsageAndFormat>;
 
-// Converts a serialized ImageTextureTargetsMap back to the runtime format.
-// Serialization takes the form:
-//   "usage,format,target;usage,format,target;...;usage,format,target"
-VIZ_COMMON_EXPORT BufferToTextureTargetMap
-StringToBufferToTextureTargetMap(const std::string& str);
+// Converts a serialized list of BufferUsageAndFormat back to the runtime
+// format. Serialization takes the form:
+//   "usage,format;usage,format;...;usage,format"
+VIZ_COMMON_EXPORT BufferUsageAndFormatList
+StringToBufferUsageAndFormatList(const std::string& str);
 
-// Converts an ImageTextureTargetsMap to a string representation of the format:
-//   "usage,format,target;usage,format,target;...;usage,format,target"
-VIZ_COMMON_EXPORT std::string BufferToTextureTargetMapToString(
-    const BufferToTextureTargetMap& map);
-
-// Returns a default-initialized BufferToTextureTargetsMap where every entry
-// maps to GL_TEXTURE_2D.
-VIZ_COMMON_EXPORT BufferToTextureTargetMap
-DefaultBufferToTextureTargetMapForTesting();
+// Converts a vector of BufferUsageAndFormat to a string representation of the
+// format:
+//   "usage,format;usage,format;...;usage,format"
+VIZ_COMMON_EXPORT std::string BufferUsageAndFormatListToString(
+    const BufferUsageAndFormatList& usage_and_format);
 
 }  // namespace viz
 

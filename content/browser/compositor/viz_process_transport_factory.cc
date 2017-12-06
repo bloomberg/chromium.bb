@@ -85,8 +85,8 @@ VizProcessTransportFactory::VizProcessTransportFactory(
       forwarding_mode_reporter_(forwarding_mode_reporter),
       frame_sink_id_allocator_(kBrowserClientId),
       task_graph_runner_(std::make_unique<cc::SingleThreadTaskGraphRunner>()),
-      renderer_settings_(
-          viz::CreateRendererSettings(CreateBufferToTextureTargetMap())),
+      renderer_settings_(viz::CreateRendererSettings(
+          CreateBufferUsageAndFormatExceptionList())),
       compositing_mode_watcher_binding_(this),
       weak_ptr_factory_(this) {
   DCHECK(gpu_channel_establish_factory_);

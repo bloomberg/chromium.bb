@@ -168,19 +168,6 @@ InProcessContextFactory::InProcessContextFactory(
 #elif defined(OS_MACOSX)
   renderer_settings_.release_overlay_resources_after_gpu_query = true;
 #endif
-  // Populate buffer_to_texture_target_map for all buffer usage/formats.
-  for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
-       ++usage_idx) {
-    gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
-    for (int format_idx = 0;
-         format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
-         ++format_idx) {
-      gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      renderer_settings_.resource_settings
-          .buffer_to_texture_target_map[std::make_pair(usage, format)] =
-          GL_TEXTURE_2D;
-    }
-  }
 }
 
 InProcessContextFactory::~InProcessContextFactory() {

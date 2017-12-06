@@ -105,7 +105,7 @@ void ServerWindow::CreateRootCompositorFrameSink(
   // platforms.
   delegate_->GetVizHostProxy()->CreateRootCompositorFrameSink(
       frame_sink_id_, widget,
-      viz::CreateRendererSettings(viz::BufferToTextureTargetMap()),
+      viz::CreateRendererSettings(viz::BufferUsageAndFormatList()),
       std::move(sink_request), std::move(client), std::move(display_request));
 }
 

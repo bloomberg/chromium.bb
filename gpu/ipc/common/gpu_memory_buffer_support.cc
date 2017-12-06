@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/gl/gl_bindings.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/client_native_pixmap_factory.h"
