@@ -78,27 +78,6 @@ typedef HashMap<const LayoutBoxModelObject*, LayoutBoxModelObject*>
     ContinuationMap;
 static ContinuationMap* g_continuation_map = nullptr;
 
-void LayoutBoxModelObject::SetSelectionState(SelectionState state) {
-  if (state == SelectionState::kInside &&
-      GetSelectionState() != SelectionState::kNone)
-    return;
-
-  if ((state == SelectionState::kStart &&
-       GetSelectionState() == SelectionState::kEnd) ||
-      (state == SelectionState::kEnd &&
-       GetSelectionState() == SelectionState::kStart))
-    LayoutObject::SetSelectionState(SelectionState::kStartAndEnd);
-  else
-    LayoutObject::SetSelectionState(state);
-
-  // FIXME: We should consider whether it is OK propagating to ancestor
-  // LayoutInlines. This is a workaround for http://webkit.org/b/32123
-  // The containing block can be null in case of an orphaned tree.
-  LayoutBlock* containing_block = ContainingBlock();
-  if (containing_block && !containing_block->IsLayoutView())
-    containing_block->SetSelectionState(state);
-}
-
 void LayoutBoxModelObject::ContentChanged(ContentChangeType change_type) {
   if (!HasLayer())
     return;
