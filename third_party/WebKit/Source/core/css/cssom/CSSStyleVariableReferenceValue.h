@@ -21,17 +21,16 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
  public:
   virtual ~CSSStyleVariableReferenceValue() = default;
 
-  static CSSStyleVariableReferenceValue* Create(
-      const String& variable,
-      const CSSUnparsedValue* fallback) {
+  static CSSStyleVariableReferenceValue* Create(const String& variable,
+                                                CSSUnparsedValue* fallback) {
     return new CSSStyleVariableReferenceValue(variable, fallback);
   }
 
   const String& variable() const { return variable_; }
+  void setVariable(const String& value) { variable_ = value; }
 
-  CSSUnparsedValue* fallback() {
-    return const_cast<CSSUnparsedValue*>(fallback_.Get());
-  }
+  CSSUnparsedValue* fallback() { return fallback_.Get(); }
+  void setFallback(CSSUnparsedValue* value) { fallback_ = value; }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(fallback_);
@@ -40,11 +39,11 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
 
  protected:
   CSSStyleVariableReferenceValue(const String& variable,
-                                 const CSSUnparsedValue* fallback)
+                                 CSSUnparsedValue* fallback)
       : variable_(variable), fallback_(fallback) {}
 
   String variable_;
-  Member<const CSSUnparsedValue> fallback_;
+  Member<CSSUnparsedValue> fallback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CSSStyleVariableReferenceValue);

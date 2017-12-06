@@ -9,6 +9,6 @@
     RuntimeEnabled=CSSTypedOM,
     ImplementedAs=CSSStyleVariableReferenceValue
 ] interface CSSVariableReferenceValue {
-    readonly attribute DOMString variable;
-    readonly attribute CSSUnparsedValue fallback;
+    attribute DOMString variable;
+    attribute CSSUnparsedValue? fallback;
 };

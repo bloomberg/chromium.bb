@@ -874,6 +874,8 @@ interface CSSVariableReferenceValue
     getter fallback
     getter variable
     method constructor
+    setter fallback
+    setter variable
 interface CSSViewportRule : CSSRule
     attribute @@toStringTag
     getter style
