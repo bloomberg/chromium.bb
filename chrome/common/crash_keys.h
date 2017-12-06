@@ -100,11 +100,6 @@ extern const char kInputEventFilterSendFailure[];
 const size_t kPrinterInfoCount = 4;
 extern const char kPrinterInfo[];
 
-#if defined(OS_CHROMEOS)
-// The number of simultaneous users in multi profile sessions.
-extern const char kNumberOfUsers[];
-#endif
-
 // Numbers of active views.
 extern const char kViewCount[];
 
