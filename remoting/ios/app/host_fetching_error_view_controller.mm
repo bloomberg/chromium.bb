@@ -41,6 +41,8 @@ static const CGFloat kButtonBottomPaddingAdjustment = -5;
 }
 
 - (void)viewDidLoad {
+  [super viewDidLoad];
+
   UIView* contentView = [[UIView alloc] initWithFrame:CGRectZero];
   contentView.backgroundColor = RemotingTheme.setupListBackgroundColor;
   contentView.translatesAutoresizingMaskIntoConstraints = NO;

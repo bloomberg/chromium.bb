@@ -32,6 +32,8 @@
 }
 
 - (void)viewDidLoad {
+  [super viewDidLoad];
+
   [self addChildViewController:_mainViewController];
   [self.view addSubview:_mainViewController.view];
   [_mainViewController didMoveToParentViewController:self];

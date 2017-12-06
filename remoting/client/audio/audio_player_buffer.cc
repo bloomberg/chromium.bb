@@ -166,7 +166,6 @@ void AudioPlayerBuffer::ProcessFrameRequestQueue() {
 
       memcpy(next_frame, packet_data.data() + bytes_consumed_, bytes_to_copy);
 
-      next_frame += bytes_to_copy;
       bytes_consumed_ += bytes_to_copy;
       activeRequest->bytes_extracted_ += bytes_to_copy;
       queued_bytes_ -= bytes_to_copy;

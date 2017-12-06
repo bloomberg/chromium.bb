@@ -17,6 +17,8 @@ static const CGFloat kActivityIndicatorRadius = 20.f;
 @implementation HostFetchingViewController
 
 - (void)viewDidLoad {
+  [super viewDidLoad];
+
   MDCActivityIndicator* activityIndicator = [[MDCActivityIndicator alloc] init];
   activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
   activityIndicator.cycleColors = @[ RemotingTheme.refreshIndicatorColor ];

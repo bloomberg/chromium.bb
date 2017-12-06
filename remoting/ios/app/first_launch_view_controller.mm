@@ -31,6 +31,8 @@ static const float kButtonHeight = 80.f;
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
+  [super viewDidLoad];
+
   UIImageView* imageView = [[UIImageView alloc]
       initWithImage:[UIImage imageNamed:@"launchscreen_app_logo"]];
   imageView.translatesAutoresizingMaskIntoConstraints = NO;
