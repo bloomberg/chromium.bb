@@ -4,12 +4,12 @@
 
 #include "components/cronet/ios/test/test_server.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -41,7 +41,7 @@ std::unique_ptr<net::test_server::HttpResponse> EchoHeaderInRequest(
   auto it = request.headers.find(header_name);
   if (it != request.headers.end())
     header_value = it->second;
-  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(header_value);
   return std::move(http_response);
@@ -54,7 +54,7 @@ std::unique_ptr<net::test_server::HttpResponse> UseEncodingInResponse(
                           base::CompareCase::INSENSITIVE_ASCII));
 
   encoding = request.relative_url.substr(strlen(kUseEncodingPath));
-  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   if (!encoding.compare("brotli")) {
     const char quickfoxCompressed[] = {
         0x0b, 0x15, -0x80, 0x54, 0x68, 0x65, 0x20, 0x71, 0x75, 0x69, 0x63, 0x6b,
@@ -76,7 +76,7 @@ std::unique_ptr<net::test_server::HttpResponse> EchoResponseBody(
   DCHECK(base::StartsWith(request.relative_url, kEchoRequestBodyPath,
                           base::CompareCase::INSENSITIVE_ASCII));
   std::string request_content = request.content;
-  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(request_content);
   return http_response;
@@ -90,7 +90,7 @@ std::unique_ptr<net::test_server::HttpResponse> ReturnBigDataInResponse(
   int64_t data_size;
   CHECK(base::StringToInt64(base::StringPiece(data_size_str), &data_size));
   CHECK(data_size == static_cast<int64_t>(g_big_data_body.Get().size()));
-  return base::MakeUnique<net::test_server::RawHttpResponse>(
+  return std::make_unique<net::test_server::RawHttpResponse>(
       std::string(), g_big_data_body.Get());
 }
 
@@ -100,7 +100,7 @@ std::unique_ptr<net::test_server::HttpResponse> SetAndEchoCookieInResponse(
   DCHECK(base::StartsWith(request.relative_url, kSetCookiePath,
                           base::CompareCase::INSENSITIVE_ASCII));
   cookie_line = request.relative_url.substr(strlen(kSetCookiePath));
-  auto http_response = base::MakeUnique<net::test_server::BasicHttpResponse>();
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content(cookie_line);
   http_response->AddCustomHeader("Set-Cookie", cookie_line);
@@ -129,7 +129,7 @@ std::unique_ptr<net::test_server::HttpResponse> CronetTestRequestHandler(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     return EchoResponseBody(request);
   }
-  return base::MakeUnique<net::test_server::BasicHttpResponse>();
+  return std::make_unique<net::test_server::BasicHttpResponse>();
 }
 
 }  // namespace
@@ -139,7 +139,7 @@ namespace cronet {
 /* static */
 bool TestServer::Start() {
   DCHECK(!g_test_server.get());
-  g_test_server = base::MakeUnique<net::EmbeddedTestServer>(
+  g_test_server = std::make_unique<net::EmbeddedTestServer>(
       net::EmbeddedTestServer::TYPE_HTTP);
   g_test_server->RegisterRequestHandler(base::Bind(&CronetTestRequestHandler));
   CHECK(g_test_server->Start());

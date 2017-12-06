@@ -26,7 +26,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
@@ -361,14 +360,14 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   if (config->enable_network_quality_estimator) {
     DCHECK(!network_quality_estimator_);
     std::unique_ptr<net::NetworkQualityEstimatorParams> nqe_params =
-        base::MakeUnique<net::NetworkQualityEstimatorParams>(
+        std::make_unique<net::NetworkQualityEstimatorParams>(
             std::map<std::string, std::string>());
     if (config->nqe_forced_effective_connection_type) {
       nqe_params->SetForcedEffectiveConnectionType(
           config->nqe_forced_effective_connection_type.value());
     }
 
-    network_quality_estimator_ = base::MakeUnique<net::NetworkQualityEstimator>(
+    network_quality_estimator_ = std::make_unique<net::NetworkQualityEstimator>(
         std::unique_ptr<net::ExternalEstimateProvider>(), std::move(nqe_params),
         g_net_log.Get().net_log());
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
@@ -819,7 +818,7 @@ static void JNI_CronetUrlRequestContext_AddQuicHint(
   URLRequestContextConfig* config =
       reinterpret_cast<URLRequestContextConfig*>(jurl_request_context_config);
   config->quic_hints.push_back(
-      base::MakeUnique<URLRequestContextConfig::QuicHint>(
+      std::make_unique<URLRequestContextConfig::QuicHint>(
           base::android::ConvertJavaStringToUTF8(env, jhost), jport,
           jalternate_port));
 }
