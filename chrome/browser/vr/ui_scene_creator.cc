@@ -48,6 +48,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vector_icons/vector_icons.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1023,11 +1024,24 @@ void UiSceneCreator::CreateUrlBar() {
   scaler->set_name(kUrlBarDmmRoot);
   scene_->AddUiElement(k2dBrowsingForeground, std::move(scaler));
 
+  base::RepeatingCallback<void()> url_click_callback;
+  if (base::FeatureList::IsEnabled(features::kVrBrowserKeyboard)) {
+    url_click_callback = base::BindRepeating(
+        [](Model* m, UiBrowserInterface* browser) {
+          m->omnibox_input_active = true;
+        },
+        base::Unretained(model_), base::Unretained(browser_));
+  } else {
+    url_click_callback = base::BindRepeating([] {});
+  }
+
   auto url_bar = base::MakeUnique<UrlBar>(
       512,
-      base::Bind(&UiBrowserInterface::NavigateBack, base::Unretained(browser_)),
-      base::Bind(&UiBrowserInterface::OnUnsupportedMode,
-                 base::Unretained(browser_)));
+      base::BindRepeating(&UiBrowserInterface::NavigateBack,
+                          base::Unretained(browser_)),
+      url_click_callback,
+      base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
+                          base::Unretained(browser_)));
   url_bar->set_name(kUrlBar);
   url_bar->set_draw_phase(kPhaseForeground);
   url_bar->SetTranslate(0, kUrlBarVerticalOffsetDMM, 0);

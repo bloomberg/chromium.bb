@@ -37,9 +37,10 @@ TextInput::TextInput(int maximum_width_pixels,
   text = base::MakeUnique<Text>(maximum_width_pixels, font_height_meters);
   text->set_type(kTypeTextInputText);
   text->set_draw_phase(kPhaseForeground);
-  text->set_hit_testable(false);
+  text->set_hit_testable(true);
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
+  text->set_bubble_events(true);
   text->SetSize(1, 1);
   text->SetMultiLine(false);
   text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
