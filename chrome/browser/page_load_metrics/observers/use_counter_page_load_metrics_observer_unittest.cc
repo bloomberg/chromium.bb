@@ -92,3 +92,27 @@ TEST_F(UseCounterPageLoadMetricsObserverTest, CountDuplicatedFeatures) {
   page_load_features_1.features = features_1;
   HistogramBasicTest(page_load_features_0, page_load_features_1);
 }
+
+TEST_F(UseCounterPageLoadMetricsObserverTest, RecordUkmUsage) {
+  std::vector<WebFeature> features_0(
+      {WebFeature::kFetch, WebFeature::kNavigatorVibrate});
+  std::vector<WebFeature> features_1(
+      {WebFeature::kTouchEventPreventedNoTouchAction});
+  page_load_metrics::mojom::PageLoadFeatures page_load_features_0;
+  page_load_metrics::mojom::PageLoadFeatures page_load_features_1;
+  page_load_features_0.features = features_0;
+  page_load_features_1.features = features_1;
+  HistogramBasicTest(page_load_features_0, page_load_features_1);
+
+  std::vector<const ukm::mojom::UkmEntry*> entries =
+      test_ukm_recorder().GetEntriesByName(internal::kUkmUseCounterEventName);
+  EXPECT_EQ(2ul, entries.size());
+  test_ukm_recorder().ExpectEntrySourceHasUrl(entries[0], GURL(kTestUrl));
+  test_ukm_recorder().ExpectEntryMetric(
+      entries[0], internal::kUkmUseCounterFeature,
+      static_cast<int64_t>(WebFeature::kNavigatorVibrate));
+  test_ukm_recorder().ExpectEntrySourceHasUrl(entries[1], GURL(kTestUrl));
+  test_ukm_recorder().ExpectEntryMetric(
+      entries[1], internal::kUkmUseCounterFeature,
+      static_cast<int64_t>(WebFeature::kTouchEventPreventedNoTouchAction));
+}
