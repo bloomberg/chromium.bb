@@ -55,7 +55,7 @@ base::LazyInstance<base::circular_deque<AfterStartupTask*>>::Leaky
 bool IsBrowserStartupComplete() {
   // Be sure to initialize the LazyInstance on the main thread since the flag
   // may only be set on it's initializing thread.
-  if (g_startup_complete_flag == nullptr)
+  if (!g_startup_complete_flag.IsCreated())
     return false;
   return g_startup_complete_flag.Get().IsSet();
 }

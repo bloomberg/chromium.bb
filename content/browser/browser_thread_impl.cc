@@ -511,7 +511,7 @@ void BrowserThread::PostAfterStartupTask(
 
 // static
 bool BrowserThread::IsThreadInitialized(ID identifier) {
-  if (g_globals == nullptr)
+  if (!g_globals.IsCreated())
     return false;
 
   BrowserThreadGlobals& globals = g_globals.Get();
@@ -548,7 +548,7 @@ std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
 
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
-  if (g_globals == nullptr)
+  if (!g_globals.IsCreated())
     return false;
 
   BrowserThreadGlobals& globals = g_globals.Get();
@@ -603,7 +603,7 @@ bool BrowserThread::PostTaskAndReply(ID identifier,
 
 // static
 bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
-  if (g_globals == nullptr)
+  if (!g_globals.IsCreated())
     return false;
 
   BrowserThreadGlobals& globals = g_globals.Get();

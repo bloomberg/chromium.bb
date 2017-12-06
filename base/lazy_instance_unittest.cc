@@ -67,17 +67,21 @@ TEST(LazyInstanceTest, Basic) {
   {
     base::ShadowingAtExitManager shadow;
 
+    EXPECT_FALSE(lazy_logger.IsCreated());
     EXPECT_EQ(0, constructed_seq_.GetNext());
     EXPECT_EQ(0, destructed_seq_.GetNext());
 
     lazy_logger.Get();
+    EXPECT_TRUE(lazy_logger.IsCreated());
     EXPECT_EQ(2, constructed_seq_.GetNext());
     EXPECT_EQ(1, destructed_seq_.GetNext());
 
     lazy_logger.Pointer();
+    EXPECT_TRUE(lazy_logger.IsCreated());
     EXPECT_EQ(3, constructed_seq_.GetNext());
     EXPECT_EQ(2, destructed_seq_.GetNext());
   }
+  EXPECT_FALSE(lazy_logger.IsCreated());
   EXPECT_EQ(4, constructed_seq_.GetNext());
   EXPECT_EQ(4, destructed_seq_.GetNext());
 }

@@ -175,7 +175,7 @@ KioskAppManager* KioskAppManager::Get() {
 
 // static
 void KioskAppManager::Shutdown() {
-  if (instance == nullptr)
+  if (!instance.IsCreated())
     return;
 
   instance.Pointer()->CleanUp();

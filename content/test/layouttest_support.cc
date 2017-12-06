@@ -110,9 +110,8 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
                                        const mojom::CreateViewParams& params) {
   WebViewTestProxyType* render_view_proxy = new WebViewTestProxyType(
       compositor_deps, params, base::ThreadTaskRunnerHandle::Get());
-  if (g_view_test_proxy_callback == nullptr)
-    return render_view_proxy;
-  g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
+  if (g_view_test_proxy_callback.IsCreated())
+    g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
   return render_view_proxy;
 }
 
@@ -141,9 +140,10 @@ void RenderWidgetInitialized(RenderWidget* render_widget) {
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
   WebFrameTestProxyType* render_frame_proxy =
       new WebFrameTestProxyType(std::move(params));
-  if (g_frame_test_proxy_callback == nullptr)
-    return render_frame_proxy;
-  g_frame_test_proxy_callback.Get().Run(render_frame_proxy, render_frame_proxy);
+  if (g_frame_test_proxy_callback.IsCreated()) {
+    g_frame_test_proxy_callback.Get().Run(render_frame_proxy,
+                                          render_frame_proxy);
+  }
   return render_frame_proxy;
 }
 

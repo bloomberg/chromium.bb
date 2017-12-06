@@ -242,7 +242,7 @@ BrowserMainRunner* BrowserMainRunner::Create() {
 
 // static
 bool BrowserMainRunner::ExitedMainMessageLoop() {
-  return !(g_exited_main_message_loop == nullptr) &&
+  return g_exited_main_message_loop.IsCreated() &&
          g_exited_main_message_loop.Get().IsSet();
 }
 

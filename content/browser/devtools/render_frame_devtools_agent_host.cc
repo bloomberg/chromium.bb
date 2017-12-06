@@ -65,7 +65,7 @@ base::LazyInstance<RenderFrameDevToolsArray>::Leaky g_agent_host_instances =
     LAZY_INSTANCE_INITIALIZER;
 
 RenderFrameDevToolsAgentHost* FindAgentHost(FrameTreeNode* frame_tree_node) {
-  if (g_agent_host_instances == nullptr)
+  if (!g_agent_host_instances.IsCreated())
     return nullptr;
   for (RenderFrameDevToolsArray::iterator it =
            g_agent_host_instances.Get().begin();

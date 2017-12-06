@@ -605,7 +605,7 @@ void SequencedWorkerPool::Worker::Run() {
 SequencedWorkerPool::Worker*
 SequencedWorkerPool::Worker::GetForCurrentThread() {
   // Don't construct lazy instance on check.
-  if (lazy_tls_ptr_ == nullptr)
+  if (!lazy_tls_ptr_.IsCreated())
     return nullptr;
 
   return lazy_tls_ptr_.Get().Get();
