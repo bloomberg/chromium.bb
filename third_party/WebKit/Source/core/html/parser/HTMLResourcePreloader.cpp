@@ -78,12 +78,16 @@ void HTMLResourcePreloader::Preload(
 
   Resource* resource = preload->Start(document_);
 
-  if (resource && !resource->IsLoaded() &&
+  // Don't scan a Resource more than once, to avoid a self-referencing
+  // stlyesheet causing infinite recursion.
+  if (resource && !css_preloaders_.Contains(resource) &&
       preload->ResourceType() == Resource::kCSSStyleSheet) {
     Settings* settings = document_->GetSettings();
     if (settings && (settings->GetCSSExternalScannerNoPreload() ||
-                     settings->GetCSSExternalScannerPreload()))
-      css_preloaders_.insert(new CSSPreloaderResourceClient(resource, this));
+                     settings->GetCSSExternalScannerPreload())) {
+      css_preloaders_.insert(resource,
+                             new CSSPreloaderResourceClient(resource, this));
+    }
   }
 }
 

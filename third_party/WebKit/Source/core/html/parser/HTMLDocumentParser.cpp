@@ -932,6 +932,9 @@ void HTMLDocumentParser::end() {
   // deletes this).
   tree_builder_->Finished();
 
+  // All preloads should be done.
+  preloader_.Clear();
+
   DocumentParser::StopParsing();
 }
 
