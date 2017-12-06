@@ -91,9 +91,10 @@ void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
       released_front_lock_ = compositor_->GetCompositorLock(nullptr);
   }
 
-  if (compositor_) {
+  if (compositor_)
     compositor_->SetLatencyInfo(latency_info);
-  }
+
+  WasResized();
 }
 
 bool DelegatedFrameHost::HasSavedFrame() {
