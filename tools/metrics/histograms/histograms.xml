@@ -22425,6 +22425,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BookmarkApp.NavigationResult"
+    enum="BookmarkAppNavigationResult">
+  <owner>mgiuca@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <summary>
+    Number of times navigations into and out of Bookmark Apps are processed,
+    grouped by their result.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BookmarkAppLaunchContainer"
     enum="AppLaunchContainer">
   <owner>benwells@chromium.org</owner>

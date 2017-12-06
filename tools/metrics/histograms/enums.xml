@@ -3121,6 +3121,38 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="LE with random address"/>
 </enum>
 
+<enum name="BookmarkAppNavigationResult">
+  <int value="0" label="From app or tab to new tab: Context Menu navigation"/>
+  <int value="1"
+      label="From probably omnibox to same context: Typed navigation"/>
+  <int value="2"
+      label="From probably launch surface e.g. NTP, Shelf, etc. to new app or
+             tab: Auto Bookmark navigation"/>
+  <int value="3" label="Keep in subframe: Auto subframe navigation"/>
+  <int value="4" label="Keep in subframe: Manual subframe navigation"/>
+  <int value="5"
+      label="From probably tab to same context: Generated entry navigation"/>
+  <int value="6"
+      label="From probably tab to same context: Auto top level navigation"/>
+  <int value="7" label="From app or tab to same context: Reload navigation"/>
+  <int value="8" label="From probably tab to same context: Keyword navigation"/>
+  <int value="9"
+      label="From probably tab to same context: Generated keyword navigation"/>
+  <int value="10"
+      label="From app or tab to same context: Forward/Back navigation"/>
+  <int value="11"
+      label="From probably omnibox to same context: Address bar navigation"/>
+  <int value="12" label="From app to new tab: Out of scope launch"/>
+  <int value="13" label="From app to same context: Same scope navigation"/>
+  <int value="14" label="From tab to same context: Form submission"/>
+  <int value="15" label="From tab to same context: Same scope navigation"/>
+  <int value="16" label="In app or tab, cancel prerender link navigation"/>
+  <int value="17"
+      label="From app or tab to new app context, close previous context"/>
+  <int value="18" label="From app or tab to new app context"/>
+  <int value="19" label="From app to new tab: Out of scope navigation"/>
+</enum>
+
 <enum name="BookmarkLaunchLocation">
   <int value="0" label="Attached bookmark bar"/>
   <int value="1" label="Detached (floating) bookmark bar"/>
