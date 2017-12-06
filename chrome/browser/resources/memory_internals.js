@@ -16,6 +16,10 @@ function reportProcess(pid) {
   chrome.send('reportProcess', [pid]);
 }
 
+function startProfiling(pid) {
+  chrome.send('startProfiling', [pid]);
+}
+
 // celltype should either be "td" or "th". The contents of the |cols| will be
 // added as children of each table cell if they are non-null.
 function addListRow(table, celltype, cols) {
@@ -68,17 +72,25 @@ function returnProcessList(data) {
     null, document.createTextNode('Process ID'), document.createTextNode('Name')
   ]);
 
-  for (let proc of processes) {
-    let procId = proc[0];
+  for (const proc of processes) {
+    const procId = proc[0];
 
-    let reportButton = document.createElement('button');
-    reportButton.innerText = '\uD83D\uDC1E Report';
-    reportButton.onclick = () => reportProcess(procId);
+    const procIdText = document.createTextNode(procId.toString());
+    const description = document.createTextNode(proc[1]);
+    const profiled = proc[2];
 
-    let procIdText = document.createTextNode(procId.toString());
-    let description = document.createTextNode(proc[1]);
+    let button = null;
+    if (profiled) {
+      button = document.createElement('button');
+      button.innerText = '\uD83D\uDC1E Report';
+      button.onclick = () => reportProcess(procId);
+    } else {
+      button = document.createElement('button');
+      button.innerText = '\u2600 Start profiling';
+      button.onclick = () => startProfiling(procId);
+    }
 
-    addListRow(table, 'td', [reportButton, procIdText, description]);
+    addListRow(table, 'td', [button, procIdText, description]);
   }
 
   proclist.appendChild(table);

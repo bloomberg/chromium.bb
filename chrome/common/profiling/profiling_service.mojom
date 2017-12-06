@@ -47,4 +47,7 @@ interface ProfilingService {
   // |buffers|.
   DumpProcessesForTracing() =>
       (array<SharedBufferWithSize> buffers);
+
+  // Returns the pids of all profiled processes.
+  GetProfiledPids() => (array<mojo.common.mojom.ProcessId> pids);
 };

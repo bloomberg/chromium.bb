@@ -137,6 +137,15 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
       TraceFinishedCallback callback,
       bool stop_immediately_after_heap_dump_for_tests);
 
+  // Returns the pids of all profiled processes. The callback is posted on the
+  // UI thread.
+  using GetProfiledPidsCallback =
+      base::OnceCallback<void(std::vector<base::ProcessId> pids)>;
+  void GetProfiledPids(GetProfiledPidsCallback callback);
+
+  // Starts profiling the process with the given id.
+  void StartProfiling(base::ProcessId pid);
+
  private:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
   friend class BackgroundProfilingTriggersTest;
@@ -197,13 +206,19 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   bool ShouldProfileNewRenderer(content::RenderProcessHost* renderer) const;
 
   // Sets up the profiling connection for the given child process.
-  void StartProfilingNonRendererChild(
+  void StartProfilingNonRendererChild(const content::ChildProcessData&);
+  void StartProfilingNonRendererChildOnIOThread(
       int child_process_id,
       base::ProcessId proc_id,
       profiling::mojom::ProcessType process_type);
 
+  void StartProfilingRenderer(content::RenderProcessHost* host);
+
   // SetRenderer.
   void SetRendererSamplingAlwaysProfileForTest();
+
+  void GetProfiledPidsOnIOThread(GetProfiledPidsCallback callback);
+  void StartProfilingPidOnIOThread(base::ProcessId pid);
 
   content::NotificationRegistrar registrar_;
   std::unique_ptr<service_manager::Connector> connector_;
@@ -225,17 +240,21 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Whether or not the profiling host is started.
   static bool has_started_;
 
-  // If in kRendererSampling mode, this is used to identify the currently
-  // profiled renderer. If no renderer is being profiled, this is set to
-  // nullptr.  This variable shouild only be accessed on the UI thread and
-  // the value should be considered opaque.
+  // This is used to identify the currently profiled renderers. Elements should
+  // only be accessed on the UI thread and their values should be considered
+  // opaque.
   //
-  // Semantically, the value must be something that identifies which
+  // Semantically, the elements must be something that identifies which
   // specific RenderProcess is being profiled. When the underlying RenderProcess
-  // goes away, this value needs to be reset to nullptr. The RenderProcessHost
+  // goes away, the element must be removed. The RenderProcessHost
   // pointer and the NOTIFICATION_RENDERER_PROCESS_CREATED notification can be
   // used to provide these semantics.
-  void* profiled_renderer_;
+  //
+  // This variable represents renderers that have been instructed to start
+  // profiling - it does not reflect whether a renderer is currently still being
+  // profiled. That information is only known by the profiling service, and for
+  // simplicity, it's easier to just track this variable in this process.
+  std::unordered_set<void*> profiled_renderers_;
 
   // For Tests. In kRendererSampling mode, overrides sampling to always profile
   // a renderer process if one is already not going.

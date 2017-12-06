@@ -38,6 +38,8 @@ class ProfilingClient : public mojom::ProfilingClient {
   // The most recent client request is bound and kept alive.
   mojo::Binding<mojom::ProfilingClient> binding_;
 
+  bool started_profiling_;
+
   std::unique_ptr<MemlogSenderPipe> memlog_sender_pipe_;
 };
 

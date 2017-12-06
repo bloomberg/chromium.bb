@@ -131,12 +131,17 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
   // Callback for the "reportProcess" message.
   void HandleReportProcess(const base::ListValue* args);
 
+  // Callback for the "startProfiling" message.
+  void HandleStartProfiling(const base::ListValue* args);
+
  private:
   // Hops to the IO thread to enumerate child processes, and back to the UI
   // thread to fill in the renderer processes.
   static void GetChildProcessesOnIOThread(
       base::WeakPtr<MemoryInternalsDOMHandler> dom_handler);
-  void ReturnProcessListOnUIThread(std::vector<base::Value> children);
+  void GetProfiledPids(std::vector<base::Value> children);
+  void ReturnProcessListOnUIThread(std::vector<base::Value> children,
+                                   std::vector<base::ProcessId> profiled_pids);
 
   // SelectFileDialog::Listener implementation:
   void FileSelected(const base::FilePath& path,
@@ -176,6 +181,10 @@ void MemoryInternalsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "reportProcess",
       base::BindRepeating(&MemoryInternalsDOMHandler::HandleReportProcess,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "startProfiling",
+      base::BindRepeating(&MemoryInternalsDOMHandler::HandleStartProfiling,
                           base::Unretained(this)));
 }
 
@@ -234,33 +243,48 @@ void MemoryInternalsDOMHandler::HandleReportProcess(
       "MEMLOG_MANUAL_TRIGGER");
 }
 
+void MemoryInternalsDOMHandler::HandleStartProfiling(
+    const base::ListValue* args) {
+  if (!args->is_list() || args->GetList().size() != 1)
+    return;
+
+  ProfilingProcessHost::GetInstance()->StartProfiling(
+      args->GetList()[0].GetInt());
+}
+
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
     base::WeakPtr<MemoryInternalsDOMHandler> dom_handler) {
   std::vector<base::Value> result;
 
-  if (ProfilingProcessHost::GetCurrentMode() !=
-      ProfilingProcessHost::Mode::kNone) {
-    // Add child processes (this does not include renderers).
-    for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-      // Note that ChildProcessData.id is a child ID and not an OS PID.
-      const content::ChildProcessData& data = iter.GetData();
+  // The only non-renderer child process that currently supports out-of-process
+  // heap profiling is GPU.
+  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+    // Note that ChildProcessData.id is a child ID and not an OS PID.
+    const content::ChildProcessData& data = iter.GetData();
 
-      if (ProfilingProcessHost::GetInstance()->ShouldProfileProcessType(
-              data.process_type)) {
-        result.push_back(MakeProcessInfo(base::GetProcId(data.handle),
-                                         GetChildDescription(data)));
-      }
+    if (data.process_type == content::PROCESS_TYPE_GPU) {
+      result.push_back(MakeProcessInfo(base::GetProcId(data.handle),
+                                       GetChildDescription(data)));
     }
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&MemoryInternalsDOMHandler::GetProfiledPids, dom_handler,
+                     std::move(result)));
+}
+
+void MemoryInternalsDOMHandler::GetProfiledPids(
+    std::vector<base::Value> children) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  ProfilingProcessHost::GetInstance()->GetProfiledPids(
       base::BindOnce(&MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
-                     dom_handler, std::move(result)));
+                     weak_factory_.GetWeakPtr(), std::move(children)));
 }
 
 void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
-    std::vector<base::Value> children) {
+    std::vector<base::Value> children,
+    std::vector<base::ProcessId> profiled_pids) {
   // This function will be called with the child processes that are not
   // renderers. It will fill in the browser and renderer processes on the UI
   // thread (RenderProcessHost is UI-thread only) and return the full list.
@@ -268,32 +292,40 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   std::vector<base::Value>& process_list = process_list_value.GetList();
 
   // Add browser process.
-  if (ProfilingProcessHost::GetInstance()->ShouldProfileProcessType(
-          content::ProcessType::PROCESS_TYPE_BROWSER)) {
-    process_list.push_back(
-        MakeProcessInfo(base::GetCurrentProcId(), "Browser"));
-  }
+  process_list.push_back(MakeProcessInfo(base::GetCurrentProcId(), "Browser"));
 
   // Append renderer processes.
-  if (ProfilingProcessHost::GetInstance()->ShouldProfileProcessType(
-          content::ProcessType::PROCESS_TYPE_RENDERER)) {
-    auto iter = content::RenderProcessHost::AllHostsIterator();
-    while (!iter.IsAtEnd()) {
-      base::ProcessHandle renderer_handle = iter.GetCurrentValue()->GetHandle();
-      base::ProcessId renderer_pid = base::GetProcId(renderer_handle);
-      if (renderer_pid != 0) {
-        // TODO(brettw) make a better description of the process, maybe see
-        // what TaskManager does to get the page title.
-        process_list.push_back(MakeProcessInfo(renderer_pid, "Renderer"));
-      }
-      iter.Advance();
+  auto iter = content::RenderProcessHost::AllHostsIterator();
+  while (!iter.IsAtEnd()) {
+    base::ProcessHandle renderer_handle = iter.GetCurrentValue()->GetHandle();
+    base::ProcessId renderer_pid = base::GetProcId(renderer_handle);
+    if (renderer_pid != 0) {
+      // TODO(brettw) make a better description of the process, maybe see
+      // what TaskManager does to get the page title.
+      process_list.push_back(MakeProcessInfo(renderer_pid, "Renderer"));
     }
+    iter.Advance();
   }
 
   // Append all child processes collected on the IO thread.
   process_list.insert(process_list.end(),
                       std::make_move_iterator(std::begin(children)),
                       std::make_move_iterator(std::end(children)));
+
+  // Sort profiled_pids to allow binary_search in the loop.
+  std::sort(profiled_pids.begin(), profiled_pids.end());
+
+  // Append whether each process is being profiled.
+  for (base::Value& value : process_list) {
+    std::vector<base::Value>& value_as_list = value.GetList();
+    DCHECK_EQ(value_as_list.size(), 2u);
+
+    base::ProcessId pid =
+        static_cast<base::ProcessId>(value_as_list[0].GetInt());
+    bool is_profiled =
+        std::binary_search(profiled_pids.begin(), profiled_pids.end(), pid);
+    value_as_list.push_back(base::Value(is_profiled));
+  }
 
   // Pass the results in a dictionary.
   base::Value result(base::Value::Type::DICTIONARY);

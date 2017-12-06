@@ -34,6 +34,7 @@
 #include "chrome/common/profiling/profiling_constants.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -192,7 +193,6 @@ ProfilingProcessHost::ProfilingProcessHost()
     : is_registered_(false),
       background_triggers_(this),
       mode_(Mode::kNone),
-      profiled_renderer_(nullptr),
       always_sample_for_tests_(false) {}
 
 ProfilingProcessHost::~ProfilingProcessHost() {
@@ -229,17 +229,7 @@ void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
     return;
   }
 
-  profiling::mojom::ProcessType process_type =
-      (data.process_type == content::ProcessType::PROCESS_TYPE_GPU)
-          ? profiling::mojom::ProcessType::GPU
-          : profiling::mojom::ProcessType::OTHER;
-
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ProfilingProcessHost::StartProfilingNonRendererChild,
-                         base::Unretained(this), data.id,
-                         base::GetProcId(data.handle), process_type));
+  StartProfilingNonRendererChild(data);
 }
 
 void ProfilingProcessHost::Observe(
@@ -255,32 +245,14 @@ void ProfilingProcessHost::Observe(
   // the RenderProcessHost's lifetime is ending. Ideally, we'd only listen to
   // the former, but if the RenderProcessHost is destroyed before the
   // RenderProcess, then the former is never sent.
-  if (host == profiled_renderer_ &&
-      (type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
+  if ((type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
        type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED)) {
-    // |profiled_renderer_| is only ever set in kRendererSampling mode. This
-    // code is a deadstore otherwise so it's safe but having a DCHECK makes the
-    // intent clear.
-    DCHECK_EQ(mode(), Mode::kRendererSampling);
-    profiled_renderer_ = nullptr;
+    profiled_renderers_.erase(host);
   }
+
   if (type == content::NOTIFICATION_RENDERER_PROCESS_CREATED &&
       ShouldProfileNewRenderer(host)) {
-    // In kRendererSampling mode, store the RPH to ensure only one renderer is
-    // ever sampled inside a chrome instance.
-    if (mode() == Mode::kRendererSampling) {
-      profiled_renderer_ = host;
-    }
-    // Tell the child process to start profiling.
-    ProfilingClientBinder client(host);
-
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(&ProfilingProcessHost::AddClientToProfilingService,
-                           base::Unretained(this), client.take(),
-                           base::GetProcId(host->GetHandle()),
-                           profiling::mojom::ProcessType::RENDERER));
+    StartProfilingRenderer(host);
   }
 }
 
@@ -567,6 +539,85 @@ void ProfilingProcessHost::RequestTraceWithHeapDump(
   }
 }
 
+void ProfilingProcessHost::GetProfiledPids(GetProfiledPidsCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ProfilingProcessHost::GetProfiledPidsOnIOThread,
+                         base::Unretained(this), std::move(callback)));
+}
+
+void ProfilingProcessHost::GetProfiledPidsOnIOThread(
+    GetProfiledPidsCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (!profiling_service_.is_bound()) {
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
+                                             std::vector<base::ProcessId>()));
+    return;
+  }
+
+  auto post_result_to_ui_thread = base::BindOnce(
+      [](GetProfiledPidsCallback callback,
+         const std::vector<base::ProcessId>& result) {
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::UI)
+            ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
+      },
+      std::move(callback));
+  profiling_service_->GetProfiledPids(std::move(post_result_to_ui_thread));
+}
+
+void ProfilingProcessHost::StartProfiling(base::ProcessId pid) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // The RenderProcessHost iterator must be used on the UI thread.
+  // The BrowserChildProcessHostIterator iterator must be used on the IO thread.
+  for (auto iter = content::RenderProcessHost::AllHostsIterator();
+       !iter.IsAtEnd(); iter.Advance()) {
+    if (pid == base::GetProcId(iter.GetCurrentValue()->GetHandle())) {
+      StartProfilingRenderer(iter.GetCurrentValue());
+      return;
+    }
+  }
+
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ProfilingProcessHost::StartProfilingPidOnIOThread,
+                         base::Unretained(this), pid));
+}
+
+void ProfilingProcessHost::StartProfilingPidOnIOThread(base::ProcessId pid) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  // Check if the request is for the current process.
+  if (pid == base::GetCurrentProcId()) {
+    ProfilingClientBinder client(connector_.get());
+    AddClientToProfilingService(client.take(), base::Process::Current().Pid(),
+                                profiling::mojom::ProcessType::BROWSER);
+    return;
+  }
+
+  for (content::BrowserChildProcessHostIterator browser_child_iter;
+       !browser_child_iter.Done(); ++browser_child_iter) {
+    const content::ChildProcessData& data = browser_child_iter.GetData();
+    if (base::GetProcId(data.handle) == pid) {
+      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(
+                         &ProfilingProcessHost::StartProfilingNonRendererChild,
+                         base::Unretained(this), data));
+      return;
+    }
+  }
+
+  DLOG(WARNING)
+      << "Attempt to start profiling failed as no process was found with pid: "
+      << pid;
+}
+
 void ProfilingProcessHost::MakeConnector(
     content::ServiceManagerConnection* connection) {
   connector_ = connection->GetConnector()->Clone();
@@ -685,7 +736,7 @@ bool ProfilingProcessHost::ShouldProfileNewRenderer(
 
   if (mode() == Mode::kAll) {
     return true;
-  } else if (mode() == Mode::kRendererSampling && !profiled_renderer_) {
+  } else if (mode() == Mode::kRendererSampling && profiled_renderers_.empty()) {
     if (always_sample_for_tests_) {
       return true;
     }
@@ -698,6 +749,23 @@ bool ProfilingProcessHost::ShouldProfileNewRenderer(
 }
 
 void ProfilingProcessHost::StartProfilingNonRendererChild(
+    const content::ChildProcessData& data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  profiling::mojom::ProcessType process_type =
+      (data.process_type == content::ProcessType::PROCESS_TYPE_GPU)
+          ? profiling::mojom::ProcessType::GPU
+          : profiling::mojom::ProcessType::OTHER;
+
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &ProfilingProcessHost::StartProfilingNonRendererChildOnIOThread,
+              base::Unretained(this), data.id, base::GetProcId(data.handle),
+              process_type));
+}
+
+void ProfilingProcessHost::StartProfilingNonRendererChildOnIOThread(
     int child_process_id,
     base::ProcessId proc_id,
     profiling::mojom::ProcessType process_type) {
@@ -711,6 +779,22 @@ void ProfilingProcessHost::StartProfilingNonRendererChild(
   // Tell the child process to start profiling.
   ProfilingClientBinder client(host);
   AddClientToProfilingService(client.take(), proc_id, process_type);
+}
+
+void ProfilingProcessHost::StartProfilingRenderer(
+    content::RenderProcessHost* host) {
+  profiled_renderers_.insert(host);
+
+  // Tell the child process to start profiling.
+  ProfilingClientBinder client(host);
+
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ProfilingProcessHost::AddClientToProfilingService,
+                         base::Unretained(this), client.take(),
+                         base::GetProcId(host->GetHandle()),
+                         profiling::mojom::ProcessType::RENDERER));
 }
 
 void ProfilingProcessHost::SetRendererSamplingAlwaysProfileForTest() {

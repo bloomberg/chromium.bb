@@ -48,6 +48,7 @@ class ProfilingService : public service_manager::Service,
                           mojom::ProcessType process_type) override;
   void DumpProcessesForTracing(
       DumpProcessesForTracingCallback callback) override;
+  void GetProfiledPids(GetProfiledPidsCallback callback) override;
 
  private:
   void MaybeRequestQuitDelayed();

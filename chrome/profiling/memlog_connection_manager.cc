@@ -113,8 +113,19 @@ void MemlogConnectionManager::OnNewConnection(
     mojom::ProcessType process_type) {
   base::AutoLock lock(connections_lock_);
 
-  // Shouldn't be asked to profile a process more than once.
-  DCHECK(connections_.find(pid) == connections_.end());
+  // Attempting to start profiling on an already profiled processs should have
+  // no effect.
+  if (connections_.find(pid) != connections_.end())
+    return;
+
+  // It's theoretically possible that we started profiling a process, the
+  // profiling was stopped [e.g. by hitting the 10-s timeout], and then we tried
+  // to start profiling again. The ProfilingClient will refuse to start again.
+  // But the MemlogConnectionManager will not be able to distinguish this
+  // never-started ProfilingClient from a brand new ProfilingClient that happens
+  // to share the same pid. This is a rare condition which should only happen
+  // when the user is attempting to manually start profiling for processes, so
+  // we ignore this edge case.
 
   base::PlatformFile receiver_handle;
   CHECK_EQ(MOJO_RESULT_OK, mojo::UnwrapPlatformFile(
@@ -149,6 +160,16 @@ void MemlogConnectionManager::OnNewConnection(
   connection->client->StartProfiling(std::move(sender_pipe_end));
 
   connections_[pid] = std::move(connection);  // Transfers ownership.
+}
+
+std::vector<base::ProcessId> MemlogConnectionManager::GetConnectionPids() {
+  base::AutoLock lock(connections_lock_);
+  std::vector<base::ProcessId> results;
+  results.reserve(connections_.size());
+  for (const auto& pair : connections_) {
+    results.push_back(pair.first);
+  }
+  return results;
 }
 
 void MemlogConnectionManager::OnConnectionComplete(base::ProcessId pid) {
