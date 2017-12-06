@@ -742,12 +742,10 @@ ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
 
   Document* element_document = &(element_->GetDocument());
   Document* context_document = element_document->ContextDocument();
-  if (!context_document)
-    return ExecuteScriptResult::kShouldFireNone;
+  DCHECK(context_document);
 
   LocalFrame* frame = context_document->GetFrame();
-  if (!frame)
-    return ExecuteScriptResult::kShouldFireNone;
+  DCHECK(frame);
 
   if (!is_external_script_) {
     bool should_bypass_main_world_csp =
@@ -833,6 +831,19 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   DCHECK(pending_script);
   DCHECK_EQ(pending_script->IsExternal(), is_external_script_);
 
+  Document* element_document = &(element_->GetDocument());
+  Document* context_document = element_document->ContextDocument();
+  if (!context_document) {
+    pending_script->Dispose();
+    return;
+  }
+
+  LocalFrame* frame = context_document->GetFrame();
+  if (!frame) {
+    pending_script->Dispose();
+    return;
+  }
+
   bool error_occurred = false;
   Script* script = pending_script->GetSource(document_url, error_occurred);
   const bool was_canceled = pending_script->WasCanceled();
@@ -843,8 +854,6 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
 
   // Do not execute module scripts if they are moved between documents.
   // TODO(hiroshige): Also do not execute classic scripts. crbug.com/721914
-  Document* element_document = &(element_->GetDocument());
-  Document* context_document = element_document->ContextDocument();
   if (original_document_ != context_document &&
       GetScriptType() == ScriptType::kModule)
     return;
