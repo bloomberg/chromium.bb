@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -310,7 +309,6 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/787837")
     @Feature({"Payments"})
     public void testDoNotCallCanMakePayment()
             throws InterruptedException, ExecutionException, TimeoutException {
