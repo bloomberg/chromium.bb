@@ -426,7 +426,7 @@ static inline bool ParseAlphaValue(const CharacterType*& string,
 template <typename CharacterType>
 static inline bool MightBeRGBOrRGBA(const CharacterType* characters,
                                     unsigned length) {
-  if (length < 4)
+  if (length < 5)
     return false;
   return IsASCIIAlphaCaselessEqual(characters[0], 'r') &&
          IsASCIIAlphaCaselessEqual(characters[1], 'g') &&
