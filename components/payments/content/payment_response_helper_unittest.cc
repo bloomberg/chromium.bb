@@ -30,9 +30,9 @@ class PaymentResponseHelperTest : public testing::Test,
       : test_payment_request_delegate_(&test_personal_data_manager_),
         address_(autofill::test::GetFullProfile()),
         billing_addresses_({&address_}) {
-    test_personal_data_manager_.AddTestingProfile(&address_);
+    test_personal_data_manager_.AddProfile(address_);
 
-    // Setup the autofill payment instrument.
+    // Set up the autofill payment instrument.
     autofill::CreditCard visa_card = autofill::test::GetCreditCard();
     visa_card.set_billing_address_id(address_.guid());
     visa_card.set_use_count(5u);

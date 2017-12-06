@@ -330,7 +330,7 @@ TEST_F(PaymentRequestTest, AddAutofillPaymentInstrument) {
   autofill::TestPersonalDataManager personal_data_manager;
 
   autofill::CreditCard credit_card_1 = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card_1);
+  personal_data_manager.AddCreditCard(credit_card_1);
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
@@ -355,7 +355,7 @@ TEST_F(PaymentRequestTest, AddAutofillProfile) {
   autofill::TestPersonalDataManager personal_data_manager;
 
   autofill::AutofillProfile profile_1 = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&profile_1);
+  personal_data_manager.AddProfile(profile_1);
 
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
@@ -478,10 +478,10 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.set_use_count(5U);
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::AutofillProfile address2 = autofill::test::GetFullProfile2();
   address2.set_use_count(15U);
-  personal_data_manager.AddTestingProfile(&address2);
+  personal_data_manager.AddProfile(address2);
 
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
@@ -505,7 +505,7 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Complete_NoShippingOption) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   address.set_use_count(5U);
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
 
   WebPaymentRequest web_payment_request;
   // No shipping options.
@@ -531,11 +531,11 @@ TEST_F(PaymentRequestTest, SelectedProfiles_Incomplete) {
   address1.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                    base::string16(), "en-US");
   address1.set_use_count(5U);
-  personal_data_manager.AddTestingProfile(&address1);
+  personal_data_manager.AddProfile(address1);
   // Add a complete profile, with fewer use counts.
   autofill::AutofillProfile address2 = autofill::test::GetFullProfile2();
   address2.set_use_count(3U);
-  personal_data_manager.AddTestingProfile(&address2);
+  personal_data_manager.AddProfile(address2);
 
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
@@ -565,11 +565,11 @@ TEST_F(PaymentRequestTest,
   address1.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                    base::string16(), "en-US");
   address1.set_use_count(5U);
-  personal_data_manager.AddTestingProfile(&address1);
+  personal_data_manager.AddProfile(address1);
   // Add a complete profile, with fewer use counts.
   autofill::AutofillProfile address2 = autofill::test::GetFullProfile();
   address2.set_use_count(3U);
-  personal_data_manager.AddTestingProfile(&address2);
+  personal_data_manager.AddProfile(address2);
 
   WebPaymentRequest web_payment_request;
   web_payment_request.details = CreateDetailsWithShippingOption();
@@ -608,11 +608,11 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_NoPaymentMethods) {
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&billing_address);
+  personal_data_manager.AddProfile(billing_address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.SetExpirationYear(2016);  // Expired.
   credit_card.set_billing_address_id(billing_address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -633,15 +633,15 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&billing_address);
+  personal_data_manager.AddProfile(billing_address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
   credit_card.set_use_count(5U);
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(billing_address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
   autofill::CreditCard credit_card2 = autofill::test::GetCreditCard2();
   credit_card2.set_use_count(15U);
-  personal_data_manager.AddTestingCreditCard(&credit_card2);
   credit_card2.set_billing_address_id(billing_address.guid());
+  personal_data_manager.AddCreditCard(credit_card2);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -661,14 +661,14 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
 TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&billing_address);
+  personal_data_manager.AddProfile(billing_address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
   credit_card.set_use_count(5U);
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(billing_address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
   autofill::CreditCard credit_card2 = autofill::test::GetCreditCard2();
   credit_card2.set_use_count(15U);
-  personal_data_manager.AddTestingCreditCard(&credit_card2);
+  personal_data_manager.AddCreditCard(credit_card2);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -695,13 +695,13 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingAndContactInfo) {
   address.SetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
                   base::string16(), "en-US");
   address.set_use_count(10U);
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::AutofillProfile contact_info = autofill::test::GetFullProfile2();
   contact_info.set_use_count(5U);
-  personal_data_manager.AddTestingProfile(&contact_info);
+  personal_data_manager.AddProfile(contact_info);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -735,10 +735,10 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingAndContactInfo) {
 TEST_F(PaymentRequestTest, RecordUseStats_SameShippingAndContactInfoProfile) {
   MockTestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -770,10 +770,10 @@ TEST_F(PaymentRequestTest, RecordUseStats_SameShippingAndContactInfoProfile) {
 TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingOnly) {
   MockTestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -806,10 +806,10 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingOnly) {
 TEST_F(PaymentRequestTest, RecordUseStats_RequestContactInfoOnly) {
   MockTestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -839,10 +839,10 @@ TEST_F(PaymentRequestTest, RecordUseStats_RequestContactInfoOnly) {
 TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
   MockTestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -875,9 +875,9 @@ TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
 TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();  // Visa.
-  personal_data_manager.AddTestingCreditCard(&credit_card);
+  personal_data_manager.AddCreditCard(credit_card);
   credit_card.set_billing_address_id(address.guid());
 
   WebPaymentRequest web_payment_request =
@@ -913,10 +913,10 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
 TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard2();  // Amex.
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -963,9 +963,9 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
 TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetCreditCard2();  // Amex.
-  personal_data_manager.AddTestingCreditCard(&credit_card);
+  personal_data_manager.AddCreditCard(credit_card);
   credit_card.set_billing_address_id(address.guid());
 
   WebPaymentRequest web_payment_request =
@@ -1005,11 +1005,11 @@ TEST_F(PaymentRequestTest,
        PaymentDetailsModifier_BasicCard_NetworkAndTypeMatch) {
   autofill::TestPersonalDataManager personal_data_manager;
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
-  personal_data_manager.AddTestingProfile(&address);
+  personal_data_manager.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCardAmex();
   credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
-  personal_data_manager.AddTestingCreditCard(&credit_card);
   credit_card.set_billing_address_id(address.guid());
+  personal_data_manager.AddCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
@@ -1110,10 +1110,10 @@ TEST_F(PaymentRequestTest, CanPay) {
                   "en-US");
   profile.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                   base::string16(), "en-US");
+  personal_data_manager.AddProfile(profile);
   autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   card.set_billing_address_id(profile.guid());
-  personal_data_manager.AddTestingProfile(&profile);
-  personal_data_manager.AddTestingCreditCard(&card);
+  personal_data_manager.AddCreditCard(card);
 
   // Has a selected payment method.
   payments::TestPaymentRequest payment_request2(
@@ -1128,8 +1128,9 @@ TEST_F(PaymentRequestTest, CanPay) {
       &personal_data_manager);
   EXPECT_FALSE(payment_request3.IsAbleToPay());
 
-  profile.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
-                  base::ASCIIToUTF16("16502111111"), "en-US");
+  personal_data_manager.GetProfiles()[0]->SetInfo(
+      autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+      base::ASCIIToUTF16("16502111111"), "en-US");
 
   // Has a selected contact info.
   payments::TestPaymentRequest payment_request4(

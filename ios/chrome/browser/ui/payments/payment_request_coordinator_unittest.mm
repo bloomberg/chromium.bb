@@ -170,7 +170,7 @@ TEST_F(PaymentRequestCoordinatorTest, DidSelectShippingAddress) {
 
   // Call the ShippingAddressSelectionCoordinator delegate method.
   [coordinator shippingAddressSelectionCoordinator:nil
-                          didSelectShippingAddress:profiles().back().get()];
+                          didSelectShippingAddress:profiles().back()];
 }
 
 // Tests that calling the ShippingOptionSelectionCoordinator delegate method

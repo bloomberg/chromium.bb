@@ -21,14 +21,14 @@ class CountryComboboxModelTest : public testing::Test {
  public:
   CountryComboboxModelTest()
       : pref_service_(autofill::test::PrefServiceForTesting()) {
-    manager_.SetTestingPrefService(pref_service_.get());
+    manager_.SetPrefService(pref_service_.get());
     manager_.set_timezone_country_code("KR");
     model_.reset(new CountryComboboxModel());
     model_->SetCountries(manager_, base::Callback<bool(const std::string&)>(),
                          "en-US");
   }
 
-  void TearDown() override { manager_.SetTestingPrefService(nullptr); }
+  void TearDown() override { manager_.SetPrefService(nullptr); }
 
   TestPersonalDataManager* manager() { return &manager_; }
   CountryComboboxModel* model() { return model_.get(); }

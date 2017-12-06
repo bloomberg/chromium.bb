@@ -33,10 +33,10 @@ class PaymentRequestStateTest : public testing::Test,
                         test_payment_request_delegate_.GetUkmRecorder()),
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()) {
-    test_personal_data_manager_.AddTestingProfile(&address_);
+    test_personal_data_manager_.AddProfile(address_);
     credit_card_visa_.set_billing_address_id(address_.guid());
     credit_card_visa_.set_use_count(5u);
-    test_personal_data_manager_.AddTestingCreditCard(&credit_card_visa_);
+    test_personal_data_manager_.AddCreditCard(credit_card_visa_);
   }
   ~PaymentRequestStateTest() override {}
 

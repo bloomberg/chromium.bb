@@ -66,7 +66,7 @@ class PaymentRequestPaymentResponseHelperTest : public PlatformTest {
       : profile_(autofill::test::GetFullProfile()),
         credit_card_(autofill::test::GetCreditCard()),
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
-    personal_data_manager_.AddTestingProfile(&profile_);
+    personal_data_manager_.AddProfile(profile_);
     payment_request_ = base::MakeUnique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         chrome_browser_state_.get(), &web_state_, &personal_data_manager_);

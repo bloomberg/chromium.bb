@@ -103,7 +103,7 @@ class PaymentRequestContactInfoEditCoordinatorTest
   void SetUp() override {
     PaymentRequestUnitTestBase::SetUp();
 
-    personal_data_manager_.SetTestingPrefService(pref_service());
+    personal_data_manager_.SetPrefService(pref_service());
 
     payment_request_ = base::MakeUnique<MockTestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
@@ -118,7 +118,7 @@ class PaymentRequestContactInfoEditCoordinatorTest
   }
 
   void TearDown() override {
-    personal_data_manager_.SetTestingPrefService(nullptr);
+    personal_data_manager_.SetPrefService(nullptr);
 
     PaymentRequestUnitTestBase::TearDown();
   }
