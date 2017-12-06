@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
@@ -67,9 +67,29 @@ class LazyWorkerInstallableManager : public InstallableManager {
   ~LazyWorkerInstallableManager() override {}
 
  protected:
-  void OnWaitingForServiceWorker() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
-  };
+  void OnWaitingForServiceWorker() override { quit_closure_.Run(); };
+
+ private:
+  base::Closure quit_closure_;
+};
+
+// Used only for testing pages where the manifest URL is changed. This class
+// will dispatch a RunLoop::QuitClosure when internal state is reset.
+class ResetDataInstallableManager : public InstallableManager {
+ public:
+  explicit ResetDataInstallableManager(content::WebContents* web_contents)
+      : InstallableManager(web_contents) {}
+  ~ResetDataInstallableManager() override {}
+
+  void SetQuitClosure(base::Closure quit_closure) {
+    quit_closure_ = quit_closure;
+  }
+
+ protected:
+  void OnResetData() override {
+    if (quit_closure_)
+      quit_closure_.Run();
+  }
 
  private:
   base::Closure quit_closure_;
@@ -92,7 +112,7 @@ class CallbackTester {
       badge_icon_.reset(new SkBitmap(*data.badge_icon));
     valid_manifest_ = data.valid_manifest;
     has_worker_ = data.has_worker;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+    quit_closure_.Run();
   }
 
   InstallableStatusCode error_code() const { return error_code_; }
@@ -159,7 +179,7 @@ class NestedCallbackTester {
     EXPECT_EQ(manifest_.name, data.manifest->name);
     EXPECT_EQ(manifest_.short_name, data.manifest->short_name);
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+    quit_closure_.Run();
   }
 
  private:
@@ -1302,4 +1322,93 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
   tester->Run();
   run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       ManifestUrlChangeFlushesState) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  auto manager = base::MakeUnique<ResetDataInstallableManager>(web_contents);
+
+  // Start on a page with no manifest.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
+
+  {
+    // Fetch the data. This should return an empty manifest.
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    manager->GetData(GetWebAppParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    run_loop.Run();
+
+    EXPECT_TRUE(tester->manifest().IsEmpty());
+    EXPECT_EQ(NO_MANIFEST, manager->manifest_error());
+    EXPECT_EQ(NO_MANIFEST, tester->error_code());
+  }
+
+  {
+    // Injecting a manifest URL but not navigating should flush the state.
+    base::RunLoop run_loop;
+    manager->SetQuitClosure(run_loop.QuitClosure());
+    EXPECT_TRUE(content::ExecuteScript(web_contents, "addManifestLinkTag()"));
+    run_loop.Run();
+
+    EXPECT_TRUE(manager->manifest().IsEmpty());
+    EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
+  }
+
+  {
+    // Fetch the data again. This should succeed.
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    manager->GetData(GetWebAppParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
+    EXPECT_EQ(base::ASCIIToUTF16("Manifest test app"),
+              tester->manifest().name.string());
+    EXPECT_EQ(base::string16(), tester->manifest().short_name.string());
+  }
+
+  {
+    // Flush the state again by changing the manifest URL.
+    base::RunLoop run_loop;
+    manager->SetQuitClosure(run_loop.QuitClosure());
+
+    GURL manifest_url = embedded_test_server()->GetURL(
+        "/banners/manifest_short_name_only.json");
+    EXPECT_TRUE(content::ExecuteScript(
+        web_contents, "changeManifestUrl('" + manifest_url.spec() + "');"));
+    run_loop.Run();
+
+    EXPECT_TRUE(manager->manifest().IsEmpty());
+  }
+
+  {
+    // Fetch again. This should return the data from the new manifest.
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    manager->GetData(GetWebAppParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->manifest().IsEmpty());
+    EXPECT_EQ(base::string16(), tester->manifest().name.string());
+    EXPECT_EQ(base::ASCIIToUTF16("Manifest"),
+              tester->manifest().short_name.string());
+    EXPECT_EQ(NO_ERROR_DETECTED, tester->error_code());
+  }
 }
