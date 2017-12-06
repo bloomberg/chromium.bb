@@ -208,7 +208,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   // Verify context bar does not change when "Delete" shows up.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // Delete it.
   [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
@@ -226,7 +227,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify context bar remains in default state.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 // TODO(crbug.com/781445): Re-enable this test on 32-bit.
@@ -535,7 +537,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Cancel edit mode
   [BookmarksNewGenTestCase closeContextBarEditMode];
 
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 - (void)testContextMenuForSingleURLSelection {
@@ -604,7 +607,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // 2. Edit the bookmark url at edit page.
 
@@ -635,7 +639,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // 3. Move a single url at edit page.
 
@@ -737,7 +742,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
              @"Waiting for URL to be copied to pasteboard.");
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 - (void)testContextMenuForMultipleURLSelection {
@@ -1206,7 +1212,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // 2. Move a single folder at edit page.
 
@@ -1463,7 +1470,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // Verify new folder "Title For New Folder" has two bookmark folder.
   [BookmarksNewGenTestCase assertChildCount:2
@@ -1555,7 +1563,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // Verify new folder "Title For New Folder" has two bookmark nodes.
   [BookmarksNewGenTestCase assertChildCount:2
@@ -1617,7 +1626,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase waitForUndoToastToGoAway];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 
   // Verify Folder 1 has three bookmark nodes.
   [BookmarksNewGenTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
@@ -1783,7 +1793,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 - (void)testDeleteSingleFolderNode {
@@ -1822,7 +1833,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 - (void)testDeleteMultipleNodes {
@@ -1867,7 +1879,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 
   // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 // Tests that the promo view is only seen at root level and not in any of the
@@ -2100,7 +2113,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Verify context bar does not change after editing folder name.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                       newFolderEnabled:YES];
 }
 
 // Tests when total height of bookmarks exceeds screen height.
@@ -2246,10 +2260,64 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Verify edit mode is close automatically (context bar switched back to
   // default state) and select button is disabled.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:NO];
+  [self verifyContextBarInDefaultStateWithSelectEnabled:NO
+                                       newFolderEnabled:YES];
 
   // Verify the empty background appears.
   [self verifyEmptyBackgroundAppears];
+}
+
+// Test when current navigating folder is deleted in background, empty
+// background should be shown with context bar buttons disabled.
+- (void)testWhenCurrentFolderDeletedInBackground {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Enter Folder 1
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Enter Folder 2
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Delete the Folder 1 and Folder 2 programmatically in background.
+  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 2"];
+  [BookmarksNewGenTestCase removeBookmarkWithTitle:@"Folder 1"];
+
+  // Verify edit mode is close automatically (context bar switched back to
+  // default state) and both select and new folder button are disabled.
+  [self verifyContextBarInDefaultStateWithSelectEnabled:NO newFolderEnabled:NO];
+
+  // Verify the empty background appears.
+  [self verifyEmptyBackgroundAppears];
+
+  // Come back to Folder 1 (which is also deleted).
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+
+  // Verify both select and new folder button are disabled.
+  [self verifyContextBarInDefaultStateWithSelectEnabled:NO newFolderEnabled:NO];
+
+  // Verify the empty background appears.
+  [self verifyEmptyBackgroundAppears];
+
+  // Come back to Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+
+  // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
+  // Bookmarks.
+  [BookmarksNewGenTestCase verifyBookmarkFolderIsSeen:@"Folder 1.1"];
 }
 
 - (void)testCachePositionIsRecreated {
@@ -2518,6 +2586,27 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that chrome://bookmarks is disabled.
+- (void)testBookmarksURLDisabled {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  const std::string kChromeBookmarksURL = "chrome://bookmarks";
+  [ChromeEarlGrey loadURL:GURL(kChromeBookmarksURL)];
+
+  // Verify chrome://bookmarks appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          kChromeBookmarksURL)]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify that the resulting page is an error page.
+  NSString* kError =
+      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
+  id<GREYMatcher> messageMatcher = [GREYMatchers matcherForText:kError];
+  [[EarlGrey selectElementWithMatcher:messageMatcher]
+      assertWithMatcher:grey_notNil()];
 }
 
 #pragma mark - Helpers
@@ -2841,7 +2930,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-- (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled {
+- (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled
+                                       newFolderEnabled:(BOOL)newFolderEnabled {
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"context_bar")]
       assertWithMatcher:grey_notNil()];
@@ -2850,7 +2940,12 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
                                           [BookmarksNewGenTestCase
                                               contextBarNewFolderString])]
-      assertWithMatcher:grey_allOf(grey_notNil(), grey_enabled(), nil)];
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   newFolderEnabled
+                                       ? grey_enabled()
+                                       : grey_accessibilityTrait(
+                                             UIAccessibilityTraitNotEnabled),
+                                   nil)];
   [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
                                           [BookmarksNewGenTestCase
                                               contextBarMoreString])]
@@ -3121,11 +3216,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // TODO(crbug.com/695749): Add egtests for:
 // 1. Spinner background.
 // 2. Reorder bookmarks. (make sure it won't clear the row selection on table)
-// 3. Current root node removed: Verify that the New Folder, Select button are
-//    disabled and empty background appears when _currentRootNode becomes NULL
-//    (maybe programmatically remove the current root node from model, and
-//    trigger a sync).
-// 4. Test new folder name is committed when name editing is interrupted by
+// 3. Test new folder name is committed when name editing is interrupted by
 //    tapping context bar buttons.
 
 @end
