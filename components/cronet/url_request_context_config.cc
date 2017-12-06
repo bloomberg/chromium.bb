@@ -42,6 +42,7 @@ const char kDiskCacheDirectoryName[] = "disk_cache";
 // TODO(xunjieli): Refactor constants in io_thread.cc.
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicConnectionOptions[] = "connection_options";
+const char kQuicClientConnectionOptions[] = "client_connection_options";
 const char kQuicStoreServerConfigsInProperties[] =
     "store_server_configs_in_properties";
 const char kQuicMaxServerConfigsStoredInProperties[] =
@@ -225,6 +226,13 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                &quic_connection_options)) {
         session_params->quic_connection_options =
             net::ParseQuicConnectionOptions(quic_connection_options);
+      }
+
+      std::string quic_client_connection_options;
+      if (quic_args->GetString(kQuicClientConnectionOptions,
+                               &quic_client_connection_options)) {
+        session_params->quic_client_connection_options =
+            net::ParseQuicConnectionOptions(quic_client_connection_options);
       }
 
       // TODO(rtenneti): Delete this option after apps stop using it.
