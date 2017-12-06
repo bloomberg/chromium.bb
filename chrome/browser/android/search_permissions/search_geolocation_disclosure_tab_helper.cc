@@ -184,7 +184,8 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
   if (gIgnoreUrlChecksForTesting)
     return true;
 
-  return service->ArePermissionsControlledByDSE(url::Origin::Create(gurl));
+  return service->IsPermissionControlledByDSE(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              url::Origin::Create(gurl));
 }
 
 bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForNavigation(

@@ -159,8 +159,19 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
   InitializeSettingsIfNeeded();
 }
 
-bool SearchPermissionsService::ArePermissionsControlledByDSE(
+bool SearchPermissionsService::IsPermissionControlledByDSE(
+    ContentSettingsType type,
     const url::Origin& requesting_origin) {
+  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS &&
+      !base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE)) {
+    return false;
+  }
+
+  if (type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
+      type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return false;
+  }
+
   if (requesting_origin.scheme() != url::kHttpsScheme)
     return false;
 
@@ -170,20 +181,13 @@ bool SearchPermissionsService::ArePermissionsControlledByDSE(
   return true;
 }
 
-bool SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
-  GURL dse_origin = delegate_->GetDSEOrigin().GetURL();
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    SetContentSetting(dse_origin, type, CONTENT_SETTING_ALLOW);
-    return true;
-  }
+void SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
+  url::Origin dse_origin = delegate_->GetDSEOrigin();
+  GURL dse_url = dse_origin.GetURL();
+  DCHECK(dse_url.is_empty() || IsPermissionControlledByDSE(type, dse_origin));
 
-  if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS &&
-      base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE)) {
-    SetContentSetting(dse_origin, type, CONTENT_SETTING_ALLOW);
-    return true;
-  }
-
-  return false;
+  if (!dse_url.is_empty())
+    SetContentSetting(dse_url, type, CONTENT_SETTING_ALLOW);
 }
 
 void SearchPermissionsService::ResetDSEPermissions() {

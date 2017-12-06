@@ -617,7 +617,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private void setUpLocationPreference(Preference preference) {
         ContentSetting permission = mSite.getGeolocationPermission();
         setUpListPreference(preference, permission);
-        if (arePermissionsControlledByDSE() && permission != null) {
+        if (isPermissionControlledByDSE(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)
+                && permission != null) {
             updateLocationPreferenceForDSESetting(preference);
         }
     }
@@ -672,9 +673,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
      * Returns true if the DSE (default search engine) geolocation and notifications permissions
      * are configured for the DSE.
      */
-    private boolean arePermissionsControlledByDSE() {
-        return WebsitePreferenceBridge.arePermissionsControlledByDSE(
-                mSite.getAddress().getOrigin(), false);
+    private boolean isPermissionControlledByDSE(@ContentSettingsType int contentSettingsType) {
+        return WebsitePreferenceBridge.isPermissionControlledByDSE(
+                contentSettingsType, mSite.getAddress().getOrigin(), false);
     }
 
     /**

@@ -91,10 +91,11 @@ bool MaybeResetDSEPermission(ContentSettingsType type,
           GetActiveUserProfile(is_incognito));
   bool same_embedder = embedder.is_empty() || embedder == origin;
   if (same_embedder && search_helper &&
-      search_helper->ArePermissionsControlledByDSE(
-          url::Origin::Create(origin)) &&
+      search_helper->IsPermissionControlledByDSE(type,
+                                                 url::Origin::Create(origin)) &&
       setting == CONTENT_SETTING_DEFAULT) {
-    return search_helper->ResetDSEPermission(type);
+    search_helper->ResetDSEPermission(type);
+    return true;
   }
   return false;
 }
@@ -826,16 +827,18 @@ static void JNI_WebsitePreferenceBridge_ClearBannerData(
       CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(), nullptr);
 }
 
-static jboolean JNI_WebsitePreferenceBridge_ArePermissionsControlledByDSE(
+static jboolean JNI_WebsitePreferenceBridge_IsPermissionControlledByDSE(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
+    int content_settings_type,
     const JavaParamRef<jstring>& jorigin,
     jboolean is_incognito) {
   SearchPermissionsService* search_helper =
       SearchPermissionsService::Factory::GetForBrowserContext(
           GetActiveUserProfile(is_incognito));
   return search_helper &&
-         search_helper->ArePermissionsControlledByDSE(
+         search_helper->IsPermissionControlledByDSE(
+             static_cast<ContentSettingsType>(content_settings_type),
              url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
 }
 
