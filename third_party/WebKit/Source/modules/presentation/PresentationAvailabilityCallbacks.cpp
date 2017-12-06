@@ -13,16 +13,17 @@
 
 namespace blink {
 
-PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
+PresentationAvailabilityCallbacksImpl::PresentationAvailabilityCallbacksImpl(
     PresentationAvailabilityProperty* resolver,
     const Vector<KURL>& urls)
     : resolver_(resolver), urls_(urls) {
   DCHECK(resolver_);
 }
 
-PresentationAvailabilityCallbacks::~PresentationAvailabilityCallbacks() {}
+PresentationAvailabilityCallbacksImpl::
+    ~PresentationAvailabilityCallbacksImpl() {}
 
-void PresentationAvailabilityCallbacks::OnSuccess(bool value) {
+void PresentationAvailabilityCallbacksImpl::OnSuccess(bool value) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed())
     return;
@@ -30,7 +31,7 @@ void PresentationAvailabilityCallbacks::OnSuccess(bool value) {
       PresentationAvailability::Take(resolver_.Get(), urls_, value));
 }
 
-void PresentationAvailabilityCallbacks::OnError(
+void PresentationAvailabilityCallbacksImpl::OnError(
     const WebPresentationError& error) {
   if (!resolver_->GetExecutionContext() ||
       resolver_->GetExecutionContext()->IsContextDestroyed())

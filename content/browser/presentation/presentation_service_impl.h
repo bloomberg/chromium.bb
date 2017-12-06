@@ -72,7 +72,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // PresentationService implementation.
   void SetDefaultPresentationUrls(
       const std::vector<GURL>& presentation_urls) override;
-  void SetClient(blink::mojom::PresentationServiceClientPtr client) override;
+  void SetController(
+      blink::mojom::PresentationControllerPtr controller) override;
   void SetReceiver(blink::mojom::PresentationReceiverPtr receiver) override;
   void ListenForScreenAvailability(const GURL& url) override;
   void StopListeningForScreenAvailability(const GURL& url) override;
@@ -217,7 +218,7 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // A callback registered to LocalPresentationManager when
   // the PresentationServiceImpl for the presentation receiver is initialized.
-  // Calls |client_| to create a new PresentationConnection on receiver page.
+  // Calls |receiver_| to create a new PresentationConnection on receiver page.
   void OnReceiverConnectionAvailable(
       const content::PresentationInfo& presentation_info,
       PresentationConnectionPtr controller_connection_ptr,
@@ -255,10 +256,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   // embedder does not support Presentation API.
   ReceiverPresentationServiceDelegate* receiver_delegate_;
 
-  // Proxy to the PresentationServiceClient to send results (e.g., screen
-  // availability) to.
-  blink::mojom::PresentationServiceClientPtr client_;
+  // Pointer to the PresentationController implementation in the renderer.
+  blink::mojom::PresentationControllerPtr controller_;
 
+  // Pointer to the PresentationReceiver implementation in the renderer.
   blink::mojom::PresentationReceiverPtr receiver_;
 
   std::vector<GURL> default_presentation_urls_;

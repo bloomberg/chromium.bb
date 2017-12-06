@@ -83,14 +83,17 @@ interface PresentationConnection {
 // availability, starting/reconnecting a presentation, and setting the
 // page-level default presentation request.
 // A PresentationService is instantiated on a frame when Presentation API is
-// first used on a page. The renderer process of the page will then set a
-// PresentationServiceClient on the service to receive updates.
-// Note: The Presentation API code is in the process of being onion-souped.
-// Some method here will be moved to other interfaces at the end of this
-// process.
+// first used on a page. The renderer process of the page will then set either
+// a PresentationController or PresentationReceiver on the service to receive
+// updates.
+// TODO(crbug.com/749327): The Presentation API code is in the process of being
+// onion-souped. Part of the work will be to split this interface into
+// controller and receiver parts.
 interface PresentationService {
-  // Sets the PresentationServiceClient.
-  SetClient(PresentationServiceClient client);
+  // Sets the PresentationController of the frame. This is called by the
+  // controller page of a presentation to listen for screen availability and
+  // initiate presentations.
+  SetController(PresentationController controller);
 
   // Sets the PresentationReceiver of the page. This is called by the
   // presentation page of a 1-UA presentation in order to receive updates on new
@@ -103,16 +106,16 @@ interface PresentationService {
 
   // Called when the frame sets or changes the default presentation URLs.
   // When the default presentation is started on this frame,
-  // PresentationServiceClient::OnDefaultPresentationStarted will be invoked.
+  // PresentationController::OnDefaultPresentationStarted will be invoked.
   SetDefaultPresentationUrls(array<url.mojom.Url> presentation_urls);
 
   // Starts listening for screen availability for presentation of
   // |availability_url|. Availability results will be returned to the client via
-  // PresentationServiceClient::OnScreenAvailabilityUpdated.
+  // PresentationController::OnScreenAvailabilityUpdated.
   ListenForScreenAvailability(url.mojom.Url availability_url);
 
   // Stops listening for screen availability for the presentation of |url|. The
-  // PresentationServiceClient will stop receiving availability updates for
+  // PresentationController will stop receiving availability updates for
   // |url|.
   StopListeningForScreenAvailability(url.mojom.Url availability_url);
 
@@ -155,9 +158,12 @@ interface PresentationService {
   Terminate(url.mojom.Url presentation_url, string presentation_id);
 };
 
-interface PresentationServiceClient {
-  //////////  This API is implemented by a controlling frame.  /////////////////
-
+// Implemented by a render frame that uses the Presentation Controller API.
+// A PresentationController can receive updates on screen availability, default
+// presentation, and connection state changes originating from the browser.
+// This interface is shared by controller implementations for both 1-UA and
+// 2-UA presentations.
+interface PresentationController {
   // Called when the client is listening for screen availability for
   // presentation of |url| and the state changes. When the client starts to
   // listen for screen availability, this method will always be called to give
@@ -168,15 +174,13 @@ interface PresentationServiceClient {
   // See PresentationService::SetDefaultPresentationURL.
   OnDefaultPresentationStarted(PresentationInfo presentation_info);
 
-  //////////  This API is implemented by both frame types.  ////////////////////
-
   // Called when the state of PresentationConnection |connection| started on
   // this frame has changed to |newState|.
   OnConnectionStateChanged(PresentationInfo presentation_info,
                            PresentationConnectionState newState);
 
-  // Caled when the state of |presentation_info| started on this frame has changed to
-  // CLOSED.
+  // Caled when the state of |presentation_info| started on this frame has
+  // changed to CLOSED.
   OnConnectionClosed(PresentationInfo presentation_info,
                      PresentationConnectionCloseReason reason,
                      string message);

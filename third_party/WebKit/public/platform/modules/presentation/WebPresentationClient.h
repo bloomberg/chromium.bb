@@ -12,19 +12,12 @@
 
 namespace blink {
 
-class WebPresentationAvailabilityObserver;
-class WebPresentationController;
-struct WebPresentationError;
 class WebPresentationConnectionCallbacks;
 class WebPresentationReceiver;
 class WebString;
 class WebURL;
 template <typename T>
 class WebVector;
-
-// Callback for .getAvailability().
-using WebPresentationAvailabilityCallbacks =
-    WebCallbacks<bool, const WebPresentationError&>;
 
 // The implementation the embedder has to provide for the Presentation API to
 // work.
@@ -33,9 +26,6 @@ using WebPresentationAvailabilityCallbacks =
 class WebPresentationClient {
  public:
   virtual ~WebPresentationClient() {}
-
-  // Passes the Blink-side delegate to the embedder.
-  virtual void SetController(WebPresentationController*) = 0;
 
   // Passes the Blink-side delegate to the embedder.
   virtual void SetReceiver(WebPresentationReceiver*) = 0;
@@ -50,25 +40,6 @@ class WebPresentationClient {
       const WebVector<WebURL>& presentation_urls,
       const WebString& presentation_id,
       std::unique_ptr<WebPresentationConnectionCallbacks>) = 0;
-
-  // Called when the frame wants to know the availability of a presentation
-  // display for |availabilityUrl|.
-  virtual void GetAvailability(
-      const WebVector<WebURL>& availability_urls,
-      std::unique_ptr<WebPresentationAvailabilityCallbacks>) = 0;
-
-  // Start listening to changes in presentation displays availability. The
-  // observer will be notified in case of a change. The observer is
-  // respensible to call stopListening() before being destroyed.
-  virtual void StartListening(WebPresentationAvailabilityObserver*) = 0;
-
-  // Stop listening to changes in presentation displays availability. The
-  // observer will no longer be notified in case of a change.
-  virtual void StopListening(WebPresentationAvailabilityObserver*) = 0;
-
-  // Called when a defaultRequest has been set. It sends the url associated
-  // with it for the embedder.
-  virtual void SetDefaultPresentationUrls(const WebVector<WebURL>&) = 0;
 };
 
 }  // namespace blink

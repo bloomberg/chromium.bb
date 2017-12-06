@@ -9,6 +9,7 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "modules/event_target_modules_names.h"
+#include "modules/presentation/PresentationAvailabilityState.h"
 #include "modules/presentation/PresentationController.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
@@ -40,11 +41,6 @@ PresentationAvailability::PresentationAvailability(
       value_(value),
       state_(State::kActive) {
   DCHECK(execution_context->IsDocument());
-  WebVector<WebURL> data(urls.size());
-  for (size_t i = 0; i < urls.size(); ++i)
-    data[i] = WebURL(urls[i]);
-
-  urls_.Swap(data);
 }
 
 PresentationAvailability::~PresentationAvailability() {}
@@ -106,20 +102,20 @@ void PresentationAvailability::SetState(State state) {
 }
 
 void PresentationAvailability::UpdateListening() {
-  WebPresentationClient* client =
-      PresentationController::ClientFromContext(GetExecutionContext());
-  if (!client)
+  PresentationController* controller =
+      PresentationController::FromContext(GetExecutionContext());
+  if (!controller)
     return;
 
   if (state_ == State::kActive &&
       (ToDocument(GetExecutionContext())->GetPageVisibilityState() ==
        mojom::PageVisibilityState::kVisible))
-    client->StartListening(this);
+    controller->GetAvailabilityState()->AddObserver(this);
   else
-    client->StopListening(this);
+    controller->GetAvailabilityState()->RemoveObserver(this);
 }
 
-const WebVector<WebURL>& PresentationAvailability::Urls() const {
+const Vector<KURL>& PresentationAvailability::Urls() const {
   return urls_;
 }
 

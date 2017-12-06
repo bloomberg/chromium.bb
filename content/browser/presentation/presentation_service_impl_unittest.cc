@@ -230,8 +230,7 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
   MOCK_METHOD0(RequestClose, void());
 };
 
-class MockPresentationServiceClient
-    : public blink::mojom::PresentationServiceClient {
+class MockPresentationController : public blink::mojom::PresentationController {
  public:
   MOCK_METHOD2(OnScreenAvailabilityUpdated,
                void(const GURL& url, ScreenAvailability availability));
@@ -275,11 +274,11 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     service_impl_.reset(new PresentationServiceImpl(
         render_frame_host, contents(), &mock_delegate_, nullptr));
 
-    blink::mojom::PresentationServiceClientPtr client_ptr;
-    client_binding_.reset(
-        new mojo::Binding<blink::mojom::PresentationServiceClient>(
-            &mock_client_, mojo::MakeRequest(&client_ptr)));
-    service_impl_->SetClient(std::move(client_ptr));
+    blink::mojom::PresentationControllerPtr controller_ptr;
+    controller_binding_.reset(
+        new mojo::Binding<blink::mojom::PresentationController>(
+            &mock_controller_, mojo::MakeRequest(&controller_ptr)));
+    service_impl_->SetController(std::move(controller_ptr));
 
     presentation_urls_.push_back(presentation_url1_);
     presentation_urls_.push_back(presentation_url2_);
@@ -320,7 +319,8 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     auto listener_it = service_impl_->screen_availability_listeners_.find(url);
     ASSERT_TRUE(listener_it->second);
 
-    EXPECT_CALL(mock_client_, OnScreenAvailabilityUpdated(url, availability));
+    EXPECT_CALL(mock_controller_,
+                OnScreenAvailabilityUpdated(url, availability));
     listener_it->second->OnScreenAvailabilityChanged(availability);
     base::RunLoop().RunUntilIdle();
   }
@@ -341,9 +341,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   std::unique_ptr<PresentationServiceImpl> service_impl_;
 
-  MockPresentationServiceClient mock_client_;
-  std::unique_ptr<mojo::Binding<blink::mojom::PresentationServiceClient>>
-      client_binding_;
+  MockPresentationController mock_controller_;
+  std::unique_ptr<mojo::Binding<blink::mojom::PresentationController>>
+      controller_binding_;
 
   GURL presentation_url1_;
   GURL presentation_url2_;
@@ -364,7 +364,7 @@ TEST_F(PresentationServiceImplTest, ListenForScreenAvailability) {
 
 TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
   mock_delegate_.set_screen_availability_listening_supported(false);
-  EXPECT_CALL(mock_client_,
+  EXPECT_CALL(mock_controller_,
               OnScreenAvailabilityUpdated(presentation_url1_,
                                           ScreenAvailability::DISABLED));
   ListenForScreenAvailabilityAndWait(presentation_url1_, false);
@@ -427,7 +427,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
 
   PresentationInfo presentation_info(presentation_url2_, kPresentationId);
 
-  EXPECT_CALL(mock_client_,
+  EXPECT_CALL(mock_controller_,
               OnDefaultPresentationStarted(InfoEquals(presentation_info)));
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _));
   std::move(callback).Run(
@@ -453,16 +453,17 @@ TEST_F(PresentationServiceImplTest,
 TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
   PresentationInfo connection(presentation_url1_, kPresentationId);
   PresentationConnectionStateChangedCallback state_changed_cb;
-  // Trigger state change. It should be propagated back up to |mock_client_|.
+  // Trigger state change. It should be propagated back up to
+  // |mock_controller_|.
   PresentationInfo presentation_connection(presentation_url1_, kPresentationId);
 
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .WillOnce(SaveArg<3>(&state_changed_cb));
   service_impl_->ListenForConnectionStateChange(connection);
 
-  EXPECT_CALL(mock_client_, OnConnectionStateChanged(
-                                InfoEquals(presentation_connection),
-                                PRESENTATION_CONNECTION_STATE_TERMINATED));
+  EXPECT_CALL(mock_controller_, OnConnectionStateChanged(
+                                    InfoEquals(presentation_connection),
+                                    PRESENTATION_CONNECTION_STATE_TERMINATED));
   state_changed_cb.Run(PresentationConnectionStateChangeInfo(
       PRESENTATION_CONNECTION_STATE_TERMINATED));
   base::RunLoop().RunUntilIdle();
@@ -476,14 +477,14 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
   service_impl_->ListenForConnectionStateChange(connection);
 
   // Trigger connection close. It should be propagated back up to
-  // |mock_client_|.
+  // |mock_controller_|.
   PresentationInfo presentation_connection(presentation_url1_, kPresentationId);
   PresentationConnectionStateChangeInfo closed_info(
       PRESENTATION_CONNECTION_STATE_CLOSED);
   closed_info.close_reason = PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
   closed_info.message = "Foo";
 
-  EXPECT_CALL(mock_client_,
+  EXPECT_CALL(mock_controller_,
               OnConnectionClosed(InfoEquals(presentation_connection),
                                  PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY,
                                  "Foo"));
@@ -676,12 +677,12 @@ TEST_F(PresentationServiceImplTest, ReceiverDelegateOnSubFrame) {
               RegisterReceiverConnectionAvailableCallback(_))
       .Times(0);
 
-  blink::mojom::PresentationServiceClientPtr client_ptr;
-  client_binding_.reset(
-      new mojo::Binding<blink::mojom::PresentationServiceClient>(
-          &mock_client_, mojo::MakeRequest(&client_ptr)));
+  blink::mojom::PresentationControllerPtr controller_ptr;
+  controller_binding_.reset(
+      new mojo::Binding<blink::mojom::PresentationController>(
+          &mock_controller_, mojo::MakeRequest(&controller_ptr)));
   service_impl.controller_delegate_ = nullptr;
-  service_impl.SetClient(std::move(client_ptr));
+  service_impl.SetController(std::move(controller_ptr));
 
   EXPECT_CALL(mock_receiver_delegate_, Reset(_, _)).Times(0);
   service_impl.Reset();

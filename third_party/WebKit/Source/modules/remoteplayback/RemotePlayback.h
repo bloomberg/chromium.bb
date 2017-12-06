@@ -11,16 +11,17 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/EventTarget.h"
 #include "modules/ModulesExport.h"
+#include "modules/presentation/PresentationAvailabilityObserver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/wtf/Compiler.h"
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "public/platform/modules/presentation/WebPresentationConnection.h"
 #include "public/platform/modules/presentation/presentation.mojom-blink.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
@@ -47,7 +48,7 @@ class MODULES_EXPORT RemotePlayback final
       public ContextLifecycleObserver,
       public ActiveScriptWrappable<RemotePlayback>,
       public WebRemotePlaybackClient,
-      public WebPresentationAvailabilityObserver,
+      public PresentationAvailabilityObserver,
       public WebPresentationConnection,
       public mojom::blink::PresentationConnection {
   DEFINE_WRAPPERTYPEINFO();
@@ -102,9 +103,9 @@ class MODULES_EXPORT RemotePlayback final
   void OnConnectionSuccess(const WebPresentationInfo&);
   void OnConnectionError(const WebPresentationError&);
 
-  // WebPresentationAvailabilityObserver implementation.
-  void AvailabilityChanged(mojom::ScreenAvailability) override;
-  const WebVector<WebURL>& Urls() const override;
+  // PresentationAvailabilityObserver implementation.
+  void AvailabilityChanged(mojom::blink::ScreenAvailability) override;
+  const Vector<KURL>& Urls() const override;
 
   // WebPresentationConnection implementation.
   void Init() override;
@@ -161,7 +162,7 @@ class MODULES_EXPORT RemotePlayback final
       availability_callbacks_;
   Member<HTMLMediaElement> media_element_;
   Member<ScriptPromiseResolver> prompt_promise_resolver_;
-  WebVector<WebURL> availability_urls_;
+  Vector<KURL> availability_urls_;
   bool is_listening_;
 
   String presentation_id_;

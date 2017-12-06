@@ -10,12 +10,12 @@
 #include "core/dom/events/EventTarget.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
+#include "modules/presentation/PresentationAvailabilityObserver.h"
 #include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 
 namespace blink {
 
@@ -30,7 +30,7 @@ class MODULES_EXPORT PresentationAvailability final
       public ActiveScriptWrappable<PresentationAvailability>,
       public PausableObject,
       public PageVisibilityObserver,
-      public WebPresentationAvailabilityObserver {
+      public PresentationAvailabilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -44,9 +44,9 @@ class MODULES_EXPORT PresentationAvailability final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // WebPresentationAvailabilityObserver implementation.
+  // PresentationAvailabilityObserver implementation.
   void AvailabilityChanged(blink::mojom::ScreenAvailability) override;
-  const WebVector<WebURL>& Urls() const override;
+  const Vector<KURL>& Urls() const override;
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
@@ -86,7 +86,7 @@ class MODULES_EXPORT PresentationAvailability final
   void SetState(State);
   void UpdateListening();
 
-  WebVector<WebURL> urls_;
+  Vector<KURL> urls_;
   bool value_;
   State state_;
 };

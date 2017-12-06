@@ -48,8 +48,8 @@ void Presentation::setDefaultRequest(PresentationRequest* request) {
       PresentationController::From(*GetFrame());
   if (!controller)
     return;
-  controller->SetDefaultRequestUrl(request ? request->Urls()
-                                           : WTF::Vector<KURL>());
+  controller->GetPresentationService()->SetDefaultPresentationUrls(
+      request ? request->Urls() : WTF::Vector<KURL>());
 }
 
 PresentationReceiver* Presentation::receiver() {
