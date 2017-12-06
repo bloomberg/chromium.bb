@@ -18,6 +18,7 @@
 #include "components/assist_ranker/binary_classifier_predictor.h"
 #include "components/assist_ranker/proto/ranker_example.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchRankerLoggerImpl_jni.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
@@ -52,8 +53,7 @@ std::string HexHashFeatureName(const std::string& feature_name) {
 
 ContextualSearchRankerLoggerImpl::ContextualSearchRankerLoggerImpl(JNIEnv* env,
                                                                    jobject obj)
-    : ukm_recorder_(nullptr),
-      source_id_(0),
+    : source_id_(ukm::kInvalidSourceId),
       builder_(nullptr),
       predictor_(nullptr),
       browser_context_(nullptr),
@@ -76,9 +76,8 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
   if (!web_contents)
     return;
 
-  GURL page_url = web_contents->GetURL();
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  SetUkmRecorder(ukm_recorder, page_url);
+  source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents);
+  ResetUkmEntry();
 
   if (IsRankerQueryEnabled()) {
     SetupRankerPredictor(web_contents);
@@ -90,18 +89,10 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
   }
 }
 
-void ContextualSearchRankerLoggerImpl::SetUkmRecorder(
-    ukm::UkmRecorder* ukm_recorder,
-    const GURL& page_url) {
-  if (!ukm_recorder) {
-    builder_.reset();
-    return;
-  }
-
-  ukm_recorder_ = ukm_recorder;
-  source_id_ = ukm_recorder_->GetNewSourceID();
-  ukm_recorder_->UpdateSourceURL(source_id_, page_url);
-  builder_ = ukm_recorder_->GetEntryBuilder(source_id_, "ContextualSearch");
+void ContextualSearchRankerLoggerImpl::ResetUkmEntry() {
+  // Releasing the old entry triggers logging.
+  builder_ =
+      ukm::UkmRecorder::Get()->GetEntryBuilder(source_id_, "ContextualSearch");
 }
 
 void ContextualSearchRankerLoggerImpl::SetupRankerPredictor(
@@ -186,11 +177,8 @@ AssistRankerPrediction ContextualSearchRankerLoggerImpl::RunInference(
 void ContextualSearchRankerLoggerImpl::WriteLogAndReset(JNIEnv* env,
                                                         jobject obj) {
   has_predicted_decision_ = false;
-  if (!ukm_recorder_)
-    return;
-
   // Set up another builder for the next record (in case it's needed).
-  builder_ = ukm_recorder_->GetEntryBuilder(source_id_, "ContextualSearch");
+  ResetUkmEntry();
   ranker_example_.reset();
 }
 

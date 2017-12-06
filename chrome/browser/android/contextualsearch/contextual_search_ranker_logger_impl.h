@@ -7,8 +7,6 @@
 
 #include "base/android/jni_android.h"
 
-class GURL;
-
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -21,7 +19,6 @@ class RankerExample;
 
 namespace ukm {
 class UkmEntryBuilder;
-class UkmRecorder;
 }  // namespace ukm
 
 // A Java counterpart will be generated for this enum.
@@ -69,19 +66,15 @@ class ContextualSearchRankerLoggerImpl {
   void WriteLogAndReset(JNIEnv* env, jobject obj);
 
  private:
-  // Set the UKM recorder and base-page URL.
-  // TODO(donnd): write a test, using this to inject a test-ukm-recorder.
-  void SetUkmRecorder(ukm::UkmRecorder* ukm_recorder, const GURL& page_url);
+  // Log the current UKM entry (if any) and start a new one.
+  // TODO(donnd): write a test using TestAutoSetUkmRecorder.
+  void ResetUkmEntry();
 
   // Sets up the Ranker Predictor for the given |web_contents|.
   void SetupRankerPredictor(content::WebContents* web_contents);
 
   // Whether querying Ranker for model loading and prediction is enabled.
   bool IsRankerQueryEnabled();
-
-  // Used to log URL-keyed metrics. This pointer will outlive |this|, and may
-  // be nullptr.
-  ukm::UkmRecorder* ukm_recorder_;
 
   // The UKM source ID being used for this session.
   int32_t source_id_;
