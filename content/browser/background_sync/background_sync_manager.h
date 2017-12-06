@@ -120,11 +120,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       const GURL& origin,
       const std::string& backend_key,
       const std::string& data,
-      const ServiceWorkerStorage::StatusCallback& callback);
+      ServiceWorkerStorage::StatusCallback callback);
   virtual void GetDataFromBackend(
       const std::string& backend_key,
-      const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
-          callback);
+      ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback);
   virtual void DispatchSyncEvent(
       const std::string& tag,
       scoped_refptr<ServiceWorkerVersion> active_version,
@@ -176,7 +175,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   // Write all registrations for a given |sw_registration_id| to persistent
   // storage.
   void StoreRegistrations(int64_t sw_registration_id,
-                          const ServiceWorkerStorage::StatusCallback& callback);
+                          ServiceWorkerStorage::StatusCallback callback);
 
   // Removes the active registration if it is in the map.
   void RemoveActiveRegistration(int64_t sw_registration_id,
