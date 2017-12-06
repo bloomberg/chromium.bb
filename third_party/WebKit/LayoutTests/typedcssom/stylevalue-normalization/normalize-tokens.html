@@ -1,0 +1,55 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Normalization of raw CSS tokens tests</title>
+<link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#normalize-tokens">
+<script src="../..//resources/testharness.js"></script>
+<script src="../..//resources/testharnessreport.js"></script>
+<script src="../resources/testhelper.js"></script>
+<script>
+'use strict';
+
+const gTestCases = [
+  {
+    value: 'var(--A)',
+    expectedResult: [
+      createReferenceValue('--A', null),
+    ]
+  },
+  {
+    value: 'var(--A, 1em)',
+    expectedResult: [
+      createReferenceValue('--A', new CSSUnparsedValue(' 1em')),
+    ]
+  },
+  {
+    value: 'var(--A, var(--B))',
+    expectedResult: [
+      createReferenceValue('--A', new CSSUnparsedValue(' ', createReferenceValue('--B', null))),
+    ]
+  },
+  {
+    value: 'calc(42px + var(--foo, 15em) + var(--bar, var(--far) + 15px))',
+    expectedResult: [
+      'calc(42px +',
+      createReferenceValue('--foo', new CSSUnparsedValue(' 15em')),
+      ' + ',
+      createReferenceValue('--bar', new CSSUnparsedValue(' ', createReferenceValue('--far', null), ' + 15px')),
+      ')',
+    ]
+  },
+];
+
+for (const {value, expectedResult} of gTestCases) {
+  // TODO(788570): Add similar tests using a custom property instead of 'color'
+  test(() => {
+    const result = CSSStyleValue.parse('color', value);
+    assert_style_value_equals(result, new CSSUnparsedValue(...expectedResult));
+  }, 'Normalizing "' + value + '" from String returns correct CSSUnparsedValue');
+
+  test(() => {
+    const result = newDivWithStyle('color:' + value).attributeStyleMap.get('color');
+    assert_style_value_equals(result, new CSSUnparsedValue(...expectedResult));
+  }, 'Normalizing "' + value + '" from CSSOM returns correct CSSUnparsedValue');
+}
+
+</script>
