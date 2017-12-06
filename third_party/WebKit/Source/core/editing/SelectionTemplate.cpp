@@ -156,6 +156,13 @@ PositionTemplate<Strategy> SelectionTemplate<Strategy>::ComputeStartPosition()
 }
 
 template <typename Strategy>
+EphemeralRangeTemplate<Strategy> SelectionTemplate<Strategy>::ComputeRange()
+    const {
+  return EphemeralRangeTemplate<Strategy>(ComputeStartPosition(),
+                                          ComputeEndPosition());
+}
+
+template <typename Strategy>
 bool SelectionTemplate<Strategy>::IsBaseFirst() const {
   DCHECK(AssertValid());
   if (base_ == extent_) {
