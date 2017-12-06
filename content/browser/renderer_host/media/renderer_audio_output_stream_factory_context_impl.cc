@@ -30,6 +30,8 @@ RendererAudioOutputStreamFactoryContextImpl::
       authorization_handler_(audio_system_,
                              media_stream_manager_,
                              render_process_id),
+      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
+          media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)),
       render_process_id_(render_process_id) {}
 
 RendererAudioOutputStreamFactoryContextImpl::
@@ -64,15 +66,12 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
 
-  MediaInternals* const media_internals = MediaInternals::GetInstance();
-  std::unique_ptr<media::AudioLog> audio_log = media_internals->CreateAudioLog(
-      media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER);
-  audio_log->OnCreated(stream_id, params, unique_device_id);
-  media_internals->SetWebContentsTitleForAudioLogEntry(
-      stream_id, render_process_id_, render_frame_id, audio_log.get());
+  audio_log_->OnCreated(stream_id, params, unique_device_id);
+  MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
+      stream_id, render_process_id_, render_frame_id, audio_log_.get());
 
   return AudioOutputDelegateImpl::Create(
-      handler, audio_manager_, std::move(audio_log),
+      handler, audio_manager_, audio_log_.get(),
       AudioMirroringManager::GetInstance(), media_observer, stream_id,
       render_frame_id, render_process_id_, params, std::move(stream_observer),
       unique_device_id);

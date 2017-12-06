@@ -100,20 +100,20 @@ class AudioInputDelegateImpl::ControllerEventHandler
 };
 
 std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
-    EventHandler* subscriber,
     media::AudioManager* audio_manager,
     AudioMirroringManager* mirroring_manager,
     media::UserInputMonitor* user_input_monitor,
+    int render_process_id,
+    int render_frame_id,
     AudioInputDeviceManager* audio_input_device_manager,
-    std::unique_ptr<media::AudioLog> audio_log,
+    media::AudioLog* audio_log,
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
     uint32_t shared_memory_count,
     int stream_id,
     int session_id,
-    int render_process_id,
-    int render_frame_id,
     bool automatic_gain_control,
-    const media::AudioParameters& audio_parameters) {
+    const media::AudioParameters& audio_parameters,
+    EventHandler* subscriber) {
   // Check if we have the permission to open the device and which device to use.
   const MediaStreamDevice* device =
       audio_input_device_manager->GetOpenedDeviceById(session_id);
@@ -148,34 +148,33 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
                          automatic_gain_control));
 
   return base::WrapUnique(new AudioInputDelegateImpl(
-      subscriber, audio_manager, mirroring_manager, user_input_monitor,
-      possibly_modified_parameters, std::move(writer),
-      std::move(foreign_socket), std::move(audio_log),
-      std::move(keyboard_mic_registration),
-      stream_id, render_process_id, render_frame_id, automatic_gain_control,
-      device));
+      audio_manager, mirroring_manager, user_input_monitor,
+      possibly_modified_parameters, render_process_id, render_frame_id,
+      audio_log, std::move(keyboard_mic_registration), stream_id,
+      automatic_gain_control, subscriber, device, std::move(writer),
+      std::move(foreign_socket)));
 }
 
 AudioInputDelegateImpl::AudioInputDelegateImpl(
-    EventHandler* subscriber,
     media::AudioManager* audio_manager,
     AudioMirroringManager* mirroring_manager,
     media::UserInputMonitor* user_input_monitor,
     const media::AudioParameters& audio_parameters,
-    std::unique_ptr<AudioInputSyncWriter> writer,
-    std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
-    std::unique_ptr<media::AudioLog> audio_log,
-    AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
-    int stream_id,
     int render_process_id,
     int render_frame_id,
+    media::AudioLog* audio_log,
+    AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
+    int stream_id,
     bool automatic_gain_control,
-    const MediaStreamDevice* device)
+    EventHandler* subscriber,
+    const MediaStreamDevice* device,
+    std::unique_ptr<AudioInputSyncWriter> writer,
+    std::unique_ptr<base::CancelableSyncSocket> foreign_socket)
     : subscriber_(subscriber),
       controller_event_handler_(),
       writer_(std::move(writer)),
       foreign_socket_(std::move(foreign_socket)),
-      audio_log_(std::move(audio_log)),
+      audio_log_(audio_log),
       controller_(),
       keyboard_mic_registration_(std::move(keyboard_mic_registration)),
       stream_id_(stream_id),
@@ -227,7 +226,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
 
   audio_log_->OnCreated(stream_id, audio_parameters, device_id);
   MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
-      stream_id, render_process_id_, render_frame_id, audio_log_.get());
+      stream_id, render_process_id_, render_frame_id, audio_log_);
 }
 
 AudioInputDelegateImpl::~AudioInputDelegateImpl() {

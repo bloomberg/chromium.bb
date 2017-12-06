@@ -190,13 +190,13 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   AudioMirroringManager* audio_mirroring_manager_;
 
-  // A map of stream IDs to audio sources.
-  AudioInputDelegateMap delegates_;
-
   // Raw pointer of the UserInputMonitor.
   media::UserInputMonitor* const user_input_monitor_;
 
   std::unique_ptr<media::AudioLog> audio_log_;
+
+  // A map of stream IDs to audio sources.
+  AudioInputDelegateMap delegates_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };

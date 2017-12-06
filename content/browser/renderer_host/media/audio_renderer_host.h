@@ -58,6 +58,7 @@ class CancelableSyncSocket;
 }
 
 namespace media {
+class AudioLog;
 class AudioManager;
 class AudioParameters;
 class AudioSystem;
@@ -191,9 +192,6 @@ class CONTENT_EXPORT AudioRendererHost
   // Used to access to AudioInputDeviceManager.
   MediaStreamManager* media_stream_manager_;
 
-  // A list of the current open streams.
-  AudioOutputDelegateVector delegates_;
-
   // Map of device authorizations for streams that are not yet created
   // The key is the stream ID, and the value is a pair. The pair's first element
   // is a bool that is true if the authorization process completes successfully.
@@ -201,6 +199,11 @@ class CONTENT_EXPORT AudioRendererHost
   std::map<int, std::pair<bool, std::string>> authorizations_;
 
   AudioOutputAuthorizationHandler authorization_handler_;
+
+  const std::unique_ptr<media::AudioLog> audio_log_;
+
+  // A list of the current open streams.
+  AudioOutputDelegateVector delegates_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };
