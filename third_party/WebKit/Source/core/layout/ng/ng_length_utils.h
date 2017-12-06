@@ -124,6 +124,10 @@ ComputeMarginsForVisualContainer(const NGConstraintSpace&,
 CORE_EXPORT NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace&,
                                              const ComputedStyle&);
 
+// Compute margins for a child during the min-max size calculation.
+CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
+                                            NGLayoutInputNode child);
+
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
                                       const ComputedStyle&);
 

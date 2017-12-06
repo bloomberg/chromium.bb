@@ -506,13 +506,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
   EXPECT_THAT(body_fragment->Offset().top, LayoutUnit(body_top_offset));
   int body_left_offset = 8;
   EXPECT_THAT(body_fragment->Offset().left, LayoutUnit(body_left_offset));
+
   // height = 70. std::max(vertical height's 70, horizontal's height's 60)
-  // TODO(glebl): Should be 70! Fix this once min/max algorithm handles
-  // orthogonal children.
-  int body_fragment_block_size = 130;
-  ASSERT_EQ(
-      NGPhysicalSize(LayoutUnit(784), LayoutUnit(body_fragment_block_size)),
-      body_fragment->Size());
+  ASSERT_EQ(NGPhysicalSize(LayoutUnit(784), LayoutUnit(70)),
+            body_fragment->Size());
   ASSERT_EQ(1UL, body_fragment->Children().size());
 
   // container
@@ -1358,7 +1355,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
 // Verifies that we compute the right min and max-content size.
 TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
   SetBodyInnerHTML(R"HTML(
-    <div id="container" style="width: 50px">
+    <div id="container">
       <div id="first-child" style="width: 20px"></div>
       <div id="second-child" style="width: 30px"></div>
     </div>
@@ -1371,6 +1368,109 @@ TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContent) {
   MinMaxSize sizes = RunComputeMinAndMax(container);
   EXPECT_EQ(kSecondChildWidth, sizes.min_size);
   EXPECT_EQ(kSecondChildWidth, sizes.max_size);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContentFloats) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #f1 { float: left; width: 20px; }
+      #f2 { float: left; width: 30px; }
+      #f3 { float: right; width: 40px; }
+    </style>
+    <div id="container">
+      <div id="f1"></div>
+      <div id="f2"></div>
+      <div id="f3"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
+
+  MinMaxSize sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(LayoutUnit(40), sizes.min_size);
+  EXPECT_EQ(LayoutUnit(90), sizes.max_size);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContentFloatsClearance) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #f1 { float: left; width: 20px; }
+      #f2 { float: left; width: 30px; }
+      #f3 { float: right; width: 40px; clear: left; }
+    </style>
+    <div id="container">
+      <div id="f1"></div>
+      <div id="f2"></div>
+      <div id="f3"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
+
+  MinMaxSize sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(LayoutUnit(40), sizes.min_size);
+  EXPECT_EQ(LayoutUnit(50), sizes.max_size);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, ComputeMinMaxContentNewFormattingContext) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #f1 { float: left; width: 20px; }
+      #f2 { float: left; width: 30px; }
+      #fc { display: flex; width: 40px; margin-left: 60px; }
+    </style>
+    <div id="container">
+      <div id="f1"></div>
+      <div id="f2"></div>
+      <div id="fc"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
+
+  MinMaxSize sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(LayoutUnit(100), sizes.min_size);
+  EXPECT_EQ(LayoutUnit(100), sizes.max_size);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest,
+       ComputeMinMaxContentNewFormattingContextNegativeMargins) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #f1 { float: left; width: 20px; }
+      #f2 { float: left; width: 30px; }
+      #fc { display: flex; width: 40px; margin-left: -20px; }
+    </style>
+    <div id="container">
+      <div id="f1"></div>
+      <div id="f2"></div>
+      <div id="fc"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
+
+  MinMaxSize sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(LayoutUnit(30), sizes.min_size);
+  EXPECT_EQ(LayoutUnit(70), sizes.max_size);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest,
+       ComputeMinMaxContentSingleNewFormattingContextNegativeMargins) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #fc { display: flex; width: 20px; margin-left: -40px; }
+    </style>
+    <div id="container">
+      <div id="fc"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
+
+  MinMaxSize sizes = RunComputeMinAndMax(container);
+  EXPECT_EQ(LayoutUnit(), sizes.min_size);
+  EXPECT_EQ(LayoutUnit(), sizes.max_size);
 }
 
 // Tests that we correctly handle shrink-to-fit
