@@ -2410,8 +2410,6 @@ crbug.com/788337 external/wpt/css/css-multicol/multicol-height-block-child-001.x
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-style-inset-001.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-style-outset-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-003.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-child-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-child-002.xht [ Failure ]
