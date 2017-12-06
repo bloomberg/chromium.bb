@@ -1067,9 +1067,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
         << ") @ (" << sub_rect.X() << ", " << sub_rect.Y() << "), image = ("
         << image_width << " x " << image_height << ")";
 
-    if (sub_rect.X() < 0 || sub_rect.Y() < 0 || sub_rect.MaxX() > image_width ||
-        sub_rect.MaxY() > image_height || sub_rect.Width() < 0 ||
-        sub_rect.Height() < 0) {
+    if (!sub_rect.IsValid() || sub_rect.X() < 0 || sub_rect.Y() < 0 ||
+        sub_rect.MaxX() > image_width || sub_rect.MaxY() > image_height ||
+        sub_rect.Width() < 0 || sub_rect.Height() < 0) {
       SynthesizeGLError(GL_INVALID_OPERATION, function_name,
                         "source sub-rectangle specified via pixel unpack "
                         "parameters is invalid");
