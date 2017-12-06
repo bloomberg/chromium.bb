@@ -29,8 +29,9 @@ TestPermissionBubbleViewDelegate::Requests() {
   return requests_;
 }
 
-base::string16 TestPermissionBubbleViewDelegate::GetDisplayOrigin() {
-  return base::string16();
+PermissionPrompt::DisplayNameOrOrigin
+TestPermissionBubbleViewDelegate::GetDisplayNameOrOrigin() {
+  return {base::string16(), false /* is_origin */};
 }
 
 PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {
