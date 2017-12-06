@@ -67,43 +67,33 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
   }
 }
 
-static void cfl_subtract_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
-  const int width = cfl->uv_width;
-  const int height = cfl->uv_height;
+static void cfl_subtract_average(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int tx_height = tx_size_high[tx_size];
   const int tx_width = tx_size_wide[tx_size];
-  const int block_row_stride = MAX_SB_SIZE << tx_size_high_log2[tx_size];
   const int num_pel_log2 =
-      (tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size]);
+      tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size];
+
   int16_t *pred_buf_q3 = cfl->pred_buf_q3;
+  int sum_q3 = 0;
 
-  cfl_pad(cfl, width, height);
+  cfl_pad(cfl, tx_width, tx_height);
 
-  for (int b_j = 0; b_j < height; b_j += tx_height) {
-    for (int b_i = 0; b_i < width; b_i += tx_width) {
-      int sum_q3 = 0;
-      int16_t *tx_pred_buf_q3 = pred_buf_q3;
-      for (int t_j = 0; t_j < tx_height; t_j++) {
-        for (int t_i = b_i; t_i < b_i + tx_width; t_i++) {
-          sum_q3 += tx_pred_buf_q3[t_i];
-        }
-        tx_pred_buf_q3 += MAX_SB_SIZE;
-      }
-      int avg_q3 = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
-      // Loss is never more than 1/2 (in Q3)
-      assert(abs((avg_q3 * (1 << num_pel_log2)) - sum_q3) <=
-             1 << num_pel_log2 >> 1);
-
-      tx_pred_buf_q3 = pred_buf_q3;
-      for (int t_j = 0; t_j < tx_height; t_j++) {
-        for (int t_i = b_i; t_i < b_i + tx_width; t_i++) {
-          tx_pred_buf_q3[t_i] -= avg_q3;
-        }
-
-        tx_pred_buf_q3 += MAX_SB_SIZE;
-      }
+  for (int j = 0; j < tx_height; j++) {
+    for (int i = 0; i < tx_width; i++) {
+      sum_q3 += pred_buf_q3[i];
     }
-    pred_buf_q3 += block_row_stride;
+    pred_buf_q3 += MAX_SB_SIZE;
+  }
+  const int avg_q3 = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
+  // Loss is never more than 1/2 (in Q3)
+  assert(abs((avg_q3 * (1 << num_pel_log2)) - sum_q3) <= 1 << num_pel_log2 >>
+         1);
+  pred_buf_q3 = cfl->pred_buf_q3;
+  for (int j = 0; j < tx_height; j++) {
+    for (int i = 0; i < tx_width; i++) {
+      pred_buf_q3[i] -= avg_q3;
+    }
+    pred_buf_q3 += MAX_SB_SIZE;
   }
 }
 
@@ -147,15 +137,12 @@ static void cfl_build_prediction_hbd(const int16_t *pred_buf_q3, uint16_t *dst,
 
 static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   CFL_CTX *const cfl = &xd->cfl;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 
   // Do not call cfl_compute_parameters multiple time on the same values.
   assert(cfl->are_parameters_computed == 0);
 
-  const BLOCK_SIZE plane_bsize = AOMMAX(
-      BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
 #if CONFIG_DEBUG
-  BLOCK_SIZE bsize = mbmi->sb_type;
+  BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     const uint16_t compute_counter = cfl->sub8x8_val[0];
     assert(compute_counter != cfl->last_compute_counter);
@@ -176,12 +163,7 @@ static void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   }
 #endif  // CONFIG_DEBUG
 
-  // AOM_PLANE_U is used, but both planes will have the same sizes.
-  cfl->uv_width = max_intra_block_width(xd, plane_bsize, AOM_PLANE_U, tx_size);
-  cfl->uv_height =
-      max_intra_block_height(xd, plane_bsize, AOM_PLANE_U, tx_size);
-
-  cfl_subtract_averages(cfl, tx_size);
+  cfl_subtract_average(cfl, tx_size);
   cfl->are_parameters_computed = 1;
 }
 

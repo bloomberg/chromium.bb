@@ -579,10 +579,6 @@ typedef struct cfl_ctx {
   // Height and width currently used in the CfL prediction buffer.
   int buf_height, buf_width;
 
-  // Height and width of the chroma prediction block currently associated with
-  // this context
-  int uv_height, uv_width;
-
   int are_parameters_computed;
 
   // Chroma subsampling
