@@ -560,7 +560,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void Reshape(int width, int height) override;
 
   void MarkLayerComposited() override;
-  ImageData* PaintRenderingResultsToImageData(SourceDrawingBuffer) override;
+
+  scoped_refptr<Uint8Array> PaintRenderingResultsToDataArray(
+      SourceDrawingBuffer) override;
 
   unsigned MaxVertexAttribs() const { return max_vertex_attribs_; }
 
@@ -587,7 +589,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
                                             SnapshotReason) const override;
-  ImageData* ToImageData(SnapshotReason) override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2OrHigher() { return Version() >= 2; }
 

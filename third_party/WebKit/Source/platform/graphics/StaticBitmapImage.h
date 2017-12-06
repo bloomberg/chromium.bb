@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Image.h"
+#include "platform/wtf/typed_arrays/Uint8Array.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -28,6 +29,10 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
       sk_sp<SkImage>,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
   static scoped_refptr<StaticBitmapImage> Create(PaintImage);
+  static scoped_refptr<StaticBitmapImage> Create(scoped_refptr<Uint8Array>&&,
+                                                 const SkImageInfo&);
+  static scoped_refptr<StaticBitmapImage> Create(WTF::ArrayBufferContents&,
+                                                 const SkImageInfo&);
 
   bool IsStaticBitmapImage() const override { return true; }
 
