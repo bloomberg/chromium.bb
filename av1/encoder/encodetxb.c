@@ -282,7 +282,7 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
 static INLINE void update_qcoeff(const int coeff_idx, const tran_low_t qc,
                                  const TxbInfo *const txb_info) {
   txb_info->qcoeff[coeff_idx] = qc;
-  txb_info->levels[get_paded_idx(coeff_idx, txb_info->bwl)] =
+  txb_info->levels[get_padded_idx(coeff_idx, txb_info->bwl)] =
       (uint8_t)clamp(abs(qc), 0, INT8_MAX);
 }
 
@@ -867,7 +867,7 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
     const int col = coeff_idx - (row << bwl);
 
     txb_cache->nz_count_arr[coeff_idx] =
-        get_nz_count(levels + get_paded_idx(coeff_idx, bwl), bwl,
+        get_nz_count(levels + get_padded_idx(coeff_idx, bwl), bwl,
                      tx_type_to_class[txb_info->tx_type]);
 
     txb_cache->nz_ctx_arr[coeff_idx] = get_nz_map_ctx_from_stats(

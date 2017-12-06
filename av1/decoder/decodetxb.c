@@ -203,7 +203,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     //            ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx][1]>>7,
     //            ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx][2]>>7);
     if (level) {
-      levels[get_paded_idx(pos, bwl)] = level;
+      levels[get_padded_idx(pos, bwl)] = level;
       *max_scan_line = AOMMAX(*max_scan_line, pos);
       if (level < 3) {
         cul_level += level;
@@ -241,7 +241,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
           break;
         }
       }
-      levels[get_paded_idx(pos, bwl)] = k + 1;
+      levels[get_padded_idx(pos, bwl)] = k + 1;
       *max_scan_line = AOMMAX(*max_scan_line, pos);
       if (k == NUM_BASE_LEVELS) {
         update_pos[num_updates++] = pos;
@@ -251,7 +251,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     // set non-zero coefficient map.
     unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
         (counts) ? &counts->nz_map[txs_ctx][plane_type] : NULL;
-    levels[get_paded_idx(pos, bwl)] = is_nz;
+    levels[get_padded_idx(pos, bwl)] = is_nz;
     if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
 #endif
 #endif
@@ -263,7 +263,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     av1_get_base_level_counts(levels, i, width, height, level_counts);
     for (c = *eob - 1; c >= 0; --c) {
       const int pos = scan[c];
-      uint8_t *const level = &levels[get_paded_idx(pos, bwl)];
+      uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
       int ctx;
 
       if (*level <= i) continue;
@@ -293,7 +293,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   for (c = 0; c < *eob; ++c) {
     const int pos = scan[c];
     int8_t *const sign = &signs[pos];
-    if (levels[get_paded_idx(pos, bwl)] == 0) continue;
+    if (levels[get_padded_idx(pos, bwl)] == 0) continue;
     if (c == 0) {
       const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
 #if LV_MAP_PROB
@@ -316,7 +316,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif
     for (c = 0; c < num_updates; ++c) {
       const int pos = update_pos[c];
-      uint8_t *const level = &levels[get_paded_idx(pos, bwl)];
+      uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
       int idx;
       int ctx;
 

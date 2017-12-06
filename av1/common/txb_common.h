@@ -167,7 +167,7 @@ static INLINE uint8_t *set_levels(uint8_t *const levels_buf, const int width) {
   return levels_buf + TX_PAD_TOP * (width + TX_PAD_HOR);
 }
 
-static INLINE int get_paded_idx(const int idx, const int bwl) {
+static INLINE int get_padded_idx(const int idx, const int bwl) {
   return idx + ((idx >> bwl) << TX_PAD_HOR_LOG2);
 }
 
@@ -557,9 +557,9 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
   const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const int stats =
 #if USE_CAUSAL_BASE_CTX
-      get_nz_mag(levels + get_paded_idx(coeff_idx, bwl), bwl, tx_class);
+      get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
 #else
-      get_nz_count(levels + get_paded_idx(coeff_idx, bwl), bwl, tx_class);
+      get_nz_count(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
 #endif
   return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, height, tx_class);
 }
