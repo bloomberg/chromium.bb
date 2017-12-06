@@ -123,8 +123,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
 
   const KeyframeVector keyframes = animation->Model()->GetFrames();
 
-  EXPECT_EQ(0, keyframes[0]->Offset());
-  EXPECT_EQ(1, keyframes[1]->Offset());
+  EXPECT_EQ(0, keyframes[0]->CheckedOffset());
+  EXPECT_EQ(1, keyframes[1]->CheckedOffset());
 
   const CSSValue& keyframe1_width =
       ToStringKeyframe(keyframes[0].get())

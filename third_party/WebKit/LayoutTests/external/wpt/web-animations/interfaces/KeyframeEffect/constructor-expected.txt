@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 167 tests; 89 PASS, 78 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 167 tests; 103 PASS, 64 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS A KeyframeEffectReadOnly can be constructed with no frames
 PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
 PASS Invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
@@ -96,30 +96,30 @@ PASS A KeyframeEffectReadOnly can be constructed with a two property keyframe se
 PASS A KeyframeEffectReadOnly constructed with a two property keyframe sequence where one property is missing from the last keyframe roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a one property two keyframe sequence that needs to stringify its values
 PASS A KeyframeEffectReadOnly constructed with a one property two keyframe sequence that needs to stringify its values roundtrips
-FAIL A KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable reference assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
+PASS A KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable reference
+PASS A KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference roundtrips
 FAIL A KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "computedOffset,easing,margin,offset" but got "computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
-FAIL A KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference in a shorthand property roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
+FAIL A KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference in a shorthand property roundtrips assert_equals: properties on ComputedKeyframe #0 should match expected "computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset" but got "computedOffset,easing,offset"
 PASS A KeyframeEffectReadOnly can be constructed with a keyframe sequence with duplicate values for a given interior offset
 PASS A KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for a given interior offset roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a keyframe sequence with duplicate values for offsets 0 and 1
 PASS A KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for offsets 0 and 1 roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a two property four keyframe sequence
 PASS A KeyframeEffectReadOnly constructed with a two property four keyframe sequence roundtrips
-FAIL A KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offset assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offset roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
-FAIL A KeyframeEffectReadOnly can be constructed with a single keyframe sequence with null offset assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a single keyframe sequence with null offset roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
+PASS A KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offset
+PASS A KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offset roundtrips
+PASS A KeyframeEffectReadOnly can be constructed with a single keyframe sequence with null offset
+PASS A KeyframeEffectReadOnly constructed with a single keyframe sequence with null offset roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a single keyframe sequence with string offset
 PASS A KeyframeEffectReadOnly constructed with a single keyframe sequence with string offset roundtrips
-FAIL A KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some omitted offsets assert_equals: value for 'offset' on ComputedKeyframe #2 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a one property keyframe sequence with some omitted offsets roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
-FAIL A KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some null offsets assert_equals: value for 'offset' on ComputedKeyframe #2 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a one property keyframe sequence with some null offsets roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
-FAIL A KeyframeEffectReadOnly can be constructed with a two property keyframe sequence with some omitted offsets assert_equals: value for 'offset' on ComputedKeyframe #2 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a two property keyframe sequence with some omitted offsets roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
-FAIL A KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with all omitted offsets assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
-FAIL A KeyframeEffectReadOnly constructed with a one property keyframe sequence with all omitted offsets roundtrips Failed to construct 'KeyframeEffectReadOnly': Non numeric offset provided
+PASS A KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some omitted offsets
+PASS A KeyframeEffectReadOnly constructed with a one property keyframe sequence with some omitted offsets roundtrips
+PASS A KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some null offsets
+PASS A KeyframeEffectReadOnly constructed with a one property keyframe sequence with some null offsets roundtrips
+PASS A KeyframeEffectReadOnly can be constructed with a two property keyframe sequence with some omitted offsets
+PASS A KeyframeEffectReadOnly constructed with a two property keyframe sequence with some omitted offsets roundtrips
+PASS A KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with all omitted offsets
+PASS A KeyframeEffectReadOnly constructed with a one property keyframe sequence with all omitted offsets roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a keyframe sequence with different easing values, but the same easing value for a given offset
 PASS A KeyframeEffectReadOnly constructed with a keyframe sequence with different easing values, but the same easing value for a given offset roundtrips
 PASS A KeyframeEffectReadOnly can be constructed with a keyframe sequence with different composite values, but the same composite value for a given offset

@@ -40,7 +40,7 @@ TransitionKeyframe::CreatePropertySpecificKeyframe(
   DCHECK(offset == offset_);
   EffectModel::CompositeOperation composite =
       composite_.value_or(effect_composite);
-  return PropertySpecificKeyframe::Create(Offset(), &Easing(), composite,
+  return PropertySpecificKeyframe::Create(CheckedOffset(), &Easing(), composite,
                                           value_->Clone(), compositor_value_);
 }
 

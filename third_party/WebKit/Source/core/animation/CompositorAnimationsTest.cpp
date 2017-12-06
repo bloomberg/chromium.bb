@@ -167,7 +167,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
   bool DuplicateSingleKeyframeAndTestIsCandidateOnResult(
       StringKeyframe* frame) {
-    EXPECT_EQ(frame->Offset(), 0);
+    EXPECT_EQ(frame->CheckedOffset(), 0);
     StringKeyframeVector frames;
     scoped_refptr<Keyframe> second = frame->CloneWithOffset(1);
 
@@ -260,7 +260,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
       scoped_refptr<StringKeyframe> to,
       scoped_refptr<StringKeyframe> c = nullptr,
       scoped_refptr<StringKeyframe> d = nullptr) {
-    EXPECT_EQ(from->Offset(), 0);
+    EXPECT_EQ(from->CheckedOffset(), 0);
     StringKeyframeVector frames;
     frames.push_back(from);
     EXPECT_LE(from->Offset(), to->Offset());
@@ -272,9 +272,9 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
     if (d) {
       frames.push_back(d);
       EXPECT_LE(c->Offset(), d->Offset());
-      EXPECT_EQ(d->Offset(), 1.0);
+      EXPECT_EQ(d->CheckedOffset(), 1.0);
     } else {
-      EXPECT_EQ(to->Offset(), 1.0);
+      EXPECT_EQ(to->CheckedOffset(), 1.0);
     }
     if (!HasFatalFailure()) {
       return StringKeyframeEffectModel::Create(frames);

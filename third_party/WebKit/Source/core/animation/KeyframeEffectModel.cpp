@@ -154,35 +154,39 @@ bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframes(
 
 Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
     const KeyframeVector& keyframes) {
+  // To avoid having to create two vectors when converting from the nullable
+  // offsets to the non-nullable computed offsets, we keep the convention in
+  // this function that std::numeric_limits::quiet_NaN() represents null.
   double last_offset = 0;
   Vector<double> result;
   result.ReserveCapacity(keyframes.size());
 
   for (const auto& keyframe : keyframes) {
-    double offset = keyframe->Offset();
-    if (!IsNull(offset)) {
-      DCHECK_GE(offset, 0);
-      DCHECK_LE(offset, 1);
-      DCHECK_GE(offset, last_offset);
-      last_offset = offset;
+    WTF::Optional<double> offset = keyframe->Offset();
+    if (offset) {
+      DCHECK_GE(offset.value(), 0);
+      DCHECK_LE(offset.value(), 1);
+      DCHECK_GE(offset.value(), last_offset);
+      last_offset = offset.value();
     }
-    result.push_back(offset);
+    result.push_back(offset.value_or(std::numeric_limits<double>::quiet_NaN()));
   }
 
   if (result.IsEmpty())
     return result;
 
-  if (IsNull(result.back()))
+  if (std::isnan(result.back()))
     result.back() = 1;
 
-  if (result.size() > 1 && IsNull(result[0]))
+  if (result.size() > 1 && std::isnan(result[0])) {
     result.front() = 0;
+  }
 
   size_t last_index = 0;
   last_offset = result.front();
   for (size_t i = 1; i < result.size(); ++i) {
     double offset = result[i];
-    if (!IsNull(offset)) {
+    if (!std::isnan(offset)) {
       for (size_t j = 1; j < i - last_index; ++j) {
         result[last_index + j] =
             last_offset + (offset - last_offset) * j / (i - last_index);

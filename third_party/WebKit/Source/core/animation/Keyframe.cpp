@@ -22,7 +22,11 @@ Keyframe::PropertySpecificKeyframe::CreateInterpolation(
 
 void Keyframe::AddKeyframePropertiesToV8Object(
     V8ObjectBuilder& object_builder) const {
-  object_builder.Add("offset", offset_);
+  if (offset_) {
+    object_builder.Add("offset", offset_.value());
+  } else {
+    object_builder.AddNull("offset");
+  }
   object_builder.Add("easing", easing_->ToString());
   if (composite_.has_value()) {
     object_builder.AddString(
@@ -33,7 +37,9 @@ void Keyframe::AddKeyframePropertiesToV8Object(
 
 bool Keyframe::CompareOffsets(const scoped_refptr<Keyframe>& a,
                               const scoped_refptr<Keyframe>& b) {
-  return a->Offset() < b->Offset();
+  if (!a->Offset() || !b->Offset())
+    return false;
+  return a->CheckedOffset() < b->CheckedOffset();
 }
 
 }  // namespace blink

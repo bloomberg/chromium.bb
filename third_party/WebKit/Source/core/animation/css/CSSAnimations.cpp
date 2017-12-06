@@ -150,7 +150,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
                    Keyframe::CompareOffsets);
   size_t target_index = 0;
   for (size_t i = 1; i < keyframes.size(); i++) {
-    if (keyframes[i]->Offset() == keyframes[target_index]->Offset()) {
+    if (keyframes[i]->CheckedOffset() ==
+        keyframes[target_index]->CheckedOffset()) {
       for (const auto& property : keyframes[i]->Properties()) {
         keyframes[target_index]->SetCSSPropertyValue(
             property.GetCSSProperty().PropertyID(),
@@ -167,22 +168,22 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   // Add 0% and 100% keyframes if absent.
   scoped_refptr<StringKeyframe> start_keyframe =
       keyframes.IsEmpty() ? nullptr : keyframes[0];
-  if (!start_keyframe || keyframes[0]->Offset() != 0) {
+  if (!start_keyframe || keyframes[0]->CheckedOffset() != 0) {
     start_keyframe = StringKeyframe::Create();
     start_keyframe->SetOffset(0);
     start_keyframe->SetEasing(default_timing_function);
     keyframes.push_front(start_keyframe);
   }
   scoped_refptr<StringKeyframe> end_keyframe = keyframes[keyframes.size() - 1];
-  if (end_keyframe->Offset() != 1) {
+  if (end_keyframe->CheckedOffset() != 1) {
     end_keyframe = StringKeyframe::Create();
     end_keyframe->SetOffset(1);
     end_keyframe->SetEasing(default_timing_function);
     keyframes.push_back(end_keyframe);
   }
   DCHECK_GE(keyframes.size(), 2U);
-  DCHECK(!keyframes.front()->Offset());
-  DCHECK_EQ(keyframes.back()->Offset(), 1);
+  DCHECK_EQ(keyframes.front()->CheckedOffset(), 0);
+  DCHECK_EQ(keyframes.back()->CheckedOffset(), 1);
 
   StringKeyframeEffectModel* model = StringKeyframeEffectModel::Create(
       keyframes, EffectModel::kCompositeReplace, &keyframes[0]->Easing());

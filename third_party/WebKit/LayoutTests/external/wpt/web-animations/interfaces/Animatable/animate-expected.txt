@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 121 tests; 68 PASS, 53 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 121 tests; 75 PASS, 46 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -53,18 +53,18 @@ FAIL Element.animate() accepts a two property (a shorthand and one of its compon
 PASS Element.animate() accepts a two property keyframe sequence where one property is missing from the first keyframe
 PASS Element.animate() accepts a two property keyframe sequence where one property is missing from the last keyframe
 PASS Element.animate() accepts a one property two keyframe sequence that needs to stringify its values
-FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
+PASS Element.animate() accepts a keyframe sequence with a CSS variable reference
 FAIL Element.animate() accepts a keyframe sequence with a CSS variable reference in a shorthand property assert_equals: properties on ComputedKeyframe #0 should match expected "computedOffset,easing,margin,offset" but got "computedOffset,easing,marginBottom,marginLeft,marginRight,marginTop,offset"
 PASS Element.animate() accepts a keyframe sequence with duplicate values for a given interior offset
 PASS Element.animate() accepts a keyframe sequence with duplicate values for offsets 0 and 1
 PASS Element.animate() accepts a two property four keyframe sequence
-FAIL Element.animate() accepts a single keyframe sequence with omitted offset assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
-FAIL Element.animate() accepts a single keyframe sequence with null offset assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
+PASS Element.animate() accepts a single keyframe sequence with omitted offset
+PASS Element.animate() accepts a single keyframe sequence with null offset
 PASS Element.animate() accepts a single keyframe sequence with string offset
-FAIL Element.animate() accepts a one property keyframe sequence with some omitted offsets assert_equals: value for 'offset' on ComputedKeyframe #2 expected (object) null but got (number) NaN
-FAIL Element.animate() accepts a one property keyframe sequence with some null offsets assert_equals: value for 'offset' on ComputedKeyframe #2 expected (object) null but got (number) NaN
-FAIL Element.animate() accepts a two property keyframe sequence with some omitted offsets assert_equals: value for 'offset' on ComputedKeyframe #2 expected (object) null but got (number) NaN
-FAIL Element.animate() accepts a one property keyframe sequence with all omitted offsets assert_equals: value for 'offset' on ComputedKeyframe #0 expected (object) null but got (number) NaN
+PASS Element.animate() accepts a one property keyframe sequence with some omitted offsets
+PASS Element.animate() accepts a one property keyframe sequence with some null offsets
+PASS Element.animate() accepts a two property keyframe sequence with some omitted offsets
+PASS Element.animate() accepts a one property keyframe sequence with all omitted offsets
 PASS Element.animate() accepts a keyframe sequence with different easing values, but the same easing value for a given offset
 PASS Element.animate() accepts a keyframe sequence with different composite values, but the same composite value for a given offset
 PASS Element.animate() does not accept keyframes with an out-of-bounded positive offset
