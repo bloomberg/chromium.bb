@@ -6,8 +6,13 @@
 #define CHROME_BROWSER_SEARCH_LOCAL_FILES_NTP_SOURCE_H_
 
 #include <string>
+
 #include "build/build_config.h"
 #include "content/public/browser/url_data_source.h"
+
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
 
 #if !defined(GOOGLE_CHROME_BUILD)
 

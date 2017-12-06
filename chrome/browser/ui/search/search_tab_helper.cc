@@ -112,8 +112,7 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
                   this,
                   base::MakeUnique<SearchIPCRouterPolicyImpl>(web_contents)),
       instant_service_(nullptr) {
-  if (!search::IsInstantExtendedAPIEnabled())
-    return;
+  DCHECK(search::IsInstantExtendedAPIEnabled());
 
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
   if (instant_service_)
@@ -126,9 +125,6 @@ SearchTabHelper::~SearchTabHelper() {
 }
 
 void SearchTabHelper::OmniboxInputStateChanged() {
-  if (!search::IsInstantExtendedAPIEnabled())
-    return;
-
   ipc_router_.SetInputInProgress(IsInputInProgress());
 }
 
@@ -258,9 +254,6 @@ void SearchTabHelper::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 
 void SearchTabHelper::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  if (!search::IsInstantExtendedAPIEnabled())
-    return;
-
   if (!load_details.is_main_frame)
     return;
 
@@ -281,8 +274,6 @@ void SearchTabHelper::MostVisitedItemsChanged(
 }
 
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
-// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
-#if !defined(OS_ANDROID)
   OmniboxView* omnibox_view = GetOmniboxView();
   if (!omnibox_view)
     return;
@@ -318,7 +309,6 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
         web_contents()->Focus();
       break;
   }
-#endif
 }
 
 void SearchTabHelper::OnDeleteMostVisitedItem(const GURL& url) {
@@ -340,34 +330,23 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
-// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
-#if !defined(OS_ANDROID)
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogEvent(event, time);
-#endif
 }
 
 void SearchTabHelper::OnLogMostVisitedImpression(
     const ntp_tiles::NTPTileImpression& impression) {
-// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
-#if !defined(OS_ANDROID)
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogMostVisitedImpression(impression);
-#endif
 }
 
 void SearchTabHelper::OnLogMostVisitedNavigation(
     const ntp_tiles::NTPTileImpression& impression) {
-// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
-#if !defined(OS_ANDROID)
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogMostVisitedNavigation(impression);
-#endif
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
-// TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
-#if !defined(OS_ANDROID)
   OmniboxView* omnibox_view = GetOmniboxView();
   if (!omnibox_view)
     return;
@@ -389,7 +368,6 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox_view->model()->OnPaste();
   omnibox_view->SetUserText(text_to_paste);
   omnibox_view->OnAfterPossibleChange(true);
-#endif
 }
 
 bool SearchTabHelper::ChromeIdentityCheck(const base::string16& identity) {
@@ -404,15 +382,11 @@ bool SearchTabHelper::HistorySyncCheck() {
 }
 
 const OmniboxView* SearchTabHelper::GetOmniboxView() const {
-#if defined(OS_ANDROID)
-  return nullptr;
-#else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
     return nullptr;
 
   return browser->window()->GetLocationBar()->GetOmniboxView();
-#endif  // OS_ANDROID
 }
 
 OmniboxView* SearchTabHelper::GetOmniboxView() {

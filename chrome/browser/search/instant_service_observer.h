@@ -7,6 +7,12 @@
 
 #include <vector>
 
+#include "build/build_config.h"
+
+#if defined(OS_ANDROID)
+#error "Instant is only used on desktop";
+#endif
+
 struct InstantMostVisitedItem;
 struct ThemeBackgroundInfo;
 

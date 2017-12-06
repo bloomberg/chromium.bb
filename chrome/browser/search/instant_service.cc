@@ -30,13 +30,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
-
-#if !defined(OS_ANDROID)
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#endif
 
 InstantService::InstantService(Profile* profile) : profile_(profile) {
   // The initialization below depends on a typical set of browser threads. Skip
@@ -66,22 +63,17 @@ InstantService::InstantService(Profile* profile) : profile_(profile) {
                        profile->GetResourceContext(), instant_io_context_));
   }
 
-  // Set up the data sources that Instant uses on the NTP.
-  // TODO(aurimas) remove this #if once instant_service.cc is no longer compiled
-  // on Android.
-#if !defined(OS_ANDROID)
   // Listen for theme installation.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(profile_)));
 
+  // Set up the data sources that Instant uses on the NTP.
   content::URLDataSource::Add(profile_, new ThemeSource(profile_));
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
-#endif  // !defined(OS_ANDROID)
-
   content::URLDataSource::Add(profile_, new FaviconSource(profile_));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
 }
@@ -136,13 +128,11 @@ void InstantService::UndoAllMostVisitedDeletions() {
 }
 
 void InstantService::UpdateThemeInfo() {
-#if !defined(OS_ANDROID)
   // Initialize |theme_info_| if necessary.
   if (!theme_info_) {
     BuildThemeInfo();
   }
   NotifyAboutThemeInfo();
-#endif  // !defined(OS_ANDROID)
 }
 
 void InstantService::UpdateMostVisitedItemsInfo() {
@@ -187,12 +177,10 @@ void InstantService::Observe(int type,
       OnRendererProcessTerminated(
           content::Source<content::RenderProcessHost>(source)->GetID());
       break;
-#if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       BuildThemeInfo();
       NotifyAboutThemeInfo();
       break;
-#endif  // !defined(OS_ANDROID)
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
   }
@@ -243,8 +231,6 @@ void InstantService::NotifyAboutThemeInfo() {
   for (InstantServiceObserver& observer : observers_)
     observer.ThemeInfoChanged(*theme_info_);
 }
-
-#if !defined(OS_ANDROID)
 
 namespace {
 
@@ -360,4 +346,3 @@ void InstantService::BuildThemeInfo() {
         theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
 }
-#endif  // !defined(OS_ANDROID)
