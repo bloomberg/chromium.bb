@@ -31,6 +31,7 @@ class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
                  GetSensorCallback callback) override;
 
   bool CheckPermission(device::mojom::SensorType type) const;
+  void OnConnectionError();
 
   mojo::BindingSet<device::mojom::SensorProvider> binding_set_;
   PermissionManager* permission_manager_;
