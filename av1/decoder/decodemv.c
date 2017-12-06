@@ -2272,12 +2272,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_EXT_SKIP
       ) {
     if (is_any_masked_compound_used(bsize)) {
-#if CONFIG_JNT_COMP
-      if (cm->allow_masked_compound && mbmi->compound_idx)
-#else
-      if (cm->allow_masked_compound)
-#endif  // CONFIG_JNT_COMP
-      {
+      if (cm->allow_masked_compound) {
         if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))
           mbmi->interinter_compound_type =
               aom_read_bit(r, ACCT_STR) ? COMPOUND_AVERAGE : COMPOUND_SEG;
