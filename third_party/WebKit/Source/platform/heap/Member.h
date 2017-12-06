@@ -251,21 +251,7 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
       BasePage* const page = PageFromObject(value);
       if (page->IsIncrementalMarking()) {
         DCHECK(ThreadState::Current()->IsIncrementalMarking());
-        HeapObjectHeader* const header =
-            page->IsLargeObjectPage()
-                ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()
-                : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
-                      reinterpret_cast<Address>(
-                          const_cast<typename std::remove_const<T>::type*>(
-                              value)));
-        if (header->IsMarked())
-          return;
-
-        // Mark and push trace callback.
-        header->Mark();
-        ThreadState::Current()->Heap().PushTraceCallback(
-            header->Payload(),
-            ThreadHeap::GcInfo(header->GcInfoIndex())->trace_);
+        ThreadState::Current()->Heap().WriteBarrierInternal(page, value);
       }
     }
   }
