@@ -369,6 +369,15 @@ BookmarkButton* gDraggedButton = nil; // Weak
     [id(delegate_) mouseDragged:theEvent];
 }
 
+- (void)mouseUp:(NSEvent*)theEvent {
+  [super mouseUp:theEvent];
+
+  // Update the highlight on mouse up.
+  GradientButtonCell* cell =
+      base::mac::ObjCCastStrict<GradientButtonCell>([self cell]);
+  [cell setMouseInside:[cell isMouseReallyInside] animate:NO];
+}
+
 - (void)willOpenMenu:(NSMenu *)menu withEvent:(NSEvent *)event {
   // Ensure that right-clicking on a button while a context menu is already open
   // highlights the new button.

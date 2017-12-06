@@ -129,6 +129,7 @@ typedef enum {
 - (BOOL)pulsing;
 - (gradient_button_cell::PulseState)pulseState;
 - (void)setPulseState:(gradient_button_cell::PulseState)pstate;
+- (void)updateTrackingAreas;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_GRADIENT_BUTTON_CELL_H_
