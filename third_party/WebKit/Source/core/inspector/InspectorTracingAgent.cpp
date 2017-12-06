@@ -62,6 +62,7 @@ void InspectorTracingAgent::start(Maybe<String> categories,
                                   Maybe<String> options,
                                   Maybe<double> buffer_usage_reporting_interval,
                                   Maybe<String> transfer_mode,
+                                  Maybe<String> transfer_compression,
                                   Maybe<protocol::Tracing::TraceConfig> config,
                                   std::unique_ptr<StartCallback> callback) {
   DCHECK(!IsStarted());

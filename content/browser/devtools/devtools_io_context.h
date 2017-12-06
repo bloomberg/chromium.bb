@@ -67,7 +67,7 @@ class DevToolsIOContext {
   DevToolsIOContext();
   ~DevToolsIOContext();
 
-  scoped_refptr<RWStream> CreateTempFileBackedStream();
+  scoped_refptr<RWStream> CreateTempFileBackedStream(bool binary);
   scoped_refptr<ROStream> GetByHandle(const std::string& handle);
   scoped_refptr<ROStream> OpenBlob(ChromeBlobStorageContext*,
                                    StoragePartition*,

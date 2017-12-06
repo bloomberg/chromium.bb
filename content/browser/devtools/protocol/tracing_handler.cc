@@ -27,6 +27,7 @@
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing_constants.mojom.h"
 
@@ -107,11 +108,26 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
       : stream_(stream), tracing_handler_(handler) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceChunk, this,
+                         std::move(chunk)));
+      return;
+    }
+
     stream_->Append(std::move(chunk));
   }
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) override {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceFinalContents,
+                         this, std::move(metadata)));
+      return;
+    }
     if (TracingHandler* h = tracing_handler_.get())
       h->OnTraceToStreamComplete(stream_->handle());
   }
@@ -134,6 +150,7 @@ TracingHandler::TracingHandler(TracingHandler::Target target,
       frame_tree_node_id_(frame_tree_node_id),
       did_initiate_recording_(false),
       return_as_stream_(false),
+      gzip_compression_(false),
       weak_factory_(this) {}
 
 TracingHandler::~TracingHandler() {
@@ -249,23 +266,30 @@ std::string TracingHandler::UpdateTraceDataBuffer(
 }
 
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
-  frontend_->TracingComplete(stream_handle);
+  std::string stream_compression =
+      (gzip_compression_ ? Tracing::StreamCompressionEnum::Gzip
+                         : Tracing::StreamCompressionEnum::None);
+  frontend_->TracingComplete(stream_handle, stream_compression);
 }
 
 void TracingHandler::Start(Maybe<std::string> categories,
                            Maybe<std::string> options,
                            Maybe<double> buffer_usage_reporting_interval,
                            Maybe<std::string> transfer_mode,
+                           Maybe<std::string> transfer_compression,
                            Maybe<Tracing::TraceConfig> config,
                            std::unique_ptr<StartCallback> callback) {
   bool return_as_stream = transfer_mode.fromMaybe("") ==
       Tracing::Start::TransferModeEnum::ReturnAsStream;
+  bool gzip_compression = transfer_compression.fromMaybe("") ==
+                          Tracing::StreamCompressionEnum::Gzip;
   if (IsTracing()) {
     if (!did_initiate_recording_ && IsStartupTracingActive()) {
       // If tracing is already running because it was initiated by startup
       // tracing, honor the transfer mode update, as that's the only way
       // for the client to communicate it.
       return_as_stream_ = return_as_stream;
+      gzip_compression_ = gzip_compression;
     }
     callback->sendFailure(Response::Error("Tracing is already started"));
     return;
@@ -280,6 +304,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
 
   did_initiate_recording_ = true;
   return_as_stream_ = return_as_stream;
+  gzip_compression_ = gzip_compression;
   if (buffer_usage_reporting_interval.isJust())
     SetupTimer(buffer_usage_reporting_interval.fromJust());
 
@@ -320,7 +345,12 @@ void TracingHandler::End(std::unique_ptr<EndCallback> callback) {
   scoped_refptr<TracingController::TraceDataEndpoint> endpoint;
   if (return_as_stream_) {
     endpoint = new DevToolsStreamEndpoint(
-        weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream());
+        weak_factory_.GetWeakPtr(), io_context_->CreateTempFileBackedStream(
+                                        gzip_compression_ /* binary */));
+    if (gzip_compression_) {
+      endpoint = TracingControllerImpl::CreateCompressedStringEndpoint(
+          endpoint, true /* compress_with_background_priority */);
+    }
     StopTracing(endpoint, "");
   } else {
     // Reset the trace data buffer state.
