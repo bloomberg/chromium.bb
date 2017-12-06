@@ -98,7 +98,6 @@ std::unique_ptr<UiElement> UiScene::RemoveUiElement(int element_id) {
 bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
                            const gfx::Vector3dF& look_at) {
   bool scene_dirty = !initialized_scene_ || is_dirty_;
-  bool needs_redraw = false;
   initialized_scene_ = true;
   is_dirty_ = false;
 
@@ -140,7 +139,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // synchronously in response to input should be prohibited.
     for (auto& element : *root_element_) {
       if (element.PrepareToDraw())
-        needs_redraw = true;
+        scene_dirty = true;
       element.set_update_phase(UiElement::kUpdatedTexturesAndSizes);
     }
   }
@@ -151,7 +150,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     for (auto& element : *root_element_) {
       element.set_update_phase(UiElement::kUpdatedWorldSpaceTransform);
     }
-    return needs_redraw;
+    return false;
   }
 
   {
@@ -175,7 +174,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     root_element_->UpdateWorldSpaceTransformRecursive();
   }
 
-  return scene_dirty || needs_redraw;
+  return scene_dirty;
 }
 
 bool UiScene::UpdateTextures() {

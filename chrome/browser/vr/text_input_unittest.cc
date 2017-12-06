@@ -11,10 +11,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/elements/keyboard.h"
+#include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/ui_test.h"
 #include "chrome/browser/vr/text_input_delegate.h"
@@ -23,27 +25,13 @@
 #include "chrome/browser/vr/ui_scene_creator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "ui/gfx/render_text.h"
 
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::StrictMock;
 
 namespace vr {
-
-namespace {
-
-#if defined(OS_LINUX)
-// The purpose here is to catch forgetting to update operator==. Ideally this
-// should go in TextInputInfo, but the size of base::string16 varies accross
-// platforms (i.e 24 bytes on linux and 20 bytes on android), so we can't add it
-// there in a generic way.
-static constexpr size_t kTextInputInfoSize = 32;
-static_assert(kTextInputInfoSize == sizeof(TextInputInfo),
-              "If new fields are added to TextInputInfo, we must explicitly "
-              "bump this size and update operator== below");
-#endif
-
-}  // namespace
 
 class MockTextInputDelegate : public TextInputDelegate {
  public:
@@ -74,7 +62,7 @@ class MockKeyboardDelegate : public KeyboardDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockKeyboardDelegate);
 };
 
-class TextInputTest : public UiTest {
+class TextInputSceneTest : public UiTest {
  public:
   void SetUp() override {
     UiTest::SetUp();
@@ -98,7 +86,7 @@ class TextInputTest : public UiTest {
   testing::Sequence in_sequence_;
 };
 
-TEST_F(TextInputTest, InputFieldFocus) {
+TEST_F(TextInputSceneTest, InputFieldFocus) {
   // Set mock delegates.
   auto* kb = static_cast<Keyboard*>(scene_->GetUiElementByName(kKeyboard));
   auto kb_delegate = base::MakeUnique<StrictMock<MockKeyboardDelegate>>();
@@ -126,7 +114,7 @@ TEST_F(TextInputTest, InputFieldFocus) {
   EXPECT_TRUE(OnBeginFrame());
 }
 
-TEST_F(TextInputTest, InputFieldEdit) {
+TEST_F(TextInputSceneTest, InputFieldEdit) {
   // UpdateInput should not be called if the text input doesn't have focus.
   EXPECT_CALL(*text_input_delegate_, UpdateInput(_))
       .Times(0)
@@ -143,6 +131,76 @@ TEST_F(TextInputTest, InputFieldEdit) {
   text_input_->OnInputEdited(info);
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_EQ(info, *text_input_info_);
+}
+
+TEST(TextInputTest, HintText) {
+  UiScene scene;
+
+  auto instance =
+      base::MakeUnique<TextInput>(512, 10, TextInput::OnFocusChangedCallback(),
+                                  TextInput::OnInputEditedCallback());
+  instance->set_name(kOmniboxTextField);
+  instance->SetSize(1, 0);
+  TextInput* element = instance.get();
+  scene.root_element().AddChild(std::move(instance));
+
+  // Text field is empty, so we should be showing hint text.
+  scene.OnBeginFrame(base::TimeTicks(), kForwardVector);
+  EXPECT_GT(element->get_hint_element()->GetTargetOpacity(), 0);
+
+  // When text enters the field, the hint should disappear.
+  TextInputInfo info;
+  info.text = base::UTF8ToUTF16("text");
+  element->UpdateInput(info);
+  scene.OnBeginFrame(base::TimeTicks(), kForwardVector);
+  EXPECT_EQ(element->get_hint_element()->GetTargetOpacity(), 0);
+}
+
+TEST(TextInputTest, Cursor) {
+  UiScene scene;
+
+  auto instance =
+      base::MakeUnique<TextInput>(512, 10, TextInput::OnFocusChangedCallback(),
+                                  TextInput::OnInputEditedCallback());
+  instance->set_name(kOmniboxTextField);
+  instance->SetSize(1, 0);
+  TextInput* element = instance.get();
+  scene.root_element().AddChild(std::move(instance));
+
+  // The cursor should not be blinking or visible.
+  float initial = element->get_cursor_element()->GetTargetOpacity();
+  EXPECT_EQ(initial, 0.f);
+  for (int ms = 0; ms <= 2000; ms += 100) {
+    scene.OnBeginFrame(MsToTicks(ms), kForwardVector);
+    EXPECT_EQ(initial, element->get_cursor_element()->GetTargetOpacity());
+  }
+
+  // When focused, the cursor should start blinking.
+  element->OnFocusChanged(true);
+  initial = element->get_cursor_element()->GetTargetOpacity();
+  bool toggled = false;
+  for (int ms = 0; ms <= 2000; ms += 100) {
+    scene.OnBeginFrame(MsToTicks(ms), kForwardVector);
+    if (initial != element->get_cursor_element()->GetTargetOpacity())
+      toggled = true;
+  }
+  EXPECT_TRUE(toggled);
+
+// TODO(cjgrant): Continue with the test cases below, when they're debugged.
+#if 0
+  TextInputInfo info;
+  info.text = base::UTF8ToUTF16("text");
+
+  // When the cursor position moves, the cursor element should move.
+  element->UpdateInput(info);
+  auto result = element->get_text_element()->LayOutTextForTest({512, 512});
+  auto position1 = element->get_text_element()->GetRawCursorBounds();
+  info.selection_end = 1;
+  element->UpdateInput(info);
+  element->get_text_element()->LayOutTextForTest({512, 512});
+  auto position2 = element->get_text_element()->GetRawCursorBounds();
+  EXPECT_NE(position1, position2);
+#endif
 }
 
 }  // namespace vr

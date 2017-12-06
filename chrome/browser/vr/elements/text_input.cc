@@ -48,6 +48,7 @@ TextInput::TextInput(int maximum_width_pixels,
   this->AddChild(std::move(text));
 
   auto cursor = base::MakeUnique<Rect>();
+  cursor->SetVisible(false);
   cursor->set_type(kTypeTextInputCursor);
   cursor->set_draw_phase(kPhaseForeground);
   cursor->set_hit_testable(false);
@@ -81,7 +82,8 @@ void TextInput::OnFocusChanged(bool focused) {
   if (delegate_ && focused)
     delegate_->UpdateInput(text_info_);
 
-  focus_changed_callback_.Run(focused);
+  if (focus_changed_callback_)
+    focus_changed_callback_.Run(focused);
 }
 
 void TextInput::RequestFocus() {

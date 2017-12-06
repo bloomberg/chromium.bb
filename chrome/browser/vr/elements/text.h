@@ -37,9 +37,13 @@ class Text : public TexturedElement {
   void SetCursorEnabled(bool enabled);
   void SetCursorPosition(int position);
 
-  // Returns the most recently computed cursor position, in DMM, relative to the
-  // corner of the element.
-  gfx::RectF GetCursorBounds();
+  // Returns the most recently computed cursor position, in pixels.  This is
+  // used for scene dirtiness and testing.
+  gfx::Rect GetRawCursorBounds() const;
+
+  // Returns the most recently computed cursor position, in fractions of the
+  // texture size, relative to the upper-left corner of the element.
+  gfx::RectF GetCursorBounds() const;
 
   void OnSetSize(gfx::SizeF size) override;
 

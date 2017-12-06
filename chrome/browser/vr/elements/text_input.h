@@ -50,6 +50,10 @@ class TextInput : public UiElement {
   void OnSetSize(gfx::SizeF size) final;
   void OnSetName() final;
 
+  Text* get_hint_element() { return hint_element_; }
+  Text* get_text_element() { return text_element_; }
+  Rect* get_cursor_element() { return cursor_element_; }
+
  private:
   void LayOutChildren() final;
   bool SetCursorBlinkState(const base::TimeTicks& time);
