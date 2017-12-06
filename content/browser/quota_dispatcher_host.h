@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 
-#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "content/common/quota_dispatcher_host.mojom.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/quota_permission_context.h"
+#include "storage/common/quota/quota_status_code.h"
 
 class GURL;
 
@@ -44,17 +44,40 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
                            RequestStorageQuotaCallback callback) override;
 
  private:
-  class RequestDispatcher;
-  class QueryUsageAndQuotaDispatcher;
-  class RequestQuotaDispatcher;
+  void DidQueryStorageUsageAndQuota(RequestStorageQuotaCallback callback,
+                                    storage::QuotaStatusCode status,
+                                    int64_t usage,
+                                    int64_t quota);
+  void DidGetPersistentUsageAndQuota(int64_t render_frame_id,
+                                     const GURL& origin_url,
+                                     storage::StorageType storage_type,
+                                     uint64_t requested_quota,
+                                     RequestStorageQuotaCallback callback,
+                                     storage::QuotaStatusCode status,
+                                     int64_t usage,
+                                     int64_t quota);
+  void DidGetPermissionResponse(
+      const GURL& origin_url,
+      uint64_t requested_quota,
+      int64_t current_usage,
+      int64_t current_quota,
+      RequestStorageQuotaCallback callback,
+      QuotaPermissionContext::QuotaPermissionResponse response);
+  void DidSetHostQuota(int64_t current_usage,
+                       RequestStorageQuotaCallback callback,
+                       storage::QuotaStatusCode status,
+                       int64_t new_quota);
+  void DidGetTemporaryUsageAndQuota(int64_t requested_quota,
+                                    RequestStorageQuotaCallback callback,
+                                    storage::QuotaStatusCode status,
+                                    int64_t usage,
+                                    int64_t quota);
 
   // The ID of this process.
   int process_id_;
 
   storage::QuotaManager* quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;
-
-  base::IDMap<std::unique_ptr<RequestDispatcher>> outstanding_requests_;
 
   base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_;
 
