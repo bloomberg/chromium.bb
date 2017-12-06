@@ -455,6 +455,57 @@ TEST_F(
       mocha.run();
     });
 
+TEST_F(
+    'InterventionsInternalsUITest',
+    'LogNewMessageExistedPageIdGroupToTopOfTable', function() {
+      test('NewMessagePushedToTopOfTable', () => {
+        let pageImpl = new InterventionsInternalPageImpl(null);
+        let logs = [
+          {
+            type: 'Type_a',
+            description: 'Some description_a',
+            url: {url: 'Some gurl.spec()_a'},
+            time: 0,
+            pageId: 3,
+          },
+          {
+            type: 'Type_b',
+            description: 'Some description_b',
+            url: {url: 'Some gurl.spec()_b'},
+            time: 1,
+            pageId: 123,
+          },
+          {
+            type: 'Type_c',
+            description: 'Some description_c',
+            url: {url: 'Some gurl.spec()_c'},
+            time: 2,
+            pageId: 3,
+          },
+        ];
+
+        pageImpl.logNewMessage(logs[0]);
+        pageImpl.logNewMessage(logs[1]);
+        let rows = $('message-logs-table').querySelectorAll('.log-message');
+        expectEquals(2, rows.length);
+        expectEquals(
+            logs[1].type, rows[0].querySelector('.log-type').textContent);
+        expectEquals(
+            logs[0].type, rows[1].querySelector('.log-type').textContent);
+
+        // Existing group pushed to the top of the log table.
+        pageImpl.logNewMessage(logs[2]);
+        rows = $('message-logs-table').querySelectorAll('.log-message');
+        expectEquals(2, rows.length);
+        expectEquals(
+            logs[2].type, rows[0].querySelector('.log-type').textContent);
+        expectEquals(
+            logs[1].type, rows[1].querySelector('.log-type').textContent);
+      });
+
+      mocha.run();
+    });
+
 TEST_F('InterventionsInternalsUITest', 'AddNewBlacklistedHost', function() {
   test('AddNewBlacklistedHost', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);

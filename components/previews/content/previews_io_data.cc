@@ -148,10 +148,12 @@ void PreviewsIOData::SetPreviewsBlacklistForTesting(
 void PreviewsIOData::LogPreviewNavigation(const GURL& url,
                                           bool opt_out,
                                           PreviewsType type,
-                                          base::Time time) const {
+                                          base::Time time,
+                                          uint64_t page_id) const {
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PreviewsUIService::LogPreviewNavigation,
-                            previews_ui_service_, url, type, opt_out, time));
+      FROM_HERE,
+      base::BindOnce(&PreviewsUIService::LogPreviewNavigation,
+                     previews_ui_service_, url, type, opt_out, time, page_id));
 }
 
 void PreviewsIOData::LogPreviewDecisionMade(
@@ -170,11 +172,12 @@ void PreviewsIOData::LogPreviewDecisionMade(
 
 void PreviewsIOData::AddPreviewNavigation(const GURL& url,
                                           bool opt_out,
-                                          PreviewsType type) {
+                                          PreviewsType type,
+                                          uint64_t page_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   base::Time time =
       previews_black_list_->AddPreviewNavigation(url, opt_out, type);
-  LogPreviewNavigation(url, opt_out, type, time);
+  LogPreviewNavigation(url, opt_out, type, time, page_id);
 }
 
 void PreviewsIOData::ClearBlackList(base::Time begin_time,

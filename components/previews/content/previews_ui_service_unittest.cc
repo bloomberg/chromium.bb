@@ -65,11 +65,13 @@ class TestPreviewsLogger : public PreviewsLogger {
   void LogPreviewNavigation(const GURL& url,
                             PreviewsType type,
                             bool opt_out,
-                            base::Time time) override {
+                            base::Time time,
+                            uint64_t page_id) override {
     navigation_url_ = url;
     navigation_opt_out_ = opt_out;
     navigation_type_ = type;
     navigation_time_ = base::Time(time);
+    navigation_page_id_ = page_id;
   }
 
   void LogPreviewDecisionMade(
@@ -120,6 +122,7 @@ class TestPreviewsLogger : public PreviewsLogger {
   bool navigation_opt_out() const { return navigation_opt_out_; }
   base::Time navigation_time() const { return navigation_time_; }
   PreviewsType navigation_type() const { return navigation_type_; }
+  uint64_t navigation_page_id() const { return navigation_page_id_; }
 
   // Return the passed in OnBlacklist events.
   std::string host_blacklisted() const { return host_blacklisted_; }
@@ -144,6 +147,7 @@ class TestPreviewsLogger : public PreviewsLogger {
   bool navigation_opt_out_;
   base::Time navigation_time_;
   PreviewsType navigation_type_;
+  uint64_t navigation_page_id_;
 
   // Passed in OnBlacklist events.
   std::string host_blacklisted_;
@@ -221,28 +225,34 @@ TEST_F(PreviewsUIServiceTest, TestInitialization) {
 
 TEST_F(PreviewsUIServiceTest, TestLogPreviewNavigationPassInCorrectParams) {
   const GURL url_a = GURL("http://www.url_a.com/url_a");
-  PreviewsType type_a = PreviewsType::LOFI;
-  bool opt_out_a = true;
-  base::Time time_a = base::Time::Now();
+  const PreviewsType type_a = PreviewsType::LOFI;
+  const bool opt_out_a = true;
+  const base::Time time_a = base::Time::Now();
+  const uint64_t page_id_a = 1234;
 
-  ui_service()->LogPreviewNavigation(url_a, type_a, opt_out_a, time_a);
+  ui_service()->LogPreviewNavigation(url_a, type_a, opt_out_a, time_a,
+                                     page_id_a);
 
   EXPECT_EQ(url_a, logger_ptr_->navigation_url());
   EXPECT_EQ(type_a, logger_ptr_->navigation_type());
   EXPECT_EQ(opt_out_a, logger_ptr_->navigation_opt_out());
   EXPECT_EQ(time_a, logger_ptr_->navigation_time());
+  EXPECT_EQ(page_id_a, logger_ptr_->navigation_page_id());
 
   const GURL url_b = GURL("http://www.url_b.com/url_b");
-  PreviewsType type_b = PreviewsType::OFFLINE;
-  bool opt_out_b = false;
-  base::Time time_b = base::Time::Now();
+  const PreviewsType type_b = PreviewsType::OFFLINE;
+  const bool opt_out_b = false;
+  const base::Time time_b = base::Time::Now();
+  const uint64_t page_id_b = 4321;
 
-  ui_service()->LogPreviewNavigation(url_b, type_b, opt_out_b, time_b);
+  ui_service()->LogPreviewNavigation(url_b, type_b, opt_out_b, time_b,
+                                     page_id_b);
 
   EXPECT_EQ(url_b, logger_ptr_->navigation_url());
   EXPECT_EQ(type_b, logger_ptr_->navigation_type());
   EXPECT_EQ(opt_out_b, logger_ptr_->navigation_opt_out());
   EXPECT_EQ(time_b, logger_ptr_->navigation_time());
+  EXPECT_EQ(page_id_b, logger_ptr_->navigation_page_id());
 }
 
 TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {

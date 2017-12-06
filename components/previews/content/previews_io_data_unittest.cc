@@ -193,6 +193,9 @@ class TestPreviewsUIService : public PreviewsUIService {
   const std::vector<PreviewsType>& navigation_types() const {
     return navigation_types_;
   }
+  const std::vector<uint64_t>& navigation_page_ids() const {
+    return navigation_page_ids_;
+  }
 
   // Expose passed in params for hosts and user blacklist event.
   std::string host_blacklisted() const { return host_blacklisted_; }
@@ -208,11 +211,13 @@ class TestPreviewsUIService : public PreviewsUIService {
   void LogPreviewNavigation(const GURL& url,
                             PreviewsType type,
                             bool opt_out,
-                            base::Time time) override {
+                            base::Time time,
+                            uint64_t page_id) override {
     navigation_urls_.push_back(url);
     navigation_opt_outs_.push_back(opt_out);
     navigation_types_.push_back(type);
     navigation_times_.push_back(time);
+    navigation_page_ids_.push_back(page_id);
   }
 
   void LogPreviewDecisionMade(
@@ -249,6 +254,7 @@ class TestPreviewsUIService : public PreviewsUIService {
   std::vector<bool> navigation_opt_outs_;
   std::vector<base::Time> navigation_times_;
   std::vector<PreviewsType> navigation_types_;
+  std::vector<uint64_t> navigation_page_ids_;
 
   // Whether the blacklist decisions are ignored or not.
   bool blacklist_ignored_;
@@ -758,12 +764,13 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
 
 TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
   InitializeUIService();
-  GURL url("http://www.url_a.com/url_a");
-  bool opt_out = true;
-  PreviewsType type = PreviewsType::OFFLINE;
-  base::Time time = base::Time::Now();
+  const GURL url("http://www.url_a.com/url_a");
+  const bool opt_out = true;
+  const PreviewsType type = PreviewsType::OFFLINE;
+  const base::Time time = base::Time::Now();
+  const uint64_t page_id = 1234;
 
-  io_data()->LogPreviewNavigation(url, opt_out, type, time);
+  io_data()->LogPreviewNavigation(url, opt_out, type, time, page_id);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(ui_service()->navigation_urls(), ::testing::ElementsAre(url));
@@ -771,6 +778,8 @@ TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
               ::testing::ElementsAre(opt_out));
   EXPECT_THAT(ui_service()->navigation_types(), ::testing::ElementsAre(type));
   EXPECT_THAT(ui_service()->navigation_times(), ::testing::ElementsAre(time));
+  EXPECT_THAT(ui_service()->navigation_page_ids(),
+              ::testing::ElementsAre(page_id));
 }
 
 TEST_F(PreviewsIODataTest, LogPreviewDecisionMadePassInCorrectParams) {

@@ -137,6 +137,9 @@ void PreviewsInfoBarDelegate::Create(
 #endif
 
   infobar_service->AddInfoBar(std::move(infobar_ptr));
+  uint64_t page_id = (infobar_tab_helper->previews_user_data())
+                         ? infobar_tab_helper->previews_user_data()->page_id()
+                         : 0;
 
   if (previews_ui_service) {
     // Not in incognito mode or guest mode.
@@ -146,7 +149,7 @@ void PreviewsInfoBarDelegate::Create(
         web_contents->GetController()
             .GetLastCommittedEntry()
             ->GetRedirectChain()[0] /* GURL */,
-        base::Time::Now(), 0 /* page_id */);
+        base::Time::Now(), page_id);
   }
 
   RecordPreviewsInfoBarAction(previews_type, INFOBAR_SHOWN);

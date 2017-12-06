@@ -65,7 +65,8 @@ class PreviewsIOData : public PreviewsDecider,
   void LogPreviewNavigation(const GURL& url,
                             bool opt_out,
                             PreviewsType type,
-                            base::Time time) const;
+                            base::Time time,
+                            uint64_t page_id) const;
 
   // Adds log message of preview decision made asynchronously. |passed_reasons|
   // are PreviewsEligibilityReasons that got passed the decision before
@@ -81,7 +82,10 @@ class PreviewsIOData : public PreviewsDecider,
       uint64_t page_id) const;
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
-  void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
+  void AddPreviewNavigation(const GURL& url,
+                            bool opt_out,
+                            PreviewsType type,
+                            uint64_t page_id);
 
   // Clears the history of the black list between |begin_time| and |end_time|,
   // both inclusive.

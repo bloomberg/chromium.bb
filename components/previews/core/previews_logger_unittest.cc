@@ -219,13 +219,16 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   PreviewsType type_b = PreviewsType::LOFI;
   const GURL url_a("http://www.url_a.com/url_a");
   const GURL url_b("http://www.url_b.com/url_b");
-  const uint64_t expected_nav_id = 0;
+  const uint64_t page_id_a = 1234;
+  const uint64_t page_id_b = 1234;
 
   TestPreviewsLoggerObserver observer;
   logger_->AddAndNotifyObserver(&observer);
 
-  logger_->LogPreviewNavigation(url_a, type_a, true /* opt_out */, time);
-  logger_->LogPreviewNavigation(url_b, type_b, false /* opt_out */, time);
+  logger_->LogPreviewNavigation(url_a, type_a, true /* opt_out */, time,
+                                page_id_a);
+  logger_->LogPreviewNavigation(url_b, type_b, false /* opt_out */, time,
+                                page_id_b);
 
   auto actual = observer.messages();
 
@@ -237,14 +240,14 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
   EXPECT_EQ(time, actual[0].time);
-  EXPECT_EQ(expected_nav_id, actual[0].page_id);
+  EXPECT_EQ(page_id_a, actual[0].page_id);
 
   std::string expected_description_b = "LoFi preview - user opt-out: False";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[1].event_type);
   EXPECT_EQ(expected_description_b, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
   EXPECT_EQ(time, actual[1].time);
-  EXPECT_EQ(expected_nav_id, actual[1].page_id);
+  EXPECT_EQ(page_id_b, actual[1].page_id);
 }
 
 TEST_F(PreviewsLoggerTest, PreviewsLoggerOnlyKeepsCertainNumberOfDecisionLogs) {
@@ -271,9 +274,10 @@ TEST_F(PreviewsLoggerTest,
   PreviewsType type = PreviewsType::OFFLINE;
   const GURL url("http://www.url_.com/url_");
   const base::Time time = base::Time::Now();
+  const uint64_t page_id = 1234;
 
   for (size_t i = 0; i < 2 * kMaximumNavigationLogs; ++i) {
-    logger_->LogPreviewNavigation(url, type, true /* opt_out */, time);
+    logger_->LogPreviewNavigation(url, type, true /* opt_out */, time, page_id);
   }
 
   TestPreviewsLoggerObserver observer;
@@ -303,12 +307,13 @@ TEST_F(PreviewsLoggerTest,
       base::Time::FromJsTime(-413696806000),  // Same as above.
       base::Time::FromJsTime(758620800000),   // Jan 15 1994 08:00:00 UTC
   };
-  const uint64_t page_ids[] = {1233, 1233, 0 /* Navigation page_id */};
+  const uint64_t page_ids[] = {1233, 1233, 5678 /* Navigation page_id */};
 
   // Logging decisions and navigations events.
   logger_->LogPreviewDecisionMade(final_reason, urls[0], times[0], type,
                                   std::move(passed_reasons), page_ids[0]);
-  logger_->LogPreviewNavigation(urls[2], type, true /* opt_out */, times[2]);
+  logger_->LogPreviewNavigation(urls[2], type, true /* opt_out */, times[2],
+                                page_ids[2]);
 
   TestPreviewsLoggerObserver observer;
   logger_->AddAndNotifyObserver(&observer);
