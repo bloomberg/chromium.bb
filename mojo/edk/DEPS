@@ -3,11 +3,9 @@ include_rules = [
   "+base",
   "+crypto",
   "+build",
-  "+gin",
   "+native_client/src/public",
   "+testing",
   "+third_party/ashmem",
-  "+v8",
 
   # internal includes.
   "+mojo",

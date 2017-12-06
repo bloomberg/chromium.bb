@@ -209,7 +209,6 @@ class MojomProcessor(object):
             variant=args.variant, bytecode_path=args.bytecode_path,
             for_blink=args.for_blink,
             use_once_callback=args.use_once_callback,
-            js_bindings_mode=args.js_bindings_mode,
             export_attribute=args.export_attribute,
             export_header=args.export_header,
             generate_non_variant_code=args.generate_non_variant_code,
@@ -342,13 +341,6 @@ def main():
   generate_parser.add_argument(
       "--use_once_callback", action="store_true",
       help="Use base::OnceCallback instead of base::RepeatingCallback.")
-  generate_parser.add_argument(
-      "--js_bindings_mode", choices=["new", "both", "old"], default="new",
-      help="This option only affects the JavaScript bindings. The value could "
-      "be: \"new\" - generate only the new-style JS bindings, which use the "
-      "new module loading approach and the core api exposed by Web IDL; "
-      "\"both\" - generate both the old- and new-style bindings; \"old\" - "
-      "generate only the old-style bindings.")
   generate_parser.add_argument(
       "--export_attribute", default="",
       help="Optional attribute to specify on class declaration to export it "

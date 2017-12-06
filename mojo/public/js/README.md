@@ -1,10 +1,6 @@
 # Mojo JavaScript Bindings API
 This document is a subset of the [Mojo documentation](/mojo).
 
-**NOTE:** This document only covers the *new mode* of JavaScript APIs. If a
-Mojom target sets `use_new_js_bindings = false`, it is using the deprecated
-*old mode* and should be converted.
-
 [TOC]
 
 ## Getting Started

@@ -761,10 +761,6 @@
     "label": "//mojo/common:mojo_common_unittests",
     "type": "console_test_launcher",
   },
-  "mojo_js_unittests": {
-    "label": "//mojo/edk/js/tests:mojo_js_unittests",
-    "type": "console_test_launcher",
-  },
   "mojo_public_bindings_unittests": {
     "label": "//mojo/edk/test:mojo_public_bindings_unittests",
     "type": "console_test_launcher",

@@ -259,7 +259,6 @@ static_library("content_shell_lib") {
     "//media",
     "//media/capture",
     "//media/mojo:features",
-    "//mojo/edk/js",
     "//net",
     "//net:net_resources",
     "//net:test_support",
@@ -742,7 +741,9 @@ if (is_mac) {
     # use rpath-based loading.
     # TODO(rsesek): After GYP is gone, re-write content_shell_main to be like
     # chrome_main and use dlopen() instead of a linked framework.
-    ldflags = [ "-Wl,-install_name,@rpath/Frameworks/$output_name.framework/$output_name" ]
+    ldflags = [
+      "-Wl,-install_name,@rpath/Frameworks/$output_name.framework/$output_name",
+    ]
 
     if (is_component_build) {
       # Set up the rpath for the framework so that it can find dylibs in the

@@ -46,12 +46,6 @@ namespace url {
 class Origin;
 }
 
-namespace v8 {
-template <typename T> class Local;
-class Context;
-class Isolate;
-}
-
 namespace content {
 class ChildURLLoaderFactoryGetter;
 class ContextMenuClient;
@@ -231,11 +225,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetSelectedText(const base::string16& selection_text,
                                size_t offset,
                                const gfx::Range& range) = 0;
-
-  // Ensures that builtin mojo bindings modules are available in |context|.
-  virtual void EnsureMojoBuiltinsAreAvailable(
-      v8::Isolate* isolate,
-      v8::Local<v8::Context> context) = 0;
 
   // Adds |message| to the DevTools console.
   virtual void AddMessageToConsole(ConsoleMessageLevel level,
