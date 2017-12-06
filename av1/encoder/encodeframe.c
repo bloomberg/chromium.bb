@@ -773,41 +773,6 @@ static int set_segment_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return av1_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
 }
 
-#if CONFIG_DIST_8X8
-static void dist_8x8_set_sub8x8_dst(MACROBLOCK *const x, uint8_t *dst8x8,
-                                    BLOCK_SIZE bsize, int bw, int bh,
-                                    int mi_row, int mi_col) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  struct macroblockd_plane *const pd = &xd->plane[0];
-  const int dst_stride = pd->dst.stride;
-  uint8_t *dst = pd->dst.buf;
-
-  assert(bsize < BLOCK_8X8);
-
-  if (bsize < BLOCK_8X8) {
-    int i, j;
-#if CONFIG_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      uint16_t *dst8x8_16 = (uint16_t *)dst8x8;
-      uint16_t *dst_sub8x8 = &dst8x8_16[((mi_row & 1) * 8 + (mi_col & 1)) << 2];
-
-      for (j = 0; j < bh; ++j)
-        for (i = 0; i < bw; ++i)
-          dst_sub8x8[j * 8 + i] = CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i];
-    } else {
-#endif
-      uint8_t *dst_sub8x8 = &dst8x8[((mi_row & 1) * 8 + (mi_col & 1)) << 2];
-
-      for (j = 0; j < bh; ++j)
-        for (i = 0; i < bw; ++i)
-          dst_sub8x8[j * 8 + i] = dst[j * dst_stride + i];
-#if CONFIG_HIGHBITDEPTH
-    }
-#endif
-  }
-}
-#endif  // CONFIG_DIST_8X8
-
 static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                              MACROBLOCK *const x, int mi_row, int mi_col,
                              RD_STATS *rd_cost,
@@ -2388,40 +2353,31 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
 
 #if CONFIG_DIST_8X8
 static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            uint8_t *y_src_8x8) {
+                            uint8_t *src_plane_8x8[MAX_MB_PLANE],
+                            uint8_t *dst_plane_8x8[MAX_MB_PLANE]) {
   MACROBLOCKD *const xd = &x->e_mbd;
   int64_t dist_8x8, dist_8x8_uv, total_dist;
   const int src_stride = x->plane[0].src.stride;
-  uint8_t *decoded_8x8;
   int plane;
 
-#if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    decoded_8x8 = CONVERT_TO_BYTEPTR(x->decoded_8x8);
-  else
-#endif
-    decoded_8x8 = (uint8_t *)x->decoded_8x8;
-
-  dist_8x8 = av1_dist_8x8(cpi, x, y_src_8x8, src_stride, decoded_8x8, 8,
-                          BLOCK_8X8, 8, 8, 8, 8, x->qindex)
-             << 4;
+  const int dst_stride = xd->plane[0].dst.stride;
+  dist_8x8 =
+      av1_dist_8x8(cpi, x, src_plane_8x8[0], src_stride, dst_plane_8x8[0],
+                   dst_stride, BLOCK_8X8, 8, 8, 8, 8, x->qindex)
+      << 4;
 
   // Compute chroma distortion for a luma 8x8 block
   dist_8x8_uv = 0;
 
   for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
+    unsigned sse;
     const int src_stride_uv = x->plane[plane].src.stride;
     const int dst_stride_uv = xd->plane[plane].dst.stride;
-    // uv buff pointers now (i.e. the last sub8x8 block) is the same
-    // to those at the first sub8x8 block because
-    // uv buff pointer is set only once at first sub8x8 block in a 8x8.
-    uint8_t *src_uv = x->plane[plane].src.buf;
-    uint8_t *dst_uv = xd->plane[plane].dst.buf;
-    unsigned sse;
     const BLOCK_SIZE plane_bsize =
         AOMMAX(BLOCK_4X4, get_plane_block_size(BLOCK_8X8, &xd->plane[plane]));
-    cpi->fn_ptr[plane_bsize].vf(src_uv, src_stride_uv, dst_uv, dst_stride_uv,
-                                &sse);
+
+    cpi->fn_ptr[plane_bsize].vf(src_plane_8x8[plane], src_stride_uv,
+                                dst_plane_8x8[plane], dst_stride_uv, &sse);
     dist_8x8_uv += (int64_t)sse << 4;
   }
 
@@ -2720,6 +2676,17 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   int64_t temp_best_rdcost = best_rdc.rdcost;
 
+#if CONFIG_DIST_8X8
+  uint8_t *src_plane_8x8[MAX_MB_PLANE], *dst_plane_8x8[MAX_MB_PLANE];
+
+  if (x->using_dist_8x8 && bsize == BLOCK_8X8) {
+    for (int i = 0; i < MAX_MB_PLANE; i++) {
+      src_plane_8x8[i] = x->plane[i].src.buf;
+      dst_plane_8x8[i] = xd->plane[i].dst.buf;
+    }
+  }
+#endif  // CONFIG_DIST_8X8
+
   // PARTITION_SPLIT
   // TODO(jingning): use the motion vectors given by the above search as
   // the starting point of motion search in the following partition type check.
@@ -2727,6 +2694,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     int reached_last_index = 0;
     subsize = get_subsize(bsize, PARTITION_SPLIT);
     int idx;
+
     for (idx = 0; idx < 4 && sum_rdc.rdcost < temp_best_rdcost; ++idx) {
       const int x_idx = (idx & 1) * mi_step;
       const int y_idx = (idx >> 1) * mi_step;
@@ -2760,9 +2728,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8 && reached_last_index &&
         sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
-      const int src_stride = x->plane[0].src.stride;
       int64_t dist_8x8;
-      dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4 * src_stride - 4);
+      dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
       if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
         assert(sum_rdc.dist == dist_8x8);
       sum_rdc.dist = dist_8x8;
@@ -2849,9 +2816,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
-        const int src_stride = x->plane[0].src.stride;
         int64_t dist_8x8;
-        dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4 * src_stride);
+        dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
         if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
           assert(sum_rdc.dist == dist_8x8);
         sum_rdc.dist = dist_8x8;
@@ -2936,7 +2902,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
         int64_t dist_8x8;
-        dist_8x8 = dist_8x8_yuv(cpi, x, x->plane[0].src.buf - 4);
+        dist_8x8 = dist_8x8_yuv(cpi, x, src_plane_8x8, dst_plane_8x8);
         if (x->tune_metric == AOM_TUNE_PSNR && xd->bd == 8)
           assert(sum_rdc.dist == dist_8x8);
         sum_rdc.dist = dist_8x8;
@@ -4860,14 +4826,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size, rate,
                           tile_data->allow_update_cdf);
   }
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
-    dist_8x8_set_sub8x8_dst(x, (uint8_t *)x->decoded_8x8, bsize,
-                            block_size_wide[bsize], block_size_high[bsize],
-                            mi_row, mi_col);
-  }
-#endif  // CONFIG_DIST_8X8
 
   if (!dry_run) {
 #if CONFIG_INTRABC
