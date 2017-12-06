@@ -471,6 +471,7 @@ const char kMediaCacheSize[]                = "media-cache-size";
 
 // Enables the out-of-process memory logging.
 const char kMemlog[] = "memlog";
+const char kMemlogKeepSmallAllocations[] = "memlog-keep-small-allocations";
 const char kMemlogModeAll[] = "all";
 const char kMemlogModeBrowser[] = "browser";
 const char kMemlogModeGpu[] = "gpu";

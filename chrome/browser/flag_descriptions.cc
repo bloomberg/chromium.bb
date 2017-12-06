@@ -498,6 +498,16 @@ const char kEnableOutOfProcessHeapProfilingModeGpu[] =
 const char kEnableOutOfProcessHeapProfilingModeRendererSampling[] =
     "Profile a random sampling of renderer processes, ensuring only one is "
     "ever profiled at a time.";
+const char kOutOfProcessHeapProfilingKeepSmallAllocations[] =
+    "Keep track of even the small allocations in memlog heap dumps.";
+const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
+    "By default, small allocations are pruned from the heap dump. This reduces "
+    "the size of the compressed trace by 100x. If pruning is disabled, the "
+    "chrome://tracing UI may be unable to take or load the trace. Save the "
+    "trace directly using chrome://memory-internals, and use other mechanisms "
+    "[e.g. diff_heap_profiler.py] to examine the trace. Note that "
+    "automatically uploaded traces will always be pruned. This only affects "
+    "manually taken memory-infra traces.";
 
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =

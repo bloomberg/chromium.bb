@@ -45,7 +45,7 @@ interface ProfilingService {
   // contents of each shared buffer is a JSON string compatible with
   // TRACE_EVENT* macros. Processes that fail to dump will be omitted from
   // |buffers|.
-  DumpProcessesForTracing() =>
+  DumpProcessesForTracing(bool keep_small_allocations) =>
       (array<SharedBufferWithSize> buffers);
 
   // Returns the pids of all profiled processes.

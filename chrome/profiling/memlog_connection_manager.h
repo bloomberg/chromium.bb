@@ -64,6 +64,7 @@ class MemlogConnectionManager {
   // returns. The dump is complete when the callback provided in the args is
   // fired.
   void DumpProcessesForTracing(
+      bool keep_small_allocations,
       mojom::ProfilingService::DumpProcessesForTracingCallback callback,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
@@ -83,6 +84,7 @@ class MemlogConnectionManager {
       scoped_refptr<DumpProcessesForTracingTracking> tracking,
       base::ProcessId pid,
       mojom::ProcessType process_type,
+      bool keep_small_allocations,
       bool success,
       AllocationCountMap counts,
       AllocationTracker::ContextMap context);

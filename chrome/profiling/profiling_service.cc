@@ -70,6 +70,7 @@ void ProfilingService::AddProfilingClient(
 }
 
 void ProfilingService::DumpProcessesForTracing(
+    bool keep_small_allocations,
     DumpProcessesForTracingCallback callback) {
   // Need a memory map to make sense of the dump. The dump will be triggered
   // in the memory map global dump callback.
@@ -77,7 +78,8 @@ void ProfilingService::DumpProcessesForTracing(
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->GetVmRegionsForHeapProfiler(base::Bind(
           &ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing,
-          weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+          weak_factory_.GetWeakPtr(), keep_small_allocations,
+          base::Passed(&callback)));
 }
 
 void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
@@ -85,6 +87,7 @@ void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
 }
 
 void ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
+    bool keep_small_allocations,
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
@@ -96,8 +99,8 @@ void ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
   }
   // TODO(bug 752621) we should be asking and getting the memory map of only
   // the process we want rather than querying all processes and filtering.
-  connection_manager_.DumpProcessesForTracing(std::move(callback),
-                                              std::move(dump));
+  connection_manager_.DumpProcessesForTracing(
+      keep_small_allocations, std::move(callback), std::move(dump));
 }
 
 }  // namespace profiling

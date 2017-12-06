@@ -3180,6 +3180,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfProcessHeapProfilingDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableOutOfProcessHeapProfilingChoices)},
 
+    {"memlog-keep-small-allocations",
+     flag_descriptions::kOutOfProcessHeapProfilingKeepSmallAllocations,
+     flag_descriptions::
+         kOutOfProcessHeapProfilingKeepSmallAllocationsDescription,
+     kOsAll, SINGLE_VALUE_TYPE(switches::kMemlogKeepSmallAllocations)},
+
     {"omnibox-ui-elide-suggestion-url-after-host",
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,

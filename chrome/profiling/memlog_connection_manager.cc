@@ -200,6 +200,7 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
 }
 
 void MemlogConnectionManager::DumpProcessesForTracing(
+    bool keep_small_allocations,
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   base::AutoLock lock(connections_lock_);
@@ -234,7 +235,7 @@ void MemlogConnectionManager::DumpProcessesForTracing(
         barrier_id, task_runner,
         base::BindOnce(&MemlogConnectionManager::DoDumpOneProcessForTracing,
                        weak_factory_.GetWeakPtr(), tracking, pid,
-                       connection->process_type));
+                       connection->process_type, keep_small_allocations));
     connection->client->FlushMemlogPipe(barrier_id);
   }
 }
@@ -243,6 +244,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
     scoped_refptr<DumpProcessesForTracingTracking> tracking,
     base::ProcessId pid,
     mojom::ProcessType process_type,
+    bool keep_small_allocations,
     bool success,
     AllocationCountMap counts,
     AllocationTracker::ContextMap context) {
@@ -278,8 +280,8 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   params.maps = std::move(process_dump->os_dump->memory_maps_for_heap_profiler);
   params.context_map = std::move(context);
   params.process_type = process_type;
-  params.min_size_threshold = kMinSizeThreshold;
-  params.min_count_threshold = kMinCountThreshold;
+  params.min_size_threshold = keep_small_allocations ? 0 : kMinSizeThreshold;
+  params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;
   params.is_argument_filtering_enabled = true;
 
   std::ostringstream oss;
