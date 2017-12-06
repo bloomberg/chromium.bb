@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   // Log in.
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),
-      kTestUserName);
+      kTestUserName, false);
   g_browser_process->profile_manager()->GetProfile(
       ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
   session_manager::SessionManager::Get()->SessionStarted();

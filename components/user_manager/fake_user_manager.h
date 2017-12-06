@@ -39,7 +39,8 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   // Set the user as logged in.
   void UserLoggedIn(const AccountId& account_id,
                     const std::string& username_hash,
-                    bool browser_restart) override;
+                    bool browser_restart,
+                    bool is_child) override;
 
   const user_manager::User* GetActiveUser() const override;
   user_manager::User* GetActiveUser() override;

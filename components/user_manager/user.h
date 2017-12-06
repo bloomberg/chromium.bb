@@ -87,9 +87,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // Returns the user type.
   virtual UserType GetType() const = 0;
 
-  // Allows managing child status of the user. Used for RegularUser.
-  virtual void SetIsChild(bool is_child);
-
   // Returns true if user has gaia account. True for users of types
   // USER_TYPE_REGULAR and USER_TYPE_CHILD.
   virtual bool HasGaiaAccount() const;
@@ -200,7 +197,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   FRIEND_TEST_ALL_PREFIXES(UserTest, UserSessionInitialized);
 
   // Do not allow anyone else to create new User instances.
-  static User* CreateRegularUser(const AccountId& account_id);
+  static User* CreateRegularUser(const AccountId& account_id,
+                                 const UserType user_type);
   static User* CreateGuestUser(const AccountId& guest_account_id);
   static User* CreateKioskAppUser(const AccountId& kiosk_app_account_id);
   static User* CreateArcKioskAppUser(const AccountId& arc_kiosk_account_id);

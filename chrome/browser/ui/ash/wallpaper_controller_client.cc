@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_files_id.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"

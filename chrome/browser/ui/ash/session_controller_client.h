@@ -88,7 +88,6 @@ class SessionControllerClient
 
   // user_manager::UserManager::Observer
   void OnUserImageChanged(const user_manager::User& user) override;
-  void OnChildStatusChanged(const user_manager::User& user) override;
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;

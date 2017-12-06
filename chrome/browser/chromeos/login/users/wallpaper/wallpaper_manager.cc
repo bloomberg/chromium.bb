@@ -574,7 +574,6 @@ void WallpaperManager::TestApi::ClearDisposableWallpaperCache() {
 WallpaperManager::~WallpaperManager() {
   show_user_name_on_signin_subscription_.reset();
   device_wallpaper_image_subscription_.reset();
-  user_manager::UserManager::Get()->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
   // In case there's wallpaper load request being processed.
   for (size_t i = 0; i < loading_.size(); ++i)
@@ -1174,10 +1173,6 @@ void WallpaperManager::Observe(int type,
   }
 }
 
-void WallpaperManager::OnChildStatusChanged(const user_manager::User& user) {
-  ShowUserWallpaper(user.GetAccountId());
-}
-
 void WallpaperManager::OnWindowActivated(ActivationReason reason,
                                          aura::Window* gained_active,
                                          aura::Window* lost_active) {
@@ -1228,8 +1223,6 @@ WallpaperManager::WallpaperManager()
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-
-  user_manager::UserManager::Get()->AddObserver(this);
 }
 
 // static

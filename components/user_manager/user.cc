@@ -40,16 +40,15 @@ bool User::TypeHasGaiaAccount(UserType user_type) {
 // Also used for regular supervised users.
 class RegularUser : public User {
  public:
-  explicit RegularUser(const AccountId& account_id);
+  RegularUser(const AccountId& account_id, const UserType user_type);
   ~RegularUser() override;
 
   // Overridden from User:
   UserType GetType() const override;
   bool CanSyncImage() const override;
-  void SetIsChild(bool is_child) override;
 
  private:
-  bool is_child_ = false;
+  bool is_child_;
 
   DISALLOW_COPY_AND_ASSIGN(RegularUser);
 };
@@ -167,14 +166,6 @@ const AccountId& User::GetAccountId() const {
   return account_id_;
 }
 
-void User::SetIsChild(bool is_child) {
-  VLOG(1) << "Ignoring SetIsChild call with param " << is_child;
-  if (is_child) {
-    NOTREACHED() << "Calling SetIsChild(true) for base User class."
-                 << "Base class cannot be set as child";
-  }
-}
-
 bool User::HasGaiaAccount() const {
   return TypeHasGaiaAccount(GetType());
 }
@@ -248,10 +239,11 @@ bool User::IsDeviceLocalAccount() const {
   return false;
 }
 
-User* User::CreateRegularUser(const AccountId& account_id) {
+User* User::CreateRegularUser(const AccountId& account_id,
+                              const UserType user_type) {
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
     return new ActiveDirectoryUser(account_id);
-  return new RegularUser(account_id);
+  return new RegularUser(account_id, user_type);
 }
 
 User* User::CreateGuestUser(const AccountId& guest_account_id) {
@@ -307,13 +299,19 @@ bool ActiveDirectoryUser::CanSyncImage() const {
   return false;
 }
 
-RegularUser::RegularUser(const AccountId& account_id) : User(account_id) {
+RegularUser::RegularUser(const AccountId& account_id, const UserType user_type)
+    : User(account_id), is_child_(user_type == USER_TYPE_CHILD) {
+  if (user_type != USER_TYPE_CHILD && user_type != USER_TYPE_REGULAR &&
+      user_type != USER_TYPE_ACTIVE_DIRECTORY) {
+    LOG(FATAL) << "Invalid user type " << user_type;
+  }
+
   set_can_lock(true);
   set_display_email(account_id.GetUserEmail());
 }
 
 ActiveDirectoryUser::ActiveDirectoryUser(const AccountId& account_id)
-    : RegularUser(account_id) {}
+    : RegularUser(account_id, user_manager::USER_TYPE_ACTIVE_DIRECTORY) {}
 
 RegularUser::~RegularUser() {
 }
@@ -327,11 +325,6 @@ UserType RegularUser::GetType() const {
 
 bool RegularUser::CanSyncImage() const {
   return true;
-}
-
-void RegularUser::SetIsChild(bool is_child) {
-  VLOG(1) << "Setting user is child to " << is_child;
-  is_child_ = is_child;
 }
 
 GuestUser::GuestUser(const AccountId& guest_account_id)

@@ -43,15 +43,23 @@ void SessionManager::SetSessionState(SessionState state) {
 }
 
 void SessionManager::CreateSession(const AccountId& user_account_id,
-                                   const std::string& user_id_hash) {
+                                   const std::string& user_id_hash,
+                                   bool is_child) {
   CreateSessionInternal(user_account_id, user_id_hash,
-                        false /* browser_restart */);
+                        false /* browser_restart */, is_child);
 }
 
 void SessionManager::CreateSessionForRestart(const AccountId& user_account_id,
                                              const std::string& user_id_hash) {
+  auto* user_manager = user_manager::UserManager::Get();
+  if (!user_manager)
+    return;
+  const user_manager::User* user = user_manager->FindUser(user_account_id);
+  // Tests do not always create users.
+  const bool is_child =
+      user && user->GetType() == user_manager::USER_TYPE_CHILD;
   CreateSessionInternal(user_account_id, user_id_hash,
-                        true /* browser_restart */);
+                        true /* browser_restart */, is_child);
 }
 
 bool SessionManager::IsSessionStarted() const {
@@ -92,11 +100,13 @@ void SessionManager::RemoveObserver(SessionManagerObserver* observer) {
 
 void SessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,
                                         const std::string& user_id_hash,
-                                        bool browser_restart) {
+                                        bool browser_restart,
+                                        bool is_child) {
   auto* user_manager = user_manager::UserManager::Get();
   if (!user_manager)
     return;
-  user_manager->UserLoggedIn(user_account_id, user_id_hash, browser_restart);
+  user_manager->UserLoggedIn(user_account_id, user_id_hash, browser_restart,
+                             is_child);
 }
 
 // static
@@ -106,10 +116,11 @@ void SessionManager::SetInstance(SessionManager* session_manager) {
 
 void SessionManager::CreateSessionInternal(const AccountId& user_account_id,
                                            const std::string& user_id_hash,
-                                           bool browser_restart) {
+                                           bool browser_restart,
+                                           bool is_child) {
   DCHECK(!HasSessionForAccountId(user_account_id));
   sessions_.push_back({next_id_++, user_account_id});
-  NotifyUserLoggedIn(user_account_id, user_id_hash, browser_restart);
+  NotifyUserLoggedIn(user_account_id, user_id_hash, browser_restart, is_child);
 }
 
 }  // namespace session_manager

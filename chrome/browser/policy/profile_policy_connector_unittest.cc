@@ -66,7 +66,8 @@ class ProfilePolicyConnectorTest : public testing::Test {
   std::unique_ptr<user_manager::User> CreateRegularUser(
       const AccountId& account_id) const {
     return base::WrapUnique<user_manager::User>(
-        user_manager::User::CreateRegularUser(account_id));
+        user_manager::User::CreateRegularUser(account_id,
+                                              user_manager::USER_TYPE_REGULAR));
   }
 
   // Needs to be the first member.

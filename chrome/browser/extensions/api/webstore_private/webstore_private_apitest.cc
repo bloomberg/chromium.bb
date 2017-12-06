@@ -41,6 +41,11 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace utils = extension_function_test_utils;
@@ -372,6 +377,12 @@ class ExtensionWebstorePrivateApiTestChild
     ExtensionWebstorePrivateApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kSupervisedUserId,
                                     supervised_users::kChildAccountSUID);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitchASCII(
+        chromeos::switches::kLoginUser,
+        "supervised_user@locally-managed.localhost");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+#endif
   }
 };
 

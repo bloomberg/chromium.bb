@@ -37,7 +37,8 @@ class ChromeSessionManager : public session_manager::SessionManager {
   void SessionStarted() override;
   void NotifyUserLoggedIn(const AccountId& user_account_id,
                           const std::string& user_id_hash,
-                          bool browser_restart) override;
+                          bool browser_restart,
+                          bool is_child) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);

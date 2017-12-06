@@ -46,7 +46,8 @@ TEST(UserTest, DeviceLocalAccountAffiliation) {
 
 TEST(UserTest, UserSessionInitialized) {
   const AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kGaiaId);
-  std::unique_ptr<User> user(User::CreateRegularUser(account_id));
+  std::unique_ptr<User> user(
+      User::CreateRegularUser(account_id, user_manager::USER_TYPE_REGULAR));
   EXPECT_FALSE(user->profile_ever_initialized());
   user->set_profile_ever_initialized(true);
   EXPECT_TRUE(user->profile_ever_initialized());

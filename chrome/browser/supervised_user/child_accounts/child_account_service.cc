@@ -36,7 +36,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -254,7 +253,6 @@ bool ChildAccountService::SetActive(bool active) {
 }
 
 void ChildAccountService::SetIsChildAccount(bool is_child_account) {
-  PropagateChildStatusToUser(is_child_account);
   if (profile_->IsChild() != is_child_account) {
     if (is_child_account) {
       profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
@@ -376,7 +374,12 @@ void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user) {
-    user_manager::UserManager::Get()->ChangeUserChildStatus(user, is_child);
+    // Note that supervised user is allowed to change type due to legacy
+    // initialization.
+    if (user->GetType() != user_manager::USER_TYPE_SUPERVISED) {
+      if (is_child != (user->GetType() == user_manager::USER_TYPE_CHILD))
+        LOG(FATAL) << "User child flag has changed: " << is_child;
+    }
   } else if (!chromeos::ProfileHelper::Get()->IsSigninProfile(profile_) &&
              !chromeos::ProfileHelper::Get()->IsLockScreenAppProfile(
                  profile_)) {

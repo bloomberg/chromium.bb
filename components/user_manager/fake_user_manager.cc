@@ -48,7 +48,8 @@ const user_manager::User* FakeUserManager::AddUser(
 const user_manager::User* FakeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
+  user_manager::User* user = user_manager::User::CreateRegularUser(
+      account_id, user_manager::USER_TYPE_REGULAR);
   user->SetAffiliation(is_affiliated);
   users_.push_back(user);
   return user;
@@ -90,7 +91,8 @@ user_manager::UserList FakeUserManager::GetUsersAllowedForMultiProfile() const {
 
 void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
-                                   bool browser_restart) {
+                                   bool browser_restart,
+                                   bool is_child) {
   for (user_manager::UserList::const_iterator it = users_.begin();
        it != users_.end(); ++it) {
     if ((*it)->username_hash() == username_hash) {
@@ -107,7 +109,7 @@ void FakeUserManager::UserLoggedIn(const AccountId& account_id,
   }
 
   if (!active_user_ && AreEphemeralUsersEnabled())
-    RegularUserLoggedInAsEphemeral(account_id);
+    RegularUserLoggedInAsEphemeral(account_id, USER_TYPE_REGULAR);
 }
 
 user_manager::User* FakeUserManager::GetActiveUserInternal() const {

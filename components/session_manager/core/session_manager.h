@@ -33,7 +33,8 @@ class SESSION_EXPORT SessionManager {
   // Creates a session for the given user. The first one is for regular cases
   // and the 2nd one is for the crash-and-restart case.
   void CreateSession(const AccountId& user_account_id,
-                     const std::string& user_id_hash);
+                     const std::string& user_id_hash,
+                     bool is_child);
   void CreateSessionForRestart(const AccountId& user_account_id,
                                const std::string& user_id_hash);
 
@@ -68,7 +69,8 @@ class SESSION_EXPORT SessionManager {
   // Notifies UserManager about a user signs in when creating a user session.
   virtual void NotifyUserLoggedIn(const AccountId& user_account_id,
                                   const std::string& user_id_hash,
-                                  bool browser_restart);
+                                  bool browser_restart,
+                                  bool is_child);
 
   // Sets SessionManager instance.
   static void SetInstance(SessionManager* session_manager);
@@ -76,7 +78,8 @@ class SESSION_EXPORT SessionManager {
  private:
   void CreateSessionInternal(const AccountId& user_account_id,
                              const std::string& user_id_hash,
-                             bool browser_restart);
+                             bool browser_restart,
+                             bool is_child);
 
   // Pointer to the existing SessionManager instance (if any).
   // Set in ctor, reset in dtor. Not owned since specific implementation of

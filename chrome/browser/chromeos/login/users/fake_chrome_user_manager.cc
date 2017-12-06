@@ -74,7 +74,8 @@ const user_manager::User* FakeChromeUserManager::AddUser(
 const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(account_id);
+  user_manager::User* user = user_manager::User::CreateRegularUser(
+      account_id, user_manager::USER_TYPE_REGULAR);
   user->SetAffiliation(is_affiliated);
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));
@@ -141,7 +142,7 @@ void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
   UserLoggedIn(
       account_id,
       ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail()),
-      false /* browser_restart */);
+      false /* browser_restart */, false /* is_child */);
 
   // NOTE: This does not match production. See function comment.
   for (auto* user : users_) {
@@ -393,7 +394,8 @@ user_manager::UserList FakeChromeUserManager::GetUnlockUsers() const {
 
 void FakeChromeUserManager::UserLoggedIn(const AccountId& account_id,
                                          const std::string& username_hash,
-                                         bool browser_restart) {
+                                         bool browser_restart,
+                                         bool is_child) {
   for (auto* user : users_) {
     if (user->username_hash() == username_hash) {
       user->set_is_logged_in(true);
@@ -484,9 +486,7 @@ std::string FakeChromeUserManager::GetUserDisplayEmail(
   return account_id.GetUserEmail();
 }
 
-void FakeChromeUserManager::SaveUserType(
-    const AccountId& account_id,
-    const user_manager::UserType& user_type) {
+void FakeChromeUserManager::SaveUserType(const user_manager::User* user) {
   NOTREACHED();
 }
 
@@ -558,11 +558,6 @@ bool FakeChromeUserManager::IsLoggedInAsStub() const {
 bool FakeChromeUserManager::IsUserNonCryptohomeDataEphemeral(
     const AccountId& account_id) const {
   return false;
-}
-
-void FakeChromeUserManager::ChangeUserChildStatus(user_manager::User* user,
-                                                  bool is_child) {
-  NOTREACHED();
 }
 
 bool FakeChromeUserManager::AreSupervisedUsersAllowed() const {
