@@ -60,9 +60,8 @@ struct ClientContext {
 // in the queue until the network type changes.
 // On offline case, no jobs run. USER_INITIATED jobs fail immediately.
 // BACKGROUND jobs stay in the queue and wait for network connection.
-class JobScheduler
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public JobListInterface {
+class JobScheduler : public net::NetworkChangeNotifier::NetworkChangeObserver,
+                     public JobListInterface {
  public:
   JobScheduler(PrefService* pref_service,
                EventLogger* logger,
@@ -362,8 +361,8 @@ class JobScheduler
   // Updates the progress status of the specified job.
   void UpdateProgress(JobID job_id, int64_t progress, int64_t total);
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver override.
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver override.
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Get the type of queue the specified job should be put in.
