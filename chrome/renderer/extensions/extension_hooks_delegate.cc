@@ -10,11 +10,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/renderer/bindings/api_signature.h"
+#include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
 
 namespace extensions {
@@ -112,9 +112,7 @@ RequestResult ExtensionHooksDelegate::HandleRequest(
       // TODO(devlin): Add getBackgroundPage, getExtensionTabs, getViews.
   };
 
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
-  DCHECK(script_context);
+  ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
 
   Handler handler = nullptr;
   for (const auto& handler_entry : kHandlers) {
@@ -166,7 +164,7 @@ void ExtensionHooksDelegate::InitializeInstance(
   // isn't terribly efficient, but is only done for certain unpacked extensions
   // and only if they access the chrome.extension module.
   if (messaging_util::IsSendRequestDisabled(
-          ScriptContextSet::GetContextByV8Context(context))) {
+          GetScriptContextFromV8ContextChecked(context))) {
     static constexpr const char* kDeprecatedSendRequestProperties[] = {
         "sendRequest", "onRequest", "onRequestExternal"};
     for (const char* property : kDeprecatedSendRequestProperties) {
