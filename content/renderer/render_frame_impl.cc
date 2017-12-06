@@ -3493,6 +3493,11 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   return web_frame;
 }
 
+blink::WebFrame* RenderFrameImpl::FindFrame(const blink::WebString& name) {
+  return GetContentClient()->renderer()->FindFrame(this->GetWebFrame(),
+                                                   name.Utf8());
+}
+
 void RenderFrameImpl::DidChangeOpener(blink::WebFrame* opener) {
   // Only a local frame should be able to update another frame's opener.
   DCHECK(!opener || opener->IsWebLocalFrame());

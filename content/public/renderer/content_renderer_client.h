@@ -383,6 +383,12 @@ class CONTENT_EXPORT ContentRendererClient {
       const GURL& url,
       base::Time cert_validity_start,
       std::string* console_messsage);
+
+  // Called when Blink cannot find a frame with the given name in the frame's
+  // browsing instance.  This gives the embedder a chance to return a frame
+  // from outside of the browsing instance.
+  virtual blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
+                                     const std::string& name);
 };
 
 }  // namespace content

@@ -91,6 +91,12 @@ ScriptContext* ScriptContextSet::GetContextByV8Context(
   return g_context_set ? g_context_set->GetByV8Context(v8_context) : nullptr;
 }
 
+ScriptContext* ScriptContextSet::GetMainWorldContextForFrame(
+    content::RenderFrame* render_frame) {
+  return GetContextByV8Context(
+      render_frame->GetWebFrame()->MainWorldScriptContext());
+}
+
 void ScriptContextSet::ForEach(
     const std::string& extension_id,
     content::RenderFrame* render_frame,

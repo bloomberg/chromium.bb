@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
@@ -53,6 +55,10 @@ class SiteInstanceImpl;
 // SiteInstance::GetRelatedSiteInstance.  Because of this,
 // BrowsingInstances and SiteInstances are tested together in
 // site_instance_unittest.cc.
+//
+// Note that a browsing instance in the browser is independently tracked in
+// the renderer inside blink::Page::RelatedPages() method (in theory the browser
+// and renderer should always stay in sync).
 //
 ///////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT BrowsingInstance final

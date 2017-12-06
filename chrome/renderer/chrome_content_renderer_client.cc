@@ -1741,3 +1741,13 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
       url::Origin::Create(url).Serialize().c_str(), in_future_string);
   return true;
 }
+
+blink::WebFrame* ChromeContentRendererClient::FindFrame(
+    blink::WebLocalFrame* relative_to_frame,
+    const std::string& name) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return ChromeExtensionsRendererClient::FindFrame(relative_to_frame, name);
+#else
+  return nullptr;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
