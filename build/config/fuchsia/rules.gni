@@ -55,8 +55,6 @@ template("generate_runner_script") {
       "//build/fuchsia/runner_common.py",
       "//build/util/lib/",
       "//third_party/fuchsia-sdk/",
-      "//third_party/qemu-aarch64/",
-      "//third_party/qemu-x86_64/",
     ]
 
     runner_args += [
