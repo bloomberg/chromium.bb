@@ -451,10 +451,8 @@ void SearchPermissionsService::SetDSEPref(
 ContentSetting SearchPermissionsService::GetContentSetting(
     const GURL& origin,
     ContentSettingsType type) {
-  // TODO(raymes): For this to be correct, it should only query the user-defined
-  // settings in HostContentSettingsMap. Add a function to do this.
-  return host_content_settings_map_->GetContentSetting(origin, origin, type,
-                                                       std::string());
+  return host_content_settings_map_->GetUserModifiableContentSetting(
+      origin, origin, type, std::string());
 }
 
 void SearchPermissionsService::SetContentSetting(const GURL& origin,

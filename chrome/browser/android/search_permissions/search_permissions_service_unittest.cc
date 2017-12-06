@@ -370,6 +370,64 @@ TEST_F(SearchPermissionsServiceTest, DSEChanges) {
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 }
 
+TEST_F(SearchPermissionsServiceTest, DSEChangesWithEnterprisePolicy) {
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
+
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Set a policy value for the geolocation setting.
+  sync_preferences::TestingPrefServiceSyncable* prefs =
+      profile()->GetTestingPrefService();
+  prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Change DSE.
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+
+  // The enterprise policy should still be in effect.
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // When the enterprise policy goes away, the setting should revert to ALLOW
+  // for the current DSE and ASK for the previous one.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultGeolocationSetting);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Simulate the user setting google.com to BLOCK.
+  SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+
+  // Put an ALLOW enterprise policy in place.
+  prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_ALLOW));
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Now change the DSE back to google.com. The enterprise setting should still
+  // be in effect so it should be ALLOW.
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  // Remove the enterprise policy. google.com should go back to blocked.
+  // google.com.au should be ASK.
+  prefs->RemoveManagedPref(prefs::kManagedDefaultGeolocationSetting);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+}
+
 TEST_F(SearchPermissionsServiceTest, DSEChangesAndDisclosure) {
   test_delegate()->ChangeDSEOrigin(kGoogleURL);
   SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
