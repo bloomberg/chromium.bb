@@ -274,10 +274,11 @@ void ComponentInstaller::StartRegistration(
   // Then check for a higher-versioned user-wide installation.
   base::FilePath latest_path;
   std::unique_ptr<base::DictionaryValue> latest_manifest;
-  base::FilePath base_dir;
-  if (!PathService::Get(DIR_COMPONENT_USER, &base_dir))
+  base::FilePath base_component_dir;
+  if (!PathService::Get(DIR_COMPONENT_USER, &base_component_dir))
     return;
-  base_dir = base_dir.Append(installer_policy_->GetRelativeInstallDir());
+  base::FilePath base_dir =
+      base_component_dir.Append(installer_policy_->GetRelativeInstallDir());
   if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {
     PLOG(ERROR) << "Could not create the base directory for "
                 << installer_policy_->GetName() << " ("
@@ -286,9 +287,15 @@ void ComponentInstaller::StartRegistration(
   }
 
 #if defined(OS_CHROMEOS)
-  if (!base::SetPosixFilePermissions(base_dir, 0755)) {
-    PLOG(ERROR) << "SetPosixFilePermissions failed: " << base_dir.value();
-    return;
+  base::FilePath base_dir_ = base_component_dir;
+  std::vector<base::FilePath::StringType> components;
+  installer_policy_->GetRelativeInstallDir().GetComponents(&components);
+  for (const base::FilePath::StringType component : components) {
+    base_dir_ = base_dir_.Append(component);
+    if (!base::SetPosixFilePermissions(base_dir_, 0755)) {
+      PLOG(ERROR) << "SetPosixFilePermissions failed: " << base_dir.value();
+      return;
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 
