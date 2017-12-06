@@ -215,11 +215,11 @@ bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
     if (next_focusable_view && !Contains(next_focusable_view)) {
       // Hitting up key when focus is on first search result or hitting down
       // key when focus is on last search result should move focus onto search
-      // box.
-      AppListPage::contents_view()
-          ->GetSearchBoxView()
-          ->search_box()
-          ->RequestFocus();
+      // box and select all text.
+      views::Textfield* search_box =
+          AppListPage::contents_view()->GetSearchBoxView()->search_box();
+      search_box->RequestFocus();
+      search_box->SelectAll(false);
       return true;
     }
 
