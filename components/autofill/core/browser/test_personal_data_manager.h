@@ -11,10 +11,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
-namespace syncer {
-class SyncService;
-}
-
 namespace autofill {
 
 // A simplistic PersonalDataManager used for testing.
@@ -23,33 +19,44 @@ class TestPersonalDataManager : public PersonalDataManager {
   TestPersonalDataManager();
   ~TestPersonalDataManager() override;
 
-  // PersonalDataManager:
+  using PersonalDataManager::set_database;
+  using PersonalDataManager::SetPrefService;
+
+  // PersonalDataManager overrides.  These functions are overridden as needed
+  // for various tests, whether to skip calls to uncreated databases/services,
+  // or to make things easier in general to toggle.
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override {}
-
-  // Sets which PrefService to use and observe. |pref_service| is not owned by
-  // this class and must outlive |this|.
-  void SetTestingPrefService(PrefService* pref_service);
-
-  // Adds |profile| to |profiles_|. This does not take ownership of |profile|.
-  void AddTestingProfile(AutofillProfile* profile);
-
-  // Adds |credit_card| to |credit_cards_|. This does not take ownership of
-  // |credit_card|.
-  void AddTestingCreditCard(CreditCard* credit_card);
-
-  // Adds |credit_card| to |server_credit_cards_| by copying.
-  void AddTestingServerCreditCard(const CreditCard& credit_card);
-
-  std::vector<AutofillProfile*> GetProfiles() const override;
-  std::vector<CreditCard*> GetCreditCards() const override;
-
+  void RecordUseOf(const AutofillDataModel& data_model) override;
   std::string SaveImportedProfile(
       const AutofillProfile& imported_profile) override;
   std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card) override;
-
-  std::string CountryCodeForCurrentTimezone() const override;
+  void AddProfile(const AutofillProfile& profile) override;
+  void RemoveByGUID(const std::string& guid) override;
+  void AddCreditCard(const CreditCard& credit_card) override;
+  void AddFullServerCreditCard(const CreditCard& credit_card) override;
+  std::vector<AutofillProfile*> GetProfiles() const override;
+  std::vector<CreditCard*> GetCreditCards() const override;
   const std::string& GetDefaultCountryCodeForNewAddress() const override;
+  std::string CountryCodeForCurrentTimezone() const override;
+
+  // Unique to TestPersonalDataManager:
+
+  // Clears |web_profiles_|.
+  void ClearProfiles();
+
+  // Clears |local_credit_cards_| and |server_credit_cards_|.
+  void ClearCreditCards();
+
+  // Gets a profile based on the provided |guid|.
+  AutofillProfile* GetProfileWithGUID(const char* guid);
+
+  // Gets a credit card based on the provided |guid| (local or server).
+  CreditCard* GetCreditCardWithGUID(const char* guid);
+
+  // Adds a card to |server_credit_cards_|.  Functionally identical to
+  // AddFullServerCreditCard().
+  void AddServerCreditCard(const CreditCard& credit_card);
 
   void set_timezone_country_code(const std::string& timezone_country_code) {
     timezone_country_code_ = timezone_country_code;
@@ -58,16 +65,16 @@ class TestPersonalDataManager : public PersonalDataManager {
     default_country_code_ = default_country_code;
   }
 
-  const AutofillProfile& imported_profile() { return imported_profile_; }
-  const CreditCard& imported_credit_card() { return imported_credit_card_; }
+  int num_times_save_imported_profile_called() const {
+    return num_times_save_imported_profile_called_;
+  }
 
  private:
-  std::vector<AutofillProfile*> profiles_;
-  std::vector<CreditCard*> credit_cards_;
-  AutofillProfile imported_profile_;
-  CreditCard imported_credit_card_;
   std::string timezone_country_code_;
   std::string default_country_code_;
+  int num_times_save_imported_profile_called_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
 
 }  // namespace autofill

@@ -114,7 +114,7 @@ class PaymentRequestAddressEditCoordinatorTest
     PaymentRequestUnitTestBase::SetUp();
 
     autofill::CountryNames::SetLocaleString("en-US");
-    personal_data_manager_.SetTestingPrefService(pref_service());
+    personal_data_manager_.SetPrefService(pref_service());
 
     payment_request_ = base::MakeUnique<MockTestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
@@ -129,7 +129,7 @@ class PaymentRequestAddressEditCoordinatorTest
   }
 
   void TearDown() override {
-    personal_data_manager_.SetTestingPrefService(nullptr);
+    personal_data_manager_.SetPrefService(nullptr);
 
     PaymentRequestUnitTestBase::TearDown();
   }
