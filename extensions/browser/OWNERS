@@ -6,15 +6,9 @@ per-file DEPS=rockot@chromium.org
 per-file DEPS=rdevlin.cronin@chromium.org
 
 per-file extension_event_histogram_value.h=set noparent
-per-file extension_event_histogram_value.h=asvitkine@chromium.org
-per-file extension_event_histogram_value.h=isherman@chromium.org
-per-file extension_event_histogram_value.h=jar@chromium.org
-per-file extension_event_histogram_value.h=mpearson@chromium.org
+per-file extension_event_histogram_value.h=file://base/metrics/OWNERS
 per-file extension_function_histogram_value.h=set noparent
-per-file extension_function_histogram_value.h=asvitkine@chromium.org
-per-file extension_function_histogram_value.h=isherman@chromium.org
-per-file extension_function_histogram_value.h=jar@chromium.org
-per-file extension_function_histogram_value.h=mpearson@chromium.org
+per-file extension_function_histogram_value.h=file://base/metrics/OWNERS
 
 # DeviceLocalAccount reviewers.
 per-file device_local_account_util*=isandrk@chromium.org
