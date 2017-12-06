@@ -1485,11 +1485,15 @@ static const aom_cdf_prob
 
 #if CONFIG_EXT_SKIP
 static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(
-    2)] = { { AOM_CDF2(24576) }, { AOM_CDF2(16384) }, { AOM_CDF2(8192) } };
-#endif  // CONFIG_EXT_SKIP
+    2)] = { { AOM_CDF2(31609) }, { AOM_CDF2(20107) }, { AOM_CDF2(10296) } };
+static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
+  { AOM_CDF2(30224) }, { AOM_CDF2(16244) }, { AOM_CDF2(4835) }
+};
+#else
 static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(24576) }, { AOM_CDF2(16384) }, { AOM_CDF2(8192) }
 };
+#endif  // CONFIG_EXT_SKIP
 
 #if CONFIG_JNT_COMP
 static const aom_cdf_prob

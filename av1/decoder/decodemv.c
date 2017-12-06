@@ -1901,10 +1901,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
 
-#if CONFIG_EXT_SKIP
-// TODO(zoeliu): To work with JNT_COMP
-#endif  // CONFIG_EXT_SKIP
-
   for (int ref = 0; ref < 1 + is_compound; ++ref) {
     MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
 
@@ -2238,7 +2234,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->compound_idx = 1;
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
 
-  if (has_second_ref(mbmi)) {
+  if (has_second_ref(mbmi)
+#if CONFIG_EXT_SKIP
+      && !mbmi->skip_mode
+#endif  // CONFIG_EXT_SKIP
+      ) {
     // Read idx to indicate current compound inter prediction mode group
     const int masked_compound_used =
         is_any_masked_compound_used(bsize) && cm->allow_masked_compound;

@@ -9091,8 +9091,6 @@ static void estimate_skip_mode_rdcost(
         frame_mv[this_mode][second_ref_frame].as_int == INVALID_MV)
       break;
 
-    // TODO(zoeliu): To work with JNT_COMP
-
     mbmi->mode = this_mode;
     mbmi->uv_mode = UV_DC_PRED;
     mbmi->ref_frame[0] = ref_frame;
@@ -9133,6 +9131,10 @@ static void estimate_skip_mode_rdcost(
     mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
 #endif  // CONFIG_FILTER_INTRA
     mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
+#if CONFIG_JNT_COMP
+    mbmi->comp_group_idx = 0;
+    mbmi->compound_idx = 1;
+#endif  // CONFIG_JNT_COMP
     mbmi->interinter_compound_type = COMPOUND_AVERAGE;
     mbmi->motion_mode = SIMPLE_TRANSLATION;
     mbmi->ref_mv_idx = 0;
@@ -9156,31 +9158,6 @@ static void estimate_skip_mode_rdcost(
     skip_mode_rd(cpi, x, bsize, mi_row, mi_col, &orig_dst);
     break;
   }
-}
-
-// Check whether the best RD mode satisfies the criteria of skip mode.
-static int check_skip_mode(const AV1_COMMON *const cm,
-                           const MB_MODE_INFO *const best_mbmi) {
-  if (!is_inter_mode(best_mbmi->mode)) return 0;
-
-  if (!has_second_ref(best_mbmi) ||
-      best_mbmi->ref_frame[0] != (cm->ref_frame_idx_0 + LAST_FRAME) ||
-      best_mbmi->ref_frame[1] != (cm->ref_frame_idx_1 + LAST_FRAME) ||
-      best_mbmi->mode != NEAREST_NEARESTMV)
-    return 0;
-
-  if (!best_mbmi->skip) return 0;
-
-  if (best_mbmi->uv_mode != UV_DC_PRED ||
-      best_mbmi->motion_mode != SIMPLE_TRANSLATION ||
-      best_mbmi->interinter_compound_type != COMPOUND_AVERAGE)
-    return 0;
-
-  if (best_mbmi->interp_filters !=
-      av1_broadcast_interp_filter(av1_unswitchable_filter(cm->interp_filter)))
-    return 0;
-
-  return 1;
 }
 #endif  // CONFIG_EXT_SKIP
 
@@ -10601,8 +10578,7 @@ PALETTE_EXIT:
           RDCOST(x->rdmult, rd_cost->rate + x->skip_mode_cost[skip_mode_ctx][0],
                  rd_cost->dist);
 
-      if (x->skip_mode_rdcost <= best_intra_inter_mode_cost ||
-          check_skip_mode(cm, &best_mbmode))
+      if (x->skip_mode_rdcost <= best_intra_inter_mode_cost)
         best_mbmode.skip_mode = 1;
     }
 
