@@ -16,6 +16,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/session_manager_types.h"
 
 namespace ash {
 
@@ -58,7 +59,20 @@ void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
 }
 
 void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
-  ash::LockScreen::Show();
+  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
+  std::move(on_shown).Run(true);
+}
+
+void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
+  // Login screen can only be used during login.
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::LOGIN_PRIMARY) {
+    std::move(on_shown).Run(false);
+    return;
+  }
+
+  // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
+  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
   std::move(on_shown).Run(true);
 }
 

@@ -43,7 +43,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
 
   // mojom::LoginScreen:
   void SetClient(mojom::LoginScreenClientPtr client) override;
-  void ShowLockScreen(ShowLockScreenCallback callback) override;
+  void ShowLockScreen(ShowLockScreenCallback on_shown) override;
+  void ShowLoginScreen(ShowLoginScreenCallback on_shown) override;
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
                         const std::string& help_link_text,

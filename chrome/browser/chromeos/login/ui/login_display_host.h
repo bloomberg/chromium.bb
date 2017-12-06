@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/auth/auth_prewarmer.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "ui/gfx/native_widget_types.h"
@@ -31,7 +33,8 @@ class LoginDisplayHost {
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
 
-  virtual ~LoginDisplayHost() {}
+  LoginDisplayHost();
+  virtual ~LoginDisplayHost();
 
   // Creates UI implementation specific login display instance (views/WebUI).
   // The caller takes ownership of the returned value.
@@ -84,13 +87,13 @@ class LoginDisplayHost {
   virtual void CancelUserAdding() = 0;
 
   // Starts sign in screen.
-  virtual void StartSignInScreen(const LoginScreenContext& context) = 0;
+  void StartSignInScreen(const LoginScreenContext& context);
 
   // Invoked when system preferences that affect the signin screen have changed.
   virtual void OnPreferencesChanged() = 0;
 
   // Initiates authentication network prewarming.
-  virtual void PrewarmAuthentication() = 0;
+  void PrewarmAuthentication();
 
   // Starts app launch splash screen. If |is_auto_launch| is true, the app is
   // being auto-launched with no delay.
@@ -113,6 +116,19 @@ class LoginDisplayHost {
  protected:
   // Default LoginDisplayHost. Child class sets the reference.
   static LoginDisplayHost* default_host_;
+
+  virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
+
+  // Deletes |auth_prewarmer_|.
+  void OnAuthPrewarmDone();
+
+  // Active instance of authentication prewarmer.
+  std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
+
+ private:
+  base::WeakPtrFactory<LoginDisplayHost> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHost);
 };
 
 }  // namespace chromeos

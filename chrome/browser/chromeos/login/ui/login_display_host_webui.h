@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
-#include "chrome/browser/chromeos/login/auth/auth_prewarmer.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -76,9 +75,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   AppLaunchController* GetAppLaunchController() override;
   void StartUserAdding(base::OnceClosure completion_callback) override;
   void CancelUserAdding() override;
-  void StartSignInScreen(const LoginScreenContext& context) override;
+  void OnStartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
-  void PrewarmAuthentication() override;
   void StartAppLaunch(const std::string& app_id,
                       bool diagnostic_mode,
                       bool auto_launch) override;
@@ -182,9 +180,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   // Closes |login_window_| and resets |login_window_| and |login_view_| fields.
   void ResetLoginWindowAndView();
 
-  // Deletes |auth_prewarmer_|.
-  void OnAuthPrewarmDone();
-
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   void SetOobeProgressBarVisible(bool visible);
 
@@ -280,9 +275,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
-
-  // Active instance of authentication prewarmer.
-  std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.

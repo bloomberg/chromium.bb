@@ -26,7 +26,7 @@ class AuthPrewarmer : public NetworkStateHandlerObserver,
   AuthPrewarmer();
   ~AuthPrewarmer() override;
 
-  void PrewarmAuthentication(const base::Closure& completion_callback);
+  void PrewarmAuthentication(base::OnceClosure completion_callback);
 
  private:
   // chromeos::NetworkStateHandlerObserver overrides.
@@ -42,7 +42,7 @@ class AuthPrewarmer : public NetworkStateHandlerObserver,
   void DoPrewarm();
 
   content::NotificationRegistrar registrar_;
-  base::Closure completion_callback_;
+  base::OnceClosure completion_callback_;
   bool doing_prewarm_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthPrewarmer);

@@ -49,8 +49,8 @@ LockScreen* instance_ = nullptr;
 
 }  // namespace
 
-LockScreen::LockScreen()
-    : tray_action_observer_(this), session_observer_(this) {
+LockScreen::LockScreen(ScreenType type)
+    : type_(type), tray_action_observer_(this), session_observer_(this) {
   tray_action_observer_.Add(ash::Shell::Get()->tray_action());
 }
 
@@ -63,9 +63,9 @@ LockScreen* LockScreen::Get() {
 }
 
 // static
-void LockScreen::Show() {
+void LockScreen::Show(ScreenType type) {
   CHECK(!instance_);
-  instance_ = new LockScreen();
+  instance_ = new LockScreen(type);
 
   auto data_dispatcher = std::make_unique<LoginDataDispatcher>();
   auto* contents = BuildContentsView(
@@ -122,7 +122,17 @@ void LockScreen::OnLockScreenNoteStateChanged(mojom::TrayActionState state) {
     data_dispatcher()->SetLockScreenNoteState(state);
 }
 
+void LockScreen::OnSessionStateChanged(session_manager::SessionState state) {
+  if (type_ == ScreenType::kLogin &&
+      state == session_manager::SessionState::ACTIVE) {
+    Destroy();
+  }
+}
+
 void LockScreen::OnLockStateChanged(bool locked) {
+  if (type_ != ScreenType::kLock)
+    return;
+
   if (!locked)
     Destroy();
   Shell::Get()->metrics()->login_metrics_recorder()->Reset();

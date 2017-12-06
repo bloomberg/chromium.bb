@@ -43,6 +43,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
+  static bool HasInstance();
   static LoginScreenClient* Get();
 
   // ash::mojom::LoginScreenClient:
@@ -63,6 +64,8 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
 
   // Wrappers around the mojom::LockScreen interface.
   void ShowLockScreen(ash::mojom::LoginScreen::ShowLockScreenCallback on_shown);
+  void ShowLoginScreen(
+      ash::mojom::LoginScreen::ShowLoginScreenCallback on_shown);
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
                         const std::string& help_link_text,

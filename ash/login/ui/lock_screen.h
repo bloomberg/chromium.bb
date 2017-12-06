@@ -23,15 +23,19 @@ class LockWindow;
 class LoginDataDispatcher;
 class TrayAction;
 
-class LockScreen : public TrayActionObserver, public SessionObserver {
+class ASH_EXPORT LockScreen : public TrayActionObserver,
+                              public SessionObserver {
  public:
+  // The UI that this instance is displaying.
+  enum class ScreenType { kLogin, kLock };
+
   // Fetch the global lock screen instance. |Show()| must have been called
   // before this.
   static LockScreen* Get();
 
   // Creates and displays the lock screen. The lock screen communicates with the
   // backend C++ via a mojo API.
-  static void Show();
+  static void Show(ScreenType type);
 
   // Check if the lock screen is currently shown.
   static bool IsShown();
@@ -49,11 +53,15 @@ class LockScreen : public TrayActionObserver, public SessionObserver {
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
 
   // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLockStateChanged(bool locked) override;
 
  private:
-  LockScreen();
+  explicit LockScreen(ScreenType type);
   ~LockScreen() override;
+
+  // The type of screen shown. Controls how the screen is dismissed.
+  const ScreenType type_;
 
   // Unowned pointer to the window which hosts the lock screen.
   LockWindow* window_ = nullptr;
