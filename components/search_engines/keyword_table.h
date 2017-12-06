@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -126,6 +127,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion68RemoveShowInDefaultListColumn();
   bool MigrateToVersion69AddLastVisitedColumn();
   bool MigrateToVersion76RemoveInstantColumns();
+  bool MigrateToVersion77IncreaseTimePrecision();
 
  private:
   friend class KeywordTableTest;
