@@ -34,14 +34,15 @@ PASS WritableStreamDefaultWriter.prototype.write should be a method
 PASS WritableStreamDefaultWriter.prototype should have exactly the expected properties
 PASS sink method start should be called with the right number of arguments
 PASS sink method start should be called even when it's located on the prototype chain
+FAIL unexpected properties should not be accessed when calling sink method start assert_array_equals: expected properties should be got lengths differ, expected 5 got 2
 PASS sink method write should be called with the right number of arguments
 PASS sink method write should be called even when it's located on the prototype chain
-PASS unexpected properties should not be accessed when calling sink method write
+FAIL unexpected properties should not be accessed when calling sink method write assert_array_equals: expected properties should be got lengths differ, expected 5 got 2
 PASS sink method close should be called with the right number of arguments
 PASS sink method close should be called even when it's located on the prototype chain
-PASS unexpected properties should not be accessed when calling sink method close
+FAIL unexpected properties should not be accessed when calling sink method close assert_array_equals: expected properties should be got lengths differ, expected 5 got 2
 PASS sink method abort should be called with the right number of arguments
 PASS sink method abort should be called even when it's located on the prototype chain
-PASS unexpected properties should not be accessed when calling sink method abort
+FAIL unexpected properties should not be accessed when calling sink method abort assert_array_equals: expected properties should be got lengths differ, expected 5 got 2
 Harness: the test ran to completion.
 
