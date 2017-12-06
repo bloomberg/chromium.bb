@@ -11,6 +11,7 @@ cr.define('extensions', function() {
         'getProfileConfiguration',
         'loadUnpacked',
         'retryLoadUnpacked',
+        'reloadItem',
         'setProfileInDevMode',
         'setShortcutHandlingSuspended',
         'updateAllExtensions',
@@ -22,6 +23,9 @@ cr.define('extensions', function() {
 
       /** @private {!chrome.developerPrivate.LoadError} */
       this.retryLoadUnpackedError_;
+
+      /** @type {boolean} */
+      this.forceReloadItemError_ = false;
     }
 
     /**
@@ -29,6 +33,13 @@ cr.define('extensions', function() {
      */
     setRetryLoadUnpackedError(error) {
       this.retryLoadUnpackedError_ = error;
+    }
+
+    /**
+     * @param {boolean} force
+     */
+    setForceReloadItemError(force) {
+      this.forceReloadItemError_ = force;
     }
 
     /** @override */
@@ -68,6 +79,12 @@ cr.define('extensions', function() {
     loadUnpacked() {
       this.methodCalled('loadUnpacked');
       return Promise.resolve();
+    }
+
+    /** @override */
+    reloadItem(id) {
+      this.methodCalled('reloadItem', id);
+      return this.forceReloadItemError_ ? Promise.reject() : Promise.resolve();
     }
 
     /** @override */

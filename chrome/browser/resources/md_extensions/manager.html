@@ -79,7 +79,8 @@
           delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
           filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
           apps="[[apps_]]" extensions="[[extensions_]]"
-          on-show-install-warnings="onShowInstallWarnings_">
+          on-show-install-warnings="onShowInstallWarnings_"
+          on-load-error="onLoadError_">
       </extensions-item-list>
       <template id="details-view" is="cr-lazy-render">
         <extensions-detail-view delegate="[[delegate]]" slot="view"

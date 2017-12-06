@@ -161,6 +161,10 @@ TEST_F('CrExtensionsItemsTest', 'ClickableItems', function() {
   this.runMochaTest(extension_item_tests.TestNames.ClickableItems);
 });
 
+TEST_F('CrExtensionsItemsTest', 'FailedReloadFiresLoadError', function() {
+  this.runMochaTest(extension_item_tests.TestNames.FailedReloadFiresLoadError);
+});
+
 TEST_F('CrExtensionsItemsTest', 'Warnings', function() {
   this.runMochaTest(extension_item_tests.TestNames.Warnings);
 });

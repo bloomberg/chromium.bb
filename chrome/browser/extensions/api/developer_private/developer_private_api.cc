@@ -189,6 +189,29 @@ std::unique_ptr<developer::ProfileInfo> CreateProfileInfo(Profile* profile) {
   return info;
 }
 
+// Creates a developer::LoadError from the provided data.
+developer::LoadError CreateLoadError(
+    const base::FilePath& file_path,
+    const std::string& error,
+    size_t line_number,
+    const std::string& manifest,
+    const DeveloperPrivateAPI::UnpackedRetryId& retry_guid) {
+  base::FilePath prettified_path = path_util::PrettifyPath(file_path);
+
+  SourceHighlighter highlighter(manifest, line_number);
+  developer::LoadError response;
+  response.error = error;
+  response.path = base::UTF16ToUTF8(prettified_path.LossyDisplayName());
+  response.retry_guid = retry_guid;
+
+  response.source = std::make_unique<developer::ErrorFileSource>();
+  response.source->before_highlight = highlighter.GetBeforeFeature();
+  response.source->highlight = highlighter.GetFeature();
+  response.source->after_highlight = highlighter.GetAfterFeature();
+
+  return response;
+}
+
 }  // namespace
 
 namespace ChoosePath = api::developer_private::ChoosePath;
@@ -724,6 +747,8 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+DeveloperPrivateReloadFunction::DeveloperPrivateReloadFunction()
+    : registry_observer_(this), error_reporter_observer_(this) {}
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 
 ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
@@ -734,9 +759,19 @@ ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
 
-  bool fail_quietly = params->options &&
-                      params->options->fail_quietly &&
-                      *params->options->fail_quietly;
+  reloading_extension_path_ = extension->path();
+
+  bool fail_quietly = false;
+  bool wait_for_completion = false;
+  if (params->options) {
+    fail_quietly =
+        params->options->fail_quietly && *params->options->fail_quietly;
+    // We only wait for completion for unpacked extensions, since they are the
+    // only extensions for which we can show actionable feedback to the user.
+    wait_for_completion = params->options->populate_error_for_unpacked &&
+                          *params->options->populate_error_for_unpacked &&
+                          Manifest::IsUnpackedLocation(extension->location());
+  }
 
   ExtensionService* service = GetExtensionService(browser_context());
   if (fail_quietly)
@@ -744,9 +779,73 @@ ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   else
     service->ReloadExtension(params->extension_id);
 
-  // TODO(devlin): We shouldn't return until the extension has finished trying
-  // to reload (and then we could also return the error).
-  return RespondNow(NoArguments());
+  if (!wait_for_completion)
+    return RespondNow(NoArguments());
+
+  // Balanced in ClearObservers(), which is called from the first observer
+  // method to be called with the appropriate extension (or shutdown).
+  AddRef();
+  error_reporter_observer_.Add(ExtensionErrorReporter::GetInstance());
+  registry_observer_.Add(ExtensionRegistry::Get(browser_context()));
+
+  return RespondLater();
+}
+
+void DeveloperPrivateReloadFunction::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (extension->path() == reloading_extension_path_) {
+    // Reload succeeded!
+    Respond(NoArguments());
+    ClearObservers();
+  }
+}
+
+void DeveloperPrivateReloadFunction::OnShutdown(ExtensionRegistry* registry) {
+  Respond(Error("Shutting down."));
+  ClearObservers();
+}
+
+void DeveloperPrivateReloadFunction::OnLoadFailure(
+    content::BrowserContext* browser_context,
+    const base::FilePath& file_path,
+    const std::string& error) {
+  if (file_path == reloading_extension_path_) {
+    // Reload failed - create an error to pass back to the extension.
+    ExtensionLoaderHandler::GetManifestError(
+        error, file_path,
+        // TODO(devlin): Update GetManifestError to take a OnceCallback.
+        base::BindRepeating(&DeveloperPrivateReloadFunction::OnGotManifestError,
+                            this));  // Creates a reference.
+    ClearObservers();
+  }
+}
+
+void DeveloperPrivateReloadFunction::OnGotManifestError(
+    const base::FilePath& file_path,
+    const std::string& error,
+    size_t line_number,
+    const std::string& manifest) {
+  DeveloperPrivateAPI::UnpackedRetryId retry_guid =
+      DeveloperPrivateAPI::Get(browser_context())
+          ->AddUnpackedPath(GetSenderWebContents(), reloading_extension_path_);
+  // Respond to the caller with the load error, which allows the caller to retry
+  // reloading through developerPrivate.loadUnpacked().
+  // TODO(devlin): This is weird. Really, we should allow retrying through this
+  // function instead of through loadUnpacked(), but
+  // ExtensionService::ReloadExtension doesn't behave well with an extension
+  // that failed to reload, and untangling that mess is quite significant.
+  // See https://crbug.com/792277.
+  Respond(OneArgument(
+      CreateLoadError(file_path, error, line_number, manifest, retry_guid)
+          .ToValue()));
+}
+
+void DeveloperPrivateReloadFunction::ClearObservers() {
+  registry_observer_.RemoveAll();
+  error_reporter_observer_.RemoveAll();
+
+  Release();  // Balanced in Run().
 }
 
 DeveloperPrivateShowPermissionsDialogFunction::
@@ -865,20 +964,9 @@ void DeveloperPrivateLoadUnpackedFunction::OnGotManifestError(
     size_t line_number,
     const std::string& manifest) {
   DCHECK(!retry_guid_.empty());
-  base::FilePath prettified_path = path_util::PrettifyPath(file_path);
-
-  SourceHighlighter highlighter(manifest, line_number);
-  developer::LoadError response;
-  response.error = error;
-  response.path = base::UTF16ToUTF8(prettified_path.LossyDisplayName());
-  response.retry_guid = retry_guid_;
-
-  response.source = base::MakeUnique<developer::ErrorFileSource>();
-  response.source->before_highlight = highlighter.GetBeforeFeature();
-  response.source->highlight = highlighter.GetFeature();
-  response.source->after_highlight = highlighter.GetAfterFeature();
-
-  Respond(OneArgument(response.ToValue()));
+  Respond(OneArgument(
+      CreateLoadError(file_path, error, line_number, manifest, retry_guid_)
+          .ToValue()));
 }
 
 bool DeveloperPrivateChooseEntryFunction::ShowPicker(

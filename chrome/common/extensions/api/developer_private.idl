@@ -300,6 +300,11 @@ namespace developerPrivate {
     // If false, an alert dialog will show in the event of a reload error.
     // Defaults to false.
     boolean? failQuietly;
+
+    // If true, populates a LoadError for the response rather than setting
+    // lastError. Only relevant for unpacked extensions; it will be ignored for
+    // any other extension.
+    boolean? populateErrorForUnpacked;
   };
 
   dictionary LoadUnpackedOptions {
@@ -533,7 +538,7 @@ namespace developerPrivate {
     // |options| : Additional configuration parameters.
     static void reload(DOMString extensionId,
                        optional ReloadOptions options,
-                       optional VoidCallback callback);
+                       optional LoadErrorCallback callback);
 
     // Modifies an extension's current configuration.
     // |update| : The parameters for updating the extension's configuration.

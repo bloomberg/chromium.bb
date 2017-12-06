@@ -17,10 +17,13 @@ cr.define('extension_test_util', function() {
      * @param {string} callName The function expected to be called.
      * @param {Array<*>=} opt_expectedArgs The arguments the function is
      *     expected to be called with.
+     * @param {*=} opt_returnValue The value to return from the function call.
      */
-    testClickingCalls: function(element, callName, opt_expectedArgs) {
+    testClickingCalls: function(element, callName, opt_expectedArgs,
+                                opt_returnValue) {
       var mock = new MockController();
       var mockMethod = mock.createFunctionMock(this, callName);
+      mockMethod.returnValue = opt_returnValue;
       MockMethod.prototype.addExpectation.apply(
           mockMethod, opt_expectedArgs);
       MockInteractions.tap(element);
@@ -116,6 +119,9 @@ cr.define('extension_test_util', function() {
 
     /** @override */
     inspectItemView: function(id, view) {},
+
+    /** @override */
+    reloadItem: function(id) {},
 
     /** @override */
     repairItem: function(id) {},

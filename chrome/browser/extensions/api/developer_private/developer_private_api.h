@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
+#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -353,16 +354,50 @@ class DeveloperPrivateUpdateExtensionConfigurationFunction
   ResponseAction Run() override;
 };
 
-class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction {
+class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction,
+                                       public ExtensionRegistryObserver,
+                                       public ExtensionErrorReporter::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.reload",
                              DEVELOPERPRIVATE_RELOAD);
+
+  DeveloperPrivateReloadFunction();
+
+  // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
+  void OnShutdown(ExtensionRegistry* registry) override;
+
+  // ExtensionErrorReporter::Observer:
+  void OnLoadFailure(content::BrowserContext* browser_context,
+                     const base::FilePath& file_path,
+                     const std::string& error) override;
 
  protected:
   ~DeveloperPrivateReloadFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;
+
+ private:
+  // Callback once we parse a manifest error from a failed reload.
+  void OnGotManifestError(const base::FilePath& file_path,
+                          const std::string& error,
+                          size_t line_number,
+                          const std::string& manifest);
+
+  // Clears the scoped observers.
+  void ClearObservers();
+
+  // The file path of the extension that's reloading.
+  base::FilePath reloading_extension_path_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_;
+  ScopedObserver<ExtensionErrorReporter, ExtensionErrorReporter::Observer>
+      error_reporter_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateReloadFunction);
 };
 
 class DeveloperPrivateShowPermissionsDialogFunction
