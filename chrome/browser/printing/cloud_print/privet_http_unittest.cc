@@ -261,7 +261,7 @@ class MockTestURLFetcherFactoryDelegate
 class PrivetHTTPTest : public TestWithParam<const char*> {
  public:
   PrivetHTTPTest() {
-    PrivetURLFetcher::ResetTokenMapForTests();
+    PrivetURLFetcher::ResetTokenMapForTest();
 
     request_context_ = base::MakeRefCounted<net::TestURLRequestContextGetter>(
         base::ThreadTaskRunnerHandle::Get());
@@ -763,7 +763,7 @@ class FakePWGRasterConverter : public printing::PWGRasterConverter {
 class PrivetLocalPrintTest : public PrivetHTTPTest {
  public:
   void SetUp() override {
-    PrivetURLFetcher::ResetTokenMapForTests();
+    PrivetURLFetcher::ResetTokenMapForTest();
 
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(
         &local_print_delegate_);
@@ -775,7 +775,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
   }
 
   scoped_refptr<base::RefCountedBytes> RefCountedBytesFromString(
-      std::string str) {
+      base::StringPiece str) {
     std::vector<unsigned char> str_vec;
     str_vec.insert(str_vec.begin(), str.begin(), str.end());
     return base::RefCountedBytes::TakeVector(&str_vec);
@@ -1095,7 +1095,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     std::unique_ptr<PrivetURLFetcher> fetcher = client_->CreateURLFetcher(
         server_->GetURL("/simple.html"), net::URLFetcher::GET, this);
 
-    fetcher->SetMaxRetries(1);
+    fetcher->SetMaxRetriesForTest(1);
     fetcher->Start();
 
     run_loop.Run();

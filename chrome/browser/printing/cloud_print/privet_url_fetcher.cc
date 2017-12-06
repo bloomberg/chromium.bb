@@ -13,8 +13,8 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/memory/singleton.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
@@ -31,16 +31,9 @@ namespace cloud_print {
 
 namespace {
 
-typedef std::map<std::string, std::string> TokenMap;
+using TokenMap = std::map<std::string, std::string>;
 
-struct TokenMapHolder {
- public:
-  static TokenMapHolder* GetInstance() {
-    return base::Singleton<TokenMapHolder>::get();
-  }
-
-  TokenMap map;
-};
+base::LazyInstance<TokenMap>::Leaky g_tokens = LAZY_INSTANCE_INITIALIZER;
 
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
 const char kRangeHeaderFormat[] = "Range: bytes=%d-%d";
@@ -95,15 +88,15 @@ PrivetURLFetcher::~PrivetURLFetcher() {
 // static
 void PrivetURLFetcher::SetTokenForHost(const std::string& host,
                                        const std::string& token) {
-  TokenMapHolder::GetInstance()->map[host] = token;
+  g_tokens.Get()[host] = token;
 }
 
 // static
-void PrivetURLFetcher::ResetTokenMapForTests() {
-  TokenMapHolder::GetInstance()->map.clear();
+void PrivetURLFetcher::ResetTokenMapForTest() {
+  g_tokens.Get().clear();
 }
 
-void PrivetURLFetcher::SetMaxRetries(int max_retries) {
+void PrivetURLFetcher::SetMaxRetriesForTest(int max_retries) {
   DCHECK_EQ(tries_, 0);
   max_retries_ = max_retries;
 }
@@ -119,13 +112,11 @@ void PrivetURLFetcher::SendEmptyPrivetToken() {
 }
 
 std::string PrivetURLFetcher::GetPrivetAccessToken() {
-  if (send_empty_privet_token_) {
+  if (send_empty_privet_token_)
     return std::string();
-  }
 
-  TokenMapHolder* token_map_holder = TokenMapHolder::GetInstance();
-  TokenMap::iterator found = token_map_holder->map.find(GetHostString());
-  return found != token_map_holder->map.end() ? found->second : std::string();
+  TokenMap::iterator it = g_tokens.Get().find(GetHostString());
+  return it != g_tokens.Get().end() ? it->second : std::string();
 }
 
 std::string PrivetURLFetcher::GetHostString() {
