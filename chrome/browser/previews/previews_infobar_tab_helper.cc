@@ -140,17 +140,15 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
 
   // Check for client previews.
   if (nav_data) {
-    previews::PreviewsType main_frame_preview =
-        previews::GetMainFramePreviewsType(nav_data->previews_state());
-    if (main_frame_preview == previews::PreviewsType::NOSCRIPT) {
+    if (nav_data->previews_state() & content::NOSCRIPT_ON) {
       PreviewsInfoBarDelegate::Create(
-          web_contents(), main_frame_preview,
+          web_contents(), previews::PreviewsType::NOSCRIPT,
           base::Time() /* previews_freshness */, true /* is_data_saver_user */,
           is_reload,
           base::Bind(&AddPreviewNavigationCallback,
                      web_contents()->GetBrowserContext(),
                      navigation_handle->GetRedirectChain()[0],
-                     main_frame_preview),
+                     previews::PreviewsType::NOSCRIPT),
           previews_ui_service);
     }
   }
