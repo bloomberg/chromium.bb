@@ -15,7 +15,9 @@
 #include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/cssom/CSSUnparsedValue.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
-#include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSPropertyParser.h"
+#include "core/css/parser/CSSTokenizer.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/properties/CSSProperty.h"
 
 namespace blink {
@@ -64,11 +66,33 @@ CSSStyleValueVector UnsupportedCSSValue(const CSSValue& value) {
   return style_value_vector;
 }
 
+const CSSValue* ParseProperty(CSSPropertyID property_id,
+                              const String& css_text,
+                              const CSSParserContext* context) {
+  CSSTokenizer tokenizer(css_text);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  const CSSParserTokenRange range(tokens);
+
+  if (const CSSValue* value =
+          CSSPropertyParser::ParseSingleValue(property_id, range, context)) {
+    return value;
+  }
+
+  if (CSSVariableParser::ContainsValidVariableReferences(range)) {
+    return CSSVariableReferenceValue::Create(
+        CSSVariableData::Create(range, false /* is_animation_tainted */,
+                                false /* needs variable resolution */),
+        *context);
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 CSSStyleValueVector StyleValueFactory::FromString(
     CSSPropertyID property_id,
-    const String& value,
+    const String& css_text,
     const CSSParserContext* parser_context) {
   DCHECK_NE(property_id, CSSPropertyInvalid);
   DCHECK(!CSSProperty::Get(property_id).IsShorthand());
@@ -78,13 +102,12 @@ CSSStyleValueVector StyleValueFactory::FromString(
     return CSSStyleValueVector();
   }
 
-  const CSSValue* css_value =
-      CSSParser::ParseSingleValue(property_id, value, parser_context);
-  if (!css_value)
+  const CSSValue* value = ParseProperty(property_id, css_text, parser_context);
+  if (!value)
     return CSSStyleValueVector();
 
   CSSStyleValueVector style_value_vector =
-      StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
+      StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
   DCHECK(!style_value_vector.IsEmpty());
   return style_value_vector;
 }
