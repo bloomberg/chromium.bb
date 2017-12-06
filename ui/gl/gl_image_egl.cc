@@ -24,13 +24,14 @@ GLImageEGL::~GLImageEGL() {
   }
 }
 
-bool GLImageEGL::Initialize(EGLenum target,
+bool GLImageEGL::Initialize(EGLContext context,
+                            EGLenum target,
                             EGLClientBuffer buffer,
                             const EGLint* attrs) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(EGL_NO_IMAGE_KHR, egl_image_);
-  egl_image_ = eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
-                                 EGL_NO_CONTEXT, target, buffer, attrs);
+  egl_image_ = eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(), context,
+                                 target, buffer, attrs);
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
     LOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
     return false;

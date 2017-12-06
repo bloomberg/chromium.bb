@@ -91,6 +91,18 @@ typedef EGLBoolean(GL_BINDING_CALL* eglDestroySyncKHRProc)(EGLDisplay dpy,
 typedef EGLint(GL_BINDING_CALL* eglDupNativeFenceFDANDROIDProc)(
     EGLDisplay dpy,
     EGLSyncKHR sync);
+typedef EGLBoolean(GL_BINDING_CALL* eglExportDMABUFImageMESAProc)(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    int* fds,
+    EGLint* strides,
+    EGLint* offsets);
+typedef EGLBoolean(GL_BINDING_CALL* eglExportDMABUFImageQueryMESAProc)(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    int* fourcc,
+    int* num_planes,
+    EGLuint64KHR* modifiers);
 typedef EGLBoolean(GL_BINDING_CALL* eglGetCompositorTimingANDROIDProc)(
     EGLDisplay dpy,
     EGLSurface surface,
@@ -277,6 +289,7 @@ struct ExtensionsEGL {
   bool b_EGL_KHR_stream_consumer_gltexture;
   bool b_EGL_KHR_swap_buffers_with_damage;
   bool b_EGL_KHR_wait_sync;
+  bool b_EGL_MESA_image_dma_buf_export;
   bool b_EGL_NV_post_sub_buffer;
   bool b_EGL_NV_stream_consumer_gltexture_yuv;
   bool b_GL_CHROMIUM_egl_android_native_fence_sync_hack;
@@ -305,6 +318,8 @@ struct ProcsEGL {
   eglDestroySurfaceProc eglDestroySurfaceFn;
   eglDestroySyncKHRProc eglDestroySyncKHRFn;
   eglDupNativeFenceFDANDROIDProc eglDupNativeFenceFDANDROIDFn;
+  eglExportDMABUFImageMESAProc eglExportDMABUFImageMESAFn;
+  eglExportDMABUFImageQueryMESAProc eglExportDMABUFImageQueryMESAFn;
   eglGetCompositorTimingANDROIDProc eglGetCompositorTimingANDROIDFn;
   eglGetCompositorTimingSupportedANDROIDProc
       eglGetCompositorTimingSupportedANDROIDFn;
@@ -428,6 +443,17 @@ class GL_EXPORT EGLApi {
   virtual EGLBoolean eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) = 0;
   virtual EGLint eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
                                               EGLSyncKHR sync) = 0;
+  virtual EGLBoolean eglExportDMABUFImageMESAFn(EGLDisplay dpy,
+                                                EGLImageKHR image,
+                                                int* fds,
+                                                EGLint* strides,
+                                                EGLint* offsets) = 0;
+  virtual EGLBoolean eglExportDMABUFImageQueryMESAFn(
+      EGLDisplay dpy,
+      EGLImageKHR image,
+      int* fourcc,
+      int* num_planes,
+      EGLuint64KHR* modifiers) = 0;
   virtual EGLBoolean eglGetCompositorTimingANDROIDFn(
       EGLDisplay dpy,
       EGLSurface surface,
@@ -607,6 +633,10 @@ class GL_EXPORT EGLApi {
 #define eglDestroySyncKHR ::gl::g_current_egl_context->eglDestroySyncKHRFn
 #define eglDupNativeFenceFDANDROID \
   ::gl::g_current_egl_context->eglDupNativeFenceFDANDROIDFn
+#define eglExportDMABUFImageMESA \
+  ::gl::g_current_egl_context->eglExportDMABUFImageMESAFn
+#define eglExportDMABUFImageQueryMESA \
+  ::gl::g_current_egl_context->eglExportDMABUFImageQueryMESAFn
 #define eglGetCompositorTimingANDROID \
   ::gl::g_current_egl_context->eglGetCompositorTimingANDROIDFn
 #define eglGetCompositorTimingSupportedANDROID \

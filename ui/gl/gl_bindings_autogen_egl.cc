@@ -161,6 +161,8 @@ void DriverEGL::InitializeExtensionBindings() {
   ext.b_EGL_KHR_swap_buffers_with_damage =
       HasExtension(extensions, "EGL_KHR_swap_buffers_with_damage");
   ext.b_EGL_KHR_wait_sync = HasExtension(extensions, "EGL_KHR_wait_sync");
+  ext.b_EGL_MESA_image_dma_buf_export =
+      HasExtension(extensions, "EGL_MESA_image_dma_buf_export");
   ext.b_EGL_NV_post_sub_buffer =
       HasExtension(extensions, "EGL_NV_post_sub_buffer");
   ext.b_EGL_NV_stream_consumer_gltexture_yuv =
@@ -195,6 +197,18 @@ void DriverEGL::InitializeExtensionBindings() {
   if (ext.b_EGL_KHR_stream) {
     fn.eglDestroyStreamKHRFn = reinterpret_cast<eglDestroyStreamKHRProc>(
         GetGLProcAddress("eglDestroyStreamKHR"));
+  }
+
+  if (ext.b_EGL_MESA_image_dma_buf_export) {
+    fn.eglExportDMABUFImageMESAFn =
+        reinterpret_cast<eglExportDMABUFImageMESAProc>(
+            GetGLProcAddress("eglExportDMABUFImageMESA"));
+  }
+
+  if (ext.b_EGL_MESA_image_dma_buf_export) {
+    fn.eglExportDMABUFImageQueryMESAFn =
+        reinterpret_cast<eglExportDMABUFImageQueryMESAProc>(
+            GetGLProcAddress("eglExportDMABUFImageQueryMESA"));
   }
 
   if (ext.b_EGL_ANDROID_get_frame_timestamps) {
@@ -462,6 +476,25 @@ EGLBoolean EGLApiBase::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
 EGLint EGLApiBase::eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
                                                 EGLSyncKHR sync) {
   return driver_->fn.eglDupNativeFenceFDANDROIDFn(dpy, sync);
+}
+
+EGLBoolean EGLApiBase::eglExportDMABUFImageMESAFn(EGLDisplay dpy,
+                                                  EGLImageKHR image,
+                                                  int* fds,
+                                                  EGLint* strides,
+                                                  EGLint* offsets) {
+  return driver_->fn.eglExportDMABUFImageMESAFn(dpy, image, fds, strides,
+                                                offsets);
+}
+
+EGLBoolean EGLApiBase::eglExportDMABUFImageQueryMESAFn(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    int* fourcc,
+    int* num_planes,
+    EGLuint64KHR* modifiers) {
+  return driver_->fn.eglExportDMABUFImageQueryMESAFn(dpy, image, fourcc,
+                                                     num_planes, modifiers);
 }
 
 EGLBoolean EGLApiBase::eglGetCompositorTimingANDROIDFn(
@@ -914,6 +947,28 @@ EGLint TraceEGLApi::eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
                                                  EGLSyncKHR sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglDupNativeFenceFDANDROID")
   return egl_api_->eglDupNativeFenceFDANDROIDFn(dpy, sync);
+}
+
+EGLBoolean TraceEGLApi::eglExportDMABUFImageMESAFn(EGLDisplay dpy,
+                                                   EGLImageKHR image,
+                                                   int* fds,
+                                                   EGLint* strides,
+                                                   EGLint* offsets) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglExportDMABUFImageMESA")
+  return egl_api_->eglExportDMABUFImageMESAFn(dpy, image, fds, strides,
+                                              offsets);
+}
+
+EGLBoolean TraceEGLApi::eglExportDMABUFImageQueryMESAFn(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    int* fourcc,
+    int* num_planes,
+    EGLuint64KHR* modifiers) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::eglExportDMABUFImageQueryMESA")
+  return egl_api_->eglExportDMABUFImageQueryMESAFn(dpy, image, fourcc,
+                                                   num_planes, modifiers);
 }
 
 EGLBoolean TraceEGLApi::eglGetCompositorTimingANDROIDFn(
@@ -1505,6 +1560,39 @@ EGLint DebugEGLApi::eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
   GL_SERVICE_LOG("eglDupNativeFenceFDANDROID"
                  << "(" << dpy << ", " << sync << ")");
   EGLint result = egl_api_->eglDupNativeFenceFDANDROIDFn(dpy, sync);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglExportDMABUFImageMESAFn(EGLDisplay dpy,
+                                                   EGLImageKHR image,
+                                                   int* fds,
+                                                   EGLint* strides,
+                                                   EGLint* offsets) {
+  GL_SERVICE_LOG("eglExportDMABUFImageMESA"
+                 << "(" << dpy << ", " << image << ", "
+                 << static_cast<const void*>(fds) << ", "
+                 << static_cast<const void*>(strides) << ", "
+                 << static_cast<const void*>(offsets) << ")");
+  EGLBoolean result =
+      egl_api_->eglExportDMABUFImageMESAFn(dpy, image, fds, strides, offsets);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglExportDMABUFImageQueryMESAFn(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    int* fourcc,
+    int* num_planes,
+    EGLuint64KHR* modifiers) {
+  GL_SERVICE_LOG("eglExportDMABUFImageQueryMESA"
+                 << "(" << dpy << ", " << image << ", "
+                 << static_cast<const void*>(fourcc) << ", "
+                 << static_cast<const void*>(num_planes) << ", "
+                 << static_cast<const void*>(modifiers) << ")");
+  EGLBoolean result = egl_api_->eglExportDMABUFImageQueryMESAFn(
+      dpy, image, fourcc, num_planes, modifiers);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

@@ -59,7 +59,8 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
 
   scoped_refptr<gl::GLImageEGL> image(new gl::GLImageAHardwareBuffer(size));
   EGLClientBuffer client_buffer = eglGetNativeClientBufferANDROID(buffer);
-  if (!image->Initialize(EGL_NATIVE_BUFFER_ANDROID, client_buffer, attribs)) {
+  if (!image->Initialize(EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
+                         client_buffer, attribs)) {
     DLOG(ERROR) << "Failed to create GLImage " << size.ToString();
     image = nullptr;
   }

@@ -1942,6 +1942,16 @@ EGL_FUNCTIONS = [
   'arguments':
       'EGLDisplay dpy, EGLSyncKHR sync' },
 { 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglExportDMABUFImageMESA',
+                 'extensions': ['EGL_MESA_image_dma_buf_export'] }],
+  'arguments': 'EGLDisplay dpy, EGLImageKHR image, int* fds, EGLint* strides, '
+               'EGLint* offsets', },
+{ 'return_type': 'EGLBoolean',
+  'versions': [{ 'name': 'eglExportDMABUFImageQueryMESA',
+                 'extensions': ['EGL_MESA_image_dma_buf_export'] }],
+  'arguments': 'EGLDisplay dpy, EGLImageKHR image, int* fourcc, '
+               'int* num_planes, EGLuint64KHR* modifiers', },
+{ 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglGetCompositorTimingANDROID',
                  'extensions': [
                    'EGL_ANDROID_get_frame_timestamps'
