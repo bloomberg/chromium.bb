@@ -8,85 +8,115 @@
 
 namespace content {
 
-namespace {
-
-inline bool operator==(
-    const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
-        track_adapter,
-    const webrtc::MediaStreamTrackInterface* webrtc_track) {
-  if (!track_adapter) {
-    // TODO(hbos): See TODO in |OnRemoved|. Because we can't set a stopped
-    // sender's track to null any |webrtc_track| could be correct. When this is
-    // fixed this line should be: return !webrtc_track;
-    // https://crbug.com/webrtc/7945
-    return true;
+class RTCRtpSender::RTCRtpSenderInternal
+    : public base::RefCountedThreadSafe<RTCRtpSender::RTCRtpSenderInternal> {
+ public:
+  RTCRtpSenderInternal(
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
+      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
+      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+          stream_refs)
+      : webrtc_sender_(std::move(webrtc_sender)),
+        track_ref_(std::move(track_ref)),
+        stream_refs_(std::move(stream_refs)) {
+    DCHECK(webrtc_sender_);
   }
-  return track_adapter->webrtc_track() == webrtc_track;
-}
 
-}  // namespace
+  webrtc::RtpSenderInterface* webrtc_sender() const {
+    return webrtc_sender_.get();
+  }
 
-uintptr_t RTCRtpSender::getId(
-    const webrtc::RtpSenderInterface* webrtc_rtp_sender) {
-  return reinterpret_cast<uintptr_t>(webrtc_rtp_sender);
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref()
+      const {
+    return track_ref_ ? track_ref_->Copy() : nullptr;
+  }
+
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+  stream_refs() const {
+    std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+        stream_ref_copies(stream_refs_.size());
+    for (size_t i = 0; i < stream_refs_.size(); ++i)
+      stream_ref_copies[i] = stream_refs_[i]->Copy();
+    return stream_ref_copies;
+  }
+
+  void OnRemoved() {
+    // TODO(hbos): We should do |webrtc_sender_->SetTrack(null)| but that is
+    // not allowed on a stopped sender. https://crbug.com/webrtc/7945
+    track_ref_.reset();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<RTCRtpSenderInternal>;
+  virtual ~RTCRtpSenderInternal() {}
+
+  const rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender_;
+  // The track adapter is the glue between blink and webrtc layer tracks.
+  // Keeping a reference to the adapter ensures it is not disposed, as is
+  // required as long as the webrtc layer track is in use by the sender.
+  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref_;
+  // Similarly, reference needs to be kept to the stream adapters of the
+  // sender's associated set of streams.
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+      stream_refs_;
+};
+
+uintptr_t RTCRtpSender::getId(const webrtc::RtpSenderInterface* webrtc_sender) {
+  return reinterpret_cast<uintptr_t>(webrtc_sender);
 }
 
 RTCRtpSender::RTCRtpSender(
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_rtp_sender,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter)
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref)
     : RTCRtpSender(
-          std::move(webrtc_rtp_sender),
-          std::move(track_adapter),
+          std::move(webrtc_sender),
+          std::move(track_ref),
           std::vector<
               std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>()) {}
 
 RTCRtpSender::RTCRtpSender(
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_rtp_sender,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter,
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
+    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
     std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-        stream_adapters)
-    : webrtc_rtp_sender_(std::move(webrtc_rtp_sender)),
-      track_adapter_(std::move(track_adapter)),
-      stream_adapters_(std::move(stream_adapters)) {
-  DCHECK(webrtc_rtp_sender_);
-  DCHECK(track_adapter_ == webrtc_rtp_sender_->track());
-}
+        stream_refs)
+    : internal_(new RTCRtpSenderInternal(std::move(webrtc_sender),
+                                         std::move(track_ref),
+                                         std::move(stream_refs))) {}
+
+RTCRtpSender::RTCRtpSender(const RTCRtpSender& other)
+    : internal_(other.internal_) {}
 
 RTCRtpSender::~RTCRtpSender() {}
 
+RTCRtpSender& RTCRtpSender::operator=(const RTCRtpSender& other) {
+  internal_ = other.internal_;
+  return *this;
+}
+
 std::unique_ptr<RTCRtpSender> RTCRtpSender::ShallowCopy() const {
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      stream_adapter_copies(stream_adapters_.size());
-  for (size_t i = 0; i < stream_adapters_.size(); ++i) {
-    stream_adapter_copies[i] = stream_adapters_[i]->Copy();
-  }
-  return std::make_unique<RTCRtpSender>(webrtc_rtp_sender_,
-                                        track_adapter_->Copy(),
-                                        std::move(stream_adapter_copies));
+  return std::make_unique<RTCRtpSender>(*this);
 }
 
 uintptr_t RTCRtpSender::Id() const {
-  return getId(webrtc_rtp_sender_.get());
+  return getId(internal_->webrtc_sender());
 }
 
-const blink::WebMediaStreamTrack* RTCRtpSender::Track() const {
-  DCHECK(track_adapter_ == webrtc_rtp_sender_->track());
-  return track_adapter_ ? &track_adapter_->web_track() : nullptr;
+blink::WebMediaStreamTrack RTCRtpSender::Track() const {
+  auto track_ref = internal_->track_ref();
+  return track_ref ? track_ref->web_track() : blink::WebMediaStreamTrack();
 }
 
 void RTCRtpSender::OnRemoved() {
-  // TODO(hbos): We should do |webrtc_rtp_sender_->SetTrack(null)| but that is
-  // not allowed on a stopped sender. https://crbug.com/webrtc/7945
-  track_adapter_.reset();
+  internal_->OnRemoved();
 }
 
-webrtc::RtpSenderInterface* RTCRtpSender::webrtc_rtp_sender() {
-  return webrtc_rtp_sender_.get();
+webrtc::RtpSenderInterface* RTCRtpSender::webrtc_sender() const {
+  return internal_->webrtc_sender();
 }
 
 const webrtc::MediaStreamTrackInterface* RTCRtpSender::webrtc_track() const {
-  DCHECK(track_adapter_ == webrtc_rtp_sender_->track());
-  return track_adapter_ ? track_adapter_->webrtc_track() : nullptr;
+  auto track_ref = internal_->track_ref();
+  return track_ref ? track_ref->webrtc_track() : nullptr;
 }
 
 }  // namespace content

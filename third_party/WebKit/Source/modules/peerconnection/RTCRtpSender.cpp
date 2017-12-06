@@ -10,11 +10,11 @@ namespace blink {
 
 namespace {
 
-bool TrackEquals(const MediaStreamTrack* track,
-                 const WebMediaStreamTrack* web_track) {
+bool TrackEquals(MediaStreamTrack* track,
+                 const WebMediaStreamTrack& web_track) {
   if (track)
-    return web_track && web_track->Id() == WebString(track->id());
-  return !web_track;
+    return track->Component() == static_cast<MediaStreamComponent*>(web_track);
+  return web_track.IsNull();
 }
 
 }  // namespace
@@ -31,7 +31,7 @@ MediaStreamTrack* RTCRtpSender::track() {
   return track_;
 }
 
-WebRTCRtpSender* RTCRtpSender::web_rtp_sender() {
+WebRTCRtpSender* RTCRtpSender::web_sender() {
   return sender_.get();
 }
 
