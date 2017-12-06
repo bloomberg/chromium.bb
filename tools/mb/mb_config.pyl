@@ -164,7 +164,6 @@
       'Afl Upload Linux ASan': 'release_afl_asan',
       'Android Builder (dbg)': 'android_debug_static_bot_vrdata',
 
-      'Android Builder Goma Canary (dbg)': 'android_debug_static_bot_vrdata',
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
 
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
@@ -173,16 +172,10 @@
       'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
-      'ChromeOS amd64 Chromium Goma Canary': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
 
-      'Chromium Linux Goma Canary': 'release_trybot',
       'Linux Builder Goma Canary': 'release_bot',
-
-      'Chromium Linux Goma Canary (clobber)': 'release_bot',
       'Linux x64 Goma Canary (clobber)': 'release_bot',
-
-      'Chromium Linux Goma Canary LocalOutputCache': 'release_bot',
       'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
 
       'Chromium Mac 10.10 MacViews': 'mac_views_browser_release_bot',
@@ -190,19 +183,10 @@
       'Chromium Mac 10.11 Force Mac Toolchain': 'release_bot_mac_new_sdk',
       'Chromium Mac 10.13': 'release_bot',
 
-      'Chromium Mac 10.9 Goma Canary': 'gpu_tests_release_trybot',
       'Mac Builder Goma Canary': 'gpu_tests_release_bot',
-
-      'Chromium Mac 10.9 Goma Canary (clobber)': 'release_bot_mac_strip',
       'Mac Goma Canary (clobber)': 'release_bot_mac_strip',
-
-      'Chromium Mac 10.9 Goma Canary (dbg)': 'debug_trybot',
       'Mac Builder (dbg) Goma Canary': 'debug_bot',
-
-      'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'debug_trybot',
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
-
-      'Chromium Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip',
       'Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip',
 
       'Chromium Win 10 GCE Tests': 'release_bot_minimal_symbols',
@@ -216,29 +200,13 @@
       },
       'Chromium Windows Analyze': 'windows_analyze',
 
-      'CrWin7Goma': 'gpu_tests_release_trybot_x86_minimal_symbols',
       'Win7 Builder Goma Canary': 'release_bot_x86_minimal_symbols',
-
-      'CrWin7Goma(dbg)': 'debug_trybot_x86_minimal_symbols',
       'Win7 Builder (dbg) Goma Canary': 'debug_trybot_x86_minimal_symbols',
-
-      'CrWin7Goma(dll)': 'gpu_tests_release_trybot_x86_shared_minimal_symbols',
       'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_no_clang',
-
-      'CrWinGoma': 'gpu_tests_release_trybot_x86_minimal_symbols',
       'Win Builder Goma Canary': 'release_bot_x86_minimal_symbols',
-
-      'CrWinGoma(dll)': 'gpu_tests_release_trybot_x86_shared_minimal_symbols',
       'Win Builder (dbg) Goma Canary': 'debug_bot_x86_minimal_symbols',
-
-      'CrWinGoma(loc)': 'release_bot_x86_minimal_symbols',
       'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols',
-
-      'CrWinClexeGoma': 'release_bot_x86_minimal_symbols_no_clang',
       'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
-
-      'CrWinClangGoma': 'clang_official_release_bot_minimal_symbols_x86_clang',
-      'ToTWin Goma Canary': 'clang_tot_official_minimal_symbols_static_release_x86',
 
       'EarlGreyiOS': 'ios',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
@@ -246,7 +214,6 @@
       'Fuchsia x64': 'release_bot_fuchsia',
       'Fuchsia': 'release_bot_fuchsia',
 
-      'GomaCanaryiOS': 'ios',
       'ios-device-goma-canary-clobber': 'ios',
 
       'ios-simulator': 'ios',
@@ -1167,12 +1134,6 @@
       'clang', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
-    'clang_official_release_bot_minimal_symbols_x86_clang': [
-      # force clang enabled for clang_official_release_bot_minimal_symbols_x86
-      # for CrWinClangGoma
-      'clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
-    ],
-
 
     'clang_official_release_trybot': [
       'clang', 'official', 'release_trybot',
@@ -1423,10 +1384,6 @@
 
     'gpu_tests_release_trybot_x86_minimal_symbols': [
       'gpu_tests', 'release_trybot', 'x86', 'minimal_symbols',
-    ],
-
-    'gpu_tests_release_trybot_x86_shared_minimal_symbols': [
-      'gpu_tests', 'release_trybot', 'x86', 'shared', 'minimal_symbols',
     ],
 
     'gpu_tests_release_bot': [
