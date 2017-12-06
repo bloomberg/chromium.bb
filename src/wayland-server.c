@@ -658,11 +658,9 @@ resource_is_deprecated(struct wl_resource *resource)
 }
 
 static enum wl_iterator_result
-destroy_resource(void *element, void *data)
+destroy_resource(void *element, void *data, uint32_t flags)
 {
 	struct wl_resource *resource = element;
-	struct wl_client *client = resource->client;
-	uint32_t flags;
 
 	wl_signal_emit(&resource->deprecated_destroy_signal, resource);
 	/* Don't emit the new signal for deprecated resources, as that would
@@ -670,7 +668,6 @@ destroy_resource(void *element, void *data)
 	if (!resource_is_deprecated(resource))
 		wl_priv_signal_emit(&resource->destroy_signal, resource);
 
-	flags = wl_map_lookup_flags(&client->objects, resource->object.id);
 	if (resource->destroy)
 		resource->destroy(resource);
 
@@ -685,9 +682,11 @@ wl_resource_destroy(struct wl_resource *resource)
 {
 	struct wl_client *client = resource->client;
 	uint32_t id;
+	uint32_t flags;
 
 	id = resource->object.id;
-	destroy_resource(resource, NULL);
+	flags = wl_map_lookup_flags(&client->objects, id);
+	destroy_resource(resource, NULL, flags);
 
 	if (id < WL_SERVER_ID_START) {
 		if (client->display_resource) {
@@ -1839,7 +1838,7 @@ struct wl_resource_iterator_context {
 };
 
 static enum wl_iterator_result
-resource_iterator_helper(void *res, void *user_data)
+resource_iterator_helper(void *res, void *user_data, uint32_t flags)
 {
 	struct wl_resource_iterator_context *context = user_data;
 	struct wl_resource *resource = res;

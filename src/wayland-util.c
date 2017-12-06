@@ -371,7 +371,7 @@ for_each_helper(struct wl_array *entries, wl_iterator_func_t func, void *data)
 
 	for (p = start; p < end; p++)
 		if (p->data && !map_entry_is_free(*p)) {
-			ret = func(map_entry_get_data(*p), data);
+			ret = func(map_entry_get_data(*p), data, map_entry_get_flags(*p));
 			if (ret != WL_ITERATOR_CONTINUE)
 				break;
 		}
