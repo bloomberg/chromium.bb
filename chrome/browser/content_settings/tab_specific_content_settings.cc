@@ -840,6 +840,7 @@ void TabSpecificContentSettings::DidStartNavigation(
   ClearGeolocationContentSettings();
   ClearMidiContentSettings();
   ClearPendingProtocolHandler();
+  ClearContentSettingsChangedViaPageInfo();
 }
 
 void TabSpecificContentSettings::DidFinishNavigation(
@@ -895,6 +896,10 @@ void TabSpecificContentSettings::ClearMidiContentSettings() {
   midi_usages_state_.ClearStateMap();
 }
 
+void TabSpecificContentSettings::ClearContentSettingsChangedViaPageInfo() {
+  content_settings_changed_via_page_info_.clear();
+}
+
 void TabSpecificContentSettings::GeolocationDidNavigate(
     content::NavigationHandle* navigation_handle) {
   geolocation_usages_state_.DidNavigate(navigation_handle->GetURL(),
@@ -932,4 +937,15 @@ void TabSpecificContentSettings::BlockAllContentForTesting() {
       web_contents()->GetLastCommittedURL(),
       media_blocked,
       std::string(), std::string(), std::string(), std::string());
+}
+
+void TabSpecificContentSettings::ContentSettingChangedViaPageInfo(
+    ContentSettingsType type) {
+  content_settings_changed_via_page_info_.insert(type);
+}
+
+bool TabSpecificContentSettings::HasContentSettingChangedViaPageInfo(
+    ContentSettingsType type) const {
+  return content_settings_changed_via_page_info_.find(type) !=
+         content_settings_changed_via_page_info_.end();
 }
