@@ -17,9 +17,9 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_decoder.h"
-#include "media/gpu/d3d11_h264_accelerator.h"
 #include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/windows/d3d11_h264_accelerator.h"
 #include "media/gpu/windows/output_with_release_mailbox_cb.h"
 
 namespace media {

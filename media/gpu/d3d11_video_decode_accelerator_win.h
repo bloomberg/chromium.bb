@@ -12,9 +12,9 @@
 #include <memory>
 
 #include "media/gpu/accelerated_video_decoder.h"
-#include "media/gpu/d3d11_h264_accelerator.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/windows/d3d11_h264_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace media {
