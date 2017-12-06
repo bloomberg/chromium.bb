@@ -47,6 +47,9 @@ DesktopAutomationHandler = function(node) {
   /** @private {AutomationNode} */
   this.lastValueTarget_ = null;
 
+  /** @private {string} */
+  this.lastRootUrl_ = '';
+
   this.addListener_(
       EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
   this.addListener_(EventType.ALERT, this.onAlert);
@@ -296,6 +299,11 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onFocus: function(evt) {
+    if (evt.target.role == RoleType.ROOT_WEB_AREA) {
+      this.maybeRecoverFocusAndOutput_(evt);
+      return;
+    }
+
     // Invalidate any previous editable text handler state.
     if (!this.createTextEditHandlerIfNeeded_(evt.target))
       this.textEditHandler_ = null;
@@ -361,33 +369,7 @@ DesktopAutomationHandler.prototype = {
         return;
       }
 
-      // If initial focus was already placed on this page (e.g. if a user starts
-      // tabbing before load complete), then don't move ChromeVox's position on
-      // the page.
-      if (ChromeVoxState.instance.currentRange &&
-          ChromeVoxState.instance.currentRange.start.node.root == focus.root)
-        return;
-
-      var o = new Output();
-      if (focus.role == RoleType.ROOT_WEB_AREA) {
-        // Restore to previous position.
-        var url = focus.docUrl;
-        url = url.substring(0, url.indexOf('#')) || url;
-        var pos = cvox.ChromeVox.position[url];
-        if (pos) {
-          focus = AutomationUtil.hitTest(focus.root, pos) || focus;
-          if (focus != focus.root)
-            o.format('$name', focus.root);
-        }
-      }
-      ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
-      if (!this.shouldOutput_(evt))
-        return;
-
-      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-      o.withRichSpeechAndBraille(
-           ChromeVoxState.instance.currentRange, null, evt.type)
-          .go();
+      this.maybeRecoverFocusAndOutput_(evt);
     }.bind(this));
   },
 
@@ -602,6 +584,60 @@ DesktopAutomationHandler.prototype = {
     return evt.target.root.role == RoleType.DESKTOP ||
         (mode == ChromeVoxMode.NEXT || mode == ChromeVoxMode.FORCE_NEXT ||
          mode == ChromeVoxMode.CLASSIC_COMPAT);
+  },
+
+  /**
+   * @param {AutomationEvent} evt
+   * @private
+   */
+  maybeRecoverFocusAndOutput_: function(evt) {
+    chrome.automation.getFocus(function(focus) {
+      var focusedRoot = AutomationUtil.getTopLevelRoot(focus);
+      if (!focusedRoot)
+        return;
+
+      var curRoot;
+      if (ChromeVoxState.instance.currentRange) {
+        curRoot = AutomationUtil.getTopLevelRoot(
+            ChromeVoxState.instance.currentRange.start.node);
+      }
+
+      // If initial focus was already placed inside this page (e.g. if a user
+      // starts tabbing before load complete), then don't move ChromeVox's
+      // position on the page.
+      if (curRoot && focusedRoot == curRoot &&
+          this.lastRootUrl_ == focusedRoot.docUrl && focus != focusedRoot)
+        return;
+
+      this.lastRootUrl_ = focusedRoot.docUrl || '';
+      var o = new Output();
+      // Restore to previous position.
+      var url = focusedRoot.docUrl;
+      url = url.substring(0, url.indexOf('#')) || url;
+      var pos = cvox.ChromeVox.position[url];
+      if (pos) {
+        focus = AutomationUtil.hitTest(focusedRoot, pos) || focus;
+        if (focus != focusedRoot)
+          o.format('$name', focusedRoot);
+      } else {
+        // This catches initial focus (i.e. on startup).
+        if (!curRoot && focus != focusedRoot)
+          o.format('$name', focusedRoot);
+      }
+
+      if (ChromeVoxState.instance.currentRange &&
+          focus == ChromeVoxState.instance.currentRange.start.node)
+        return;
+
+      ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
+      if (!this.shouldOutput_(evt))
+        return;
+
+      Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+      o.withRichSpeechAndBraille(
+           ChromeVoxState.instance.currentRange, null, evt.type)
+          .go();
+    }.bind(this));
   }
 };
 

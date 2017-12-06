@@ -525,13 +525,13 @@ TEST_F('BackgroundTest', 'ModeSwitching', function() {
     fakeWebRoot.parent = fakeDesktop;
     fakeWebRoot.role = RoleType.ROOT_WEB_AREA;
     fakeWebRoot.makeVisible = function() {};
-    fakeWebRoot.location = {left: 1, top: 1, width: 1, height: 1};
+    fakeWebRoot.unclippedLocation = {left: 1, top: 1, width: 1, height: 1};
     var fakeSubRoot = {};
     fakeSubRoot.root = fakeSubRoot;
     fakeSubRoot.parent = fakeWebRoot;
     fakeSubRoot.role = RoleType.ROOT_WEB_AREA;
     fakeSubRoot.makeVisible = function() {};
-    fakeSubRoot.location = {left: 1, top: 1, width: 1, height: 1};
+    fakeSubRoot.unclippedLocation = {left: 1, top: 1, width: 1, height: 1};
     var bk = ChromeVoxState.instance;
 
     // Tests default to force next mode.
