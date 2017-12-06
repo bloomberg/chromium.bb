@@ -6,13 +6,14 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/notifications/notification_display_service_tester.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "components/user_manager/user_manager.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
+
+using message_center::MessageCenter;
 
 namespace chromeos {
 
@@ -21,32 +22,64 @@ namespace {
 const char* const kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
 
+bool HasNotification() {
+  MessageCenter* message_center = MessageCenter::Get();
+  return message_center->FindVisibleNotificationById(kNotificationId);
+}
+
+class NotificationObserver : public message_center::MessageCenterObserver {
+ public:
+  NotificationObserver() : add_count_(0), remove_count_(0), update_count_(0) {}
+
+  // Overridden from message_center::MessageCenterObserver:
+  void OnNotificationAdded(const std::string& notification_id) override {
+    if (notification_id == kNotificationId)
+      ++add_count_;
+  }
+
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool /* by_user */) override {
+    if (notification_id == kNotificationId)
+      ++remove_count_;
+  }
+
+  void OnNotificationUpdated(const std::string& notification_id) override {
+    if (notification_id == kNotificationId)
+      ++update_count_;
+  }
+
+  unsigned add_count() const { return add_count_; }
+  unsigned remove_count() const { return remove_count_; }
+  unsigned update_count() const { return update_count_; }
+
+ private:
+  unsigned add_count_;
+  unsigned remove_count_;
+  unsigned update_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationObserver);
+};
+
 }  // namespace
 
-class NetworkPortalNotificationControllerTest
-    : public BrowserWithTestWindowTest {
+class NetworkPortalNotificationControllerTest : public testing::Test {
  public:
   NetworkPortalNotificationControllerTest()
-      : user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(base::WrapUnique(user_manager_)),
+      : user_manager_enabler_(
+            std::make_unique<chromeos::FakeChromeUserManager>()),
         controller_(nullptr) {}
   ~NetworkPortalNotificationControllerTest() override {}
 
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kEnableNetworkPortalNotification);
-
-    AccountId account_id = AccountId::FromUserEmail("user@example.com");
-    user_manager_->AddUser(account_id);
-    user_manager_->LoginUser(account_id);
-
-    display_service_ =
-        std::make_unique<NotificationDisplayServiceTester>(profile());
+    MessageCenter::Initialize();
+    MessageCenter::Get()->AddObserver(&observer_);
   }
 
-  TestingProfile* CreateProfile() override {
-    return profile_manager()->CreateTestingProfile("user@example.com");
+  void TearDown() override {
+    MessageCenter::Get()->RemoveObserver(&observer_);
+    MessageCenter::Shutdown();
   }
 
  protected:
@@ -56,18 +89,13 @@ class NetworkPortalNotificationControllerTest
     controller_.OnPortalDetectionCompleted(network, state);
   }
 
-  bool HasNotification() {
-    return !!display_service_->GetNotification(kNotificationId);
-  }
-
-  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
-  chromeos::FakeChromeUserManager* user_manager_;
-  user_manager::ScopedUserManager user_manager_enabler_;
-  NetworkPortalNotificationController controller_;
-  // NotificationObserver observer_;
-  AccountId account_id_;
+  NotificationObserver& observer() { return observer_; }
 
  private:
+  user_manager::ScopedUserManager user_manager_enabler_;
+  NetworkPortalNotificationController controller_;
+  NotificationObserver observer_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationControllerTest);
 };
 
@@ -104,8 +132,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NetworkChanged) {
   OnPortalDetectionCompleted(&wifi1, wifi1_state);
   ASSERT_TRUE(HasNotification());
 
-  display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
-                                       kNotificationId, true /* by_user */);
+  MessageCenter::Get()->RemoveNotification(kNotificationId, true /* by_user */);
   ASSERT_FALSE(HasNotification());
 
   // User already closed notification about portal state for this network,
@@ -139,45 +166,45 @@ TEST_F(NetworkPortalNotificationControllerTest, NotificationUpdated) {
   // be displayed.
   NetworkState wifi1("wifi1");
   wifi1.SetGuid("wifi1");
-  wifi1.PropertyChanged("Name", base::Value("wifi1"));
   OnPortalDetectionCompleted(&wifi1, portal_state);
   ASSERT_TRUE(HasNotification());
-  EXPECT_EQ(1u, display_service_
-                    ->GetDisplayedNotificationsForType(
-                        NotificationHandler::Type::TRANSIENT)
-                    .size());
-  const base::string16 initial_message =
-      display_service_->GetNotification(kNotificationId)->message();
+  EXPECT_EQ(1u, observer().add_count());
+  EXPECT_EQ(0u, observer().remove_count());
+  EXPECT_EQ(0u, observer().update_count());
 
   // Second network is also behind a captive portal, so notification
   // should be updated.
   NetworkState wifi2("wifi2");
   wifi2.SetGuid("wifi2");
-  wifi2.PropertyChanged("Name", base::Value("wifi2"));
   OnPortalDetectionCompleted(&wifi2, portal_state);
   ASSERT_TRUE(HasNotification());
-  EXPECT_EQ(1u, display_service_
-                    ->GetDisplayedNotificationsForType(
-                        NotificationHandler::Type::TRANSIENT)
-                    .size());
-  EXPECT_NE(initial_message,
-            display_service_->GetNotification(kNotificationId)->message());
+  EXPECT_EQ(1u, observer().add_count());
+  EXPECT_EQ(0u, observer().remove_count());
+  EXPECT_EQ(1u, observer().update_count());
 
   // User closes the notification.
-  display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
-                                       kNotificationId, true /* by_user */);
+  MessageCenter::Get()->RemoveNotification(kNotificationId, true /* by_user */);
   ASSERT_FALSE(HasNotification());
+  EXPECT_EQ(1u, observer().add_count());
+  EXPECT_EQ(1u, observer().remove_count());
+  EXPECT_EQ(1u, observer().update_count());
 
   // Portal detector notified that second network is still behind captive
   // portal, but user already closed the notification, so there should
   // not be any notifications.
   OnPortalDetectionCompleted(&wifi2, portal_state);
   ASSERT_FALSE(HasNotification());
+  EXPECT_EQ(1u, observer().add_count());
+  EXPECT_EQ(1u, observer().remove_count());
+  EXPECT_EQ(1u, observer().update_count());
 
   // Network was switched (by shill or by user) to wifi1. Notification
   // should be displayed.
   OnPortalDetectionCompleted(&wifi1, portal_state);
   ASSERT_TRUE(HasNotification());
+  EXPECT_EQ(2u, observer().add_count());
+  EXPECT_EQ(1u, observer().remove_count());
+  EXPECT_EQ(1u, observer().update_count());
 }
 
 }  // namespace chromeos
