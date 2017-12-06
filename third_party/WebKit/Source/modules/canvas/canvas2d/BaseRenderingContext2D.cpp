@@ -195,8 +195,10 @@ void BaseRenderingContext2D::setStrokeStyle(
   } else if (style.IsCanvasPattern()) {
     CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
-    if (OriginClean() && !canvas_pattern->OriginClean())
+    if (OriginClean() && !canvas_pattern->OriginClean()) {
       SetOriginTainted();
+      ClearResolvedFilters();
+    }
 
     canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
   }
@@ -236,8 +238,10 @@ void BaseRenderingContext2D::setFillStyle(
   } else if (style.IsCanvasPattern()) {
     CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
-    if (OriginClean() && !canvas_pattern->OriginClean())
+    if (OriginClean() && !canvas_pattern->OriginClean()) {
       SetOriginTainted();
+      ClearResolvedFilters();
+    }
     if (canvas_pattern->GetPattern()->IsTextureBacked())
       DisableDeferral(kDisableDeferralReasonUsingTextureBackedPattern);
     canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
@@ -1103,6 +1107,11 @@ bool ShouldDisableDeferral(CanvasImageSource* image_source,
   return false;
 }
 
+void BaseRenderingContext2D::ClearResolvedFilters() {
+  for (auto& state : state_stack_)
+    state->ClearResolvedFilter();
+}
+
 void BaseRenderingContext2D::drawImage(ScriptState* script_state,
                                        CanvasImageSource* image_source,
                                        double sx,
@@ -1265,6 +1274,12 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   ValidateStateStack();
 
+  if (OriginClean() &&
+      WouldTaintOrigin(image_source, ExecutionContext::From(script_state))) {
+    SetOriginTainted();
+    ClearResolvedFilters();
+  }
+
   Draw(
       [this, &image_source, &image, &src_rect, dst_rect](
           PaintCanvas* c, const PaintFlags* flags)  // draw lambda
@@ -1280,10 +1295,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
           : CanvasRenderingContext2DState::kNonOpaqueImage);
 
   ValidateStateStack();
-
-  if (OriginClean() &&
-      WouldTaintOrigin(image_source, ExecutionContext::From(script_state)))
-    SetOriginTainted();
 
   if (!IsPaint2D()) {
     DCHECK(start_time);

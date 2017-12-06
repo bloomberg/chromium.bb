@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<canvas id="canvas" width="200" height="200"></canvas>
+<svg height="0">
+  <filter id="filter">
+    <feFlood fill-color="lime"/>
+    <feDisplacementMap in2="SourceGraphic" xChannelSelector="R" yChannelSelector="G" scale="100"/>
+  </filter>
+</svg>
+
+<script>
+if (window.testRunner)
+    window.testRunner.waitUntilDone();
+// Passes if the output is a black square.
+var img = new Image();
+// Use a cross-origin URL.
+img.src = "http://localhost:8000/resources/square.png";
+img.onload = function () {
+  var ctx = document.getElementById("canvas").getContext("2d");
+  ctx.filter = "url(#filter)";
+
+  ctx.drawImage(img, 0, 0);
+  window.testRunner.notifyDone();
+}
+</script>

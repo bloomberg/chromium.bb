@@ -277,7 +277,8 @@ void CanvasRenderingContext2DState::ResetTransform() {
 }
 
 sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
-    IntSize canvas_size) const {
+    IntSize canvas_size,
+    BaseRenderingContext2D* context) const {
   if (!filter_value_)
     return nullptr;
 
@@ -301,9 +302,10 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
       1.0f,  // Deliberately ignore zoom on the canvas element.
       &fill_flags_for_filter, &stroke_flags_for_filter);
 
-  FilterEffect* last_effect =
-      filter_effect_builder.BuildFilterEffect(operations);
+  FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
+      operations, !context->OriginClean());
   if (last_effect) {
+    // TODO(chrishtr): Taint the origin if needed. crbug.com/792506.
     resolved_filter_ =
         PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
   }
@@ -355,8 +357,8 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
         1.0f,  // Deliberately ignore zoom on the canvas element.
         &fill_flags_for_filter, &stroke_flags_for_filter);
 
-    if (FilterEffect* last_effect =
-            filter_effect_builder.BuildFilterEffect(filter_style->Filter())) {
+    if (FilterEffect* last_effect = filter_effect_builder.BuildFilterEffect(
+            filter_style->Filter(), !context->OriginClean())) {
       resolved_filter_ =
           PaintFilterBuilder::Build(last_effect, kInterpolationSpaceSRGB);
       if (resolved_filter_) {
@@ -371,10 +373,11 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
 }
 
 bool CanvasRenderingContext2DState::HasFilterForOffscreenCanvas(
-    IntSize canvas_size) const {
+    IntSize canvas_size,
+    BaseRenderingContext2D* context) const {
   // Checking for a non-null m_filterValue isn't sufficient, since this value
   // might refer to a non-existent filter.
-  return !!GetFilterForOffscreenCanvas(canvas_size);
+  return !!GetFilterForOffscreenCanvas(canvas_size, context);
 }
 
 bool CanvasRenderingContext2DState::HasFilter(

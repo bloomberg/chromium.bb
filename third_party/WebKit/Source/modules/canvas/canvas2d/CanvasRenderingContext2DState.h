@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class BaseRenderingContext2D;
 class CanvasRenderingContext2D;
 class CanvasStyle;
 class CSSValue;
@@ -97,8 +98,10 @@ class CanvasRenderingContext2DState final
   sk_sp<PaintFilter> GetFilter(Element*,
                                IntSize canvas_size,
                                CanvasRenderingContext2D*) const;
-  sk_sp<PaintFilter> GetFilterForOffscreenCanvas(IntSize canvas_size) const;
-  bool HasFilterForOffscreenCanvas(IntSize canvas_size) const;
+  sk_sp<PaintFilter> GetFilterForOffscreenCanvas(IntSize canvas_size,
+                                                 BaseRenderingContext2D*) const;
+  bool HasFilterForOffscreenCanvas(IntSize canvas_size,
+                                   BaseRenderingContext2D*) const;
   bool HasFilter(Element*,
                  IntSize canvas_size,
                  CanvasRenderingContext2D*) const;

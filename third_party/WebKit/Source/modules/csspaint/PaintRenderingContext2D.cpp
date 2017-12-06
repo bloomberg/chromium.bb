@@ -86,11 +86,13 @@ void PaintRenderingContext2D::ValidateStateStack() const {
 }
 
 bool PaintRenderingContext2D::StateHasFilter() {
-  return GetState().HasFilterForOffscreenCanvas(IntSize(Width(), Height()));
+  return GetState().HasFilterForOffscreenCanvas(IntSize(Width(), Height()),
+                                                this);
 }
 
 sk_sp<PaintFilter> PaintRenderingContext2D::StateGetFilter() {
-  return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()));
+  return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()),
+                                                this);
 }
 
 void PaintRenderingContext2D::WillOverwriteCanvas() {
