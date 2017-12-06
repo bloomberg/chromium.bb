@@ -2650,8 +2650,6 @@ crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
-crbug.com/667371 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Failure ]
-
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 external/wpt/css/css-ui/box-sizing-014.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui/box-sizing-015.html [ Failure ]
