@@ -20,7 +20,7 @@
 // |frame| and the |style| of the toolbar it belongs to.
 - (instancetype)initWithFrame:(CGRect)frame
                         style:(ToolbarControllerStyle)style
-                        small:(BOOL)smallButton NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 

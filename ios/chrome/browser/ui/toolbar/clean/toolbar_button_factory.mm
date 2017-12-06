@@ -130,9 +130,7 @@ const int styleCount = 2;
                                      ? ToolbarControllerStyleLightMode
                                      : ToolbarControllerStyleIncognitoMode;
   ToolbarToolsMenuButton* toolsMenuButton =
-      [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero
-                                              style:style
-                                              small:YES];
+      [[ToolbarToolsMenuButton alloc] initWithFrame:CGRectZero style:style];
 
   toolsMenuButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);

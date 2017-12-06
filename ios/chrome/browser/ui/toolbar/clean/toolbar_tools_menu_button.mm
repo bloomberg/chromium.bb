@@ -20,8 +20,6 @@ const int kNumberOfDots = 3;
 // Position of the topmost dot.
 const CGFloat kDotOffsetX = 22;
 const CGFloat kDotOffsetY = 18;
-// Y offset of the topmost dot in case the button is the smaller version.
-const CGFloat kSmallButtonOffset = 3;
 // Vertical space between dots.
 const CGFloat kVerticalSpaceBetweenDots = 6;
 // The duration of the animation, in seconds.
@@ -60,9 +58,6 @@ const CGFloat kLineWidthAtApogee = 3;
   BOOL animationOnGoing_;
 }
 
-// Whether the button is the smaller version.
-@property(nonatomic, assign, getter=isSmallButton) BOOL smallButton;
-
 // Tints of the button.
 @property(nonatomic, strong) UIColor* normalStateTint;
 @property(nonatomic, strong) UIColor* highlightedStateTint;
@@ -71,16 +66,13 @@ const CGFloat kLineWidthAtApogee = 3;
 
 @implementation ToolbarToolsMenuButton
 
-@synthesize smallButton = _smallButton;
 @synthesize normalStateTint = _normalStateTint;
 @synthesize highlightedStateTint = _highlightedStateTint;
 
 - (instancetype)initWithFrame:(CGRect)frame
-                        style:(ToolbarControllerStyle)style
-                        small:(BOOL)smallButton {
+                        style:(ToolbarControllerStyle)style {
   if (self = [super initWithFrame:frame]) {
     style_ = style;
-    _smallButton = smallButton;
     pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
 
     [self setTintColor:toolbar::NormalButtonTint(style_)
@@ -158,11 +150,6 @@ const CGFloat kLineWidthAtApogee = 3;
   self.tintColor = newTint;
 }
 
-// Returns the Y offset of the topmost dot.
-- (CGFloat)dotOffsetY {
-  return self.smallButton ? kDotOffsetY - kSmallButtonOffset : kDotOffsetY;
-}
-
 // Initializes the pathLayers.
 - (void)initializeShapeLayers {
   for (NSUInteger i = 0; i < pathLayers_.count; i++) {
@@ -172,7 +159,7 @@ const CGFloat kLineWidthAtApogee = 3;
   pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
   for (NSUInteger i = 0; i < kNumberOfDots; i++) {
     const CGFloat x = kDotOffsetX;
-    const CGFloat y = [self dotOffsetY] + kVerticalSpaceBetweenDots * i;
+    const CGFloat y = kDotOffsetY + kVerticalSpaceBetweenDots * i;
 
     UIBezierPath* path = [UIBezierPath bezierPath];
     [path moveToPoint:CGPointMake(x - kMaxWidthOfSegment * 0.5, y)];
