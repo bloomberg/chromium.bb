@@ -515,8 +515,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   for (auto& origin : secure_origin_whitelist::GetWhitelist()) {
-    WebSecurityPolicy::AddOriginTrustworthyWhiteList(
-        WebSecurityOrigin::Create(origin));
+    WebSecurityPolicy::AddOriginTrustworthyWhiteList(WebSecurityOrigin(origin));
   }
 
   for (auto& scheme :

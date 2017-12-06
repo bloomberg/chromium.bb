@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -28,7 +28,7 @@ CONTENT_EXPORT void RegisterContentSchemes(bool lock_schemes);
 // See comment in ContentClient::AddAdditionalSchemes for explanations. These
 // getters can be invoked on any thread.
 const std::vector<std::string>& GetSavableSchemes();
-const std::vector<GURL>& GetSecureOrigins();
+const std::vector<url::Origin>& GetSecureOrigins();
 const std::vector<std::string>& GetServiceWorkerSchemes();
 
 }  // namespace content

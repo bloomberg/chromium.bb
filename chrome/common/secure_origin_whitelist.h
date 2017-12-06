@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "url/gurl.h"
+#include "url/origin.h"
 
 class PrefRegistrySimple;
 
@@ -19,7 +19,7 @@ namespace secure_origin_whitelist {
 // The whitelist is given by kUnsafelyTreatInsecureOriginAsSecure
 // command-line option. See
 // https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
-std::vector<GURL> GetWhitelist();
+std::vector<url::Origin> GetWhitelist();
 
 // Returns a whitelist of schemes that should bypass the Is Privileged Context
 // check. See http://www.w3.org/TR/powerful-features/#settings-privileged.
