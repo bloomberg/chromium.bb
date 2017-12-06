@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Upload files in x-user-defined form</title>
+<title>Select UTF-8-named files in a file input</title>
 <link rel="help"
-      href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data">
+      href="https://html.spec.whatwg.org/multipage/input.html#file-upload-state-(type=file)">
 <link rel="author" title="Benjamin C. Wiley Sittler"
       href="mailto:bsittler@chromium.org">
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
-<script src="resources/send-dragged-file-form-helper.js"></script>
+<script src="resources/select-dragged-file-input-helper.js"></script>
 <!--
 
  NOTE: Blink renderer crashes are expected on non-Windows hosts using
@@ -27,49 +27,34 @@
 <script>
 'use strict';
 
-formPostFileUploadTest({
+fileInputTest({
   fileNameSource: 'ASCII',
   fileBaseName: 'file-for-drag-to-send3.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3.txt',
 });
 
-formPostFileUploadTest({
+fileInputTest({
   fileNameSource: 'x-user-defined',
   fileBaseName: 'file-for-drag-to-send3-\uF7F0\uF793\uF783\uF7A0.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-𓃠.txt',
 });
 
-formPostFileUploadTest({
+fileInputTest({
   fileNameSource: 'windows-1252',
   fileBaseName: 'file-for-drag-to-send3-â˜ºðŸ˜‚.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: ('file-for-drag-to-send3-' +
-                            '&#226;&#732;&#186;&#240;&#376;&#732;&#8218;.txt'),
 });
 
-formPostFileUploadTest({
+fileInputTest({
   fileNameSource: 'JIS X 0201 and JIS X 0208',
   fileBaseName: 'file-for-drag-to-send3-★星★.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-&#9733;&#26143;&#9733;.txt',
 });
 
-formPostFileUploadTest({
+fileInputTest({
   fileNameSource: 'Unicode',
   fileBaseName: 'file-for-drag-to-send3-☺😂.txt',
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: 'file-for-drag-to-send3-&#9786;&#128514;.txt',
 });
 
-formPostFileUploadTest({
+fileInputTest({
   fileNameSource: 'Unicode',
   fileBaseName: `file-for-drag-to-send3-${kTestChars}.txt`,
-  formEncoding: 'x-user-defined',
-  expectedEncodedBaseName: `file-for-drag-to-send3-${
-      kTestFallbackXUserDefined
-  }.txt`,
 });
 
 </script>
