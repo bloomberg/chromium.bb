@@ -288,9 +288,8 @@ class ShadowBoundaryAdjuster final {
   template <typename Strategy>
   static SelectionTemplate<Strategy> AdjustSelection(
       const SelectionTemplate<Strategy>& granularity_adjusted_selection) {
-    const EphemeralRangeTemplate<Strategy> expanded_range(
-        granularity_adjusted_selection.ComputeStartPosition(),
-        granularity_adjusted_selection.ComputeEndPosition());
+    const EphemeralRangeTemplate<Strategy> expanded_range =
+        granularity_adjusted_selection.ComputeRange();
 
     const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
         granularity_adjusted_selection.IsBaseFirst()
@@ -503,9 +502,8 @@ class EditingBoundaryAdjuster final {
   static SelectionTemplate<Strategy> AdjustSelection(
       const SelectionTemplate<Strategy>& shadow_adjusted_selection) {
     // TODO(editing-dev): Refactor w/o EphemeralRange.
-    const EphemeralRangeTemplate<Strategy> shadow_adjusted_range(
-        shadow_adjusted_selection.ComputeStartPosition(),
-        shadow_adjusted_selection.ComputeEndPosition());
+    const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
+        shadow_adjusted_selection.ComputeRange();
     const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
         AdjustSelectionToAvoidCrossingEditingBoundaries(
             shadow_adjusted_range, shadow_adjusted_selection.Base());
