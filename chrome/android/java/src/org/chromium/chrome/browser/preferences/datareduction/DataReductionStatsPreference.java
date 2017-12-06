@@ -15,7 +15,6 @@ import android.content.DialogInterface;
 import android.preference.Preference;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateUtils;
-import android.text.format.Formatter;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -29,6 +28,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.util.FileSizeUtil;
 import org.chromium.third_party.android.datausagechart.ChartDataUsageView;
 import org.chromium.third_party.android.datausagechart.NetworkStats;
 import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
@@ -64,9 +64,9 @@ public class DataReductionStatsPreference extends Preference {
     private long mLeftPosition;
     private long mRightPosition;
     private Long mCurrentTime;
-    private String mOriginalTotalPhrase;
-    private String mSavingsTotalPhrase;
-    private String mReceivedTotalPhrase;
+    private CharSequence mOriginalTotalPhrase;
+    private CharSequence mSavingsTotalPhrase;
+    private CharSequence mReceivedTotalPhrase;
     private String mPercentReductionPhrase;
     private String mStartDatePhrase;
     private String mEndDatePhrase;
@@ -292,12 +292,11 @@ public class DataReductionStatsPreference extends Preference {
         final Context context = getContext();
 
         final long compressedTotalBytes = mReceivedNetworkStatsHistory.getTotalBytes();
-        mReceivedTotalPhrase = Formatter.formatFileSize(context, compressedTotalBytes);
-
+        mReceivedTotalPhrase = FileSizeUtil.formatFileSize(context, compressedTotalBytes);
         final long originalTotalBytes = mOriginalNetworkStatsHistory.getTotalBytes();
-        mOriginalTotalPhrase = Formatter.formatFileSize(context, originalTotalBytes);
-        mSavingsTotalPhrase =
-                Formatter.formatFileSize(context, originalTotalBytes - compressedTotalBytes);
+        mOriginalTotalPhrase = FileSizeUtil.formatFileSize(context, originalTotalBytes);
+        final long savingsTotalBytes = originalTotalBytes - compressedTotalBytes;
+        mSavingsTotalPhrase = FileSizeUtil.formatFileSize(context, savingsTotalBytes);
 
         float percentage = 0.0f;
         if (originalTotalBytes > 0L && originalTotalBytes > compressedTotalBytes) {
