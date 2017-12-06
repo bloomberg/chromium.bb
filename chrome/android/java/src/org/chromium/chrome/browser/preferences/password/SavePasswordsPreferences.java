@@ -21,8 +21,9 @@ import android.view.MenuItem;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.PasswordManagerHandler;
 import org.chromium.chrome.browser.PasswordUIView;
-import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
+import org.chromium.chrome.browser.SavedPasswordEntry;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -37,8 +38,9 @@ import org.chromium.ui.text.SpanApplier;
  * The "Save passwords" screen in Settings, which allows the user to enable or disable password
  * saving, to view saved passwords (just the username and URL), and to delete saved passwords.
  */
-public class SavePasswordsPreferences extends PreferenceFragment
-        implements PasswordListObserver, Preference.OnPreferenceClickListener {
+public class SavePasswordsPreferences
+        extends PreferenceFragment implements PasswordManagerHandler.PasswordListObserver,
+                                              Preference.OnPreferenceClickListener {
     // Keys for name/password dictionaries.
     public static final String PASSWORD_LIST_URL = "url";
     public static final String PASSWORD_LIST_NAME = "name";
@@ -65,7 +67,6 @@ public class SavePasswordsPreferences extends PreferenceFragment
     private static final int ORDER_EXCEPTIONS = 4;
     private static final int ORDER_SAVED_PASSWORDS_NO_TEXT = 5;
 
-    private final PasswordUIView mPasswordManagerHandler = new PasswordUIView();
     private boolean mNoPasswords;
     private boolean mNoPasswordExceptions;
     private Preference mLinkPref;
@@ -78,7 +79,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
         super.onCreate(savedInstanceState);
         getActivity().setTitle(R.string.prefs_saved_passwords);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
-        mPasswordManagerHandler.addObserver(this);
+        PasswordManagerHandlerProvider.getInstance().addObserver(this);
         if (ChromeFeatureList.isEnabled(EXPORT_PASSWORDS)) {
             setHasOptionsMenu(true);
         }
@@ -123,7 +124,9 @@ public class SavePasswordsPreferences extends PreferenceFragment
         getPreferenceScreen().removeAll();
         createSavePasswordsSwitch();
         createAutoSignInCheckbox();
-        mPasswordManagerHandler.updatePasswordLists();
+        PasswordManagerHandlerProvider.getInstance()
+                .getPasswordManagerHandler()
+                .updatePasswordLists();
     }
 
     /**
@@ -168,8 +171,9 @@ public class SavePasswordsPreferences extends PreferenceFragment
         profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
         getPreferenceScreen().addPreference(profileCategory);
         for (int i = 0; i < count; i++) {
-            PasswordUIView.SavedPasswordEntry saved =
-                    mPasswordManagerHandler.getSavedPasswordEntry(i);
+            SavedPasswordEntry saved = PasswordManagerHandlerProvider.getInstance()
+                                               .getPasswordManagerHandler()
+                                               .getSavedPasswordEntry(i);
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getActivity());
             String url = saved.getUrl();
             String name = saved.getUserName();
@@ -205,7 +209,9 @@ public class SavePasswordsPreferences extends PreferenceFragment
         profileCategory.setOrder(ORDER_EXCEPTIONS);
         getPreferenceScreen().addPreference(profileCategory);
         for (int i = 0; i < count; i++) {
-            String exception = mPasswordManagerHandler.getSavedPasswordException(i);
+            String exception = PasswordManagerHandlerProvider.getInstance()
+                                       .getPasswordManagerHandler()
+                                       .getSavedPasswordException(i);
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getActivity());
             screen.setTitle(exception);
             screen.setOnPreferenceClickListener(this);
@@ -225,7 +231,7 @@ public class SavePasswordsPreferences extends PreferenceFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mPasswordManagerHandler.destroy();
+        PasswordManagerHandlerProvider.getInstance().removeObserver(this);
     }
 
     /**
