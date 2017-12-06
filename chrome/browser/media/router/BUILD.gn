@@ -69,13 +69,6 @@ static_library("router") {
       "event_page_request_manager.h",
       "event_page_request_manager_factory.cc",
       "event_page_request_manager_factory.h",
-
-      # TODO(crbug.com/646627): Move media_router_ui_service* to
-      # chrome/browser/ui/.
-      "media_router_ui_service.cc",
-      "media_router_ui_service.h",
-      "media_router_ui_service_factory.cc",
-      "media_router_ui_service_factory.h",
       "mojo/extension_media_route_provider_proxy.cc",
       "mojo/extension_media_route_provider_proxy.h",
       "mojo/media_route_controller.cc",
