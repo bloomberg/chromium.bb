@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/hr-time/#the-performance-interface
+// https://w3c.github.io/hr-time/#the-performance-attribute
 
 // TODO(foolip): This should be a GlobalPerformance interface implemented by
 // Window and WorkerGlobalScope.
