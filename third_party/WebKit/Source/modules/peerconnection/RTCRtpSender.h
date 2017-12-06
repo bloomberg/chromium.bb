@@ -25,7 +25,7 @@ class RTCRtpSender final : public ScriptWrappable {
 
   MediaStreamTrack* track();
 
-  WebRTCRtpSender* web_rtp_sender();
+  WebRTCRtpSender* web_sender();
   // Sets the track. This must be called when the |WebRTCRtpSender| has its
   // track updated, and the |track| must match the |WebRTCRtpSender::Track|.
   void SetTrack(MediaStreamTrack*);

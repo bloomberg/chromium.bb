@@ -24,7 +24,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   // same |id|. IDs are guaranteed to be unique amongst senders but they are
   // allowed to be reused after a sender is destroyed.
   virtual uintptr_t Id() const = 0;
-  virtual const WebMediaStreamTrack* Track() const = 0;
+  virtual WebMediaStreamTrack Track() const = 0;
 };
 
 }  // namespace blink

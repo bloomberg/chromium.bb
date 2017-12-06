@@ -1240,7 +1240,7 @@ HeapVector<Member<RTCRtpSender>> RTCPeerConnection::getSenders() {
       // yet, create it.
       MediaStreamTrack* track = nullptr;
       if (web_rtp_senders[i]->Track()) {
-        track = GetTrack(*web_rtp_senders[i]->Track());
+        track = GetTrack(web_rtp_senders[i]->Track());
         DCHECK(track);
       }
       RTCRtpSender* rtp_sender =
@@ -1305,13 +1305,13 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   DCHECK(sender);
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return;
-  if (rtp_senders_.find(sender->web_rtp_sender()->Id()) == rtp_senders_.end()) {
+  if (rtp_senders_.find(sender->web_sender()->Id()) == rtp_senders_.end()) {
     exception_state.ThrowDOMException(
         kInvalidAccessError,
         "The sender was not created by this peer connection.");
   }
 
-  if (!peer_handler_->RemoveTrack(sender->web_rtp_sender())) {
+  if (!peer_handler_->RemoveTrack(sender->web_sender())) {
     // Operation aborted. This indicates that the sender is no longer used by
     // the peer connection, i.e. that it was removed due to setting a remote
     // description of type "rollback".
@@ -1321,7 +1321,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   }
   // Successfully removing the track results in the sender's track property
   // being nulled.
-  DCHECK(!sender->web_rtp_sender()->Track());
+  DCHECK(!sender->web_sender()->Track());
   sender->SetTrack(nullptr);
   // TODO(hbos): When |addStream| and |removeStream| are implemented using
   // |addTrack| and |removeTrack|, we should remove |sender| from |rtp_senders_|
