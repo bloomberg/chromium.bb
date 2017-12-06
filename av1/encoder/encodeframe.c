@@ -427,6 +427,14 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   } else if (tx_mode != TX_MODE_SELECT) {
     mbmi->tx_size =
         tx_size_from_tx_mode(mbmi->sb_type, tx_mode, is_inter_block(mbmi));
+  } else {
+    BLOCK_SIZE bsize = mbmi->sb_type;
+    TX_SIZE max_rect_txsize = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
+    TX_SIZE min_tx_size =
+        (TX_SIZE)AOMMAX((int)TX_4X4,
+                        txsize_sqr_map[max_rect_txsize] - MAX_TX_DEPTH +
+                            is_rect_tx(max_rect_txsize));
+    mbmi->tx_size = (TX_SIZE)AOMMAX(mbmi->tx_size, min_tx_size);
   }
 }
 

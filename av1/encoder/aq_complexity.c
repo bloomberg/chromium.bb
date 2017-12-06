@@ -123,8 +123,9 @@ void av1_caq_select_segment(const AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
     segment = DEFAULT_AQ2_SEG;
   } else {
     // Rate depends on fraction of a SB64 in frame (xmis * ymis / bw * bh).
-    // It is converted to bits * 256 units.
-    const int64_t num = (int64_t)cpi->rc.sb64_target_rate * xmis * ymis * 256;
+    // It is converted to bits << AV1_PROB_COST_SHIFT units.
+    const int64_t num = (int64_t)(cpi->rc.sb64_target_rate * xmis * ymis)
+                        << AV1_PROB_COST_SHIFT;
     const int denom = cm->mib_size * cm->mib_size;
     const int target_rate = (int)(num / denom);
     double logvar;
