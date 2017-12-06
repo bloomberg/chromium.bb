@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -16,6 +17,9 @@
 class FramebustBlockTabHelper
     : public content::WebContentsUserData<FramebustBlockTabHelper> {
  public:
+  using ClickCallback = base::OnceCallback<
+      void(const GURL&, size_t /* index */, size_t /* total_size */)>;
+
   // There is expected to be at most one observer at a time.
   class Observer {
    public:
@@ -30,8 +34,9 @@ class FramebustBlockTabHelper
 
   // Shows the blocked Framebust icon in the Omnibox for the |blocked_url|.
   // If the icon is already visible, that URL is instead added to the vector of
-  // currently blocked URLs and the bubble view is updated.
-  void AddBlockedUrl(const GURL& blocked_url);
+  // currently blocked URLs and the bubble view is updated. The |click_callback|
+  // will be called (if it is non-null) if the blocked URL is ever clicked.
+  void AddBlockedUrl(const GURL& blocked_url, ClickCallback click_callback);
 
   // Returns true if at least one Framebust was blocked on this page.
   bool HasBlockedUrls() const;
@@ -61,6 +66,10 @@ class FramebustBlockTabHelper
   // Remembers all the currently blocked URLs. This is cleared on each
   // navigation.
   std::vector<GURL> blocked_urls_;
+
+  // Callbacks associated with |blocked_urls_|. Separate vector to allow easy
+  // distribution of the URLs in blocked_urls().
+  std::vector<ClickCallback> callbacks_;
 
   // Remembers if the animation has run.
   bool animation_has_run_ = false;

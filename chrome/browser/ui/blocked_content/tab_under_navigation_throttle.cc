@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/public/rappor_utils.h"
@@ -33,7 +34,9 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
-#endif  // defined(OS_ANDROID)
+#else
+#include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#endif
 
 namespace {
 
@@ -57,7 +60,14 @@ void LogOutcome(InterventionOutcome outcome) {
   }
   LogAction(action);
 }
-#endif  // defined(OS_ANDROID)
+#else
+void OnListItemClicked(const GURL& url, size_t index, size_t total_size) {
+  LogAction(TabUnderNavigationThrottle::Action::kClickedThrough);
+  UMA_HISTOGRAM_ENUMERATION("Tab.TabUnder.ClickThroughPosition",
+                            GetListItemPositionFromDistance(index, total_size),
+                            ListItemPosition::kLast);
+}
+#endif
 
 void LogTabUnderAttempt(content::NavigationHandle* handle,
                         base::Optional<ukm::SourceId> opener_source_id) {
@@ -95,7 +105,7 @@ void ShowUI(content::WebContents* web_contents, const GURL& url) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   DCHECK(content_settings);
-  content_settings->OnFramebustBlocked(url);
+  content_settings->OnFramebustBlocked(url, base::BindOnce(&OnListItemClicked));
 #endif
 }
 

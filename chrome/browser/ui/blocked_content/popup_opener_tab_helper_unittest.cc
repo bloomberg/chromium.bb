@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -37,6 +38,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #else
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
@@ -544,6 +546,34 @@ TEST_F(BlockTabUnderTest,
       kTabUnderAction,
       static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 3);
   histogram_tester()->ExpectTotalCount(kTabUnderAction, 10);
+}
+
+TEST_F(BlockTabUnderTest, ClickThroughAction) {
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  histogram_tester()->ExpectUniqueSample(
+      kTabUnderAction,
+      static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 1);
+  SimulatePopup();
+
+  // Populate two blocked URLs in the UI.
+  const GURL blocked_url("https://example.test/");
+  EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
+  EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
+#if defined(OS_ANDROID)
+  InfoBarAndroid* infobar = GetInfoBar();
+  base::android::JavaParamRef<jobject> jobj(nullptr);
+  infobar->OnLinkClicked(nullptr /* env */, jobj);
+#else
+  FramebustBlockTabHelper* framebust =
+      FramebustBlockTabHelper::FromWebContents(web_contents());
+  framebust->OnBlockedUrlClicked(1);
+  histogram_tester()->ExpectUniqueSample(
+      "Tab.TabUnder.ClickThroughPosition",
+      static_cast<int>(ListItemPosition::kLastItem), 1);
+#endif
+  histogram_tester()->ExpectBucketCount(
+      kTabUnderAction,
+      static_cast<int>(TabUnderNavigationThrottle::Action::kClickedThrough), 1);
 }
 
 // kDidTabUnder is not reported multiple times for redirects.

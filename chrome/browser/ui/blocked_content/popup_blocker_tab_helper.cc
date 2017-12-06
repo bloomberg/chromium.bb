@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 
+#include <iterator>
 #include <string>
 
 #include "base/command_line.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
+#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -181,8 +183,11 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
   if (it == blocked_popups_.end())
     return;
 
+  ListItemPosition position = GetListItemPositionFromDistance(
+      std::distance(blocked_popups_.begin(), it), blocked_popups_.size());
+
   UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups.ClickThroughPosition",
-                            GetPopupPosition(id), PopupPosition::kLast);
+                            position, ListItemPosition::kLast);
 
   BlockedRequest* popup = it->second.get();
 
@@ -227,21 +232,6 @@ PopupBlockerTabHelper::PopupIdMap
     result[it.first] = it.second->params.url;
   }
   return result;
-}
-
-PopupBlockerTabHelper::PopupPosition PopupBlockerTabHelper::GetPopupPosition(
-    int32_t id) const {
-  DCHECK(base::ContainsKey(blocked_popups_, id));
-  if (blocked_popups_.size() == 1u)
-    return PopupPosition::kOnlyPopup;
-
-  if (blocked_popups_.begin()->first == id)
-    return PopupPosition::kFirstPopup;
-
-  if (blocked_popups_.rbegin()->first == id)
-    return PopupPosition::kLastPopup;
-
-  return PopupPosition::kMiddlePopup;
 }
 
 // static

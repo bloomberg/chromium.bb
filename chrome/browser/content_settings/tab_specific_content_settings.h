@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
+#include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
@@ -203,8 +204,12 @@ class TabSpecificContentSettings
   // Called when audio has been blocked on the page.
   void OnAudioBlocked();
 
-  // Updates the blocked framebust icon in the location bar.
-  void OnFramebustBlocked(const GURL& blocked_url);
+  // Updates the blocked framebust icon in the location bar. The
+  // |click_callback| will be called (if it is non-null) if the blocked URL is
+  // ever clicked on in the resulting UI.
+  void OnFramebustBlocked(
+      const GURL& blocked_url,
+      FramebustBlockTabHelper::ClickCallback click_callback);
 
   // Returns whether a particular kind of content has been blocked for this
   // page.

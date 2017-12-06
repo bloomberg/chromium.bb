@@ -11206,7 +11206,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ContentSettings.Popups.ClickThroughPosition"
-    enum="PopupPosition">
+    enum="ListItemPosition">
   <owner>csharrison@chromium.org</owner>
   <summary>
     The blocked popup list contains a list of links that Chrome has blocked via
@@ -87373,6 +87373,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Each time a tab is brought to the foreground, this histogram indicates if
     this is the first viewing of the tab since Chrome was put into foreground,
     or if it was a return to a tab that has already been shown in this session.
+  </summary>
+</histogram>
+
+<histogram name="Tab.TabUnder.ClickThroughPosition" enum="ListItemPosition">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The position of the URL in the framebust UI list (desktop only) when it is
+    clicked. Note that this UI surface is shared with the framebusting
+    intervention, so elements in the list could come from either features. This
+    metric will only be logged when a URL from the tab under intervention is
+    clicked.
   </summary>
 </histogram>
 

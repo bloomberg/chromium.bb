@@ -10,9 +10,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(FramebustBlockTabHelper);
 
 FramebustBlockTabHelper::~FramebustBlockTabHelper() = default;
 
-// static
-void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url) {
+void FramebustBlockTabHelper::AddBlockedUrl(const GURL& blocked_url,
+                                            ClickCallback click_callback) {
   blocked_urls_.push_back(blocked_url);
+  callbacks_.push_back(std::move(click_callback));
+  DCHECK_EQ(blocked_urls_.size(), callbacks_.size());
 
   if (observer_)
     observer_->OnBlockedUrlAdded(blocked_url);
@@ -23,10 +25,16 @@ bool FramebustBlockTabHelper::HasBlockedUrls() const {
 }
 
 void FramebustBlockTabHelper::OnBlockedUrlClicked(size_t index) {
+  size_t total_size = blocked_urls_.size();
+  DCHECK_LT(index, total_size);
+  const GURL& url = blocked_urls_[index];
+  if (!callbacks_[index].is_null())
+    std::move(callbacks_[index]).Run(url, index, total_size);
   web_contents_->OpenURL(content::OpenURLParams(
-      blocked_urls_[index], content::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false));
+      url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_LINK, false));
   blocked_urls_.clear();
+  callbacks_.clear();
 }
 
 void FramebustBlockTabHelper::SetObserver(Observer* observer) {

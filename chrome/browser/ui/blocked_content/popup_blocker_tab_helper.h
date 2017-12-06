@@ -36,18 +36,6 @@ class PopupBlockerTabHelper
   // Mapping from popup IDs to blocked popup requests.
   typedef std::map<int32_t, GURL> PopupIdMap;
 
-  // This class backs a histogram. Make sure you update enums.xml if you make
-  // any changes.
-  enum class PopupPosition : int {
-    kOnlyPopup,
-    kFirstPopup,
-    kMiddlePopup,
-    kLastPopup,
-
-    // Any new values should go before this one.
-    kLast,
-  };
-
   // This enum is backed by a histogram. Make sure enums.xml is updated if this
   // is updated.
   enum class Action : int {
@@ -122,8 +110,6 @@ class PopupBlockerTabHelper
 
   // Called when the blocked popup notification is shown or hidden.
   void PopupNotificationVisibilityChanged(bool visible);
-
-  PopupPosition GetPopupPosition(int32_t id) const;
 
   static void LogAction(Action action);
 
