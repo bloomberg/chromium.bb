@@ -51,7 +51,8 @@ Workspace: 2 uiSourceCodes.
 
 Running: Resuming targets.
 Removed: 0 uiSourceCodes
-Workspace: 7 uiSourceCodes.
+Workspace: 8 uiSourceCodes.
+[+] debugger:///VM[XXX]
 [+] debugger:///VM[XXX] sourcemap-script.js
     http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-frame.html
 [+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
