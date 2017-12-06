@@ -1,15 +1,5 @@
 <!DOCTYPE html>
-<img id="target" src="resources/kate.png"
-    style="margin:20px; outline:20px solid green;
+<div id="target"
+    style="width: 100px; height: 100px; background: blue;
+           margin:20px; outline:20px solid green;
            -webkit-box-reflect: below 2px url(resources/vignette-mask.png) 75 / auto / 25px stretch">
-<script src="../../resources/run-after-layout-and-paint.js"></script>
-<script>
-if (window.testRunner)
-  testRunner.waitUntilDone();
-// Ensure the reflect mask image is loaded before ending the test.
-var imageLoader = new Image();
-imageLoader.onload = function() {
-  runAfterLayoutAndPaint(function() {}, true);
-};
-imageLoader.src = 'resources/vignette-mask.png';
-</script>

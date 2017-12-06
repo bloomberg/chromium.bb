@@ -73,8 +73,9 @@ bool FilterOperations::CanInterpolateWith(const FilterOperations& other) const {
 }
 
 bool FilterOperations::HasReferenceFilter() const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    if (operations_.at(i)->GetType() == FilterOperation::REFERENCE)
+  for (const auto& operation : operations_) {
+    if (operation->GetType() == FilterOperation::REFERENCE ||
+        operation->GetType() == FilterOperation::BOX_REFLECT)
       return true;
   }
   return false;

@@ -1,8 +1,7 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x357
-  LayoutBlockFlow {HTML} at (0,0) size 800x357
-    LayoutBlockFlow {BODY} at (8,8) size 784x341
-      LayoutText {#text} at (0,0) size 0x0
-layer at (28,28) size 335x296
-  LayoutImage {IMG} at (20,20) size 335x296
+layer at (0,0) size 800x140
+  LayoutBlockFlow {HTML} at (0,0) size 800x140
+    LayoutBlockFlow {BODY} at (8,20) size 784x100
+layer at (28,20) size 100x100
+  LayoutBlockFlow {DIV} at (20,0) size 100x100 [bgcolor=#0000FF]
