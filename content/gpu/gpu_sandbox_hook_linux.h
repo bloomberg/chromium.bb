@@ -9,8 +9,7 @@
 
 namespace content {
 
-bool GpuProcessPreSandboxHook(service_manager::BPFBasePolicy* policy,
-                              service_manager::SandboxLinux::Options options);
+bool GpuProcessPreSandboxHook(service_manager::SandboxLinux::Options options);
 
 }  // namespace content
 

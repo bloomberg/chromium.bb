@@ -108,7 +108,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // is passed to the BPF compiler and the sandbox is engaged. If
   // pre_sandbox_hook() returns true, the sandbox will be engaged
   // afterwards, otherwise the process is terminated.
-  using PreSandboxHook = base::OnceCallback<bool(BPFBasePolicy*, Options)>;
+  using PreSandboxHook = base::OnceCallback<bool(Options)>;
 
   // Get our singleton instance.
   static SandboxLinux* GetInstance();
@@ -209,7 +209,6 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // This should never be destroyed, as after the sandbox is started it is
   // vital to the process.
   void StartBrokerProcess(
-      BPFBasePolicy* client_sandbox_policy,
       const sandbox::syscall_broker::BrokerCommandSet& allowed_command_set,
       std::vector<sandbox::syscall_broker::BrokerFilePermission> permissions,
       PreSandboxHook broker_side_hook,

@@ -6,6 +6,7 @@
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_BROKER_POLICY_LINUX_H_
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
+#include "sandbox/linux/syscall_broker/broker_command.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
@@ -16,13 +17,16 @@ namespace service_manager {
 class SERVICE_MANAGER_SANDBOX_EXPORT BrokerProcessPolicy
     : public BPFBasePolicy {
  public:
-  BrokerProcessPolicy();
+  explicit BrokerProcessPolicy(
+      const sandbox::syscall_broker::BrokerCommandSet& allowed_command_set);
   ~BrokerProcessPolicy() override;
 
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
  private:
+  const sandbox::syscall_broker::BrokerCommandSet allowed_command_set_;
+
   DISALLOW_COPY_AND_ASSIGN(BrokerProcessPolicy);
 };
 

@@ -333,7 +333,6 @@ sandbox::syscall_broker::BrokerCommandSet CommandSetForGPU(
 }
 
 bool BrokerProcessPreSandboxHook(
-    service_manager::BPFBasePolicy* policy,
     service_manager::SandboxLinux::Options options) {
   // Oddly enough, we call back into gpu to invoke this service manager
   // method, since it is part of the embedder component, and the service
@@ -344,10 +343,9 @@ bool BrokerProcessPreSandboxHook(
 
 }  // namespace
 
-bool GpuProcessPreSandboxHook(service_manager::BPFBasePolicy* policy,
-                              service_manager::SandboxLinux::Options options) {
+bool GpuProcessPreSandboxHook(service_manager::SandboxLinux::Options options) {
   service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
-      policy, CommandSetForGPU(options), FilePermissionsForGpu(options),
+      CommandSetForGPU(options), FilePermissionsForGpu(options),
       base::BindOnce(BrokerProcessPreSandboxHook), options);
 
   if (!LoadLibrariesForGpu(options))
