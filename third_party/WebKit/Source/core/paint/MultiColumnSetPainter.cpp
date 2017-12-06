@@ -59,7 +59,7 @@ void MultiColumnSetPainter::PaintColumnRules(const PaintInfo& paint_info,
                          ? left_to_right ? kBSLeft : kBSRight
                          : left_to_right ? kBSTop : kBSBottom;
   const Color& rule_color = layout_multi_column_set_.ResolveColor(
-      block_style, CSSPropertyColumnRuleColor);
+      block_style, GetCSSPropertyColumnRuleColor());
 
   for (auto& bound : column_rule_bounds) {
     IntRect pixel_snapped_rule_rect = PixelSnappedIntRect(bound);

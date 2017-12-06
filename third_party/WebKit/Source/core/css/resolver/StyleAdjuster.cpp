@@ -527,7 +527,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   else
     style.RestoreParentTextDecorations(parent_style);
   style.ApplyTextDecorations(
-      parent_style.VisitedDependentColor(CSSPropertyTextDecorationColor),
+      parent_style.VisitedDependentColor(GetCSSPropertyTextDecorationColor()),
       OverridesTextDecorationColors(element));
 
   // Cull out any useless layers and also repeat patterns into additional

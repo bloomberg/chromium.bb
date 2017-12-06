@@ -499,7 +499,7 @@ void ObjectPainterBase::PaintOutlineRects(
     pixel_snapped_outline_rects.push_back(PixelSnappedIntRect(r));
 
   DrawingRecorder recorder(paint_info.context, display_item, paint_info.phase);
-  Color color = style.VisitedDependentColor(CSSPropertyOutlineColor);
+  Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   if (style.OutlineStyleIsAuto()) {
     paint_info.context.DrawFocusRing(pixel_snapped_outline_rects,
                                      style.GetOutlineStrokeWidthForFocusRing(),

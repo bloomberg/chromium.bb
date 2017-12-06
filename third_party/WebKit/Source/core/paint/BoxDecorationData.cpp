@@ -31,7 +31,8 @@ BoxDecorationData::BoxDecorationData(const NGPhysicalFragment& fragment)
 }
 
 BoxDecorationData::BoxDecorationData(const ComputedStyle& style) {
-  background_color = style.VisitedDependentColor(CSSPropertyBackgroundColor);
+  background_color =
+      style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
   has_background = background_color.Alpha() || style.HasBackgroundImage();
   DCHECK(has_background == style.HasBackground());
   has_border_decoration = style.HasBorderDecoration();

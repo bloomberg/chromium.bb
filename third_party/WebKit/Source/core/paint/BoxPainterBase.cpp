@@ -63,7 +63,8 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
 
   bool has_border_radius = style.HasBorderRadius();
   bool has_opaque_background =
-      style.VisitedDependentColor(CSSPropertyBackgroundColor).Alpha() == 255;
+      style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha() ==
+      255;
 
   GraphicsContextStateSaver state_saver(context, false);
 
@@ -81,7 +82,7 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
       continue;
 
     const Color& shadow_color = shadow.GetColor().Resolve(
-        style.VisitedDependentColor(CSSPropertyColor));
+        style.VisitedDependentColor(GetCSSPropertyColor()));
 
     FloatRect fill_rect = border.Rect();
     fill_rect.Inflate(shadow_spread);
@@ -205,7 +206,7 @@ void BoxPainterBase::PaintInsetBoxShadow(const PaintInfo& info,
       continue;
 
     const Color& shadow_color = shadow.GetColor().Resolve(
-        style.VisitedDependentColor(CSSPropertyColor));
+        style.VisitedDependentColor(GetCSSPropertyColor()));
 
     // The inset shadow case.
     GraphicsContext::Edges clipped_edges = GraphicsContext::kNoEdge;

@@ -466,7 +466,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   // They are called during UpdateCollapsedBorderValues(). The 'start', 'end',
   // 'before', 'after' directions are all in the table's inline and block
   // directions.
-  inline CSSPropertyID ResolveBorderProperty(const CSSProperty&) const;
+  inline const CSSProperty& ResolveBorderProperty(const CSSProperty&) const;
   CollapsedBorderValue ComputeCollapsedStartBorder() const;
   CollapsedBorderValue ComputeCollapsedEndBorder() const;
   CollapsedBorderValue ComputeCollapsedBeforeBorder() const;

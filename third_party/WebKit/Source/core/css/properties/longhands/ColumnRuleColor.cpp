@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/OutlineColor.h"
+#include "core/css/properties/longhands/ColumnRuleColor.h"
 
 #include "core/css/CSSColorValue.h"
 #include "core/css/parser/CSSParserContext.h"
@@ -13,27 +13,24 @@
 namespace blink {
 namespace CSSLonghand {
 
-const CSSValue* OutlineColor::ParseSingleValue(
+const CSSValue* ColumnRuleColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  // Allow the special focus color even in HTML Standard parsing mode.
-  if (range.Peek().Id() == CSSValueWebkitFocusRingColor)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
   return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
 
-const blink::Color OutlineColor::ColorIncludingFallback(
+const blink::Color ColumnRuleColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result =
-      visited_link ? style.VisitedLinkOutlineColor() : style.OutlineColor();
+  StyleColor result = visited_link ? style.VisitedLinkColumnRuleColor()
+                                   : style.ColumnRuleColor();
   if (!result.IsCurrentColor())
     return result.GetColor();
   return visited_link ? style.VisitedLinkColor() : style.GetColor();
 }
 
-const CSSValue* OutlineColor::CSSValueFromComputedStyle(
+const CSSValue* ColumnRuleColor::CSSValueFromComputedStyle(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     Node* styled_node,
@@ -41,7 +38,7 @@ const CSSValue* OutlineColor::CSSValueFromComputedStyle(
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())
                              : ComputedStyleUtils::CurrentColorOrValidColor(
-                                   style, style.OutlineColor());
+                                   style, style.ColumnRuleColor());
 }
 
 }  // namespace CSSLonghand
