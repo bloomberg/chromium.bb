@@ -11,9 +11,9 @@
 
 #include "av1/common/tile_common.h"
 #include "av1/common/onyxc_int.h"
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 #include "av1/common/resize.h"
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 #include "aom_dsp/aom_dsp_common.h"
 
 #if CONFIG_DEPENDENT_HORZTILES
@@ -252,7 +252,7 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
   r.top = (tile_info->mi_row_start * MI_SIZE + ss_y) >> ss_y;
   r.bottom = (tile_info->mi_row_end * MI_SIZE + ss_y) >> ss_y;
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   // If upscaling is enabled, the tile limits need scaling to match the
   // upscaled frame where the restoration tiles live. To do this, scale up the
   // top-left and bottom-right of the tile.
@@ -268,7 +268,7 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
 #else
   const int frame_w = cm->width;
   const int frame_h = cm->height;
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   const int plane_w = (frame_w + ss_x) >> ss_x;
   const int plane_h = (frame_h + ss_y) >> ss_y;

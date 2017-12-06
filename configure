@@ -300,7 +300,6 @@ EXPERIMENT_LIST="
     txk_sel
     mv_compress
     segment_globalmv
-    frame_superres
     aom_qm
     ext_qm
     ext_comp_refs
@@ -545,7 +544,6 @@ post_process_cmdline() {
     enabled frame_sign_bias && enable_feature frame_marker
     enabled txmg && enable_feature highbitdepth
     enabled ext_skip && enable_feature frame_marker
-    enabled horzonly_frame_superres && enable_feature frame_superres
     enabled loopfilter_level && enable_feature parallel_deblocking
     enabled loopfilter_level && enable_feature ext_delta_q
     enabled striped_loop_restoration && enable_feature loop_restoration

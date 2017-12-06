@@ -50,9 +50,9 @@ static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
 typedef struct {
   int resize_width;
   int resize_height;
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   uint8_t superres_denom;
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 } size_params_type;
 
 typedef struct {

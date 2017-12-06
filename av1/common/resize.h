@@ -71,7 +71,7 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                  YV12_BUFFER_CONFIG *dst);
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 #if CONFIG_HIGHBITDEPTH
 void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                             YV12_BUFFER_CONFIG *dst,
@@ -81,7 +81,7 @@ void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
                                             YV12_BUFFER_CONFIG *dst,
                                             int superres_denom);
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
@@ -91,7 +91,7 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
 // resize scale denominator.
 void av1_calculate_scaled_size(int *width, int *height, int resize_denom);
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 // Similar to above, but calculates scaled dimensions after superres from the
 // given original dimensions and superres scale denominator.
 void av1_calculate_scaled_superres_size(int *width, int *height,
@@ -108,20 +108,16 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool);
 static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
   return (cm->superres_scale_denominator == SCALE_NUMERATOR);
 }
-#endif  // CONFIG_FRAME_SUPERRES
-
-#if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-#define UPSCALE_NORMATIVE_TAPS 8
-#else
-#define UPSCALE_NORMATIVE_TAPS 6
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
+
+#if CONFIG_HORZONLY_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
+#define UPSCALE_NORMATIVE_TAPS 8
 
 extern const int16_t av1_resize_filter_normative[1 << RS_SUBPEL_BITS]
                                                 [UPSCALE_NORMATIVE_TAPS];
 
 int32_t av1_get_upscale_convolve_step(int in_length, int out_length);
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
 
 #ifdef __cplusplus
 }  // extern "C"

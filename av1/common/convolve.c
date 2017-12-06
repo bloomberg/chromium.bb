@@ -25,7 +25,7 @@
 #define MAX_BLOCK_HEIGHT (MAX_SB_SIZE)
 #define MAX_STEP (32)
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 
 #define UPSCALE_PROC_UNIT 64  // Source step (roughly)
 #define UPSCALE_PROC_UNIT_SCALE (UPSCALE_PROC_UNIT / SCALE_NUMERATOR)
@@ -77,7 +77,7 @@ void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
                           int dst_stride, int w, int h,

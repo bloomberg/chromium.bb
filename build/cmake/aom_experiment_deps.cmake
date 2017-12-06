@@ -109,13 +109,6 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_HORZONLY_FRAME_SUPERRES)
-    if (NOT CONFIG_FRAME_SUPERRES)
-      change_config_and_warn(CONFIG_FRAME_SUPERRES 1
-                             CONFIG_HORZONLY_FRAME_SUPERRES)
-    endif ()
-  endif ()
-
   if (CONFIG_INTRA_EDGE)
     if (NOT CONFIG_EXT_INTRA)
       change_config_and_warn(CONFIG_EXT_INTRA 1 CONFIG_INTRA_EDGE)

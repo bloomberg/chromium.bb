@@ -404,12 +404,12 @@ typedef struct AV1Common {
   InterpFilter interp_filter;
 
   loop_filter_info_n lf_info;
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   // The denominator of the superres scale; the numerator is fixed.
   uint8_t superres_scale_denominator;
   int superres_upscaled_width;
   int superres_upscaled_height;
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 #if CONFIG_LOOP_RESTORATION
   RestorationInfo rst_info[MAX_MB_PLANE];
 

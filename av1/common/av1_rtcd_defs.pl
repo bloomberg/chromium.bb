@@ -58,7 +58,7 @@ specialize qw/av1_convolve_horiz ssse3/;
 add_proto qw/void av1_convolve_vert/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, ConvolveParams *conv_params";
 specialize qw/av1_convolve_vert ssse3/;
 
-if (aom_config("CONFIG_FRAME_SUPERRES") eq "yes") {
+if (aom_config("CONFIG_HORZONLY_FRAME_SUPERRES") eq "yes") {
   add_proto qw/void av1_convolve_horiz_rs/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const int16_t *x_filters, int interp_taps, const int x0_qn, const int x_step_qn";
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void av1_highbd_convolve_horiz_rs/, "const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w, int h, const int16_t *x_filters, int interp_taps, const int x0_qn, const int x_step_qn, int bd";

@@ -3356,7 +3356,7 @@ static void write_render_size(const AV1_COMMON *cm,
   }
 }
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 static void write_superres_scale(const AV1_COMMON *const cm,
                                  struct aom_write_bit_buffer *wb) {
   // First bit is whether to to scale or not
@@ -3372,7 +3372,7 @@ static void write_superres_scale(const AV1_COMMON *const cm,
         SUPERRES_SCALE_BITS);
   }
 }
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #if CONFIG_FRAME_SIZE
 static void write_frame_size(const AV1_COMMON *cm, int frame_size_override,
@@ -3382,13 +3382,13 @@ static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb)
 #endif
 {
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   const int coded_width = cm->superres_upscaled_width - 1;
   const int coded_height = cm->superres_upscaled_height - 1;
 #else
   const int coded_width = cm->width - 1;
   const int coded_height = cm->height - 1;
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #if CONFIG_FRAME_SIZE
   if (frame_size_override) {
@@ -3403,9 +3403,9 @@ static void write_frame_size(const AV1_COMMON *cm,
   aom_wb_write_literal(wb, coded_height, 16);
 #endif
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   write_superres_scale(cm, wb);
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   write_render_size(cm, wb);
 }
 
@@ -3419,21 +3419,21 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
     YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, ref_frame);
 
     if (cfg != NULL) {
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
       found = cm->superres_upscaled_width == cfg->y_crop_width &&
               cm->superres_upscaled_height == cfg->y_crop_height;
 #else
       found =
           cm->width == cfg->y_crop_width && cm->height == cfg->y_crop_height;
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
       found &= cm->render_width == cfg->render_width &&
                cm->render_height == cfg->render_height;
     }
     aom_wb_write_bit(wb, found);
     if (found) {
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
       write_superres_scale(cm, wb);
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
       break;
     }
   }
@@ -3739,13 +3739,13 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Frame dimensions are larger than the maximum values");
   }
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   const int coded_width = cm->superres_upscaled_width;
   const int coded_height = cm->superres_upscaled_height;
 #else
   const int coded_width = cm->width;
   const int coded_height = cm->height;
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   int frame_size_override_flag =
       (coded_width != cm->seq_params.max_frame_width ||
        coded_height != cm->seq_params.max_frame_height);

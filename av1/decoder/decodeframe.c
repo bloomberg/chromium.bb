@@ -48,9 +48,9 @@
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 #include "av1/common/resize.h"
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 #include "av1/common/seg_common.h"
 #include "av1/common/thread_common.h"
 #include "av1/common/tile_common.h"
@@ -1234,13 +1234,13 @@ static InterpFilter read_frame_interp_filter(struct aom_read_bit_buffer *rb) {
 }
 
 static void setup_render_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   cm->render_width = cm->superres_upscaled_width;
   cm->render_height = cm->superres_upscaled_height;
 #else
   cm->render_width = cm->width;
   cm->render_height = cm->height;
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   if (aom_rb_read_bit(rb))
 #if CONFIG_FRAME_SIZE
     av1_read_frame_size(rb, 16, 16, &cm->render_width, &cm->render_height);
@@ -1249,7 +1249,7 @@ static void setup_render_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #endif
 }
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 // TODO(afergs): make "struct aom_read_bit_buffer *const rb"?
 static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
                            int *width, int *height) {
@@ -1268,7 +1268,7 @@ static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
     cm->superres_scale_denominator = SCALE_NUMERATOR;
   }
 }
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 #if CONFIG_SEGMENT_PRED_LAST
 static void resize_segmap_buffer(AV1_COMMON *cm) {
   aom_free(cm->cur_frame->seg_map);
@@ -1342,9 +1342,9 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #else
   av1_read_frame_size(rb, &width, &height);
 #endif
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   setup_superres(cm, rb, &width, &height);
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   resize_context_buffers(cm, width, height);
   setup_render_size(cm, rb);
 
@@ -1409,9 +1409,9 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
       height = buf->y_crop_height;
       cm->render_width = buf->render_width;
       cm->render_height = buf->render_height;
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
       setup_superres(cm, rb, &width, &height);
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
       resize_context_buffers(cm, width, height);
       found = 1;
       break;
@@ -1426,9 +1426,9 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #else
     av1_read_frame_size(rb, &width, &height);
 #endif
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
     setup_superres(cm, rb, &width, &height);
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
     resize_context_buffers(cm, width, height);
     setup_render_size(cm, rb);
   }
@@ -3138,13 +3138,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
 #else
   cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
                            cm->width == cm->last_width &&
                            cm->height == cm->last_height &&
 #else
                            cm->width == cm->prev_frame->buf.y_crop_width &&
                            cm->height == cm->prev_frame->buf.y_crop_height &&
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
                            !cm->last_intra_only && cm->last_show_frame &&
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
@@ -3265,7 +3265,7 @@ static void make_update_tile_list_dec(AV1Decoder *pbi, int start_tile,
     ec_ctxs[i - start_tile] = &pbi->tile_data[i].tctx;
 }
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
 void superres_post_decode(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
@@ -3276,7 +3276,7 @@ void superres_post_decode(AV1Decoder *pbi) {
   av1_superres_upscale(cm, pool);
   unlock_buffer_pool(pool);
 }
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
 // Note: When LOOPFILTERING_ACROSS_TILES is enabled, we need to clear the
@@ -3394,13 +3394,13 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   }
 #else
   cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
                            cm->width == cm->last_width &&
                            cm->height == cm->last_height &&
 #else
                            cm->width == cm->prev_frame->buf.y_crop_width &&
                            cm->height == cm->prev_frame->buf.y_crop_height &&
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
                            !cm->last_intra_only && cm->last_show_frame &&
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
@@ -3533,15 +3533,15 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-#if CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   if (!av1_superres_unscaled(cm)) aom_extend_frame_borders(&pbi->cur_buf->buf);
-#endif
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
   }
-#endif
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
   if (!cm->skip_loop_filter &&
 #if CONFIG_INTRABC
@@ -3552,9 +3552,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
   }
 
-#if CONFIG_FRAME_SUPERRES
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   superres_post_decode(pbi);
-#endif  // CONFIG_FRAME_SUPERRES
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 #if CONFIG_LOOP_RESTORATION
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
