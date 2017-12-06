@@ -96,7 +96,7 @@ test(function() {
 
   assert_equals(entries.length, 1);
   assert_equals(entries[0].constructor, CSSUnparsedValue);
-  assert_equals(entries[0].toString(), '--bg-color');
+  assert_equals(entries[0].toString(), 'var(--bg-color)');
   assert_equals([...entries[0]].length, 1);
   assert_equals([...entries[0]][0].variable, "--bg-color");
   assert_equals([...entries[0]][0].fallback, null);
