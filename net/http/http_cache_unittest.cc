@@ -3428,6 +3428,77 @@ TEST(HttpCache, SimpleGET_DoomWithPending) {
   }
 }
 
+TEST(HttpCache, DoomDoesNotSetHints) {
+  // Test that a doomed writer doesn't set in-memory index hints.
+  MockHttpCache cache;
+  cache.disk_cache()->set_support_in_memory_entry_data(true);
+
+  // Request 1 is a normal one to a no-cache/no-etag resource, to potentially
+  // set a "this is unvalidatable" hint in the cache. We also need it to
+  // actually write out to the doomed entry after request 2 does its thing,
+  // so its transaction is paused.
+  MockTransaction no_cache_transaction(kSimpleGET_Transaction);
+  no_cache_transaction.response_headers = "Cache-Control: no-cache\n";
+  AddMockTransaction(&no_cache_transaction);
+  MockHttpRequest request1(no_cache_transaction);
+
+  Context c1;
+  c1.result = cache.CreateTransaction(&c1.trans);
+  ASSERT_THAT(c1.result, IsOk());
+  c1.trans->SetBeforeNetworkStartCallback(
+      base::Bind([](bool* defer) { *defer = true; }));
+  c1.result =
+      c1.trans->Start(&request1, c1.callback.callback(), NetLogWithSource());
+  ASSERT_THAT(c1.result, IsError(ERR_IO_PENDING));
+
+  // It starts, copies over headers info, but doesn't get to proceed.
+  base::RunLoop().RunUntilIdle();
+  RemoveMockTransaction(&no_cache_transaction);
+
+  // Request 2 sets LOAD_BYPASS_CACHE to force the first one to be doomed ---
+  // it'll want to be a writer.
+  MockHttpRequest request2(kSimpleGET_Transaction);
+  request2.load_flags = LOAD_BYPASS_CACHE;
+
+  Context c2;
+  c2.result = cache.CreateTransaction(&c2.trans);
+  ASSERT_THAT(c2.result, IsOk());
+  c2.result =
+      c2.trans->Start(&request2, c2.callback.callback(), NetLogWithSource());
+  ASSERT_THAT(c2.result, IsError(ERR_IO_PENDING));
+
+  // Run Request2, then let the first one wrap up.
+  base::RunLoop().RunUntilIdle();
+  c2.callback.WaitForResult();
+  ReadAndVerifyTransaction(c2.trans.get(), kSimpleGET_Transaction);
+
+  c1.trans->ResumeNetworkStart();
+  c1.callback.WaitForResult();
+  ReadAndVerifyTransaction(c1.trans.get(), no_cache_transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+
+  // Request 3 tries to read from cache, and it should successfully do so. It's
+  // run after the previous two transactions finish so it doesn't try to
+  // cooperate with them, and is entirely driven by the state of the cache.
+  MockHttpRequest request3(kSimpleGET_Transaction);
+  Context context3;
+  context3.result = cache.CreateTransaction(&context3.trans);
+  ASSERT_THAT(context3.result, IsOk());
+  context3.result = context3.trans->Start(
+      &request3, context3.callback.callback(), NetLogWithSource());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(context3.result, IsError(ERR_IO_PENDING));
+  context3.result = context3.callback.WaitForResult();
+  ReadAndVerifyTransaction(context3.trans.get(), kSimpleGET_Transaction);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(2, cache.disk_cache()->create_count());
+}
+
 // This is a test for http://code.google.com/p/chromium/issues/detail?id=4731.
 // We may attempt to delete an entry synchronously with the act of adding a new
 // transaction to said entry.

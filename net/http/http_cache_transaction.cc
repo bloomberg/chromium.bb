@@ -2982,11 +2982,14 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
 
   io_buf_len_ = data->pickle()->size();
 
-  // Summarize some info on cacheability in memory.
-  cache_->GetCurrentBackend()->SetEntryInMemoryData(
-      cache_key_, ComputeUnusablePerCachingHeaders()
-                      ? HINT_UNUSABLE_PER_CACHING_HEADERS
-                      : 0);
+  // Summarize some info on cacheability in memory. Don't do it if doomed
+  // since then |entry_| isn't definitive for |cache_key_|.
+  if (!entry_->doomed) {
+    cache_->GetCurrentBackend()->SetEntryInMemoryData(
+        cache_key_, ComputeUnusablePerCachingHeaders()
+                        ? HINT_UNUSABLE_PER_CACHING_HEADERS
+                        : 0);
+  }
 
   return entry_->disk_entry->WriteData(kResponseInfoIndex, 0, data.get(),
                                        io_buf_len_, io_callback_, true);
