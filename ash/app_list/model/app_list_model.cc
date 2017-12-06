@@ -91,10 +91,6 @@ AppListItem* AppListModel::AddItemToFolder(std::unique_ptr<AppListItem> item,
 
 const std::string AppListModel::MergeItems(const std::string& target_item_id,
                                            const std::string& source_item_id) {
-  if (!folders_enabled()) {
-    LOG(ERROR) << "MergeItems called with folders disabled.";
-    return "";
-  }
   DVLOG(2) << "MergeItems: " << source_item_id << " -> " << target_item_id;
 
   if (target_item_id == source_item_id) {
@@ -280,31 +276,6 @@ void AppListModel::DeleteUninstalledItem(const std::string& id) {
   }
 }
 
-void AppListModel::SetFoldersEnabled(bool folders_enabled) {
-  folders_enabled_ = folders_enabled;
-  if (folders_enabled)
-    return;
-  // Remove child items from folders.
-  std::vector<std::string> folder_ids;
-  for (size_t i = 0; i < top_level_item_list_->item_count(); ++i) {
-    AppListItem* item = top_level_item_list_->item_at(i);
-    if (item->GetItemType() != AppListFolderItem::kItemType)
-      continue;
-    AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
-    if (folder->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM)
-      continue;  // Do not remove OEM folders.
-    while (folder->item_list()->item_count()) {
-      std::unique_ptr<AppListItem> child = folder->item_list()->RemoveItemAt(0);
-      child->set_folder_id("");
-      AddItemToItemListAndNotifyUpdate(std::move(child));
-    }
-    folder_ids.push_back(folder->id());
-  }
-  // Delete folders.
-  for (size_t i = 0; i < folder_ids.size(); ++i)
-    DeleteItem(folder_ids[i]);
-}
-
 void AppListModel::SetCustomLauncherPageEnabled(bool enabled) {
   custom_launcher_page_enabled_ = enabled;
   for (auto& observer : observers_)
@@ -344,11 +315,6 @@ AppListFolderItem* AppListModel::FindOrCreateFolderItem(
   AppListFolderItem* dest_folder = FindFolderItem(folder_id);
   if (dest_folder)
     return dest_folder;
-
-  if (!folders_enabled()) {
-    LOG(ERROR) << "Attempt to create folder item when disabled: " << folder_id;
-    return NULL;
-  }
 
   DVLOG(2) << "Creating new folder: " << folder_id;
   std::unique_ptr<AppListFolderItem> new_folder(

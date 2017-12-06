@@ -88,7 +88,6 @@ class AppListMainViewTest : public views::ViewsTestBase {
     delegate_.reset(new AppListTestViewDelegate);
     main_view_ = new AppListMainView(delegate_.get(), nullptr);
     main_view_->SetPaintToLayer();
-    main_view_->model()->SetFoldersEnabled(true);
 
     search_box_view_ = new SearchBoxView(main_view_, delegate_.get());
     main_view_->Init(0, search_box_view_);

@@ -349,8 +349,6 @@ AppListSyncableService::AppListSyncableService(
   oem_folder_name_ =
       l10n_util::GetStringUTF8(IDS_APP_LIST_OEM_DEFAULT_FOLDER_NAME);
 
-  model_->SetFoldersEnabled(true);
-
   if (IsExtensionServiceReady()) {
     BuildModel();
   } else {
