@@ -9,7 +9,7 @@ android_apk("chrome_public_test_support_apk") {
   # Used as an additional_apk in test scripts.
   never_incremental = true
   deps = [
-    "//chrome/test/android/cast_emulator:cast_emulator",
+    "//chrome/test/android/cast_emulator:cast_emulator_java",
   ]
 
   apk_name = "ChromePublicTestSupport"
