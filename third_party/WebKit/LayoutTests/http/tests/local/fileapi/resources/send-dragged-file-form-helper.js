@@ -93,16 +93,12 @@ const kTestFallbackWindows1252 =
 const kTestFallbackXUserDefined =
       kTestChars.replace(/[^\0-\x7F]/gu, x => `&#${x.codePointAt(0)};`);
 
-// Web server hosting helper CGIs
+// Web server hosting helper CGI
 const kWebServer = 'http://127.0.0.1:8000';
 
 // formPostFileUploadTest - verifies multipart upload structure and
 // numeric character reference replacement for filenames, field names,
 // and field values.
-//
-// Uses /fileapi/resources/write-temp-file.cgi to create the
-// test file and /fileapi/resources/delete-temp-file.cgi to
-// remove it at the end of the test.
 //
 // Uses /xmlhttprequest/resources/post-echo.cgi to echo the upload
 // POST with UTF-8 byte interpretation, leading to the "UTF-8 goggles"
@@ -123,8 +119,7 @@ const kWebServer = 'http://127.0.0.1:8000';
 //   the fileBaseName, or Unicode if no smaller-than-Unicode source
 //   contains all the characters. Used in the test name.
 // - fileBaseName: the not-necessarily-just-7-bit-ASCII file basename
-//   used to create and then upload the test file. Used in the test
-//   name.
+//   for the test file. Used in the test name.
 // - formEncoding: the acceptCharset of the form used to submit the
 //   test file. Used in the test name.
 // - expectedEncodedBaseName: the expected formEncoding-encoded
@@ -132,12 +127,6 @@ const kWebServer = 'http://127.0.0.1:8000';
 //   numeric character references and non-7-bit-ASCII bytes seen
 //   through UTF-8 goggles; subsequences not interpretable as UTF-8
 //   have each byte represented here by \uFFFD REPLACEMENT CHARACTER.
-//
-// Only a subset of functionality representable in the active "ANSI"
-// codepage is actually testable for filenames on Win32 at the moment
-// due to Blink and test suite limitations. Elsewhere (Linux, OS X,
-// etc.) full functionality is testable provided a UTF-8 locale is
-// used to run the test.
 //
 // NOTE: This does not correctly account for varying representation of
 // combining characters across platforms and filesystems due to
@@ -211,29 +200,11 @@ const formPostFileUploadTest = ({
     });
     form.appendChild(fileInput);
 
-    const fileToDropLines = (await (await fetch(
-        `${kWebServer}/fileapi/resources/write-temp-file.cgi` +
-          `?filename=${
-               encodeURIComponent(fileBaseName)
-             }&data=${encodeURIComponent(kTestChars)}`,
-        { method: 'post' })).text()).split('\n');
-    assert_equals(
-        fileToDropLines.length,
-        2,
-        `CGI response should have two lines but got ${fileToDropLines}`);
-    const [shouldBeOk, fileToDrop] = fileToDropLines;
-    assert_equals(
-        shouldBeOk,
-        'OK',
-        `CGI response should begin with OK but got ${fileToDropLines}`);
+    const fileToDrop = `resources/${fileBaseName}`;
     // Removes c:\fakepath\ or other pseudofolder and returns just the
     // final component of filePath; allows both / and \ as segment
     // delimiters.
     const baseNameOfFilePath = filePath => filePath.split(/[\/\\]/).pop();
-    assert_equals(
-        baseNameOfFilePath(fileToDrop),
-        fileBaseName,
-        `Unicode ${fileToDrop} basename should be ${fileBaseName}`);
     fileInput.onchange = event => {
       assert_equals(
           fileInput.files[0].name,
@@ -249,22 +220,14 @@ const formPostFileUploadTest = ({
           `The basename of the field's value should match its files[0].name`);
       form.submit();
     };
-    try {
-      await new Promise(resolve => {
-        formTargetFrame.onload = resolve;
-        eventSender.beginDragWithFiles([fileToDrop]);
-        const centerX = fileInput.offsetLeft + fileInput.offsetWidth / 2;
-        const centerY = fileInput.offsetTop + fileInput.offsetHeight / 2;
-        eventSender.mouseMoveTo(centerX, centerY);
-        eventSender.mouseUp();
-      });
-    } finally {
-      const cleanupErrors = await (await fetch(
-          `${kWebServer}/fileapi/resources/delete-temp-file.cgi` +
-            `?filename=${encodeURIComponent(fileToDrop)}`,
-          { method: 'post' })).text();
-      assert_equals(cleanupErrors, 'OK', 'Temp file cleanup should not fail');
-    }
+    await new Promise(resolve => {
+      formTargetFrame.onload = resolve;
+      eventSender.beginDragWithFiles([fileToDrop]);
+      const centerX = fileInput.offsetLeft + fileInput.offsetWidth / 2;
+      const centerY = fileInput.offsetTop + fileInput.offsetHeight / 2;
+      eventSender.mouseMoveTo(centerX, centerY);
+      eventSender.mouseUp();
+    });
 
     const formDataText = formTargetFrame.contentDocument.body.textContent;
     const formDataLines = formDataText.split('\n');
