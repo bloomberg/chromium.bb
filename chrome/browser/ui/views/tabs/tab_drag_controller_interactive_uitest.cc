@@ -1864,7 +1864,7 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
 
 // Drags from browser to a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DISABLED_DragSingleTabToSeparateWindowInSecondDisplay) {
+                       DragSingleTabToSeparateWindowInSecondDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStripImpl* tab_strip = GetTabStripForBrowser(browser());
@@ -1937,7 +1937,7 @@ void DragTabToWindowInSeparateDisplayStep2(
 
 // Drags from browser to another browser on a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DISABLED_DragTabToWindowInSeparateDisplay) {
+                       DragTabToWindowInSeparateDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStripImpl* tab_strip = GetTabStripForBrowser(browser());
@@ -1988,7 +1988,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
 // Drags from browser to another browser on a second display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DISABLED_DragTabToWindowOnSecondDisplay) {
+                       DragTabToWindowOnSecondDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   TabStripImpl* tab_strip = GetTabStripForBrowser(browser());
@@ -2052,7 +2052,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 // Drags from a maximized browser to another non-maximized browser on a second
 // display and releases input.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                       DISABLED_DragMaxTabToNonMaxWindowInSeparateDisplay) {
+                       DragMaxTabToNonMaxWindowInSeparateDisplay) {
   // Add another tab.
   AddTabAndResetBrowser(browser());
   browser()->window()->Maximize();
@@ -2525,7 +2525,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                        ::testing::Values("mouse", "touch"));
+                        ::testing::Values("mouse"));
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DifferentDeviceScaleFactorDisplayTabDragControllerTest,
                         ::testing::Values("mouse"));
