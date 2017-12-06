@@ -225,6 +225,11 @@ std::string AudioManagerCras::GetAssociatedOutputDeviceID(
              : base::Uint64ToString(output_device_it->id);
 }
 
+std::string AudioManagerCras::GetDefaultInputDeviceID() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  return base::Uint64ToString(GetPrimaryActiveInputNode());
+}
+
 std::string AudioManagerCras::GetDefaultOutputDeviceID() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return base::Uint64ToString(GetPrimaryActiveOutputNode());
