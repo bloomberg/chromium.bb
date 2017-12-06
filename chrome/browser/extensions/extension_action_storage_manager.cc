@@ -233,9 +233,15 @@ void ExtensionActionStorageManager::OnExtensionActionUpdated(
     ExtensionAction* extension_action,
     content::WebContents* web_contents,
     content::BrowserContext* browser_context) {
+  // This is an update to the default settings of the action iff |web_contents|
+  // is null. We only persist the default settings to disk, since per-tab
+  // settings can't be persisted across browser sessions.
+  bool for_default_tab = !web_contents;
   if (browser_context_ == browser_context &&
-      extension_action->action_type() == ActionInfo::TYPE_BROWSER)
+      extension_action->action_type() == ActionInfo::TYPE_BROWSER &&
+      for_default_tab) {
     WriteToStorage(extension_action);
+  }
 }
 
 void ExtensionActionStorageManager::OnExtensionActionAPIShuttingDown() {
