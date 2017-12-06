@@ -36,6 +36,7 @@
 #include "core/layout/OrderIterator.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 

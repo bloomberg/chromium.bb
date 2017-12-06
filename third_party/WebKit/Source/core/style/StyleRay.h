@@ -27,7 +27,6 @@ class StyleRay : public BasicShape {
   bool Contain() const { return contain_; }
 
   void GetPath(Path&, const FloatRect&) override;
-  scoped_refptr<BasicShape> Blend(const BasicShape*, double) const override;
   bool operator==(const BasicShape&) const override;
 
   ShapeType GetType() const override { return kStyleRayType; }

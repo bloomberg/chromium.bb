@@ -66,10 +66,4 @@ void StylePath::GetPath(Path&, const FloatRect&) {
   NOTREACHED();
 }
 
-scoped_refptr<BasicShape> StylePath::Blend(const BasicShape*, double) const {
-  // TODO(ericwilligers): Implement animation for offset-path.
-  NOTREACHED();
-  return nullptr;
-}
-
 }  // namespace blink

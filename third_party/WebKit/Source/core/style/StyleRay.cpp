@@ -29,10 +29,4 @@ void StyleRay::GetPath(Path&, const FloatRect&) {
   NOTREACHED();
 }
 
-scoped_refptr<BasicShape> StyleRay::Blend(const BasicShape*, double) const {
-  // TODO(ericwilligers): Implement animation for offset-path.
-  NOTREACHED();
-  return nullptr;
-}
-
 }  // namespace blink

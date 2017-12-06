@@ -30,42 +30,11 @@
 #include "core/style/BasicShapes.h"
 
 #include "core/css/BasicShapeFunctions.h"
-#include "platform/CalculationValue.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Path.h"
 
 namespace blink {
-
-bool BasicShape::CanBlend(const BasicShape* other) const {
-  // FIXME: Support animations between different shapes in the future.
-  if (!other || !IsSameType(*other))
-    return false;
-
-  // Just polygons with same number of vertices can be animated.
-  if (GetType() == BasicShape::kBasicShapePolygonType &&
-      (ToBasicShapePolygon(this)->Values().size() !=
-           ToBasicShapePolygon(other)->Values().size() ||
-       ToBasicShapePolygon(this)->GetWindRule() !=
-           ToBasicShapePolygon(other)->GetWindRule()))
-    return false;
-
-  // Circles with keywords for radii or center coordinates cannot be animated.
-  if (GetType() == BasicShape::kBasicShapeCircleType) {
-    if (!ToBasicShapeCircle(this)->Radius().CanBlend(
-            ToBasicShapeCircle(other)->Radius()))
-      return false;
-  }
-
-  // Ellipses with keywords for radii or center coordinates cannot be animated.
-  if (GetType() != BasicShape::kBasicShapeEllipseType)
-    return true;
-
-  return (ToBasicShapeEllipse(this)->RadiusX().CanBlend(
-              ToBasicShapeEllipse(other)->RadiusX()) &&
-          ToBasicShapeEllipse(this)->RadiusY().CanBlend(
-              ToBasicShapeEllipse(other)->RadiusY()));
-}
 
 bool BasicShapeCircle::operator==(const BasicShape& o) const {
   if (!IsSameType(o))
@@ -105,18 +74,6 @@ void BasicShapeCircle::GetPath(Path& path, const FloatRect& bounding_box) {
                             radius * 2));
 }
 
-scoped_refptr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
-                                                  double progress) const {
-  DCHECK_EQ(GetType(), other->GetType());
-  const BasicShapeCircle* o = ToBasicShapeCircle(other);
-  scoped_refptr<BasicShapeCircle> result = BasicShapeCircle::Create();
-
-  result->SetCenterX(center_x_.Blend(o->CenterX(), progress));
-  result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
-  result->SetRadius(radius_.Blend(o->Radius(), progress));
-  return result;
-}
-
 bool BasicShapeEllipse::operator==(const BasicShape& o) const {
   if (!IsSameType(o))
     return false;
@@ -153,30 +110,6 @@ void BasicShapeEllipse::GetPath(Path& path, const FloatRect& bounding_box) {
                             radius_x * 2, radius_y * 2));
 }
 
-scoped_refptr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
-                                                   double progress) const {
-  DCHECK_EQ(GetType(), other->GetType());
-  const BasicShapeEllipse* o = ToBasicShapeEllipse(other);
-  scoped_refptr<BasicShapeEllipse> result = BasicShapeEllipse::Create();
-
-  if (radius_x_.GetType() != BasicShapeRadius::kValue ||
-      o->RadiusX().GetType() != BasicShapeRadius::kValue ||
-      radius_y_.GetType() != BasicShapeRadius::kValue ||
-      o->RadiusY().GetType() != BasicShapeRadius::kValue) {
-    result->SetCenterX(o->CenterX());
-    result->SetCenterY(o->CenterY());
-    result->SetRadiusX(o->RadiusX());
-    result->SetRadiusY(o->RadiusY());
-    return result;
-  }
-
-  result->SetCenterX(center_x_.Blend(o->CenterX(), progress));
-  result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
-  result->SetRadiusX(radius_x_.Blend(o->RadiusX(), progress));
-  result->SetRadiusY(radius_y_.Blend(o->RadiusY(), progress));
-  return result;
-}
-
 void BasicShapePolygon::GetPath(Path& path, const FloatRect& bounding_box) {
   DCHECK(path.IsEmpty());
   DCHECK(!(values_.size() % 2));
@@ -198,32 +131,6 @@ void BasicShapePolygon::GetPath(Path& path, const FloatRect& bounding_box) {
             bounding_box.Y()));
   }
   path.CloseSubpath();
-}
-
-scoped_refptr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
-                                                   double progress) const {
-  DCHECK(other);
-  DCHECK(IsSameType(*other));
-
-  const BasicShapePolygon* o = ToBasicShapePolygon(other);
-  DCHECK_EQ(values_.size(), o->Values().size());
-  DCHECK(!(values_.size() % 2));
-
-  size_t length = values_.size();
-  scoped_refptr<BasicShapePolygon> result = BasicShapePolygon::Create();
-  if (!length)
-    return result;
-
-  result->SetWindRule(o->GetWindRule());
-
-  for (size_t i = 0; i < length; i = i + 2) {
-    result->AppendPoint(
-        values_.at(i).Blend(o->Values().at(i), progress, kValueRangeAll),
-        values_.at(i + 1).Blend(o->Values().at(i + 1), progress,
-                                kValueRangeAll));
-  }
-
-  return result;
 }
 
 bool BasicShapePolygon::operator==(const BasicShape& o) const {
@@ -261,39 +168,6 @@ void BasicShapeInset::GetPath(Path& path, const FloatRect& bounding_box) {
   FloatRoundedRect final_rect(rect, radii);
   final_rect.ConstrainRadii();
   path.AddRoundedRect(final_rect);
-}
-
-static inline LengthSize BlendLengthSize(const LengthSize& to,
-                                         const LengthSize& from,
-                                         double progress) {
-  return LengthSize(
-      to.Width().Blend(from.Width(), progress, kValueRangeNonNegative),
-      to.Height().Blend(from.Height(), progress, kValueRangeNonNegative));
-}
-
-scoped_refptr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
-                                                 double progress) const {
-  DCHECK(other);
-  DCHECK(IsSameType(*other));
-
-  const BasicShapeInset& other_inset = ToBasicShapeInset(*other);
-  scoped_refptr<BasicShapeInset> result = BasicShapeInset::Create();
-  result->SetTop(top_.Blend(other_inset.Top(), progress, kValueRangeAll));
-  result->SetRight(right_.Blend(other_inset.Right(), progress, kValueRangeAll));
-  result->SetBottom(
-      bottom_.Blend(other_inset.Bottom(), progress, kValueRangeAll));
-  result->SetLeft(left_.Blend(other_inset.Left(), progress, kValueRangeAll));
-
-  result->SetTopLeftRadius(
-      BlendLengthSize(top_left_radius_, other_inset.TopLeftRadius(), progress));
-  result->SetTopRightRadius(BlendLengthSize(
-      top_right_radius_, other_inset.TopRightRadius(), progress));
-  result->SetBottomRightRadius(BlendLengthSize(
-      bottom_right_radius_, other_inset.BottomRightRadius(), progress));
-  result->SetBottomLeftRadius(BlendLengthSize(
-      bottom_left_radius_, other_inset.BottomLeftRadius(), progress));
-
-  return result;
 }
 
 bool BasicShapeInset::operator==(const BasicShape& o) const {

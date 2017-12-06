@@ -44,6 +44,7 @@
 #include "platform/LengthBox.h"
 #include "platform/LengthPoint.h"
 #include "platform/LengthSize.h"
+#include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/runtime_enabled_features.h"
@@ -83,8 +84,6 @@ class StylePath;
 class StyleResolver;
 class StyleSelfAlignmentData;
 class TransformationMatrix;
-
-class ContentData;
 
 typedef Vector<scoped_refptr<ComputedStyle>, 4> PseudoStyleCache;
 
