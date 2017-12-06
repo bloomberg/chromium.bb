@@ -55,6 +55,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
              Maybe<std::string> options,
              Maybe<double> buffer_usage_reporting_interval,
              Maybe<std::string> transfer_mode,
+             Maybe<std::string> transfer_compression,
              Maybe<Tracing::TraceConfig> config,
              std::unique_ptr<StartCallback> callback) override;
   void End(std::unique_ptr<EndCallback> callback) override;
@@ -110,6 +111,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   int frame_tree_node_id_;
   bool did_initiate_recording_;
   bool return_as_stream_;
+  bool gzip_compression_;
   TraceDataBufferState trace_data_buffer_state_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 

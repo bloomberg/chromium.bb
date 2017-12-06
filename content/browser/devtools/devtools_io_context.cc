@@ -48,7 +48,7 @@ unsigned s_last_stream_handle = 0;
 
 class TempFileStream : public DevToolsIOContext::RWStream {
  public:
-  TempFileStream();
+  explicit TempFileStream(bool binary);
 
   void Read(off_t position, size_t max_size, ReadCallback callback) override;
   void Close(bool invoke_pending_callbacks) override {}
@@ -67,16 +67,18 @@ class TempFileStream : public DevToolsIOContext::RWStream {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   bool had_errors_;
   off_t last_read_pos_;
+  bool binary_;
 
   DISALLOW_COPY_AND_ASSIGN(TempFileStream);
 };
 
-TempFileStream::TempFileStream()
+TempFileStream::TempFileStream(bool binary)
     : DevToolsIOContext::RWStream(impl_task_runner()),
       handle_(base::UintToString(++s_last_stream_handle)),
       task_runner_(impl_task_runner()),
       had_errors_(false),
-      last_read_pos_(0) {}
+      last_read_pos_(0),
+      binary_(binary) {}
 
 TempFileStream::~TempFileStream() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -129,6 +131,7 @@ void TempFileStream::ReadOnFileSequence(off_t position,
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   Status status = StatusFailure;
   std::unique_ptr<std::string> data;
+  bool base64_encoded = false;
 
   if (file_.IsValid()) {
     std::string buffer;
@@ -154,9 +157,14 @@ void TempFileStream::ReadOnFileSequence(off_t position,
       last_read_pos_ = position + size_got;
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(std::move(callback), std::move(data), false, status));
+  if (binary_) {
+    std::string raw_data(std::move(*data));
+    base::Base64Encode(raw_data, data.get());
+    base64_encoded = true;
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), std::move(data),
+                                         base64_encoded, status));
 }
 
 void TempFileStream::AppendOnFileSequence(std::unique_ptr<std::string> data) {
@@ -472,8 +480,8 @@ DevToolsIOContext::~DevToolsIOContext() {
 }
 
 scoped_refptr<DevToolsIOContext::RWStream>
-DevToolsIOContext::CreateTempFileBackedStream() {
-  scoped_refptr<TempFileStream> result = new TempFileStream();
+DevToolsIOContext::CreateTempFileBackedStream(bool binary) {
+  scoped_refptr<TempFileStream> result = new TempFileStream(binary);
   bool inserted =
       streams_.insert(std::make_pair(result->handle(), result)).second;
   DCHECK(inserted);

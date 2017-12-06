@@ -5432,6 +5432,12 @@ experimental domain Tracing
       # Configuration for memory dump triggers. Used only when "memory-infra" category is enabled.
       optional MemoryDumpConfig memoryDumpConfig
 
+  # Compression type to use for traces returned via streams.
+  type StreamCompression extends string
+    enum
+      none
+      gzip
+
   # Stop trace events collection.
   command end
 
@@ -5469,6 +5475,9 @@ experimental domain Tracing
       optional enum transferMode
         ReportEvents
         ReturnAsStream
+      # Compression format to use. This only applies when using `ReturnAsStream`
+      # transfer mode (defaults to `none`)
+      optional StreamCompression streamCompression
       optional TraceConfig traceConfig
 
   event bufferUsage
@@ -5494,3 +5503,5 @@ experimental domain Tracing
     parameters
       # A handle of the stream that holds resulting trace data.
       optional IO.StreamHandle stream
+      # Compression format of returned stream.
+      optional StreamCompression streamCompression

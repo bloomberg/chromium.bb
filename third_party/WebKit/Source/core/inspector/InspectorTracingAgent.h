@@ -53,6 +53,7 @@ class CORE_EXPORT InspectorTracingAgent final
              protocol::Maybe<String> options,
              protocol::Maybe<double> buffer_usage_reporting_interval,
              protocol::Maybe<String> transfer_mode,
+             protocol::Maybe<String> transfer_compression,
              protocol::Maybe<protocol::Tracing::TraceConfig>,
              std::unique_ptr<StartCallback>) override;
   void end(std::unique_ptr<EndCallback>) override;
