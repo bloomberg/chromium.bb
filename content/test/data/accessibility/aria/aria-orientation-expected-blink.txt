@@ -14,12 +14,12 @@ rootWebArea
 ++radioGroup
 ++radioGroup horizontal
 ++radioGroup vertical
-++scrollBar vertical minValueForRange=0.00 maxValueForRange=100.00
-++scrollBar horizontal minValueForRange=0.00 maxValueForRange=100.00
-++scrollBar vertical minValueForRange=0.00 maxValueForRange=100.00
-++slider horizontal minValueForRange=0.00 maxValueForRange=100.00
-++slider horizontal minValueForRange=0.00 maxValueForRange=100.00
-++slider vertical minValueForRange=0.00 maxValueForRange=100.00
+++scrollBar vertical valueForRange=50.00 minValueForRange=0.00 maxValueForRange=100.00
+++scrollBar horizontal valueForRange=50.00 minValueForRange=0.00 maxValueForRange=100.00
+++scrollBar vertical valueForRange=50.00 minValueForRange=0.00 maxValueForRange=100.00
+++slider horizontal valueForRange=50.00 minValueForRange=0.00 maxValueForRange=100.00
+++slider horizontal valueForRange=50.00 minValueForRange=0.00 maxValueForRange=100.00
+++slider vertical valueForRange=50.00 minValueForRange=0.00 maxValueForRange=100.00
 ++splitter horizontal
 ++splitter horizontal
 ++splitter vertical

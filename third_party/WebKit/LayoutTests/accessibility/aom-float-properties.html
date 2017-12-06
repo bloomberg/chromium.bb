@@ -38,7 +38,7 @@ test(function(t) {
 test(function(t) {
     var node = document.getElementById("slider2");
     var axNode = accessibilityController.accessibleElementById("slider2");
-    assert_equals(axNode.intValue, 0);
+    assert_equals(axNode.intValue, 50);
     assert_equals(axNode.minValue, 0);
     assert_equals(axNode.maxValue, 100);
     node.accessibleNode.valueNow = 33;
