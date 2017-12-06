@@ -671,8 +671,8 @@ TEST_F(SequencedSocketDataTest, SingleSyncWriteTooSmall) {
 
   static const char* kExpectedFailures[] = {
       "Expected: (data.length()) >= (expected_data.length())",
-      "To be equal to: actual_data",
-      "To be equal to: sock_->Write(buf.get(), len, failing_callback_)"};
+      "Expected equality of these values:\n  expected_data",
+      "Expected equality of these values:\n  rv"};
   ASSERT_EQ(arraysize(kExpectedFailures),
             static_cast<size_t>(gtest_failures.size()));
 
