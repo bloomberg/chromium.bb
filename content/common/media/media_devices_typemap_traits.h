@@ -18,6 +18,25 @@ struct EnumTraits<blink::mojom::MediaDeviceType, content::MediaDeviceType> {
                         content::MediaDeviceType* out);
 };
 
+template <>
+struct StructTraits<blink::mojom::MediaDeviceInfoDataView,
+                    content::MediaDeviceInfo> {
+  static const std::string& device_id(const content::MediaDeviceInfo& info) {
+    return info.device_id;
+  }
+
+  static const std::string& label(const content::MediaDeviceInfo& info) {
+    return info.label;
+  }
+
+  static const std::string& group_id(const content::MediaDeviceInfo& info) {
+    return info.group_id;
+  }
+
+  static bool Read(blink::mojom::MediaDeviceInfoDataView input,
+                   content::MediaDeviceInfo* out);
+};
+
 }  // namespace mojo
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_DEVICES_TYPEMAP_TRAITS_H_

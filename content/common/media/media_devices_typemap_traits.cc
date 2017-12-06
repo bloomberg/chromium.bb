@@ -47,4 +47,18 @@ bool EnumTraits<blink::mojom::MediaDeviceType, content::MediaDeviceType>::
   return false;
 }
 
+// static
+bool StructTraits<
+    blink::mojom::MediaDeviceInfoDataView,
+    content::MediaDeviceInfo>::Read(blink::mojom::MediaDeviceInfoDataView input,
+                                    content::MediaDeviceInfo* out) {
+  if (!input.ReadDeviceId(&out->device_id))
+    return false;
+  if (!input.ReadLabel(&out->label))
+    return false;
+  if (!input.ReadGroupId(&out->group_id))
+    return false;
+  return true;
+}
+
 }  // namespace mojo
