@@ -24288,6 +24288,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="23" label="Unnamed"/>
 </enum>
 
+<enum name="ListItemPosition">
+  <int value="0" label="Only item"/>
+  <int value="1" label="First item"/>
+  <int value="2" label="Any middle item"/>
+  <int value="3" label="Last item"/>
+</enum>
+
 <enum name="LoadLibraryResultCategory">
   <int value="0" label="LoadLibraryExW Succeeded"/>
   <int value="1" label="LoadLibraryExW Fail, LoadLibraryW Succeeded"/>
@@ -33698,13 +33705,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Popup initiated"/>
   <int value="1" label="Popup blocked"/>
   <int value="2" label="Popup clicked through"/>
-</enum>
-
-<enum name="PopupPosition">
-  <int value="0" label="Only popup"/>
-  <int value="1" label="First popup"/>
-  <int value="2" label="Any middle popup"/>
-  <int value="3" label="Last popup"/>
 </enum>
 
 <enum name="Ports">
