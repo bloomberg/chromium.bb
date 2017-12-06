@@ -42,6 +42,7 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSVariableData.h"
+#include "core/css/FontSizeFunctions.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaValues.h"
@@ -2321,7 +2322,21 @@ Response InspectorCSSAgent::getBackgroundColors(
       CSSComputedStyleDeclaration::Create(body, true);
   const CSSValue* body_font_size =
       computed_style_body->GetPropertyCSSValue(GetCSSPropertyFontSize());
-  *computed_body_font_size = body_font_size->CssText();
+  if (body_font_size) {
+    *computed_body_font_size = body_font_size->CssText();
+  } else {
+    // This is an extremely rare and pathological case -
+    // just return the baseline default to avoid a crash.
+    // crbug.com/738777
+    unsigned default_font_size_keyword =
+        FontSizeFunctions::InitialKeywordSize();
+    float default_font_size_pixels = FontSizeFunctions::FontSizeForKeyword(
+        &document, default_font_size_keyword, false);
+    *computed_body_font_size =
+        CSSPrimitiveValue::Create(default_font_size_pixels,
+                                  CSSPrimitiveValue::UnitType::kPixels)
+            ->CssText();
+  }
 
   return Response::OK();
 }
