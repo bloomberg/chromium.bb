@@ -13,7 +13,7 @@ import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker.mojom";
+import "third_party/WebKit/common/service_worker/service_worker.mojom";
 import "third_party/WebKit/public/web/console_message.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
 import "url/mojo/url.mojom";

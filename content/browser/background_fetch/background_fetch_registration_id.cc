@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
 

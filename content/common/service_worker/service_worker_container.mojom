@@ -6,9 +6,9 @@ module content.mojom;
 
 import "content/common/service_worker/controller_service_worker.mojom";
 import "mojo/common/string16.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_error_type.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_object.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_registration.mojom";
 import "third_party/WebKit/public/platform/web_feature.mojom";
 import "url/mojo/url.mojom";
 

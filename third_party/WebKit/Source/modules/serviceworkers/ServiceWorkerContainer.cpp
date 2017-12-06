@@ -61,7 +61,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-blink.h"
+#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-blink.h"
 
 namespace blink {
 

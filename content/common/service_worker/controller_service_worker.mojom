@@ -8,7 +8,7 @@ import "mojo/common/time.mojom";
 import "content/common/service_worker/service_worker_fetch_response_callback.mojom";
 import "content/public/common/url_loader.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_event_status.mojom";
 
 // S13nServiceWorker:
 // Represents a service worker that is a 'controller'.

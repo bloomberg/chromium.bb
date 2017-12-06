@@ -24,7 +24,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/log/net_log_with_source.h"
 #include "third_party/WebKit/common/blob/blob.mojom.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
 
 namespace net {
 class URLRequest;

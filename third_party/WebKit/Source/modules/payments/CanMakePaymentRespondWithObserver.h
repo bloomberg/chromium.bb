@@ -7,7 +7,7 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
-#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
+#include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom-blink.h"
 
 namespace blink {
 

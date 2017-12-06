@@ -4,9 +4,9 @@
 
 module blink.mojom;
 
-import "third_party/WebKit/public/platform/modules/serviceworker/navigation_preload_state.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
-import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom";
+import "third_party/WebKit/common/service_worker/navigation_preload_state.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_error_type.mojom";
+import "third_party/WebKit/common/service_worker/service_worker_object.mojom";
 import "url/mojo/url.mojom";
 
 const int64 kInvalidServiceWorkerRegistrationId = -1;
