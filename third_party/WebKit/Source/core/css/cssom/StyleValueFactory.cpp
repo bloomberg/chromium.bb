@@ -4,8 +4,10 @@
 
 #include "core/css/cssom/StyleValueFactory.h"
 
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSKeywordValue.h"
 #include "core/css/cssom/CSSNumericValue.h"
 #include "core/css/cssom/CSSOMTypes.h"
@@ -44,6 +46,12 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
     return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
   if (value.IsVariableReferenceValue())
     return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
+  if (value.IsCustomPropertyDeclaration()) {
+    const CSSVariableData* variable_data =
+        ToCSSCustomPropertyDeclaration(value).Value();
+    DCHECK(variable_data);
+    return CSSUnparsedValue::FromCSSValue(*variable_data);
+  }
   if (value.IsImageValue()) {
     return CSSURLImageValue::Create(ToCSSImageValue(value).Clone());
   }
@@ -73,12 +81,15 @@ const CSSValue* ParseProperty(CSSPropertyID property_id,
   const auto tokens = tokenizer.TokenizeToEOF();
   const CSSParserTokenRange range(tokens);
 
-  if (const CSSValue* value =
-          CSSPropertyParser::ParseSingleValue(property_id, range, context)) {
-    return value;
+  if (property_id != CSSPropertyVariable) {
+    if (const CSSValue* value =
+            CSSPropertyParser::ParseSingleValue(property_id, range, context)) {
+      return value;
+    }
   }
 
-  if (CSSVariableParser::ContainsValidVariableReferences(range)) {
+  if (property_id == CSSPropertyVariable ||
+      CSSVariableParser::ContainsValidVariableReferences(range)) {
     return CSSVariableReferenceValue::Create(
         CSSVariableData::Create(range, false /* is_animation_tainted */,
                                 false /* needs variable resolution */),
@@ -96,11 +107,6 @@ CSSStyleValueVector StyleValueFactory::FromString(
     const CSSParserContext* parser_context) {
   DCHECK_NE(property_id, CSSPropertyInvalid);
   DCHECK(!CSSProperty::Get(property_id).IsShorthand());
-
-  // TODO(775804): Handle custom properties
-  if (property_id == CSSPropertyVariable) {
-    return CSSStyleValueVector();
-  }
 
   const CSSValue* value = ParseProperty(property_id, css_text, parser_context);
   if (!value)

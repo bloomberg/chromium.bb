@@ -30,7 +30,7 @@ for (const parseMethod of ['parse', 'parseAll']) {
 const gValidNonListTests = [
   { property: 'width', value: '10px', expected: CSS.px(10), desc: 'a valid cssText for the given property' },
   { property: 'wIdTh', value: '10px', expected: CSS.px(10), desc: 'a mixed case cssText' },
-  { property: '--foo', value: '10%', expected: CSS.percent(10), desc: 'a custom property' },
+  { property: '--foo', value: '10%', expected: new CSSUnparsedValue('10%'), desc: 'a custom property' },
 ];
 
 for (const {property, value, expected, desc} of gValidNonListTests) {
