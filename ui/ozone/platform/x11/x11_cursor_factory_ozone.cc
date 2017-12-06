@@ -49,6 +49,12 @@ PlatformCursor X11CursorFactoryOzone::CreateImageCursor(
   // resulting SkBitmap is empty and X crashes when creating a zero size cursor
   // image. Return invisible cursor here instead.
   if (bitmap.drawsNothing()) {
+    // The result of |invisible_cursor_| is owned by the caller, and will be
+    // Unref()ed by code far away. (Usually in web_cursor.cc in content, among
+    // others.) If we don't manually add another reference before we cast this
+    // to a void*, we can end up with |invisible_cursor_| being freed out from
+    // under us.
+    invisible_cursor_->AddRef();
     return ToPlatformCursor(invisible_cursor_.get());
   }
 
