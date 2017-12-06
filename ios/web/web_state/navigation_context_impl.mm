@@ -98,6 +98,15 @@ void NavigationContextImpl::SetNavigationItemUniqueID(int unique_id) {
   navigation_item_unique_id_ = unique_id;
 }
 
+void NavigationContextImpl::SetWKNavigationType(
+    WKNavigationType wk_navigation_type) {
+  wk_navigation_type_ = wk_navigation_type;
+}
+
+WKNavigationType NavigationContextImpl::GetWKNavigationType() const {
+  return wk_navigation_type_;
+}
+
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
                                              ui::PageTransition page_transition,

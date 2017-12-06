@@ -1365,10 +1365,13 @@ registerLoadRequestForURL:(const GURL&)URL
       [self pageTransitionFromNavigationType:navigationType];
   // The referrer is not known yet, and will be updated later.
   const web::Referrer emptyReferrer;
-  return [self registerLoadRequestForURL:URL
-                                referrer:emptyReferrer
-                              transition:transition
-                  sameDocumentNavigation:sameDocumentNavigation];
+  std::unique_ptr<web::NavigationContextImpl> context =
+      [self registerLoadRequestForURL:URL
+                             referrer:emptyReferrer
+                           transition:transition
+               sameDocumentNavigation:sameDocumentNavigation];
+  context->SetWKNavigationType(navigationType);
+  return context;
 }
 
 - (std::unique_ptr<web::NavigationContextImpl>)
@@ -5222,6 +5225,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     } else {
       // |didCommitNavigation:| may not be called for fast navigation, so update
       // the navigation type now as it is already known.
+      navigationContext->SetWKNavigationType(WKNavigationTypeBackForward);
       holder->set_navigation_type(WKNavigationTypeBackForward);
       navigation =
           [_webView goToBackForwardListItem:holder->back_forward_list_item()];
