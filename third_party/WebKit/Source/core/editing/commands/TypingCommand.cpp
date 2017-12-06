@@ -338,14 +338,7 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
       CompositionType() == kTextCompositionUpdate ? selection_start : end;
   const SelectionInDOMTree& selection =
       CreateSelection(start, end, EndingSelection().IsDirectional(), element);
-
-  if (selection == frame->Selection()
-                       .ComputeVisibleSelectionInDOMTreeDeprecated()
-                       .AsSelection())
-    return;
-
   SetEndingSelection(SelectionForUndoStep::From(selection));
-  frame->Selection().SetSelection(selection);
 }
 
 // FIXME: We shouldn't need to take selectionForInsertion. It should be
