@@ -32,8 +32,6 @@ MojoResult FileErrorToMojoResult(base::File::Error error) {
   switch (error) {
     case base::File::FILE_OK:
       return MOJO_RESULT_OK;
-    case base::File::FILE_ERROR_EXISTS:
-      return MOJO_RESULT_ALREADY_EXISTS;
     case base::File::FILE_ERROR_NOT_FOUND:
       return MOJO_RESULT_NOT_FOUND;
     case base::File::FILE_ERROR_SECURITY:
@@ -132,7 +130,7 @@ class FileDataPipeProducer::FileSequenceState
     if (result != MOJO_RESULT_OK) {
       // Either the consumer pipe has been closed or something terrible
       // happened. In any case, we'll never be able to write more data.
-      Finish(MOJO_RESULT_ABORTED);
+      Finish(result);
       return;
     }
 
@@ -149,7 +147,7 @@ class FileDataPipeProducer::FileSequenceState
       if (result == MOJO_RESULT_SHOULD_WAIT)
         return;
       if (result != MOJO_RESULT_OK) {
-        Finish(MOJO_RESULT_ABORTED);
+        Finish(result);
         return;
       }
 

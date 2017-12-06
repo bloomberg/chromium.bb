@@ -39,8 +39,14 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataPipeProducer {
   //
   // If the write is successful |result| will be |MOJO_RESULT_OK|. Otherwise
   // (e.g. if the producer detects the consumer is closed and the pipe has no
-  // remaining capacity, or if file reads fail for any reason) |result| will be
-  // |MOJO_RESULT_ABORTED|.
+  // remaining capacity, or if file open/reads fail for any reason) |result|
+  // will be one of the following:
+  //
+  //   |MOJO_RESULT_ABORTED|
+  //   |MOJO_RESULT_NOT_FOUND|
+  //   |MOJO_RESULT_PERMISSION_DENIED|
+  //   |MOJO_RESULT_RESOURCE_EXHAUSTED|
+  //   |MOJO_RESULT_UNKNOWN|
   //
   // Note that if the FileDataPipeProducer is destroyed before |callback| can be
   // invoked, |callback| is *never* invoked, and the write will be permanently
