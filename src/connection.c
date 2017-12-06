@@ -632,7 +632,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	const char *signature;
 	struct argument_details arg;
 	struct wl_closure *closure;
-	struct wl_array *array, *array_extra;
+	struct wl_array *array_extra;
 
 	count = arg_count_for_signature(message->signature);
 	if (count > WL_CLOSURE_MAX_ARGS) {
@@ -643,7 +643,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 	}
 
 	num_arrays = wl_message_count_arrays(message);
-	closure = malloc(sizeof *closure + size + num_arrays * sizeof *array);
+	closure = malloc(sizeof *closure + size +
+			 num_arrays * sizeof(struct wl_array));
 	if (closure == NULL) {
 		errno = ENOMEM;
 		wl_connection_consume(connection, size);
