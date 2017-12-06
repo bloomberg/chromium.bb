@@ -86,6 +86,7 @@ class AppListDelegateImpl;
 class NativeCursorManagerAsh;
 class AshTouchTransformController;
 class AutoclickController;
+class BacklightsForcedOffSetter;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
@@ -635,6 +636,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AccessibilityController> accessibility_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
+  std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<DragDropController> drag_drop_controller_;

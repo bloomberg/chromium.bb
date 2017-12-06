@@ -91,10 +91,8 @@ void TabletPowerButtonController::OnPowerButtonEvent(
       force_off_on_button_up_ = false;
     }
 
-    screen_off_when_power_button_down_ =
-        display_controller_->screen_state() !=
-        PowerButtonDisplayController::ScreenState::ON;
-    display_controller_->SetDisplayForcedOff(false);
+    screen_off_when_power_button_down_ = !display_controller_->IsScreenOn();
+    display_controller_->SetBacklightsForcedOff(false);
     StartShutdownTimer();
   } else {
     const base::TimeTicks previous_up_time = last_button_up_time_;
@@ -114,7 +112,7 @@ void TabletPowerButtonController::OnPowerButtonEvent(
     if (shutdown_timer_.IsRunning()) {
       shutdown_timer_.Stop();
       if (!screen_off_when_power_button_down_ && force_off_on_button_up_) {
-        display_controller_->SetDisplayForcedOff(true);
+        display_controller_->SetBacklightsForcedOff(true);
         LockScreenIfRequired();
       }
     }

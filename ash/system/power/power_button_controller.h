@@ -22,6 +22,7 @@ class TimeTicks;
 
 namespace ash {
 
+class BacklightsForcedOffSetter;
 class LockStateController;
 class PowerButtonDisplayController;
 class PowerButtonScreenshotController;
@@ -48,7 +49,8 @@ class ASH_EXPORT PowerButtonController
     LEGACY,
   };
 
-  PowerButtonController();
+  explicit PowerButtonController(
+      BacklightsForcedOffSetter* backlights_forced_off_setter);
   ~PowerButtonController() override;
 
   // Handles clamshell power button behavior.
@@ -102,6 +104,9 @@ class ASH_EXPORT PowerButtonController
   // Called by |display_off_timer_| to force backlights off shortly after the
   // screen is locked. Only used when |force_clamshell_power_button_| is true.
   void ForceDisplayOffAfterLock();
+
+  // Used to force backlights off, when needed.
+  BacklightsForcedOffSetter* backlights_forced_off_setter_;  // Not owned.
 
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;

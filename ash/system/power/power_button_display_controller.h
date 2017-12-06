@@ -5,10 +5,13 @@
 #ifndef ASH_SYSTEM_POWER_POWER_BUTTON_DISPLAY_CONTROLLER_H_
 #define ASH_SYSTEM_POWER_POWER_BUTTON_DISPLAY_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
+#include "ash/system/power/backlights_forced_off_setter.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/events/devices/input_device_event_observer.h"
@@ -20,30 +23,24 @@ class TickClock;
 
 namespace ash {
 
+class ScopedBacklightsForcedOff;
+
 // PowerButtonDisplayController performs display-related tasks (e.g. forcing
 // backlights off or disabling the touchscreen) on behalf of
 // PowerButtonController and TabletPowerButtonController.
 class ASH_EXPORT PowerButtonDisplayController
-    : public chromeos::PowerManagerClient::Observer,
+    : public BacklightsForcedOffSetter::Observer,
+      public chromeos::PowerManagerClient::Observer,
       public ui::EventHandler,
       public ui::InputDeviceEventObserver {
  public:
-  // Screen state as communicated by D-Bus signals from powerd about backlight
-  // brightness changes.
-  enum class ScreenState {
-    // The screen is on.
-    ON,
-    // The screen is off.
-    OFF,
-    // The screen is off, specifically due to an automated change like user
-    // inactivity.
-    OFF_AUTO,
-  };
-
-  explicit PowerButtonDisplayController(base::TickClock* tick_clock);
+  PowerButtonDisplayController(
+      BacklightsForcedOffSetter* backlights_forced_off_setter,
+      base::TickClock* tick_clock);
   ~PowerButtonDisplayController() override;
 
-  ScreenState screen_state() const { return screen_state_; }
+  bool IsScreenOn() const;
+
   base::TimeTicks screen_state_last_changed() const {
     return screen_state_last_changed_;
   }
@@ -51,11 +48,14 @@ class ASH_EXPORT PowerButtonDisplayController
   // Updates the power manager's backlights-forced-off state and enables or
   // disables the touchscreen. No-op if |backlights_forced_off_| already equals
   // |forced_off|.
-  void SetDisplayForcedOff(bool forced_off);
+  void SetBacklightsForcedOff(bool forced_off);
+
+  // Overridden from BacklightsForcedOffObserver:
+  void OnBacklightsForcedOffChanged(bool forced_off) override;
+  void OnScreenStateChanged(
+      BacklightsForcedOffSetter::ScreenState screen_state) override;
 
   // Overridden from chromeos::PowerManagerClient::Observer:
-  void PowerManagerRestarted() override;
-  void BrightnessChanged(int level, bool user_initiated) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         const base::TimeTicks& timestamp) override;
@@ -70,33 +70,24 @@ class ASH_EXPORT PowerButtonDisplayController
   void OnStylusStateChanged(ui::StylusState state) override;
 
  private:
-  // Sends a request to powerd to get the backlights forced off state so that
-  // |backlights_forced_off_| can be initialized.
-  void GetInitialBacklightsForcedOff();
-
-  // Initializes |backlights_forced_off_|.
-  void OnGotInitialBacklightsForcedOff(base::Optional<bool> is_forced_off);
-
-  // Enables or disables the touchscreen by updating the global touchscreen
-  // enabled status. The touchscreen is disabled when backlights are forced off
-  // or |screen_state_| is OFF_AUTO.
-  void UpdateTouchscreenStatus();
-
-  // Current screen state.
-  ScreenState screen_state_ = ScreenState::ON;
-
-  // Current forced-off state of backlights.
-  bool backlights_forced_off_ = false;
-
   // Saves the most recent timestamp that screen state changed.
   base::TimeTicks screen_state_last_changed_;
 
-  // Controls whether the touchscreen is disabled when the screen is turned off
-  // due to user inactivity.
-  bool disable_touchscreen_while_screen_off_ = true;
+  BacklightsForcedOffSetter* backlights_forced_off_setter_;  // Not owned.
+
+  ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
+      backlights_forced_off_observer_;
+
+  // Whether an accessibility alert should be sent when the backlights
+  // forced-off state changes.
+  bool send_accessibility_alert_on_backlights_forced_off_change_ = false;
 
   // Time source for performed action times.
   base::TickClock* tick_clock_;  // Not owned.
+
+  // If set, the active request passed to |backlights_forced_off_setter_| in
+  // order to force the backlights off.
+  std::unique_ptr<ScopedBacklightsForcedOff> backlights_forced_off_;
 
   base::WeakPtrFactory<PowerButtonDisplayController> weak_ptr_factory_;
 
