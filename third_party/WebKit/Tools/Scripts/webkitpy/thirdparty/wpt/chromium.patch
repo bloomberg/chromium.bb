@@ -1,7 +1,7 @@
 diff --git a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/lint/lint.py b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/lint/lint.py
 --- a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/lint/lint.py
 +++ b/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/lint/lint.py
-@@ -725,6 +725,7 @@ def create_parser():
+@@ -752,6 +752,7 @@ def create_parser():
                          help="Run CSS testsuite specific lints")
      parser.add_argument("--repo-root", help="The WPT directory. Use this"
                          "option if the lint script exists outside the repository")
@@ -9,18 +9,18 @@ diff --git a/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty/wpt/wpt/tools/
      parser.add_argument("--all", action="store_true", help="If no paths are passed, try to lint the whole "
                          "working directory, not just files that changed")
      return parser
-@@ -746,16 +747,21 @@ def main(**kwargs):
+@@ -773,16 +774,21 @@ def main(**kwargs):
  
      paths = lint_paths(kwargs, repo_root)
  
--    return lint(repo_root, paths, output_format, kwargs.get("css_mode", False))
+-    return lint(repo_root, paths, output_format)
 +    ignore_glob = kwargs.get("ignore_glob")
  
-+    return lint(repo_root, paths, output_format, kwargs.get("css_mode", False), ignore_glob)
++    return lint(repo_root, paths, output_format, ignore_glob)
  
--def lint(repo_root, paths, output_format, css_mode):
+-def lint(repo_root, paths, output_format):
 +
-+def lint(repo_root, paths, output_format, css_mode, ignore_glob):
++def lint(repo_root, paths, output_format, ignore_glob):
      error_count = defaultdict(int)
      last = None
  

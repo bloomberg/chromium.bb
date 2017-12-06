@@ -68,6 +68,7 @@
 ./tools/manifest/catalog
 ./tools/manifest/catalog/xhtml.dtd
 ./tools/manifest/commands.json
+./tools/manifest/download.py
 ./tools/manifest/item.py
 ./tools/manifest/log.py
 ./tools/manifest/manifest.py
