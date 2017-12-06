@@ -21,6 +21,7 @@ TEST_F(SelectionTest, defaultConstructor) {
   EXPECT_TRUE(selection.IsNone());
   EXPECT_EQ(Position(), selection.Base());
   EXPECT_EQ(Position(), selection.Extent());
+  EXPECT_EQ(EphemeralRange(), selection.ComputeRange());
 }
 
 TEST_F(SelectionTest, IsBaseFirst) {
@@ -100,6 +101,9 @@ TEST_F(SelectionTest, SetAsBacwardAndForward) {
   EXPECT_FALSE(backward_selection.IsNone());
   EXPECT_EQ(end, backward_selection.Base());
   EXPECT_EQ(start, backward_selection.Extent());
+  EXPECT_EQ(start, backward_selection.ComputeStartPosition());
+  EXPECT_EQ(end, backward_selection.ComputeEndPosition());
+  EXPECT_EQ(range, backward_selection.ComputeRange());
 
   EXPECT_EQ(TextAffinity::kDownstream, forward_selection.Affinity());
   EXPECT_TRUE(forward_selection.IsBaseFirst());
@@ -107,6 +111,9 @@ TEST_F(SelectionTest, SetAsBacwardAndForward) {
   EXPECT_FALSE(forward_selection.IsNone());
   EXPECT_EQ(start, forward_selection.Base());
   EXPECT_EQ(end, forward_selection.Extent());
+  EXPECT_EQ(start, forward_selection.ComputeStartPosition());
+  EXPECT_EQ(end, forward_selection.ComputeEndPosition());
+  EXPECT_EQ(range, forward_selection.ComputeRange());
 
   EXPECT_EQ(TextAffinity::kDownstream, collapsed_selection.Affinity());
   EXPECT_TRUE(collapsed_selection.IsBaseFirst());
@@ -114,6 +121,9 @@ TEST_F(SelectionTest, SetAsBacwardAndForward) {
   EXPECT_FALSE(collapsed_selection.IsNone());
   EXPECT_EQ(start, collapsed_selection.Base());
   EXPECT_EQ(start, collapsed_selection.Extent());
+  EXPECT_EQ(start, collapsed_selection.ComputeStartPosition());
+  EXPECT_EQ(start, collapsed_selection.ComputeEndPosition());
+  EXPECT_EQ(EphemeralRange(start, start), collapsed_selection.ComputeRange());
 }
 
 }  // namespace blink

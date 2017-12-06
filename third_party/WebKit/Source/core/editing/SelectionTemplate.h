@@ -118,6 +118,7 @@ class CORE_EXPORT SelectionTemplate final {
 
   PositionTemplate<Strategy> ComputeEndPosition() const;
   PositionTemplate<Strategy> ComputeStartPosition() const;
+  EphemeralRangeTemplate<Strategy> ComputeRange() const;
 
   // Returns |SelectionType| for |this| based on |base_| and |extent_|.
   SelectionType Type() const;
