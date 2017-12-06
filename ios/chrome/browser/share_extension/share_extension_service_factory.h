@@ -21,8 +21,8 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Singleton that owns the ShareExtensionService and associates it with
-// ios::ChromeBrowserState.
+// Singleton that creates the ShareExtensionService and associates that service
+// with ios::ChromeBrowserState.
 class ShareExtensionServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static ShareExtensionService* GetForBrowserState(
