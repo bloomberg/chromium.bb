@@ -126,7 +126,7 @@ class PermissionRequestManager
 
   // PermissionPrompt::Delegate:
   const std::vector<PermissionRequest*>& Requests() override;
-  base::string16 GetDisplayOrigin() override;
+  PermissionPrompt::DisplayNameOrOrigin GetDisplayNameOrOrigin() override;
   void Accept() override;
   void Deny() override;
   void Closing() override;

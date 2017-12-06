@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
 class PermissionRequest;
@@ -23,6 +24,13 @@ class WebContents;
 // to the manager for the visible tab.
 class PermissionPrompt {
  public:
+  // Holds the string to be displayed as the origin of the permission prompt,
+  // and whether or not that string is an origin.
+  struct DisplayNameOrOrigin {
+    base::string16 name_or_origin;
+    bool is_origin;
+  };
+
   // The delegate will receive events caused by user action which need to
   // be persisted in the per-tab UI state.
   class Delegate {
@@ -32,7 +40,10 @@ class PermissionPrompt {
     // These pointers should not be stored as the actual request objects may be
     // deleted upon navigation and so on.
     virtual const std::vector<PermissionRequest*>& Requests() = 0;
-    virtual base::string16 GetDisplayOrigin() = 0;
+
+    // Returns the origin to be displayed in the permission prompt. May return
+    // a non-origin, e.g. extension URLs use the name of the extension.
+    virtual DisplayNameOrOrigin GetDisplayNameOrOrigin() = 0;
 
     virtual void Accept() = 0;
     virtual void Deny() = 0;

@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -69,7 +68,7 @@ class PermissionsBubbleDialogDelegateView
   PermissionsBubbleDialogDelegateView(
       PermissionPromptImpl* owner,
       const std::vector<PermissionRequest*>& requests,
-      const base::string16& display_origin);
+      const PermissionPrompt::DisplayNameOrOrigin& name_or_origin);
   ~PermissionsBubbleDialogDelegateView() override;
 
   void CloseBubble();
@@ -95,7 +94,7 @@ class PermissionsBubbleDialogDelegateView
 
  private:
   PermissionPromptImpl* owner_;
-  base::string16 display_origin_;
+  PermissionPrompt::DisplayNameOrOrigin name_or_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDialogDelegateView);
 };
@@ -103,8 +102,8 @@ class PermissionsBubbleDialogDelegateView
 PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
     PermissionPromptImpl* owner,
     const std::vector<PermissionRequest*>& requests,
-    const base::string16& display_origin)
-    : owner_(owner), display_origin_(display_origin) {
+    const PermissionPrompt::DisplayNameOrOrigin& name_or_origin)
+    : owner_(owner), name_or_origin_(name_or_origin) {
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
@@ -157,6 +156,10 @@ void PermissionsBubbleDialogDelegateView::CloseBubble() {
 }
 
 void PermissionsBubbleDialogDelegateView::AddedToWidget() {
+  // There is no URL spoofing risk from non-origins.
+  if (!name_or_origin_.is_origin)
+    return;
+
   std::unique_ptr<views::Label> title =
       views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
 
@@ -183,7 +186,7 @@ ui::AXRole PermissionsBubbleDialogDelegateView::GetAccessibleWindowRole()
 base::string16 PermissionsBubbleDialogDelegateView::GetAccessibleWindowTitle()
     const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_ACCESSIBLE_TITLE,
-                                    display_origin_);
+                                    name_or_origin_.name_or_origin);
 }
 
 bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {
@@ -192,7 +195,7 @@ bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {
 
 base::string16 PermissionsBubbleDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
-                                    display_origin_);
+                                    name_or_origin_.name_or_origin);
 }
 
 void PermissionsBubbleDialogDelegateView::SizeToContents() {
@@ -310,7 +313,7 @@ void PermissionPromptImpl::Show() {
   DCHECK(browser_->window());
 
   bubble_delegate_ = new PermissionsBubbleDialogDelegateView(
-      this, delegate_->Requests(), delegate_->GetDisplayOrigin());
+      this, delegate_->Requests(), delegate_->GetDisplayNameOrOrigin());
 
   // Set |parent_window| because some valid anchors can become hidden.
   bubble_delegate_->set_parent_window(

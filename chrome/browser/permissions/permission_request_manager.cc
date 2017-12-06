@@ -10,6 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -345,7 +346,8 @@ const std::vector<PermissionRequest*>& PermissionRequestManager::Requests() {
   return requests_;
 }
 
-base::string16 PermissionRequestManager::GetDisplayOrigin() {
+PermissionPrompt::DisplayNameOrOrigin
+PermissionRequestManager::GetDisplayNameOrOrigin() {
   DCHECK(!requests_.empty());
   GURL origin_url = requests_[0]->GetOrigin();
 
@@ -354,15 +356,15 @@ base::string16 PermissionRequestManager::GetDisplayOrigin() {
     base::string16 extension_name =
         extensions::ui_util::GetEnabledExtensionNameForUrl(
             origin_url, web_contents()->GetBrowserContext());
-    if (!extension_name.empty()) {
-      return extension_name;
-    }
+    if (!extension_name.empty())
+      return {extension_name, false /* is_origin */};
   }
 #endif  // !defined(OS_ANDROID)
 
   // Web URLs should be displayed as the origin in the URL.
-  return url_formatter::FormatUrlForSecurityDisplay(
-      origin_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+  return {url_formatter::FormatUrlForSecurityDisplay(
+              origin_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+          true /* is_origin */};
 }
 
 void PermissionRequestManager::Accept() {
