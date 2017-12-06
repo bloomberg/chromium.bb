@@ -20,8 +20,9 @@ namespace {
 // prevent any destructors from being called that will slow us down or cause
 // problems.
 std::vector<std::string>* savable_schemes = nullptr;
-// Note we store GURLs here instead of strings to deal with canonicalization.
-std::vector<GURL>* secure_origins = nullptr;
+// Note we store url::Origins here instead of strings to deal with
+// canonicalization.
+std::vector<url::Origin>* secure_origins = nullptr;
 std::vector<std::string>* service_worker_schemes = nullptr;
 
 const char* const kDefaultSavableSchemes[] = {
@@ -97,7 +98,7 @@ void RegisterContentSchemes(bool lock_schemes) {
   *service_worker_schemes = std::move(schemes.service_worker_schemes);
 
   delete secure_origins;
-  secure_origins = new std::vector<GURL>;
+  secure_origins = new std::vector<url::Origin>;
   *secure_origins = std::move(schemes.secure_origins);
 }
 
@@ -105,7 +106,7 @@ const std::vector<std::string>& GetSavableSchemes() {
   return *savable_schemes;
 }
 
-const std::vector<GURL>& GetSecureOrigins() {
+const std::vector<url::Origin>& GetSecureOrigins() {
   return *secure_origins;
 }
 

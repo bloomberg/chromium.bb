@@ -11,11 +11,12 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "extensions/common/constants.h"
+#include "url/gurl.h"
 
 namespace secure_origin_whitelist {
 
-std::vector<GURL> GetWhitelist() {
-  std::vector<GURL> origins;
+std::vector<url::Origin> GetWhitelist() {
+  std::vector<url::Origin> origins;
   // If kUnsafelyTreatInsecureOriginAsSecure option is given, then treat the
   // value as a comma-separated list of origins:
   const base::CommandLine& command_line =
@@ -23,9 +24,13 @@ std::vector<GURL> GetWhitelist() {
   if (command_line.HasSwitch(switches::kUnsafelyTreatInsecureOriginAsSecure)) {
     std::string origins_str = command_line.GetSwitchValueASCII(
         switches::kUnsafelyTreatInsecureOriginAsSecure);
-    for (const std::string& origin : base::SplitString(
-             origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-      origins.push_back(GURL(origin));
+    for (const std::string& origin_str : base::SplitString(
+             origins_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      // Drop .unique() origins, as they are unequal to any other origins.
+      url::Origin origin(url::Origin::Create(GURL(origin_str)));
+      if (!origin.unique())
+        origins.push_back(std::move(origin));
+    }
   }
 
   UMA_HISTOGRAM_COUNTS_100("Security.TreatInsecureOriginAsSecure",
