@@ -34,7 +34,6 @@
 #include <memory>
 #include "core/style/ShadowData.h"
 #include "platform/geometry/FloatRectOutsets.h"
-#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
@@ -42,7 +41,6 @@
 namespace blink {
 
 class FloatRect;
-class LayoutRect;
 
 typedef Vector<ShadowData, 1> ShadowDataVector;
 
@@ -57,11 +55,6 @@ class ShadowList : public RefCounted<ShadowList> {
   const ShadowDataVector& Shadows() const { return shadows_; }
   bool operator==(const ShadowList& o) const { return shadows_ == o.shadows_; }
   bool operator!=(const ShadowList& o) const { return !(*this == o); }
-
-  static scoped_refptr<ShadowList> Blend(const ShadowList* from,
-                                         const ShadowList* to,
-                                         double progress,
-                                         const Color& current_color);
 
   // Outsets needed to include all shadows in this list, as well as the
   // source (i.e. no outsets will be negative).

@@ -8,8 +8,6 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "core/style/BasicShapes.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 
@@ -33,7 +31,6 @@ class StylePath final : public BasicShape {
   CSSValue* ComputedCSSValue() const;
 
   void GetPath(Path&, const FloatRect&) override;
-  scoped_refptr<BasicShape> Blend(const BasicShape*, double) const override;
   bool operator==(const BasicShape&) const override;
 
   ShapeType GetType() const override { return kStylePathType; }
