@@ -93317,7 +93317,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram base="true" name="VR.Component.Assets.Status.OnEnter"
-    enum="VRAssetsComponentEnterStatus">
+    enum="VRComponentStatus">
   <owner>tiborg@chromium.org</owner>
   <summary>Status of the VR assets component when entering a VR mode.</summary>
 </histogram>

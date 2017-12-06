@@ -43208,11 +43208,6 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="6" label="L2TP/IPSec Username/Password"/>
 </enum>
 
-<enum name="VRAssetsComponentEnterStatus">
-  <int value="0" label="Component is ready to use"/>
-  <int value="1" label="Component is not ready to use. Reason not known."/>
-</enum>
-
 <enum name="VRAssetsComponentUpdateStatus">
   <int value="1"
       label="Failed to verify component (component version not known)."/>
@@ -43234,6 +43229,11 @@ Called by update_traffic_annotation_histograms.py.-->
       label="Failed to load assets from disk (component version 0.1)."/>
   <int value="1002"
       label="Assets have an invalid content (component version 0.1)."/>
+</enum>
+
+<enum name="VRComponentStatus">
+  <int value="0" label="Component is ready to use"/>
+  <int value="1" label="Component is not ready to use. Reason unknown."/>
 </enum>
 
 <enum name="VRSuppressedElement">
