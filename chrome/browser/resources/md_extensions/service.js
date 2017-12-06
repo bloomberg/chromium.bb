@@ -92,7 +92,7 @@ cr.define('extensions', function() {
      * a previously-specified load.
      * @param {string=} opt_retryGuid
      * @return {!Promise} A signal that loading finished, rejected if any error
-     *     occured.
+     *     occurred.
      * @private
      */
     loadUnpackedHelper_(opt_retryGuid) {
