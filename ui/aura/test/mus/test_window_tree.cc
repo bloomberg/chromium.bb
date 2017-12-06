@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/mus/test_window_tree.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace aura {
@@ -35,6 +36,20 @@ base::Optional<std::vector<uint8_t>> TestWindowTree::GetLastPropertyValue() {
 base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
 TestWindowTree::GetLastNewWindowProperties() {
   return std::move(last_new_window_properties_);
+}
+
+void TestWindowTree::NotifyClientAboutAcceleratedWidget() {
+  // This magic value comes from managed_display_info.cc
+  const int64_t kSynthesizedDisplayIdStart = 2200000000LL;
+#if defined(OS_WIN)
+  const gfx::AcceleratedWidget kSynthesizedAcceleratedWidget =
+      reinterpret_cast<gfx::AcceleratedWidget>(1);
+#else
+  const gfx::AcceleratedWidget kSynthesizedAcceleratedWidget =
+      static_cast<gfx::AcceleratedWidget>(1);
+#endif
+  window_manager_->WmOnAcceleratedWidgetForDisplay(
+      kSynthesizedDisplayIdStart, kSynthesizedAcceleratedWidget);
 }
 
 void TestWindowTree::AckAllChanges() {
