@@ -1575,10 +1575,7 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     return;
   }
 
-  bool device_disabled = false;
-  cros_settings_->GetBoolean(kDeviceDisabled, &device_disabled);
-  if (device_disabled && system::DeviceDisablingManager::
-                             HonorDeviceDisablingDuringNormalOperation()) {
+  if (system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation()) {
     // If the device is disabled, bail out. A device disabled screen will be
     // shown by the DeviceDisablingManager.
 
@@ -1587,7 +1584,6 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     login_display_->SetUIEnabled(true);
     return;
   }
-  //  if ()
 
   chromeos::DBusThreadManager::Get()
       ->GetCryptohomeClient()

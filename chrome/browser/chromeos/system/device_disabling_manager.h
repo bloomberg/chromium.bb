@@ -104,6 +104,10 @@ class DeviceDisablingManager {
   void CheckWhetherDeviceDisabledDuringOOBE(
       const DeviceDisabledCheckCallback& callback);
 
+  // Returns true if trusted cros settings say the device is disabled and the
+  // device disabled setting should be honored.
+  static bool IsDeviceDisabledDuringNormalOperation();
+
   // Whenever trusted cros settings indicate that the device is disabled, this
   // method should be used to check whether the device disabling is to be
   // honored. If this method returns false, the device should not be disabled.
