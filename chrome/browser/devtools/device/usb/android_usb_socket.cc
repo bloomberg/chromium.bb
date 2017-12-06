@@ -12,6 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -133,9 +134,11 @@ int AndroidUsbSocket::Read(net::IOBuffer* buffer,
   return bytes_to_copy;
 }
 
-int AndroidUsbSocket::Write(net::IOBuffer* buffer,
-                            int length,
-                            const net::CompletionCallback& callback) {
+int AndroidUsbSocket::Write(
+    net::IOBuffer* buffer,
+    int length,
+    const net::CompletionCallback& callback,
+    const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) {
   DCHECK(!callback.is_null());
   if (!is_connected_)
     return net::ERR_SOCKET_NOT_CONNECTED;

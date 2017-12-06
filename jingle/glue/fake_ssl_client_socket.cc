@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace jingle_glue {
 
@@ -99,11 +100,14 @@ int FakeSSLClientSocket::Read(net::IOBuffer* buf, int buf_len,
   return transport_socket_->Read(buf, buf_len, callback);
 }
 
-int FakeSSLClientSocket::Write(net::IOBuffer* buf, int buf_len,
-                               const net::CompletionCallback& callback) {
+int FakeSSLClientSocket::Write(
+    net::IOBuffer* buf,
+    int buf_len,
+    const net::CompletionCallback& callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_EQ(next_handshake_state_, STATE_NONE);
   DCHECK(handshake_completed_);
-  return transport_socket_->Write(buf, buf_len, callback);
+  return transport_socket_->Write(buf, buf_len, callback, traffic_annotation);
 }
 
 int FakeSSLClientSocket::SetReceiveBufferSize(int32_t size) {
@@ -203,8 +207,7 @@ void FakeSSLClientSocket::ProcessConnectDone() {
 
 int FakeSSLClientSocket::DoSendClientHello() {
   int status = transport_socket_->Write(
-      write_buf_.get(),
-      write_buf_->BytesRemaining(),
+      write_buf_.get(), write_buf_->BytesRemaining(),
       base::Bind(&FakeSSLClientSocket::OnSendClientHelloDone,
                  base::Unretained(this)));
   if (status < net::OK) {

@@ -25,6 +25,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -94,7 +95,8 @@ class MockConnectClientSocket : public StreamSocket {
   }
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override {
     return ERR_FAILED;
   }
   int SetReceiveBufferSize(int32_t size) override { return OK; }
@@ -159,7 +161,8 @@ class MockFailingClientSocket : public StreamSocket {
 
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override {
     return ERR_FAILED;
   }
   int SetReceiveBufferSize(int32_t size) override { return OK; }
@@ -286,7 +289,8 @@ class MockTriggerableClientSocket : public StreamSocket {
 
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override {
     return ERR_FAILED;
   }
   int SetReceiveBufferSize(int32_t size) override { return OK; }

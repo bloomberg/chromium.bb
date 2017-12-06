@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "net/log/net_log_with_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "third_party/webrtc/p2p/base/pseudotcp.h"
 
@@ -35,8 +36,12 @@ class PseudoTcpAdapter : public P2PStreamSocket {
   // P2PStreamSocket implementation.
   int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
            const net::CompletionCallback& callback) override;
-  int Write(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
-            const net::CompletionCallback& callback) override;
+  // TODO(crbug.com/656607): Remove default value.
+  int Write(const scoped_refptr<net::IOBuffer>& buffer,
+            int buffer_size,
+            const net::CompletionCallback& callback,
+            const net::NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
 
   int Connect(const net::CompletionCallback& callback);
 

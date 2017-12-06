@@ -66,6 +66,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -157,7 +158,9 @@ class WrappedStreamSocket : public StreamSocket {
   }
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override {
     return transport_->Write(buf, buf_len, callback);
   }
   int SetReceiveBufferSize(int32_t size) override {
@@ -347,9 +350,12 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   const CompletionCallback& callback) override;
+  // TODO(crbug.com/656607): Remove default value.
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
 
   // Sets the next Read() call and all future calls to return |error|.
   // If there is already a pending asynchronous read, the configured error
@@ -398,9 +404,11 @@ int SynchronousErrorStreamSocket::ReadIfReady(
   return transport_->ReadIfReady(buf, buf_len, callback);
 }
 
-int SynchronousErrorStreamSocket::Write(IOBuffer* buf,
-                                        int buf_len,
-                                        const CompletionCallback& callback) {
+int SynchronousErrorStreamSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   if (have_write_error_)
     return pending_write_error_;
   return transport_->Write(buf, buf_len, callback);
@@ -423,9 +431,12 @@ class FakeBlockingStreamSocket : public WrappedStreamSocket {
   int ReadIfReady(IOBuffer* buf,
                   int buf_len,
                   const CompletionCallback& callback) override;
+  // TODO(crbug.com/656607): Remove default value.
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
 
   int pending_read_result() const { return pending_read_result_; }
   IOBuffer* pending_read_buf() const { return pending_read_buf_.get(); }
@@ -559,9 +570,11 @@ int FakeBlockingStreamSocket::ReadIfReady(IOBuffer* buf,
   return rv;
 }
 
-int FakeBlockingStreamSocket::Write(IOBuffer* buf,
-                                    int len,
-                                    const CompletionCallback& callback) {
+int FakeBlockingStreamSocket::Write(
+    IOBuffer* buf,
+    int len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(buf);
   DCHECK_LE(0, len);
 
@@ -713,7 +726,8 @@ class CountingStreamSocket : public WrappedStreamSocket {
   }
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override {
     write_count_++;
     return transport_->Write(buf, buf_len, callback);
   }

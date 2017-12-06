@@ -30,6 +30,7 @@
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_options.h"
 #include "net/socket/udp_net_log_parameters.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -407,7 +408,9 @@ int UDPSocketWin::RecvFrom(IOBuffer* buf,
 
 int UDPSocketWin::Write(IOBuffer* buf,
                         int buf_len,
-                        const CompletionCallback& callback) {
+                        const CompletionCallback& callback,
+                        const NetworkTrafficAnnotationTag& traffic_annotation) {
+  // TODO(crbug.com/656607): Handle traffic annotation.
   return SendToOrWrite(buf, buf_len, remote_address_.get(), callback);
 }
 

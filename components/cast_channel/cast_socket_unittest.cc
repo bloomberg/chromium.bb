@@ -149,7 +149,11 @@ class MockTCPSocket : public net::TCPClientSocket {
   }
 
   MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
-  MOCK_METHOD3(Write, int(net::IOBuffer*, int, const net::CompletionCallback&));
+  MOCK_METHOD4(Write,
+               int(net::IOBuffer*,
+                   int,
+                   const net::CompletionCallback&,
+                   const net::NetworkTrafficAnnotationTag&));
 
   virtual void Disconnect() {
     // Do nothing in tests

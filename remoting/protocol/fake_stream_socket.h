@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "net/base/completion_callback.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
 
@@ -73,8 +74,12 @@ class FakeStreamSocket : public P2PStreamSocket {
   // P2PStreamSocket interface.
   int Read(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
            const net::CompletionCallback& callback) override;
-  int Write(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
-            const net::CompletionCallback& callback) override;
+  // TODO(crbug.com/656607): Remove default value.
+  int Write(const scoped_refptr<net::IOBuffer>& buf,
+            int buf_len,
+            const net::CompletionCallback& callback,
+            const net::NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
 
  private:
   void DoAsyncWrite(const scoped_refptr<net::IOBuffer>& buf, int buf_len,

@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 
@@ -109,8 +110,11 @@ class ChannelMultiplexer::MuxSocket : public P2PStreamSocket {
   // P2PStreamSocket interface.
   int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
            const net::CompletionCallback& callback) override;
-  int Write(const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
-            const net::CompletionCallback& callback) override;
+  int Write(
+      const scoped_refptr<net::IOBuffer>& buffer,
+      int buffer_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
  private:
   MuxChannel* channel_;
@@ -237,10 +241,14 @@ int ChannelMultiplexer::MuxSocket::Read(
 }
 
 int ChannelMultiplexer::MuxSocket::Write(
-    const scoped_refptr<net::IOBuffer>& buffer, int buffer_len,
-    const net::CompletionCallback& callback) {
+    const scoped_refptr<net::IOBuffer>& buffer,
+    int buffer_len,
+    const net::CompletionCallback& callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(write_callback_.is_null());
+
+  // TODO(crbug.com/656607): Handle traffic annotation.
 
   if (base_channel_error_ != net::OK)
     return base_channel_error_;

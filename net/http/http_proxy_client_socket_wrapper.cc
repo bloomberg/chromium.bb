@@ -25,6 +25,7 @@
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/spdy/chromium/spdy_stream.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -299,11 +300,13 @@ int HttpProxyClientSocketWrapper::Read(IOBuffer* buf,
   return ERR_SOCKET_NOT_CONNECTED;
 }
 
-int HttpProxyClientSocketWrapper::Write(IOBuffer* buf,
-                                        int buf_len,
-                                        const CompletionCallback& callback) {
+int HttpProxyClientSocketWrapper::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   if (transport_socket_)
-    return transport_socket_->Write(buf, buf_len, callback);
+    return transport_socket_->Write(buf, buf_len, callback, traffic_annotation);
   return ERR_SOCKET_NOT_CONNECTED;
 }
 

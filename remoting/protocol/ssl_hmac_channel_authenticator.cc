@@ -34,6 +34,7 @@
 #include "net/socket/ssl_server_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_server_config.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/p2p_stream_socket.h"
@@ -93,9 +94,13 @@ class NetStreamSocketAdapter : public net::StreamSocket {
            const net::CompletionCallback& callback) override {
     return socket_->Read(buf, buf_len, callback);
   }
-  int Write(net::IOBuffer* buf, int buf_len,
-            const net::CompletionCallback& callback) override {
-    return socket_->Write(buf, buf_len, callback);
+  // TODO(crbug.com/656607): Remove default value.
+  int Write(net::IOBuffer* buf,
+            int buf_len,
+            const net::CompletionCallback& callback,
+            const net::NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override {
+    return socket_->Write(buf, buf_len, callback, traffic_annotation);
   }
 
   int SetReceiveBufferSize(int32_t size) override {
@@ -174,9 +179,12 @@ class P2PStreamSocketAdapter : public P2PStreamSocket {
            const net::CompletionCallback& callback) override {
     return socket_->Read(buf.get(), buf_len, callback);
   }
-  int Write(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
-            const net::CompletionCallback& callback) override {
-    return socket_->Write(buf.get(), buf_len, callback);
+  int Write(
+      const scoped_refptr<net::IOBuffer>& buf,
+      int buf_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
+    return socket_->Write(buf.get(), buf_len, callback, traffic_annotation);
   }
 
  private:
@@ -357,11 +365,12 @@ void SslHmacChannelAuthenticator::OnConnected(int result) {
 void SslHmacChannelAuthenticator::WriteAuthenticationBytes(
     bool* callback_called) {
   while (true) {
+    // TODO(crbug.com/656607): Add proper network traffic annotation.
     int result = socket_->Write(
-        auth_write_buf_.get(),
-        auth_write_buf_->BytesRemaining(),
+        auth_write_buf_.get(), auth_write_buf_->BytesRemaining(),
         base::Bind(&SslHmacChannelAuthenticator::OnAuthBytesWritten,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        NO_TRAFFIC_ANNOTATION_BUG_656607);
     if (result == net::ERR_IO_PENDING)
       break;
     if (!HandleAuthBytesWritten(result, callback_called))

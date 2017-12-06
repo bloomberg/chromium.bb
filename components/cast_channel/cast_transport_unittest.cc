@@ -22,6 +22,7 @@
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,10 +126,11 @@ class MockSocket : public net::Socket {
                    int buf_len,
                    const net::CompletionCallback& callback));
 
-  MOCK_METHOD3(Write,
+  MOCK_METHOD4(Write,
                int(net::IOBuffer* buf,
                    int buf_len,
-                   const net::CompletionCallback& callback));
+                   const net::CompletionCallback& callback,
+                   const net::NetworkTrafficAnnotationTag&));
 
   virtual int SetReceiveBufferSize(int32_t size) {
     NOTREACHED();
@@ -176,7 +178,7 @@ TEST_F(CastTransportTest, TestFullWriteAsync) {
   std::string serialized_message;
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
 
-  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _))
+  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _, _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)));
@@ -201,15 +203,16 @@ TEST_F(CastTransportTest, TestPartialWritesAsync) {
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
 
   // Only one byte is written.
-  EXPECT_CALL(mock_socket_,
-              Write(NotNull(), static_cast<int>(serialized_message.size()), _))
+  EXPECT_CALL(
+      mock_socket_,
+      Write(NotNull(), static_cast<int>(serialized_message.size()), _, _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)));
   // Remainder of bytes are written.
   EXPECT_CALL(
       mock_socket_,
-      Write(NotNull(), static_cast<int>(serialized_message.size() - 1), _))
+      Write(NotNull(), static_cast<int>(serialized_message.size() - 1), _, _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)));
@@ -233,7 +236,7 @@ TEST_F(CastTransportTest, TestWriteFailureAsync) {
   CompletionQueue socket_cbs;
   CompleteHandler write_handler;
   CastMessage message = CreateCastMessage();
-  EXPECT_CALL(mock_socket_, Write(NotNull(), _, _))
+  EXPECT_CALL(mock_socket_, Write(NotNull(), _, _, _))
       .WillOnce(
           DoAll(EnqueueCallback<2>(&socket_cbs), Return(net::ERR_IO_PENDING)));
   EXPECT_CALL(write_handler, Complete(net::ERR_FAILED));
@@ -258,7 +261,7 @@ TEST_F(CastTransportTest, TestFullWriteSync) {
   CastMessage message = CreateCastMessage();
   std::string serialized_message;
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
-  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _))
+  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _, _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       Return(serialized_message.size())));
   EXPECT_CALL(write_handler, Complete(net::OK));
@@ -279,10 +282,11 @@ TEST_F(CastTransportTest, TestPartialWritesSync) {
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
 
   // Only one byte is written.
-  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _))
+  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _, _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output), Return(1)));
   // Remainder of bytes are written.
-  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size() - 1, _))
+  EXPECT_CALL(mock_socket_,
+              Write(NotNull(), serialized_message.size() - 1, _, _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       Return(serialized_message.size() - 1)));
 
@@ -298,7 +302,7 @@ TEST_F(CastTransportTest, TestPartialWritesSync) {
 TEST_F(CastTransportTest, TestWriteFailureSync) {
   CompleteHandler write_handler;
   CastMessage message = CreateCastMessage();
-  EXPECT_CALL(mock_socket_, Write(NotNull(), _, _))
+  EXPECT_CALL(mock_socket_, Write(NotNull(), _, _, _))
       .WillOnce(Return(net::ERR_CONNECTION_RESET));
   EXPECT_CALL(write_handler, Complete(net::ERR_FAILED));
   transport_->SendMessage(

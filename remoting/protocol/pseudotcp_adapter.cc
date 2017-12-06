@@ -17,6 +17,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
 
 using cricket::PseudoTcp;
@@ -466,10 +467,13 @@ int PseudoTcpAdapter::Read(const scoped_refptr<net::IOBuffer>& buffer,
   return core_->Read(buffer, buffer_size, callback);
 }
 
-int PseudoTcpAdapter::Write(const scoped_refptr<net::IOBuffer>& buffer,
-                            int buffer_size,
-                            const net::CompletionCallback& callback) {
+int PseudoTcpAdapter::Write(
+    const scoped_refptr<net::IOBuffer>& buffer,
+    int buffer_size,
+    const net::CompletionCallback& callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(crbug.com/656607): Handle traffic annotation.
   return core_->Write(buffer, buffer_size, callback);
 }
 
