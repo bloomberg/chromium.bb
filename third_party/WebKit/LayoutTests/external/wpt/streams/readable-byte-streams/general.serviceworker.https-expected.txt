@@ -22,8 +22,10 @@ FAIL ReadableStream with byte source: Mix of auto allocate and BYOB bytes type i
 FAIL ReadableStream with byte source: Automatic pull() after start() and read(view) bytes type is not yet implemented
 FAIL ReadableStream with byte source: enqueue(), getReader(), then read() bytes type is not yet implemented
 FAIL ReadableStream with byte source: Push source that doesn't understand pull signal bytes type is not yet implemented
-FAIL ReadableStream with byte source: read(), but pull() function is not callable bytes type is not yet implemented
-FAIL ReadableStream with byte source: read(view), but pull() function is not callable bytes type is not yet implemented
+FAIL ReadableStream with byte source: pull() function is not callable assert_throws: constructor should throw function "() => new ReadableStream({
+    pull: 'foo',
+    type: 'bytes'
+  })" threw object "RangeError: bytes type is not yet implemented" ("RangeError") expected object "TypeError" ("TypeError")
 FAIL ReadableStream with byte source: enqueue() with Uint16Array, getReader(), then read() bytes type is not yet implemented
 FAIL ReadableStream with byte source: enqueue(), read(view) partially, then read() bytes type is not yet implemented
 FAIL ReadableStream with byte source: getReader(), enqueue(), close(), then read() bytes type is not yet implemented
