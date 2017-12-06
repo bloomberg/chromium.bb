@@ -89,6 +89,9 @@ void Login::OnSettingsExhausted() {
 }
 
 void Login::OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type) {
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+    return;
+
   DVLOG(1) << "Network changed";
   OnNetworkEvent();
 }
