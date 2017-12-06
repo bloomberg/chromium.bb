@@ -119,7 +119,7 @@ bool CdmModule::Initialize(const base::FilePath& cdm_path,
 #else
 bool CdmModule::Initialize(const base::FilePath& cdm_path) {
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
-  DVLOG(2) << __func__ << ": cdm_path = " << cdm_path.value();
+  DVLOG(1) << __func__ << ": cdm_path = " << cdm_path.value();
 
   DCHECK(!was_initialize_called_);
   was_initialize_called_ = true;
@@ -167,9 +167,10 @@ bool CdmModule::Initialize(const base::FilePath& cdm_path) {
   }
 
   // In case of crashes, provide CDM version to facilitate investigation.
-  crash_reporter::InitializeCrashKeys();
-  static crash_reporter::CrashKeyString<32> cdm_version_key("cdm-version");
   std::string cdm_version = get_cdm_version_func_();
+  DVLOG(2) << __func__ << ": cdm_version = " << cdm_version;
+
+  static crash_reporter::CrashKeyString<32> cdm_version_key("cdm-version");
   cdm_version_key.Set(cdm_version);
 
 #if defined(OS_WIN)
