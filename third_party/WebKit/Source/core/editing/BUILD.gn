@@ -345,6 +345,7 @@ jumbo_source_set("unit_tests") {
     "commands/EditingCommandTest.cpp",
     "commands/InsertIncrementalTextCommandTest.cpp",
     "commands/InsertListCommandTest.cpp",
+    "commands/InsertParagraphSeparatorCommandTest.cpp",
     "commands/InsertTextCommandTest.cpp",
     "commands/ReplaceSelectionCommandTest.cpp",
     "commands/SetCharacterDataCommandTest.cpp",

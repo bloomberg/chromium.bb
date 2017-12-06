@@ -32,7 +32,8 @@ namespace blink {
 
 class EditingStyle;
 
-class InsertParagraphSeparatorCommand final : public CompositeEditCommand {
+class CORE_EXPORT InsertParagraphSeparatorCommand final
+    : public CompositeEditCommand {
  public:
   static InsertParagraphSeparatorCommand* Create(
       Document& document,
