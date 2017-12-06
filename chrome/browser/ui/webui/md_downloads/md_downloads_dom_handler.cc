@@ -75,8 +75,7 @@ void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
 
 MdDownloadsDOMHandler::MdDownloadsDOMHandler(
     content::DownloadManager* download_manager, content::WebUI* web_ui)
-    : list_tracker_(download_manager, web_ui),
-      weak_ptr_factory_(this) {
+    : list_tracker_(download_manager, web_ui) {
   // Create our fileicon data source.
   profile_ = Profile::FromBrowserContext(download_manager->GetBrowserContext());
   content::URLDataSource::Add(profile_, new FileIconSource());
@@ -139,12 +138,14 @@ void MdDownloadsDOMHandler::RegisterMessages() {
 void MdDownloadsDOMHandler::OnJavascriptDisallowed() {
   list_tracker_.Stop();
   list_tracker_.Reset();
-  CheckForRemovedFiles();
+  if (!render_process_gone_)
+    CheckForRemovedFiles();
 }
 
 void MdDownloadsDOMHandler::RenderProcessGone(base::TerminationStatus status) {
   // TODO(dbeam): WebUI + WebUIMessageHandler should do this automatically.
   // http://crbug.com/610450
+  render_process_gone_ = true;
   DisallowJavascript();
 }
 
