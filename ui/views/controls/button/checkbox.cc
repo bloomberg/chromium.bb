@@ -147,6 +147,10 @@ void Checkbox::SetChecked(bool checked) {
   UpdateImage();
 }
 
+void Checkbox::SetMultiLine(bool multi_line) {
+  label()->SetMultiLine(multi_line);
+}
+
 // TODO(tetsui): Remove this method and |use_md_| when MD for secondary UI
 // becomes default and IsSecondaryUiMaterial() is tautology.
 bool Checkbox::UseMd() const {

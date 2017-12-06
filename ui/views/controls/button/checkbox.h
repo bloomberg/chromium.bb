@@ -37,6 +37,8 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   virtual void SetChecked(bool checked);
   bool checked() const { return checked_; }
 
+  void SetMultiLine(bool multi_line);
+
  protected:
   // Returns whether MD is enabled. Returns true if |force_md| in the
   // constructor or --secondary-ui-md flag is set.
