@@ -24,6 +24,8 @@ class FakeRemoteGattService;
 // src/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.
 // Implemented on top of the C++ device/bluetooth API, mainly
 // device/bluetooth/bluetooth_adapter.h.
+//
+// Not intended for direct use by clients.  See README.md.
 class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
  public:
   FakeCentral(mojom::CentralState state, mojom::FakeCentralRequest request);

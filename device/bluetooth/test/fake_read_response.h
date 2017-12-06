@@ -11,6 +11,8 @@
 namespace bluetooth {
 
 // Holds the necessary values for dispatching a fake read response.
+//
+// Not intended for direct use by clients.  See README.md.
 class FakeReadResponse {
  public:
   FakeReadResponse(uint16_t gatt_code,
