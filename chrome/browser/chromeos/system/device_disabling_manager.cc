@@ -145,6 +145,17 @@ void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
 }
 
 // static
+bool DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation() {
+  bool device_disabled = false;
+  CrosSettings::Get()->GetBoolean(kDeviceDisabled, &device_disabled);
+  if (device_disabled && HonorDeviceDisablingDuringNormalOperation()) {
+    return true;
+  }
+
+  return false;
+}
+
+// static
 bool DeviceDisablingManager::HonorDeviceDisablingDuringNormalOperation() {
   // Device disabling should be honored when the device is enterprise managed
   // and device disabling has not been turned off by flag.
