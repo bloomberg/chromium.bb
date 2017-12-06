@@ -70,18 +70,6 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   return response;
 }
 
-FetchResponseData* FetchResponseData::CreateCORSFilteredResponse() const {
-  DCHECK_EQ(type_, Type::kDefault);
-  WebHTTPHeaderSet access_control_expose_header_set;
-  String access_control_expose_headers;
-  if (header_list_->Get(HTTPNames::Access_Control_Expose_Headers,
-                        access_control_expose_headers)) {
-    WebCORS::ParseAccessControlExposeHeadersAllowList(
-        access_control_expose_headers, access_control_expose_header_set);
-  }
-  return CreateCORSFilteredResponse(access_control_expose_header_set);
-}
-
 FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
     const WebHTTPHeaderSet& exposed_headers) const {
   DCHECK_EQ(type_, Type::kDefault);
@@ -97,18 +85,13 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
-    const bool explicitly_exposed =
-        exposed_headers.find(name.Ascii().data()) != exposed_headers.end();
     if (WebCORS::IsOnAccessControlResponseHeaderWhitelist(name) ||
-        (explicitly_exposed &&
+        (exposed_headers.find(name.Ascii().data()) != exposed_headers.end() &&
          !FetchUtils::IsForbiddenResponseHeaderName(name))) {
-      if (explicitly_exposed) {
-        response->cors_exposed_header_names_.emplace(name.Ascii().data(),
-                                                     name.Ascii().length());
-      }
       response->header_list_->Append(name, header.second);
     }
   }
+  response->cors_exposed_header_names_ = exposed_headers;
   response->buffer_ = buffer_;
   response->mime_type_ = mime_type_;
   response->internal_response_ = const_cast<FetchResponseData*>(this);

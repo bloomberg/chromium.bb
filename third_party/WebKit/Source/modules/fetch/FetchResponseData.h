@@ -43,12 +43,6 @@ class MODULES_EXPORT FetchResponseData final
   static FetchResponseData* CreateWithBuffer(BodyStreamBuffer*);
 
   FetchResponseData* CreateBasicFilteredResponse() const;
-  // Creates a CORS filtered response, settings the response's cors exposed
-  // header names list to the result of parsing the
-  // Access-Control-Expose-Headers header.
-  FetchResponseData* CreateCORSFilteredResponse() const;
-  // Creates a CORS filtered response with an explicit set of exposed header
-  // names.
   FetchResponseData* CreateCORSFilteredResponse(
       const WebHTTPHeaderSet& exposed_headers) const;
   FetchResponseData* CreateOpaqueFilteredResponse() const;

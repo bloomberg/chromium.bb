@@ -99,6 +99,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
       WebAssociatedURLLoaderClient*,
       const WebAssociatedURLLoaderOptions&,
       network::mojom::FetchRequestMode,
+      network::mojom::FetchCredentialsMode,
       scoped_refptr<WebTaskRunner>);
 
   // ThreadableLoaderClient
@@ -142,6 +143,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
                 WebAssociatedURLLoaderClient*,
                 const WebAssociatedURLLoaderOptions&,
                 network::mojom::FetchRequestMode,
+                network::mojom::FetchCredentialsMode,
                 scoped_refptr<WebTaskRunner>);
 
   void NotifyError(TimerBase*);
@@ -150,6 +152,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
   network::mojom::FetchRequestMode fetch_request_mode_;
+  network::mojom::FetchCredentialsMode credentials_mode_;
   Optional<WebURLError> error_;
 
   TaskRunnerTimer<ClientAdapter> error_timer_;
@@ -165,9 +168,11 @@ WebAssociatedURLLoaderImpl::ClientAdapter::Create(
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
     network::mojom::FetchRequestMode fetch_request_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     scoped_refptr<WebTaskRunner> task_runner) {
   return WTF::WrapUnique(new ClientAdapter(loader, client, options,
-                                           fetch_request_mode, task_runner));
+                                           fetch_request_mode, credentials_mode,
+                                           task_runner));
 }
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
@@ -175,11 +180,13 @@ WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
     network::mojom::FetchRequestMode fetch_request_mode,
+    network::mojom::FetchCredentialsMode credentials_mode,
     scoped_refptr<WebTaskRunner> task_runner)
     : loader_(loader),
       client_(client),
       options_(options),
       fetch_request_mode_(fetch_request_mode),
+      credentials_mode_(credentials_mode),
       error_timer_(std::move(task_runner), this, &ClientAdapter::NotifyError),
       enable_error_notifications_(false),
       did_fail_(false) {
@@ -226,9 +233,8 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
   }
 
-  WebHTTPHeaderSet exposed_headers;
-  WebCORS::ExtractCorsExposedHeaderNamesList(WrappedResourceResponse(response),
-                                             exposed_headers);
+  WebHTTPHeaderSet exposed_headers = WebCORS::ExtractCorsExposedHeaderNamesList(
+      credentials_mode_, WrappedResourceResponse(response));
   WebHTTPHeaderSet blocked_headers;
   for (const auto& header : response.HttpHeaderFields()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.key) ||
@@ -397,9 +403,9 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     task_runner = Platform::Current()->CurrentThread()->GetWebTaskRunner();
   }
   client_ = client;
-  client_adapter_ = ClientAdapter::Create(this, client, options_,
-                                          request.GetFetchRequestMode(),
-                                          std::move(task_runner));
+  client_adapter_ = ClientAdapter::Create(
+      this, client, options_, request.GetFetchRequestMode(),
+      request.GetFetchCredentialsMode(), std::move(task_runner));
 
   if (allow_load) {
     ThreadableLoaderOptions options;

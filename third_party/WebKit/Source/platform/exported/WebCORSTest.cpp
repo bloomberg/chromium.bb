@@ -4,13 +4,29 @@
 
 #include "public/platform/WebCORS.h"
 
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 namespace {
+
+class CORSExposedHeadersTest : public ::testing::Test {
+ public:
+  using CredentialsMode = network::mojom::FetchCredentialsMode;
+
+  WebHTTPHeaderSet Parse(CredentialsMode credentials_mode,
+                         const AtomicString& header) const {
+    ResourceResponse response;
+    response.AddHTTPHeaderField("access-control-expose-headers", header);
+
+    return WebCORS::ExtractCorsExposedHeaderNamesList(
+        credentials_mode, WrappedResourceResponse(response));
+  }
+};
 
 TEST(CreateAccessControlPreflightRequestTest, LexicographicalOrder) {
   WebURLRequest request;
@@ -79,85 +95,81 @@ TEST(CreateAccessControlPreflightRequestTest,
             preflight.HttpHeaderField("Access-Control-Request-Headers"));
 }
 
-TEST(ParseAccessControlExposeHeadersAllowListTest, ValidInput) {
-  WebHTTPHeaderSet set;
-  WebCORS::ParseAccessControlExposeHeadersAllowList("valid", set);
-  EXPECT_EQ(1U, set.size());
-  EXPECT_TRUE(set.find("valid") != set.end());
+TEST_F(CORSExposedHeadersTest, ValidInput) {
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "valid"),
+            WebHTTPHeaderSet({"valid"}));
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("a,b", set);
-  EXPECT_EQ(2U, set.size());
-  EXPECT_TRUE(set.find("a") != set.end());
-  EXPECT_TRUE(set.find("b") != set.end());
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a,b"), WebHTTPHeaderSet({"a", "b"}));
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("   a ,  b ", set);
-  EXPECT_EQ(2U, set.size());
-  EXPECT_TRUE(set.find("a") != set.end());
-  EXPECT_TRUE(set.find("b") != set.end());
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "   a ,  b "),
+            WebHTTPHeaderSet({"a", "b"}));
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList(" \t   \t\t a", set);
-  EXPECT_EQ(1U, set.size());
-  EXPECT_TRUE(set.find("a") != set.end());
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, " \t   \t\t a"),
+            WebHTTPHeaderSet({"a"}));
 }
 
-TEST(ParseAccessControlExposeHeadersAllowListTest, DuplicatedEntries) {
-  WebHTTPHeaderSet set;
-  WebCORS::ParseAccessControlExposeHeadersAllowList("a, a", set);
-  EXPECT_EQ(1U, set.size());
-  EXPECT_TRUE(set.find("a") != set.end());
+TEST_F(CORSExposedHeadersTest, DuplicatedEntries) {
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a"), WebHTTPHeaderSet{"a"});
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("a, a, b", set);
-  EXPECT_EQ(2U, set.size());
-  EXPECT_TRUE(set.find("a") != set.end());
-  EXPECT_TRUE(set.find("b") != set.end());
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a, b"),
+            WebHTTPHeaderSet({"a", "b"}));
 }
 
-TEST(ParseAccessControlExposeHeadersAllowListTest, InvalidInput) {
-  WebHTTPHeaderSet set;
-  WebCORS::ParseAccessControlExposeHeadersAllowList("not valid", set);
-  EXPECT_TRUE(set.empty());
+TEST_F(CORSExposedHeadersTest, InvalidInput) {
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, "not valid").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("///", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, "///").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("/a/", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, "/a/").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList(",", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, ",").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList(" , ", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, " , ").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList(" , a", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, " , a").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("a , ", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, "a , ").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList("", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, "").empty());
 
-  set.clear();
-  WebCORS::ParseAccessControlExposeHeadersAllowList(" ", set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(Parse(CredentialsMode::kOmit, " ").empty());
 
-  set.clear();
   // U+0141 which is 'A' (0x41) + 0x100.
-  WebCORS::ParseAccessControlExposeHeadersAllowList(
-      String::FromUTF8("\xC5\x81"), set);
-  EXPECT_TRUE(set.empty());
+  EXPECT_TRUE(
+      Parse(CredentialsMode::kOmit, AtomicString(String::FromUTF8("\xC5\x81")))
+          .empty());
+}
+
+TEST_F(CORSExposedHeadersTest, Wildcard) {
+  ResourceResponse response;
+  response.AddHTTPHeaderField("access-control-expose-headers", "a, b, *");
+  response.AddHTTPHeaderField("b", "-");
+  response.AddHTTPHeaderField("c", "-");
+  response.AddHTTPHeaderField("d", "-");
+  response.AddHTTPHeaderField("*", "-");
+
+  EXPECT_EQ(
+      WebCORS::ExtractCorsExposedHeaderNamesList(
+          CredentialsMode::kOmit, WrappedResourceResponse(response)),
+      WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
+
+  EXPECT_EQ(
+      WebCORS::ExtractCorsExposedHeaderNamesList(
+          CredentialsMode::kSameOrigin, WrappedResourceResponse(response)),
+      WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
+}
+
+TEST_F(CORSExposedHeadersTest, Asterisk) {
+  ResourceResponse response;
+  response.AddHTTPHeaderField("access-control-expose-headers", "a, b, *");
+  response.AddHTTPHeaderField("b", "-");
+  response.AddHTTPHeaderField("c", "-");
+  response.AddHTTPHeaderField("d", "-");
+  response.AddHTTPHeaderField("*", "-");
+
+  EXPECT_EQ(WebCORS::ExtractCorsExposedHeaderNamesList(
+                CredentialsMode::kInclude, WrappedResourceResponse(response)),
+            WebHTTPHeaderSet({"a", "b", "*"}));
 }
 
 }  // namespace

@@ -474,9 +474,9 @@ void FetchManager::Loader::DidReceiveResponse(
         tainted_response = response_data->CreateBasicFilteredResponse();
         break;
       case FetchRequestData::kCORSTainting: {
-        WebHTTPHeaderSet header_names;
-        WebCORS::ExtractCorsExposedHeaderNamesList(
-            WrappedResourceResponse(response), header_names);
+        WebHTTPHeaderSet header_names =
+            WebCORS::ExtractCorsExposedHeaderNamesList(
+                request_->Credentials(), WrappedResourceResponse(response));
         tainted_response =
             response_data->CreateCORSFilteredResponse(header_names);
         break;
