@@ -86,8 +86,7 @@ class FieldTrialTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FieldTrialTest);
 };
 
-// Test registration, and also check that destructors are called for trials
-// (and that Valgrind doesn't catch us leaking).
+// Test registration, and also check that destructors are called for trials.
 TEST_F(FieldTrialTest, Registration) {
   const char name1[] = "name 1 test";
   const char name2[] = "name 2 test";

@@ -204,7 +204,7 @@ class BASE_EXPORT CommandLine {
   void AppendArguments(const CommandLine& other, bool include_program);
 
   // Insert a command before the current command.
-  // Common for debuggers, like "valgrind" or "gdb --args".
+  // Common for debuggers, like "gdb --args".
   void PrependWrapper(const StringType& wrapper);
 
 #if defined(OS_WIN)

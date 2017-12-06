@@ -871,7 +871,6 @@ jumbo_component("base") {
     "third_party/nspr/prtime.cc",
     "third_party/nspr/prtime.h",
     "third_party/superfasthash/superfasthash.c",
-    "third_party/valgrind/memcheck.h",
     "threading/platform_thread.h",
     "threading/platform_thread_android.cc",
     "threading/platform_thread_internal_posix.cc",

@@ -891,8 +891,10 @@ TEST(ObserverListTest, IteratorOutlivesList) {
 
   for (auto& observer : *observer_list)
     observer.Observe(0);
-  // If this test fails, there'll be Valgrind errors when this function goes out
-  // of scope.
+
+  // There are no EXPECT* statements for this test, if we catch
+  // use-after-free errors for observer_list (eg with ASan) then
+  // this test has failed.  See http://crbug.com/85296.
 }
 
 TEST(ObserverListTest, BasicStdIterator) {

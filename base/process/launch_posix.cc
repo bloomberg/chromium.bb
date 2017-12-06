@@ -38,8 +38,6 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/third_party/valgrind/valgrind.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -287,14 +285,8 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
     if (fd == dir_fd)
       continue;
 
-    // When running under Valgrind, Valgrind opens several FDs for its
-    // own use and will complain if we try to close them.  All of
-    // these FDs are >= |max_fds|, so we can check against that here
-    // before closing.  See https://bugs.kde.org/show_bug.cgi?id=191758
-    if (fd < static_cast<int>(max_fds)) {
-      int ret = IGNORE_EINTR(close(fd));
-      DPCHECK(ret == 0);
-    }
+    int ret = IGNORE_EINTR(close(fd));
+    DPCHECK(ret == 0);
   }
 }
 
@@ -749,25 +741,6 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
 
   if (clone_tls_used || invalid_ctid || invalid_ptid || clone_vm_used) {
     RAW_LOG(FATAL, "Invalid usage of ForkWithFlags");
-  }
-
-  // Valgrind's clone implementation does not support specifiying a child_stack
-  // without CLONE_VM, so we cannot use libc's clone wrapper when running under
-  // Valgrind. As a result, the libc pid cache may be incorrect under Valgrind.
-  // See crbug.com/442817 for more details.
-  if (RunningOnValgrind()) {
-    // See kernel/fork.c in Linux. There is different ordering of sys_clone
-    // parameters depending on CONFIG_CLONE_BACKWARDS* configuration options.
-#if defined(ARCH_CPU_X86_64)
-    return syscall(__NR_clone, flags, nullptr, ptid, ctid, nullptr);
-#elif defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARM_FAMILY) ||        \
-    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_S390_FAMILY) || \
-    defined(ARCH_CPU_PPC64_FAMILY)
-    // CONFIG_CLONE_BACKWARDS defined.
-    return syscall(__NR_clone, flags, nullptr, ptid, nullptr, ctid);
-#else
-#error "Unsupported architecture"
-#endif
   }
 
   jmp_buf env;

@@ -29,7 +29,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -884,11 +883,8 @@ TEST_F(ProcessUtilTest, LaunchProcess) {
 
 #if defined(OS_LINUX)
   // Test a non-trival value for clone_flags.
-  // Don't test on Valgrind as it has limited support for clone().
-  if (!RunningOnValgrind()) {
-    EXPECT_EQ("wibble\n", TestLaunchProcess(echo_base_test, env_changes,
-                                            no_clear_environ, CLONE_FS));
-  }
+  EXPECT_EQ("wibble\n", TestLaunchProcess(echo_base_test, env_changes,
+                                          no_clear_environ, CLONE_FS));
 
   EXPECT_EQ(
       "BASE_TEST=wibble\n",
@@ -1087,8 +1083,7 @@ MULTIPROCESS_TEST_MAIN(CheckPidProcess) {
 
 #if defined(CLONE_NEWUSER) && defined(CLONE_NEWPID)
 TEST_F(ProcessUtilTest, CloneFlags) {
-  if (RunningOnValgrind() ||
-      !base::PathExists(FilePath("/proc/self/ns/user")) ||
+  if (!base::PathExists(FilePath("/proc/self/ns/user")) ||
       !base::PathExists(FilePath("/proc/self/ns/pid"))) {
     // User or PID namespaces are not supported.
     return;
@@ -1107,12 +1102,6 @@ TEST_F(ProcessUtilTest, CloneFlags) {
 #endif  // defined(CLONE_NEWUSER) && defined(CLONE_NEWPID)
 
 TEST(ForkWithFlagsTest, UpdatesPidCache) {
-  // The libc clone function, which allows ForkWithFlags to keep the pid cache
-  // up to date, does not work on Valgrind.
-  if (RunningOnValgrind()) {
-    return;
-  }
-
   // Warm up the libc pid cache, if there is one.
   ASSERT_EQ(syscall(__NR_getpid), getpid());
 
