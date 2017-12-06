@@ -477,30 +477,18 @@ void BufferFeeder::TestAudioConfigs() {
   // TODO(kmackay) Determine required sample formats/channel numbers.
   config.sample_format = kSampleFormatS16;
   config.bytes_per_channel = 2;
+  config.codec = kCodecPCM;
+  EXPECT_TRUE(audio_decoder->SetConfig(config))
+      << "Audio decoder does not accept kCodecPCM";
+  config.codec = kCodecPCM_S16BE;
+  EXPECT_TRUE(audio_decoder->SetConfig(config))
+      << "Audio decoder does not accept kCodecPCM_S16BE";
   config.codec = kCodecAAC;
   EXPECT_TRUE(audio_decoder->SetConfig(config))
       << "Audio decoder does not accept kCodecAAC";
   config.codec = kCodecMP3;
   EXPECT_TRUE(audio_decoder->SetConfig(config))
       << "Audio decoder does not accept kCodecMP3";
-
-  // Test optional codecs.
-  // TODO(kmackay) Make sure other parts of config are correct for each codec.
-  config.codec = kCodecPCM_S16BE;
-  if (!audio_decoder->SetConfig(config))
-    LOG(INFO) << "Audio decoder does not accept kCodecPCM_S16BE";
-  config.codec = kCodecOpus;
-  if (!audio_decoder->SetConfig(config))
-    LOG(INFO) << "Audio decoder does not accept kCodecOpus";
-  config.codec = kCodecEAC3;
-  if (!audio_decoder->SetConfig(config))
-    LOG(INFO) << "Audio decoder does not accept kCodecEAC3";
-  config.codec = kCodecAC3;
-  if (!audio_decoder->SetConfig(config))
-    LOG(INFO) << "Audio decoder does not accept kCodecAC3";
-  config.codec = kCodecFLAC;
-  if (!audio_decoder->SetConfig(config))
-    LOG(INFO) << "Audio decoder does not accept kCodecFLAC";
 
   // Test supported sample rates.
   const int kRequiredSampleRates[] = {8000,  11025, 12000, 16000, 22050,
@@ -534,11 +522,12 @@ void BufferFeeder::TestAudioVolume() {
 void BufferFeeder::TestVideoConfigs() {
   MediaPipelineBackend::VideoDecoder* video_decoder =
       static_cast<MediaPipelineBackend::VideoDecoder*>(decoder_);
-  VideoConfig config;
-  config.codec = kVideoCodecUnknown;
   // Set invalid config first, to test that the decoder still accepts valid
   // config after an invalid config.
+  VideoConfig config;
+  config.codec = kVideoCodecUnknown;
   video_decoder->SetConfig(config);
+
   EXPECT_TRUE(video_decoder->SetConfig(video_config_));
 }
 
