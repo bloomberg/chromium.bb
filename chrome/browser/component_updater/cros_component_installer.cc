@@ -46,6 +46,8 @@
      {"sha2hashstr",                                                         \
       "5714811c04f0a63aac96b39096faa759ace4c04e9b68291e7c9716128f5a2722"}}}};
 
+#define COMPONENTS_ROOT_PATH "cros-components"
+
 using content::BrowserThread;
 
 namespace component_updater {
@@ -79,10 +81,23 @@ bool CrOSComponentInstallerPolicy::RequiresNetworkEncryption() const {
   return true;
 }
 
+void CleanupOldInstalls(const std::string& name) {
+  // Clean up components installed at old path.
+  base::FilePath path;
+  if (!PathService::Get(DIR_COMPONENT_USER, &path))
+    return;
+  path = path.Append(name);
+  if (base::PathExists(path))
+    base::DeleteFile(path, true);
+}
+
 update_client::CrxInstaller::Result
 CrOSComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
+  // TODO(xiaochu): remove this at M66 (crbug.com/792203).
+  CleanupOldInstalls(name);
+
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
@@ -109,7 +124,8 @@ bool CrOSComponentInstallerPolicy::VerifyInstallation(
 }
 
 base::FilePath CrOSComponentInstallerPolicy::GetRelativeInstallDir() const {
-  return base::FilePath(name);
+  base::FilePath path = base::FilePath(COMPONENTS_ROOT_PATH);
+  return path.Append(name);
 }
 
 void CrOSComponentInstallerPolicy::GetHash(std::vector<uint8_t>* hash) const {
@@ -242,6 +258,7 @@ std::vector<ComponentConfig> CrOSComponent::GetInstalledComponents() {
   if (!PathService::Get(DIR_COMPONENT_USER, &root))
     return configs;
 
+  root = root.Append(COMPONENTS_ROOT_PATH);
   const ConfigMap components = CONFIG_MAP_CONTENT;
   for (auto it : components) {
     const std::string& name = it.first;
