@@ -509,7 +509,7 @@ AssertionResult FrameParts::AppendString(Http2StringPiece source,
   target->append(source.data(), source.size());
   if (opt_length != nullptr) {
     VERIFY_TRUE(*opt_length) << "Length is not set yet\n" << *this;
-    VERIFY_LE(target->size(), static_cast<size_t>(opt_length->value()))
+    VERIFY_LE(target->size(), opt_length->value())
         << "String too large; source.size() = " << source.size() << "\n"
         << *this;
   }
