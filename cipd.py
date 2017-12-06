@@ -177,7 +177,6 @@ class CipdClient(object):
               'Could not install packages; subdir %r contains newline' % subdir)
           os.write(ensure_file_handle, '@Subdir %s\n' % (subdir,))
           for pkg, version in pkgs:
-            pkg = render_package_name_template(pkg)
             os.write(ensure_file_handle, '%s %s\n' % (pkg, version))
       finally:
         os.close(ensure_file_handle)
@@ -266,13 +265,6 @@ def get_platform():
   return '%s-%s' % (os_name, arch)
 
 
-def render_package_name_template(template):
-  """Expands template variables in a CIPD package name template."""
-  return (template
-      .lower()  # Package names are always lower case
-      .replace('${platform}', get_platform()))
-
-
 def _check_response(res, fmt, *args):
   """Raises Error if response is bad."""
   if not res:
@@ -307,7 +299,6 @@ def get_client_fetch_url(service_url, package_name, instance_id, timeout=None):
     Error if cannot retrieve fetch URL.
   """
   # Fetch the URL of the binary from CIPD backend.
-  package_name = render_package_name_template(package_name)
   url = '%s/_ah/api/repo/v1/client?%s' % (service_url, urllib.urlencode({
     'package_name': package_name,
     'instance_id': instance_id,
@@ -353,7 +344,7 @@ def _fetch_cipd_client(disk_cache, instance_id, fetch_url, timeoutfn):
 
 
 @contextlib.contextmanager
-def get_client(service_url, package_name, version, cache_dir, timeout=None):
+def get_client(service_url, package_template, version, cache_dir, timeout=None):
   """Returns a context manager that yields a CipdClient. A blocking call.
 
   Upon exit from the context manager, the client binary may be deleted
@@ -361,7 +352,7 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
 
   Args:
     service_url (str): URL of the CIPD backend.
-    package_name (str): package name template of the CIPD client.
+    package_template (str): package name template of the CIPD client.
     version (str): version of CIPD client package.
     cache_dir: directory to store instance cache, version cache
       and a hardlink to the client binary.
@@ -375,7 +366,9 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
   """
   timeoutfn = tools.sliding_timeout(timeout)
 
-  package_name = render_package_name_template(package_name)
+  # Package names are always lower case.
+  # TODO(maruel): Assert instead?
+  package_name = package_template.lower().replace('${platform}', get_platform())
 
   # Resolve version to instance id.
   # Is it an instance id already? They look like HEX SHA1.
