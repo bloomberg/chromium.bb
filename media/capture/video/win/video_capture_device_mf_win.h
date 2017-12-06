@@ -3,13 +3,12 @@
 // found in the LICENSE file.
 
 // Windows specific implementation of VideoCaptureDevice.
-// MediaFoundation is used for capturing. MediaFoundation provides its own
-// threads for capturing.
+// DirectShow is used for capturing. DirectShow provide its own threads
+// for capturing.
 
 #ifndef MEDIA_CAPTURE_VIDEO_WIN_VIDEO_CAPTURE_DEVICE_MF_WIN_H_
 #define MEDIA_CAPTURE_VIDEO_WIN_VIDEO_CAPTURE_DEVICE_MF_WIN_H_
 
-#include <mfcaptureengine.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <stdint.h>
@@ -17,9 +16,9 @@
 
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/synchronization/lock.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device.h"
 
@@ -31,12 +30,10 @@ class Location;
 
 namespace media {
 
-class MFVideoCallback;
+class MFReaderCallback;
 
-const DWORD kPreferredVideoPreviewStream = static_cast<DWORD>(
-    MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_VIDEO_PREVIEW);
-const DWORD kPreferredPhotoStream =
-    static_cast<DWORD>(MF_CAPTURE_ENGINE_PREFERRED_SOURCE_STREAM_FOR_PHOTO);
+const DWORD kFirstVideoStream =
+    static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM);
 
 class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
  public:
@@ -54,10 +51,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
       const VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
-  void TakePhoto(TakePhotoCallback callback) override;
-  void GetPhotoState(GetPhotoStateCallback callback) override;
-  void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
-                       SetPhotoOptionsCallback callback) override;
 
   // Captured new video data.
   void OnIncomingCapturedData(const uint8_t* data,
@@ -65,33 +58,19 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
                               int rotation,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp);
-  void OnEvent(IMFMediaEvent* media_event);
-
-  using CreateMFPhotoCallbackCB =
-      base::Callback<scoped_refptr<IMFCaptureEngineOnSampleCallback>(
-          VideoCaptureDevice::TakePhotoCallback callback,
-          VideoCaptureFormat format)>;
-
-  void set_create_mf_photo_callback_for_testing(CreateMFPhotoCallbackCB cb) {
-    create_mf_photo_callback_ = cb;
-  }
 
  private:
   void OnError(const base::Location& from_here, HRESULT hr);
 
   VideoCaptureDeviceDescriptor descriptor_;
-  CreateMFPhotoCallbackCB create_mf_photo_callback_;
-  scoped_refptr<MFVideoCallback> video_callback_;
+  Microsoft::WRL::ComPtr<IMFActivate> device_;
+  scoped_refptr<MFReaderCallback> callback_;
 
-  // Guards the below variables from concurrent access between methods running
-  // on |sequence_checker_| and calls to OnIncomingCapturedData() and OnEvent()
-  // made by MediaFoundation on threads outside of our control.
-  base::Lock lock_;
-
+  base::Lock lock_;  // Used to guard the below variables.
   std::unique_ptr<VideoCaptureDevice::Client> client_;
-  Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
-  VideoCaptureFormat capture_video_format_;
-  bool is_started_;
+  Microsoft::WRL::ComPtr<IMFSourceReader> reader_;
+  VideoCaptureFormat capture_format_;
+  bool capture_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
