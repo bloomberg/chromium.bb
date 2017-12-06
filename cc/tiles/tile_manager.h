@@ -323,6 +323,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
     std::vector<PrioritizedTile> tiles_to_raster;
     std::vector<PrioritizedTile> tiles_to_process_for_images;
+    // A vector of additional images to be decoded for prepaint, but that
+    // are not necessarily associated with any tile.
+    std::vector<DrawImage> extra_prepaint_images;
     CheckerImageTracker::ImageDecodeQueue checker_image_decode_queue;
   };
 
@@ -331,7 +334,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   scoped_refptr<TileTask> CreateRasterTask(
       const PrioritizedTile& prioritized_tile,
       const gfx::ColorSpace& color_space,
-      CheckerImageTracker::ImageDecodeQueue* checker_image_decode_queue);
+      PrioritizedWorkToSchedule* work_to_schedule);
 
   std::unique_ptr<EvictionTilePriorityQueue>
   FreeTileResourcesUntilUsageIsWithinLimit(

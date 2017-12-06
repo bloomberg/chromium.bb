@@ -2510,6 +2510,89 @@ TEST_F(CheckerImagingTileManagerTest,
   EXPECT_FALSE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
 }
 
+class EmptyCacheTileManagerTest : public TileManagerTest {
+ public:
+  LayerTreeSettings CreateSettings() override {
+    LayerTreeSettings settings;
+    settings.decoded_image_working_set_budget_bytes = 0;
+    return settings;
+  }
+};
+
+TEST_F(EmptyCacheTileManagerTest, AtRasterOnScreenTileRasterTasks) {
+  const gfx::Size layer_bounds(500, 500);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_fill_with_nonsolid_color(true);
+
+  int dimension = 500;
+  PaintImage image =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  recording_source->add_draw_image(image, gfx::Point(0, 0));
+
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource();
+
+  gfx::Size tile_size(500, 500);
+  Region invalidation((gfx::Rect(layer_bounds)));
+  SetupPendingTree(raster_source, tile_size, invalidation);
+
+  PictureLayerTilingSet* tiling_set =
+      pending_layer()->picture_layer_tiling_set();
+  PictureLayerTiling* pending_tiling = tiling_set->tiling_at(0);
+  pending_tiling->set_resolution(HIGH_RESOLUTION);
+  pending_tiling->CreateAllTilesForTesting();
+  pending_tiling->SetTilePriorityRectsForTesting(
+      gfx::Rect(layer_bounds),   // Visible rect.
+      gfx::Rect(layer_bounds),   // Skewport rect.
+      gfx::Rect(layer_bounds),   // Soon rect.
+      gfx::Rect(layer_bounds));  // Eventually rect.
+
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  // There will be a tile raster task and an image decode task.
+  EXPECT_TRUE(pending_tiling->TileAt(0, 0)->HasRasterTask());
+  EXPECT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+}
+
+TEST_F(EmptyCacheTileManagerTest, AtRasterPrepaintTileRasterTasksSkipped) {
+  const gfx::Size layer_bounds(500, 500);
+
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  recording_source->set_fill_with_nonsolid_color(true);
+
+  int dimension = 500;
+  PaintImage image =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  recording_source->add_draw_image(image, gfx::Point(0, 0));
+
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource();
+
+  gfx::Size tile_size(500, 500);
+  Region invalidation((gfx::Rect(layer_bounds)));
+  SetupPendingTree(raster_source, tile_size, invalidation);
+
+  PictureLayerTilingSet* tiling_set =
+      pending_layer()->picture_layer_tiling_set();
+  PictureLayerTiling* pending_tiling = tiling_set->tiling_at(0);
+  pending_tiling->set_resolution(HIGH_RESOLUTION);
+  pending_tiling->CreateAllTilesForTesting();
+  pending_tiling->SetTilePriorityRectsForTesting(
+      gfx::Rect(),  // An empty visual rect leads to the tile being pre-paint.
+      gfx::Rect(layer_bounds),   // Skewport rect.
+      gfx::Rect(layer_bounds),   // Soon rect.
+      gfx::Rect(layer_bounds));  // Eventually rect.
+
+  host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+  // There will be no tile raster task, but there will be an image decode task.
+  EXPECT_FALSE(pending_tiling->TileAt(0, 0)->HasRasterTask());
+  EXPECT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+}
+
 TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
   const gfx::Size layer_bounds(900, 900);
 
