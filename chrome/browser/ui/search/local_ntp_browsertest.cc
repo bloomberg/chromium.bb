@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
@@ -56,62 +55,6 @@ class LocalNTPTest : public InProcessBrowserTest {
  public:
   LocalNTPTest() {}
 
-  // Navigates the active tab to chrome://newtab and waits until the NTP is
-  // fully loaded. Note that simply waiting for a navigation is not enough,
-  // since the MV iframe receives the tiles asynchronously.
-  void NavigateToNTPAndWaitUntilLoaded() {
-    content::WebContents* active_tab =
-        browser()->tab_strip_model()->GetActiveWebContents();
-
-    // Attach a message queue *before* navigating to the NTP, to make sure we
-    // don't miss the 'loaded' message due to some race condition.
-    content::DOMMessageQueue msg_queue(active_tab);
-
-    // Navigate to the NTP.
-    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-    ASSERT_TRUE(search::IsInstantNTP(active_tab));
-    ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-              active_tab->GetController().GetVisibleEntry()->GetURL());
-
-    // At this point, the MV iframe may or may not have been fully loaded. Once
-    // it loads, it sends a 'loaded' postMessage to the page. Check if the page
-    // has already received that, and if not start listening for it. It's
-    // important that these two things happen in the same JS invocation, since
-    // otherwise we might miss the message.
-    bool mv_tiles_loaded = false;
-    ASSERT_TRUE(instant_test_utils::GetBoolFromJS(active_tab,
-                                                  R"js(
-        (function() {
-          if (tilesAreLoaded) {
-            return true;
-          }
-          window.addEventListener('message', function(event) {
-            if (event.data.cmd == 'loaded') {
-              domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
-            }
-          });
-          return false;
-        })()
-                                                  )js",
-                                                  &mv_tiles_loaded));
-
-    std::string message;
-    // Get rid of the message that the GetBoolFromJS call produces.
-    ASSERT_TRUE(msg_queue.PopMessage(&message));
-
-    if (mv_tiles_loaded) {
-      // The tiles are already loaded, i.e. we missed the 'loaded' message. All
-      // is well.
-      return;
-    }
-
-    // Not loaded yet. Wait for the "NavigateToNTPAndWaitUntilLoaded" message.
-    ASSERT_TRUE(msg_queue.WaitForMessage(&message));
-    ASSERT_EQ("\"NavigateToNTPAndWaitUntilLoaded\"", message);
-    // There shouldn't be any other messages.
-    ASSERT_FALSE(msg_queue.PopMessage(&message));
-  }
-
  private:
   void SetUp() override {
     feature_list_.InitAndEnableFeature(features::kUseGoogleLocalNtp);
@@ -140,9 +83,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
 
   // Navigate somewhere else in the same tab.
   content::TestNavigationObserver elsewhere_observer(active_tab);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), other_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), other_url);
   elsewhere_observer.Wait();
   ASSERT_TRUE(elsewhere_observer.last_navigation_succeeded());
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
@@ -171,10 +112,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   EXPECT_FALSE(result);
 
   // Navigate to a new NTP instance.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Now the API should be available again.
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
@@ -286,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Navigating to an NTP should trigger an update of the MV items.
-  NavigateToNTPAndWaitUntilLoaded();
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
 
   // Make sure the same number of items is available in JS.
@@ -326,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIAfterDownload) {
       InstantServiceFactory::GetForProfile(browser()->profile()));
 
   // Navigating to an NTP should trigger an update of the MV items.
-  NavigateToNTPAndWaitUntilLoaded();
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount);
 
   // Download some file.
@@ -394,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   base::HistogramTester histograms;
 
   // Navigate to the NTP.
-  NavigateToNTPAndWaitUntilLoaded();
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   bool is_google = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
@@ -446,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   base::HistogramTester histograms;
 
   // Navigate to the NTP.
-  NavigateToNTPAndWaitUntilLoaded();
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   bool is_google = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
@@ -496,12 +434,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
   content::ConsoleObserverDelegate console_observer(active_tab, "*");
   active_tab->SetDelegate(&console_observer);
 
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
-  // Make sure it's actually in French.
+  // Navigate to the NTP and make sure it's actually in French.
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   ASSERT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
 
   // We shouldn't have gotten any console error messages.
@@ -527,9 +461,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ShouldNotTrackBlinkUseCounterForNTP) {
   EXPECT_EQ(nullptr,
             base::StatisticsRecorder::FindHistogram(kFeaturesHistogramName));
   // Navigate somewhere else in the same tab.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), other_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), other_url);
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
   // Navigate back to NTP.
   content::TestNavigationObserver back_observer(active_tab);
@@ -547,10 +479,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ShouldNotTrackBlinkUseCounterForNTP) {
   fwd_observer.Wait();
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
   // Navigate to a new NTP instance.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kChromeUINewTabURL),
-      WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // There should be 2 counts of PageVisits.
   histogram_tester.ExpectBucketCount(
@@ -595,7 +524,7 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  NavigateToNTPAndWaitUntilLoaded();
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Get the iframe and check that the tiles loaded correctly.
   content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
@@ -703,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
   content::TestNavigationThrottleInserter throttle_inserter(
       active_tab, base::BindRepeating(&TestNavigationThrottle::Create));
 
-  NavigateToNTPAndWaitUntilLoaded();
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   // Navigate to some non-NTP URL, which will result in an interstitial.
