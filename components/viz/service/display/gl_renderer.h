@@ -156,6 +156,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   friend class GLRendererCopierPixelTest;
   friend class GLRendererShaderPixelTest;
   friend class GLRendererShaderTest;
+  friend class GLRendererTest;
 
   // If any of the following functions returns false, then it means that drawing
   // is not possible.

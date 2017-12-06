@@ -113,6 +113,7 @@ bool OverlayProcessor::ProcessForDCLayers(
 void OverlayProcessor::ProcessForOverlays(
     cc::DisplayResourceProvider* resource_provider,
     RenderPassList* render_passes,
+    const SkMatrix44& output_color_matrix,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
     cc::OverlayCandidateList* candidates,
@@ -158,9 +159,11 @@ void OverlayProcessor::ProcessForOverlays(
 
   // Only if that fails, attempt hardware overlay strategies.
   for (const auto& strategy : strategies_) {
-    if (!strategy->Attempt(resource_provider, render_passes->back().get(),
-                           candidates, content_bounds))
+    if (!strategy->Attempt(output_color_matrix, resource_provider,
+                           render_passes->back().get(), candidates,
+                           content_bounds)) {
       continue;
+    }
 
     UpdateDamageRect(candidates, previous_frame_underlay_rect, damage_rect);
     break;

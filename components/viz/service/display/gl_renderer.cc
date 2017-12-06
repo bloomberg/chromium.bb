@@ -2993,6 +2993,14 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
       GetColorTransform(src_color_space, dst_color_space);
   program_key.SetColorTransform(color_transform);
 
+  const bool is_root_render_pass =
+      current_frame()->current_render_pass == current_frame()->root_render_pass;
+  const SkMatrix44& output_color_matrix = output_surface_->color_matrix();
+  const bool has_output_color_matrix =
+      is_root_render_pass && !output_color_matrix.isIdentity();
+
+  program_key.set_has_output_color_matrix(has_output_color_matrix);
+
   // Create and set the program if needed.
   std::unique_ptr<Program>& program = program_cache_[program_key];
   if (!program) {
@@ -3028,6 +3036,14 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
     gl_->Uniform1i(current_program_->lut_texture_location(), 5);
     gl_->Uniform1f(current_program_->lut_size_location(), lut.size);
     gl_->ActiveTexture(GL_TEXTURE0);
+  }
+
+  if (has_output_color_matrix) {
+    DCHECK_NE(current_program_->output_color_matrix_location(), -1);
+    float matrix[16];
+    output_color_matrix.asColMajorf(matrix);
+    gl_->UniformMatrix4fv(current_program_->output_color_matrix_location(), 1,
+                          false, matrix);
   }
 }
 

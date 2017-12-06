@@ -45,6 +45,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
+  void SetDisplayColorMatrix(const gfx::Transform& color_matrix) override;
   void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
                             const gfx::ColorSpace& device_color_space) override;
   void SetOutputIsSecure(bool secure) override;

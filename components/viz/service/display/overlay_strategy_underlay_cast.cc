@@ -18,6 +18,7 @@ OverlayStrategyUnderlayCast::OverlayStrategyUnderlayCast(
 OverlayStrategyUnderlayCast::~OverlayStrategyUnderlayCast() {}
 
 bool OverlayStrategyUnderlayCast::Attempt(
+    const SkMatrix44& output_color_matrix,
     cc::DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     cc::OverlayCandidateList* candidate_list,
@@ -36,8 +37,8 @@ bool OverlayStrategyUnderlayCast::Attempt(
     bool is_underlay = false;
     if (!found_underlay) {
       cc::OverlayCandidate candidate;
-      is_underlay = cc::OverlayCandidate::FromDrawQuad(resource_provider, quad,
-                                                       &candidate);
+      is_underlay = cc::OverlayCandidate::FromDrawQuad(
+          resource_provider, output_color_matrix, quad, &candidate);
       found_underlay = is_underlay;
     }
 
@@ -55,7 +56,8 @@ bool OverlayStrategyUnderlayCast::Attempt(
   }
 
   const bool result = OverlayStrategyUnderlay::Attempt(
-      resource_provider, render_pass, candidate_list, content_bounds);
+      output_color_matrix, resource_provider, render_pass, candidate_list,
+      content_bounds);
   DCHECK(content_bounds && content_bounds->empty());
   DCHECK(result == found_underlay);
   if (found_underlay) {

@@ -52,6 +52,11 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
   display_->SetVisible(visible);
 }
 
+void RootCompositorFrameSinkImpl::SetDisplayColorMatrix(
+    const gfx::Transform& color_matrix) {
+  display_->SetColorMatrix(color_matrix.matrix());
+}
+
 void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
     const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& device_color_space) {

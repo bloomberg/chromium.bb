@@ -469,6 +469,8 @@ void FragmentShader::Init(GLES2Interface* context,
     uniforms.push_back("lut_texture");
     uniforms.push_back("lut_size");
   }
+  if (has_output_color_matrix_)
+    uniforms.emplace_back("output_color_matrix");
 
   locations.resize(uniforms.size());
 
@@ -525,6 +527,10 @@ void FragmentShader::Init(GLES2Interface* context,
     lut_texture_location_ = locations[index++];
     lut_size_location_ = locations[index++];
   }
+
+  if (has_output_color_matrix_)
+    output_color_matrix_location_ = locations[index++];
+
   DCHECK_EQ(index, locations.size());
 }
 
@@ -1009,6 +1015,13 @@ std::string FragmentShader::GetShaderSource() const {
   if (swizzle_mode_ == DO_SWIZZLE) {
     SRC("// Apply swizzle");
     SRC("texColor = texColor.bgra;\n");
+  }
+
+  // Finally apply the output color matrix to texColor.
+  if (has_output_color_matrix_) {
+    HDR("uniform mat4 output_color_matrix;");
+    SRC("// Apply the output color matrix");
+    SRC("texColor = output_color_matrix * texColor;");
   }
 
   // Include header text for alpha.

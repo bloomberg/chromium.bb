@@ -108,6 +108,11 @@ class VIZ_SERVICE_EXPORT ProgramKey {
 
   void SetColorTransform(const gfx::ColorTransform* transform);
 
+  bool has_output_color_matrix() const { return has_output_color_matrix_; }
+  void set_has_output_color_matrix(bool value) {
+    has_output_color_matrix_ = value;
+  }
+
  private:
   friend struct ProgramKeyHash;
   friend class Program;
@@ -134,6 +139,8 @@ class VIZ_SERVICE_EXPORT ProgramKey {
   const gfx::ColorTransform* color_transform_ = nullptr;
 
   bool has_tex_clamp_rect_ = false;
+
+  bool has_output_color_matrix_ = false;
 };
 
 struct ProgramKeyHash {
@@ -153,7 +160,8 @@ struct ProgramKeyHash {
            (static_cast<size_t>(key.yuv_alpha_texture_mode_) << 24) ^
            (static_cast<size_t>(key.uv_texture_mode_) << 25) ^
            (static_cast<size_t>(key.color_conversion_mode_) << 26) ^
-           (static_cast<size_t>(key.has_tex_clamp_rect_) << 28);
+           (static_cast<size_t>(key.has_tex_clamp_rect_) << 28) ^
+           (static_cast<size_t>(key.has_output_color_matrix_) << 29);
   }
 };
 
@@ -174,6 +182,7 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
     fragment_shader_.mask_for_background_ = key.mask_for_background_;
     fragment_shader_.color_conversion_mode_ = key.color_conversion_mode_;
     fragment_shader_.color_transform_ = key.color_transform_;
+    fragment_shader_.has_output_color_matrix_ = key.has_output_color_matrix_;
 
     switch (key.type_) {
       case PROGRAM_TYPE_DEBUG_BORDER:
@@ -295,6 +304,9 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
   }
   int uv_clamp_rect_location() const {
     return fragment_shader_.uv_clamp_rect_location_;
+  }
+  int output_color_matrix_location() const {
+    return fragment_shader_.output_color_matrix_location_;
   }
 
  private:
