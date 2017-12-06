@@ -2408,7 +2408,6 @@ crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-003.xht [
 crbug.com/788337 external/wpt/css/css-multicol/multicol-count-computed-005.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-height-block-child-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-fraction-003.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-style-inset-001.xht [ Failure ]
