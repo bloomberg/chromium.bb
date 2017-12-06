@@ -125,13 +125,12 @@ NSString* const kKeychainPairingSecret = @"kKeychainPairingSecret";
   if (mapString &&
       [mapString respondsToSelector:@selector(dataUsingEncoding:)]) {
     NSData* data = [mapString dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary* pairingMap;
-    if (data) {
-      pairingMap = (NSDictionary*)[NSJSONSerialization
-          JSONObjectWithData:data
-                     options:NSJSONReadingMutableContainers
-                       error:&err];
-    }
+    NSDictionary* pairingMap =
+        data ? (NSDictionary*)[NSJSONSerialization
+                   JSONObjectWithData:data
+                              options:NSJSONReadingMutableContainers
+                                error:&err]
+             : @{};
     if (!err) {
       return [NSMutableDictionary dictionaryWithDictionary:pairingMap];
     }
