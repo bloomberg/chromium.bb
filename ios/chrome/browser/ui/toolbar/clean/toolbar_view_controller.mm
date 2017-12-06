@@ -389,8 +389,7 @@
   self.tabSwitchStripButton =
       [self.buttonFactory tabSwitcherStripToolbarButton];
   self.tabSwitchStripButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidth |
-      ToolbarComponentVisibilityRegularWidth;
+      ToolbarComponentVisibilityIPhoneOnly;
   [buttonConstraints
       addObject:[self.tabSwitchStripButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];

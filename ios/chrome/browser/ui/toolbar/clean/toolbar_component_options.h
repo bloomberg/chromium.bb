@@ -20,6 +20,8 @@ typedef NS_OPTIONS(NSUInteger, ToolbarComponentVisibility) {
   // Use this option when the component should be visible in CompactWidth only
   // if it's enabled.
   ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled = 1 << 2,
+  // Use this option when the component should be always visible on iPhone only.
+  ToolbarComponentVisibilityIPhoneOnly = 1 << 3,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COMPONENT_OPTIONS_H_
