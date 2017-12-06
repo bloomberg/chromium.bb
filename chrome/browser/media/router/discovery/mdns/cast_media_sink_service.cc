@@ -64,7 +64,8 @@ ErrorType CreateCastMediaSink(const DnsSdService& service,
   std::string friendly_name = service_data["fn"];
   if (friendly_name.empty())
     return ErrorType::MISSING_FRIENDLY_NAME;
-  MediaSink sink(unique_id, friendly_name, SinkIconType::CAST);
+  MediaSink sink(unique_id, friendly_name, SinkIconType::CAST,
+                 MediaRouteProviderId::EXTENSION);
 
   CastSinkExtraData extra_data;
   extra_data.ip_endpoint =
