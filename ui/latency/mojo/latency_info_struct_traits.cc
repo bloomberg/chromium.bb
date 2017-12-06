@@ -19,6 +19,24 @@ ui::mojom::LatencyComponentType UILatencyComponentTypeToMojo(
     case ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
       return ui::mojom::LatencyComponentType::
           LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
@@ -92,6 +110,23 @@ ui::LatencyComponentType MojoLatencyComponentTypeToUI(
         LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
       return ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
     case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
+      return ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
+      return ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
+      return ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
+    case ui::mojom::LatencyComponentType::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
+      return ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
+      return ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
+      return ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
+    case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
       return ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
     case ui::mojom::LatencyComponentType::
@@ -162,6 +197,8 @@ ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
       return ui::mojom::SourceEventType::TOUCH;
     case ui::KEY_PRESS:
       return ui::mojom::SourceEventType::KEY_PRESS;
+    case ui::FRAME:
+      return ui::mojom::SourceEventType::FRAME;
     case ui::OTHER:
       return ui::mojom::SourceEventType::OTHER;
   }
@@ -179,6 +216,8 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
       return ui::TOUCH;
     case ui::mojom::SourceEventType::KEY_PRESS:
       return ui::KEY_PRESS;
+    case ui::mojom::SourceEventType::FRAME:
+      return ui::FRAME;
     case ui::mojom::SourceEventType::OTHER:
       return ui::OTHER;
   }

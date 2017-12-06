@@ -108,9 +108,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }
-  size_t stored_latency_info_size_for_testing() const {
-    return stored_latency_info_.size();
-  }
 
   void ForceImmediateDrawAndSwapIfPossible();
   void SetNeedsOneBeginFrame();

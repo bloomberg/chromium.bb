@@ -88,6 +88,18 @@ CompositorFrameBuilder& CompositorFrameBuilder::AddLatencyInfo(
   return *this;
 }
 
+CompositorFrameBuilder& CompositorFrameBuilder::AddLatencyInfos(
+    std::vector<ui::LatencyInfo> latency_info) {
+  if (frame_->metadata.latency_info.empty()) {
+    frame_->metadata.latency_info.swap(latency_info);
+  } else {
+    for (auto& latency : latency_info) {
+      frame_->metadata.latency_info.push_back(std::move(latency));
+    }
+  }
+  return *this;
+}
+
 CompositorFrameBuilder& CompositorFrameBuilder::SetActivationDependencies(
     std::vector<SurfaceId> activation_dependencies) {
   frame_->metadata.activation_dependencies = std::move(activation_dependencies);

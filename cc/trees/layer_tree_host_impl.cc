@@ -1788,7 +1788,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     return false;
   }
 
-  fps_counter_->SaveTimeStamp(CurrentBeginFrameArgs().frame_time,
+  base::TimeTicks frame_time = CurrentBeginFrameArgs().frame_time;
+  fps_counter_->SaveTimeStamp(frame_time,
                               !layer_tree_frame_sink_->context_provider());
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
@@ -1835,20 +1836,27 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame->may_contain_video;
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
+
   active_tree()->FinishSwapPromises(&metadata);
-  for (auto& latency : metadata.latency_info) {
-    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
-                           TRACE_ID_DONT_MANGLE(latency.trace_id()),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "step", "SwapBuffers");
-    // Only add the latency component once for renderer swap, not the browser
-    // swap.
-    if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
-                             nullptr)) {
-      latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
-                               0, 0);
+
+  metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
+  ui::LatencyInfo& new_latency_info = metadata.latency_info.back();
+  if (CommitToActiveTree()) {
+    new_latency_info.AddLatencyNumberWithTimestamp(
+        ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, 0, 0, frame_time, 1);
+  } else {
+    new_latency_info.AddLatencyNumberWithTimestamp(
+        ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, 0, 0, frame_time,
+        1);
+
+    base::TimeTicks draw_time = base::TimeTicks::Now();
+    for (auto& latency : metadata.latency_info) {
+      latency.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, 0, draw_time, 1);
     }
   }
+  ui::LatencyInfo::TraceIntermediateFlowEvents(metadata.latency_info,
+                                               "SwapBuffers");
 
   // Collect all resource ids in the render passes into a single array.
   ResourceProvider::ResourceIdArray resources;
