@@ -249,7 +249,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                                  unsigned height,
                                  GLenum format,
                                  GLenum type,
-                                 unsigned unpack_alignment,
+                                 const PixelStoreParams& unpack_params,
                                  bool flip_y,
                                  bool premultiply_alpha,
                                  const void* pixels,
