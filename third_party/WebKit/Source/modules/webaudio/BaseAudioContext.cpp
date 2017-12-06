@@ -151,7 +151,11 @@ void BaseAudioContext::Initialize() {
 
   if (OriginTrials::audioWorkletEnabled(GetExecutionContext()) ||
       RuntimeEnabledFeatures::AudioWorkletEnabled()) {
-    audio_worklet_ = AudioWorklet::Create(this);
+    // Worklet requires a valid Frame object, but GetFrame() from the window
+    // can be nullptr. Block out such case. See: crbug.com/792108
+    if (GetExecutionContext()->ExecutingWindow()->GetFrame()) {
+      audio_worklet_ = AudioWorklet::Create(this);
+    }
   }
 
   if (destination_node_) {
