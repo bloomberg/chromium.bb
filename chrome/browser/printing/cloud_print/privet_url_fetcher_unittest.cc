@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -55,7 +54,7 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
 
   MOCK_METHOD1(OnParsedJsonInternal, void(bool has_error));
 
-  virtual void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) {}
+  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override {}
 
   bool OnRawData(bool response_is_file,
                  const std::string& data,
@@ -90,17 +89,16 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
 class PrivetURLFetcherTest : public ::testing::Test {
  public:
   PrivetURLFetcherTest() {
-    request_context_ = new net::TestURLRequestContextGetter(
+    request_context_ = base::MakeRefCounted<net::TestURLRequestContextGetter>(
         base::ThreadTaskRunnerHandle::Get());
-    privet_urlfetcher_.reset(new PrivetURLFetcher(
+    privet_urlfetcher_ = std::make_unique<PrivetURLFetcher>(
         GURL(kSamplePrivetURL), net::URLFetcher::POST, request_context_.get(),
-        TRAFFIC_ANNOTATION_FOR_TESTS, &delegate_));
+        TRAFFIC_ANNOTATION_FOR_TESTS, &delegate_);
 
     PrivetURLFetcher::SetTokenForHost(GURL(kSamplePrivetURL).GetOrigin().spec(),
                                       kSamplePrivetToken);
   }
-  virtual ~PrivetURLFetcherTest() {
-  }
+  ~PrivetURLFetcherTest() override {}
 
   void RunFor(base::TimeDelta time_period) {
     base::CancelableCallback<void()> callback(base::Bind(

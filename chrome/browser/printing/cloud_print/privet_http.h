@@ -156,18 +156,20 @@ class PrivetLocalPrintOperation {
 
   virtual void Start() = 0;
 
-
   // Required print data. MUST be called before calling |Start()|.
   virtual void SetData(const scoped_refptr<base::RefCountedBytes>& data) = 0;
 
   // Optional attributes for /submitdoc. Call before calling |Start()|
   // |ticket| should be in CJT format.
   virtual void SetTicket(const std::string& ticket) = 0;
+
   // |capabilities| should be in CDD format.
   virtual void SetCapabilities(const std::string& capabilities) = 0;
+
   // Username and jobname are for display only.
   virtual void SetUsername(const std::string& username) = 0;
   virtual void SetJobname(const std::string& jobname) = 0;
+
   // Document page size.
   virtual void SetPageSize(const gfx::Size& page_size) = 0;
 
