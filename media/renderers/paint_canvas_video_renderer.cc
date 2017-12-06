@@ -102,13 +102,14 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
 
   GrGLTextureInfo source_textures[] = {{0, 0}, {0, 0}, {0, 0}};
   GLint min_mag_filter[][2] = {{0, 0}, {0, 0}, {0, 0}};
-  for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
-       ++i) {
+  for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
     // Get the texture from the mailbox and wrap it in a GrTexture.
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
     DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
            mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES ||
-           mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB);
+           mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB)
+        << "Unsupported texture target " << std::hex << std::showbase
+        << mailbox_holder.texture_target;
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_textures[i].fID =
         gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
@@ -164,8 +165,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
                                            handles, yuvSizes,
                                            kTopLeft_GrSurfaceOrigin);
   }
-  for (size_t i = 0; i < media::VideoFrame::NumPlanes(video_frame->format());
-       ++i) {
+  for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
     gl->BindTexture(source_textures[i].fTarget, source_textures[i].fID);
     gl->TexParameteri(source_textures[i].fTarget, GL_TEXTURE_MIN_FILTER,
                       min_mag_filter[i][0]);
@@ -190,6 +190,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
   DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
          mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||
          mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES)
+      << "Unsupported texture target " << std::hex << std::showbase
       << mailbox_holder.texture_target;
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
@@ -881,7 +882,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
-  if (media::VideoFrame::NumPlanes(video_frame->format()) > 1) {
+  if (video_frame->NumTextures() > 1) {
     if (!context_3d.gr_context)
       return false;
     if (!UpdateLastImage(video_frame, context_3d))
@@ -1040,7 +1041,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
     if (video_frame->HasTextures()) {
       DCHECK(context_3d.gr_context);
       DCHECK(context_3d.gl);
-      if (media::VideoFrame::NumPlanes(video_frame->format()) > 1) {
+      if (video_frame->NumTextures() > 1) {
         paint_image_builder.set_image(
             NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d));
       } else {
