@@ -75,28 +75,6 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SpeakStatusTray) {
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "Status tray*"));
 }
 
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SearchLocksToSelectToSpeakMode) {
-  ui_test_utils::NavigateToURL(browser(), GURL("data:text/html;charset=utf-8,"
-                                               "<p>This is some text</p>"));
-  gfx::Rect bounds = browser()->window()->GetBounds();
-
-  // Hold click Search, then and click a few pixels into the window bounds.
-  generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
-  generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
-
-  for (int i = 0; i < 2; ++i) {
-    // With the mouse only, have it speak a few times.
-    generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 50);
-    generator_->PressLeftButton();
-    generator_->MoveMouseTo(bounds.x() + bounds.width() - 8,
-                            bounds.y() + bounds.height() - 8);
-    generator_->ReleaseLeftButton();
-
-    EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                   "This is some text*"));
-  }
-}
-
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, SmoothlyReadsAcrossInlineUrl) {
   // Make sure an inline URL is read smoothly.
   ActivateSelectToSpeakInWindowBounds(

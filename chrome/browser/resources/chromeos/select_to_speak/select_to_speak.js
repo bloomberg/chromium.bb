@@ -392,6 +392,8 @@ SelectToSpeak.prototype = {
    * @return {boolean} True if the default action should be performed.
    */
   onMouseUp_: function(evt) {
+    if (!this.trackingMouse_)
+      return false;
     this.onMouseMove_(evt);
     this.trackingMouse_ = false;
 
