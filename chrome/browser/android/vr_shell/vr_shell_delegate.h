@@ -25,6 +25,13 @@ class VRDevice;
 
 namespace vr_shell {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
+enum class VrSupportLevel : int {
+  kVrNotAvailable = 0,
+  kVrCardboard = 1,
+  kVrDaydream = 2,  // Supports both Cardboard and Daydream viewer.
+};
+
 class VrShell;
 
 class VrShellDelegate : public device::GvrDelegateProvider {
@@ -59,6 +66,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
  private:
   // device::GvrDelegateProvider implementation.
+  bool ShouldDisableGvrDevice() override;
   void SetDeviceId(unsigned int device_id) override;
   void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
                            device::mojom::VRPresentationProviderRequest request,

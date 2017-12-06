@@ -181,12 +181,20 @@ void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
+bool VrShellDelegate::ShouldDisableGvrDevice() {
+  JNIEnv* env = AttachCurrentThread();
+  int vr_support_level =
+      Java_VrShellDelegate_getVrSupportLevel(env, j_vr_shell_delegate_);
+  return static_cast<VrSupportLevel>(vr_support_level) ==
+         VrSupportLevel::kVrNotAvailable;
+}
+
 void VrShellDelegate::SetDeviceId(unsigned int device_id) {
   device_id_ = device_id;
   if (vr_shell_) {
     device::VRDevice* device = GetDevice();
     // See comment in VrShellDelegate::SetDelegate. This handles the case where
-    // VrShell is created before the device/ code is initialized (like when
+    // VrShell is created before the device code is initialized (like when
     // entering VR browsing on a non-webVR page).
     if (device)
       device->SetMagicWindowEnabled(false);
