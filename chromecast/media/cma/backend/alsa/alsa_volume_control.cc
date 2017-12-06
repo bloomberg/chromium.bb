@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "media/base/media_switches.h"
 
@@ -168,9 +167,34 @@ std::string AlsaVolumeControl::GetMuteDeviceName() {
   return GetVolumeDeviceName();
 }
 
+// static
+std::string AlsaVolumeControl::GetAmpElementName() {
+  std::string mixer_element_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAlsaAmpElementName);
+  if (!mixer_element_name.empty()) {
+    return mixer_element_name;
+  }
+  return std::string();
+}
+
+// static
+std::string AlsaVolumeControl::GetAmpDeviceName() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  std::string mixer_device_name =
+      command_line->GetSwitchValueASCII(switches::kAlsaAmpDeviceName);
+  if (!mixer_device_name.empty()) {
+    return mixer_device_name;
+  }
+
+  // If the amp mixer device was not specified directly, use the same device as
+  // the volume mixer.
+  return GetVolumeDeviceName();
+}
+
 AlsaVolumeControl::AlsaVolumeControl(Delegate* delegate)
     : delegate_(delegate),
-      alsa_(base::MakeUnique<::media::AlsaWrapper>()),
+      alsa_(std::make_unique<::media::AlsaWrapper>()),
       volume_mixer_device_name_(GetVolumeDeviceName()),
       volume_mixer_element_name_(GetVolumeElementName()),
       mute_mixer_device_name_(GetMuteDeviceName()),
@@ -178,6 +202,8 @@ AlsaVolumeControl::AlsaVolumeControl(Delegate* delegate)
                                                   volume_mixer_device_name_,
                                                   volume_mixer_element_name_,
                                                   mute_mixer_device_name_)),
+      amp_mixer_device_name_(GetAmpDeviceName()),
+      amp_mixer_element_name_(GetAmpElementName()),
       volume_range_min_(0),
       volume_range_max_(0),
       mute_mixer_ptr_(nullptr) {
@@ -186,8 +212,10 @@ AlsaVolumeControl::AlsaVolumeControl(Delegate* delegate)
           << ", element = " << volume_mixer_element_name_;
   VLOG(1) << "Mute device = " << mute_mixer_device_name_
           << ", element = " << mute_mixer_element_name_;
+  VLOG(1) << "Idle device = " << amp_mixer_device_name_
+          << ", element = " << amp_mixer_element_name_;
 
-  volume_mixer_ = base::MakeUnique<ScopedAlsaMixer>(
+  volume_mixer_ = std::make_unique<ScopedAlsaMixer>(
       alsa_.get(), volume_mixer_device_name_, volume_mixer_element_name_);
   if (volume_mixer_->element) {
     ALSA_ASSERT(MixerSelemGetPlaybackVolumeRange, volume_mixer_->element,
@@ -200,7 +228,7 @@ AlsaVolumeControl::AlsaVolumeControl(Delegate* delegate)
   }
 
   if (mute_mixer_element_name_ != volume_mixer_element_name_) {
-    mute_mixer_ = base::MakeUnique<ScopedAlsaMixer>(
+    mute_mixer_ = std::make_unique<ScopedAlsaMixer>(
         alsa_.get(), mute_mixer_device_name_, mute_mixer_element_name_);
     if (mute_mixer_->element) {
       mute_mixer_ptr_ = mute_mixer_.get();
@@ -213,6 +241,14 @@ AlsaVolumeControl::AlsaVolumeControl(Delegate* delegate)
     }
   } else {
     mute_mixer_ptr_ = volume_mixer_.get();
+  }
+
+  if (!amp_mixer_element_name_.empty()) {
+    amp_mixer_ = std::make_unique<ScopedAlsaMixer>(
+        alsa_.get(), amp_mixer_device_name_, amp_mixer_element_name_);
+    if (amp_mixer_->element) {
+      RefreshMixerFds(amp_mixer_.get());
+    }
   }
 }
 
@@ -271,16 +307,28 @@ bool AlsaVolumeControl::IsMuted() {
 }
 
 void AlsaVolumeControl::SetMuted(bool muted) {
-  if (!mute_mixer_ptr_->element ||
-      !alsa_->MixerSelemHasPlaybackSwitch(mute_mixer_ptr_->element)) {
+  if (!SetElementMuted(mute_mixer_ptr_, muted)) {
     LOG(ERROR) << "Mute failed: no mute switch on mixer element.";
-    return;
+  }
+}
+
+void AlsaVolumeControl::SetPowerSave(bool power_save_on) {
+  if (!SetElementMuted(amp_mixer_.get(), power_save_on)) {
+    LOG(INFO) << "Amp toggle failed: no amp switch on mixer element.";
+  }
+}
+
+bool AlsaVolumeControl::SetElementMuted(ScopedAlsaMixer* mixer, bool muted) {
+  if (!mixer || !mixer->element ||
+      !alsa_->MixerSelemHasPlaybackSwitch(mixer->element)) {
+    return false;
   }
   for (int32_t channel = 0; channel <= SND_MIXER_SCHN_LAST; ++channel) {
     alsa_->MixerSelemSetPlaybackSwitch(
-        mute_mixer_ptr_->element,
-        static_cast<snd_mixer_selem_channel_id_t>(channel), !muted);
+        mixer->element, static_cast<snd_mixer_selem_channel_id_t>(channel),
+        !muted);
   }
+  return true;
 }
 
 void AlsaVolumeControl::RefreshMixerFds(ScopedAlsaMixer* mixer) {
@@ -291,7 +339,7 @@ void AlsaVolumeControl::RefreshMixerFds(ScopedAlsaMixer* mixer) {
   DCHECK_GT(num_fds, 0);
   for (int i = 0; i < num_fds; ++i) {
     auto watcher =
-        base::MakeUnique<base::MessageLoopForIO::FileDescriptorWatcher>(
+        std::make_unique<base::MessageLoopForIO::FileDescriptorWatcher>(
             FROM_HERE);
     base::MessageLoopForIO::current()->WatchFileDescriptor(
         pfds[i].fd, true /* persistent */, base::MessageLoopForIO::WATCH_READ,
@@ -304,6 +352,10 @@ void AlsaVolumeControl::OnFileCanReadWithoutBlocking(int fd) {
   alsa_->MixerHandleEvents(volume_mixer_->mixer);
   if (mute_mixer_) {
     alsa_->MixerHandleEvents(mute_mixer_->mixer);
+  }
+  if (amp_mixer_) {
+    // amixer locks up if we don't call this for unknown reasons.
+    alsa_->MixerHandleEvents(amp_mixer_->mixer);
   }
 }
 

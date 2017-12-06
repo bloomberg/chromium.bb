@@ -87,6 +87,11 @@ class CHROMECAST_EXPORT VolumeControl {
   // May be called from multiple processes.
   static float VolumeToDbFS(float volume) __attribute__((__weak__));
   static float DbFSToVolume(float dbfs) __attribute__((__weak__));
+
+  // Called to enable power save mode when no audio is being played
+  // (|power_save_on| will be true in this case), and to disable power save mode
+  // when audio playback resumes (|power_save_on| will be false).
+  static void SetPowerSaveMode(bool power_save_on) __attribute__((__weak__));
 };
 
 }  // namespace media

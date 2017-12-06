@@ -37,6 +37,7 @@ cast_source_set("backend") {
   deps = [
     "//base",
     "//chromecast:chromecast_features",
+    "//chromecast/base/metrics:metrics",
     "//chromecast/media:libcast_media",
     "//chromecast/media/cma/base",
   ]

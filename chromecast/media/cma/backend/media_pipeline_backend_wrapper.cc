@@ -39,8 +39,8 @@ MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
 
   if (playing_) {
     LOG(WARNING) << "Destroying media backend while still in 'playing' state";
-    if (audio_decoder_ && !IsSfx()) {
-      backend_manager_->UpdatePlayingAudioCount(-1);
+    if (audio_decoder_) {
+      backend_manager_->UpdatePlayingAudioCount(IsSfx(), -1);
     }
   }
 }
@@ -136,8 +136,8 @@ void MediaPipelineBackendWrapper::SetPlaying(bool playing) {
     return;
   }
   playing_ = playing;
-  if (audio_decoder_ && !IsSfx()) {
-    backend_manager_->UpdatePlayingAudioCount(playing_ ? 1 : -1);
+  if (audio_decoder_) {
+    backend_manager_->UpdatePlayingAudioCount(IsSfx(), (playing_ ? 1 : -1));
   }
 }
 

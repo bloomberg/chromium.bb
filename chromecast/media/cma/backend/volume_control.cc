@@ -125,8 +125,8 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     thread_.StartWithOptions(options);
 
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VolumeControlInternal::InitializeOnThread,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&VolumeControlInternal::InitializeOnThread,
+                                  base::Unretained(this)));
     initialize_complete_event_.Wait();
   }
 
@@ -152,9 +152,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   void SetVolume(AudioContentType type, float level) {
     level = std::max(0.0f, std::min(level, 1.0f));
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VolumeControlInternal::SetVolumeOnThread,
-                              base::Unretained(this), type, level,
-                              false /* from_system */));
+        FROM_HERE, base::BindOnce(&VolumeControlInternal::SetVolumeOnThread,
+                                  base::Unretained(this), type, level,
+                                  false /* from_system */));
   }
 
   bool IsMuted(AudioContentType type) {
@@ -164,9 +164,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
   void SetMuted(AudioContentType type, bool muted) {
     thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VolumeControlInternal::SetMutedOnThread,
-                              base::Unretained(this), type, muted,
-                              false /* from_system */));
+        FROM_HERE, base::BindOnce(&VolumeControlInternal::SetMutedOnThread,
+                                  base::Unretained(this), type, muted,
+                                  false /* from_system */));
   }
 
   void SetOutputLimit(AudioContentType type, float limit) {
@@ -176,6 +176,13 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     limit = std::max(0.0f, std::min(limit, 1.0f));
     StreamMixer::Get()->SetOutputLimit(
         type, DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
+  }
+
+  void SetPowerSaveMode(bool power_save_on) {
+    thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VolumeControlInternal::SetPowerSaveModeOnThread,
+                       base::Unretained(this), power_save_on));
   }
 
  private:
@@ -276,8 +283,15 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     }
   }
 
+  void SetPowerSaveModeOnThread(bool power_save_on) {
+    DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+    system_volume_control_->SetPowerSave(power_save_on);
+  }
+
   // SystemVolumeControl::Delegate implementation:
   void OnSystemVolumeOrMuteChange(float new_volume, bool new_mute) override {
+    LOG(INFO) << "System volume/mute change, new volume = " << new_volume
+              << ", new mute = " << new_mute;
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
     SetVolumeOnThread(AudioContentType::kMedia, new_volume,
                       true /* from_system */);
@@ -362,6 +376,11 @@ float VolumeControl::VolumeToDbFS(float volume) {
 // static
 float VolumeControl::DbFSToVolume(float db) {
   return g_volume_map.Get().DbFSToVolume(db);
+}
+
+// static
+void VolumeControl::SetPowerSaveMode(bool power_save_on) {
+  g_volume_control.Get().SetPowerSaveMode(power_save_on);
 }
 
 }  // namespace media

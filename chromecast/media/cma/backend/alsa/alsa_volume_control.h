@@ -30,6 +30,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
   void SetVolume(float level) override;
   bool IsMuted() override;
   void SetMuted(bool muted) override;
+  void SetPowerSave(bool power_save_on) override;
 
  private:
   class ScopedAlsaMixer;
@@ -41,9 +42,13 @@ class AlsaVolumeControl : public SystemVolumeControl,
                                         const std::string& mixer_element_name,
                                         const std::string& mute_card_name);
   static std::string GetMuteDeviceName();
+  static std::string GetAmpElementName();
+  static std::string GetAmpDeviceName();
 
   static int VolumeOrMuteChangeCallback(snd_mixer_elem_t* elem,
                                         unsigned int mask);
+
+  bool SetElementMuted(ScopedAlsaMixer* mixer, bool muted);
 
   void RefreshMixerFds(ScopedAlsaMixer* mixer);
 
@@ -52,6 +57,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   void OnVolumeOrMuteChanged();
+
   Delegate* const delegate_;
 
   const std::unique_ptr<::media::AlsaWrapper> alsa_;
@@ -59,6 +65,8 @@ class AlsaVolumeControl : public SystemVolumeControl,
   const std::string volume_mixer_element_name_;
   const std::string mute_mixer_device_name_;
   const std::string mute_mixer_element_name_;
+  const std::string amp_mixer_device_name_;
+  const std::string amp_mixer_element_name_;
 
   long volume_range_min_;  // NOLINT(runtime/int)
   long volume_range_max_;  // NOLINT(runtime/int)
@@ -66,6 +74,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
   std::unique_ptr<ScopedAlsaMixer> volume_mixer_;
   std::unique_ptr<ScopedAlsaMixer> mute_mixer_;
   ScopedAlsaMixer* mute_mixer_ptr_;
+  std::unique_ptr<ScopedAlsaMixer> amp_mixer_;
 
   std::vector<std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher>>
       file_descriptor_watchers_;
