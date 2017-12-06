@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -134,12 +133,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
 #endif  // OS_ANDROID
 
-  // In addition to disabling the watchdog if the command line switch is
-  // present, disable the watchdog on valgrind because the code is expected
-  // to run slowly in that case.
   bool enable_watchdog = !gpu_preferences.disable_gpu_watchdog &&
-                         !command_line->HasSwitch(switches::kHeadless) &&
-                         !RunningOnValgrind();
+                         !command_line->HasSwitch(switches::kHeadless);
 
   // Disable the watchdog in debug builds because they tend to only be run by
   // developers who will not appreciate the watchdog killing the GPU process.
