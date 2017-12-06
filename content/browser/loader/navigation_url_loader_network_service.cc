@@ -551,6 +551,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers)
     : delegate_(delegate),
       allow_download_(request_info->common_params.allow_download),
+      url_(request_info->common_params.url),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int frame_tree_node_id = request_info->frame_tree_node_id;
@@ -694,6 +695,7 @@ void NavigationURLLoaderNetworkService::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     scoped_refptr<ResourceResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  url_ = redirect_info.new_url;
   delegate_->OnRequestRedirected(redirect_info, std::move(response));
 }
 
@@ -744,6 +746,9 @@ bool NavigationURLLoaderNetworkService::IsDownload() const {
         !disposition.empty() &&
         net::HttpContentDisposition(disposition, std::string())
             .is_attachment()) {
+      return true;
+    } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
+                   url_, response_->head.mime_type)) {
       return true;
     } else if (response_->head.mime_type == "multipart/related") {
       // TODO(https://crbug.com/790734): retrieve the new NavigationUIData from

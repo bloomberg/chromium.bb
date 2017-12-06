@@ -78,11 +78,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   virtual bool HandleExternalProtocol(const GURL& url,
                                       ResourceRequestInfo* info);
 
-  // Returns true if we should force the given resource to be downloaded.
-  // Otherwise, the content layer decides.
-  virtual bool ShouldForceDownloadResource(const GURL& url,
-                                           const std::string& mime_type);
-
   // Returns true and sets |origin| if a Stream should be created for the
   // resource. |plugin_path| is the plugin which will be used to handle the
   // request (if the stream will be rendered in a BrowserPlugin). It may be

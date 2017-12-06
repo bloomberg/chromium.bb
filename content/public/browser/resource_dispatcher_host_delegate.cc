@@ -47,12 +47,6 @@ bool ResourceDispatcherHostDelegate::HandleExternalProtocol(
   return true;
 }
 
-bool ResourceDispatcherHostDelegate::ShouldForceDownloadResource(
-    const GURL& url,
-    const std::string& mime_type) {
-  return false;
-}
-
 bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     net::URLRequest* request,
     const base::FilePath& plugin_path,

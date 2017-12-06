@@ -583,7 +583,13 @@ bool ContentBrowserClient::ShouldOverrideUrlLoading(
 #endif
 
 bool ContentBrowserClient::AllowRenderingMhtmlOverHttp(
-    NavigationUIData* navigation_ui_data) const {
+    NavigationUIData* navigation_ui_data) {
+  return false;
+}
+
+bool ContentBrowserClient::ShouldForceDownloadResource(
+    const GURL& url,
+    const std::string& mime_type) {
   return false;
 }
 
