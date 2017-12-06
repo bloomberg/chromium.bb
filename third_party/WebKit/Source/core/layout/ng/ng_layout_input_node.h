@@ -38,6 +38,8 @@ class CORE_EXPORT NGLayoutInputNode {
 
   bool IsInline() const;
   bool IsBlock() const;
+
+  bool IsColumnSpanAll() const;
   bool IsFloating() const;
   bool IsOutOfFlowPositioned() const;
   bool IsReplaced() const;

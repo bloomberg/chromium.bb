@@ -118,35 +118,118 @@ Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize() const {
   if (Style().ContainsSize())
     return sizes;
 
-  // TODO: handle floats & orthogonal children.
-  for (NGLayoutInputNode node = Node().FirstChild(); node;
-       node = node.NextSibling()) {
-    if (node.IsOutOfFlowPositioned())
+  const TextDirection direction = Style().Direction();
+  LayoutUnit float_left_inline_size;
+  LayoutUnit float_right_inline_size;
+
+  for (NGLayoutInputNode child = Node().FirstChild(); child;
+       child = child.NextSibling()) {
+    if (child.IsOutOfFlowPositioned() || child.IsColumnSpanAll())
       continue;
+
+    const ComputedStyle& child_style = child.Style();
+    const EClear child_clear = child_style.Clear();
+
+    // Conceptually floats and a single new-FC would just get positioned on a
+    // single "line". If there is a float/new-FC with clearance, this creates a
+    // new "line", resetting the appropriate float size trackers.
+    //
+    // Both of the float size trackers get reset for anything that isn't a float
+    // (inflow and new-FC) at the end of the loop, as this creates a new "line".
+    if (child.IsFloating() || child.CreatesNewFormattingContext()) {
+      LayoutUnit float_inline_size =
+          float_left_inline_size + float_right_inline_size;
+
+      if (child_clear != EClear::kNone)
+        sizes.max_size = std::max(sizes.max_size, float_inline_size);
+
+      if (child_clear == EClear::kBoth || child_clear == EClear::kLeft)
+        float_left_inline_size = LayoutUnit();
+
+      if (child_clear == EClear::kBoth || child_clear == EClear::kRight)
+        float_right_inline_size = LayoutUnit();
+    }
+
     MinMaxSize child_sizes;
-    if (node.IsInline()) {
+    if (child.IsInline()) {
       // From |NGBlockLayoutAlgorithm| perspective, we can handle |NGInlineNode|
       // almost the same as |NGBlockNode|, because an |NGInlineNode| includes
-      // all inline nodes following |node| and their descendants, and produces
+      // all inline nodes following |child| and their descendants, and produces
       // an anonymous box that contains all line boxes.
       // |NextSibling| returns the next block sibling, or nullptr, skipping all
       // following inline siblings and descendants.
-      child_sizes = node.ComputeMinMaxSize();
+      child_sizes = child.ComputeMinMaxSize();
     } else {
       Optional<MinMaxSize> child_minmax;
-      if (NeedMinMaxSizeForContentContribution(node.Style())) {
-        child_minmax = node.ComputeMinMaxSize();
+      if (NeedMinMaxSizeForContentContribution(child_style)) {
+        child_minmax = child.ComputeMinMaxSize();
       }
 
       child_sizes =
-          ComputeMinAndMaxContentContribution(node.Style(), child_minmax);
+          ComputeMinAndMaxContentContribution(child_style, child_minmax);
     }
 
-    sizes.min_size = std::max(sizes.min_size, child_sizes.min_size);
-    sizes.max_size = std::max(sizes.max_size, child_sizes.max_size);
+    // Determine the max inline contribution of the child.
+    NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
+    LayoutUnit max_inline_contribution;
+
+    if (child.IsFloating()) {
+      // A float adds to its inline size to the current "line". The new max
+      // inline contribution is just the sum of all the floats on that "line".
+      LayoutUnit float_inline_size = child_sizes.max_size + margins.InlineSum();
+      if (child_style.Floating() == EFloat::kLeft)
+        float_left_inline_size += float_inline_size;
+      else
+        float_right_inline_size += float_inline_size;
+
+      max_inline_contribution =
+          float_left_inline_size + float_right_inline_size;
+    } else if (child.CreatesNewFormattingContext()) {
+      // As floats are line relative, we perform the margin calculations in the
+      // line relative coordinate system as well.
+      LayoutUnit margin_line_left = margins.LineLeft(direction);
+      LayoutUnit margin_line_right = margins.LineRight(direction);
+
+      // line_left_inset and line_right_inset are the "distance" from their
+      // respective edges of the parent that the new-FC would take. If the
+      // margin is positive the inset is just whichever of the floats inline
+      // size and margin is larger, and if negative it just subtracts from the
+      // float inline size.
+      LayoutUnit line_left_inset =
+          margin_line_left > LayoutUnit()
+              ? std::max(float_left_inline_size, margin_line_left)
+              : float_left_inline_size + margin_line_left;
+
+      LayoutUnit line_right_inset =
+          margin_line_right > LayoutUnit()
+              ? std::max(float_right_inline_size, margin_line_right)
+              : float_right_inline_size + margin_line_right;
+
+      max_inline_contribution =
+          child_sizes.max_size + line_left_inset + line_right_inset;
+    } else {
+      // This is just a standard inflow child.
+      max_inline_contribution = child_sizes.max_size + margins.InlineSum();
+    }
+    sizes.max_size = std::max(sizes.max_size, max_inline_contribution);
+
+    // The min inline contribution just assumes that floats are all on their own
+    // "line".
+    LayoutUnit min_inline_contribution =
+        child_sizes.min_size + margins.InlineSum();
+    sizes.min_size = std::max(sizes.min_size, min_inline_contribution);
+
+    // Anything that isn't a float will create a new "line" resetting the float
+    // size trackers.
+    if (!child.IsFloating()) {
+      float_left_inline_size = LayoutUnit();
+      float_right_inline_size = LayoutUnit();
+    }
   }
 
-  sizes.max_size = std::max(sizes.min_size, sizes.max_size);
+  DCHECK_GE(sizes.min_size, LayoutUnit());
+  DCHECK_GE(sizes.max_size, sizes.min_size);
+
   return sizes;
 }
 

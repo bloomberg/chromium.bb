@@ -388,7 +388,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-129
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-130.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-131.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-137.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-143.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
 
@@ -506,8 +505,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/014.html [ Failure Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/018.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/022.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/031.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/035.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float-2.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/block-with-negative-margin-clears-float.html [ Failure ]
@@ -526,7 +523,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-inserted-into-clean-li
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-layout-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-line-obeys-container-padding.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-overflow-hidden-containing-block-width.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent-rl.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent.html [ Failure ]
@@ -534,7 +530,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-image-strict-line-height.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-offset-inline-block-strict-line-height.html [ Failure ]
 
-crbug.com/635619 virtual/layout_ng/fast/block/float/floats-with-margin-should-not-wrap.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/independent-align-positioning.html [ Failure ]
 crbug.com/635619 [ Win10 ] virtual/layout_ng/fast/block/float/intruding-float-add-in-sibling-block-on-static-position.html [ Failure ]
 crbug.com/635619 [ Win10 ]  virtual/layout_ng/fast/block/float/intruding-float-add-in-sibling-block-on-static-position2.html [ Failure ]

@@ -65,6 +65,10 @@ bool NGLayoutInputNode::IsBlock() const {
   return type_ == kBlock;
 }
 
+bool NGLayoutInputNode::IsColumnSpanAll() const {
+  return IsBlock() && box_->IsColumnSpanAll();
+}
+
 bool NGLayoutInputNode::IsFloating() const {
   return IsBlock() && Style().IsFloating();
 }
