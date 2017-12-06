@@ -524,6 +524,17 @@ wl_argument_from_va_list(const char *signature, union wl_argument *args,
 	}
 }
 
+static void
+wl_closure_clear_fds(struct wl_closure *closure)
+{
+	int i;
+
+	for (i = 0; closure->message->signature[i]; i++) {
+		if (closure->message->signature[i] == 'h')
+			closure->args[i].h = -1;
+	}
+}
+
 static struct wl_closure *
 wl_closure_init(const struct wl_message *message, uint32_t size,
                 int *num_arrays, union wl_argument *args)
@@ -556,6 +567,14 @@ wl_closure_init(const struct wl_message *message, uint32_t size,
 
 	closure->message = message;
 	closure->count = count;
+
+	/* Set these all to -1 so we can close any that have been
+	 * set to a real value during wl_closure_destroy().
+	 * We may have copied a bunch of fds into the closure with
+	 * memcpy previously, but those are undup()d client fds
+	 * that we would have replaced anyway.
+	 */
+	wl_closure_clear_fds(closure);
 
 	return closure;
 }
@@ -948,6 +967,8 @@ wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 			 opcode, target->interface->name);
 	}
 	ffi_call(&cif, implementation[opcode], NULL, ffi_args);
+
+	wl_closure_clear_fds(closure);
 }
 
 void
@@ -956,6 +977,8 @@ wl_closure_dispatch(struct wl_closure *closure, wl_dispatcher_func_t dispatcher,
 {
 	dispatcher(target->implementation, target, opcode, closure->message,
 		   closure->args);
+
+	wl_closure_clear_fds(closure);
 }
 
 static int
@@ -980,6 +1003,7 @@ copy_fds_to_connection(struct wl_closure *closure,
 			       "can't send file descriptor");
 			return -1;
 		}
+		closure->args[i].h = -1;
 	}
 
 	return 0;
