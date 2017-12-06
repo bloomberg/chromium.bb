@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -24,8 +23,8 @@
 #include "extensions/test/result_catcher.h"
 #include "net/base/net_errors.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/message_center/notification.h"
-#include "ui/message_center/notification_delegate.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::NetworkPortalDetector;
@@ -34,12 +33,44 @@ using chromeos::NetworkPortalNotificationController;
 using chromeos::ShillDeviceClient;
 using chromeos::ShillProfileClient;
 using chromeos::ShillServiceClient;
+using message_center::MessageCenter;
+using message_center::MessageCenterObserver;
 
 namespace {
 
 const char kWifiDevicePath[] = "/device/stub_wifi_device1";
 const char kWifi1ServicePath[] = "stub_wifi1";
 const char kWifi1ServiceGUID[] = "wifi1_guid";
+
+class TestNotificationObserver : public MessageCenterObserver {
+ public:
+  TestNotificationObserver() {
+    MessageCenter::Get()->AddObserver(this);
+  }
+
+  ~TestNotificationObserver() override {
+    MessageCenter::Get()->RemoveObserver(this);
+  }
+
+  void WaitForNotificationToDisplay() {
+    run_loop_.Run();
+  }
+
+  void OnNotificationDisplayed(
+      const std::string& notification_id,
+      const message_center::DisplaySource source) override {
+    if (notification_id ==
+        NetworkPortalNotificationController::kNotificationId) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    run_loop_.QuitClosure());
+    }
+  }
+
+ private:
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNotificationObserver);
+};
 
 }  // namespace
 
@@ -50,9 +81,6 @@ class NetworkingConfigTest
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
-
-    display_service_ =
-        std::make_unique<NotificationDisplayServiceTester>(profile());
 
     DBusThreadManager* const dbus_manager = DBusThreadManager::Get();
     ShillServiceClient::TestInterface* const service_test =
@@ -117,10 +145,10 @@ class NetworkingConfigTest
         .status;
   }
 
- protected:
   NetworkPortalDetectorImpl* network_portal_detector_ = nullptr;
+
+ private:
   const extensions::Extension* extension_ = nullptr;
-  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(NetworkingConfigTest, ApiAvailability) {
@@ -141,16 +169,19 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigTest, FullTest) {
   // This will cause the extension to register for wifi1.
   ASSERT_TRUE(RunExtensionTest("full_test.html")) << message_;
 
+  TestNotificationObserver observer;
+
   SimulateCaptivePortal();
 
   // Wait until a captive portal notification is displayed and verify that it is
   // the expected captive portal notification.
-  auto notification = display_service_->GetNotification(
-      NetworkPortalNotificationController::kNotificationId);
-  ASSERT_TRUE(notification);
+  observer.WaitForNotificationToDisplay();
+  EXPECT_TRUE(MessageCenter::Get()->FindVisibleNotificationById(
+      NetworkPortalNotificationController::kNotificationId));
 
   // Simulate the user click which leads to the extension being notified.
-  notification->delegate()->ButtonClick(
+  MessageCenter::Get()->ClickOnNotificationButton(
+      NetworkPortalNotificationController::kNotificationId,
       NetworkPortalNotificationController::kUseExtensionButtonIndex);
 
   extensions::ResultCatcher catcher;
