@@ -2420,7 +2420,6 @@ crbug.com/788337 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Fa
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-child-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-child-002.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
-crbug.com/788337 external/wpt/css/css-multicol/multicol-span-all-margin-nested-003.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-table-cell-vertical-align-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-width-ems-001.xht [ Failure ]
