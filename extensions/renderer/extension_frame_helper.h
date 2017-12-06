@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_EXTENSION_FRAME_HELPER_H_
 #define EXTENSIONS_RENDERER_EXTENSION_FRAME_HELPER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -60,6 +61,17 @@ class ExtensionFrameHelper
   // isn't one in this process.
   static content::RenderFrame* GetBackgroundPageFrame(
       const std::string& extension_id);
+
+  // Finds a neighboring extension frame with the same extension as the one
+  // owning |relative_to_frame| (if |relative_to_frame| is not an extension
+  // frame, returns nullptr). Pierces the browsing instance boundary because
+  // certain extensions rely on this behavior.
+  // TODO(devlin, lukasza): https://crbug.com/786411: Remove this behavior, and
+  // make extensions follow the web standard for finding frames or use an
+  // explicit API.
+  static content::RenderFrame* FindFrame(
+      content::RenderFrame* relative_to_frame,
+      const std::string& name);
 
   // Returns true if the given |context| is for any frame in the extension's
   // event page.

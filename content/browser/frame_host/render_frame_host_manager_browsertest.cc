@@ -3428,4 +3428,52 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(child_url, grandchild->child_at(0)->current_url());
 }
 
+// Test that unrelated browsing contexts cannot find each other's windows,
+// even when they end up using the same renderer process (e.g. because of
+// hitting a process limit).  See also https://crbug.com/718489.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ProcessReuseVsBrowsingInstance) {
+  // Set max renderers to 1 to force reusing a renderer process between two
+  // unrelated tabs.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Navigate 2 tabs to a web page (regular web pages can share renderers
+  // among themselves without any restrictions, unlike extensions, apps, etc.).
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url1(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  RenderFrameHost* tab1 = shell()->web_contents()->GetMainFrame();
+  EXPECT_EQ(url1, tab1->GetLastCommittedURL());
+  GURL url2(embedded_test_server()->GetURL("/title2.html"));
+  Shell* shell2 = Shell::CreateNewWindow(
+      shell()->web_contents()->GetBrowserContext(), url2, nullptr, gfx::Size());
+  EXPECT_TRUE(NavigateToURL(shell2, url2));
+  RenderFrameHost* tab2 = shell2->web_contents()->GetMainFrame();
+  EXPECT_EQ(url2, tab2->GetLastCommittedURL());
+
+  // Sanity-check test setup: 2 frames share a renderer process, but are not in
+  // a related browsing instance.
+  if (!AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(tab1->GetProcess(), tab2->GetProcess());
+  EXPECT_FALSE(
+      tab1->GetSiteInstance()->IsRelatedSiteInstance(tab2->GetSiteInstance()));
+
+  // Name the 2 frames.
+  EXPECT_TRUE(ExecuteScript(tab1, "window.name = 'tab1';"));
+  EXPECT_TRUE(ExecuteScript(tab2, "window.name = 'tab2';"));
+
+  // Verify that |tab1| cannot find named frames belonging to |tab2| (i.e. that
+  // window.open will end up creating a new tab rather than returning the old
+  // |tab2| tab).
+  WebContentsAddedObserver new_contents_observer;
+  std::string location_of_opened_window;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      tab1,
+      "var w = window.open('', 'tab2');\n"
+      "window.domAutomationController.send(w.location.href);",
+      &location_of_opened_window));
+  EXPECT_EQ(url::kAboutBlankURL, location_of_opened_window);
+  EXPECT_TRUE(new_contents_observer.GetWebContents());
+}
+
 }  // namespace content

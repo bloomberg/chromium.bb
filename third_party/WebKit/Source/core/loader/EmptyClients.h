@@ -371,6 +371,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void AnnotatedRegionsChanged() override {}
   String GetInstrumentationToken() override { return g_empty_string; };
 
+  Frame* FindFrame(const AtomicString& name) const override;
+
  protected:
   EmptyLocalFrameClient() = default;
 

@@ -380,6 +380,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void SetVirtualTimePauser(
       WebScopedVirtualTimePauser virtual_time_pauser) {}
+
+  virtual Frame* FindFrame(const AtomicString& name) const = 0;
 };
 
 }  // namespace blink

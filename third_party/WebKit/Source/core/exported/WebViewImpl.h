@@ -102,7 +102,9 @@ class CORE_EXPORT WebViewImpl final
       public WebScheduler::InterventionReporter,
       public WebViewScheduler::WebViewSchedulerDelegate {
  public:
-  static WebViewImpl* Create(WebViewClient*, mojom::PageVisibilityState);
+  static WebViewImpl* Create(WebViewClient*,
+                             mojom::PageVisibilityState,
+                             WebViewImpl* opener);
   static HashSet<WebViewImpl*>& AllInstances();
   static const WebInputEvent* CurrentInputEvent();
   // Returns true if popup menus should be rendered by the browser, false if
@@ -504,7 +506,7 @@ class CORE_EXPORT WebViewImpl final
   friend class WebViewFrameWidget;
   friend class WTF::RefCounted<WebViewImpl>;
 
-  explicit WebViewImpl(WebViewClient*, mojom::PageVisibilityState);
+  WebViewImpl(WebViewClient*, mojom::PageVisibilityState, WebViewImpl* opener);
   ~WebViewImpl() override;
 
   void HideSelectPopup();

@@ -2306,8 +2306,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_NoOpener) {
       &opener_as_bool));
   EXPECT_FALSE(opener_as_bool);
 
-  // TODO(lukasza): http://crbug.com/718489: Verify that |new_contents| can NOT
-  // find |old_contents| using window.open/name.
+  // TODO(lukasza): http://crbug.com/786411: Verify that |new_contents| can NOT
+  // find |old_contents| using window.open/name.  This is currently broken,
+  // because browsing instance boundaries are pierced for all extension frames
+  // (we hope this can be limited to background pages / contents).
 }
 
 }  // namespace extensions

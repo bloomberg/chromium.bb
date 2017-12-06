@@ -23,6 +23,8 @@
 #ifndef Page_h
 #define Page_h
 
+#include <memory>
+
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/Deprecation.h"
@@ -111,7 +113,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   }
 
   // An "ordinary" page is a fully-featured page owned by a web view.
-  static Page* CreateOrdinary(PageClients&);
+  static Page* CreateOrdinary(PageClients&, Page* opener);
 
   ~Page() override;
 
@@ -126,6 +128,11 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // This set does not include Pages created for other, internal purposes
   // (SVGImages, inspector overlays, page popups etc.)
   static PageSet& OrdinaryPages();
+
+  // Returns pages related to the current browsing context (excluding the
+  // current page).  See also
+  // https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-browsing-contexts
+  HeapVector<Member<Page>> RelatedPages();
 
   static void PlatformColorsChanged();
 
@@ -398,6 +405,11 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   int subframe_count_;
 
   HeapHashSet<WeakMember<PluginsChangedObserver>> plugins_changed_observers_;
+
+  // A circular, double-linked list of pages that are related to the current
+  // browsing context.  See also RelatedPages method.
+  Member<Page> next_related_page_;
+  Member<Page> prev_related_page_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;

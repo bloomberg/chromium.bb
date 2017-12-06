@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
@@ -82,6 +83,11 @@ class ScriptContextSet {
   // null-check the result (and should also always check whether or not the
   // context has access to the other context).
   static ScriptContext* GetContextByObject(const v8::Local<v8::Object>& object);
+
+  // Returns the ScriptContext corresponding to the main world of the
+  // |render_frame|.
+  static ScriptContext* GetMainWorldContextForFrame(
+      content::RenderFrame* render_frame);
 
   // Synchronously runs |callback| with each ScriptContext that belongs to
   // |extension_id| in |render_frame|.
