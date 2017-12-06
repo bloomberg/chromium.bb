@@ -283,7 +283,7 @@ TEST_F(PaintArtifactCompositorTest, OneTransform) {
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(), TransformationMatrix().Rotate(90),
-          FloatPoint3D(100, 100, 0), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(100, 100, 0), false, 0, CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -330,11 +330,11 @@ TEST_F(PaintArtifactCompositorTest, TransformCombining) {
   scoped_refptr<TransformPaintPropertyNode> transform1 =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(), TransformationMatrix().Scale(2),
-          FloatPoint3D(10, 10, 0), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(10, 10, 0), false, 0, CompositingReason::k3DTransform);
   scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
           transform1, TransformationMatrix().Translate(5, 5), FloatPoint3D(),
-          false, 0, kCompositingReason3DTransform);
+          false, 0, CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -437,17 +437,17 @@ TEST_F(PaintArtifactCompositorTest, SortingContextID) {
   scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(transform1, TransformationMatrix(),
                                          FloatPoint3D(), false, 1,
-                                         kCompositingReason3DTransform);
+                                         CompositingReason::k3DTransform);
   // Extends the 3D rendering context of transform2.
   scoped_refptr<TransformPaintPropertyNode> transform3 =
       TransformPaintPropertyNode::Create(transform2, TransformationMatrix(),
                                          FloatPoint3D(), false, 1,
-                                         kCompositingReason3DTransform);
+                                         CompositingReason::k3DTransform);
   // Establishes a 3D rendering context distinct from transform2.
   scoped_refptr<TransformPaintPropertyNode> transform4 =
       TransformPaintPropertyNode::Create(transform2, TransformationMatrix(),
                                          FloatPoint3D(), false, 2,
-                                         kCompositingReason3DTransform);
+                                         CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -545,11 +545,11 @@ TEST_F(PaintArtifactCompositorTest, NestedClips) {
   scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(100, 100, 700, 700),
-      kCompositingReasonOverflowScrollingTouch);
+      CompositingReason::kOverflowScrollingTouch);
   scoped_refptr<ClipPaintPropertyNode> clip2 =
       ClipPaintPropertyNode::Create(clip1, TransformPaintPropertyNode::Root(),
                                     FloatRoundedRect(200, 200, 700, 700),
-                                    kCompositingReasonOverflowScrollingTouch);
+                                    CompositingReason::kOverflowScrollingTouch);
 
   TestPaintArtifact artifact;
   artifact
@@ -734,19 +734,19 @@ TEST_F(PaintArtifactCompositorTest, EffectTreeConversion) {
           EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 0.5, SkBlendMode::kSrcOver,
-          kCompositingReasonAll, CompositorElementId(2));
+          CompositingReason::kAll, CompositorElementId(2));
   scoped_refptr<EffectPaintPropertyNode> effect2 =
       EffectPaintPropertyNode::Create(
           effect1, TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 0.3, SkBlendMode::kSrcOver,
-          kCompositingReasonAll);
+          CompositingReason::kAll);
   scoped_refptr<EffectPaintPropertyNode> effect3 =
       EffectPaintPropertyNode::Create(
           EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 0.2, SkBlendMode::kSrcOver,
-          kCompositingReasonAll);
+          CompositingReason::kAll);
 
   TestPaintArtifact artifact;
   artifact
@@ -805,7 +805,7 @@ TEST_F(PaintArtifactCompositorTest, OneScrollNode) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(7, 9), FloatPoint3D(), false, 0,
-          kCompositingReasonNone, CompositorElementId(), scroll);
+          CompositingReason::kNone, CompositorElementId(), scroll);
 
   TestPaintArtifact artifact;
   artifact
@@ -876,12 +876,12 @@ TEST_F(PaintArtifactCompositorTest, TransformUnderScrollNode) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(7, 9), FloatPoint3D(), false, 0,
-          kCompositingReasonNone, CompositorElementId(), scroll);
+          CompositingReason::kNone, CompositorElementId(), scroll);
 
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           scroll_translation, TransformationMatrix(), FloatPoint3D(), false, 0,
-          kCompositingReason3DTransform);
+          CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -939,7 +939,7 @@ TEST_F(PaintArtifactCompositorTest, NestedScrollNodes) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(11, 13), FloatPoint3D(), false, 0,
-          kCompositingReasonLayerForScrollingContents, CompositorElementId(),
+          CompositingReason::kLayerForScrollingContents, CompositorElementId(),
           scroll_a);
 
   CompositorElementId scroll_element_id_b = ScrollElementId(3);
@@ -951,7 +951,7 @@ TEST_F(PaintArtifactCompositorTest, NestedScrollNodes) {
   scoped_refptr<TransformPaintPropertyNode> scroll_translation_b =
       TransformPaintPropertyNode::Create(
           scroll_translation_a, TransformationMatrix().Translate(37, 41),
-          FloatPoint3D(), false, 0, kCompositingReasonNone,
+          FloatPoint3D(), false, 0, CompositingReason::kNone,
           CompositorElementId(), scroll_b);
   TestPaintArtifact artifact;
   artifact.Chunk(scroll_translation_a, ClipPaintPropertyNode::Root(), effect)
@@ -1018,13 +1018,13 @@ TEST_F(PaintArtifactCompositorTest, ScrollHitTestLayerOrder) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(7, 9), FloatPoint3D(), false, 0,
-          kCompositingReasonWillChangeCompositingHint, CompositorElementId(),
+          CompositingReason::kWillChangeCompositingHint, CompositorElementId(),
           scroll);
 
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           scroll_translation, TransformationMatrix().Translate(5, 5),
-          FloatPoint3D(), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(), false, 0, CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
   artifact.Chunk(scroll_translation, clip, EffectPaintPropertyNode::Root())
@@ -1068,7 +1068,7 @@ TEST_F(PaintArtifactCompositorTest, NestedScrollHitTestLayerOrder) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(7, 9), FloatPoint3D(), false, 0,
-          kCompositingReasonWillChangeCompositingHint, CompositorElementId(),
+          CompositingReason::kWillChangeCompositingHint, CompositorElementId(),
           scroll_1);
 
   scoped_refptr<ClipPaintPropertyNode> clip_2 = ClipPaintPropertyNode::Create(
@@ -1083,7 +1083,7 @@ TEST_F(PaintArtifactCompositorTest, NestedScrollHitTestLayerOrder) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(0, 0), FloatPoint3D(), false, 0,
-          kCompositingReasonWillChangeCompositingHint, CompositorElementId(),
+          CompositingReason::kWillChangeCompositingHint, CompositorElementId(),
           scroll_2);
 
   TestPaintArtifact artifact;
@@ -1139,7 +1139,7 @@ TEST_F(PaintArtifactCompositorTest, AncestorScrollNodes) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(11, 13), FloatPoint3D(), false, 0,
-          kCompositingReasonLayerForScrollingContents, CompositorElementId(),
+          CompositingReason::kLayerForScrollingContents, CompositorElementId(),
           scroll_a);
 
   CompositorElementId scroll_element_id_b = ScrollElementId(3);
@@ -1151,7 +1151,7 @@ TEST_F(PaintArtifactCompositorTest, AncestorScrollNodes) {
   scoped_refptr<TransformPaintPropertyNode> scroll_translation_b =
       TransformPaintPropertyNode::Create(
           scroll_translation_a, TransformationMatrix().Translate(37, 41),
-          FloatPoint3D(), false, 0, kCompositingReasonNone,
+          FloatPoint3D(), false, 0, CompositingReason::kNone,
           CompositorElementId(), scroll_b);
 
   TestPaintArtifact artifact;
@@ -1312,7 +1312,7 @@ TEST_F(PaintArtifactCompositorTest, Merge2DTransformDirectAncestor) {
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(), TransformationMatrix(),
-          FloatPoint3D(), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(), false, 0, CompositingReason::k3DTransform);
 
   scoped_refptr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::Create(
@@ -1806,7 +1806,7 @@ TEST_F(PaintArtifactCompositorTest, OverlapTransform) {
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
           TransformationMatrix().Translate(50, 50), FloatPoint3D(100, 100, 0),
-          false, 0, kCompositingReason3DTransform);
+          false, 0, CompositingReason::k3DTransform);
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk(DefaultPaintChunkProperties())
@@ -1969,7 +1969,7 @@ scoped_refptr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
       EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       ClipPaintPropertyNode::Root(), kColorFilterNone,
       CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver,
-      kCompositingReasonActiveAnimation, expected_compositor_element_id);
+      CompositingReason::kActiveAnimation, expected_compositor_element_id);
 }
 
 scoped_refptr<TransformPaintPropertyNode>
@@ -1977,7 +1977,7 @@ CreateSampleTransformNodeWithElementId() {
   CompositorElementId expected_compositor_element_id(3);
   return TransformPaintPropertyNode::Create(
       TransformPaintPropertyNode::Root(), TransformationMatrix().Rotate(90),
-      FloatPoint3D(100, 100, 0), false, 0, kCompositingReason3DTransform,
+      FloatPoint3D(100, 100, 0), false, 0, CompositingReason::k3DTransform,
       expected_compositor_element_id);
 }
 
@@ -2014,13 +2014,13 @@ TEST_F(PaintArtifactCompositorTest, CompositedLuminanceMask) {
           EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 1.0, SkBlendMode::kSrcOver,
-          kCompositingReasonIsolateCompositedDescendants);
+          CompositingReason::kIsolateCompositedDescendants);
   scoped_refptr<EffectPaintPropertyNode> masking =
       EffectPaintPropertyNode::Create(
           masked, TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterLuminanceToAlpha,
           CompositorFilterOperations(), 1.0, SkBlendMode::kDstIn,
-          kCompositingReasonSquashingDisallowed);
+          CompositingReason::kSquashingDisallowed);
 
   TestPaintArtifact artifact;
   artifact
@@ -2063,7 +2063,7 @@ TEST_F(PaintArtifactCompositorTest, UpdateProducesNewSequenceNumber) {
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(), TransformationMatrix().Rotate(90),
-          FloatPoint3D(100, 100, 0), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(100, 100, 0), false, 0, CompositingReason::k3DTransform);
 
   scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
@@ -2171,7 +2171,7 @@ TEST_F(PaintArtifactCompositorTest, DirectlyCompositedEffect) {
           EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 0.5f, SkBlendMode::kSrcOver,
-          kCompositingReasonAll);
+          CompositingReason::kAll);
 
   TestPaintArtifact artifact;
   artifact
@@ -2219,7 +2219,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositeDeepEffect) {
           effect1, TransformPaintPropertyNode::Root(),
           ClipPaintPropertyNode::Root(), kColorFilterNone,
           CompositorFilterOperations(), 0.2f, SkBlendMode::kSrcOver,
-          kCompositingReasonAll);
+          CompositingReason::kAll);
   scoped_refptr<EffectPaintPropertyNode> effect3 =
       CreateOpacityOnlyEffect(effect2, 0.3f);
 
@@ -2269,7 +2269,7 @@ TEST_F(PaintArtifactCompositorTest, IndirectlyCompositedEffect) {
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(), TransformationMatrix(),
-          FloatPoint3D(), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(), false, 0, CompositingReason::k3DTransform);
 
   TestPaintArtifact artifact;
   artifact
@@ -2314,7 +2314,7 @@ TEST_F(PaintArtifactCompositorTest, DecompositedEffectNotMergingDueToOverlap) {
   scoped_refptr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(), TransformationMatrix(),
-          FloatPoint3D(), false, 0, kCompositingReason3DTransform);
+          FloatPoint3D(), false, 0, CompositingReason::k3DTransform);
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -2497,7 +2497,7 @@ scoped_refptr<EffectPaintPropertyNode> CreateEffectWithOpacityAndReason(
 TEST_F(PaintArtifactCompositorTest,
        DontSkipChunkWithTinyOpacityAndDirectCompositingReason) {
   scoped_refptr<EffectPaintPropertyNode> effect =
-      CreateEffectWithOpacityAndReason(0.0001f, kCompositingReasonCanvas);
+      CreateEffectWithOpacityAndReason(0.0001f, CompositingReason::kCanvas);
   TestPaintArtifact artifact;
   artifact
       .Chunk(TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
@@ -2510,9 +2510,9 @@ TEST_F(PaintArtifactCompositorTest,
 TEST_F(PaintArtifactCompositorTest,
        SkipChunkWithTinyOpacityAndVisibleChildEffectNode) {
   scoped_refptr<EffectPaintPropertyNode> tinyEffect =
-      CreateEffectWithOpacityAndReason(0.0001f, kCompositingReasonNone);
+      CreateEffectWithOpacityAndReason(0.0001f, CompositingReason::kNone);
   scoped_refptr<EffectPaintPropertyNode> visibleEffect =
-      CreateEffectWithOpacityAndReason(0.5f, kCompositingReasonNone,
+      CreateEffectWithOpacityAndReason(0.5f, CompositingReason::kNone,
                                        tinyEffect);
   TestPaintArtifact artifact;
   artifact
@@ -2527,9 +2527,9 @@ TEST_F(
     PaintArtifactCompositorTest,
     DontSkipChunkWithTinyOpacityAndVisibleChildEffectNodeWithCompositingParent) {
   scoped_refptr<EffectPaintPropertyNode> tinyEffect =
-      CreateEffectWithOpacityAndReason(0.0001f, kCompositingReasonCanvas);
+      CreateEffectWithOpacityAndReason(0.0001f, CompositingReason::kCanvas);
   scoped_refptr<EffectPaintPropertyNode> visibleEffect =
-      CreateEffectWithOpacityAndReason(0.5f, kCompositingReasonNone,
+      CreateEffectWithOpacityAndReason(0.5f, CompositingReason::kNone,
                                        tinyEffect);
   TestPaintArtifact artifact;
   artifact
@@ -2543,9 +2543,9 @@ TEST_F(
 TEST_F(PaintArtifactCompositorTest,
        SkipChunkWithTinyOpacityAndVisibleChildEffectNodeWithCompositingChild) {
   scoped_refptr<EffectPaintPropertyNode> tinyEffect =
-      CreateEffectWithOpacityAndReason(0.0001f, kCompositingReasonNone);
+      CreateEffectWithOpacityAndReason(0.0001f, CompositingReason::kNone);
   scoped_refptr<EffectPaintPropertyNode> visibleEffect =
-      CreateEffectWithOpacityAndReason(0.5f, kCompositingReasonCanvas,
+      CreateEffectWithOpacityAndReason(0.5f, CompositingReason::kCanvas,
                                        tinyEffect);
   TestPaintArtifact artifact;
   artifact
@@ -2589,7 +2589,7 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, kCompositingReasonWillChangeCompositingHint);
+      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2639,13 +2639,13 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   scoped_refptr<TransformPaintPropertyNode> t1 =
       TransformPaintPropertyNode::Create(
           t0(), TransformationMatrix(), FloatPoint3D(), false, 0,
-          kCompositingReasonWillChangeCompositingHint);
+          CompositingReason::kWillChangeCompositingHint);
 
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, kCompositingReasonWillChangeCompositingHint);
+      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2710,13 +2710,13 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   scoped_refptr<TransformPaintPropertyNode> t1 =
       TransformPaintPropertyNode::Create(
           t0(), TransformationMatrix(), FloatPoint3D(), false, 0,
-          kCompositingReasonWillChangeCompositingHint);
+          CompositingReason::kWillChangeCompositingHint);
 
   FloatSize corner(5, 5);
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, kCompositingReasonWillChangeCompositingHint);
+      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2805,11 +2805,11 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, kCompositingReasonWillChangeCompositingHint);
+      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
 
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c1, ColorFilter(), CompositorFilterOperations(), 1,
-      SkBlendMode::kSrcOver, kCompositingReasonWillChangeCompositingHint);
+      SkBlendMode::kSrcOver, CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2877,13 +2877,13 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, kCompositingReasonWillChangeCompositingHint);
+      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
 
   CompositorFilterOperations non_trivial_filter;
   non_trivial_filter.AppendBlurFilter(5);
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c0(), ColorFilter(), non_trivial_filter, 1,
-      SkBlendMode::kSrcOver, kCompositingReasonWillChangeCompositingHint);
+      SkBlendMode::kSrcOver, CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -2983,11 +2983,11 @@ TEST_F(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   scoped_refptr<ClipPaintPropertyNode> c1 = ClipPaintPropertyNode::Create(
-      c0(), t0(), rrect, kCompositingReasonWillChangeCompositingHint);
+      c0(), t0(), rrect, CompositingReason::kWillChangeCompositingHint);
 
   scoped_refptr<EffectPaintPropertyNode> e1 = EffectPaintPropertyNode::Create(
       e0(), t0(), c1, ColorFilter(), CompositorFilterOperations(), 1,
-      SkBlendMode::kMultiply, kCompositingReasonWillChangeCompositingHint);
+      SkBlendMode::kMultiply, CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c1, e0())
@@ -3208,7 +3208,7 @@ TEST_F(PaintArtifactCompositorTest, CompositedEffectWithNoOutputClip) {
       EffectPaintPropertyNode::Create(
           EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
           nullptr, kColorFilterNone, CompositorFilterOperations(), 0.5,
-          SkBlendMode::kSrcOver, kCompositingReasonAll);
+          SkBlendMode::kSrcOver, CompositingReason::kAll);
 
   TestPaintArtifact artifact;
   artifact

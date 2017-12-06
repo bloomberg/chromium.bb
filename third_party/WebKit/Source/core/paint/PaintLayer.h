@@ -683,18 +683,18 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   CompositingReasons PotentialCompositingReasonsFromStyle() const {
     return rare_data_ ? rare_data_->potential_compositing_reasons_from_style
-                      : kCompositingReasonNone;
+                      : CompositingReason::kNone;
   }
   void SetPotentialCompositingReasonsFromStyle(CompositingReasons reasons) {
     DCHECK(reasons ==
-           (reasons & kCompositingReasonComboAllStyleDeterminedReasons));
-    if (rare_data_ || reasons != kCompositingReasonNone)
+           (reasons & CompositingReason::kComboAllStyleDeterminedReasons));
+    if (rare_data_ || reasons != CompositingReason::kNone)
       EnsureRareData().potential_compositing_reasons_from_style = reasons;
   }
 
   bool HasStyleDeterminedDirectCompositingReasons() const {
     return PotentialCompositingReasonsFromStyle() &
-           kCompositingReasonComboAllDirectStyleDeterminedReasons;
+           CompositingReason::kComboAllDirectStyleDeterminedReasons;
   }
 
   class AncestorDependentCompositingInputs {
@@ -843,15 +843,15 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   CompositingReasons GetCompositingReasons() const {
     DCHECK(IsAllowedToQueryCompositingState());
     return rare_data_ ? rare_data_->compositing_reasons
-                      : kCompositingReasonNone;
+                      : CompositingReason::kNone;
   }
   void SetCompositingReasons(CompositingReasons,
-                             CompositingReasons mask = kCompositingReasonAll);
+                             CompositingReasons mask = CompositingReason::kAll);
 
   SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
     DCHECK(IsAllowedToQueryCompositingState());
     return rare_data_ ? rare_data_->squashing_disallowed_reasons
-                      : kSquashingDisallowedReasonsNone;
+                      : SquashingDisallowedReason::kNone;
   }
   void SetSquashingDisallowedReasons(SquashingDisallowedReasons);
 

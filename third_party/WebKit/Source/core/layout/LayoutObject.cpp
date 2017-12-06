@@ -2966,7 +2966,7 @@ CompositingState LayoutObject::GetCompositingState() const {
 }
 
 CompositingReasons LayoutObject::AdditionalCompositingReasons() const {
-  return kCompositingReasonNone;
+  return CompositingReason::kNone;
 }
 
 bool LayoutObject::HitTest(HitTestResult& result,

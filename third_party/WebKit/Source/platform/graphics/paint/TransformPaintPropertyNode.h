@@ -40,7 +40,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const FloatPoint3D& origin,
       bool flattens_inherited_transform = false,
       unsigned rendering_context_id = 0,
-      CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
+      CompositingReasons direct_compositing_reasons = CompositingReason::kNone,
       const CompositorElementId& compositor_element_id = CompositorElementId(),
       scoped_refptr<const ScrollPaintPropertyNode> scroll = nullptr) {
     if (scroll) {
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       const FloatPoint3D& origin,
       bool flattens_inherited_transform = false,
       unsigned rendering_context_id = 0,
-      CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
+      CompositingReasons direct_compositing_reasons = CompositingReason::kNone,
       CompositorElementId compositor_element_id = CompositorElementId(),
       scoped_refptr<const ScrollPaintPropertyNode> scroll = nullptr) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
@@ -112,11 +112,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   }
 
   bool HasDirectCompositingReasons() const {
-    return direct_compositing_reasons_ != kCompositingReasonNone;
+    return direct_compositing_reasons_ != CompositingReason::kNone;
   }
 
   bool RequiresCompositingForAnimation() const {
-    return direct_compositing_reasons_ & kCompositingReasonActiveAnimation;
+    return direct_compositing_reasons_ & CompositingReason::kActiveAnimation;
   }
 
   const CompositorElementId& GetCompositorElementId() const {

@@ -376,7 +376,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   std::unique_ptr<GraphicsLayer> CreateGraphicsLayer(
       CompositingReasons,
-      SquashingDisallowedReasons = kSquashingDisallowedReasonsNone);
+      SquashingDisallowedReasons = SquashingDisallowedReason::kNone);
   bool ToggleScrollbarLayerIfNeeded(std::unique_ptr<GraphicsLayer>&,
                                     bool needs_layer,
                                     CompositingReasons);

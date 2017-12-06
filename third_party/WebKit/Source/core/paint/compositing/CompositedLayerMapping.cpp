@@ -499,7 +499,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
 void CompositedLayerMapping::UpdateRasterizationPolicy() {
   bool transformed_rasterization_allowed =
       !(owning_layer_.GetCompositingReasons() &
-        kCompositingReasonComboAllDirectReasons);
+        CompositingReason::kComboAllDirectReasons);
   graphics_layer_->ContentLayer()->SetTransformedRasterizationAllowed(
       transformed_rasterization_allowed);
   if (squashing_layer_)
@@ -968,7 +968,7 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
       SetContentsNeedDisplay();
     else if (!(owning_layer_.GetCompositingReasons() &
-               kCompositingReasonComboAllDirectReasons))
+               CompositingReason::kComboAllDirectReasons))
       SetContentsNeedDisplay();
   }
 
@@ -1990,7 +1990,7 @@ bool CompositedLayerMapping::UpdateClippingLayers(
   if (needs_ancestor_clip) {
     if (!ancestor_clipping_layer_) {
       ancestor_clipping_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForAncestorClip);
+          CreateGraphicsLayer(CompositingReason::kLayerForAncestorClip);
       ancestor_clipping_layer_->SetMasksToBounds(true);
       ancestor_clipping_layer_->SetShouldFlattenTransform(false);
       layers_changed = true;
@@ -2009,7 +2009,7 @@ bool CompositedLayerMapping::UpdateClippingLayers(
     DCHECK(ancestor_clipping_layer_);
     if (!ancestor_clipping_mask_layer_) {
       ancestor_clipping_mask_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForAncestorClippingMask);
+          CreateGraphicsLayer(CompositingReason::kLayerForAncestorClippingMask);
       ancestor_clipping_mask_layer_->SetPaintingPhase(
           kGraphicsLayerPaintAncestorClippingMask);
       ancestor_clipping_layer_->SetMaskLayer(
@@ -2029,7 +2029,7 @@ bool CompositedLayerMapping::UpdateClippingLayers(
     // clipping.
     if (!child_containment_layer_ && !is_main_frame_layout_view_layer_) {
       child_containment_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForDescendantClip);
+          CreateGraphicsLayer(CompositingReason::kLayerForDescendantClip);
       child_containment_layer_->SetMasksToBounds(true);
       layers_changed = true;
     }
@@ -2049,7 +2049,7 @@ bool CompositedLayerMapping::UpdateChildTransformLayer(
   if (needs_child_transform_layer) {
     if (!child_transform_layer_) {
       child_transform_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForPerspective);
+          CreateGraphicsLayer(CompositingReason::kLayerForPerspective);
       child_transform_layer_->SetDrawsContent(false);
       layers_changed = true;
     }
@@ -2080,10 +2080,10 @@ bool CompositedLayerMapping::ToggleScrollbarLayerIfNeeded(
           owning_layer_.GetScrollableArea()) {
     if (ScrollingCoordinator* scrolling_coordinator =
             owning_layer_.GetScrollingCoordinator()) {
-      if (reason == kCompositingReasonLayerForHorizontalScrollbar) {
+      if (reason == CompositingReason::kLayerForHorizontalScrollbar) {
         scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
             scrollable_area, kHorizontalScrollbar);
-      } else if (reason == kCompositingReasonLayerForVerticalScrollbar) {
+      } else if (reason == CompositingReason::kLayerForVerticalScrollbar) {
         scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
             scrollable_area, kVerticalScrollbar);
       }
@@ -2105,12 +2105,13 @@ bool CompositedLayerMapping::UpdateOverflowControlsLayers(
         scrollable_area->ShouldRebuildHorizontalScrollbarLayer()) {
       ToggleScrollbarLayerIfNeeded(
           layer_for_horizontal_scrollbar_, false,
-          kCompositingReasonLayerForHorizontalScrollbar);
+          CompositingReason::kLayerForHorizontalScrollbar);
     }
     if (layer_for_vertical_scrollbar_ && needs_vertical_scrollbar_layer &&
         scrollable_area->ShouldRebuildVerticalScrollbarLayer()) {
-      ToggleScrollbarLayerIfNeeded(layer_for_vertical_scrollbar_, false,
-                                   kCompositingReasonLayerForVerticalScrollbar);
+      ToggleScrollbarLayerIfNeeded(
+          layer_for_vertical_scrollbar_, false,
+          CompositingReason::kLayerForVerticalScrollbar);
     }
     scrollable_area->ResetRebuildScrollbarLayerFlags();
 
@@ -2136,25 +2137,26 @@ bool CompositedLayerMapping::UpdateOverflowControlsLayers(
 
   bool horizontal_scrollbar_layer_changed = ToggleScrollbarLayerIfNeeded(
       layer_for_horizontal_scrollbar_, needs_horizontal_scrollbar_layer,
-      kCompositingReasonLayerForHorizontalScrollbar);
+      CompositingReason::kLayerForHorizontalScrollbar);
   bool vertical_scrollbar_layer_changed = ToggleScrollbarLayerIfNeeded(
       layer_for_vertical_scrollbar_, needs_vertical_scrollbar_layer,
-      kCompositingReasonLayerForVerticalScrollbar);
+      CompositingReason::kLayerForVerticalScrollbar);
   bool scroll_corner_layer_changed = ToggleScrollbarLayerIfNeeded(
       layer_for_scroll_corner_, needs_scroll_corner_layer,
-      kCompositingReasonLayerForScrollCorner);
+      CompositingReason::kLayerForScrollCorner);
 
   bool needs_overflow_controls_host_layer = needs_horizontal_scrollbar_layer ||
                                             needs_vertical_scrollbar_layer ||
                                             needs_scroll_corner_layer;
-  ToggleScrollbarLayerIfNeeded(overflow_controls_host_layer_,
-                               needs_overflow_controls_host_layer,
-                               kCompositingReasonLayerForOverflowControlsHost);
+  ToggleScrollbarLayerIfNeeded(
+      overflow_controls_host_layer_, needs_overflow_controls_host_layer,
+      CompositingReason::kLayerForOverflowControlsHost);
   bool needs_overflow_ancestor_clip_layer =
       needs_overflow_controls_host_layer && needs_ancestor_clip;
-  ToggleScrollbarLayerIfNeeded(overflow_controls_ancestor_clipping_layer_,
-                               needs_overflow_ancestor_clip_layer,
-                               kCompositingReasonLayerForOverflowControlsHost);
+  ToggleScrollbarLayerIfNeeded(
+      overflow_controls_ancestor_clipping_layer_,
+      needs_overflow_ancestor_clip_layer,
+      CompositingReason::kLayerForOverflowControlsHost);
 
   return horizontal_scrollbar_layer_changed ||
          vertical_scrollbar_layer_changed || scroll_corner_layer_changed;
@@ -2390,7 +2392,7 @@ bool CompositedLayerMapping::UpdateForegroundLayer(
   if (needs_foreground_layer) {
     if (!foreground_layer_) {
       foreground_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForForeground);
+          CreateGraphicsLayer(CompositingReason::kLayerForForeground);
       foreground_layer_->SetHitTestableWithoutDrawsContent(true);
       layer_changed = true;
     }
@@ -2409,7 +2411,7 @@ bool CompositedLayerMapping::UpdateBackgroundLayer(
   if (needs_background_layer) {
     if (!background_layer_) {
       background_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForBackground);
+          CreateGraphicsLayer(CompositingReason::kLayerForBackground);
       background_layer_->SetTransformOrigin(FloatPoint3D());
       background_layer_->SetPaintingPhase(kGraphicsLayerPaintBackground);
       layer_changed = true;
@@ -2435,7 +2437,7 @@ bool CompositedLayerMapping::UpdateDecorationOutlineLayer(
   if (needs_decoration_outline_layer) {
     if (!decoration_outline_layer_) {
       decoration_outline_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForDecoration);
+          CreateGraphicsLayer(CompositingReason::kLayerForDecoration);
       decoration_outline_layer_->SetPaintingPhase(
           kGraphicsLayerPaintDecoration);
       layer_changed = true;
@@ -2452,7 +2454,7 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
   bool layer_changed = false;
   if (needs_mask_layer) {
     if (!mask_layer_) {
-      mask_layer_ = CreateGraphicsLayer(kCompositingReasonLayerForMask);
+      mask_layer_ = CreateGraphicsLayer(CompositingReason::kLayerForMask);
       mask_layer_->SetPaintingPhase(kGraphicsLayerPaintMask);
       layer_changed = true;
     }
@@ -2469,7 +2471,7 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayer(
   if (needs_child_clipping_mask_layer) {
     if (!child_clipping_mask_layer_) {
       child_clipping_mask_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForClippingMask);
+          CreateGraphicsLayer(CompositingReason::kLayerForClippingMask);
       child_clipping_mask_layer_->SetPaintingPhase(
           kGraphicsLayerPaintChildClippingMask);
     }
@@ -2495,13 +2497,13 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
     } else {
       // Outer layer which corresponds with the scroll view.
       scrolling_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForScrollingContainer);
+          CreateGraphicsLayer(CompositingReason::kLayerForScrollingContainer);
       scrolling_layer_->SetDrawsContent(false);
       scrolling_layer_->SetMasksToBounds(true);
 
       // Inner layer which renders the content that scrolls.
       scrolling_contents_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
+          CreateGraphicsLayer(CompositingReason::kLayerForScrollingContents);
       scrolling_contents_layer_->SetHitTestableWithoutDrawsContent(true);
 
       auto element_id = scrollable_area->GetCompositorElementId();
@@ -2638,7 +2640,7 @@ bool CompositedLayerMapping::UpdateSquashingLayers(
   if (needs_squashing_layers) {
     if (!squashing_layer_) {
       squashing_layer_ =
-          CreateGraphicsLayer(kCompositingReasonLayerForSquashingContents);
+          CreateGraphicsLayer(CompositingReason::kLayerForSquashingContents);
       squashing_layer_->SetDrawsContent(true);
       layers_changed = true;
     }
@@ -2652,7 +2654,7 @@ bool CompositedLayerMapping::UpdateSquashingLayers(
     } else {
       if (!squashing_containment_layer_) {
         squashing_containment_layer_ =
-            CreateGraphicsLayer(kCompositingReasonLayerForSquashingContainer);
+            CreateGraphicsLayer(CompositingReason::kLayerForSquashingContainer);
         squashing_containment_layer_->SetShouldFlattenTransform(false);
         layers_changed = true;
       }
