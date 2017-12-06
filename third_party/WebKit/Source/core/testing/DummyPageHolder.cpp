@@ -61,8 +61,6 @@ DummyPageHolder::DummyPageHolder(
     FillWithEmptyClients(page_clients);
   } else {
     page_clients.chrome_client = page_clients_argument->chrome_client;
-    page_clients.context_menu_client =
-        page_clients_argument->context_menu_client;
     page_clients.editor_client = page_clients_argument->editor_client;
   }
   page_ = Page::Create(page_clients);

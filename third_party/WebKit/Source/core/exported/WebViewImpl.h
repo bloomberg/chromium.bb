@@ -38,7 +38,6 @@
 #include "core/exported/WebPagePopupImpl.h"
 #include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
@@ -566,7 +565,6 @@ class CORE_EXPORT WebViewImpl final
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
 
   Persistent<ChromeClient> chrome_client_;
-  ContextMenuClient context_menu_client_;
   EditorClient editor_client_;
 
   WebSize size_;

@@ -50,9 +50,6 @@ void FillWithEmptyClients(Page::PageClients& page_clients) {
                       (EmptyChromeClient::Create()));
   page_clients.chrome_client = &dummy_chrome_client;
 
-  DEFINE_STATIC_LOCAL(EmptyContextMenuClient, dummy_context_menu_client, ());
-  page_clients.context_menu_client = &dummy_context_menu_client;
-
   DEFINE_STATIC_LOCAL(EmptyEditorClient, dummy_editor_client, ());
   page_clients.editor_client = &dummy_editor_client;
 }
@@ -222,10 +219,5 @@ EmptyLocalFrameClient::CreateApplicationCacheHost(
 }
 
 EmptyRemoteFrameClient::EmptyRemoteFrameClient() = default;
-
-bool EmptyContextMenuClient::ShowContextMenu(const ContextMenu*,
-                                             WebMenuSourceType source_type) {
-  return false;
-}
 
 }  // namespace blink

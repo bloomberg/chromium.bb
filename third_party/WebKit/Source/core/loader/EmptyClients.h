@@ -37,7 +37,6 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/RemoteFrameClient.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/ContextMenuClient.h"
 #include "core/page/EditorClient.h"
 #include "core/page/Page.h"
 #include "platform/DragImage.h"
@@ -415,18 +414,6 @@ class EmptyEditorClient final : public EditorClient {
   bool HandleKeyboardEvent(LocalFrame*) override { return false; }
 
   DISALLOW_COPY_AND_ASSIGN(EmptyEditorClient);
-};
-
-class EmptyContextMenuClient final : public ContextMenuClient {
-  USING_FAST_MALLOC(EmptyContextMenuClient);
-
- public:
-  EmptyContextMenuClient() : ContextMenuClient() {}
-  ~EmptyContextMenuClient() override {}
-  bool ShowContextMenu(const ContextMenu*, WebMenuSourceType) override;
-  void ClearContextMenu() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(EmptyContextMenuClient);
 };
 
 class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
