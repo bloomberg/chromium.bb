@@ -4,12 +4,13 @@
 
 #include "core/paint/ng/ng_paint_fragment.h"
 
-#include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_container_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/paint/ng/ng_box_fragment_painter.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -130,6 +131,23 @@ void NGPaintFragment::AddOutlineRects(
     LayoutRect outline_rect = child->VisualRect();
     outline_rect.MoveBy(additional_offset);
     outline_rects->push_back(outline_rect);
+  }
+}
+
+void NGPaintFragment::PaintInlineBoxForDescendants(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset,
+    const LayoutInline* layout_object,
+    NGPhysicalOffset offset) const {
+  for (const auto& child : Children()) {
+    if (child->GetLayoutObject() == layout_object) {
+      NGBoxFragmentPainter(*child).PaintInlineBox(
+          paint_info, paint_offset + offset.ToLayoutPoint(), paint_offset);
+      continue;
+    }
+
+    child->PaintInlineBoxForDescendants(paint_info, paint_offset, layout_object,
+                                        offset + child->Offset());
   }
 }
 

@@ -34,6 +34,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&, const LayoutPoint&);
+  void PaintInlineBox(const PaintInfo&,
+                      const LayoutPoint&,
+                      const LayoutPoint& block_paint_offset);
 
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
@@ -64,9 +67,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const PaintInfo&);
   bool IntersectsPaintRect(const PaintInfo&, const LayoutPoint&) const;
 
-  void PaintInlineBox(const PaintInfo&,
-                      const LayoutPoint&,
-                      const LayoutPoint& block_paint_offset);
   void PaintWithAdjustedOffset(PaintInfo&, const LayoutPoint&);
   void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
