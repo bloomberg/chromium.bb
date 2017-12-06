@@ -16,7 +16,13 @@ function addManifestLinkTag() {
   var manifestUrl =
       (manifestIndex >= 0) ? url.slice(manifestIndex + 10) : 'manifest.json';
   var linkTag = document.createElement("link");
+  linkTag.id = "manifest";
   linkTag.rel = "manifest";
   linkTag.href = manifestUrl;
   document.head.append(linkTag);
+}
+
+function changeManifestUrl(newManifestUrl) {
+  var linkTag = document.getElementById("manifest");
+  linkTag.href = newManifestUrl;
 }

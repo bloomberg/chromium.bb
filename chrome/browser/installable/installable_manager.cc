@@ -339,6 +339,8 @@ void InstallableManager::Reset() {
   manifest_ = base::MakeUnique<ManifestProperty>();
   valid_manifest_ = base::MakeUnique<ValidManifestProperty>();
   worker_ = base::MakeUnique<ServiceWorkerProperty>();
+
+  OnResetData();
 }
 
 void InstallableManager::SetManifestDependentTasksComplete() {
@@ -630,6 +632,12 @@ void InstallableManager::DidFinishNavigation(
       !handle->IsSameDocument()) {
     Reset();
   }
+}
+
+void InstallableManager::DidUpdateWebManifestURL(
+    const base::Optional<GURL>& manifest_url) {
+  // A change in the manifest URL invalidates our entire internal state.
+  Reset();
 }
 
 void InstallableManager::WebContentsDestroyed() {
