@@ -1347,14 +1347,9 @@ bool SpdySession::ValidatePushedStream(const SpdySessionKey& key) const {
          VerifyDomainAuthentication(key.host_port_pair().host());
 }
 
-void SpdySession::OnPushedStreamClaimed(const GURL& url) {
-  SpdyStreamId stream_id = unclaimed_pushed_streams_.FindStream(url);
-  // This is only possible in tests.
-  // TODO(bnc): Change to DCHECK once Http2PushPromiseIndexTest stops using
-  // actual SpdySession instances.  https://crbug.com/791055.
-  if (stream_id == kNoPushedStreamFound)
-    return;
-
+void SpdySession::OnPushedStreamClaimed(const GURL& url,
+                                        SpdyStreamId stream_id) {
+  DCHECK_NE(kNoPushedStreamFound, stream_id);
   LogPushStreamClaimed(url, stream_id);
 }
 
@@ -1411,7 +1406,7 @@ bool SpdySession::UnclaimedPushedStreamContainer::erase(
   // Only allow cross-origin push for secure resources.
   if (it->first.SchemeIsCryptographic()) {
     spdy_session_->pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
-        it->first, spdy_session_);
+        it->first, stream_id, spdy_session_);
   }
   streams_.erase(it);
   return true;
@@ -1429,7 +1424,7 @@ bool SpdySession::UnclaimedPushedStreamContainer::insert(
   // Only allow cross-origin push for https resources.
   if (url.SchemeIsCryptographic()) {
     spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
-        url, spdy_session_);
+        url, stream_id, spdy_session_);
   }
   return true;
 }

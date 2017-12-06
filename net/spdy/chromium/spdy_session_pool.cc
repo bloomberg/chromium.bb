@@ -138,7 +138,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const NetLogWithSource& net_log) {
   AvailableSessionMap::iterator it = LookupAvailableSessionByKey(key);
   if (it != available_sessions_.end()) {
-    if (key.Equals(it->second->spdy_session_key())) {
+    if (key == it->second->spdy_session_key()) {
       UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet", FOUND_EXISTING,
                                 SPDY_SESSION_GET_MAX);
       net_log.AddEvent(
@@ -286,7 +286,7 @@ std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     // host_port_proxy_pair (not an alias).
     const SpdySessionKey& key = it->first;
     const SpdySessionKey& session_key = it->second->spdy_session_key();
-    if (key.Equals(session_key))
+    if (key == session_key)
       list->Append(it->second->GetInfoAsValue());
   }
   return std::move(list);
@@ -498,7 +498,7 @@ void SpdySessionPool::RemoveAliases(const SpdySessionKey& key) {
   // Walk the aliases map, find references to this pair.
   // TODO(mbelshe):  Figure out if this is too expensive.
   for (AliasMap::iterator it = aliases_.begin(); it != aliases_.end(); ) {
-    if (it->second.Equals(key)) {
+    if (it->second == key) {
       AliasMap::iterator old_it = it;
       ++it;
       aliases_.erase(old_it);
