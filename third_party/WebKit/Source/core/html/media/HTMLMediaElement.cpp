@@ -1014,9 +1014,19 @@ void HTMLMediaElement::SelectMediaResource() {
     // has neither a src attribute nor a source element child: set the
     // networkState to kNetworkEmpty, and abort these steps; the synchronous
     // section ends.
+    // TODO(mlamouri): Setting the network state to empty implies that there
+    // should be no |web_media_player_|. However, if a previous playback ended
+    // due to an error, we can get here and still have one. Decide on a plan
+    // to deal with this properly. https://crbug.com/789737
     load_state_ = kWaitingForSource;
     SetShouldDelayLoadEvent(false);
-    SetNetworkState(kNetworkEmpty);
+    if (!GetWebMediaPlayer() || (ready_state_ < kHaveFutureData &&
+                                 ready_state_maximum_ < kHaveFutureData)) {
+      SetNetworkState(kNetworkEmpty);
+    } else {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHTMLMediaElementEmptyLoadWithFutureData);
+    }
     UpdateDisplayState();
 
     BLINK_MEDIA_LOG << "selectMediaResource(" << (void*)this
