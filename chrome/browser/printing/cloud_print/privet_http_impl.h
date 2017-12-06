@@ -88,8 +88,8 @@ class PrivetRegisterOperationImpl
   };
 
   // Arguments is JSON value from request.
-  typedef base::Callback<void(const base::DictionaryValue&)>
-      ResponseHandler;
+  using ResponseHandler =
+      base::OnceCallback<void(const base::DictionaryValue&)>;
 
   void StartInfoOperation();
   void OnPrivetInfoDone(const base::DictionaryValue* value);
@@ -171,8 +171,9 @@ class PrivetLocalPrintOperationImpl
   void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
 
  private:
-  typedef base::Callback<void(bool, const base::DictionaryValue* value)>
-      ResponseCallback;
+  using ResponseCallback =
+      base::OnceCallback<void(/*has_error=*/bool,
+                              const base::DictionaryValue* value)>;
 
   void StartInitialRequest();
   void DoCreatejob();
