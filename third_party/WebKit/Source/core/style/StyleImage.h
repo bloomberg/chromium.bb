@@ -46,7 +46,7 @@ typedef void* WrappedImagePtr;
 // value.
 class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
  public:
-  virtual ~StyleImage();
+  virtual ~StyleImage() {}
 
   bool operator==(const StyleImage& other) const {
     return Data() == other.Data();
@@ -133,10 +133,6 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   ALWAYS_INLINE bool IsInvalidImage() const { return is_invalid_image_; }
   ALWAYS_INLINE bool IsPaintImage() const { return is_paint_image_; }
 
-  // If the StyleImage belongs to a User Agent stylesheet, it should be flagged
-  // so that it can persist beyond a navigation.
-  void FlagAsUserAgentResource();
-
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
@@ -153,8 +149,6 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   bool is_image_resource_set_ : 1;
   bool is_invalid_image_ : 1;
   bool is_paint_image_ : 1;
-
-  bool is_ua_css_resource_ = false;
 
   LayoutSize ApplyZoom(const LayoutSize&, float multiplier) const;
   LayoutSize ImageSizeForSVGImage(SVGImage*,

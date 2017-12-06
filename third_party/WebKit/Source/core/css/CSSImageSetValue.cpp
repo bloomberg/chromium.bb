@@ -139,9 +139,6 @@ StyleImage* CSSImageSetValue::CacheImage(
       cached_image_ = StyleInvalidImage::Create(image.image_url);
     }
     cached_scale_factor_ = device_scale_factor;
-
-    if (parser_mode_ == kUASheetMode)
-      cached_image_->FlagAsUserAgentResource();
   }
 
   return cached_image_.Get();
