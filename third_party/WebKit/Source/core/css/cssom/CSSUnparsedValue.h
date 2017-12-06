@@ -57,6 +57,8 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
     return Create(tokens);
   }
 
+  String ToString() const;
+
   FRIEND_TEST_ALL_PREFIXES(CSSVariableReferenceValueTest, MixedList);
 
   HeapVector<StringOrCSSVariableReferenceValue> tokens_;
