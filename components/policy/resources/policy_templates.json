@@ -2911,33 +2911,8 @@
 
           This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>.
 
-          The configuration for each extension (or extensions with same update URL) is another dictionary that can contain the fields documented below.
-
-          <ph name="INSTALLATION_MODE">"installation_mode"</ph>: maps to a string indicating the installation mode for the extension. The valid strings are:
-          * <ph name="ALLOWED">"allowed"</ph>: allows the extension to be installed by the user. This is the default behavior.
-          * <ph name="BLOCKED">"blocked"</ph>: blocks installation of the extension.
-          * <ph name="FORCE_INSTALLED">"force_installed"</ph>: the extension is automatically installed and can't be removed by the user.
-          * <ph name="NORMAL_INSTALLED">"normal_installed"</ph>: the extension is automatically installed but can be disabled by the user.
-
-          The <ph name="INSTALLATION_MODE">"installation_mode"</ph> can also be configured for multiple extensions as well, including the <ph name="DEFAULT_SCOPE">"*"</ph> extension (as default settings) and extensions with same update URL. Only the <ph name="ALLOWED">"allowed"</ph> and <ph name="BLOCKED">"blocked"</ph> values can be used in this case.
-
-          If the mode is set to <ph name="FORCE_INSTALLED">"force_installed"</ph> or <ph name="NORMAL_INSTALLED">"normal_installed"</ph> then an <ph name="UPDATE_URL">"update_url"</ph> must be configured too. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest. The update URL should point to an Update Manifest XML document as mentioned above.
-
-          <ph name="BLOCKED_PERMISSIONS">"blocked_permissions"</ph>: maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3">https://developer.chrome.com/extensions/declare_permissions</ph>. This setting also can be configured for <ph name="DEFAULT_SCOPE">"*"</ph> extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
-
-          <ph name="ALLOWED_PERMISSIONS">"allowed_permissions"</ph>: similar to <ph name="BLOCKED_PERMISSIONS">"blocked_permissions"</ph>, but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for <ph name="DEFAULT_SCOPE">"*"</ph> extension. Note that this setting doesn't give granted permissions to extensions automatically.
-
-          <ph name="MINIMUM_VERSION_REQUIRED">"minimum_version_required"</ph>: maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4">https://developer.chrome.com/apps/manifest/version</ph>. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
-
-          The following settings can be used only for the default <ph name="DEFAULT_SCOPE">"*"</ph> configuration:
-
-          <ph name="INSTALL_SOURCES">"install_sources"</ph>: Each item in this list is an extension-style match pattern (<ph name="LINK_TO_MATCH_PATTERNS">https://developer.chrome.com/extensions/match_patterns</ph>). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the <ph name="EXTENSION_SUFFIX_WILDCARD">*.crx</ph> file and the page where the download is started from (i.e.  the referrer) must be allowed by these patterns.
-
-          <ph name="ALLOWED_TYPES">"allowed_types"</ph>: This setting whitelists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.  The value is a list of strings, each of which should be one of the following: <ph name="VALID_ALLOWED_TYPES">"extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app"</ph>. See the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extensions documentation for more information on these types.
-          <ph name="BLOCKED_INSTALL_MESSAGE">"blocked_install_message"</ph>: If a user tries to install an extension, but it is blocked by policy the Chrome Webstore displays a generic error message. This setting allows you to append text to the error message. This could be used to direct users to your help desk, explain why a particular extension is blocked, or something else. This error message will be truncated if it is longer than 1000 characters.
-          <ph name="RUNTIME_BLOCKED_HOSTS">"runtime_blocked_hosts"</ph>: Accepts a list of hosts that an extension will be blocked from interacting with. This includes injecting javascript, altering and viewing webRequests / webNavigation, viewing and altering cookies. The format is similar to Match Patterns <ph name="LINK_TO_MATCH_PATTERNS">https://developer.chrome.com/extensions/match_patterns</ph> except no paths may be defined. e.g. "*://*.example.com". This also supports effective TLD wildcarding e.g. "*://example.*".
-          <ph name="RUNTIME_ALLOWED_HOSTS">"runtime_allowed_hosts"</ph>: Accepts a list of hosts that an extension can interact with regardless of whether they are listed in <ph name="RUNTIME_BLOCKED_HOSTS">"runtime_blocked_hosts"</ph>. This is the same format as <ph name="RUNTIME_BLOCKED_HOSTS">"runtime_blocked_hosts"</ph>.
-          '''
+          For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          ''',
     },
     {
       'name': 'ShowHomeButton',
