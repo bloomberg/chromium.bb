@@ -115,7 +115,7 @@ void DialMediaSinkServiceImpl::OnDeviceDescriptionAvailable(
   // ID when it is sent to the extension, because it derives a different sink ID
   // using the given sink ID.
   MediaSink sink(description_data.unique_id, description_data.friendly_name,
-                 SinkIconType::GENERIC);
+                 SinkIconType::GENERIC, MediaRouteProviderId::EXTENSION);
   DialSinkExtraData extra_data;
   extra_data.app_url = description_data.app_url;
   extra_data.model_name = description_data.model_name;

@@ -30,7 +30,8 @@ media_router::MediaSinkInternal CreateCastSinkFromDialSink(
   const std::string& unique_id = dial_sink.sink().id();
   const std::string& friendly_name = dial_sink.sink().name();
   media_router::MediaSink sink(unique_id, friendly_name,
-                               media_router::SinkIconType::CAST);
+                               media_router::SinkIconType::CAST,
+                               media_router::MediaRouteProviderId::EXTENSION);
 
   media_router::CastSinkExtraData extra_data;
   extra_data.ip_endpoint =
