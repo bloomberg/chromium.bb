@@ -13,6 +13,8 @@ component("gamepad") {
   output_name = "device_gamepad"
 
   sources = [
+    "abstract_haptic_gamepad.cc",
+    "abstract_haptic_gamepad.h",
     "game_controller_data_fetcher_mac.h",
     "game_controller_data_fetcher_mac.mm",
     "gamepad_consumer.cc",
