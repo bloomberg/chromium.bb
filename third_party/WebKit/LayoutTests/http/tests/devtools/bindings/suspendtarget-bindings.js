@@ -25,6 +25,7 @@
   TestRunner.markStep('detachFrame');
   await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame.js');
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
 
   TestRunner.markStep('Resuming targets.');
   await Promise.all([
