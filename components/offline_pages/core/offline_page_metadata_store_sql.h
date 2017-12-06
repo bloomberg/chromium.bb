@@ -122,6 +122,16 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
       return;
     }
 
+    // This if allows to run commands later, after store was given a chance to
+    // initialize. They would be failing immediately otherwise.
+    if (state_ == StoreState::INITIALIZING) {
+      pending_commands_.push_back(
+          base::BindOnce(&OfflinePageMetadataStoreSQL::Execute<T>,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(run_callback), std::move(result_callback)));
+      return;
+    }
+
     // Ensure that any scheduled close operations are canceled.
     closing_weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -179,6 +189,9 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
 
   // State of the store.
   StoreState state_;
+
+  // Pending commands.
+  std::vector<base::OnceClosure> pending_commands_;
 
   // Time of the last time the store was closed. Kept for metrics reporting.
   base::Time last_closing_time_;

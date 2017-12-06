@@ -432,6 +432,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   }
 
   std::unique_ptr<OfflinePageMetadataStore> BuildStore();
+  std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithoutInit();
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM52();
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM53();
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM54();
@@ -466,6 +467,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
 
  protected:
   CalledCallback last_called_callback_;
+  int get_callback_counter_;
   Status last_status_;
   std::unique_ptr<OfflinePagesUpdateResult> last_update_result_;
   std::vector<OfflinePageItem> offline_pages_;
@@ -478,6 +480,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
 
 OfflinePageMetadataStoreTest::OfflinePageMetadataStoreTest()
     : last_called_callback_(NONE),
+      get_callback_counter_(0),
       last_status_(STATUS_NONE),
       task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_) {
@@ -501,6 +504,7 @@ void OfflinePageMetadataStoreTest::InitializeCallback(bool success) {
 void OfflinePageMetadataStoreTest::GetOfflinePagesCallback(
     std::vector<OfflinePageItem> offline_pages) {
   last_called_callback_ = LOAD;
+  get_callback_counter_++;
   offline_pages_.swap(offline_pages);
 }
 
@@ -584,6 +588,13 @@ OfflinePageMetadataStoreTest::BuildStore() {
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
                  base::Unretained(this)));
   PumpLoop();
+  return store;
+}
+
+std::unique_ptr<OfflinePageMetadataStore>
+OfflinePageMetadataStoreTest::BuildStoreWithoutInit() {
+  std::unique_ptr<OfflinePageMetadataStore> store(
+      factory_.BuildStore(temp_directory_.GetPath()));
   return store;
 }
 
@@ -1167,6 +1178,33 @@ TEST_F(OfflinePageMetadataStoreTest, StoreCloses) {
   EXPECT_EQ(StoreState::LOADED, store->state());
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(0U, offline_pages_.size());
+}
+
+TEST_F(OfflinePageMetadataStoreTest, MultiplePendingCalls) {
+  std::unique_ptr<OfflinePageMetadataStore> store(BuildStoreWithoutInit());
+  EXPECT_FALSE(task_runner()->HasPendingTask());
+  EXPECT_EQ(StoreState::NOT_LOADED, store->state());
+
+  // First call flips the state to initializing.
+  store->GetOfflinePages(base::BindRepeating(
+      &OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+      base::Unretained(this)));
+
+  EXPECT_EQ(StoreState::INITIALIZING, store->state());
+
+  // Subsequent calls should be pending until store is initialized.
+  store->GetOfflinePages(base::BindRepeating(
+      &OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+      base::Unretained(this)));
+  store->GetOfflinePages(base::BindRepeating(
+      &OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+      base::Unretained(this)));
+  PumpLoop();
+
+  EXPECT_EQ(StoreState::LOADED, store->state());
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(0U, offline_pages_.size());
+  EXPECT_EQ(3, get_callback_counter_);
 }
 
 }  // namespace

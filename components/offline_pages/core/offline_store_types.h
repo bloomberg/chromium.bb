@@ -21,6 +21,7 @@ enum class StoreState {
   LOADED,          // Store is properly loaded and operational.
   FAILED_LOADING,  // Store initialization failed.
   FAILED_RESET,    // Resetting the store failed.
+  INITIALIZING,    // Store is in the process of initializing.
 };
 
 // Statuses referring to actions taken on items in the stores.
