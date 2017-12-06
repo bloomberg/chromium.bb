@@ -65,6 +65,16 @@ EGLBoolean eglDestroyStreamKHRFn(EGLDisplay dpy, EGLStreamKHR stream) override;
 EGLBoolean eglDestroySurfaceFn(EGLDisplay dpy, EGLSurface surface) override;
 EGLBoolean eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) override;
 EGLint eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy, EGLSyncKHR sync) override;
+EGLBoolean eglExportDMABUFImageMESAFn(EGLDisplay dpy,
+                                      EGLImageKHR image,
+                                      int* fds,
+                                      EGLint* strides,
+                                      EGLint* offsets) override;
+EGLBoolean eglExportDMABUFImageQueryMESAFn(EGLDisplay dpy,
+                                           EGLImageKHR image,
+                                           int* fourcc,
+                                           int* num_planes,
+                                           EGLuint64KHR* modifiers) override;
 EGLBoolean eglGetCompositorTimingANDROIDFn(EGLDisplay dpy,
                                            EGLSurface surface,
                                            EGLint numTimestamps,
