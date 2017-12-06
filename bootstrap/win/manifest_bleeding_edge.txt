@@ -11,6 +11,8 @@
 # string "cpython" and ends with the CIPD tag "version:VERSION". It uses this
 # to extract VERSION.
 
+$VerifiedPlatform windows-386 windows-amd64
+
 @Subdir python
 infra/python/cpython/${platform} version:2.7.13.chromium7
 

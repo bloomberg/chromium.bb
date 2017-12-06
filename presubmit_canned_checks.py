@@ -1165,15 +1165,22 @@ def CheckCIPDManifest(input_api, output_api, path=None, content=None):
   if path:
     assert content is None, 'Cannot provide both "path" and "content".'
     cmd += ['-ensure-file', path]
+    name = 'Check CIPD manifest %r' % path
   elif content:
     assert path is None, 'Cannot provide both "path" and "content".'
     cmd += ['-ensure-file=-']
     kwargs['stdin'] = content
+    # quick and dirty parser to extract checked packages.
+    packages = [
+      l.split()[0] for l in (ll.strip() for ll in content.splitlines())
+      if ' ' in l and not l.startswith('$')
+    ]
+    name = 'Check CIPD packages from string: %r' % (packages,)
   else:
     raise Exception('Exactly one of "path" or "content" must be provided.')
 
   return input_api.Command(
-      'Check CIPD manifest',
+      name,
       cmd,
       kwargs,
       output_api.PresubmitError)
