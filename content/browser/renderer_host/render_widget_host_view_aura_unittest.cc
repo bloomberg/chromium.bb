@@ -3135,6 +3135,31 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
 }
 
+// This test verifies that even if the primary surface is evicted after
+// the view is hidden, when it is shown again, the layer is repopulated.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, HideThenShow) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  EXPECT_FALSE(view_->HasPrimarySurface());
+  ASSERT_TRUE(view_->delegated_frame_host_);
+
+  view_->SetSize(gfx::Size(300, 300));
+  ASSERT_TRUE(view_->HasPrimarySurface());
+  EXPECT_EQ(gfx::Size(300, 300), view_->window_->layer()->size());
+  EXPECT_EQ(gfx::Size(300, 300),
+            view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
+
+  view_->Hide();
+  view_->delegated_frame_host_->ClearDelegatedFrame();
+  ASSERT_FALSE(view_->HasPrimarySurface());
+
+  view_->Show();
+  ASSERT_TRUE(view_->HasPrimarySurface());
+}
+
 // This test verifies that the primary SurfaceInfo is updated on device scale
 // factor changes.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
@@ -3245,8 +3270,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
   // LRU renderer is [0], make it visible, it shouldn't evict anything yet.
   views[0]->Show();
-  EXPECT_FALSE(views[0]->HasPrimarySurface());
-  EXPECT_TRUE(views[1]->HasPrimarySurface());
+  EXPECT_TRUE(views[0]->HasPrimarySurface());
+  EXPECT_FALSE(views[1]->HasPrimarySurface());
 
   // Resize [0], it should evict the next LRU [1].
   views[0]->SetSize(gfx::Size(300, 300));
@@ -3269,11 +3294,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // hidden, it becomes the LRU.
   for (size_t i = 1; i < renderer_count; ++i) {
     views[i]->Show();
-    // The renderers who don't have a frame should be waiting. The ones that
-    // have a frame should not.
-    // In practice, [1] has a frame, but anything after has its frame evicted.
-    EXPECT_EQ(!views[i]->HasPrimarySurface(),
-              views[i]->released_front_lock_active());
     views[i]->SetSize(gfx::Size(300, 300));
     EXPECT_TRUE(views[i]->HasPrimarySurface());
   }
