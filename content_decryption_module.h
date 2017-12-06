@@ -389,7 +389,11 @@ enum SessionType {
 enum MessageType {
   kLicenseRequest = 0,
   kLicenseRenewal = 1,
-  kLicenseRelease = 2
+  kLicenseRelease = 2,
+  // Only supported by Host_10 and later. On Host_9 and earlier, it's undefined
+  // behavior. For example, the host can drop the message or send it using
+  // other message type.
+  kIndividualizationRequest = 3
 };
 
 enum HdcpVersion {
