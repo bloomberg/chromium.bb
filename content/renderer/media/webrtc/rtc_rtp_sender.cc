@@ -40,10 +40,15 @@ class RTCRtpSender::RTCRtpSenderInternal
     return stream_ref_copies;
   }
 
-  void OnRemoved() {
-    // TODO(hbos): We should do |webrtc_sender_->SetTrack(null)| but that is
-    // not allowed on a stopped sender. https://crbug.com/webrtc/7945
+  bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {
+    if (!pc->RemoveTrack(webrtc_sender_))
+      return false;
+    // TODO(hbos): Removing the track should null the sender's track, or we
+    // should do |webrtc_sender_->SetTrack(null)| but that is not allowed on a
+    // stopped sender. In the meantime, there is a discrepancy between layers.
+    // https://crbug.com/webrtc/7945
     track_ref_.reset();
+    return true;
   }
 
  private:
@@ -106,10 +111,6 @@ blink::WebMediaStreamTrack RTCRtpSender::Track() const {
   return track_ref ? track_ref->web_track() : blink::WebMediaStreamTrack();
 }
 
-void RTCRtpSender::OnRemoved() {
-  internal_->OnRemoved();
-}
-
 webrtc::RtpSenderInterface* RTCRtpSender::webrtc_sender() const {
   return internal_->webrtc_sender();
 }
@@ -117,6 +118,11 @@ webrtc::RtpSenderInterface* RTCRtpSender::webrtc_sender() const {
 const webrtc::MediaStreamTrackInterface* RTCRtpSender::webrtc_track() const {
   auto track_ref = internal_->track_ref();
   return track_ref ? track_ref->webrtc_track() : nullptr;
+}
+
+bool RTCRtpSender::RemoveFromPeerConnection(
+    webrtc::PeerConnectionInterface* pc) {
+  return internal_->RemoveFromPeerConnection(pc);
 }
 
 }  // namespace content

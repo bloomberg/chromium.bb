@@ -1309,6 +1309,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
     exception_state.ThrowDOMException(
         kInvalidAccessError,
         "The sender was not created by this peer connection.");
+    return;
   }
 
   if (!peer_handler_->RemoveTrack(sender->web_sender())) {
