@@ -53,6 +53,7 @@ class BackgroundProfilingTriggers {
   // checks on memory usage and trigger a memory report with
   // |TriggerMemoryReportForProcess| if needed.
   void OnReceivedMemoryDump(
+      std::vector<base::ProcessId> profiled_pids,
       bool success,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr);
 

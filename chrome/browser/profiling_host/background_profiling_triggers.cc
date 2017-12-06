@@ -74,10 +74,11 @@ void BackgroundProfilingTriggers::StartTimer() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Register a repeating timer to check memory usage periodically.
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromHours(kRepeatingCheckMemoryDelayInHours),
-      base::Bind(&BackgroundProfilingTriggers::PerformMemoryUsageChecks,
-                 weak_ptr_factory_.GetWeakPtr()));
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromHours(kRepeatingCheckMemoryDelayInHours),
+               base::BindRepeating(
+                   &BackgroundProfilingTriggers::PerformMemoryUsageChecks,
+                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
@@ -126,13 +127,20 @@ void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
     return;
   }
 
-  memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDump(
-          base::Bind(&BackgroundProfilingTriggers::OnReceivedMemoryDump,
-                     weak_ptr_factory_.GetWeakPtr()));
+  auto callback = base::BindOnce(
+      [](base::WeakPtr<BackgroundProfilingTriggers> weak_ptr,
+         std::vector<base::ProcessId> result) {
+        memory_instrumentation::MemoryInstrumentation::GetInstance()
+            ->RequestGlobalDump(
+                base::Bind(&BackgroundProfilingTriggers::OnReceivedMemoryDump,
+                           std::move(weak_ptr), std::move(result)));
+      },
+      weak_ptr_factory_.GetWeakPtr());
+  host_->GetProfiledPids(std::move(callback));
 }
 
 void BackgroundProfilingTriggers::OnReceivedMemoryDump(
+    std::vector<base::ProcessId> profiled_pids,
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -143,6 +151,9 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
 
   bool should_send_report = false;
   for (const auto& proc : dump->process_dumps) {
+    if (std::find(profiled_pids.begin(), profiled_pids.end(), proc->pid) ==
+        profiled_pids.end())
+      continue;
     if (IsOverTriggerThreshold(GetContentProcessType(proc->process_type),
                                proc->os_dump->private_footprint_kb)) {
       should_send_report = true;
@@ -156,12 +167,12 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
     // If a report was sent, throttle the memory data collection rate to
     // kThrottledReportRepeatingCheckMemoryDelayInHours to avoid sending too
     // many reports from a known problematic client.
-    timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromHours(
-            kThrottledReportRepeatingCheckMemoryDelayInHours),
-        base::Bind(&BackgroundProfilingTriggers::PerformMemoryUsageChecks,
-                   weak_ptr_factory_.GetWeakPtr()));
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromHours(
+                     kThrottledReportRepeatingCheckMemoryDelayInHours),
+                 base::BindRepeating(
+                     &BackgroundProfilingTriggers::PerformMemoryUsageChecks,
+                     weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

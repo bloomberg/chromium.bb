@@ -73,6 +73,8 @@ class MemlogConnectionManager {
                        mojo::ScopedHandle receiver_pipe_end,
                        mojom::ProcessType process_type);
 
+  std::vector<base::ProcessId> GetConnectionPids();
+
  private:
   struct Connection;
   struct DumpProcessesForTracingTracking;

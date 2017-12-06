@@ -80,6 +80,10 @@ void ProfilingService::DumpProcessesForTracing(
           weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
+void ProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
+  std::move(callback).Run(connection_manager_.GetConnectionPids());
+}
+
 void ProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
     mojom::ProfilingService::DumpProcessesForTracingCallback callback,
     bool success,
