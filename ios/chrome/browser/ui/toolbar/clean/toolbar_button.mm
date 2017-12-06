@@ -50,7 +50,8 @@
     if (self.visibilityMask &
         ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled) {
       newHiddenValue = !self.enabled;
-    } else if (self.visibilityMask & ToolbarComponentVisibilityCompactWidth) {
+    } else if (self.visibilityMask & ToolbarComponentVisibilityCompactWidth ||
+               self.visibilityMask & ToolbarComponentVisibilityIPhoneOnly) {
       newHiddenValue = NO;
     }
   } else {
