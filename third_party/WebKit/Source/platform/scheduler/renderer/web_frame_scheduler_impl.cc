@@ -5,6 +5,7 @@
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
 #include <memory>
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/real_time_domain.h"
@@ -187,6 +188,7 @@ void WebFrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   DCHECK(parent_web_view_scheduler_);
   if (frame_visible_ == frame_visible)
     return;
+  UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
   bool was_throttled = ShouldThrottleTimers();
   frame_visible_ = frame_visible;
   UpdateThrottling(was_throttled);
