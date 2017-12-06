@@ -229,11 +229,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
 
   WindowTreeHost* host_;
 
-  // Mask of the mouse buttons currently down.
-  unsigned button_down_mask_ = 0;
+  // Mask of the mouse buttons currently down. This is static as it needs to
+  // track the state globally for all displays. A UIControlsOzone instance is
+  // created for each display host.
+  static unsigned button_down_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(UIControlsOzone);
 };
+
+// static
+unsigned UIControlsOzone::button_down_mask_ = 0;
 
 }  // namespace
 
