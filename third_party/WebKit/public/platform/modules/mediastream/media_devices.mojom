@@ -7,9 +7,6 @@ module blink.mojom;
 import "media/capture/mojo/video_capture_types.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 
-[Native]
-struct MediaDeviceInfo;
-
 enum MediaDeviceType {
   MEDIA_AUDIO_INPUT,
   MEDIA_VIDEO_INPUT,
@@ -22,6 +19,12 @@ enum MediaDeviceType {
 // with the addition of NONE, which would map to the empty string in
 // JavaScript.
 enum FacingMode { NONE, USER, ENVIRONMENT, LEFT, RIGHT };
+
+struct MediaDeviceInfo {
+  string device_id;
+  string label;
+  string group_id;
+};
 
 struct VideoInputDeviceCapabilities {
   string device_id;

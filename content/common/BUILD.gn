@@ -211,8 +211,6 @@ source_set("common") {
     "media/cdm_info.cc",
     "media/media_devices.cc",
     "media/media_devices.h",
-    "media/media_devices_param_traits.cc",
-    "media/media_devices_param_traits.h",
     "media/media_player_delegate_messages.h",
     "media/media_player_messages_android.h",
     "media/media_stream_controls.cc",
