@@ -31,6 +31,15 @@ std::string GetTracingCategories(
   return base::JoinString(categories, ",");
 }
 
+std::string GetAllTracingCategories() {
+  std::vector<base::StringPiece> categories;
+  for (size_t i = 0; i < chromecast::tracing::kCategoryCount; ++i) {
+    base::StringPiece category(chromecast::tracing::kCategories[i]);
+    categories.push_back(category);
+  }
+  return base::JoinString(categories, ",");
+}
+
 }  // namespace
 
 CastTracingAgent::CastTracingAgent(service_manager::Connector* connector)
@@ -96,7 +105,7 @@ void CastTracingAgent::RequestClockSyncMarker(
 
 void CastTracingAgent::GetCategories(
     const Agent::GetCategoriesCallback& callback) {
-  callback.Run("" /* categories */);
+  callback.Run(GetAllTracingCategories());
 }
 
 void CastTracingAgent::RequestBufferStatus(
