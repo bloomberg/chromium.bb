@@ -104,7 +104,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
       [contentStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor],
       [contentStack.trailingAnchor
-          constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor]
+          constraintEqualToAnchor:self.contentView.trailingAnchor]
     ]];
 
     // Add separator view.
