@@ -399,7 +399,7 @@
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
 <translation id="3765032636089507299">Die Seite "Safe Browsing" wird überarbeitet.</translation>
 <translation id="3778403066972421603">Möchten Sie diese Karte in Ihrem Google-Konto und auf diesem Gerät speichern?</translation>
-<translation id="3783418713923659662">MasterCard</translation>
+<translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Ablaufdatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3808375843007691220">Warnung: experimentelle Funktionen!</translation>
 <translation id="382518646247711829">Falls Sie einen Proxyserver verwenden...</translation>
@@ -704,7 +704,7 @@
 <translation id="6305205051461490394"><ph name="URL" /> ist nicht erreichbar.</translation>
 <translation id="6319915415804115995">Vor über einem Jahr zuletzt verwendet</translation>
 <translation id="6321917430147971392">Überprüfen Sie die DNS-Einstellungen.</translation>
-<translation id="6325286409953503969">Interessiert an coolen neuen Chrome-Funktionen? <ph name="BEGIN_LINK" />Testen Sie unsere Dev-Version.<ph name="END_LINK" /></translation>
+<translation id="6325286409953503969">Interessiert an coolen neuen Chrome-Funktionen? <ph name="BEGIN_LINK" />Testen Sie unseren Entwicklerkanal.<ph name="END_LINK" /></translation>
 <translation id="6328639280570009161">Deaktivieren Sie die Netzwerkvorhersage.</translation>
 <translation id="6328786501058569169">Sie befinden sich auf einer betrügerischen Website</translation>
 <translation id="6337133576188860026">Es werden weniger als <ph name="SIZE" /> Speicherplatz freigegeben. Manche Websites werden beim nächsten Öffnen eventuell langsamer geladen.</translation>
@@ -724,7 +724,6 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6451458296329894277">Erneute Formular-Übermittlung bestätigen</translation>
 <translation id="6456339708790392414">Bezahlung</translation>
-<translation id="6458467102616083041">Ignoriert, da Standardsuche durch Richtlinie deaktiviert</translation>
 <translation id="647261751007945333">Geräterichtlinien</translation>
 <translation id="6477321094435799029">Chrome hat auf dieser Seite ungewöhnlichen Code erfasst und diese Seite daher blockiert, um Ihre personenbezogenen Daten wie Passwörter, Telefonnummern oder Kreditkarteninformationen zu schützen.</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
@@ -862,7 +861,7 @@
 <translation id="7668654391829183341">Unbekanntes Gerät</translation>
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
 <translation id="7682287625158474539">Versand</translation>
-<translation id="7695552107151968219">Interessiert an coolen neuen Chrome-Funktionen? <ph name="BEGIN_LINK" />Testen Sie unsere Betaversion.<ph name="END_LINK" /></translation>
+<translation id="7695552107151968219">Interessiert an coolen neuen Chrome-Funktionen? <ph name="BEGIN_LINK" />Testen Sie unseren Betakanal.<ph name="END_LINK" /></translation>
 <translation id="7699293099605015246">Momentan sind keine Artikel verfügbar</translation>
 <translation id="7701040980221191251">Keine</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Weiter zu <ph name="SITE" /> (unsicher)<ph name="END_LINK" /></translation>

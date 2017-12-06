@@ -47,6 +47,39 @@
 
       Politika değeri mili saniye olarak belirtilmelidir.</translation>
 <translation id="1151353063931113432">Bu sitelerdeki resimlere izin ver</translation>
+<translation id="1151545095291359187"><ph name="PRODUCT_NAME" /> için uzantı yönetimi ayarlarını yapılandırır.
+
+          Bu politika, uzantıyla ilgili mevcut politikaların kontrol ettiği ayarlar da dahil olmak üzere çeşitli ayarları denetler. Bu politikayla birlikte ayarlanan eski politikalar geçersiz kılınır.
+
+          Bu politika, bir uzantı kimliğini veya güncelleme URL'sini kendi yapılandırmasıyla eşleştirir. Uzantı kimliği kullanıldığında, yapılandırma sadece belirtilen uzantıya uygulanır. Özel <ph name="DEFAULT_SCOPE" />, kimliği için varsayılan bir yapılandırma ayarlanabilir ve bu, politikada ayarlanmış özel bir yapılandırmaya sahip olmayan tüm uzantılara uygulanır. Bir güncelleme URL'si kullanıldığında yapılandırma, <ph name="LINK_TO_EXTENSION_DOC1" /> adresinde açıklandığı gibi, bu uzantının manifest dosyasında tamamen aynı güncelleme URL'sine sahip tüm uzantılara uygulanır.
+
+          Her uzantının (veya aynı güncelleme URL'sine sahip uzantıların) yapılandırması aşağıda açıklanan alanların yer aldığı ayrı bir sözlüktür.
+
+          <ph name="INSTALLATION_MODE" />: Uzantı için yükleme modunu belirten bir dizeye eşler. Geçerli dizeler şunlardır:
+          * <ph name="ALLOWED" />: Kullanıcının uzantıyı yüklemesine izin verir. Bu varsayılan davranıştır.
+          * <ph name="BLOCKED" />: Uzantının yüklenmesini engeller.
+          * <ph name="FORCE_INSTALLED" />: Uzantı otomatik olarak yüklenir ve kullanıcı tarafından kaldırılamaz.
+          * <ph name="NORMAL_INSTALLED" />: Uzantı otomatik olarak yüklenir, ancak kullanıcı tarafından devre dışı bırakılabilir. 
+
+          <ph name="INSTALLATION_MODE" />, <ph name="DEFAULT_SCOPE" /> uzantısı dahil olmak üzere birden fazla uzantı ve aynı güncelleme URL'sine sahip uzantılar için de (varsayılan ayarlar olarak) yapılandırılabilir. Bu durumda sadece <ph name="ALLOWED" /> ve <ph name="BLOCKED" /> değerleri kullanılabilir.
+
+          Mod <ph name="FORCE_INSTALLED" /> veya <ph name="NORMAL_INSTALLED" /> seçeneğine ayarlanırsa ayrıca <ph name="UPDATE_URL" /> yapılandırılmalıdır. Bu politikada ayarlanmış olan güncelleme URL'sinin sadece ilk yükleme için kullanıldığını unutmayın. Uzantının sonraki güncellemelerinde, uzantının manifest dosyasında belirtilen güncelleme URL'si kullanılır. Güncelleme URL'si, yukarıda belirtildiği gibi bir Güncelleme Manifest XML dokümanını işaret etmelidir.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Uzantı için engellenen API izinlerini belirten dizeleri barındıran bir listeye eşlenir. İzin adları, <ph name="LINK_TO_EXTENSION_DOC3" /> adresinde açıklandığı gibi, uzantının manifest dosyasında belirtilen izin dizeleri ile aynıdır. Bu ayar <ph name="DEFAULT_SCOPE" /> uzantısı için de yapılandırılabilir. Uzantı, engelleme listesine alınmış bir izni gerektiriyorsa yüklemesine izin verilmez. İsteğe bağlı koşul olarak engellenmiş bir izin içeriyorsa normal şekilde işlem yapılır, ancak çakışan izinler istenirse çalışma zamanında otomatik olarak reddedilir.
+
+          <ph name="ALLOWED_PERMISSIONS" />: <ph name="BLOCKED_PERMISSIONS" /> dizesine benzer, ancak izin listesi tarafından genel olarak engellenmiş olabilecek ve böylece <ph name="DEFAULT_SCOPE" /> uzantısı için yapılandırılamayan bazı izinler açık şekilde sağlanır. Bu ayarın izinleri uzantılara otomatik olarak vermediğini unutmayın.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Bir sürüm dizesine eşlenir. Sürüm dizesinin biçimi, <ph name="LINK_TO_EXTENSION_DOC4" /> adresinde açıklandığı gibi, uzantı manifest dosyasında kullanılan biçimle aynıdır. Belirtilen minimum sürümden daha eski sürüme sahip uzantılar devre dışı bırakılır. Bu, yüklenmeye zorlanan uzantılar için de geçerlidir.
+
+          Aşağıdaki ayarlar sadece varsayılan <ph name="DEFAULT_SCOPE" /> yapılandırması için kullanılabilir:
+
+          <ph name="INSTALL_SOURCES" />: Bu listedeki her öğe, uzantı tarzında bir eşleşme kalıbıdır (bkz. <ph name="LINK_TO_MATCH_PATTERNS" />). Kullanıcılar bu listedeki bir öğeyle eşleşen herhangi bir URL'den kolayca öğe yükleyebilirler. Bu kalıplar hem <ph name="EXTENSION_SUFFIX_WILDCARD" /> dosyasının konumuna hem de indirme işleminin başlatıldığı sayfaya (yani yönlendiren) izin vermelidir.
+
+          <ph name="ALLOWED_TYPES" />: Bu ayar, izin verilen ve <ph name="PRODUCT_NAME" /> .ürününe yüklenebilen uzantı/uygulama türlerini beyaz listeye ekler. Değer, her biri şunlardan biri olması gereken dizelerden oluşan bir listedir: <ph name="VALID_ALLOWED_TYPES" />. Bu türlerle ilgili daha fazla bilgi için <ph name="PRODUCT_NAME" /> uzantılarıyla ilgili dokümanlara bakın.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Bir kullanıcı bir uzantıyı yüklemeyi dener ancak politika tarafından engellenirse, Chrome Web Mağazası bir genel hata mesajı görüntüler. Bu ayar, hata mesajına metin eklemenize olanak tanır. Bu işlem, kullanıcıları yardım masanıza yönlendirmek, belirli bir uzantının engellenme nedenini açıklamak veya başka bir amaçla kullanılabilir. Bu hata mesajı 1000 karakterden uzun olursa kesilir.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Bir uzantının etkileşimde bulunmasının engelleneceği ana makinelerin listesini kabul eder. Bu etkileşim javascript ekleme, webRequest / webNavigation öğelerini değiştirme ve görüntüleme, çerezleri görüntüleme ve değiştirmeyi içerir. Biçim, Eşleşme Kalıplarına (<ph name="LINK_TO_MATCH_PATTERNS" />) benzer ancak herhangi bir yol (ör. "*://*.example.com") tanımlanamaz. Bu, etkili TLD joker karakterlerini de (ör. "*://example.*") destekler.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: <ph name="RUNTIME_BLOCKED_HOSTS" /> içinde listelenip listelenmediklerinden bağımsız olarak bir uzantının etkileşimde bulunabileceği ana makinelerin bir listesini kabul eder. Bu, <ph name="RUNTIME_BLOCKED_HOSTS" /> ile aynı biçimdir.
+          </translation>
 <translation id="1152117524387175066">Açılışta cihazın geliştirici anahtarının durumunu bildirin.
 
       Politika yanlış değerine ayarlanmışsa geliştirici anahtarının durumu rapor edilmez.</translation>
@@ -64,6 +97,7 @@
 <translation id="1204263402976895730">Etkinleştirilmiş kurumsal yazıcılar</translation>
 <translation id="1221359380862872747">Demo girişinde belirtilen URL'leri yükle</translation>
 <translation id="123081309365616809">Cihaza içerik yayınlamayı etkinleştirme</translation>
+<translation id="1257550411839719984">Varsayılan indirme dizinini ayarlama</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
 <translation id="1291880496936992484">Uyarı: RC4, sürüm 52'den sonra (yaklaşık olarak Eylül 2016'da) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
 
@@ -566,6 +600,7 @@
       </translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
+<translation id="2793923553868251161">Başlangıç noktaları, güvenli içerik olarak değerlendirilir.</translation>
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
       Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
@@ -805,11 +840,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Bu politikaların ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendilerinin yapabilmesine olanak tanır.</translation>
 <translation id="3758249152301468420">Geliştirici Araçları'nı devre dışı bırak</translation>
 <translation id="3765260570442823273">Boştayken çıkış yapma uyarı mesajının süresi</translation>
-<translation id="376931976323225993">Web sitelerinin <ph name="FLASH_PLUGIN_NAME" /> eklentisini otomatik olarak çalıştırmalarına izin verilip verilmeyeceğini ayarlamanızı sağlar. Otomatik olarak çalışan <ph name="FLASH_PLUGIN_NAME" /> eklentisine ya bütün web sitelerinde izin verilebilir ya da bu eklenti web sitelerinin tümünde reddedilebilir.
-
-          Tıkla oynat seçeneği <ph name="FLASH_PLUGIN_NAME" /> eklentisinin çalışmasına izin verir, ancak eklentiyi çalıştırmak için kullanıcının yer tutucuyu tıklaması gerekir.
-
-          Bu politika ayarlanmadan bırakılırsa kullanıcı bu ayarı manuel olarak değiştirebilir.</translation>
 <translation id="3780152581321609624">Kerberos SPN'sine standart dışı bağlantı noktasını dahil et</translation>
 <translation id="3780319008680229708">Bu politika doğru değerine ayarlanırsa Cast araç çubuğu simgesi, araç çubuğunda veya taşma menüsünde her zaman gösterilir ve kullanıcılar bu simgeyi kaldıramaz.
 
@@ -890,6 +920,13 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Bu ayarı etkinleştirirseniz, Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmak için kullanılan klavye kısayolları ve menüler veya bağlam menüsü girişleri devre dışı bırakılır.
 
       Bu seçeneğin devre dışı olarak ayarlanması veya ayarlanmadan bırakılması, kullanıcının Geliştirici Araçları ve JavaScript konsolunu kullanmasına izin verir.</translation>
+<translation id="3895557476567727016"><ph name="PRODUCT_NAME" /> ürününün dosya indirmek için kullanacağı varsayılan dizini yapılandırır.
+
+      Bu politikanın ayarlanması, <ph name="PRODUCT_NAME" /> ürününün dosyaları indirdiği varsayılan dizini değiştirir. Bu politika zorunlu olmadığı için kullanıcı dizini değiştirebilir.
+
+      Bu politikayı ayarlamazsanız, <ph name="PRODUCT_NAME" /> kendi olağan varsayılan dizinini (platforma özgü) kullanır.
+
+      Kullanılabilecek değişkenlerin listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.</translation>
 <translation id="3907986150060929099">Herkese açık oturum için önerilen yerel ayarları belirt</translation>
 <translation id="3911737181201537215">Bu politikanın Android tarafından gerçekleştirilen günlük kaydı üzerinde hiçbir etkisi yoktur.</translation>
 <translation id="391531815696899618">Doğru seçeneğine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> Files uygulamasında Google Drive'ın senkronizasyonunu devre dışı bırakır. Bu durumda Google Drive'a veri yüklenmez.
@@ -1828,7 +1865,6 @@ politikayı geçersiz kılamaz.
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7072406291414141328">Ağ bant genişliğini daraltmayı etkinleştirir</translation>
 <translation id="7079519252486108041">Bu sitelerde pop-up'ları engelle</translation>
-<translation id="7091198954851103976">Yetkilendirme gerektiren eklentileri her zaman çalıştırır</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
 
       Bu ayarı etkinleştirirseniz uykudaki cihazlarının kilidini açabilmeleri için kullanıcılardan şifre girmeleri istenir.
@@ -2069,6 +2105,13 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="787125417158068494">SyncDisabled seçeneğine ayarlanırsa veya hiç yapılandırılmazsa, ARC uygulamaları için <ph name="PRODUCT_OS_NAME" /> sertifikaları kullanılamaz.
 
       CopyCaCerts seçeneğine ayarlanırsa ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir.</translation>
+<translation id="7872535148622213208">
+        Bu politika, güvenli içerik olarak değerlendirilecek olan başlangıç noktalarının (URL'ler)
+        bir listesini belirtir. Burada amaç, kuruluşların dahili web gelişmeleri için hazırlık
+        sunucusu ayarlamalarına olanak tanımaktır.
+        Bu, --unsafely-treat-insecure-origin-as-secure işaretiyle aynıdır.
+        Güvenli içerikler ile ilgili daha fazla bilgi edinmek için https://www.w3.org/TR/secure-contexts/ adresine bakın
+        </translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>
@@ -2313,6 +2356,15 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika yapılandırılmazsa veya değer 1 MB'tan az olursa, <ph name="PRODUCT_OS_NAME" /> varsayılan önbellek boyutunu kullanır.</translation>
 <translation id="8858642179038618439">YouTube Güvenlik Modunu zorla</translation>
 <translation id="8864975621965365890">Bir site <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulduğunda görülen reddetme sorusunu engeller.</translation>
+<translation id="8867464911288727016"><ph name="PRODUCT_NAME" /> üzerindeki entegre Google Çeviri hizmetini etkinleştirir.
+
+      Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, uygun olduğunda kullanıcıya entegre bir çeviri araç çubuğu ve sağ tıklanan bağlam menüsünde çeviri seçeneği göstererek çeviri işlevi sunar.
+
+      Bu ayarı devre dışı bırakırsanız, tüm yerleşik çeviri özellikleri devre dışı kalır.
+
+      Bu ayarı etkinleştirirseniz veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> ürününde bu ayarı değiştiremez veya geçersiz kılamazlar.
+
+      Bu ayar ayarlanmadan bırakılırsa kullanıcı bu işlevi kullanıp kullanmamaya karar verebilir.</translation>
 <translation id="8870318296973696995">Ana sayfa</translation>
 <translation id="8882006618241293596">Bu sitelerde <ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
 <translation id="8906768759089290519">Misafir modunu etkinleştir</translation>

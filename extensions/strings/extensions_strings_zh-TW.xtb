@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑不能包含符號連結。你的設定檔中沒有符合條件的路徑。</translation>
 <translation id="641087317769093025">無法將擴充功能解壓縮</translation>
 <translation id="6542618148162044354">「<ph name="APP_NAME" />」要求存取你的一或多個裝置：</translation>
-<translation id="6566142449942033617">無法載入外掛程式的「<ph name="PLUGIN_PATH" />」。</translation>
 <translation id="657064425229075395">無法載入背景指令碼「<ph name="BACKGROUND_SCRIPT" />」。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> 的 <ph name="PRODUCT_NAME" /> (序號：<ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">無法建立解壓縮目錄：「<ph name="DIRECTORY_PATH" />」</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">這項擴充功能自動重新載入的頻率過高。</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">這台電腦的管理員要求安裝 <ph name="EXTENSION_NAME" />，因此你無法移除或修改它。</translation>
-<translation id="7581279002575751816">系統不支援 NPAPI 外掛程式。</translation>
 <translation id="7972881773422714442">選項：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">前置鏡頭</translation>
 <translation id="8047248493720652249">擴充功能無法將下載的檔案命名為「<ph name="ATTEMPTED_FILENAME" />」，因為其他擴充功能 (<ph name="EXTENSION_NAME" />) 已為將此檔案命名為「<ph name="ACTUAL_FILENAME" />」。</translation>

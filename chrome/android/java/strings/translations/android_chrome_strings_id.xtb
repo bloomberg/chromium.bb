@@ -66,6 +66,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1539064842193522527">Link dibuka di Chrome</translation>
 <translation id="1549000191223877751">Beralih ke jendela lain</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
+<translation id="1566400915470565838">Untuk menggunakan <ph name="APP_NAME" />, hubungkan ke internet.</translation>
 <translation id="1569387923882100876">Perangkat yang Terhubung</translation>
 <translation id="1571304935088121812">Salin nama pengguna</translation>
 <translation id="1612196535745283361">Chrome memerlukan akses lokasi untuk memindai perangkat. Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
 <translation id="2369533728426058518">tab terbuka</translation>
-<translation id="2372491353676110880">Otomatis download halaman</translation>
 <translation id="2387895666653383613">Ukuran teks</translation>
 <translation id="2414886740292270097">Gelap</translation>
 <translation id="2416359993254398973">Chrome memerlukan izin akses ke kamera untuk situs ini.</translation>
@@ -179,8 +179,8 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2621115761605608342">Izinkan JavaScript untuk situs tertentu.</translation>
 <translation id="2625189173221582860">Sandi disalin</translation>
 <translation id="2631006050119455616">Dihemat</translation>
+<translation id="2647434099613338025">Tambah bahasa</translation>
 <translation id="2653659639078652383">Kirim</translation>
-<translation id="2671100504997899381">Memuat halaman lebih cepat dan menyimpan halaman populer untuk dibaca secara offline</translation>
 <translation id="2677748264148917807">Keluar</translation>
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2707726405694321444">Segarkan halaman</translation>
@@ -565,7 +565,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6337234675334993532">Enkripsi</translation>
 <translation id="6343192674172527289">Tidak ada file download</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> lainnya}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> lainnya}}</translation>
-<translation id="6354616574440533128">Buka kunci untuk melanjutkan penyiapan ponsel</translation>
 <translation id="6364438453358674297">Hapus saran dari histori?</translation>
 <translation id="6383961787135158834">Hapus Penyimpanan Situs…</translation>
 <translation id="6388207532828177975">Hapus &amp; setel ulang</translation>
@@ -793,6 +792,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8493948351860045254">Kosongkan ruang</translation>
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>
+<translation id="8514477925623180633">Ekspor sandi yang disimpan dengan Chrome</translation>
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
 <translation id="8523928698583292556">Hapus sandi tersimpan</translation>
 <translation id="854522910157234410">Buka halaman ini</translation>

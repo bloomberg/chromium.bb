@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">Ο σύνδεσμος άνοιξε στο Chrome</translation>
 <translation id="1549000191223877751">Μεταβείτε σε άλλο παράθυρο</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
+<translation id="1566400915470565838">Για να χρησιμοποιήσετε την εφαρμογή <ph name="APP_NAME" />, συνδεθείτε στο διαδίκτυο.</translation>
 <translation id="1569387923882100876">Συνδεδεμένη συσκευή</translation>
 <translation id="1571304935088121812">Αντιγραφή ονόματος χρήστη</translation>
 <translation id="1612196535745283361">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία, προκειμένου να κάνει σάρωση για συσκευές. Η πρόσβαση τοποθεσίας είναι <ph name="BEGIN_LINK" />απενεργοποιημένη για αυτήν τη συσκευή<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">Έγινε επαναφορά ρυθμίσεων μετάφρασης.</translation>
 <translation id="2359808026110333948">Συνέχεια</translation>
 <translation id="2369533728426058518">ανοικτές καρτέλες</translation>
-<translation id="2372491353676110880">Αυτόματη λήψη σελίδων</translation>
 <translation id="2387895666653383613">Κλιμάκωση κειμένου</translation>
 <translation id="2414886740292270097">Σκούρο</translation>
 <translation id="2416359993254398973">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στην κάμερα για αυτόν τον ιστότοπο.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">Να επιτρέπεται η JavaScript για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="2625189173221582860">Ο κωδικός πρόσβασης αντιγράφηκε</translation>
 <translation id="2631006050119455616">Εξοικονομήθηκαν</translation>
+<translation id="2647434099613338025">Προσθήκη γλώσσας</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
-<translation id="2671100504997899381">Φορτώστε σελίδες πιο γρήγορα και αποθηκεύστε δημοφιλείς σελίδες για ανάγνωση εκτός σύνδεσης</translation>
 <translation id="2677748264148917807">Αποχώρηση</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2707726405694321444">Ανανέωση σελίδας</translation>
@@ -565,7 +565,6 @@
 <translation id="6337234675334993532">Κρυπτογράφηση</translation>
 <translation id="6343192674172527289">Δεν βρέθηκαν λήψεις</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ακόμη}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ακόμη}}</translation>
-<translation id="6354616574440533128">Ξεκλειδώστε για να συνεχίσετε τη ρύθμιση του τηλεφώνου σας</translation>
 <translation id="6364438453358674297">Κατάργηση πρότασης από το ιστορικό;</translation>
 <translation id="6383961787135158834">Διαγρ. αποθ. χώρ. ιστότ…</translation>
 <translation id="6388207532828177975">Διαγραφή και επαναφορά</translation>
@@ -793,6 +792,7 @@
 <translation id="8493948351860045254">Ελευθερώστε χώρο</translation>
 <translation id="8497726226069778601">Δεν υπάρχει τίποτα να δείτε εδώ…ακόμη</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>
+<translation id="8514477925623180633">Εξαγωγή κωδικών πρόσβασης που έχουν αποθηκευτεί στο Chrome</translation>
 <translation id="8514577642972634246">Είσοδος στην κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="8523928698583292556">Διαγραφή αποθηκευμένου κωδικού πρόσβασης</translation>
 <translation id="854522910157234410">Άνοιγμα αυτής της σελίδας</translation>

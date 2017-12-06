@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Rozšírenie sa nepodarilo rozbaliť. Aby bolo rozbalenie rozšírenia bezpečné, musíte zadať cestu k profilovému adresáru, ktorá neobsahuje žiadny odkaz symlink. Pre váš profil nie je k dispozícii žiadna takáto cesta.</translation>
 <translation id="641087317769093025">Rozšírenie sa nepodarilo rozbaliť</translation>
 <translation id="6542618148162044354">Aplikácia <ph name="APP_NAME" /> žiada o prístup k jednému alebo viacerým vašim zariadeniam:</translation>
-<translation id="6566142449942033617">Cestu „<ph name="PLUGIN_PATH" />“ sa pre doplnok nepodarilo načítať.</translation>
 <translation id="657064425229075395">Nepodarilo sa načítať skript na pozadí „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> od dodávateľa <ph name="VENDOR_NAME" /> (sériové číslo <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nepodarilo sa vytvoriť adresár na rozbalenie: <ph name="DIRECTORY_PATH" /></translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Toto rozšírenie sa obnovovalo príliš často.</translation>
 <translation id="7003844668372540529">Neznámy produkt <ph name="PRODUCT_ID" /> od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Správca tohto zariadenia vyžaduje inštaláciu rozšírenia <ph name="EXTENSION_NAME" />. Nemôže byť odstránené alebo upravené.</translation>
-<translation id="7581279002575751816">Doplnky NPAPI nie sú podporované.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Nasmerovaný na používateľa</translation>
 <translation id="8047248493720652249">Tomuto rozšíreniu sa nepodarilo pomenovať stiahnutý súbor s názvom „<ph name="ATTEMPTED_FILENAME" />„, pretože ďalšie rozšírenie (<ph name="EXTENSION_NAME" />) určilo odlišný názov súboru „<ph name="ACTUAL_FILENAME" />“.</translation>

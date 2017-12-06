@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">連結已在 Chrome 中開啟</translation>
 <translation id="1549000191223877751">移至其他視窗</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
+<translation id="1566400915470565838">如要使用「<ph name="APP_NAME" />」，請連上網際網路。</translation>
 <translation id="1569387923882100876">連結的裝置</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">您的翻譯設定已重設。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2369533728426058518">開啟的分頁</translation>
-<translation id="2372491353676110880">自動下載網頁</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2416359993254398973">Chrome 需要相關權限，才能讓這個網站使用你的攝影機。</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">允許特定網站執行 JavaScript。</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2631006050119455616">已節省</translation>
+<translation id="2647434099613338025">新增語言</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2671100504997899381">加快網頁載入速度，並儲存常用網頁以供離線閱讀</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2707726405694321444">重新整理頁面</translation>
@@ -565,7 +565,6 @@
 <translation id="6337234675334993532">加密</translation>
 <translation id="6343192674172527289">找不到下載內容</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}}</translation>
-<translation id="6354616574440533128">請先將手機解除鎖定，才能繼續進行設定</translation>
 <translation id="6364438453358674297">從歷史紀錄中移除建議項目？</translation>
 <translation id="6383961787135158834">清除網站儲存的資料…</translation>
 <translation id="6388207532828177975">清除並重設</translation>
@@ -793,6 +792,7 @@
 <translation id="8493948351860045254">釋出空間</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8503813439785031346">使用者名稱</translation>
+<translation id="8514477925623180633">將使用 Chrome 儲存的密碼匯出</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
 <translation id="8523928698583292556">刪除已儲存的密碼</translation>
 <translation id="854522910157234410">開啟以下網頁</translation>

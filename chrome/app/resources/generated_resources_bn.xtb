@@ -43,7 +43,6 @@
 <translation id="106001083577824516">ক্ষতিকর সফ্টওয়্যার সরানো যাবে না</translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK" />তত্ত্বাবধানে থাকা ব্যবহারকারীদের ড্যাশবোর্ড<ph name="END_LINK" /> এর মাধ্যমে আপনার তত্ত্বাবধানে থাকা ব্যবহারকারীদের পরিচালনা করুন৷</translation>
-<translation id="1064662184364304002">মিডিয়া লাইব্রেরী ফাইল পরীক্ষাকারী</translation>
 <translation id="1064835277883315402">ব্যক্তিগত নেটওয়ার্কে যোগদান করুন</translation>
 <translation id="1064912851688322329">আপনার Google অ্যাকাউন্ট সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="1067048845568873861">তৈরি হয়েছে</translation>
@@ -308,7 +307,6 @@
 <translation id="1477301030751268706">পরিচয় API টোকেন ক্যাশে</translation>
 <translation id="1478233201128522094">পরের বার, নতুন ফোন এই <ph name="DEVICE_TYPE" /> আনলক করতে পারবে। সেটিংসে গিয়ে Smart Lock বন্ধ করুন।</translation>
 <translation id="1478340334823509079">বিবরণ: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544"><ph name="FILE_COUNT" />টি নতুন ফটোর ব্যাকআপ নিতে প্রস্তুত</translation>
 <translation id="1483493594462132177">পাঠান</translation>
 <translation id="1485015260175968628">এটি এখন করতে পারে:</translation>
 <translation id="1485141095922496924">সংস্করণ <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />সতর্কতা:<ph name="END_BOLD" /> এই ফাইলগুলি অস্থায়ী এবং ডিস্ক স্থান মুক্ত করতে স্বয়ংক্রিয়ভাবে মুছে ফেলা হতে পারে৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">আপনার <ph name="DEVICE_TYPE" /> এর জন্য Smart Lock সেট আপ করুন</translation>
 <translation id="1817871734039893258">Microsoft  ফাইল পুনরুদ্ধার</translation>
-<translation id="1825832322945165090">ডিভাইসে পর্যাপ্ত জায়গা নেই</translation>
 <translation id="1826516787628120939">চেক করা হচ্ছে</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> আপনাকে বিজ্ঞপ্তি পাঠাতে চায়।</translation>
 <translation id="1828378091493947763">এই ডিভাইসে এই প্লাগ ইন সমর্থিত নয়</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">একটি ত্রুটি ঘটেছে৷ অনুগ্রহ করে আপনার প্রিন্টারটি পরীক্ষা করে আবার চেষ্টা করুন।</translation>
 <translation id="2385700042425247848">পরিষেবার  নাম:</translation>
 <translation id="2387458720915042159">প্রক্সি সংযোগের প্রকার</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" />টি নতুন ফটো খুঁজে পাওয়া গেছে
-    <ph name="LINE_BREAK1" />
-    ডিভাইসে পর্যাপ্ত স্থান নেই৷
-    <ph name="LINE_BREAK2" />
-    শুরু করতে কিছু ফটো চয়ন করার চেষ্টা করুন৷</translation>
 <translation id="2391419135980381625">মানক হরফ</translation>
 <translation id="2391762656119864333">প্রত্যাহার করুন</translation>
 <translation id="2392369802118427583">সক্রিয় করুন</translation>
@@ -1249,7 +1241,6 @@
 <translation id="2963151496262057773">নিম্নোক্ত প্ল্যাগ ইনটি প্রতিক্রিয়াবিহীন: <ph name="PLUGIN_NAME" /> আপনি কি এটিকে থামাতে চান?</translation>
 <translation id="2966449113954629791">আপনি হয়তো আপনার মোবাইল ডেটার প্রদত্ত পরিমান ব্যবহার করে ফেলেছেন৷ আরও ডেটা কিনতে <ph name="NAME" /> সক্রিয়করণ পোর্টালে যান৷</translation>
 <translation id="2966937470348689686">Android ডিভাইসে পছন্দের সেটিংগুলি পরিচালনা করুন</translation>
-<translation id="2971033837577180453">&lt;span&gt;আইডি:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">অনুজ্জ্বল করুন</translation>
 <translation id="2972557485845626008">ফার্মওয়্যার</translation>
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
@@ -1554,7 +1545,6 @@
 <translation id="344630545793878684">কতগুলি ওয়েবসাইটে আপনার ডেটা পড়ে</translation>
 <translation id="3449839693241009168"><ph name="SEARCH_KEY" />তে আদেশগুলি প্রেরণ করতে <ph name="EXTENSION_NAME" /> টি টিপুন</translation>
 <translation id="3450157232394774192">নিষ্ক্রিয় স্থিতির ওকুপেন্সির শতকরা হার</translation>
-<translation id="3450505713373650336"><ph name="FILE_COUNT" />টি ফটোর ব্যাক আপ নেওয়া হচ্ছে</translation>
 <translation id="3453612417627951340">অনুমোদনের প্রয়োজন</translation>
 <translation id="3454157711543303649">সক্রিয়করণ সমাপ্ত</translation>
 <translation id="345693547134384690">&amp;ছবি নতুন ট্যাবে খুলুন</translation>
@@ -1797,9 +1787,6 @@
 <translation id="381202950560906753">আরেকটি জুড়ুন</translation>
 <translation id="3812525830114410218">খারাপ শংসাপত্র</translation>
 <translation id="3813296892522778813">আপনি যা খুঁজছেন তা খুঁজে না পেলে <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome সহায়তায়<ph name="END_LINK_CHROMIUM" /> যান</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" />টি নতুন ফটো পাওয়া গেছে
-    <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google ড্রাইভে<ph name="END_LINK" /> ব্যাকআপ করার জন্য প্রস্তুত</translation>
 <translation id="3819007103695653773">পটভূমি পুশ বার্তা পাঠাতে সমস্ত সাইটকে অনুমতি দিন</translation>
 <translation id="3819752733757735746">অ্যাক্সেস সুইচ করুন (মাত্র এক বা দুই সুইচের মাধ্যমে কম্পিউটার নিয়ন্ত্রণ করুন)</translation>
 <translation id="3819800052061700452">&amp;পূর্ণ-স্ক্রীন</translation>
@@ -2069,9 +2056,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K লাইভ)</translation>
 <translation id="431076611119798497">&amp;বিশদ বিবরণ</translation>
 <translation id="4312866146174492540">অবরুদ্ধ করুন (ডিফল্ট)</translation>
-<translation id="4315548163539304064">আপনার মিডিয়া ডিভাইস স্ক্যান করা হচ্ছে...
-....<ph name="LINE_BREAK1" />
-....<ph name="FILE_COUNT" />টি নতুন ফটো খুঁজে পাওয়া গেছে</translation>
 <translation id="4316850752623536204">ডেভেলপার ওয়েবসাইট</translation>
 <translation id="4320177379694898372">কোনো ইন্টারনেট সংযোগ নেই</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ডাউনলোড চালিয়ে যান}one{ডাউনলোড চালিয়ে যান}other{ডাউনলোড চালিয়ে যান}}</translation>
@@ -2159,7 +2143,6 @@
 <translation id="4481249487722541506">প্যাক না করা এক্সটেনশন লোড করুন...</translation>
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
 <translation id="4482194545587547824">অনুসন্ধান এবং অন্যান্য Google পরিষেবাগুলি ব্যক্তিগতকৃত করতে Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে</translation>
-<translation id="4492190037599258964">'<ph name="SEARCH_STRING" />'-এর অনুসন্ধান ফলাফল</translation>
 <translation id="4495419450179050807">এই পৃষ্ঠাতে দেখাবেন না</translation>
 <translation id="450099669180426158">বিস্ময়বোধক চিহ্ন আইকন</translation>
 <translation id="4501530680793980440">সরানো নিশ্চিত করুন</translation>
@@ -3807,7 +3790,6 @@
 <translation id="721331389620694978">ব্রাউজিং অভ্যাস প্রতিফলিত করতে পারে এমন কিছু সেটিংস সাফ করা হবে না।</translation>
 <translation id="7216409898977639127">মোবাইল পরিষেবা প্রদানকারী</translation>
 <translation id="7216595297012131718">আপনার পছন্দের উপর ভিত্তি করে ভাষাগুলি সাজান</translation>
-<translation id="7219989745826083607">ডায়াল ডিভাইস বর্ণনা বিশ্লেষক</translation>
 <translation id="722055596168483966">Google পরিষেবাগুলিকে ব্যক্তিগত করুন</translation>
 <translation id="7221155467930685510">$১ GB</translation>
 <translation id="7221855153210829124">বিজ্ঞপ্তিগুলি দেখান</translation>
@@ -4445,7 +4427,6 @@
 <translation id="8261378640211443080">এই এক্সটেনশানটি <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> এ তালিকাভুক্ত নেই এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছে৷</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> এর জন্য অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="8261506727792406068">মুছুন</translation>
-<translation id="8261673729476082470"><ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ <ph name="FILE_COUNT" />টি ফটোর ব্যাকআপ নেওয়া হচ্ছে</translation>
 <translation id="826246685091802258">এই বিল্ডে <ph name="BAD_FLAG" /> এর সুবিধা নেই।</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" />আপনার মাউস কার্সার অক্ষম করেছে৷</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" এর দ্বারা চালিত পূর্ণ স্ক্রিন৷</translation>

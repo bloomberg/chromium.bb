@@ -75,7 +75,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2351097562818989364">Se han restablecido tus ajustes de traducción.</translation>
 <translation id="2354750644801399986">No realizar seguimiento</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2381405137052800939">Básica</translation>
+<translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
@@ -405,7 +405,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
-<translation id="91549621916703028">Crea varias pestañas para todas tus tareas</translation>
 <translation id="9157836665414082580">Quitar cuadros de diálogo</translation>
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="976982866697960176">Administrar datos sincronizados…</translation>
 <translation id="988141524645182168">Otros dispositivos</translation>
 <translation id="989988560359834682">Editar dirección</translation>
+<translation id="994757059139821576">Sugerencias de artículos</translation>
 </translationbundle>

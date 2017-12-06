@@ -66,6 +66,7 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="1539064842193522527">Kiungo kilichofunguliwa kwenye Chrome</translation>
 <translation id="1549000191223877751">Nenda kwenye dirisha jingine</translation>
 <translation id="1553358976309200471">Sasisha Chrome</translation>
+<translation id="1566400915470565838">Tafadhali washa intaneti ili uweze kutumia <ph name="APP_NAME" />.</translation>
 <translation id="1569387923882100876">Kifaa Kilichounganishwa</translation>
 <translation id="1571304935088121812">Nakili jina la mtumiaji</translation>
 <translation id="1612196535745283361">Chrome inahitaji idhini ya kufikia mahali ili itafute vifaa. Kipengele cha kufikia mahali <ph name="BEGIN_LINK" />kimezimwa kwenye kifaa hiki<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="2351097562818989364">Mipangilio yako ya kutafsiri imewekwa upya.</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2369533728426058518">vichupo vilivyo wazi</translation>
-<translation id="2372491353676110880">Pakua kurasa kiotomatiki</translation>
 <translation id="2387895666653383613">Upimaji wa maandishi</translation>
 <translation id="2414886740292270097">Giza</translation>
 <translation id="2416359993254398973">Ruhusu Chrome ifikie kamera yako ya tovuti hii.</translation>
@@ -179,8 +179,8 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="2621115761605608342">Ruhusu JavaScript ya tovuti mahususi.</translation>
 <translation id="2625189173221582860">Nenosiri limenakiliwa</translation>
 <translation id="2631006050119455616">Iliyookolewa</translation>
+<translation id="2647434099613338025">Ongeza lugha</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
-<translation id="2671100504997899381">Pakia kurasa kwa haraka zaidi na uhifadhi kurasa maarufu ili uzisome nje ya mtandao</translation>
 <translation id="2677748264148917807">Ondoka</translation>
 <translation id="2704606927547763573">Imenakiliwa</translation>
 <translation id="2707726405694321444">Onyesha upya ukurasa</translation>
@@ -565,7 +565,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6337234675334993532">Usimbaji fiche</translation>
 <translation id="6343192674172527289">Hakuna vipakuliwa vilivyopatikana</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 na <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> zaidi}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 na <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> zaidi}}</translation>
-<translation id="6354616574440533128">Fungua skrini ili uendelee kuweka mipangilio ya simu yako</translation>
 <translation id="6364438453358674297">Je, ungependa kuondoa pendekezo kwenye historia?</translation>
 <translation id="6383961787135158834">Futa Hifadhi ya Tovuti...</translation>
 <translation id="6388207532828177975">Futa na uweke upya</translation>
@@ -793,6 +792,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8493948351860045254">Ongeza nafasi ya hifadhi</translation>
 <translation id="8497726226069778601">Bado hapana chochote cha kuangalia...</translation>
 <translation id="8503813439785031346">Jina la mtumiaji</translation>
+<translation id="8514477925623180633">Tuma manenosiri yaliyohifadhiwa kwenye Chrome</translation>
 <translation id="8514577642972634246">Ingia kwenye hali fiche</translation>
 <translation id="8523928698583292556">Futa manenosiri yaliyohifadhiwa</translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>

@@ -46,6 +46,39 @@
 
       Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
 <translation id="1151353063931113432">Leisti vaizdus šiose svetainėse</translation>
+<translation id="1151545095291359187">Konfigūruojami „<ph name="PRODUCT_NAME" />“ plėtinių valdymo nustatymai.
+
+          Ši politika valdo kelis nustatymus, įskaitant esamos su plėtiniais susijusios politikos valdomus nustatymus. Ši politika nepaisys pasenusios politikos, jei bus nustatytos abi.
+
+          Ši politika susieja plėtinio ID arba naujinio URL su konfigūracija. Naudojant plėtinio ID konfigūracija bus taikoma tik nurodytam plėtiniui. Specialiam ID „<ph name="DEFAULT_SCOPE" />“ galima nustatyti numatytąją konfigūraciją, kuri bus taikoma visiems plėtiniams, kurių tinkinta konfigūracija nenustatyta šioje politikoje. Naudojant naujinio URL konfigūracija bus taikoma visiems plėtiniams su tiksliu naujinio URL, nurodytu šio plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Kiekvieno plėtinio (ar plėtinių su tuo pačiu naujinio URL) konfigūracija sudaro kitą žodyną, į kurį gali būti įtraukti toliau dokumentuojami laukai.
+
+          „<ph name="INSTALLATION_MODE" />“: susieja su eilute, nurodančia plėtinio diegimo režimą. Toliau pateikiamos tinkamos eilutės.
+          * „<ph name="ALLOWED" />“: naudotojui leidžiama įdiegti plėtinį. Tai numatytoji elgsena.
+          * „<ph name="BLOCKED" />“: užblokuoja plėtinio diegimą.
+          * „<ph name="FORCE_INSTALLED" />“: plėtinys automatiškai įdiegiamas ir naudotojas negali jo pašalinti.
+          * „<ph name="NORMAL_INSTALLED" />“: plėtinys automatiškai įdiegiamas, bet naudotojas gali jį išjungti.
+
+          „<ph name="INSTALLATION_MODE" />“ taip pat galima konfigūruoti keliems plėtiniams, įskaitant plėtinį „<ph name="DEFAULT_SCOPE" />“ (kaip numatytuosius nustatymus) ir plėtinius su tuo pačiu naujinio URL. Šiuo atveju galima naudoti tik vertes „<ph name="ALLOWED" />“ ir „<ph name="BLOCKED" />“.
+
+          Jei režimas nustatytas į „<ph name="FORCE_INSTALLED" />“ arba „<ph name="NORMAL_INSTALLED" />“, taip pat reikia sukonfigūruoti „<ph name="UPDATE_URL" />“. Atminkite, kad šioje politikoje nustatytas naujinio URL naudojamas tik diegiant pirmą kartą; vėlesniems plėtinio naujiniams bus naudojamas plėtinio apraše nurodytas naujinio URL. Naujinio URL turėtų nukreipti į naujinio aprašo XML dokumentą, kaip nurodyta anksčiau.
+
+          „<ph name="BLOCKED_PERMISSIONS" />“: susieja su eilučių, nurodančių plėtinio užblokuotus API leidimus, sąrašu. Leidimų pavadinimai tokie pat kaip ir leidimų eilutės, pateiktos plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC3" />. Be to, šį nustatymą galima sukonfigūruoti plėtiniui „<ph name="DEFAULT_SCOPE" />“. Jei plėtiniui reikalingas leidimas, kuris įtrauktas į užblokuotų leidimų sąrašą, jo neleidžiama įkelti. Jei užblokuotas leidimas nurodomas kaip pasirenkamas reikalavimas, jis apdorojamas įprastai, bet vykdant nesuderinamų leidimų užklausos bus automatiškai atmestos.
+
+          „<ph name="ALLOWED_PERMISSIONS" />“: panašu į „<ph name="BLOCKED_PERMISSIONS" />“, bet aiškiai leidžiami keli leidimai, kurie gali būti užblokuoti bendrųjų užblokuotų leidimų sąraše, todėl negalima konfigūruoti plėtiniui „<ph name="DEFAULT_SCOPE" />“. Atminkite, kad nustačius šį nustatymą plėtiniams leidimai nėra automatiškai suteikiami.
+
+          „<ph name="MINIMUM_VERSION_REQUIRED" />“: susiejama su versijos eilute. Versijos eilutės formatas toks pat, kaip ir naudojamas plėtinio apraše, kaip nurodyta adresu <ph name="LINK_TO_EXTENSION_DOC4" />. Plėtinys, kurio versija senesnė nei nurodyta minimali versija, bus išjungtas. Tai taip pat taikoma priverstinai įdiegtiems plėtiniams.
+
+          Toliau nurodytus nustatymus galima naudoti tik numatytajai „<ph name="DEFAULT_SCOPE" />“ konfigūracijai.
+
+          „<ph name="INSTALL_SOURCES" />“: kiekvienas elementas šiame sąraše yra plėtinio stiliaus atitikties šablonas (<ph name="LINK_TO_MATCH_PATTERNS" />). Naudotojai galės lengvai įdiegti elementus iš bet kurio URL, kuris atitinka elementą šiame sąraše. Failo <ph name="EXTENSION_SUFFIX_WILDCARD" /> vieta ir puslapis, iš kurio pradedamas atsisiuntimas (t. y. persiuntimo URL), turi būti leidžiami šiuose šablonuose.
+
+          „<ph name="ALLOWED_TYPES" />“: nustačius šį nustatymą leidžiami plėtinio / programų, kuriuos galima įdiegti „<ph name="PRODUCT_NAME" />“, tipai įtraukiami į baltąjį sąrašą. Vertė – tai eilučių, kurių kiekviena turi būti vienos iš šių verčių: <ph name="VALID_ALLOWED_TYPES" />, sąrašas. Jei reikia daugiau informacijos apie šiuos tipus, žr. „<ph name="PRODUCT_NAME" />“ plėtinių dokumentus.
+          „<ph name="BLOCKED_INSTALL_MESSAGE" />“: jei naudotojas bando įdiegti plėtinį, bet jis blokuojamas atsižvelgiant į politiką, „Chrome“ internetinėje parduotuvėje pateikiamas bendrosios klaidos pranešimas. Naudojant šį nustatymą galima pridėti teksto prie klaidos pranešimo. Tai gali būti naudojama naudotojams nukreipti į pagalbos centrą, paaiškinti, kodėl tam tikras plėtinys blokuojamas, ir kitais tikslais. Šis klaidos pranešimas bus sutrumpintas, jei bus ilgesnis nei 1 000 simbolių ilgio.
+          „<ph name="RUNTIME_BLOCKED_HOSTS" />“: priimamas prieglobos serverių, su kuriais bus blokuojamos plėtinio sąveikos, sąrašas. Tai apima „javascript“ įtraukimą, „webRequest“ / „webNavigation“ keitimą ir peržiūrą, slapukų peržiūrą ir keitimą. Formatas yra panašus į atitikties šablonus <ph name="LINK_TO_MATCH_PATTERNS" />, išskyrus tai, kad negalima nustatyti jokių kelių, pvz., „*://*.example.com“. Taip pat palaikomi veiksmingi TLD pakaitos simboliai, pvz., „*://example.*“.
+          „<ph name="RUNTIME_ALLOWED_HOSTS" />“: priimamas prieglobos serverių, su kuriais plėtinys gali sąveikauti, sąrašas, neatsižvelgiant į tai, ar jie pateikiami sąraše „<ph name="RUNTIME_BLOCKED_HOSTS" />“. Sąrašas pateikiamas tokiu pačiu formatu kaip ir „<ph name="RUNTIME_BLOCKED_HOSTS" />“.
+          </translation>
 <translation id="1152117524387175066">Pateikti įrenginio „Dev“ perjungimo būseną paleidžiant.
 
       Jei ši politika nustatyta kaip „False“, „Dev“ perjungimo būsena nebus pateikta.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Įgalinti įmonės spausdintuvai</translation>
 <translation id="1221359380862872747">Įkelti nurodytus URL prisijungiant prie demonstracinės versijos</translation>
 <translation id="123081309365616809">Įgalinamas turinio perdavimas į įrenginį</translation>
+<translation id="1257550411839719984">Numatytojo atsisiuntimų katalogo nustatymas</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
 <translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
 
@@ -565,6 +599,7 @@
       </translation>
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
+<translation id="2793923553868251161">Šaltiniai, kurie turi būti laikomi saugiu kontekstu.</translation>
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
       Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
@@ -806,11 +841,6 @@
       Jei paliksite šią politiką nenustatytą, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3758249152301468420">Neleisti kūrėjo įrankių</translation>
 <translation id="3765260570442823273">Neveikos būsenos atjungimo įspėjimo pranešimo trukmė</translation>
-<translation id="376931976323225993">Galima nustatyti, ar svetainėms leidžiama automatiškai paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“. Automatinį papildinio „<ph name="FLASH_PLUGIN_NAME" />“ paleidimą galima visose svetainėse leisti arba uždrausti.
-
-          Pasirinkus „Spustelėti ir paleisti“ papildinį „<ph name="FLASH_PLUGIN_NAME" />“ galima paleisti, bet naudotojas turi spustelėti rezervuotą vietą, kad papildinys būtų vykdomas.
-
-          Jei ši politika nenustatyta, naudotojas galės pats pakeisti šį nustatymą.</translation>
 <translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
 <translation id="3780319008680229708">Jei ši politika bus nustatyta į „true“, „Cast“ įrankių juostos piktograma visada bus rodoma įrankių juostoje arba perpildymo meniu ir naudotojai negalės jos pašalinti.
 
@@ -900,6 +930,13 @@
       Jei įgalinsite šį nustatymą, nebebus galima pasiekti kūrėjo įrankių ir patikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.
 
       Išjungus šią parinktį ar jos nenustačius naudotojai galės naudoti kūrėjo įrankius ir „JavaScript“ pultą.</translation>
+<translation id="3895557476567727016">Konfigūruojamas numatytasis katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos failams atsisiųsti.
+
+      Nustačius šią politiką, bus pakeistas numatytasis katalogas, į kurį „<ph name="PRODUCT_NAME" />“ atsisiunčia failus. Ši politika nėra būtina, todėl naudotojas galės pakeisti katalogą.
+
+      Nenustačius šios politikos, „<ph name="PRODUCT_NAME" />“ naudos įprastą numatytąjį katalogą (konkrečios platformos).
+
+      Jei reikia kintamųjų, kuriuos galima naudoti, sąrašo, žr. https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Rekomenduojamų viešos sesijos lokalių nustatymas</translation>
 <translation id="3911737181201537215">Ši politika neturi įtakos „Android“ vykdomam registravimo procesui.</translation>
 <translation id="391531815696899618">Kai nustatyta kaip „true“, neleidžiamas „Google“ disko sinchronizavimas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“. Tokiu atveju duomenys į „Google“ diską neįkeliami.
@@ -1821,7 +1858,6 @@
 <translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
 <translation id="7072406291414141328">Įgalinamas tinklo siuntimo spartos reguliavimas</translation>
 <translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
-<translation id="7091198954851103976">Visada paleidžiami papildiniai, kuriuos naudojant reikalinga prieigos teisė</translation>
 <translation id="7106631983877564505">Kai „<ph name="PRODUCT_OS_NAME" />“ įrenginiai tampa neaktyvūs ar sustabdomi, įjungiamas užraktas.
 
       Jei įgalinsite šį nustatymą, naudotojų bus prašoma pateikti slaptažodį, kad būtų galima atrakinti įrenginį iš miego režimo.
@@ -2064,6 +2100,13 @@
 <translation id="787125417158068494">Nustačius „SyncDisabled“ arba nesukonfigūravus, <ph name="PRODUCT_OS_NAME" /> sertifikatų nebus galima naudoti ARC programose.
 
       Nustačius „CopyCaCerts“, visi per ONC įdiegti CA sertifikatai su „<ph name="WEB_TRUSTED_BIT" />“ bus prieinami ARC programose.</translation>
+<translation id="7872535148622213208">
+        Politika nurodo šaltinių (URL), kurie turi būti laikomi saugiu kontekstu,
+        sąrašą. Siekiama leisti organizacijoms nustatyti darbinį serverį
+        vidiniams žiniatinklio tobulinimams atlikti.
+        Tai yra tas pats kaip žymė --unsafely-treat-insecure-origin-as-secure.
+        Jei reikia daugiau informacijos apie saugų kontekstą, žr. https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
@@ -2307,6 +2350,15 @@
       Jei ši politika nesukonfigūruota arba vertė nustatyta į mažiau nei 1 MB, „<ph name="PRODUCT_OS_NAME" />“ naudos numatytojo dydžio talpyklą.</translation>
 <translation id="8858642179038618439">Priverstinis „YouTube“ saugos režimas</translation>
 <translation id="8864975621965365890">Nerodomas raginimas išjungti, kuris rodomas, kai svetainę pateikia „<ph name="PRODUCT_FRAME_NAME" />“.</translation>
+<translation id="8867464911288727016">Įgalinama integruota „Google“ vertėjo paslauga „<ph name="PRODUCT_NAME" />“.
+
+      Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ bus teikiama vertimo funkcija naudotojui, rodant integruotą vertėjo įrankių juostą (kai galima) ir vertimo parinktį kontekstiniame meniu, kuris rodomas spustelėjus dešiniuoju pelės klavišu.
+
+      Jei išjungsite šį nustatymą, visos integruotos vertimo funkcijos bus išjungtos.
+
+      Jei įgalinsite arba išjungsite šį nustatymą, naudotojai negalės pakeisti ar nepaisyti šio nustatymo „<ph name="PRODUCT_NAME" />“.
+
+      Nenustačius šio nustatymo, naudotojas galės nuspręsti, ar naudoti šią funkciją.</translation>
 <translation id="8870318296973696995">Pagrindinis puslapis</translation>
 <translation id="8882006618241293596">Užblokuoti papildinį „<ph name="FLASH_PLUGIN_NAME" />“ šiose svetainėse</translation>
 <translation id="8906768759089290519">Įgalinti svečio režimą</translation>

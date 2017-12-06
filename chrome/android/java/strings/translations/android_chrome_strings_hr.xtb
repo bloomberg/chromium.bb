@@ -66,6 +66,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1539064842193522527">Veza otvorena u Chromeu</translation>
 <translation id="1549000191223877751">Premjesti u drugi prozor</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
+<translation id="1566400915470565838">Da biste upotrebljavali aplikaciju <ph name="APP_NAME" />, povežite se s internetom.</translation>
 <translation id="1569387923882100876">Povezani uređaj</translation>
 <translation id="1571304935088121812">Kopiraj korisničko ime</translation>
 <translation id="1612196535745283361">Chrome treba pristup lokaciji kako bi skenirao uređaje. Pristup lokaciji <ph name="BEGIN_LINK" />isključen je za ovaj uređaj<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2351097562818989364">Vaše su postavke prevođenja vraćene na zadano.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2369533728426058518">otvorene kartice</translation>
-<translation id="2372491353676110880">Automatski preuzmi stranice</translation>
 <translation id="2387895666653383613">Skaliranje teksta</translation>
 <translation id="2414886740292270097">Tamno</translation>
 <translation id="2416359993254398973">Chrome treba dopuštenje za pristup fotoaparatu za ovu web-lokaciju.</translation>
@@ -179,8 +179,8 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2621115761605608342">Dopuštanje JavaScripta za određenu web-lokaciju.</translation>
 <translation id="2625189173221582860">Zaporka je kopirana</translation>
 <translation id="2631006050119455616">Spremljeno</translation>
+<translation id="2647434099613338025">Dodavanje jezika</translation>
 <translation id="2653659639078652383">Pošalji</translation>
-<translation id="2671100504997899381">Brže učitavanje stranica i spremanje popularnih stranica za offline čitanje</translation>
 <translation id="2677748264148917807">Napusti</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2707726405694321444">Osvježavanje stranice</translation>
@@ -565,7 +565,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6337234675334993532">Enkripcija</translation>
 <translation id="6343192674172527289">Preuzimanja nisu pronađena</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Otključajte da biste nastavili s postavljanjem telefona</translation>
 <translation id="6364438453358674297">Želite li ukloniti prijedlog iz povijesti?</translation>
 <translation id="6383961787135158834">Izbriši pohranu…</translation>
 <translation id="6388207532828177975">Izbriši i poništi</translation>
@@ -793,6 +792,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8493948351860045254">Oslobodi prostor</translation>
 <translation id="8497726226069778601">Ovdje nema ničega... zasad</translation>
 <translation id="8503813439785031346">Korisničko ime</translation>
+<translation id="8514477925623180633">Izvoz zaporki pohranjenih u Chromeu</translation>
 <translation id="8514577642972634246">Ulaz u anonimni način</translation>
 <translation id="8523928698583292556">Izbriši pohranjenu zaporku</translation>
 <translation id="854522910157234410">Otvori tu stranicu:</translation>

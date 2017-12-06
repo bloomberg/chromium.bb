@@ -405,7 +405,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="9083392325882095631">1 objekt</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
-<translation id="91549621916703028">Skapa flera flikar för allt du behöver göra</translation>
 <translation id="9157836665414082580">Visa inte dialogrutor</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="976982866697960176">Hantera synkroniserad data …</translation>
 <translation id="988141524645182168">Övriga enheter</translation>
 <translation id="989988560359834682">Redigera adress</translation>
+<translation id="994757059139821576">Artikelförslag</translation>
 </translationbundle>

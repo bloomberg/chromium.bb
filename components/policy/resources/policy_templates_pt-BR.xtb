@@ -42,6 +42,39 @@
       Se esta política for deixada sem definição, o diretório de cache padrão será usado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--disk-cache-dir".</translation>
 <translation id="1138294736309071213">Esta política é ativa somente no modo de varejo. Determina o tempo antes do protetor de tela ser mostrado na tela de login para os dispositivos no modo de varejo. O valor da política deve ser especificado em milésimos de segundos.</translation>
 <translation id="1151353063931113432">Permitir imagens nestes sites</translation>
+<translation id="1151545095291359187">Define configurações de gerenciamento de extensão para <ph name="PRODUCT_NAME" />.
+
+          Esta política monitora várias configurações, inclusive aquelas controladas por quaisquer políticas existentes relacionadas a extensões. Ela modifica todas as políticas herdadas, se ambas estiverem definidas.
+
+          Esta política mapeia um código de extensão ou um URL de atualização para a configuração dela. Com um código de extensão, a configuração é aplicada apenas à extensão especificada. Uma configuração padrão pode ser definida para o código especial <ph name="DEFAULT_SCOPE" />, e ela é aplicada a todas as extensões que não tenham uma configuração personalizada nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões que tenham exatamente o mesmo URL de atualização mencionado no manifesto de tal extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          A configuração de cada extensão (ou extensões com o mesmo URL de atualização) é outro dicionário que pode ter os campos documentados abaixo.
+
+          <ph name="INSTALLATION_MODE" />: mapeia para uma string que indica o modo de instalação da extensão. As strings válidas são:
+          * <ph name="ALLOWED" />: permite que a extensão seja instalada pelo usuário. Este é o comportamento padrão;
+          * <ph name="BLOCKED" />: bloqueia a instalação da extensão;
+          * <ph name="FORCE_INSTALLED" />: a extensão é automaticamente instalada e não pode ser removida pelo usuário;
+          * <ph name="NORMAL_INSTALLED" />: a extensão é automaticamente instalada, mas pode ser desativada pelo usuário.
+
+          O <ph name="INSTALLATION_MODE" /> também pode ser configurado para diversas extensões, inclusive para a extensão <ph name="DEFAULT_SCOPE" /> (como configurações padrão) e para as extensões com o mesmo URL de atualização. Apenas os valores <ph name="ALLOWED" /> e <ph name="BLOCKED" /> podem ser usados nesse caso.
+
+          Se o modo é definido como <ph name="FORCE_INSTALLED" /> ou <ph name="NORMAL_INSTALLED" />, um <ph name="UPDATE_URL" /> também precisa ser configurado. Observe que o URL de atualização definido nesta política só é usado na instalação inicial. As atualizações subsequentes da extensão usarão o URL de atualização indicado no manifesto da extensão. O URL de atualização deve apontar para um documento de atualização do manifesto XML, conforme mencionado acima.
+
+          <ph name="BLOCKED_PERMISSIONS" />: mapeia para uma lista de strings que indicam as permissões bloqueadas de API para a extensão. Os nomes das permissões são os mesmos das strings de permissão mencionadas no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC3" />. Esta configuração também pode ser definida para a extensão <ph name="DEFAULT_SCOPE" />. Se a extensão precisa de uma permissão da lista de bloqueio, ela não pode ser carregada. Se tem uma permissão bloqueada como exigência opcional, a extensão é tratada da maneira normal, mas a solicitação de permissões conflitantes é automaticamente recusada no tempo de execução.
+
+          <ph name="ALLOWED_PERMISSIONS" />: semelhante a <ph name="BLOCKED_PERMISSIONS" />, com a diferença de permitir, explicitamente, algumas permissões que podem estar bloqueadas pela lista global de permissões bloqueadas; portanto, ela não pode ser configurada para a extensão <ph name="DEFAULT_SCOPE" />. Esta configuração não dá permissões concedidas às extensões de forma automática.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: mapeia para a string de uma versão. O formato da string da versão é o mesmo usado no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC4" />. Uma extensão com uma versão mais antiga que a versão mínima especificada é desativada. Isso se aplica também a extensões forçadamente instaladas.
+
+          As configurações a seguir só podem ser usadas para a configuração <ph name="DEFAULT_SCOPE" /> padrão:
+
+          <ph name="INSTALL_SOURCES" />: cada item desta lista é um padrão de correspondência de estilo de extensão (consulte <ph name="LINK_TO_MATCH_PATTERNS" />). Os usuários instalam facilmente os itens de qualquer URL correspondente a um item desta lista. Tanto o local do arquivo <ph name="EXTENSION_SUFFIX_WILDCARD" /> como a página na qual o download é iniciado (isto é, o referenciador) devem ser permitidos por esses padrões.
+
+          <ph name="ALLOWED_TYPES" />: esta configuração coloca na lista de permissões os tipos permitidos de extensão/apps que podem ser instalados em <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, das quais cada uma deve ser uma das seguintes opções: <ph name="VALID_ALLOWED_TYPES" />. Consulte a documentação de extensões de <ph name="PRODUCT_NAME" /> para ver outras informações sobre esses tipos.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: se um usuário tenta instalar uma extensão, mas é bloqueado por uma política, a Chrome Web Store exibe uma mensagem de erro genérica. Esta definição permite acrescentar texto a essa mensagem de erro. Isso pode ser usado para direcionar os usuários para o suporte técnico, explicar por que uma extensão específica está bloqueada ou para outros fins. Essa mensagem de erro ficará truncada se tiver mais de 1.000 caracteres.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: aceita uma lista de hosts com que uma extensão será impedida de interagir. Isso inclui injeção de JavaScript, alteração e exibição de webRequests / webNavigation, exibição e alteração de cookies. O formato é similar aos Padrões de correspondência <ph name="LINK_TO_MATCH_PATTERNS" />, com a diferença de que não é possível definir nenhum caminho, por exemplo, "*://*.example.com". Isso também é compatível com caracteres curingas TLD efetivos, como por exemplo "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: aceita uma lista de hosts com que uma extensão pode interagir, independentemente de eles estarem listados em <ph name="RUNTIME_BLOCKED_HOSTS" />. Possui o mesmo formato que <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Informa o estado da chave dev do dispositivo durante a inicialização.
 
       Se a política for definida como "False", o estado da chave dev não será informado.</translation>
@@ -59,6 +92,7 @@
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
 <translation id="1221359380862872747">Carrega os urls especificados no login de demonstração</translation>
 <translation id="123081309365616809">Ativa transmissão de conteúdo para o dispositivo</translation>
+<translation id="1257550411839719984">Definir diretório de download padrão</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>
 <translation id="1291880496936992484">Atenção: o RC4 será completamente removido de <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016), e esta política parará de funcionar.
 
@@ -78,7 +112,7 @@
 <translation id="1330985749576490863">Desativar o Google Drive por conexões de rede celular no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="13356285923490863">Nome da política</translation>
 <translation id="1353966721814789986">Páginas de inicialização</translation>
-<translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo sem rastros.
+<translation id="1359553908012294236">Se esta política é definida como "true" ou não é configurada, o <ph name="PRODUCT_NAME" /> ativa os logins de convidados. Os logins de convidados são perfis do <ph name="PRODUCT_NAME" /> nos quais todas as janelas ficam no modo de navegação anônima.
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
@@ -248,7 +282,7 @@
 
       Se esta política não é definida, os padrões são usados para todas as configurações.</translation>
 <translation id="1960840544413786116">Se os certificados emitidos pelas âncoras de confiança locais que estão sem a extensão subjectAlternativeName devem ser permitidos</translation>
-<translation id="1964634611280150550">Modo sem rastros desativado</translation>
+<translation id="1964634611280150550">Modo de navegação anônima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app do YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
 <translation id="1969212217917526199">Modifica as políticas sobre versões de depuração do host de acesso remoto.
 
@@ -534,6 +568,7 @@
       </translation>
 <translation id="2769952903507981510">Configurar o nome de domínio obrigatório para hosts de acesso remoto</translation>
 <translation id="2787173078141616821">Informações de relatório sobre o status do Android</translation>
+<translation id="2793923553868251161">Origens a serem tratadas como um contexto seguro.</translation>
 <translation id="2801230735743888564">Permite que os usuários joguem o easter egg de dinossauro quando o dispositivo estiver off-line.
 
       Se esta política for configurada como "False", não será possível jogar o easter egg de dinossauro quando o dispositivo estiver off-line. Se esta configuração for definida como "True", os usuários estarão autorizados a jogar o easter egg de dinossauro. Se esta política não for configurada, os usuários não terão autorização para jogar o easter egg de dinossauro em Chrome OS registrados, mas poderão jogá-lo em outras circunstâncias.</translation>
@@ -546,7 +581,7 @@
 
           Se esta política não for definida, a configuração será ativada.</translation>
 <translation id="2823870601012066791">Local de registro do Windows para clientes do <ph name="PRODUCT_OS_NAME" />:</translation>
-<translation id="2824715612115726353">Ativar o modo sem rastros</translation>
+<translation id="2824715612115726353">Ativar o modo de navegação anônima</translation>
 <translation id="2838830882081735096">Bloquear migração de dados e ARC</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
 
@@ -647,7 +682,7 @@
 
       Se esta política não for definida, os usuários poderão decidir se o cliente DNS integrado será usado editando-se chrome://flags ou especificando-se a sinalização de uma linha de comando.</translation>
 <translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
-<translation id="3219421230122020860">Modo sem rastros disponível</translation>
+<translation id="3219421230122020860">Modo de navegação anônima disponível</translation>
 <translation id="3220624000494482595">Se o app em Kiosk for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalação de extensões, aplicativos e scripts do usuário a partir de</translation>
 <translation id="3240609035816615922">Política de acesso à configuração de impressoras.</translation>
@@ -767,11 +802,6 @@
       Deixar estas políticas se definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas de desenvolvedor</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
-<translation id="376931976323225993">Permite definir se os websites podem executar o plug-in <ph name="FLASH_PLUGIN_NAME" /> automaticamente. É possível permitir ou negar a execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> para todos os websites.
-
-          "Clicar para reproduzir" permite que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado, mas é preciso que o usuário clique nele para iniciar a execução.
-
-          Se esta política não for definida, o usuário poderá alterar essa configuração manualmente.</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
 <translation id="3780319008680229708">Se esta política for definida como true, o ícone do Google Cast sempre será exibido na barra de ferramentas ou no menu flutuante, e os usuários não poderão removê-lo.
 
@@ -853,6 +883,13 @@
       Se você ativar esta configuração, as Ferramentas do desenvolvedor não poderão ser acessadas, e elementos de websites não poderão mais ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou menu de contexto para abrir as Ferramentas do desenvolvedor ou o Console de JavaScript serão desativados.
 
       Definir esta opção como desativada ou deixá-la sem definição permitirá a utilização das Ferramentas do desenvolvedor e do console JavaScript.</translation>
+<translation id="3895557476567727016">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar dados do usuário.
+
+      Se você definir esta política, o diretório padrão usado para os downloads do <ph name="PRODUCT_NAME" /> será alterado. Ela não é obrigatória, sendo que o usuário poderá alterar o diretório posteriormente.
+
+      Se você não definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório padrão (específico da plataforma).
+
+      Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.</translation>
 <translation id="3907986150060929099">Definir as localidades recomendadas para uma sessão pública</translation>
 <translation id="3911737181201537215">Esta política não tem nenhum efeito sobre o registro feito pelo Android.</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
@@ -889,7 +926,7 @@
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros em uma página pode acionar pop-up de uma caixa de diálogo básica de autorização HTTP. Normalmente, esta função é desativada como proteção contra phishing. Se esta política não estiver definida, a função é desativada e o subconteúdo de terceiros não terá permissão para acionar pop-up de uma caixa de diálogo básica de autorização HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="408029843066770167">Permitir consultas a um serviço de hora do Google</translation>
-<translation id="4088589230932595924">Modo sem rastros forçado</translation>
+<translation id="4088589230932595924">Modo de navegação anônima forçado</translation>
 <translation id="4088983553732356374">Permite que você configure se os websites têm ou não permissão para definir dados locais. É possível permitir a configuração dos dados locais para todos os websites ou negá-la a todos eles.
 
           Se esta política é configurada para "Manter cookies enquanto durar a sessão", os cookies são apagados quando a sessão é encerrada. Se o <ph name="PRODUCT_NAME" /> é executado no "modo de segundo plano", é possível que a sessão não seja encerrada quando a última janela é fechada. Consulte a política "BackgroundModeEnabled" para ver mais informações sobre como configurar esse comportamento.
@@ -1209,7 +1246,7 @@
           Quando esta política não está definida, nenhuma caixa de diálogo de advertência é mostrada.
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem iguais ou inferiores ao período de inatividade.</translation>
-<translation id="5307432759655324440">Disponibilidade do modo sem rastros</translation>
+<translation id="5307432759655324440">Disponibilidade do modo de navegação anônima</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
 
@@ -1330,7 +1367,7 @@
       Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.
 
       Se a política não for definida, será usado o diretório padrão do perfil.</translation>
-<translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no modo sem rastros em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no modo sem rastros. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no modo sem rastros. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no modo sem rastros.</translation>
+<translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no modo de navegação anônima em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no modo de navegação anônima. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no modo de navegação anônima. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no modo de navegação anônima.</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="5862253018042179045">Definir o estado padrão do recurso de acessibilidade do feedback falado na tela de login.
 
@@ -1697,7 +1734,6 @@
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
 <translation id="7072406291414141328">Ativa o acelerador de largura de banda da rede</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
-<translation id="7091198954851103976">Sempre executa plug-ins que requerem autorização</translation>
 <translation id="7106631983877564505">Ativa o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> entram no modo inativo ou suspenso.
 
       Se você ativar esta configuração, será solicitado aos usuários uma senha para retirar o dispositivo do modo de espera.
@@ -1930,6 +1966,13 @@
 <translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
 
       Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
+<translation id="7872535148622213208">
+        A política especifica que uma lista de origens (URLs) seja tratada como contexto0
+        seguro. O objetivo é permitir que organizações possam configurar um servidor temporário
+        para desenvolvimentos internos na Web.
+        Funciona da mesma forma que a sinalização --unsafely-treat-insecure-origin-as-secure.
+        Para mais informações sobre contextos seguros, consulte https://www.w3.org/TR/secure-contexts/ (link em inglês)
+        </translation>
 <translation id="7882585827992171421">Esta política só fica ativada em modo de varejo.
 
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
@@ -2001,7 +2044,7 @@
 
       Neste modo, os dados de perfil são mantidos no disco apenas durante a sessão do usuário. Recursos como o histórico do navegador, as extensões e as informações nelas contidas, os dados da Web, como cookies e bancos de dados não são mantidos após o navegador ser fechado. No entanto, isso não impede que o usuário faça o download de dados para o disco manualmente, salve páginas ou as imprima.
 
-      Se o usuário tiver ativado a sincronização, todos esses dados serão preservados no perfil de sincronização dele, assim como acontece nos perfis regulares. O modo sem rastros também estará disponível, se não for explicitamente desativado pela política.
+      Se o usuário tiver ativado a sincronização, todos esses dados serão preservados no perfil de sincronização dele, assim como acontece nos perfis regulares. O modo de navegação anônima também estará disponível, se não for explicitamente desativado pela política.
 
       Se a política for desativada ou não for definida, o login levará a perfis regulares.</translation>
 <translation id="8158758865057576716">Permite a criação de cópias em roaming dos dados de perfil do <ph name="PRODUCT_NAME" />.</translation>
@@ -2154,6 +2197,15 @@
       Se esta política não é configurada ou se o valor é inferior a 1 MB, o <ph name="PRODUCT_OS_NAME" /> usa o tamanho de cache padrão.</translation>
 <translation id="8858642179038618439">Forçar modo de segurança do YouTube</translation>
 <translation id="8864975621965365890">Remove a solicitação de recusa que aparece quando um site é processado pelo <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Ativa o serviço integrado Google Tradutor no <ph name="PRODUCT_NAME" />.
+
+      Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> oferecerá funcionalidades de tradução para o usuário por meio de uma barra de ferramentas (quando apropriado) e uma opção de tradução no menu de contexto que aparece ao clicar com o botão direito do mouse.
+
+      Se você desativar esta configuração, todos os recursos de tradução serão desativados.
+
+      Se você ativar ou desativar esta configuração, os usuários não poderão alterá-la nem substituí-la no <ph name="PRODUCT_NAME" />.
+
+      Se esta configuração for deixada sem definição, o usuário poderá optar por utilizar esta função ou não.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
 <translation id="8906768759089290519">Ativa o modo visitante</translation>
@@ -2232,7 +2284,7 @@
 
       Se esta política é definida como "true", os registros de sistema são enviados. Se ela é definida
       como "false" ou se não é definida, nenhum registro de sistema é enviado.</translation>
-<translation id="9150416707757015439">Esta política é obsoleta. Utilize IncognitoModeAvailability em seu lugar, que ativa o modo sem rastros em <ph name="PRODUCT_NAME" />. Caso esta configuração seja ativada ou não configurada, os usuários podem abrir páginas da Web no modo sem rastros. Se essa configuração for desativada, os usuários não podem abrir páginas da Web usando o modo sem rastros. Se esta política for deixada sem definição, esta opção será ativada e o usuário será capaz de usar o modo sem rastros.</translation>
+<translation id="9150416707757015439">Esta política é obsoleta. Utilize IncognitoModeAvailability em seu lugar, que ativa o modo de navegação anônima em <ph name="PRODUCT_NAME" />. Caso esta configuração seja ativada ou não configurada, os usuários podem abrir páginas da Web no modo de navegação anônima. Se essa configuração for desativada, os usuários não podem abrir páginas da Web usando o modo de navegação anônima. Se esta política for deixada sem definição, esta opção será ativada e o usuário será capaz de usar o modo de navegação anônima.</translation>
 <translation id="915194831143859291">Se esta política é definida como "false" ou se não é configurada, o <ph name="PRODUCT_OS_NAME" /> permite que o usuário desligue o dispositivo.
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
 <translation id="9187743794267626640">Desativa a montagem de armazenamento externo</translation>

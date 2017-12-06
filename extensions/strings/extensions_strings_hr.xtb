@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Ne mogu otpakirati proširenje. Kako biste sigurno otpakirali proširenje, mora postojati putanja do direktorija vašeg profila koja ne sadrži simboličku vezu. Za vaš profil ne postoji takva putanja.</translation>
 <translation id="641087317769093025">Nije uspjelo raspakiravanje proširenja</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" zahtijeva pristup nekim od vaših uređaja:</translation>
-<translation id="6566142449942033617">Nije uspjelo učitavanje putanje "<ph name="PLUGIN_PATH" />" za dodatak.</translation>
 <translation id="657064425229075395">Nije bilo moguće učitati pozadinsku skriptu "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167">pristupiti uređaju <ph name="PRODUCT_NAME" /> dobavljača <ph name="VENDOR_NAME" /> (serijski broj <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nije uspjelo stvaranje direktorija za raspakiravanje: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Proširenje se prečesto ponovno učitavalo.</translation>
 <translation id="7003844668372540529">Nepoznati proizvod <ph name="PRODUCT_ID" />, <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administrator ovog računala zahtijeva instalaciju proširenja <ph name="EXTENSION_NAME" />. Ona se ne može ukloniti ni izmijeniti.</translation>
-<translation id="7581279002575751816">Dodaci NPAPI-ja nisu podržani.</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Prema korisniku</translation>
 <translation id="8047248493720652249">To proširenje nije uspjelo dodijeliti naziv preuzimanju "<ph name="ATTEMPTED_FILENAME" />" jer je drugo proširenje (<ph name="EXTENSION_NAME" />) odredilo drugačiji naziv datoteke "<ph name="ACTUAL_FILENAME" />".</translation>

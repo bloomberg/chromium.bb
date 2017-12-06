@@ -401,7 +401,7 @@
 <translation id="3759461132968374835">Ei viimeaikaisia kaatumisilmoituksia. Jos selain kaatui kaatumisilmoitusten ollessa pois käytöstä, ilmoituksia ei näytetä täällä.</translation>
 <translation id="3765032636089507299">Selaussuojasivu on työn alla.</translation>
 <translation id="3778403066972421603">Haluatko tallentaa tämän kortin Google-tilille ja tälle laitteelle?</translation>
-<translation id="3783418713923659662">MasterCard</translation>
+<translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Vanhenee <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3808375843007691220">Varoitus: Kokeellisia ominaisuuksia</translation>
 <translation id="382518646247711829">Jos käytät välityspalvelinta…</translation>
@@ -726,7 +726,6 @@
 <translation id="6447842834002726250">Evästeet</translation>
 <translation id="6451458296329894277">Vahvista lomakkeen uudelleenlähetys</translation>
 <translation id="6456339708790392414">Maksu</translation>
-<translation id="6458467102616083041">Ohitettu, koska oletushaku on poistettu käytöstä käytännön mukaan.</translation>
 <translation id="647261751007945333">Laitekäytännöt</translation>
 <translation id="6477321094435799029">Chrome havaitsi tällä sivulla epätavallista koodia ja esti sen suojellakseen henkilötietojasi (esimerkiksi salasanoja, puhelinnumeroita tai luottokorttitietoja).</translation>
 <translation id="6489534406876378309">Aloita kaatumistietojen lähettäminen</translation>

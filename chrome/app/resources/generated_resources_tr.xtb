@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Zararlı yazılım kaldırılamıyor</translation>
 <translation id="1062407476771304334">Değiştir</translation>
 <translation id="1062866675591297858">Denetlenen kullanıcılarınızı <ph name="BEGIN_LINK" />Denetlenen Kullanıcılar Gösterge Tablosu<ph name="END_LINK" /> aracılığıyla yönetin.</translation>
-<translation id="1064662184364304002">Medya Kitaplığı Dosyası Denetleyicisi</translation>
 <translation id="1064835277883315402">Özel ağa katıl</translation>
 <translation id="1064912851688322329">Google Hesabınızın bağlantısını kesin</translation>
 <translation id="1067048845568873861">Oluşturulduğu tarih</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Kimlik API'sı Jeton Önbelleği</translation>
 <translation id="1478233201128522094">Bir dahaki sefere yeni bir telefon kullanarak bu <ph name="DEVICE_TYPE" /> cihazının kilidini açabilirsiniz. Ayarlar'da Smart Lock'u kapatın.</translation>
 <translation id="1478340334823509079">Ayrıntılar: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544"><ph name="FILE_COUNT" /> yeni fotoğrafı yedeklemeye hazır</translation>
 <translation id="1483493594462132177">Gönder</translation>
 <translation id="1485015260175968628">Artık şunları yapabilir:</translation>
 <translation id="1485141095922496924"><ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /> Sürümü</translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Dikkat:<ph name="END_BOLD" />  Bu dosyalar geçicidir ve disk alanından kazanmak için otomatik olarak silinebilir. <ph name="BEGIN_LINK" />Daha Fazla Bilgi Edinin<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383"><ph name="DEVICE_TYPE" /> cihazınız için Smart Lock'u kurun</translation>
 <translation id="1817871734039893258">Microsoft Dosya Kurtarma</translation>
-<translation id="1825832322945165090">Cihazda yeterli alan yok</translation>
 <translation id="1826516787628120939">Kontrol ediliyor</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> size bildirim göndermek istiyor.</translation>
 <translation id="1828378091493947763">Bu eklenti, bu cihazda desteklenmiyor</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">Bir hata oluştu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="2385700042425247848">Hizmet adı:</translation>
 <translation id="2387458720915042159">Proxy bağlantısı türü</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> yeni fotoğraf bulundu
-    <ph name="LINE_BREAK1" />
-    Cihazda yeterli alan yok.
-    <ph name="LINE_BREAK2" />
-    Başlamak için birkaç fotoğraf seçmeyi deneyin.</translation>
 <translation id="2391419135980381625">Standart yazı tipi</translation>
 <translation id="2391762656119864333">İptal et</translation>
 <translation id="2392369802118427583">Etkinleştir</translation>
@@ -1247,7 +1239,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2963151496262057773">Aşağıdaki eklenti yanıt vermiyor: <ph name="PLUGIN_NAME" />Durdurmak ister misiniz?</translation>
 <translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME" /> etkinleştirme portalını ziyaret edin.</translation>
 <translation id="2966937470348689686">Android tercihlerini yönet</translation>
-<translation id="2971033837577180453">&lt;span&gt;Kimlik:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">parlaklığı azalt</translation>
 <translation id="2972557485845626008">Donanım yazılımı</translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
@@ -1377,6 +1368,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3153862085237805241">Kartı Kaydet</translation>
 <translation id="3154351730702813399">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="3154429428035006212">Bir aydan fazladır çevrimdışı</translation>
+<translation id="3156531245809797194">Chrome'u kullanmak için lütfen oturum açın</translation>
 <translation id="3156815148496352304">OS güncellemesini yükleyin</translation>
 <translation id="3157931365184549694">Geri yükle</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (donanım destekli)</translation>
@@ -1540,6 +1532,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3429599832623003132">$1 öğe</translation>
 <translation id="3432227430032737297">Tüm Gösterilenleri Kaldır</translation>
 <translation id="3432757130254800023">Yerel ağdaki ekranlara ses ve video gönderme</translation>
+<translation id="3432762828853624962">Ortak Çalışanlar</translation>
 <translation id="3433621910545056227">Hata! Sistem, cihaz yükleme zamanı özellikleri kilidini oluşturamadı.</translation>
 <translation id="3434107140712555581">%<ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="343467364461911375">Bazı içerik hizmetleri, korumalı içeriğe erişimi yetkilendirmek amacıyla sizi benzersiz şekilde tanımlamak için makine tanımlayıcıları kullanır.</translation>
@@ -1557,7 +1550,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="344630545793878684">Birden fazla web sitesindeki verilerinize erişme</translation>
 <translation id="3449839693241009168">Komutları <ph name="EXTENSION_NAME" /> uygulamasına göndermek için <ph name="SEARCH_KEY" /> tuşuna basın</translation>
 <translation id="3450157232394774192">Boşta Kalma Durumu Kullanma Yüzdesi</translation>
-<translation id="3450505713373650336"><ph name="FILE_COUNT" /> fotoğraf yedekleniyor</translation>
 <translation id="3453612417627951340">Yetkilendirme gerektiriyor</translation>
 <translation id="3454157711543303649">Etkinleştirme tamamlandı</translation>
 <translation id="345693547134384690">Resm&amp;i yeni sekmede aç</translation>
@@ -1800,9 +1792,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="381202950560906753">Başka ekle</translation>
 <translation id="3812525830114410218">Bozuk sertifika</translation>
 <translation id="3813296892522778813">Aradığınız bilgiyi bulamazsanız <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome yardımına<ph name="END_LINK_CHROMIUM" /> gidin</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> yeni fotoğraf bulundu
-    <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklemek için hazır</translation>
 <translation id="3819007103695653773">Tüm sitelerin arka plan push mesajları göndermesine izin ver</translation>
 <translation id="3819752733757735746">Anahtar erişimi (bilgisayarı yalnızca bir veya iki anahtarla kontrol edin)</translation>
 <translation id="3819800052061700452">Tam ek&amp;ran</translation>
@@ -2073,9 +2062,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K aktif)</translation>
 <translation id="431076611119798497">&amp;Ayrıntılar</translation>
 <translation id="4312866146174492540">Engelle (varsayılan)</translation>
-<translation id="4315548163539304064">Medya cihazınız taranıyor...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> yeni fotoğraf bulundu</translation>
 <translation id="4316850752623536204">Geliştirici Web Sitesi</translation>
 <translation id="4320177379694898372">İnternet bağlantısı yok</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{İndirme işlemine devam et}other{İndirme işlemlerine devam et}}</translation>
@@ -2163,7 +2149,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4481249487722541506">Paketi açılmış uzantı yükle...</translation>
 <translation id="4481530544597605423">Eşlemesi kaldırılmış cihazlar</translation>
 <translation id="4482194545587547824">Google, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi kullanabilir</translation>
-<translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' için arama sonuçları</translation>
 <translation id="4495419450179050807">Bu sayfada gösterme</translation>
 <translation id="450099669180426158">Ünlem işareti simgesi</translation>
 <translation id="4501530680793980440">Kaldırmayı Onaylayın</translation>
@@ -2665,6 +2650,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="5316716239522500219">Monitörleri yansıt</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5319359161174645648">Google, Chrome'u önerir</translation>
+<translation id="5319566035256672173">Bu cihaz artık en yeni yazılım güncellemelerini almayacak. Lütfen yeni sürüme geçme seçeneğini değerlendirin.</translation>
 <translation id="532247166573571973">Sunucuya ulaşılamıyor olabilir. Daha sonra tekrar deneyin.</translation>
 <translation id="532360961509278431">"$1" açılamıyor: $2</translation>
 <translation id="5324780743567488672">Konumumu kullanarak saat dilimini otomatik olarak ayarla</translation>
@@ -3813,7 +3799,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="721331389620694978">Göz atma alışkanlıklarını yansıtabilecek bazı ayarlar temizlenmeyecek.</translation>
 <translation id="7216409898977639127">Hücresel sağlayıcı</translation>
 <translation id="7216595297012131718">Dilleri tercihinize göre sıralayın</translation>
-<translation id="7219989745826083607">DIAL Cihaz Açıklaması için Ayrıştırıcı</translation>
 <translation id="722055596168483966">Google hizmetlerini kişiselleştirme</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Bildirimleri gösterme</translation>
@@ -4453,7 +4438,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8261378640211443080">Bu uzantı <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> altında listelenmiyor ve bilginiz dışında eklenmiş olabilir.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> için hesap ekle</translation>
 <translation id="8261506727792406068">Sil</translation>
-<translation id="8261673729476082470"><ph name="FILE_COUNT" /> fotoğraf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedekleniyor</translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" />, bu yapıda uygulanmıyor.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" />, fare imlecinizi devre dışı bıraktı.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" tam ekranı tetikledi.</translation>

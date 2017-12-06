@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Kan ikke pakke ut utvidelse. For å kunne pakke ut en utvidelse på en sikker måte, må det finnes en bane til profilkatalogen din som ikke inneholder en symlink. Det finnes ingen slik bane for profilen din.</translation>
 <translation id="641087317769093025">Kunne ikke pakke ut utvidelsen</translation>
 <translation id="6542618148162044354">«<ph name="APP_NAME" />» ber om tilgang til én eller flere av enhetene dine:</translation>
-<translation id="6566142449942033617">Kan ikke laste inn «<ph name="PLUGIN_PATH" />» for programtillegg.</translation>
 <translation id="657064425229075395">Kunne ikke laste inn bakgrunnsskriptet «<ph name="BACKGROUND_SCRIPT" />».</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Kunne ikke opprette katalog for utpakking: «<ph name="DIRECTORY_PATH" />»</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Denne utvidelsen lastet seg inn på nytt for ofte.</translation>
 <translation id="7003844668372540529">Ukjent produkt, <ph name="PRODUCT_ID" />, fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administratoren til denne maskinen krever at <ph name="EXTENSION_NAME" /> blir installert. Utvidelsen kan ikke fjernes eller endres.</translation>
-<translation id="7581279002575751816">NPAPI-programtillegg støttes ikke.</translation>
 <translation id="7972881773422714442">Alternativer: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Denne utvidelsen kunne ikke kalle nedlastingen «<ph name="ATTEMPTED_FILENAME" />» fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) har angitt et annet filnavn («<ph name="ACTUAL_FILENAME" />»).</translation>

@@ -10,7 +10,7 @@
 <translation id="1112015203684611006">मुद्रण अयशस्वी झाले.</translation>
 <translation id="1125564390852150847">नवीन टॅब तयार करा.</translation>
 <translation id="1145536944570833626">विद्यमान डेटा हटवा.</translation>
-<translation id="1165039591588034296">त्रुटी</translation>
+<translation id="1165039591588034296">एरर</translation>
 <translation id="1172898394251786223">पुढील फील्ड</translation>
 <translation id="1176932207622159128">प्रतिमा जतन करू शकत नाही</translation>
 <translation id="1181037720776840403">काढा</translation>
@@ -406,7 +406,6 @@
 <translation id="9083392325882095631">1 आयटम</translation>
 <translation id="9100610230175265781">सांकेतिक वाक्यांश आवश्यक</translation>
 <translation id="9148126808321036104">पुन्हा साइन इन करा </translation>
-<translation id="91549621916703028">तुमच्या सर्व कार्यांसाठी अनेक टॅब तयार करा</translation>
 <translation id="9157836665414082580">संवाद दर्शवू नका</translation>
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -417,4 +416,5 @@
 <translation id="976982866697960176">संकालित केलेला डेटा व्यवस्थापित करा...</translation>
 <translation id="988141524645182168">इतर डिव्हायसेस</translation>
 <translation id="989988560359834682">पत्ता संपादित करा</translation>
+<translation id="994757059139821576">लेख सूचना</translation>
 </translationbundle>

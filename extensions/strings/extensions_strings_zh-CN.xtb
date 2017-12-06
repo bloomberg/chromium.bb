@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径不得包含符号链接。您的个人资料中不存在这样的路径。</translation>
 <translation id="641087317769093025">无法解压缩扩展程序</translation>
 <translation id="6542618148162044354">“<ph name="APP_NAME" />”请求访问您的一台或多台设备：</translation>
-<translation id="6566142449942033617">无法加载插件的路径“<ph name="PLUGIN_PATH" />”。</translation>
 <translation id="657064425229075395">无法加载背景脚本“<ph name="BACKGROUND_SCRIPT" />”。</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />提供的<ph name="PRODUCT_NAME" />（序列号：<ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">无法创建解压缩目录：“<ph name="DIRECTORY_PATH" />”</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">此扩展程序自行重新加载的频率过高。</translation>
 <translation id="7003844668372540529">来自<ph name="VENDOR_NAME" />的未知产品 <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">此计算机的管理员要求安装 <ph name="EXTENSION_NAME" />。该扩展程序无法删除或修改。</translation>
-<translation id="7581279002575751816">NPAPI 插件不受支持。</translation>
 <translation id="7972881773422714442">选项：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">前置</translation>
 <translation id="8047248493720652249">此扩展程序无法将下载的文件命名为“<ph name="ATTEMPTED_FILENAME" />”，因为另一扩展程序 (<ph name="EXTENSION_NAME" />) 已将此文件命名为“<ph name="ACTUAL_FILENAME" />”。</translation>

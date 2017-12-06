@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuriame nebūtų virtualiojo katalogo. Nėra tokio tipo jūsų profilio kelio.</translation>
 <translation id="641087317769093025">Nepavyko išarchyvuoti plėtinio</translation>
 <translation id="6542618148162044354">„<ph name="APP_NAME" />“ prašo leidimo pasiekti vieną ar daugiau jūsų įrenginių:</translation>
-<translation id="6566142449942033617">Papildiniui nepavyko įkelti „<ph name="PLUGIN_PATH" />“.</translation>
 <translation id="657064425229075395">Nepavyko įkelti foninio scenarijaus „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167">„<ph name="PRODUCT_NAME" />“, pardavėjas „<ph name="VENDOR_NAME" />“ (serijos numeris <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH" />“</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Šis plėtinys buvo per dažnai įkeltas iš naujo.</translation>
 <translation id="7003844668372540529">Nežinomas produktas „<ph name="PRODUCT_ID" />“ iš „<ph name="VENDOR_NAME" />“</translation>
 <translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME" />“. Jo negalima pašalinti ar pakeisti.</translation>
-<translation id="7581279002575751816">NPAPI papildiniai nepalaikomi.</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME" />“</translation>
 <translation id="8035920974645200807">Nukreiptas į naudotoją</translation>
 <translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME" />“, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME" />“.</translation>

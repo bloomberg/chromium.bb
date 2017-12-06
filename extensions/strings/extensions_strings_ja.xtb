@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">拡張機能を解凍できません。拡張機能を安全に解凍するには、シンボリック リンクが含まれていないプロフィール ディレクトリへのパスが必要です。このようなパスがプロフィール内に存在しません。</translation>
 <translation id="641087317769093025">拡張機能を解凍できませんでした</translation>
 <translation id="6542618148162044354">「<ph name="APP_NAME" />」が次のデバイスへのアクセスをリクエストしています:</translation>
-<translation id="6566142449942033617">プラグインの「<ph name="PLUGIN_PATH" />」を読み込むことができませんでした。</translation>
 <translation id="657064425229075395">バックグラウンド スクリプト「<ph name="BACKGROUND_SCRIPT" />」を読み込めませんでした。</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" />、提供元 <ph name="VENDOR_NAME" />（シリアル番号 <ph name="SERIAL_NUMBER" />）</translation>
 <translation id="6731255991101203740">解凍用のディレクトリを作成できませんでした: <ph name="DIRECTORY_PATH" /></translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">この拡張機能は、自身により頻繁に再読み込みされています。</translation>
 <translation id="7003844668372540529">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_NAME" />）</translation>
 <translation id="7217838517480956708">このパソコンの管理者にとって <ph name="EXTENSION_NAME" /> がインストールされている必要があります。削除や修正はできません。</translation>
-<translation id="7581279002575751816">NPAPI プラグインはサポートされていません。</translation>
 <translation id="7972881773422714442">オプション: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ユーザー向き</translation>
 <translation id="8047248493720652249">この拡張機能は、ダウンロード ファイル「<ph name="ATTEMPTED_FILENAME" />」に名前を付けることができませんでした。別の拡張機能（<ph name="EXTENSION_NAME" />）が異なるファイル名「<ph name="ACTUAL_FILENAME" />」を指定しました。</translation>

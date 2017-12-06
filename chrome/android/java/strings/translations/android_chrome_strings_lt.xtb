@@ -66,6 +66,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1539064842193522527">Nuor. atidar. narš. „Chrome“</translation>
 <translation id="1549000191223877751">Perkelti į kitą langą</translation>
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
+<translation id="1566400915470565838">Jei norite naudoti „<ph name="APP_NAME" />“, prisijunkite prie interneto.</translation>
 <translation id="1569387923882100876">Prijungtas įrenginys</translation>
 <translation id="1571304935088121812">Kopijuoti naudotojo vardą</translation>
 <translation id="1612196535745283361">„Chrome“ reikalinga prieiga prie informacijos apie vietovę, kad galėtų nuskaityti įrenginius. Galimybė pasiekti informaciją apie vietovę <ph name="BEGIN_LINK" />išjungta šiame įrenginyje<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
 <translation id="2359808026110333948">Tęsti</translation>
 <translation id="2369533728426058518">atidaryti skirtukus</translation>
-<translation id="2372491353676110880">Automatiškai atsisiųsti puslapius</translation>
 <translation id="2387895666653383613">Teksto mastelio keitimas</translation>
 <translation id="2414886740292270097">Tamsi</translation>
 <translation id="2416359993254398973">„Chrome“ reikia leidimo, kad galėtų naudoti jūsų fotoaparatą šioje svetainėje.</translation>
@@ -179,8 +179,8 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2621115761605608342">Leisti „JavaScript“ konkrečioje svetainėje.</translation>
 <translation id="2625189173221582860">Slaptažodis nukopijuotas</translation>
 <translation id="2631006050119455616">Išsaugota</translation>
+<translation id="2647434099613338025">Pridėti kalbą</translation>
 <translation id="2653659639078652383">Pateikti</translation>
-<translation id="2671100504997899381">Greičiau įkelkite puslapius ir išsaugokite populiarius puslapius, kad galėtumėte skaityti neprisijungę</translation>
 <translation id="2677748264148917807">Išeiti</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2707726405694321444">Atnaujinti puslapį</translation>
@@ -565,7 +565,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6337234675334993532">Šifruotė</translation>
 <translation id="6343192674172527289">Nerasta jokių atsisiųstų elementų</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Atrakinkite ir tęskite telefono sąrankos procesą</translation>
 <translation id="6364438453358674297">Pašalinti pasiūlymą iš istorijos?</translation>
 <translation id="6383961787135158834">Išval. svet. saugyklą...</translation>
 <translation id="6388207532828177975">Išvalyti ir nustatyti iš naujo</translation>
@@ -793,6 +792,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8493948351860045254">Atlaisvinti vietos</translation>
 <translation id="8497726226069778601">Čia dar nėra nieko, ką galėtumėte peržiūrėti…</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>
+<translation id="8514477925623180633">Eksportuoti sistemoje „Chrome“ saugomus slaptažodžius</translation>
 <translation id="8514577642972634246">Įjungti inkognito režimą</translation>
 <translation id="8523928698583292556">Ištrinti išsaugotą slaptažodį</translation>
 <translation id="854522910157234410">Atidaryti šį puslapį</translation>

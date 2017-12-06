@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Δεν είναι δυνατή η αποσυσκευασία της επέκτασης.  Για την ασφαλή αποσυσκευασία μιας επέκτασης πρέπει να υπάρχει στον κατάλογο προφίλ σας μια διαδρομή που δεν περιέχει κάποιο symlink.  Στο προφίλ σας δεν υπάρχει κάποια τέτοια διαδρομή.</translation>
 <translation id="641087317769093025">Δεν ήταν δυνατή η αποσυμπίεση της επέκτασης</translation>
 <translation id="6542618148162044354">Η εφαρμογή "<ph name="APP_NAME" />" ζητά πρόσβαση σε μία ή περισσότερες συσκευές σας:</translation>
-<translation id="6566142449942033617">Δεν ήταν δυνατή η φόρτωση του "<ph name="PLUGIN_PATH" />" για την προσθήκη.</translation>
 <translation id="657064425229075395">Δεν ήταν δυνατή η φόρτωση του σεναρίου παρασκηνίου '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> από <ph name="VENDOR_NAME" /> (σειριακός αριθμός <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Δεν ήταν δυνατή η δημιουργία καταλόγου για την αποσυμπίεση: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Αυτή η επέκταση επαναφορτώνεται πολύ συχνά.</translation>
 <translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
-<translation id="7581279002575751816">Οι προσθήκες NPAPI δεν υποστηρίζονται.</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Μπροστινή κάμερα</translation>
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη "<ph name="ATTEMPTED_FILENAME" />" επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME" />) καθόρισε ένα διαφορετικό όνομα "<ph name="ACTUAL_FILENAME" />".</translation>

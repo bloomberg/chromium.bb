@@ -405,7 +405,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9148126808321036104">Sign in again</translation>
-<translation id="91549621916703028">Create multiple tabs for all your tasks</translation>
 <translation id="9157836665414082580">Suppress Dialogues</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="976982866697960176">Manage Synced Data…</translation>
 <translation id="988141524645182168">Other Devices</translation>
 <translation id="989988560359834682">Edit Address</translation>
+<translation id="994757059139821576">Article Suggestions</translation>
 </translationbundle>

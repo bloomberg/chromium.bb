@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який не містить символьного посилання. Для вашого профілю такого шляху немає.</translation>
 <translation id="641087317769093025">Не вдалося розпакувати розширення</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> просить надати доступ до одного або кількох ваших пристроїв:</translation>
-<translation id="6566142449942033617">Не вдалося завантажити "<ph name="PLUGIN_PATH" />" для плагіна.</translation>
 <translation id="657064425229075395">Не вдалося завантажити фоновий сценарій "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> від постачальника <ph name="VENDOR_NAME" /> (серійний номер <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Не вдалося створити каталог для розпакування: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Це розширення перезавантажувалося надто часто.</translation>
 <translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID" /> від постачальника <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME" />. Його не можна видаляти чи змінювати.</translation>
-<translation id="7581279002575751816">Плагіни NPAPI не підтримуються.</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальна камера</translation>
 <translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження "<ph name="ATTEMPTED_FILENAME" />", оскільки інше розширення (<ph name="EXTENSION_NAME" />) визначило іншу назву файлу "<ph name="ACTUAL_FILENAME" />".</translation>

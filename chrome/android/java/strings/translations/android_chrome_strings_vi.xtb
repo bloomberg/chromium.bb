@@ -66,6 +66,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1539064842193522527">Đã mở liên kết trong Chrome</translation>
 <translation id="1549000191223877751">Di chuyển đến cửa sổ khác</translation>
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
+<translation id="1566400915470565838">Để sử dụng <ph name="APP_NAME" />, vui lòng kết nối Internet.</translation>
 <translation id="1569387923882100876">Thiết bị đã kết nối</translation>
 <translation id="1571304935088121812">Sao chép tên người dùng</translation>
 <translation id="1612196535745283361">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. Tính năng truy cập vị trí bị <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2369533728426058518">tab đang mở</translation>
-<translation id="2372491353676110880">Tự động tải trang xuống</translation>
 <translation id="2387895666653383613">Chia tỷ lệ văn bản</translation>
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2416359993254398973">Chrome cần có quyền truy cập máy ảnh của bạn cho trang web này.</translation>
@@ -179,8 +179,8 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2621115761605608342">Cho phép JavaScript cho trang web cụ thể.</translation>
 <translation id="2625189173221582860">Đã sao chép mật khẩu</translation>
 <translation id="2631006050119455616">Đã tiết kiệm</translation>
+<translation id="2647434099613338025">Thêm ngôn ngữ</translation>
 <translation id="2653659639078652383">Gửi</translation>
-<translation id="2671100504997899381">Tải trang nhanh hơn và lưu các trang phổ biến để đọc ngoại tuyến</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2704606927547763573">Đã sao chép</translation>
 <translation id="2707726405694321444">Làm mới trang</translation>
@@ -280,7 +280,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3656115297268584622">Bật vị trí trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Các trang web của bên thứ ba có thể lưu và đọc dữ liệu cookie</translation>
 <translation id="3662546969139119822">Không có lịch sử ở đây</translation>
-<translation id="3672452749423051839">Đề xuất lỗi điều hướng</translation>
+<translation id="3672452749423051839">Đề xuất cho lỗi điều hướng</translation>
 <translation id="3712575778697986964">Đặt lại Trình tiết kiệm dữ liệu?</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3734660163659757482">Kéo lên để xem dấu trang và nội dung khác</translation>
@@ -376,7 +376,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="4645575059429386691">Do cha mẹ của bạn quản lý</translation>
 <translation id="4663756553811254707">Đã xóa <ph name="NUMBER_OF_BOOKMARKS" /> dấu trang</translation>
 <translation id="4665282149850138822">Đã thêm <ph name="NAME" /> vào Màn hình chính của bạn</translation>
-<translation id="4684427112815847243">Đồng bộ hóa tất cả</translation>
+<translation id="4684427112815847243">Đồng bộ hóa mọi thứ</translation>
 <translation id="4686372254213217147">Kích thước ban đầu</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn khác}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn khác}}</translation>
 <translation id="4698034686595694889">Xem ngoại tuyến trong <ph name="APP_NAME" /></translation>
@@ -565,7 +565,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="6343192674172527289">Không tìm thấy tài nguyên đã tải xuống nào</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}}</translation>
-<translation id="6354616574440533128">Mở khóa để tiếp tục thiết lập điện thoại của bạn</translation>
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
 <translation id="6383961787135158834">Xóa bộ nhớ trang web...</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
@@ -793,6 +792,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8493948351860045254">Giải phóng dung lượng</translation>
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
+<translation id="8514477925623180633">Xuất mật khẩu đã lưu trữ với Chrome</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="8523928698583292556">Xóa mật khẩu đã lưu trữ</translation>
 <translation id="854522910157234410">Mở trang này</translation>

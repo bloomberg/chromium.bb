@@ -66,6 +66,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1539064842193522527">Binuksan ang link sa Chrome</translation>
 <translation id="1549000191223877751">Lumipat sa ibang window</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
+<translation id="1566400915470565838">Upang magamit ang <ph name="APP_NAME" />, kumonekta sa internet.</translation>
 <translation id="1569387923882100876">Nakakonektang Device</translation>
 <translation id="1571304935088121812">Kopyahin ang username</translation>
 <translation id="1612196535745283361">Kailangan ng Chrome ng access sa lokasyon upang magkapag-scan ng mga device. Ang access sa lokasyon ay <ph name="BEGIN_LINK" />naka-off para sa device na ito<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2351097562818989364">Na-reset ang iyong mga setting sa pag-translate.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2369533728426058518">magbukas ng mga tab</translation>
-<translation id="2372491353676110880">Awtomatikong i-download ang mga page</translation>
 <translation id="2387895666653383613">Pag-scale ng text</translation>
 <translation id="2414886740292270097">Madilim</translation>
 <translation id="2416359993254398973">Kailangan ng Chrome ng pahintulot na i-access ang iyong camera para sa site na ito.</translation>
@@ -179,8 +179,8 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2621115761605608342">Payagan ang JavaScript para sa isang partikular na site.</translation>
 <translation id="2625189173221582860">Nakopya ang password</translation>
 <translation id="2631006050119455616">Na-save</translation>
+<translation id="2647434099613338025">Magdagdag ng wika</translation>
 <translation id="2653659639078652383">Isumite</translation>
-<translation id="2671100504997899381">Mas mabilis na mag-load ng mga page at mag-save ng mga sikat na page para sa offline na pagbabasa</translation>
 <translation id="2677748264148917807">Umalis</translation>
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2707726405694321444">I-refresh ang page</translation>
@@ -565,7 +565,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6337234675334993532">Pag-encrypt</translation>
 <translation id="6343192674172527289">Walang nakitang download</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> iba pa}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> iba pa}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> na iba pa}}</translation>
-<translation id="6354616574440533128">I-unlock upang magpatuloy sa pag-set up sa iyong telepono</translation>
 <translation id="6364438453358674297">Alisin ang suhestyon mula sa history?</translation>
 <translation id="6383961787135158834">I-clear ang Storage ng Site…</translation>
 <translation id="6388207532828177975">I-clear at i-reset</translation>
@@ -793,6 +792,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8493948351860045254">Magbakante ng espasyo</translation>
 <translation id="8497726226069778601">Walang makikita dito... sa ngayon</translation>
 <translation id="8503813439785031346">Username</translation>
+<translation id="8514477925623180633">Mag-export ng mga password na naka-store sa Chrome</translation>
 <translation id="8514577642972634246">Pumasok sa mode na incognito</translation>
 <translation id="8523928698583292556">I-delete ang nakaimbak na password</translation>
 <translation id="854522910157234410">Buksan ang page na ito</translation>

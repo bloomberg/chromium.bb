@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Uzantının paketi açılamıyor. Bir uzantının paketini güvenli bir şekilde açabilmek için profil dizininize sembolik bağlantı içermeyen bir yol olmalıdır. Profiliniz için böyle bir yol bulunmuyor.</translation>
 <translation id="641087317769093025">Uzantı açılamadı</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" uygulaması cihazlarınızdan birine veya birkaçına erişim izni istiyor:</translation>
-<translation id="6566142449942033617">Eklentiye ilişkin '<ph name="PLUGIN_PATH" />' yolu yüklenemedi.</translation>
 <translation id="657064425229075395">Arka plan komut dosyası '<ph name="BACKGROUND_SCRIPT" />' yüklenemedi.</translation>
 <translation id="6580950983454333167">Ürün: <ph name="PRODUCT_NAME" />, Firma: <ph name="VENDOR_NAME" /> (seri numarası: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Açma dizini oluşturulamadı: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Bu uzantı, kendisini yeniden yükleme işlemini çok sık yaptı.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> tarafından sağlanan <ph name="PRODUCT_ID" /> ürün kimliğine sahip bilinmeyen ürün</translation>
 <translation id="7217838517480956708">Bu makinenin yöneticisi <ph name="EXTENSION_NAME" /> yüklenmesini gerektiriyor. Kaldırılamaz veya değiştirilemez.</translation>
-<translation id="7581279002575751816">NPAPI eklentileri desteklenmez.</translation>
 <translation id="7972881773422714442">Seçenekler: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Ön kamera</translation>
 <translation id="8047248493720652249">Başka bir uzantı (<ph name="EXTENSION_NAME" />) farklı bir dosya adı ("<ph name="ACTUAL_FILENAME" />") belirlediğinden, uzantı indirilen dosyayı "<ph name="ATTEMPTED_FILENAME" />" olarak adlandıramadı.</translation>

@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Nu se poate elimina software-ul dăunător</translation>
 <translation id="1062407476771304334">Înlocuiți</translation>
 <translation id="1062866675591297858">Gestionați utilizatorii monitorizați din <ph name="BEGIN_LINK" />Tabloul de bord pentru utilizatori monitorizați<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Verificator de fișiere din biblioteca media</translation>
 <translation id="1064835277883315402">Alăturați-vă rețelei private</translation>
 <translation id="1064912851688322329">Deconectați Contul dvs. Google</translation>
 <translation id="1067048845568873861">Creat</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Memorie cache pentru indicativele API-ului Identity</translation>
 <translation id="1478233201128522094">Data viitoare, un telefon nou va debloca acest dispozitiv <ph name="DEVICE_TYPE" />. Dezactivează Smart Lock din Setări.</translation>
 <translation id="1478340334823509079">Detalii: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Gata de backup pentru <ph name="FILE_COUNT" /> fotografii noi</translation>
 <translation id="1483493594462132177">Trimite</translation>
 <translation id="1485015260175968628">Aceasta poate acum să:</translation>
 <translation id="1485141095922496924">Versiunea <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Atenție:<ph name="END_BOLD" /> aceste fișiere sunt temporare și pot fi șterse automat pentru a elibera spațiu pe disc. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Configurează Smart Lock pentru <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Recuperarea fișierelor Microsoft</translation>
-<translation id="1825832322945165090">Spațiu insuficient pe dispozitiv</translation>
 <translation id="1826516787628120939">Se verifică</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> dorește să îți trimită notificări.</translation>
 <translation id="1828378091493947763">Acest plugin nu este acceptat pe dispozitiv</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">A apărut o eroare. Verifică imprimanta și încearcă din nou.</translation>
 <translation id="2385700042425247848">Nume serviciu:</translation>
 <translation id="2387458720915042159">Tip de conexiune prin proxy</translation>
-<translation id="2391243203977115091">S-au găsit <ph name="FILE_COUNT" /> fotografii noi
-    <ph name="LINE_BREAK1" />
-    Spațiu insuficient pe dispozitiv.
-    <ph name="LINE_BREAK2" />
-    Încearcă să selectezi câteva fotografii pentru a începe.</translation>
 <translation id="2391419135980381625">Font standard</translation>
 <translation id="2391762656119864333">Revocați</translation>
 <translation id="2392369802118427583">Activează</translation>
@@ -1247,7 +1239,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2963151496262057773">Următorul plugin este inactiv: <ph name="PLUGIN_NAME" />. Dorești să îl oprești?</translation>
 <translation id="2966449113954629791">Este posibil să fi epuizat datele mobile puse la dispoziție. Accesați portalul de activare <ph name="NAME" /> pentru a cumpăra mai multe date.</translation>
 <translation id="2966937470348689686">Gestionează preferințele Android</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">scade luminozitatea</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
@@ -1377,6 +1368,7 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3153862085237805241">Salvează cardul</translation>
 <translation id="3154351730702813399">Este posibil ca administratorul dispozitivului să monitorizeze activitatea de navigare.</translation>
 <translation id="3154429428035006212">Offline pentru mai mult de o lună</translation>
+<translation id="3156531245809797194">Pentru a folosi Chrome, conectează-te</translation>
 <translation id="3156815148496352304">Instalează actualizarea sistemului de operare</translation>
 <translation id="3157931365184549694">Restabilește</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (stocat pe hardware)</translation>
@@ -1540,6 +1532,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3429599832623003132">$1 elemente</translation>
 <translation id="3432227430032737297">Elimină-le pe cele afișate</translation>
 <translation id="3432757130254800023">Trimite conținut audio și video pe afișajele din rețeaua locală</translation>
+<translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">Hopa! Sistemul nu a reușit să blocheze atributele la instalarea pe gadget.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">Unele servicii de conținut utilizează identificatorii de computer pentru a vă identifica în mod unic în scopul autorizării accesului la conținutul protejat.</translation>
@@ -1557,7 +1550,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="344630545793878684">Citește datele de pe un număr de site-uri</translation>
 <translation id="3449839693241009168">Apasă pe <ph name="SEARCH_KEY" /> pentru a trimite comenzi la <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Procentaj de ocupare în starea inactivă</translation>
-<translation id="3450505713373650336">Se face backup pentru <ph name="FILE_COUNT" /> fotografii</translation>
 <translation id="3453612417627951340">Necesită autorizare</translation>
 <translation id="3454157711543303649">Activarea a fost finalizată</translation>
 <translation id="345693547134384690">Deschide &amp;imaginea într-o filă nouă</translation>
@@ -1800,9 +1792,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="381202950560906753">Adaugă alta</translation>
 <translation id="3812525830114410218">Certificat nevalid</translation>
 <translation id="3813296892522778813">Accesează <ph name="BEGIN_LINK_CHROMIUM" />Ajutor Google Chrome<ph name="END_LINK_CHROMIUM" /> dacă nu găsești ceea ce cauți</translation>
-<translation id="3815571115159309122">S-au găsit <ph name="FILE_COUNT" /> fotografii noi
-    <ph name="LINE_BREAK1" />
-    Gata pentru backup pe <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Permite tuturor site-urilor să trimită mesaje push în fundal</translation>
 <translation id="3819752733757735746">Accesul prin comutare (controlează computerul cu numai un comutator sau două)</translation>
 <translation id="3819800052061700452">&amp;Ecran complet</translation>
@@ -2073,9 +2062,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB live)</translation>
 <translation id="431076611119798497">&amp;Detalii</translation>
 <translation id="4312866146174492540">Blochează (în mod prestabilit)</translation>
-<translation id="4315548163539304064">Se scanează dispozitivul media...
-    <ph name="LINE_BREAK1" />
-    S-au găsit <ph name="FILE_COUNT" /> fotografii noi</translation>
 <translation id="4316850752623536204">Site-ul dezvoltatorului</translation>
 <translation id="4320177379694898372">Fără conexiune la internet</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continuă descărcarea}few{Continuă descărcările}other{Continuă descărcările}}</translation>
@@ -2163,7 +2149,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4481249487722541506">Încarcă extensia neîmpachetată...</translation>
 <translation id="4481530544597605423">Dispozitive neasociate</translation>
 <translation id="4482194545587547824">Google poate folosi istoricul de navigare pentru a personaliza Căutarea și alte servicii Google</translation>
-<translation id="4492190037599258964">Rezultatele căutării pentru „<ph name="SEARCH_STRING" />”</translation>
 <translation id="4495419450179050807">Nu afișa pe această pagină</translation>
 <translation id="450099669180426158">Pictogramă semn de exclamare</translation>
 <translation id="4501530680793980440">Confirmați eliminarea</translation>
@@ -2665,6 +2650,7 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5316716239522500219">Oglindiți monitoarele</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5319359161174645648">Google recomandă Chrome</translation>
+<translation id="5319566035256672173">Acest dispozitiv nu va mai primi cele mai recente actualizări de software. Îți recomandăm să faci upgrade.</translation>
 <translation id="532247166573571973">Este posibil ca serverul să nu poată fi accesat. Încearcă din nou mai târziu.</translation>
 <translation id="532360961509278431">Nu se poate deschide „$1”: $2</translation>
 <translation id="5324780743567488672">Setează automat fusul orar folosind locația</translation>
@@ -3812,7 +3798,6 @@ De la <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="721331389620694978">Unele setări care pot reflecta obiceiurile tale de navigare nu vor fi șterse.</translation>
 <translation id="7216409898977639127">Furnizor de date mobile</translation>
 <translation id="7216595297012131718">Ordonează limbile pe baza preferințelor tale</translation>
-<translation id="7219989745826083607">Parser pentru descrierea dispozitivului de APELARE</translation>
 <translation id="722055596168483966">Personalizează serviciile Google</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Afișeze notificări</translation>
@@ -4452,7 +4437,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8261378640211443080">Această extensie nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și este posibil să fi fost adăugată fără știrea dvs.</translation>
 <translation id="8261387128019234107">Adăugați un cont pentru <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Șterge</translation>
-<translation id="8261673729476082470">Se face backup pentru <ph name="FILE_COUNT" /> fotografii pe <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> nu este implementat în această versiune.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> a dezactivat cursorul mouse-ului.</translation>
 <translation id="8264718194193514834">„<ph name="EXTENSION_NAME" />” a activat modul Ecran complet.</translation>

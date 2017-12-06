@@ -405,7 +405,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>
-<translation id="91549621916703028">Otevřete si několik karet pro všechny činnosti</translation>
 <translation id="9157836665414082580">Potlačit dialogová okna</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="976982866697960176">Správa synchronizovaných dat…</translation>
 <translation id="988141524645182168">Jiná zařízení</translation>
 <translation id="989988560359834682">Upravit adresu</translation>
+<translation id="994757059139821576">Návrhy článků</translation>
 </translationbundle>

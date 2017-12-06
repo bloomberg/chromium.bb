@@ -46,6 +46,39 @@
 
        La valeur de cette règle est définie en millisecondes.</translation>
 <translation id="1151353063931113432">Autoriser les images sur ces sites</translation>
+<translation id="1151545095291359187">Configure les paramètres de gestion d'extension pour <ph name="PRODUCT_NAME" />.
+
+          Cette règle contrôle plusieurs paramètres, y compris ceux contrôlés par des règles associées à une extension. Le cas échéant, elle remplace les anciennes règles.
+
+          Cette règle fait correspondre un ID d'extension ou une URL de mise à jour avec sa configuration. Avec un ID d'extension, la configuration n'est appliquée qu'à l'extension spécifiée. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions dépourvues d'une configuration personnalisée dans cette règle. Avec une URL de mise à jour, la configuration est appliquée à l'ensemble des extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de cette extension, comme précisé sur la page <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          La configuration de chaque extension (ou des extensions ayant la même URL de mise à jour) constitue un autre dictionnaire pouvant contenir les champs documentés ci-dessous.
+
+          <ph name="INSTALLATION_MODE" /> : mappe vers une chaîne qui indique le mode d'installation de l'extension. Les chaînes valides sont les suivantes :
+          * <ph name="ALLOWED" /> : permet l'installation de l'extension par l'utilisateur. Il s'agit du comportement par défaut.
+          * <ph name="BLOCKED" /> : bloque l'installation de l'extension.
+          * <ph name="FORCE_INSTALLED" /> : l'extension est installée automatiquement et ne peut pas être supprimée par l'utilisateur.
+          * <ph name="NORMAL_INSTALLED" /> : l'extension est installée automatiquement, mais elle peut être désactivée par l'utilisateur.
+
+          Le champ "<ph name="INSTALLATION_MODE" />" peut également être configuré pour plusieurs extensions, dont l'extension <ph name="DEFAULT_SCOPE" /> (comme paramètre par défaut) et les extensions ayant la même URL de mise à jour. Dans ce cas, seules les valeurs <ph name="ALLOWED" /> et <ph name="BLOCKED" /> peuvent être utilisées.
+
+          Si le mode est défini sur "<ph name="FORCE_INSTALLED" />" ou "<ph name="NORMAL_INSTALLED" />", une URL de mise à jour ("<ph name="UPDATE_URL" />") doit également être configurée. Notez que l'URL de mise à jour définie dans cette règle est seulement utilisée pour l'installation initiale ; les mises à jour ultérieures de l'extension utiliseront l'URL qui est indiquée dans le fichier manifeste de l'extension. L'URL de mise à jour doit toujours pointer vers un document XML "Update Manifest", comme précisé ci-dessus.
+
+          <ph name="BLOCKED_PERMISSIONS" /> : mappe vers une liste de chaînes indiquant les autorisations d'API bloquées pour l'extension. Les noms des autorisations sont identiques aux chaînes d'autorisations déclarées dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC3" />. Ce paramètre peut également être configuré pour l'extension "<ph name="DEFAULT_SCOPE" />". Si l'extension nécessite une autorisation qui figure sur la liste de blocage, son chargement n'est pas autorisé. Si elle contient une autorisation bloquée en tant qu'exigence facultative, elle est traitée normalement, mais les autorisations en conflit seront refusées automatiquement au moment de l'exécution.
+
+          <ph name="ALLOWED_PERMISSIONS" /> : semblable à "<ph name="BLOCKED_PERMISSIONS" />", mais autorise explicitement certaines autorisations qui sont peut-être bloquées par une liste de blocage globale ; la configuration étant donc impossible pour l'extension "<ph name="DEFAULT_SCOPE" />". Notez que ce paramètre n'accorde pas automatiquement d'autorisations aux extensions.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" /> : mappe vers une chaîne de version. Le format de cette chaîne de version est identique à celui utilisé dans le fichier manifeste de l'extension, comme indiqué sur la page <ph name="LINK_TO_EXTENSION_DOC4" />. Une extension présentant une version plus ancienne que la version minimale spécifiée sera désactivée. Cela s'applique également aux extensions de type "force-installed".
+
+          Les paramètres suivants ne peuvent être utilisés que pour la configuration "<ph name="DEFAULT_SCOPE" />" par défaut :
+
+          <ph name="INSTALL_SOURCES" /> : chaque élément de cette liste est un schéma de correspondance de style extension (voir <ph name="LINK_TO_MATCH_PATTERNS" />). Les utilisateurs pourront facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier <ph name="EXTENSION_SUFFIX_WILDCARD" /> et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces schémas.
+
+          <ph name="ALLOWED_TYPES" /> : ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui peuvent être installés dans <ph name="PRODUCT_NAME" />. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : <ph name="VALID_ALLOWED_TYPES" />. Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions de <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" /> : si un utilisateur essaie d'installer une extension, mais que celle-ci est bloquée par une règle, le Chrome Web Store affiche un message d'erreur générique. Ce paramètre vous permet d'ajouter du texte au message d'erreur. Cela peut être utilisé pour rediriger les utilisateurs vers votre centre d'assistance, expliquer pourquoi une extension spécifique est bloquée ou pour tout autre message. Ce message d'erreur sera tronqué s'il dépasse 1 000 caractères.
+          <ph name="RUNTIME_BLOCKED_HOSTS" /> : accepte une liste d'hôtes avec lesquels une extension ne pourra pas interagir. Cela inclut l'injection de JavaScript, la modification et l'affichage de webRequests/webNavigation, ainsi que la modification et l'affichage de cookies. Le format est semblable à Match Patterns (<ph name="LINK_TO_MATCH_PATTERNS" />), sauf qu'aucun chemin ne peut être défini. Par exemple : "*://*.example.com". Les caractères génériques TLD (par exemple : "*://example.*") sont également acceptés.
+          <ph name="RUNTIME_ALLOWED_HOSTS" /> : accepte une liste d'hôtes avec lesquels une extension peut interagir, qu'ils soient répertoriés dans <ph name="RUNTIME_BLOCKED_HOSTS" /> ou non. Il s'agit du même format que <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Indiquer l'état de l'interrupteur du mode développeur au moment du démarrage.
 
       Si la règle est définie sur "False", l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Imprimantes d'entreprise activées</translation>
 <translation id="1221359380862872747">Charger les URL spécifiées lors de la connexion à la démonstration</translation>
 <translation id="123081309365616809">Activer la diffusion de contenus sur l'appareil</translation>
+<translation id="1257550411839719984">Définir le répertoire de téléchargement par défaut</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
 <translation id="1291880496936992484">Avertissement : RC4 sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 52 (autour de septembre 2016) et cette règle ne sera plus valable.
 
@@ -573,6 +607,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       </translation>
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
 <translation id="2787173078141616821">Transmettre des informations sur l'état d'Android</translation>
+<translation id="2793923553868251161">Origines à considérer comme contexte sécurisé.</translation>
 <translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
 
 Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
@@ -814,11 +849,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si ces règles ne sont pas configurées, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3758249152301468420">Désactiver les outils de développement</translation>
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
-<translation id="376931976323225993">Cette règle permet d'indiquer si les sites Web sont autorisés à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />" automatiquement. L'exécution automatique du plug-in "<ph name="FLASH_PLUGIN_NAME" />" peut être soit autorisée pour tous les sites Web, soit refusée pour tous les sites Web.
-
-          L'option "Cliquer pour lire" autorise l'exécution du plug-in "<ph name="FLASH_PLUGIN_NAME" />", mais l'utilisateur doit cliquer sur l'espace réservé pour le lancer.
-
-          Si cette règle n'est pas configurée, l'utilisateur pourra modifier ce paramètre manuellement.</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
 <translation id="3780319008680229708">Si cette règle est définie sur "true", l'icône Cast de la barre d'outils s'afficher toujours dans la barre d'outils ou dans le menu à développer et les utilisateurs ne peuvent pas la supprimer.
 
@@ -908,6 +938,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés.
 
       Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur a accès aux outils de développement et à la console JavaScript.</translation>
+<translation id="3895557476567727016">Configure le répertoire par défaut utilisé par <ph name="PRODUCT_NAME" /> pour le téléchargement de fichiers.
+
+      Si vous définissez cette règle, le répertoire de téléchargement par défaut utilisé par <ph name="PRODUCT_NAME" /> est donc différent du répertoire habituel. Toutefois, cette règle n'étant pas obligatoire, l'utilisateur peut changer de répertoire.
+
+      Si vous ne configurez pas cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire par défaut habituel (spécifique à la plate-forme).
+
+      Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Définir les paramètres régionaux recommandés pour une session publique</translation>
 <translation id="3911737181201537215">Cette règle n'a aucun effet sur l'enregistrement effectué par Android.</translation>
 <translation id="391531815696899618">Désactive la synchronisation de Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> lorsque ce paramètre est défini sur "True". Dans ce cas, aucune donnée n'est importée dans Google Drive.
@@ -1835,7 +1872,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7072406291414141328">Active la limitation de la bande passante réseau</translation>
 <translation id="7079519252486108041">Bloquer les fenêtres pop-up sur ces sites</translation>
-<translation id="7091198954851103976">Toujours exécuter les plug-ins qui nécessitent une autorisation</translation>
 <translation id="7106631983877564505">Activer le verrouillage lorsque les appareils exécutant <ph name="PRODUCT_OS_NAME" /> sont inactifs ou en veille.
 
       Si vous activez ce paramètre, les utilisateurs sont invités à fournir un mot de passe pour réactiver l'appareil lorsqu'il est en veille.
@@ -2079,6 +2115,13 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 <translation id="787125417158068494">Si la règle est définie sur SyncDisabled ou n'est pas configurée, les certificats <ph name="PRODUCT_OS_NAME" /> ne sont pas disponibles pour les applications ARC.
 
       Si la règle est définie sur CopyCaCerts, tous les certificats CA installés via ONC avec <ph name="WEB_TRUSTED_BIT" /> sont disponibles pour les applications ARC.</translation>
+<translation id="7872535148622213208">
+        Cette règle répertorie les origines (URL) à considérer comme contexte
+        sécurisé. L'objectif est de permettre aux organisations de configurer
+        un serveur de test pour les développements Web internes.
+        Le principe est le même que pour l'indicateur "unsafely-treat-insecure-origin-as-secure".
+        Pour en savoir plus sur les contextes sécurisés, consultez le site https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Cette règle n'est active qu'en mode "point de vente".
 
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
@@ -2322,6 +2365,15 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       Si cette règle n'est pas configurée ou si la valeur est inférieure à 1 Mo, <ph name="PRODUCT_OS_NAME" /> utilisera la taille de cache par défaut.</translation>
 <translation id="8858642179038618439">Forcer le mode sécurisé de YouTube</translation>
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Active le service Google Traduction intégré sur <ph name="PRODUCT_NAME" />.
+
+      Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> propose une barre d'outils intégrée de traduction (le cas échéant), ainsi qu'une option de traduction disponible dans le menu contextuel que l'utilisateur peut afficher en effectuant un clic droit.
+
+      Si vous désactivez ce paramètre, toutes les fonctionnalités intégrées de traduction sont désactivées.
+
+      Si vous activez ou désactivez ce paramètre, l'utilisateur ne peut pas le modifier ni le remplacer dans <ph name="PRODUCT_NAME" />.
+
+      Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser ou non cette fonction.</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
 <translation id="8882006618241293596">Bloquer le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
 <translation id="8906768759089290519">Activer le mode invité</translation>

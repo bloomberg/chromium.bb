@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Уклањање штетног софтвера није успело</translation>
 <translation id="1062407476771304334">Замени</translation>
 <translation id="1062866675591297858">Управљајте корисницима под надзором преко <ph name="BEGIN_LINK" />Контролне табле за кориснике под надзором<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Провера библиотеке медијских датотека</translation>
 <translation id="1064835277883315402">Придруживање приватној мрежи</translation>
 <translation id="1064912851688322329">Прекид везе са Google налогом...</translation>
 <translation id="1067048845568873861">Направљено</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Кеш токена API-ја за идентитет</translation>
 <translation id="1478233201128522094">Следећи пут ће нови телефон откључати овај <ph name="DEVICE_TYPE" />. Искључите Smart Lock у подешавањима.</translation>
 <translation id="1478340334823509079">Детаљи: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Све је спремно за прављење резервних копија нових слика (<ph name="FILE_COUNT" />)</translation>
 <translation id="1483493594462132177">Пошаљи</translation>
 <translation id="1485015260175968628">Сада може да:</translation>
 <translation id="1485141095922496924">Верзија <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -528,7 +526,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Опрез:<ph name="END_BOLD" /> Ове датотеке су привремене и могу да се аутоматски избришу да би се ослободио простор на диску. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Подесите Smart Lock за <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Microsoft опоравак датотека</translation>
-<translation id="1825832322945165090">Нема довољно простора на уређају</translation>
 <translation id="1826516787628120939">Провера</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> жели да вам шаље обавештења.</translation>
 <translation id="1828378091493947763">Ова додатна компонента није подржана на овом уређају</translation>
@@ -858,11 +855,6 @@
 <translation id="2384436799579181135">Дошло је до грешке. Проверите штампач и пробајте поново.</translation>
 <translation id="2385700042425247848">Назив услуге:</translation>
 <translation id="2387458720915042159">Тип везе са проксијем</translation>
-<translation id="2391243203977115091">Пронађене су нове слике (<ph name="FILE_COUNT" />)
-    <ph name="LINE_BREAK1" />
-    Нема довољно простора на уређају.
-    <ph name="LINE_BREAK2" />
-    Покушајте да изаберете неколико слика за почетак.</translation>
 <translation id="2391419135980381625">Стандардни фонт</translation>
 <translation id="2391762656119864333">Опозови</translation>
 <translation id="2392369802118427583">Активирај</translation>
@@ -1243,7 +1235,6 @@
 <translation id="2963151496262057773">Следећа додатна компонента се не одазива: <ph name="PLUGIN_NAME" /> Желите ли да је зауставите?</translation>
 <translation id="2966449113954629791">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију за <ph name="NAME" /> да бисте купили још података.</translation>
 <translation id="2966937470348689686">Управљајте Android подешавањима</translation>
-<translation id="2971033837577180453">&lt;span&gt;ИД:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">смањивање осветљености</translation>
 <translation id="2972557485845626008">Фирмвер</translation>
 <translation id="2972581237482394796">&amp;Понови радњу</translation>
@@ -1373,6 +1364,7 @@
 <translation id="3153862085237805241">Сачувај картицу</translation>
 <translation id="3154351730702813399">Администратор уређаја може да прати активности прегледања.</translation>
 <translation id="3154429428035006212">Офлајн дуже од месец дана</translation>
+<translation id="3156531245809797194">Пријавите се да бисте користили Chrome</translation>
 <translation id="3156815148496352304">Инсталирајте ажурирање ОС-а</translation>
 <translation id="3157931365184549694">Поново отвори</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (хардвер је сертификован)</translation>
@@ -1536,6 +1528,7 @@
 <translation id="3429599832623003132">Ставки: $1</translation>
 <translation id="3432227430032737297">Уклони све приказано</translation>
 <translation id="3432757130254800023">Шаљи аудио и видео садржај екранима на локалној мрежи</translation>
+<translation id="3432762828853624962">Дељени ресурси</translation>
 <translation id="3433621910545056227">Упс! Систем није успео да одреди закључавање атрибута за време инсталације уређаја.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">Неке услуге садржаја користе машинске идентификаторе како би вас јединствено идентификовале ради одобравања приступа заштићеном садржају.</translation>
@@ -1553,7 +1546,6 @@
 <translation id="344630545793878684">Читање ваших података на више веб-сајтова</translation>
 <translation id="3449839693241009168">Притисните <ph name="SEARCH_KEY" /> да бисте послали команде у <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Проценат заузетости стања мировања</translation>
-<translation id="3450505713373650336">Праве се резервне копије слика (<ph name="FILE_COUNT" />)</translation>
 <translation id="3453612417627951340">Потребно је овлашћење</translation>
 <translation id="3454157711543303649">Активација је довршена</translation>
 <translation id="345693547134384690">Отвори &amp;слику у новој картици</translation>
@@ -1796,9 +1788,6 @@
 <translation id="381202950560906753">Додај други</translation>
 <translation id="3812525830114410218">Неисправан сертификат</translation>
 <translation id="3813296892522778813">Идите на <ph name="BEGIN_LINK_CHROMIUM" />страницу помоћи за Google Chrome<ph name="END_LINK_CHROMIUM" /> ако не можете да пронађете оно што тражите</translation>
-<translation id="3815571115159309122">Пронађене су нове слике (<ph name="FILE_COUNT" />)
-    <ph name="LINE_BREAK1" />
-    Све је спремно за прављење резервних копија на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Дозволи свим сајтовима да шаљу искачуће поруке у позадини</translation>
 <translation id="3819752733757735746">Приступ помоћу прекидача (контролишите рачунар помоћу само једног или два прекидача)</translation>
 <translation id="3819800052061700452">&amp;Пун екран</translation>
@@ -2069,9 +2058,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB уживо)</translation>
 <translation id="431076611119798497">&amp;Детаљи</translation>
 <translation id="4312866146174492540">Блокирај (подразумевано)</translation>
-<translation id="4315548163539304064">Медијски уређај се скенира...
-    <ph name="LINE_BREAK1" />
-    Пронађене су нове слике (<ph name="FILE_COUNT" />)</translation>
 <translation id="4316850752623536204">Веб-сајт програмера</translation>
 <translation id="4320177379694898372">Нема интернет везе</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Настави преузимање}one{Настави преузимања}few{Настави преузимања}other{Настави преузимања}}</translation>
@@ -2159,7 +2145,6 @@
 <translation id="4481249487722541506">Учитај отпаковани додатак...</translation>
 <translation id="4481530544597605423">Уређаји чије је упаривање опозвано</translation>
 <translation id="4482194545587547824">Google може да користи историју прегледања за персонализацију Претраге и других Google услуга</translation>
-<translation id="4492190037599258964">Резултати претраге за „<ph name="SEARCH_STRING" />“</translation>
 <translation id="4495419450179050807">Не приказуј на овој страници</translation>
 <translation id="450099669180426158">Икона узвичника</translation>
 <translation id="4501530680793980440">Потврда уклањања</translation>
@@ -2661,6 +2646,7 @@
 <translation id="5316716239522500219">Пресликавање монитора</translation>
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5319359161174645648">Google препоручује Chrome</translation>
+<translation id="5319566035256672173">Овај уређај више неће добијати најновија ажурирања софтвера. Размислите о надоградњи.</translation>
 <translation id="532247166573571973">Сервер је можда недоступан. Пробајте поново касније.</translation>
 <translation id="532360961509278431">Није могуће отворити „$1“: $2</translation>
 <translation id="5324780743567488672">Аутоматски подеси временску зону помоћу моје локације</translation>
@@ -3809,7 +3795,6 @@
 <translation id="721331389620694978">Нека подешавања која можда одражавају навике прегледања неће бити обрисана.</translation>
 <translation id="7216409898977639127">Мобилни оператер</translation>
 <translation id="7216595297012131718">Распоредите језике по жељи</translation>
-<translation id="7219989745826083607">Рашчлањивач описа DIAL уређаја</translation>
 <translation id="722055596168483966">Персонализујте Google услуге</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">приказује обавештења</translation>
@@ -4443,7 +4428,6 @@
 <translation id="8261378640211443080"><ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не наводи овај додатак и он је можда додат без вашег знања.</translation>
 <translation id="8261387128019234107">Додај налог за <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Избриши</translation>
-<translation id="8261673729476082470">Праве се резервне копије слика (<ph name="FILE_COUNT" />) на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> није примењен у овој верзији.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> је онемогућио курсор.</translation>
 <translation id="8264718194193514834">Додатак „<ph name="EXTENSION_NAME" />“ је активирао режим целог екрана.</translation>

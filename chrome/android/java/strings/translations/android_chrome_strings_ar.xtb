@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">‏تم فتح الرابط في Chrome</translation>
 <translation id="1549000191223877751">الانتقال إلى نافذة أخرى</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
+<translation id="1566400915470565838">لاستخدام <ph name="APP_NAME" />، يُرجى الاتصال بالإنترنت.</translation>
 <translation id="1569387923882100876">جهاز متصل</translation>
 <translation id="1571304935088121812">نسخ اسم المستخدم</translation>
 <translation id="1612196535745283361">‏يحتاج Chrome للوصول إلى الموقع للبحث عن الأجهزة. الوصول إلى الموقع <ph name="BEGIN_LINK" />معطل لهذا الجهاز<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2369533728426058518">علامات التبويب المفتوحة</translation>
-<translation id="2372491353676110880">تنزيل الصفحات تلقائيًا</translation>
 <translation id="2387895666653383613">تغيير حجم النص</translation>
 <translation id="2414886740292270097">داكن</translation>
 <translation id="2416359993254398973">‏يحتاج Chrome إلى إذن لاستخدام الكاميرا لموقع الويب هذا.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">السماح بجافا سكريبت لموقع ويب معين.</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2631006050119455616">تم الحفظ</translation>
+<translation id="2647434099613338025">إضافة لغة</translation>
 <translation id="2653659639078652383">إرسال</translation>
-<translation id="2671100504997899381">تحميل الصفحات بسرعة أكبر وحفظ الصفحات الشائعة للقراءة بلا اتصال بالإنترنت</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2707726405694321444">تحديث الصفحة</translation>
@@ -566,7 +566,6 @@
 <translation id="6337234675334993532">تشفير</translation>
 <translation id="6343192674172527289">لم يتم العثور على أي تنزيلات</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 وعنوان إضافي واحد (<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />)}zero{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوان إضافي}two{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 وعنوانان إضافيان (<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />)}few{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عناوين إضافية}many{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوانًا إضافيًا}other{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوان إضافي}}</translation>
-<translation id="6354616574440533128">يمكنك إلغاء القفل لمتابعة إعداد هاتفك</translation>
 <translation id="6364438453358674297">هل تريد إزالة اقتراح من السجل؟</translation>
 <translation id="6383961787135158834">محو سعة تخزين الموقع...</translation>
 <translation id="6388207532828177975">مسح وإعادة التعيين</translation>
@@ -795,6 +794,7 @@
 <translation id="8493948351860045254">تفريغ بعض المساحة</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8503813439785031346">اسم المستخدم</translation>
+<translation id="8514477925623180633">‏تصدير كلمات المرور المخزنة من خلال Chrome</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>

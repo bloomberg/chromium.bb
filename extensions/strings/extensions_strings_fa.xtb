@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">بسته برنامهٔ افزودنی را نمی‌توان باز کرد.  برای باز کردن ایمن بسته برنامهٔ افزودنی، باید یک مسیر در فهرست نمایهٔ شما وجود داشته باشد که فاقد پیوند نمادی باشد.  چنین مسیری برای نمایهٔ شما وجود ندارد.</translation>
 <translation id="641087317769093025">برنامه افزودنی از حالت زیپ خارج نشد</translation>
 <translation id="6542618148162044354">«<ph name="APP_NAME" />» درخواست دسترسی به یک یا چند دستگاه شما را دارد:</translation>
-<translation id="6566142449942033617">بارگیری "<ph name="PLUGIN_PATH" />" برای افزایه ممکن نیست.</translation>
 <translation id="657064425229075395">بارگیری اسکریپت پس‌زمینه "<ph name="BACKGROUND_SCRIPT" />" ممکن نیست.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> از <ph name="VENDOR_NAME" /> (شماره سریال <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">ایجاد دایرکتوری برای خارج کردن «<ph name="DIRECTORY_PATH" />» از حالت زیپ امکان‌پذیر نیست</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">این برنامه افزودنی بیش از حد خود را بارگیری مجدد می‌کند.</translation>
 <translation id="7003844668372540529">محصول نامشخص <ph name="PRODUCT_ID" /> از <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME" /> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
-<translation id="7581279002575751816">‏افزایه‌های NPAPI پشتیبانی نمی‌شوند.</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">رو به کاربر</translation>
 <translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری بارگیری «<ph name="ATTEMPTED_FILENAME" />» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME" />) نام فایل دیگری «<ph name="ACTUAL_FILENAME" />» را تعیین کرد.</translation>

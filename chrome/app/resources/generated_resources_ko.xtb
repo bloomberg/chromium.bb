@@ -43,7 +43,6 @@
 <translation id="106001083577824516">유해한 소프트웨어를 삭제할 수 없습니다.</translation>
 <translation id="1062407476771304334">바꾸기</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK" />관리 대상 사용자 대시보드<ph name="END_LINK" />를 통해 관리 대상 사용자를 관리합니다.</translation>
-<translation id="1064662184364304002">미디어 라이브러리 파일 검사기</translation>
 <translation id="1064835277883315402">사설 네트워크에 연결</translation>
 <translation id="1064912851688322329">Google 계정 연결 해제</translation>
 <translation id="1067048845568873861">생성됨</translation>
@@ -308,7 +307,6 @@
 <translation id="1477301030751268706">Identity API 토큰 캐시</translation>
 <translation id="1478233201128522094">다음번에는 새 휴대전화를 통해 이 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지하세요.</translation>
 <translation id="1478340334823509079">세부정보: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">새로운 사진 <ph name="FILE_COUNT" />장을 백업할 준비가 되었습니다.</translation>
 <translation id="1483493594462132177">보내기</translation>
 <translation id="1485015260175968628">앱의 현재 권한:</translation>
 <translation id="1485141095922496924">버전 <ph name="PRODUCT_VERSION" />(<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -532,7 +530,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />주의:<ph name="END_BOLD" /> 이 파일은 임시 파일이며 디스크 여유 공간을 확보하기 위해 자동으로 삭제될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383"><ph name="DEVICE_TYPE" />의 Smart Lock 설정</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
-<translation id="1825832322945165090">기기에 공간이 부족합니다.</translation>
 <translation id="1826516787628120939">확인 중</translation>
 <translation id="1828149253358786390"><ph name="SITE" />에서 알림을 보내려고 합니다.</translation>
 <translation id="1828378091493947763">이 기기에서 지원되지 않는 플러그인입니다.</translation>
@@ -862,11 +859,6 @@
 <translation id="2384436799579181135">오류가 발생했습니다. 프린터를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="2385700042425247848">서비스 이름:</translation>
 <translation id="2387458720915042159">프록시 연결 유형</translation>
-<translation id="2391243203977115091">새로운 사진 <ph name="FILE_COUNT" />장이 있습니다.
-    <ph name="LINE_BREAK1" />
-    기기에 공간이 부족합니다.
-    <ph name="LINE_BREAK2" />
-    사진 몇 장을 선택하여 시작해 보세요.</translation>
 <translation id="2391419135980381625">표준 글꼴</translation>
 <translation id="2391762656119864333">취소</translation>
 <translation id="2392369802118427583">활성화</translation>
@@ -1248,7 +1240,6 @@
 <translation id="2963151496262057773">다음 플러그인에서 응답이 없습니다. <ph name="PLUGIN_NAME" />을(를) 중단하시겠습니까?</translation>
 <translation id="2966449113954629791">할당되 모바일 데이터를 모두 사용한 것 같습니다. 추가 데이터를 구입하려면 <ph name="NAME" /> 활성화 포털을 방문하세요.</translation>
 <translation id="2966937470348689686">Android 환경설정 관리</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">어둡게</translation>
 <translation id="2972557485845626008">펌웨어</translation>
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
@@ -1378,6 +1369,7 @@
 <translation id="3153862085237805241">카드 저장</translation>
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3154429428035006212">1달 이상 오프라인 상태</translation>
+<translation id="3156531245809797194">Chrome을 사용하려면 로그인하세요</translation>
 <translation id="3156815148496352304">OS 업데이트 설치</translation>
 <translation id="3157931365184549694">복구</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />](하드웨어에 백업됨)</translation>
@@ -1541,6 +1533,7 @@
 <translation id="3429599832623003132">$1 항목</translation>
 <translation id="3432227430032737297">표시된 항목 모두 삭제</translation>
 <translation id="3432757130254800023">로컬 네트워크의 디스플레이로 오디오 및 동영상 전송</translation>
+<translation id="3432762828853624962">공유 작업자</translation>
 <translation id="3433621910545056227">시스템이 기기 설치 시간 속성 잠금을 설정하는 데 실패했습니다.</translation>
 <translation id="3434107140712555581">배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">일부 콘텐츠 서비스는 보호된 콘텐츠에 대한 액세스 승인 목적으로 기기 식별자를 사용하여 사용자를 고유하게 식별합니다.</translation>
@@ -1558,7 +1551,6 @@
 <translation id="344630545793878684">다수의 웹사이트에서 데이터 읽기</translation>
 <translation id="3449839693241009168"><ph name="SEARCH_KEY" /> 키를 눌러 <ph name="EXTENSION_NAME" />에 명령 보내기</translation>
 <translation id="3450157232394774192">유휴 상태 점유율</translation>
-<translation id="3450505713373650336">사진 <ph name="FILE_COUNT" />장 백업 중</translation>
 <translation id="3453612417627951340">승인 필요</translation>
 <translation id="3454157711543303649">활성화 완료</translation>
 <translation id="345693547134384690">새 탭에서 이미지 열기(&amp;I)</translation>
@@ -1801,9 +1793,6 @@
 <translation id="381202950560906753">다른 지문 추가</translation>
 <translation id="3812525830114410218">잘못된 인증서</translation>
 <translation id="3813296892522778813">원하는 자료를 찾지 못했다면 <ph name="BEGIN_LINK_CHROMIUM" />Chrome 도움말<ph name="END_LINK_CHROMIUM" />을 참조하세요.</translation>
-<translation id="3815571115159309122">새로운 사진 <ph name="FILE_COUNT" />장이 있습니다.
-    <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />로 백업할 준비가 되었습니다.</translation>
 <translation id="3819007103695653773">모든 사이트에서 푸시 메시지를 보낼 수 있도록 허용</translation>
 <translation id="3819752733757735746">스위치 제어(스위치 1~2회 사용으로 컴퓨터 제어)</translation>
 <translation id="3819800052061700452">전체화면(&amp;F)</translation>
@@ -2073,9 +2062,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K(<ph name="NUM_KILOBYTES_LIVE" />K 활성)</translation>
 <translation id="431076611119798497">세부정보(&amp;D)</translation>
 <translation id="4312866146174492540">차단(기본값)</translation>
-<translation id="4315548163539304064">미디어 기기 스캔 중...
-    <ph name="LINE_BREAK1" />
-    새로운 사진 <ph name="FILE_COUNT" />장이 있습니다.</translation>
 <translation id="4316850752623536204">개발자 웹사이트</translation>
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{계속 다운로드}other{계속 다운로드}}</translation>
@@ -2163,7 +2149,6 @@
 <translation id="4481249487722541506">압축해제된 확장 프로그램 로드...</translation>
 <translation id="4481530544597605423">페어링 해제된 기기</translation>
 <translation id="4482194545587547824">검색 및 다른 Google 서비스를 맞춤설정하기 위하여 Google에서 인터넷 사용 기록을 사용할 수 있습니다.</translation>
-<translation id="4492190037599258964">'<ph name="SEARCH_STRING" />'에 대한 검색결과</translation>
 <translation id="4495419450179050807">이 페이지에 표시하지 않음</translation>
 <translation id="450099669180426158">느낌표 아이콘</translation>
 <translation id="4501530680793980440">삭제 확인</translation>
@@ -2665,6 +2650,7 @@
 <translation id="5316716239522500219">모니터 미러</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5319359161174645648">Google에서 추천하는 Chrome</translation>
+<translation id="5319566035256672173">이 기기는 더 이상 최신 소프트웨어 업데이트를 받지 않습니다. 업그레이드를 고려해 주시기 바랍니다.</translation>
 <translation id="532247166573571973">서버 접속이 불가능할 수 있습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="532360961509278431">'$1'을(를) 열 수 없음: $2</translation>
 <translation id="5324780743567488672">사용자 위치를 사용하여 자동으로 시간대 설정</translation>
@@ -3812,7 +3798,6 @@
 <translation id="721331389620694978">인터넷 사용 습관이 반영될 수 있는 일부 설정은 삭제되지 않습니다.</translation>
 <translation id="7216409898977639127">이동통신사</translation>
 <translation id="7216595297012131718">원하는 대로 언어를 정렬하세요.</translation>
-<translation id="7219989745826083607">DIAL 기기 설명 파서</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
 <translation id="7221155467930685510">$1GB</translation>
 <translation id="7221855153210829124">알림 표시</translation>
@@ -4452,7 +4437,6 @@
 <translation id="8261378640211443080">이 확장 프로그램은 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않으며 사용자 모르게 추가되었을 수 있습니다.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" />에 계정 추가</translation>
 <translation id="8261506727792406068">삭제</translation>
-<translation id="8261673729476082470">사진 <ph name="FILE_COUNT" />장을 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업하는 중</translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" />은(는) 이 빌드에 구현되어 있지 않습니다.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" />에서 마우스 커서를 사용 중지했습니다.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" />에서 전체 화면을 실행합니다.</translation>

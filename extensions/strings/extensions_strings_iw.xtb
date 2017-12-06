@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">לא ניתן לפרוק את התוסף. כדי לפרוק תוספים בצורה בטוחה, יש צורך בנתיב לספריית הפרופילים שלך שלא מכיל קישור סמלי. לא קיים נתיב שכזה לפרופיל שלך.</translation>
 <translation id="641087317769093025">לא ניתן לבטל את הדחיסה של התוסף</translation>
 <translation id="6542618148162044354">האפליקציה "<ph name="APP_NAME" />" מבקשת גישה לאחד או יותר מהמכשירים שלך:</translation>
-<translation id="6566142449942033617">לא היתה אפשרות לטעון את '<ph name="PLUGIN_PATH" />' עבור פלאג אין.</translation>
 <translation id="657064425229075395">לא ניתן להעלות את סקריפט הרקע '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> מ-<ph name="VENDOR_NAME" /> (מספר סידורי <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">לא ניתן ליצור ספריה עבור ביטול הדחיסה: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">התוסף הזה טען את עצמו מחדש בתדירות גבוהה מדי.</translation>
 <translation id="7003844668372540529">מוצר לא ידוע <ph name="PRODUCT_ID" /> מאת <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">מנהל המערכת של מחשב זה דורש התקנת <ph name="EXTENSION_NAME" />. לא ניתן להסיר או לשנות אותו.</translation>
-<translation id="7581279002575751816">‏יישומי פלאגין מסוג NPAPI אינם נתמכים.</translation>
 <translation id="7972881773422714442">אפשרויות: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">מצלמה קדמית</translation>
 <translation id="8047248493720652249">תוסף זה לא הצליח לתת שם לקובץ "<ph name="ATTEMPTED_FILENAME" />" שהורד, משום שתוסף אחר (<ph name="EXTENSION_NAME" />) קבע שם קובץ אחר - "<ph name="ACTUAL_FILENAME" />".</translation>

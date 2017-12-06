@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">Линк је отворен у Chrome-у</translation>
 <translation id="1549000191223877751">Премести у други прозор</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
+<translation id="1566400915470565838">Да бисте користили апликацију <ph name="APP_NAME" />, повежите се на интернет.</translation>
 <translation id="1569387923882100876">Повезани уређај</translation>
 <translation id="1571304935088121812">Копирај корисничко име</translation>
 <translation id="1612196535745283361">Chrome-у је потребан приступ локацији да би тражио уређаје. Приступ локацији је <ph name="BEGIN_LINK" />искључен за овај уређај<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">Подешавања за превођење су ресетована.</translation>
 <translation id="2359808026110333948">Настави</translation>
 <translation id="2369533728426058518">отворене картице</translation>
-<translation id="2372491353676110880">Аутоматски преузимај слике</translation>
 <translation id="2387895666653383613">Промена величине текста</translation>
 <translation id="2414886740292270097">Тамнa</translation>
 <translation id="2416359993254398973">Chrome тражи дозволу да приступи камери за овај сајт.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">Дозволите JavaScript за одређени сајт.</translation>
 <translation id="2625189173221582860">Лозинка је копирана</translation>
 <translation id="2631006050119455616">Сачувано</translation>
+<translation id="2647434099613338025">Додај језик</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
-<translation id="2671100504997899381">Брже учитава странице и чува популарне странице за офлајн читање</translation>
 <translation id="2677748264148917807">Затвори</translation>
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2707726405694321444">Освежи страницу</translation>
@@ -565,7 +565,6 @@
 <translation id="6337234675334993532">Шифровање</translation>
 <translation id="6343192674172527289">Нису пронађена преузимања</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Откључајте да бисте наставили са подешавањем телефона</translation>
 <translation id="6364438453358674297">Желите ли да уклоните предлог из историје?</translation>
 <translation id="6383961787135158834">Обриши меморију сајта…</translation>
 <translation id="6388207532828177975">Обриши и ресетуј</translation>
@@ -793,6 +792,7 @@
 <translation id="8493948351860045254">Ослободите простор</translation>
 <translation id="8497726226069778601">Овде нема ничега... засад</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
+<translation id="8514477925623180633">Извезите лозинке сачуване у Chrome-у</translation>
 <translation id="8514577642972634246">Уђи у режим без архивирања</translation>
 <translation id="8523928698583292556">Избриши сачувану лозинку</translation>
 <translation id="854522910157234410">Отвори ову страницу</translation>

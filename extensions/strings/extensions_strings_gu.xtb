@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">એક્સ્ટેંશન અનપૅક કરી શકાતું નથી. એક્સ્ટેંશનને સુરક્ષિત રીતે અનપૅક કરવા માટે, તમારી પ્રોફાઇલ નિર્દેશિકાનો પાથ હોવો જોઈએ જે સિમલિંક ધરાવતો ન હોય. આવો કોઈ પાથ તમારી પ્રોફાઇલ માટે અસ્તિત્વમાં નથી.</translation>
 <translation id="641087317769093025">એક્સ્ટેન્શન અનઝિપ કરી શકાયું નથી</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />", તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહ્યું છે:</translation>
-<translation id="6566142449942033617">પ્લગઇન માટે '<ph name="PLUGIN_PATH" />' લોડ કરી શકાયું નહીં.</translation>
 <translation id="657064425229075395">પૃષ્ઠભૂમિ સ્ક્રિપ્ટ '<ph name="BACKGROUND_SCRIPT" />' લોડ કરી શકાઈ નથી.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> નું <ph name="PRODUCT_NAME" /> (સીરિયલ નંબર <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">આને અનઝિપ કરવા માટે નિર્દેશિકા બનાવી શક્યાં નથી: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">આ એક્સ્ટેન્શન પોતાની મેળે ઘણી વાર ફરીથી લોડ થયેલું.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> નું અજાણ્યું ઉત્પાદન <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">આ મશીનના વ્યવસ્થાપકને ઇન્સ્ટોલ કરવા માટે <ph name="EXTENSION_NAME" /> ની આવશ્કતા છે. તેને દૂર અથવા સંશોધિત કરી શકાશે નહીં.</translation>
-<translation id="7581279002575751816">NPAPI પ્લગિન્સ સમર્થિત નથી.</translation>
 <translation id="7972881773422714442">વિકલ્પો: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">સામેનો કૅમેરો</translation>
 <translation id="8047248493720652249">આ એક્સટેન્શન "<ph name="ATTEMPTED_FILENAME" />" ને ડાઉનલોડ નામ આપવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ એક જુદું ફાઇલનામ "<ph name="ACTUAL_FILENAME" />" નક્કી કર્યું છે.</translation>

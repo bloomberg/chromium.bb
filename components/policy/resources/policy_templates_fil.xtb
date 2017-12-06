@@ -46,6 +46,39 @@
 
       Dapat na tinukoy sa milliseconds ang halaga ng patakaran.</translation>
 <translation id="1151353063931113432">Pinapayagan ang mga larawan sa mga site na ito</translation>
+<translation id="1151545095291359187">Nagko-configure sa mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
+
+          Maraming setting ang kinokontrol ng patakarang ito, kasama ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-override ng patakarang ito ang anumang legacy na patakaran kung parehong nakatakda ang mga ito.
+
+          Minamapa ng patakarang ito ang isang extension ID o update URL sa configuration nito. Sa pamamagitan ng extension ID, sa tinukoy na extension lang malalapat ang configuration. Maaaring magtakda ng default na configuration para sa espesyal na ID na <ph name="DEFAULT_SCOPE" />, na malalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Sa pamamagitan ng update URL, malalapat ang configuration sa lahat ng extension na mayroon ng eksaktong update URL na nakasaad sa manifest ng extension na ito, gaya ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Ang configuration para sa bawat extension (o mga extension na may parehong update URL) ay panibagong diksyunaryo na maaaring maglaman sa mga field na nakadokumento sa ibaba.
+
+          <ph name="INSTALLATION_MODE" />: nagmamapa sa isang string na nagsasaad ng installation mode para sa extension. Ang mga valid na string ay:
+          * <ph name="ALLOWED" />: nagpapahintulot sa extension na ma-install ng user. Ito ang default na gawi.
+          * <ph name="BLOCKED" />: nagba-block sa pag-install ng extension.
+          * <ph name="FORCE_INSTALLED" />: awtomatikong ini-install ang extension at hindi maaalis ng user.
+          * <ph name="NORMAL_INSTALLED" />: awtomatikong ini-install ang extension ngunit maaaring i-disable ng user.
+
+          Mako-configure din ang <ph name="INSTALLATION_MODE" /> para sa maraming extension, kasama ang extension na <ph name="DEFAULT_SCOPE" /> (bilang mga default na setting) at mga extension na may parehong update URL. Ang value na <ph name="ALLOWED" /> at <ph name="BLOCKED" /> lang ang magagamit sa sitwasyong ito.
+
+          Kung nakatakda ang mode sa <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, dapat ding mag-configure ng <ph name="UPDATE_URL" />. Tandaang ginagamit lang ang update URL na nakatakda sa patakarang ito para sa unang pag-install; gagamitin sa mga kasunod na update ng extension ang update URL na nakasaad sa manifest ng extension. Dapat tumuro ang update URL sa isang Update Manifest XML document tulad ng nabanggit sa itaas.
+
+          <ph name="BLOCKED_PERMISSIONS" />: nagmamapa sa isang listahan ng mga string na nagsasaad sa mga naka-block na pahintulot sa API para sa extension. Ang mga pangalan ng mga pahintulot ay pareho sa mga string ng pahintulot na idineklara sa manifest ng extension tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC3" />. Mako-configure din ang setting na ito para sa extension na <ph name="DEFAULT_SCOPE" />. Kung kailangan ng extension ng pahintulot na nasa blocklist, hindi ito papayagang mag-load. Kung naglalaman ito ng naka-block na pahintulot bilang opsyonal na kinakailangan, pangangasiwaan ito sa normal na paraan, ngunit awtomatikong tatanggihan sa runtime ang paghiling ng mga nagsasalungat na pahintulot.
+
+          <ph name="ALLOWED_PERMISSIONS" />: katulad ng <ph name="BLOCKED_PERMISSIONS" />, ngunit sa halip ay tahasang pinapayagan ang ilang pahintulot na maaaring ma-block ng pangkalahatang listahan ng naka-block na pahintunlot, at dahil dito ay hindi mako-configure para sa extension na <ph name="DEFAULT_SCOPE" />. Tandaang hindi awtomatikong nagbibigay ng mga pinayagang pahintulot sa mga extension ang setting na ito.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: nagmamapa sa isang string ng bersyon. Ang format ng string ng bersyon ay pareho sa ginamit sa manifest ng extension, gaya ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC4" />. Madi-disable ang extension na may bersyong mas luma sa tinukoy na minimum na bersyon. Nalalapat din ito sa mga pwersahang na-install na extension.
+
+          Magagamit lang ang mga sumusunod na setting para sa default na configuration ng <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Ang bawat item sa listahang ito ay isang match pattern sa istilo ng extension (<ph name="LINK_TO_MATCH_PATTERNS" />). Madaling mai-install ng mga user ang mga item mula sa anumang URL na tumutugma sa isang item sa listahang ito. Dapat payagan ng mga pattern na ito ang lokasyon ng <ph name="EXTENSION_SUFFIX_WILDCARD" /> file at ang page kung saan sinimulan ang download (ibig sabihin, ang referrer).
+
+          <ph name="ALLOWED_TYPES" />: Inilalagay sa whitelist ng setting na ito ang mga pinapayagang uri ng extension/mga app na maaaring i-install sa <ph name="PRODUCT_NAME" />.  Ang value ay isang listahan ng mga string, kung saan ang bawat isa sa mga ito ay dapat na isa sa mga sumusunod: <ph name="VALID_ALLOWED_TYPES" />. Tingnan ang dokumentasyon ng mga extension ng <ph name="PRODUCT_NAME" /> para sa higit pang impormasyon tungkol sa mga uring ito.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Kung susubukan ng isang user na mag-install ng isang extension, ngunit maba-block ito ng patakaran, magpapakita ang Chrome Webstore ng pangkalahatang mensahe ng error. Binibigyang-daan ka ng setting na ito na magsama ng text sa mensahe ng error. Magagamit ito sa pagdirekta ng mga user sa iyong help desk, pagpapaliwanag kung bakit naka-block ang isang partikular na extension, o iba pang bagay. Mapuputol ang mensahe ng error na ito kung lalampas ito sa 1000 character.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tumatanggap ng listahan ng mga host na hindi maaaring makaugnayan ng isang extension. Kasama rito ang paglalagay ng javascript, pagbago at pagtingin sa webRequests / webNavigation, pagtingin at pagbago ng cookies. Pareho ang format sa Mga Match Pattern <ph name="LINK_TO_MATCH_PATTERNS" />, ngunit walang maaaring tukuying path dito. hal. "*://*.example.com". Sinusuportahan din nito ang epektibong pag-wildcard ng TLD, hal. "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Tumatanggap ng listahan ng mga host kung saan maaaring makipag-ugnayan ang isang extension, nakalista man ang mga ito sa <ph name="RUNTIME_BLOCKED_HOSTS" /> o hindi. Pareho ang format nito sa <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Iulat ang katayuan ng dev switch ng device sa pag-boot.
 
       Kung nakatakda ang patakaran sa false, hindi iuulat ang katayuan ng dev switch.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Mga naka-enable na printer ng enterprise</translation>
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
+<translation id="1257550411839719984">Itakda ang default na directory sa pag-download</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
 <translation id="1291880496936992484">Babala: Tuluyan nang maalis ang RC4 sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (tinatayang lalabas sa Setyembre 2016) at hindi na gagana ang patakarang ito.
 
@@ -561,6 +595,7 @@
       </translation>
 <translation id="2769952903507981510">I-configure ang kinakailangang domain name para sa mga host ng malayuang pag-access</translation>
 <translation id="2787173078141616821">Ulat ng impormasyon tungkol sa status ng Android</translation>
+<translation id="2793923553868251161">Ituturing bilang secure na konteksto ang mga pinagmulan.</translation>
 <translation id="2801230735743888564">Nagbibigay-daan sa mga user na makapaglaro ng dinosaur easter egg game kapag offline ang device.
 
       Kung itatakda sa False ang patakarang ito, kapag naka-offline ang device, hindi makakapaglaro ng dinosaur easter egg game ang mga user. Kung itatakda naman sa True ang setting na ito, makakapaglaro ng dinosaur game ang mga user. Kung hindi itatakda ang patakarang ito, hindi makakapaglaro ng dinosaur easter egg game ang mga user na naka-enroll sa Chrome OS, ngunit sa ibang mga pagkakataon, maaari itong malaro ng mga user.</translation>
@@ -801,11 +836,6 @@
       Kapag hinayaang hindi nakatakda ang patakarang ito, mabibigyang-daan ang mga user na sila mismo ang pumili ng mga setting ng proxy.</translation>
 <translation id="3758249152301468420">Huwag paganahin ang Mga Tool ng Nag-develop</translation>
 <translation id="3765260570442823273">Tagal ng babalang mensahe ng pag-log-out ng idle</translation>
-<translation id="376931976323225993">Nagbibigay-daan sa iyo na itakda kung pinapahintulutan ang mga website na awtomatikong patakbuhin ang plugin na <ph name="FLASH_PLUGIN_NAME" />. Ang awtomatikong pagpapatakbo sa plugin na <ph name="FLASH_PLUGIN_NAME" /> ay maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website.
-
-          Nagbibigay-daan ang i-click upang i-play na gumana ang plugin na <ph name="FLASH_PLUGIN_NAME" /> ngunit dapat mag-click ang user sa placeholder upang simulan ang pagtakbo nito.
-
-          Kung hahayaang hindi nakatakda ang patakarang ito, manual na mababago ng user ang setting na ito.</translation>
 <translation id="3780152581321609624">Isama sa Kerberos SPN ang port na hindi karaniwan</translation>
 <translation id="3780319008680229708">Kung nakatakda sa true ang patakarang ito, palaging ipapakita ang icon ng toolbar ng Cast sa toolbar o sa overflow menu, at hindi ito maaalis ng mga user.
 
@@ -889,6 +919,13 @@
       Kung ie-enable mo ang setting na ito, hindi maa-access ang Mga Tool ng Developer at hindi na maaaring siyasatin ang mga elemento ng web-site. Idi-disable ang anumang mga keyboard shortcut at anumang mga entry ng menu o menu ng konteksto upang mabuksan ang Mga Tool ng Developer o ang JavaScript Console.
 
       Kapag itinakda ang opsyong ito sa naka-disable o kapag iniwan itong hindi nakatakda, bibigyang-daan ang user na gamitin ang Mga Tool ng Developer at ang JavaScript console.</translation>
+<translation id="3895557476567727016">Nagko-configure sa default na directory na gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-download ng mga file.
+
+      Kung itatakda mo ang patakarang ito, babaguhin nito ang default na directory kung saan nagda-download ng mga file ang <ph name="PRODUCT_NAME" />. Hindi mandatoryo ang patakarang ito, kaya mapapalitan ng user ang directory.
+
+      Kung hindi mo itatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang karaniwang default na directory nito (partikular sa platform).
+
+      Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa isang listahan ng mga magagamit na variable.</translation>
 <translation id="3907986150060929099">Itakda ang mga inirerekumendang lokal para sa isang pampublikong session</translation>
 <translation id="3911737181201537215">Walang epekto ang patakarang ito sa pag-log na ginawa ng Android.</translation>
 <translation id="391531815696899618">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag nakatakda sa True. Sa sitwasyong iyon, walang data na maa-upload sa Google Drive.
@@ -1809,7 +1846,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="706669471845501145">Payagan ang mga site upang magpakita ng mga notification sa desktop</translation>
 <translation id="7072406291414141328">Ine-enable ang pag-throttle sa bandwidth ng network</translation>
 <translation id="7079519252486108041">I-block ang mga popup sa mga site na ito</translation>
-<translation id="7091198954851103976">Palaging patakbuhin ang mga plugin na nangangailangan ng pahintulot</translation>
 <translation id="7106631983877564505">Paganahin ang pag-lock kapag naging idle o nasuspinde ang mga device ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung ie-enable mo ang setting na ito, hihingan ng password ang mga user upang i-unlock ang device mula sa pag-sleep.
@@ -2053,6 +2089,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="787125417158068494">Kung nakatakda sa SyncDisabled o hindi naka-configure, hindi available ang mga certificate ng <ph name="PRODUCT_OS_NAME" /> para sa mga ARC app.
 
       Kung nakatakda sa CopyCaCerts, available para sa mga ARC app ang lahat ng CA certificate na may <ph name="WEB_TRUSTED_BIT" /> na na-install ng ONC.</translation>
+<translation id="7872535148622213208">
+        May nakasaad sa patakaran na isang listahan ng mga pinagmulan (URL) na ituturing bilang secure
+        na konteksto. Ang layunin ay payagan ang mga organisasyong mag-set up ng server ng pag-stage
+        para sa mga internal na pag-develop sa web.
+        Pareho ito sa flag na --unsafely-treat-insecure-origin-as-secure.
+        Para sa higit pang impormasyon tungkol sa mga secure na konteksto, tingnan ang https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Sa retail mode lamang aktibo ang patakarang ito.
 
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
@@ -2294,6 +2337,15 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi naka-configure ang patakaran na ito o ang value ay mas mababa sa 1 MB, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang default na laki ng cache.</translation>
 <translation id="8858642179038618439">Puwersahin ang YouTube Safety Mode</translation>
 <translation id="8864975621965365890">Pinipigilan ang turndown na prompt na lumilitaw kapag na-render ang isang site ng <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Nag-e-enable sa isinamang serbisyo ng Google Translate sa <ph name="PRODUCT_NAME" />.
+
+      Kung ie-enable mo ang setting na ito, mag-aalok ang <ph name="PRODUCT_NAME" /> ng functionality ng pagsasalin sa user sa pamamagitan ng pagpapakita ng isinamang toolbar sa pagsasalin (kapag naaangkop) at opsyon sa pagsasalin sa menu ng konteksto sa pag-right click.
+
+      Kung idi-disable mo ang setting na ito, madi-disable ang lahat ng built-in na feature sa pagsasalin.
+
+      Kung ie-enable o idi-disable mo ang setting na ito, hindi mababago o mao-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME" />.
+
+      Kung hahayaang hindi nakatakda ang setting na ito, maaaring magpasya ang user na gamitin ang function na ito o hindi.</translation>
 <translation id="8870318296973696995">Home page</translation>
 <translation id="8882006618241293596">I-block ang plugin na <ph name="FLASH_PLUGIN_NAME" /> sa mga site na ito</translation>
 <translation id="8906768759089290519">Payagan ang mode ng bisita</translation>

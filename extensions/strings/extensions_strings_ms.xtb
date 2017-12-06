@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Tidak dapat menyahpek sambungan.  Untuk menyahpek sambungan dengan selamat, perlu ada laluan ke direktori profil anda yang tidak mengandungi symlink.  Tiada laluan tersebut wujud untuk profil anda.</translation>
 <translation id="641087317769093025">Tidak boleh menyahzip sambungan</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses kepada satu atau beberapa peranti anda.</translation>
-<translation id="6566142449942033617">Tidak dapat memuatkan '<ph name="PLUGIN_PATH" />' untuk pemalam.</translation>
 <translation id="657064425229075395">Tidak dapat memuatkan skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> daripada <ph name="VENDOR_NAME" /> (nombor siri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat mencipta direktori untuk menyahzip: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Sambungan ini terlalu kerap memuat semula sendiri.</translation>
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID" /> daripada <ph name="VENDOR_NAME" /> tidak diketahui</translation>
 <translation id="7217838517480956708">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME" /> dipasang. Sambungan ini tidak boleh dialih keluar atau diubah suai.</translation>
-<translation id="7581279002575751816">Pemalam NPAPI tidak disokong.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Menghadap pengguna</translation>
 <translation id="8047248493720652249">Sambungan ini gagal menamakan muat turun "<ph name="ATTEMPTED_FILENAME" />" kerana sambungan lain (<ph name="EXTENSION_NAME" />) menetapkan nama fail lain "<ph name="ACTUAL_FILENAME" />".</translation>

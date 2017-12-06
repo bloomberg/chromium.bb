@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">لا يمكن فك ضغط الإضافة.  لفك ضغط الإضافة بشكل آمن، يجب أن يكون هناك مسار إلى دليل ملفك الشخصي، ولا يحتوي على رابط رمزي.  ليس هناك مثل هذا المسار لملفك الشخصي.</translation>
 <translation id="641087317769093025">تعذر فك ضغط الإضافة</translation>
 <translation id="6542618148162044354">يطلب تطبيق "<ph name="APP_NAME" />" الدخول إلى جهاز أو أكثر من أجهزتك:</translation>
-<translation id="6566142449942033617">تعذر تحميل '<ph name="PLUGIN_PATH" />' للمكوّن الإضافي.</translation>
 <translation id="657064425229075395">تعذر تحميل النص البرمجي للخلفية '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> من <ph name="VENDOR_NAME" /> (الرقم التسلسلي <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">تعذر إنشاء دليل لفك ضغط: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">تعيد هذه الإضافة تحميل نفسها باستمرار.</translation>
 <translation id="7003844668372540529">المنتج غير معروف <ph name="PRODUCT_ID" /> من <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">يطلب مشرف هذا الجهاز تثبيت <ph name="EXTENSION_NAME" />. لا يمكن إزالتها أو تعديلها.</translation>
-<translation id="7581279002575751816">‏المكونات الإضافية لـ NPAPI غير متوافقة.</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">الكاميرا الأمامية للمستخدم</translation>
 <translation id="8047248493720652249">تعذّرت هذه الإضافة في تسمية التنزيل "<ph name="ATTEMPTED_FILENAME" />" نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME" />) قد حددت اسم ملف آخر "<ph name="ACTUAL_FILENAME" />".</translation>

@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">विस्तार अनपॅक करू नका. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निदेशिकेत सिमलिंक नसलेला पथ असणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
 <translation id="641087317769093025">विस्तार अनझिप करणे शक्य झाले नाही</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> आपल्या एका किंवा अधिक डिव्हाइसवर प्रवेशाची विनंती करीत आहे:</translation>
-<translation id="6566142449942033617">प्लगइनसाठी '<ph name="PLUGIN_PATH" />' लोड करणे शक्य नाही.</translation>
 <translation id="657064425229075395">पार्श्वभूमी स्क्रिप्‍ट '<ph name="BACKGROUND_SCRIPT" />' लोड करू शकले नाही.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> (अनुक्रमांक <ph name="SERIAL_NUMBER" />) कडील <ph name="PRODUCT_NAME" /></translation>
 <translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">या विस्ताराने स्वतःस वारंवार रीलोड केले आहे.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_ID" /> अज्ञात उत्पादन</translation>
 <translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME" /> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
-<translation id="7581279002575751816">NPAPI प्लगिन समर्थित नाहीत.</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">वापरकर्ता-समोरील</translation>
 <translation id="8047248493720652249">दुसर्‍या विस्ताराने (<ph name="EXTENSION_NAME" />) एक वेगळे फाईलनाव "<ph name="ACTUAL_FILENAME" />" निर्धारित केल्यामुळे डाउनलोड "<ph name="ATTEMPTED_FILENAME" />" ला नाव देण्यात हा विस्तार अयशस्वी झाला.</translation>

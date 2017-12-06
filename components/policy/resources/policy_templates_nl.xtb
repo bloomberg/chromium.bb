@@ -46,6 +46,39 @@
 
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
 <translation id="1151353063931113432">Afbeeldingen toestaan op deze sites</translation>
+<translation id="1151545095291359187">Hiermee worden extensiebeheerinstellingen voor <ph name="PRODUCT_NAME" /> geconfigureerd.
+
+          Met dit beleid worden meerdere instellingen beheerd, inclusief instellingen die worden beheerd door bestaande, aan extensies gerelateerde beleidsregels. Dit beleid overschrijft alle oudere beleidsregels als beide zijn ingesteld.
+
+          Dit beleid wijst een extensie-ID of update-URL toe aan de bijbehorende configuratie. Bij een extensie-ID wordt de configuratie uitsluitend op de opgegeven extensie toegepast. Er kan een standaardconfiguratie worden ingesteld voor de speciale ID <ph name="DEFAULT_SCOPE" />. Deze wordt vervolgens toegepast op alle extensies waarvoor geen aangepaste configuratie is ingesteld in dit beleid. Bij een update-URL wordt de configuratie toegepast op alle extensies met de exacte update-URL in het manifest van deze extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          De configuratie voor elke extensie (of extensies met dezelfde update-URL) is een woordenboek dat de onderstaande velden kan bevatten.
+
+          <ph name="INSTALLATION_MODE" />: Is toegewezen aan een tekenreeks die de installatiemodus voor de extensie aangeeft. De geldige tekenreeksen zijn:
+          * <ph name="ALLOWED" />: Staat toe dat de extensie wordt geïnstalleerd door de gebruiker. Dit is het standaardgedrag.
+          * <ph name="BLOCKED" />: Blokkeert de installatie van de extensie.
+          * <ph name="FORCE_INSTALLED" />: De extensie wordt automatisch geïnstalleerd en kan niet door de gebruiker worden verwijderd.
+          * <ph name="NORMAL_INSTALLED" />: De extensie wordt automatisch geïnstalleerd, maar kan door de gebruiker worden uitgeschakeld.
+
+          De <ph name="INSTALLATION_MODE" /> kan ook worden geconfigureerd voor meerdere extensies, waaronder de extensie <ph name="DEFAULT_SCOPE" /> (als standaardinstellingen) en extensies met dezelfde update-URL. Alleen de waarden <ph name="ALLOWED" /> en <ph name="BLOCKED" /> kunnen in dit geval worden gebruikt.
+
+          Als de modus is ingesteld op <ph name="FORCE_INSTALLED" /> of <ph name="NORMAL_INSTALLED" />, moet er ook een <ph name="UPDATE_URL" /> worden geconfigureerd. Let op: De in dit beleid ingestelde update-URL wordt alleen gebruikt voor de aanvankelijke installatie. Volgende updates van de extensie gebruiken de update-URL die in het manifest van de update-URL is opgenomen. De update-URL moet naar een XML-document met een updatemanifest verwijzen, zoals hierboven genoemd.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Is toegewezen aan een lijst van tekenreeksen die de geblokkeerde API-rechten voor de extensie aangeven. De namen van de rechten zijn hetzelfde als de tekenreeksen voor rechten die zijn opgenomen in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC3" />. Deze instelling kan ook worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />. Als er rechten zijn vereist voor de extensie die op de blokkeerlijst staan, kan deze niet worden geladen. Als de extensie geblokkeerde rechten als optionele vereiste bevat, wordt deze als gebruikelijk behandeld, maar wordt de aanvraag van conflicterende rechten automatisch afgewezen tijdens de uitvoering.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Vergelijkbaar met <ph name="BLOCKED_PERMISSIONS" />, maar in dit geval worden sommige rechten expliciet toegestaan die wellicht zijn geblokkeerd via lijsten met globaal geblokkeerde rechten. Deze instelling kan daarom niet worden geconfigureerd voor de extensie <ph name="DEFAULT_SCOPE" />.Let op: Deze instelling geeft niet automatisch goedgekeurde rechten af aan extensies.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Is toegewezen aan een versiereeks. De indeling van de versiereeks is gelijk aan de indeling in het manifest van de extensie, zoals beschreven in <ph name="LINK_TO_EXTENSION_DOC4" />. Een extensie met een versie die ouder is dan de opgegeven minimum versie wordt uitgeschakeld. Dit is ook van toepassing op automatisch geïnstalleerde extensies.
+
+          De volgende instellingen kunnen alleen worden gebruikt voor de standaardconfiguratie <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Elk item in deze lijst is een patroon van een extensie (<ph name="LINK_TO_MATCH_PATTERNS" />).Gebruikers kunnen gemakkelijk items installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het <ph name="EXTENSION_SUFFIX_WILDCARD" />-bestand en de pagina waar de download wordt gestart (dat wil zeggen, de verwijzing), moeten beide zijn toegestaan op basis van deze patronen.
+
+          <ph name="ALLOWED_TYPES" />: Met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME" /> kunnen worden geïnstalleerd, op een witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende moet zijn: <ph name="VALID_ALLOWED_TYPES" />. Raadpleeg de documentatie over <ph name="PRODUCT_NAME" />-extensies voor meer informatie over deze typen.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Als een gebruiker probeert een extensie te installeren, maar deze wordt geblokkeerd door beleid, geeft de Chrome Web Store een algemene foutmelding weer. Met deze instelling kun je tekst toevoegen aan de foutmelding. Deze tekst kan bijvoorbeeld worden gebruikt om gebruikers door te verwijzen naar je helpdesk of uit te leggen waarom een bepaalde extensie wordt geblokkeerd. De foutmelding wordt afgekapt als deze meer dan 1000 tekens bevat.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie geen interactie mag hebben. Dit omvat het invoegen van JavaScript, het aanpassen en bekijken van webRequests/webNavigation en het bekijken en aanpassen van cookies. De indeling is vergelijkbaar met overeenkomstpatronen <ph name="LINK_TO_MATCH_PATTERNS" />, behalve dat er geen paden kunnen worden gedefinieerd (zoals "*://*.example.com"). Dit biedt ook ondersteuning voor effectieve TLD-jokertekens ("*://example.*").
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepteert een lijst met hosts waarmee een extensie interactie mag hebben, ongeacht of ze worden vermeld in <ph name="RUNTIME_BLOCKED_HOSTS" />. Dit is dezelfde indeling als <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">De status van de schakelaar voor de ontwikkelaarsmodus van het apparaat bij opstarten melden.
 
       Als het beleid is ingesteld op 'onwaar' (false), wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
@@ -62,6 +95,7 @@
 <translation id="1204263402976895730">Bedrijfsprinters ingeschakeld</translation>
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
 <translation id="123081309365616809">Casten van content naar het apparaat inschakelen</translation>
+<translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
 <translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
 
@@ -561,6 +595,7 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
       </translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
+<translation id="2793923553868251161">Beginpunten moeten worden behandeld als beveiligde context.</translation>
 <translation id="2801230735743888564">Toestaan dat gebruikers de easter egg-dinosaurusgame spelen wanneer het apparaat offline is.
 
       Als dit beleid is ingesteld op 'oinwaar', kunnen gebruikers de easter egg-dinosaurusgame niet spelen wanneer het apparaat offline is. Als deze instelling is ingesteld op 'waar', kunnen gebruikers de easter egg-dinosaurusgame spelen. Als dit beleid niet is ingesteld, kunnen gebruikers de easter egg-dinosaurusgame niet spelen op geregistreerde Chrome OS-apparaten, maar kunnen ze deze wel onder andere omstandigheden spelen.</translation>
@@ -799,11 +834,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
       Als je dit beleid niet instelt, kunnen gebruikers zelf de gewenste proxyinstellingen selecteren.</translation>
 <translation id="3758249152301468420">Ontwikkelaarstools uitschakelen</translation>
 <translation id="3765260570442823273">Duur van de waarschuwing bij uitloggen inactieve gebruiker</translation>
-<translation id="376931976323225993">Hiermee kun je instellen of websites de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch mogen uitvoeren. Het automatisch uitvoeren van de <ph name="FLASH_PLUGIN_NAME" />-plug-in kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
-
-          Via Click-to-play kan de <ph name="FLASH_PLUGIN_NAME" />-plug-in worden uitgevoerd, maar de gebruiker moet op de tijdelijke aanduiding klikken om de uitvoering te starten.
-
-          Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig wijzigen.</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
 <translation id="3780319008680229708">Als dit beleid is ingesteld op 'waar' (true), wordt het Cast-icoon altijd weergegeven in de werkbalk of het overloopmenu en kunnen gebruikers het niet verwijderen.
 
@@ -893,6 +923,13 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
       Als je deze instelling inschakelt, kunnen de ontwikkelaarstools niet meer worden geopend en kunnen website-elementen niet meer worden geïnspecteerd. Alle sneltoetsen en menu- en contextmenu-opties voor het openen van de ontwikkelaarstools of de JavaScript-console worden uitgeschakeld.
 
       Als je deze optie uitschakelt of niet instelt, kan de gebruiker de ontwikkelaarstools en de JavaScript-console gebruiken.</translation>
+<translation id="3895557476567727016">Hiermee wordt de standaardmap geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt voor gedownloade bestanden.
+
+      Als je dit beleid instelt, wijzigt dit de standaardmap waarin <ph name="PRODUCT_NAME" /> bestanden downloadt. Dit beleid is niet verplicht. De gebruiker kan de map wijzigen.
+
+      Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de normale standaardmap (platformspecifiek).
+
+      Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.</translation>
 <translation id="3907986150060929099">De aanbevolen talen instellen voor een openbare sessie</translation>
 <translation id="3911737181201537215">Dit beleid is niet van invloed op de logboekregistratie van Android.</translation>
 <translation id="391531815696899618">Hiermee wordt synchronisatie van Google Drive in de app Bestanden van <ph name="PRODUCT_OS_NAME" /> uitgeschakeld wanneer de optie is ingesteld op 'waar'. In dat geval worden geen gegevens naar Google Drive geüpload.
@@ -1796,7 +1833,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7072406291414141328">Netwerkbandbreedtebeperking inschakelen</translation>
 <translation id="7079519252486108041">Pop-ups blokkeren op deze sites</translation>
-<translation id="7091198954851103976">Plug-ins waarvoor toestemming is vereist, altijd uitvoeren</translation>
 <translation id="7106631983877564505">Hiermee wordt de vergrendeling ingeschakeld wanneer <ph name="PRODUCT_OS_NAME" />-apparaten inactief worden of overschakelen op de slaapstand.
 
       Als je deze instelling inschakelt, worden gebruikers om een wachtwoord gevraagd om het apparaat te ontgrendelen als het zich in de slaapstand bevindt.
@@ -2039,6 +2075,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="787125417158068494">Als dit is ingesteld op SyncDisabled of niet is geconfigureerd, zijn certificaten van <ph name="PRODUCT_OS_NAME" /> niet beschikbaar voor ARC-apps.
 
       Als dit is ingesteld op CopyCaCerts, zijn alle door ONC geïnstalleerde CA-certificaten met <ph name="WEB_TRUSTED_BIT" /> beschikbaar voor ARC-apps.</translation>
+<translation id="7872535148622213208">
+        Dit beleid geeft een lijst met beginpunten (URL's) op die moeten worden behandeld als beveiligde context. Het is de bedoeling dat organisaties hiermee een faserende server kunnen instellen voor interne webontwikkelingen.
+        Dit is hetzelfde als de markering --unsafely-treat-insecure-origin-as-secure.
+        Raadpleeg https://www.w3.org/TR/secure-contexts/ voor meer informatie over beveiligde contexten.
+        </translation>
 <translation id="7882585827992171421">Dit beleid is alleen actief in de commerciële modus.
 
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>
@@ -2283,6 +2324,15 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als dit beleid niet is geconfigureerd of de waarde lager is dan 1 MB, gebruikt <ph name="PRODUCT_OS_NAME" /> het standaardformaat van de cache.</translation>
 <translation id="8858642179038618439">Beperkte modus van YouTube afdwingen</translation>
 <translation id="8864975621965365890">Hiermee onderdruk je de prompt die wordt weergegeven wanneer een site wordt weergegeven door <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Hiermee wordt de geïntegreerde service Google Translate ingeschakeld in <ph name="PRODUCT_NAME" />.
+
+      Als je deze instelling inschakelt, wordt in <ph name="PRODUCT_NAME" /> een geïntegreerde werkbalk weergegeven waarin de gebruiker wordt gevraagd of deze de pagina wil laten vertalen (indien van toepassing) en een vertaaloptie in het contextmenu dat wordt geopend met de rechtermuisknop.
+
+      Als je deze instelling uitschakelt, worden alle ingebouwde vertaalfuncties uitgeschakeld.
+
+      Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of overschrijven in <ph name="PRODUCT_NAME" />.
+
+      Als je deze instelling niet instelt, kan de gebruiker ervoor kiezen deze functie wel of niet te gebruiken.</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="8882006618241293596">De <ph name="FLASH_PLUGIN_NAME" />-plug-in blokkeren op deze sites</translation>
 <translation id="8906768759089290519">Gastmodus inschakelen</translation>

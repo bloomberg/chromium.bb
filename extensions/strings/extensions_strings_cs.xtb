@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Rozšíření nelze rozbalit. Chcete-li je rozbalit bezpečně, musíte zadat cestu k adresáři profilu, která neobsahuje odkaz symlink. Ve vašem profilu taková cesta neexistuje.</translation>
 <translation id="641087317769093025">Rozšíření se nepodařilo rozbalit</translation>
 <translation id="6542618148162044354">Aplikace <ph name="APP_NAME" /> žádá o přístup k jednomu nebo více z vašich zařízení:</translation>
-<translation id="6566142449942033617">„<ph name="PLUGIN_PATH" />“ nelze načíst jako plugin.</translation>
 <translation id="657064425229075395">Nelze načíst skript pozadí <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> od dodavatele <ph name="VENDOR_NAME" /> (sériové číslo <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nepodařilo se vytvořit adresář pro rozbalení: <ph name="DIRECTORY_PATH" /></translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Toto rozšíření se obnovovalo příliš často.</translation>
 <translation id="7003844668372540529">Neznámý produkt <ph name="PRODUCT_ID" /> od dodavatele <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Správce tohoto počítače vyžaduje instalaci rozšíření <ph name="EXTENSION_NAME" />. Nelze je odebrat ani upravit.</translation>
-<translation id="7581279002575751816">Pluginy NPAPI nejsou podporovány.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Přední</translation>
 <translation id="8047248493720652249">Tomuto rozšíření se nepodařilo pojmenovat stahovaný soubor „<ph name="ATTEMPTED_FILENAME" />“, protože jiné rozšíření (<ph name="EXTENSION_NAME" />) vybralo jiný název souboru „<ph name="ACTUAL_FILENAME" />“.</translation>

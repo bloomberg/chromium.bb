@@ -46,6 +46,39 @@
 
       Vrijednost pravila trebala bi biti navedena u milisekundama.</translation>
 <translation id="1151353063931113432">Dopusti slike na ovim web-lokacijama</translation>
+<translation id="1151545095291359187">Konfigurira postavke upravljanja proširenjima za <ph name="PRODUCT_NAME" />.
+
+          To pravilo kontrolira više postavki, uključujući postavke kojima upravljaju postojeća pravila za proširenja. To će pravilo nadjačati sva naslijeđena pravila ako su postavljena.
+
+          To pravilo mapira ID proširenja ili URL ažuriranja na svoju konfiguraciju. S ID-om proširenja konfiguracija će se primijeniti samo na određeno proširenje. Zadana konfiguracija može se postaviti za posebni ID <ph name="DEFAULT_SCOPE" />, tako da se primjenjuje na sva proširenja za koja u tom pravilu nije postavljena prilagođena konfiguracija. S URL-om ažuriranja konfiguracija će se primijeniti na sva proširenja s istim URL-om ažuriranja navedenim u manifestu proširenja kako je opisano u dokumentu  <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfiguracija za svako proširenje (ili proširenja s istim URL-om ažuriranja) drugi je rječnik koje može sadržavati polja navedena u nastavku.
+
+          <ph name="INSTALLATION_MODE" />: mapira na niz koji pokazuje način instalacije za proširenje. Važeći su nizovi sljedeći:
+          * <ph name="ALLOWED" />: korisniku se dopušta instaliranje proširenja. To je zadano ponašanje.
+          * <ph name="BLOCKED" />: blokira instaliranje proširenja.
+          * <ph name="FORCE_INSTALLED" />: proširenje se instalira automatski i korisnik ga ne može ukloniti.
+          * <ph name="NORMAL_INSTALLED" />: proširenje se instalira automatski, ali ga korisnik može onemogućiti.
+
+          Postavka <ph name="INSTALLATION_MODE" /> može se konfigurirati i za više proširenja, uključujući proširenje <ph name="DEFAULT_SCOPE" /> (kao zadane postavke) i proširenja s istim URL-om ažuriranja. U tom se slučaju mogu koristiti samo vrijednosti <ph name="ALLOWED" /> i <ph name="BLOCKED" />.
+
+          Ako se način postavi na <ph name="FORCE_INSTALLED" /> ili <ph name="NORMAL_INSTALLED" />, mora se konfigurirati i <ph name="UPDATE_URL" />. URL ažuriranja u tom pravilu upotrebljava se samo za prvo instaliranje, dok će se za daljnja ažuriranja proširenja upotrebljavati URL ažuriranja naveden u manifestu proširenja. URL ažuriranja treba usmjeravati na XML dokument manifesta ažuriranja kako je prethodno navedeno.
+
+          <ph name="BLOCKED_PERMISSIONS" />: mapira na popis nizova koji naznačuje blokirana dopuštenja API-ja za proširenje. Nazivi dopuštenja isti su kao i nizovi dopuštenja navedeni u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC3" />. Ta se postavka može konfigurirati i za proširenje <ph name="DEFAULT_SCOPE" />. Ako proširenje zahtijeva dopuštenje koje je na popisu blokiranih, proširenje se neće smjeti učitati. Ako sadrži blokirano dopuštenje kao neobavezni zahtjev, obradit će se na uobičajeni način, ali će se zahtjevi za sukobljena dopuštenja automatski odbiti za vrijeme izvođenja.
+
+          <ph name="ALLOWED_PERMISSIONS" />: slično je načinu <ph name="BLOCKED_PERMISSIONS" />, jedino što izričito dopušta neka dopuštenja koje možda blokira globalni popis blokiranih dopuštenja, pa se zato ne mogu konfigurirati za proširenje <ph name="DEFAULT_SCOPE" />. Ta postavka proširenjima ne daje automatski odobrena dopuštenja.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: mapira na niz verzije. Format niza verzije jednak je onome u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC4" />. Proširenje s verzijom koja je starija od navedene minimalne verzije neće biti omogućeno. To vrijedi i za prisilno instalirana proširenja.
+
+          Sljedeće se postavke mogu koristiti samo za zadanu <ph name="DEFAULT_SCOPE" /> konfiguraciju:
+
+          <ph name="INSTALL_SOURCES" />: svaka stavka na tom popisu podudaran je uzorak stila proširenja (<ph name="LINK_TO_MATCH_PATTERNS" />). Korisnici će moći jednostavno instalirati stavke s bilo kojeg URL-a koji se podudara sa stavkom na popisu. Ti uzorci moraju dopuštati lokaciju <ph name="EXTENSION_SUFFIX_WILDCARD" /> datoteke i stranicu s koje je preuzimanje pokrenuto (tj., preporuku).
+
+          <ph name="ALLOWED_TYPES" />: ova postavka stavlja na popis dopuštenih dopuštene vrste proširenja/aplikacija koje se mogu instalirati u proizvodu <ph name="PRODUCT_NAME" />. Vrijednost je popis nizova, od kojih svaki treba biti jedan od sljedećih: <ph name="VALID_ALLOWED_TYPES" />. Više informacija o tim vrstama potražite u dokumentaciji o proširenjima preglednika <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: ako korisnik pokuša instalirati neko proširenje koje je blokirano pravilom, Chrome web-trgovina prikazat će generičku poruku pogreške. Pomoću ove postavke poruci pogreške možete dodati tekst. Tako možete usmjeriti korisnike na korisničku podršku, objasniti zašto je određeno proširenje blokirano ili slično. Poruka pogreške skratit će se ako je dulja od 1000 znakova.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: prihvaća popis hostova s kojima proširenje ne smije stupiti u interakciju. To uključuje umetanje Javascripta, izmjenu i prikaz API-ja webRequests/webNavigation te prikaz i izmjenu kolačića. Format je sličan uzorcima podudaranja <ph name="LINK_TO_MATCH_PATTERNS" />, samo što se ne mogu definirati putanje, primjerice "*://*.example.com". Pravilo podržava i upotrebu zamjenskih znakova za vršnu domenu, primjerice "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: prihvaća popis hostova s kojima proširenje može stupiti u interakciju neovisno o tome jesu li navedeni u pravilu <ph name="RUNTIME_BLOCKED_HOSTS" />. To je isti format kao i <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Generira izvješće o stanju prekidača za razvojne programere na uređaju prilikom pokretanja.
 
       Ako se pravilo ne postavi ili se postavi na neistinito, izvješće o stanju prekidača za razvojne programere neće se generirati.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Omogućeni pisači tvrtke</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
 <translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
+<translation id="1257550411839719984">Postavi zadani direktorij za preuzimanje</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
 <translation id="1291880496936992484">Upozorenje: RC4 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (oko rujna 2016.) i ovo će pravilo tada prestati funkcionirati.
 
@@ -539,6 +573,7 @@
       </translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
+<translation id="2793923553868251161">Izvori se tretiraju kao siguran kontekst.</translation>
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
       Ako se to pravilo postavi na "False", korisnici neće moći igrati skrivenu igru s dinosaurom kada uređaj nije povezan s mrežom. Ako se ta postavka postavi na "True", korisnici će moći igrati igru s dinosaurom. Ako se to pravilo ne postavi, korisnici neće moći igrati skrivenu igru s dinosaurom u prijavljenom OS-u Chrome, ali će je moći igrati u drugim okolnostima.</translation>
@@ -771,11 +806,6 @@
       Ako se ta pravila ne postave, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3758249152301468420">Onemogući Razvojne alate</translation>
 <translation id="3765260570442823273">Trajanje poruke upozorenja za odjavu u stanju mirovanja</translation>
-<translation id="376931976323225993">Omogućuje određivanje je li web-lokacijama dopušteno automatsko pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />. Automatsko pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" /> može biti dopušteno za sve web-lokacije ili onemogućeno za sve web-lokacije.
-
-          Klik za reprodukciju omogućuje dodatku <ph name="FLASH_PLUGIN_NAME" /> da se pokrene, no korisnik mora kliknuti rezervirano mjesto da bi pokrenuo izvršavanje.
-
-          Ako se to pravilo ne postavi, korisnik će moći ručno promijeniti tu postavku.</translation>
 <translation id="3780152581321609624">Uključi nestandardni port u Kerberos SPN-u</translation>
 <translation id="3780319008680229708">Ako se to pravilo postavi na "istinito", ikona Casta na alatnoj traci uvijek će se prikazivati na alatnoj traci ili u dodatnom izborniku te je korisnici neće moći ukloniti.
 
@@ -857,6 +887,13 @@
       Ako omogućite tu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovni prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScripta.
 
       Ako se ta opcija onemogući ili ne postavi, korisnik može upotrebljavati Alate za razvojne programere i konzole JavaScripta.</translation>
+<translation id="3895557476567727016">Konfigurira zadani direktorij koji će <ph name="PRODUCT_NAME" /> upotrebljavati za preuzimanje datoteka.
+
+      Ako postavite to pravilo, ono će promijeniti zadani direktorij u koji <ph name="PRODUCT_NAME" /> preuzima datoteke. To pravilo nije obavezno, pa će korisnik moći promijeniti direktorij.
+
+      Ako ne postavite to pravilo, <ph name="PRODUCT_NAME" /> upotrebljava svoj uobičajeni zadani direktorij (ovisno o platformi).
+
+      Popis varijabli koje se mogu upotrebljavati potražite na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Postavi preporučene jezike za javnu sesiju</translation>
 <translation id="3911737181201537215">To pravilo nema utjecaja na Androidovo bilježenje u zapisnike.</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
@@ -1712,7 +1749,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="706669471845501145">Dopusti web-lokaciji prikazivanje obavijesti radne površine</translation>
 <translation id="7072406291414141328">Omogućuje usporavanje propusnosti mreže</translation>
 <translation id="7079519252486108041">Blokiraj skočne prozore na ovim web-lokacijama</translation>
-<translation id="7091198954851103976">Uvijek pokreni dodatke koji zahtijevaju autorizaciju</translation>
 <translation id="7106631983877564505">Omogući zaključavanje kada uređaji <ph name="PRODUCT_OS_NAME" /> prijeđu u stanje mirovanja ili se isključe.
 
       Ako omogućite tu postavku, korisnici će morati unijeti zaporku za otključavanje uređaja u stanju mirovanja.
@@ -1945,6 +1981,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="787125417158068494">Ako se postavi na SyncDisabled ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> certifikati nisu dostupni za ARC aplikacije.
 
       Ako se postavi na CopyCaCerts, svi CA certifikati instalirani u ONC uz <ph name="WEB_TRUSTED_BIT" /> dostupni su za ARC aplikacije.</translation>
+<translation id="7872535148622213208">
+        Pravilo određuje popis izvora (URL-ova) koji se tretiraju kao siguran
+        kontekst. Namjera je dopustiti organizacijama postavljanje poslužitelja
+        u pokusne svrhe za interni razvoj na webu.
+        Jednako je oznaci --unsafely-treat-insecure-origin-as-secure.
+        Više informacija o sigurnim kontekstima potražite na stranici https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
@@ -2177,6 +2220,15 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo ne konfigurira ili je vrijednost niža od 1 MB, <ph name="PRODUCT_OS_NAME" /> upotrebljava zadanu veličinu predmemoriranja.</translation>
 <translation id="8858642179038618439">Nametni Siguran način rada na YouTubeu</translation>
 <translation id="8864975621965365890">Zaustavlja upit za odbijanje koji se pojavljuje kada web-lokaciju generira <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Omogućuje integriranu uslugu Google Prevoditelj u proizvodu <ph name="PRODUCT_NAME" />.
+
+      Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> korisniku nudi funkciju prijevoda prikazujući integriranu alatnu traku za prijevod (u odgovarajućoj situaciji) i opciju prevođenja na kontekstnom izborniku koji se aktivira desnim klikom.
+
+      Ako onemogućite tu postavku, onemogućit će se sve ugrađene značajke prijevoda.
+
+      Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu mijenjati niti poništiti u proizvodu <ph name="PRODUCT_NAME" />.
+
+      Ako ta postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>

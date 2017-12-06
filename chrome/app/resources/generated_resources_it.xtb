@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Impossibile rimuovere il software dannoso</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
 <translation id="1062866675591297858">Gestisci i tuoi utenti supervisionati utilizzando la <ph name="BEGIN_LINK" />Dashboard degli utenti supervisionati<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Media Library File Checker</translation>
 <translation id="1064835277883315402">Connetti a rete privata</translation>
 <translation id="1064912851688322329">Disconnetti il tuo account Google</translation>
 <translation id="1067048845568873861">Data creazione</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Cache token dell'API Identity</translation>
 <translation id="1478233201128522094">La prossima volta potrai usare un nuovo telefono per sbloccare questo dispositivo <ph name="DEVICE_TYPE" />. Disattiva Smart Lock nelle Impostazioni.</translation>
 <translation id="1478340334823509079">Dettagli: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Pronto per il backup di <ph name="FILE_COUNT" /> nuove foto</translation>
 <translation id="1483493594462132177">Invia</translation>
 <translation id="1485015260175968628">Ora può:</translation>
 <translation id="1485141095922496924">Versione <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Attenzione.<ph name="END_BOLD" /> Questi file sono temporanei e potrebbero essere eliminati automaticamente per liberare spazio su disco. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Configura Smart Lock per il tuo dispositivo <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Ripristino file Microsoft</translation>
-<translation id="1825832322945165090">Spazio sul dispositivo insufficiente</translation>
 <translation id="1826516787628120939">Verifica in corso...</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> desidera inviarti le notifiche.</translation>
 <translation id="1828378091493947763">Questo plug-in non è supportato sul dispositivo in uso</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">Si è verificato un errore. Controlla la tua stampante e riprova.</translation>
 <translation id="2385700042425247848">Nome servizio:</translation>
 <translation id="2387458720915042159">Tipo di connessione proxy</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> nuove foto trovate
-    <ph name="LINE_BREAK1" />
-    Spazio sul dispositivo insufficiente.
-    <ph name="LINE_BREAK2" />
-    Prova a selezionare alcune foto per iniziare.</translation>
 <translation id="2391419135980381625">Carattere standard</translation>
 <translation id="2391762656119864333">Revoca</translation>
 <translation id="2392369802118427583">Attiva</translation>
@@ -1246,7 +1238,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2963151496262057773">Il seguente plug-in non risponde: <ph name="PLUGIN_NAME" />. Interrompere l'esecuzione?</translation>
 <translation id="2966449113954629791">Potresti avere esaurito la tua quota di dati mobili. Visita il portale di attivazione <ph name="NAME" /> per acquistare altri dati.</translation>
 <translation id="2966937470348689686">Gestisci le preferenze Android</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">riduci luminosità</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
@@ -1376,6 +1367,7 @@ Per ulteriori informazioni, visita il nostro <ph name="BEGIN_LINK" />Centro assi
 <translation id="3153862085237805241">Salva carta</translation>
 <translation id="3154351730702813399">L'amministratore del dispositivo potrebbe monitorare l'attività di navigazione.</translation>
 <translation id="3154429428035006212">Offline per più di un mese</translation>
+<translation id="3156531245809797194">Accedi per usare Chrome</translation>
 <translation id="3156815148496352304">Installa l'aggiornamento del sistema operativo</translation>
 <translation id="3157931365184549694">Ripristina</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (con supporto hardware)</translation>
@@ -1537,6 +1529,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3429599832623003132">$1 elementi</translation>
 <translation id="3432227430032737297">Rimuovi tutti i cookie visualizzati</translation>
 <translation id="3432757130254800023">Invio di audio e video agli schermi sulla rete locale</translation>
+<translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">Spiacenti. Il sistema non è riuscito a stabilire il blocco degli attributi del tempo di installazione del dispositivo.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">Alcuni servizi di contenuti utilizzano identificatori automatici per identificarti in modo univoco al fine di autorizzare l'accesso ai contenuti protetti.</translation>
@@ -1554,7 +1547,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="344630545793878684">Lettura dei dati su una serie di siti web</translation>
 <translation id="3449839693241009168">Premi <ph name="SEARCH_KEY" /> per inviare comandi a <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Percentuale di occupazione dello stato di inattività</translation>
-<translation id="3450505713373650336">Backup di <ph name="FILE_COUNT" /> foto in corso</translation>
 <translation id="3453612417627951340">Occorre l'autorizzazione</translation>
 <translation id="3454157711543303649">Attivazione completata</translation>
 <translation id="345693547134384690">Apri &amp;immagine in un'altra scheda</translation>
@@ -1797,9 +1789,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="381202950560906753">Aggiungine un'altra</translation>
 <translation id="3812525830114410218">Certificato non valido</translation>
 <translation id="3813296892522778813">Visita la <ph name="BEGIN_LINK_CHROMIUM" />guida di Google Chrome<ph name="END_LINK_CHROMIUM" /> se non riesci a trovare quello che cerchi</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> nuove foto trovate
-    <ph name="LINE_BREAK1" />
-    Puoi effettuare il backup su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Consenti a tutti i siti di inviare messaggi push in background</translation>
 <translation id="3819752733757735746">Switch Access (consente l'utilizzo del computer semplicemente mediante uno o due sensori)</translation>
 <translation id="3819800052061700452">&amp;Schermo intero</translation>
@@ -2070,9 +2059,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> kB (<ph name="NUM_KILOBYTES_LIVE" /> kB effettivi)</translation>
 <translation id="431076611119798497">&amp;Dettagli</translation>
 <translation id="4312866146174492540">Blocca (predefinita)</translation>
-<translation id="4315548163539304064">Scansione del dispositivo multimediale...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> nuove foto trovate</translation>
 <translation id="4316850752623536204">Sito web dello sviluppatore</translation>
 <translation id="4320177379694898372">Nessuna connessione Internet</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continua il download}other{Continua i download}}</translation>
@@ -2160,7 +2146,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4481249487722541506">Carica estensione non pacchettizzata...</translation>
 <translation id="4481530544597605423">Dispositivi disaccoppiati</translation>
 <translation id="4482194545587547824">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca e altri servizi Google</translation>
-<translation id="4492190037599258964">Risultati di ricerca per "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">Non visualizzare in questa pagina</translation>
 <translation id="450099669180426158">Icona punto esclamativo</translation>
 <translation id="4501530680793980440">Conferma rimozione</translation>
@@ -2661,6 +2646,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5316716239522500219">Consente di duplicare i monitor</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5319359161174645648">Google consiglia Chrome</translation>
+<translation id="5319566035256672173">Questo dispositivo non riceverà più gli aggiornamenti software più recenti. Prova a eseguire l'upgrade.</translation>
 <translation id="532247166573571973">Il server potrebbe non essere raggiungibile. Riprova più tardi.</translation>
 <translation id="532360961509278431">Impossibile aprire "$1": $2</translation>
 <translation id="5324780743567488672">Imposta automaticamente il fuso orario in base alla posizione</translation>
@@ -3808,7 +3794,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="721331389620694978">Alcune impostazioni che potrebbero rispecchiare le abitudini di navigazione non verranno cancellate.</translation>
 <translation id="7216409898977639127">Fornitore del servizio di telefonia mobile</translation>
 <translation id="7216595297012131718">Ordina le lingue in base alle tue preferenze</translation>
-<translation id="7219989745826083607">Analizzatore sintattico delle descrizioni dei dispositivi DIAL</translation>
 <translation id="722055596168483966">Personalizza i servizi Google</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Mostra notifiche</translation>
@@ -4439,7 +4424,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8261378640211443080">Questa estensione non è elencata nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="8261387128019234107">Aggiungi account per <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Elimina</translation>
-<translation id="8261673729476082470">Backup di <ph name="FILE_COUNT" /> foto su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> in corso</translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> non implementato in questa build.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ha disattivato il puntatore del mouse.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ha attivato lo schermo intero.</translation>

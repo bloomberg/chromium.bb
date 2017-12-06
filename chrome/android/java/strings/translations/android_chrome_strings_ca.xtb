@@ -66,6 +66,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1539064842193522527">Enllaç obert a Chrome</translation>
 <translation id="1549000191223877751">Mou a l'altra finestra</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
+<translation id="1566400915470565838">Per utilitzar <ph name="APP_NAME" />, connecta't a Internet.</translation>
 <translation id="1569387923882100876">Dispositiu connectat</translation>
 <translation id="1571304935088121812">Copia el nom d'usuari</translation>
 <translation id="1612196535745283361">Chrome necessita tenir accés a la ubicació per poder cercar dispositius, però aquesta funció està <ph name="BEGIN_LINK" />desactivada en aquest dispositiu<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2351097562818989364">S'ha restablert la configuració del Traductor.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2369533728426058518">obre les pestanyes</translation>
-<translation id="2372491353676110880">Baixa aquestes pàgines automàticament</translation>
 <translation id="2387895666653383613">Canvia la mida del text</translation>
 <translation id="2414886740292270097">Fosc</translation>
 <translation id="2416359993254398973">Per visitar aquest lloc web, Chrome necessita permís per accedir a la teva càmera.</translation>
@@ -179,8 +179,8 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2621115761605608342">Permet JavaScript en un lloc concret.</translation>
 <translation id="2625189173221582860">S'ha copiat la contrasenya</translation>
 <translation id="2631006050119455616">Dades desades</translation>
+<translation id="2647434099613338025">Afegir un idioma</translation>
 <translation id="2653659639078652383">Envia</translation>
-<translation id="2671100504997899381">Carrega les pàgines més de pressa i desa les més populars per llegir-les sense connexió</translation>
 <translation id="2677748264148917807">Surt</translation>
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2707726405694321444">Actualitza la pàgina</translation>
@@ -381,7 +381,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> més}}</translation>
 <translation id="4698034686595694889">Mostra sense connexió a <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Falta una funcionalitat crítica necessària per executar Chrome; la vostra instal·lació de Chrome no està completa o bé no és compatible amb aquesta versió d'Android.</translation>
-<translation id="4699172675775169585">Imatges i fitxers emmagatzemats a la memòria cau</translation>
+<translation id="4699172675775169585">Imatges i fitxers desats a la memòria cau</translation>
 <translation id="4714588616299687897">Estalvia fins a un 60% de les dades</translation>
 <translation id="4720023427747327413">Obre a <ph name="PRODUCT_NAME" /></translation>
 <translation id="472631402238783923">Ajuda a millorar Chrome. <ph name="BEGIN_LINK" />Respon a l'enquesta<ph name="END_LINK" />.</translation>
@@ -565,7 +565,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="6343192674172527289">No s'ha trobat cap baixada</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> més}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> més}}</translation>
-<translation id="6354616574440533128">Desbloqueja el telèfon per continuar amb la configuració</translation>
 <translation id="6364438453358674297">Voleu suprimir el suggeriment de l'historial?</translation>
 <translation id="6383961787135158834">Esborra emmagatz. lloc…</translation>
 <translation id="6388207532828177975">Esborra i restableix</translation>
@@ -793,6 +792,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8493948351860045254">Allibera espai</translation>
 <translation id="8497726226069778601">Aquí encara no hi ha contingut per mostrar</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
+<translation id="8514477925623180633">Exporta les contrasenyes emmagatzemades a Chrome</translation>
 <translation id="8514577642972634246">Entra al mode d'incògnit</translation>
 <translation id="8523928698583292556">Suprimeix la contrasenya emmagatzemada</translation>
 <translation id="854522910157234410">Obre aquesta pàgina</translation>

@@ -46,6 +46,39 @@
 
       O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="1151353063931113432">Permitir imagens nestes sites</translation>
+<translation id="1151545095291359187">Configura as definições de gestão de extensões no <ph name="PRODUCT_NAME" />.
+
+          Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
+
+          Esta política mapeia um ID de extensão ou um URL de atualização para a respetiva configuração. Com um ID de extensão, a configuração é aplicada apenas à extensão especificada. É possível definir uma configuração predefinida para o ID especial <ph name="DEFAULT_SCOPE" />, que se aplica a todas as extensões que não tenham uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões com o URL de atualização exato indicado no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          A configuração de cada extensão (ou extensões com o mesmo URL de atualização) é outro dicionário que pode conter os campos documentados abaixo.
+
+          <ph name="INSTALLATION_MODE" />: mapeia para uma string que indica o modo de instalação para a extensão. As strings válidas são:
+          * <ph name="ALLOWED" />: permite que a extensão seja instalada pelo utilizador. Este é o comportamento predefinido.
+          * <ph name="BLOCKED" />: bloqueia a instalação da extensão.
+          * <ph name="FORCE_INSTALLED" />: a extensão é instalada automaticamente e o utilizador não a pode remover.
+          * <ph name="NORMAL_INSTALLED" />: a extensão é instalada automaticamente, mas o utilizador pode desativá-la.
+
+          Também é possível configurar o <ph name="INSTALLATION_MODE" /> para várias extensões, incluindo a extensão <ph name="DEFAULT_SCOPE" /> (como predefinições) e extensões com o mesmo URL de atualização. Neste caso, só é possível utilizar os valores <ph name="ALLOWED" /> e <ph name="BLOCKED" />.
+
+          Se o modo estiver definido como <ph name="FORCE_INSTALLED" /> ou <ph name="NORMAL_INSTALLED" />, também é necessário configurar um <ph name="UPDATE_URL" />. Tenha em atenção que o URL de atualização definido nesta política é utilizado apenas para a instalação inicial; as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão. O URL de atualização deve indicar um documento XML de Manifesto de atualização, conforme supramencionado.
+
+          <ph name="BLOCKED_PERMISSIONS" />: mapeia para uma lista de strings que indicam as autorizações de API bloqueadas para a extensão. Os nomes das autorizações são os mesmos que as strings de autorização declaradas no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC3" />. Também é possível configurar esta definição para a extensão <ph name="DEFAULT_SCOPE" />. Se a extensão necessitar de uma autorização que faz parte da lista de bloqueio, o carregamento não é permitido. Se incluir uma autorização bloqueada como requisito opcional, esta é processada normalmente. No entanto, a solicitação de autorizações em conflito é recusada automaticamente no tempo de execução.
+
+          <ph name="ALLOWED_PERMISSIONS" />: é semelhante a <ph name="BLOCKED_PERMISSIONS" />, porém, permite explicitamente algumas autorizações que podem estar bloqueadas na lista global de autorizações bloqueadas e que, por isso, não podem ser configuradas para a extensão <ph name="DEFAULT_SCOPE" />. Tenha em atenção que esta definição não concede autorizações a extensões automaticamente.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: mapeia para uma string de versão. O formato da string de versão é igual ao utilizado no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC4" />. As extensões com uma versão mais antiga do que a versão mínima especificada são desativadas. Isto também se aplica a extensões de instalação forçada.
+
+          As seguintes definições apenas podem ser utilizadas para a configuração <ph name="DEFAULT_SCOPE" /> predefinida:
+
+          <ph name="INSTALL_SOURCES" />: cada item nesta lista é um padrão de correspondência ao estilo de extensão (<ph name="LINK_TO_MATCH_PATTERNS" />). Os utilizadores podem instalar itens facilmente a partir de qualquer URL que corresponda a um item nesta lista. Tanto a localização do ficheiro <ph name="EXTENSION_SUFFIX_WILDCARD" /> como a página a partir da qual é iniciada a transferência (ou seja, o referenciador) têm de estar autorizadas por estes padrões.
+
+          <ph name="ALLOWED_TYPES" />: esta definição adiciona à lista de autorizações os tipos permitidos de extensão/aplicação que podem ser instalados no <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, em que cada uma deve ser um dos seguintes tipos: <ph name="VALID_ALLOWED_TYPES" />. Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para obter mais informações acerca destes tipos.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: se um utilizador tentar instalar uma extensão, mas esta estiver bloqueada por uma política, a Web Store do Chrome apresenta uma mensagem de erro genérica. Esta definição permite-lhe anexar texto à mensagem de erro. Isto pode ser utilizado para direcionar os utilizadores para o serviço de assistência, explicar os motivos do bloqueio de uma determinada extensão ou outras questões. Esta mensagem de erro é cortada se exceder o limite de 1000 carateres.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: aceita uma lista de anfitriões com os quais uma extensão está impedida de interagir. Isto inclui a injeção de JavaScript, a alteração e a visualização de webRequests/webNavigation, a visualização e a alteração de cookies. O formato é semelhante aos padrões de correspondência <ph name="LINK_TO_MATCH_PATTERNS" /> com a diferença de que não é possível definir caminhos, por exemplo, "*://*.example.com". Também suporta a atribuição eficaz de carateres universais TLD, por exemplo "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: aceita uma lista de anfitriões com os quais uma extensão pode interagir, independentemente de estarem incluídos em <ph name="RUNTIME_BLOCKED_HOSTS" />. O formato é igual a <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Comunicar o estado do comutador dev do dispositivo no arranque.
 
       Se a política estiver definida como "false", o estado do comutador dev não será comunicado.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
 <translation id="1221359380862872747">Carregar URLs especificados no início de sessão de demonstração</translation>
 <translation id="123081309365616809">Permite a transmissão de conteúdo para o dispositivo</translation>
+<translation id="1257550411839719984">Defina o diretório de transferências predefinido.</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
 <translation id="1291880496936992484">Aviso: o RC4 será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016) e esta política deixa de funcionar nessa altura.
 
@@ -546,6 +580,7 @@
       </translation>
 <translation id="2769952903507981510">Configurar o nome de domínio necessário para anfitriões de acesso remoto</translation>
 <translation id="2787173078141616821">Comunicar informações acerca do estado do Android</translation>
+<translation id="2793923553868251161">As origens que devem ser tratadas como contexto seguro.</translation>
 <translation id="2801230735743888564">Permitir aos utilizadores jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline.
 
       Se esta política estiver definida como falsa, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline. Se esta política estiver definida como verdadeira, os utilizadores podem jogar o jogo do dinossauro. Se esta política não estiver definida, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro em dispositivos com o Chrome OS inscritos, mas podem jogá-lo noutras circunstâncias.</translation>
@@ -782,11 +817,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se deixar estas políticas por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas do Programador</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
-<translation id="376931976323225993">Permite-lhe definir se os Websites têm automaticamente autorização para executar o plug-in <ph name="FLASH_PLUGIN_NAME" />. A execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> pode ser permitida ou negada para todos os Websites.
-
-          Clicar para reproduzir permite a execução do plug-in <ph name="FLASH_PLUGIN_NAME" />, mas o utilizador tem de clicar no marcador de posição para iniciar a sua execução.
-
-          Se esta política não for definida, o utilizador poderá alterá-la manualmente.</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN do Kerberos</translation>
 <translation id="3780319008680229708">Se esta política estiver definida como verdadeira, o ícone da barra de ferramentas do Google Cast é sempre apresentado na barra de ferramentas ou no menu adicional e os utilizadores não podem removê-lo.
 
@@ -868,6 +898,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 Se ativar esta definição, não será possível aceder às Ferramentas do programador e os elementos de Web sites deixarão de ser inspecionados. Todos os atalhos de teclado e entradas de menu ou de menu de contexto para abrir as Ferramentas do programador ou a Consola de JavaScript serão desativados.
 
 Se desativar ou não definir esta opção, permite que o utilizador use as Ferramentas do programador e a Consola de JavaScript.</translation>
+<translation id="3895557476567727016">Configura o diretório predefinido que o <ph name="PRODUCT_NAME" /> vai utilizar para a transferência de ficheiros.
+
+      Se definir esta política, altera o diretório predefinido para onde o <ph name="PRODUCT_NAME" /> transfere ficheiros. Esta política não é obrigatória, pelo que o utilizador pode alterar o diretório.
+
+      Se não definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o respetivo diretório predefinido habitual (específico da plataforma).
+
+      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista das variáveis que é possível utilizar.</translation>
 <translation id="3907986150060929099">Definir os locais recomendados para uma sessão pública</translation>
 <translation id="3911737181201537215">Esta política não tem qualquer efeito nos registos realizados pelo Android.</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> quando definida como verdadeira. Nesse caso, os dados não são carregados para o Google Drive.
@@ -1721,7 +1758,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="706669471845501145">Permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="7072406291414141328">Permite controlar a largura de banda da rede</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
-<translation id="7091198954851103976">Executa sempre plug-ins que requerem autorização</translation>
 <translation id="7106631983877564505">Ativar o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> ficam inativos ou entram em suspensão.
 
       Se ativar esta definição, os utilizadores são solicitados a introduzir uma palavra-passe para desbloquear o dispositivo do modo de suspensão.
@@ -1954,6 +1990,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="787125417158068494">Se estiverem definidos para SyncDisabled ou não estiverem configurados, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficam disponíveis para aplicações ARC.
 
       Se estiverem definidos para CopyCaCerts, todos os certificados da AC (Autoridade de certificação) instalados pelo ONC com <ph name="WEB_TRUSTED_BIT" /> ficam disponíveis para aplicações ARC.</translation>
+<translation id="7872535148622213208">
+        A política especifica uma lista de origens (URLs) que devem ser tratadas como contexto
+        seguro. A intenção é permitir que as entidades configurem um servidor
+        experimental para programações Web internas.
+        Trata-se do mesmo que o sinalizador --unsafely-treat-insecure-origin-as-secure.
+        Para mais informações acerca dos contextos seguros, consulte https://www.w3.org/TR/secure-contexts/.
+        </translation>
 <translation id="7882585827992171421">Esta política está ativa apenas no modo de retalho.
 
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
@@ -2198,6 +2241,15 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política não estiver configurada ou o valor for inferior a 1 MB, o <ph name="PRODUCT_OS_NAME" /> utiliza o tamanho de cache predefinido.</translation>
 <translation id="8858642179038618439">Forçar o Modo de segurança do YouTube</translation>
 <translation id="8864975621965365890">Suprime o pedido de recusa que aparece quando um site é convertido por <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Ativa o serviço Google Tradutor integrado no <ph name="PRODUCT_NAME" />.
+
+      Se ativar esta definição, o <ph name="PRODUCT_NAME" /> sugere ao utilizador a funcionalidade de tradução ao apresentar uma barra de ferramentas de tradução integrada (quando aplicável) e uma opção de tradução no menu de contexto de clique com o botão direito do rato.
+
+      Se desativar esta definição, todas as funcionalidades de tradução integradas são desativadas.
+
+      Se ativar ou desativar esta definição, os utilizadores não a podem alterar ou substituir no <ph name="PRODUCT_NAME" />.
+
+      Se deixar esta definição por definir, o utilizador pode optar por utilizar ou não esta função.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
 <translation id="8906768759089290519">Ativar o modo de convidado</translation>

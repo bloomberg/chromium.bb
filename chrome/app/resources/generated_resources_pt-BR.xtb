@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Não é possível remover software perigoso</translation>
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1062866675591297858">Administre seus usuários supervisionados usando o <ph name="BEGIN_LINK" />Painel de usuários supervisionados<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Verificador de arquivo de biblioteca de mídia</translation>
 <translation id="1064835277883315402">Conectar a uma rede particular</translation>
 <translation id="1064912851688322329">Desconecta sua Conta do Google</translation>
 <translation id="1067048845568873861">Criado em</translation>
@@ -100,7 +99,7 @@
 <translation id="1153356358378277386">Dispositivos pareados</translation>
 <translation id="1156488781945104845">Hora atual</translation>
 <translation id="1161575384898972166">Faça login no <ph name="TOKEN_NAME" /> para exportar o certificado do cliente.</translation>
-<translation id="1163361280229063150">{NUM_DOWNLOAD,plural, =1{Um download está em andamento. Deseja cancelar o download e sair do modo sem rastros?}one{# downloads estão em andamento. Deseja cancelar os downloads e sair do modo sem rastros?}other{# downloads estão em andamento. Deseja cancelar os downloads e sair do modo sem rastros?}}</translation>
+<translation id="1163361280229063150">{NUM_DOWNLOAD,plural, =1{Um download está em andamento. Deseja cancelar o download e sair do modo de navegação anônima?}one{# downloads estão em andamento. Deseja cancelar os downloads e sair do modo de navegação anônima?}other{# downloads estão em andamento. Deseja cancelar os downloads e sair do modo de navegação anônima?}}</translation>
 <translation id="1163931534039071049">&amp;Exibir código fonte do frame</translation>
 <translation id="1164674268730883318">Desativar o Smart Lock para <ph name="DEVICE_TYPE" />?</translation>
 <translation id="1164899421101904659">Informar chave para desbloqueio de PIN</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Cache do token da API de identidade</translation>
 <translation id="1478233201128522094">Na próxima vez, um novo smartphone desbloqueará este <ph name="DEVICE_TYPE" />. Desative o Smart Lock nas configurações.</translation>
 <translation id="1478340334823509079">Detalhes: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Pronto para fazer o backup de <ph name="FILE_COUNT" /> fotos novas</translation>
 <translation id="1483493594462132177">Enviar</translation>
 <translation id="1485015260175968628">Ele agora pode:</translation>
 <translation id="1485141095922496924">Versão <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Atenção:<ph name="END_BOLD" /> Estes arquivos são temporários e podem ser excluídos automaticamente para liberar espaço em disco. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Configurar o Smart Lock para o <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Recuperação de arquivos da Microsoft</translation>
-<translation id="1825832322945165090">Não há espaço suficiente no dispositivo</translation>
 <translation id="1826516787628120939">Em verificação</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> deseja enviar notificações a você.</translation>
 <translation id="1828378091493947763">Este plug-in não é compatível com este dispositivo</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">Ocorreu um erro. Verifique sua impressora e tente novamente.</translation>
 <translation id="2385700042425247848">Nome do serviço:</translation>
 <translation id="2387458720915042159">Tipo de conexão proxy</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> fotos novas encontradas
-    <ph name="LINE_BREAK1" />
-    Não há espaço suficiente no dispositivo.
-    <ph name="LINE_BREAK2" />
-    Tente selecionar algumas fotos para iniciar.</translation>
 <translation id="2391419135980381625">Fonte padrão</translation>
 <translation id="2391762656119864333">Revogar</translation>
 <translation id="2392369802118427583">Ativar</translation>
@@ -1247,7 +1239,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2963151496262057773">Este plug-in não responde: <ph name="PLUGIN_NAME" />. Deseja interrompê-lo?</translation>
 <translation id="2966449113954629791">Você pode ter usado a cota de dados do seu dispositivo móvel. Visite o portal de ativação do <ph name="NAME" /> para comprar mais dados.</translation>
 <translation id="2966937470348689686">Gerenciar preferências do Android</translation>
-<translation id="2971033837577180453">&lt;span&gt;Código:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">diminuir brilho</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Refazer</translation>
@@ -1377,6 +1368,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3153862085237805241">Salvar cartão</translation>
 <translation id="3154351730702813399">O administrador do dispositivo pode monitorar sua atividade de navegação.</translation>
 <translation id="3154429428035006212">Off-line há mais de um mês</translation>
+<translation id="3156531245809797194">Para usar o Chrome, faça login</translation>
 <translation id="3156815148496352304">Instalar atualização do SO</translation>
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (no hardware)</translation>
@@ -1540,6 +1532,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3429599832623003132">$1 itens</translation>
 <translation id="3432227430032737297">Remover todos os cookies mostrados</translation>
 <translation id="3432757130254800023">Enviar áudio e vídeo para telas na rede local</translation>
+<translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">Ops! O sistema falhou ao estabelecer o bloqueio de atributos da hora de instalação do dispositivo.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">Alguns serviços de conteúdo usam identificadores de máquina para identificar o usuário com exclusividade a fim de autorizar o acesso a conteúdos protegidos.</translation>
@@ -1557,7 +1550,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="344630545793878684">Leia seus dados em uma série de websites</translation>
 <translation id="3449839693241009168">Pressione <ph name="SEARCH_KEY" /> para enviar comandos para <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Porcentagem de ocupação em estado de inatividade</translation>
-<translation id="3450505713373650336">Fazendo o backup de <ph name="FILE_COUNT" /> fotos</translation>
 <translation id="3453612417627951340">Requer autorização</translation>
 <translation id="3454157711543303649">Ativação concluída</translation>
 <translation id="345693547134384690">Abrir &amp;imagem em uma nova guia</translation>
@@ -1800,9 +1792,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="381202950560906753">Adicionar outra</translation>
 <translation id="3812525830114410218">Certificado inválido</translation>
 <translation id="3813296892522778813">Se você não encontrar o que está procurando, acesse a <ph name="BEGIN_LINK_CHROMIUM" />Ajuda do Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> fotos novas encontradas
-    <ph name="LINE_BREAK1" />
-    Pronto para fazer o backup no <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Permitir que todos os sites enviem mensagens push de segundo plano</translation>
 <translation id="3819752733757735746">Acesso com interruptor (controlar o computador com apenas um ou dois interruptores)</translation>
 <translation id="3819800052061700452">&amp;Tela cheia</translation>
@@ -2073,9 +2062,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K ativos)</translation>
 <translation id="431076611119798497">&amp;Detalhes</translation>
 <translation id="4312866146174492540">Bloquear (padrão)</translation>
-<translation id="4315548163539304064">Verificando seu dispositivo de mídia...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> fotos novas encontradas</translation>
 <translation id="4316850752623536204">Website do desenvolvedor</translation>
 <translation id="4320177379694898372">Sem conexão com a Internet</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continuar download}one{Continuar downloads}other{Continuar downloads}}</translation>
@@ -2163,7 +2149,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4481249487722541506">Carregar extensão expandida...</translation>
 <translation id="4481530544597605423">Dispositvos não pareados</translation>
 <translation id="4482194545587547824">O Google pode usar seu histórico de navegação para personalizar a Pesquisa e outros serviços Google</translation>
-<translation id="4492190037599258964">Resultados de pesquisa para "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">Não mostrar esta página</translation>
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
 <translation id="4501530680793980440">Confirmar remoção</translation>
@@ -2665,6 +2650,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5316716239522500219">Espelhar monitores</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5319359161174645648">O Google recomenda o Chrome</translation>
+<translation id="5319566035256672173">Este dispositivo não receberá mais atualizações de software. Recomendamos o upgrade dele.</translation>
 <translation id="532247166573571973">É possível que o servidor esteja inacessível. Tente novamente mais tarde.</translation>
 <translation id="532360961509278431">Não foi possível abrir "$1": $2</translation>
 <translation id="5324780743567488672">Define o fuso horário automaticamente utilizando seu local</translation>
@@ -2708,7 +2694,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5379268888377976432">Desfazer exclusão</translation>
 <translation id="5380103295189760361">Pressione Control, Alt, Shift ou "Pesquisar" para visualizar os atalhos do teclado para estes modificadores.</translation>
 <translation id="5382591305415226340">Gerenciar links compatíveis</translation>
-<translation id="5384883051496921101">Este site está prestes a compartilhar informações com um app fora do modo sem rastros.</translation>
+<translation id="5384883051496921101">Este site está prestes a compartilhar informações com um app fora do modo de navegação anônima.</translation>
 <translation id="5388588172257446328">Nome de usuário:</translation>
 <translation id="5388885445722491159">Emparelhado</translation>
 <translation id="5389237414310520250">Não foi possível criar o novo usuário. Verifique o espaço no seu disco rígido e suas permissões e tente novamente.</translation>
@@ -3814,7 +3800,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="721331389620694978">Algumas configurações que podem refletir os hábitos de navegação não serão limpas.</translation>
 <translation id="7216409898977639127">Operadora de celular</translation>
 <translation id="7216595297012131718">Ordenar idiomas com base na sua preferência</translation>
-<translation id="7219989745826083607">Analisador de descrição do dispositivo de discagem</translation>
 <translation id="722055596168483966">Personalizar os serviços do Google</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Mostrar notificações</translation>
@@ -4455,7 +4440,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8261378640211443080">Esta extensão não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e pode ter sido adicionada sem seu conhecimento.</translation>
 <translation id="8261387128019234107">Adicionar conta para <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Excluir</translation>
-<translation id="8261673729476082470">Fazendo o backup de <ph name="FILE_COUNT" /> fotos no <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> não está implementada nesta versão.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> desativou o cursor do mouse.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ativou a tela cheia.</translation>
@@ -4847,7 +4831,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8944964446326379280">O app <ph name="APP_NAME" /> está compartilhando uma janela com <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Seu <ph name="DEVICE_TYPE" /> pode ser desbloqueado com seu smartphone Android.</translation>
 <translation id="8946359700442089734">Os recursos de depuração não foram completamente ativados neste dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="894871326938397531">Sair do modo sem rastros?</translation>
+<translation id="894871326938397531">Sair do modo de navegação anônima?</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="8954952943849489823">Falha na transferência, erro inesperado: $1</translation>
 <translation id="895586998699996576">Imagem $1</translation>

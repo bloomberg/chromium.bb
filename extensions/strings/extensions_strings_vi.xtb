@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Không thể giải nén tiện ích.  Để giải nén tiện ích một cách an toàn, phải có đường dẫn đến thư mục hồ sơ không chứa liên kết dạng biểu tượng của bạn.  Không có đường dẫn như vậy tồn tại cho hồ sơ của bạn.</translation>
 <translation id="641087317769093025">Không thể giải nén tiện ích</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" đang yêu cầu quyền truy cập vào một hoặc nhiều thiết bị của bạn:</translation>
-<translation id="6566142449942033617">Không thể tải '<ph name="PLUGIN_PATH" />' cho plugin.</translation>
 <translation id="657064425229075395">Không thể tải tập lệnh nền '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> của <ph name="VENDOR_NAME" /> (số sê-ri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Không thể tạo thư mục để giải nén: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Phần mở rộng này đã được tải lại quá thường xuyên.</translation>
 <translation id="7003844668372540529">Sản phẩm không xác định <ph name="PRODUCT_ID" /> từ <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME" />. Bạn không thể xóa hoặc sửa đổi tiện ích này.</translation>
-<translation id="7581279002575751816">Plugin NPAPI không được hỗ trợ.</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Máy ảnh mặt trước</translation>
 <translation id="8047248493720652249">Tiện ích này không thể đặt tên cho bản tải xuống "<ph name="ATTEMPTED_FILENAME" />" vì một tiện ích khác (<ph name="EXTENSION_NAME" />) đã xác định tên tệp khác "<ph name="ACTUAL_FILENAME" />".</translation>

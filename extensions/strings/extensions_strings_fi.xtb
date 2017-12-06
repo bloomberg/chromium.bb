@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Laajennuksen purkaminen epäonnistui. Voit purkaa laajennuksen määrittämällä polun profiilihakemistoon, joka ei sisällä symlink-määritettä. Profiilissasi ei ole kyseistä polkua.</translation>
 <translation id="641087317769093025">Laajennuksen purkaminen epäonnistui</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> pyytää oikeutta käyttää yhtä tai useampaa laitettasi:</translation>
-<translation id="6566142449942033617">Polun <ph name="PLUGIN_PATH" /> lataaminen laajennukselle ei onnistunut.</translation>
 <translation id="657064425229075395">Taustakoodin <ph name="BACKGROUND_SCRIPT" /> lataaminen epäonnistui.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> myyjältä <ph name="VENDOR_NAME" /> (sarjanumero <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Ei voitu luoda hakemistoa <ph name="DIRECTORY_PATH" /> laajennuksen purkamista varten:</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Tämä laajennus päivittyy liian usein.</translation>
 <translation id="7003844668372540529">Tuntematon tuote <ph name="PRODUCT_ID" /> toimittajalta <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Koneen ylläpitäjä vaatii laajennuksen <ph name="EXTENSION_NAME" /> asennusta. Sitä ei voi poistaa tai muuttaa.</translation>
-<translation id="7581279002575751816">NPAPI-laajennuksia ei tueta.</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Käyttäjää kuvaava</translation>
 <translation id="8047248493720652249">Laajennus ei voinut antaa lataukselle nimeä <ph name="ATTEMPTED_FILENAME" />, koska toinen laajennus (<ph name="EXTENSION_NAME" />) määritti toisen tiedostonimen (<ph name="ACTUAL_FILENAME" />).</translation>

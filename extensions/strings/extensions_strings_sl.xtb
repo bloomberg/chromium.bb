@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Razširitve ni mogoče odpakirati. Če želite varno odpakirati razširitev, pot do imenika vašega profila ne sme vsebovati simbolne povezave. Takšne poti ni za vaš profil.</translation>
 <translation id="641087317769093025">Razširitve ni bilo mogoče odpakirati</translation>
 <translation id="6542618148162044354">Aplikacija »<ph name="APP_NAME" />« zahteva dostop do ene ali več vaših naprav:</translation>
-<translation id="6566142449942033617">Ni mogoče naložiti »<ph name="PLUGIN_PATH" />« za vtičnik.</translation>
 <translation id="657064425229075395">Skripta za ozadje »<ph name="BACKGROUND_SCRIPT" />« ni bilo mogoče naložiti.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> proizvajalca <ph name="VENDOR_NAME" /> (serijska številka <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Imenika za odpakiranje ni bilo mogoče ustvariti: »<ph name="DIRECTORY_PATH" />«</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Ta razširitev se je prepogosto naložila znova.</translation>
 <translation id="7003844668372540529">Neznan izdelek <ph name="PRODUCT_ID" /> dobavitelja <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Skrbnik tega računalnika zahteva namestitev razširitve <ph name="EXTENSION_NAME" />. Ni je mogoče odstraniti ali spremeniti.</translation>
-<translation id="7581279002575751816">Vtičniki NPAPI niso podprti.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Sprednji</translation>
 <translation id="8047248493720652249">Ta razširitev ni mogla prenosa poimenovati »<ph name="ATTEMPTED_FILENAME" />«, ker je druga razširitev (<ph name="EXTENSION_NAME" />) določila drugo ime datoteke: »<ph name="ACTUAL_FILENAME" />«.</translation>

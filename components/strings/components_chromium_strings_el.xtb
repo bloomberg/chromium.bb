@@ -16,7 +16,7 @@
           <ph name="PROXIES_TITLE" />
           &gt;
           Ρυθμίσεις LAN
-          και καταργήστε την επιλογή του πλαισίου ελέγχου "Χρήση
+          και αποεπιλέξτε το πλαίσιο ελέγχου "Χρήση
           διακομιστή μεσολάβησης για το LAN".</translation>
 <translation id="48558539577516920">Επιτρέψτε στο Chromium να αποκτήσει πρόσβαση στο δίκτυο από τις ρυθμίσεις του τείχους προστασίας
           ή του λογισμικού προστασίας από ιούς που διαθέτετε.</translation>
@@ -35,11 +35,11 @@
         <ph name="SETTINGS_TITLE" />
         &gt;
         <ph name="ADVANCED_TITLE" />
-        και καταργήστε την επιλογή "<ph name="NO_PREFETCH_DESCRIPTION" />".
+        και αποεπιλέξτε "<ph name="NO_PREFETCH_DESCRIPTION" />".
         Εάν με αυτόν τον τρόπο δεν επιλύεται το ζήτημά σας, συνιστούμε
         να ενεργοποιήσετε ξανά αυτήν την επιλογή για βελτιωμένη απόδοση.</translation>
 <translation id="8187289872471304532">Μεταβείτε στο
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          και καταργήστε τυχόν διακομιστές μεσολάβησης που έχουν επιλεγεί.</translation>
+          και αποεπιλέξτε τυχόν διακομιστές μεσολάβησης που έχουν επιλεγεί.</translation>
 <translation id="8684913864886094367">Το Chromium δεν έκλεισε σωστά.</translation>
 </translationbundle>

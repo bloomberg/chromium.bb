@@ -176,7 +176,7 @@
 <translation id="4370827530403103842">동기화가 작동하지 않습니다. 탭하여 수정하세요.</translation>
 <translation id="4375040482473363939">QR 코드 검색</translation>
 <translation id="4378154925671717803">휴대전화</translation>
-<translation id="441868831736628555">개인정보 보호정책</translation>
+<translation id="441868831736628555">개인정보처리방침</translation>
 <translation id="4460091562821778167">항상 사용할 앱 확인</translation>
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
@@ -405,7 +405,6 @@
 <translation id="9083392325882095631">항목 1개</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
-<translation id="91549621916703028">여러 개의 탭을 만들어 다양한 작업을 동시에 진행하세요.</translation>
 <translation id="9157836665414082580">대화상자 숨기기</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@
 <translation id="976982866697960176">동기화된 데이터 관리…</translation>
 <translation id="988141524645182168">기타 기기</translation>
 <translation id="989988560359834682">주소 수정</translation>
+<translation id="994757059139821576">기사 추천</translation>
 </translationbundle>

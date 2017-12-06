@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">확장 프로그램을 압축해제할 수 없습니다. 확장 프로그램을 안전하게 압축해제하려면 심볼릭 링크가 포함되지 않은 프로필 디렉토리 경로가 있어야 합니다. 프로필에 해당 경로가 없습니다.</translation>
 <translation id="641087317769093025">확장 프로그램의 압축을 해제하지 못했습니다.</translation>
 <translation id="6542618148162044354">'<ph name="APP_NAME" />'이(가) 사용자의 기기 하나 이상에 액세스 권한을 요청하고 있습니다.</translation>
-<translation id="6566142449942033617">플러그인('<ph name="PLUGIN_PATH" />')을 로드하지 못했습니다.</translation>
 <translation id="657064425229075395">백그라운드 스크립트('<ph name="BACKGROUND_SCRIPT" />')를 로드하지 못했습니다.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" />의 제품 <ph name="PRODUCT_NAME" />(일련 번호 <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">'<ph name="DIRECTORY_PATH" />'의 압축을 해제하기 위한 디렉토리를 만들지 못했습니다.</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">확장 프로그램이 너무 자주 새로고침됩니다.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" />의 알 수 없는 제품 <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">이 기기를 설치할 때 관리자가 <ph name="EXTENSION_NAME" />을(를) 요구합니다. 삭제 또는 수정할 수 없습니다.</translation>
-<translation id="7581279002575751816">NPAPI 플러그인이 지원되지 않습니다.</translation>
 <translation id="7972881773422714442">옵션: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">전면</translation>
 <translation id="8047248493720652249">다른 확장 프로그램(<ph name="EXTENSION_NAME" />)에서 파일 이름을 '<ph name="ACTUAL_FILENAME" />'(으)로 지정했기 때문에 이 확장 프로그램에서 다운로드하는 파일의 이름을 '<ph name="ATTEMPTED_FILENAME" />'(으)로 지정하지 못했습니다.</translation>

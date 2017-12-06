@@ -66,6 +66,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1539064842193522527">Link Chrome-ban megnyitva</translation>
 <translation id="1549000191223877751">Áthelyezés másik ablakba</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
+<translation id="1566400915470565838">A(z) <ph name="APP_NAME" /> használatához internetkapcsolatra van szükség.</translation>
 <translation id="1569387923882100876">Csatlakoztatott eszköz</translation>
 <translation id="1571304935088121812">Felhasználónév másolása</translation>
 <translation id="1612196535745283361">A Chrome-nak hozzá kell férnie a tartózkodási helyhez, hogy eszközöket kereshessen. A tartózkodási helyhez való hozzáférés <ph name="BEGIN_LINK" />ki van kapcsolva ezen az eszközön<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2351097562818989364">A fordítási beállítások visszaállítása megtörtént.</translation>
 <translation id="2359808026110333948">Folytatás</translation>
 <translation id="2369533728426058518">megnyitott lapok</translation>
-<translation id="2372491353676110880">Oldalak automatikus letöltése</translation>
 <translation id="2387895666653383613">Szöveg nagyítása</translation>
 <translation id="2414886740292270097">Sötét</translation>
 <translation id="2416359993254398973">A Chrome számára engedély szükséges, hogy hozzáférjen a kamerához ennél a webhelynél.</translation>
@@ -179,8 +179,8 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2621115761605608342">A JavaScript engedélyezése egy adott webhelyen.</translation>
 <translation id="2625189173221582860">Jelszó vágólapra másolva</translation>
 <translation id="2631006050119455616">Megtakarított</translation>
+<translation id="2647434099613338025">Nyelv hozzáadása</translation>
 <translation id="2653659639078652383">Elküldés</translation>
-<translation id="2671100504997899381">Gyorsabban tölthet be oldalakat, és a népszerűeket elmentheti offline olvasáshoz</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2707726405694321444">Oldal frissítése</translation>
@@ -565,7 +565,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6337234675334993532">Titkosítás</translation>
 <translation id="6343192674172527289">Nem található letöltés</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Oldja fel a zárolást a telefon beállításának folytatásához</translation>
 <translation id="6364438453358674297">Eltávolítja a javaslatot az előzményekből?</translation>
 <translation id="6383961787135158834">Webhelytárhely törlése…</translation>
 <translation id="6388207532828177975">Törlés és visszaállítás</translation>
@@ -793,6 +792,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8493948351860045254">Terület felszabadítása</translation>
 <translation id="8497726226069778601">Nincs itt semmi látnivaló… még</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>
+<translation id="8514477925623180633">A Chrome-ban tárolt jelszavak exportálása</translation>
 <translation id="8514577642972634246">Belépés inkognitómódba</translation>
 <translation id="8523928698583292556">Tárolt jelszó törlése</translation>
 <translation id="854522910157234410">Az oldal megnyitása</translation>

@@ -43,7 +43,6 @@
 <translation id="106001083577824516">નુકસાનકારક સૉફ્ટવેર દૂર કરી શકાતું નથી</translation>
 <translation id="1062407476771304334">બદલો</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK" />નિરીક્ષિત વપરાશકર્તાઓ ડેશબોર્ડ<ph name="END_LINK" /> મારફતે તમારા નિરીક્ષિત વપરાશકર્તાઓનું સંચાલન કરો.</translation>
-<translation id="1064662184364304002">મીડિયા લાઇબ્રેરી ફાઇલ તપાસનાર</translation>
 <translation id="1064835277883315402">ખાનગી નેટવર્કથી જોડાઓ</translation>
 <translation id="1064912851688322329">તમારું Google એકાઉન્ટ ડિસ્કનેક્ટ કરો</translation>
 <translation id="1067048845568873861">બનાવ્યું</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">ઓળખ API ટોકન કેશ</translation>
 <translation id="1478233201128522094">આગલી વખતે, એક નવો ફોન આ <ph name="DEVICE_TYPE" />ને અનલૉક કરશે. સેટિંગ્સમાં Smart Lockને બંધ કરો.</translation>
 <translation id="1478340334823509079">વિગતો: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544"><ph name="FILE_COUNT" /> નવા ફોટાનો બેકઅપ લેવા માટે તૈયાર</translation>
 <translation id="1483493594462132177">મોકલો</translation>
 <translation id="1485015260175968628">તે હવે આ કરી શકે છે:</translation>
 <translation id="1485141095922496924">સંસ્કરણ <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -527,7 +525,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />ચેતવણી:<ph name="END_BOLD" />  આ ફાઇલો અસ્થાયી છે અને બની શકે કે ડિસ્ક સ્થાન ખાલી કરવા માટે આપમેળે કાઢી નાંખવામાં આવે.  <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">તમારા <ph name="DEVICE_TYPE" /> માટે Smart Lock સેટ કરો</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
-<translation id="1825832322945165090">ઉપકરણ પર પર્યાપ્ત સ્થાન નથી</translation>
 <translation id="1826516787628120939">તપાસી રહ્યાં છે</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> તમને સૂચનાઓ મોકલવા માંગે છે.</translation>
 <translation id="1828378091493947763">આ ઉપકરણ પર આ પ્લગ-ઇન સમર્થિત નથી</translation>
@@ -857,11 +854,6 @@
 <translation id="2384436799579181135">એક ભૂલ આવી છે. કૃપા કરીને તમારું પ્રિન્ટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="2385700042425247848">સેવા નામ:</translation>
 <translation id="2387458720915042159">પ્રૉક્સી કનેક્શનનો પ્રકાર</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> નવા ફોટો મળ્યાં
-    <ph name="LINE_BREAK1" />
-    ઉપકરણ પર પર્યાપ્ત સ્થાન નથી.
-    <ph name="LINE_BREAK2" />
-    પ્રારંભ કરવા માટે ઓછા ફોટો પસંદ કરીને પ્રયાસ કરો.</translation>
 <translation id="2391419135980381625">માનક ફૉન્ટ</translation>
 <translation id="2391762656119864333">રદબાતલ કરો</translation>
 <translation id="2392369802118427583">સક્રિય કરો</translation>
@@ -1243,7 +1235,6 @@
 <translation id="2963151496262057773">નીચેના પ્લગિન પ્રતિભાવવિહીન છે: <ph name="PLUGIN_NAME" />તમે તેને રોકવા માંગશો?</translation>
 <translation id="2966449113954629791">તમે તમારા મોબાઇલ ડેટા ભથ્થાનો ઉપયોગ કર્યો હોઈ શકે છે. વધુ ડેટા ખરીદવા માટે <ph name="NAME" /> સક્રિયતા પોર્ટલની મુલાકાત લો.</translation>
 <translation id="2966937470348689686">Android પસંદગીઓનું સંચાલન કરો</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">તેજસ્વીતા ઘટાડો</translation>
 <translation id="2972557485845626008">ફર્મવેર</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
@@ -1373,6 +1364,7 @@
 <translation id="3153862085237805241">કાર્ડ સાચવો</translation>
 <translation id="3154351730702813399">ઉપકરણ વ્યવસ્થાપક, તમારી બ્રાઉઝિંગ પ્રવૃત્તિનું નિરીક્ષણ કરી શકે છે.</translation>
 <translation id="3154429428035006212">એક મહિના કરતા વધુ માટે ઑફલાઇન</translation>
+<translation id="3156531245809797194">Chromeનો ઉપયોગ કરવા માટે કૃપા કરીને સાઇન ઇન કરો</translation>
 <translation id="3156815148496352304">OS અપડેટ ઇન્સ્ટૉલ કરો</translation>
 <translation id="3157931365184549694">પુનઃસ્થાપિત કરો</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (હાર્ડવેર સમર્થિત)</translation>
@@ -1536,6 +1528,7 @@
 <translation id="3429599832623003132">$1 આઇટમ્સ</translation>
 <translation id="3432227430032737297">બતાવેલ તમામ દૂર કરો</translation>
 <translation id="3432757130254800023">સ્થાનિક નેટવર્ક પરના પ્રદર્શનો પર ઑડિઓ અને વિડિઓ મોકલો</translation>
+<translation id="3432762828853624962">શેર કરેલા કારીગરો</translation>
 <translation id="3433621910545056227">અરે! સિસ્ટમ ઉપકરણ ઇન્સ્ટોલેશન-સમય લક્ષણોનું લૉક સ્થાપિત કરવામાં નિષ્ફળ ગયું.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">કેટલીક સામગ્રી સેવાઓ સુરક્ષિત સામગ્રી માટે અધિકારીક ઍક્સેસ હેતુ તમને અનન્ય રીતે ઓળખવા માટે મશીન ઓળખકર્તાઓનો ઉપયોગ કરે છે.</translation>
@@ -1553,7 +1546,6 @@
 <translation id="344630545793878684">ઘણી વેબસાઇટ્સ પર તમારો ડેટા વાંચી શકે છે</translation>
 <translation id="3449839693241009168">આદેશોને <ph name="EXTENSION_NAME" /> પર મોકલવા માટે <ph name="SEARCH_KEY" /> દબાવો</translation>
 <translation id="3450157232394774192">નિષ્ક્રિય સ્થિતિ અક્યુપન્સિ ટકા</translation>
-<translation id="3450505713373650336"><ph name="FILE_COUNT" /> ફોટાનો બેક અપ લઈ રહ્યાં છે</translation>
 <translation id="3453612417627951340">અધિકૃતતાની જરૂર છે</translation>
 <translation id="3454157711543303649">સક્રિયતા પૂર્ણ</translation>
 <translation id="345693547134384690">નવા ટૅબમાં &amp;છબી ખોલો</translation>
@@ -1796,9 +1788,6 @@
 <translation id="381202950560906753">બીજી ઉમેરો</translation>
 <translation id="3812525830114410218">ખોટું પ્રમાણપત્ર</translation>
 <translation id="3813296892522778813">જો તમે શોધી રહ્યાં છો તે શોધી શકતાં ન હોવ તો <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome સહાય<ph name="END_LINK_CHROMIUM" /> પર જાઓ</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> નવા ફોટો મળ્યા
-    <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google ડ્રાઇવ<ph name="END_LINK" /> પર બેકઅપ લેવા માટે તૈયાર</translation>
 <translation id="3819007103695653773">બધી સાઇટ્સને પૃષ્ઠભૂમિમાં પુશ સંદેશા મોકલવાની મંજૂરી આપશો</translation>
 <translation id="3819752733757735746">સ્વિચ અ‍ૅક્સેસ (એક કે બે સ્વિચેસ વડે કમ્પ્યુટરને નિયંત્રિત કરો)</translation>
 <translation id="3819800052061700452">&amp;પૂર્ણ સ્ક્રીન</translation>
@@ -2069,9 +2058,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K લાઇવ)</translation>
 <translation id="431076611119798497">&amp;વિગતો</translation>
 <translation id="4312866146174492540">અવરોધિત કરો (ડિફૉલ્ટ)</translation>
-<translation id="4315548163539304064">તમારા મીડિયા ઉપકરણને સ્કેન કરી રહ્યાં છે...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> નવા ફોટો મળ્યાં</translation>
 <translation id="4316850752623536204">વિકાસકર્તા વેબસાઇટ</translation>
 <translation id="4320177379694898372">કોઈ ઇન્ટરનેટ કનેક્શન નથી</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ડાઉનલોડ ચાલુ રાખો}one{ડાઉનલોડ્સ ચાલુ રાખો}other{ડાઉનલોડ્સ ચાલુ રાખો}}</translation>
@@ -2159,7 +2145,6 @@
 <translation id="4481249487722541506">અનપેક્ડ એક્સટેન્શનને લોડ કરો...</translation>
 <translation id="4481530544597605423">જોડીથી અલગ કરેલા ઉપકરણો</translation>
 <translation id="4482194545587547824">Google, શોધ અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે</translation>
-<translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' માટે  શોધ પરિણામ</translation>
 <translation id="4495419450179050807">આ પૃષ્ઠ પર બતાવશો નહીં</translation>
 <translation id="450099669180426158">ઉદ્ગાર ચિહ્નનું આયકન</translation>
 <translation id="4501530680793980440">રીમૂવલની પુષ્ટિ કરો</translation>
@@ -2661,6 +2646,7 @@
 <translation id="5316716239522500219">મિરર મૉનિટર્સ</translation>
 <translation id="5317780077021120954">સાચવો</translation>
 <translation id="5319359161174645648">Google Chromeની ભલામણ કરે છે</translation>
+<translation id="5319566035256672173">આ ઉપકરણ હવેથી તાજેતરના સૉફ્ટવેર અપડેટ પ્રાપ્ત કરી શકશે નહીં. કૃપા કરીને અપગ્રેડ કરવાનું વિચારો.</translation>
 <translation id="532247166573571973">સર્વર પહોંચની બહાર હોઇ શકે છે. પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="532360961509278431">"$1" ખોલવામાં અક્ષમ છીએ: $2</translation>
 <translation id="5324780743567488672">તમારા સ્થાનનો ઉપયોગ કરીને આપમેળે સમય ઝોન સેટ કરો</translation>
@@ -3809,7 +3795,6 @@
 <translation id="721331389620694978">કેટલીક સેટિંગ્સ જે બ્રાઉઝિંગ ટેવોને પ્રભાવિત કરી શકે છે તે સાફ કરવામાં આવશે નહીં.</translation>
 <translation id="7216409898977639127">સેલ્યુલર પ્રદાતા</translation>
 <translation id="7216595297012131718">તમારી પસંદગીના આધારે ભાષાઓને ક્રમમાં ગોઠવો</translation>
-<translation id="7219989745826083607">ડાયલ ઉપકરણનાં વર્ણનનો વિશ્લેષક</translation>
 <translation id="722055596168483966">Google સેવાઓને વ્યક્તિગત કરો</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">સૂચનાઓ દર્શાવો</translation>
@@ -4443,7 +4428,6 @@
 <translation id="8261378640211443080">આ એક્સટેન્શન <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યું હોઈ શકે છે.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> માટે એકાઉન્ટ ઉમેરો</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
-<translation id="8261673729476082470"><ph name="BEGIN_LINK" />Google ડ્રાઇવ<ph name="END_LINK" /> પર <ph name="FILE_COUNT" /> ફોટાનો બેક અપ લઈ રહ્યાં છે</translation>
 <translation id="826246685091802258">આ બિલ્ડમાં <ph name="BAD_FLAG" />નો અમલ કરાયો નથી.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> એ તમારા માઉસ કર્સરને અક્ષમ કર્યું છે.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" /> એ પૂર્ણ સ્ક્રીનને ટ્રિગર કરેલી છે.</translation>

@@ -46,6 +46,39 @@
 
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="1151353063931113432">Consenti immagini su questi siti</translation>
+<translation id="1151545095291359187">Consente di configurare le impostazioni di gestione delle estensioni di <ph name="PRODUCT_NAME" />.
+
+          Questa norma consente di controllare diverse impostazioni, incluse quelle controllate da norme esistenti correlate alle estensioni. Questa norma sostituisce qualsiasi norma precedente se vengono impostate entrambe.
+
+          Questa norma consente di associare un ID estensione o un URL di aggiornamento alla relativa configurazione. Con un ID estensione, la configurazione viene applicata solo all'estensione specificata. È possibile impostare una configurazione predefinita per l'ID speciale <ph name="DEFAULT_SCOPE" />, che verrà applicato a tutte le estensioni per cui non è impostata una configurazione personalizzata in questa norma. Con un URL di aggiornamento, la configurazione verrà applicata a tutte le estensioni con l'esatto URL di aggiornamento indicato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          La configurazione relativa a ogni estensione (o per estensioni con lo stesso URL di aggiornamento) è un altro dizionario che può contenere i campi documentati di seguito.
+
+          <ph name="INSTALLATION_MODE" />: corrisponde a una stringa che indica la modalità di installazione dell'estensione. Le stringhe valide sono:
+          * <ph name="ALLOWED" />: consente l'installazione dell'estensione da parte dell'utente. È il comportamento predefinito.
+          * <ph name="BLOCKED" />: consente di bloccare l'installazione dell'estensione.
+          * <ph name="FORCE_INSTALLED" />: l'estensione viene installata automaticamente e non può essere rimossa dall'utente.
+          * <ph name="NORMAL_INSTALLED" />: l'estensione viene installata automaticamente, ma può essere disattivata dall'utente.
+
+          È anche possibile configurare il valore <ph name="INSTALLATION_MODE" /> per più estensioni, incluse l'estensione <ph name="DEFAULT_SCOPE" /> (come impostazione predefinita) e le estensioni con lo stesso URL di aggiornamento. In questo caso è possibile usare solo i valori <ph name="ALLOWED" /> e <ph name="BLOCKED" />.
+
+          Se viene impostata la modalità <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, è necessario configurare anche un valore <ph name="UPDATE_URL" />. Tieni presente che l'URL di aggiornamento impostato in questa norma viene utilizzato solo per l'installazione iniziale. Per i successivi aggiornamenti dell'estensione verrà utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione. L'URL di aggiornamento dovrebbe rimandare a un documento XML Manifest di aggiornamento come descritto in precedenza.
+
+          <ph name="BLOCKED_PERMISSIONS" />: corrisponde a un elenco di stringhe che indicano le autorizzazioni API bloccate per l'estensione. I nomi delle autorizzazioni corrispondono alle stringhe di autorizzazione indicate nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC3" />. Questa impostazione può essere configurata anche per l'estensione <ph name="DEFAULT_SCOPE" />. Se per l'estensione è necessaria un'autorizzazione che è presente nell'elenco di quelle bloccate, non potrà essere caricata. Se contiene un'autorizzazione bloccata come requisito opzionale, verrà trattata normalmente, ma la richiesta di autorizzazioni in conflitto verrà respinta automaticamente in fase di runtime.
+
+          <ph name="ALLOWED_PERMISSIONS" />: simile a <ph name="BLOCKED_PERMISSIONS" /> ma, al contrario, consente esplicitamente alcune autorizzazioni che potrebbero essere bloccate da un elenco globale di autorizzazioni bloccate e che quindi non possono essere configurate per l'estensione <ph name="DEFAULT_SCOPE" />. Questa impostazione non assegna automaticamente le autorizzazioni concesse alle estensioni.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: corrisponde a una stringa della versione. Il formato della stringa della versione corrisponde a quello utilizzato nel file manifest dell'estensione, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC4" />. Un'estensione con una versione precedente rispetto alla versione minima specificata viene disattivata. Ciò vale anche per le estensioni con installazione imposta.
+
+          Le seguenti impostazioni possono essere utilizzate solo per la configurazione <ph name="DEFAULT_SCOPE" /> predefinita:
+
+          <ph name="INSTALL_SOURCES" />: ogni voce presente in questo elenco è uno schema di corrispondenza in stile di estensione (<ph name="LINK_TO_MATCH_PATTERNS" />). Gli utenti potranno installare facilmente elementi da qualsiasi URL corrispondente a una voce nell'elenco. Questi schemi devono consentire sia la posizione del file <ph name="EXTENSION_SUFFIX_WILDCARD" /> sia la pagina da cui viene avviato il download (il referrer).
+
+          <ph name="ALLOWED_TYPES" />: questa impostazione consente di autorizzare i tipi consentiti di estensioni e app che è possibile installare in <ph name="PRODUCT_NAME" />. Il valore è un elenco di stringhe, tra le seguenti: <ph name="VALID_ALLOWED_TYPES" />. Leggi la documentazione relativa alle estensioni di <ph name="PRODUCT_NAME" /> per avere ulteriori informazioni su questi tipi.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: se un utente prova a installare un'estensione, ma questa viene bloccata da una norma, nel Chrome Web Store viene mostrato un messaggio di errore generico. Questa impostazione ti consente di aggiungere testo al messaggio di errore. In questo modo puoi indirizzare gli utenti al tuo Centro assistenza, spiegare perché una determinata estensione è bloccata o altro ancora. Il messaggio di errore viene troncato se supera i 1000 caratteri.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: consente di accettare un elenco di host con cui un'estensione non potrà interagire. Sono inclusi l'inserimento di JavaScript, l'alterazione e la visualizzazione di webRequest/webNavigation, la visualizzazione e l'alterazione di cookie. Il formato è simile agli schemi di corrispondenza <ph name="LINK_TO_MATCH_PATTERNS" />, ma potrebbe non essere possibile definire dei percorsi, ad esempio "*://*.example.com". È inoltre supportato l'inserimento efficace di caratteri jolly TLD come "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: consente di accettare un elenco di host con cui un'estensione può interagire, che siano elencati o meno in <ph name="RUNTIME_BLOCKED_HOSTS" />. Il formato corrisponde a quello di <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
 <translation id="1166377463685560145">Consente di specificare le stampanti non utilizzabili dagli utenti.
@@ -60,6 +93,7 @@
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
+<translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
@@ -522,6 +556,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       </translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
+<translation id="2793923553868251161">Origini da considerare contesto sicuro.</translation>
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
       Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
@@ -752,11 +787,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se queste norme non vengono impostate, gli utenti possono scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="3758249152301468420">Disabilita Strumenti per sviluppatori</translation>
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
-<translation id="376931976323225993">Ti consente di impostare i siti web affinché eseguano o meno automaticamente il plug-in <ph name="FLASH_PLUGIN_NAME" />. L'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> può essere consentita o negata a tutti i siti web.
-
-          Click-to-play consente di eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />, ma l'utente deve fare clic sul segnaposto per avviarne l'esecuzione.
-
-          Se la norma non viene impostata, l'utente potrà modificare l'impostazione manualmente.</translation>
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
 <translation id="3780319008680229708">Se il criterio è impostato su true, l'icona Cast della barra degli strumenti sarà sempre visibile nella barra degli strumenti o nel menu extra e gli utenti non potranno rimuoverla.
 
@@ -835,6 +865,13 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa impostazione viene attivata, gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile eseguire un'ispezione degli elementi del sito web. Le scorciatoie da tastiera e le voci dei menu contestuali e di altri menu che consentono di aprire gli Strumenti per sviluppatori o la Console JavaScript verranno disattivate.
 
       Se questa opzione viene disattivata o non viene impostata sarà possibile utilizzare gli Strumenti per sviluppatori e la Console JavaScript.</translation>
+<translation id="3895557476567727016">Consente di configurare la directory predefinita da usare in <ph name="PRODUCT_NAME" /> per il download dei file.
+
+      Se questa norma viene impostata, verrà cambiata la directory predefinita in cui vengono scaricati i file in <ph name="PRODUCT_NAME" />. Questa norma non è obbligatoria, pertanto l'utente potrà cambiare la directory.
+
+      Se questa norma non viene impostata, verrà usata la normale directory predefinita (specifica della piattaforma) di <ph name="PRODUCT_NAME" />.
+
+      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.</translation>
 <translation id="3907986150060929099">Consente di impostare le impostazioni internazionali consigliate per una sessione pubblica</translation>
 <translation id="3911737181201537215">Questa norma non influisce sulla registrazione effettuata da Android.</translation>
 <translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
@@ -1669,7 +1706,6 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7072406291414141328">Attiva la limitazione della larghezza di banda</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
-<translation id="7091198954851103976">Esegue sempre i plug-in che richiedono l'autorizzazione</translation>
 <translation id="7106631983877564505">Consente di attivare il blocco quando lo stato dei dispositivi <ph name="PRODUCT_OS_NAME" /> diventa inattivo o sospeso.
 
       Se questa impostazione viene attivata, agli utenti verrà chiesto di inserire una password per sbloccare il dispositivo dalla sospensione.
@@ -1901,6 +1937,11 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="787125417158068494">Se la norma viene impostata su SyncDisabled o non viene configurata, i certificati <ph name="PRODUCT_OS_NAME" /> non saranno disponibili per le app ARC.
 
       Se viene impostata su CopyCaCerts, per le app ARC saranno disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.</translation>
+<translation id="7872535148622213208">
+        Questa norma consente di specificare un elenco di origini (URL) da considerare come contesto sicuro. Lo scopo è consentire alle organizzazioni di configurare un server di gestione temporanea per gli sviluppi web interni.
+        Questa norma corrisponde all'opzione --unsafely-treat-insecure-origin-as-secure.
+        Visita il sito https://www.w3.org/TR/secure-contexts/ per avere ulteriori informazioni sui contesti sicuri.
+        </translation>
 <translation id="7882585827992171421">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
@@ -2118,6 +2159,15 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se questa norma non viene configurata o se il valore è inferiore a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilizzerà le dimensioni della cache predefinite.</translation>
 <translation id="8858642179038618439">Forza la Modalità di protezione di YouTube</translation>
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Consente di attivare il servizio Google Traduttore integrato su <ph name="PRODUCT_NAME" />.
+
+      Se questa impostazione viene attivata, in <ph name="PRODUCT_NAME" /> verrà offerta una funzionalità di traduzione mediante una barra degli strumenti di traduzione integrata (se opportuno) e un'opzione di traduzione mostrata nel menu contestuale visualizzato facendo clic con il pulsante destro del mouse.
+
+      Se questa impostazione viene disattivata, tutte le funzioni di traduzione incorporate verranno disattivate.
+
+      Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
+
+      Se questa impostazione non viene configurata, gli utenti potranno decidere se utilizzare o meno questa funzione.</translation>
 <translation id="8870318296973696995">Pagina iniziale</translation>
 <translation id="8882006618241293596">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
 <translation id="8906768759089290519">Attiva modalità ospite</translation>

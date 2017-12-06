@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">‏پیوند در Chrome باز شد</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
+<translation id="1566400915470565838">برای استفاده از <ph name="APP_NAME" />، لطفاً به اینترنت وصل شوید.</translation>
 <translation id="1569387923882100876">دستگاه متصل</translation>
 <translation id="1571304935088121812">کپی کردن نام کاربری</translation>
 <translation id="1612196535745283361">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. دسترسی به مکان <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2369533728426058518">برگه‌های باز</translation>
-<translation id="2372491353676110880">بارگیری صفحه‌ها به‌طور خودکار</translation>
 <translation id="2387895666653383613">اندازه قلم نوشتار</translation>
 <translation id="2414886740292270097">تاریک</translation>
 <translation id="2416359993254398973">‏Chrome به مجوز دسترسی به دوربین برای این سایت نیاز دارد.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">جاوااسکرپیت را برای سایتی خاص مجاز کنید.</translation>
 <translation id="2625189173221582860">گذرواژه کپی شد</translation>
 <translation id="2631006050119455616">ذخیره شده</translation>
+<translation id="2647434099613338025">افزودن زبان</translation>
 <translation id="2653659639078652383">ارائه</translation>
-<translation id="2671100504997899381">صفحه‌ها را سریع‌تر بار کنید و صفحه‌های محبوب را برای خواندن آفلاین ذخیره کنید</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
@@ -564,7 +564,6 @@
 <translation id="6337234675334993532">رمزگذاری</translation>
 <translation id="6343192674172527289">هیچ بارگیری‌ای پیدا نشد</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> نشانی دیگر}one{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> نشانی دیگر}other{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> نشانی دیگر}}</translation>
-<translation id="6354616574440533128">برای ادامه راه‌اندازی تلفنتان، قفل آن را باز کنید</translation>
 <translation id="6364438453358674297">پیشنهاد از سابقه حذف شود؟</translation>
 <translation id="6383961787135158834">پاک کردن فضای ذخیره‌سازی سایت…</translation>
 <translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
@@ -792,6 +791,7 @@
 <translation id="8493948351860045254">آزاد کردن فضا</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
+<translation id="8514477925623180633">‏صادر کردن گذرواژه‌های ذخیره‌شده در Chrome</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="8523928698583292556">حذف گذرواژه ذخیره‌شده</translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
