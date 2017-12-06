@@ -51,8 +51,8 @@ ui::EventDispatchDetails EventInjector::Inject(WindowTreeHost* host,
     // root location. The non-ui-service code does this by way of
     // OnEventFromSource() ending up in LocatedEvent::UpdateForRootTransform(),
     // which reset the root_location to match the location.
-    event->AsLocatedEvent()->set_location_f(
-        event->AsLocatedEvent()->root_location_f());
+    event->AsLocatedEvent()->set_root_location_f(
+        event->AsLocatedEvent()->location_f());
   }
 
   if (!remote_event_dispatcher_) {
