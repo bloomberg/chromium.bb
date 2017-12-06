@@ -39,8 +39,55 @@ class MediaEngagementPreloadedList {
  protected:
   friend class MediaEngagementPreloadedListTest;
 
+  // The names of the CheckResult and LoadResult histograms.
+  static const char kHistogramCheckResultName[];
+  static const char kHistogramLoadResultName[];
+
+  // The result of the CheckStringIsPresent operation. This enum is used to
+  // record a histogram and should not be renumbered.
+  enum class CheckResult {
+    // The check succeeded and the string was found in the data.
+    kFound = 0,
+
+    // The check succeeded but the string was not found in the data.
+    kNotFound,
+
+    // The check failed because the list is empty.
+    kListEmpty,
+
+    // The check failed because the list has not been loaded.
+    kListNotLoaded,
+
+    kCount
+  };
+
+  // The result of the LoadFromFile operation. This enum is used to record
+  // a histogram and should not be renumbered.
+  enum class LoadResult {
+    // The list was loaded successfully.
+    kLoaded = 0,
+
+    // The list was not loaded because the file was not found.
+    kFileNotFound,
+
+    // The list was not loaded because the file could not be read.
+    kFileReadFailed,
+
+    // The list was not loaded because the proto stored in the file could not be
+    // parsed.
+    kParseProtoFailed,
+
+    kCount
+  };
+
   // Checks if |input| is present in the preloaded data.
   bool CheckStringIsPresent(const std::string& input) const;
+
+  // Records |result| to the LoadResult histogram.
+  void RecordLoadResult(LoadResult result);
+
+  // Records |result| to the CheckResult histogram.
+  void RecordCheckResult(CheckResult result) const;
 
  private:
   // The preloaded data in dafsa format.

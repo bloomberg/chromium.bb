@@ -33858,6 +33858,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="VERSION_LATEST"/>
 </enum>
 
+<enum name="PreloadedListCheckResult">
+  <int value="0" label="string was found"/>
+  <int value="1" label="string was not found"/>
+  <int value="2" label="check failed because list was empty"/>
+  <int value="3" label="check failed because list was not loaded"/>
+</enum>
+
+<enum name="PreloadedListLoadResult">
+  <int value="0" label="loaded"/>
+  <int value="1" label="file not found"/>
+  <int value="2" label="file read failed"/>
+  <int value="3" label="parse proto failed"/>
+</enum>
+
 <enum name="PrerenderCookieSendType">
   <obsolete>
     Deprecated March 13 2015.
