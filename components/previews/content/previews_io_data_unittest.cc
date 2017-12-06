@@ -33,6 +33,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
+#include "components/previews/core/previews_user_data.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
@@ -47,6 +48,9 @@
 namespace previews {
 
 namespace {
+
+// A fake default page_id for testing.
+const uint64_t kDefaultPageId = 123456;
 
 // This method simulates the actual behavior of the passed in callback, which is
 // validated in other tests. For simplicity, offline, lite page, and server LoFi
@@ -172,11 +176,11 @@ class TestPreviewsUIService : public PreviewsUIService {
   const std::vector<base::Time>& decision_times() const {
     return decision_times_;
   }
-
   const std::vector<std::vector<PreviewsEligibilityReason>>&
   decision_passed_reasons() const {
     return decision_passed_reasons_;
   }
+  const std::vector<uint64_t>& decision_ids() const { return decision_ids_; }
 
   // Expose passed in LogPreviewsNavigation parameters.
   const std::vector<GURL>& navigation_urls() const { return navigation_urls_; }
@@ -216,12 +220,14 @@ class TestPreviewsUIService : public PreviewsUIService {
       const GURL& url,
       base::Time time,
       PreviewsType type,
-      std::vector<PreviewsEligibilityReason>&& passed_reasons) override {
+      std::vector<PreviewsEligibilityReason>&& passed_reasons,
+      uint64_t page_id) override {
     decision_reasons_.push_back(reason);
     decision_urls_.push_back(GURL(url));
     decision_times_.push_back(time);
     decision_types_.push_back(type);
     decision_passed_reasons_.push_back(std::move(passed_reasons));
+    decision_ids_.push_back(page_id);
   }
 
   // Passed in params for blacklist status events.
@@ -236,6 +242,7 @@ class TestPreviewsUIService : public PreviewsUIService {
   std::vector<PreviewsType> decision_types_;
   std::vector<base::Time> decision_times_;
   std::vector<std::vector<PreviewsEligibilityReason>> decision_passed_reasons_;
+  std::vector<uint64_t> decision_ids_;
 
   // Passed in LogPreviewsNavigation parameters.
   std::vector<GURL> navigation_urls_;
@@ -350,16 +357,22 @@ class PreviewsIODataTest : public testing::Test {
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest() const {
-    return CreateRequestWithURL(GURL("http://example.com"));
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequestWithURL(GURL("http://example.com"));
+    return request;
   }
 
   std::unique_ptr<net::URLRequest> CreateHttpsRequest() const {
-    return CreateRequestWithURL(GURL("https://secure.example.com"));
+    std::unique_ptr<net::URLRequest> request =
+        CreateRequestWithURL(GURL("https://secure.example.com"));
+    return request;
   }
 
   std::unique_ptr<net::URLRequest> CreateRequestWithURL(const GURL& url) const {
-    return context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
-                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+    std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
+        url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
+    PreviewsUserData::Create(request.get(), kDefaultPageId);
+    return request;
   }
 
   TestPreviewsIOData* io_data() { return &io_data_; }
@@ -651,6 +664,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiObeysHostBlackListFromServer) {
     std::unique_ptr<net::URLRequest> request =
         context()->CreateRequest(GURL(test.url), net::DEFAULT_PRIORITY, nullptr,
                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+    PreviewsUserData::Create(request.get(), 54321 /* page_id, not used */);
 
     EXPECT_EQ(test.expected_client_lofi_allowed,
               io_data()->ShouldAllowPreviewAtECT(
@@ -761,11 +775,11 @@ TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
 
 TEST_F(PreviewsIODataTest, LogPreviewDecisionMadePassInCorrectParams) {
   InitializeUIService();
-  PreviewsEligibilityReason reason(
+  const PreviewsEligibilityReason reason(
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
-  GURL url("http://www.url_a.com/url_a");
-  base::Time time = base::Time::Now();
-  PreviewsType type = PreviewsType::OFFLINE;
+  const GURL url("http://www.url_a.com/url_a");
+  const base::Time time = base::Time::Now();
+  const PreviewsType type = PreviewsType::OFFLINE;
   std::vector<PreviewsEligibilityReason> passed_reasons = {
       PreviewsEligibilityReason::NETWORK_NOT_SLOW,
       PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
@@ -773,15 +787,17 @@ TEST_F(PreviewsIODataTest, LogPreviewDecisionMadePassInCorrectParams) {
   };
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons(
       passed_reasons);
+  const uint64_t page_id = 1234;
 
   io_data()->LogPreviewDecisionMade(reason, url, time, type,
-                                    std::move(passed_reasons));
+                                    std::move(passed_reasons), page_id);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(ui_service()->decision_reasons(), ::testing::ElementsAre(reason));
   EXPECT_THAT(ui_service()->decision_urls(), ::testing::ElementsAre(url));
   EXPECT_THAT(ui_service()->decision_types(), ::testing::ElementsAre(type));
   EXPECT_THAT(ui_service()->decision_times(), ::testing::ElementsAre(time));
+  EXPECT_THAT(ui_service()->decision_ids(), ::testing::ElementsAre(page_id));
 
   auto actual_passed_reasons = ui_service()->decision_passed_reasons();
   EXPECT_EQ(1UL, actual_passed_reasons.size());

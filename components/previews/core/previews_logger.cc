@@ -86,17 +86,20 @@ std::string GetDescriptionForPreviewsDecision(PreviewsEligibilityReason reason,
 PreviewsLogger::MessageLog::MessageLog(const std::string& event_type,
                                        const std::string& event_description,
                                        const GURL& url,
-                                       base::Time time)
+                                       base::Time time,
+                                       uint64_t page_id)
     : event_type(event_type),
       event_description(event_description),
       url(url),
-      time(time) {}
+      time(time),
+      page_id(page_id) {}
 
 PreviewsLogger::MessageLog::MessageLog(const MessageLog& other)
     : event_type(other.event_type),
       event_description(other.event_description),
       url(other.url),
-      time(other.time) {}
+      time(other.time),
+      page_id(other.page_id) {}
 
 PreviewsLogger::PreviewsLogger() : blacklist_ignored_(false) {}
 
@@ -153,12 +156,13 @@ void PreviewsLogger::RemoveObserver(PreviewsLoggerObserver* observer) {
 void PreviewsLogger::LogMessage(const std::string& event_type,
                                 const std::string& event_description,
                                 const GURL& url,
-                                base::Time time) {
+                                base::Time time,
+                                uint64_t page_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Notify observers about the new MessageLog.
   for (auto& observer : observer_list_) {
     observer.OnNewMessageLogAdded(
-        MessageLog(event_type, event_description, url, time));
+        MessageLog(event_type, event_description, url, time, page_id));
   }
 }
 
@@ -168,9 +172,12 @@ void PreviewsLogger::LogPreviewNavigation(const GURL& url,
                                           base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(kMaximumNavigationLogs, navigations_logs_.size());
+  // TODO(thanhdle): Group navigation together with decisions logs.
+  // crbug.com/791778.
+  const uint64_t page_id = 0;  // Non grouped log message.
 
   std::string description = GetDescriptionForPreviewsNavigation(type, opt_out);
-  LogMessage(kPreviewNavigationEventType, description, url, time);
+  LogMessage(kPreviewNavigationEventType, description, url, time, page_id);
 
   // Pop out the oldest message when the list is full.
   if (navigations_logs_.size() >= kMaximumNavigationLogs) {
@@ -178,7 +185,7 @@ void PreviewsLogger::LogPreviewNavigation(const GURL& url,
   }
 
   navigations_logs_.emplace_back(kPreviewNavigationEventType, description, url,
-                                 time);
+                                 time, page_id);
 }
 
 void PreviewsLogger::LogPreviewDecisionMade(
@@ -186,7 +193,8 @@ void PreviewsLogger::LogPreviewDecisionMade(
     const GURL& url,
     base::Time time,
     PreviewsType type,
-    std::vector<PreviewsEligibilityReason>&& passed_reasons) {
+    std::vector<PreviewsEligibilityReason>&& passed_reasons,
+    uint64_t page_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(kMaximumDecisionLogs, decisions_logs_.size());
 
@@ -194,14 +202,15 @@ void PreviewsLogger::LogPreviewDecisionMade(
   for (auto decision : passed_reasons) {
     std::string decision_description = GetDescriptionForPreviewsDecision(
         decision, type, false /* final_reason */);
-    LogMessage(kPreviewDecisionMadeEventType, decision_description, url, time);
+    LogMessage(kPreviewDecisionMadeEventType, decision_description, url, time,
+               page_id);
     decisions_logs_.emplace_back(kPreviewDecisionMadeEventType,
-                                 decision_description, url, time);
+                                 decision_description, url, time, page_id);
   }
 
   std::string description =
       GetDescriptionForPreviewsDecision(reason, type, true /* final_reason */);
-  LogMessage(kPreviewDecisionMadeEventType, description, url, time);
+  LogMessage(kPreviewDecisionMadeEventType, description, url, time, page_id);
 
   // Pop out the older messages when the list is full.
   while (decisions_logs_.size() >= kMaximumDecisionLogs) {
@@ -209,7 +218,7 @@ void PreviewsLogger::LogPreviewDecisionMade(
   }
 
   decisions_logs_.emplace_back(kPreviewDecisionMadeEventType, description, url,
-                               time);
+                               time, page_id);
 }
 
 void PreviewsLogger::OnNewBlacklistedHost(const std::string& host,

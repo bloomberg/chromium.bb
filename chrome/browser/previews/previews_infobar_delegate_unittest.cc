@@ -130,7 +130,8 @@ class TestPreviewsLogger : public previews::PreviewsLogger {
   void LogMessage(const std::string& event_type,
                   const std::string& event_description,
                   const GURL& url,
-                  base::Time time) override {
+                  base::Time time,
+                  uint64_t page_id) override {
     event_type_ = event_type;
     event_description_ = event_description;
   }

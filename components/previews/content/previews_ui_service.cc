@@ -57,10 +57,11 @@ void PreviewsUIService::LogPreviewDecisionMade(
     const GURL& url,
     base::Time time,
     PreviewsType type,
-    std::vector<PreviewsEligibilityReason>&& passed_reasons) {
+    std::vector<PreviewsEligibilityReason>&& passed_reasons,
+    uint64_t page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   logger_->LogPreviewDecisionMade(reason, url, time, type,
-                                  std::move(passed_reasons));
+                                  std::move(passed_reasons), page_id);
 }
 
 void PreviewsUIService::OnNewBlacklistedHost(const std::string& host,

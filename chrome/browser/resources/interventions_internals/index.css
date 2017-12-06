@@ -116,9 +116,8 @@ nav {
 }
 
 table {
-  border-collapse: separate;
+  border: 0;
   font-size: 90%;
-  margin-top: 10px;
   max-height: 100px;
   table-layout: fixed;
   width: 100%;
@@ -129,9 +128,10 @@ table {
 }
 
 td {
-  border: 1px solid white;
+  border: 0;
   padding: 10px;
   text-align: left;
+  vertical-align: middle;
 }
 
 tr:nth-child(odd) td {
@@ -153,6 +153,7 @@ td.log-time {
 
 td.log-description {
   font-size: 80%;
+  vertical-align: center;
 }
 
 td.log-url {
@@ -198,6 +199,56 @@ td.log-url .url-tooltip::after {
   left: 50%;
   margin-left: -5px;
   position: absolute;
+}
+
+.expansion-row {
+  background: transparent;
+  border: 0;
+  margin-left: 20px;
+  padding: 0 0 0 15px;
+  width: 80%;
+}
+
+tr.expansion-row td {
+  background-color: silver;
+  border: 0;
+}
+
+tr.expansion-row td:nth-child(odd) {
+  background-color: silver;
+  border: 0;
+  padding: 0;
+}
+
+.hide {
+  display: none;
+}
+
+.expansion-logs-table {
+  border: 0;
+  border-spacing: 0;
+  color: black;
+}
+
+.expansion-logs-table tr {
+  color: black;
+}
+
+.expansion-logs-table tr:nth-child(odd) td {
+  background: rgb(240,248,255);
+  color: black;
+  padding: 10px;
+}
+
+.expansion-logs-table tr:nth-child(even) td {
+  background: rgb(220, 228, 235);
+  color: black;
+  padding: 10px;
+}
+
+.expansion-logs-table td {
+  background: silver;
+  color: black;
 }
 
 @media(min-device-width: 600px) {
@@ -259,6 +310,31 @@ td.log-url .url-tooltip::after {
   td.log-description {
     font-size: 100%;
   }
+}
+
+.more-details-button {
+  background: transparent;
+  border: 0;
+  float: right;
+  vertical-align: center;
+}
+
+i {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  vertical-align: center;
+}
+
+.down {
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.up {
+  -webkit-transform: rotate(-135deg);
+  transform: rotate(-135deg);
 }
 
 .error-header {

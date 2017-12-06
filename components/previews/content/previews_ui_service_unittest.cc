@@ -56,7 +56,8 @@ class TestPreviewsUIService : public PreviewsUIService {
 class TestPreviewsLogger : public PreviewsLogger {
  public:
   TestPreviewsLogger()
-      : navigation_opt_out_(false),
+      : decision_page_id_(0),
+        navigation_opt_out_(false),
         user_blacklisted_(false),
         blacklist_ignored_(false) {}
 
@@ -76,12 +77,14 @@ class TestPreviewsLogger : public PreviewsLogger {
       const GURL& url,
       base::Time time,
       PreviewsType type,
-      std::vector<PreviewsEligibilityReason>&& passed_reasons) override {
+      std::vector<PreviewsEligibilityReason>&& passed_reasons,
+      uint64_t page_id) override {
     decision_reason_ = reason;
     decision_url_ = GURL(url);
     decision_time_ = time;
     decision_type_ = type;
     decision_passed_reasons_ = std::move(passed_reasons);
+    decision_page_id_ = page_id;
   }
 
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
@@ -110,6 +113,7 @@ class TestPreviewsLogger : public PreviewsLogger {
       const {
     return decision_passed_reasons_;
   }
+  uint64_t decision_page_id() const { return decision_page_id_; }
 
   // Return the passed in LogPreviewNavigation parameters.
   GURL navigation_url() const { return navigation_url_; }
@@ -133,6 +137,7 @@ class TestPreviewsLogger : public PreviewsLogger {
   PreviewsType decision_type_;
   base::Time decision_time_;
   std::vector<PreviewsEligibilityReason> decision_passed_reasons_;
+  uint64_t decision_page_id_;
 
   // Passed in LogPreviewsNavigation parameters.
   GURL navigation_url_;
@@ -253,14 +258,17 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   };
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons_a(
       passed_reasons_a);
+  const uint64_t page_id_a = 1234;
 
   ui_service()->LogPreviewDecisionMade(reason_a, url_a, time_a, type_a,
-                                       std::move(passed_reasons_a));
+                                       std::move(passed_reasons_a), page_id_a);
 
   EXPECT_EQ(reason_a, logger_ptr_->decision_reason());
   EXPECT_EQ(url_a, logger_ptr_->decision_url());
   EXPECT_EQ(time_a, logger_ptr_->decision_time());
   EXPECT_EQ(type_a, logger_ptr_->decision_type());
+  EXPECT_EQ(expected_passed_reasons_a, logger_ptr_->decision_passed_reasons());
+  EXPECT_EQ(page_id_a, logger_ptr_->decision_page_id());
 
   auto actual_passed_reasons_a = logger_ptr_->decision_passed_reasons();
   EXPECT_EQ(3UL, actual_passed_reasons_a.size());
@@ -279,14 +287,16 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   };
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons_b(
       passed_reasons_b);
+  const uint64_t page_id_b = 4321;
 
   ui_service()->LogPreviewDecisionMade(reason_b, url_b, time_b, type_b,
-                                       std::move(passed_reasons_b));
+                                       std::move(passed_reasons_b), page_id_b);
 
   EXPECT_EQ(reason_b, logger_ptr_->decision_reason());
   EXPECT_EQ(url_b, logger_ptr_->decision_url());
   EXPECT_EQ(type_b, logger_ptr_->decision_type());
   EXPECT_EQ(time_b, logger_ptr_->decision_time());
+  EXPECT_EQ(page_id_b, logger_ptr_->decision_page_id());
 
   auto actual_passed_reasons_b = logger_ptr_->decision_passed_reasons();
   EXPECT_EQ(2UL, actual_passed_reasons_b.size());

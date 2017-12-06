@@ -37,6 +37,10 @@ struct MessageLog {
 
   // The time when the event happened in millisecond since Unix epoch.
   int64 time;
+
+  // The ID associated with the request, for grouping log messages in the UI. If
+  // |id| is 0, then they will not be grouped, since pageId values start at 1.
+  uint64 page_id;
 };
 
 

@@ -18,6 +18,7 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
+#include "components/previews/core/previews_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
@@ -158,12 +159,13 @@ void PreviewsIOData::LogPreviewDecisionMade(
     const GURL& url,
     base::Time time,
     PreviewsType type,
-    std::vector<PreviewsEligibilityReason>&& passed_reasons) const {
+    std::vector<PreviewsEligibilityReason>&& passed_reasons,
+    uint64_t page_id) const {
   LogPreviewsEligibilityReason(reason, type);
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsUIService::LogPreviewDecisionMade,
                             previews_ui_service_, reason, url, time, type,
-                            base::Passed(std::move(passed_reasons))));
+                            base::Passed(std::move(passed_reasons)), page_id));
 }
 
 void PreviewsIOData::AddPreviewNavigation(const GURL& url,
@@ -209,10 +211,11 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
   }
 
   std::vector<PreviewsEligibilityReason> passed_reasons;
+  uint64_t page_id = PreviewsUserData::GetData(request)->page_id();
   if (is_enabled_callback_.is_null() || !previews_black_list_) {
     LogPreviewDecisionMade(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
                            request.url(), base::Time::Now(), type,
-                           std::move(passed_reasons));
+                           std::move(passed_reasons), page_id);
     return false;
   }
   passed_reasons.push_back(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
@@ -227,7 +230,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
         request.url(), type, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type,
-                             std::move(passed_reasons));
+                             std::move(passed_reasons), page_id);
       return false;
     }
   }
@@ -241,7 +244,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
             net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, request.url(),
-          base::Time::Now(), type, std::move(passed_reasons));
+          base::Time::Now(), type, std::move(passed_reasons), page_id);
       return false;
     }
     passed_reasons.push_back(
@@ -251,7 +254,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
         effective_connection_type_threshold) {
       LogPreviewDecisionMade(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
                              request.url(), base::Time::Now(), type,
-                             std::move(passed_reasons));
+                             std::move(passed_reasons), page_id);
       return false;
     }
     passed_reasons.push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
@@ -264,7 +267,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
           (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE)) {
     LogPreviewDecisionMade(PreviewsEligibilityReason::RELOAD_DISALLOWED,
                            request.url(), base::Time::Now(), type,
-                           std::move(passed_reasons));
+                           std::move(passed_reasons), page_id);
     return false;
   }
   passed_reasons.push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
@@ -276,7 +279,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
       host_blacklist_from_server.end()) {
     LogPreviewDecisionMade(
         PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER, request.url(),
-        base::Time::Now(), type, std::move(passed_reasons));
+        base::Time::Now(), type, std::move(passed_reasons), page_id);
     return false;
   }
   passed_reasons.push_back(
@@ -290,7 +293,8 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
           !previews_opt_guide_->IsWhitelisted(request, type)) {
         LogPreviewDecisionMade(
             PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
-            request.url(), base::Time::Now(), type, std::move(passed_reasons));
+            request.url(), base::Time::Now(), type, std::move(passed_reasons),
+            page_id);
         return false;
       }
       passed_reasons.push_back(
@@ -300,13 +304,15 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
       // but with qualified eligibility reason.
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS,
-          request.url(), base::Time::Now(), type, std::move(passed_reasons));
+          request.url(), base::Time::Now(), type, std::move(passed_reasons),
+          page_id);
       return true;
     }
   }
 
   LogPreviewDecisionMade(PreviewsEligibilityReason::ALLOWED, request.url(),
-                         base::Time::Now(), type, std::move(passed_reasons));
+                         base::Time::Now(), type, std::move(passed_reasons),
+                         page_id);
   return true;
 }
 
