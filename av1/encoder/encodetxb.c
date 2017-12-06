@@ -2506,7 +2506,6 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
   uint8_t best_eob = 0;
-  const int coeff_ctx = combine_entropy_contexts(*a, *l);
   RD_STATS best_rd_stats;
   TX_TYPE tx_type;
 
@@ -2532,10 +2531,10 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     av1_invalid_rd_stats(&this_rd_stats);
 #if DISABLE_TRELLISQ_SEARCH
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    coeff_ctx, AV1_XFORM_QUANT_B);
+                    AV1_XFORM_QUANT_B);
 #else
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    coeff_ctx, AV1_XFORM_QUANT_FP);
+                    AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l, 1);
 #endif
@@ -2569,10 +2568,10 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 // can use it for prediction.
 #if DISABLE_TRELLISQ_SEARCH
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    coeff_ctx, AV1_XFORM_QUANT_B);
+                    AV1_XFORM_QUANT_B);
 #else
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    coeff_ctx, AV1_XFORM_QUANT_FP);
+                    AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l, 1);
 #endif

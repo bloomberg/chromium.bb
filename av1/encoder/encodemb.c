@@ -165,7 +165,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 #endif  // CONFIG_AOM_QM
 #if CONFIG_NEW_QUANT
-  int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
+  int dq = get_dq_profile(mb->qindex, ref, plane_type);
   const dequant_val_type_nuq *dequant_val = p->dequant_val_nuq_QTX[dq];
 #endif  // CONFIG_NEW_QUANT
   int64_t rd_cost0, rd_cost1;
@@ -480,8 +480,7 @@ static const fwdTxfmFunc fwd_txfm_func[2] = { av1_fwd_txfm,
 
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
-                     TX_SIZE tx_size, int ctx,
-                     AV1_XFORM_QUANT xform_quant_idx) {
+                     TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 #if !CONFIG_DIST_8X8
@@ -542,7 +541,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif
   qparam.tx_size = tx_size;
 #if CONFIG_NEW_QUANT
-  qparam.dq = get_dq_profile_from_ctx(x->qindex, ctx, is_inter, plane_type);
+  qparam.dq = get_dq_profile(x->qindex, is_inter, plane_type);
 #endif  // CONFIG_NEW_QUANT
 #if CONFIG_AOM_QM
   qparam.qmatrix = qmatrix;
@@ -575,8 +574,6 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_HIGHBITDEPTH
   }
 #endif  // CONFIG_DIST_8X8
-
-  (void)ctx;
 
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;
@@ -621,7 +618,6 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   AV1_COMMON *cm = args->cm;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  int ctx;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -634,14 +630,13 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
-  ctx = get_entropy_context(tx_size, a, l);
 
   // Assert not magic number (uninitialized).
   assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
   if (x->blk_skip[plane][blk_row * bw + blk_col] == 0) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    ctx, AV1_XFORM_QUANT_FP);
+                    AV1_XFORM_QUANT_FP);
   } else {
     p->eobs[block] = 0;
   }
@@ -734,12 +729,11 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   TxfmParam txfm_param;
   uint8_t *dst;
-  int ctx = 0;
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
 
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  ctx, AV1_XFORM_QUANT_B);
+                  AV1_XFORM_QUANT_B);
 
   if (p->eobs[block] > 0) {
     txfm_param.bd = xd->bd;
@@ -915,15 +909,14 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   const ENTROPY_CONTEXT *a = &args->ta[blk_col];
   const ENTROPY_CONTEXT *l = &args->tl[blk_row];
-  int ctx = combine_entropy_contexts(*a, *l);
   if (args->enable_optimize_b) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    ctx, AV1_XFORM_QUANT_FP);
+                    AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
                    a, l, CONFIG_LV_MAP);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    ctx, AV1_XFORM_QUANT_B);
+                    AV1_XFORM_QUANT_B);
   }
 
   av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, dst,

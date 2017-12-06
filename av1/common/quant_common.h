@@ -94,26 +94,23 @@ static INLINE int qindex_to_qrange(int qindex) {
   return (qindex < 140 ? 1 : 0);
 }
 
-static INLINE int get_dq_profile_from_ctx(int qindex, int q_ctx, int is_inter,
-                                          PLANE_TYPE plane_type) {
+static INLINE int get_dq_profile(int qindex, int is_inter,
+                                 PLANE_TYPE plane_type) {
   // intra/inter, Y/UV, ctx, qrange
-  static const int
-      def_dq_profile_lookup[REF_TYPES][PLANE_TYPES][COEFF_CONTEXTS0]
-                           [QUANT_RANGES] = {
-                             {
-                                 // intra
-                                 { { 2, 1 }, { 2, 1 }, { 2, 1 } },  // Y
-                                 { { 3, 1 }, { 3, 1 }, { 3, 1 } },  // UV
-                             },
-                             {
-                                 // inter
-                                 { { 3, 1 }, { 2, 1 }, { 2, 1 } },  // Y
-                                 { { 3, 1 }, { 3, 1 }, { 3, 1 } },  // UV
-                             },
-                           };
+  static const int dq_profile_lookup[REF_TYPES][PLANE_TYPES][QUANT_RANGES] = {
+    {
+        // intra
+        { 2, 1 },  // Y
+        { 3, 1 },  // UV
+    },
+    {
+        // inter
+        { 2, 1 },  // Y
+        { 3, 1 },  // UV
+    },
+  };
   if (!qindex) return 0;  // lossless
-  return def_dq_profile_lookup[is_inter][plane_type][q_ctx]
-                              [qindex_to_qrange(qindex)];
+  return dq_profile_lookup[is_inter][plane_type][qindex_to_qrange(qindex)];
 }
 #endif  // CONFIG_NEW_QUANT
 

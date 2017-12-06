@@ -2077,14 +2077,13 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 
 #if !CONFIG_TXK_SEL
-  // full forward transform and quantization
-  const int coeff_ctx = combine_entropy_contexts(*a, *l);
+// full forward transform and quantization
 #if DISABLE_TRELLISQ_SEARCH
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  coeff_ctx, AV1_XFORM_QUANT_B);
+                  AV1_XFORM_QUANT_B);
 #else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  coeff_ctx, AV1_XFORM_QUANT_FP);
+                  AV1_XFORM_QUANT_FP);
 
 // TX-domain results need to shift down to Q2/D10 to match pixel
 // domain distortion values which are in Q2^2
@@ -3763,11 +3762,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
 #if DISABLE_TRELLISQ_SEARCH
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  coeff_ctx, AV1_XFORM_QUANT_B);
+                  AV1_XFORM_QUANT_B);
 
 #else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  coeff_ctx, AV1_XFORM_QUANT_FP);
+                  AV1_XFORM_QUANT_FP);
 
 // TX-domain results need to shift down to Q2/D10 to match pixel
 // domain distortion values which are in Q2^2

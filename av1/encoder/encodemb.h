@@ -48,7 +48,7 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
 void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
-                     TX_SIZE tx_size, int ctx, AV1_XFORM_QUANT xform_quant_idx);
+                     TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx);
 
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
                    int blk_col, int block, BLOCK_SIZE plane_bsize,
