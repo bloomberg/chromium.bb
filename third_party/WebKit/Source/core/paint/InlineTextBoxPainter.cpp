@@ -1055,7 +1055,7 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
 
   Color text_color =
       LayoutTheme::GetTheme().PlatformTextSearchColor(marker.IsActiveMatch());
-  if (style.VisitedDependentColor(CSSPropertyColor) == text_color)
+  if (style.VisitedDependentColor(GetCSSPropertyColor()) == text_color)
     return;
 
   const SimpleFontData* font_data = font.PrimaryFont();

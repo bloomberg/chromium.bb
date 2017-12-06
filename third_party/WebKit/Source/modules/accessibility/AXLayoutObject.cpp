@@ -882,7 +882,7 @@ RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
       continue;
 
     Color current_color =
-        style->VisitedDependentColor(CSSPropertyBackgroundColor);
+        style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
     blended_color = current_color.Blend(blended_color);
     // Continue blending until we get no transparency.
     if (!blended_color.HasAlpha())
@@ -912,7 +912,7 @@ RGBA32 AXLayoutObject::GetColor() const {
   if (!style)
     return AXNodeObject::GetColor();
 
-  Color color = style->VisitedDependentColor(CSSPropertyColor);
+  Color color = style->VisitedDependentColor(GetCSSPropertyColor());
   return color.Rgb();
 }
 

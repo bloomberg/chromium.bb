@@ -2729,7 +2729,7 @@ float CompositedLayerMapping::CompositingOpacity(
 
 Color CompositedLayerMapping::LayoutObjectBackgroundColor() const {
   const auto& object = GetLayoutObject();
-  auto background_color = object.ResolveColor(CSSPropertyBackgroundColor);
+  auto background_color = object.ResolveColor(GetCSSPropertyBackgroundColor());
   if (object.IsLayoutView() && object.GetDocument().IsInMainFrame()) {
     return ToLayoutView(object).GetFrameView()->BaseBackgroundColor().Blend(
         background_color);

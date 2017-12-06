@@ -216,7 +216,7 @@ class LayoutItem {
                                                           flags);
   }
 
-  Color ResolveColor(CSSPropertyID color_property) const {
+  Color ResolveColor(const CSSProperty& color_property) const {
     return layout_object_->ResolveColor(color_property);
   }
 

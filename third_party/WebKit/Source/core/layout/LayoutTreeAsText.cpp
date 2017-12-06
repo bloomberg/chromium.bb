@@ -171,27 +171,28 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
                 ToLayoutFileUploadControl(&o)->FileTextValue());
 
     if (o.Parent()) {
-      Color color = o.ResolveColor(CSSPropertyColor);
-      if (o.Parent()->ResolveColor(CSSPropertyColor) != color)
+      Color color = o.ResolveColor(GetCSSPropertyColor());
+      if (o.Parent()->ResolveColor(GetCSSPropertyColor()) != color)
         ts << " [color=" << color << "]";
 
       // Do not dump invalid or transparent backgrounds, since that is the
       // default.
-      Color background_color = o.ResolveColor(CSSPropertyBackgroundColor);
-      if (o.Parent()->ResolveColor(CSSPropertyBackgroundColor) !=
+      Color background_color = o.ResolveColor(GetCSSPropertyBackgroundColor());
+      if (o.Parent()->ResolveColor(GetCSSPropertyBackgroundColor()) !=
               background_color &&
           background_color.Rgb())
         ts << " [bgcolor=" << background_color << "]";
 
-      Color text_fill_color = o.ResolveColor(CSSPropertyWebkitTextFillColor);
-      if (o.Parent()->ResolveColor(CSSPropertyWebkitTextFillColor) !=
+      Color text_fill_color =
+          o.ResolveColor(GetCSSPropertyWebkitTextFillColor());
+      if (o.Parent()->ResolveColor(GetCSSPropertyWebkitTextFillColor()) !=
               text_fill_color &&
           text_fill_color != color && text_fill_color.Rgb())
         ts << " [textFillColor=" << text_fill_color << "]";
 
       Color text_stroke_color =
-          o.ResolveColor(CSSPropertyWebkitTextStrokeColor);
-      if (o.Parent()->ResolveColor(CSSPropertyWebkitTextStrokeColor) !=
+          o.ResolveColor(GetCSSPropertyWebkitTextStrokeColor());
+      if (o.Parent()->ResolveColor(GetCSSPropertyWebkitTextStrokeColor()) !=
               text_stroke_color &&
           text_stroke_color != color && text_stroke_color.Rgb())
         ts << " [textStrokeColor=" << text_stroke_color << "]";
@@ -216,7 +217,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
       } else {
         ts << " (" << box.BorderTop() << "px ";
         PrintBorderStyle(ts, o.Style()->BorderTopStyle());
-        ts << o.ResolveColor(CSSPropertyBorderTopColor) << ")";
+        ts << o.ResolveColor(GetCSSPropertyBorderTopColor()) << ")";
       }
 
       if (!o.Style()->BorderRightEquals(prev_border)) {
@@ -226,7 +227,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
         } else {
           ts << " (" << box.BorderRight() << "px ";
           PrintBorderStyle(ts, o.Style()->BorderRightStyle());
-          ts << o.ResolveColor(CSSPropertyBorderRightColor) << ")";
+          ts << o.ResolveColor(GetCSSPropertyBorderRightColor()) << ")";
         }
       }
 
@@ -237,7 +238,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
         } else {
           ts << " (" << box.BorderBottom() << "px ";
           PrintBorderStyle(ts, o.Style()->BorderBottomStyle());
-          ts << o.ResolveColor(CSSPropertyBorderBottomColor) << ")";
+          ts << o.ResolveColor(GetCSSPropertyBorderBottomColor()) << ")";
         }
       }
 
@@ -248,7 +249,7 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
         } else {
           ts << " (" << box.BorderLeft() << "px ";
           PrintBorderStyle(ts, o.Style()->BorderLeftStyle());
-          ts << o.ResolveColor(CSSPropertyBorderLeftColor) << ")";
+          ts << o.ResolveColor(GetCSSPropertyBorderLeftColor()) << ")";
         }
       }
 

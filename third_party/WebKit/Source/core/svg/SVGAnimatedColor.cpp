@@ -48,7 +48,7 @@ SVGPropertyBase* SVGColorProperty::CloneForAnimation(const String&) const {
 static inline Color FallbackColorForCurrentColor(SVGElement* target_element) {
   DCHECK(target_element);
   if (LayoutObject* target_layout_object = target_element->GetLayoutObject())
-    return target_layout_object->ResolveColor(CSSPropertyColor);
+    return target_layout_object->ResolveColor(GetCSSPropertyColor());
   return Color::kTransparent;
 }
 

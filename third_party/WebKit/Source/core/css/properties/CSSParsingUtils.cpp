@@ -2316,6 +2316,17 @@ bool IsValidPropertyList(const CSSValueList& value_list) {
   return true;
 }
 
+CSSValue* ConsumeBorderColorSide(CSSParserTokenRange& range,
+                                 const CSSParserContext& context,
+                                 const CSSParserLocalContext& local_context) {
+  CSSPropertyID shorthand = local_context.CurrentShorthand();
+  bool allow_quirky_colors =
+      IsQuirksModeBehavior(context.Mode()) &&
+      (shorthand == CSSPropertyInvalid || shorthand == CSSPropertyBorderColor);
+  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode(),
+                                                allow_quirky_colors);
+}
+
 CSSValue* ConsumeBorderWidth(CSSParserTokenRange& range,
                              CSSParserMode css_parser_mode,
                              CSSPropertyParserHelpers::UnitlessQuirk unitless) {
