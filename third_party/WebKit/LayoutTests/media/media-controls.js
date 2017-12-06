@@ -286,3 +286,51 @@ function checkButtonNotHasClass(button, className) {
 function checkControlsClassName(videoElement, className) {
   assert_equals(window.internals.shadowRoot(videoElement).firstChild.className, className);
 }
+
+function mediaControlsOverlayPlayButton(videoElement) {
+  return mediaControlsButton(videoElement, 'overlay-play-button');
+}
+
+function mediaControlsOverlayPlayButtonInternal(videoElement) {
+  var controlID = '-internal-media-controls-overlay-play-button-internal';
+  var element = mediaControlsElement(
+      window.internals.shadowRoot(
+          mediaControlsOverlayPlayButton(videoElement)).firstChild, controlID);
+  if (!element)
+    throw 'Failed to find the internal overlay play button';
+  return element;
+}
+
+function doubleTapAtCoordinates(x, y, timeout) {
+  if (timeout == undefined)
+    timeout = 100;
+
+  singleTapAtCoordinates(x, y);
+
+  setTimeout(() => {
+    singleTapAtCoordinates(x, y);
+  }, timeout);
+}
+
+function singleTapAtCoordinates(xPos, yPos) {
+  chrome.gpuBenchmarking.pointerActionSequence([
+    {
+      source: 'touch',
+      actions: [
+        { name: 'pointerDown', x: xPos, y: yPos },
+        { name: 'pointerUp' }
+      ]
+    }
+  ]);
+}
+
+function enableDoubleTapToJumpForTest(t) {
+  var doubleTapToJumpOnVideoEnabledValue =
+      internals.runtimeFlags.doubleTapToJumpOnVideoEnabled;
+  internals.runtimeFlags.doubleTapToJumpOnVideoEnabled = true;
+
+  t.add_cleanup(() => {
+    internals.runtimeFlags.doubleTapToJumpOnVideoEnabled =
+        doubleTapToJumpOnVideoEnabledValue;
+  });
+}

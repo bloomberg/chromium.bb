@@ -6,6 +6,7 @@
 #define MediaControlOverlayPlayButtonElement_h
 
 #include "modules/media_controls/elements/MediaControlInputElement.h"
+#include "platform/Timer.h"
 
 namespace blink {
 
@@ -29,8 +30,17 @@ class MediaControlOverlayPlayButtonElement final
   const char* GetNameForHistograms() const override;
 
  private:
+  void TapTimerFired(TimerBase*);
+
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
+
+  void MaybePlayPause();
+  void MaybeJump(int);
+
+  void HandlePlayPauseEvent(Event*, WTF::TimeDelta);
+
+  TaskRunnerTimer<MediaControlOverlayPlayButtonElement> tap_timer_;
 
   Member<HTMLDivElement> internal_button_;
 };
