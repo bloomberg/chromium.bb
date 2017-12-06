@@ -188,22 +188,6 @@ if (enable_mojom_typemapping) {
 #   cpp_only (optional)
 #       If set to true, only the C++ bindings targets will be generated.
 #
-#   use_new_js_bindings (optional)
-#       If set to true, the generated JS code will use the new module loading
-#       approach and the core API exposed by Web IDL.
-#       Default value is true.
-#       TODO(yzshen): Convert all users to use new JS bindings and remove the
-#       old mode.
-#
-#   js_bindings_mode (optional)
-#       |js_bindings_mode| and |use_new_js_bindings| are mutually exclusive. You
-#       can only specify at most one of them.
-#       - "new" (default): generate only the new-style JS bindings;
-#       - "both": generate both the old- and new-style JS bindings;
-#       - "old": generate only the old-style JS bindings.
-#       TODO(yzshen): Convert all users to use new JS bindings and remove the
-#       old mode.
-#
 #   support_lazy_serialization (optional)
 #       If set to |true|, generated C++ bindings will effectively prefer to
 #       transmit messages in an unserialized form when going between endpoints
@@ -280,11 +264,6 @@ template("mojom") {
           defined(invoker.public_deps),
       "\"sources\" or \"deps\" must be defined for the $target_name template.")
 
-  assert(!defined(invoker.use_new_js_bindings) ||
-             !defined(invoker.js_bindings_mode),
-         "You shouldn't specify both \"use_new_js_bindings\" and " +
-             "\"js_bindings_mode\".")
-
   if (defined(invoker.export_class_attribute) ||
       defined(invoker.export_define) || defined(invoker.export_header)) {
     assert(defined(invoker.export_class_attribute))
@@ -310,17 +289,6 @@ template("mojom") {
     assert(defined(invoker.overridden_deps_blink))
     assert(defined(invoker.component_deps_blink))
   }
-
-  js_bindings_mode = "new"
-  if (defined(invoker.js_bindings_mode)) {
-    js_bindings_mode = invoker.js_bindings_mode
-  }
-  if (defined(invoker.use_new_js_bindings) && !invoker.use_new_js_bindings) {
-    js_bindings_mode = "old"
-  }
-  assert(js_bindings_mode == "new" || js_bindings_mode == "both" ||
-             js_bindings_mode == "old",
-         "Invalid js_bindings_mode value.")
 
   all_deps = []
   if (defined(invoker.deps)) {
@@ -994,11 +962,6 @@ template("mojom") {
         args += [
           "-g",
           "javascript",
-        ]
-
-        args += [
-          "--js_bindings_mode",
-          js_bindings_mode,
         ]
       }
     }

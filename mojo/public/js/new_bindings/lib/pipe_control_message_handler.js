@@ -12,12 +12,12 @@
       throw error;
     }
 
-    if (message.getName() != mojo.pipeControl2.kRunOrClosePipeMessageId) {
+    if (message.getName() != mojo.pipeControl.kRunOrClosePipeMessageId) {
       throw new Error("Control message name is not kRunOrClosePipeMessageId");
     }
 
     // Validate payload.
-    error = mojo.pipeControl2.RunOrClosePipeMessageParams.validate(
+    error = mojo.pipeControl.RunOrClosePipeMessageParams.validate(
         messageValidator, message.getHeaderNumBytes());
     if (error != internal.validationError.NONE) {
       throw error;
@@ -27,7 +27,7 @@
   function runOrClosePipe(message, delegate) {
     var reader = new internal.MessageReader(message);
     var runOrClosePipeMessageParams = reader.decodeStruct(
-        mojo.pipeControl2.RunOrClosePipeMessageParams);
+        mojo.pipeControl.RunOrClosePipeMessageParams);
     var event = runOrClosePipeMessageParams.input
         .peerAssociatedEndpointClosedEvent;
     return delegate.onPeerAssociatedEndpointClosed(event.id,

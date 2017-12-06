@@ -390,7 +390,6 @@
     'dbus_unittests': {},
     'filesystem_service_unittests': {},
     'leveldb_service_unittests': {},
-    'mojo_js_unittests': {},
     'site_per_process_browser_tests': {
       'args': [
         '--site-per-process',

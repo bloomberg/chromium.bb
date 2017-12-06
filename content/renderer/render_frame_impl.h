@@ -483,8 +483,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetSelectedText(const base::string16& selection_text,
                        size_t offset,
                        const gfx::Range& range) override;
-  void EnsureMojoBuiltinsAreAvailable(v8::Isolate* isolate,
-                                      v8::Local<v8::Context> context) override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
   void DetachDevToolsForTest() override;

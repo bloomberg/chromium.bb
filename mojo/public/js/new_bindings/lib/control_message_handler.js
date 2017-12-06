@@ -12,12 +12,12 @@
       throw error;
     }
 
-    if (message.getName() != mojo.interfaceControl2.kRunMessageId) {
+    if (message.getName() != mojo.interfaceControl.kRunMessageId) {
       throw new Error("Control message name is not kRunMessageId");
     }
 
     // Validate payload.
-    error = mojo.interfaceControl2.RunMessageParams.validate(messageValidator,
+    error = mojo.interfaceControl.RunMessageParams.validate(messageValidator,
         message.getHeaderNumBytes());
     if (error != internal.validationError.NONE) {
       throw error;
@@ -31,12 +31,12 @@
       throw error;
     }
 
-    if (message.getName() != mojo.interfaceControl2.kRunOrClosePipeMessageId) {
+    if (message.getName() != mojo.interfaceControl.kRunOrClosePipeMessageId) {
       throw new Error("Control message name is not kRunOrClosePipeMessageId");
     }
 
     // Validate payload.
-    error = mojo.interfaceControl2.RunOrClosePipeMessageParams.validate(
+    error = mojo.interfaceControl.RunOrClosePipeMessageParams.validate(
         messageValidator, message.getHeaderNumBytes());
     if (error != internal.validationError.NONE) {
       throw error;
@@ -46,7 +46,7 @@
   function runOrClosePipe(message, interfaceVersion) {
     var reader = new internal.MessageReader(message);
     var runOrClosePipeMessageParams = reader.decodeStruct(
-        mojo.interfaceControl2.RunOrClosePipeMessageParams);
+        mojo.interfaceControl.RunOrClosePipeMessageParams);
     return interfaceVersion >=
         runOrClosePipeMessageParams.input.requireVersion.version;
   }
@@ -54,35 +54,35 @@
   function run(message, responder, interfaceVersion) {
     var reader = new internal.MessageReader(message);
     var runMessageParams =
-        reader.decodeStruct(mojo.interfaceControl2.RunMessageParams);
+        reader.decodeStruct(mojo.interfaceControl.RunMessageParams);
     var runOutput = null;
 
     if (runMessageParams.input.queryVersion) {
-      runOutput = new mojo.interfaceControl2.RunOutput();
+      runOutput = new mojo.interfaceControl.RunOutput();
       runOutput.queryVersionResult = new
-          mojo.interfaceControl2.QueryVersionResult(
+          mojo.interfaceControl.QueryVersionResult(
               {'version': interfaceVersion});
     }
 
     var runResponseMessageParams = new
-        mojo.interfaceControl2.RunResponseMessageParams();
+        mojo.interfaceControl.RunResponseMessageParams();
     runResponseMessageParams.output = runOutput;
 
-    var messageName = mojo.interfaceControl2.kRunMessageId;
+    var messageName = mojo.interfaceControl.kRunMessageId;
     var payloadSize =
-        mojo.interfaceControl2.RunResponseMessageParams.encodedSize;
+        mojo.interfaceControl.RunResponseMessageParams.encodedSize;
     var requestID = reader.requestID;
     var builder = new internal.MessageV1Builder(messageName,
         payloadSize, internal.kMessageIsResponse, requestID);
-    builder.encodeStruct(mojo.interfaceControl2.RunResponseMessageParams,
+    builder.encodeStruct(mojo.interfaceControl.RunResponseMessageParams,
                          runResponseMessageParams);
     responder.accept(builder.finish());
     return true;
   }
 
   function isInterfaceControlMessage(message) {
-    return message.getName() == mojo.interfaceControl2.kRunMessageId ||
-           message.getName() == mojo.interfaceControl2.kRunOrClosePipeMessageId;
+    return message.getName() == mojo.interfaceControl.kRunMessageId ||
+           message.getName() == mojo.interfaceControl.kRunOrClosePipeMessageId;
   }
 
   function ControlMessageHandler(interfaceVersion) {

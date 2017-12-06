@@ -11,13 +11,10 @@ namespace content {
 // to renderers.
 enum BindingsPolicy {
   // HTML-based UI bindings that allows the JS content to send JSON-encoded
-  // data back to the browser process and to access Mojo system API and
-  // ServiceRegistry modules. The system API modules are defined in
-  // //mojo/public/js and provide the ability to create Mojo primitives such as
-  // message and data pipes. The Connector and InterfaceProvider modules (see
-  // //content/renderer/mojo) in turn allows these Mojo primitives to be used to
-  // connect to named services exposed by the browser. These bindings should not
-  // be exposed to normal web contents.
+  // data back to the browser process and to access Mojo system API. The Mojo
+  // system API provides the ability to create Mojo primitives such as message
+  // and data pipes, as well as connecting to named services exposed by the
+  // browser. These bindings should not be exposed to normal web contents.
   BINDINGS_POLICY_WEB_UI = 1 << 0,
   // DOM automation bindings that allows the JS content to send JSON-encoded
   // data back to automation in the parent process.  (By default this isn't

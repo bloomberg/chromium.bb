@@ -107,7 +107,6 @@ jumbo_source_set("browser") {
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/js",
     "//mojo/public/js:resources",
     "//net",
     "//net:extras",

@@ -6,42 +6,7 @@ import("//tools/grit/grit_rule.gni")
 
 interfaces_bindings_gen_dir = "$root_gen_dir/mojo/public/interfaces/bindings"
 
-source_set("js") {
-  sources = [
-    "constants.cc",
-    "constants.h",
-  ]
-}
-
-group("bindings") {
-  data = [
-    "$interfaces_bindings_gen_dir/interface_control_messages.mojom.js",
-    "$interfaces_bindings_gen_dir/pipe_control_messages.mojom.js",
-    "associated_bindings.js",
-    "bindings.js",
-    "buffer.js",
-    "codec.js",
-    "connector.js",
-    "core.js",
-    "interface_types.js",
-    "lib/control_message_handler.js",
-    "lib/control_message_proxy.js",
-    "lib/interface_endpoint_client.js",
-    "lib/interface_endpoint_handle.js",
-    "lib/pipe_control_message_handler.js",
-    "lib/pipe_control_message_proxy.js",
-    "router.js",
-    "support.js",
-    "threading.js",
-    "unicode.js",
-    "validator.js",
-  ]
-
-  public_deps = [
-    "//mojo/public/interfaces/bindings:bindings_js__generator",
-  ]
-}
-
+# TODO(yzshen): Rename to "bindings" and move the files accordingly.
 action("new_bindings") {
   new_bindings_js_files = [
     # This must be the first file in the list, because it initializes global
@@ -64,8 +29,8 @@ action("new_bindings") {
     "new_bindings/validator.js",
 
     # These two needs to refer to codec.js.
-    "$interfaces_bindings_gen_dir/new_bindings/interface_control_messages.mojom.js",
-    "$interfaces_bindings_gen_dir/new_bindings/pipe_control_messages.mojom.js",
+    "$interfaces_bindings_gen_dir/interface_control_messages.mojom.js",
+    "$interfaces_bindings_gen_dir/pipe_control_messages.mojom.js",
   ]
   compiled_file = "$target_gen_dir/mojo_bindings.js"
 
@@ -82,19 +47,7 @@ action("new_bindings") {
   args += [ rebase_path(compiled_file, root_build_dir) ]
 
   deps = [
-    "//mojo/public/interfaces/bindings:new_bindings_js__generator",
-  ]
-}
-
-group("tests") {
-  testonly = true
-
-  data = [
-    "tests/core_unittest.js",
-  ]
-
-  public_deps = [
-    ":bindings",
+    "//mojo/public/interfaces/bindings:bindings_js__generator",
   ]
 }
 

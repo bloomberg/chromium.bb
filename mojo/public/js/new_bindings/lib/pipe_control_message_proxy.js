@@ -7,15 +7,15 @@
 
   function constructRunOrClosePipeMessage(runOrClosePipeInput) {
     var runOrClosePipeMessageParams = new
-        mojo.pipeControl2.RunOrClosePipeMessageParams();
+        mojo.pipeControl.RunOrClosePipeMessageParams();
     runOrClosePipeMessageParams.input = runOrClosePipeInput;
 
-    var messageName = mojo.pipeControl2.kRunOrClosePipeMessageId;
+    var messageName = mojo.pipeControl.kRunOrClosePipeMessageId;
     var payloadSize =
-        mojo.pipeControl2.RunOrClosePipeMessageParams.encodedSize;
+        mojo.pipeControl.RunOrClosePipeMessageParams.encodedSize;
 
     var builder = new internal.MessageV0Builder(messageName, payloadSize);
-    builder.encodeStruct(mojo.pipeControl2.RunOrClosePipeMessageParams,
+    builder.encodeStruct(mojo.pipeControl.RunOrClosePipeMessageParams,
                          runOrClosePipeMessageParams);
     var message = builder.finish();
     message.setInterfaceId(internal.kInvalidInterfaceId);
@@ -34,14 +34,14 @@
 
   PipeControlMessageProxy.prototype.constructPeerEndpointClosedMessage =
       function(interfaceId, reason) {
-    var event = new mojo.pipeControl2.PeerAssociatedEndpointClosedEvent();
+    var event = new mojo.pipeControl.PeerAssociatedEndpointClosedEvent();
     event.id = interfaceId;
     if (reason) {
-      event.disconnectReason = new mojo.pipeControl2.DisconnectReason({
+      event.disconnectReason = new mojo.pipeControl.DisconnectReason({
           customReason: reason.customReason,
           description: reason.description});
     }
-    var runOrClosePipeInput = new mojo.pipeControl2.RunOrClosePipeInput();
+    var runOrClosePipeInput = new mojo.pipeControl.RunOrClosePipeInput();
     runOrClosePipeInput.peerAssociatedEndpointClosedEvent = event;
     return constructRunOrClosePipeMessage(runOrClosePipeInput);
   };

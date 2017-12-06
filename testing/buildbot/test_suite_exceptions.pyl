@@ -1104,11 +1104,6 @@
       },
     },
   },
-  'mojo_js_unittests': {
-    'remove_from': [
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'mojo_public_bindings_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.

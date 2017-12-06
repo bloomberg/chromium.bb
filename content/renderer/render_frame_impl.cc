@@ -124,9 +124,7 @@
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_device_observer.h"
 #include "content/renderer/media/user_media_client_impl.h"
-#include "content/renderer/mojo/blink_connector_js_wrapper.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
-#include "content/renderer/mojo/interface_provider_js_wrapper.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
@@ -156,12 +154,7 @@
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "crypto/sha2.h"
-#include "gin/modules/console.h"
-#include "gin/modules/module_registry.h"
-#include "gin/modules/timer.h"
 #include "media/blink/webmediaplayer_util.h"
-#include "mojo/edk/js/core.h"
-#include "mojo/edk/js/support.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -2976,40 +2969,6 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                       const gfx::Range& range) {
   Send(new FrameHostMsg_SelectionChanged(routing_id_, selection_text,
                                          static_cast<uint32_t>(offset), range));
-}
-
-void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
-    v8::Isolate* isolate,
-    v8::Local<v8::Context> context) {
-  gin::ModuleRegistry* registry = gin::ModuleRegistry::From(context);
-  if (registry->available_modules().count(mojo::edk::js::Core::kModuleName))
-    return;
-
-  v8::HandleScope handle_scope(isolate);
-
-  registry->AddBuiltinModule(isolate, gin::Console::kModuleName,
-                             gin::Console::GetModule(isolate));
-  registry->AddBuiltinModule(isolate, gin::TimerModule::kName,
-                             gin::TimerModule::GetModule(isolate));
-  registry->AddBuiltinModule(isolate, mojo::edk::js::Core::kModuleName,
-                             mojo::edk::js::Core::GetModule(isolate));
-  registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,
-                             mojo::edk::js::Support::GetModule(isolate));
-  registry->AddBuiltinModule(
-      isolate, InterfaceProviderJsWrapper::kPerFrameModuleName,
-      InterfaceProviderJsWrapper::Create(isolate, context, &remote_interfaces_)
-          .ToV8());
-  registry->AddBuiltinModule(
-      isolate, InterfaceProviderJsWrapper::kPerProcessModuleName,
-      InterfaceProviderJsWrapper::Create(isolate, context,
-                                         RenderThread::Get()->GetConnector())
-          .ToV8());
-  registry->AddBuiltinModule(
-      isolate, BlinkConnectorJsWrapper::kModuleName,
-      BlinkConnectorJsWrapper::Create(
-          isolate, context,
-          RenderThreadImpl::current_blink_platform_impl()->GetConnector())
-          .ToV8());
 }
 
 void RenderFrameImpl::AddMessageToConsole(ConsoleMessageLevel level,

@@ -861,7 +861,6 @@ test("content_browsertests") {
     "//media:test_support",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/js",
     "//net:test_support",
     "//ppapi/features",
     "//services/catalog:lib",

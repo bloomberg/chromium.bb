@@ -703,7 +703,7 @@ function MediaRouter(service) {
  * TODO(imcheng): We should stop exporting mojo bindings classes that the
  * Media Router extension doesn't directly use, such as
  * mojo.AssociatedInterfacePtrInfo, mojo.InterfacePtrController and
- * mojo.interfaceControl2.
+ * mojo.interfaceControl.
  */
 MediaRouter.prototype.getMojoExports = function() {
   return {
@@ -739,7 +739,7 @@ MediaRouter.prototype.getMojoExports = function() {
     SinkExtraData: MediaSinkExtraDataAdapter,
     TimeDelta: mojo.common.mojom.TimeDelta,
     Url: url.mojom.Url,
-    interfaceControl2: mojo.interfaceControl2,
+    interfaceControl: mojo.interfaceControl,
     makeRequest: mojo.makeRequest,
   };
 };
