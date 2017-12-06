@@ -142,6 +142,20 @@ namespace {
 
 const char kDownloadTest1Path[] = "download-test1.lib";
 
+class DownloadTestContentBrowserClient : public content::ContentBrowserClient {
+ public:
+  explicit DownloadTestContentBrowserClient(bool must_download)
+      : must_download_(must_download) {}
+
+  bool ShouldForceDownloadResource(const GURL& url,
+                                   const std::string& mime_type) override {
+    return must_download_;
+  }
+
+ private:
+  const bool must_download_;
+};
+
 class CreatedObserver : public content::DownloadManager::Observer {
  public:
   explicit CreatedObserver(content::DownloadManager* manager)
@@ -265,6 +279,9 @@ const char kGoodCrxPath[] = "extensions/good.crx";
 
 const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const char kLargeThemePath[] = "extensions/theme2.crx";
+
+// User script file used in tests.
+const char kUserScriptPath[] = "extensions/user_script_basic.user.js";
 
 // Get History Information.
 class DownloadsHistoryDataCollector {
@@ -2097,6 +2114,27 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
   downloaded_file = downloaded_file.Append(FILE_PATH_LITERAL("a_red_dot.png"));
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(downloaded_file));
+}
+
+// Test that navigating to a user script URL will result in a download.
+IN_PROC_BROWSER_TEST_F(DownloadTest, UserScriptDownload) {
+  DownloadTestContentBrowserClient new_client(true);
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/" + std::string(kUserScriptPath));
+
+  // Navigate to the user script URL and wait for the download to complete.
+  std::unique_ptr<content::DownloadTestObserver> observer(
+      DangerousDownloadWaiter(
+          browser(), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+  ui_test_utils::NavigateToURL(browser(), url);
+  observer->WaitForFinished();
+  EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+  SetBrowserClientForTesting(old_client);
 }
 
 // Test to make sure auto-open works.

@@ -144,12 +144,6 @@ class TestResourceDispatcherHostDelegate final
     return false;
   }
 
-  bool ShouldForceDownloadResource(const GURL& url,
-                                   const std::string& mime_type) override {
-    ADD_FAILURE() << "ShouldForceDownloadResource should not be called.";
-    return false;
-  }
-
   bool ShouldInterceptResourceAsStream(net::URLRequest* request,
                                        const base::FilePath& plugin_path,
                                        const std::string& mime_type,

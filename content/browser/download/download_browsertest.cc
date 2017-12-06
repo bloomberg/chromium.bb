@@ -103,8 +103,7 @@ class DownloadTestContentBrowserClient : public ContentBrowserClient {
  public:
   DownloadTestContentBrowserClient() = default;
 
-  bool AllowRenderingMhtmlOverHttp(
-      NavigationUIData* navigation_data) const override {
+  bool AllowRenderingMhtmlOverHttp(NavigationUIData* navigation_data) override {
     return allowed_rendering_mhtml_over_http_;
   }
 

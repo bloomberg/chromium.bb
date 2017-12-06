@@ -21,6 +21,7 @@
 #include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/test_resource_handler.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
@@ -40,10 +41,9 @@ namespace content {
 
 namespace {
 
-class TestResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
+class TestContentBrowserClient : public ContentBrowserClient {
  public:
-  explicit TestResourceDispatcherHostDelegate(bool must_download)
+  explicit TestContentBrowserClient(bool must_download)
       : must_download_(must_download) {}
 
   bool ShouldForceDownloadResource(const GURL& url,
@@ -278,8 +278,8 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
                                           nullptr);        // navigation_ui_data
 
   TestResourceDispatcherHost host(stream_has_handler_);
-  TestResourceDispatcherHostDelegate host_delegate(must_download);
-  host.SetDelegate(&host_delegate);
+  TestContentBrowserClient new_client(must_download);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
 
@@ -312,6 +312,7 @@ bool MimeSniffingResourceHandlerTest::TestStreamIsIntercepted(
   EXPECT_LT(host.intercepted_as_stream_count(), 2);
   if (allow_download)
     EXPECT_TRUE(intercepting_handler->new_handler_for_testing());
+  SetBrowserClientForTesting(old_client);
   return host.intercepted_as_stream();
 }
 
@@ -339,8 +340,6 @@ void MimeSniffingResourceHandlerTest::TestHandlerSniffing(
                                           nullptr);      // navigation_ui_data
 
   TestResourceDispatcherHost host(false);
-  TestResourceDispatcherHostDelegate host_delegate(false);
-  host.SetDelegate(&host_delegate);
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -502,8 +501,6 @@ void MimeSniffingResourceHandlerTest::TestHandlerNoSniffing(
                                           nullptr);      // navigation_ui_data
 
   TestResourceDispatcherHost host(false);
-  TestResourceDispatcherHostDelegate host_delegate(false);
-  host.SetDelegate(&host_delegate);
 
   TestFakePluginService plugin_service(plugin_available_, plugin_stale_);
   std::unique_ptr<InterceptingResourceHandler> intercepting_handler(
@@ -883,8 +880,6 @@ TEST_F(MimeSniffingResourceHandlerTest, 304Handling) {
                                           nullptr);      // navigation_ui_data
 
   TestResourceDispatcherHost host(false);
-  TestResourceDispatcherHostDelegate host_delegate(false);
-  host.SetDelegate(&host_delegate);
 
   TestFakePluginService plugin_service(false, false);
   std::unique_ptr<ResourceHandler> intercepting_handler(

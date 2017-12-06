@@ -384,7 +384,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& frame_url,
       NonNetworkURLLoaderFactoryMap* factories) override;
   bool AllowRenderingMhtmlOverHttp(
-      content::NavigationUIData* navigation_ui_data) const override;
+      content::NavigationUIData* navigation_ui_data) override;
+  bool ShouldForceDownloadResource(const GURL& url,
+                                   const std::string& mime_type) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

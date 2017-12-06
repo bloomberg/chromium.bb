@@ -3749,7 +3749,7 @@ void ChromeContentBrowserClient::
 }
 
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(
-    content::NavigationUIData* navigation_ui_data) const {
+    content::NavigationUIData* navigation_ui_data) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // It is OK to load the saved offline copy, in MHTML format.
   ChromeNavigationUIData* chrome_navigation_ui_data =
@@ -3759,6 +3759,17 @@ bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(
   offline_pages::OfflinePageNavigationUIData* offline_page_data =
       chrome_navigation_ui_data->GetOfflinePageNavigationUIData();
   return offline_page_data && offline_page_data->is_offline_page();
+#else
+  return false;
+#endif
+}
+
+bool ChromeContentBrowserClient::ShouldForceDownloadResource(
+    const GURL& url,
+    const std::string& mime_type) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Special-case user scripts to get downloaded instead of viewed.
+  return extensions::UserScript::IsURLUserScript(url, mime_type);
 #else
   return false;
 #endif
