@@ -60,11 +60,6 @@ ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
 ASH_PUBLIC_EXPORT extern const char kShowTaps[];
 ASH_PUBLIC_EXPORT extern const char kShowViewsLogin[];
 ASH_PUBLIC_EXPORT extern const char kShowWebUiLock[];
-ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonWindow[];
-ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonAccelCount[];
-ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonScreenAccel[];
-ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonKeyboardAccel[];
-ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonLidAngleChange[];
 ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
