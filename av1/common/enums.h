@@ -103,10 +103,10 @@ extern "C" {
 #define LPF_SIGN_CONTEXT 2
 
 // Half of maximum loop filter length (15-tap)
-#define FILT_BOUNDARY_OFFSET 8
+#define FILT_BOUNDARY_OFFSET 0
 #define FILT_BOUNDARY_MI_OFFSET (FILT_BOUNDARY_OFFSET >> MI_SIZE_LOG2)
 
-#define USE_GUESS_LEVEL 1
+#define USE_GUESS_LEVEL 0
 #define USE_LOOP_FILTER_SUPERBLOCK 1
 #endif  // CONFIG_LPF_SB
 

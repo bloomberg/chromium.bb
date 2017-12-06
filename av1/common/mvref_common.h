@@ -476,6 +476,7 @@ static INLINE void av1_find_ref_dv(int_mv *ref_dv, int mi_row, int mi_col) {
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels
 #define INTRABC_DELAY_SB64 (INTRABC_DELAY_PIXELS / 64)
 #define USE_WAVE_FRONT 1  // Use only top left area of frame for reference.
+#define INTRABC_ROW_DELAY 8
 static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
                                   int mi_row, int mi_col, BLOCK_SIZE bsize,
                                   int mib_size_log2) {
@@ -514,6 +515,20 @@ static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
   const int active_sb64 = active_sb_row * total_sb64_per_row + active_sb64_col;
   const int src_sb64 = src_sb_row * total_sb64_per_row + src_sb64_col;
   if (src_sb64 >= active_sb64 - INTRABC_DELAY_SB64) return 0;
+
+#if CONFIG_LPF_SB
+  // Because of loop filter, the last 8 rows of current superblock row can't be
+  // used as intrabc search area.
+  if ((src_bottom_edge >> 3) >=
+      (active_sb_row + 1) * sb_size - INTRABC_ROW_DELAY)
+    return 0;
+
+  // The last 8 rows of the above superblock is invalid
+  if ((src_bottom_edge >> 3) >= active_sb_row * sb_size - INTRABC_ROW_DELAY &&
+      (src_right_edge >> 3) >= (mi_col >> mib_size_log2) * sb_size)
+    return 0;
+#endif  // CONFIG_LPF_SB
+
 #if USE_WAVE_FRONT
   const int gradient = 1 + INTRABC_DELAY_SB64 + (sb_size > 64);
   const int wf_offset = gradient * (active_sb_row - src_sb_row);
