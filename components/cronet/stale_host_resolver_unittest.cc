@@ -4,6 +4,10 @@
 
 #include "components/cronet/stale_host_resolver.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -13,6 +17,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/cronet/url_request_context_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -374,7 +379,13 @@ TEST_F(StaleHostResolverTest, CancelWithStaleCache) {
 // CancelWithFreshCache makes no sense; the request would've returned
 // synchronously.
 
-TEST_F(StaleHostResolverTest, StaleUsability) {
+// crbug.com/792173
+#if defined(OS_IOS)
+#define MAYBE_StaleUsability DISABLED_StaleUsability
+#else
+#define MAYBE_StaleUsability StaleUsability
+#endif
+TEST_F(StaleHostResolverTest, MAYBE_StaleUsability) {
   const struct {
     int max_expired_time_sec;
     int max_stale_uses;

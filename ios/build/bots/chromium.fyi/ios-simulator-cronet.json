@@ -24,6 +24,12 @@
   "sdk": "iphonesimulator11.0",
   "tests": [
     {
+      "app": "cronet_unittests_ios",
+      "device type": "iPhone 5s",
+      "os": "9.3",
+      "xcode version": "9.0"
+    },
+    {
       "app": "cronet_test",
       "device type": "iPhone 5s",
       "os": "9.3",
