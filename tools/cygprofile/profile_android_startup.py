@@ -104,9 +104,9 @@ class WprManager(object):
       binary_manager.InitDependencyManager([])
     self._wpr_server = webpagereplay_go_server.ReplayServer(
         self._wpr_archive, '127.0.0.1', 0, 0, replay_options=[])
-    ports = self._wpr_server.StartServer()[:-1]
-    self._host_http_port = ports[0]
-    self._host_https_port = ports[1]
+    ports = self._wpr_server.StartServer()
+    self._host_http_port = ports['http']
+    self._host_https_port = ports['https']
 
   def _StopWpr(self):
     """ Stop the WPR and forwarder. """
