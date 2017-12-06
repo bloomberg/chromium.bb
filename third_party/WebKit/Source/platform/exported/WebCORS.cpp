@@ -32,6 +32,7 @@
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/http_names.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -513,27 +514,35 @@ WebString GetErrorString(const CORSError error,
   return WebString();
 }
 
-void ExtractCorsExposedHeaderNamesList(const WebURLResponse& response,
-                                       WebHTTPHeaderSet& header_set) {
+WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
+    network::mojom::FetchCredentialsMode credentials_mode,
+    const WebURLResponse& response) {
   // If a response was fetched via a service worker, it will always have
   // CorsExposedHeaderNames set from the Access-Control-Expose-Headers header.
   // For requests that didn't come from a service worker, just parse the CORS
   // header.
   if (response.WasFetchedViaServiceWorker()) {
+    WebHTTPHeaderSet header_set;
     for (const auto& header : response.CorsExposedHeaderNames())
       header_set.emplace(header.Ascii().data(), header.Ascii().length());
-    return;
+    return header_set;
   }
-  ParseAccessControlExposeHeadersAllowList(
-      response.HttpHeaderField(
-          WebString(HTTPNames::Access_Control_Expose_Headers)),
-      header_set);
-}
 
-void ParseAccessControlExposeHeadersAllowList(const WebString& header_value,
-                                              WebHTTPHeaderSet& header_set) {
-  HTTPHeaderNameListParser parser(header_value);
+  WebHTTPHeaderSet header_set;
+  HTTPHeaderNameListParser parser(response.HttpHeaderField(
+      WebString(HTTPNames::Access_Control_Expose_Headers)));
   parser.Parse(header_set);
+
+  if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude &&
+      header_set.find("*") != header_set.end()) {
+    header_set.clear();
+    for (const auto& header :
+         response.ToResourceResponse().HttpHeaderFields()) {
+      CString name = header.key.Ascii();
+      header_set.emplace(name.data(), name.length());
+    }
+  }
+  return header_set;
 }
 
 bool IsOnAccessControlResponseHeaderWhitelist(const WebString& name) {
