@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -54,6 +55,10 @@ AudioSyncReader::AudioSyncReader(
           switches::kMuteAudio)),
       had_socket_error_(false),
       socket_(std::move(socket)),
+      // Validated for reasonable size in Create.
+      output_bus_buffer_size_(
+          AudioBus::CalculateMemorySize(params.channels(),
+                                        params.frames_per_buffer())),
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
       trailing_renderer_missed_callback_count_(0),
@@ -209,8 +214,17 @@ void AudioSyncReader::Read(AudioBus* dest) {
     // For bitstream formats, we need the real data size and PCM frame count.
     AudioOutputBuffer* buffer =
         reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
-    output_bus_->SetBitstreamDataSize(buffer->params.bitstream_data_size);
-    output_bus_->SetBitstreamFrames(buffer->params.bitstream_frames);
+    uint32_t data_size = buffer->params.bitstream_data_size;
+    uint32_t bitstream_frames = buffer->params.bitstream_frames;
+    // |bitstream_frames| is cast to int below, so it must fit.
+    if (data_size > output_bus_buffer_size_ ||
+        !base::IsValueInRangeForNumericType<int>(bitstream_frames)) {
+      // Received data doesn't fit in the buffer, shouldn't happen.
+      dest->Zero();
+      return;
+    }
+    output_bus_->SetBitstreamDataSize(data_size);
+    output_bus_->SetBitstreamFrames(bitstream_frames);
   }
   output_bus_->CopyTo(dest);
 }

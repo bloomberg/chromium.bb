@@ -79,6 +79,8 @@ class CONTENT_EXPORT AudioSyncReader
   // Socket for transmitting audio data.
   std::unique_ptr<base::CancelableSyncSocket> socket_;
 
+  const uint32_t output_bus_buffer_size_;
+
   // Shared memory wrapper used for transferring audio data to Read() callers.
   std::unique_ptr<media::AudioBus> output_bus_;
 

@@ -350,6 +350,10 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
   }
 
   if (will_monitor_audio_levels()) {
+    // Note: this code path should never be hit when using bitstream streams.
+    // Scan doesn't expect compressed audio, so it may go out of bounds trying
+    // to read |frames| frames of PCM data.
+    CHECK(!params_.IsBitstreamFormat());
     power_monitor_.Scan(*dest, frames);
 
     const auto now = base::TimeTicks::Now();
