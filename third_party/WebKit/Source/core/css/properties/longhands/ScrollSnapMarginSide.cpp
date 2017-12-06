@@ -15,7 +15,7 @@ const CSSValue* ScrollSnapMarginSide::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
+      range, context.Mode(), kValueRangeAll,
       CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 

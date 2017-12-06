@@ -120,6 +120,8 @@ class CORE_EXPORT ScrollManager
   WebGestureEvent SynthesizeGestureScrollBegin(
       const WebGestureEvent& update_event);
 
+  void SnapAtGestureScrollEnd();
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.
 
@@ -144,6 +146,11 @@ class CORE_EXPORT ScrollManager
   // scroll which shouldn't propagate can't cause any element to
   // scroll other than the |m_previousGestureScrolledNode|.
   bool delta_consumed_for_scroll_sequence_;
+
+  // True iff some of the delta has been consumed for the current
+  // scroll sequence on the specific axis.
+  bool did_scroll_x_for_scroll_gesture_;
+  bool did_scroll_y_for_scroll_gesture_;
 
   Member<Scrollbar> scrollbar_handling_scroll_gesture_;
 
