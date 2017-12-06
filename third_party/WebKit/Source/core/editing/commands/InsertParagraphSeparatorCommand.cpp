@@ -444,7 +444,8 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
     visible_pos = CreateVisiblePosition(insertion_position);
     // If the insertion point is a break element, there is nothing else
     // we need to do.
-    if (visible_pos.DeepEquivalent().AnchorNode()->GetLayoutObject()->IsBR()) {
+    if (visible_pos.IsNotNull() &&
+        visible_pos.DeepEquivalent().AnchorNode()->GetLayoutObject()->IsBR()) {
       SetEndingSelection(SelectionForUndoStep::From(
           SelectionInDOMTree::Builder()
               .Collapse(insertion_position)
@@ -478,6 +479,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       insertion_position = MostBackwardCaretPosition(insertion_position);
   }
 
+  ABORT_EDITING_COMMAND_IF(!IsEditablePosition(insertion_position));
   // Make sure we do not cause a rendered space to become unrendered.
   // FIXME: We need the affinity for pos, but mostForwardCaretPosition does not
   // give it
