@@ -220,10 +220,10 @@ handle_array(struct wl_resource *resource, uint32_t opcode,
 		return;
 	}
 
+	log_closure(resource, closure, true);
+
 	if (send_func(closure, resource->client->connection))
 		resource->client->error = 1;
-
-	log_closure(resource, closure, true);
 
 	wl_closure_destroy(closure);
 }
