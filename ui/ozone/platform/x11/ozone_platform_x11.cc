@@ -114,9 +114,9 @@ class OzonePlatformX11 : public OzonePlatform {
     if (common_initialized_)
       return;
 
-    // In single process mode XInitThreads() must be the first Xlib call.
-    if (params.single_process)
-      XInitThreads();
+    // Always initialze in multi-thread mode, since this is used only during
+    // development.
+    XInitThreads();
 
     ui::SetDefaultX11ErrorHandlers();
 
