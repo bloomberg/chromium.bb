@@ -108,7 +108,8 @@ uint32_t CustomArchiveRead(void* archive,
         archive_minizip->dynamic_cache_offset_ +
                 archive_minizip->dynamic_cache_size_ <
             offset + size) {
-      volume_archive_functions::DynamicCache(archive_minizip, size);
+      if (volume_archive_functions::DynamicCache(archive_minizip, size) < 0)
+        return -1 /* Error */;
     }
 
     // Just copy the required data from the cache.
