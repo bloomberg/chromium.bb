@@ -21,7 +21,7 @@ RemoteDeviceProviderImpl::Factory::NewInstance(
     CryptAuthDeviceManager* device_manager,
     const std::string& user_id,
     const std::string& user_private_key,
-    SecureMessageDelegateFactory* secure_message_delegate_factory) {
+    SecureMessageDelegate::Factory* secure_message_delegate_factory) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
@@ -41,7 +41,7 @@ RemoteDeviceProviderImpl::Factory::BuildInstance(
     CryptAuthDeviceManager* device_manager,
     const std::string& user_id,
     const std::string& user_private_key,
-    SecureMessageDelegateFactory* secure_message_delegate_factory) {
+    SecureMessageDelegate::Factory* secure_message_delegate_factory) {
   return base::WrapUnique(
       new RemoteDeviceProviderImpl(device_manager, user_id, user_private_key,
                                    secure_message_delegate_factory));
@@ -51,7 +51,7 @@ RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
     CryptAuthDeviceManager* device_manager,
     const std::string& user_id,
     const std::string& user_private_key,
-    SecureMessageDelegateFactory* secure_message_delegate_factory)
+    SecureMessageDelegate::Factory* secure_message_delegate_factory)
     : device_manager_(device_manager),
       user_id_(user_id),
       user_private_key_(user_private_key),
@@ -99,7 +99,7 @@ void RemoteDeviceProviderImpl::OnRemoteDevicesLoaded(
   RemoteDeviceProvider::NotifyObserversDeviceListChanged();
 }
 
-const RemoteDeviceList RemoteDeviceProviderImpl::GetSyncedDevices() const {
+const RemoteDeviceList& RemoteDeviceProviderImpl::GetSyncedDevices() const {
   return synced_remote_devices_;
 }
 

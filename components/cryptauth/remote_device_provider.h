@@ -19,19 +19,20 @@ class RemoteDeviceProvider {
     virtual void OnSyncDeviceListChanged() {}
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
   RemoteDeviceProvider();
-
   virtual ~RemoteDeviceProvider();
 
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual void NotifyObserversDeviceListChanged();
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns a list of all RemoteDevices that have been synced.
-  virtual const cryptauth::RemoteDeviceList GetSyncedDevices() const = 0;
+  virtual const cryptauth::RemoteDeviceList& GetSyncedDevices() const = 0;
+
+ protected:
+  void NotifyObserversDeviceListChanged();
 
  private:
   base::ObserverList<Observer> observers_;

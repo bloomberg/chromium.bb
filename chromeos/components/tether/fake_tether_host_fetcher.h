@@ -18,23 +18,20 @@ namespace tether {
 // Test double for TetherHostFetcher.
 class FakeTetherHostFetcher : public TetherHostFetcher {
  public:
-  FakeTetherHostFetcher(std::vector<cryptauth::RemoteDevice> tether_hosts,
-                        bool synchronously_reply_with_results);
-  explicit FakeTetherHostFetcher(bool synchronously_reply_with_results);
+  FakeTetherHostFetcher(
+      const std::vector<cryptauth::RemoteDevice>& tether_hosts);
+  FakeTetherHostFetcher();
   ~FakeTetherHostFetcher() override;
 
-  void set_synchronously_reply_with_results(
-      bool synchronously_reply_with_results) {
-    synchronously_reply_with_results_ = synchronously_reply_with_results;
+  void set_tether_hosts(
+      const std::vector<cryptauth::RemoteDevice>& tether_hosts) {
+    tether_hosts_ = tether_hosts;
   }
 
-  void SetTetherHosts(const std::vector<cryptauth::RemoteDevice> tether_hosts);
-
-  // If |synchronously_reply_with_results_| is false, calling this method will
-  // actually invoke the callbacks.
-  void InvokePendingCallbacks();
+  void NotifyTetherHostsUpdated();
 
   // TetherHostFetcher:
+  bool HasSyncedTetherHosts() override;
   void FetchAllTetherHosts(
       const TetherHostFetcher::TetherHostListCallback& callback) override;
   void FetchTetherHost(
@@ -43,7 +40,6 @@ class FakeTetherHostFetcher : public TetherHostFetcher {
 
  private:
   std::vector<cryptauth::RemoteDevice> tether_hosts_;
-  bool synchronously_reply_with_results_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTetherHostFetcher);
 };

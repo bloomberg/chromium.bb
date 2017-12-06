@@ -19,9 +19,8 @@ void RemoteDeviceProvider::RemoveObserver(Observer* observer) {
 }
 
 void RemoteDeviceProvider::NotifyObserversDeviceListChanged() {
-  for (auto& observer : observers_) {
+  for (auto& observer : observers_)
     observer.OnSyncDeviceListChanged();
-  }
 }
 
 }  // namespace cryptauth

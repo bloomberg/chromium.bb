@@ -93,8 +93,8 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
 
   void SetUp() override {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
-    fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
-        test_devices_, true /* synchronously_reply_with_results */);
+    fake_tether_host_fetcher_ =
+        base::MakeUnique<FakeTetherHostFetcher>(test_devices_);
 
     fake_operation_factory_ =
         base::MakeUnique<FakeDisconnectTetheringOperationFactory>();
@@ -206,7 +206,7 @@ TEST_F(DisconnectTetheringRequestSenderTest, SendRequest_Success) {
 TEST_F(DisconnectTetheringRequestSenderTest, SendRequest_CannotFetchHost) {
   // Remove hosts from |fake_tether_host_fetcher_|; this will cause the fetcher
   // to return a null RemoteDevice.
-  fake_tether_host_fetcher_->SetTetherHosts(
+  fake_tether_host_fetcher_->set_tether_hosts(
       std::vector<cryptauth::RemoteDevice>());
 
   disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
@@ -298,23 +298,6 @@ TEST_F(DisconnectTetheringRequestSenderTest,
   EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());
   EXPECT_EQ(3u, fake_disconnect_tethering_request_sender_observer_
                     ->num_no_more_pending_requests_events());
-}
-
-TEST_F(DisconnectTetheringRequestSenderTest,
-       HasPendingRequests_FetchTetherHost) {
-  fake_tether_host_fetcher_->set_synchronously_reply_with_results(false);
-  disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
-      test_devices_[0].GetDeviceId());
-  EXPECT_TRUE(fake_operation_factory_->created_operations().empty());
-  EXPECT_TRUE(disconnect_tethering_request_sender_->HasPendingRequests());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
-  EXPECT_TRUE(disconnect_tethering_request_sender_->HasPendingRequests());
-
-  ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
-  fake_operation_factory_->created_operations()[0]->NotifyFinished(
-      true /* success */);
-  EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());
 }
 
 }  // namespace tether

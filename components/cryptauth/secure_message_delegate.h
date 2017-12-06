@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
 #define COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -17,6 +18,14 @@ namespace cryptauth {
 // implementation on ChromeOS communicates with a daemon process over IPC.
 class SecureMessageDelegate {
  public:
+  class Factory {
+   public:
+    virtual std::unique_ptr<SecureMessageDelegate>
+    CreateSecureMessageDelegate() = 0;
+
+    virtual ~Factory() = default;
+  };
+
   // Fields specifying how to create a SecureMessage.
   struct CreateOptions {
     CreateOptions();

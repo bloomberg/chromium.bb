@@ -56,6 +56,7 @@ class AsynchronousShutdownObjectContainerImpl
     static std::unique_ptr<AsynchronousShutdownObjectContainer> NewInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
+        TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
             managed_network_configuration_handler,
@@ -67,6 +68,7 @@ class AsynchronousShutdownObjectContainerImpl
     virtual std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
+        TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
             managed_network_configuration_handler,
@@ -81,6 +83,7 @@ class AsynchronousShutdownObjectContainerImpl
   AsynchronousShutdownObjectContainerImpl(
       scoped_refptr<device::BluetoothAdapter> adapter,
       cryptauth::CryptAuthService* cryptauth_service,
+      TetherHostFetcher* tether_host_fetcher,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
       NetworkConnectionHandler* network_connection_handler,
@@ -124,7 +127,7 @@ class AsynchronousShutdownObjectContainerImpl
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  std::unique_ptr<TetherHostFetcher> tether_host_fetcher_;
+  TetherHostFetcher* tether_host_fetcher_;
   std::unique_ptr<cryptauth::LocalDeviceDataProvider>
       local_device_data_provider_;
   std::unique_ptr<cryptauth::RemoteBeaconSeedFetcher>

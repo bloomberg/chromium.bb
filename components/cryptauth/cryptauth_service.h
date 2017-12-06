@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/secure_message_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace cryptauth {
@@ -16,10 +17,9 @@ namespace cryptauth {
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
-class SecureMessageDelegate;
 
 // Service which provides access to various CryptAuth singletons.
-class CryptAuthService {
+class CryptAuthService : public SecureMessageDelegate::Factory {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -27,14 +27,12 @@ class CryptAuthService {
   virtual CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager() = 0;
   virtual DeviceClassifier GetDeviceClassifier() = 0;
   virtual std::string GetAccountId() = 0;
-  virtual std::unique_ptr<SecureMessageDelegate>
-  CreateSecureMessageDelegate() = 0;
   virtual std::unique_ptr<CryptAuthClientFactory>
   CreateCryptAuthClientFactory() = 0;
 
  protected:
-  CryptAuthService() {}
-  virtual ~CryptAuthService() {}
+  CryptAuthService() = default;
+  ~CryptAuthService() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CryptAuthService);

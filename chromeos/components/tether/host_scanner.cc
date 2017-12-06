@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_state.h"
 #include "components/cryptauth/remote_device_loader.h"
+#include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
@@ -48,9 +49,8 @@ bool HostScanner::IsScanActive() {
 }
 
 void HostScanner::StartScan() {
-  if (IsScanActive()) {
+  if (IsScanActive())
     return;
-  }
 
   is_fetching_hosts_ = true;
   tether_host_fetcher_->FetchAllTetherHosts(base::Bind(
@@ -60,6 +60,14 @@ void HostScanner::StartScan() {
 void HostScanner::OnTetherHostsFetched(
     const cryptauth::RemoteDeviceList& tether_hosts) {
   is_fetching_hosts_ = false;
+
+  if (tether_hosts.empty()) {
+    PA_LOG(WARNING) << "Could not start host scan. No tether hosts available.";
+    return;
+  }
+
+  PA_LOG(INFO) << "Starting Tether host scan. " << tether_hosts.size() << " "
+               << "potential hosts included in the search.";
 
   tether_guids_in_cache_before_scan_ =
       host_scan_cache_->GetTetherGuidsInCache();
@@ -82,9 +90,8 @@ void HostScanner::OnTetherAvailabilityResponse(
 
   // Ensure all results received so far are in the cache (setting entries which
   // already exist is a no-op).
-  for (const auto& scanned_device_info : scanned_device_list_so_far) {
+  for (const auto& scanned_device_info : scanned_device_list_so_far)
     SetCacheEntry(scanned_device_info);
-  }
 
   if (CanAvailableHostNotificationBeShown() &&
       !scanned_device_list_so_far.empty()) {
@@ -111,9 +118,8 @@ void HostScanner::OnTetherAvailabilityResponse(
     was_notification_shown_in_current_scan_ = true;
   }
 
-  if (is_final_scan_result) {
+  if (is_final_scan_result)
     OnFinalScanResultReceived(scanned_device_list_so_far);
-  }
 }
 
 void HostScanner::AddObserver(Observer* observer) {
@@ -125,9 +131,8 @@ void HostScanner::RemoveObserver(Observer* observer) {
 }
 
 void HostScanner::NotifyScanFinished() {
-  for (auto& observer : observer_list_) {
+  for (auto& observer : observer_list_)
     observer.ScanFinished();
-  }
 }
 
 void HostScanner::SetCacheEntry(
@@ -192,6 +197,9 @@ void HostScanner::OnFinalScanResultReceived(
       was_notification_shown_in_current_scan_;
   was_notification_shown_in_current_scan_ = false;
   was_notification_showing_when_current_scan_started_ = false;
+
+  PA_LOG(INFO) << "Finished Tether host scan. " << final_scan_results.size()
+               << " result(s) were found.";
 
   // If the final scan result has been received, the operation is finished.
   // Delete it.
