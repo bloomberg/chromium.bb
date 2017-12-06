@@ -1,6 +1,11 @@
 // Compares two CSSStyleValues to check if they're the same type
 // and have the same attributes.
 function assert_style_value_equals(a, b) {
+  if (a == null || b == null) {
+    assert_equals(a, b);
+    return;
+  }
+
   assert_equals(a.constructor.name, b.constructor.name);
   const className = a.constructor.name;
   switch (className) {
@@ -20,6 +25,13 @@ function assert_style_value_equals(a, b) {
     case 'CSSMathInvert':
     case 'CSSMathNegate':
       assert_style_value_equals(a.value, b.value);
+      break;
+    case 'CSSUnparsedValue':
+      assert_style_value_array_equals(a, b);
+      break;
+    case 'CSSVariableReferenceValue':
+      assert_equals(a.variable, b.variable);
+      assert_style_value_equals(a.fallback, b.fallback);
       break;
   }
 }
@@ -52,10 +64,9 @@ const gValidUnits = [
 // Hacky way of creating a CSSVariableReferenceValue
 // since it doesn't expose a constructor.
 function createReferenceValue(variable, fallback) {
-  const varExpr = fallback ?
-    'var(' + variable + ', ' + fallback + ')' :
-    'var(' + variable + ')';
-
+  const varExpr = 'var(' + variable + ')';
   const unparsedValue = newDivWithStyle('color:' + varExpr).attributeStyleMap.get('color');
-  return unparsedValue[0];
+  let referenceValue = unparsedValue[0];
+  referenceValue.fallback = fallback;
+  return referenceValue;
 }

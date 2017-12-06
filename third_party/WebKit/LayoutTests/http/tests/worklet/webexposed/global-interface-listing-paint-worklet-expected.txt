@@ -139,6 +139,8 @@ CONSOLE MESSAGE: line 147: interface CSSVariableReferenceValue
 CONSOLE MESSAGE: line 147:     getter fallback
 CONSOLE MESSAGE: line 147:     getter variable
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter fallback
+CONSOLE MESSAGE: line 147:     setter variable
 CONSOLE MESSAGE: line 147: interface CountQueuingStrategy
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method size
@@ -434,6 +436,8 @@ CONSOLE MESSAGE: line 147: interface CSSVariableReferenceValue
 CONSOLE MESSAGE: line 147:     getter fallback
 CONSOLE MESSAGE: line 147:     getter variable
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter fallback
+CONSOLE MESSAGE: line 147:     setter variable
 CONSOLE MESSAGE: line 147: interface CountQueuingStrategy
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method size
