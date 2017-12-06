@@ -100,18 +100,9 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
       pad.pose.has_orientation = true;
       pad.pose.has_position = true;
 
-      vr::TrackedPropertyError error = vr::TrackedProp_Success;
-      char attached_device_id[vr::k_unMaxPropertyStringSize];
-      vr_system_->GetStringTrackedDeviceProperty(
-          i, vr::Prop_AttachedDeviceId_String, attached_device_id,
-          vr::k_unMaxPropertyStringSize, &error);
-
-      if (error == vr::TrackedProp_Success) {
-        swprintf(pad.id, Gamepad::kIdLengthCap,
-                 base::UTF8ToUTF16(attached_device_id).c_str());
-      } else {
-        swprintf(pad.id, Gamepad::kIdLengthCap, L"OpenVR Controller");
-      }
+      // The defacto standard says we set id to "OpenVR Gamepad".  WebXR input
+      // will provide a better solution.
+      swprintf(pad.id, Gamepad::kIdLengthCap, L"OpenVR Gamepad");
       swprintf(pad.mapping, Gamepad::kMappingLengthCap, L"");
 
       pad.display_id = display_id_;
