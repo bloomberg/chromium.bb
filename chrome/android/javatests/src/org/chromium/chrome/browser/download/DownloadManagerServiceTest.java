@@ -24,6 +24,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
@@ -498,8 +499,9 @@ public class DownloadManagerServiceTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"Download"})
+    //@MediumTest
+    //@Feature({"Download"})
+    @DisabledTest // crbug.com/789931
     public void testInterruptedUnmeteredDownloadCannotAutoResumeOnMeteredNetwork()
             throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier(getTestContext());
