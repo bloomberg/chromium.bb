@@ -153,9 +153,12 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   std::vector<IdSet> removals_;
 
   // User profile that corresponds to this handler.
-  Profile* profile_;
+  Profile* profile_ = nullptr;
 
-  base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_;
+  // Whether the render process has gone.
+  bool render_process_gone_ = false;
+
+  base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MdDownloadsDOMHandler);
 };
