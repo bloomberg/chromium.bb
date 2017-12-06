@@ -358,9 +358,14 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
     /** Logs in {@link SharedPreferences} that the info bar was displayed. */
     private void recordInfoBarDisplayed() {
+        // This can be called multiple times e.g. by mLoggingHandler & onSurveyInfoBarClosed().
+        // Return early to allow only one call to this method (http://crbug.com/791076).
+        if (mSurveyInfoBarTab == null) return;
+
         if (mSurveyInfoBarTab.getInfoBarContainer() != null) {
             mSurveyInfoBarTab.getInfoBarContainer().removeAnimationListener(this);
         }
+
         mLoggingHandler.removeCallbacksAndMessages(null);
 
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
