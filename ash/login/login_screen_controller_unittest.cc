@@ -5,8 +5,10 @@
 #include "ash/login/login_screen_controller.h"
 
 #include "ash/login/mock_login_screen_client.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -109,6 +111,41 @@ TEST_F(LoginScreenControllerTest, RequestUserPodFocus) {
   EXPECT_CALL(*client, OnNoPodFocused());
   controller->OnNoPodFocused();
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(LoginScreenControllerTest,
+       ShowLoginScreenRequiresLoginPrimarySessionState) {
+  auto show_login = [&](session_manager::SessionState state) {
+    EXPECT_FALSE(ash::LockScreen::IsShown());
+
+    LoginScreenController* controller = Shell::Get()->login_screen_controller();
+
+    GetSessionControllerClient()->SetSessionState(state);
+    base::Optional<bool> result;
+    controller->ShowLoginScreen(base::BindOnce(
+        [](base::Optional<bool>* result, bool did_show) { *result = did_show; },
+        &result));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_TRUE(result.has_value());
+
+    // Verify result matches actual ash::LockScreen state.
+    EXPECT_EQ(*result, ash::LockScreen::IsShown());
+
+    // Destroy login if we created it.
+    if (*result)
+      ash::LockScreen::Get()->Destroy();
+
+    return *result;
+  };
+
+  EXPECT_FALSE(show_login(session_manager::SessionState::UNKNOWN));
+  EXPECT_FALSE(show_login(session_manager::SessionState::OOBE));
+  EXPECT_TRUE(show_login(session_manager::SessionState::LOGIN_PRIMARY));
+  EXPECT_FALSE(show_login(session_manager::SessionState::LOGGED_IN_NOT_ACTIVE));
+  EXPECT_FALSE(show_login(session_manager::SessionState::ACTIVE));
+  EXPECT_FALSE(show_login(session_manager::SessionState::LOCKED));
+  EXPECT_FALSE(show_login(session_manager::SessionState::LOGIN_SECONDARY));
 }
 
 }  // namespace

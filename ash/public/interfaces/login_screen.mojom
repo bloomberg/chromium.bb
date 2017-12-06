@@ -19,6 +19,10 @@ interface LoginScreen {
   // successfully displayed.
   ShowLockScreen() => (bool did_show);
 
+  // Displays the login screen. |did_show| is true iff the login UI was
+  // successfully displayed.
+  ShowLoginScreen() => (bool did_show);
+
   // Requests to show error message in the ash lock screen.
   // TODO(xiaoyinh): login_attempts is probabaly not needed from chrome,
   // remove it when we start to count the login attempts in ash lock screen.

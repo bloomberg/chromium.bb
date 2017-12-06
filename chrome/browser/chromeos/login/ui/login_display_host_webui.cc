@@ -50,7 +50,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -152,11 +151,6 @@ const bool kHiddenWebUIInitializationDefault = true;
 // Switch values that might be used to override WebUI init type.
 const char kWebUIInitParallel[] = "parallel";
 const char kWebUIInitPostpone[] = "postpone";
-
-// The delay of triggering initialization of the device policy subsystem
-// after the login screen is initialized. This makes sure that device policy
-// network requests are made while the system is idle waiting for user input.
-const int64_t kPolicyServiceInitializationDelayMilliseconds = 100;
 
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.
@@ -744,7 +738,7 @@ void LoginDisplayHostWebUI::CancelUserAdding() {
   Finalize(base::OnceClosure());
 }
 
-void LoginDisplayHostWebUI::StartSignInScreen(
+void LoginDisplayHostWebUI::OnStartSignInScreen(
     const LoginScreenContext& context) {
   DisableKeyboardOverscroll();
 
@@ -754,14 +748,13 @@ void LoginDisplayHostWebUI::StartSignInScreen(
   if (!ash_util::IsRunningInMash())
     finalize_animation_type_ = ANIMATION_WORKSPACE;
 
-  PrewarmAuthentication();
-
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
     VLOG(1) << "Login WebUI >> sign in postponed";
     return;
   }
   VLOG(1) << "Login WebUI >> sign in";
 
+  // TODO(crbug.com/784495): Make sure this is ported to views.
   if (!login_window_) {
     TRACE_EVENT_ASYNC_BEGIN0("ui", "ShowLoginWebUI", kShowLoginWebUIid);
     TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
@@ -771,18 +764,6 @@ void LoginDisplayHostWebUI::StartSignInScreen(
   }
 
   DVLOG(1) << "Starting sign in screen";
-  const user_manager::UserList& users =
-      user_manager::UserManager::Get()->GetUsers();
-
-  // Fix for users who updated device and thus never passed register screen.
-  // If we already have users, we assume that it is not a second part of
-  // OOBE. See http://crosbug.com/6289
-  if (!StartupUtils::IsDeviceRegistered() && !users.empty()) {
-    VLOG(1) << "Mark device registered because there are remembered users: "
-            << users.size();
-    StartupUtils::MarkDeviceRegistered(base::Closure());
-  }
-
   existing_user_controller_.reset();  // Only one controller in a time.
   existing_user_controller_.reset(new chromeos::ExistingUserController(this));
 
@@ -791,24 +772,18 @@ void LoginDisplayHostWebUI::StartSignInScreen(
         new SignInScreenController(GetOobeUI(), login_display_->delegate()));
   }
 
+  // TODO(crbug.com/784495): This is always false, since
+  // LoginDisplayHost::StartSignInScreen marks the device as registered.
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
-  SetStatusAreaVisible(true);
-  existing_user_controller_->Init(users);
-
-  // Initiate mobile config load.
-  MobileConfig::GetInstance();
-
-  // Initiate device policy fetching.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  connector->ScheduleServiceInitialization(
-      kPolicyServiceInitializationDelayMilliseconds);
+  existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   CHECK(login_display_);
   GetOobeUI()->ShowSigninScreen(context, login_display_, login_display_);
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
+
+  // TODO(crbug.com/784495): Make sure this is ported to views.
   BootTimesRecorder::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
 }
@@ -816,13 +791,6 @@ void LoginDisplayHostWebUI::StartSignInScreen(
 void LoginDisplayHostWebUI::OnPreferencesChanged() {
   if (is_showing_login_)
     login_display_->OnPreferencesChanged();
-}
-
-void LoginDisplayHostWebUI::PrewarmAuthentication() {
-  auth_prewarmer_.reset(new AuthPrewarmer());
-  auth_prewarmer_->PrewarmAuthentication(
-      base::Bind(&LoginDisplayHostWebUI::OnAuthPrewarmDone,
-                 pointer_factory_.GetWeakPtr()));
 }
 
 void LoginDisplayHostWebUI::StartDemoAppLaunch() {
@@ -1270,10 +1238,6 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
     login_window_ = nullptr;
     login_window_delegate_ = nullptr;
   }
-}
-
-void LoginDisplayHostWebUI::OnAuthPrewarmDone() {
-  auth_prewarmer_.reset();
 }
 
 void LoginDisplayHostWebUI::SetOobeProgressBarVisible(bool visible) {

@@ -125,10 +125,9 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   }
   void StartUserAdding(base::OnceClosure completion_callback) override {}
   void CancelUserAdding() override {}
-  void StartSignInScreen(const chromeos::LoginScreenContext& context) override {
-  }
+  void OnStartSignInScreen(
+      const chromeos::LoginScreenContext& context) override {}
   void OnPreferencesChanged() override {}
-  void PrewarmAuthentication() override {}
   void StartAppLaunch(const std::string& app_id,
                       bool diagnostic_mode,
                       bool is_auto_launch) override {}

@@ -38,13 +38,13 @@ AuthPrewarmer::~AuthPrewarmer() {
 }
 
 void AuthPrewarmer::PrewarmAuthentication(
-    const base::Closure& completion_callback) {
+    base::OnceClosure completion_callback) {
   if (doing_prewarm_) {
     LOG(ERROR) << "PrewarmAuthentication called twice.";
     return;
   }
   doing_prewarm_ = true;
-  completion_callback_ = completion_callback;
+  completion_callback_ = std::move(completion_callback);
   if (GetRequestContext() && IsNetworkConnected()) {
     DoPrewarm();
     return;
@@ -95,7 +95,7 @@ void AuthPrewarmer::DoPrewarm() {
                      net::HttpRequestInfo::EARLY_LOAD_MOTIVATED));
   if (!completion_callback_.is_null()) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     completion_callback_);
+                                     std::move(completion_callback_));
   }
 }
 
