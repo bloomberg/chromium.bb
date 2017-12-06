@@ -259,7 +259,7 @@ bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
     // empty.  This occlusion check can be wrong.
     if (current_layer->ClipOccludesNextLayers() &&
         current_layer->ImageOccludesNextLayers(*document_, style_)) {
-      if (current_layer->Clip() == kBorderFillBox)
+      if (current_layer->Clip() == EFillBox::kBorder)
         is_non_associative = false;
       break;
     }
@@ -325,10 +325,9 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
       include_left_edge(include_left),
       include_right_edge(include_right),
       is_bottom_layer(!layer.Next()),
-      is_border_fill(layer.Clip() == kBorderFillBox),
-      is_clipped_with_local_scrolling(has_overflow_clip &&
-                                      layer.Attachment() ==
-                                          kLocalBackgroundAttachment) {
+      is_border_fill(layer.Clip() == EFillBox::kBorder),
+      is_clipped_with_local_scrolling(
+          has_overflow_clip && layer.Attachment() == EFillAttachment::kLocal) {
   // When printing backgrounds is disabled or using economy mode,
   // change existing background colors and images to a solid white background.
   // If there's no bg color or image, leave it untouched to avoid affecting
@@ -569,7 +568,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     clip_to_border.emplace(display_item_, paint_info, rect, border_rect,
                            kApplyToContext);
   }
-  if (bg_layer.Clip() == kTextFillBox) {
+  if (bg_layer.Clip() == EFillBox::kText) {
     PaintFillLayerTextFillBox(context, info, image.get(), composite_op,
                               geometry, rect, scrolled_paint_rect);
     return;
@@ -577,24 +576,24 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   GraphicsContextStateSaver background_clip_state_saver(context, false);
   switch (bg_layer.Clip()) {
-    case kPaddingFillBox:
-    case kContentFillBox: {
+    case EFillBox::kPadding:
+    case EFillBox::kContent: {
       if (info.is_rounded_fill)
         break;
 
       // Clip to the padding or content boxes as necessary.
       LayoutRect clip_rect = scrolled_paint_rect;
       clip_rect.Contract(BorderOutsets(info));
-      if (bg_layer.Clip() == kContentFillBox)
+      if (bg_layer.Clip() == EFillBox::kContent)
         clip_rect.Contract(PaddingOutsets(info));
       background_clip_state_saver.Save();
       // TODO(chrishtr): this should be pixel-snapped.
       context.Clip(FloatRect(clip_rect));
       break;
     }
-    case kBorderFillBox:
+    case EFillBox::kBorder:
       break;
-    case kTextFillBox:  // fall through
+    case EFillBox::kText:  // fall through
     default:
       NOTREACHED();
       break;
@@ -622,11 +621,11 @@ FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
                                      info.include_right_edge);
 
   // Clip to the padding or content boxes as necessary.
-  if (bg_layer.Clip() == kContentFillBox) {
+  if (bg_layer.Clip() == EFillBox::kContent) {
     border = style_.GetRoundedInnerBorderFor(
         LayoutRect(border.Rect()), border_padding_insets,
         info.include_left_edge, info.include_right_edge);
-  } else if (bg_layer.Clip() == kPaddingFillBox) {
+  } else if (bg_layer.Clip() == EFillBox::kPadding) {
     border = style_.GetRoundedInnerBorderFor(LayoutRect(border.Rect()),
                                              info.include_left_edge,
                                              info.include_right_edge);

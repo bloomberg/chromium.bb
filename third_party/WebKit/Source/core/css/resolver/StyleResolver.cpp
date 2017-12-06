@@ -1904,10 +1904,10 @@ bool StyleResolver::HasAuthorBackground(const StyleResolverState& state) {
   FillLayer old_fill = cached_ua_style->background_layers;
   FillLayer new_fill = state.Style()->BackgroundLayers();
   // Exclude background-repeat from comparison by resetting it.
-  old_fill.SetRepeatX(kNoRepeatFill);
-  old_fill.SetRepeatY(kNoRepeatFill);
-  new_fill.SetRepeatX(kNoRepeatFill);
-  new_fill.SetRepeatY(kNoRepeatFill);
+  old_fill.SetRepeatX(EFillRepeat::kNoRepeatFill);
+  old_fill.SetRepeatY(EFillRepeat::kNoRepeatFill);
+  new_fill.SetRepeatX(EFillRepeat::kNoRepeatFill);
+  new_fill.SetRepeatY(EFillRepeat::kNoRepeatFill);
 
   return (old_fill != new_fill || cached_ua_style->background_color !=
                                       state.Style()->BackgroundColor());

@@ -228,7 +228,7 @@ namespace blink {
 
 {% macro apply_fill_layer(property_id, fill_type, fill_type_getter = None) %}
 {% set layer_type = 'Background' if 'Background' in property_id else 'Mask' %}
-{% set fill_layer_type = 'k' + layer_type + 'FillLayer' %}
+{% set fill_layer_type = 'EFillLayerType::k' + layer_type %}
 {% set access_layers = 'Access' + layer_type + 'Layers' %}
 {% set map_fill = 'MapFill' + fill_type %}
 {% set fill_type_getter = fill_type_getter or fill_type %}

@@ -141,25 +141,25 @@ class CORE_EXPORT FillLayer {
   }
   void SetAttachment(EFillAttachment attachment) {
     DCHECK(!cached_properties_computed_);
-    attachment_ = attachment;
+    attachment_ = static_cast<unsigned>(attachment);
     attachment_set_ = true;
   }
   void SetClip(EFillBox b) {
     DCHECK(!cached_properties_computed_);
-    clip_ = b;
+    clip_ = static_cast<unsigned>(b);
     clip_set_ = true;
   }
   void SetOrigin(EFillBox b) {
     DCHECK(!cached_properties_computed_);
-    origin_ = b;
+    origin_ = static_cast<unsigned>(b);
     origin_set_ = true;
   }
   void SetRepeatX(EFillRepeat r) {
-    repeat_x_ = r;
+    repeat_x_ = static_cast<unsigned>(r);
     repeat_x_set_ = true;
   }
   void SetRepeatY(EFillRepeat r) {
-    repeat_y_ = r;
+    repeat_y_ = static_cast<unsigned>(r);
     repeat_y_set_ = true;
   }
   void SetComposite(CompositeOperator c) {
@@ -222,7 +222,8 @@ class CORE_EXPORT FillLayer {
   }
 
   bool HasFixedImage() const {
-    if (image_ && attachment_ == kFixedBackgroundAttachment)
+    if (image_ &&
+        static_cast<EFillAttachment>(attachment_) == EFillAttachment::kFixed)
       return true;
     return next_ ? next_->HasFixedImage() : false;
   }
@@ -253,14 +254,19 @@ class CORE_EXPORT FillLayer {
   void ComputeCachedPropertiesIfNeeded() const;
 
   static EFillAttachment InitialFillAttachment(EFillLayerType) {
-    return kScrollBackgroundAttachment;
+    return EFillAttachment::kScroll;
   }
-  static EFillBox InitialFillClip(EFillLayerType) { return kBorderFillBox; }
+  static EFillBox InitialFillClip(EFillLayerType) { return EFillBox::kBorder; }
   static EFillBox InitialFillOrigin(EFillLayerType type) {
-    return type == kBackgroundFillLayer ? kPaddingFillBox : kBorderFillBox;
+    return type == EFillLayerType::kBackground ? EFillBox::kPadding
+                                               : EFillBox::kBorder;
   }
-  static EFillRepeat InitialFillRepeatX(EFillLayerType) { return kRepeatFill; }
-  static EFillRepeat InitialFillRepeatY(EFillLayerType) { return kRepeatFill; }
+  static EFillRepeat InitialFillRepeatX(EFillLayerType) {
+    return EFillRepeat::kRepeatFill;
+  }
+  static EFillRepeat InitialFillRepeatY(EFillLayerType) {
+    return EFillRepeat::kRepeatFill;
+  }
   static CompositeOperator InitialFillComposite(EFillLayerType) {
     return kCompositeSourceOver;
   }

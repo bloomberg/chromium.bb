@@ -912,7 +912,7 @@ FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
 }
 
 LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
-  EFillBox background_box = kTextFillBox;
+  EFillBox background_box = EFillBox::kText;
   // Find the largest background rect of the given opaqueness.
   if (const FillLayer* current = &(Style()->BackgroundLayers())) {
     do {
@@ -926,8 +926,10 @@ LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
         bool layer_known_opaque = false;
         // Check if the image is opaque and fills the clip.
         if (const StyleImage* image = cur->GetImage()) {
-          if ((cur->RepeatX() == kRepeatFill || cur->RepeatX() == kRoundFill) &&
-              (cur->RepeatY() == kRepeatFill || cur->RepeatY() == kRoundFill) &&
+          if ((cur->RepeatX() == EFillRepeat::kRepeatFill ||
+               cur->RepeatX() == EFillRepeat::kRoundFill) &&
+              (cur->RepeatY() == EFillRepeat::kRepeatFill ||
+               cur->RepeatY() == EFillRepeat::kRoundFill) &&
               image->KnownToBeOpaque(GetDocument(), StyleRef())) {
             layer_known_opaque = true;
           }
@@ -946,28 +948,29 @@ LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
       }
       EFillBox current_clip = cur->Clip();
       // Restrict clip if attachment is local.
-      if (current_clip == kBorderFillBox &&
-          cur->Attachment() == kLocalBackgroundAttachment)
-        current_clip = kPaddingFillBox;
+      if (current_clip == EFillBox::kBorder &&
+          cur->Attachment() == EFillAttachment::kLocal)
+        current_clip = EFillBox::kPadding;
 
       // If we're asking for the clip rect, a content-box clipped fill layer can
       // be scrolled into the padding box of the overflow container.
-      if (rect_type == kBackgroundClipRect && current_clip == kContentFillBox &&
-          cur->Attachment() == kLocalBackgroundAttachment) {
-        current_clip = kPaddingFillBox;
+      if (rect_type == kBackgroundClipRect &&
+          current_clip == EFillBox::kContent &&
+          cur->Attachment() == EFillAttachment::kLocal) {
+        current_clip = EFillBox::kPadding;
       }
 
       background_box = EnclosingFillBox(background_box, current_clip);
     } while (current);
   }
   switch (background_box) {
-    case kBorderFillBox:
+    case EFillBox::kBorder:
       return BorderBoxRect();
       break;
-    case kPaddingFillBox:
+    case EFillBox::kPadding:
       return PaddingBoxRect();
       break;
-    case kContentFillBox:
+    case EFillBox::kContent:
       return ContentBoxRect();
       break;
     default:
@@ -5708,7 +5711,8 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnHeightChange(
   if (!img || !img->CanRender())
     return false;
 
-  if (layer.RepeatY() != kRepeatFill && layer.RepeatY() != kNoRepeatFill)
+  if (layer.RepeatY() != EFillRepeat::kRepeatFill &&
+      layer.RepeatY() != EFillRepeat::kNoRepeatFill)
     return true;
 
   // TODO(alancutter): Make this work correctly for calc lengths.
@@ -5748,7 +5752,8 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnWidthChange(
   if (!img || !img->CanRender())
     return false;
 
-  if (layer.RepeatX() != kRepeatFill && layer.RepeatX() != kNoRepeatFill)
+  if (layer.RepeatX() != EFillRepeat::kRepeatFill &&
+      layer.RepeatX() != EFillRepeat::kNoRepeatFill)
     return true;
 
   // TODO(alancutter): Make this work correctly for calc lengths.

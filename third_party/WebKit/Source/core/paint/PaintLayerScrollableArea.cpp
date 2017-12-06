@@ -498,7 +498,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
     // TODO(pdr): This invalidation can be removed if the local background
     // attachment is painted into the scrolling contents.
     if (ScrollsOverflow() && Box().Style()->BackgroundLayers().Attachment() ==
-                                 kLocalBackgroundAttachment) {
+                                 EFillAttachment::kLocal) {
       Box().SetShouldDoFullPaintInvalidation();
       return;
     }
@@ -535,7 +535,7 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
     bool only_scrolled_composited_layers =
         ScrollsOverflow() && Layer()->IsAllScrollingContentComposited() &&
         Box().Style()->BackgroundLayers().Attachment() !=
-            kLocalBackgroundAttachment;
+            EFillAttachment::kLocal;
 
     if (UsesCompositedScrolling() || only_scrolled_composited_layers)
       requires_paint_invalidation = false;

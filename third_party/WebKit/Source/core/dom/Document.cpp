@@ -1969,13 +1969,13 @@ void Document::PropagateStyleToViewport() {
     // http://www.w3.org/TR/css3-background/#root-background
     // The root element background always have painting area of the whole
     // canvas.
-    current_layer->SetClip(kBorderFillBox);
+    current_layer->SetClip(EFillBox::kBorder);
 
     // The root element doesn't scroll. It always propagates its layout overflow
     // to the viewport. Positioning background against either box is equivalent
     // to positioning against the scrolled box of the viewport.
-    if (current_layer->Attachment() == kScrollBackgroundAttachment)
-      current_layer->SetAttachment(kLocalBackgroundAttachment);
+    if (current_layer->Attachment() == EFillAttachment::kScroll)
+      current_layer->SetAttachment(EFillAttachment::kLocal);
   }
   EImageRendering image_rendering = background_style->ImageRendering();
 

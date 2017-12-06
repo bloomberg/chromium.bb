@@ -108,32 +108,28 @@ enum class EVerticalAlign : unsigned {
   kLength
 };
 
-enum EFillAttachment {
-  kScrollBackgroundAttachment,
-  kLocalBackgroundAttachment,
-  kFixedBackgroundAttachment
-};
+enum class EFillAttachment : unsigned { kScroll, kLocal, kFixed };
 
-enum EFillBox {
-  kBorderFillBox,
-  kPaddingFillBox,
-  kContentFillBox,
-  kTextFillBox
-};
+enum class EFillBox : unsigned { kBorder, kPadding, kContent, kText };
 
 inline EFillBox EnclosingFillBox(EFillBox box_a, EFillBox box_b) {
-  if (box_a == kBorderFillBox || box_b == kBorderFillBox)
-    return kBorderFillBox;
-  if (box_a == kPaddingFillBox || box_b == kPaddingFillBox)
-    return kPaddingFillBox;
-  if (box_a == kContentFillBox || box_b == kContentFillBox)
-    return kContentFillBox;
-  return kTextFillBox;
+  if (box_a == EFillBox::kBorder || box_b == EFillBox::kBorder)
+    return EFillBox::kBorder;
+  if (box_a == EFillBox::kPadding || box_b == EFillBox::kPadding)
+    return EFillBox::kPadding;
+  if (box_a == EFillBox::kContent || box_b == EFillBox::kContent)
+    return EFillBox::kContent;
+  return EFillBox::kText;
 }
 
-enum EFillRepeat { kRepeatFill, kNoRepeatFill, kRoundFill, kSpaceFill };
+enum class EFillRepeat : unsigned {
+  kRepeatFill,
+  kNoRepeatFill,
+  kRoundFill,
+  kSpaceFill
+};
 
-enum EFillLayerType { kBackgroundFillLayer, kMaskFillLayer };
+enum class EFillLayerType : unsigned { kBackground, kMask };
 
 // CSS3 Background Values
 enum EFillSizeType { kContain, kCover, kSizeLength, kSizeNone };

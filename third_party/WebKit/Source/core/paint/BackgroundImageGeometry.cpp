@@ -423,7 +423,7 @@ bool ShouldUseFixedAttachment(const FillLayer& fill_layer) {
     // on scroll of a page that has fixed background images.
     return false;
   }
-  return fill_layer.Attachment() == kFixedBackgroundAttachment;
+  return fill_layer.Attachment() == EFillAttachment::kFixed;
 }
 
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
@@ -521,9 +521,9 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       positioning_area.SetSize(positioning_size_override_);
     else
       positioning_area = paint_rect;
-    if (fill_layer.Origin() != kBorderFillBox) {
+    if (fill_layer.Origin() != EFillBox::kBorder) {
       box_outset = positioning_box_.BorderBoxOutsets();
-      if (fill_layer.Origin() == kContentFillBox)
+      if (fill_layer.Origin() == EFillBox::kContent)
         box_outset += positioning_box_.PaddingOutsets();
     }
     positioning_area.Contract(box_outset);
@@ -565,7 +565,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   LayoutUnit computed_x_position =
       RoundedMinimumValueForLength(fill_layer.XPosition(), available_width) -
       offset_in_background_.X();
-  if (background_repeat_x == kRoundFill &&
+  if (background_repeat_x == EFillRepeat::kRoundFill &&
       positioning_area_size.Width() > LayoutUnit() &&
       fill_tile_size.Width() > LayoutUnit()) {
     int nr_tiles = std::max(
@@ -574,7 +574,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
 
     // Maintain aspect ratio if background-size: auto is set
     if (fill_layer.Size().size.Height().IsAuto() &&
-        background_repeat_y != kRoundFill) {
+        background_repeat_y != EFillRepeat::kRoundFill) {
       fill_tile_size.SetHeight(fill_tile_size.Height() * rounded_width /
                                fill_tile_size.Width());
     }
@@ -594,7 +594,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   LayoutUnit computed_y_position =
       RoundedMinimumValueForLength(fill_layer.YPosition(), available_height) -
       offset_in_background_.Y();
-  if (background_repeat_y == kRoundFill &&
+  if (background_repeat_y == EFillRepeat::kRoundFill &&
       positioning_area_size.Height() > LayoutUnit() &&
       fill_tile_size.Height() > LayoutUnit()) {
     int nr_tiles = std::max(1, RoundToInt(positioning_area_size.Height() /
@@ -602,7 +602,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     LayoutUnit rounded_height = positioning_area_size.Height() / nr_tiles;
     // Maintain aspect ratio if background-size: auto is set
     if (fill_layer.Size().size.Width().IsAuto() &&
-        background_repeat_x != kRoundFill) {
+        background_repeat_x != EFillRepeat::kRoundFill) {
       fill_tile_size.SetWidth(fill_tile_size.Width() * rounded_height /
                               fill_tile_size.Height());
     }
@@ -619,20 +619,20 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     SetSpaceSize(LayoutSize());
   }
 
-  if (background_repeat_x == kRepeatFill) {
+  if (background_repeat_x == EFillRepeat::kRepeatFill) {
     SetRepeatX(fill_layer, fill_tile_size.Width(), available_width,
                unsnapped_available_width, box_outset.Left(),
                offset_in_background_.X());
-  } else if (background_repeat_x == kSpaceFill &&
+  } else if (background_repeat_x == EFillRepeat::kSpaceFill &&
              TileSize().Width() > LayoutUnit()) {
     LayoutUnit space = GetSpaceBetweenImageTiles(positioning_area_size.Width(),
                                                  TileSize().Width());
     if (space >= LayoutUnit())
       SetSpaceX(space, available_width, box_outset.Left());
     else
-      background_repeat_x = kNoRepeatFill;
+      background_repeat_x = EFillRepeat::kNoRepeatFill;
   }
-  if (background_repeat_x == kNoRepeatFill) {
+  if (background_repeat_x == EFillRepeat::kNoRepeatFill) {
     LayoutUnit x_offset = fill_layer.BackgroundXOrigin() == kRightEdge
                               ? available_width - computed_x_position
                               : computed_x_position;
@@ -641,20 +641,20 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
       SetDestRect(LayoutRect());
   }
 
-  if (background_repeat_y == kRepeatFill) {
+  if (background_repeat_y == EFillRepeat::kRepeatFill) {
     SetRepeatY(fill_layer, fill_tile_size.Height(), available_height,
                unsnapped_available_height, box_outset.Top(),
                offset_in_background_.Y());
-  } else if (background_repeat_y == kSpaceFill &&
+  } else if (background_repeat_y == EFillRepeat::kSpaceFill &&
              TileSize().Height() > LayoutUnit()) {
     LayoutUnit space = GetSpaceBetweenImageTiles(positioning_area_size.Height(),
                                                  TileSize().Height());
     if (space >= LayoutUnit())
       SetSpaceY(space, available_height, box_outset.Top());
     else
-      background_repeat_y = kNoRepeatFill;
+      background_repeat_y = EFillRepeat::kNoRepeatFill;
   }
-  if (background_repeat_y == kNoRepeatFill) {
+  if (background_repeat_y == EFillRepeat::kNoRepeatFill) {
     LayoutUnit y_offset = fill_layer.BackgroundYOrigin() == kBottomEdge
                               ? available_height - computed_y_position
                               : computed_y_position;

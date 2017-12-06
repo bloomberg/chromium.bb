@@ -200,8 +200,9 @@ bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
     // that fully covers the overflow area.
     // TODO(pdr): Check all background layers instead of skipping this if there
     // are multiple backgrounds.
-    if (layers.Next() || layers.GetImage() || layers.RepeatX() != kRepeatFill ||
-        layers.RepeatY() != kRepeatFill)
+    if (layers.Next() || layers.GetImage() ||
+        layers.RepeatX() != EFillRepeat::kRepeatFill ||
+        layers.RepeatY() != EFillRepeat::kRepeatFill)
       return true;
   }
 
