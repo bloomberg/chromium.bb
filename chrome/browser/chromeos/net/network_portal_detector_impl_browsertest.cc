@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -32,11 +33,6 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_observer.h"
-
-using message_center::MessageCenter;
-using message_center::MessageCenterObserver;
 
 namespace chromeos {
 
@@ -68,42 +64,6 @@ void SetConnected(const std::string& service_path) {
       base::Bind(&ErrorCallbackFunction));
   base::RunLoop().RunUntilIdle();
 }
-
-class TestObserver : public MessageCenterObserver {
- public:
-  TestObserver() : run_loop_(new base::RunLoop()) {
-    MessageCenter::Get()->AddObserver(this);
-  }
-
-  ~TestObserver() override { MessageCenter::Get()->RemoveObserver(this); }
-
-  void WaitAndReset() {
-    run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
-  }
-
-  void OnNotificationDisplayed(
-      const std::string& notification_id,
-      const message_center::DisplaySource source) override {
-    if (notification_id == kNotificationId) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    run_loop_->QuitClosure());
-    }
-  }
-
-  void OnNotificationRemoved(const std::string& notification_id,
-                             bool by_user) override {
-    if (notification_id == kNotificationId && by_user) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    run_loop_->QuitClosure());
-    }
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
-};
 
 }  // namespace
 
@@ -157,8 +117,6 @@ class NetworkPortalDetectorImplBrowserTest
     return network_portal_detector_->strategy_.get();
   }
 
-  MessageCenter* message_center() { return MessageCenter::Get(); }
-
   void SetIgnoreNoNetworkForTesting() {
     network_portal_detector_->notification_controller_
         ->SetIgnoreNoNetworkForTesting();
@@ -171,6 +129,9 @@ class NetworkPortalDetectorImplBrowserTest
 
  protected:
   AccountId test_account_id_;
+
+  // This lives here because it has to outlast other profile-keyed services.
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
   NetworkPortalDetectorImpl* network_portal_detector_;
@@ -189,8 +150,6 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
                        InSessionDetection) {
   typedef NetworkPortalNotificationController Controller;
 
-  TestObserver observer;
-
   EnumHistogramChecker ui_checker(
       kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, NULL);
   EnumHistogramChecker action_checker(
@@ -198,6 +157,8 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
 
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
+  display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+      ProfileManager::GetActiveUserProfile());
 
   // User connects to wifi.
   SetConnected(kWifiServicePath);
@@ -205,30 +166,25 @@ IN_PROC_BROWSER_TEST_F(NetworkPortalDetectorImplBrowserTest,
   ASSERT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
 
   // No notification until portal detection is completed.
-  ASSERT_FALSE(message_center()->FindVisibleNotificationById(kNotificationId));
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
   RestartDetection();
   CompleteURLFetch(net::OK, 200, NULL);
 
   // Check that wifi is marked as behind the portal and that notification
   // is displayed.
-  ASSERT_TRUE(message_center()->FindVisibleNotificationById(kNotificationId));
+  EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
   ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
             network_portal_detector::GetInstance()
                 ->GetCaptivePortalState(kWifiGuid)
                 .status);
-
-  // Wait until notification is displayed.
-  observer.WaitAndReset();
 
   ASSERT_TRUE(
       ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
   ASSERT_TRUE(action_checker.Check());
 
   // User explicitly closes the notification.
-  message_center()->RemoveNotification(kNotificationId, true);
-
-  // Wait until notification is closed.
-  observer.WaitAndReset();
+  display_service_->RemoveNotification(NotificationHandler::Type::TRANSIENT,
+                                       kNotificationId, true);
 
   ASSERT_TRUE(ui_checker.Check());
   ASSERT_TRUE(
@@ -252,8 +208,6 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
     const bool preference_value) {
   using Controller = NetworkPortalNotificationController;
 
-  TestObserver observer;
-
   EnumHistogramChecker ui_checker(
       kNotificationMetric, Controller::NOTIFICATION_METRIC_COUNT, nullptr);
   EnumHistogramChecker action_checker(
@@ -261,6 +215,8 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
 
   LoginUser(test_account_id_);
   content::RunAllPendingInMessageLoop();
+  display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+      ProfileManager::GetActiveUserProfile());
 
   SetIgnoreNoNetworkForTesting();
 
@@ -273,26 +229,23 @@ void NetworkPortalDetectorImplBrowserTestIgnoreProxy::TestImpl(
   EXPECT_EQ(PortalDetectorStrategy::STRATEGY_ID_SESSION, strategy()->Id());
 
   // No notification until portal detection is completed.
-  EXPECT_FALSE(message_center()->FindVisibleNotificationById(kNotificationId));
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
   RestartDetection();
   CompleteURLFetch(net::OK, 200, nullptr);
 
   // Check that WiFi is marked as behind a portal and that a notification
   // is displayed.
-  EXPECT_TRUE(message_center()->FindVisibleNotificationById(kNotificationId));
+  ASSERT_TRUE(display_service_->GetNotification(kNotificationId));
   EXPECT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
             network_portal_detector::GetInstance()
                 ->GetCaptivePortalState(kWifiGuid)
                 .status);
 
-  // Wait until notification is displayed.
-  observer.WaitAndReset();
-
   EXPECT_TRUE(
       ui_checker.Expect(Controller::NOTIFICATION_METRIC_DISPLAYED, 1)->Check());
   EXPECT_TRUE(action_checker.Check());
 
-  message_center()->ClickOnNotification(kNotificationId);
+  display_service_->GetNotification(kNotificationId)->delegate()->Click();
 
   content::RunAllPendingInMessageLoop();
 
