@@ -606,6 +606,20 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
   if (blocked_reason != ResourceRequestBlockedReason::kNone)
     return kBlock;
 
+  const scoped_refptr<const SecurityOrigin>& origin = options.security_origin;
+  if (origin && !origin->IsUnique() &&
+      !origin->IsSameSchemeHostPort(Context().GetSecurityOrigin())) {
+    // |options.security_origin| may differ from the document's origin if
+    // this is a fetch initiated by an isolated world execution context, with a
+    // different SecurityOrigin. In this case, plumb it through as the
+    // RequestorOrigin so that the browser process can make policy decisions for
+    // this request, based on any special permissions the isolated world may
+    // have been granted.
+    // TODO(nick, dcheng): Find a way to formalize the isolated world origin
+    // check in https://crbug.com/792154.
+    resource_request.SetRequestorOrigin(origin);
+  }
+
   // For initial requests, call prepareRequest() here before revalidation
   // policy is determined.
   Context().PrepareRequest(resource_request,
@@ -614,7 +628,6 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return kAbort;
 
-  scoped_refptr<const SecurityOrigin> origin = options.security_origin;
   params.MutableOptions().cors_flag =
       !origin || !origin->CanRequestNoSuborigin(params.Url());
 

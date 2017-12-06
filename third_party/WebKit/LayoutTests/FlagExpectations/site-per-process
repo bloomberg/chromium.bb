@@ -1,6 +1,13 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/789781: Document blocking should skip these cases.
+crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-exact-match.html [ Failure ]
+crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-removal.html [ Failure ]
+crbug.com/789781 http/tests/xmlhttprequest/origin-whitelisting-subdomains.html [ Failure ]
+crbug.com/789781 http/tests/xmlhttprequest/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
+crbug.com/789781 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Failure ]
+
 # https://crbug.com/769502: PlzNavigate-related, not-yet-investigated timeout.
 crbug.com/769502 fast/loader/recursive-before-unload-crash.html [ Timeout ]
 

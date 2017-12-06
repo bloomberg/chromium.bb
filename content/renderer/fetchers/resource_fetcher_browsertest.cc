@@ -318,10 +318,10 @@ class ResourceFetcherTests : public ContentBrowserTest {
 // Test a fetch from the test server.
 // If this flakes, use http://crbug.com/51622.
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
+  // Need to spin up the renderer to same-site URL.
   ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
   GURL url(embedded_test_server()->GetURL("/simple_page.html"));
 
   PostTaskToInProcessRendererAndWait(
@@ -331,10 +331,10 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
 
 // Test if ResourceFetcher can handle server redirects correctly.
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherRedirect) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
-
+  // Need to spin up the renderer to same-site URL.
   ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
   GURL final_url(embedded_test_server()->GetURL("/simple_page.html"));
   GURL url(
       embedded_test_server()->GetURL("/server-redirect?" + final_url.spec()));
@@ -345,11 +345,11 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherRedirect) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcher404) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  // Need to spin up the renderer to same-site URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   // Test 404 response.
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/thisfiledoesntexist.html");
 
   PostTaskToInProcessRendererAndWait(
@@ -368,12 +368,12 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  // Need to spin up the renderer to same-site URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/slow?1"));
 
   PostTaskToInProcessRendererAndWait(
@@ -382,12 +382,12 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  // Need to spin up the renderer to same-site URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/slow?1"));
 
   PostTaskToInProcessRendererAndWait(base::Bind(
@@ -397,11 +397,11 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
 
 // Test that ResourceFetchers can handle POSTs.
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  // Need to spin up the renderer to same-site URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   // Grab a page that echos the POST body.
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/echo"));
 
   PostTaskToInProcessRendererAndWait(base::Bind(
@@ -410,11 +410,11 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherPost) {
 
 // Test that ResourceFetchers can set headers.
 IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherSetHeader) {
-  // Need to spin up the renderer.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  // Need to spin up the renderer to same-site URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
 
   // Grab a page that echos the POST body.
-  ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/echoheader?header"));
 
   PostTaskToInProcessRendererAndWait(

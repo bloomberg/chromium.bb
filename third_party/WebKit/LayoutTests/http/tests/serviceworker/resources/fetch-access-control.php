@@ -104,7 +104,7 @@ foreach ($_FILES as $key => $file) {
                      'content' => $content);
 }
 
-header('Content-Type: application/json');
+header('Content-Type: application/javascript');
 $arr = array('jsonpResult' => 'success',
              'method' => $_SERVER['REQUEST_METHOD'],
              'headers' => getallheaders(),

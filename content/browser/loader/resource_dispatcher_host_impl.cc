@@ -44,6 +44,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/async_resource_handler.h"
+#include "content/browser/loader/cross_site_document_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
 #include "content/browser/loader/loader_delegate.h"
@@ -1575,6 +1576,14 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // Add the pre mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(
       std::move(handler), request, std::move(pre_mime_sniffing_throttles)));
+
+  if (!IsResourceTypeFrame(resource_type)) {
+    // Add a handler to block cross-site documents from the renderer process.
+    // This should be pre mime-sniffing, since it affects whether the response
+    // will be read, and since it looks at the original mime type.
+    handler.reset(
+        new CrossSiteDocumentResourceHandler(std::move(handler), request));
+  }
 
   return handler;
 }

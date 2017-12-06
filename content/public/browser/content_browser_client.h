@@ -247,6 +247,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldLockToOrigin(BrowserContext* browser_context,
                                   const GURL& effective_url);
 
+  // Returns true if the |initiator| origin should be allowed to receive a
+  // document at |url|, bypassing the usual blocking logic. Defaults to false.
+  // This is called on the IO thread.
+  virtual bool ShouldBypassDocumentBlocking(const url::Origin& initiator,
+                                            const GURL& url,
+                                            ResourceType resource_type);
+
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may
   // not serve specific WebUI pages depending on the particular URLDataSource

@@ -81420,6 +81420,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.XSD.Browser.Action"
+    enum="SiteIsolationResponseAction">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    Various actions related to cross-site document blocking in the browser
+    process, indicating whether the response was blocked from the renderer.
+    Recorded as the response is processed in the network stack.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Browser.Blocked" enum="ContentResourceType2">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The total count of responses that were blocked by the cross-site document
+    blocking logic in the browser process. Sampled with a resource type (0-17)
+    when the response is blocked, just after the first read from the network.
+    This is also recorded with a suffix indicating the MIME type category.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.XSD.Browser.BytesReadForSniffing" units="bytes">
+  <owner>creis@chromium.org</owner>
+  <summary>
+    The number of bytes in the first read of the network response, when
+    attempting to sniff the response to determine if it should be blocked as a
+    cross-site document. Recorded when sniffing is attempted.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.XSD.DataLength" units="byte">
   <owner>creis@chromium.org</owner>
   <summary>
@@ -108798,6 +108827,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SimpleCache.SyncCreateResult"/>
   <affected-histogram name="SimpleCache.SyncOpenPlatformFileError"/>
   <affected-histogram name="SimpleCache.SyncOpenResult"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SiteIsolation.XSD.MIME" separator=".">
+  <suffix name="HTML" label="Classified as HTML MIME type."/>
+  <suffix name="XML" label="Classified as XML MIME type."/>
+  <suffix name="JSON" label="Classified as JSON MIME type."/>
+  <suffix name="Plain" label="Classified as plain text MIME type."/>
+  <affected-histogram name="SiteIsolation.XSD.Browser.Blocked"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SkiaDrawScaleFactorFilterQuality" separator=".">

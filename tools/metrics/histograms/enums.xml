@@ -38545,6 +38545,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Others"/>
 </enum>
 
+<enum name="SiteIsolationResponseAction">
+  <int value="0" label="Response started"/>
+  <int value="1" label="Response blocked without sniffing"/>
+  <int value="2" label="Response blocked after sniffing"/>
+  <int value="3" label="Response allowed without sniffing"/>
+  <int value="4" label="Response allowed after sniffing"/>
+</enum>
+
 <enum name="SkiaFilterQuality">
   <int value="0" label="None"/>
   <int value="1" label="Low"/>
