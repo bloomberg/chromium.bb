@@ -105,7 +105,11 @@ void Text::SetCursorPosition(int position) {
   texture_->SetCursorPosition(position);
 }
 
-gfx::RectF Text::GetCursorBounds() {
+gfx::Rect Text::GetRawCursorBounds() const {
+  return texture_->get_cursor_bounds();
+}
+
+gfx::RectF Text::GetCursorBounds() const {
   // Note that gfx:: cursor bounds always indicate a one-pixel width, so we
   // override the width here to be a percentage of height for the sake of
   // arbitrary texture sizes.

@@ -19,4 +19,8 @@ bool TextInputInfo::operator!=(const TextInputInfo& other) const {
   return !(*this == other);
 }
 
+static_assert(sizeof(base::string16) + 8 == sizeof(TextInputInfo),
+              "If new fields are added to TextInputInfo, we must explicitly "
+              "bump this size and update operator==");
+
 }  // namespace vr
