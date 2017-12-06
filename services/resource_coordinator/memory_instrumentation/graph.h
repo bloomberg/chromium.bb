@@ -128,6 +128,14 @@ class GlobalDumpGraph {
     void add_not_owning_sub_size(uint64_t addition) {
       not_owning_sub_size_ += addition;
     }
+    double owned_coefficient() const { return owned_coefficient_; }
+    void set_owned_coefficient(double owned_coefficient) {
+      owned_coefficient_ = owned_coefficient;
+    }
+    double owning_coefficient() const { return owning_coefficient_; }
+    void set_owning_coefficient(double owning_coefficient) {
+      owning_coefficient_ = owning_coefficient;
+    }
     GlobalDumpGraph::Edge* owns_edge() const { return owns_edge_; }
     std::map<std::string, Node*>* children() { return &children_; }
     std::vector<GlobalDumpGraph::Edge*>* owned_by_edges() {
@@ -146,6 +154,8 @@ class GlobalDumpGraph {
     bool weak_ = false;
     uint64_t not_owning_sub_size_ = 0;
     uint64_t not_owned_sub_size_ = 0;
+    double owned_coefficient_ = 1;
+    double owning_coefficient_ = 1;
 
     GlobalDumpGraph::Edge* owns_edge_;
     std::vector<GlobalDumpGraph::Edge*> owned_by_edges_;

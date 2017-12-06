@@ -149,6 +149,15 @@ void GraphProcessor::CalculateSizesForGraph(GlobalDumpGraph* global_graph) {
       CalculateDumpSubSizes(node);
     }
   }
+
+  // Tenth pass: Calculate owned and owning coefficients of owned and owner
+  // nodes.
+  {
+    auto it = global_graph->VisitInDepthFirstPostOrder();
+    while (Node* node = it.next()) {
+      CalculateDumpOwnershipCoefficient(node);
+    }
+  }
 }
 
 // static
@@ -623,6 +632,77 @@ void GraphProcessor::CalculateDumpSubSizes(Node* node) {
     }
     uint64_t child_size = GetSizeEntryOfNode(child).value_or(0);
     node->add_not_owned_sub_size(child_size - largest_owner_size);
+  }
+}
+
+// static
+void GraphProcessor::CalculateDumpOwnershipCoefficient(Node* node) {
+  // Completely skip dumps with undefined size.
+  base::Optional<uint64_t> size_opt = GetSizeEntryOfNode(node);
+  if (!size_opt)
+    return;
+
+  // We only need to consider owned dumps.
+  if (node->owned_by_edges()->empty())
+    return;
+
+  // Sort the owners in decreasing order of ownership priority and
+  // increasing order of not-owning sub-size (in case of equal priority).
+  std::vector<Edge*> owners = *node->owned_by_edges();
+  std::sort(owners.begin(), owners.end(), [](Edge* a, Edge* b) {
+    if (a->priority() == b->priority()) {
+      return a->source()->not_owning_sub_size() <
+             b->source()->not_owning_sub_size();
+    }
+    return b->priority() < a->priority();
+  });
+
+  // Loop over the list of owners and distribute the owned dump's not-owned
+  // sub-size among them according to their ownership priority and
+  // not-owning sub-size.
+  uint64_t already_attributed_sub_size = 0;
+  for (auto current_it = owners.begin(); current_it != owners.end();) {
+    // Find the position of the first owner with lower priority.
+    int current_priority = (*current_it)->priority();
+    auto next_it =
+        std::find_if(current_it, owners.end(), [current_priority](Edge* edge) {
+          return edge->priority() < current_priority;
+        });
+
+    // Compute the number of nodes which have the same priority as current.
+    size_t difference = std::distance(current_it, next_it);
+
+    // Visit the owners with the same priority in increasing order of
+    // not-owned sub-size, split the owned memory among them appropriately,
+    // and calculate their owning coefficients.
+    double attributed_not_owning_sub_size = 0;
+    for (; current_it != next_it; current_it++) {
+      uint64_t not_owning_sub_size =
+          (*current_it)->source()->not_owning_sub_size();
+      if (not_owning_sub_size > already_attributed_sub_size) {
+        attributed_not_owning_sub_size +=
+            (not_owning_sub_size - already_attributed_sub_size) / difference;
+        already_attributed_sub_size = not_owning_sub_size;
+      }
+
+      if (not_owning_sub_size != 0) {
+        double coeff = attributed_not_owning_sub_size / not_owning_sub_size;
+        (*current_it)->source()->set_owning_coefficient(coeff);
+      }
+      difference--;
+    }
+
+    // At the end of this loop, we should move to a node with a lower priority.
+    DCHECK(current_it == next_it);
+  }
+
+  // Attribute the remainder of the owned dump's not-owned sub-size to
+  // the dump itself and calculate its owned coefficient.
+  uint64_t not_owned_sub_size = node->not_owned_sub_size();
+  if (not_owned_sub_size != 0) {
+    double remainder_sub_size =
+        not_owned_sub_size - already_attributed_sub_size;
+    node->set_owned_coefficient(remainder_sub_size / not_owned_sub_size);
   }
 }
 
