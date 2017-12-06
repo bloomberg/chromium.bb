@@ -1259,7 +1259,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)presentBubblesIfEligible {
   [self presentNewTabTipBubbleOnInitialized];
-  [self presentNewIncognitoTabTipBubble];
+  [self presentNewIncognitoTabTipBubbleOnInitialized];
 }
 
 #pragma mark - UIViewController methods
