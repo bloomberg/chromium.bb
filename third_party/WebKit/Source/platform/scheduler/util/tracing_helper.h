@@ -7,6 +7,7 @@
 
 #include <string>
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/PlatformExport.h"
 
@@ -31,6 +32,8 @@ PLATFORM_EXPORT void WarmupTracingCategories();
 PLATFORM_EXPORT bool AreVerboseSnapshotsEnabled();
 
 PLATFORM_EXPORT std::string PointerToString(const void* pointer);
+
+PLATFORM_EXPORT double TimeDeltaToMilliseconds(const base::TimeDelta& value);
 
 // TRACE_EVENT macros define static variable to cache a pointer to the state
 // of category. Hence, we need distinct version for each category in order to

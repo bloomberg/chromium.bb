@@ -57,5 +57,9 @@ std::string PointerToString(const void* pointer) {
       static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
 }
 
+double TimeDeltaToMilliseconds(const base::TimeDelta& value) {
+  return value.InMillisecondsF();
+}
+
 }  // namespace scheduler
 }  // namespace blink
