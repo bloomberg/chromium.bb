@@ -50,6 +50,7 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
         'powerMetric',
         'tracingMetric',
         'accessibilityMetric',
+        'limitedCpuTimeMetric'
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)
     # The EQT metric depends on the same categories as the loading metric.
