@@ -52,6 +52,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#include "chrome/browser/spellchecker/test/spellcheck_content_browser_client.h"
 #include "components/spellcheck/common/spellcheck_panel.mojom.h"
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
@@ -856,117 +857,11 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckTest) {
 }
 
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
-class TestSpellCheckPanelHost : public spellcheck::mojom::SpellCheckPanelHost {
- public:
-  explicit TestSpellCheckPanelHost(content::RenderProcessHost* process_host)
-      : process_host_(process_host) {}
-
-  content::RenderProcessHost* process_host() const { return process_host_; }
-
-  bool SpellingPanelVisible() {
-    if (!show_spelling_panel_called_) {
-      base::RunLoop run_loop;
-      quit_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-
-    EXPECT_TRUE(show_spelling_panel_called_);
-    return spelling_panel_visible_;
-  }
-
-  void SpellCheckPanelHostRequest(
-      spellcheck::mojom::SpellCheckPanelHostRequest request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  // spellcheck::mojom::SpellCheckPanelHost:
-  void ShowSpellingPanel(bool show) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    show_spelling_panel_called_ = true;
-    spelling_panel_visible_ = show;
-    if (quit_)
-      std::move(quit_).Run();
-  }
-
-  void UpdateSpellingPanelWithMisspelledWord(
-      const base::string16& word) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  }
-
-  mojo::BindingSet<spellcheck::mojom::SpellCheckPanelHost> bindings_;
-  content::RenderProcessHost* process_host_;
-  bool show_spelling_panel_called_ = false;
-  bool spelling_panel_visible_ = false;
-  base::OnceClosure quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSpellCheckPanelHost);
-};
-
-class TestBrowserClientForSpellCheckPanelHost
-    : public ChromeContentBrowserClient {
- public:
-  TestBrowserClientForSpellCheckPanelHost() = default;
-
-  // ContentBrowserClient overrides.
-  void OverrideOnBindInterface(
-      const service_manager::BindSourceInfo& remote_info,
-      const std::string& name,
-      mojo::ScopedMessagePipeHandle* handle) override {
-    if (name != spellcheck::mojom::SpellCheckPanelHost::Name_)
-      return;
-
-    spellcheck::mojom::SpellCheckPanelHostRequest request(std::move(*handle));
-
-    // Override the default SpellCheckHost interface.
-    auto ui_task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI);
-    ui_task_runner->PostTask(
-        FROM_HERE, base::Bind(&TestBrowserClientForSpellCheckPanelHost::
-                                  BindSpellCheckPanelHostRequest,
-                              base::Unretained(this), base::Passed(&request),
-                              remote_info));
-  }
-
-  TestSpellCheckPanelHost* GetTestSpellCheckPanelHostForProcess(
-      content::RenderProcessHost* render_process_host) const {
-    for (const auto& host : hosts_) {
-      if (host->process_host() == render_process_host)
-        return host.get();
-    }
-    return nullptr;
-  }
-
-  void RunUntilBind() {
-    base::RunLoop run_loop;
-    quit_on_bind_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
- private:
-  void BindSpellCheckPanelHostRequest(
-      spellcheck::mojom::SpellCheckPanelHostRequest request,
-      const service_manager::BindSourceInfo& source_info) {
-    content::RenderProcessHost* render_process_host =
-        content::RenderProcessHost::FromRendererIdentity(source_info.identity);
-    auto spell_check_panel_host =
-        std::make_unique<TestSpellCheckPanelHost>(render_process_host);
-    spell_check_panel_host->SpellCheckPanelHostRequest(std::move(request));
-    hosts_.push_back(std::move(spell_check_panel_host));
-    std::move(quit_on_bind_closure_).Run();
-  }
-
-  base::OnceClosure quit_on_bind_closure_;
-  std::vector<std::unique_ptr<TestSpellCheckPanelHost>> hosts_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserClientForSpellCheckPanelHost);
-};
 
 // Tests that the OSX spell check panel can be opened from an out-of-process
 // subframe, crbug.com/712395
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckPanelTest) {
-  TestBrowserClientForSpellCheckPanelHost browser_client;
+  spellcheck::SpellCheckContentBrowserClient browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
 
@@ -987,8 +882,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFSpellCheckPanelTest) {
   spell_check_panel_client->ToggleSpellPanel(false);
   browser_client.RunUntilBind();
 
-  TestSpellCheckPanelHost* host =
-      browser_client.GetTestSpellCheckPanelHostForProcess(
+  spellcheck::SpellCheckMockPanelHost* host =
+      browser_client.GetSpellCheckMockPanelHostForProcess(
           cross_site_subframe->GetProcess());
   EXPECT_TRUE(host->SpellingPanelVisible());
 

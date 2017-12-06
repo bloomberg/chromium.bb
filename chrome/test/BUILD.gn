@@ -675,6 +675,7 @@ test("browser_tests") {
       "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/speech/extension_api/tts_extension_apitest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
+      "../browser/spellchecker/spellcheck_mac_view_browsertest.mm",
       "../browser/spellchecker/spellcheck_service_browsertest.cc",
       "../browser/ssl/cert_verifier_browser_test.cc",
       "../browser/ssl/cert_verifier_browser_test.h",
