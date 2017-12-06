@@ -6,7 +6,18 @@
 <body>
 <script>
 description("Tests the acceptable types for arguments to navigator.getUserMedia methods.");
+window.jsTestIsAsync = true;
 
+// Pending callbacks may cause the leak detector run at the end of the test to
+// find leaked blink nodes. Therefore, we must wait for all callbacks to arrive
+// before finishing the test run.
+var remainingExpectedCallbackCount = 3;
+var callbackFunction = function() {
+  remainingExpectedCallbackCount--;
+  if (remainingExpectedCallbackCount == 0) {
+    finishJSTest();
+  }
+};
 var emptyFunction = function() {};
 
 // No arguments
@@ -17,9 +28,9 @@ shouldThrow('navigator.webkitGetUserMedia({video: true})');
 shouldThrow('navigator.webkitGetUserMedia({video: true}, emptyFunction)');
 
 // 3 arguments (getUserMedia requires at least 3 arguments).
-shouldNotThrow('navigator.webkitGetUserMedia({video: true}, emptyFunction, emptyFunction)');
-shouldNotThrow('navigator.webkitGetUserMedia({audio: true}, emptyFunction, emptyFunction)');
-shouldNotThrow('navigator.webkitGetUserMedia({audio: true, video: true}, emptyFunction, emptyFunction)');
+shouldNotThrow('navigator.webkitGetUserMedia({video: true}, callbackFunction, callbackFunction)');
+shouldNotThrow('navigator.webkitGetUserMedia({audio: true}, callbackFunction, callbackFunction)');
+shouldNotThrow('navigator.webkitGetUserMedia({audio: true, video: true}, callbackFunction, callbackFunction)');
 shouldThrow('navigator.webkitGetUserMedia(-Infinity, emptyFunction, emptyFunction)');
 shouldThrow('navigator.webkitGetUserMedia(42, emptyFunction, emptyFunction)');
 shouldThrow('navigator.webkitGetUserMedia(Infinity, emptyFunction, emptyFunction)');
@@ -47,7 +58,6 @@ shouldThrow('navigator.webkitGetUserMedia({video: true}, true, emptyFunction)');
 shouldThrow('navigator.webkitGetUserMedia({video: true}, undefined, emptyFunction)');
 shouldThrow('navigator.webkitGetUserMedia({video: true}, {}, emptyFunction)');
 
-window.jsTestIsAsync = false;
 </script>
 </body>
 </html>
