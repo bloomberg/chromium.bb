@@ -8,40 +8,8 @@
 
 namespace autofill {
 
-AutofillType::AutofillType(ServerFieldType field_type)
-    : html_type_(HTML_TYPE_UNSPECIFIED), html_mode_(HTML_MODE_NONE) {
-  if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
-      (field_type >= 15 && field_type <= 19) ||
-      (field_type >= 25 && field_type <= 29) ||
-      (field_type >= 44 && field_type <= 50)) {
-    server_type_ = UNKNOWN_TYPE;
-  } else {
-    server_type_ = field_type;
-  }
-}
-
-AutofillType::AutofillType(HtmlFieldType field_type, HtmlFieldMode mode)
-    : server_type_(UNKNOWN_TYPE),
-      html_type_(field_type),
-      html_mode_(mode) {}
-
-
-AutofillType::AutofillType(const AutofillType& autofill_type) {
-  *this = autofill_type;
-}
-
-AutofillType& AutofillType::operator=(const AutofillType& autofill_type) {
-  if (this != &autofill_type) {
-    this->server_type_ = autofill_type.server_type_;
-    this->html_type_ = autofill_type.html_type_;
-    this->html_mode_ = autofill_type.html_mode_;
-  }
-
-  return *this;
-}
-
-FieldTypeGroup AutofillType::group() const {
-  switch (server_type_) {
+FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
+  switch (field_type) {
     case NAME_FIRST:
     case NAME_MIDDLE:
     case NAME_LAST:
@@ -150,16 +118,21 @@ FieldTypeGroup AutofillType::group() const {
       return USERNAME_FIELD;
 
     case UNKNOWN_TYPE:
-      break;
+      return NO_GROUP;
+    default:
+      return NO_GROUP;
   }
+}
 
-  switch (html_type_) {
+FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
+                                        HtmlFieldMode field_mode) {
+  switch (field_type) {
     case HTML_TYPE_NAME:
     case HTML_TYPE_GIVEN_NAME:
     case HTML_TYPE_ADDITIONAL_NAME:
     case HTML_TYPE_ADDITIONAL_NAME_INITIAL:
     case HTML_TYPE_FAMILY_NAME:
-      return html_mode_ == HTML_MODE_BILLING ? NAME_BILLING : NAME;
+      return field_mode == HTML_MODE_BILLING ? NAME_BILLING : NAME;
 
     case HTML_TYPE_ORGANIZATION:
       return COMPANY;
@@ -175,7 +148,7 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_COUNTRY_NAME:
     case HTML_TYPE_POSTAL_CODE:
     case HTML_TYPE_FULL_ADDRESS:
-      return html_mode_ == HTML_MODE_BILLING ? ADDRESS_BILLING : ADDRESS_HOME;
+      return field_mode == HTML_MODE_BILLING ? ADDRESS_BILLING : ADDRESS_HOME;
 
     case HTML_TYPE_CREDIT_CARD_NAME_FULL:
     case HTML_TYPE_CREDIT_CARD_NAME_FIRST:
@@ -204,21 +177,46 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_TEL_LOCAL_PREFIX:
     case HTML_TYPE_TEL_LOCAL_SUFFIX:
     case HTML_TYPE_TEL_EXTENSION:
-      return html_mode_ == HTML_MODE_BILLING ? PHONE_BILLING : PHONE_HOME;
+      return field_mode == HTML_MODE_BILLING ? PHONE_BILLING : PHONE_HOME;
 
     case HTML_TYPE_EMAIL:
       return EMAIL;
 
     case HTML_TYPE_UPI_VPA:
       // TODO(crbug/702223): Add support for UPI-VPA.
-      break;
+      return NO_GROUP;
 
     case HTML_TYPE_UNSPECIFIED:
     case HTML_TYPE_UNRECOGNIZED:
-      break;
+      return NO_GROUP;
+    default:
+      return NO_GROUP;
   }
+}
 
-  return NO_GROUP;
+AutofillType::AutofillType(ServerFieldType field_type)
+    : html_type_(HTML_TYPE_UNSPECIFIED), html_mode_(HTML_MODE_NONE) {
+  if ((field_type < NO_SERVER_DATA || field_type >= MAX_VALID_FIELD_TYPE) ||
+      (field_type >= 15 && field_type <= 19) ||
+      (field_type >= 25 && field_type <= 29) ||
+      (field_type >= 44 && field_type <= 50)) {
+    server_type_ = UNKNOWN_TYPE;
+  } else {
+    server_type_ = field_type;
+  }
+}
+
+AutofillType::AutofillType(HtmlFieldType field_type, HtmlFieldMode mode)
+    : server_type_(UNKNOWN_TYPE), html_type_(field_type), html_mode_(mode) {}
+
+FieldTypeGroup AutofillType::group() const {
+  FieldTypeGroup result = NO_GROUP;
+  if (server_type_ != UNKNOWN_TYPE) {
+    result = GroupTypeOfServerFieldType(server_type_);
+  } else {
+    result = GroupTypeOfHtmlFieldType(html_type_, html_mode_);
+  }
+  return result;
 }
 
 bool AutofillType::IsUnknown() const {

@@ -211,8 +211,9 @@ TEST_F(AutofillFieldFillerTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
   EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
 }
 
-// Tests that a server prediction of *_CITY_AND_NUMBER override html
-// "autocomplete=tel" prediction, which is always *_WHOLE_NUMBER
+// Tests that if both autocomplete attibutes and server agree it's a phone
+// field, always use server predicted type. If they disagree with autocomplete
+// says it's a phone field, always use autocomplete attribute.
 TEST_F(AutofillFieldFillerTest,
        Type_ServerPredictionOfCityAndNumber_OverrideHtml) {
   AutofillField field;
@@ -222,11 +223,22 @@ TEST_F(AutofillFieldFillerTest,
   field.set_overall_server_type(PHONE_HOME_CITY_AND_NUMBER);
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
 
-  // Other phone number prediction does not override.
+  // Overrides to another number format.
   field.set_overall_server_type(PHONE_HOME_NUMBER);
+  EXPECT_EQ(PHONE_HOME_NUMBER, field.Type().GetStorableType());
+
+  // Overrides autocomplete=tel-national too.
+  field.SetHtmlType(HTML_TYPE_TEL_NATIONAL, HTML_MODE_NONE);
+  field.set_overall_server_type(PHONE_HOME_WHOLE_NUMBER);
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, field.Type().GetStorableType());
 
-  // If html type not specified, we use server prediction.
+  // If autocomplete=tel-national but server says it's not a phone field,
+  // do not override.
+  field.SetHtmlType(HTML_TYPE_TEL_NATIONAL, HTML_MODE_NONE);
+  field.set_overall_server_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
+  EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
+
+  // If html type not specified, we still use server prediction.
   field.SetHtmlType(HTML_TYPE_UNSPECIFIED, HTML_MODE_NONE);
   field.set_overall_server_type(PHONE_HOME_CITY_AND_NUMBER);
   EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
