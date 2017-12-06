@@ -73,13 +73,6 @@ PrivetURLFetcher::PrivetURLFetcher(
       traffic_annotation_(traffic_annotation),
       delegate_(delegate),
       max_retries_(kPrivetMaxRetries),
-      do_not_retry_on_transient_error_(false),
-      send_empty_privet_token_(false),
-      has_byte_range_(false),
-      make_response_file_(false),
-      byte_range_start_(0),
-      byte_range_end_(0),
-      tries_(0),
       weak_factory_(this) {}
 
 PrivetURLFetcher::~PrivetURLFetcher() {
@@ -261,7 +254,6 @@ bool PrivetURLFetcher::OnURLFetchCompleteDoNotParseData(
 
   if (make_response_file_) {
     base::FilePath response_file_path;
-
     if (!source->GetResponseAsFilePath(true, &response_file_path)) {
       delegate_->OnError(0, UNKNOWN_ERROR);
       return true;
@@ -347,8 +339,8 @@ void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {
 }
 
 void PrivetURLFetcher::RequestTokenRefresh() {
-  delegate_->OnNeedPrivetToken(
-      base::Bind(&PrivetURLFetcher::RefreshToken, weak_factory_.GetWeakPtr()));
+  delegate_->OnNeedPrivetToken(base::BindOnce(&PrivetURLFetcher::RefreshToken,
+                                              weak_factory_.GetWeakPtr()));
 }
 
 void PrivetURLFetcher::RefreshToken(const std::string& token) {
@@ -361,9 +353,9 @@ void PrivetURLFetcher::RefreshToken(const std::string& token) {
 }
 
 bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
-  return (error == kPrivetErrorDeviceBusy) ||
-         (error == kPrivetErrorPendingUserAction) ||
-         (error == kPrivetErrorPrinterBusy);
+  return error == kPrivetErrorDeviceBusy ||
+         error == kPrivetErrorPendingUserAction ||
+         error == kPrivetErrorPrinterBusy;
 }
 
 scoped_refptr<base::SequencedTaskRunner> PrivetURLFetcher::GetFileTaskRunner() {

@@ -54,9 +54,9 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
                               const base::DictionaryValue& value,
                               bool has_error) = 0;
 
-    // If this method is returns true, the data will not be parsed as JSON, and
+    // If this method returns true, the data will not be parsed as JSON, and
     // OnParsedJson() will not be called. Otherwise, OnParsedJson() will be
-    // called.
+    // called. This only happens in tests.
     virtual bool OnRawData(bool response_is_file,
                            const std::string& data_string,
                            const base::FilePath& data_file);
@@ -124,21 +124,21 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   scoped_refptr<base::SequencedTaskRunner> GetFileTaskRunner();
 
   const GURL url_;
-  net::URLFetcher::RequestType request_type_;
+  const net::URLFetcher::RequestType request_type_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
-  Delegate* delegate_;
+  Delegate* const delegate_;
 
   int max_retries_;
-  bool do_not_retry_on_transient_error_;
-  bool send_empty_privet_token_;
-  bool has_byte_range_;
-  bool make_response_file_;
+  bool do_not_retry_on_transient_error_ = false;
+  bool send_empty_privet_token_ = false;
+  bool has_byte_range_ = false;
+  bool make_response_file_ = false;
 
-  int byte_range_start_;
-  int byte_range_end_;
+  int byte_range_start_ = 0;
+  int byte_range_end_ = 0;
 
-  int tries_;
+  int tries_ = 0;
   std::string upload_data_;
   std::string upload_content_type_;
   base::FilePath upload_file_path_;
