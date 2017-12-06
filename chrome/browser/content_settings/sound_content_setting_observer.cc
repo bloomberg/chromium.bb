@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/url_constants.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -113,12 +114,10 @@ void SoundContentSettingObserver::RecordSiteMutedUKM() {
     return;
   logged_site_muted_ukm_ = true;
 
-  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  recorder->UpdateSourceURL(source_id, web_contents()->GetLastCommittedURL());
-  ukm::builders::Media_SiteMuted(source_id)
+  ukm::builders::Media_SiteMuted(
+      ukm::GetSourceIdForWebContentsDocument(web_contents()))
       .SetMuteReason(GetSiteMutedReason())
-      .Record(recorder);
+      .Record(ukm::UkmRecorder::Get());
 }
 
 SoundContentSettingObserver::MuteReason

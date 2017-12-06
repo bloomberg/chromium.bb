@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,6 +40,7 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     SoundContentSettingObserver::CreateForWebContents(web_contents());
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
     host_content_settings_map_ = HostContentSettingsMapFactory::GetForProfile(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
     test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
