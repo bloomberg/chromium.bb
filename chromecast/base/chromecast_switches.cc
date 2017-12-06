@@ -89,6 +89,14 @@ const char kAlsaMuteElementName[] = "alsa-mute-element-name";
 // specified it will default to the same device as kAlsaVolumeDeviceName.
 const char kAlsaMuteDeviceName[] = "alsa-mute-device-name";
 
+// Name of the simple mixer control element that the ALSA-based media library
+// should use to toggle powersave mode on the system.
+const char kAlsaAmpElementName[] = "alsa-amp-element-name";
+
+// Name of the device the amp mixer should be opened on. If this flag is not
+// specified it will default to the same device as kAlsaVolumeDeviceName.
+const char kAlsaAmpDeviceName[] = "alsa-amp-device-name";
+
 // Calibrated max output volume dBa for voice content at 1 meter, if known.
 const char kMaxOutputVolumeDba1m[] = "max-output-volume-dba1m";
 

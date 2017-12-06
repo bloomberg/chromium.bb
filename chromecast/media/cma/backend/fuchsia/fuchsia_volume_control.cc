@@ -41,5 +41,9 @@ void FuchsiaVolumeControl::SetMuted(bool muted) {
   NOTIMPLEMENTED();
 }
 
+void FuchsiaVolumeControl::SetPowerSave(bool power_save_on) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace media
 }  // namespace chromecast

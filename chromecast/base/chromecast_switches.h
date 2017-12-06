@@ -52,6 +52,8 @@ extern const char kAlsaVolumeDeviceName[];
 extern const char kAlsaVolumeElementName[];
 extern const char kAlsaMuteDeviceName[];
 extern const char kAlsaMuteElementName[];
+extern const char kAlsaAmpDeviceName[];
+extern const char kAlsaAmpElementName[];
 extern const char kMaxOutputVolumeDba1m[];
 extern const char kAudioOutputChannels[];
 extern const char kAudioOutputSampleRate[];

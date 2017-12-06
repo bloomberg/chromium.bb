@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/timer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
@@ -129,12 +130,17 @@ class MediaPipelineBackendManager {
   void DecrementDecoderCount(DecoderType type);
 
   // Update the count of playing non-effects audio streams.
-  void UpdatePlayingAudioCount(int change);
+  void UpdatePlayingAudioCount(bool sfx, int change);
+
+  void EnterPowerSaveMode();
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // Total count of decoders created
   int decoder_count_[NUM_DECODER_TYPES];
+
+  // Total number of playing audio streams.
+  int playing_audio_streams_count_;
 
   // Total number of playing non-effects streams.
   int playing_noneffects_audio_streams_count_;
@@ -146,6 +152,8 @@ class MediaPipelineBackendManager {
   base::flat_map<AudioContentType, float> global_volume_multipliers_;
 
   BufferDelegate* buffer_delegate_;
+
+  base::OneShotTimer power_save_timer_;
 
   base::WeakPtrFactory<MediaPipelineBackendManager> weak_factory_;
 
