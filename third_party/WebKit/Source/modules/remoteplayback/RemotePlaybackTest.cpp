@@ -52,6 +52,18 @@ class MockEventListenerForRemotePlayback : public EventListener {
   MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
 };
 
+class MockPresentationController final : public PresentationController {
+ public:
+  MockPresentationController(LocalFrame& frame, WebPresentationClient* client)
+      : PresentationController(frame, client) {}
+  ~MockPresentationController() override = default;
+
+  MOCK_METHOD1(AddAvailabilityObserver,
+               void(PresentationAvailabilityObserver*));
+  MOCK_METHOD1(RemoveAvailabilityObserver,
+               void(PresentationAvailabilityObserver*));
+};
+
 class RemotePlaybackTest : public ::testing::Test,
                            private ScopedRemotePlaybackBackendForTest {
  public:
@@ -374,14 +386,17 @@ TEST_F(RemotePlaybackTest, IsListening) {
   RemotePlayback* remote_playback =
       HTMLMediaElementRemotePlayback::remote(*element);
 
-  PresentationController::ProvideTo(page_holder->GetFrame(),
-                                    &presentation_client_);
+  LocalFrame& frame = page_holder->GetFrame();
+  MockPresentationController* mock_controller =
+      new MockPresentationController(frame, &presentation_client_);
+  Supplement<LocalFrame>::ProvideTo(
+      frame, PresentationController::SupplementName(), mock_controller);
 
-  EXPECT_CALL(presentation_client_,
-              StartListening(::testing::Eq(remote_playback)))
+  EXPECT_CALL(*mock_controller,
+              AddAvailabilityObserver(::testing::Eq(remote_playback)))
       .Times(2);
-  EXPECT_CALL(presentation_client_,
-              StopListening(::testing::Eq(remote_playback)))
+  EXPECT_CALL(*mock_controller,
+              RemoveAvailabilityObserver(::testing::Eq(remote_playback)))
       .Times(2);
 
   MockFunction* callback_function =
@@ -396,7 +411,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
   remote_playback->watchAvailability(scope.GetScriptState(),
                                      availability_callback);
 
-  ASSERT_TRUE(remote_playback->Urls().empty());
+  ASSERT_TRUE(remote_playback->Urls().IsEmpty());
   ASSERT_FALSE(IsListening(remote_playback));
 
   remote_playback->SourceChanged(WebURL(KURL("http://www.example.com")), true);
@@ -415,11 +430,11 @@ TEST_F(RemotePlaybackTest, IsListening) {
   remote_playback->AvailabilityChanged(mojom::ScreenAvailability::AVAILABLE);
 
   remote_playback->SourceChanged(WebURL(), false);
-  ASSERT_TRUE(remote_playback->Urls().empty());
+  ASSERT_TRUE(remote_playback->Urls().IsEmpty());
   ASSERT_FALSE(IsListening(remote_playback));
 
   remote_playback->SourceChanged(WebURL(KURL("@$@#@#")), true);
-  ASSERT_TRUE(remote_playback->Urls().empty());
+  ASSERT_TRUE(remote_playback->Urls().IsEmpty());
   ASSERT_FALSE(IsListening(remote_playback));
 
   // Runs pending promises.
@@ -428,7 +443,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
   // Verify mock expectations explicitly as the mock objects are garbage
   // collected.
   ::testing::Mock::VerifyAndClear(callback_function);
-  ::testing::Mock::VerifyAndClear(&presentation_client_);
+  ::testing::Mock::VerifyAndClear(mock_controller);
 }
 
 }  // namespace blink

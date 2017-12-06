@@ -20,8 +20,8 @@ class PresentationServiceMock {
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();
 
-    this.client_ = null;
-    this.onSetClient = null;
+    this.controller_ = null;
+    this.onSetController = null;
 
     this.receiver_ = null;
     this.onSetReceiver = null;
@@ -32,11 +32,11 @@ class PresentationServiceMock {
     this.interceptor_.stop();
   }
 
-  setClient(client) {
-    this.client_ = client;
+  setController(controller) {
+    this.controller_ = controller;
 
-    if (this.onSetClient)
-      this.onSetClient();
+    if (this.onSetController)
+      this.onSetController();
   }
 
   setReceiver(receiver) {
@@ -62,7 +62,7 @@ class PresentationServiceMock {
   }
 
   terminate(presentationUrl, presentationId) {
-    this.client_.onConnectionStateChanged(
+    this.controller_.onConnectionStateChanged(
         { url: presentationUrl, id: presentationId },
         blink.mojom.PresentationConnectionState.TERMINATED);
   }
@@ -73,7 +73,7 @@ class PresentationServiceMock {
     console.log('setPresentationConnection');
     this.controllerConnectionPtr_ = controllerConnectionPtr;
     this.receiverConnectionRequest_ = receiverConnectionRequest;
-    this.client_.onConnectionStateChanged(
+    this.controller_.onConnectionStateChanged(
         presentation_info,
         blink.mojom.PresentationConnectionState.CONNECTED);
   }

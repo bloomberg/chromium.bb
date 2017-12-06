@@ -6,6 +6,7 @@
 #define MockWebPresentationClient_h
 
 #include "public/platform/modules/presentation/WebPresentationClient.h"
+#include "public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blink {
@@ -24,15 +25,7 @@ class MockWebPresentationClient : public WebPresentationClient {
                                   callbacks);
   }
 
-  void GetAvailability(const WebVector<WebURL>& availability_urls,
-                       std::unique_ptr<WebPresentationAvailabilityCallbacks>
-                           callbacks) override {
-    return getAvailability_(availability_urls, callbacks);
-  }
-
  public:
-  MOCK_METHOD1(SetController, void(WebPresentationController*));
-
   MOCK_METHOD1(SetReceiver, void(WebPresentationReceiver*));
 
   MOCK_METHOD2(startPresentation_,
@@ -43,16 +36,6 @@ class MockWebPresentationClient : public WebPresentationClient {
                void(const WebVector<WebURL>& presentationUrls,
                     const WebString& presentationId,
                     std::unique_ptr<WebPresentationConnectionCallbacks>&));
-
-  MOCK_METHOD2(getAvailability_,
-               void(const WebVector<WebURL>& availabilityUrls,
-                    std::unique_ptr<WebPresentationAvailabilityCallbacks>&));
-
-  MOCK_METHOD1(StartListening, void(WebPresentationAvailabilityObserver*));
-
-  MOCK_METHOD1(StopListening, void(WebPresentationAvailabilityObserver*));
-
-  MOCK_METHOD1(SetDefaultPresentationUrls, void(const WebVector<WebURL>&));
 };
 
 }  // namespace blink

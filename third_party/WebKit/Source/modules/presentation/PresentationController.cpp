@@ -9,41 +9,15 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
+#include "modules/presentation/PresentationAvailabilityCallbacks.h"
+#include "modules/presentation/PresentationAvailabilityObserver.h"
+#include "modules/presentation/PresentationAvailabilityState.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
-
-namespace mojo {
-
-template <>
-struct TypeConverter<blink::mojom::blink::PresentationConnectionState,
-                     blink::WebPresentationConnectionState> {
-  static blink::mojom::blink::PresentationConnectionState Convert(
-      blink::WebPresentationConnectionState);
-};
-
-blink::mojom::blink::PresentationConnectionState
-TypeConverter<blink::mojom::blink::PresentationConnectionState,
-              blink::WebPresentationConnectionState>::
-    Convert(blink::WebPresentationConnectionState state) {
-  switch (state) {
-    case blink::WebPresentationConnectionState::kConnecting:
-      return blink::mojom::blink::PresentationConnectionState::CONNECTING;
-    case blink::WebPresentationConnectionState::kConnected:
-      return blink::mojom::blink::PresentationConnectionState::CONNECTED;
-    case blink::WebPresentationConnectionState::kClosed:
-      return blink::mojom::blink::PresentationConnectionState::CLOSED;
-    case blink::WebPresentationConnectionState::kTerminated:
-      return blink::mojom::blink::PresentationConnectionState::TERMINATED;
-  }
-
-  NOTREACHED();
-  return blink::mojom::blink::PresentationConnectionState::TERMINATED;
-}
-
-}  // namespace mojo
+#include "public/platform/modules/presentation/WebPresentationError.h"
 
 namespace blink {
 
@@ -51,14 +25,10 @@ PresentationController::PresentationController(LocalFrame& frame,
                                                WebPresentationClient* client)
     : Supplement<LocalFrame>(frame),
       ContextLifecycleObserver(frame.GetDocument()),
-      client_(client) {
-  if (client_)
-    client_->SetController(this);
-}
+      client_(client),
+      controller_binding_(this) {}
 
 PresentationController::~PresentationController() {
-  if (client_)
-    client_->SetController(nullptr);
 }
 
 // static
@@ -120,56 +90,8 @@ void PresentationController::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-WebPresentationConnection* PresentationController::DidStartDefaultPresentation(
-    const WebPresentationInfo& presentation_info) {
-  if (!presentation_ || !presentation_->defaultRequest())
-    return nullptr;
-
-  PresentationRequest::RecordStartOriginTypeAccess(*GetExecutionContext());
-  return ControllerPresentationConnection::Take(
-      this, presentation_info, presentation_->defaultRequest());
-}
-
-void PresentationController::DidChangeConnectionState(
-    const WebPresentationInfo& presentation_info,
-    WebPresentationConnectionState state) {
-  PresentationConnection* connection = FindConnection(presentation_info);
-  if (!connection)
-    return;
-
-  // TODO(crbug.com/749327): Remove this logic once we move state changes
-  // out of PresentationDispatcher.
-  connection->DidChangeState(
-      mojo::TypeConverter<mojom::blink::PresentationConnectionState,
-                          WebPresentationConnectionState>::Convert(state));
-}
-
-void PresentationController::DidCloseConnection(
-    const WebPresentationInfo& presentation_info,
-    WebPresentationConnectionCloseReason reason,
-    const WebString& message) {
-  PresentationConnection* connection = FindConnection(presentation_info);
-  if (!connection)
-    return;
-  connection->DidClose(reason, message);
-}
-
 void PresentationController::SetPresentation(Presentation* presentation) {
   presentation_ = presentation;
-}
-
-void PresentationController::SetDefaultRequestUrl(
-    const WTF::Vector<KURL>& urls) {
-  if (!client_)
-    return;
-
-  WebVector<WebURL> presentation_urls(urls.size());
-  for (size_t i = 0; i < urls.size(); ++i) {
-    if (urls[i].IsValid())
-      presentation_urls[i] = urls[i];
-  }
-
-  client_->SetDefaultPresentationUrls(presentation_urls);
 }
 
 void PresentationController::RegisterConnection(
@@ -177,11 +99,67 @@ void PresentationController::RegisterConnection(
   connections_.insert(connection);
 }
 
-void PresentationController::ContextDestroyed(ExecutionContext*) {
-  if (client_) {
-    client_->SetController(nullptr);
-    client_ = nullptr;
+PresentationAvailabilityState* PresentationController::GetAvailabilityState() {
+  if (!availability_state_) {
+    availability_state_.reset(
+        new PresentationAvailabilityState(GetPresentationService().get()));
   }
+
+  return availability_state_.get();
+}
+
+void PresentationController::AddAvailabilityObserver(
+    PresentationAvailabilityObserver* observer) {
+  GetAvailabilityState()->AddObserver(observer);
+}
+
+void PresentationController::RemoveAvailabilityObserver(
+    PresentationAvailabilityObserver* observer) {
+  GetAvailabilityState()->RemoveObserver(observer);
+}
+
+void PresentationController::OnScreenAvailabilityUpdated(
+    const KURL& url,
+    mojom::blink::ScreenAvailability availability) {
+  GetAvailabilityState()->UpdateAvailability(url, availability);
+}
+
+void PresentationController::OnConnectionStateChanged(
+    mojom::blink::PresentationInfoPtr presentation_info,
+    mojom::blink::PresentationConnectionState state) {
+  PresentationConnection* connection = FindConnection(*presentation_info);
+  if (!connection)
+    return;
+
+  connection->DidChangeState(state);
+}
+
+void PresentationController::OnConnectionClosed(
+    mojom::blink::PresentationInfoPtr presentation_info,
+    mojom::blink::PresentationConnectionCloseReason reason,
+    const String& message) {
+  PresentationConnection* connection = FindConnection(*presentation_info);
+  if (!connection)
+    return;
+
+  connection->DidClose(reason, message);
+}
+
+void PresentationController::OnDefaultPresentationStarted(
+    mojom::blink::PresentationInfoPtr presentation_info) {
+  DCHECK(presentation_info);
+  if (!presentation_ || !presentation_->defaultRequest())
+    return;
+
+  PresentationRequest::RecordStartOriginTypeAccess(*GetExecutionContext());
+  auto* connection = ControllerPresentationConnection::Take(
+      this, *presentation_info, presentation_->defaultRequest());
+  connection->Init();
+}
+
+void PresentationController::ContextDestroyed(ExecutionContext*) {
+  client_ = nullptr;
+  controller_binding_.Close();
 }
 
 ControllerPresentationConnection*
@@ -205,14 +183,18 @@ PresentationController::GetPresentationService() {
   if (!presentation_service_ && GetFrame() && GetFrame()->Client()) {
     auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
     interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
+
+    mojom::blink::PresentationControllerPtr controller_ptr;
+    controller_binding_.Bind(mojo::MakeRequest(&controller_ptr));
+    presentation_service_->SetController(std::move(controller_ptr));
   }
   return presentation_service_;
 }
 
 ControllerPresentationConnection* PresentationController::FindConnection(
-    const WebPresentationInfo& presentation_info) const {
+    const mojom::blink::PresentationInfo& presentation_info) const {
   for (const auto& connection : connections_) {
-    if (connection->Matches(presentation_info))
+    if (connection->Matches(presentation_info.id, presentation_info.url))
       return connection.Get();
   }
 

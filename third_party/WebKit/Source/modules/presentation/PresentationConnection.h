@@ -16,7 +16,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/presentation/WebPresentationConnection.h"
-#include "public/platform/modules/presentation/WebPresentationController.h"
 #include "public/platform/modules/presentation/WebPresentationInfo.h"
 #include "public/platform/modules/presentation/presentation.mojom-blink.h"
 
@@ -75,7 +74,8 @@ class PresentationConnection : public EventTargetWithInlineData,
   bool Matches(const String& id, const KURL&) const;
 
   // Notifies the connection about its state change to 'closed'.
-  void DidClose(WebPresentationConnectionCloseReason, const String& message);
+  void DidClose(mojom::blink::PresentationConnectionCloseReason,
+                const String& message);
 
   // mojom::blink::PresentationConnection implementation.
   void OnMessage(mojom::blink::PresentationConnectionMessagePtr,
@@ -166,9 +166,10 @@ class ControllerPresentationConnection final
   static ControllerPresentationConnection* Take(ScriptPromiseResolver*,
                                                 const WebPresentationInfo&,
                                                 PresentationRequest*);
-  static ControllerPresentationConnection* Take(PresentationController*,
-                                                const WebPresentationInfo&,
-                                                PresentationRequest*);
+  static ControllerPresentationConnection* Take(
+      PresentationController*,
+      const mojom::blink::PresentationInfo&,
+      PresentationRequest*);
 
   ControllerPresentationConnection(LocalFrame&,
                                    PresentationController*,
