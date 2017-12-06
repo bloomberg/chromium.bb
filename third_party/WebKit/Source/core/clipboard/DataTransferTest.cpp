@@ -58,9 +58,9 @@ TEST_P(DataTransferTest, NodeImageWithNestedElement) {
   Element* sample = GetDocument().getElementById("sample");
   const std::unique_ptr<DragImage> image =
       DataTransfer::NodeImage(GetFrame(), *sample);
-  EXPECT_EQ(
-      Color(0, 255, 0),
-      sample->firstChild()->GetLayoutObject()->ResolveColor(CSSPropertyColor))
+  EXPECT_EQ(Color(0, 255, 0),
+            sample->firstChild()->GetLayoutObject()->ResolveColor(
+                GetCSSPropertyColor()))
       << "Descendants node should have :-webkit-drag.";
 }
 
@@ -110,14 +110,14 @@ TEST_P(DataTransferTest, NodeImageWithChangingLayoutObject) {
   EXPECT_TRUE(sample->GetLayoutObject() != before_layout_object)
       << ":-webkit-drag causes sample to have different layout object.";
   EXPECT_EQ(Color(255, 0, 0),
-            sample->GetLayoutObject()->ResolveColor(CSSPropertyColor))
+            sample->GetLayoutObject()->ResolveColor(GetCSSPropertyColor()))
       << "#sample has :-webkit-drag.";
 
   // Layout w/o :-webkit-drag
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color(0, 0, 255),
-            sample->GetLayoutObject()->ResolveColor(CSSPropertyColor))
+            sample->GetLayoutObject()->ResolveColor(GetCSSPropertyColor()))
       << "#sample doesn't have :-webkit-drag.";
 }
 

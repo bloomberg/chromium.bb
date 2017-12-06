@@ -304,7 +304,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   PaintNormalBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);
 
   Color background_color = inline_flow_box_layout_object->ResolveColor(
-      *style_to_use, CSSPropertyBackgroundColor);
+      *style_to_use, GetCSSPropertyBackgroundColor());
   PaintFillLayers(paint_info, background_color,
                   style_to_use->BackgroundLayers(), adjusted_frame_rect);
   PaintInsetBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);

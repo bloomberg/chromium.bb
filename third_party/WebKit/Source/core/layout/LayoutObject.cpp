@@ -1920,8 +1920,8 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   }
 
   if (diff.NeedsFullPaintInvalidation() && old_style) {
-    if (ResolveColor(*old_style, CSSPropertyBackgroundColor) !=
-            ResolveColor(CSSPropertyBackgroundColor) ||
+    if (ResolveColor(*old_style, GetCSSPropertyBackgroundColor()) !=
+            ResolveColor(GetCSSPropertyBackgroundColor()) ||
         old_style->BackgroundLayers() != StyleRef().BackgroundLayers())
       SetBackgroundChangedSinceLastPaintInvalidation();
   }

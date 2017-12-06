@@ -7,6 +7,8 @@
 
 #include "core/css/properties/CSSProperty.h"
 
+#include "platform/graphics/Color.h"
+
 namespace blink {
 
 class CSSValue;
@@ -27,6 +29,11 @@ class Longhand : public CSSProperty {
   virtual void ApplyInherit(StyleResolverState&) const { NOTREACHED(); }
   virtual void ApplyValue(StyleResolverState&, const CSSValue&) const {
     NOTREACHED();
+  }
+  virtual const blink::Color ColorIncludingFallback(bool, const ComputedStyle&)
+      const {
+    NOTREACHED();
+    return Color();
   }
   bool IsLonghand() const override { return true; }
 };

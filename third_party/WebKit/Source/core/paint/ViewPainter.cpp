@@ -107,8 +107,8 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
        document.GetSettings()->GetShouldClearDocumentBackground());
   Color base_background_color =
       paints_base_background ? frame_view.BaseBackgroundColor() : Color();
-  Color root_background_color =
-      layout_view_.Style()->VisitedDependentColor(CSSPropertyBackgroundColor);
+  Color root_background_color = layout_view_.Style()->VisitedDependentColor(
+      GetCSSPropertyBackgroundColor());
   const LayoutObject* root_object =
       document.documentElement() ? document.documentElement()->GetLayoutObject()
                                  : nullptr;

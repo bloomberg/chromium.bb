@@ -157,7 +157,7 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
     // Solid color layers with an effective background clip of the padding box
     // can be treated as local.
     if (!layer->GetImage() && !layer->Next() &&
-        ResolveColor(CSSPropertyBackgroundColor).Alpha() > 0) {
+        ResolveColor(GetCSSPropertyBackgroundColor()).Alpha() > 0) {
       EFillBox clip = layer->Clip();
       if (clip == EFillBox::kPadding)
         continue;
@@ -166,20 +166,20 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
       if (clip == EFillBox::kBorder) {
         if (!has_custom_scrollbars &&
             (Style()->BorderTopWidth() == 0 ||
-             !ResolveColor(CSSPropertyBorderTopColor).HasAlpha()) &&
+             !ResolveColor(GetCSSPropertyBorderTopColor()).HasAlpha()) &&
             (Style()->BorderLeftWidth() == 0 ||
-             !ResolveColor(CSSPropertyBorderLeftColor).HasAlpha()) &&
+             !ResolveColor(GetCSSPropertyBorderLeftColor()).HasAlpha()) &&
             (Style()->BorderRightWidth() == 0 ||
-             !ResolveColor(CSSPropertyBorderRightColor).HasAlpha()) &&
+             !ResolveColor(GetCSSPropertyBorderRightColor()).HasAlpha()) &&
             (Style()->BorderBottomWidth() == 0 ||
-             !ResolveColor(CSSPropertyBorderBottomColor).HasAlpha())) {
+             !ResolveColor(GetCSSPropertyBorderBottomColor()).HasAlpha())) {
           continue;
         }
         // If we have an opaque background color only, we can safely paint it
         // into both the scrolling contents layer and the graphics layer to
         // preserve LCD text.
         if (layer == (&Style()->BackgroundLayers()) &&
-            ResolveColor(CSSPropertyBackgroundColor).Alpha() < 255)
+            ResolveColor(GetCSSPropertyBackgroundColor()).Alpha() < 255)
           return kBackgroundPaintInGraphicsLayer;
         paint_location |= kBackgroundPaintInGraphicsLayer;
         continue;

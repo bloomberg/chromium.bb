@@ -4860,8 +4860,8 @@ TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   Document* document = frame->GetFrame()->GetDocument();
   Element* div = document->getElementById("d");
 
-  EXPECT_EQ(MakeRGB(0, 128, 0),
-            div->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
 
   FloatSize page_size(300, 360);
 
@@ -4872,8 +4872,8 @@ TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   frame->PrintBegin(print_params, WebNode());
   frame->PrintEnd();
 
-  EXPECT_EQ(MakeRGB(0, 128, 0),
-            div->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(0, 128, 0), div->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
 }
 
 TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
