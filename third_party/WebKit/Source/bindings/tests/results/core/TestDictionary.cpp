@@ -30,6 +30,7 @@ TestDictionary::TestDictionary() {
   setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
   setTestInterfaceSequenceMember(HeapVector<Member<TestInterfaceImplementation>>());
   setTreatNullAsStringSequenceMember(Vector<String>());
+  setUnionMemberWithSequenceDefault(DoubleOrDoubleSequence::FromDoubleSequence(Vector<double>()));
   setUnrestrictedDoubleMember(3.14);
 }
 
@@ -130,6 +131,10 @@ void TestDictionary::setUnionInRecordMember(const HeapVector<std::pair<String, L
   has_union_in_record_member_ = true;
 }
 
+void TestDictionary::setUnionMemberWithSequenceDefault(const DoubleOrDoubleSequence& value) {
+  union_member_with_sequence_default_ = value;
+}
+
 void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
   union_with_typedefs_ = value;
 }
@@ -152,6 +157,7 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_object_sequence_member_);
   visitor->Trace(uint8_array_member_);
   visitor->Trace(union_in_record_member_);
+  visitor->Trace(union_member_with_sequence_default_);
   visitor->Trace(union_with_typedefs_);
   IDLDictionaryBase::Trace(visitor);
 }

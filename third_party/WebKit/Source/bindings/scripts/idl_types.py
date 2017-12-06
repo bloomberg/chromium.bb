@@ -370,6 +370,11 @@ class IdlUnionType(IdlTypeBase):
             lambda member_type: member_type.base_type == 'boolean')
 
     @property
+    def sequence_member_type(self):
+        return self.single_matching_member_type(
+            lambda member_type: member_type.is_sequence_type)
+
+    @property
     def as_union_type(self):
         # Note: Use this to "look through" a possible IdlNullableType wrapper.
         return self

@@ -48,4 +48,5 @@ dictionary TestDictionary {
     (Float or BooleanType) unionWithTypedefs;
     [Clamp] long applicableToTypeLongMember;
     [TreatNullAs=EmptyString] DOMString applicableToTypeStringMember;
+    (double or sequence<double>) unionMemberWithSequenceDefault = [];
 };
