@@ -26,6 +26,8 @@ namespace bluetooth {
 // Implements device::BluetoothRemoteGattCharacteristics. Meant to be used
 // by FakeRemoteGattService to keep track of the characteristic's state and
 // attributes.
+//
+// Not intended for direct use by clients.  See README.md.
 class FakeRemoteGattCharacteristic
     : public device::BluetoothRemoteGattCharacteristic {
  public:

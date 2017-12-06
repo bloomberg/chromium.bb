@@ -1,7 +1,7 @@
 # Bluetooth Testing
 
-Implementation of the Bluetooth component is tested via unittests. Client code
-uses Mock Bluetooth objects. These are described in sections below.
+This page describes testing APIs for both **clients** and **implementation** of
+the Bluetooth component.
 
 There are also notable higher level bluetooth tests:
 
@@ -9,18 +9,48 @@ There are also notable higher level bluetooth tests:
 *   [Web Bluetooth](/third_party/WebKit/Source/modules/bluetooth/README.md)
 
 
-## Mojo Testing Interface Implementation
+## Client Testing
 
-See [bluetooth/public/interfaces/test](/device/bluetooth/public/interfaces/test)
-for details about the interface. The current implementation of this interface
-creates a fake implementation of the current non-mojo C++ Bluetooth interface.
-This interface is implemented across files with a "fake_" prefix.
-*This interface may be removed when a Bluetooth Mojo Service is introduced, if
-Web Bluetooth remains its only client. Testing code would implement the service
-as needed for tests.*
+### Mock Bluetooth Objects
+
+`test/mock_bluetooth_*` files provide GoogleMock based fake objects that
+subclass the cross platform C++ device/bluetooth API.
+
+These are used by numerous clients and are stable.
 
 
-## Cross Platform Unit Tests
+### Fake Bluetooth Mojo Testing Interface Implementation
+
+WORK IN PROGRESS.
+
+Web Platform Tests for Web Bluetooth are being refactored to use
+`third_party/WebKit/LayoutTests/resources/bluetooth/web-bluetooth-test.js`.
+
+That library is implemented over a mojo interface `fake_bluetooth.mojom` in
+[bluetooth/public/interfaces/test](/device/bluetooth/public/interfaces/test)
+and is implemented in the `bluetooth/test/fake_*` files.
+
+The `fake_bluetooth.mojom` interface is not intended to be used directly.
+`web-bluetooth-test.js` makes the Fake Bluetooth interface easier to work with.
+
+*   Calls are synchronous.
+*   IDs are cached.
+
+If another C++ client intends to use Fake Bluetooth a C++ wrapper similar to
+`web-bluetooth-test.js` should be created.
+
+When a Bluetooth service is created the `fake_bluetooth.mojom` and
+`bluetooth/test/fake_*` files should be removed and the client facing test
+wrapper `web-bluetooth-test.js` converted to implement the Bluetooth service as
+needed for tests.
+
+Design Doc:
+https://docs.google.com/document/d/1Nhv_oVDCodd1pEH_jj9k8gF4rPGb_84VYaZ9IG8M_WY
+
+
+## Implementation Testing
+
+### Cross Platform Unit Tests
 
 New feature development uses cross platform unit tests. This reduces test code
 redundancy and produces consistency across all implementations.
@@ -38,7 +68,7 @@ operating system APIs as possible.
 [More testing information](https://docs.google.com/document/d/1mBipxn1sJu6jMqP0RQZpkYXC1o601bzLCpCxwTA2yGA/edit?usp=sharing)
 
 
-## Legacy Platform Specific Unit Tests
+### Legacy Platform Specific Unit Tests
 
 Early code (Classic on most platforms, and Low Energy on BlueZ) was tested with
 platform specific unit tests, e.g. `bluetooth_bluez_unittest.cc` &
@@ -50,13 +80,7 @@ place. Long term these tests should be [refactored into cross platform
 tests](https://crbug.com/580403).
 
 
-## Mock Bluetooth Objects
-
-`test/mock_bluetooth_*` files provide GoogleMock based fake objects for use in
-client code.
-
-
-## Chrome OS Blueooth Controller Tests
+### Chrome OS Blueooth Controller Tests
 
 Bluetooth controller system tests generating radio signals are run and managed
 by the Chrome OS team. See:

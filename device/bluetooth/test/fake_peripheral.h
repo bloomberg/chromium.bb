@@ -18,6 +18,8 @@ namespace bluetooth {
 
 // Implements device::BluetoothDevice. Meant to be used by FakeCentral
 // to keep track of the peripheral's state and attributes.
+//
+// Not intended for direct use by clients.  See README.md.
 class FakePeripheral : public device::BluetoothDevice {
  public:
   FakePeripheral(FakeCentral* fake_central, const std::string& address);

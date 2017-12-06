@@ -24,6 +24,8 @@ namespace bluetooth {
 
 // Implements device::BluetoothRemoteGattService. Meant to be used by
 // FakePeripheral to keep track of the service's state and attributes.
+//
+// Not intended for direct use by clients.  See README.md.
 class FakeRemoteGattService : public device::BluetoothRemoteGattService {
  public:
   FakeRemoteGattService(const std::string& service_id,
