@@ -36,6 +36,7 @@ base::WeakPtr<SystemCookieStore> SystemCookieStore::GetWeakPtr() {
 
 // protected static
 NSInteger SystemCookieStore::CompareCookies(id a, id b, void* context) {
+  DCHECK(context);
   NSHTTPCookie* cookie_a = static_cast<NSHTTPCookie*>(a);
   NSHTTPCookie* cookie_b = static_cast<NSHTTPCookie*>(b);
   // Compare path lengths first.
