@@ -1683,8 +1683,9 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
   // TODO(jchaffraix): This function should be rethought as it's called during
   // and outside of the paint phase. Potentially returning different results at
   // different phases.
-  geometry.Calculate(nullptr, kGlobalPaintNormalPhase,
-                     Style()->BackgroundLayers(), background_rect);
+  geometry.Calculate(nullptr, PaintPhase::kBlockBackground,
+                     kGlobalPaintNormalPhase, Style()->BackgroundLayers(),
+                     background_rect);
   if (geometry.HasNonLocalGeometry())
     return false;
   painted_extent = LayoutRect(geometry.DestRect());

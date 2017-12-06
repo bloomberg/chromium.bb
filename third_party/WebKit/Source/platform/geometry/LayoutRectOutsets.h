@@ -135,6 +135,12 @@ inline LayoutRectOutsets operator-(const LayoutRectOutsets& a) {
   return LayoutRectOutsets(-a.Top(), -a.Right(), -a.Bottom(), -a.Left());
 }
 
+inline LayoutRectOutsets& operator-=(LayoutRectOutsets& a,
+                                     const LayoutRectOutsets& b) {
+  a += -b;
+  return a;
+}
+
 inline LayoutRectOutsets EnclosingLayoutRectOutsets(
     const FloatRectOutsets& rect) {
   return LayoutRectOutsets(LayoutUnit::FromFloatCeil(rect.Top()),
