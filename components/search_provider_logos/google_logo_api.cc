@@ -181,6 +181,7 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   }
 
   const bool is_animated = (logo->metadata.type == LogoType::ANIMATED);
+  const bool is_interactive = (logo->metadata.type == LogoType::INTERACTIVE);
 
   // Check if the main image is animated.
   if (is_animated) {
@@ -234,6 +235,15 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   ddljson->GetString("alt_text", &logo->metadata.alt_text);
 
   ddljson->GetString("fingerprint", &logo->metadata.fingerprint);
+
+  if (is_interactive) {
+    std::string behavior;
+    if (ddljson->GetString("launch_interactive_behavior", &behavior) &&
+        (behavior == "NEW_WINDOW")) {
+      logo->metadata.type = LogoType::SIMPLE;
+      logo->metadata.on_click_url = logo->metadata.full_page_url;
+    }
+  }
 
   base::TimeDelta time_to_live;
   // The JSON doesn't guarantee the number to fit into an int.

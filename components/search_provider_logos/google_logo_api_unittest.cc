@@ -226,6 +226,32 @@ TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodle) {
   EXPECT_EQ(LogoType::INTERACTIVE, logo->metadata.type);
 }
 
+TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodleWithNewWindowAsSimple) {
+  const GURL base_url("https://base.doo/");
+  // Note: The base64 encoding of "abc" is "YWJj".
+  const std::string json = R"json()]}'
+    {
+      "ddljson": {
+        "doodle_type": "INTERACTIVE",
+        "target_url": "/search?q=interactive",
+        "fullpage_interactive_url": "/play",
+        "launch_interactive_behavior": "NEW_WINDOW",
+        "data_uri": "data:image/png;base64,YWJj"
+      }
+    })json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ(LogoType::SIMPLE, logo->metadata.type);
+  EXPECT_EQ(GURL("https://base.doo/play"), logo->metadata.on_click_url);
+  EXPECT_EQ(GURL("https://base.doo/play"), logo->metadata.full_page_url);
+  EXPECT_EQ("abc", logo->encoded_image->data());
+}
+
 TEST(GoogleNewLogoApiTest, ParsesCapturedApiResult) {
   const GURL base_url("https://base.doo/");
 
