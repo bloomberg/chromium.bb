@@ -4,6 +4,8 @@
 
 #include "content/browser/plugin_service_impl.h"
 
+#include <memory>
+
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
@@ -45,7 +47,7 @@ class PluginServiceImplTest : public RenderViewHostTestHarness {
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
-    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
   bool RecordedBrokerEvent(const GURL& url) {
@@ -61,7 +63,7 @@ class PluginServiceImplTest : public RenderViewHostTestHarness {
   }
 
   void ResetUKM() {
-    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
  private:

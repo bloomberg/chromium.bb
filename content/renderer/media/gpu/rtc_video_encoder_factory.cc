@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/gpu/rtc_video_encoder_factory.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"

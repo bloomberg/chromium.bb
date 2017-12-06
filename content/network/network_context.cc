@@ -4,10 +4,11 @@
 
 #include "content/network/network_context.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
@@ -270,7 +271,7 @@ void NetworkContext::ApplyContextParamsToBuilder(
     network_context_params->initial_proxy_config =
         net::ProxyConfig::CreateDirect();
   }
-  builder->set_proxy_config_service(base::MakeUnique<ProxyConfigServiceMojo>(
+  builder->set_proxy_config_service(std::make_unique<ProxyConfigServiceMojo>(
       std::move(network_context_params->proxy_config_client_request),
       std::move(network_context_params->initial_proxy_config),
       std::move(network_context_params->proxy_config_poller_client)));

@@ -23,6 +23,7 @@
 
 #include "content/browser/download/download_item_impl.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -1357,7 +1358,7 @@ void DownloadItemImpl::Init(bool active,
       file_name = GetURL().ExtractFileName();
   }
 
-  auto active_data = base::MakeUnique<DownloadItemActivatedData>(
+  auto active_data = std::make_unique<DownloadItemActivatedData>(
       download_type, GetId(), GetOriginalUrl().spec(), GetURL().spec(),
       file_name, GetDangerType(), GetReceivedBytes(), HasUserGesture());
 
@@ -2152,7 +2153,7 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
     std::string file_name(GetTargetFilePath().BaseName().AsUTF8Unsafe());
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
         "download", "DownloadItemActive", download_id_, "download_item",
-        base::MakeUnique<DownloadItemActivatedData>(
+        std::make_unique<DownloadItemActivatedData>(
             TYPE_ACTIVE_DOWNLOAD, GetId(), GetOriginalUrl().spec(),
             GetURL().spec(), file_name, GetDangerType(), GetReceivedBytes(),
             HasUserGesture()));

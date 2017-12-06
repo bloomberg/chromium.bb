@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1954,7 +1954,7 @@ void RTCPeerConnectionHandler::StartEventLog() {
   // or find a way to be able to use it.
   // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
-      base::MakeUnique<RtcEventLogOutputSinkProxy>(
+      std::make_unique<RtcEventLogOutputSinkProxy>(
           peer_connection_observer_.get()),
       webrtc::RtcEventLog::kImmediateOutput);
 }

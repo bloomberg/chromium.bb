@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "content/browser/renderer_host/media/fake_video_capture_device_launcher.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
@@ -73,15 +75,15 @@ void FakeVideoCaptureDeviceLauncher::LaunchDeviceAsync(
       []() { return std::unique_ptr<media::VideoCaptureJpegDecoder>(); });
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool(
       new media::VideoCaptureBufferPoolImpl(
-          base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+          std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
           kMaxBufferCount));
-  auto device_client = base::MakeUnique<media::VideoCaptureDeviceClient>(
-      base::MakeUnique<media::VideoFrameReceiverOnTaskRunner>(
+  auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(
+      std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
           receiver, base::ThreadTaskRunnerHandle::Get()),
       std::move(buffer_pool), empty_jpeg_decoder_factory_cb);
   device->AllocateAndStart(params, std::move(device_client));
   auto launched_device =
-      base::MakeUnique<FakeLaunchedVideoCaptureDevice>(std::move(device));
+      std::make_unique<FakeLaunchedVideoCaptureDevice>(std::move(device));
   callbacks->OnDeviceLaunched(std::move(launched_device));
 }
 

@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -98,7 +97,7 @@ class VideoCaptureTest : public testing::Test,
 
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner(),
-        base::MakeUnique<FakeVideoCaptureProvider>());
+        std::make_unique<FakeVideoCaptureProvider>());
     media_stream_manager_->UseFakeUIFactoryForTests(
         base::Bind(&VideoCaptureTest::CreateFakeUI, base::Unretained(this)));
 

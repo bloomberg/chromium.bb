@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -34,7 +33,7 @@ void QuotaDispatcherHost::Create(
   // TODO(sashab): Work out the conditions for permission_context to be set and
   // add a DCHECK for it here.
   mojo::MakeStrongBinding(
-      base::MakeUnique<QuotaDispatcherHost>(process_id, quota_manager,
+      std::make_unique<QuotaDispatcherHost>(process_id, quota_manager,
                                             std::move(permission_context)),
       std::move(request));
 }

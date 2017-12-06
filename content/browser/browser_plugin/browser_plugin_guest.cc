@@ -7,11 +7,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #include "base/pickle.h"
@@ -193,7 +193,7 @@ int BrowserPluginGuest::LoadURLWithParams(
 void BrowserPluginGuest::ResizeDueToAutoResize(const gfx::Size& new_size,
                                                uint64_t sequence_number) {
   SendMessageToEmbedder(
-      base::MakeUnique<BrowserPluginMsg_ResizeDueToAutoResize>(
+      std::make_unique<BrowserPluginMsg_ResizeDueToAutoResize>(
           browser_plugin_instance_id_, sequence_number));
 }
 

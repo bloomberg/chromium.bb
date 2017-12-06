@@ -4,6 +4,8 @@
 
 #include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -148,7 +150,7 @@ LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
   SetPreferences(settings);
 
   if (new_harness) {
-    secondary_observer_ = base::MakeUnique<SecondaryObserver>(this);
+    secondary_observer_ = std::make_unique<SecondaryObserver>(this);
     NavigationController::LoadURLParams params(
         GetInspectedPageURL(frontend_url));
     params.transition_type = ui::PageTransitionFromInt(

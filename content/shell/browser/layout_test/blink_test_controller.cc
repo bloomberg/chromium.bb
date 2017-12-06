@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -18,7 +19,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -468,7 +468,7 @@ Shell* BlinkTestController::SecondaryWindow() {
 void BlinkTestController::LoadDevToolsJSTest() {
   devtools_window_ = main_window_;
   Shell* secondary = SecondaryWindow();
-  devtools_bindings_ = base::MakeUnique<LayoutTestDevToolsBindings>(
+  devtools_bindings_ = std::make_unique<LayoutTestDevToolsBindings>(
       devtools_window_->web_contents(), secondary->web_contents(), "",
       test_url_, true);
 }
@@ -955,7 +955,7 @@ void BlinkTestController::OnSetPopupBlockingEnabled(bool block_popups) {
 void BlinkTestController::OnShowDevTools(const std::string& settings,
                                          const std::string& frontend_url) {
   devtools_window_ = SecondaryWindow();
-  devtools_bindings_ = base::MakeUnique<LayoutTestDevToolsBindings>(
+  devtools_bindings_ = std::make_unique<LayoutTestDevToolsBindings>(
       devtools_window_->web_contents(), main_window_->web_contents(), settings,
       GURL(frontend_url), false);
   devtools_window_->web_contents()->GetRenderViewHost()->GetWidget()->Focus();

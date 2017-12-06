@@ -4,6 +4,8 @@
 
 #include "content/browser/download/resource_downloader.h"
 
+#include <memory>
+
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/download/download_utils.h"
 #include "content/common/throttling_url_loader.h"
@@ -129,7 +131,7 @@ void ResourceDownloader::Start(
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
   guid_ = download_url_parameters->guid();
-  url_loader_client_ = base::MakeUnique<DownloadResponseHandler>(
+  url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this,
       std::make_unique<DownloadSaveInfo>(
           download_url_parameters->GetSaveInfo()),
@@ -144,7 +146,7 @@ void ResourceDownloader::Start(
     mojom::URLLoaderRequest url_loader_request;
     mojom::URLLoaderClientPtr client;
     blob_client_binding_ =
-        base::MakeUnique<mojo::Binding<mojom::URLLoaderClient>>(
+        std::make_unique<mojo::Binding<mojom::URLLoaderClient>>(
             url_loader_client_.get());
     blob_client_binding_->Bind(mojo::MakeRequest(&client));
     BlobURLLoaderFactory::CreateLoaderAndStart(
@@ -171,7 +173,7 @@ void ResourceDownloader::InitializeURLLoader(
     base::Optional<network::URLLoaderCompletionStatus> status) {
   url_loader_status_ = std::move(status);
   url_loader_ = std::move(url_loader);
-  url_loader_client_ = base::MakeUnique<URLLoaderStatusMonitor>(
+  url_loader_client_ = std::make_unique<URLLoaderStatusMonitor>(
       base::Bind(&ResourceDownloader::OnURLLoaderStatusChanged,
                  weak_ptr_factory_.GetWeakPtr()));
   url_loader_->set_forwarding_client(url_loader_client_.get());
@@ -188,7 +190,7 @@ void ResourceDownloader::StartNavigationInterception(
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     net::CertStatus cert_status,
     std::vector<GURL> url_chain) {
-  url_loader_client_ = base::MakeUnique<DownloadResponseHandler>(
+  url_loader_client_ = std::make_unique<DownloadResponseHandler>(
       resource_request_.get(), this, std::make_unique<DownloadSaveInfo>(),
       false, false, false, url_chain);
   url_loader_->set_forwarding_client(url_loader_client_.get());

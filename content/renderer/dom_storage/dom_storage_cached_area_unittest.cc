@@ -5,11 +5,10 @@
 #include "content/renderer/dom_storage/dom_storage_cached_area.h"
 
 #include <stdint.h>
-
 #include <list>
+#include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/dom_storage/dom_storage_proxy.h"
@@ -133,7 +132,7 @@ class DOMStorageCachedAreaTest : public testing::Test {
 
   void SetUp() override {
     renderer_scheduler_ =
-        base::MakeUnique<blink::scheduler::FakeRendererScheduler>();
+        std::make_unique<blink::scheduler::FakeRendererScheduler>();
     mock_proxy_ = new MockProxy();
   }
 

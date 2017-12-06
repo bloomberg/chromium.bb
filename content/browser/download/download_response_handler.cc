@@ -4,6 +4,8 @@
 
 #include "content/browser/download/download_response_handler.h"
 
+#include <memory>
+
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -110,7 +112,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
     const ResourceResponseHead& head) {
   // TODO(qinmin): instead of using NetLogWithSource, introduce new logging
   // class for download.
-  auto create_info = base::MakeUnique<DownloadCreateInfo>(
+  auto create_info = std::make_unique<DownloadCreateInfo>(
       base::Time::Now(), std::move(save_info_));
 
   DownloadInterruptReason result =
