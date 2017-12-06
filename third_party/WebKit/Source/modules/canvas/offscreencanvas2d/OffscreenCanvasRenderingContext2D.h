@@ -62,7 +62,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   }
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
                                             SnapshotReason) const final;
-  ImageData* ToImageData(SnapshotReason) override;
   void Reset() override;
   void RestoreCanvasMatrixClipStack(PaintCanvas* c) const override {
     RestoreMatrixClipStack(c);

@@ -32,6 +32,30 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(PaintImage image) {
   return UnacceleratedStaticBitmapImage::Create(std::move(image));
 }
 
+scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
+    scoped_refptr<Uint8Array>&& image_pixels,
+    const SkImageInfo& info) {
+  SkPixmap pixmap(info, image_pixels->Data(), info.minRowBytes());
+
+  Uint8Array* pixels = image_pixels.get();
+  if (pixels) {
+    pixels->AddRef();
+    image_pixels = nullptr;
+  }
+
+  return Create(SkImage::MakeFromRaster(
+      pixmap,
+      [](const void*, void* p) { static_cast<Uint8Array*>(p)->Release(); },
+      pixels));
+}
+
+scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
+    WTF::ArrayBufferContents& contents,
+    const SkImageInfo& info) {
+  SkPixmap pixmap(info, contents.Data(), info.minRowBytes());
+  return Create(SkImage::MakeFromRaster(pixmap, nullptr, nullptr));
+}
+
 void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
                                    const PaintFlags& flags,
                                    const FloatRect& dst_rect,

@@ -206,25 +206,6 @@ scoped_refptr<Uint8Array> CopyImageData(
   return CopyImageData(std::move(input), info);
 }
 
-void freePixels(const void*, void* pixels) {
-  static_cast<Uint8Array*>(pixels)->Release();
-}
-
-scoped_refptr<StaticBitmapImage> NewImageFromRaster(
-    const SkImageInfo& info,
-    scoped_refptr<Uint8Array>&& image_pixels) {
-  SkPixmap pixmap(info, image_pixels->Data(), info.minRowBytes());
-
-  Uint8Array* pixels = image_pixels.get();
-  if (pixels) {
-    pixels->AddRef();
-    image_pixels = nullptr;
-  }
-
-  return StaticBitmapImage::Create(
-      SkImage::MakeFromRaster(pixmap, freePixels, pixels));
-}
-
 static inline bool ShouldAvoidPremul(
     const ImageBitmap::ParsedOptions& options) {
   return options.source_is_unpremul && !options.premultiply_alpha;
@@ -252,7 +233,7 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
                        image_pixels->Data() + top_last_element,
                        image_pixels->Data() + bottom_first_element);
     }
-    return NewImageFromRaster(info, std::move(image_pixels));
+    return StaticBitmapImage::Create(std::move(image_pixels), info);
   }
 
   // Since we are allowed to premul the input image if needed, we can use Skia
@@ -297,7 +278,7 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
         CopyImageData(image, info.makeColorSpace(nullptr));
     if (!dst_pixels)
       return nullptr;
-    return NewImageFromRaster(info, std::move(dst_pixels));
+    return StaticBitmapImage::Create(std::move(dst_pixels), info);
   }
 
   // Draw on a surface. Avoid sRGB gamma transfer curve.
@@ -311,6 +292,10 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   surface->getCanvas()->drawImage(skia_image.get(), 0, 0, &paint);
   return StaticBitmapImage::Create(surface->makeImageSnapshot(),
                                    image->ContextProviderWrapper());
+}
+
+void freePixels(const void*, void* pixels) {
+  static_cast<Uint8Array*>(pixels)->Release();
 }
 
 // Resizes an SkImage using scalePixels(). This code path should not be used if
@@ -777,7 +762,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
       parsed_options.premultiply_alpha ? kPremul_SkAlphaType
                                        : kUnpremul_SkAlphaType,
       parsed_options.color_params.GetSkColorSpaceForSkSurfaces());
-  image_ = NewImageFromRaster(info, std::move(image_pixels));
+  image_ = StaticBitmapImage::Create(std::move(image_pixels), info);
   if (!image_)
     return;
 
