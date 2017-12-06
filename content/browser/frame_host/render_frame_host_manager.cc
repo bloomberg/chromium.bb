@@ -730,8 +730,17 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // not be recreated if the URL didn't change. So instead of calling
     // CleanUpNavigation just discard the speculative RenderFrameHost if one
     // exists.
-    if (speculative_render_frame_host_)
+    if (speculative_render_frame_host_) {
+      // If the speculative RenderFrameHost is trying to commit a navigation,
+      // inform the NavigationController that the load of the corresponding
+      // NavigationEntry stopped.
+      if (speculative_render_frame_host_->navigation_handle()) {
+        frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
+            speculative_render_frame_host_->navigation_handle()
+                ->pending_nav_entry_id());
+      }
       DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+    }
 
     // Short-term solution: avoid creating a WebUI for subframes because
     // non-PlzNavigate code path doesn't do it and some WebUI pages don't
@@ -855,6 +864,14 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 void RenderFrameHostManager::CleanUpNavigation() {
   CHECK(IsBrowserSideNavigationEnabled());
   if (speculative_render_frame_host_) {
+    // If the speculative RenderFrameHost is trying to commit a navigation,
+    // inform the NavigationController that the load of the corresponding
+    // NavigationEntry stopped.
+    if (speculative_render_frame_host_->navigation_handle()) {
+      frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
+          speculative_render_frame_host_->navigation_handle()
+              ->pending_nav_entry_id());
+    }
     bool was_loading = speculative_render_frame_host_->is_loading();
     DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
     if (was_loading)

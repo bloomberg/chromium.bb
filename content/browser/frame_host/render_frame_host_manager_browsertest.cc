@@ -47,6 +47,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -1496,6 +1497,103 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
   // The visible entry should be null, resulting in about:blank in the address
   // bar.
   EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+}
+
+// Ensures that a pending navigation's URL  is no longer visible after the
+// speculative RFH is discarded due to a concurrent renderer-initiated
+// navigation.  See https://crbug.com/760342.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ResetVisibleURLOnCrossProcessNavigationInterrupted) {
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+  const std::string kVictimPath = "/victim.html";
+  const std::string kAttackPath = "/attack.html";
+  ControllableHttpResponse victim_response(embedded_test_server(), kVictimPath);
+  ControllableHttpResponse attack_response(embedded_test_server(), kAttackPath);
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  const GURL kVictimURL = embedded_test_server()->GetURL("a.com", kVictimPath);
+  const GURL kAttackURL = embedded_test_server()->GetURL("b.com", kAttackPath);
+
+  // First navigate to the attacker page. This page will be cross-site compared
+  // to the next navigations we will attempt.
+  const GURL kAttackInitialURL =
+      embedded_test_server()->GetURL("b.com", "/title1.html");
+  NavigateToURL(shell(), kAttackInitialURL);
+  EXPECT_EQ(kAttackInitialURL, shell()->web_contents()->GetVisibleURL());
+
+  // Now, start a browser-initiated cross-site navigation to a new page that
+  // will hang at ready to commit stage.
+  TestNavigationManager victim_navigation(shell()->web_contents(), kVictimURL);
+  shell()->LoadURL(kVictimURL);
+  EXPECT_TRUE(victim_navigation.WaitForRequestStart());
+  victim_navigation.ResumeNavigation();
+
+  victim_response.WaitForRequest();
+  victim_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+  EXPECT_TRUE(victim_navigation.WaitForResponse());
+  victim_navigation.ResumeNavigation();
+
+  // The navigation is ready to commit: it has been handed to the speculative
+  // RenderFrameHost for commit.
+  RenderFrameHostImpl* speculative_rfh =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->render_manager()
+          ->speculative_frame_host();
+  CHECK(speculative_rfh);
+  EXPECT_TRUE(speculative_rfh->is_loading());
+
+  // Since we have a browser-initiated pending navigation, the navigation URL is
+  // showing in the address bar.
+  EXPECT_EQ(kVictimURL, shell()->web_contents()->GetVisibleURL());
+
+  // The attacker page requests a navigation to a new document while the
+  // browser-initiated navigation hasn't committed yet.
+  TestNavigationManager attack_navigation(shell()->web_contents(), kAttackURL);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      shell()->web_contents(),
+      "location.href = \"" + kAttackURL.spec() + "\";"));
+  EXPECT_TRUE(attack_navigation.WaitForRequestStart());
+
+  // This deletes the speculative RenderFrameHost that was supposed to commit
+  // the browser-initiated navigation.
+  speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
+                        ->GetFrameTree()
+                        ->root()
+                        ->render_manager()
+                        ->speculative_frame_host();
+  EXPECT_FALSE(speculative_rfh);
+
+  // The URL of the browser-initiated navigation should no longer be shown in
+  // the address bar since the RenderFrameHost that was supposed to commit it
+  // has been discarded. Instead, we should be showing the URL of the current
+  // page as we do not show the URL of pending navigations when they are
+  // renderer-initiated.
+  EXPECT_NE(kVictimURL, shell()->web_contents()->GetVisibleURL());
+  EXPECT_EQ(kAttackInitialURL, shell()->web_contents()->GetVisibleURL());
+
+  // The attacker navigation results in a 204.
+  attack_navigation.ResumeNavigation();
+  attack_response.WaitForRequest();
+  attack_response.Send(
+      "HTTP/1.1 204 OK\r\n"
+      "Connection: close\r\n"
+      "\r\n");
+  attack_navigation.WaitForNavigationFinished();
+  speculative_rfh = static_cast<WebContentsImpl*>(shell()->web_contents())
+                        ->GetFrameTree()
+                        ->root()
+                        ->render_manager()
+                        ->speculative_frame_host();
+  EXPECT_FALSE(speculative_rfh);
+
+  // We are still showing the URL of the current page.
+  EXPECT_EQ(kAttackInitialURL, shell()->web_contents()->GetVisibleURL());
 }
 
 // Test for crbug.com/9682.  We should not show the URL for a pending renderer-
