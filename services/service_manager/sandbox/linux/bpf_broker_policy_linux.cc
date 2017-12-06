@@ -12,7 +12,9 @@ using sandbox::bpf_dsl::ResultExpr;
 
 namespace service_manager {
 
-BrokerProcessPolicy::BrokerProcessPolicy() {}
+BrokerProcessPolicy::BrokerProcessPolicy(
+    const sandbox::syscall_broker::BrokerCommandSet& allowed_command_set)
+    : allowed_command_set_(allowed_command_set) {}
 
 BrokerProcessPolicy::~BrokerProcessPolicy() {}
 
@@ -20,44 +22,78 @@ ResultExpr BrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
 #if defined(__NR_access)
     case __NR_access:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_ACCESS))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_faccessat)
     case __NR_faccessat:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_ACCESS))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_open)
     case __NR_open:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_OPEN))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_openat)
     case __NR_openat:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_OPEN))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_unlink)
     case __NR_unlink:
+      return Allow();
 #endif
 #if defined(__NR_rename)
     case __NR_rename:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_RENAME))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_stat)
     case __NR_stat:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_STAT))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_stat64)
     case __NR_stat64:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_STAT))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_fstatat)
     case __NR_fstatat:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_STAT))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_newfstatat)
     case __NR_newfstatat:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_STAT))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_readlink)
     case __NR_readlink:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_READLINK))
+        return Allow();
+      break;
 #endif
 #if defined(__NR_readlinkat)
     case __NR_readlinkat:
+      if (allowed_command_set_.test(sandbox::syscall_broker::COMMAND_READLINK))
+        return Allow();
+      break;
 #endif
-      return Allow();
     default:
-      return BPFBasePolicy::EvaluateSyscall(sysno);
+      break;
   }
+  return BPFBasePolicy::EvaluateSyscall(sysno);
 }
 
 }  // namespace service_manager

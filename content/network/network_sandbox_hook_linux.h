@@ -9,8 +9,7 @@
 
 namespace content {
 
-bool NetworkPreSandboxHook(service_manager::BPFBasePolicy* policy,
-                           service_manager::SandboxLinux::Options options);
+bool NetworkPreSandboxHook(service_manager::SandboxLinux::Options options);
 
 }  // namespace content
 

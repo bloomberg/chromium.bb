@@ -12,8 +12,7 @@ using sandbox::syscall_broker::BrokerFilePermission;
 
 namespace content {
 
-bool NetworkPreSandboxHook(service_manager::BPFBasePolicy* policy,
-                           service_manager::SandboxLinux::Options options) {
+bool NetworkPreSandboxHook(service_manager::SandboxLinux::Options options) {
   sandbox::syscall_broker::BrokerCommandSet command_set;
   command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
   command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
@@ -26,7 +25,7 @@ bool NetworkPreSandboxHook(service_manager::BPFBasePolicy* policy,
       BrokerFilePermission::ReadWriteCreateRecursive("/")};
 
   service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
-      policy, command_set, std::move(file_permissions),
+      command_set, std::move(file_permissions),
       service_manager::SandboxLinux::PreSandboxHook(), options);
 
   return true;
