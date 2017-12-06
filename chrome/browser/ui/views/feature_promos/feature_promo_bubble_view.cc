@@ -9,7 +9,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/event_monitor.h"
@@ -54,7 +53,8 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
     views::BubbleBorder::Arrow arrow,
     int string_specifier,
     ActivationAction activation_action)
-    : BubbleDialogDelegateView(anchor_view, arrow) {
+    : BubbleDialogDelegateView(anchor_view, arrow),
+      activation_action_(activation_action) {
   UseCompactMargins();
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
@@ -68,13 +68,14 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   SetLayoutManager(box_layout.release());
 
   AddChildView(new views::Label(l10n_util::GetStringUTF16(string_specifier)));
-
-  if (activation_action == ActivationAction::DO_NOT_ACTIVATE)
+  if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {
     set_can_activate(activation_action == ActivationAction::ACTIVATE);
+    set_shadow(views::BubbleBorder::NO_SHADOW);
+  }
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
   if (activation_action == ActivationAction::DO_NOT_ACTIVATE)
     SetArrowPaintType(views::BubbleBorder::PAINT_TRANSPARENT);
-  UseCompactMargins();
+
   widget->Show();
   if (activation_action == ActivationAction::ACTIVATE)
     StartAutoCloseTimer(kDelayDefault);
@@ -101,6 +102,17 @@ void FeaturePromoBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
 
 void FeaturePromoBubbleView::OnMouseExited(const ui::MouseEvent& event) {
   StartAutoCloseTimer(kDelayShort);
+}
+
+gfx::Rect FeaturePromoBubbleView::GetBubbleBounds() {
+  gfx::Rect bounds = BubbleDialogDelegateView::GetBubbleBounds();
+  if (activation_action_ == ActivationAction::DO_NOT_ACTIVATE) {
+    if (base::i18n::IsRTL())
+      bounds.Offset(5, 0);
+    else
+      bounds.Offset(-5, 0);
+  }
+  return bounds;
 }
 
 void FeaturePromoBubbleView::StartAutoCloseTimer(
