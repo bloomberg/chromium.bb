@@ -41,36 +41,32 @@ class BrokerClient {
                bool quiet_failures_for_tests);
   ~BrokerClient();
 
+  // Get the file descriptor used for IPC. This is used for tests.
+  int GetIPCDescriptor() const { return ipc_channel_.get(); }
+
+  // The following public methods can be used in place of the equivalently
+  // name system calls. They all return -errno on errors. They are all async
+  // signal safe so they may be called from a SIGSYS trap handler.
+
   // Can be used in place of access().
   // X_OK will always return an error in practice since the broker process
   // doesn't support execute permissions.
-  // It's similar to the access() system call and will return -errno on errors.
-  // This is async signal safe.
   int Access(const char* pathname, int mode) const;
 
   // Can be used in place of open().
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
-  // It's similar to the open() system call and will return -errno on errors.
-  // This is async signal safe.
   int Open(const char* pathname, int flags) const;
 
   // Can be used in place of stat()/stat64().
-  // It's similar to the stat() system call and will return -errno on errors.
-  // This is async signal safe.
   int Stat(const char* pathname, struct stat* sb);
   int Stat64(const char* pathname, struct stat64* sb);
 
   // Can be used in place of rename().
-  // It's similar to the rename() system call and will return -errno on errors.
-  // This is async signal safe.
   int Rename(const char* oldpath, const char* newpath);
 
   // Can be used in place of Readlink().
   int Readlink(const char* path, char* buf, size_t bufsize);
-
-  // Get the file descriptor used for IPC. This is used for tests.
-  int GetIPCDescriptor() const { return ipc_channel_.get(); }
 
  private:
   int PathAndFlagsSyscall(BrokerCommand syscall_type,
