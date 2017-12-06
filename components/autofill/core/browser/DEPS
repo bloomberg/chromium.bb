@@ -7,7 +7,6 @@ include_rules = [
   "+components/policy",
   "+components/security_state",
   "+components/signin/core/browser",
-  "+components/signin/core/common",
   "+components/sync",
   "+components/variations",
   "+components/version_info",
