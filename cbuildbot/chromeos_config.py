@@ -568,6 +568,7 @@ _x86_internal_release_boards = frozenset([
     'mccloud',
     'meowth',
     'monroe',
+    'nami',
     'nautilus',
     'newbie',
     'ninja',
@@ -656,6 +657,7 @@ _cheets_x86_boards = frozenset([
     'lars',
     'lulu',
     'meowth',
+    'nami',
     'nautilus',
     'newbie',
     'novato',
@@ -2401,6 +2403,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'grunt',
+      'nami',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
