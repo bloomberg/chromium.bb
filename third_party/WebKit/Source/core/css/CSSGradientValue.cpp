@@ -297,7 +297,7 @@ static Color ResolveStopColor(const CSSValue& stop_color,
                               const Document& document,
                               const ComputedStyle& style) {
   return document.GetTextLinkColors().ColorFromCSSValue(
-      stop_color, style.VisitedDependentColor(CSSPropertyColor));
+      stop_color, style.VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 static Color ResolveStopColor(const CSSValue& stop_color,

@@ -36,7 +36,7 @@ void FrameSetPainter::PaintColumnBorder(const PaintInfo& paint_info,
   GraphicsContext& context = paint_info.context;
   context.FillRect(border_rect, layout_frame_set_.FrameSet()->HasBorderColor()
                                     ? layout_frame_set_.ResolveColor(
-                                          CSSPropertyBorderLeftColor)
+                                          GetCSSPropertyBorderLeftColor())
                                     : BorderFillColor());
 
   // Now stroke the edges but only if we have enough room to paint both edges
@@ -60,7 +60,7 @@ void FrameSetPainter::PaintRowBorder(const PaintInfo& paint_info,
   GraphicsContext& context = paint_info.context;
   context.FillRect(border_rect, layout_frame_set_.FrameSet()->HasBorderColor()
                                     ? layout_frame_set_.ResolveColor(
-                                          CSSPropertyBorderLeftColor)
+                                          GetCSSPropertyBorderLeftColor())
                                     : BorderFillColor());
 
   // Now stroke the edges but only if we have enough room to paint both edges

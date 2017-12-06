@@ -56,6 +56,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
@@ -1962,7 +1963,7 @@ void Document::PropagateStyleToViewport() {
     background_style = body_style;
 
   Color background_color =
-      background_style->VisitedDependentColor(CSSPropertyBackgroundColor);
+      background_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
   FillLayer background_layers = background_style->BackgroundLayers();
   for (auto current_layer = &background_layers; current_layer;
        current_layer = current_layer->Next()) {
@@ -2042,7 +2043,7 @@ void Document::PropagateStyleToViewport() {
       GetLayoutViewItem().MutableStyle();
   if (viewport_style->GetWritingMode() != root_writing_mode ||
       viewport_style->Direction() != root_direction ||
-      viewport_style->VisitedDependentColor(CSSPropertyBackgroundColor) !=
+      viewport_style->VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
           background_color ||
       viewport_style->BackgroundLayers() != background_layers ||
       viewport_style->ImageRendering() != image_rendering ||

@@ -34,5 +34,15 @@
       return_type: "bool",
       parameters: "(const ComputedStyle*, LayoutObject*)",
     },
+    {
+      name: "CSSValueFromComputedStyle",
+      return_type: "const CSSValue*",
+      parameters: "(const ComputedStyle&, const LayoutObject*, Node*, bool)",
+    },
+    {
+      name: "ColorIncludingFallback",
+      return_type: "const blink::Color",
+      parameters: "(bool, const ComputedStyle&)",
+    },
   ]
 }

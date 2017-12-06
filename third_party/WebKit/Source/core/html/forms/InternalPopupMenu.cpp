@@ -122,7 +122,7 @@ class InternalPopupMenu::ItemIterationContext {
   ItemIterationContext(const ComputedStyle& style, SharedBuffer* buffer)
       : base_style_(style),
         background_color_(
-            style.VisitedDependentColor(CSSPropertyBackgroundColor)),
+            style.VisitedDependentColor(GetCSSPropertyBackgroundColor())),
         list_index_(0),
         is_in_group_(false),
         buffer_(buffer) {
@@ -144,7 +144,7 @@ class InternalPopupMenu::ItemIterationContext {
     AddProperty("backgroundColor", background_color_.Serialized(), buffer_);
     AddProperty(
         "color",
-        BaseStyle().VisitedDependentColor(CSSPropertyColor).Serialized(),
+        BaseStyle().VisitedDependentColor(GetCSSPropertyColor()).Serialized(),
         buffer_);
     AddProperty("textTransform",
                 String(TextTransformToString(BaseStyle().TextTransform())),
@@ -169,9 +169,9 @@ class InternalPopupMenu::ItemIterationContext {
   }
 
   Color BackgroundColor() const {
-    return is_in_group_
-               ? group_style_->VisitedDependentColor(CSSPropertyBackgroundColor)
-               : background_color_;
+    return is_in_group_ ? group_style_->VisitedDependentColor(
+                              GetCSSPropertyBackgroundColor())
+                        : background_color_;
   }
   // Do not use baseStyle() for background-color, use backgroundColor()
   // instead.
@@ -320,11 +320,12 @@ void InternalPopupMenu::AddElementStyle(ItemIterationContext& context,
   }
   if (IsOverride(style->GetUnicodeBidi()))
     AddProperty("unicodeBidi", String("bidi-override"), data);
-  Color foreground_color = style->VisitedDependentColor(CSSPropertyColor);
-  if (base_style.VisitedDependentColor(CSSPropertyColor) != foreground_color)
+  Color foreground_color = style->VisitedDependentColor(GetCSSPropertyColor());
+  if (base_style.VisitedDependentColor(GetCSSPropertyColor()) !=
+      foreground_color)
     AddProperty("color", foreground_color.Serialized(), data);
   Color background_color =
-      style->VisitedDependentColor(CSSPropertyBackgroundColor);
+      style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
   if (context.BackgroundColor() != background_color &&
       background_color != Color::kTransparent)
     AddProperty("backgroundColor", background_color.Serialized(), data);

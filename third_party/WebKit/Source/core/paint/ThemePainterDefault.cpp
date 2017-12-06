@@ -197,7 +197,7 @@ bool ThemePainterDefault::PaintButton(const Node* node,
       UseMockTheme() ? 0xffc0c0c0 : kDefaultButtonBackgroundColor;
   if (style.HasBackground()) {
     extra_params.button.background_color =
-        style.VisitedDependentColor(CSSPropertyBackgroundColor).Rgb();
+        style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Rgb();
   }
   Platform::Current()->ThemeEngine()->Paint(canvas, WebThemeEngine::kPartButton,
                                             GetWebThemeState(node),
@@ -223,7 +223,7 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   WebCanvas* canvas = paint_info.context.Canvas();
 
   Color background_color =
-      style.VisitedDependentColor(CSSPropertyBackgroundColor);
+      style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
   extra_params.text_field.background_color = background_color.Rgb();
 
   Platform::Current()->ThemeEngine()->Paint(
@@ -243,8 +243,10 @@ bool ThemePainterDefault::PaintMenuList(const Node* node,
   extra_params.menu_list.has_border_radius = style.HasBorderRadius();
   // Fallback to transparent if the specified color object is invalid.
   Color background_color(Color::kTransparent);
-  if (style.HasBackground())
-    background_color = style.VisitedDependentColor(CSSPropertyBackgroundColor);
+  if (style.HasBackground()) {
+    background_color =
+        style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
+  }
   extra_params.menu_list.background_color = background_color.Rgb();
 
   // If we have a background image, don't fill the content area to expose the
@@ -325,7 +327,7 @@ void ThemePainterDefault::SetupMenuListArrow(
     extra_params.menu_list.arrow_size = arrow_size;
   }
   extra_params.menu_list.arrow_color =
-      style.VisitedDependentColor(CSSPropertyColor).Rgb();
+      style.VisitedDependentColor(GetCSSPropertyColor()).Rgb();
 }
 
 bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,

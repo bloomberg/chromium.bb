@@ -195,6 +195,9 @@ CSSValue* ConsumeTransformList(CSSParserTokenRange&,
 CSSValue* ConsumeTransitionProperty(CSSParserTokenRange&);
 bool IsValidPropertyList(const CSSValueList&);
 
+CSSValue* ConsumeBorderColorSide(CSSParserTokenRange&,
+                                 const CSSParserContext&,
+                                 const CSSParserLocalContext&);
 CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
                              CSSParserMode,
                              CSSPropertyParserHelpers::UnitlessQuirk);

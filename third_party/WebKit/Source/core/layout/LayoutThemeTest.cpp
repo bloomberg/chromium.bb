@@ -31,7 +31,7 @@ void LayoutThemeTest::SetHtmlInnerHTML(const char* html_content) {
 
 inline Color OutlineColor(Element* element) {
   return element->GetComputedStyle()->VisitedDependentColor(
-      CSSPropertyOutlineColor);
+      GetCSSPropertyOutlineColor());
 }
 
 inline EBorderStyle OutlineStyle(Element* element) {

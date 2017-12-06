@@ -66,7 +66,7 @@ bool ThemePainterMac::PaintTextField(const Node* node,
 
   bool use_ns_text_field_cell =
       style.HasAppearance() &&
-      style.VisitedDependentColor(CSSPropertyBackgroundColor) ==
+      style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) ==
           Color::kWhite &&
       !style.HasBackgroundImage();
 
@@ -293,7 +293,7 @@ bool ThemePainterMac::PaintMenuListButton(const Node* node,
   if (bounds.Width() < arrow_width + scaled_padding_end)
     return false;
 
-  Color color = style.VisitedDependentColor(CSSPropertyColor);
+  Color color = style.VisitedDependentColor(GetCSSPropertyColor());
   PaintFlags flags = paint_info.context.FillFlags();
   flags.setAntiAlias(true);
   flags.setColor(color.Rgb());

@@ -100,7 +100,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   if (style_category == LayoutListMarker::ListStyleCategory::kNone)
     return;
 
-  Color color(layout_list_marker_.ResolveColor(CSSPropertyColor));
+  Color color(layout_list_marker_.ResolveColor(GetCSSPropertyColor()));
 
   if (BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
           layout_list_marker_.ListItem()->GetDocument(),
