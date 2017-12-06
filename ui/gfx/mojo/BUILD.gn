@@ -8,6 +8,7 @@ mojom("mojo") {
   sources = [
     "accelerated_widget.mojom",
     "buffer_types.mojom",
+    "ca_layer_params.mojom",
     "color_space.mojom",
     "icc_profile.mojom",
     "overlay_transform.mojom",

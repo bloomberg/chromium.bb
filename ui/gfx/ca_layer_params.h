@@ -6,6 +6,7 @@
 #define UI_GFX_CA_LAYER_PARAMS_H_
 
 #include "build/build_config.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -24,24 +25,25 @@ struct GFX_EXPORT CALayerParams {
   CALayerParams& operator=(const CALayerParams& params);
   ~CALayerParams();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
   // The |is_empty| flag is used to short-circuit code to handle CALayerParams
   // on non-macOS platforms.
-  bool is_empty = false;
+  bool is_empty = true;
+
   // Can be used to instantiate a CALayerTreeHost in the browser process, which
   // will display a CALayerTree rooted in the GPU process. This is non-zero when
   // using remote CoreAnimation.
   uint32_t ca_context_id = 0;
+
   // Used to set the contents of a CALayer in the browser to an IOSurface that
   // is specified by the GPU process. This is non-null iff |ca_context_id| is
   // zero.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   gfx::ScopedRefCountedIOSurfaceMachPort io_surface_mach_port;
-  // The geometry of the
+#endif
+
+  // The geometry of the frame.
   gfx::Size pixel_size;
   float scale_factor = 1.f;
-#else
-  bool is_empty = true;
-#endif
 };
 
 }  // namespace gfx

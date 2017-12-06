@@ -232,6 +232,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     }
     params.ca_layer_params.pixel_size = pixel_size_;
     params.ca_layer_params.scale_factor = scale_factor_;
+    params.ca_layer_params.is_empty = false;
     params.swap_response.swap_id = swap_id_++;
     params.swap_response.result = gfx::SwapResult::SWAP_ACK;
     // TODO(brianderson): Tie swap_start to before_flush_time.
