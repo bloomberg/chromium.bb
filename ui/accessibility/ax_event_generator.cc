@@ -51,7 +51,7 @@ AXEventGenerator::TargetedEvent AXEventGenerator::Iterator::operator*() const {
   return AXEventGenerator::TargetedEvent(map_iter_->first, *set_iter_);
 }
 
-AXEventGenerator::AXEventGenerator() : tree_(nullptr) {}
+AXEventGenerator::AXEventGenerator() = default;
 
 AXEventGenerator::AXEventGenerator(AXTree* tree) : tree_(tree) {
   if (tree_)

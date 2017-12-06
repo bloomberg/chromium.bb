@@ -15,23 +15,9 @@ using base::IntToString;
 
 namespace ui {
 
-AXActionData::AXActionData()
-    : action(AX_ACTION_NONE),
-      target_tree_id(-1),
-      target_node_id(-1),
-      request_id(-1),
-      flags(0),
-      anchor_node_id(-1),
-      anchor_offset(-1),
-      focus_node_id(-1),
-      focus_offset(-1),
-      custom_action_id(-1),
-      hit_test_event_to_fire(AX_EVENT_NONE) {}
-
+AXActionData::AXActionData() = default;
 AXActionData::AXActionData(const AXActionData& other) = default;
-
-AXActionData::~AXActionData() {
-}
+AXActionData::~AXActionData() = default;
 
 // Note that this includes an initial space character if nonempty, but
 // that works fine because this is normally printed by AXAction::ToString.

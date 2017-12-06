@@ -119,14 +119,10 @@ struct AXTreeUpdateState {
   std::set<int> removed_node_ids;
 };
 
-AXTreeDelegate::AXTreeDelegate() {
-}
+AXTreeDelegate::AXTreeDelegate() = default;
+AXTreeDelegate::~AXTreeDelegate() = default;
 
-AXTreeDelegate::~AXTreeDelegate() {
-}
-
-AXTree::AXTree()
-    : delegate_(NULL), root_(NULL) {
+AXTree::AXTree() {
   AXNodeData root;
   root.id = -1;
 
@@ -136,8 +132,7 @@ AXTree::AXTree()
   CHECK(Unserialize(initial_state)) << error();
 }
 
-AXTree::AXTree(const AXTreeUpdate& initial_state)
-    : delegate_(NULL), root_(NULL) {
+AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
 }
 
@@ -151,8 +146,8 @@ void AXTree::SetDelegate(AXTreeDelegate* delegate) {
 }
 
 AXNode* AXTree::GetFromId(int32_t id) const {
-  base::hash_map<int32_t, AXNode*>::const_iterator iter = id_map_.find(id);
-  return iter != id_map_.end() ? iter->second : NULL;
+  auto iter = id_map_.find(id);
+  return iter != id_map_.end() ? iter->second : nullptr;
 }
 
 void AXTree::UpdateData(const AXTreeData& new_data) {
@@ -349,10 +344,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
 
   if (!update_state.pending_nodes.empty()) {
     error_ = "Nodes left pending by the update:";
-    for (std::set<AXNode*>::iterator iter = update_state.pending_nodes.begin();
-         iter != update_state.pending_nodes.end(); ++iter) {
-      error_ += base::StringPrintf(" %d", (*iter)->id());
-    }
+    for (const AXNode* pending : update_state.pending_nodes)
+      error_ += base::StringPrintf(" %d", pending->id());
     return false;
   }
 
@@ -441,7 +434,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
       return false;
     }
 
-    update_state->new_root = CreateNode(NULL, src.id, 0, update_state);
+    update_state->new_root = CreateNode(nullptr, src.id, 0, update_state);
     node = update_state->new_root;
     update_state->new_nodes.insert(node);
     UpdateReverseRelations(node, src);

@@ -59,16 +59,6 @@ std::string IntVectorToString(const std::vector<int>& items) {
   return str;
 }
 
-std::string StringVectorToString(const std::vector<std::string>& items) {
-  std::string str;
-  for (size_t i = 0; i < items.size(); ++i) {
-    if (i > 0)
-      str += ",";
-    str += items[i];
-  }
-  return str;
-}
-
 // Predicate that returns true if the first value of a pair is |first|.
 template<typename FirstType, typename SecondType>
 struct FirstIs {
@@ -194,15 +184,8 @@ bool IsNodeIdIntListAttribute(AXIntListAttribute attr) {
   return false;
 }
 
-AXNodeData::AXNodeData()
-    : id(-1),
-      role(AX_ROLE_UNKNOWN),
-      state(AX_STATE_NONE),
-      actions(AX_ACTION_NONE),
-      offset_container_id(-1) {}
-
-AXNodeData::~AXNodeData() {
-}
+AXNodeData::AXNodeData() = default;
+AXNodeData::~AXNodeData() = default;
 
 AXNodeData::AXNodeData(const AXNodeData& other) {
   id = other.id;
@@ -1049,7 +1032,7 @@ std::string AXNodeData::ToString() const {
     switch (stringlist_attributes[i].first) {
       case AX_ATTR_CUSTOM_ACTION_DESCRIPTIONS:
         result +=
-            " custom_action_descriptions: " + StringVectorToString(values);
+            " custom_action_descriptions: " + base::JoinString(values, ",");
         break;
       case AX_STRING_LIST_ATTRIBUTE_NONE:
         break;

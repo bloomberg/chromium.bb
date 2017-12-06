@@ -29,33 +29,33 @@ struct AX_EXPORT AXActionData {
   // parameters apply.
 
   // The action to take.
-  AXAction action;
+  AXAction action = AX_ACTION_NONE;
 
   // The ID of the tree that this action should be performed on.
-  int target_tree_id;
+  int target_tree_id = -1;
 
   // The source extension id (if any) of this action.
   std::string source_extension_id;
 
   // The ID of the node that this action should be performed on.
-  int target_node_id;
+  int target_node_id = -1;
 
   // The request id of this action tracked by the client.
-  int request_id;
+  int request_id = -1;
 
   // Use enums from AXActionFlags
-  int flags;
+  int flags = 0;
 
   // For an action that creates a selection, the selection anchor and focus
   // (see ax_tree_data.h for definitions).
-  int anchor_node_id;
-  int anchor_offset;
+  int anchor_node_id = -1;
+  int anchor_offset = -1;
 
-  int focus_node_id;
-  int focus_offset;
+  int focus_node_id = -1;
+  int focus_offset = -1;
 
   // For custom action.
-  int custom_action_id;
+  int custom_action_id = -1;
 
   // The target rect for the action.
   gfx::Rect target_rect;
@@ -67,7 +67,7 @@ struct AX_EXPORT AXActionData {
   base::string16 value;
 
   // The event to fire in response to a HIT_TEST action.
-  AXEvent hit_test_event_to_fire;
+  AXEvent hit_test_event_to_fire = AX_EVENT_NONE;
 };
 
 }  // namespace ui

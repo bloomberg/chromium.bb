@@ -264,8 +264,8 @@ class AX_EXPORT AXTree {
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
 
-  AXTreeDelegate* delegate_;
-  AXNode* root_;
+  AXTreeDelegate* delegate_ = nullptr;
+  AXNode* root_ = nullptr;
   base::hash_map<int32_t, AXNode*> id_map_;
   std::string error_;
   AXTreeData data_;

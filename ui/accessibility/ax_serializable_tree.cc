@@ -44,13 +44,13 @@ class AX_EXPORT AXTreeSourceAdapter
     return node->parent();
   }
 
-  bool IsValid(const AXNode* node) const override { return node != NULL; }
+  bool IsValid(const AXNode* node) const override { return node != nullptr; }
 
   bool IsEqual(const AXNode* node1, const AXNode* node2) const override {
     return node1 == node2;
   }
 
-  const AXNode* GetNull() const override { return NULL; }
+  const AXNode* GetNull() const override { return nullptr; }
 
   void SerializeNode(const AXNode* node, AXNodeData* out_data) const override {
     *out_data = node->data();

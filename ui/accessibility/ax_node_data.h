@@ -127,10 +127,10 @@ struct AX_EXPORT AXNodeData {
 
   // As much as possible this should behave as a simple, serializable,
   // copyable struct.
-  int32_t id;
-  AXRole role;
-  uint32_t state;
-  uint32_t actions;
+  int32_t id = -1;
+  AXRole role = AX_ROLE_UNKNOWN;
+  uint32_t state = AX_STATE_NONE;
+  uint32_t actions = AX_ACTION_NONE;
   std::vector<std::pair<AXStringAttribute, std::string>> string_attributes;
   std::vector<std::pair<AXIntAttribute, int32_t>> int_attributes;
   std::vector<std::pair<AXFloatAttribute, float>> float_attributes;
@@ -147,7 +147,7 @@ struct AX_EXPORT AXNodeData {
 
   // The id of an ancestor node in the same AXTree that this object's
   // bounding box is relative to, or -1 if there's no offset container.
-  int offset_container_id;
+  int offset_container_id = -1;
 
   // The relative bounding box of this node.
   gfx::RectF location;

@@ -33,7 +33,7 @@ class AX_EXPORT AXPlatformNode {
   static AXPlatformNode* Create(AXPlatformNodeDelegate* delegate);
 
   // Cast a gfx::NativeViewAccessible to an AXPlatformNode if it is one,
-  // or return NULL if it's not an instance of this class.
+  // or return nullptr if it's not an instance of this class.
   static AXPlatformNode* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
 
