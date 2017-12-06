@@ -42,15 +42,15 @@ WindowAnimationWorklet& WindowAnimationWorklet::From(LocalDOMWindow& window) {
   WindowAnimationWorklet* supplement = static_cast<WindowAnimationWorklet*>(
       Supplement<LocalDOMWindow>::From(window, SupplementName()));
   if (!supplement) {
-    supplement = new WindowAnimationWorklet(window);
+    supplement = new WindowAnimationWorklet(window.GetFrame()->GetDocument());
     ProvideTo(window, SupplementName(), supplement);
   }
   return *supplement;
 }
 
-WindowAnimationWorklet::WindowAnimationWorklet(LocalDOMWindow& window)
-    : ContextLifecycleObserver(window.GetFrame()->GetDocument()),
-      animation_worklet_(AnimationWorklet::Create(window.GetFrame())) {
+WindowAnimationWorklet::WindowAnimationWorklet(Document* document)
+    : ContextLifecycleObserver(document),
+      animation_worklet_(new AnimationWorklet(document)) {
   DCHECK(GetExecutionContext());
 }
 

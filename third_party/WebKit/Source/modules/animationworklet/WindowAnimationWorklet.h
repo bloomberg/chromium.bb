@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class Document;
 class LocalDOMWindow;
 
 class MODULES_EXPORT WindowAnimationWorklet final
@@ -31,7 +32,7 @@ class MODULES_EXPORT WindowAnimationWorklet final
  private:
   static WindowAnimationWorklet& From(LocalDOMWindow&);
 
-  explicit WindowAnimationWorklet(LocalDOMWindow&);
+  explicit WindowAnimationWorklet(Document*);
   static const char* SupplementName();
 
   Member<AnimationWorklet> animation_worklet_;
