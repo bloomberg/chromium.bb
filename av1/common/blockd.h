@@ -566,12 +566,14 @@ typedef struct {
   (CFL_SUB8X8_VAL_MI_SIZE * CFL_SUB8X8_VAL_MI_SIZE)
 #endif  // CONFIG_DEBUG
 #define CFL_MAX_BLOCK_SIZE (BLOCK_32X32)
+#define CFL_PRED_BUF_LINE (32)
+#define CFL_PRED_BUF_SQUARE (CFL_PRED_BUF_LINE * CFL_PRED_BUF_LINE)
 typedef struct cfl_ctx {
   // The CfL prediction buffer is used in two steps:
   //   1. Stores Q3 reconstructed luma pixels
   //      (only Q2 is required, but Q3 is used to avoid shifts)
   //   2. Stores Q3 AC contributions (step1 - tx block avg)
-  int16_t pred_buf_q3[MAX_SB_SQUARE];
+  int16_t pred_buf_q3[CFL_PRED_BUF_SQUARE];
 
   // Height and width currently used in the CfL prediction buffer.
   int buf_height, buf_width;
