@@ -589,33 +589,9 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
   return metadata
 
 
-def CreateSectionSizesAndSymbols(
-    map_path, elf_path, tool_prefix, output_directory,
-    track_string_literals=True):
-  """Creates sections sizes and symbols for a SizeInfo.
-
-  Args:
-    map_path: Path to the linker .map(.gz) file to parse.
-    elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
-        aliases and inlined functions. Can be None.
-    tool_prefix: Prefix for c++filt & nm (required).
-    output_directory: Build output directory. If None, source_paths and symbol
-        alias information will not be recorded.
-    track_string_literals: Whether to break down "** merge string" sections into
-        smaller symbols (requires output_directory).
-  """
-  source_mapper = None
-  if output_directory:
-    # Start by finding the elf_object_paths, so that nm can run on them while
-    # the linker .map is being parsed.
-    logging.info('Parsing ninja files.')
-    source_mapper, elf_object_paths = ninja_parser.Parse(
-        output_directory, elf_path)
-    logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
-    assert not elf_path or elf_object_paths, (
-        'Failed to find link command in ninja files for ' +
-        os.path.relpath(elf_path, output_directory))
-
+def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
+    track_string_literals, elf_object_paths):
+  """Adds Elf section sizes and symbols."""
   if elf_path:
     # Run nm on the elf file to retrieve the list of symbol names per-address.
     # This list is required because the .map file contains only a single name
@@ -709,16 +685,13 @@ def CreateSectionSizesAndSymbols(
             # is fast enough since len(merge_string_syms) < 10.
             raw_symbols[idx:idx + 1] = literal_syms
 
-  _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
-  logging.info('Converting excessive aliases into shared-path symbols')
-  _CompactLargeAliasesIntoSharedSymbols(raw_symbols)
   logging.debug('Connecting nm aliases')
   _ConnectNmAliases(raw_symbols)
   return section_sizes, raw_symbols
 
 
 def _ComputePakFileSymbols(
-    file_name, file_size, contents, res_info, symbols_by_name):
+    file_name, file_size, contents, res_info, symbols_by_id):
   total = 12 + 6  # Header size plus extra offset
   id_map = {id(v): k
             for k, v in sorted(contents.resources.items(), reverse=True)}
@@ -729,22 +702,20 @@ def _ComputePakFileSymbols(
     section_name = models.SECTION_PAK_TRANSLATIONS
   else:
     section_name = models.SECTION_PAK_NONTRANSLATED
-  object_path = path_util.ToSrcRootRelative(file_name)
   for resource_id in sorted(contents.resources):
     if resource_id in alias_map:
       # 4 extra bytes of metadata (2 16-bit ints)
       size = 4
-      name = res_info[alias_map[resource_id]][0]
+      resource_id = alias_map[resource_id]
     else:
       # 6 extra bytes of metadata (1 32-bit int, 1 16-bit int)
       size = len(contents.resources[resource_id]) + 6
       name, source_path = res_info[resource_id]
-      if name not in symbols_by_name:
+      if resource_id not in symbols_by_id:
         full_name = '{}: {}'.format(source_path, name)
-        symbols_by_name[name] = models.Symbol(
-            section_name, 0, address=resource_id, full_name=full_name,
-            source_path=source_path, object_path=object_path)
-    symbols_by_name[name].size += size
+        symbols_by_id[resource_id] = models.Symbol(
+            section_name, 0, address=resource_id, full_name=full_name)
+    symbols_by_id[resource_id].size += size
     total += size
   assert file_size == total, (
       '{} bytes in pak file not accounted for'.format(file_size - total))
@@ -759,22 +730,36 @@ def _ParsePakInfoFile(pak_info_path):
   return res_info
 
 
-def _AddPakSymbols(section_sizes, raw_symbols, symbols_by_name):
-  pak_symbols = sorted(symbols_by_name.values(),
+def _ParsePakSymbols(object_paths, output_directory, symbols_by_id):
+  for path in object_paths:
+    whitelist_path = os.path.join(output_directory, path + '.whitelist')
+    if (not os.path.exists(whitelist_path)
+        or os.path.getsize(whitelist_path) == 0):
+      continue
+    with open(whitelist_path, 'r') as f:
+      for line in f:
+        resource_id = int(line.rstrip())
+        # There may be object files in static libraries that are removed by the
+        # linker when there are no external references to its symbols. These
+        # files may be included in object_paths which our apk does not use,
+        # resulting in resource_ids that don't end up being in the final apk.
+        if resource_id not in symbols_by_id:
+          continue
+        symbols_by_id[resource_id].object_path = path
+
+  raw_symbols = sorted(symbols_by_id.values(),
                        key=lambda s: (s.section_name, s.address))
-  for symbol in pak_symbols:
+  section_sizes = {}
+  for symbol in raw_symbols:
     prev = section_sizes.setdefault(symbol.section_name, 0)
     section_sizes[symbol.section_name] = prev + symbol.size
-  raw_symbols.extend(pak_symbols)
+  return section_sizes, raw_symbols
 
 
-def AddApkInfo(section_sizes, raw_symbols, apk_path, output_directory,
-               metadata, apk_elf_result):
-  """Uses apk and output directory add pak and size info."""
+def _ParseApkSectionSizes(section_sizes, metadata, apk_elf_result):
   if metadata:
     logging.debug('Extracting section sizes from .so within .apk')
-    unstripped_section_sizes = section_sizes
-    apk_build_id, section_sizes = apk_elf_result.get()
+    apk_build_id, apk_section_sizes = apk_elf_result.get()
     assert apk_build_id == metadata[models.METADATA_ELF_BUILD_ID], (
         'BuildID from apk_elf_result did not match')
 
@@ -791,44 +776,101 @@ def AddApkInfo(section_sizes, raw_symbols, apk_path, output_directory,
       if packed_section_name not in section_sizes:
         logging.warning('Packed section not present: %s', packed_section_name)
       else:
-        section_sizes['%s (unpacked)' % packed_section_name] = (
-            unstripped_section_sizes.get(packed_section_name))
-  _AddPakSymbolsFromApk(section_sizes, raw_symbols, apk_path, output_directory)
+        apk_section_sizes['%s (unpacked)' % packed_section_name] = (
+            section_sizes.get(packed_section_name))
+  return apk_section_sizes
 
 
-def _AddPakSymbolsFromApk(
-    section_sizes, raw_symbols, apk_path, output_directory):
+def _FindPakSymbolsFromApk(apk_path, output_directory):
   with zipfile.ZipFile(apk_path) as z:
-    pak_zip_infos = [f for f in z.infolist() if f.filename.endswith('.pak')]
+    pak_zip_infos = (f for f in z.infolist() if f.filename.endswith('.pak'))
     apk_info_name = os.path.basename(apk_path) + '.pak.info'
     pak_info_path = os.path.join(output_directory, 'size-info', apk_info_name)
     res_info = _ParsePakInfoFile(pak_info_path)
-    symbols_by_name = {}
+    symbols_by_id = {}
     for pak_zip_info in pak_zip_infos:
       contents = data_pack.ReadDataPackFromString(z.read(pak_zip_info))
       _ComputePakFileSymbols(
           pak_zip_info.filename, pak_zip_info.file_size, contents, res_info,
-          symbols_by_name)
-  _AddPakSymbols(section_sizes, raw_symbols, symbols_by_name)
+          symbols_by_id)
+  return symbols_by_id
 
 
-def AddPakSymbolsFromFiles(
-    section_sizes, raw_symbols, pak_files, pak_info_path):
+def _FindPakSymbolsFromFiles(pak_files, pak_info_path):
   """Uses files from args to find and add pak symbols."""
   res_info = _ParsePakInfoFile(pak_info_path)
-  symbols_by_name = {}
+  symbols_by_id = {}
   for pak_file_path in pak_files:
     with open(pak_file_path, 'r') as f:
       contents = data_pack.ReadDataPackFromString(f.read())
       _ComputePakFileSymbols(
           pak_file_path, os.path.getsize(pak_file_path), contents, res_info,
-          symbols_by_name)
-  _AddPakSymbols(section_sizes, raw_symbols, symbols_by_name)
+          symbols_by_id)
+  return symbols_by_id
+
+
+def CreateSectionSizesAndSymbols(
+      map_path=None, tool_prefix=None, output_directory=None, elf_path=None,
+      apk_path=None, track_string_literals=True, metadata=None,
+      apk_elf_result=None, pak_files=None, pak_info_file=None):
+  """Creates sections sizes and symbols for a SizeInfo.
+
+  Args:
+    map_path: Path to the linker .map(.gz) file to parse.
+    elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
+        aliases and inlined functions. Can be None.
+    tool_prefix: Prefix for c++filt & nm (required).
+    output_directory: Build output directory. If None, source_paths and symbol
+        alias information will not be recorded.
+    track_string_literals: Whether to break down "** merge string" sections into
+        smaller symbols (requires output_directory).
+  """
+  source_mapper = None
+  elf_object_paths = None
+  if output_directory:
+    # Start by finding the elf_object_paths, so that nm can run on them while
+    # the linker .map is being parsed.
+    logging.info('Parsing ninja files.')
+    source_mapper, elf_object_paths = ninja_parser.Parse(
+        output_directory, elf_path)
+    logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
+    assert not elf_path or elf_object_paths, (
+        'Failed to find link command in ninja files for ' +
+        os.path.relpath(elf_path, output_directory))
+
+  section_sizes, raw_symbols = _ParseElfInfo(
+      map_path, elf_path, tool_prefix, output_directory, track_string_literals,
+      elf_object_paths)
+
+  pak_symbols_by_id = None
+  if apk_path:
+    section_sizes = _ParseApkSectionSizes(section_sizes, metadata,
+                                          apk_elf_result)
+    pak_symbols_by_id = _FindPakSymbolsFromApk(apk_path, output_directory)
+  elif pak_files and pak_info_file:
+    pak_symbols_by_id = _FindPakSymbolsFromFiles(pak_files, pak_info_file)
+
+  if pak_symbols_by_id:
+    object_paths = (p for p in source_mapper.IterAllPaths() if p.endswith('.o'))
+    pak_section_sizes, pak_raw_symbols = _ParsePakSymbols(
+        object_paths, output_directory, pak_symbols_by_id)
+    section_sizes.update(pak_section_sizes)
+    raw_symbols.extend(pak_raw_symbols)
+
+  _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
+  logging.info('Converting excessive aliases into shared-path symbols')
+  _CompactLargeAliasesIntoSharedSymbols(raw_symbols)
+  return section_sizes, raw_symbols
 
 
 def CreateSizeInfo(
     section_sizes, raw_symbols, metadata=None, normalize_names=True):
   """Performs operations on all symbols and creates a SizeInfo object."""
+  logging.debug('Sorting %d symbols', len(raw_symbols))
+  raw_symbols.sort(key=lambda s: (
+      s.IsPak(), s.IsBss(), s.section_name, s.address))
+  logging.info('Processed %d symbols', len(raw_symbols))
+
   # Padding not really required, but it is useful to check for large padding and
   # log a warning.
   logging.info('Calculating padding')
@@ -840,9 +882,6 @@ def CreateSizeInfo(
   if normalize_names:
     _NormalizeNames(raw_symbols)
 
-  raw_symbols.sort(key=lambda s: (
-      s.IsPak(), s.IsBss(), s.section_name, s.address))
-  logging.info('Processed %d symbols', len(raw_symbols))
   return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata)
 
 
@@ -957,8 +996,6 @@ def Run(args, parser):
   elf_path = args.elf_file
   map_path = args.map_file
   apk_path = args.apk_file
-  pak_files = args.pak_file
-  pak_info_file = args.pak_info_file
   any_input = apk_path or elf_path or map_path
   if not any_input:
     parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
@@ -1004,20 +1041,19 @@ def Run(args, parser):
 
   metadata = CreateMetadata(map_path, elf_path, apk_path, tool_prefix,
                             output_directory)
+
+  apk_elf_result = None
   if apk_path and elf_path:
     # Extraction takes around 1 second, so do it in parallel.
     apk_elf_result = concurrent.ForkAndCall(
         _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
 
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
-      map_path, elf_path, tool_prefix, output_directory,
-      track_string_literals=args.track_string_literals)
-  if apk_path:
-    AddApkInfo(section_sizes, raw_symbols, apk_path, output_directory,
-               metadata, apk_elf_result)
-  elif pak_files and pak_info_file:
-    AddPakSymbolsFromFiles(
-        section_sizes, raw_symbols, pak_files, pak_info_file)
+      map_path=map_path, tool_prefix=tool_prefix, elf_path=elf_path,
+      apk_path=apk_path, output_directory=output_directory,
+      track_string_literals=args.track_string_literals,
+      metadata=metadata, apk_elf_result=apk_elf_result,
+      pak_files=args.pak_file, pak_info_file=args.pak_info_file)
   size_info = CreateSizeInfo(
       section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
 

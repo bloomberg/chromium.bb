@@ -107,11 +107,15 @@ class IntegrationTest(unittest.TestCase):
     if cache_key not in IntegrationTest.cached_size_info:
       elf_path = _TEST_ELF_PATH if use_elf else None
       output_directory = _TEST_OUTPUT_DIR if use_output_directory else None
-      section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
-          _TEST_MAP_PATH, elf_path, _TEST_TOOL_PREFIX, output_directory)
       if use_pak:
-        archive.AddPakSymbolsFromFiles(
-            section_sizes, raw_symbols, [_TEST_PAK_PATH], _TEST_PAK_INFO_PATH)
+        section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
+            map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
+            elf_path=elf_path, output_directory=output_directory,
+            pak_files=[_TEST_PAK_PATH], pak_info_file=_TEST_PAK_INFO_PATH)
+      else:
+        section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
+            map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
+            elf_path=elf_path, output_directory=output_directory)
       metadata = None
       if use_elf:
         with _AddMocksToPath():
