@@ -198,8 +198,7 @@ class GLRendererCopierPixelTest
     // Bind the texture to a framebuffer from which to read the pixels.
     if (sync_token.HasData())
       gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-    GLuint texture =
-        gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    GLuint texture = gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
     GLuint framebuffer = 0;
     gl_->GenFramebuffers(1, &framebuffer);
     gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer);

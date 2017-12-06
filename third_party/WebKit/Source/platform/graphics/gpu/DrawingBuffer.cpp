@@ -391,7 +391,6 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
   // produceSyncToken with that point.
   {
     gl_->ProduceTextureDirectCHROMIUM(color_buffer_for_mailbox->texture_id,
-                                      texture_target_,
                                       color_buffer_for_mailbox->mailbox.name);
     const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
     // It's critical to order the execution of this context's work relative
@@ -519,7 +518,8 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   // could just use the actual texture id and avoid needing to produce/consume a
   // mailbox.
   GLuint texture_id = gl_->CreateAndConsumeTextureCHROMIUM(
-      GL_TEXTURE_2D, transferable_resource.mailbox_holder.mailbox.name);
+      transferable_resource.mailbox_holder.mailbox.name);
+
   // Return the mailbox but report that the resource is lost to prevent trying
   // to use the backing for future frames. We keep it alive with our own
   // reference to the backing via our |textureId|.
@@ -771,7 +771,6 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
 
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
-  GLenum src_texture_target = texture_target_;
   gpu::Mailbox mailbox;
   gpu::SyncToken produce_sync_token;
   if (src_buffer == kFrontBuffer && front_color_buffer_) {
@@ -780,7 +779,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   } else {
     src_gl->GenMailboxCHROMIUM(mailbox.name);
     src_gl->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id,
-                                         src_texture_target, mailbox.name);
+                                         mailbox.name);
     const GLuint64 fence_sync = src_gl->InsertFenceSyncCHROMIUM();
     src_gl->OrderingBarrierCHROMIUM();
     src_gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
@@ -793,8 +792,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   }
 
   dst_gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
-  GLuint src_texture =
-      dst_gl->CreateAndConsumeTextureCHROMIUM(src_texture_target, mailbox.name);
+  GLuint src_texture = dst_gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
 
   GLboolean unpack_premultiply_alpha_needed = GL_FALSE;
   GLboolean unpack_unpremultiply_alpha_needed = GL_FALSE;

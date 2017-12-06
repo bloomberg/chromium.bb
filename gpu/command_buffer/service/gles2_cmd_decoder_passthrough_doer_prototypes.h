@@ -802,13 +802,9 @@ error::Error DoDrawElementsInstancedANGLE(GLenum mode,
                                           const void* indices,
                                           GLsizei primcount);
 error::Error DoVertexAttribDivisorANGLE(GLuint index, GLuint divisor);
-error::Error DoProduceTextureCHROMIUM(GLenum target,
-                                      const volatile GLbyte* mailbox);
 error::Error DoProduceTextureDirectCHROMIUM(GLuint texture_client_id,
-                                            GLenum target,
                                             const volatile GLbyte* mailbox);
-error::Error DoCreateAndConsumeTextureINTERNAL(GLenum target,
-                                               GLuint texture_client_id,
+error::Error DoCreateAndConsumeTextureINTERNAL(GLuint texture_client_id,
                                                const volatile GLbyte* mailbox);
 error::Error DoBindUniformLocationCHROMIUM(GLuint program,
                                            GLint location,

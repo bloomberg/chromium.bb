@@ -232,8 +232,8 @@ GLuint GLRendererCopier::RenderResultTexture(
     if (!request.mailbox().IsZero()) {
       if (request.sync_token().HasData())
         gl->WaitSyncTokenCHROMIUM(request.sync_token().GetConstData());
-      result_texture = gl->CreateAndConsumeTextureCHROMIUM(
-          GL_TEXTURE_2D, request.mailbox().name);
+      result_texture =
+          gl->CreateAndConsumeTextureCHROMIUM(request.mailbox().name);
     }
   }
   if (result_texture == 0) {
@@ -436,8 +436,7 @@ void GLRendererCopier::SendTextureResult(
     mailbox = request->mailbox();
   } else {
     gl->GenMailboxCHROMIUM(mailbox.name);
-    gl->ProduceTextureDirectCHROMIUM(result_texture, GL_TEXTURE_2D,
-                                     mailbox.name);
+    gl->ProduceTextureDirectCHROMIUM(result_texture, mailbox.name);
   }
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->ShallowFlushCHROMIUM();

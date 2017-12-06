@@ -406,7 +406,8 @@ void FastInkView::UpdateSurface() {
     gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gles2->GenMailboxCHROMIUM(resource->mailbox.name);
-    gles2->ProduceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name);
+    gles2->ProduceTextureDirectCHROMIUM(resource->texture,
+                                        resource->mailbox.name);
   }
 
   gfx::Size buffer_size = gpu_memory_buffer_->GetSize();

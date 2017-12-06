@@ -86,10 +86,8 @@ void CreateGLMailbox(gpu::gles2::GLES2Interface* gles2,
                      unsigned texture_id,
                      GLenum target,
                      gpu::Mailbox* mailbox) {
-  gles2->ActiveTexture(GL_TEXTURE0);
-  gles2->BindTexture(target, texture_id);
   gles2->GenMailboxCHROMIUM(mailbox->name);
-  gles2->ProduceTextureCHROMIUM(target, mailbox->name);
+  gles2->ProduceTextureDirectCHROMIUM(texture_id, mailbox->name);
 }
 
 }  // namespace

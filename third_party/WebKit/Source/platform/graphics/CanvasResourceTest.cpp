@@ -20,8 +20,7 @@ namespace blink {
 
 class MockGLES2InterfaceWithMailboxSupport : public FakeGLES2Interface {
  public:
-  MOCK_METHOD3(ProduceTextureDirectCHROMIUM,
-               void(GLuint, GLenum, const GLbyte*));
+  MOCK_METHOD2(ProduceTextureDirectCHROMIUM, void(GLuint, const GLbyte*));
   MOCK_METHOD1(GenMailboxCHROMIUM, void(GLbyte*));
 };
 
@@ -75,8 +74,8 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   // No expected call to DeleteTextures becaus skia recycles
-  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(0, GL_TEXTURE_2D,
-                                                Pointee(test_mailbox.name[0])))
+  EXPECT_CALL(gl_,
+              ProduceTextureDirectCHROMIUM(0, Pointee(test_mailbox.name[0])))
       .Times(1);
   resource = nullptr;
 

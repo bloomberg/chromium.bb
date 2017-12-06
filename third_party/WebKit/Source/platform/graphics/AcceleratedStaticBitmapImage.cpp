@@ -162,7 +162,7 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
   gpu::gles2::GLES2Interface* dest_gl = dest_provider->ContextGL();
   dest_gl->WaitSyncTokenCHROMIUM(texture_holder_->GetSyncToken().GetData());
   GLuint source_texture_id = dest_gl->CreateAndConsumeTextureCHROMIUM(
-      GL_TEXTURE_2D, texture_holder_->GetMailbox().name);
+      texture_holder_->GetMailbox().name);
   dest_gl->CopySubTextureCHROMIUM(
       source_texture_id, 0, dest_target, dest_texture_id, 0, dest_point.X(),
       dest_point.Y(), source_sub_rectangle.X(), source_sub_rectangle.Y(),

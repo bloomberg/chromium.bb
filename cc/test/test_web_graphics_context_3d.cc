@@ -477,7 +477,6 @@ void TestWebGraphicsContext3D::genMailboxCHROMIUM(GLbyte* mailbox) {
 }
 
 GLuint TestWebGraphicsContext3D::createAndConsumeTextureCHROMIUM(
-    GLenum target,
     const GLbyte* mailbox) {
   return createTexture();
 }

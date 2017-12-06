@@ -164,8 +164,7 @@ int32_t CompositorLayerResource::SetTexture(
   gl->GenMailboxCHROMIUM(
       reinterpret_cast<GLbyte*>(data_.texture->mailbox.name));
   gl->ProduceTextureDirectCHROMIUM(
-      texture, target,
-      reinterpret_cast<const GLbyte*>(data_.texture->mailbox.name));
+      texture, reinterpret_cast<const GLbyte*>(data_.texture->mailbox.name));
 
   // Set the source size to (1, 1). It will be used to verify the source_rect
   // passed to SetSourceRect().

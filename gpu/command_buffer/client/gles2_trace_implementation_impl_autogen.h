@@ -2012,27 +2012,19 @@ void GLES2TraceImplementation::GenMailboxCHROMIUM(GLbyte* mailbox) {
   gl_->GenMailboxCHROMIUM(mailbox);
 }
 
-void GLES2TraceImplementation::ProduceTextureCHROMIUM(GLenum target,
-                                                      const GLbyte* mailbox) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ProduceTextureCHROMIUM");
-  gl_->ProduceTextureCHROMIUM(target, mailbox);
-}
-
 void GLES2TraceImplementation::ProduceTextureDirectCHROMIUM(
     GLuint texture,
-    GLenum target,
     const GLbyte* mailbox) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::ProduceTextureDirectCHROMIUM");
-  gl_->ProduceTextureDirectCHROMIUM(texture, target, mailbox);
+  gl_->ProduceTextureDirectCHROMIUM(texture, mailbox);
 }
 
 GLuint GLES2TraceImplementation::CreateAndConsumeTextureCHROMIUM(
-    GLenum target,
     const GLbyte* mailbox) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CreateAndConsumeTextureCHROMIUM");
-  return gl_->CreateAndConsumeTextureCHROMIUM(target, mailbox);
+  return gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
 }
 
 void GLES2TraceImplementation::BindUniformLocationCHROMIUM(GLuint program,

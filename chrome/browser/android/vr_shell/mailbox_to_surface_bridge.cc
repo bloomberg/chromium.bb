@@ -130,8 +130,7 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
   TRACE_EVENT0("gpu", "MailboxToSurfaceBridge::ConsumeTexture");
   gl->WaitSyncTokenCHROMIUM(mailbox.sync_token.GetConstData());
 
-  return gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D,
-                                             mailbox.mailbox.name);
+  return gl->CreateAndConsumeTextureCHROMIUM(mailbox.mailbox.name);
 }
 
 }  // namespace

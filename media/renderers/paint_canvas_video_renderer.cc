@@ -110,8 +110,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
            mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES ||
            mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB);
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_textures[i].fID = gl->CreateAndConsumeTextureCHROMIUM(
-        mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+    source_textures[i].fID =
+        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
     source_textures[i].fTarget = mailbox_holder.texture_target;
 
     gl->BindTexture(mailbox_holder.texture_target, source_textures[i].fID);
@@ -207,8 +207,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
   } else {
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_texture = gl->CreateAndConsumeTextureCHROMIUM(
-        mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+    source_texture =
+        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
   }
   GrGLTextureInfo source_texture_info;
   source_texture_info.fID = source_texture;
@@ -827,8 +827,8 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
       << mailbox_holder.texture_target;
 
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-  uint32_t source_texture = gl->CreateAndConsumeTextureCHROMIUM(
-      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+  uint32_t source_texture =
+      gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
 
   // The video is stored in a unmultiplied format, so premultiply
   // if necessary.
@@ -899,7 +899,6 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     mailbox_holder.texture_target = texture_info->fTarget;
     canvas_gl->GenMailboxCHROMIUM(mailbox_holder.mailbox.name);
     canvas_gl->ProduceTextureDirectCHROMIUM(texture_info->fID,
-                                            mailbox_holder.texture_target,
                                             mailbox_holder.mailbox.name);
 
     // Wait for mailbox creation on canvas context before consuming it and
@@ -913,7 +912,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         mailbox_holder.sync_token.GetConstData());
     uint32_t intermediate_texture =
         destination_gl->CreateAndConsumeTextureCHROMIUM(
-            mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+            mailbox_holder.mailbox.name);
 
     destination_gl->CopyTextureCHROMIUM(intermediate_texture, 0, target,
                                         texture, level, internal_format, type,

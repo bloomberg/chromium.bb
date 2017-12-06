@@ -1391,19 +1391,12 @@ void GL_APIENTRY GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
 void GL_APIENTRY GLES2GenMailboxCHROMIUM(GLbyte* mailbox) {
   gles2::GetGLContext()->GenMailboxCHROMIUM(mailbox);
 }
-void GL_APIENTRY GLES2ProduceTextureCHROMIUM(GLenum target,
-                                             const GLbyte* mailbox) {
-  gles2::GetGLContext()->ProduceTextureCHROMIUM(target, mailbox);
-}
 void GL_APIENTRY GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                   GLenum target,
                                                    const GLbyte* mailbox) {
-  gles2::GetGLContext()->ProduceTextureDirectCHROMIUM(texture, target, mailbox);
+  gles2::GetGLContext()->ProduceTextureDirectCHROMIUM(texture, mailbox);
 }
-GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(GLenum target,
-                                                        const GLbyte* mailbox) {
-  return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(target,
-                                                                mailbox);
+GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) {
+  return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(mailbox);
 }
 void GL_APIENTRY GLES2BindUniformLocationCHROMIUM(GLuint program,
                                                   GLint location,
@@ -2869,10 +2862,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGenMailboxCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glGenMailboxCHROMIUM),
-    },
-    {
-        "glProduceTextureCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glProduceTextureCHROMIUM),
     },
     {
         "glProduceTextureDirectCHROMIUM",

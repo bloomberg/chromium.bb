@@ -30,7 +30,7 @@ Overview
     by the server, it only guarantees submission order.
 
     It does however guarantee operation order with respect to
-    CreateAndConsumeTextureCHROMIUM and ProduceTextureCHROMIUM from
+    CreateAndConsumeTextureCHROMIUM and ProduceTextureDirectCHROMIUM from
     CHROMIUM_texture_mailbox, if present.
 
 Issues

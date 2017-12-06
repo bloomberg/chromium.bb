@@ -946,7 +946,7 @@ void VideoDecoderShim::AssignPictureBuffers(
   for (uint32_t i = 0; i < num_textures; i++) {
     DCHECK_EQ(1u, buffers[i].client_texture_ids().size());
     local_texture_ids[i] = gles2->CreateAndConsumeTextureCHROMIUM(
-        GL_TEXTURE_2D, pending_texture_mailboxes_[i].name);
+        pending_texture_mailboxes_[i].name);
     // Map the plugin texture id to the local texture id.
     uint32_t plugin_texture_id = buffers[i].client_texture_ids()[0];
     texture_id_map_[plugin_texture_id] = local_texture_ids[i];
