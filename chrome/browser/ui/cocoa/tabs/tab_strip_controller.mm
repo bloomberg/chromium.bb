@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -1324,6 +1325,13 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   [delegate_ onTabInsertedWithContents:contents inForeground:inForeground];
 }
 
+// Called when a notification is received from the model to close the tab with
+// the WebContents.
+- (void)tabClosingWithContents:(content::WebContents*)contents
+                       atIndex:(NSInteger)index {
+  wasHidingThrobberSet_.erase(contents);
+}
+
 // Called before |contents| is deactivated.
 - (void)tabDeactivatedWithContents:(content::WebContents*)contents {
   contents->StoreFocus();
@@ -1647,8 +1655,11 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
       [tabController
           setIconImage:[self iconImageForContents:contents atIndex:modelIndex]];
     }
-  } else if (newState == kTabDone || oldState != newState ||
+    wasHidingThrobberSet_.insert(contents);
+  } else if (base::ContainsKey(wasHidingThrobberSet_, contents) ||
+             newState == kTabDone || oldState != newState ||
              oldHasIcon != newHasIcon) {
+    wasHidingThrobberSet_.erase(contents);
     if (newHasIcon) {
       if (newState == kTabDone) {
         [tabController setIconImage:[self iconImageForContents:contents
