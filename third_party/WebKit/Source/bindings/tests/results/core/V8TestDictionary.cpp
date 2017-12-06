@@ -76,6 +76,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
     "treatNullAsStringSequenceMember",
     "uint8ArrayMember",
     "unionInRecordMember",
+    "unionMemberWithSequenceDefault",
     "unionWithTypedefs",
     "unrestrictedDoubleMember",
   };
@@ -685,8 +686,23 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setUnionInRecordMember(unionInRecordMemberCppValue);
   }
 
+  v8::Local<v8::Value> unionMemberWithSequenceDefaultValue;
+  if (!v8Object->Get(context, keys[42].Get(isolate)).ToLocal(&unionMemberWithSequenceDefaultValue)) {
+    exceptionState.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (unionMemberWithSequenceDefaultValue.IsEmpty() || unionMemberWithSequenceDefaultValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    DoubleOrDoubleSequence unionMemberWithSequenceDefaultCppValue;
+    V8DoubleOrDoubleSequence::ToImpl(isolate, unionMemberWithSequenceDefaultValue, unionMemberWithSequenceDefaultCppValue, UnionTypeConversionMode::kNotNullable, exceptionState);
+    if (exceptionState.HadException())
+      return;
+    impl.setUnionMemberWithSequenceDefault(unionMemberWithSequenceDefaultCppValue);
+  }
+
   v8::Local<v8::Value> unionWithTypedefsValue;
-  if (!v8Object->Get(context, keys[42].Get(isolate)).ToLocal(&unionWithTypedefsValue)) {
+  if (!v8Object->Get(context, keys[43].Get(isolate)).ToLocal(&unionWithTypedefsValue)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -701,7 +717,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   }
 
   v8::Local<v8::Value> unrestrictedDoubleMemberValue;
-  if (!v8Object->Get(context, keys[43].Get(isolate)).ToLocal(&unrestrictedDoubleMemberValue)) {
+  if (!v8Object->Get(context, keys[44].Get(isolate)).ToLocal(&unrestrictedDoubleMemberValue)) {
     exceptionState.RethrowV8Exception(block.Exception());
     return;
   }
@@ -1258,6 +1274,20 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     return false;
   }
 
+  v8::Local<v8::Value> unionMemberWithSequenceDefaultValue;
+  bool unionMemberWithSequenceDefaultHasValueOrDefault = false;
+  if (impl.hasUnionMemberWithSequenceDefault()) {
+    unionMemberWithSequenceDefaultValue = ToV8(impl.unionMemberWithSequenceDefault(), creationContext, isolate);
+    unionMemberWithSequenceDefaultHasValueOrDefault = true;
+  } else {
+    unionMemberWithSequenceDefaultValue = ToV8(DoubleOrDoubleSequence::FromDoubleSequence(Vector<double>()), creationContext, isolate);
+    unionMemberWithSequenceDefaultHasValueOrDefault = true;
+  }
+  if (unionMemberWithSequenceDefaultHasValueOrDefault &&
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[42].Get(isolate), unionMemberWithSequenceDefaultValue))) {
+    return false;
+  }
+
   v8::Local<v8::Value> unionWithTypedefsValue;
   bool unionWithTypedefsHasValueOrDefault = false;
   if (impl.hasUnionWithTypedefs()) {
@@ -1265,7 +1295,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     unionWithTypedefsHasValueOrDefault = true;
   }
   if (unionWithTypedefsHasValueOrDefault &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[42].Get(isolate), unionWithTypedefsValue))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[43].Get(isolate), unionWithTypedefsValue))) {
     return false;
   }
 
@@ -1279,7 +1309,7 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
     unrestrictedDoubleMemberHasValueOrDefault = true;
   }
   if (unrestrictedDoubleMemberHasValueOrDefault &&
-      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[43].Get(isolate), unrestrictedDoubleMemberValue))) {
+      !V8CallBoolean(dictionary->CreateDataProperty(context, keys[44].Get(isolate), unrestrictedDoubleMemberValue))) {
     return false;
   }
 

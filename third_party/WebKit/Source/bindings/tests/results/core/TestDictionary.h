@@ -14,6 +14,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/double_or_double_sequence.h"
 #include "bindings/core/v8/double_or_string.h"
 #include "bindings/core/v8/float_or_boolean.h"
 #include "bindings/core/v8/long_or_boolean.h"
@@ -318,6 +319,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>&);
 
+  bool hasUnionMemberWithSequenceDefault() const { return !union_member_with_sequence_default_.IsNull(); }
+  const DoubleOrDoubleSequence& unionMemberWithSequenceDefault() const {
+    return union_member_with_sequence_default_;
+  }
+  void setUnionMemberWithSequenceDefault(const DoubleOrDoubleSequence&);
+
   bool hasUnionWithTypedefs() const { return !union_with_typedefs_.IsNull(); }
   const FloatOrBoolean& unionWithTypedefs() const {
     return union_with_typedefs_;
@@ -401,6 +408,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Vector<String> treat_null_as_string_sequence_member_;
   Member<DOMUint8Array> uint8_array_member_;
   HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_;
+  DoubleOrDoubleSequence union_member_with_sequence_default_;
   FloatOrBoolean union_with_typedefs_;
   double unrestricted_double_member_;
 
