@@ -28,6 +28,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -223,6 +224,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   void OnProgress(const SavePageRequest& request, int64_t bytes);
   void OnCancel(const SavePageRequest& request);
   content::TestBrowserThreadBundle thread_bundle_;
+  content::RenderViewHostTestEnabler rvhte_;
   TestingProfile profile_;
   std::unique_ptr<OfflinerPolicy> policy_;
   TestLoadTerminationListener* load_termination_listener_;
