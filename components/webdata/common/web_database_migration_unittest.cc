@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 76;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 77;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1503,5 +1503,48 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion75ToCurrent) {
         connection.DoesColumnExist("keywords", "instant_url_post_params"));
     EXPECT_FALSE(
         connection.DoesColumnExist("keywords", "search_terms_replacement_key"));
+  }
+}
+
+// Tests changing format of three timestamp columns inside keywords.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion76ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_76.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 76, 76));
+
+    sql::Statement s(connection.GetUniqueStatement(
+        "SELECT id, date_created, last_modified, last_visited FROM keywords"));
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(2, s.ColumnInt64(0));
+    EXPECT_EQ(123, s.ColumnInt64(1));
+    EXPECT_EQ(456, s.ColumnInt64(2));
+    EXPECT_EQ(789, s.ColumnInt64(3));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    sql::Statement s(connection.GetUniqueStatement(
+        "SELECT id, date_created, last_modified, last_visited FROM keywords"));
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(2, s.ColumnInt64(0));
+    EXPECT_EQ(11644473723000000, s.ColumnInt64(1));
+    EXPECT_EQ(11644474056000000, s.ColumnInt64(2));
+    EXPECT_EQ(11644474389000000, s.ColumnInt64(3));
   }
 }
