@@ -61,6 +61,8 @@ const ClipPaintPropertyNode* RarePaintData::GetPostOverflowClip() const {
     return local_border_box_properties_->Clip();
   if (paint_properties_->OverflowClip())
     return paint_properties_->OverflowClip();
+  if (paint_properties_->InnerBorderRadiusClip())
+    return paint_properties_->InnerBorderRadiusClip();
   return local_border_box_properties_->Clip();
 }
 
@@ -87,6 +89,8 @@ PropertyTreeState RarePaintData::ContentsProperties() const {
       contents.SetTransform(properties->ScrollTranslation());
     if (properties->OverflowClip())
       contents.SetClip(properties->OverflowClip());
+    if (properties->InnerBorderRadiusClip())
+      contents.SetClip(properties->InnerBorderRadiusClip());
     else if (properties->CssClip())
       contents.SetClip(properties->CssClip());
   }

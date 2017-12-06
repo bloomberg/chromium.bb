@@ -277,6 +277,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateFragmentClip(const PaintLayer&);
   ALWAYS_INLINE void UpdateCssClip();
   ALWAYS_INLINE void UpdateLocalBorderBoxContext();
+  ALWAYS_INLINE void UpdateInnerBorderRadiusClip();
   ALWAYS_INLINE void UpdateOverflowClip();
   ALWAYS_INLINE void UpdatePerspective();
   ALWAYS_INLINE void UpdateSvgLocalToBorderBoxTransform();
@@ -941,6 +942,12 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
   return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow();
 }
 
+static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
+  return object.StyleRef().HasBorderRadius() &&
+         // IsLayoutEmbeddedContent() is for iframes with border-radius.
+         (object.IsLayoutEmbeddedContent() || NeedsOverflowClip(object));
+}
+
 static bool NeedsControlClipFragmentationAdjustment(const LayoutBox& box) {
   return box.HasControlClip() && !box.Layer() &&
          box.PaintingLayer()->EnclosingPaginationLayer();
@@ -964,52 +971,64 @@ static LayoutPoint VisualOffsetFromPaintOffsetRoot(
   return result;
 }
 
+void FragmentPaintPropertyTreeBuilder::UpdateInnerBorderRadiusClip() {
+  DCHECK(properties_);
+
+  if (object_.NeedsPaintPropertyUpdate() ||
+      full_context_.force_subtree_update) {
+    bool clip_added_or_removed;
+    if (NeedsInnerBorderRadiusClip(object_)) {
+      const LayoutBox& box = ToLayoutBox(object_);
+      auto inner_border = box.StyleRef().GetRoundedInnerBorderFor(
+          LayoutRect(context_.current.paint_offset, box.Size()));
+      auto result = properties_->UpdateInnerBorderRadiusClip(
+          context_.current.clip, context_.current.transform, inner_border);
+
+      if (!full_context_.clip_changed && properties_->InnerBorderRadiusClip() &&
+          inner_border != properties_->InnerBorderRadiusClip()->ClipRect())
+        full_context_.clip_changed = true;
+      clip_added_or_removed = result.NewNodeCreated();
+    } else {
+      clip_added_or_removed = properties_->ClearInnerBorderRadiusClip();
+    }
+
+    full_context_.force_subtree_update |= clip_added_or_removed;
+    full_context_.clip_changed |= clip_added_or_removed;
+  }
+
+  if (auto* border_radius_clip = properties_->InnerBorderRadiusClip())
+    context_.current.clip = border_radius_clip;
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
   DCHECK(properties_);
 
   if (object_.NeedsPaintPropertyUpdate() ||
       full_context_.force_subtree_update) {
-    bool local_clip_added_or_removed = false;
-    bool local_clip_changed = false;
+    bool clip_added_or_removed;
     if (NeedsOverflowClip(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
       LayoutRect clip_rect;
       clip_rect = box.OverflowClipRect(context_.current.paint_offset);
-
-      const auto* current_clip = context_.current.clip;
-      if (box.StyleRef().HasBorderRadius()) {
-        auto inner_border = box.StyleRef().GetRoundedInnerBorderFor(
-            LayoutRect(context_.current.paint_offset, box.Size()));
-        auto result = properties_->UpdateInnerBorderRadiusClip(
-            context_.current.clip, context_.current.transform, inner_border);
-        local_clip_added_or_removed |= result.NewNodeCreated();
-        current_clip = properties_->InnerBorderRadiusClip();
-      } else {
-        local_clip_added_or_removed |=
-            properties_->ClearInnerBorderRadiusClip();
-      }
-
       FloatRoundedRect clipping_rect((FloatRect(clip_rect)));
-      if (properties_->OverflowClip() &&
-          clipping_rect != properties_->OverflowClip()->ClipRect()) {
-        local_clip_changed = true;
-      }
+      if (!full_context_.clip_changed && properties_->OverflowClip() &&
+          clipping_rect != properties_->OverflowClip()->ClipRect())
+        full_context_.clip_changed = true;
 
       auto result = properties_->UpdateOverflowClip(
-          current_clip, context_.current.transform,
+          context_.current.clip, context_.current.transform,
           FloatRoundedRect(FloatRect(clip_rect)));
-      local_clip_added_or_removed |= result.NewNodeCreated();
+      clip_added_or_removed = result.NewNodeCreated();
     } else {
-      local_clip_added_or_removed |= properties_->ClearInnerBorderRadiusClip();
-      local_clip_added_or_removed |= properties_->ClearOverflowClip();
+      clip_added_or_removed = properties_->ClearOverflowClip();
     }
-    full_context_.force_subtree_update |= local_clip_added_or_removed;
-    full_context_.clip_changed |=
-        local_clip_changed || local_clip_added_or_removed;
+
+    full_context_.force_subtree_update |= clip_added_or_removed;
+    full_context_.clip_changed |= clip_added_or_removed;
   }
 
-  if (properties_->OverflowClip())
-    context_.current.clip = properties_->OverflowClip();
+  if (auto* overflow_clip = properties_->OverflowClip())
+    context_.current.clip = overflow_clip;
 }
 
 static FloatPoint PerspectiveOrigin(const LayoutBox& box) {
@@ -1422,15 +1441,15 @@ static void SetNeedsPaintPropertyUpdateIfNeeded(const LayoutObject& object) {
   // The overflow clip paint property depends on the border box rect through
   // overflowClipRect(). The border box rect's size equals the frame rect's
   // size so we trigger a paint property update when the frame rect changes.
-  if (box.ShouldClipOverflow() ||
+  if (NeedsOverflowClip(box) || NeedsInnerBorderRadiusClip(box) ||
       // The used value of CSS clip may depend on size of the box, e.g. for
       // clip: rect(auto auto auto -5px).
-      box.HasClip() ||
+      NeedsCssClip(box) ||
       // Relative lengths (e.g., percentage values) in transform, perspective,
       // transform-origin, and perspective-origin can depend on the size of the
       // frame rect, so force a property update if it changes. TODO(pdr): We
       // only need to update properties if there are relative lengths.
-      box.StyleRef().HasTransform() || box.StyleRef().HasPerspective() ||
+      box.StyleRef().HasTransform() || NeedsPerspective(box) ||
       box_generates_property_nodes_for_mask_and_clip_path)
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
 }
@@ -1497,6 +1516,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 #endif
 
   if (properties_) {
+    UpdateInnerBorderRadiusClip();
     UpdateOverflowClip();
     UpdatePerspective();
     UpdateSvgLocalToBorderBoxTransform();
@@ -1557,8 +1577,8 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
       NeedsPaintOffsetTranslation(object_) || NeedsTransform(object_) ||
       NeedsEffect(object_) || NeedsTransformForNonRootSVG(object_) ||
       NeedsFilter(object_) || NeedsCssClip(object_) ||
-      NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
-      NeedsSVGLocalToBorderBoxTransform(object_) ||
+      NeedsInnerBorderRadiusClip(object_) || NeedsOverflowClip(object_) ||
+      NeedsPerspective(object_) || NeedsSVGLocalToBorderBoxTransform(object_) ||
       NeedsScrollOrScrollTranslation(object_) ||
       NeedsFragmentationClip(object_, *context_.painting_layer);
 
