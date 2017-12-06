@@ -4643,9 +4643,7 @@ TEST_P(SourceBufferStreamTest, Audio_SpliceTrimming_ExistingTrimming) {
 }
 
 TEST_P(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
-  EXPECT_MEDIA_LOG(
-      HasSubstr("Skipping audio splice trimming at PTS=1250us. Found only 250us"
-                " of overlap, need at least 1000us."));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(1250, 250));
 
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,

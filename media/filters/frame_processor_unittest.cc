@@ -858,8 +858,27 @@ TEST_P(FrameProcessorTest, AppendWindowFilterWithInexactPreroll_2) {
   if (use_sequence_mode_)
     frame_processor_->SetSequenceMode(true);
   SetTimestampOffset(Milliseconds(-10));
+
+  // When buffering ByDts, splice trimming checks are done only on every audio
+  // frame following either a discontinuity or the beginning of ProcessFrames().
+  // When buffering ByPts, splice trimming checks are also done on audio frames
+  // with PTS not directly continuous with the highest frame end PTS already
+  // processed.  To simplify the test to have the same splice logging
+  // expectations, process each frame by itself here.
+  if (use_sequence_mode_)
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(-10)));
+  else
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(0)));
+  EXPECT_TRUE(ProcessFrames("0K", ""));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(
+                              base::TimeDelta::FromMicroseconds(10250)));
+  EXPECT_TRUE(ProcessFrames("10.25K", ""));
+
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(10000, 250));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(20)));
-  EXPECT_TRUE(ProcessFrames("0K 10.25K 20K", ""));
+  EXPECT_TRUE(ProcessFrames("20K", ""));
+
   CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,20) }");
   CheckReadsThenReadStalls(audio_.get(), "0P 0:10.25 10:20");
 }
@@ -1319,6 +1338,261 @@ TEST_P(FrameProcessorTest,
   // Note the following includes a truncated 6001 microseconds end time for the
   // third range.
   CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,1) [3,4) [6,6) [10,11) }");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_SapType2_and_PtsJumpForward) {
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(1060));
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("1.06", "1"));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1070)));
+  EXPECT_TRUE(ProcessFrames(
+      "", "1060|0K 1000|10 1050|20 1010|30 1040|40 1020|50 1030|60"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  // Note that the PTS of GOP non-keyframes earlier than the keyframe doesn't
+  // modify the GOP start of the buffered range here. This may change if we
+  // decide to improve spec for SAP Type 2 GOPs that begin a coded frame group.
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [1060,1070) }");
+
+  // Process just the keyframe of the next SAP Type 2 GOP in decode continuity
+  // with the previous one.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1140)));
+  EXPECT_TRUE(ProcessFrames("", "1130|70K"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  // Note that the second GOP is buffered continuous with the first because
+  // there was no decode discontinuity detected. This results in inclusion of
+  // the significant PTS jump forward in the same continuous range.
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [1060,1140) }");
+
+  // Process the remainder of the second GOP.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1140)));
+  EXPECT_TRUE(
+      ProcessFrames("", "1070|80 1120|90 1080|100 1110|110 1090|120 1100|130"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [1060,1140) }");
+
+  // TODO(wolenetz): Here, [1060,1140) should demux continuously without read
+  // stall in the middle. See https://crbug.com/791095.
+  SeekStream(video_.get(), Milliseconds(1060));
+  CheckReadsThenReadStalls(video_.get(), "1060 1000 1050 1010 1040 1020 1030");
+  SeekStream(video_.get(), Milliseconds(1070));
+  CheckReadsThenReadStalls(video_.get(), "1130 1070 1120 1080 1110 1090 1100");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_NewGopEndOverlapsLastGop_1) {
+  // API user might craft a continuous-in-DTS-with-previous-append GOP that has
+  // PTS interval overlapping the previous append.
+  // Tests SAP-Type-1 GOPs, where newly appended GOP overlaps a nonkeyframe of
+  // the last GOP appended.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(100));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
+  EXPECT_TRUE(ProcessFrames("", "100|0K 110|10 120|20 130|30"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(165)));
+  EXPECT_TRUE(ProcessFrames("", "125|40K 135|50 145|60 155|70"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,165) }");
+  CheckReadsThenReadStalls(video_.get(), "100 110 120 125 135 145 155");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_NewGopEndOverlapsLastGop_2) {
+  // API user might craft a continuous-in-DTS-with-previous-append GOP that has
+  // PTS interval overlapping the previous append.
+  // Tests SAP-Type 1 GOPs, where newly appended GOP overlaps the keyframe of
+  // the last GOP appended.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(100));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
+  EXPECT_TRUE(ProcessFrames("", "100|0K 110|10 120|20K 130|30"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  // TODO(wolenetz): Duration shouldn't be allowed to possibly increase to 140ms
+  // here. See https://crbug.com/763620.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
+  EXPECT_TRUE(ProcessFrames("", "115|40K 125|50"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,135) }");
+  CheckReadsThenReadStalls(video_.get(), "100 110 115 125");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_NewSap2GopEndOverlapsLastGop_1) {
+  // API user might craft a continuous-in-DTS-with-previous-append GOP that has
+  // PTS interval overlapping the previous append, using SAP Type 2 GOPs.
+  // Tests SAP-Type 2 GOPs, where newly appended GOP overlaps nonkeyframes of
+  // the last GOP appended.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(120));
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.12", "0.1"));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
+  EXPECT_TRUE(ProcessFrames("", "120|0K 100|10 130|20 110|30"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(165)));
+  EXPECT_TRUE(ProcessFrames("", "145|40K 125|50 155|60 135|70"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [120,165) }");
+  // TODO(wolenetz): Here, [120,165) should demux continuously without read
+  // stall in the middle. See https://crbug.com/791095.
+  CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
+  SeekStream(video_.get(), Milliseconds(145));
+  CheckReadsThenReadStalls(video_.get(), "145 125 155 135");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_NewSap2GopEndOverlapsLastGop_2) {
+  // API user might craft a continuous-in-DTS-with-previous-append GOP that has
+  // PTS interval overlapping the previous append, using SAP Type 2 GOPs.
+  // Tests SAP-Type 2 GOPs, where newly appended GOP overlaps the keyframe of
+  // last GOP appended.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(120));
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.12", "0.1"));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(180)));
+  EXPECT_TRUE(ProcessFrames(
+      "", "120|0K 100|10 130|20 110|30 160|40K 140|50 170|60 150|70"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  // TODO(wolenetz): Duration shouldn't be allowed to possibly increase to 180ms
+  // here. See https://crbug.com/763620.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(180)));
+  EXPECT_TRUE(ProcessFrames("", "155|80K 145|90"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  // Note that this buffered range discontinuity is due to unclarified MSE spec
+  // around handling this kind of SAP Type 2 sequence. In particular, we don't
+  // "grow" the [155,165) range start time earlier based on nonkeyframes with
+  // PTS < the keyframe at 155ms.
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [120,140) [155,165) }");
+  CheckReadsThenReadStalls(video_.get(), "120 100 130 110");
+  SeekStream(video_.get(), Milliseconds(155));
+  CheckReadsThenReadStalls(video_.get(), "155 145");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_GopKeyframePtsOrder_2_1_3) {
+  // White-box test, demonstrating expected behavior for a specially crafted
+  // sequence that "should" be unusual, but gracefully handled:
+  // SAP-Type 1 GOPs for simplicity of test. First appended GOP is highest in
+  // timeline. Second appended GOP is earliest in timeline. Third appended GOP
+  // is continuous in time with highest end time of first appended GOP. The
+  // result should be a single continuous range containing just the second and
+  // third appended GOPs (since the first-appended GOP was overlap-removed from
+  // the timeline due to being in the gap between the second and third appended
+  // GOPs). Note that MseTrackBuffer::ResetHighestPresentationTimestamp() done
+  // at the beginning of the second appended GOP is the key to gracefully
+  // handling the third appended GOP.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(200));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
+  EXPECT_TRUE(ProcessFrames("", "200|0K 210|10 220|20 230|30"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [200,240) }");
+
+  // TODO(wolenetz): Duration shouldn't be allowed to possibly increase to 240ms
+  // here. See https://crbug.com/763620.
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
+  EXPECT_TRUE(ProcessFrames("", "100|40K 110|50 120|60 130|70"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [200,240) }");
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(260)));
+  EXPECT_TRUE(ProcessFrames("", "240|80K 250|90"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,260) }");
+
+  SeekStream(video_.get(), Milliseconds(100));
+  CheckReadsThenReadStalls(video_.get(), "100 110 120 130 240 250");
 }
 
 INSTANTIATE_TEST_CASE_P(SequenceModeLegacyByDts,

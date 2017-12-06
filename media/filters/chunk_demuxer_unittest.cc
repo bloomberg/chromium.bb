@@ -3465,7 +3465,29 @@ TEST_P(ChunkDemuxerTest, EmitBuffersDuringAbort) {
 
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-1280x720.ts");
   EXPECT_CALL(*this, InitSegmentReceivedMock(_));
-  ASSERT_TRUE(AppendData(kSourceId, buffer->data(), buffer->data_size()));
+
+  // This mp2ts file contains buffers which can trigger media logs related to
+  // splicing. Related logic occurs more deterministically (and frequently) when
+  // buffering ByPts; we append in small chunks to force the same logic when
+  // buffering by either Pts or Dts here.
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(1655422, 1655419, 23217));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(1957277, 4));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(2514555, 6));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(3071833, 6));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(3652333, 6));
+
+  // Append the media in small chunks. 1 byte chunks would cause test timeout;
+  // 1k chunks appear to be small enough to let ByDts meet the logging
+  // expectations of the more deterministic ByPts logic, simplifying this test.
+  size_t appended_bytes = 0;
+  const size_t chunk_size = 1024;
+  while (appended_bytes < buffer->data_size()) {
+    size_t cur_chunk_size =
+        std::min(chunk_size, buffer->data_size() - appended_bytes);
+    ASSERT_TRUE(
+        AppendData(kSourceId, buffer->data() + appended_bytes, cur_chunk_size));
+    appended_bytes += cur_chunk_size;
+  }
 
   // Confirm we're in the middle of parsing a media segment.
   ASSERT_TRUE(demuxer_->IsParsingMediaSegment(kSourceId));
@@ -3513,7 +3535,29 @@ TEST_P(ChunkDemuxerTest, SeekCompleteDuringAbort) {
 
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-1280x720.ts");
   EXPECT_CALL(*this, InitSegmentReceivedMock(_));
-  ASSERT_TRUE(AppendData(kSourceId, buffer->data(), buffer->data_size()));
+
+  // This mp2ts file contains buffers which can trigger media logs related to
+  // splicing. Related logic occurs more deterministically (and frequently) when
+  // buffering ByPts; we append in small chunks to force the same logic when
+  // buffering by either Pts or Dts here.
+  EXPECT_MEDIA_LOG(TrimmedSpliceOverlap(1655422, 1655419, 23217));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(1957277, 4));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(2514555, 6));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(3071833, 6));
+  EXPECT_MEDIA_LOG(SkippingSpliceTooLittleOverlap(3652333, 6));
+
+  // Append the media in small chunks. 1 byte chunks would cause test timeout;
+  // 1k chunks appear to be small enough to let ByDts meet the logging
+  // expectations of the more deterministic ByPts logic, simplifying this test.
+  size_t appended_bytes = 0;
+  const size_t chunk_size = 1024;
+  while (appended_bytes < buffer->data_size()) {
+    size_t cur_chunk_size =
+        std::min(chunk_size, buffer->data_size() - appended_bytes);
+    ASSERT_TRUE(
+        AppendData(kSourceId, buffer->data() + appended_bytes, cur_chunk_size));
+    appended_bytes += cur_chunk_size;
+  }
 
   // Confirm we're in the middle of parsing a media segment.
   ASSERT_TRUE(demuxer_->IsParsingMediaSegment(kSourceId));
