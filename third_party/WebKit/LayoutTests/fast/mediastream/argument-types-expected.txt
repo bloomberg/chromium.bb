@@ -6,9 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS navigator.webkitGetUserMedia() threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': 3 arguments required, but only 0 present..
 PASS navigator.webkitGetUserMedia({video: true}) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': 3 arguments required, but only 1 present..
 PASS navigator.webkitGetUserMedia({video: true}, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': 3 arguments required, but only 2 present..
-PASS navigator.webkitGetUserMedia({video: true}, emptyFunction, emptyFunction) did not throw exception.
-PASS navigator.webkitGetUserMedia({audio: true}, emptyFunction, emptyFunction) did not throw exception.
-PASS navigator.webkitGetUserMedia({audio: true, video: true}, emptyFunction, emptyFunction) did not throw exception.
+PASS navigator.webkitGetUserMedia({video: true}, callbackFunction, callbackFunction) did not throw exception.
+PASS navigator.webkitGetUserMedia({audio: true}, callbackFunction, callbackFunction) did not throw exception.
+PASS navigator.webkitGetUserMedia({audio: true, video: true}, callbackFunction, callbackFunction) did not throw exception.
 PASS navigator.webkitGetUserMedia(-Infinity, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
 PASS navigator.webkitGetUserMedia(42, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
 PASS navigator.webkitGetUserMedia(Infinity, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
