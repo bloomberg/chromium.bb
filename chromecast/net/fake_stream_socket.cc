@@ -14,6 +14,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/next_proto.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace chromecast {
 
@@ -96,9 +97,11 @@ int FakeStreamSocket::Read(net::IOBuffer* buf,
   return buffer_->Read(buf->data(), buf_len, callback);
 }
 
-int FakeStreamSocket::Write(net::IOBuffer* buf,
-                            int buf_len,
-                            const net::CompletionCallback& /* callback */) {
+int FakeStreamSocket::Write(
+    net::IOBuffer* buf,
+    int buf_len,
+    const net::CompletionCallback& /* callback */,
+    const net::NetworkTrafficAnnotationTag& /*traffic_annotation*/) {
   DCHECK(buf);
   if (!peer_) {
     return net::ERR_SOCKET_NOT_CONNECTED;

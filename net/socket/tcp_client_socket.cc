@@ -14,6 +14,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -294,16 +295,18 @@ int TCPClientSocket::ReadIfReady(IOBuffer* buf,
   return ReadCommon(buf, buf_len, callback, /*read_if_ready=*/true);
 }
 
-int TCPClientSocket::Write(IOBuffer* buf,
-                           int buf_len,
-                           const CompletionCallback& callback) {
+int TCPClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!callback.is_null());
 
   // |socket_| is owned by this class and the callback won't be run once
   // |socket_| is gone. Therefore, it is safe to use base::Unretained() here.
   CompletionCallback write_callback = base::Bind(
       &TCPClientSocket::DidCompleteWrite, base::Unretained(this), callback);
-  int result = socket_->Write(buf, buf_len, write_callback);
+  int result = socket_->Write(buf, buf_len, write_callback, traffic_annotation);
   if (result > 0)
     use_history_.set_was_used_to_convey_data();
 

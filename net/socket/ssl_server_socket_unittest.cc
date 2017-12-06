@@ -66,6 +66,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -119,7 +120,12 @@ class FakeDataChannel {
     return PropagateData(buf, buf_len);
   }
 
-  int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
+  // TODO(crbug.com/656607): Remove default value.
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) {
     DCHECK(write_callback_.is_null());
     if (closed_) {
       if (write_called_after_close_)
@@ -232,9 +238,12 @@ class FakeSocket : public StreamSocket {
     return incoming_->Read(buf, buf_len, callback);
   }
 
+  // TODO(crbug.com/656607): Remove default value.
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override {
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607) override {
     // Write random number of bytes.
     buf_len = rand() % buf_len + 1;
     return outgoing_->Write(buf, buf_len, callback);

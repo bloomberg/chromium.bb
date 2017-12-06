@@ -16,6 +16,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/spdy/chromium/spdy_http_utils.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -205,9 +206,11 @@ void QuicProxyClientSocket::OnReadComplete(int rv) {
   }
 }
 
-int QuicProxyClientSocket::Write(IOBuffer* buf,
-                                 int buf_len,
-                                 const CompletionCallback& callback) {
+int QuicProxyClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(connect_callback_.is_null());
   DCHECK(write_callback_.is_null());
 

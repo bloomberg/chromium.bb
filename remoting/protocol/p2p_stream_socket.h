@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_P2P_STREAM_SOCKET_H_
 
 #include "net/base/completion_callback.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class IOBuffer;
@@ -39,8 +40,12 @@ class P2PStreamSocket {
   // the callback is invoked or the socket is closed. Implementations of this
   // method should not modify the contents of the actual buffer that is written
   // to the socket.
-  virtual int Write(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
-                    const net::CompletionCallback& callback) = 0;
+  // TODO(crbug.com/656607): Remove default value.
+  virtual int Write(const scoped_refptr<net::IOBuffer>& buf,
+                    int buf_len,
+                    const net::CompletionCallback& callback,
+                    const net::NetworkTrafficAnnotationTag& traffic_annotation =
+                        NO_TRAFFIC_ANNOTATION_BUG_656607) = 0;
 };
 
 }  // namespace protocol

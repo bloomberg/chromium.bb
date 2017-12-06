@@ -5,6 +5,7 @@
 #include "net/socket/udp_client_socket.h"
 
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -81,10 +82,12 @@ int UDPClientSocket::Read(IOBuffer* buf,
   return socket_.Read(buf, buf_len, callback);
 }
 
-int UDPClientSocket::Write(IOBuffer* buf,
-                          int buf_len,
-                          const CompletionCallback& callback) {
-  return socket_.Write(buf, buf_len, callback);
+int UDPClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  return socket_.Write(buf, buf_len, callback, traffic_annotation);
 }
 
 void UDPClientSocket::Close() {

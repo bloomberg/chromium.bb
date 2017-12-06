@@ -22,6 +22,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -123,9 +124,11 @@ int ProxyResolvingClientSocket::Read(net::IOBuffer* buf, int buf_len,
 int ProxyResolvingClientSocket::Write(
     net::IOBuffer* buf,
     int buf_len,
-    const net::CompletionCallback& callback) {
+    const net::CompletionCallback& callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   if (transport_.get() && transport_->socket())
-    return transport_->socket()->Write(buf, buf_len, callback);
+    return transport_->socket()->Write(buf, buf_len, callback,
+                                       traffic_annotation);
   NOTREACHED();
   return net::ERR_SOCKET_NOT_CONNECTED;
 }

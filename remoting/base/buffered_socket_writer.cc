@@ -10,6 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace remoting {
 
@@ -18,8 +19,9 @@ namespace {
 int WriteNetSocket(net::Socket* socket,
                    const scoped_refptr<net::IOBuffer>& buf,
                    int buf_len,
-                   const net::CompletionCallback& callback) {
-  return socket->Write(buf.get(), buf_len, callback);
+                   const net::CompletionCallback& callback,
+                   const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+  return socket->Write(buf.get(), buf_len, callback, traffic_annotation);
 }
 
 }  // namespace
@@ -40,6 +42,7 @@ std::unique_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
     net::Socket* socket,
     const WriteFailedCallback& write_failed_callback) {
   std::unique_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
+  // TODO(crbug.com/656607): Add proper network traffic annotation.
   result->Start(base::Bind(&WriteNetSocket, socket), write_failed_callback);
   return result;
 }
@@ -80,10 +83,12 @@ void BufferedSocketWriter::DoWrite() {
   base::WeakPtr<BufferedSocketWriter> self = weak_factory_.GetWeakPtr();
   while (self && !write_pending_ && !write_callback_.is_null() &&
          !queue_.empty()) {
+    // TODO(crbug.com/656607): Add proper network traffic annotation.
     int result = write_callback_.Run(
         queue_.front()->data.get(), queue_.front()->data->BytesRemaining(),
         base::Bind(&BufferedSocketWriter::OnWritten,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr()),
+        NO_TRAFFIC_ANNOTATION_BUG_656607);
     HandleWriteResult(result);
   }
 }

@@ -18,6 +18,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class TimeDelta;
@@ -91,7 +92,12 @@ class NET_EXPORT TCPSocketPosix {
 
   // Writes to the socket.
   // Returns a net error code.
-  int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
+  // TODO(crbug.com/656607): Remove default value.
+  int Write(IOBuffer* buf,
+            int buf_len,
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation =
+                NO_TRAFFIC_ANNOTATION_BUG_656607);
 
   // Copies the local tcp address into |address| and returns a net error code.
   int GetLocalAddress(IPEndPoint* address) const;

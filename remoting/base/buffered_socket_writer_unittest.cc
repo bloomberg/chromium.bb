@@ -13,6 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket_test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,8 +27,9 @@ const size_t kWriteChunkSize = 1024U;
 int WriteNetSocket(net::Socket* socket,
                    const scoped_refptr<net::IOBuffer>& buf,
                    int buf_len,
-                   const net::CompletionCallback& callback) {
-  return socket->Write(buf.get(), buf_len, callback);
+                   const net::CompletionCallback& callback,
+                   const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+  return socket->Write(buf.get(), buf_len, callback, traffic_annotation);
 }
 
 class SocketDataProvider: public net::SocketDataProvider {

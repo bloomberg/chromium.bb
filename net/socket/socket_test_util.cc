@@ -33,6 +33,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define NET_TRACE(level, s) VLOG(level) << s << __FUNCTION__ << "() "
@@ -917,10 +918,15 @@ int MockTCPClientSocket::ReadIfReady(IOBuffer* buf,
   return ReadIfReadyImpl(buf, buf_len, callback);
 }
 
-int MockTCPClientSocket::Write(IOBuffer* buf, int buf_len,
-                               const CompletionCallback& callback) {
+int MockTCPClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
+
+  // TODO(crbug.com/656607): Handle traffic annotation.
 
   if (!connected_ || !data_)
     return ERR_UNEXPECTED;
@@ -1189,9 +1195,13 @@ int MockSSLClientSocket::ReadIfReady(IOBuffer* buf,
   return transport_->socket()->ReadIfReady(buf, buf_len, callback);
 }
 
-int MockSSLClientSocket::Write(IOBuffer* buf, int buf_len,
-                               const CompletionCallback& callback) {
-  return transport_->socket()->Write(buf, buf_len, callback);
+int MockSSLClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  return transport_->socket()->Write(buf, buf_len, callback,
+                                     traffic_annotation);
 }
 
 int MockSSLClientSocket::Connect(const CompletionCallback& callback) {
@@ -1336,10 +1346,15 @@ int MockUDPClientSocket::Read(IOBuffer* buf,
   return CompleteRead();
 }
 
-int MockUDPClientSocket::Write(IOBuffer* buf, int buf_len,
-                               const CompletionCallback& callback) {
+int MockUDPClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
+
+  // TODO(crbug.com/656607): Handle traffic annotation.
 
   if (!connected_ || !data_)
     return ERR_UNEXPECTED;

@@ -14,6 +14,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -195,8 +196,11 @@ int SOCKSClientSocket::Read(IOBuffer* buf, int buf_len,
 
 // Write is called by the transport layer. This can only be done if the
 // SOCKS handshake is complete.
-int SOCKSClientSocket::Write(IOBuffer* buf, int buf_len,
-                             const CompletionCallback& callback) {
+int SOCKSClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(completed_handshake_);
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(user_callback_.is_null());
@@ -205,7 +209,8 @@ int SOCKSClientSocket::Write(IOBuffer* buf, int buf_len,
   int rv = transport_->socket()->Write(
       buf, buf_len,
       base::Bind(&SOCKSClientSocket::OnReadWriteComplete,
-                 base::Unretained(this), callback));
+                 base::Unretained(this), callback),
+      traffic_annotation);
   if (rv > 0)
     was_ever_used_ = true;
   return rv;
@@ -352,8 +357,7 @@ int SOCKSClientSocket::DoHandshakeWrite() {
   memcpy(handshake_buf_->data(), &buffer_[bytes_sent_],
          handshake_buf_len);
   return transport_->socket()->Write(
-      handshake_buf_.get(),
-      handshake_buf_len,
+      handshake_buf_.get(), handshake_buf_len,
       base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)));
 }
 

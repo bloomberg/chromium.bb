@@ -38,6 +38,7 @@
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -570,7 +571,8 @@ class MockClientSocket : public SSLClientSocket {
            const CompletionCallback& callback) override = 0;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override = 0;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override = 0;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
@@ -641,7 +643,8 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
                   const CompletionCallback& callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override;
@@ -721,7 +724,8 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
                   const CompletionCallback& callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override;
@@ -772,7 +776,8 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
            const CompletionCallback& callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback) override;
+            const CompletionCallback& callback,
+            const NetworkTrafficAnnotationTag& traffic_annotation) override;
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
   int SetDoNotFragment() override;

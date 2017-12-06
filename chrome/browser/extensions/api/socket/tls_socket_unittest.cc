@@ -22,6 +22,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -43,10 +44,11 @@ class MockSSLClientSocket : public net::SSLClientSocket {
                int(net::IOBuffer* buf,
                    int buf_len,
                    const net::CompletionCallback& callback));
-  MOCK_METHOD3(Write,
+  MOCK_METHOD4(Write,
                int(net::IOBuffer* buf,
                    int buf_len,
-                   const net::CompletionCallback& callback));
+                   const net::CompletionCallback& callback,
+                   const net::NetworkTrafficAnnotationTag&));
   MOCK_METHOD1(SetReceiveBufferSize, int(int32_t));
   MOCK_METHOD1(SetSendBufferSize, int(int32_t));
   MOCK_METHOD1(Connect, int(const CompletionCallback&));
@@ -95,10 +97,11 @@ class MockTCPSocket : public net::TCPClientSocket {
                int(net::IOBuffer* buf,
                    int buf_len,
                    const net::CompletionCallback& callback));
-  MOCK_METHOD3(Write,
+  MOCK_METHOD4(Write,
                int(net::IOBuffer* buf,
                    int buf_len,
-                   const net::CompletionCallback& callback));
+                   const net::CompletionCallback& callback,
+                   const net::NetworkTrafficAnnotationTag&));
   MOCK_METHOD2(SetKeepAlive, bool(bool enable, int delay));
   MOCK_METHOD1(SetNoDelay, bool(bool no_delay));
 
@@ -167,8 +170,9 @@ TEST_F(TLSSocketTest, TestTLSSocketWrite) {
   CompleteHandler handler;
   net::CompletionCallback callback;
 
-  EXPECT_CALL(*ssl_socket_, Write(_, _, _)).Times(2).WillRepeatedly(
-      DoAll(SaveArg<2>(&callback), Return(128)));
+  EXPECT_CALL(*ssl_socket_, Write(_, _, _, _))
+      .Times(2)
+      .WillRepeatedly(DoAll(SaveArg<2>(&callback), Return(128)));
   EXPECT_CALL(handler, OnComplete(_)).Times(1);
 
   scoped_refptr<net::IOBufferWithSize> io_buffer(
@@ -187,8 +191,10 @@ TEST_F(TLSSocketTest, TestTLSSocketBlockedWrite) {
 
   // Return ERR_IO_PENDING to say the Write()'s blocked. Save the |callback|
   // Write()'s passed.
-  EXPECT_CALL(*ssl_socket_, Write(_, _, _)).Times(2).WillRepeatedly(
-      DoAll(SaveArg<2>(&callback), Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(*ssl_socket_, Write(_, _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          DoAll(SaveArg<2>(&callback), Return(net::ERR_IO_PENDING)));
 
   scoped_refptr<net::IOBufferWithSize> io_buffer(new net::IOBufferWithSize(42));
   socket_->Write(
@@ -218,8 +224,10 @@ TEST_F(TLSSocketTest, TestTLSSocketBlockedWriteReentry) {
   // will all be equivalent), and return ERR_IO_PENDING, to indicate a blocked
   // request. The mocked SSLClientSocket::Write() will get one request per
   // TLSSocket::Write() request invoked on |socket_| below.
-  EXPECT_CALL(*ssl_socket_, Write(_, _, _)).Times(kNumIOs).WillRepeatedly(
-      DoAll(SaveArg<2>(&callback), Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(*ssl_socket_, Write(_, _, _, _))
+      .Times(kNumIOs)
+      .WillRepeatedly(
+          DoAll(SaveArg<2>(&callback), Return(net::ERR_IO_PENDING)));
 
   // Send out |kNuMIOs| requests, each with a different size.
   for (int i = 0; i < kNumIOs; i++) {
@@ -282,9 +290,10 @@ TEST_F(TLSSocketTest, TestTLSSocketLargeWrites) {
   // from Socket::Write(). If the callback is invoked with a smaller number,
   // Socket::WriteImpl() will get repeatedly invoked until the sum of the
   // callbacks' arguments is equal to the original requested amount.
-  EXPECT_CALL(*ssl_socket_, Write(_, _, _)).WillRepeatedly(
-      DoAll(WithArgs<2, 1>(Invoke(&pending_callbacks, &CallbackList::append)),
-            Return(net::ERR_IO_PENDING)));
+  EXPECT_CALL(*ssl_socket_, Write(_, _, _, _))
+      .WillRepeatedly(DoAll(
+          WithArgs<2, 1>(Invoke(&pending_callbacks, &CallbackList::append)),
+          Return(net::ERR_IO_PENDING)));
 
   // Observe what comes back from Socket::Write() here.
   EXPECT_CALL(handler, OnComplete(Gt(0))).Times(kNumIncrements);

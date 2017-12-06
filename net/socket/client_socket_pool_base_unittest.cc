@@ -45,6 +45,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,9 +152,11 @@ class MockClientSocket : public StreamSocket {
     return ERR_UNEXPECTED;
   }
 
-  int Write(IOBuffer* /* buf */,
-            int len,
-            const CompletionCallback& /* callback */) override {
+  int Write(
+      IOBuffer* /* buf */,
+      int len,
+      const CompletionCallback& /* callback */,
+      const NetworkTrafficAnnotationTag& /*traffic_annotation*/) override {
     was_used_to_convey_data_ = true;
     return len;
   }

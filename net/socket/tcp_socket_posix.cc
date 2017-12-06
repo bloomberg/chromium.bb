@@ -36,6 +36,7 @@
 #include "net/socket/socket_net_log_params.h"
 #include "net/socket/socket_options.h"
 #include "net/socket/socket_posix.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 // If we don't have a definition for TCPI_OPT_SYN_DATA, create one.
 #if !defined(TCPI_OPT_SYN_DATA)
@@ -340,9 +341,11 @@ int TCPSocketPosix::ReadIfReady(IOBuffer* buf,
   return rv;
 }
 
-int TCPSocketPosix::Write(IOBuffer* buf,
-                          int buf_len,
-                          const CompletionCallback& callback) {
+int TCPSocketPosix::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
 
@@ -357,7 +360,7 @@ int TCPSocketPosix::Write(IOBuffer* buf,
   if (use_tcp_fastopen_ && !tcp_fastopen_write_attempted_) {
     rv = TcpFastOpenWrite(buf, buf_len, write_callback);
   } else {
-    rv = socket_->Write(buf, buf_len, write_callback);
+    rv = socket_->Write(buf, buf_len, write_callback, traffic_annotation);
   }
 
   if (rv != ERR_IO_PENDING)

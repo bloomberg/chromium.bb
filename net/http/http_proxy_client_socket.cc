@@ -21,6 +21,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -227,12 +228,16 @@ int HttpProxyClientSocket::Read(IOBuffer* buf, int buf_len,
   return transport_->socket()->Read(buf, buf_len, callback);
 }
 
-int HttpProxyClientSocket::Write(IOBuffer* buf, int buf_len,
-                                 const CompletionCallback& callback) {
+int HttpProxyClientSocket::Write(
+    IOBuffer* buf,
+    int buf_len,
+    const CompletionCallback& callback,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_EQ(STATE_DONE, next_state_);
   DCHECK(user_callback_.is_null());
 
-  return transport_->socket()->Write(buf, buf_len, callback);
+  return transport_->socket()->Write(buf, buf_len, callback,
+                                     traffic_annotation);
 }
 
 int HttpProxyClientSocket::SetReceiveBufferSize(int32_t size) {
