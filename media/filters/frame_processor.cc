@@ -82,6 +82,9 @@ class MseTrackBuffer {
   // |needs_random_access_point_| to true.
   void Reset();
 
+  // Unsets |highest_presentation_timestamp_|.
+  void ResetHighestPresentationTimestamp();
+
   // If |highest_presentation_timestamp_| is unset or |timestamp| is greater
   // than |highest_presentation_timestamp_|, sets
   // |highest_presentation_timestamp_| to |timestamp|. Note that bidirectional
@@ -205,6 +208,10 @@ void MseTrackBuffer::Reset() {
   highest_presentation_timestamp_ = kNoTimestamp;
   needs_random_access_point_ = true;
   last_keyframe_presentation_timestamp_ = kNoTimestamp;
+}
+
+void MseTrackBuffer::ResetHighestPresentationTimestamp() {
+  highest_presentation_timestamp_ = kNoTimestamp;
 }
 
 void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
@@ -901,16 +908,36 @@ bool FrameProcessor::ProcessFrame(
         (track_buffer->pending_group_start_pts() != kNoTimestamp &&
          track_buffer->pending_group_start_pts() > presentation_timestamp);
 
-    // When buffering by PTS intervals and a keyframe is discovered to have
-    // a decreasing PTS versus the previous keyframe for that track in the
-    // current coded frame group, signal a new coded frame group for that track
-    // buffer so that it can correctly process overlap-removals of the new GOP.
-    signal_new_cfg |=
-        range_api_ == ChunkDemuxerStream::RangeApi::kNewByPts &&
-        frame->is_key_frame() &&
-        track_buffer->last_keyframe_presentation_timestamp() != kNoTimestamp &&
-        track_buffer->last_keyframe_presentation_timestamp() >
-            presentation_timestamp;
+    if (range_api_ == ChunkDemuxerStream::RangeApi::kNewByPts &&
+        frame->is_key_frame()) {
+      // When buffering by PTS intervals and a keyframe is discovered to have a
+      // decreasing PTS versus the previous highest presentation timestamp for
+      // that track in the current coded frame group, signal a new coded frame
+      // group for that track buffer so that it can correctly process
+      // overlap-removals for the new GOP.
+      if (track_buffer->highest_presentation_timestamp() != kNoTimestamp &&
+          track_buffer->highest_presentation_timestamp() >
+              presentation_timestamp) {
+        signal_new_cfg = true;
+        // In case there is currently a decreasing keyframe PTS relative to the
+        // track buffer's highest PTS, that is later followed by a jump forward
+        // requiring overlap removal of media prior to the track buffer's
+        // highest PTS, reset that tracking now to ensure correctness of
+        // signalling the need for such overlap removal later.
+        track_buffer->ResetHighestPresentationTimestamp();
+      }
+
+      // When buffering by PTS intervals and an otherwise continuous coded frame
+      // group (by DTS, and with non-decreasing keyframe PTS) contains a
+      // keyframe with PTS in the future, signal a new coded frame group with
+      // start time set to the previous highest frame end time in the coded
+      // frame group for this track. This lets the stream coalesce a potential
+      // gap, and also pass internal buffer adjacency checks.
+      signal_new_cfg |=
+          track_buffer->highest_presentation_timestamp() != kNoTimestamp &&
+          track_buffer->highest_presentation_timestamp() <
+              presentation_timestamp;
+    }
 
     if (signal_new_cfg) {
       DCHECK(frame->is_key_frame());
@@ -924,10 +951,15 @@ bool FrameProcessor::ProcessFrame(
         NotifyStartOfCodedFrameGroup(decode_timestamp, presentation_timestamp);
         pending_notify_all_group_start_ = false;
       } else {
-        // Don't signal later times than previously signalled for this group.
         DecodeTimestamp updated_dts = std::min(
             track_buffer->last_processed_decode_timestamp(), decode_timestamp);
         base::TimeDelta updated_pts = track_buffer->pending_group_start_pts();
+        if (updated_pts == kNoTimestamp &&
+            track_buffer->highest_presentation_timestamp() != kNoTimestamp &&
+            track_buffer->highest_presentation_timestamp() <
+                presentation_timestamp) {
+          updated_pts = track_buffer->highest_presentation_timestamp();
+        }
         if (updated_pts == kNoTimestamp || updated_pts > presentation_timestamp)
           updated_pts = presentation_timestamp;
         track_buffer->NotifyStartOfCodedFrameGroup(updated_dts, updated_pts);

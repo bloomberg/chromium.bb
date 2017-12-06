@@ -545,9 +545,6 @@ void SourceBufferStream<RangeClass>::UpdateLastAppendStateForRemove(
 
   if (range_for_next_append_ != ranges_.end()) {
     if (last_appended_buffer_timestamp_ != kNoDecodeTimestamp()) {
-      DCHECK(RangeBelongsToRange(range_for_next_append_->get(),
-                                 last_appended_buffer_timestamp_));
-
       // Note start and end of last appended GOP.
       DecodeTimestamp gop_end = highest_timestamp_in_append_sequence_;
       DecodeTimestamp gop_start =
@@ -1317,9 +1314,40 @@ void SourceBufferStream<RangeClass>::PrepareRangesForNextAppend(
         std::min(coded_frame_group_start_time_, buffers_start_timestamp);
   }
 
-  // Return early if no further overlap removal is needed.
-  if (buffers_start_timestamp >= buffers_end_timestamp)
+  // Return early if no further overlap removal is needed. When buffering by PTS
+  // intervals, first check if |buffers_start_timestamp| is in the middle of the
+  // range; we could be overlap-appending the middle of a previous coded frame
+  // sequence's range with non-keyframes prior to
+  // |highest_timestamp_in_append_sequence_|, so we need to split that range
+  // appropriately here and then return early. If we don't return early here,
+  // overlap removal (including any necessary range splitting) will occur.
+  if (buffers_start_timestamp >= buffers_end_timestamp) {
+    if (!BufferingByPts())
+      return;
+
+    DCHECK(highest_timestamp_in_append_sequence_ != kNoDecodeTimestamp());
+    DCHECK(range_for_next_append_ != ranges_.end());
+    DCHECK(RangeBelongsToRange(range_for_next_append_->get(),
+                               buffers_start_timestamp));
+
+    // Split the range at |buffers_start_timestamp|, if necessary, then return
+    // early.
+    std::unique_ptr<RangeClass> new_range =
+        RangeSplitRange(range_for_next_append_->get(), buffers_start_timestamp);
+    if (!new_range)
+      return;
+
+    range_for_next_append_ =
+        ranges_.insert(++range_for_next_append_, std::move(new_range));
+
+    // Update the selected range if the next buffer position was transferred
+    // to the newly inserted range.
+    if ((*range_for_next_append_)->HasNextBufferPosition())
+      SetSelectedRange(range_for_next_append_->get());
+
+    --range_for_next_append_;
     return;
+  }
 
   // Exclude the start from removal to avoid deleting the highest appended
   // buffer in cases where the first buffer in |new_buffers| has same timestamp
@@ -1401,10 +1429,15 @@ template <typename RangeClass>
 bool SourceBufferStream<RangeClass>::
     IsNextGopAdjacentToEndOfCurrentAppendSequence(
         DecodeTimestamp next_gop_timestamp) const {
+  DecodeTimestamp upper_bound = highest_timestamp_in_append_sequence_ +
+                                ComputeFudgeRoom(GetMaxInterbufferDistance());
+  DVLOG(4) << __func__ << " " << GetStreamTypeName()
+           << " next_gop_timestamp=" << next_gop_timestamp.InMicroseconds()
+           << "us, highest_timestamp_in_append_sequence_="
+           << highest_timestamp_in_append_sequence_.InMicroseconds()
+           << "us, upper_bound=" << upper_bound.InMicroseconds() << "us";
   return highest_timestamp_in_append_sequence_ < next_gop_timestamp &&
-         next_gop_timestamp <=
-             highest_timestamp_in_append_sequence_ +
-                 ComputeFudgeRoom(GetMaxInterbufferDistance());
+         next_gop_timestamp <= upper_bound;
 }
 
 template <typename RangeClass>

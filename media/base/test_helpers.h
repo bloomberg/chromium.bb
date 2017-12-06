@@ -312,6 +312,18 @@ MATCHER_P(SkippingSpliceAlreadySpliced, time_microseconds, "") {
                "us are in a previously buffered splice.");
 }
 
+MATCHER_P2(SkippingSpliceTooLittleOverlap,
+           pts_microseconds,
+           overlap_microseconds,
+           "") {
+  return CONTAINS_STRING(
+      arg, "Skipping audio splice trimming at PTS=" +
+               base::IntToString(pts_microseconds) + "us. Found only " +
+               base::IntToString(overlap_microseconds) +
+               "us of overlap, need at least 1000us. Multiple occurrences may "
+               "result in loss of A/V sync.");
+}
+
 MATCHER_P(WebMSimpleBlockDurationEstimated, estimated_duration_ms, "") {
   return CONTAINS_STRING(arg, "Estimating WebM block duration to be " +
                                   base::IntToString(estimated_duration_ms) +
