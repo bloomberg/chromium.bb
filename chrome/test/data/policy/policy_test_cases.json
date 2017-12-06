@@ -31,7 +31,7 @@
   },
 
   "UnsafelyTreatInsecureOriginAsSecure": {
-    "os": ["win", "linux", "max", "chromeos", "android"],
+    "os": ["win", "linux", "mac"],
     "test_policy": { "UnsafelyTreatInsecureOriginAsSecure": ["http://example.com/"] },
     "pref_mappings": [ { "pref": "unsafely_treat_insecure_origin_as_secure" } ]
   },
@@ -126,16 +126,7 @@
   },
 
   "DnsPrefetchingEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "can_be_recommended": true,
-    "test_policy": { "DnsPrefetchingEnabled": false },
-    "pref_mappings": [
-      { "pref": "net.network_prediction_options",
-        "indicator_tests": [
-          { "policy": { "DnsPrefetchingEnabled": false } }
-        ]
-      }
-    ]
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=624095"
   },
 
   "NetworkPredictionOptions": {
@@ -152,11 +143,7 @@
   },
 
   "DisableSpdy": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DisableSpdy": true },
-    "pref_mappings": [
-      { "pref": "spdy.disabled" }
-    ]
+    "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=624095"
   },
 
   "QuicAllowed": {
@@ -540,9 +527,7 @@
   },
 
   "DisablePluginFinder": {
-    "note": "This policy is not in use anymore.",
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DisablePluginFinder": true }
+    "note": "This policy is not in use anymore since Chrome 65."
   },
 
   "SyncDisabled": {
@@ -562,8 +547,7 @@
   },
 
   "EnableDeprecatedWebBasedSignin": {
-    "os": ["win", "linux", "mac"],
-    "test_policy": { "EnableDeprecatedWebBasedSignin": false }
+    "note": "This policy has been removed in Chrome 42."
   },
 
   "UserDataDir": {
@@ -724,6 +708,7 @@
           { "policy": { "ProxySettings": { "ProxyMode": "direct" } } }
         ]
       }
+
     ]
   },
 
@@ -732,13 +717,7 @@
   },
 
   "DisableSSLRecordSplitting": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DisableSSLRecordSplitting": true },
-    "pref_mappings": [
-      { "pref": "ssl.ssl_record_splitting.disabled",
-        "local_state": true
-      }
-    ]
+    "note": "This policy is retired, see https://bugs.chromium.org/p/chromium/issues/detail?id=485097#c17."
   },
 
   "EnableOnlineRevocationChecks": {
@@ -832,7 +811,7 @@
   },
 
   "GSSAPILibraryName": {
-    "os": ["mac", "linux"],
+    "os": ["linux"],
     "test_policy": { "GSSAPILibraryName": "libwhatever.so" },
     "pref_mappings": [
       { "pref": "auth.gssapi_library_name",
@@ -1113,16 +1092,7 @@
   },
 
   "DefaultSearchProviderInstantURL": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": {
-      "DefaultSearchProviderEnabled": true,
-      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
-      "DefaultSearchProviderKeyword": "google",
-      "DefaultSearchProviderInstantURL": "http://www.google.com/instant?q={searchTerms}"
-    },
-    "pref_mappings": [
-      { "pref": "default_search_provider_data.template_url_data" }
-    ]
+    "note": "Deprecated since Chrome 63. See https://crbug.com/476079"
   },
 
   "DefaultSearchProviderNewTabURL": {
@@ -1178,16 +1148,7 @@
   },
 
   "DefaultSearchProviderSearchTermsReplacementKey": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": {
-      "DefaultSearchProviderEnabled": true,
-      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
-      "DefaultSearchProviderKeyword": "google",
-      "DefaultSearchProviderSearchTermsReplacementKey": "espv"
-    },
-    "pref_mappings": [
-      { "pref": "default_search_provider_data.template_url_data" }
-    ]
+    "note": "Deprecated since Chrome 63. See https://crbug.com/476079"
   },
 
   "DefaultSearchProviderImageURL": {
@@ -1230,16 +1191,7 @@
   },
 
   "DefaultSearchProviderInstantURLPostParams": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": {
-      "DefaultSearchProviderEnabled": true,
-      "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}",
-      "DefaultSearchProviderKeyword": "google",
-      "DefaultSearchProviderInstantURLPostParams": ""
-    },
-    "pref_mappings": [
-      { "pref": "default_search_provider_data.template_url_data" }
-    ]
+    "note": "Deprecated since Chrome 63. See https://crbug.com/476079"
   },
 
   "DefaultSearchProviderImageURLPostParams": {
@@ -1784,11 +1736,7 @@
   },
 
   "AlwaysAuthorizePlugins": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "AlwaysAuthorizePlugins": true },
-    "pref_mappings": [
-      { "pref": "plugins.always_authorize" }
-    ]
+    "note": "This policy has been removed since Chrome 65."
   },
 
   "RunAllFlashInAllowMode": {
@@ -1925,7 +1873,7 @@
   },
 
   "MaxConnectionsPerProxy": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac"],
     "test_policy": { "MaxConnectionsPerProxy": 16 },
     "pref_mappings": [
       { "pref": "net.max_connections_per_proxy",
@@ -2095,7 +2043,7 @@
   },
 
   "HideWebStoreIcon": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac"],
     "test_policy": { "HideWebStoreIcon": true },
     "pref_mappings": [
       { "pref": "hide_web_store_icon" }
@@ -2165,7 +2113,7 @@
   },
 
   "ForceBrowserSignin": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win"],
     "test_policy": { "ForceBrowserSignin": false },
     "pref_mappings": [
       { "pref": "profile.force_browser_signin",
@@ -3313,7 +3261,7 @@
   },
 
   "BrowserNetworkTimeQueriesEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac"],
     "test_policy": { "BrowserNetworkTimeQueriesEnabled": true },
     "pref_mappings": [
       { "pref": "network_time.network_time_queries_enabled",
@@ -3327,8 +3275,7 @@
   },
 
   "DeviceEcryptfsMigrationStrategy": {
-    "note": "This policy is deprecated.",
-    "os": ["chromeos"]
+    "note": "This policy is deprecated and removed since Chrome 61."
   },
 
   "NoteTakingAppsLockScreenWhitelist": {
