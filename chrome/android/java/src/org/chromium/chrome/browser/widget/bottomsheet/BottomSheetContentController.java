@@ -110,7 +110,7 @@ public class BottomSheetContentController
                 float offsetY = mBottomSheet.getSheetHeightForState(mBottomSheet.isSmallScreen()
                                                 ? BottomSheet.SHEET_STATE_FULL
                                                 : BottomSheet.SHEET_STATE_HALF)
-                        - mBottomSheet.getSheetOffsetFromBottom();
+                        - mBottomSheet.getCurrentOffsetPx();
                 setTranslationY(Math.max(offsetY, 0f));
 
                 if (mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK

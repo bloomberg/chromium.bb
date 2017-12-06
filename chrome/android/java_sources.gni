@@ -1363,6 +1363,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/animation/CancelAwareAnimatorListener.java",
   "java/src/org/chromium/chrome/browser/widget/animation/FocusAnimator.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheet.java",
+  "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetector.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetContentController.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetMetrics.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetNavigationItemView.java",
@@ -1981,6 +1982,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webapps/WebappInfoTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkInfoTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetSwipeDetectorTest.java",
   "junit/src/org/chromium/chrome/browser/widget/selection/SelectionDelegateTest.java",
 ]
 
