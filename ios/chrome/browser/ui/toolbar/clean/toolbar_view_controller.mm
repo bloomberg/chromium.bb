@@ -134,6 +134,13 @@
     self.contractButton.hidden = NO;
     self.contractButton.alpha = 1;
   }];
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    CGFloat borderWidth = (finalPosition == UIViewAnimatingPositionEnd)
+                              ? 0
+                              : kLocationBarBorderWidth;
+    self.locationBarContainer.layer.borderWidth = borderWidth;
+  }];
+
   self.expanded = YES;
 }
 
@@ -143,6 +150,7 @@
   [NSLayoutConstraint deactivateConstraints:self.expandedToolbarConstraints];
   [NSLayoutConstraint activateConstraints:self.regularToolbarConstraints];
   [animator addAnimations:^{
+    self.locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
     [self.view layoutIfNeeded];
     self.contractButton.hidden = YES;
     self.contractButton.alpha = 0;
