@@ -114,6 +114,7 @@ void InterventionsInternalsPageHandler::OnNewMessageLogAdded(
   mojo_message_ptr->description = message.event_description;
   mojo_message_ptr->url = message.url;
   mojo_message_ptr->time = message.time.ToJavaTime();
+  mojo_message_ptr->page_id = message.page_id;
 
   page_->LogNewMessage(std::move(mojo_message_ptr));
 }

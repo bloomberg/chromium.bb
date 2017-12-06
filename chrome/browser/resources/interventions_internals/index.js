@@ -9,6 +9,8 @@ const IGNORE_BLACKLIST_BUTTON = 'Ignore Blacklist';
 const IGNORE_BLACKLIST_MESSAGE = 'Blacklist decisions are ignored.';
 const URL_THRESHOLD = 40;  // Maximum URL length
 
+window.logTableMap = {};
+
 /**
  * Convert milliseconds to human readable date/time format.
  * The return format will be "MM/dd/YYYY hh:mm:ss.sss"
@@ -29,6 +31,106 @@ function getTimeFormat(time) {
 }
 
 /**
+ * Append a button to |element|, so that when the button is clicked, the
+ * detailed logs table associated with |pageId| will be shown/hidden.
+ * @param {!HTMLElement} element The element that the button will be added to.
+ * @param {number} pageId Used to locate the ID of the logs table row.
+ */
+function addMoreDetailsButton(element, pageId) {
+  let moreDetailsButton = document.createElement('button');
+  moreDetailsButton.setAttribute('class', 'more-details-button');
+  element.appendChild(moreDetailsButton);
+
+  let icon = document.createElement('i');
+  icon.setAttribute('class', 'arrow down');
+  moreDetailsButton.appendChild(icon);
+
+  moreDetailsButton.addEventListener('click', () => {
+    let expansionRow = $('expansion-row-' + pageId);
+    expansionRow.className = (expansionRow.className.includes('hide')) ?
+        expansionRow.className.replace('hide', 'show') :
+        expansionRow.className.replace('show', 'hide');
+
+    icon.className = (icon.className.includes('down')) ?
+        icon.className.replace('down', 'up') :
+        icon.className.replace('up', 'down');
+  });
+}
+
+/**
+ * Update the |pageId| log message group. Copy the main row that contains the
+ * most updated log message of the group to the expansion row, and update the
+ * current main row with new info.
+ *
+ * @param {number!} time Millisecond since Unix Epoch representation of time.
+ * @param {string!} type The message event type.
+ * @param {string!} description The event message description.
+ * @param {string} url The URL associated with the event.
+ */
+function updateTableRowByPageId(time, type, description, url, pageId) {
+  assert(pageId > 0);
+  assert(window.logTableMap[pageId]);
+  let currentRow = window.logTableMap[pageId];
+  let expansionRow = $('expansion-row-' + pageId);
+  let newRow = expansionRow.querySelector('.expansion-logs-table').insertRow(0);
+  newRow.setAttribute('class', 'expand-log-message');
+
+  // Copying data from previous row, to the first row of the expansion table.
+  currentRow.querySelectorAll('td').forEach((column) => {
+    let cell = column.cloneNode(true);
+    let expandButton = cell.querySelector('.more-details-button');
+    if (expandButton) {
+      expandButton.remove();
+    }
+    newRow.appendChild(cell);
+  });
+
+  // Update current row with new data.
+  currentRow.querySelector('.log-time').textContent = getTimeFormat(time);
+  currentRow.querySelector('.log-type').textContent = type;
+  let descriptionTd = currentRow.querySelector('.log-description');
+  descriptionTd.textContent = description;
+  addMoreDetailsButton(descriptionTd, pageId);
+
+  let urlTd = currentRow.querySelector('.log-url');
+  if (urlTd) {
+    urlTd.remove();
+    if (url.length > 0) {
+      urlTd = createUrlElement(url);
+      urlTd.setAttribute('class', 'log-url');
+      currentRow.appendChild(urlTd);
+    }
+  }
+}
+
+/**
+ * Create an new row for expansion table below the |mainRow|.
+ *
+ * @param {!HTMLElement} mainRow The row with the most updated log event of the
+ * group.
+ * @param {number} pageId The ID associated with the group event.
+ */
+function createExpansionRow(mainRow, pageId) {
+  let logsTable = $('message-logs-table');
+  let expansionRow = logsTable.insertRow(mainRow.rowIndex + 1);
+  expansionRow.setAttribute('class', 'expansion-row hide');
+  expansionRow.setAttribute('id', 'expansion-row-' + pageId);
+  window.logTableMap[pageId] = mainRow;
+
+  let tdNode = document.createElement('td');
+  tdNode.setAttribute('colspan', '4');
+  expansionRow.appendChild(tdNode);
+
+  let expansionTable = document.createElement('table');
+  expansionTable.setAttribute('class', 'expansion-logs-table');
+  tdNode.appendChild(expansionTable);
+
+  // Insert row so that the table even/odd coloring remains the same.
+  let hiddenRow = logsTable.insertRow(expansionRow.rowIndex + 1);
+  hiddenRow.setAttribute('class', 'hide');
+}
+
+/**
  * Insert a log message row to the top of the log message table.
  *
  * @param {number!} time Millisecond since Unix Epoch representation of time.
@@ -36,10 +138,21 @@ function getTimeFormat(time) {
  * @param {string!} description The event message description.
  * @param {string} url The URL associated with the event.
  */
-function insertMessageRowToMessageLogTable(time, type, description, url) {
+function insertMessageRowToMessageLogTable(
+    time, type, description, url, pageId) {
+  assert(pageId >= 0);
+  if (pageId > 0 && window.logTableMap[pageId]) {
+    updateTableRowByPageId(time, type, description, url, pageId);
+    return;
+  }
+
   let tableRow =
       $('message-logs-table').insertRow(1);  // Index 0 belongs to header row.
   tableRow.setAttribute('class', 'log-message');
+
+  if (pageId > 0) {  // If the new message will be grouped.
+    createExpansionRow(tableRow, pageId);
+  }
 
   let timeTd = document.createElement('td');
   timeTd.textContent = getTimeFormat(time);
@@ -121,9 +234,11 @@ function setupLogSearch() {
 
     rows.forEach((row) => {
       let found = KEY_COLUMNS.some((column) => {
-        return (row.querySelector('.' + column)
-                    .textContent.toUpperCase()
-                    .includes(keyword));
+        let cell = row.querySelector('.' + column);
+        if (!cell) {
+          return keyword == '';
+        }
+        return cell.textContent.toUpperCase().includes(keyword);
       });
       row.style.display = found ? '' : 'none';
     });
@@ -229,7 +344,7 @@ InterventionsInternalPageImpl.prototype = {
    */
   logNewMessage: function(log) {
     insertMessageRowToMessageLogTable(
-        log.time, log.type, log.description, log.url.url);
+        log.time, log.type, log.description, log.url.url, log.pageId);
   },
 
   /**
@@ -290,6 +405,10 @@ InterventionsInternalPageImpl.prototype = {
 
     // Remove log message from logs table.
     removeAllLogMessagesRows();
+
+    // Log event message.
+    insertMessageRowToMessageLogTable(
+        time, 'Blacklist', 'Blacklist Cleared', '' /* URL */, 0 /* pageId */);
   },
 
   /**
@@ -339,7 +458,8 @@ InterventionsInternalPageImpl.prototype = {
 
     // Insert ECT changed message to message-logs-table.
     insertMessageRowToMessageLogTable(
-        now, 'ECT Changed', 'Effective Connection Type changed to ' + type, '');
+        now, 'ECT Changed', 'Effective Connection Type changed to ' + type,
+        '' /* URL */, 0 /* pageId */);
   },
 };
 

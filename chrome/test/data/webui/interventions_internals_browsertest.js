@@ -215,18 +215,21 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
         description: 'Some description_a',
         url: {url: 'Some gurl.spec()_a'},
         time: 1507221689240,  // Oct 05 2017 16:41:29 UTC
+        pageId: 0,
       },
       {
         type: 'Type_b',
         description: 'Some description_b',
         url: {url: 'Some gurl.spec()_b'},
         time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+        pageId: 0,
       },
       {
         type: 'Type_c',
         description: 'Some description_c',
         url: {url: 'Some gurl.spec()_c'},
         time: -314307870000,  // Jan 16 1960 04:15:30 UTC
+        pageId: 0,
       },
     ];
 
@@ -234,8 +237,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessage', function() {
       pageImpl.logNewMessage(log);
     });
 
-    let logTable = $('message-logs-table');
-    let rows = logTable.querySelectorAll('.log-message');
+    let rows = $('message-logs-table').querySelectorAll('.log-message');
     expectEquals(logs.length, rows.length);
 
     logs.forEach((log, index) => {
@@ -265,6 +267,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessageWithLongUrl', function() {
       url: {url: ''},
       description: 'Some description',
       time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+      pageId: 0,
     };
     // Creating long url.
     for (let i = 0; i <= 2 * URL_THRESHOLD; i++) {
@@ -288,6 +291,7 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessageWithNoUrl', function() {
       url: {url: ''},
       description: 'Some description',
       time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+      pageId: 0,
     };
     pageImpl.logNewMessage(log);
     let actual = $('message-logs-table').rows[1];
@@ -300,6 +304,156 @@ TEST_F('InterventionsInternalsUITest', 'LogNewMessageWithNoUrl', function() {
 
   mocha.run();
 });
+
+TEST_F('InterventionsInternalsUITest', 'LogNewMessagePageIdZero', function() {
+  test('LogMessageWithPageIdZero', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let logs = [
+      {
+        type: 'Type_a',
+        description: 'Some description_a',
+        url: {url: 'Some gurl.spec()_a'},
+        time: 1507221689240,  // Oct 05 2017 16:41:29 UTC
+        pageId: 0,
+      },
+      {
+        type: 'Type_b',
+        description: 'Some description_b',
+        url: {url: 'Some gurl.spec()_b'},
+        time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+        pageId: 0,
+      },
+    ];
+
+    logs.forEach((log) => {
+      pageImpl.logNewMessage(log);
+    });
+
+    // Expect 2 different rows in logs table.
+    let rows = $('message-logs-table').querySelectorAll('.log-message');
+    let expectedNumberOfRows = 2;
+    expectEquals(expectedNumberOfRows, rows.length);
+
+    logs.forEach((log, index) => {
+      let expectedTime = getTimeFormat(log.time);
+      let row = rows[logs.length - index - 1];
+
+      expectEquals(expectedTime, row.querySelector('.log-time').textContent);
+      expectEquals(log.type, row.querySelector('.log-type').textContent);
+      expectEquals(
+          log.description, row.querySelector('.log-description').textContent);
+      expectEquals(
+          log.url.url, row.querySelector('.log-url-value').textContent);
+    });
+  });
+
+  mocha.run();
+});
+
+TEST_F('InterventionsInternalsUITest', 'LogNewMessageNewPageId', function() {
+  test('LogMessageWithNewPageId', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    let logs = [
+      {
+        type: 'Type_a',
+        description: 'Some description_a',
+        url: {url: 'Some gurl.spec()_a'},
+        time: 1507221689240,  // Oct 05 2017 16:41:29 UTC
+        pageId: 123,
+      },
+      {
+        type: 'Type_b',
+        description: 'Some description_b',
+        url: {url: 'Some gurl.spec()_b'},
+        time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+        pageId: 321,
+      },
+    ];
+
+    logs.forEach((log) => {
+      pageImpl.logNewMessage(log);
+    });
+
+    // Expect 2 different rows in logs table.
+    let rows = $('message-logs-table').querySelectorAll('.log-message');
+    expectEquals(2, rows.length);
+
+    logs.forEach((log, index) => {
+      let expectedTime = getTimeFormat(log.time);
+      let row = rows[logs.length - index - 1];
+
+      expectEquals(expectedTime, row.querySelector('.log-time').textContent);
+      expectEquals(log.type, row.querySelector('.log-type').textContent);
+      expectEquals(
+          log.description, row.querySelector('.log-description').textContent);
+      expectEquals(
+          log.url.url, row.querySelector('.log-url-value').textContent);
+    });
+  });
+
+  mocha.run();
+});
+
+TEST_F(
+    'InterventionsInternalsUITest', 'LogNewMessageExistedPageId', function() {
+      test('LogMessageWithExistedPageId', () => {
+        let pageImpl = new InterventionsInternalPageImpl(null);
+        let logs = [
+          {
+            type: 'Type_a',
+            description: 'Some description_a',
+            url: {url: 'Some gurl.spec()_a'},
+            time: 1507221689240,  // Oct 05 2017 16:41:29 UTC
+            pageId: 3,
+          },
+          {
+            type: 'Type_b',
+            description: 'Some description_b',
+            url: {url: 'Some gurl.spec()_b'},
+            time: 758675653000,  // Jan 15 1994 23:14:13 UTC
+            pageId: 3,
+          },
+        ];
+
+        logs.forEach((log) => {
+          pageImpl.logNewMessage(log);
+        });
+
+        let logTableRows =
+            $('message-logs-table').querySelectorAll('.log-message');
+        expectEquals(1, logTableRows.length);
+        expectEquals(
+            1, document.querySelector('.expansion-logs-table').rows.length);
+
+        // Log table row.
+        let row = $('message-logs-table').querySelector('.log-message');
+        let expectedRowTime = getTimeFormat(logs[1].time);
+        expectEquals(
+            expectedRowTime, row.querySelector('.log-time').textContent);
+        expectEquals(logs[1].type, row.querySelector('.log-type').textContent);
+        expectEquals(
+            logs[1].description,
+            row.querySelector('.log-description').textContent);
+        expectEquals(
+            logs[1].url.url, row.querySelector('.log-url-value').textContent);
+
+        // Sub log table row.
+        let subRow = document.querySelector('.expansion-logs-table').rows[0];
+        let expectedSubTime = getTimeFormat(logs[0].time);
+        expectEquals(
+            expectedSubTime, subRow.querySelector('.log-time').textContent);
+        expectEquals(
+            logs[0].type, subRow.querySelector('.log-type').textContent);
+        expectEquals(
+            logs[0].description,
+            subRow.querySelector('.log-description').textContent);
+        expectEquals(
+            logs[0].url.url,
+            subRow.querySelector('.log-url-value').textContent);
+      });
+
+      mocha.run();
+    });
 
 TEST_F('InterventionsInternalsUITest', 'AddNewBlacklistedHost', function() {
   test('AddNewBlacklistedHost', () => {
@@ -402,7 +556,12 @@ TEST_F(
         pageImpl.logNewMessage(log);
         expectGT($('message-logs-table').rows.length, 1 /* header row */);
         pageImpl.onBlacklistCleared(time);
-        expectEquals(1 /* header row */, $('message-logs-table').rows.length);
+        let expectedNumberOfRows = 2;  // header row and clear blacklist log.
+        let rows = $('message-logs-table').rows;
+        expectEquals(expectedNumberOfRows, rows.length);
+        expectEquals(
+            'Blacklist Cleared',
+            rows[1].querySelector('.log-description').textContent);
       });
 
       mocha.run();

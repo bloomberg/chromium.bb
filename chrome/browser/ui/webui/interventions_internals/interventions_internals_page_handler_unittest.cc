@@ -560,15 +560,15 @@ TEST_F(InterventionsInternalsPageHandlerTest,
 
 TEST_F(InterventionsInternalsPageHandlerTest, OnNewMessageLogAddedPostToPage) {
   const previews::PreviewsLogger::MessageLog expected_messages[] = {
-      previews::PreviewsLogger::MessageLog("Event_a", "Some description a",
-                                           GURL("http://www.url_a.com/url_a"),
-                                           base::Time::Now()),
-      previews::PreviewsLogger::MessageLog("Event_b", "Some description b",
-                                           GURL("http://www.url_b.com/url_b"),
-                                           base::Time::Now()),
-      previews::PreviewsLogger::MessageLog("Event_c", "Some description c",
-                                           GURL("http://www.url_c.com/url_c"),
-                                           base::Time::Now()),
+      previews::PreviewsLogger::MessageLog(
+          "Event_a", "Some description a", GURL("http://www.url_a.com/url_a"),
+          base::Time::Now(), 1234UL /* page_id */),
+      previews::PreviewsLogger::MessageLog(
+          "Event_b", "Some description b", GURL("http://www.url_b.com/url_b"),
+          base::Time::Now(), 4321UL /* page_id */),
+      previews::PreviewsLogger::MessageLog(
+          "Event_c", "Some description c", GURL("http://www.url_c.com/url_c"),
+          base::Time::Now(), 6789UL /* page_id */),
   };
 
   for (auto message : expected_messages) {
@@ -581,6 +581,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, OnNewMessageLogAddedPostToPage) {
     EXPECT_EQ(message.url, (*actual)->url);
     int64_t expected_time = message.time.ToJavaTime();
     EXPECT_EQ(expected_time, (*actual)->time);
+    EXPECT_EQ(message.page_id, (*actual)->page_id);
   }
 }
 

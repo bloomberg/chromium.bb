@@ -122,16 +122,18 @@ class PreviewsLoggerTest : public testing::Test {
     const base::Time time = base::Time::Now();
     PreviewsType type = PreviewsType::OFFLINE;
     const GURL url("http://www.url_a.com/url");
+    const uint64_t page_id = 1234;
     TestPreviewsLoggerObserver observer;
     logger_->AddAndNotifyObserver(&observer);
     if (final_reason) {
       std::vector<PreviewsEligibilityReason> passed_reasons = {};
       logger_->LogPreviewDecisionMade(reason, url, time, type,
-                                      std::move(passed_reasons));
+                                      std::move(passed_reasons), page_id);
     } else {
       std::vector<PreviewsEligibilityReason> passed_reasons = {reason};
       logger_->LogPreviewDecisionMade(PreviewsEligibilityReason::ALLOWED, url,
-                                      time, type, std::move(passed_reasons));
+                                      time, type, std::move(passed_reasons),
+                                      page_id);
     }
 
     auto actual = observer.messages();
@@ -165,14 +167,16 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   };
   const GURL url_a("http://www.url_a.com/url_a");
   const GURL url_b("http://www.url_b.com/url_b");
+  const uint64_t page_id_a = 1234;
+  const uint64_t page_id_b = 4321;
 
   TestPreviewsLoggerObserver observer;
   logger_->AddAndNotifyObserver(&observer);
 
   logger_->LogPreviewDecisionMade(reason_a, url_a, time, type_a,
-                                  std::move(passed_reasons_a));
+                                  std::move(passed_reasons_a), page_id_a);
   logger_->LogPreviewDecisionMade(reason_b, url_b, time, type_b,
-                                  std::move(passed_reasons_b));
+                                  std::move(passed_reasons_b), page_id_b);
 
   auto actual = observer.messages();
   const size_t expected_size = 4;  // reason_a, reason_b, and passed_reasons_b
@@ -184,24 +188,28 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
   EXPECT_EQ(time, actual[0].time);
+  EXPECT_EQ(page_id_a, actual[0].page_id);
 
   std::string expected_passed_0 = "LoFi preview - Network quality available";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[1].event_type);
   EXPECT_EQ(expected_passed_0, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
   EXPECT_EQ(time, actual[1].time);
+  EXPECT_EQ(page_id_b, actual[1].page_id);
 
   std::string expected_passed_1 = "LoFi preview - Page reloads allowed";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[2].event_type);
   EXPECT_EQ(expected_passed_1, actual[2].event_description);
   EXPECT_EQ(url_b, actual[2].url);
   EXPECT_EQ(time, actual[2].time);
+  EXPECT_EQ(page_id_b, actual[2].page_id);
 
   std::string expected_description_b = "LoFi preview - Network not slow";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[3].event_type);
   EXPECT_EQ(expected_description_b, actual[3].event_description);
   EXPECT_EQ(url_b, actual[3].url);
   EXPECT_EQ(time, actual[3].time);
+  EXPECT_EQ(page_id_b, actual[3].page_id);
 }
 
 TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
@@ -211,6 +219,7 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   PreviewsType type_b = PreviewsType::LOFI;
   const GURL url_a("http://www.url_a.com/url_a");
   const GURL url_b("http://www.url_b.com/url_b");
+  const uint64_t expected_nav_id = 0;
 
   TestPreviewsLoggerObserver observer;
   logger_->AddAndNotifyObserver(&observer);
@@ -228,12 +237,14 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
   EXPECT_EQ(time, actual[0].time);
+  EXPECT_EQ(expected_nav_id, actual[0].page_id);
 
   std::string expected_description_b = "LoFi preview - user opt-out: False";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[1].event_type);
   EXPECT_EQ(expected_description_b, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
   EXPECT_EQ(time, actual[1].time);
+  EXPECT_EQ(expected_nav_id, actual[1].page_id);
 }
 
 TEST_F(PreviewsLoggerTest, PreviewsLoggerOnlyKeepsCertainNumberOfDecisionLogs) {
@@ -242,11 +253,12 @@ TEST_F(PreviewsLoggerTest, PreviewsLoggerOnlyKeepsCertainNumberOfDecisionLogs) {
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
   const base::Time time = base::Time::Now();
   const GURL url("http://www.url_.com/url_");
+  const uint64_t page_id = 1234;
 
   for (size_t i = 0; i < 2 * kMaximumDecisionLogs; i++) {
     std::vector<PreviewsEligibilityReason> passed_reasons = {};
     logger_->LogPreviewDecisionMade(reason, url, time, type,
-                                    std::move(passed_reasons));
+                                    std::move(passed_reasons), page_id);
   }
 
   TestPreviewsLoggerObserver observer;
@@ -273,7 +285,8 @@ TEST_F(PreviewsLoggerTest,
        ObserverIsNotifiedOfHistoricalNavigationsAndDecisionsWhenAdded) {
   // Non historical log event.
   logger_->LogMessage("Event_", "Some description_",
-                      GURL("http://www.url_.com/url_"), base::Time::Now());
+                      GURL("http://www.url_.com/url_"), base::Time::Now(),
+                      1234 /* page_id */);
 
   PreviewsType type = PreviewsType::LOFI;
   PreviewsEligibilityReason final_reason =
@@ -290,10 +303,11 @@ TEST_F(PreviewsLoggerTest,
       base::Time::FromJsTime(-413696806000),  // Same as above.
       base::Time::FromJsTime(758620800000),   // Jan 15 1994 08:00:00 UTC
   };
+  const uint64_t page_ids[] = {1233, 1233, 0 /* Navigation page_id */};
 
   // Logging decisions and navigations events.
   logger_->LogPreviewDecisionMade(final_reason, urls[0], times[0], type,
-                                  std::move(passed_reasons));
+                                  std::move(passed_reasons), page_ids[0]);
   logger_->LogPreviewNavigation(urls[2], type, true /* opt_out */, times[2]);
 
   TestPreviewsLoggerObserver observer;
@@ -314,6 +328,7 @@ TEST_F(PreviewsLoggerTest,
     EXPECT_EQ(expected_types[i], received_messages[i].event_type);
     EXPECT_EQ(urls[i], received_messages[i].url);
     EXPECT_EQ(times[i], received_messages[i].time);
+    EXPECT_EQ(page_ids[i], received_messages[i].page_id);
   }
 }
 
@@ -325,11 +340,12 @@ TEST_F(PreviewsLoggerTest, ObserversOnNewMessageIsCalledWithCorrectParams) {
     logger_->AddAndNotifyObserver(&observers[i]);
   }
 
-  std::string type = "Event_";
-  std::string description = "Some description";
-  GURL url("http://www.url_.com/url_");
-  base::Time now = base::Time::Now();
-  logger_->LogMessage(type, description, url, now);
+  const std::string type = "Event_";
+  const std::string description = "Some description";
+  const GURL url("http://www.url_.com/url_");
+  const base::Time now = base::Time::Now();
+  const uint64_t page_id = 1234;
+  logger_->LogMessage(type, description, url, now, page_id);
 
   const size_t expected_size = 1;
   for (size_t i = 0; i < number_of_obs; i++) {
@@ -338,6 +354,7 @@ TEST_F(PreviewsLoggerTest, ObserversOnNewMessageIsCalledWithCorrectParams) {
     EXPECT_EQ(description, observers[i].message()->event_description);
     EXPECT_EQ(url, observers[i].message()->url);
     EXPECT_EQ(now, observers[i].message()->time);
+    EXPECT_EQ(page_id, observers[i].message()->page_id);
   }
 }
 
@@ -352,11 +369,12 @@ TEST_F(PreviewsLoggerTest, RemovedObserverIsNotNotified) {
   const size_t removed_observer = 1;
   logger_->RemoveObserver(&observers[removed_observer]);
 
-  std::string type = "Event_";
-  std::string description = "Some description";
-  GURL url("http://www.url_.com/url_");
-  base::Time now = base::Time::Now();
-  logger_->LogMessage(type, description, url, now);
+  const std::string type = "Event_";
+  const std::string description = "Some description";
+  const GURL url("http://www.url_.com/url_");
+  const base::Time now = base::Time::Now();
+  const uint64_t page_id = 1234;
+  logger_->LogMessage(type, description, url, now, page_id);
 
   const size_t expected_size = 0;
   EXPECT_EQ(expected_size, observers[removed_observer].messages().size());
@@ -367,6 +385,7 @@ TEST_F(PreviewsLoggerTest, RemovedObserverIsNotNotified) {
       EXPECT_EQ(description, observers[i].message()->event_description);
       EXPECT_EQ(url, observers[i].message()->url);
       EXPECT_EQ(now, observers[i].message()->time);
+      EXPECT_EQ(page_id, observers[i].message()->page_id);
     }
   }
 }
@@ -723,11 +742,13 @@ TEST_F(PreviewsLoggerTest, LastObserverRemovedIsNotified) {
 }
 
 TEST_F(PreviewsLoggerTest, ClearBufferLogsWhenBlacklistCleared) {
-  std::string type = "Event_";
-  std::string description = "Some description";
-  GURL url("http://www.url_.com/url_");
-  base::Time now = base::Time::Now();
-  logger_->LogMessage(type, description, url, now);
+  const std::string type = "Event_";
+  const std::string description = "Some description";
+  const GURL url("http://www.url_.com/url_");
+  const base::Time now = base::Time::Now();
+  const uint64_t page_id = 1234;
+
+  logger_->LogMessage(type, description, url, now, page_id);
 
   logger_->OnBlacklistCleared(base::Time::Now());
 
