@@ -1056,6 +1056,8 @@ void Node::ReattachLayoutTree(AttachContext& context) {
   if (GetStyleChangeType() < kNeedsReattachStyleChange)
     DetachLayoutTree(context);
   AttachLayoutTree(context);
+  DCHECK(!NeedsReattachLayoutTree());
+  DCHECK(!GetNonAttachedStyle());
 }
 
 void Node::AttachLayoutTree(AttachContext& context) {
