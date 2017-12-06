@@ -1297,6 +1297,11 @@ void VrShellGl::ClosePresentationBindings() {
 void VrShellGl::OnAssetsLoaded(bool success,
                                std::string environment,
                                const base::Version& component_version) {
+  if (success && environment == "zq7sax8chrtjchxysh7b\n") {
+    VLOG(1) << "Successfully loaded VR assets component";
+  } else {
+    VLOG(1) << "Failed to load VR assets component";
+  }
   if (!success) {
     browser_->OnAssetsLoaded(vr::AssetsLoadStatus::kParseFailure,
                              component_version);
@@ -1308,11 +1313,6 @@ void VrShellGl::OnAssetsLoaded(bool success,
     return;
   }
   browser_->OnAssetsLoaded(vr::AssetsLoadStatus::kSuccess, component_version);
-  if (success && environment == "zq7sax8chrtjchxysh7b\n") {
-    VLOG(1) << "Successfully loaded VR assets component";
-  } else {
-    VLOG(1) << "Failed to load VR assets component";
-  }
 }
 
 }  // namespace vr_shell
