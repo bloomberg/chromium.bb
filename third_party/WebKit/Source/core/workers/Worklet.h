@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class LocalFrame;
+class Document;
 class ScriptPromiseResolver;
 
 // This is the base implementation of Worklet interface defined in the spec:
@@ -47,8 +47,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  protected:
-  // The Worklet inherits the url and userAgent from the frame->document().
-  explicit Worklet(LocalFrame*);
+  explicit Worklet(Document*);
 
   // Returns one of available global scopes.
   WorkletGlobalScopeProxy* FindAvailableGlobalScope();

@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
@@ -32,10 +31,10 @@ network::mojom::FetchCredentialsMode ParseCredentialsOption(
 
 }  // namespace
 
-Worklet::Worklet(LocalFrame* frame)
-    : ContextLifecycleObserver(frame->GetDocument()),
+Worklet::Worklet(Document* document)
+    : ContextLifecycleObserver(document),
       module_responses_map_(
-          new WorkletModuleResponsesMap(frame->GetDocument()->Fetcher())) {
+          new WorkletModuleResponsesMap(document->Fetcher())) {
   DCHECK(IsMainThread());
 }
 

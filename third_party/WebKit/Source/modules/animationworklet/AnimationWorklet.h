@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class LocalFrame;
+class Document;
 
 // Represents the animation worklet on the main thread. All the logic for
 // loading a new source module is implemented in its parent class |Worklet|. The
@@ -22,13 +22,12 @@ class MODULES_EXPORT AnimationWorklet final : public Worklet {
   WTF_MAKE_NONCOPYABLE(AnimationWorklet);
 
  public:
-  static AnimationWorklet* Create(LocalFrame*);
+  explicit AnimationWorklet(Document*);
   ~AnimationWorklet() override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit AnimationWorklet(LocalFrame*);
 
   // Implements Worklet.
   bool NeedsToCreateGlobalScope() final;

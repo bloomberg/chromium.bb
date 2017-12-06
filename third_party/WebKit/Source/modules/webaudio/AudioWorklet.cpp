@@ -6,8 +6,6 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
@@ -23,8 +21,7 @@ AudioWorklet* AudioWorklet::Create(BaseAudioContext* context) {
 }
 
 AudioWorklet::AudioWorklet(BaseAudioContext* context)
-    : Worklet(context->GetExecutionContext()->ExecutingWindow()->GetFrame()),
-      context_(context) {}
+    : Worklet(ToDocument(context->GetExecutionContext())), context_(context) {}
 
 void AudioWorklet::CreateProcessor(AudioWorkletHandler* handler,
                                    MessagePortChannel message_port_channel) {
@@ -71,7 +68,7 @@ bool AudioWorklet::IsReady() {
 bool AudioWorklet::NeedsToCreateGlobalScope() {
   // This is a callback from |Worklet::FetchAndInvokeScript| call, which only
   // can be triggered by Worklet.addModule() call.
-  UseCounter::Count(GetFrame(), WebFeature::kAudioWorkletAddModule);
+  UseCounter::Count(GetExecutionContext(), WebFeature::kAudioWorkletAddModule);
 
   return GetNumberOfGlobalScopes() == 0;
 }

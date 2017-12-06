@@ -36,7 +36,7 @@ PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
-    : Worklet(frame),
+    : Worklet(frame->GetDocument()),
       Supplement<LocalDOMWindow>(*frame->DomWindow()),
       pending_generator_registry_(new PaintWorkletPendingGeneratorRegistry) {}
 
