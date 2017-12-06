@@ -373,6 +373,9 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif
+#if defined(USE_AURA)
+      switches::kMus,
+#endif
       switches::kNoSandbox,
       switches::kPpapiStartupDialog,
     };
