@@ -84,8 +84,7 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferImageCopy::CopyImage(Image* image) {
   // Not strictly necessary since we are on the same context, but keeping
   // for cleanliness and in case we ever move off the same context.
   gl_->WaitSyncTokenCHROMIUM(sync_token.GetData());
-  GLuint source_texture_id =
-      gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  GLuint source_texture_id = gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   GLuint read_frame_buffer;
   gl_->GenFramebuffers(1, &read_frame_buffer);

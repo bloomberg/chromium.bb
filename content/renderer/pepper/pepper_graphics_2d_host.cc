@@ -712,7 +712,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
       }
 
       gl->GenMailboxCHROMIUM(gpu_mailbox.name);
-      gl->ProduceTextureCHROMIUM(texture_target, gpu_mailbox.name);
+      gl->ProduceTextureDirectCHROMIUM(texture_id, gpu_mailbox.name);
     }
 
     TextureInfo info;

@@ -189,8 +189,7 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
   // Contexts may be in a different share group. We must transfer the texture
   // through a mailbox first.
   source_gl->GenMailboxCHROMIUM(mailbox.name);
-  source_gl->ProduceTextureDirectCHROMIUM(texture_info->fID,
-                                          texture_info->fTarget, mailbox.name);
+  source_gl->ProduceTextureDirectCHROMIUM(texture_info->fID, mailbox.name);
   const GLuint64 shared_fence_sync = source_gl->InsertFenceSyncCHROMIUM();
   source_gl->Flush();
 
@@ -199,8 +198,7 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
                                   produce_sync_token.GetData());
   gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
 
-  GLuint source_texture =
-      gl->CreateAndConsumeTextureCHROMIUM(texture_info->fTarget, mailbox.name);
+  GLuint source_texture = gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
 
   // The canvas is stored in a premultiplied format, so unpremultiply if
   // necessary. The canvas is also stored in an inverted position, so the flip
@@ -225,8 +223,7 @@ bool ImageBuffer::CopyToPlatformTexture(SnapshotReason reason,
   source_gl->WaitSyncTokenCHROMIUM(copy_sync_token.GetConstData());
   // This disassociates the texture from the mailbox to avoid leaking the
   // mapping between the two in cases where the texture is recycled by skia.
-  source_gl->ProduceTextureDirectCHROMIUM(0, texture_info->fTarget,
-                                          mailbox.name);
+  source_gl->ProduceTextureDirectCHROMIUM(0, mailbox.name);
 
   // Undo grContext texture binding changes introduced in this function.
   GrContext* gr_context = provider->GetGrContext();

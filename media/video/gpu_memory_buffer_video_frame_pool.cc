@@ -822,7 +822,8 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gles2->GenMailboxCHROMIUM(plane_resource.mailbox.name);
-    gles2->ProduceTextureCHROMIUM(texture_target, plane_resource.mailbox.name);
+    gles2->ProduceTextureDirectCHROMIUM(plane_resource.texture_id,
+                                        plane_resource.mailbox.name);
   }
   return frame_resources;
 }

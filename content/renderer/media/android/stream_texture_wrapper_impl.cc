@@ -12,8 +12,6 @@
 
 using gpu::gles2::GLES2Interface;
 
-static const uint32_t kGLTextureExternalOES = GL_TEXTURE_EXTERNAL_OES;
-
 namespace {
 // Non-member function to allow it to run even after this class is deleted.
 void OnReleaseTexture(scoped_refptr<content::StreamTextureFactory> factories,
@@ -71,9 +69,9 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GLES2Interface* gl = factory_->ContextGL();
-  GLuint texture_target = kGLTextureExternalOES;
-  GLuint texture_id_ref = gl->CreateAndConsumeTextureCHROMIUM(
-      texture_target, texture_mailbox_.name);
+  GLuint texture_target = GL_TEXTURE_EXTERNAL_OES;
+  GLuint texture_id_ref =
+      gl->CreateAndConsumeTextureCHROMIUM(texture_mailbox_.name);
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->Flush();
 
@@ -164,8 +162,8 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  stream_texture_proxy_ = factory_->CreateProxy(
-      kGLTextureExternalOES, &texture_id_, &texture_mailbox_);
+  stream_texture_proxy_ =
+      factory_->CreateProxy(&texture_id_, &texture_mailbox_);
   if (!stream_texture_proxy_) {
     init_cb.Run(false);
     return;

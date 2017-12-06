@@ -405,8 +405,8 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
                                 NULL);
       }
       if (!mailboxes.empty()) {
-        gles2_impl_->ProduceTextureCHROMIUM(
-            GL_TEXTURE_2D, reinterpret_cast<const GLbyte*>(mailboxes[i].name));
+        gles2_impl_->ProduceTextureDirectCHROMIUM(
+            texture_ids[i], reinterpret_cast<const GLbyte*>(mailboxes[i].name));
       }
 
       textures_.insert(

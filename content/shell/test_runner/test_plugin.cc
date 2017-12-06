@@ -263,7 +263,7 @@ void TestPlugin::UpdateGeometry(
     DrawSceneGL();
 
     gl_->GenMailboxCHROMIUM(mailbox_.name);
-    gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox_.name);
+    gl_->ProduceTextureDirectCHROMIUM(color_texture_, mailbox_.name);
     const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
     gl_->Flush();
 

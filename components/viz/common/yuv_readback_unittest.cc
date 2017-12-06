@@ -357,7 +357,7 @@ class YUVReadbackTest : public testing::Test {
     gpu::Mailbox mailbox;
     gl_->GenMailboxCHROMIUM(mailbox.name);
     EXPECT_FALSE(mailbox.IsZero());
-    gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    gl_->ProduceTextureDirectCHROMIUM(src_texture, mailbox.name);
     const GLuint64 fence_sync = gl_->InsertFenceSyncCHROMIUM();
     gl_->ShallowFlushCHROMIUM();
 

@@ -65,7 +65,7 @@ void GraphicsContext3DUtils::GetMailboxForSkImage(gpu::Mailbox& out_mailbox,
   GLuint texture_id =
       skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))
           ->fID;
-  gl->ProduceTextureDirectCHROMIUM(texture_id, GL_TEXTURE_2D, out_mailbox.name);
+  gl->ProduceTextureDirectCHROMIUM(texture_id, out_mailbox.name);
 
   // We changed bound textures in ProduceTextureDirectCHROMIUM, so reset the
   // GrContext.

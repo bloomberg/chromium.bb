@@ -699,7 +699,7 @@ void ResourceProvider::ScopedWriteLockGL::CreateMailbox() {
   gpu::gles2::GLES2Interface* gl = resource_provider_->ContextGL();
   DCHECK(gl);
   gl->GenMailboxCHROMIUM(mailbox_.name);
-  gl->ProduceTextureDirectCHROMIUM(texture_id_, target_, mailbox_.name);
+  gl->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
 }
 
 GLuint ResourceProvider::ScopedWriteLockGL::ConsumeTexture(
@@ -707,8 +707,7 @@ GLuint ResourceProvider::ScopedWriteLockGL::ConsumeTexture(
   DCHECK(gl);
   DCHECK(!mailbox_.IsZero());
 
-  GLuint texture_id =
-      gl->CreateAndConsumeTextureCHROMIUM(target_, mailbox_.name);
+  GLuint texture_id = gl->CreateAndConsumeTextureCHROMIUM(mailbox_.name);
   DCHECK(texture_id);
 
   LazyAllocate(gl, texture_id);
@@ -932,8 +931,7 @@ void ResourceProvider::CreateMailbox(viz::internal::Resource* resource) {
   gpu::gles2::GLES2Interface* gl = ContextGL();
   DCHECK(gl);
   gl->GenMailboxCHROMIUM(resource->mailbox.name);
-  gl->ProduceTextureDirectCHROMIUM(resource->gl_id, resource->target,
-                                   resource->mailbox.name);
+  gl->ProduceTextureDirectCHROMIUM(resource->gl_id, resource->mailbox.name);
   resource->SetLocallyUsed();
 }
 

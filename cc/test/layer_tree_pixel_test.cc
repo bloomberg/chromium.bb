@@ -239,8 +239,7 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
   if (sync_token.HasData())
     gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
 
-  GLuint texture_id =
-      gl->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  GLuint texture_id = gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
 
   GLuint fbo = 0;
   gl->GenFramebuffers(1, &fbo);

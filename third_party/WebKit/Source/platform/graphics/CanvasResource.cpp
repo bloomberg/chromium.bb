@@ -101,7 +101,7 @@ void CanvasResource::PrepareTransferableResource(
   gl->TexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  gl->ProduceTextureDirectCHROMIUM(texture_id, target, GpuMailbox().name);
+  gl->ProduceTextureDirectCHROMIUM(texture_id, GpuMailbox().name);
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->ShallowFlushCHROMIUM();
   gpu::SyncToken sync_token;
@@ -174,7 +174,7 @@ void CanvasResource_Skia::TearDown() {
     DCHECK(image_->isTextureBacked());
     // To avoid leaking Mailbox records, we must disassociate the mailbox
     // before image_ goes out of scope because skia might recycle the texture.
-    gl->ProduceTextureDirectCHROMIUM(0, GL_TEXTURE_2D, GpuMailbox().name);
+    gl->ProduceTextureDirectCHROMIUM(0, GpuMailbox().name);
   }
   image_ = nullptr;
   context_provider_wrapper_ = nullptr;

@@ -218,8 +218,8 @@ bool GpuVideoAcceleratorFactoriesImpl::CreateTextures(
                         0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     }
     gles2->GenMailboxCHROMIUM(texture_mailboxes->at(i).name);
-    gles2->ProduceTextureCHROMIUM(texture_target,
-                                  texture_mailboxes->at(i).name);
+    gles2->ProduceTextureDirectCHROMIUM(texture_id,
+                                        texture_mailboxes->at(i).name);
   }
 
   // We need ShallowFlushCHROMIUM() here to order the command buffer commands

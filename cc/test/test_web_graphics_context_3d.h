@@ -192,12 +192,9 @@ class TestWebGraphicsContext3D {
                              const void* pixels) {}
 
   virtual void genMailboxCHROMIUM(GLbyte* mailbox);
-  virtual void produceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {}
   virtual void produceTextureDirectCHROMIUM(GLuint texture,
-                                            GLenum target,
                                             const GLbyte* mailbox) {}
-  virtual GLuint createAndConsumeTextureCHROMIUM(GLenum target,
-                                                 const GLbyte* mailbox);
+  virtual GLuint createAndConsumeTextureCHROMIUM(const GLbyte* mailbox);
 
   virtual void loseContextCHROMIUM(GLenum current, GLenum other);
 
