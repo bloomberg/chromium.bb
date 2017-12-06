@@ -6,8 +6,9 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_SENDER_H_
 
 #include "base/containers/queue.h"
-#include "content/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 
 namespace content {
 
@@ -29,7 +30,7 @@ class ServiceWorkerVersion;
 // 3. The sender sends requested scripts. |state_| is kSendingScripts. When all
 //    the requested scripts are sent, returns to the phase 2.
 class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
-    : public mojom::ServiceWorkerInstalledScriptsManagerHost {
+    : public blink::mojom::ServiceWorkerInstalledScriptsManagerHost {
  public:
   // Do not change the order. This is used for UMA.
   enum class FinishedReason {
@@ -49,10 +50,10 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
 
   ~ServiceWorkerInstalledScriptsSender() override;
 
-  // Creates a Mojo struct (mojom::ServiceWorkerInstalledScriptsInfo) and sets
-  // it with the information to create WebServiceWorkerInstalledScriptsManager
-  // on the renderer.
-  mojom::ServiceWorkerInstalledScriptsInfoPtr CreateInfoAndBind();
+  // Creates a Mojo struct (blink::mojom::ServiceWorkerInstalledScriptsInfo) and
+  // sets it with the information to create
+  // WebServiceWorkerInstalledScriptsManager on the renderer.
+  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr CreateInfoAndBind();
 
   // Starts sending installed scripts to the worker.
   void Start();
@@ -91,7 +92,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
   void OnHttpInfoRead(scoped_refptr<HttpResponseInfoIOBuffer> http_info);
   void OnFinishSendingScript(FinishedReason reason);
 
-  // Implements mojom::ServiceWorkerInstalledScriptsManagerHost.
+  // Implements blink::mojom::ServiceWorkerInstalledScriptsManagerHost.
   void RequestInstalledScript(const GURL& script_url) override;
 
   bool IsSendingMainScript() const;
@@ -101,8 +102,9 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
   const int64_t main_script_id_;
   bool sent_main_script_;
 
-  mojo::Binding<mojom::ServiceWorkerInstalledScriptsManagerHost> binding_;
-  mojom::ServiceWorkerInstalledScriptsManagerPtr manager_;
+  mojo::Binding<blink::mojom::ServiceWorkerInstalledScriptsManagerHost>
+      binding_;
+  blink::mojom::ServiceWorkerInstalledScriptsManagerPtr manager_;
   std::unique_ptr<Sender> running_sender_;
 
   State state_;

@@ -472,7 +472,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
     instance_host_ptr.Bind(std::move(instance_host));
@@ -941,7 +941,7 @@ class UpdateJobTestHelper
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     const std::string kMockScriptBody = "mock_script";
     const uint64_t kMockScriptSize = 19284;
@@ -1079,7 +1079,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ServiceWorkerRegistration* registration =
@@ -1785,7 +1785,7 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
       const EmbeddedWorkerStartParams& params,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info,
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info,
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,

@@ -243,9 +243,10 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     return worker->SendStartWorker(std::move(params));
   }
 
-  mojom::ServiceWorkerInstalledScriptsInfoPtr GetInstalledScriptsInfoPtr() {
+  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
+  GetInstalledScriptsInfoPtr() {
     installed_scripts_managers_.emplace_back();
-    auto info = mojom::ServiceWorkerInstalledScriptsInfo::New();
+    auto info = blink::mojom::ServiceWorkerInstalledScriptsInfo::New();
     info->manager_request =
         mojo::MakeRequest(&installed_scripts_managers_.back());
     installed_scripts_manager_host_requests_.push_back(
@@ -278,9 +279,9 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   // Mojo endpoints.
   std::vector<mojom::ServiceWorkerEventDispatcherPtr> dispatchers_;
   std::vector<mojom::ControllerServiceWorkerPtr> controllers_;
-  std::vector<mojom::ServiceWorkerInstalledScriptsManagerPtr>
+  std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
       installed_scripts_managers_;
-  std::vector<mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
+  std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
       installed_scripts_manager_host_requests_;
   std::vector<blink::mojom::ServiceWorkerHostAssociatedRequest>
       service_worker_host_requests_;
@@ -312,7 +313,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     if (force_stall_in_start_) {
       // Prepare for OnStopWorker().
@@ -925,15 +926,16 @@ class FailEmbeddedWorkerInstanceClientImpl
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
  private:
-  void StartWorker(const EmbeddedWorkerStartParams&,
-                   mojom::ServiceWorkerEventDispatcherRequest,
-                   mojom::ControllerServiceWorkerRequest,
-                   mojom::ServiceWorkerInstalledScriptsInfoPtr /* unused */,
-                   blink::mojom::ServiceWorkerHostAssociatedPtrInfo,
-                   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo,
-                   mojom::ServiceWorkerProviderInfoForStartWorkerPtr,
-                   blink::mojom::WorkerContentSettingsProxyPtr
-                       content_settings_proxy) override {
+  void StartWorker(
+      const EmbeddedWorkerStartParams&,
+      mojom::ServiceWorkerEventDispatcherRequest,
+      mojom::ControllerServiceWorkerRequest,
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr /* unused */,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo,
+      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo,
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr,
+      blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)
+      override {
     helper_->mock_instance_clients()->clear();
   }
 };

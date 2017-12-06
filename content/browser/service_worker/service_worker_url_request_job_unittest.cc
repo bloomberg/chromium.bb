@@ -65,6 +65,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/service_worker/service_worker.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -517,7 +518,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     embedded_worker_id_ = embedded_worker_id;
     service_worker_version_id_ = service_worker_version_id;
@@ -556,7 +557,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
-  mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;
+  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;
   int embedded_worker_id_ = 0;
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
   mojom::FetchEventPreloadHandlePtr preload_handle_;

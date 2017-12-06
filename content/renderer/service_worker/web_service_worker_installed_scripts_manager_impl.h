@@ -8,8 +8,8 @@
 #include <set>
 #include <vector>
 
-#include "content/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "content/renderer/service_worker/thread_safe_script_container.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 
 namespace content {
@@ -19,7 +19,7 @@ class CONTENT_EXPORT WebServiceWorkerInstalledScriptsManagerImpl final
  public:
   // Called on the main thread.
   static std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> Create(
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~WebServiceWorkerInstalledScriptsManagerImpl() override;
@@ -33,12 +33,13 @@ class CONTENT_EXPORT WebServiceWorkerInstalledScriptsManagerImpl final
   WebServiceWorkerInstalledScriptsManagerImpl(
       std::vector<GURL>&& installed_urls,
       scoped_refptr<ThreadSafeScriptContainer> script_container,
-      mojom::ServiceWorkerInstalledScriptsManagerHostPtr manager_host);
+      blink::mojom::ServiceWorkerInstalledScriptsManagerHostPtr manager_host);
 
   const std::set<GURL> installed_urls_;
   scoped_refptr<ThreadSafeScriptContainer> script_container_;
 
-  scoped_refptr<mojom::ThreadSafeServiceWorkerInstalledScriptsManagerHostPtr>
+  scoped_refptr<
+      blink::mojom::ThreadSafeServiceWorkerInstalledScriptsManagerHostPtr>
       manager_host_;
 };
 

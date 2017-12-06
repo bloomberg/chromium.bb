@@ -479,7 +479,7 @@ void EmbeddedWorkerInstance::Start(
     ProviderInfoGetter provider_info_getter,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
-    mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+    blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     blink::mojom::ServiceWorkerHostAssociatedPtrInfo
         service_worker_host_ptr_info,
     StatusCallback callback) {

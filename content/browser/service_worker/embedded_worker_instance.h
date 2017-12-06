@@ -30,6 +30,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/common/service_worker/service_worker.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
 
 namespace IPC {
@@ -132,14 +133,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // it is null.
   // |provider_info_getter| is called when this instance
   // allocates a process and is ready to send a StartWorker message.
-  void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
-             ProviderInfoGetter provider_info_getter,
-             mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-             mojom::ControllerServiceWorkerRequest controller_request,
-             mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-             blink::mojom::ServiceWorkerHostAssociatedPtrInfo
-                 service_worker_host_ptr_info,
-             StatusCallback callback);
+  void Start(
+      std::unique_ptr<EmbeddedWorkerStartParams> params,
+      ProviderInfoGetter provider_info_getter,
+      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo
+          service_worker_host_ptr_info,
+      StatusCallback callback);
 
   // Stops the worker. It is invalid to call this when the worker is not in
   // STARTING or RUNNING status.
@@ -331,7 +333,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // changed to a mojo struct and we put them in EmbeddedWorkerStartParams.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
   mojom::ControllerServiceWorkerRequest pending_controller_request_;
-  mojom::ServiceWorkerInstalledScriptsInfoPtr pending_installed_scripts_info_;
+  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
+      pending_installed_scripts_info_;
   blink::mojom::ServiceWorkerHostAssociatedPtrInfo
       pending_service_worker_host_ptr_info_;
 

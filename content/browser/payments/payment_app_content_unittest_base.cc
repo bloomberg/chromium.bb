@@ -69,7 +69,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     ServiceWorkerVersion* version =
         context()->GetLiveVersion(service_worker_version_id);

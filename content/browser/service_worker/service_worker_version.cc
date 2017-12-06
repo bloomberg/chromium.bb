@@ -48,6 +48,7 @@
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 
@@ -1520,7 +1521,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download_;
 
-  mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info;
+  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info;
   if (ServiceWorkerUtils::IsScriptStreamingEnabled() && IsInstalled(status()) &&
       !pause_after_download_) {
     DCHECK(!installed_scripts_sender_);
