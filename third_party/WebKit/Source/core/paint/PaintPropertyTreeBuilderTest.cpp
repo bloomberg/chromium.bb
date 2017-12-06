@@ -4187,4 +4187,29 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerPaintOffsetTranslation) {
   EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #iframe {
+        width: 200px;
+        height: 200px;
+        border: 10px solid blue;
+        border-radius: 50px;
+      }
+    </style>
+    <iframe id='iframe'></iframe>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("iframe");
+  const auto* border_radius_clip = properties->InnerBorderRadiusClip();
+  ASSERT_NE(nullptr, border_radius_clip);
+  FloatSize radius(40, 40);
+  EXPECT_EQ(FloatRoundedRect(FloatRect(18, 18, 200, 200), radius, radius,
+                             radius, radius),
+            border_radius_clip->ClipRect());
+  EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
+  EXPECT_EQ(FramePreTranslation(), border_radius_clip->LocalTransformSpace());
+  EXPECT_EQ(nullptr, properties->OverflowClip());
+}
+
 }  // namespace blink
