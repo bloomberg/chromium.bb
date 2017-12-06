@@ -1227,6 +1227,28 @@ bool ChromeContentBrowserClient::ShouldLockToOrigin(
   return true;
 }
 
+bool ChromeContentBrowserClient::ShouldBypassDocumentBlocking(
+    const url::Origin& initiator,
+    const GURL& url,
+    ResourceType resource_type) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (ChromeContentBrowserClientExtensionsPart::ShouldBypassDocumentBlocking(
+          initiator)) {
+    return true;
+  }
+#endif
+
+  // LinkDoctor requests are made with no initiator.  Allow them through for
+  // SUB_RESOURCE requests when the initiator is unique (which matches the use
+  // of LinkDoctor in error pages), since the site is not critical to protect.
+  if (resource_type == content::RESOURCE_TYPE_SUB_RESOURCE &&
+      initiator.unique() && url == google_util::LinkDoctorBaseURL()) {
+    return true;
+  }
+
+  return false;
+}
+
 // These are treated as WebUI schemes but do not get WebUI bindings. Also,
 // view-source is allowed for these schemes.
 void ChromeContentBrowserClient::GetAdditionalWebUISchemes(

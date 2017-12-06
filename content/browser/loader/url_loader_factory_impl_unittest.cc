@@ -162,8 +162,8 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId,
       mojom::kURLLoadOptionNone, request, client.CreateInterfacePtr(),
@@ -239,8 +239,8 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 2, 1, mojom::kURLLoadOptionNone, request,
       client.CreateInterfacePtr(),
@@ -269,8 +269,8 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 2, 1, mojom::kURLLoadOptionNone, request,
       client.CreateInterfacePtr(),
@@ -296,8 +296,8 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   ASSERT_FALSE(request.url.is_valid());
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 2, 1, mojom::kURLLoadOptionNone, request,
@@ -324,8 +324,8 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 2, 1, mojom::kURLLoadOptionNone, request,
       client.CreateInterfacePtr(),
@@ -355,7 +355,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   request.method = "GET";
   request.resource_type = RESOURCE_TYPE_XHR;
   request.download_to_file = true;
-  request.request_initiator = url::Origin();
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId, 0, request,
       client.CreateInterfacePtr(),
@@ -423,7 +423,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
   request.method = "GET";
   request.resource_type = RESOURCE_TYPE_XHR;
   request.download_to_file = true;
-  request.request_initiator = url::Origin();
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId, 0, request,
       client.CreateInterfacePtr(),
@@ -484,8 +484,8 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   request.report_raw_headers = true;
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId,
@@ -546,8 +546,8 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   // enabled, the url scheme of frame type requests from the renderer process
   // must be blob scheme.
   request.resource_type = RESOURCE_TYPE_XHR;
-  // Need to set |request_initiator| for non main frame type request.
-  request.request_initiator = url::Origin();
+  // Need to set same-site |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId,
       mojom::kURLLoadOptionNone, request, client.CreateInterfacePtr(),

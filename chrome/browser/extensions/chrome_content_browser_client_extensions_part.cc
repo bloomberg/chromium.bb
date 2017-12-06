@@ -63,6 +63,7 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
@@ -374,6 +375,14 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
       return false;
   }
   return true;
+}
+
+bool ChromeContentBrowserClientExtensionsPart::ShouldBypassDocumentBlocking(
+    const url::Origin& initiator) {
+  // Don't block responses for extension processes or for content scripts.
+  // TODO(creis): This check can be made stricter by checking what the extension
+  // has access to.
+  return initiator.scheme() == extensions::kExtensionScheme;
 }
 
 // static
