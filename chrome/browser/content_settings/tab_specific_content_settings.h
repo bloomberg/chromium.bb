@@ -383,6 +383,13 @@ class TabSpecificContentSettings
   // Block all content. Used for testing content setting bubbles.
   void BlockAllContentForTesting();
 
+  // Stores content settings changed by the user via PageInfo.
+  void ContentSettingChangedViaPageInfo(ContentSettingsType type);
+
+  // Returns true if the user changed the given ContentSettingsType via PageInfo
+  // since the last navigation.
+  bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) const;
+
  private:
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 
@@ -414,6 +421,9 @@ class TabSpecificContentSettings
 
   // Clears the MIDI settings.
   void ClearMidiContentSettings();
+
+  // Clears settings changed by the user via PageInfo since the last navigation.
+  void ClearContentSettingsChangedViaPageInfo();
 
   // Updates Geolocation settings on navigation.
   void GeolocationDidNavigate(content::NavigationHandle* navigation_handle);
@@ -478,6 +488,10 @@ class TabSpecificContentSettings
 
   // Observer to watch for content settings changed.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_;
+
+  // Stores content settings changed by the user via page info since the last
+  // navigation. Used to determine whether to display the settings in page info.
+  std::set<ContentSettingsType> content_settings_changed_via_page_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };
