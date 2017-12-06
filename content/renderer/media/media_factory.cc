@@ -374,8 +374,7 @@ MediaFactory::CreateRendererFactorySelector(
   // level uses the MediaPlayerRenderer as its underlying media::Renderer.
   auto mojo_media_player_renderer_factory =
       std::make_unique<media::MojoRendererFactory>(
-          media::MojoRendererFactory::GetGpuFactoriesCB(),
-          remote_interfaces_->get());
+          media::MojoRendererFactory::GetGpuFactoriesCB(), remote_interfaces_);
 
   // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
   // might fallback to it if the final redirected URL is an HLS url.
@@ -567,8 +566,7 @@ media::mojom::VideoDecodeStatsRecorderPtr
 MediaFactory::CreateVideoDecodeStatsRecorder() {
   DCHECK(remote_interfaces_);
   media::mojom::VideoDecodeStatsRecorderPtr recorder_ptr;
-  service_manager::GetInterface(remote_interfaces_->get(), &recorder_ptr);
-
+  remote_interfaces_->GetInterface(&recorder_ptr);
   return recorder_ptr;
 }
 

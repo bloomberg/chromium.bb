@@ -75,15 +75,16 @@ using blink::WebURLRequest;
 
 namespace {
 
-const int32_t kRouteId = 5;
-const int32_t kMainFrameRouteId = 6;
+const int32_t kRouteId = 101;
+const int32_t kMainFrameRouteId = 201;
 // TODO(avi): Widget routing IDs should be distinct from the view routing IDs,
 // once RenderWidgetHost is distilled from RenderViewHostImpl.
 // https://crbug.com/545684
-const int32_t kMainFrameWidgetRouteId = 5;
-const int32_t kNewWindowRouteId = 7;
-const int32_t kNewFrameRouteId = 10;
-const int32_t kNewFrameWidgetRouteId = 7;
+const int32_t kMainFrameWidgetRouteId = 101;
+
+const int32_t kNewWindowRouteId = 211;
+const int32_t kNewFrameRouteId = 111;
+const int32_t kNewFrameWidgetRouteId = 211;
 
 // Converts |ascii_character| into |key_code| and returns true on success.
 // Handles only the characters needed by tests.
@@ -309,8 +310,10 @@ void RenderViewTest::SetUp() {
   view_params->renderer_preferences = RendererPreferences();
   view_params->web_preferences = WebPreferences();
   view_params->view_id = kRouteId;
+  render_thread_->PassInitialInterfaceProviderRequestForFrame(
+      kMainFrameRouteId,
+      mojo::MakeRequest(&view_params->main_frame_interface_provider));
   view_params->main_frame_routing_id = kMainFrameRouteId;
-  mojo::MakeRequest(&view_params->main_frame_interface_provider);
   view_params->main_frame_widget_routing_id = kMainFrameWidgetRouteId;
   view_params->session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   view_params->swapped_out = false;

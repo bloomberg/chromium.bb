@@ -40,6 +40,7 @@
 #include "WebFormElement.h"
 #include "WebFrame.h"
 #include "WebFrameOwnerProperties.h"
+#include "WebGlobalObjectReusePolicy.h"
 #include "WebHistoryCommitType.h"
 #include "WebHistoryItem.h"
 #include "WebIconURL.h"
@@ -417,7 +418,8 @@ class BLINK_EXPORT WebFrameClient {
   // response body has been received, and the encoding of the response
   // body is known.
   virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                        WebHistoryCommitType) {}
+                                        WebHistoryCommitType,
+                                        WebGlobalObjectReusePolicy) {}
 
   // The frame's document has just been initialized.
   virtual void DidCreateNewDocument() {}

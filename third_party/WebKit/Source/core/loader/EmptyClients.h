@@ -261,7 +261,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                        ResourceRequest&) override {}
   void DispatchDidReceiveTitle(const String&) override {}
   void DispatchDidChangeIcons(IconType) override {}
-  void DispatchDidCommitLoad(HistoryItem*, HistoryCommitType) override {}
+  void DispatchDidCommitLoad(HistoryItem*,
+                             HistoryCommitType,
+                             WebGlobalObjectReusePolicy) override {}
   void DispatchDidFailProvisionalLoad(const ResourceError&,
                                       HistoryCommitType) override {}
   void DispatchDidFailLoad(const ResourceError&, HistoryCommitType) override {}

@@ -97,7 +97,7 @@ void AudioIPCFactory::RegisterRemoteFactoryOnIOThread(
   // Unretained is safe because |this| owns the binding, so a connection error
   // cannot trigger after destruction.
   emplaced_factory.set_connection_error_handler(
-      base::BindOnce(&AudioIPCFactory::MaybeDeregisterRemoteFactory,
+      base::BindOnce(&AudioIPCFactory::MaybeDeregisterRemoteFactoryOnIOThread,
                      base::Unretained(this), frame_id));
 }
 

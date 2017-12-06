@@ -249,6 +249,9 @@ NavigationSimulator::NavigationSimulator(const GURL& original_url,
     else
       transition_ = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   }
+
+  service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
+  interface_provider_request_ = mojo::MakeRequest(&stub_interface_provider);
 }
 
 NavigationSimulator::~NavigationSimulator() {}
@@ -484,7 +487,11 @@ void NavigationSimulator::Commit() {
       navigation_url_, params.item_sequence_number,
       params.document_sequence_number);
 
-  render_frame_host_->SendNavigateWithParams(&params);
+  if (params.was_within_same_document)
+    interface_provider_request_ = nullptr;
+
+  render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
+      &params, std::move(interface_provider_request_));
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -596,7 +603,8 @@ void NavigationSimulator::CommitErrorPage() {
       navigation_url_, params.item_sequence_number,
       params.document_sequence_number);
 
-  render_frame_host_->SendNavigateWithParams(&params);
+  render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
+      &params, std::move(interface_provider_request_));
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -642,7 +650,9 @@ void NavigationSimulator::CommitSameDocument() {
   params.page_state =
       PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
 
-  render_frame_host_->SendNavigateWithParams(&params);
+  interface_provider_request_ = nullptr;
+  render_frame_host_->SendNavigateWithParamsAndInterfaceProvider(
+      &params, nullptr /* interface_provider_request */);
 
   state_ = FINISHED;
 
@@ -693,6 +703,14 @@ void NavigationSimulator::SetSocketAddress(
   CHECK_LE(state_, STARTED) << "The socket address cannot be set after the "
                                "navigation has committed or failed";
   socket_address_ = socket_address;
+}
+
+void NavigationSimulator::SetInterfaceProviderRequest(
+    service_manager::mojom::InterfaceProviderRequest request) {
+  CHECK_LE(state_, STARTED) << "The InterfaceProviderRequest cannot be set "
+                               "after the navigation has committed or failed";
+  CHECK(request.is_pending());
+  interface_provider_request_ = std::move(request);
 }
 
 NavigationThrottle::ThrottleCheckResult

@@ -12,9 +12,7 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 
 namespace service_manager {
-namespace mojom {
 class InterfaceProvider;
-}
 }
 
 namespace media {
@@ -32,9 +30,8 @@ class MojoRendererFactory : public RendererFactory {
 
   MojoRendererFactory(const GetGpuFactoriesCB& get_gpu_factories_cb,
                       media::mojom::InterfaceFactory* interface_factory);
-  MojoRendererFactory(
-      const GetGpuFactoriesCB& get_gpu_factories_cb,
-      service_manager::mojom::InterfaceProvider* interface_provider);
+  MojoRendererFactory(const GetGpuFactoriesCB& get_gpu_factories_cb,
+                      service_manager::InterfaceProvider* interface_provider);
 
   ~MojoRendererFactory() final;
 
@@ -54,7 +51,7 @@ class MojoRendererFactory : public RendererFactory {
   // InterfaceFactory or InterfaceProvider used to create or connect to remote
   // renderer.
   media::mojom::InterfaceFactory* interface_factory_ = nullptr;
-  service_manager::mojom::InterfaceProvider* interface_provider_ = nullptr;
+  service_manager::InterfaceProvider* interface_provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererFactory);
 };

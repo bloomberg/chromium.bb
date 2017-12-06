@@ -516,6 +516,7 @@ source_set("blink_headers") {
     "web/WebFrameSerializerCacheControlPolicy.h",
     "web/WebFrameSerializerClient.h",
     "web/WebFrameWidget.h",
+    "web/WebGlobalObjectReusePolicy.h",
     "web/WebHeap.h",
     "web/WebHelperPlugin.h",
     "web/WebHistoryCommitType.h",

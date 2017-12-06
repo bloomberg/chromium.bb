@@ -434,7 +434,8 @@ void LocalFrameClientImpl::DispatchDidChangeIcons(IconType type) {
 
 void LocalFrameClientImpl::DispatchDidCommitLoad(
     HistoryItem* item,
-    HistoryCommitType commit_type) {
+    HistoryCommitType commit_type,
+    WebGlobalObjectReusePolicy global_object_reuse_policy) {
   if (!web_frame_->Parent()) {
     web_frame_->ViewImpl()->DidCommitLoad(commit_type == kStandardCommit,
                                           false);
@@ -442,7 +443,8 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
 
   if (web_frame_->Client()) {
     web_frame_->Client()->DidCommitProvisionalLoad(
-        WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type));
+        WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type),
+        global_object_reuse_policy);
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());

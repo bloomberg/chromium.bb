@@ -677,14 +677,16 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
     if (owner_frame && owner_frame->IsLocalFrame())
       owner_document = ToLocalFrame(owner_frame)->GetDocument();
   }
-  bool should_reuse_default_view = frame_->ShouldReuseDefaultView(Url());
   DCHECK(frame_->GetPage());
 
   ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
   if (!Document::ThreadedParsingEnabledForTesting())
     parsing_policy = kForceSynchronousParsing;
 
-  InstallNewDocument(Url(), owner_document, should_reuse_default_view,
+  InstallNewDocument(Url(), owner_document,
+                     frame_->ShouldReuseDefaultView(Url())
+                         ? WebGlobalObjectReusePolicy::kUseExisting
+                         : WebGlobalObjectReusePolicy::kCreateNew,
                      mime_type, encoding, InstallNewDocumentReason::kNavigation,
                      parsing_policy, overriding_url);
   parser_->SetDocumentWasLoadedAsPartOfNavigation();
@@ -950,7 +952,8 @@ void DocumentLoader::WillCommitNavigation() {
   frame_->GetIdlenessDetector()->WillCommitLoad();
 }
 
-void DocumentLoader::DidCommitNavigation() {
+void DocumentLoader::DidCommitNavigation(
+    WebGlobalObjectReusePolicy global_object_reuse_policy) {
   if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     return;
 
@@ -964,7 +967,8 @@ void DocumentLoader::DidCommitNavigation() {
   frame_->FrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
       frame_->IsLocalRoot());
-  GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(), commit_type);
+  GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(), commit_type,
+                                              global_object_reuse_policy);
 
   // When the embedder gets notified (above) that the new navigation has
   // committed, the embedder will drop the old Content Security Policy and
@@ -1050,7 +1054,7 @@ bool DocumentLoader::ShouldPersistUserGestureValue(
 void DocumentLoader::InstallNewDocument(
     const KURL& url,
     Document* owner_document,
-    bool should_reuse_default_view,
+    WebGlobalObjectReusePolicy global_object_reuse_policy,
     const AtomicString& mime_type,
     const AtomicString& encoding,
     InstallNewDocumentReason reason,
@@ -1058,7 +1062,6 @@ void DocumentLoader::InstallNewDocument(
     const KURL& overriding_url) {
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
-
   if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
     GetFrameLoader().StateMachine()->AdvanceTo(
         FrameLoaderStateMachine::kCommittedFirstRealLoad);
@@ -1076,7 +1079,7 @@ void DocumentLoader::InstallNewDocument(
   // commits. To make that happen, we "securely transition" the existing
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
-  if (!should_reuse_default_view)
+  if (global_object_reuse_policy != WebGlobalObjectReusePolicy::kUseExisting)
     frame_->SetDOMWindow(LocalDOMWindow::Create(*frame_));
 
   bool user_gesture_bit_set = frame_->HasBeenActivated() ||
@@ -1122,7 +1125,7 @@ void DocumentLoader::InstallNewDocument(
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.
   if (reason == InstallNewDocumentReason::kNavigation)
-    DidCommitNavigation();
+    DidCommitNavigation(global_object_reuse_policy);
 
   if (document->GetSettings()
           ->GetForceTouchEventFeatureDetectionForInspector()) {
@@ -1156,10 +1159,10 @@ const AtomicString& DocumentLoader::MimeType() const {
 void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
     const KURL& url,
     Document* owner_document,
-    bool should_reuse_default_view,
+    WebGlobalObjectReusePolicy global_object_reuse_policy,
     const String& source) {
-  InstallNewDocument(url, owner_document, should_reuse_default_view, MimeType(),
-                     response_.TextEncodingName(),
+  InstallNewDocument(url, owner_document, global_object_reuse_policy,
+                     MimeType(), response_.TextEncodingName(),
                      InstallNewDocumentReason::kJavascriptURL,
                      kForceSynchronousParsing, NullURL());
 
