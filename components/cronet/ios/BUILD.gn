@@ -148,7 +148,7 @@ ios_framework_bundle("cronet_framework") {
   public_configs = [ ":cronet_include_config" ]
 }
 
-test("cronet_unittests") {
+test("cronet_unittests_ios") {
   testonly = true
 
   sources = [
@@ -162,11 +162,12 @@ test("cronet_unittests") {
     ":cronet_sources_with_global_state",
     "//base",
     "//base/test:test_support",
-    "//components/cronet/ios/test:cronet_test",
     "//components/metrics",
     "//net",
     "//testing/gtest",
   ]
+
+  bundle_deps = [ "//components/cronet/ios/test:cronet_test" ]
 }
 
 action("generate_accept_languages") {

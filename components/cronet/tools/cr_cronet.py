@@ -32,8 +32,21 @@ def test(out_dir, extra_options):
   return run(out_dir + '/bin/run_cronet_test_instrumentation_apk ' + \
              extra_options)
 
+
+def unittest(out_dir, extra_options):
+  return run(out_dir + '/bin/run_cronet_unittests ' + \
+             extra_options)
+
+
 def test_ios(out_dir, extra_options):
-  return run(out_dir + '/iossim ' + out_dir + '/cronet_test.app', extra_options)
+  return run(out_dir + '/iossim -c "' + extra_options + '" ' + \
+             out_dir + '/cronet_test.app')
+
+
+def unittest_ios(out_dir, extra_options):
+  return run(out_dir + '/iossim -c "' + extra_options + '" ' + \
+             out_dir + '/cronet_unittests_ios.app')
+
 
 def debug(extra_options):
   return run('build/android/adb_gdb --start ' + \
@@ -57,6 +70,8 @@ def main():
                                'proguard',
                                'test',
                                'build-test',
+                               'unit',
+                               'build-unit',
                                'stack',
                                'debug',
                                'build-debug'])
@@ -79,6 +94,7 @@ def main():
   if is_os:
     target_os = 'ios'
     test_target = 'cronet_test'
+    unit_target = 'cronet_unittests_ios'
     gn_args = 'is_cronet_build=true is_component_build=false ' \
         'use_xcode_clang=true ios_deployment_target="9.0" '
     gn_extra = '--ide=xcode'
@@ -94,6 +110,7 @@ def main():
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
+    unit_target = 'cronet_unittests'
     gn_args = 'use_errorprone_java_compiler=true arm_use_neon=false '
     gn_extra = ''
     out_dir_suffix = ''
@@ -143,11 +160,19 @@ def main():
     if (options.command=='build-debug'):
       return build(out_dir, test_target) or install(out_dir) or \
           debug(extra_options)
+    if (options.command=='unit'):
+      return unittest(out_dir, extra_options)
+    if (options.command=='build-unit'):
+      return build(out_dir, unit_target) or unittest(out_dir, extra_options)
   else:
     if (options.command=='test'):
       return test_ios(out_dir, extra_options)
     if (options.command=='build-test'):
       return build(out_dir, test_target) or test_ios(out_dir, extra_options)
+    if (options.command=='unit'):
+      return unittest_ios(out_dir, extra_options)
+    if (options.command=='build-unit'):
+      return build(out_dir, unit_target) or unittest_ios(out_dir, extra_options)
 
   parser.print_help()
   return 1

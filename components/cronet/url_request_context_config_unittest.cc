@@ -100,8 +100,10 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Check race_cert_verification.
   EXPECT_TRUE(params->quic_race_cert_verification);
 
-  // Check AsyncDNS resolver is enabled.
+#if defined(ENABLE_BUILT_IN_DNS)
+  // Check AsyncDNS resolver is enabled (not supported on iOS).
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
+#endif  // defined(ENABLE_BUILT_IN_DNS)
 
   // Check IPv6 is disabled when on wifi.
   EXPECT_TRUE(context->host_resolver()->GetNoIPv6OnWifi());

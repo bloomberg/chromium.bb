@@ -428,6 +428,10 @@
     "label": "//components/cronet/ios/test:cronet_test",
     "type": "raw",
   },
+  "cronet_unittests_ios": {
+    "label": "//components/cronet/ios:cronet_unittests_ios",
+    "type": "raw",
+  },
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
     "type": "additional_compile_target",
