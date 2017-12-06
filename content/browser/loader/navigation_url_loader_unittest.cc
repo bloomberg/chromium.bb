@@ -234,7 +234,6 @@ TEST_F(NavigationURLLoaderTest, RequestFailedNoCertError) {
 // Tests that request failures are propagated correctly for a (non-fatal) cert
 // error:
 // - |ssl_info| has the expected values.
-// - |should_ssl_errors_be_fatal| is false.
 TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
@@ -252,13 +251,12 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
   EXPECT_TRUE(https_server.GetCertificate()->Equals(ssl_info.cert.get()));
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));
-  EXPECT_FALSE(delegate.should_ssl_errors_be_fatal());
+  EXPECT_FALSE(ssl_info.is_fatal_cert_error);
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 
 // Tests that request failures are propagated correctly for a fatal cert error:
 // - |ssl_info| has the expected values.
-// - |should_ssl_errors_be_fatal| is true.
 TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
@@ -285,7 +283,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
   EXPECT_TRUE(https_server.GetCertificate()->Equals(ssl_info.cert.get()));
   EXPECT_EQ(net::ERR_CERT_COMMON_NAME_INVALID,
             net::MapCertStatusToNetError(ssl_info.cert_status));
-  EXPECT_TRUE(delegate.should_ssl_errors_be_fatal());
+  EXPECT_TRUE(ssl_info.is_fatal_cert_error);
   EXPECT_EQ(1, delegate.on_request_handled_counter());
 }
 

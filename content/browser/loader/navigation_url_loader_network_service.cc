@@ -726,11 +726,8 @@ void NavigationURLLoaderNetworkService::OnComplete(
                          "&NavigationURLLoaderNetworkService", this, "success",
                          false);
 
-  // TODO(https://crbug.com/757633): Pass real values in the case of cert
-  // errors.
-  bool should_ssl_errors_be_fatal = true;
   delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
-                             status.ssl_info, should_ssl_errors_be_fatal);
+                             status.ssl_info);
 }
 
 bool NavigationURLLoaderNetworkService::IsDownload() const {

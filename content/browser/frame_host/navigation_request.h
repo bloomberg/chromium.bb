@@ -234,8 +234,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                              subresource_loader_params) override;
   void OnRequestFailed(bool has_stale_copy_in_cache,
                        int net_error,
-                       const base::Optional<net::SSLInfo>& ssl_info,
-                       bool should_ssl_errors_be_fatal) override;
+                       const base::Optional<net::SSLInfo>& ssl_info) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
   // A version of OnRequestFailed() that allows skipping throttles, to be used
@@ -243,7 +242,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void OnRequestFailedInternal(bool has_stale_copy_in_cache,
                                int net_error,
                                const base::Optional<net::SSLInfo>& ssl_info,
-                               bool should_ssl_errors_be_fatal,
                                bool skip_throttles);
 
   // Called when the NavigationThrottles have been checked by the

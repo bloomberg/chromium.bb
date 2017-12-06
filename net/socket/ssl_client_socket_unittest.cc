@@ -2757,6 +2757,40 @@ TEST_F(SSLClientSocketTest, ReuseStates) {
   // buffer. Call SSL_pending.
 }
 
+// Tests that |is_fatal_cert_error| does not get set for a certificate error,
+// on a non-HSTS host.
+TEST_F(SSLClientSocketTest, IsFatalErrorNotSetOnNonFatalError) {
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_CHAIN_WRONG_ROOT);
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_FALSE(ssl_info.is_fatal_cert_error);
+}
+
+// Tests that |is_fatal_cert_error| gets set for a certificate error on an
+// HSTS host.
+TEST_F(SSLClientSocketTest, IsFatalErrorSetOnFatalError) {
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_CHAIN_WRONG_ROOT);
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  SSLConfig ssl_config;
+  int rv;
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  context_.transport_security_state->AddHSTS(
+      spawned_test_server()->host_port_pair().host(), expiry, true);
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.is_fatal_cert_error);
+}
+
 // Tests that IsConnectedAndIdle treats a socket as idle even if a Write hasn't
 // been flushed completely out of SSLClientSocket's internal buffers. This is a
 // regression test for https://crbug.com/466147.

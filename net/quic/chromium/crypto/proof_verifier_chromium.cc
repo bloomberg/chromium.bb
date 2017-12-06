@@ -32,7 +32,7 @@ using std::string;
 namespace net {
 
 ProofVerifyDetailsChromium::ProofVerifyDetailsChromium()
-    : pkp_bypassed(false) {}
+    : pkp_bypassed(false), is_fatal_cert_error(false) {}
 
 ProofVerifyDetailsChromium::~ProofVerifyDetailsChromium() {}
 
@@ -489,6 +489,10 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
     if (result != ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN && ct_result != OK)
       result = ct_result;
   }
+
+  verify_details_->is_fatal_cert_error =
+      IsCertStatusError(cert_status) && !IsCertStatusMinorError(cert_status) &&
+      transport_security_state_->ShouldSSLErrorsBeFatal(hostname_);
 
   if (result != OK) {
     std::string error_string = ErrorToString(result);

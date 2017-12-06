@@ -151,7 +151,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
     test_handle_->WillFailRequest(
-        ssl_info, false,
+        ssl_info,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }

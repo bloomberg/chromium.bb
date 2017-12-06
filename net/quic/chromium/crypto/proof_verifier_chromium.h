@@ -48,6 +48,10 @@ class NET_EXPORT_PRIVATE ProofVerifyDetailsChromium
 
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
+
+  // True if there was a certificate error which should be treated as fatal,
+  // and false otherwise.
+  bool is_fatal_cert_error;
 };
 
 // ProofVerifyContextChromium is the implementation-specific information that a

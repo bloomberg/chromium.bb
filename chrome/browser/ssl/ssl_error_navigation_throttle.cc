@@ -49,8 +49,7 @@ SSLErrorNavigationThrottle::WillFailRequest() {
       base::BindOnce(
           std::move(handle_ssl_error_callback_), handle->GetWebContents(),
           net::MapCertStatusToNetError(cert_status), handle->GetSSLInfo(),
-          handle->GetURL(), handle->ShouldSSLErrorsBeFatal(), false,
-          std::move(ssl_cert_reporter_),
+          handle->GetURL(), false, std::move(ssl_cert_reporter_),
           base::Callback<void(content::CertificateRequestResultType)>(),
           base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
                          weak_ptr_factory_.GetWeakPtr())));

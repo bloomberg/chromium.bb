@@ -2363,7 +2363,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   // to indicate that we don't want SSLErrorHandler to take the committed
   // interstitials code path.
   SSLErrorHandler::HandleSSLError(
-      web_contents, cert_error, ssl_info, request_url, strict_enforcement,
+      web_contents, cert_error, ssl_info, request_url,
       expired_previous_decision,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
       callback, SSLErrorHandler::BlockingPageReadyCallback());

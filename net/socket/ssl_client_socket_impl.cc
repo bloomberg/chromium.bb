@@ -413,6 +413,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.ct_policy_enforcer),
       pkp_bypassed_(false),
+      is_fatal_cert_error_(false),
       connect_error_details_(SSLErrorDetails::kOther),
       net_log_(transport_->socket()->NetLog()),
       weak_factory_(this) {
@@ -674,7 +675,7 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->token_binding_key_param = tb_negotiated_param_;
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
-
+  ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
   AddCTInfoToSSLInfo(ssl_info);
 
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_.get());
@@ -1233,6 +1234,10 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
     if (result != ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN && ct_result != OK)
       result = ct_result;
   }
+
+  is_fatal_cert_error_ =
+      IsCertStatusError(cert_status) && !IsCertStatusMinorError(cert_status) &&
+      transport_security_state_->ShouldSSLErrorsBeFatal(host_and_port_.host());
 
   if (result == OK) {
     DCHECK(!certificate_verified_);

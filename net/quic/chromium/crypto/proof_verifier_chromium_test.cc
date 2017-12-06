@@ -445,6 +445,67 @@ HashValueVector MakeHashValueVector(uint8_t tag) {
   return hashes;
 }
 
+TEST_F(ProofVerifierChromiumTest, IsFatalErrorNotSetForNonFatalError) {
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.cert_status = MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  dummy_result.verified_cert = test_cert;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result,
+                                  ERR_CERT_DATE_INVALID);
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_FAILURE, status);
+
+  ProofVerifyDetailsChromium* verify_details =
+      static_cast<ProofVerifyDetailsChromium*>(details_.get());
+  EXPECT_FALSE(verify_details->is_fatal_cert_error);
+}
+
+TEST_F(ProofVerifierChromiumTest, IsFatalErrorSetForFatalError) {
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.cert_status = MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  dummy_result.verified_cert = test_cert;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result,
+                                  ERR_CERT_DATE_INVALID);
+
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  transport_security_state_.AddHSTS(kTestHostname, expiry, true);
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_FAILURE, status);
+  ProofVerifyDetailsChromium* verify_details =
+      static_cast<ProofVerifyDetailsChromium*>(details_.get());
+  EXPECT_TRUE(verify_details->is_fatal_cert_error);
+}
+
 // Test that PKP is enforced for certificates that chain up to known roots.
 TEST_F(ProofVerifierChromiumTest, PKPEnforced) {
   scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();

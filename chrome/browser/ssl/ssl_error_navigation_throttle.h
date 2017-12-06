@@ -34,7 +34,6 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
-      bool should_ssl_errors_be_fatal,
       bool expired_previous_decision,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const base::Callback<void(content::CertificateRequestResultType)>&

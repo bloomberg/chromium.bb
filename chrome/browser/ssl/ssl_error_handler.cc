@@ -580,7 +580,6 @@ void SSLErrorHandler::HandleSSLError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    bool should_ssl_errors_be_fatal,
     bool expired_previous_decision,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(content::CertificateRequestResultType)>&
@@ -600,7 +599,7 @@ void SSLErrorHandler::HandleSSLError(
   bool is_superfish =
       base::FeatureList::IsEnabled(kSuperfishInterstitial) && is_superfish_cert;
   int options_mask = CalculateOptionsMask(
-      cert_error, hard_override_disabled, should_ssl_errors_be_fatal,
+      cert_error, hard_override_disabled, ssl_info.is_fatal_cert_error,
       is_superfish, expired_previous_decision);
 
   SSLErrorHandler* error_handler = new SSLErrorHandler(

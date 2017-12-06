@@ -688,6 +688,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   std::unique_ptr<ct::CTVerifyResult> ct_verify_result_;
   std::string pinning_failure_log_;
   bool pkp_bypassed_;
+  bool is_fatal_cert_error_;
   HandleSet handles_;
   StreamRequestQueue stream_requests_;
   std::vector<CompletionCallback> waiting_for_confirmation_callbacks_;
