@@ -50,6 +50,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"

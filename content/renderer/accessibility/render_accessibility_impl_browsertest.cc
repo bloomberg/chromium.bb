@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/render_view_test.h"

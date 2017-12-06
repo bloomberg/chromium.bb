@@ -69,6 +69,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/resource_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -442,8 +443,7 @@ class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
 // thread.
 class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
  public:
-  explicit UkmRecorderFactoryImpl(
-      std::unique_ptr<service_manager::Connector> connector)
+  UkmRecorderFactoryImpl(std::unique_ptr<service_manager::Connector> connector)
       : connector_(std::move(connector)) {
     DCHECK(connector_);
   }

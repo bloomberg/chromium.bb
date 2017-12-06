@@ -41,6 +41,7 @@
 #include "content/common/drag_messages.h"
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
