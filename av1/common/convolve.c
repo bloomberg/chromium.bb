@@ -684,7 +684,7 @@ void av1_convolve_2d_copy_c(const uint8_t *src, int src_stride,
 
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
-      CONV_BUF_TYPE res = (1 << bits) * src[y * src_stride + x];
+      CONV_BUF_TYPE res = src[y * src_stride + x] << bits;
       if (conv_params->do_average)
         dst[y * dst_stride + x] += res;
       else
@@ -776,12 +776,14 @@ void av1_jnt_convolve_2d_copy_c(const uint8_t *src, int src_stride,
       CONV_BUF_TYPE res = (1 << bits) * src[y * src_stride + x];
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
-          dst[y * dst_stride + x] += res * conv_params->bck_offset;
+          dst[y * dst_stride + x] +=
+              (src[y * src_stride + x] * conv_params->bck_offset) << bits;
 
           dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
                                                        DIST_PRECISION_BITS - 1);
         } else {
-          dst[y * dst_stride + x] = res * conv_params->fwd_offset;
+          dst[y * dst_stride + x] =
+              (src[y * src_stride + x] * conv_params->fwd_offset) << bits;
         }
       } else {
         if (conv_params->do_average)
