@@ -66,6 +66,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1539064842193522527">Link deschis în Chrome</translation>
 <translation id="1549000191223877751">Mută în altă fereastră</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
+<translation id="1566400915470565838">Ca să folosești <ph name="APP_NAME" />, conectează-te la internet.</translation>
 <translation id="1569387923882100876">Dispozitiv conectat</translation>
 <translation id="1571304935088121812">Copiază numele de utilizator</translation>
 <translation id="1612196535745283361">Chrome necesită accesul la locație pentru a căuta dispozitive. Accesul la locație este <ph name="BEGIN_LINK" />dezactivat pentru acest dispozitiv<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2351097562818989364">Setările de traducere au fost resetate.</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2369533728426058518">file deschise</translation>
-<translation id="2372491353676110880">Descarcă paginile automat</translation>
 <translation id="2387895666653383613">Scalarea textului</translation>
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="2416359993254398973">Chrome are nevoie de permisiune ca să acceseze camera foto pentru acest site.</translation>
@@ -179,8 +179,8 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2621115761605608342">Permite JavaScript pentru un anumit site.</translation>
 <translation id="2625189173221582860">Parola a fost copiată</translation>
 <translation id="2631006050119455616">Economisite</translation>
+<translation id="2647434099613338025">Adaugă o limbă</translation>
 <translation id="2653659639078652383">Trimite</translation>
-<translation id="2671100504997899381">Încarcă mai repede paginile și salvează paginile populare pentru citire offline</translation>
 <translation id="2677748264148917807">Ieși</translation>
 <translation id="2704606927547763573">Copiat</translation>
 <translation id="2707726405694321444">Actualizează pagina</translation>
@@ -565,7 +565,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6337234675334993532">Criptare</translation>
 <translation id="6343192674172527289">Nu s-a găsit nicio descărcare</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Deblochează pentru a continua configurarea telefonului</translation>
 <translation id="6364438453358674297">Elimini sugestia din istoric?</translation>
 <translation id="6383961787135158834">Șterge stocare site-uri…</translation>
 <translation id="6388207532828177975">Șterge și resetează</translation>
@@ -793,6 +792,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8493948351860045254">Eliberează spațiu</translation>
 <translation id="8497726226069778601">Nu este nimic de văzut aici... deocamdată</translation>
 <translation id="8503813439785031346">Nume utilizator</translation>
+<translation id="8514477925623180633">Exportă parolele stocate în Chrome</translation>
 <translation id="8514577642972634246">Intră în modul incognito</translation>
 <translation id="8523928698583292556">Șterge parola stocată</translation>
 <translation id="854522910157234410">Deschide această pagină</translation>

@@ -46,6 +46,40 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Politikværdien skal angives i millisekunder.</translation>
 <translation id="1151353063931113432">Tillad billeder på disse websites</translation>
+<translation id="1151545095291359187">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne politik styrer flere indstillinger, inklusive indstillinger, der styres af eksisterende politikker vedrørende udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er indstillet.
+
+          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til sin konfiguration. Med et udvidelses-id bliver konfigurationen udelukkende anvendt på den angivne udvidelse. Der kan indstilles en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som anvendes på alle udvidelser, for hvilke der ikke er indstillet en tilpasset konfiguration i denne politik. Med en opdateringswebadresse anvendes konfigurationen på alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i manifestfilen for denne udvidelse som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurationen for hver udvidelse (eller udvidelser med samme opdateringswebadresse) er en anden ordbog, der kan indeholde de felter, der er dokumenteret nedenfor.
+
+          <ph name="INSTALLATION_MODE" />: Tilknytter en streng, der angiver installationstilstanden for udvidelsen. De gyldige strenge er:
+          * <ph name="ALLOWED" />: Tillader, at udvidelsen installeres af brugeren. Dette er standardadfærden.
+          * <ph name="BLOCKED" />: Blokerer for installation af udvidelsen.
+          * <ph name="FORCE_INSTALLED" />: Udvidelsen installeres automatisk og kan ikke fjernes af brugeren.
+          * <ph name="NORMAL_INSTALLED" />: Udvidelsen installeres automatisk, men kan deaktiveres af brugeren.
+
+          <ph name="INSTALLATION_MODE" /> kan også konfigureres for flere udvidelser, bl.a. udvidelsen <ph name="DEFAULT_SCOPE" /> (som standardindstillinger), og for udvidelser med samme opdateringswebadresse. Det er kun værdierne <ph name="ALLOWED" /> og <ph name="BLOCKED" />, der kan bruges i dette tilfælde.
+
+          Hvis denne tilstand er indstillet til <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, skal der også konfigureres en <ph name="UPDATE_URL" />. Bemærk, at opdateringswebadressen, der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen bruger den opdateringswebadresse, der er angivet i udvidelsens manifestfil. Som nævnt ovenfor skal opdateringswebadressen pege på et Update Manifest XML-dokument.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Tilknytter en liste over strenge, der angiver de blokerede API-tilladelser for udvidelsen. Navnene på tilladelserne er de samme som de tilladelsesstrenge, der er angivet i udvidelsens manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC3" />. Denne indstilling kan også konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Hvis udvidelsen kræver en tilladelse, der er på blokeringslisten, tillades det ikke, at den indlæses. Hvis den indeholder en blokeret tilladelse som valgfrit krav, håndteres den på normal vis, men anmodning om modstridende tilladelser afvises automatisk på kørselstidspunktet.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Svarer til <ph name="BLOCKED_PERMISSIONS" />, men tillader i stedet udtrykkeligt nogle tilladelser, som kan være blokeret af listen med globalt blokerede tilladelser, og som dermed ikke kan konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Bemærk, at denne indstilling ikke automatisk giver tildelte tilladelser til udvidelser.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Tilknytter en versionsstreng. Formatet for versionsstrengen er det samme som det, der bruges i udvidelsesmanifestfilen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. En udvidelse med en version, der er ældre end den angivne minimumsversion, deaktiveres. Dette gælder også for udvidelser med tvungen installation.
+
+          Følgende indstillinger kan kun bruges til standardkonfigurationen <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Hvert element på listen har et matchmønster, der minder om en udvidelse (se <ph name="LINK_TO_MATCH_PATTERNS" />). Brugerne kan nemt installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen 
+og siden, hvor downloadet er startet fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
+
+          <ph name="ALLOWED_TYPES" />: Denne indstilling hvidlister de tilladte typer af udvidelser/apps, der kan installeres på <ph name="PRODUCT_NAME" />.  Værdien er en liste over strenge, hvor hver af disse skal være en af følgende: <ph name="VALID_ALLOWED_TYPES" />. Se udvidelsesdokumentationen for <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruger forsøger at installere en udvidelse, som er blokeret af en politik, viser Chrome Webshop en generisk fejlmeddelelse. Med denne indstilling kan du føje tekst til fejlmeddelelsen. Teksten kan bruges til at lede brugerne til dit supportteam, forklare, hvorfor en bestemt udvidelse er blokeret eller andet. Denne fejlmeddelelse forkortes, hvis den er på mere end 1000 tegn.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse blokeres fra at interagere med. Dette omfatter indsættelse af javascript, ændring og visning af webRequests/webNavigation samt visning og ændring af cookies. Formatet ligner Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, bortset fra at der ikke må defineres nogen stier, f.eks. "*://*.eksempel.dk". Dette understøtter også gældende TLD-jokertegn, f.eks. "*://eksempel.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse kan interagere med, uanset om de er angivet på <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ej. Dette er det samme format som <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Rapportér tilstanden for enhedens udviklerkontakt ved opstart.
 
       Hvis politikken er angivet til Falsk, rapporteres tilstanden for udviklerkontakten ikke.</translation>
@@ -63,6 +97,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1204263402976895730">Aktiverede virksomhedsprintere</translation>
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
 <translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
+<translation id="1257550411839719984">Angiv standardmappe til downloads</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
 
@@ -539,6 +574,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       </translation>
 <translation id="2769952903507981510">Konfigurer det påkrævede domænenavn for værter med fjernadgang</translation>
 <translation id="2787173078141616821">Rapportér oplysninger om status for Android</translation>
+<translation id="2793923553868251161">Kilder skal behandles som sikkert indhold.</translation>
 <translation id="2801230735743888564">Giv brugerne mulighed for at spille det ekstra dinosaurspil, når enheden er offline.
 
       Hvis denne politik er angivet til Falsk, kan brugerne ikke spille det ekstra dinosaurspil, når enheden er offline. Hvis indstillingen er angivet til Sand, kan brugerne spille dinosaurspillet. Hvis politikken ikke er angivet, kan brugerne ikke spille det ekstra dinosaurspil på tilmeldte Chrome OS-systemer, men de kan spille det under andre omstændigheder.</translation>
@@ -768,11 +804,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3758249152301468420">Deaktiver udviklerværktøjer</translation>
 <translation id="3765260570442823273">Varighed af advarselsmeddelelsen om logout for inaktivitet</translation>
-<translation id="376931976323225993">Gør det muligt for dig at angive, om det er tilladt for websites at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet automatisk. Automatisk kørsel af <ph name="FLASH_PLUGIN_NAME" />-pluginnet kan tillades for alle websites eller forbydes for alle websites.
-
-          Klik for at afspille giver tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet, men brugeren skal klikke på pladsholderen for at starte det.
-
-          Hvis denne politik ikke angives, kan brugeren ændre denne indstilling manuelt.</translation>
 <translation id="3780152581321609624">Inkluder en port, der ikke er standard, i Kerberos-SPN</translation>
 <translation id="3780319008680229708">Hvis denne politik angives som Sand, vises Cast-ikonet altid på værktøjslinjen eller i prikmenuen, og brugerne kan ikke fjerne det.
 
@@ -860,6 +891,13 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis du aktiverer denne indstilling, kan der ikke opnås adgang til udviklerværktøjerne, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje og alle angivelser i menuer eller genvejsmenuer, der bruges til at åbne udviklerværktøjerne eller JavaScript-konsollen, bliver deaktiveret.
 
       Hvis du deaktiverer denne indstilling eller ikke angiver den, kan brugeren benytte udviklerværktøjerne og JavaScript-konsollen.</translation>
+<translation id="3895557476567727016">Konfigurerer standardmappen, som <ph name="PRODUCT_NAME" /> bruger til download af filer.
+
+      Hvis du angiver denne politik, ændrer det standardmappen, som <ph name="PRODUCT_NAME" /> downloader filer til. Denne politik er ikke obligatorisk, så brugeren kan ændre mappen.
+
+      Hvis du ikke angiver denne politik, bruger <ph name="PRODUCT_NAME" /> den sædvanlige standardmappe (platformspecifikt).
+
+      Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler, der kan bruges.</translation>
 <translation id="3907986150060929099">Indstil de anbefalede landestandarder for en offentlig session</translation>
 <translation id="3911737181201537215">Denne politik påvirker ikke logføring udført af Android.</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
@@ -1457,7 +1495,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
-<translation id="6076099373507468537">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapplikation. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
+<translation id="6076099373507468537">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapp. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
 
       Hvis denne politik ikke konfigureres, er listen over USB-enheder, der kan frigøres, tom.</translation>
 <translation id="6083631234867522991">Windows (Windows-klienter):</translation>
@@ -1697,7 +1735,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsunderretninger</translation>
 <translation id="7072406291414141328">Gør det muligt at begrænse netværkets båndbredde</translation>
 <translation id="7079519252486108041">Bloker pop op-vinduer på disse websites</translation>
-<translation id="7091198954851103976">Kør altid plugins, der kræver godkendelse</translation>
 <translation id="7106631983877564505">Aktivér låsen, når <ph name="PRODUCT_OS_NAME" />-enheder bliver inaktive eller suspenderes.
 
       Hvis du aktiverer denne indstilling, vil brugerne blive bedt om en adgangskode for at låse enheden op fra dvale.
@@ -1934,6 +1971,13 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certifikater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
 
       Hvis den er angivet til CopyCaCerts, er alle ONC-installerede CA-certifikater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
+<translation id="7872535148622213208">
+        Denne politik angiver en liste over kilder (webadresser), der skal behandles som sikkert
+        indhold. Formålet er, at organisationer kan konfigurere en testserver
+        til intern webudvikling.
+        Dette er det samme som "--unsafely-treat-insecure-origin-as-secure"-markeringen.
+        Hvis du vil have flere oplysninger om sikre kontekster, kan du gå til https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
@@ -2157,6 +2201,15 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
       Hvis denne politik ikke er konfigureret, eller hvis værdien er lavere end 1 MB, anvender <ph name="PRODUCT_OS_NAME" /> standardstørrelsen for cachen.</translation>
 <translation id="8858642179038618439">Gennemtving Beskyttet tilstand på YouTube</translation>
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Aktiverer den integrerede tjeneste Google Oversæt i <ph name="PRODUCT_NAME" />.
+
+      Hvis du aktiverer denne indstilling, viser <ph name="PRODUCT_NAME" /> en integreret værktøjslinje, der tilbyder brugeren oversættelse, når det er relevant, og en oversættelsesmulighed i genvejsmenuen ved højreklik.
+
+      Hvis du deaktiverer denne indstilling, deaktiveres alle indbyggede oversættelsesfunktioner.
+
+      Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />.
+
+      Hvis indstillingen ikke konfigureres, kan brugerne selv bestemme, om de vil bruge denne funktion eller ej.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet på disse websites</translation>
 <translation id="8906768759089290519">Aktivér gæstetilstand</translation>

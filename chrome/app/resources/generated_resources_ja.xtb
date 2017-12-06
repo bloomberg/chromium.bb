@@ -43,7 +43,6 @@
 <translation id="106001083577824516">有害なソフトウェアを削除することができません</translation>
 <translation id="1062407476771304334">置換</translation>
 <translation id="1062866675591297858">監視対象ユーザーを管理するには<ph name="BEGIN_LINK" />監視対象ユーザーのダッシュボード<ph name="END_LINK" />を使用します。</translation>
-<translation id="1064662184364304002">メディア ライブラリ ファイル チェッカー</translation>
 <translation id="1064835277883315402">プライベート ネットワークに参加</translation>
 <translation id="1064912851688322329">Google アカウントを切断</translation>
 <translation id="1067048845568873861">作成日</translation>
@@ -308,7 +307,6 @@
 <translation id="1477301030751268706">Identity API トークン キャッシュ</translation>
 <translation id="1478233201128522094">次回から、新しいスマートフォンでこの <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] で指定します。</translation>
 <translation id="1478340334823509079">詳細: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544"><ph name="FILE_COUNT" /> 枚の新しい写真をバックアップする準備ができました</translation>
 <translation id="1483493594462132177">送信</translation>
 <translation id="1485015260175968628">次の権限に現在アクセス可能:</translation>
 <translation id="1485141095922496924">バージョン: <ph name="PRODUCT_VERSION" />（<ph name="PRODUCT_CHANNEL" />）<ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -532,7 +530,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383"><ph name="DEVICE_TYPE" /> に Smart Lock を設定する</translation>
 <translation id="1817871734039893258">Microsoft ファイル回復</translation>
-<translation id="1825832322945165090">デバイスに十分な容量がありません</translation>
 <translation id="1826516787628120939">確認中</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> が通知を送信しようとしています。</translation>
 <translation id="1828378091493947763">このプラグインはこの端末ではサポートされていません</translation>
@@ -862,11 +859,6 @@
 <translation id="2384436799579181135">エラーが発生しました。プリンタを確認してもう一度お試しください。</translation>
 <translation id="2385700042425247848">サービス名:</translation>
 <translation id="2387458720915042159">プロキシ接続タイプ</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> 件の新しい写真が見つかりました
-    <ph name="LINE_BREAK1" />
-    デバイスに十分な空きがありません。
-    <ph name="LINE_BREAK2" />
-    まず写真を数件だけ選択してお試しください。</translation>
 <translation id="2391419135980381625">標準フォント</translation>
 <translation id="2391762656119864333">取り消し</translation>
 <translation id="2392369802118427583">有効にする</translation>
@@ -1248,7 +1240,6 @@
 <translation id="2963151496262057773">プラグイン（<ph name="PLUGIN_NAME" />）は応答していません。強制終了しますか？</translation>
 <translation id="2966449113954629791">モバイル データの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME" /> の有効化ポータルにアクセスしてください。</translation>
 <translation id="2966937470348689686">Android 設定を管理</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">暗くする</translation>
 <translation id="2972557485845626008">ファームウェア</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
@@ -1378,6 +1369,7 @@
 <translation id="3153862085237805241">カードを保存</translation>
 <translation id="3154351730702813399">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="3154429428035006212">1 か月以上オフライン</translation>
+<translation id="3156531245809797194">Chrome を使用するにはログインしてください</translation>
 <translation id="3156815148496352304">OS アップデートのインストール</translation>
 <translation id="3157931365184549694">復元</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（ハードウェアにより保護を強化）</translation>
@@ -1541,6 +1533,7 @@
 <translation id="3429599832623003132">$1 アイテム</translation>
 <translation id="3432227430032737297">表示中のサイトをすべて削除</translation>
 <translation id="3432757130254800023">映像と音声をローカル ネットワーク経由でディスプレイに送信する</translation>
+<translation id="3432762828853624962">共有ワーカー</translation>
 <translation id="3433621910545056227">デバイス インストール時の属性のロックを確立できませんでした。</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">コンテンツ サービスによっては、デバイス ID を使用してユーザーを識別し、保護されたコンテンツに対するアクセスの認証を行うことがあります。</translation>
@@ -1558,7 +1551,6 @@
 <translation id="344630545793878684">多数のウェブサイトでのユーザーデータの読み取り</translation>
 <translation id="3449839693241009168"><ph name="SEARCH_KEY" /> を押すと <ph name="EXTENSION_NAME" /> にコマンドが送信されます</translation>
 <translation id="3450157232394774192">アイドル状態の占有率（%）</translation>
-<translation id="3450505713373650336"><ph name="FILE_COUNT" /> 枚の写真をバックアップしています</translation>
 <translation id="3453612417627951340">認証が必要です</translation>
 <translation id="3454157711543303649">起動を完了</translation>
 <translation id="345693547134384690">新しいタブで画像を開く(&amp;I)</translation>
@@ -1801,9 +1793,6 @@
 <translation id="381202950560906753">別の指紋を登録</translation>
 <translation id="3812525830114410218">不適切な証明書</translation>
 <translation id="3813296892522778813">探しているものが見つからない場合は、<ph name="BEGIN_LINK_CHROMIUM" />Google Chrome のヘルプ<ph name="END_LINK_CHROMIUM" />をご覧ください。</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> 件の新しい写真が見つかりました
-    <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップできます</translation>
 <translation id="3819007103695653773">すべてのサイトに対しバックグラウンドのプッシュ メッセージの送信を許可する</translation>
 <translation id="3819752733757735746">スイッチ アクセス（スイッチ 1 つまたは 2 つでパソコンを制御）</translation>
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
@@ -2074,9 +2063,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（<ph name="NUM_KILOBYTES_LIVE" /> K ライブ）</translation>
 <translation id="431076611119798497">詳細(&amp;D)</translation>
 <translation id="4312866146174492540">ブロック（デフォルト）</translation>
-<translation id="4315548163539304064">メディア デバイスをスキャンしています...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> 件の新しい写真が見つかりました</translation>
 <translation id="4316850752623536204">デベロッパーのウェブサイト</translation>
 <translation id="4320177379694898372">インターネットに接続されていません</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ダウンロードを続ける}other{ダウンロードを続ける}}</translation>
@@ -2164,7 +2150,6 @@
 <translation id="4481249487722541506">パッケージ化されていない拡張機能を読み込む...</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
-<translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」の検索結果</translation>
 <translation id="4495419450179050807">このページに表示しない</translation>
 <translation id="450099669180426158">感嘆符アイコン</translation>
 <translation id="4501530680793980440">削除の確認</translation>
@@ -2666,6 +2651,7 @@
 <translation id="5316716239522500219">モニターをミラーリングする</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5319359161174645648">Google は Chrome を推奨しています</translation>
+<translation id="5319566035256672173">この端末では今後、最新のソフトウェア アップデートは受信されません。アップグレードをご検討ください。</translation>
 <translation id="532247166573571973">サーバーへのアクセスに問題が起こっている可能性があります。しばらくしてからもう一度お試しください。</translation>
 <translation id="532360961509278431">「$1」を開くことができません: $2</translation>
 <translation id="5324780743567488672">ユーザーの現在地情報を使用して自動的にタイムゾーンを設定する</translation>
@@ -3813,7 +3799,6 @@
 <translation id="721331389620694978">閲覧行動を反映した設定は、場合によっては消去されません。</translation>
 <translation id="7216409898977639127">モバイル プロバイダ</translation>
 <translation id="7216595297012131718">言語を希望の順序に並べ替えます</translation>
-<translation id="7219989745826083607">DIAL デバイス記述パーサー</translation>
 <translation id="722055596168483966">Google サービスのカスタマイズ</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">通知の表示</translation>
@@ -4455,7 +4440,6 @@
 <translation id="8261378640211443080">この拡張機能は <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供されていません。知らないうちに追加された可能性があります。</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> のアカウントを追加</translation>
 <translation id="8261506727792406068">削除</translation>
-<translation id="8261673729476082470"><ph name="FILE_COUNT" /> 枚の写真を <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップ中です</translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> はこのビルドで実装されていません。</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> でマウス カーソルが無効になりました。</translation>
 <translation id="8264718194193514834">「<ph name="EXTENSION_NAME" />」によって全画面表示になりました。</translation>

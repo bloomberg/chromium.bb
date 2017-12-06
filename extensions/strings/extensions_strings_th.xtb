@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">ไม่สามารถแยกส่วนขยาย หากต้องการแยกส่วนขยายอย่างปลอดภัย คุณต้องมีเส้นทางไปยังไดเรกทอรีโปรไฟล์ของคุณซึ่งไม่มีลิงก์สัญลักษณ์ ไม่มีเส้นทางในรูปแบบดังกล่าวอยู่สำหรับโปรไฟล์ของคุณ</translation>
 <translation id="641087317769093025">ไม่สามารถแตกไฟล์ซิปส่วนขยาย</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" ขอสิทธิ์ในการเข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง:</translation>
-<translation id="6566142449942033617">ไม่สามารถโหลดปลั๊กอินจาก "<ph name="PLUGIN_PATH" />"</translation>
 <translation id="657064425229075395">ไม่สามารถโหลดสคริปต์พื้นหลัง "<ph name="BACKGROUND_SCRIPT" />"</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> จาก <ph name="VENDOR_NAME" /> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">ไม่สามารถสร้างไดเรกทอรีสำหรับการแตกไฟล์ซิป: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">ส่วนขยายนี้โหลดตัวเองซ้ำบ่อยเกินไป</translation>
 <translation id="7003844668372540529">ผลิตภัณฑ์ที่ไม่รู้จัก <ph name="PRODUCT_ID" /> จาก <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME" /> โดยไม่สามารถลบหรือแก้ไขได้</translation>
-<translation id="7581279002575751816">ปลั๊กอิน NPAPI ไม่ได้รับการสนับสนุน</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">กล้องหน้า</translation>
 <translation id="8047248493720652249">ส่วนขยายนี้ล้มเหลวในการตั้งชื่อการดาวน์โหลดว่า "<ph name="ATTEMPTED_FILENAME" />" เนื่องจากอีกส่วนขยายหนึ่ง (<ph name="EXTENSION_NAME" />) ได้กำหนดชื่อไฟล์ที่แตกต่างไว้ว่า "<ph name="ACTUAL_FILENAME" />"</translation>

@@ -66,6 +66,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1539064842193522527">Linkki avattu Chromessa</translation>
 <translation id="1549000191223877751">Siirrä toiseen ikkunaan</translation>
 <translation id="1553358976309200471">Päivitä Chrome</translation>
+<translation id="1566400915470565838"><ph name="APP_NAME" /> edellyttää internetyhteyttä.</translation>
 <translation id="1569387923882100876">Yhdistetty laite</translation>
 <translation id="1571304935088121812">Kopioi käyttäjänimi</translation>
 <translation id="1612196535745283361">Chrome tarvitsee sijaintitietoja hakeakseen laitteita. Sijaintitiedot on <ph name="BEGIN_LINK" />poistettu käytöstä tällä laitteella<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2369533728426058518">Avoimet välilehdet</translation>
-<translation id="2372491353676110880">Lataa sivut automaattisesti</translation>
 <translation id="2387895666653383613">Tekstin skaalaus</translation>
 <translation id="2414886740292270097">Tumma</translation>
 <translation id="2416359993254398973">Chrome tarvitsee oikeuden käyttää kameraasi tällä sivustolla.</translation>
@@ -179,8 +179,8 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2621115761605608342">Salli JavaScript tietyllä sivustolla.</translation>
 <translation id="2625189173221582860">Salasana kopioitu</translation>
 <translation id="2631006050119455616">Säästetty</translation>
+<translation id="2647434099613338025">Lisää kieli</translation>
 <translation id="2653659639078652383">Lähetä</translation>
-<translation id="2671100504997899381">Lataa sivuja nopeammin ja tallenna lempisivujasi offline-lukemista varten.</translation>
 <translation id="2677748264148917807">Poistu</translation>
 <translation id="2704606927547763573">Kopioitu</translation>
 <translation id="2707726405694321444">Päivitä sivu</translation>
@@ -565,7 +565,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6337234675334993532">Salaus</translation>
 <translation id="6343192674172527289">Latauksia ei löytynyt.</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> muu}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> muuta}}</translation>
-<translation id="6354616574440533128">Jatka laitteen määritystä avaamalla lukitus.</translation>
 <translation id="6364438453358674297">Poistetaanko ehdotus historiasta?</translation>
 <translation id="6383961787135158834">Poista sivustotiedot…</translation>
 <translation id="6388207532828177975">Tyhjennä ja nollaa</translation>
@@ -793,6 +792,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8493948351860045254">Vapauta tilaa</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
 <translation id="8503813439785031346">Käyttäjätunnus</translation>
+<translation id="8514477925623180633">Vie Chromeen tallennetut salasanat</translation>
 <translation id="8514577642972634246">Siirry incognito-tilaan</translation>
 <translation id="8523928698583292556">Poista tallennettu salasana</translation>
 <translation id="854522910157234410">Avaa tämä sivu</translation>

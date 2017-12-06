@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Tidak dapat mengalih keluar perisian berbahaya</translation>
 <translation id="1062407476771304334">Gantikan</translation>
 <translation id="1062866675591297858">Urus pengguna di bawah seliaan anda melalui <ph name="BEGIN_LINK" />Papan Pemuka Pengguna Di Bawah Seliaan<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Penyemak Fail Pustaka Media</translation>
 <translation id="1064835277883315402">Sertai rangkaian persendirian</translation>
 <translation id="1064912851688322329">Putuskan sambungan Akaun Google anda</translation>
 <translation id="1067048845568873861">Dibuat</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Cache Token API Identiti</translation>
 <translation id="1478233201128522094">Selepas ini, telefon baharu akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Matikan Smart Lock dalam Tetapan.</translation>
 <translation id="1478340334823509079">Butiran: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Bersedia untuk menyandarkan <ph name="FILE_COUNT" /> foto baharu</translation>
 <translation id="1483493594462132177">Hantar</translation>
 <translation id="1485015260175968628">Item kini boleh:</translation>
 <translation id="1485141095922496924">Versi <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Awas:<ph name="END_BOLD" />  Fail ini adalah bersifat sementara dan boleh dipadamkan secara automatik untuk mengosongkan ruang cakera.  <ph name="BEGIN_LINK" />Ketahui Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Sediakan Smart Lock untuk <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="1817871734039893258">Pemulihan Fail Microsoft</translation>
-<translation id="1825832322945165090">Ruang pada peranti tidak mencukupi</translation>
 <translation id="1826516787628120939">Menyemak</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> mahu menghantar pemberitahuan kepada anda.</translation>
 <translation id="1828378091493947763">Pemalam ini tidak disokong pada peranti ini</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">Ralat telah berlaku. Sila periksa pencetak anda dan cuba lagi.</translation>
 <translation id="2385700042425247848">Nama perkhidmatan:</translation>
 <translation id="2387458720915042159">Jenis sambungan proksi</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> foto baharu ditemui
-    <ph name="LINE_BREAK1" />
-    Ruang pada peranti tidak mencukupi.
-    <ph name="LINE_BREAK2" />
-    Cuba pilih foto baharu untuk bermula.</translation>
 <translation id="2391419135980381625">Fon standard</translation>
 <translation id="2391762656119864333">Batalkan</translation>
 <translation id="2392369802118427583">Aktifkan</translation>
@@ -1248,7 +1240,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2963151496262057773">Pemalam berikut tidak responsif: <ph name="PLUGIN_NAME" />Adakah anda ingin menghentikannya?</translation>
 <translation id="2966449113954629791">Anda mungkin telah menggunakan peruntukan data mudah alih anda. Lawati <ph name="NAME" />portal pengaktifan untuk membeli lebih banyak data.</translation>
 <translation id="2966937470348689686">Urus pilihan Android</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">kurangkan kecerahan</translation>
 <translation id="2972557485845626008">Perisian tegar</translation>
 <translation id="2972581237482394796">&amp;Buat Semula</translation>
@@ -1378,6 +1369,7 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3153862085237805241">Simpan Kad</translation>
 <translation id="3154351730702813399">Pentadbir peranti boleh memantau aktiviti penyemakan imbas anda.</translation>
 <translation id="3154429428035006212">Di luar talian selama lebih sebulan</translation>
+<translation id="3156531245809797194">Untuk menggunakan Chrome, sila log masuk</translation>
 <translation id="3156815148496352304">Pasang kemas kini OS</translation>
 <translation id="3157931365184549694">Pulihkan</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (disokong perkakasan)</translation>
@@ -1541,6 +1533,7 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3429599832623003132">$1 item</translation>
 <translation id="3432227430032737297">Alih Keluar Semua Yang Ditunjukkan</translation>
 <translation id="3432757130254800023">Hantar audio dan video untuk disiarkan pada rangkaian tempatan</translation>
+<translation id="3432762828853624962">Pekerja Kongsi</translation>
 <translation id="3433621910545056227">Op! Sistem gagal mewujudkan kunci atribut masa pemasangan peranti.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">Sesetengah perkhidmatan kandungan menggunakan pengecam mesin untuk mengenal pasti anda secara unik bagi maksud membenarkan akses kepada kandungan yang dilindungi.</translation>
@@ -1558,7 +1551,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="344630545793878684">Baca data anda di beberapa tapak web</translation>
 <translation id="3449839693241009168">Tekan <ph name="SEARCH_KEY" /> untuk menghantar perintah kepada <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Peratusan Penggunaan Keadaan Melahu</translation>
-<translation id="3450505713373650336">Menyandarkan <ph name="FILE_COUNT" /> foto</translation>
 <translation id="3453612417627951340">Memerlukan kebenaran</translation>
 <translation id="3454157711543303649">Pengaktifan lengkap</translation>
 <translation id="345693547134384690">Buka &amp;imej dalam tab baharu</translation>
@@ -1801,9 +1793,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="381202950560906753">Tambahkan yang lain</translation>
 <translation id="3812525830114410218">Sijil tidak sah</translation>
 <translation id="3813296892522778813">Pergi ke <ph name="BEGIN_LINK_CHROMIUM" />bantuan Google Chrome<ph name="END_LINK_CHROMIUM" /> jika anda tidak menemui perkara yang dicari</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> foto baharu ditemui
-    <ph name="LINE_BREAK1" />
-    Sedia untuk menyandarkan ke <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Benarkan semua tapak untuk menghantar mesej tolak di latar belakang</translation>
 <translation id="3819752733757735746">Akses suis (kawal komputer dengan satu atau dua suis sahaja)</translation>
 <translation id="3819800052061700452">&amp;Skrin penuh</translation>
@@ -2074,9 +2063,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K langsung)</translation>
 <translation id="431076611119798497">&amp;Butiran</translation>
 <translation id="4312866146174492540">Sekat (lalai)</translation>
-<translation id="4315548163539304064">Mengimbas peranti media anda...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> foto baharu ditemui</translation>
 <translation id="4316850752623536204">Tapak Web Pembangun</translation>
 <translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Teruskan muat turun}other{Teruskan muat turun}}</translation>
@@ -2164,7 +2150,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4481249487722541506">Muatkan sambungan yang dinyahpek...</translation>
 <translation id="4481530544597605423">Peranti dinyahganding</translation>
 <translation id="4482194545587547824">Google boleh menggunakan sejarah penyemakan imbas anda untuk memperibadikan Carian dan perkhidmatan Google yang lain.</translation>
-<translation id="4492190037599258964">Hasil carian untuk '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495419450179050807">Jangan paparkan pada halaman ini</translation>
 <translation id="450099669180426158">Ikon tanda seru</translation>
 <translation id="4501530680793980440">Sahkan Pengalihan Keluar</translation>
@@ -2666,6 +2651,7 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5316716239522500219">Cerminkan monitor</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5319359161174645648">Google mengesyorkan Chrome</translation>
+<translation id="5319566035256672173">Peranti ini tidak akan menerima kemas kini perisian terbaharu lagi. Sila pertimbangkan untuk meningkatkan peranti anda.</translation>
 <translation id="532247166573571973">Pelayan mungkin tidak dapat dihubungi. Cuba sebentar lagi.</translation>
 <translation id="532360961509278431">Tidak dapat membuka "$1": $2</translation>
 <translation id="5324780743567488672">Tetapkan zon waktu secara automatik menggunakan lokasi anda</translation>
@@ -3813,7 +3799,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="721331389620694978">Sesetengah tetapan yang boleh menggambarkan tabiat penyemakan imbas tidak akan dikosongkan.</translation>
 <translation id="7216409898977639127">Penyedia selular</translation>
 <translation id="7216595297012131718">Susun bahasa berdasarkan pilihan anda</translation>
-<translation id="7219989745826083607">Penghurai Pemerihalan Peranti DIAL</translation>
 <translation id="722055596168483966">Peribadikan perkhidmatan Google</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Tunjukkan pemberitahuan</translation>
@@ -4452,7 +4437,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8261378640211443080">Sambungan ini tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="8261387128019234107">Tambah akaun untuk <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Padam</translation>
-<translation id="8261673729476082470">Menyandarkan <ph name="FILE_COUNT" /> foto pada <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> tidak dilaksanakan dalam binaan ini.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> telah melumpuhkan kursor tetikus anda.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" mencetuskan skrin penuh.</translation>

@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">Povezava, odprta v Chromu</translation>
 <translation id="1549000191223877751">Premik v drugo okno</translation>
 <translation id="1553358976309200471">Posodobi Chrome</translation>
+<translation id="1566400915470565838">Če želite uporabljati aplikacijo <ph name="APP_NAME" />, se povežite z internetom.</translation>
 <translation id="1569387923882100876">Povezana naprava</translation>
 <translation id="1571304935088121812">Kopiranje uporabniškega imena</translation>
 <translation id="1612196535745283361">Chrome za iskanje naprav potrebuje dostop do lokacije. Dostop do lokacije <ph name="BEGIN_LINK" />je izklopljen za to napravo<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2369533728426058518">odpiranje zavihkov</translation>
-<translation id="2372491353676110880">Samodejni prenos strani</translation>
 <translation id="2387895666653383613">Prilagajanje besedila</translation>
 <translation id="2414886740292270097">Temno</translation>
 <translation id="2416359993254398973">Chrome potrebuje dovoljenje za dostop do fotoaparata za to spletno mesto.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">Dovoli JavaScript za določeno spletno mesto.</translation>
 <translation id="2625189173221582860">Geslo kopirano</translation>
 <translation id="2631006050119455616">Prihranjeno</translation>
+<translation id="2647434099613338025">Dodaj jezik</translation>
 <translation id="2653659639078652383">Pošlji</translation>
-<translation id="2671100504997899381">Hitrejše nalaganje strani in shranjevanje priljubljenih strani za branje brez povezave</translation>
 <translation id="2677748264148917807">Zapusti</translation>
 <translation id="2704606927547763573">Kopirano</translation>
 <translation id="2707726405694321444">Osveži stran</translation>
@@ -565,7 +565,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6337234675334993532">Šifriranje</translation>
 <translation id="6343192674172527289">Ni prenosov</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}two{<ph name="SHIPPING_ADDRESS_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Če želite nadaljevati nastavitev, odklenite telefon.</translation>
 <translation id="6364438453358674297">Ali želite odstraniti predlog iz zgodovine?</translation>
 <translation id="6383961787135158834">Izbris shrambe mesta …</translation>
 <translation id="6388207532828177975">Izbriši in ponastavi</translation>
@@ -793,6 +792,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8493948351860045254">Sprosti prostor</translation>
 <translation id="8497726226069778601">Nimate česa videti ... Za zdaj.</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
+<translation id="8514477925623180633">Izvoz gesel, shranjenih v Chromu</translation>
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
 <translation id="8523928698583292556">Izbris shranjenega gesla</translation>
 <translation id="854522910157234410">Odpri to stran</translation>

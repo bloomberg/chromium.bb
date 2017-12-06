@@ -46,6 +46,39 @@
 
       应以毫秒为单位指定此政策的值。</translation>
 <translation id="1151353063931113432">在这些网站上允许图片</translation>
+<translation id="1151545095291359187">为 <ph name="PRODUCT_NAME" /> 配置扩展程序管理设置。
+
+          此政策可控制多项设置，其中包括由任何现有的扩展程序相关政策控制的设置。此政策将会替换所有旧版政策（如果同时设置了这两种政策的话）。
+
+          此政策可将某个扩展程序 ID 或某个更新网址映射至其配置。对于扩展程序 ID，配置将只会应用于所指定的扩展程序。您可为特殊 ID“<ph name="DEFAULT_SCOPE" />”设置默认配置，该配置将会应用于未在此政策中设置自定义配置的所有扩展程序。对于更新网址，配置则会应用于具有在此扩展程序的清单中注明的确切更新网址的所有扩展程序（如 <ph name="LINK_TO_EXTENSION_DOC1" /> 中所述）。
+
+          每个扩展程序（或具有相同更新网址的扩展程序）的配置都是一个单独的字典条目，其中可以包含下述字段。
+
+          <ph name="INSTALLATION_MODE" />：会映射至一个字符串，该字符串用于指明相应扩展程序的安装模式。有效字符串为：
+          * <ph name="ALLOWED" />：允许用户安装相应扩展程序。这是默认行为。
+          * <ph name="BLOCKED" />：禁止安装相应扩展程序。
+          * <ph name="FORCE_INSTALLED" />：自动安装相应扩展程序，且用户无法将其卸载。
+          * <ph name="NORMAL_INSTALLED" />：自动安装相应扩展程序，但用户可将其停用。
+
+          您也可同时为多个扩展程序配置“<ph name="INSTALLATION_MODE" />”，其中包括“<ph name="DEFAULT_SCOPE" />”扩展程序（以作为默认设置）和具有相同更新网址的扩展程序。在这种情况下，只能使用“<ph name="ALLOWED" />”和“<ph name="BLOCKED" />”这两个值。
+
+          如果此模式设为“<ph name="FORCE_INSTALLED" />”或“<ph name="NORMAL_INSTALLED" />”，那么您还必须配置“<ph name="UPDATE_URL" />”。请注意，此政策中设置的更新网址仅会用于初次安装，相应扩展程序的后续更新将会使用其清单中指定的更新网址。更新网址应指向更新清单 XML 文档（如上所述）。
+
+          <ph name="BLOCKED_PERMISSIONS" />：会映射至一系列字符串，这些字符串用于指明相应扩展程序的已被屏蔽的 API 权限。权限名称与扩展程序清单中声明的权限字符串相同（如 <ph name="LINK_TO_EXTENSION_DOC3" /> 中所述）。您也可为“<ph name="DEFAULT_SCOPE" />”扩展程序配置此设置。如果相应扩展程序请求获得屏蔽名单中的某项权限，它将无法进行加载。如果相应扩展程序包含某项已被屏蔽的权限，而这项权限只是作为可选请求，系统将会按照正常方式予以处理，但如果相应扩展程序请求获得冲突的权限，在运行时将会被系统自动拒绝。
+
+          <ph name="ALLOWED_PERMISSIONS" />：与“<ph name="BLOCKED_PERMISSIONS" />”类似，但该设置会明确允许某些可能已被全局屏蔽权限列表屏蔽的权限，因此您无法为“<ph name="DEFAULT_SCOPE" />”扩展程序配置此设置。请注意，此设置不会自动向扩展程序授予所允许的权限。
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />：会映射至一个版本字符串。版本字符串的格式与扩展程序清单中使用的格式相同（如 <ph name="LINK_TO_EXTENSION_DOC4" /> 中所述）。系统将会停用版本低于所指定的最低版本的扩展程序。此设置也适用于强制安装的扩展程序。
+
+          以下设置仅适用于默认的“<ph name="DEFAULT_SCOPE" />”配置：
+
+          <ph name="INSTALL_SOURCES" />：此列表中的每一项都是一种扩展程序样式的匹配模式（请访问 <ph name="LINK_TO_MATCH_PATTERNS" />）。用户将能够从任何与此列表中的扩展程序匹配的网址上轻松地安装扩展程序。<ph name="EXTENSION_SUFFIX_WILDCARD" /> 文件的位置和下载所始于的网页（即引荐来源网址）都必须由这些模式授权。
+
+          <ph name="ALLOWED_TYPES" />：通过此设置，您可将允许在 <ph name="PRODUCT_NAME" /> 中安装的扩展程序/应用的类型列入白名单。此设置的值是一系列字符串，其中每个字符串都应是以下类型之一：<ph name="VALID_ALLOWED_TYPES" />。要详细了解这些类型，请参阅 <ph name="PRODUCT_NAME" /> 扩展程序文档。
+          <ph name="BLOCKED_INSTALL_MESSAGE" />：如果用户尝试安装的扩展程序已被相关政策屏蔽，Chrome 网上应用店就会显示一条常规的错误消息。此设置可让您向这类错误消息附加文本，以便将用户引导至您的支持部门、解释相应扩展程序为何会被屏蔽，或用于其他用途。如果此类错误消息的长度超过 1000 个字符，则会被截断。
+          <ph name="RUNTIME_BLOCKED_HOSTS" />：此设置的值是一系列主机名称，用于指明相应扩展程序将被禁止与哪些主机交互（包括注入 JavaScript、更改和查看 webRequests / webNavigation，以及查看和更改 Cookie）。格式与匹配模式（请访问 <ph name="LINK_TO_MATCH_PATTERNS" />）类似，但无法指定任何路径（例如“*://*.example.com”）。也支持有效的顶级域名 (TLD) 通配符（例如“*://example.*”）。
+          <ph name="RUNTIME_ALLOWED_HOSTS" />：此设置的值是一系列主机名称，用于指明相应扩展程序可与哪些主机交互，无论它们是否已列在“<ph name="RUNTIME_BLOCKED_HOSTS" />”中。格式与“<ph name="RUNTIME_BLOCKED_HOSTS" />”相同。
+          </translation>
 <translation id="1152117524387175066">报告设备启动时的dev开关状态。
 
       如果此政策设为False，则不报告dev开关的状态。</translation>
@@ -62,6 +95,7 @@
 <translation id="1204263402976895730">已启用企业打印机</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="123081309365616809">允许向设备投射内容</translation>
+<translation id="1257550411839719984">设置默认下载目录</translation>
 <translation id="1265053460044691532">限制通过SAML验证身份的用户可离线登录的时长</translation>
 <translation id="1291880496936992484">警告：从 52 版开始，<ph name="PRODUCT_NAME" /> 中将彻底移除 RC4（2016 年 9 月左右）。届时，此政策将不再有效。
 
@@ -520,6 +554,7 @@
       </translation>
 <translation id="2769952903507981510">为远程访问主机配置所需的域名</translation>
 <translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
+<translation id="2793923553868251161">指定将被视为安全上下文的来源。</translation>
 <translation id="2801230735743888564">允许用户在设备未联网的情况下玩恐龙复活节彩蛋游戏。
 
       如果此政策设为 False，用户将无法在设备未联网的情况下玩恐龙复活节彩蛋游戏。如果此设置设为 True，用户将可以玩恐龙复活节彩蛋游戏。如果此政策未设置，用户将无法在已注册的 Chrome 操作系统上玩恐龙复活节彩蛋游戏，但可以在其他环境下玩该游戏。</translation>
@@ -748,11 +783,6 @@
       如果您未设置这些政策，用户将可以自行选择代理设置。</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
-<translation id="376931976323225993">可让您设置是否允许网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。您既可允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件，也可禁止所有网站自动运行该插件。
-
-          选中“点击运行”选项可允许 <ph name="FLASH_PLUGIN_NAME" /> 插件运行，但用户必须点击该插件才能启动它。
-
-          如果未设置此政策，用户则可手动更改这项设置。</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3780319008680229708">如果此政策设为 true，Cast 工具栏图标将始终显示在工具栏或菜单中，用户无法将其移除。
 
@@ -831,6 +861,13 @@
       如果您启用此设置，用户就无法再访问开发者工具和查看网站元素了。用于开启开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单或上下文菜单条目都会停用。
 
       如果将此选项设为停用或未设置此选项，用户即可使用开发者工具和 JavaScript 控制台。</translation>
+<translation id="3895557476567727016">配置供 <ph name="PRODUCT_NAME" /> 用于下载文件的默认目录。
+
+      如果您设置了此政策，它便会更改供 <ph name="PRODUCT_NAME" /> 用于下载文件的默认目录，此政策不是强制性的，因此用户将能够更改该目录。
+
+      如果您未设置此政策，<ph name="PRODUCT_NAME" /> 将会使用其惯用的默认目录（因平台而异）。
+
+      有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
 <translation id="3907986150060929099">为公用自助终端设置建议的语言区域</translation>
 <translation id="3911737181201537215">此政策对 Android 完成的记录没有任何影响。</translation>
 <translation id="391531815696899618">当此政策设为 True 时，在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统不会将任何数据上传到 Google 云端硬盘。
@@ -1663,7 +1700,6 @@
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
 <translation id="7072406291414141328">启用调节网络带宽的功能</translation>
 <translation id="7079519252486108041">在这些网站上阻止弹出式窗口</translation>
-<translation id="7091198954851103976">始终运行需要授权的插件</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" />设备进入待机或暂停状态时，启用锁定功能。
 
       如果您启用了此设置，用户需要提供密码，才能将处于睡眠状态的设备解锁。
@@ -1896,6 +1932,11 @@
 <translation id="787125417158068494">如果设置为 SyncDisabled 或未配置，ARC 应用便无法使用 <ph name="PRODUCT_OS_NAME" /> 证书。
 
       如果设置为 CopyCaCerts，ARC 应用便可使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。</translation>
+<translation id="7872535148622213208">
+        此政策会指定一系列将被视为安全上下文的来源（网址），意在允许相关组织设置临时服务器以用于开发内部网络。
+        这与 --unsafely-treat-insecure-origin-as-secure 标记相同。
+        有关安全上下文的详情，请访问 https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">此策略仅在零售模式下有效。
 
       确定在登录屏幕上用作屏幕保护程序的扩展程序的 ID。该扩展程序必须属于通过 DeviceAppPack 策略为此域配置的 AppPack。</translation>
@@ -2115,6 +2156,15 @@
       如果此政策未配置或值小于 1 MB，<ph name="PRODUCT_OS_NAME" />将使用默认缓存大小。</translation>
 <translation id="8858642179038618439">强制启用 YouTube 安全模式</translation>
 <translation id="8864975621965365890">浏览使用 <ph name="PRODUCT_FRAME_NAME" />呈现的网站时，阻止显示“停止支持”的提示。</translation>
+<translation id="8867464911288727016">启用 <ph name="PRODUCT_NAME" /> 中的集成式 Google 翻译服务。
+
+      如果您启用了此设置，<ph name="PRODUCT_NAME" /> 将会适时地显示一个集成式翻译工具栏，并会在一旦用户右键点击鼠标即会出现的上下文菜单中显示一个翻译选项，以便向用户提供翻译功能。
+
+      如果您停用了此设置，系统就会停用所有内置的翻译功能。
+
+      如果您启用或停用了此设置，用户便无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。
+
+      如果您未指定此设置，用户则可自行决定是否要使用该功能。</translation>
 <translation id="8870318296973696995">主页</translation>
 <translation id="8882006618241293596">禁止这些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="8906768759089290519">启用访客模式</translation>

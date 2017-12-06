@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Nem lehet kicsomagolni a bővítményt. A bővítmények biztonságos kicsomagolásához kell lennie egy olyan elérési útnak a profilkönyvtárban, amelyben nem szerepel közvetett hivatkozás (symlink). Ilyen elérési út nem létezik a profiljában.</translation>
 <translation id="641087317769093025">Nem sikerült a bővítmény kicsomagolása</translation>
 <translation id="6542618148162044354">A(z) „<ph name="APP_NAME" />” alkalmazás hozzáférést kér egy vagy több eszközéhez.</translation>
-<translation id="6566142449942033617">A(z) '<ph name="PLUGIN_PATH" />' nem tölthető be a bővítményhez.</translation>
 <translation id="657064425229075395">Nem sikerült betölteni a következő háttérszkriptet: "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> a következőtől: <ph name="VENDOR_NAME" /> (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nem sikerült könyvtárat létrehozni a kicsomagoláshoz: „<ph name="DIRECTORY_PATH" />”</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Ez a bővítmény túl gyakran töltötte újra magát.</translation>
 <translation id="7003844668372540529">Ismeretlen termék (<ph name="PRODUCT_ID" />) a következő forgalmazótól: <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Az eszköz rendszergazdája megköveteli, hogy a(z) <ph name="EXTENSION_NAME" /> telepítve legyen. A bővítményt nem lehet eltávolítani vagy módosítani.</translation>
-<translation id="7581279002575751816">Az NPAPI bővítmények nem támogatottak.</translation>
 <translation id="7972881773422714442">Lehetőségek: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Előlapi</translation>
 <translation id="8047248493720652249">Ez a bővítmény nem tudta elnevezni a(z) „<ph name="ATTEMPTED_FILENAME" />” letöltést, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő fájlnevet határozott meg: „<ph name="ACTUAL_FILENAME" />”.</translation>

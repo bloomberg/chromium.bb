@@ -46,6 +46,39 @@
 
       A házirend értékét ezredmásodpercben kell megadni.</translation>
 <translation id="1151353063931113432">Képek engedélyezése ezeken a webhelyeken</translation>
+<translation id="1151545095291359187">Konfigurálja a <ph name="PRODUCT_NAME" /> bővítménykezelési beállításait.
+
+          Ez a házirend több beállítást is vezérel, beleértve a bővítményekkel kapcsolatban már meghatározott házirendek beállításait is. Felülbírálja a régi házirendeket, ha mindkettő be van állítva.
+
+          A házirend bővítményazonosítót vagy frissítési URL-t rendel hozzá a konfigurációjához. Bővítményazonosító használata esetén a konfiguráció kizárólag a megadott bővítményre fog vonatkozni. A speciális <ph name="DEFAULT_SCOPE" /> azonosítóhoz be lehet állítani alapértelmezett konfigurációt, amely az összes olyan bővítményre érvényes lesz, amelyhez nincs beállítva egyéni konfiguráció ebben a házirendben. Frissítési URL használata esetén a konfiguráció az összes olyan bővítményre érvényes lesz, amelynek a frissítési URL-je pontosan ugyanaz, mint a bővítmény jegyzékében megadott URL (ennek a leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC1" />).
+
+          Az egyes bővítmények (vagy az ugyanazzal a frissítési URL-lel rendelkező bővítmények) konfigurációja egy másik könyvtár, amely az alább ismertetett mezőket tartalmazza.
+
+          <ph name="INSTALLATION_MODE" />: Olyan karakterlánchoz kapcsolódik, amely jelzi a bővítmény telepítési módját. Az érvényes karakterláncok a következők:
+          * <ph name="ALLOWED" />: Engedélyezi a felhasználónak a bővítmény telepítését. Ez az alapértelmezett viselkedés.
+          * <ph name="BLOCKED" />: Letiltja a bővítmény telepítését.
+          * <ph name="FORCE_INSTALLED" />: A bővítmény automatikusan települ, és a felhasználó nem távolíthatja el.
+          * <ph name="NORMAL_INSTALLED" />: A bővítmény automatikusan települ, de a felhasználó letilthatja.
+
+          Az <ph name="INSTALLATION_MODE" /> több bővítményhez is beállítható, beleértve a <ph name="DEFAULT_SCOPE" /> bővítményt (alapértelmezett beállítás) és az ugyanazzal a frissítési URL-lel rendelkező bővítményeket. Ebben az esetben kizárólag a következő értékeket lehet használni: <ph name="ALLOWED" /> és <ph name="BLOCKED" />.
+
+          Ha a mód beállítása <ph name="FORCE_INSTALLED" /> vagy <ph name="NORMAL_INSTALLED" />, akkor a következőt is be kell állítani: <ph name="UPDATE_URL" />. Felhívjuk figyelmét, hogy a jelen házirendben megadott frissítési URL-t csak az első telepítés során használja a böngésző. A bővítmény további frissítései a bővítmény jegyzékfájljában megadott frissítési URL-t fogják használni. A frissítési URL-nek a fent említettek szerint a frissítési jegyzéket tartalmazó XML-dokumentumra kell mutatnia.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Olyan karakterláncok listájához van hozzárendelve, amelyek a bővítmény letiltott API-engedélyeit jelzik. Az engedélynevek ugyanazok, mint a bővítmény jegyzékében deklarált engedélyek karakterláncai (ezek leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC3" />). Ez a beállítás a <ph name="DEFAULT_SCOPE" /> bővítményhez is beállítható. Ha a bővítménynek olyan engedélyre van szüksége, amely szerepel a tiltólistán, akkor nem töltődhet be. Amennyiben választható követelményként tartalmazza valamelyik letiltott engedélyt, a böngésző a megszokott módon kezeli, de az ütköző engedélyekre irányuló kérelmeket automatikusan elutasítja futásidőben.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Hasonló, mint a <ph name="BLOCKED_PERMISSIONS" />, de kifejezetten engedélyez bizonyos engedélyeket, amelyeket esetleg letilthat az engedélyek globális tiltólistája, ezért nem lehet beállítani a <ph name="DEFAULT_SCOPE" /> bővítményhez. Ez a beállítás nem adja meg automatikusan az engedélyeket a bővítményeknek.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Verzió karakterlánca. A verzió karakterláncának formátuma ugyanaz, mint a bővítmény jegyzékfájljában használt formátum (ennek leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC4" />). A megadott minimális verziószámnál régebbi verziójú bővítményeket a böngésző letiltja. Ez a kényszerített telepítésű bővítményekre is érvényes.
+
+          A következő beállítások csak az alapértelmezett <ph name="DEFAULT_SCOPE" /> konfigurációnál használhatók:
+
+          <ph name="INSTALL_SOURCES" />: Az ezen a listán szereplő összes elem bővítmény jellegű egyezési minta (<ph name="LINK_TO_MATCH_PATTERNS" />). A felhasználók a listán szereplő bármelyik elemmel egyező URL-ről könnyűszerrel telepíthetnek elemeket. A mintáknak a <ph name="EXTENSION_SUFFIX_WILDCARD" /> fájl helye mellett azt az oldalt is engedélyezniük kell, ahonnan a letöltés megkezdődik (azaz a hivatkozó oldalt).
+
+          <ph name="ALLOWED_TYPES" />: Ez a beállítás a bővítmények/alkalmazások azon megengedett típusait teszi engedélyezőlistára, amelyek telepíthetők a <ph name="PRODUCT_NAME" /> böngészőben. Az érték karakterláncok listája, és mindegyik karakterláncnak a következők valamelyikének kell lennie: <ph name="VALID_ALLOWED_TYPES" />. Ezekről a típusokról a <ph name="PRODUCT_NAME" />-bővítmények dokumentációja nyújt további tájékoztatást.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Ha a felhasználó olyan bővítményt próbál meg telepíteni, amelyet letilt a házirend, a Chrome Internetes áruház általános hibaüzenetet jelenít meg. Ez a beállítás lehetővé teszi szöveg hozzáfűzését a hibaüzenethez. Használhatja arra, hogy átirányítsa a felhasználókat az ügyfélszolgálathoz, hogy ismertesse az adott bővítmény letiltásának indokát stb. Ha a hibaüzenet hossza meghaladja az 1000 karaktert, a rendszer levágja a végét.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Olyan gazdagépek listáját fogadja el, amelyekkel az adott bővítmény nem léphet interakcióba. Ebbe beletartozik a JavaScript beszúrása, a webRequest / webNavigation API-k megtekintése és módosítása, valamint a cookie-k megtekintése és módosítása. Formátuma hasonló az egyezési mintákéhoz (<ph name="LINK_TO_MATCH_PATTERNS" />) de útvonalat (pl. „*://*.example.com”) nem lehet megadni. Támogatja a legfelső szintű domainek helyettesítő karakterrel való ellátását (pl. „*://example.*”).
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Olyan gazdagépek listáját fogadja el, amelyekkel az adott bővítmény akkor is interakcióba léphet, ha szerepelnek a <ph name="RUNTIME_BLOCKED_HOSTS" /> listán. Formátuma ugyanaz, mint a <ph name="RUNTIME_BLOCKED_HOSTS" /> listáé.
+          </translation>
 <translation id="1152117524387175066">Az eszköz fejlesztői kapcsolójának állapotjelentése a rendszer indításakor.
 
       Ha a házirend értéke hamis, akkor a fejlesztői kapcsoló állapota nem lesz jelentve.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Engedélyezett vállalati nyomtatók</translation>
 <translation id="1221359380862872747">Megadott URL-ek betöltése a Demó módban való bejelentkezésnél</translation>
 <translation id="123081309365616809">Tartalom eszközre való átküldésének engedélyezése</translation>
+<translation id="1257550411839719984">Alapértelmezett letöltési könyvtár beállítása</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>
 <translation id="1291880496936992484">Figyelem: az RC4 teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 52-es verziója után (2016 szeptembere körül), és ez a házirend onnantól kezdve nem lesz használható.
 
@@ -538,6 +572,7 @@
       </translation>
 <translation id="2769952903507981510">Beállítja a távoli hozzáférésű gazdagép szükséges domainnevét</translation>
 <translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
+<translation id="2793923553868251161">Biztonságos környezetként kezelendő eredetek.</translation>
 <translation id="2801230735743888564">A felhasználók játszhatnak a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van.
 
       Ha a házirend értéke hamis, akkor a felhasználók nem tudnak játszani a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van. Ha a házirend értéke igaz, akkor a felhasználók játszhatnak a játékkal. Ha nincs beállítva, akkor a regisztrált vállalati Chrome OS-t használók nem játszhatnak a játékkal, más körülmények között azonban játszhatnak vele a felhasználók.</translation>
@@ -771,11 +806,6 @@
       Ha beállítatlanul hagyja ezeket a házirendeket, akkor a felhasználók maguk választhatják ki proxybeállításaikat.</translation>
 <translation id="3758249152301468420">Fejlesztőeszközök letiltása</translation>
 <translation id="3765260570442823273">A tétlenség miatti kijelentkeztetés figyelmeztető üzenetének időtartama</translation>
-<translation id="376931976323225993">Itt lehet beállítani, hogy a weboldalak futtathatják-e automatikusan a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult. A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul automatikus futtatását engedélyezheti vagy letilthatja minden webhelyre vonatkozóan.
-
-          A „Kattintson a lejátszáshoz” lehetővé teszi a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul futtatását, de indításához a felhasználónak rá kell kattintania.
-
-          Ha a házirend nincs beállítva, akkor a felhasználó kézzel módosíthatja ezt a beállítást.</translation>
 <translation id="3780152581321609624">A Kerberos SPN tartalmazza a nem szabványos portot</translation>
 <translation id="3780319008680229708">Ha a házirend értéke igaz, akkor a Cast-eszköztár ikonja mindig megjelenik majd az eszköztáron vagy a további elemeket tartalmazó menüben, és a felhasználók nem távolíthatják el onnan.
 
@@ -854,6 +884,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha engedélyezi ezt a beállítást, akkor a fejlesztői eszközökhöz nem férhet hozzá, illetve a webhelyek elemeit nem ellenőrizheti a jövőben. Bármely billentyűparancs, menü vagy helyi menüpont le lesz tiltva, amely megnyitná a fejlesztői eszközöket vagy a JavaScript-konzolt.
 
       Ha letiltja ezt a beállítást, vagy konfigurálatlanul hagyja, akkor a felhasználó használhatja a fejlesztői eszközöket és a JavaScript-konzolt.</translation>
+<translation id="3895557476567727016">Konfigurálja az alapértelmezett könyvtárat, amelybe a <ph name="PRODUCT_NAME" /> letölti a fájlokat.
+
+      Ha beállítja a házirendet, módosítja a <ph name="PRODUCT_NAME" /> által a fájlok letöltési helyeként használt könyvtárat. Ez a házirend nem kötelező érvényű, azaz a felhasználó módosíthatja a könyvtárat.
+
+      Ha nem állítja be a házirendet, a <ph name="PRODUCT_NAME" /> a szokásos (operációs rendszertől függő) alapértelmezett könyvtárat fogja használni.
+
+      A használható változók listáját itt tekintheti meg: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Beállítja a nyilvános munkamenet ajánlott nyelv- és országkódjait</translation>
 <translation id="3911737181201537215">A házirend nem vonatkozik az Android által végzett naplózásra.</translation>
 <translation id="391531815696899618">Igaz érték esetén letiltja a Google Drive szinkronizálását a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában. Ebben az esetben nem lesznek feltöltve adatok a Google Drive-ra.
@@ -1707,7 +1744,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="706669471845501145">Megengedi a webhelyeknek, hogy értesítéseket jelenítsenek meg az asztalon</translation>
 <translation id="7072406291414141328">Hálózati sávszélesség szabályozásának engedélyezése</translation>
 <translation id="7079519252486108041">Előugró ablakok tiltása ezeken a webhelyeken</translation>
-<translation id="7091198954851103976">Mindig futtassa az engedélyköteles bővítményeket</translation>
 <translation id="7106631983877564505">Lezárás engedélyezése, ha a <ph name="PRODUCT_OS_NAME" />-t futtató eszközök tétlenek, illetve felfüggesztett állapotban vannak.
 
       Ha engedélyezi ezt a beállítást, az eszközök alvásból való felébredésekor a felhasználóknak jelszót kell megadniuk a feloldáshoz.
@@ -1940,6 +1976,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="787125417158068494">Ha a SyncDisabled beállítás van megadva, illetve a beállítás nincs konfigurálva, akkor a(z) <ph name="PRODUCT_OS_NAME" /> tanúsítványai nem hozzáférhetők az ARC-alkalmazások számára.
 
       Ha a CopyCaCerts beállítás van megadva, akkor minden ezzel: <ph name="WEB_TRUSTED_BIT" /> rendelkező, ONC-telepítésű CA-tanúsítvány hozzáférhető az ARC-alkalmazások számára.</translation>
+<translation id="7872535148622213208">
+        Ez a házirend megadja a biztonságos környezetként kezelendő eredetek (URL-ek)
+        listáját. A célja az, hogy a szervezetek tesztszervert tudjanak beállítani
+        a belső webfejlesztési munkákhoz.
+        Ez a beállítás ugyanaz, mint a --unsafely-treat-insecure-origin-as-secure jelölő.
+        További információ a biztonságos környezetekről: https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Ez a házirend csak kiállító módban aktív.
 
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
@@ -2168,6 +2211,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend nincs beállítva, vagy ha az értéke kisebb mint 1 MB, akkor a <ph name="PRODUCT_OS_NAME" /> az alapértelmezett gyorsítótárméretet fogja használni.</translation>
 <translation id="8858642179038618439">A YouTube Biztonságos módjának kényszerítése</translation>
 <translation id="8864975621965365890">Elrejti a kikapcsolási figyelmeztetést, amely akkor jelenik meg, ha egy webhelyet a(z) <ph name="PRODUCT_FRAME_NAME" /> jeleníti meg.</translation>
+<translation id="8867464911288727016">Engedélyezi az integrált Google Fordító szolgáltatást a <ph name="PRODUCT_NAME" /> böngészőben.
+
+      Ha engedélyezi ezt a beállítást, a <ph name="PRODUCT_NAME" /> felkínálja a felhasználónak a fordítási funkció használatát. E célra megjeleníti az integrált fordítási eszköztárat (ha szükséges), valamint a fordítási lehetőséget a jobb gombbal elérhető helyi menüben.
+
+      Ha letiltja a beállítást, letiltja az összes beépített fordítási funkciót is.
+
+      A beállítás engedélyezése vagy letiltása esetén a felhasználók nem tudják felülbírálni a <ph name="PRODUCT_NAME" /> böngészőben.
+
+      Ha nincs megadva ez a beállítás, a felhasználók dönthetik el, hogy szeretnék-e használni a funkciót.</translation>
 <translation id="8870318296973696995">Kezdőoldal</translation>
 <translation id="8882006618241293596">A(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modul letiltása ezeken a webhelyeken</translation>
 <translation id="8906768759089290519">Vendég mód bekapcsolása</translation>

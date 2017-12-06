@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Impossibile decomprimere l'estensione. Per decomprimere in modo sicuro un'estensione, deve essere fornito un percorso alla directory del profilo che non contenga un link simbolico. Non esiste un simile percorso per il tuo profilo.</translation>
 <translation id="641087317769093025">Impossibile decomprimere l'estensione</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" richiede l'accesso a uno o più dispositivi:</translation>
-<translation id="6566142449942033617">Impossibile caricare "<ph name="PLUGIN_PATH" />" per il plug-in.</translation>
 <translation id="657064425229075395">Impossibile caricare lo script in background "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> di <ph name="VENDOR_NAME" /> (numero di serie: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Impossibile creare la directory per la decompressione: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">L'estensione si è ricaricata automaticamente troppo spesso.</translation>
 <translation id="7003844668372540529">Prodotto sconosciuto <ph name="PRODUCT_ID" /> di <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME" /> sia installata. Non è possibile rimuovere o modificare l'estensione.</translation>
-<translation id="7581279002575751816">I plug-in NPAPI non sono supportati.</translation>
 <translation id="7972881773422714442">Opzioni: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Fotocamera anteriore</translation>
 <translation id="8047248493720652249">Questa estensione non è riuscita a denominare il download "<ph name="ATTEMPTED_FILENAME" />" perché un'altra estensione (<ph name="EXTENSION_NAME" />) ha determinato un nome di file diverso "<ph name="ACTUAL_FILENAME" />".</translation>

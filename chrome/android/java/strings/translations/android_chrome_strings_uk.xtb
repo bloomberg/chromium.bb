@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">Посилання відкрито в Chrome</translation>
 <translation id="1549000191223877751">Відкрити в іншому вікні</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
+<translation id="1566400915470565838">Щоб запустити додаток <ph name="APP_NAME" />, під’єднайте пристрій до Інтернету.</translation>
 <translation id="1569387923882100876">Під’єднаний пристрій</translation>
 <translation id="1571304935088121812">Копіювати ім’я користувача</translation>
 <translation id="1612196535745283361">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. Доступ до геоданих <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">Налаштування перекладу скинуто.</translation>
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2369533728426058518">відкриті вкладки</translation>
-<translation id="2372491353676110880">Автоматично завантажувати сторінки</translation>
 <translation id="2387895666653383613">Масштаб тексту</translation>
 <translation id="2414886740292270097">Темна</translation>
 <translation id="2416359993254398973">Chrome потрібні дозволи, щоб використовувати камеру на цьому сайті.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">Увімкнути Javascript на певному сайті.</translation>
 <translation id="2625189173221582860">Пароль скопійовано</translation>
 <translation id="2631006050119455616">Збережено</translation>
+<translation id="2647434099613338025">Додати мову</translation>
 <translation id="2653659639078652383">Надіслати</translation>
-<translation id="2671100504997899381">Завантажуйте сторінки швидше та зберігайте популярні сторінки для читання в режимі офлайн</translation>
 <translation id="2677748264148917807">Вийти</translation>
 <translation id="2704606927547763573">Скопійов.</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
@@ -565,7 +565,6 @@
 <translation id="6337234675334993532">Шифрування</translation>
 <translation id="6343192674172527289">Завантаження не знайдено</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Розблокуйте телефон, щоб продовжити налаштування</translation>
 <translation id="6364438453358674297">Вилучити пропозицію з історії?</translation>
 <translation id="6383961787135158834">Видалити дані сайтів…</translation>
 <translation id="6388207532828177975">Очистити та скинути</translation>
@@ -793,6 +792,7 @@
 <translation id="8493948351860045254">Звільнити місце</translation>
 <translation id="8497726226069778601">Тут ще нічого немає…</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
+<translation id="8514477925623180633">Експортувати паролі, збережені в Chrome</translation>
 <translation id="8514577642972634246">Перейти в режим анонімного перегляду</translation>
 <translation id="8523928698583292556">Видалити збережений пароль</translation>
 <translation id="854522910157234410">Відкрити цю сторінку</translation>

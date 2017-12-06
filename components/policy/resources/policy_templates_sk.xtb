@@ -45,6 +45,40 @@
 
       Hodnota pre toto pravidlo by mala byť zadaná v milisekundách.</translation>
 <translation id="1151353063931113432">Povoliť obrázky na týchto webových stránkach</translation>
+<translation id="1151545095291359187">Umožňuje konfigurovať nastavenia správy pre <ph name="PRODUCT_NAME" />.
+
+          Toto pravidlo ovláda viaceré nastavenia, ako aj nastavenia ovládané existujúcimi pravidlami týkajúcimi sa rozšírení. Ak nastavíte obe, toto pravidlo prepíše všetky staré pravidlá.
+
+          Toto pravidlo namapuje identifikátor rozšírenia alebo webovú adresu aktualizácie na svoju konfiguráciu. Keď bude mať k dispozícii identifikátor rozšírenia, konfigurácia sa použije iba pre ním určené rozšírenie. Pre špeciálny identifikátor <ph name="DEFAULT_SCOPE" /> môžete nastaviť predvolenú konfiguráciu, ktorá sa použije pre všetky rozšírenia, pre ktoré ste v rámci tohto pravidla nenastavili vlastnú konfiguráciu. Keď bude mať k dispozícii webovú adresu aktualizácie, konfigurácia sa použije pre všetky rozšírenia s presnou webovou adresou aktualizácie stanovenou v manifeste tohto rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurácia pre jednotlivé rozšírenia (alebo rozšírenia s rovnakou webovou adresou aktualizácie) je ďalší slovník, ktorý môže obsahovať polia uvedené nižšie.
+
+          <ph name="INSTALLATION_MODE" />: spustí mapovanie na reťazec označujúci režim inštalácie daného rozšírenia. Medzi platné reťazce patria:
+          * <ph name="ALLOWED" />: umožňuje používateľovi nainštalovať rozšírenie. Ide o predvolené správanie.
+          * <ph name="BLOCKED" />: zablokuje inštaláciu rozšírenia.
+          * <ph name="FORCE_INSTALLED" />: 
+rozšírenie sa automaticky nainštaluje a používateľ ho nebude môcť odstrániť.
+          * <ph name="NORMAL_INSTALLED" />: rozšírenie sa automaticky nainštaluje, ale používateľ ho bude môcť zakázať.
+
+          Režim <ph name="INSTALLATION_MODE" /> môžete nakonfigurovať aj pre viacero rozšírení, ako aj pre rozšírenie <ph name="DEFAULT_SCOPE" /> (ako predvolené nastavenie) a rozšírenia s rovnakou webovou adresou aktualizácie. V tomto prípade môžete použiť iba hodnoty <ph name="ALLOWED" /> a <ph name="BLOCKED" />.
+
+          Ak režim nastavíte na <ph name="FORCE_INSTALLED" /> alebo <ph name="NORMAL_INSTALLED" />, potom musíte nakonfigurovať aj parameter <ph name="UPDATE_URL" />. Upozorňujeme, že webová adresa aktualizácie nastavená v rámci tohto pravidla sa použije iba pri prvej inštalácii. Následné aktualizácie rozšírenia budú používať webovú adresu aktualizácie uvedenú v manifeste daného rozšírenia. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené vyššie.
+
+          <ph name="BLOCKED_PERMISSIONS" />: spustí mapovanie na zoznam reťazcov označujúci blokované povolenia rozhrania API pre dané rozšírenie. Názvy povolení sú rovnaké ako reťazce povolení uvedené v manifeste daného rozšírenia tak, ako je to opísané na adrese <ph name="LINK_TO_EXTENSION_DOC3" />. Toto nastavenie môžete nakonfigurovať aj pre rozšírenie <ph name="DEFAULT_SCOPE" />. Ak rozšírenie vyžaduje povolenie, ktoré sa nachádza v zozname blokovaných položiek, toto povolenie sa nenačíta. Ak ako nepovinnú požiadavku obsahuje blokované povolenie, bude spracované bežným spôsobom. Ak však vyžiada povolenia, ktoré sú v konflikte, budú automaticky zakázané pri spustení.
+
+          <ph name="ALLOWED_PERMISSIONS" />: je rovnaké nastavenie ako <ph name="BLOCKED_PERMISSIONS" />, ale na rozdiel od neho explicitne povolí niektoré povolenia, ktoré môžu byť blokované globálnym zoznamom blokovaných povolení, a preto ho nie je možné nakonfigurovať pre rozšírenie <ph name="DEFAULT_SCOPE" />. Upozorňujeme, že toto nastavenie neudeľuje rozšíreniam povolenia automaticky.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: spustí mapovanie na reťazec verzie. Formát reťazca verzie je rovnaký ako ten, ktorý bol použitý v manifeste daného rozšírenia tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC4" />. Rozšírenia so staršou verziou ako stanovená minimálna verzia budú zakázané. Platí to aj pre rozšírenia, ktorých inštalácia bola vynútená.
+
+          Nasledujúce nastavenie môžete použiť iba pre predvolenú konfiguráciu <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: všetky položky v tomto zozname sú vzory zodpovedajúce typu rozšírenia (<ph name="LINK_TO_MATCH_PATTERNS" />). Používatelia budú môcť poľahky inštalovať položky z ľubovoľnej webovej adresy, ktorá sa bude zhodovať s položkou v tomto zozname. Pomocou týchto vzorov musíte povoliť umiestnenie súboru <ph name="EXTENSION_SUFFIX_WILDCARD" /> a stránku, na ktorej sa spustí sťahovanie (t. j. sprostredkovateľa).
+
+          <ph name="ALLOWED_TYPES" />: toto nastavenie pridá na bielu listinu povolené typy rozšírenia/aplikácií, ktoré je možné nainštalovať v prehliadači <ph name="PRODUCT_NAME" />.  Daná hodnota je zoznam týchto reťazcov: <ph name="VALID_ALLOWED_TYPES" />. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam pre <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: ak sa používateľ pokúsi nainštalovať rozšírenie, ktoré je blokované pravidlami, Internetový obchod Chrome zobrazí všeobecné chybové hlásenie. Toto nastavenie umožňuje k nemu pripojiť text. Môžete to využiť na nasmerovanie používateľov na vašu stránku technickej pomoci, vysvetliť dôvod blokovania konkrétneho rozšírenia a pod. Toto chybové hlásenie môže mať maximálne 1 000 znakov, inak bude skrátené.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: umožní prijať zoznam hostiteľov, s ktorými nebude môcť rozšírenie interagovať. Patria sem vkladanie JavaScriptu, upravovanie alebo zobrazovanie parametrov webRequests/webNavigation, zobrazovanie a upravovanie súborov cookie. Formát je podobný hľadaniu zhôd so vzormi <ph name="LINK_TO_MATCH_PATTERNS" />, avšak nemôžete definovať žiadne cesty, napr. *://*.example.com. Tiež je podporované efektívne používanie zástupných znakov TLD, napr. *://example.*.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: umožňuje prijať zoznam hostiteľov, s ktorými môže rozšírenie interagovať bez ohľadu na to, či sú uvedené v zozname <ph name="RUNTIME_BLOCKED_HOSTS" />. Má rovnaký formát ako <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Nahlásenie stavu prepínača režimu pre vývojárov pri spustení zariadenia.
 
       Ak je toto pravidlo nastavené na hodnotu False, stav prepínača režimu pre vývojárov sa nebude nahlasovať.</translation>
@@ -62,6 +96,7 @@
 <translation id="1204263402976895730">Povolené podnikové tlačiarne</translation>
 <translation id="1221359380862872747">Po prihlásení v režime ukážky načítať zadané webové adresy</translation>
 <translation id="123081309365616809">Povolenie prenášania obsahu do zariadenia</translation>
+<translation id="1257550411839719984">Nastaviť predvolený adresár na sťahovanie</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
 <translation id="1291880496936992484">Upozornenie: Po verzii 52 (približne v septembri 2016) bude šifrovací algoritmus RC4 z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
 
@@ -557,6 +592,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       </translation>
 <translation id="2769952903507981510">Konfigurácia povinného názvu domény pre hostiteľov vzdialeného prístupu</translation>
 <translation id="2787173078141616821">Nahlasovať informácie o stave Androidu</translation>
+<translation id="2793923553868251161">Zdroje, ktoré sa majú považovať za zabezpečený kontext</translation>
 <translation id="2801230735743888564">Povoľte používateľom hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline.
 
       Ak je toto pravidlo nastavené na hodnotu False, používatelia nebudú môcť hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline. Ak je toto pravidlo nastavené na hodnotu True, používatelia môžu hrať hru s dinosaurom. Ak toto pravidlo nie je nastavené, v zaregistrovanom systéme Chrome OS používatelia veľkonočnú hru s dinosaurom hrať nemôžu, ale za všetkých iných okolností ju hrať môžu.</translation>
@@ -797,11 +833,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto pravidlo nenastavíte, používateľom umožníte zvoliť vlastné nastavenia proxy servera.</translation>
 <translation id="3758249152301468420">Zakázať Nástroje pre vývojárov</translation>
 <translation id="3765260570442823273">Doba zobrazenia správy s upozornením na odhlásenie  z dôvodu nečinnosti</translation>
-<translation id="376931976323225993">Umožňuje nastaviť, či môžu weby automaticky spúšťať doplnok <ph name="FLASH_PLUGIN_NAME" />. Automatické spúšťanie doplnku <ph name="FLASH_PLUGIN_NAME" /> je možné buď povoliť pre všetky weby, alebo ho pre všetky weby zakázať.
-
-          Spustenie doplnku <ph name="FLASH_PLUGIN_NAME" /> umožní kliknutie na tlačidlo prehrávania, ale používateľ musí kliknúť na zástupný symbol, aby spustil jeho aktiváciu.
-
-          Ak toto pravidlo nenastavíte, používateľ bude môcť nastavenie zmeniť ručne.</translation>
 <translation id="3780152581321609624">Do hlavného názvu služby protokolu Kerberos zahrnúť neštandardný port</translation>
 <translation id="3780319008680229708">Ak je toto pravidlo nastavené na hodnotu True, bude sa ikona Cast stále zobrazovať na paneli s nástrojmi a používatelia ju nebudú môcť odobrať.
 
@@ -885,6 +916,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto nastavenie povolíte, nebude možné pristupovať k nástrojom pre vývojárov ani kontrolovať prvky webov. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné otvoriť nástroje pre vývojárov alebo konzolu JavaScript.
 
       Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, umožní to používateľovi použiť Nástroje pre vývojárov a konzolu JavaScript.</translation>
+<translation id="3895557476567727016">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie súborov.
+
+      Ak nastavíte toto pravidlo, zmení sa predvolený adresár, do ktorého <ph name="PRODUCT_NAME" /> sťahuje súbory. Toto pravidlo nie je povinné, takže používateľ bude môcť priečinok zmeniť.
+
+      Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> bude používať obvyklý predvolený adresár (podľa konkrétnej platformy).
+
+      Zoznam premenných, ktoré sa dajú použiť, nájdete na adrese https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Nastavenie odporúčaných miestnych nastavení pre verejnú reláciu</translation>
 <translation id="3911737181201537215">Na zaznamenávanie do denníkov vykonávané systémom Android nemá toto pravidlo žiaden vplyv.</translation>
 <translation id="391531815696899618">Ak je toto pravidlo nastavené na hodnotu True, zakazuje synchronizáciu aplikácie Súbory systému <ph name="PRODUCT_OS_NAME" /> s Diskom Google. V takom prípade sa na Disk Google nenahrajú žiadne údaje.
@@ -1803,7 +1841,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="706669471845501145">Povoliť webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="7072406291414141328">Aktivuje obmedzenie rýchlosti pripojenia</translation>
 <translation id="7079519252486108041">Blokovať kontextové okná na týchto webových stránkach</translation>
-<translation id="7091198954851103976">Vždy spustí doplnky, ktoré vyžadujú autorizáciu</translation>
 <translation id="7106631983877564505">Povolí uzamknutie v prípade, ak sú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> nečinné alebo pozastavené.
 
       Ak toto nastavenie povolíte, pri pokuse o odomknutie zariadenia a prebudenie z režimu spánku sa používateľom zobrazí výzva na zadanie hesla.
@@ -2046,6 +2083,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="787125417158068494">Ak je pravidlo nastavené na hodnotu SyncDisabled alebo nie je nakonfigurované, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nie sú pre aplikácie ARC k dispozícii.
 
       Ak je nastavené na hodnotu CopyCaCerts, všetky certifikáty CA inštalované s konfiguráciou ONC a parametrom <ph name="WEB_TRUSTED_BIT" /> sú pre aplikácie ARC k dispozícii.</translation>
+<translation id="7872535148622213208">
+        Toto pravidlo umožňuje určiť zoznam zdrojov (webových adries), ktoré sa majú považovať za zabezpečený
+        kontext. Cieľom je povoliť organizáciám nastaviť pracovný server
+        pre interný vývoj webu.
+        Je rovnaké ako príznak --unsafely-treat-insecure-origin-as-secure.
+        Ďalšie informácie o zabezpečených kontextoch nájdete na adrese https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Určuje identifikátor rozšírenia, ktoré sa má použiť ako šetrič obrazovky na prihlasovacej obrazovke. Rozšírenie musí byť súčasťou balíka AppPack, ktorý bol pre túto doménu nakonfigurovaný v rámci pravidla DeviceAppPack.</translation>
@@ -2288,6 +2332,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak nie je toto pravidlo nakonfigurované alebo je hodnota nižšia než 1 MB, <ph name="PRODUCT_OS_NAME" /> použije predvolenú veľkosť vyrovnávacej pamäte.</translation>
 <translation id="8858642179038618439">Vynútenie Bezpečnostného režimu v službe YouTube</translation>
 <translation id="8864975621965365890">Potlačí výzvu o zamietnutie, ktorá sa zobrazí pri vykreslení stránky rámcom <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Umožňuje povoliť v prehliadači <ph name="PRODUCT_NAME" /> integrovanú službu Prekladač Google.
+
+      Ak toto nastavenie povolíte, <ph name="PRODUCT_NAME" /> sprístupní používateľovi prekladateľské funkcie zobrazením integrovaného prekladateľského panela s nástrojmi (v náležitých prípadoch) a možnosť prekladu v kontextovej ponuke zobrazenej po pravom kliknutí myšou.
+
+      Ak toto nastavenie zakážete, všetky vstavané prekladateľské funkcie budú deaktivované.
+
+      Ak toto nastavenie povolíte alebo zakážete, používatelia ho nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť ani prepísať.
+
+      Ak je toto nastavenie ponechané nenastavené, používateľ sa môže rozhodnúť, či chce túto funkciu použiť.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8882006618241293596">Blokovať doplnok <ph name="FLASH_PLUGIN_NAME" /> na týchto weboch</translation>
 <translation id="8906768759089290519">Povoliť režim hosťa</translation>

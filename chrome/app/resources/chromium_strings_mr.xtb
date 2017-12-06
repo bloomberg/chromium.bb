@@ -47,7 +47,7 @@
 <translation id="2572494885440352020">Chromium मदतनीस</translation>
 <translation id="2587578672395088481">अपडेट लागू करण्यासाठी Chromium OS रीस्टार्ट करणे आवश्यक आहे.</translation>
 <translation id="2647554856022461007">Chromium आपला ब्राउझिंग अनुभव सुधारण्यासाठी वेब सेवा वापरू शकते. आपण या सेवा वैकल्पिकपणे अक्षम करू शकता. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
-<translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली त्रुटी आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
+<translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली एरर आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="2685838254101182273">Chromium ने अपडेट करणे थांबविले आहे आणि हे आपल्या ऑपरेटिंग प्रणालीच्या या आवृत्तीचे यापुढे समर्थन करत नाही.</translation>
 <translation id="2711502716910134313">Chromium टॅब</translation>
 <translation id="2718390899429598676">अतिरिक्त सुरक्षिततेसाठी, Chromium आपला डेटा कूटबद्ध करेल.</translation>
@@ -129,6 +129,7 @@
 <translation id="5466153949126434691">Chromium स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chromium रीस्टार्ट होईल आणि आपण आपल्या मार्गावर असाल.</translation>
 <translation id="5479196819031988440">Chromium OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टम अपडेट इंस्टॉल करेपर्यंत प्रतीक्षा करा.</translation>
+<translation id="5524843473235508879">रीडिरेक्‍ट ब्लॉक केले.</translation>
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5698481217667032250">Chromium या भाषेत प्रदर्शि‍त करा</translation>
@@ -146,7 +147,7 @@
 <translation id="59625444380784159">आपल्या संपर्कांकडील तपशील आपल्याला Chromium मध्ये अधिक द्रुतपणे फॉर्म भरण्यास मदत करू शकतात.</translation>
 <translation id="5987687638152509985">संकालित करण्यासाठी Chromium अपडेट करा</translation>
 <translation id="6055895534982063517">Chromium ची नवीन आवृत्ती उपलब्ध आहे आणि ही नेहमीपेक्षा जलद आहे.</translation>
-<translation id="608189560609172163">साइन इन करण्यात त्रुटी आल्यामुळे Chromium आपला डेटा संकालित करू शकले नाही.</translation>
+<translation id="608189560609172163">साइन इन करण्यात एरर आल्यामुळे Chromium आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chromium ने ते अवरोधित केले आहे.</translation>
 <translation id="6212496753309875659">या संगणकावर आधीपासून Chromium ची अगदी अलीकडील आवृत्ती आहे. सॉफ्‍टवेअर कार्य करत नसल्‍यास, कृपया Chromium विस्‍थापित करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="6248213926982192922">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>

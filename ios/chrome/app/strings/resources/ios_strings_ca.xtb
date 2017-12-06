@@ -405,7 +405,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9148126808321036104">Torneu a iniciar la sessió</translation>
-<translation id="91549621916703028">Crea diverses pestanyes per a totes les tasques</translation>
 <translation id="9157836665414082580">Suprimeix quadres de diàleg</translation>
 <translation id="9188680907066685419">Tanqueu la sessió del compte gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="976982866697960176">Gestioneu les dades sincronitzades…</translation>
 <translation id="988141524645182168">Altres dispositius</translation>
 <translation id="989988560359834682">Edita l'adreça</translation>
+<translation id="994757059139821576">Suggeriments d'articles</translation>
 </translationbundle>

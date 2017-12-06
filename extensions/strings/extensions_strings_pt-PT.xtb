@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Não é possível descompactar a extensão. Para descompactar uma extensão em segurança, é necessário existir um caminho para o seu directório de perfil sem uma ligação simbólica. Não existe um caminho deste tipo para o seu perfil.</translation>
 <translation id="641087317769093025">Não foi possível descomprimir a extensão</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" está a solicitar acesso a um ou mais dos seus dispositivos:</translation>
-<translation id="6566142449942033617">Não foi possível carregar "<ph name="PLUGIN_PATH" />"para o plug-in.</translation>
 <translation id="657064425229075395">Não foi possível carregar o script de segundo plano "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (número de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Não foi possível criar um diretório para descomprimir: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Esta extensão foi recarregada demasiado frequentemente.</translation>
 <translation id="7003844668372540529">Produto desconhecido <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">O gestor desta máquina exige que o <ph name="EXTENSION_NAME" /> seja instalado. Este não pode ser removido ou modificado.</translation>
-<translation id="7581279002575751816">Os plug-ins NPAPI não são suportados.</translation>
 <translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Virada para o utilizador</translation>
 <translation id="8047248493720652249">Esta extensão não conseguiu atribuir o nome "<ph name="ATTEMPTED_FILENAME" />" à transferência, porque outra extensão (<ph name="EXTENSION_NAME" />) determinou um nome de ficheiro diferente: "<ph name="ACTUAL_FILENAME" />".</translation>

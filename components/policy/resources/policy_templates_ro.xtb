@@ -46,6 +46,39 @@
 
       Valoarea politicii ar trebui să fie specificată în milisecunde.</translation>
 <translation id="1151353063931113432">Permite imagini de pe aceste site-uri</translation>
+<translation id="1151545095291359187">Configurează setările de gestionare a extensiilor pentru <ph name="PRODUCT_NAME" />.
+
+          Această politică stabilește mai multe setări, inclusiv pe cele controlate de eventualele politici existente privind extensiile. Această politică va suprascrie eventualele politici vechi dacă ambele sunt setate.
+
+          Această politică asociază un ID de extensie sau o adresă URL de actualizare la configurația sa. În cazul unui ID de extensie, configurația va fi aplicată numai pentru extensia specificată. O configurație prestabilită poate fi setată pentru ID-ul special „<ph name="DEFAULT_SCOPE" />”, care se va aplica pentru toate extensiile care nu au o configurație personalizată setată în această politică. În cazul unei adrese URL de actualizare, configurația se va aplica pentru toate extensiile cu adresa URL de actualizare exactă specificată în manifestul acestei extensii, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Configurația pentru fiecare extensie (sau pentru extensiile cu aceeași adresă URL de actualizare) este alt dicționar care poate să conțină domeniile prezentate mai jos.
+
+          <ph name="INSTALLATION_MODE" />: corespunde unui șir care indică modul de instalare pentru extensie. Șirurile valide sunt:
+          * <ph name="ALLOWED" />: permite instalarea extensiei de către utilizator. Acesta este comportamentul prestabilit;
+          * <ph name="BLOCKED" />: blochează instalarea extensiei;
+          * <ph name="FORCE_INSTALLED" />: extensia este instalată automat și nu poate fi dezactivată de utilizator;
+          * <ph name="NORMAL_INSTALLED" />: extensia este instalată automat, însă poate fi dezactivată de utilizator.
+
+         <ph name="INSTALLATION_MODE" /> poate fi configurat și pentru mai multe extensii, inclusiv pentru extensia <ph name="DEFAULT_SCOPE" /> (ca setări prestabilite) și pentru extensiile cu aceeași adresă URL de actualizare. În acest caz, numai valorile <ph name="ALLOWED" /> și <ph name="BLOCKED" /> pot fi folosite.
+
+          Dacă modul este setat la <ph name="FORCE_INSTALLED" /> sau la <ph name="NORMAL_INSTALLED" />, atunci trebuie să se configureze și o valoare <ph name="UPDATE_URL" />. Reține că adresa URL setată în această politică este folosită numai pentru instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Adresa URL de actualizare trebuie să trimită la un document XML cu manifestul de actualizare, după cum s-a menționat mai sus.
+
+          <ph name="BLOCKED_PERMISSIONS" />: corespunde unei liste de șiruri care trimit la permisiunile API blocate pentru extensia respectivă. Numele permisiunilor sunt aceleași cu șirurile de permisiuni declarate în manifestul extensiei, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC3" />. Această setare poate fi configurată și pentru extensia <ph name="DEFAULT_SCOPE" />. Dacă extensia necesită o permisiune aflată pe lista de blocare, nu se va putea încărca. Dacă include o permisiune blocată ca cerință opțională, aceasta va fi gestionată ca de obicei, însă solicitarea de permisiuni contradictorii va fi refuzată automat la executare.
+
+          <ph name="ALLOWED_PERMISSIONS" />: similară cu <ph name="BLOCKED_PERMISSIONS" />, însă permite în mod explicit anumite permisiuni care ar putea fi blocate de lista globală a permisiunilor blocate și, din acest motiv, nu poate fi configurată pentru extensia <ph name="DEFAULT_SCOPE" />. Reține că această setare nu atribuie automat extensiilor permisiunile acordate.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: corespunde unui șir care indică versiunea. Formatul șirului pentru versiune este același cu cel folosit în manifestul extensiei, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC4" />. Eventualele extensii cu o versiune mai veche decât versiunea minimă specificată vor fi dezactivate. Acest lucru este valabil și în cazul extensiilor instalate forțat.
+
+          Următoarele setări pot fi folosite numai pentru configurația <ph name="DEFAULT_SCOPE" /> prestabilită:
+
+          <ph name="INSTALL_SOURCES" />: fiecare element din această listă este un model de potrivire pentru stilul extensiei (consultă <ph name="LINK_TO_MATCH_PATTERNS" />). Utilizatorii vor putea instala cu ușurință elemente de la orice adresă URL care se potrivește unui element din această listă. Aceste modele trebuie să permită atât locația fișierului <ph name="EXTENSION_SUFFIX_WILDCARD" />, cât și pagina din care începe descărcarea (adică adresa URL sursă).
+
+          <ph name="ALLOWED_TYPES" />: această setare trece pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" />. Valoarea este o listă de șiruri, iar fiecare șir trebuie să fie unul dintre următoarele: <ph name="VALID_ALLOWED_TYPES" />. Pentru mai multe informații despre aceste tipuri, consultă documentația extensiilor <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: dacă un utilizator încearcă să instaleze o extensie, dar aceasta este blocată de politică, Magazinul web Chrome afișează un mesaj generic de eroare. Cu această setare poți să adaugi text la mesajul de eroare. Opțiunea poate fi utilizată pentru a îndruma utilizatorii spre biroul de asistență, pentru a explica motivul blocării unei anumite extensii sau altele. Acest mesaj de eroare va fi trunchiat dacă depășește 1.000 de caractere.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: acceptă o listă de gazde a căror interacțiune cu o anumită extensie va fi blocată. Aceasta include inserarea JavaScript, modificarea și vizualizarea solicitărilor web/navigării pe web, vizualizarea și modificarea cookie-urilor. Formatul este similar cu cel al Modelelor de potrivire <ph name="LINK_TO_MATCH_PATTERNS" />, cu excepția faptului că nu pot fi definite căi. De ex.,  „*://*.example.com”. Acceptă, de asemenea, utilizarea efectivă a metacaracterelor TLD, de ex., „*://example.*”.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: acceptă o listă de gazde cu care o extensie poate interacționa, indiferent dacă acestea sunt incluse sau nu în <ph name="RUNTIME_BLOCKED_HOSTS" />. Formatul este identic cu cel din <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Raportează starea comutatorului modului pentru dezvoltatori al dispozitivului la pornire.
 
       Dacă politica este dezactivată, starea comutatorului modului pentru dezvoltatori nu va fi raportată.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Imprimantele activate ale companiei</translation>
 <translation id="1221359380862872747">Încărcați adrese URL specificate la conectarea demonstrativă</translation>
 <translation id="123081309365616809">Activează proiectarea conținutului pe dispozitiv</translation>
+<translation id="1257550411839719984">Setează directorul prestabilit pentru descărcare</translation>
 <translation id="1265053460044691532">Limitați intervalul de timp pentru care un utilizator autentificat prin SAML se poate conecta offline</translation>
 <translation id="1291880496936992484">Avertisment: compatibilitatea cu RC4 va fi eliminată complet din <ph name="PRODUCT_NAME" /> după versiunea 52 (aproximativ în septembrie 2016), iar această politică nu va mai funcționa de la momentul respectiv.
 
@@ -542,6 +576,7 @@
       </translation>
 <translation id="2769952903507981510">Configurați numele de domeniu necesar pentru gazdele de acces la distanță</translation>
 <translation id="2787173078141616821">Raportează informații despre starea Android</translation>
+<translation id="2793923553868251161">Origini care trebuie tratate drept context securizat.</translation>
 <translation id="2801230735743888564">Permite utilizatorilor să joace jocul ascuns cu dinozaurul când dispozitivul este offline.
 
       Dacă această politică este dezactivată, utilizatorii nu vor putea să joace jocul ascuns cu dinozaurul când dispozitivul este offline. Dacă această politică este activată, utilizatorii pot să joace jocul cu dinozaurul. Dacă această politică nu este configurată, utilizatorii nu pot să joace jocul ascuns cu dinozaurul pe un dispozitiv înregistrat, cu sistem de operare Chrome, însă pot să îl joace în alte circumstanțe.</translation>
@@ -777,11 +812,6 @@
       Dacă nu configurezi politicile, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="3758249152301468420">Dezactivează instrumentele pentru dezvoltatori</translation>
 <translation id="3765260570442823273">Durata mesajului de avertizare privind deconectarea din cauza inactivității</translation>
-<translation id="376931976323225993">Îți permite să setezi dacă site-urile au permisiunea să ruleze automat pluginul <ph name="FLASH_PLUGIN_NAME" />. Rularea automată a pluginului <ph name="FLASH_PLUGIN_NAME" /> poate fi permisă sau refuzată în bloc pentru toate site-urile.
-
-          Opțiunea „Dă clic pentru redare” îi permite pluginului <ph name="FLASH_PLUGIN_NAME" /> să ruleze, dar utilizatorul trebuie să dea clic pe substituent pentru a începe executarea.
-
-          Dacă politica nu este setată, utilizatorul va putea modifica această setare manual.</translation>
 <translation id="3780152581321609624">Include un port non-standard în codul SPN al protocolului Kerberos</translation>
 <translation id="3780319008680229708">Dacă această politică este activată, pictograma Cast din bara de instrumente va fi afișată întotdeauna în bara de instrumente sau în meniul suplimentar, iar utilizatorii nu o vor putea elimina.
 
@@ -869,6 +899,13 @@
       Dacă activezi această setare, Instrumentele pentru dezvoltatori nu pot fi accesate, iar elementele site-urilor nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.
 
       Dacă dezactivezi această opțiune sau nu o configurezi, utilizatorul va putea să folosească Instrumentele pentru dezvoltatori și consola JavaScript.</translation>
+<translation id="3895557476567727016">Configurează directorul prestabilit pe care <ph name="PRODUCT_NAME" /> îl va utiliza pentru descărcarea fișierelor.
+
+      Dacă setezi această politică, aceasta va schimba directorul prestabilit în care <ph name="PRODUCT_NAME" /> descarcă fișiere. Această politică nu este obligatorie, deci utilizatorul va putea schimba directorul.
+
+      Dacă nu setezi această politică, <ph name="PRODUCT_NAME" /> va utiliza directorul prestabilit obișnuit (specific platformei).
+
+      Pentru o listă a variabilelor care pot fi utilizate, accesează https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Setează limbile recomandate pentru o sesiune publică</translation>
 <translation id="3911737181201537215">Această politică nu afectează înregistrările în jurnal din Android.</translation>
 <translation id="391531815696899618">Dacă este activată, dezactivează sincronizarea cu Google Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" />. În acest caz, datele nu sunt încărcate în Google Drive.
@@ -1724,7 +1761,6 @@
 <translation id="706669471845501145">Permite site-urilor să afișeze notificări pe desktop</translation>
 <translation id="7072406291414141328">Activează limitarea lățimii de bandă a rețelei</translation>
 <translation id="7079519252486108041">Blochează ferestrele pop-up de pe aceste site-uri</translation>
-<translation id="7091198954851103976">Rulează întotdeauna pluginuri care necesită autorizare</translation>
 <translation id="7106631983877564505">Activează blocarea când dispozitivele <ph name="PRODUCT_OS_NAME" /> ajung să fie inactive sau suspendate.
 
       Dacă activezi această setare, utilizatorilor li se va solicita o parolă pentru a debloca dispozitivul din modul inactiv.
@@ -1958,6 +1994,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="787125417158068494">Dacă politica este setată la SyncDisabled sau nu este configurată, certificatele <ph name="PRODUCT_OS_NAME" /> nu sunt disponibile pentru aplicațiile ARC.
 
       Dacă politica este setată la CopyCaCerts, toate certificatele CA instalate prin ONC cu <ph name="WEB_TRUSTED_BIT" /> sunt disponibile pentru aplicațiile ARC.</translation>
+<translation id="7872535148622213208">
+        Politica specifică o listă de origini (adrese URL) care trebuie tratate drept context
+        securizat. Scopul este să permită organizațiilor să configureze un server de simulare
+        pentru dezvoltările web interne.
+        Acest lucru este identic cu marcajul --unsafely-treat-insecure-origin-as-secure.
+        Pentru mai multe informații despre contextele securizate, accesează https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Această politică este activă numai în modul Vânzare.
 
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
@@ -2187,6 +2230,15 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă această politică nu este configurată sau valoarea este mai mică de 1 MB, <ph name="PRODUCT_OS_NAME" /> va folosi dimensiunea prestabilită a memoriei cache.</translation>
 <translation id="8858642179038618439">Forțează Modul sigur pe YouTube</translation>
 <translation id="8864975621965365890">Elimină solicitarea de refuzare care apare atunci când un site web este redat de <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Activează serviciul integrat Google Traducere pe <ph name="PRODUCT_NAME" />.
+
+      Dacă activezi această setare, <ph name="PRODUCT_NAME" /> va oferi funcția de traducere pentru utilizator afișând o bară de instrumente integrată (atunci când este cazul) și o opțiune de traducere în meniul contextual afișat atunci când dai clic dreapta.
+
+      Dacă dezactivezi această setare, toate funcțiile de traducere încorporate vor fi dezactivate.
+
+      Dacă activezi sau dezactivezi această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />.
+
+      Dacă această setare este lăsată nesetată, utilizatorul poate decide dacă folosește sau nu această funcție.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
 <translation id="8882006618241293596">Blochează plunginul <ph name="FLASH_PLUGIN_NAME" /> pe aceste site-uri</translation>
 <translation id="8906768759089290519">Activați modul pentru invitați</translation>

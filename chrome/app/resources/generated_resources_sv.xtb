@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Den skadliga programvaran gick inte att ta bort</translation>
 <translation id="1062407476771304334">Ersätt</translation>
 <translation id="1062866675591297858">Hantera dina kontrollerade användare via <ph name="BEGIN_LINK" />översikten för kontrollerade användare<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Filkontroll för mediebiblioteksfiler</translation>
 <translation id="1064835277883315402">Anslut till privat nätverk</translation>
 <translation id="1064912851688322329">Koppla bort Google-kontot</translation>
 <translation id="1067048845568873861">Skapad</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">Tokencacheminne för identitets-API</translation>
 <translation id="1478233201128522094">Nästa gång låser en ny mobil upp denna <ph name="DEVICE_TYPE" />. Du kan inaktivera Smart Lock i inställningarna.</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Klar att säkerhetskopiera <ph name="FILE_COUNT" /> nya foton</translation>
 <translation id="1483493594462132177">Skicka</translation>
 <translation id="1485015260175968628">Appen eller tillägget kan nu:</translation>
 <translation id="1485141095922496924">Version <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -530,7 +528,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Varning!<ph name="END_BOLD" />  De här filerna är tillfälliga och kan tas bort automatiskt för att frigöra utrymme på hårddisken.  <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Konfigurera Smart Lock för din <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Microsofts filåterställning</translation>
-<translation id="1825832322945165090">Det finns inte tillräckligt med utrymme på enheten</translation>
 <translation id="1826516787628120939">Kontrollerar</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> vill skicka aviseringar.</translation>
 <translation id="1828378091493947763">Enheten har inte stöd för det här pluginprogrammet</translation>
@@ -860,11 +857,6 @@
 <translation id="2384436799579181135">Ett fel uppstod. Kontrollera skrivaren och försök igen.</translation>
 <translation id="2385700042425247848">Namn på tjänsten</translation>
 <translation id="2387458720915042159">Proxyanslutningstyp</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> nya foton hittades
-    <ph name="LINE_BREAK1" />
-    Det finns inte tillräckligt med utrymme på enheten.
-    <ph name="LINE_BREAK2" />
-    Testa att välja ett par foton för att komma igång.</translation>
 <translation id="2391419135980381625">Standardteckensnitt</translation>
 <translation id="2391762656119864333">Återkalla</translation>
 <translation id="2392369802118427583">Aktivera</translation>
@@ -1246,7 +1238,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2963151496262057773">Följande pluginprogram svarar inte: <ph name="PLUGIN_NAME" />. Vill du stoppa det?</translation>
 <translation id="2966449113954629791">Du kan ha använt din tillåtna mängd mobildata. Besök aktiveringsportalen <ph name="NAME" /> om du vill köpa mer data.</translation>
 <translation id="2966937470348689686">Hantera Android-inställningar</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">mörkare</translation>
 <translation id="2972557485845626008">Fast programvara</translation>
 <translation id="2972581237482394796">&amp;Upprepa</translation>
@@ -1376,6 +1367,7 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3153862085237805241">Spara kortet</translation>
 <translation id="3154351730702813399">Enhetsadministratören kan övervaka din webbaktivitet.</translation>
 <translation id="3154429428035006212">Offline i mer än en månad</translation>
+<translation id="3156531245809797194">Logga in om du vill använda Chrome</translation>
 <translation id="3156815148496352304">Installera uppdatering för operativsystemet</translation>
 <translation id="3157931365184549694">Återställ</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (med maskinvarustöd)</translation>
@@ -1539,6 +1531,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3429599832623003132">$1 objekt</translation>
 <translation id="3432227430032737297">Ta bort alla som visas</translation>
 <translation id="3432757130254800023">Skicka ljud och bild till skärmar i det lokala nätverket</translation>
+<translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">Hoppsan! Det gick inte att fastställa enhetens attributlås för installationstid.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="343467364461911375">Vissa innehållstjänster använder datoridentifierare för att identifiera dig unikt i syfte att ge åtkomst till skyddat innehåll.</translation>
@@ -1556,7 +1549,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="344630545793878684">Läsa din data på ett antal webbplatser</translation>
 <translation id="3449839693241009168">Tryck på <ph name="SEARCH_KEY" /> om du vill skicka kommandon till <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Kapacitetsprocentsats för inaktivitet</translation>
-<translation id="3450505713373650336">Säkerhetskopierar <ph name="FILE_COUNT" /> foton</translation>
 <translation id="3453612417627951340">Auktorisering behövs</translation>
 <translation id="3454157711543303649">Aktiveringen har slutförts</translation>
 <translation id="345693547134384690">Öppna &amp;bild i ny flik</translation>
@@ -1799,9 +1791,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="381202950560906753">Lägg till ett till</translation>
 <translation id="3812525830114410218">Dåligt certifikat</translation>
 <translation id="3813296892522778813">Öppna <ph name="BEGIN_LINK_CHROMIUM" />Hjälp för Google Chrome<ph name="END_LINK_CHROMIUM" /> om du inte hittar vad du letar efter.</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> nya foton hittades
-    <ph name="LINE_BREAK1" />
-    Klar att säkerhetskopiera till <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Tillåt alla webbplatser att skicka push-meddelanden i bakgrunden</translation>
 <translation id="3819752733757735746">Brytarstyrning (styr datorn med bara en eller två knappar)</translation>
 <translation id="3819800052061700452">&amp;Helskärm</translation>
@@ -2072,9 +2061,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K aktiva)</translation>
 <translation id="431076611119798497">&amp;Info</translation>
 <translation id="4312866146174492540">Blockera (standard)</translation>
-<translation id="4315548163539304064">Mediaenheten genomsöks ...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> nya foton hittades</translation>
 <translation id="4316850752623536204">Webbplats för utvecklare</translation>
 <translation id="4320177379694898372">Ingen internetanslutning</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Fortsätt med nedladdningen}other{Fortsätt med nedladdningarna}}</translation>
@@ -2162,7 +2148,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4481249487722541506">Hämta okomprimerat tillägg...</translation>
 <translation id="4481530544597605423">Frånkopplade enheter</translation>
 <translation id="4482194545587547824">Google kan använda webbhistoriken för att anpassa Sök och andra tjänster från Google.</translation>
-<translation id="4492190037599258964">Sökresultat för "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">Visa inte den här sidan</translation>
 <translation id="450099669180426158">Ikon med utropstecken</translation>
 <translation id="4501530680793980440">Bekräfta borttagning</translation>
@@ -2664,6 +2649,7 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5316716239522500219">Speglar monitorer</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5319359161174645648">Google rekommenderar Chrome</translation>
+<translation id="5319566035256672173">Den här enheten får inte längre de senaste programuppdateringarna. Vi rekommenderar att du uppgraderar.</translation>
 <translation id="532247166573571973">Servern kanske inte kan nås. Försök igen senare.</translation>
 <translation id="532360961509278431">Det går inte att öppna $1: $2</translation>
 <translation id="5324780743567488672">Ange tidszon automatiskt genom att använda din plats</translation>
@@ -3811,7 +3797,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="721331389620694978">En del inställningar som kan visa surfvanor rensas inte.</translation>
 <translation id="7216409898977639127">Mobiloperatör</translation>
 <translation id="7216595297012131718">Sortera språk i prioriteringsordning</translation>
-<translation id="7219989745826083607">Textanalysator för beskrivning av DIAL-enhet</translation>
 <translation id="722055596168483966">Anpassa Googles tjänster</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Visa aviseringar</translation>
@@ -4450,7 +4435,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8261378640211443080">Det här tillägget finns inte i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och kan ha lagts till utan att du vet om det.</translation>
 <translation id="8261387128019234107">Lägg till ett konto för <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Radera</translation>
-<translation id="8261673729476082470">Säkerhetskopierar <ph name="FILE_COUNT" /> foton till <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> har inte implementerats i den här versionen.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> har inaktiverat muspekaren.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" /> aktiverade helskärmsläge.</translation>

@@ -46,6 +46,38 @@
 
       Policyns värde anges i millisekunder.</translation>
 <translation id="1151353063931113432">Tillåt bilder på dessa webbplatser</translation>
+<translation id="1151545095291359187">Konfigurerar inställningar för tilläggshantering för <ph name="PRODUCT_NAME" />.
+
+          Den här principen styr flera inställningar, bland annat inställningar som styrs av befintliga tilläggsrelaterande principer. Principen åsidosätter alla äldre principer om båda är angivna.
+
+          Principen mappar ett tilläggs-id eller en uppdateringsadress till dess konfiguration. Med ett tilläggs-id tillämpas konfigurationen endast på det angivna tillägget. En standardkonfiguration kan anges för det särskilda id:t <ph name="DEFAULT_SCOPE" /> som tillämpas på alla tillägg som inte har en anpassad konfiguration i den här principen. Med en uppdateringsadress tillämpas konfigurationen på alla tillägg med den exakta uppdateringsadressen som angetts i manifestet för tillägget, så som beskrivs på <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurationen för varje tillägg (eller tillägg med samma uppdateringsadress) är en annan ordlista som kan innehålla fälten nedan.
+
+          <ph name="INSTALLATION_MODE" />: mappar till en sträng som anger installationsläget för tillägget. De giltiga strängarna är:
+          * <ph name="ALLOWED" />: tillåter att användaren installerar tillägget. Detta är standardbeteende.
+          * <ph name="BLOCKED" />: blockerar installationen av tillägget.
+          * <ph name="FORCE_INSTALLED" />: tillägget installeras automatiskt och kan inte tas bort av användaren.
+          * <ph name="NORMAL_INSTALLED" />: tillägget installeras automatiskt men kan inaktiveras av användaren.
+          <ph name="INSTALLATION_MODE" /> kan även konfigureras för flera tillägg, bland annat tillägget <ph name="DEFAULT_SCOPE" /> (som standardinställningar) och tillägg med samma uppdateringsadress. Endast värdena <ph name="ALLOWED" /> och <ph name="BLOCKED" /> kan användas i det här fallet.
+
+          Om läget är inställt på <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" /> måste även en <ph name="UPDATE_URL" /> konfigureras. Tänk på att uppdateringsadressen som anges i den här principen endast används för den första installationen. Vid senare uppdateringar av tillägget används uppdateringsadressen som anges i tilläggets manifest. Uppdateringsadressen ska peka på ett Update Manifest-dokument i XML-format så som nämnts ovan.
+
+          <ph name="BLOCKED_PERMISSIONS" />: mappar till en lista med strängar som anger de blockerade API-behörigheterna för tillägget. Namnen på behörigheterna är desamma som behörighetssträngarna som deklarerats i manifestet för tillägget som beskrivs på <ph name="LINK_TO_EXTENSION_DOC3" />. Inställningen kan även konfigureras för tillägget <ph name="DEFAULT_SCOPE" />. Om tillägget kräver en behörighet som finns med på blockeringslistan läses den inte in. Om det innehåller en blockerad behörighet som inte är obligatorisk hanteras det som vanligt, men begäran om motstridiga behörigheter nekas automatiskt vid körning.
+
+          <ph name="ALLOWED_PERMISSIONS" />: liknar <ph name="BLOCKED_PERMISSIONS" /> men tillåter uttryckligen vissa behörigheter som kan vara blockerade av en global lista över blockerade behörigheter och kan därmed inte konfigureras för tillägget <ph name="DEFAULT_SCOPE" />. Tänk på att den här inställningen inte automatiskt tilldelar tilläggen beviljade behörigheter.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: mappar till en versionssträng. Formatet för versionssträngen är detsamma som det som används i tilläggets manifest, som beskrivs på <ph name="LINK_TO_EXTENSION_DOC4" />. Ett tillägg med en version som är äldre än den angivna lägsta versionen inaktiveras. Detta gäller även för tillägg som måste installeras.
+
+          Följande inställningar kan endast användas för standardkonfigurationen <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Varje objekt i listan motsvarar en matchning i form av ett tillägg (<ph name="LINK_TO_MATCH_PATTERNS" />). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både platsen för <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen och sidan där nedladdningen påbörjades (dvs. hänvisningsadressen) måste tillåtas av mönstren.
+
+          <ph name="ALLOWED_TYPES" />: Den här inställningen godkänner de tillåtna typerna med tillägg/appar som kan installeras i <ph name="PRODUCT_NAME" />. Värdet är en lista med strängar där varje sträng måste vara något av följande: <ph name="VALID_ALLOWED_TYPES" />. Mer information om dessa typer finns i dokumentationen för tillägget <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Om en användare försöker installera ett tillägg som blockeras av en princip visas ett allmänt felmeddelande i Chrome Webstore. Med den här inställningen kan du lägga till text i felmeddelandet. Du kan till exempel hänvisa användarna till din support, förklara varför ett visst tillägg är blockerat eller annat. Felmeddelandet blir avklippt om det överstiger 1 000 tecken.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tar emot en lista över värdar som tillägget blockeras från att använda. Detta inkluderar att lägga till JavaScript, ändra och visa webRequests / webNavigation och att visa och ändra cookies. Formatet liknar matchningsmönstren <ph name="LINK_TO_MATCH_PATTERNS" /> förutom att sökvägar, t.ex. *://*.example.com, inte kan användas. Detta stöder även jokertoppdomäner, t.ex. *://example.*.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Tar emot en lista över värdar som tillägget kan använda oavsett om de finns med på listan över <ph name="RUNTIME_BLOCKED_HOSTS" />. Detta är samma format som <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Rapportera vilket läge enhetens utvecklarväxel har vid uppstart.
 
       Om principen anges som False kommer utvecklarväxelns läge inte att redovisas.</translation>
@@ -63,6 +95,7 @@
 <translation id="1204263402976895730">Aktiverade företagsskrivare</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="123081309365616809">Aktivera möjlighet att casta till enheten</translation>
+<translation id="1257550411839719984">Ange standardkatalog för nedladdning</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
 <translation id="1291880496936992484">Varning: RC4 kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (kring september 2016) och den här principen upphör då att fungera.
 
@@ -566,6 +599,7 @@
       </translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
 <translation id="2787173078141616821">Rapportera information om Android-status</translation>
+<translation id="2793923553868251161">Källor som behandlas som säker kontext.</translation>
 <translation id="2801230735743888564">Tillåt användare att spela påskäggsspelet med dinosaurier när enheten är offline.
 
       Om den här principen är inställd på falskt kommer användare inte att kunna spela påskäggsspelet med dinosaurier när enheten är offline. Om principen är inställd på sant kommer användare att kunna spela dinosauriespelet. Om principen inte tillämpas kommer användare inte att kunna spela påskäggsspelet med dinosaurier på Chrome OS med registrering, men kan spela det under andra omständigheter.</translation>
@@ -808,11 +842,6 @@
       Om du inte anger de här principerna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="3765260570442823273">Varaktighet för varningsmeddelande för inaktivitetsutloggning</translation>
-<translation id="376931976323225993">Låter dig ange om pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras automatiskt på webbplatser. Det kan vara tillåtet för alla webbplatser eller inte tillåtet för någon webbplats att köra pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> automatiskt.
-
-          Inställningen Klicka för att spela innebär att pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras, men användaren måste klicka på platshållaren för att det ska starta.
-
-          Om den här principen inte anges kan användaren ändra inställningen manuellt.</translation>
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
 <translation id="3780319008680229708">Om sant har angetts för principen visas alltid Cast-ikonen i verktygsfältet eller i fler menyalternativ och användarna kan inte ta bort den.
 
@@ -902,6 +931,13 @@
       Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
 
       Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
+<translation id="3895557476567727016">Konfigurerar standardkatalogen som används för att ladda ned filer med <ph name="PRODUCT_NAME" />.
+
+      Om du ändrar denna princip ändras standardkatalogen som används när du laddar ned filer med <ph name="PRODUCT_NAME" />. Den här principen är inte obligatorisk, och användaren kan därför ändra katalogen.
+
+      Om principen inte anges används standardkatalogen för nedladdning (för den aktuella plattformen) i <ph name="PRODUCT_NAME" />.
+
+      En lista med variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3907986150060929099">Anger de rekommenderade språkkoderna för en offentlig session</translation>
 <translation id="3911737181201537215">Den här principen har ingen inverkan på loggningen i Android.</translation>
 <translation id="391531815696899618">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />. Då överförs ingen data till Google Drive.
@@ -1825,7 +1861,6 @@
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
 <translation id="7072406291414141328">Aktiverar begränsning av bandbredden i nätverket</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
-<translation id="7091198954851103976">Kör alltid pluginprogram som kräver auktorisering</translation>
 <translation id="7106631983877564505">Policyn aktiverar lås när <ph name="PRODUCT_OS_NAME" />-enheter blir inaktiva eller stängs av.
 
       Om du aktiverar inställningen måste användarna ange ett lösenord för att låsa upp enheter som är i viloläge.
@@ -2067,6 +2102,13 @@
 <translation id="787125417158068494">Om principen är inställd på SyncDisabled eller inte har konfigurerats blir inga certifikat i <ph name="PRODUCT_OS_NAME" /> tillgängliga för ARC-appar.
 
       Om principen är inställd på CopyCaCerts blir alla CA-certifikat som installerats via ONC med <ph name="WEB_TRUSTED_BIT" /> tillgängliga för ARC-appar.</translation>
+<translation id="7872535148622213208">
+        Principen anger en lista med källor (webbadresser) som ska behandlas som säker
+        kontext. Syftet är att tillåta organisationer att konfigurera en provkörningsserver
+        för intern webbutveckling.
+        Detta är samma som flaggan --unsafely-treat-insecure-origin-as-secure.
+        Du kan läsa mer om säker kontext på https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
@@ -2310,6 +2352,15 @@
       Om policyn inte konfigureras eller om värdet är lägre än 1 MB används den cachestorlek som är standard i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME" /> inte visas.</translation>
+<translation id="8867464911288727016">Aktiverar den integrerade tjänsten Google Översätt i <ph name="PRODUCT_NAME" />.
+
+      Om du aktiverar inställningen får användarna åtkomst till en översättningsfunktion i <ph name="PRODUCT_NAME" /> genom att ett integrerat verktygsfält visas (i tillämpliga fall) och via ett översättningsalternativ på snabbmenyn (via högerklick).
+
+      Om du inaktiverar den här inställningen inaktiveras alla inbyggda översättningsfunktioner.
+
+      Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
+
+      Om du inte anger inställningen kan användarna välja om de vill använda funktionen eller inte.</translation>
 <translation id="8870318296973696995">Startsida</translation>
 <translation id="8882006618241293596">Blockera pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> på dessa webbplatser</translation>
 <translation id="8906768759089290519">Aktivera gästläge</translation>

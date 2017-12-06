@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">एक्सटेंशन को अनपैक नहीं कर सका.  किसी एक्सटेंशन को सुरक्षित रूप से अनपैक करने के लिए आपकी प्रोफ़ाइल निर्देशिका में एक ऐसा पथ होना आवश्यक है, जिसमें कोई सिमलिंक न हो.  ऐसा कोई भी पथ आपकी प्रोफ़ाइल के लिए मौजूद नहीं है.</translation>
 <translation id="641087317769093025">एक्सटेंशन को अनज़िप नहीं किया जा सका</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" आपके एक या अधिक डिवाइस के एक्‍सेस का अनुरोध कर रहा है:</translation>
-<translation id="6566142449942033617">प्लग इन के लिए '<ph name="PLUGIN_PATH" />' को लोड नहीं कर सका.</translation>
 <translation id="657064425229075395">पृष्ठभूमि स्क्रिप्ट '<ph name="BACKGROUND_SCRIPT" />' लोड नहीं की जा सकी.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> का <ph name="PRODUCT_NAME" /> (सीरियल नंबर <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">अनज़िप करने के लिए निर्देशिका नहीं बनाई जा सकी: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">इस एक्सटेंशन ने स्वयं को बहुत जल्दी-जल्दी फिर से लोड किया.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME" /> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
-<translation id="7581279002575751816">NPAPI प्लग इन समर्थित नहीं हैं.</translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">सामने वाला कैमरा</translation>
 <translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" निर्धारित कर लिया है.</translation>

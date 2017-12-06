@@ -399,7 +399,7 @@
 <translation id="3759461132968374835">Pēdējā laikā neesat ziņojis par avārijām. Šeit nebūs redzamas avārijas, kas radās laikā, kad avāriju pārskatu izveide bija atspējota.</translation>
 <translation id="3765032636089507299">Drošās pārlūkošanas lapa pašlaik nav pieejama</translation>
 <translation id="3778403066972421603">Vai vēlaties saglabāt šo karti savā Google kontā un šajā ierīcē?</translation>
-<translation id="3783418713923659662">MasterCard</translation>
+<translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Derīguma termiņš: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3808375843007691220">Uzmanību — turpmākās funkcijas ir eksperimentālas!</translation>
 <translation id="382518646247711829">Ja izmantojat starpniekserveri...</translation>
@@ -724,7 +724,6 @@
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="6451458296329894277">Apstiprināt veidlapas atkārtotu iesniegšanu</translation>
 <translation id="6456339708790392414">Maksājums</translation>
-<translation id="6458467102616083041">Ignorēta, jo ar politiku ir atspējota noklusējuma meklēšana.</translation>
 <translation id="647261751007945333">Ierīces politikas</translation>
 <translation id="6477321094435799029">Pārlūkā Chrome tika noteikts, ka šajā lapā ir neparasts kods. Lapa tika bloķēta, lai aizsargātu jūsu personas informāciju (piemēram, paroles, tālruņa numurus un kredītkaršu informāciju).</translation>
 <translation id="6489534406876378309">Sākt avāriju datu augšupielādi</translation>

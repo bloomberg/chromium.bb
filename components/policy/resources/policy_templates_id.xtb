@@ -46,6 +46,39 @@
 
       Nilai kebijakan harus ditentukan dalam milidetik.</translation>
 <translation id="1151353063931113432">Izinkan gambar di situs ini</translation>
+<translation id="1151545095291359187">Mengonfigurasi setelan pengelolaan ekstensi untuk <ph name="PRODUCT_NAME" />.
+
+          Kebijakan ini mengontrol berbagai setelan, termasuk setelan yang dikontrol oleh kebijakan terkait ekstensi yang sudah ada mana pun. Kebijakan ini akan mengganti kebijakan lama apa pun jika keduanya disetel.
+
+          Kebijakan ini memetakan ID ekstensi atau URL update ke konfigurasinya. Dengan ID ekstensi, konfigurasi hanya akan diterapkan ke ekstensi yang ditentukan. Konfigurasi default dapat disetel untuk ID spesifik <ph name="DEFAULT_SCOPE" />, yang akan diterapkan ke semua ekstensi yang tidak memiliki konfigurasi kustom, yang disetel dalam kebijakan ini. Dengan URL update, konfigurasi akan diterapkan ke semua ekstensi dengan URL update persis seperti yang dinyatakan dalam manifes ekstensi ini, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurasi untuk setiap ekstensi (atau ekstensi dengan URL update yang sama) adalah kamus lain yang dapat berisi kolom yang didokumentasikan di bawah.
+
+          <ph name="INSTALLATION_MODE" />: memetakan ke string yang menunjukkan mode penginstalan untuk ekstensi. String yang valid adalah:
+          * <ph name="ALLOWED" />: mengizinkan ekstensi diinstal oleh pengguna. Konfigurasi ini adalah perilaku default.
+          * <ph name="BLOCKED" />: memblokir penginstalan ekstensi.
+          * <ph name="FORCE_INSTALLED" />: ekstensi akan otomatis diinstal dan tidak dapat dihapus oleh pengguna.
+          * <ph name="NORMAL_INSTALLED" />: ekstensi akan otomatis diinstal, tetapi dapat dinonaktifkan oleh pengguna.
+
+          <ph name="INSTALLATION_MODE" /> juga dapat dikonfigurasi untuk beberapa ekstensi, termasuk ekstensi <ph name="DEFAULT_SCOPE" /> (sebagai setelan default) dan ekstensi dengan URL update yang sama. Dalam hal ini, hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> yang dapat digunakan.
+
+          Jika mode disetel ke <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, <ph name="UPDATE_URL" /> juga harus dikonfigurasi. Perhatikan bahwa URL update yang disetel dalam kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan di manifes ekstensi. URL update harus mengarah ke dokumen XML Manifes Update seperti yang dijelaskan di atas.
+
+          <ph name="BLOCKED_PERMISSIONS" />: memetakan ke daftar string yang menunjukkan izin API yang diblokir untuk ekstensi. Nama izin sama dengan string izin yang dinyatakan dalam manifes ekstensi seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC3" />. Setelan ini juga dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Jika mewajibkan izin yang berada di daftar blokir, ekstensi tidak akan diizinkan untuk dimuat. Jika ekstensi berisi izin yang diblokir sebagai persyaratan opsional, ekstensi akan ditangani dengan cara normal, tetapi permintaan izin yang bertentangan akan ditolak secara otomatis selama waktu proses.
+
+          <ph name="ALLOWED_PERMISSIONS" />: mirip dengan <ph name="BLOCKED_PERMISSIONS" />, namun mengizinkan beberapa izin secara eksplisit yang mungkin diblokir oleh daftar izin yang diblokir secara global, sehingga tidak dapat dikonfigurasi untuk ekstensi <ph name="DEFAULT_SCOPE" />. Perhatikan bahwa setelan ini tidak memberikan izin ke ekstensi secara otomatis.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: memetakan ke string versi. Format string versi sama dengan yang digunakan dalam manifes ekstensi, seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC4" />. Ekstensi dengan versi yang lebih lama daripada versi minimum yang ditentukan akan dinonaktifkan. Hal ini juga berlaku pada ekstensi yang diinstal paksa.
+
+          Setelan berikut dapat digunakan hanya untuk konfigurasi <ph name="DEFAULT_SCOPE" /> default:
+
+          <ph name="INSTALL_SOURCES" />: Setiap item dalam daftar ini adalah pola pencocokan gaya ekstensi (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna dapat dengan mudah menginstal item dari URL apa pun yang cocok dengan item di daftar ini. Lokasi halaman maupun file <ph name="EXTENSION_SUFFIX_WILDCARD" /> tempat download dimulai (yaitu perujuk) harus diizinkan oleh pola ini.
+
+          <ph name="ALLOWED_TYPES" />: Setelan ini memberi akses jenis ekstensi/aplikasi yang diizinkan, yang dapat diinstal di <ph name="PRODUCT_NAME" />. Nilainya adalah daftar string, yang masing-masing harus berupa salah satu dari: <ph name="VALID_ALLOWED_TYPES" />. Lihat dokumentasi ekstensi <ph name="PRODUCT_NAME" /> untuk informasi selengkapnya tentang jenis ini.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna mencoba menginstal ekstensi namun diblokir oleh kebijakan, Toko Web Chrome akan menampilkan pesan error umum. Setelan ini mengizinkan Anda menambahkan teks ke pesan error. Setelan ini dapat digunakan untuk mengarahkan pengguna ke layanan bantuan, menjelaskan alasan ekstensi tertentu diblokir, atau hal-hal lain. Pesan error ini akan terpotong jika lebih dari 1.000 karakter.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Menerima daftar host yang interaksinya dengan ekstensi akan diblokir. Hal ini termasuk melakukan injeksi JavaScript, mengubah dan melihat webRequests/webNavigation, serta melihat dan mengubah cookie. Formatnya mirip dengan Pola Pencocokan <ph name="LINK_TO_MATCH_PATTERNS" />, kecuali tidak ada path yang dapat ditentukan. Mis. "*://*.example.com". Format ini juga mendukung penulisan karakter pengganti TLD yang efektif, misalnya "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima daftar host yang dapat berinteraksi dengan ekstensi, terlepas dari apakah host terdaftar dalam <ph name="RUNTIME_BLOCKED_HOSTS" /> atau tidak. Formatnya sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Laporkan status pengalih dev perangkat ketika boot.
 
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Mengaktifkan printer perusahaan</translation>
 <translation id="1221359380862872747">Muat url yang ditentukan di proses masuk demo</translation>
 <translation id="123081309365616809">Mengaktifkan casting konten ke perangkat</translation>
+<translation id="1257550411839719984">Setel direktori download default</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>
 <translation id="1291880496936992484">Peringatan: RC4 akan dihapus sepenuhnya dari <ph name="PRODUCT_NAME" /> setelah versi 52 (sekitar September 2016) dan sejak saat itu kebijakan ini tidak akan berlaku lagi.
 
@@ -511,7 +545,7 @@
 <translation id="2682225790874070339">Menonaktifkan Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktifkan fitur proxy kompresi data</translation>
 <translation id="2731627323327011390">Menonaktifkan penggunaan sertifikat <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
-<translation id="2742843273354638707">Menyembunyikan aplikasi Toko Web Chrome serta link footer dari Halaman Tab Baru dan peluncur aplikasi <ph name="PRODUCT_OS_NAME" />.
+<translation id="2742843273354638707">Menyembunyikan aplikasi Chrome Webstore serta link footer dari Halaman Tab Baru dan peluncur aplikasi <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke true, ikon akan disembunyikan.
 
@@ -539,6 +573,7 @@
       </translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
+<translation id="2793923553868251161">Asal yang akan diperlakukan sebagai konteks yang aman.</translation>
 <translation id="2801230735743888564">Mengizinkan pengguna memainkan game dinosaur easter egg saat perangkat offline.
 
       Jika kebijakan ini disetel ke False, pengguna tidak dapat memainkan game dinosaur easter egg saat perangkat offline. Jika setelan ini disetel ke True, pengguna dapat memainkan game tersebut. Jika kebijakan ini tidak disetel, pengguna tidak dapat memainkan game dinosaur easter egg pada Chrome OS yang terdaftar, tapi pengguna dapat memainkannya dalam situasi tertentu.</translation>
@@ -775,11 +810,6 @@
       Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
-<translation id="376931976323225993">Memungkinkan Anda menyetel apakah situs diizinkan untuk otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />. Fitur otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> dapat diizinkan untuk semua situs atau ditolak untuk semua situs.
-
-          Fitur klik untuk memutar memungkinkan plugin <ph name="FLASH_PLUGIN_NAME" /> berjalan, namun pengguna harus mengklik placeholder untuk mulai menjalankannya.
-
-          Jika kebijakan ini tidak disetel, pengguna akan dapat mengubah setelan ini secara manual.</translation>
 <translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
 <translation id="3780319008680229708">Jika kebijakan ini disetel ke true, ikon toolbar Cast akan selalu ditampilkan di toolbar atau menu tambahan, dan pengguna tidak dapat menghapusnya.
 
@@ -861,6 +891,13 @@
       Jika Anda mengaktifkan setelan ini, Fitur Developer tidak dapat diakses dan elemen situs web tidak dapat diperiksa lagi. Setiap pintasan dan menu atau entri konteks menu untuk membuka Fitur Developer atau Konsol JavaScript akan dinonaktifkan.
 
       Menonaktifkan opsi ini atau membiarkannya tidak disetel akan memungkinkan pengguna menggunakan Fitur Developer dan konsol JavaScript.</translation>
+<translation id="3895557476567727016">Mengonfigurasi direktori default yang akan digunakan <ph name="PRODUCT_NAME" /> untuk mendownload file.
+
+      Jika diatur, setelan ini akan mengubah direktori default tempat <ph name="PRODUCT_NAME" /> mendownload file. Kebijakan ini tidak bersifat wajib, sehingga pengguna akan dapat mengubah direktori tersebut.
+
+      Jika Anda tidak menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori defaultnya yang biasa digunakan (khusus platform).
+
+      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.</translation>
 <translation id="3907986150060929099">Menyetel bahasa yang disarankan untuk sesi publik</translation>
 <translation id="3911737181201537215">Kebijakan ini tidak memengaruhi penyimpanan log yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> ketika disetel ke True. Dalam kasus ini, tidak ada data yang diupload ke Google Drive.
@@ -1121,13 +1158,13 @@
 
           Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bertentangan. Jika aplikasi atau ekstensi yang sebelumnya diinstal paksa telah dihapus dari daftar ini, aplikasi/ekstensi tersebut otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
 
-          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan paksa dibatasi untuk aplikasi dan ekstensi yang tercantum di Toko Web Chrome.
+          Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan paksa dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Webstore.
 
           Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Fitur Developer (berpotensi merender disfungsi ekstensi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya disetel.
 
           Setiap item daftar kebijakan merupakan string yang berisi ID ekstensi dan URL "update" yang dipisah dengan titik koma (<ph name="SEMICOLON" />). ID ekstensi adalah string 32 huruf yang ditemukan misalnya di <ph name="CHROME_EXTENSIONS_LINK" /> saat dalam mode developer. URL "update" seharusnya mengarah ke dokumen XML Manifes Update seperti yang dijelaskan dalam <ph name="LINK_TO_EXTENSION_DOC1" />. Perhatikan bahwa URL "update" yang disetel di kebijakan ini hanya digunakan untuk penginstalan awal; update ekstensi berikutnya akan menggunakan URL update yang ditunjukkan dalam manifes ekstensi.
 
-          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Toko Web Chrome standar. Untuk informasi selengkapnya tentang menghosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Misalnya, <ph name="EXTENSION_POLICY_EXAMPLE" /> menginstal aplikasi <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dari URL "update" Chrome Webstore standar. Untuk informasi selengkapnya tentang menghosting ekstensi, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan saat melakukan penelusuran saran dengan POST. Terdiri dari pasangan nama/nilai yang dipisahkan koma. Jika nilai  parameter template, seperti {searchTerms} pada contoh di atas, akan diganti dengan data istilah penelusuran nyata.
@@ -1713,7 +1750,6 @@
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7072406291414141328">Mengaktifkan pembatasan bandwidth jaringan</translation>
 <translation id="7079519252486108041">Cekal pop-up di situs ini</translation>
-<translation id="7091198954851103976">Selalu jalankan plugin yang membutuhkan otorisasi</translation>
 <translation id="7106631983877564505">Mengaktifkan kunci jika perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.
 
       Jika Anda mengaktifkan setelan ini, pengguna akan dimintai sandi untuk membuka kunci perangkat dari mode tidur.
@@ -1794,7 +1830,7 @@
 <translation id="7329968046053403405">Menentukan jenis akun untuk akun yang diberikan oleh aplikasi autentikasi Android, yang mendukung autentikasi <ph name="HTTP_NEGOTIATE" /> (misalnya autentikasi Kerberos). Informasi ini seharusnya tersedia dari penyedia aplikasi autentikasi. Untuk detail selengkapnya, lihat https://goo.gl/hajyfN.
 
           Jika tidak ada setelan yang diberikan, autentikasi <ph name="HTTP_NEGOTIATE" /> akan dinonaktifkan di Android.</translation>
-<translation id="7331962793961469250">Bila disetel ke True, promosi untuk apl Toko Web Chrome tidak akan muncul pada halaman tab baru. Menyetel opsi ini ke False atau membiarkannya tanpa disetel akan membuat promosi untuk apl Toko Web Chrome muncul di halaman tab baru</translation>
+<translation id="7331962793961469250">Bila disetel ke True, promosi untuk apl Chrome Webstore tidak akan muncul pada halaman tab baru. Menyetel opsi ini ke False atau membiarkannya tanpa disetel akan membuat promosi untuk apl Chrome Webstore muncul di halaman tab baru</translation>
 <translation id="7332963785317884918">Kebijakan ini tidak lagi digunakan. <ph name="PRODUCT_OS_NAME" /> akan selalu menggunakan strategi pembersihan 'RemoveLRU'.
 
       Mengontrol perilaku pembersihan otomatis di perangkat <ph name="PRODUCT_OS_NAME" />. Pembersihan otomatis dipicu saat jumlah ruang disk kosong mencapai level kritis guna memulihkan sejumlah ruang disk.
@@ -1946,6 +1982,13 @@
 <translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
 
       Jika disetel ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk aplikasi ARC.</translation>
+<translation id="7872535148622213208">
+        Kebijakan ini menentukan daftar asal (URL) yang akan diperlakukan sebagai konteks yang
+        aman. Tujuannya adalah mengizinkan organisasi untuk menyiapkan server sementara
+        bagi pengembangan web internal.
+        Hal ini sama dengan bendera --unsafely-treat-insecure-origin-as-secure.
+        Untuk informasi lebih lanjut tentang konteks yang aman, lihat https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Kebijakan ini hanya aktif dalam mode ritel.
 
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>
@@ -2174,6 +2217,15 @@
       Jika kebijakan ini tidak dikonfigurasi atau nilainya kurang dari 1 MB, <ph name="PRODUCT_OS_NAME" /> akan menggunakan ukuran cache default.</translation>
 <translation id="8858642179038618439">Memaksakan Mode Perlindungan YouTube</translation>
 <translation id="8864975621965365890">Menimpa permintaan penghentian yang muncul saat situs dirender oleh <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Mengaktifkan layanan Google Terjemahan terpadu di <ph name="PRODUCT_NAME" />.
+
+      Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menawarkan fungsi terjemahan kepada pengguna dengan menunjukkan toolbar terjemahan terpadu (jika sesuai) dan opsi terjemahan di menu konteks klik kanan.
+
+      Jika Anda menonaktifkan setelan ini, semua fitur terjemahan bawaan akan dinonaktifkan.
+
+      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
+
+      Jika setelan ini dibiarkan tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="8870318296973696995">Beranda</translation>
 <translation id="8882006618241293596">Blokir plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
 <translation id="8906768759089290519">Aktifkan mode tamu</translation>

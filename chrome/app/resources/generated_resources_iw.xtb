@@ -43,7 +43,6 @@
 <translation id="106001083577824516">לא ניתן להסיר תוכנה מזיקה</translation>
 <translation id="1062407476771304334">החלף</translation>
 <translation id="1062866675591297858">נהל את המשתמשים שבפיקוח באמצעות <ph name="BEGIN_LINK" />לוח הבקרה למשתמשים בפיקוח<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">בודק הקבצים בספריית המדיה</translation>
 <translation id="1064835277883315402">הצטרף לרשת פרטית</translation>
 <translation id="1064912851688322329">‏נתק את חשבון Google שלך</translation>
 <translation id="1067048845568873861">נוצר</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">‏מטמון של אסימון ממשק API של זהות</translation>
 <translation id="1478233201128522094">‏בפעם הבאה, טלפון חדש יבטל את הנעילה של <ph name="DEVICE_TYPE" />. ב'הגדרות' אפשר להשבית את Smart Lock.</translation>
 <translation id="1478340334823509079">פרטים: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">מוכן לגבות <ph name="FILE_COUNT" /> תמונות חדשות</translation>
 <translation id="1483493594462132177">שלח</translation>
 <translation id="1485015260175968628">יכול כעת:</translation>
 <translation id="1485141095922496924">גרסה <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -528,7 +526,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />זהירות:<ph name="END_BOLD" /> קבצים אלה הם זמניים והם עלולים להימחק באופן אוטומטי כדי לפנות שטח דיסק. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">‏מומלץ להגדיר את Smart Lock ל-<ph name="DEVICE_TYPE" /> שלך</translation>
 <translation id="1817871734039893258">‏שחזור קבצים של Microsoft</translation>
-<translation id="1825832322945165090">נפח האחסון הפנוי במכשיר אינו מספיק</translation>
 <translation id="1826516787628120939">מתבצעת בדיקה</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> רוצה לשלוח לך הודעות.</translation>
 <translation id="1828378091493947763">הפלאגין אינו נתמך במכשיר זה</translation>
@@ -858,11 +855,6 @@
 <translation id="2384436799579181135">אירעה שגיאה. יש לבדוק את המדפסת ולנסות שוב.</translation>
 <translation id="2385700042425247848">שם השירות:</translation>
 <translation id="2387458720915042159">‏סוג חיבור לשרת proxy</translation>
-<translation id="2391243203977115091">נמצא <ph name="FILE_COUNT" /> תמונות חדשות
-    <ph name="LINE_BREAK1" />
-    אין מספיק שטח אחסון במכשיר.
-    <ph name="LINE_BREAK2" />
-    נסה לבחור כמה תמונות כדי להתחיל.</translation>
 <translation id="2391419135980381625">גופן רגיל</translation>
 <translation id="2391762656119864333">בטל</translation>
 <translation id="2392369802118427583">הפעל</translation>
@@ -1244,7 +1236,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2963151496262057773">הפלאגין הבא אינו מגיב: <ph name="PLUGIN_NAME" /> האם ברצונך לכבות אותו?</translation>
 <translation id="2966449113954629791">ייתכן שהשתמשת בכל מכסת הנתונים לנייד שלך. בקר בפורטל ההפעלה של <ph name="NAME" /> לרכישת נתונים נוספים.</translation>
 <translation id="2966937470348689686">‏ניהול העדפות ל-Android</translation>
-<translation id="2971033837577180453">‏&lt;span&gt;מזהה:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">הפחתת בהירות</translation>
 <translation id="2972557485845626008">קושחה</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
@@ -1553,7 +1544,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="344630545793878684">קריאת הנתונים שלך במספר אתרים</translation>
 <translation id="3449839693241009168">לחץ על <ph name="SEARCH_KEY" /> כדי לשלוח פקודות אל <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">אחוז תפוסה במצב לא פעיל</translation>
-<translation id="3450505713373650336">מגבה <ph name="FILE_COUNT" /> תמונות</translation>
 <translation id="3453612417627951340">יש צורך באישור</translation>
 <translation id="3454157711543303649">ההפעלה הושלמה</translation>
 <translation id="345693547134384690">פתח &amp;תמונה בכרטיסייה חדשה</translation>
@@ -1796,9 +1786,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="381202950560906753">להמשך הוספה</translation>
 <translation id="3812525830114410218">אישור פגום</translation>
 <translation id="3813296892522778813">‏אם אתה לא מוצא את מה שחיפשת, עבור אל <ph name="BEGIN_LINK_CHROMIUM" />מרכז העזרה של Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
-<translation id="3815571115159309122">‏נמצאו <ph name="FILE_COUNT" /> תמונות חדשות
-    <ph name="LINE_BREAK1" />
-    מוכנות לגיבוי ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">אפשר לכל האתרים לשלוח הודעות בדחיפה ברקע</translation>
 <translation id="3819752733757735746">גישה באמצעות מתג (שלוט במחשב בעזרת מתג אחד או שניים בלבד)</translation>
 <translation id="3819800052061700452">&amp;מסך מלא</translation>
@@ -2069,9 +2056,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4309420042698375243">‏‎<ph name="NUM_KILOBYTES" />K ‏‎(<ph name="NUM_KILOBYTES_LIVE" />K בשימוש)‎‎</translation>
 <translation id="431076611119798497">&amp;פרטים</translation>
 <translation id="4312866146174492540">חסום (ברירת מחדל)</translation>
-<translation id="4315548163539304064">סורק את התקן המדיה שלך...
-    <ph name="LINE_BREAK1" />
-    נמצאו <ph name="FILE_COUNT" /> תמונות חדשות</translation>
 <translation id="4316850752623536204">אתר המפתח</translation>
 <translation id="4320177379694898372">אין חיבור לאינטרנט</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{המשך את ההורדה}two{המשך את ההורדות}many{המשך את ההורדות}other{המשך את ההורדות}}</translation>
@@ -2159,7 +2143,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4481249487722541506">טען תוסף שלא נארז...</translation>
 <translation id="4481530544597605423">מכשירים לא מותאמים</translation>
 <translation id="4482194545587547824">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google</translation>
-<translation id="4492190037599258964">תוצאות החיפוש עבור '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495419450179050807">אל תציג בדף זה</translation>
 <translation id="450099669180426158">סמל של סימן קריאה</translation>
 <translation id="4501530680793980440">אשר הסרה</translation>
@@ -3809,7 +3792,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="721331389620694978">חלק מההגדרות שעשויות לשקף את הרגלי הגלישה לא ינוקו.</translation>
 <translation id="7216409898977639127">ספק שירות סלולרי</translation>
 <translation id="7216595297012131718">סדר את השפות לפי ההעדפות שלך</translation>
-<translation id="7219989745826083607">‏מנתח תיאורים של מכשירי DIAL</translation>
 <translation id="722055596168483966">‏התאמה אישית של שירותי Google</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">להציג הודעות</translation>
@@ -4440,7 +4422,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8261378640211443080">התוסף הזה לא רשום ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
 <translation id="8261387128019234107">הוסף חשבון עבור <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">מחיקה</translation>
-<translation id="8261673729476082470">‏מגבה <ph name="FILE_COUNT" /> תמונות ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258">‏<ph name="BAD_FLAG" /> לא מוטמע ב-build הזה.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> השבית את סמן העכבר.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" הפעיל מסך מלא.</translation>

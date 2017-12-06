@@ -46,6 +46,39 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
 <translation id="1151353063931113432">Bilder auf diesen Websites zulassen</translation>
+<translation id="1151545095291359187">Konfiguriert die Verwaltungseinstellungen für Erweiterungen für <ph name="PRODUCT_NAME" />.
+
+          Mit dieser Richtlinie können Sie mehrere Einstellungen festlegen, zum Beispiel Einstellungen, die von bestehenden, auf Erweiterungen bezogenen Richtlinien geregelt werden. Diese Richtlinie überschreibt ältere Richtlinien, wenn beide konfiguriert sind.
+
+          Mit dieser Richtlinie wird eine Erweiterungs-ID oder eine Update-URL ihrer Konfiguration zugeordnet. Bei einer Erweiterungs-ID wird die Konfiguration nur auf die angegebene Erweiterung angewendet. Eine Standardkonfiguration kann für die Spezial-ID <ph name="DEFAULT_SCOPE" /> festgelegt werden, die auf alle Erweiterungen angewendet wird, für die keine benutzerdefinierte Konfiguration in dieser Richtlinie konfiguriert ist. Bei einer Update-URL wird die Konfiguration auf alle Erweiterungen mit genau der im Manifest dieser Erweiterung angegebenen Update-URL angewendet, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> erläutert.
+
+          Bei der Konfiguration für jede Erweiterung (oder Erweiterungen mit der gleichen Update-URL) handelt es sich um ein weiteres Wörterbuch, das die im Folgenden genannten Felder enthalten kann.
+
+          <ph name="INSTALLATION_MODE" />: Verweist auf einen String, der den Installationsmodus für die Erweiterung angibt. Folgende Strings sind gültig:
+          * <ph name="ALLOWED" />: Lässt die Installation der Erweiterung durch den Nutzer zu. Dies ist das Standardverhalten.
+          * <ph name="BLOCKED" />: Blockiert die Installation der Erweiterung.
+          * <ph name="FORCE_INSTALLED" />: Die Erweiterung wird automatisch installiert und kann nicht vom Nutzer entfernt werden.
+          * <ph name="NORMAL_INSTALLED" />: Die Erweiterung wird automatisch installiert, kann aber vom Nutzer deaktiviert werden.
+
+          Das Feld <ph name="INSTALLATION_MODE" /> kann auch für mehrere Erweiterungen konfiguriert werden, einschließlich der Erweiterung <ph name="DEFAULT_SCOPE" /> (als Standardeinstellungen) und Erweiterungen mit der gleichen Update-URL. In diesem Fall können nur die Werte <ph name="ALLOWED" /> und <ph name="BLOCKED" /> verwendet werden.
+
+          Wenn der Modus <ph name="FORCE_INSTALLED" /> oder <ph name="NORMAL_INSTALLED" /> festgelegt ist, muss auch <ph name="UPDATE_URL" /> konfiguriert werden. Die in dieser Richtlinie festgelegte Update-URL wird nur für die Erstinstallation verwendet. Bei späteren Aktualisierungen der Erweiterungen wird die im Manifest der Erweiterung angegebene Update-URL verwendet werden. Die Update-URL muss wie oben erwähnt auf ein XML-Dokument zur Aktualisierung eines Manifests verweisen.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Verweist auf eine Liste mit Strings, in denen die Berechtigungen für blockierte APIs für die Erweiterung angegeben sind. Die Namen der Berechtigungen sind identisch mit den im Manifest angegebenen Strings der Berechtigung, wie unter <ph name="LINK_TO_EXTENSION_DOC3" /> erläutert. Die Einstellung kann auch für die Erweiterung <ph name="DEFAULT_SCOPE" /> konfiguriert werden. Wenn die Erweiterung eine Berechtigung erfordert, die auf der Sperrliste steht, kann sie nicht geladen werden. Wenn sie eine blockierte Berechtigung als optionale Anforderung enthält, wird sie normal behandelt, allerdings werden Anforderungen in Konflikt stehender Berechtigungen automatisch zur Laufzeit abgelehnt.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Ähnlich wie <ph name="BLOCKED_PERMISSIONS" />, nur werden einige Berechtigungen explizit zugelassen, die möglicherweise von der globalen Liste der blockierten Berechtigungen gesperrt werden und daher nicht für die Erweiterung <ph name="DEFAULT_SCOPE" /> konfiguriert werden können. Mit dieser Einstellung erhalten Erweiterungen jedoch nicht automatisch gewährte Berechtigungen.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Verweist auf einen Versions-String. Das Format dieses Strings ist mit dem im Manifest der Erweiterung verwendeten Format identisch, wie unter <ph name="LINK_TO_EXTENSION_DOC4" /> erläutert. Eine Erweiterung mit einer älteren Version als der angegebenen Mindestversion wird deaktiviert. Dies gilt auch für Erweiterungen, deren Installation erzwungen wurde.
+
+          Die folgenden Einstellungen können nur für die Standardkonfiguration von <ph name="DEFAULT_SCOPE" /> verwendet werden:
+
+          <ph name="INSTALL_SOURCES" />: Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe <ph name="LINK_TO_MATCH_PATTERNS" />). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der <ph name="EXTENSION_SUFFIX_WILDCARD" />-Datei als auch die Seite, über die der Download gestartet wird (der Referrer), müssen durch diese Muster zugelassen sein.
+
+          <ph name="ALLOWED_TYPES" />: Mit dieser Einstellung werden die zulässigen Typen von Erweiterungen/Apps, die in <ph name="PRODUCT_NAME" /> installiert werden können, auf die weiße Liste gesetzt. Jeder Wert besteht aus einer Liste mit folgenden Strings: <ph name="VALID_ALLOWED_TYPES" />. Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu den Erweiterungen in <ph name="PRODUCT_NAME" />.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Wenn der Nutzer versucht, eine Erweiterung zu installieren, die von der Richtlinie blockiert wird, wird im Chrome Web Store eine allgemeine Fehlermeldung angezeigt. Mit dieser Einstellung können Sie den Text der Fehlermeldung ergänzen. So können Sie beispielsweise Nutzer an Ihren Helpdesk verweisen oder eine Erklärung für den Grund der Richtlinienblockierung einfügen. Wenn die Fehlermeldung mehr als 1.000 Zeichen lang ist, wird sie abgeschnitten.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Lässt eine Liste von Hosts zu, mit denen eine Erweiterung nicht interagieren kann. Dazu gehören das Einfügen von JavaScript, das Ändern oder Aufrufen von webRequests/webNavigation sowie das Aufrufen oder Ändern von Cookies. Das Format ähnelt den Übereinstimmungsmustern (siehe <ph name="LINK_TO_MATCH_PATTERNS" />), allerdings müssen keine Pfade wie "*://*.example.com" angegeben werden. Dadurch werden auch effektive TLD-Platzhalter wie "*://example.*" unterstützt.
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Lässt eine Liste von Hosts zu, mit denen eine Erweiterung interagieren kann, auch wenn diese nicht unter <ph name="RUNTIME_BLOCKED_HOSTS" /> aufgeführt sind. Das Format ist mit <ph name="RUNTIME_BLOCKED_HOSTS" /> identisch.
+          </translation>
 <translation id="1152117524387175066">Meldet den Status des Entwicklerschalters des Geräts beim Start
 
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
@@ -63,6 +96,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1204263402976895730">Aktivierte Unternehmensdrucker</translation>
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
 <translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
+<translation id="1257550411839719984">Standard-Downloadverzeichnis festlegen</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>
 <translation id="1291880496936992484">Achtung: RC4 wird nach Version 52, etwa im September 2016, vollständig aus <ph name="PRODUCT_NAME" /> entfernt. Anschließend funktioniert diese Richtlinie nicht mehr.
 
@@ -534,6 +568,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       </translation>
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remote-Zugriff-Hosts konfigurieren</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
+<translation id="2793923553868251161">Quellen als sicheren Kontext einstufen.</translation>
 <translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
 
       Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
@@ -771,11 +806,6 @@ Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der g
       Sind diese Richtlinien nicht konfiguriert, so können Nutzer ihre eigenen Proxy-Einstellungen wählen.</translation>
 <translation id="3758249152301468420">Entwickler-Tools deaktivieren</translation>
 <translation id="3765260570442823273">Dauer der Warnmeldung zur Abmeldung bei Inaktivität</translation>
-<translation id="376931976323225993">Mit dieser Option können Sie festlegen, ob Websites das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" automatisch ausführen dürfen. Das automatische Ausführen des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" kann entweder für alle Websites zugelassen oder für alle Websites verboten werden.
-
-          Click-to-Play ermöglicht die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />". Der Nutzer muss jedoch auf den Platzhalter klicken, um die Ausführung zu initiieren.
-
-          Wird diese Richtlinie nicht konfiguriert, kann der Nutzer diese Einstellung manuell ändern.</translation>
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
 <translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Überlaufmenü und Nutzer können es nicht entfernen.
 
@@ -854,6 +884,13 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Wenn Sie diese Einstellung aktivieren, besteht kein Zugriff mehr auf die Entwicklertools, sodass Websiteelemente nicht mehr überprüft werden können. Jegliche Tastenkombinationen und Menü- und Kontextmenüeinträge zum Öffnen der Entwicklertools oder der JavaScript-Konsole werden deaktiviert.
 
       Ist diese Option deaktiviert oder nicht konfiguriert, können die Entwicklertools und die JavaScript-Konsole verwendet werden.</translation>
+<translation id="3895557476567727016">Konfiguriert das Standardverzeichnis, in dem über <ph name="PRODUCT_NAME" /> heruntergeladene Dateien gespeichert werden.
+
+      Wenn Sie diese Richtlinie festlegen, wird ein anderes Standard-Downloadverzeichnis für <ph name="PRODUCT_NAME" /> festgelegt. Diese Richtlinie ist nicht verbindlich, daher kann ein Nutzer das Verzeichnis ändern.
+
+      Sollten Sie diese Richtlinie nicht festlegen, wird für <ph name="PRODUCT_NAME" /> das jeweilige plattformspezifische Verzeichnis verwendet.
+
+      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit allen Variablen, die verwendet werden können.</translation>
 <translation id="3907986150060929099">Empfohlene Gebietsschemas für eine öffentliche Sitzung festlegen</translation>
 <translation id="3911737181201537215">Diese Richtlinie hat keine Auswirkung auf die Protokollierung durch Android.</translation>
 <translation id="391531815696899618">Bei Festlegung auf "true" wird die Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktiviert. Es werden dann keine Daten in Google Drive hochgeladen.
@@ -1712,7 +1749,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7072406291414141328">Begrenzung der Netzwerkbandbreite zulassen</translation>
 <translation id="7079519252486108041">Pop-ups auf diesen Websites blockieren</translation>
-<translation id="7091198954851103976">Führt Plug-ins, die eine Autorisierung erfordern, immer aus</translation>
 <translation id="7106631983877564505">Ermöglicht das Sperren von Geräten, wenn ein <ph name="PRODUCT_OS_NAME" />-Gerät inaktiv ist oder angehalten wird.
 
       Wenn Sie diese Einstellung aktivieren, werden Nutzer nach einem Passwort gefragt, um das Gerät aus dem Ruhemodus zu reaktivieren.
@@ -1945,6 +1981,13 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="787125417158068494"><ph name="PRODUCT_OS_NAME" />-Zertifikate sind nicht für ARC-Apps verfügbar, wenn "SyncDisabled" festgelegt wurde oder die Zertifikate nicht konfiguriert wurden.
 
       Wenn "CopyCaCerts" festgelegt wurde, sind alle über ONC installierten CA-Zertifikate mit <ph name="WEB_TRUSTED_BIT" /> für ARC-Apps verfügbar.</translation>
+<translation id="7872535148622213208">
+        Mit dieser Richtlinie wird eine Liste aller Quellen (URLs) festgelegt, die als 
+        sicherer Kontext eingestuft werden sollen. Auf diese Weise können Organisationen
+        einen Testserver für interne Webentwicklungen einrichten.
+        Diese Richtlinie entspricht der Kennzeichnung "--unsafely-treat-insecure-origin-as-secure".
+        Weitere Informationen zu sicherem Kontext finden Sie unter https://www.w3.org/TR/secure-contexts/.
+        </translation>
 <translation id="7882585827992171421">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
@@ -2164,6 +2207,15 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
       Wenn diese Richtlinie nicht konfiguriert oder der Wert auf weniger als 1 MB festgelegt ist, verwendet <ph name="PRODUCT_OS_NAME" /> die standardmäßige Cachegröße.</translation>
 <translation id="8858642179038618439">YouTube-Sicherheitsmodus erzwingen</translation>
 <translation id="8864975621965365890">Unterdrückung des Hinweises auf Einstellung des Frames, der beim Rendern einer Website durch <ph name="PRODUCT_FRAME_NAME" /> erscheint</translation>
+<translation id="8867464911288727016">Aktiviert den integrierten Google Übersetzer-Dienst in <ph name="PRODUCT_NAME" />.
+
+      Wenn Sie diese Einstellung aktivieren, wird in <ph name="PRODUCT_NAME" /> ggf. eine integrierte Symbolleiste für Übersetzungen und eine Übersetzungsfunktion im Kontextmenü angezeigt, das mit einem Rechtsklick geöffnet werden kann.
+
+      Sollten Sie diese Einstellung deaktivieren, wird keine der integrierten Übersetzungsfunktionen angezeigt.
+
+      Wird diese Einstellung aktiviert oder deaktiviert, können Nutzer diese Einstellung in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
+
+      Wenn die Einstellung nicht konfiguriert ist, kann der Nutzer entscheiden, ob er die Funktion in Anspruch nehmen möchte oder nicht.</translation>
 <translation id="8870318296973696995">Startseite</translation>
 <translation id="8882006618241293596">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" auf diesen Websites blockieren</translation>
 <translation id="8906768759089290519">Gastmodus aktivieren</translation>

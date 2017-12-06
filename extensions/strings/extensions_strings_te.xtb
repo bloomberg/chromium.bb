@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">ఎక్స్‌టెన్‌షన్‌ అన్‌ప్యాక్ చేయబడదు.  ఒక ఎక్స్‌టెన్‌షన్‌‌ను సురక్షితంగా అన్‌ప్యాక్ చేయడానికి, మీ ప్రొఫైల్ డైరెక్టరీకి సింలింక్ ఉండని గమ్యమార్గం తప్పనిసరిగా ఉండాలి.  మీ ప్రొఫైల్‌కు అటువంటి గమ్యమార్గం లేదు.</translation>
 <translation id="641087317769093025">పొడిగింపు అన్‌జిప్ చేయబడదు</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు ప్రాప్యతను అభ్యర్థిస్తోంది:</translation>
-<translation id="6566142449942033617">ప్లగ్‌ఇన్‌ కోసం '<ph name="PLUGIN_PATH" />'ను లోడ్ చేయలేకపోయాము.</translation>
 <translation id="657064425229075395">నేపథ్య స్క్రిప్ట్ '<ph name="BACKGROUND_SCRIPT" />'ను లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> నుండి <ph name="PRODUCT_NAME" /> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">దీనిలో అన్‌జిప్ చేయడానికి  డైరెక్టరీ సృష్టించబడదు: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">ఈ పొడిగింపు దానికదే చాలా తరచుగా రీలోడ్ అయ్యింది.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME" /> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
-<translation id="7581279002575751816">NPAPI ప్లగిన్‌లకు మద్దతు లేదు.</translation>
 <translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">వినియోగదారు వైపుగా</translation>
 <translation id="8047248493720652249">ఈ పొడిగింపు డౌన్‌లోడ్ యొక్క పేరును "<ph name="ATTEMPTED_FILENAME" />"గా పేర్కొనడంలో విఫలమైంది ఎందుకంటే మరో పొడిగింపు (<ph name="EXTENSION_NAME" />) "<ph name="ACTUAL_FILENAME" />" అనే వేరే ఫైల్ పేరుని నిశ్చయించింది.</translation>

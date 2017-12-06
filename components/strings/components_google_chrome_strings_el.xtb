@@ -25,7 +25,7 @@
         <ph name="SETTINGS_TITLE" />
         &gt;
         <ph name="ADVANCED_TITLE" />
-        και καταργήστε την επιλογή "<ph name="NO_PREFETCH_DESCRIPTION" />".
+        και αποεπιλέξτε "<ph name="NO_PREFETCH_DESCRIPTION" />".
         Εάν με αυτόν τον τρόπο δεν επιλύεται το ζήτημά σας, συνιστούμε
         να ενεργοποιήσετε ξανά αυτήν την επιλογή για βελτιωμένη απόδοση.</translation>
 <translation id="6855094794438142393">Μεταβείτε
@@ -37,8 +37,8 @@
           <ph name="PROXIES_TITLE" />
           &gt;
           Ρυθμίσεις LAN
-          και καταργήστε την επιλογή "Χρήση διακομιστή μεσολάβησης για το LAN".</translation>
+          και αποεπιλέξτε τη "Χρήση διακομιστή μεσολάβησης για το LAN".</translation>
 <translation id="8187289872471304532">Μεταβείτε στο
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
-          και καταργήστε τυχόν διακομιστές μεσολάβησης που έχουν επιλεγεί.</translation>
+          και αποεπιλέξτε τυχόν διακομιστές μεσολάβησης που έχουν επιλεγεί.</translation>
 </translationbundle>

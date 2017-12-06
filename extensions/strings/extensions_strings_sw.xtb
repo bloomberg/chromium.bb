@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Haiwezi kufungua kiendelezi. Ili kufungua kiendelezi kwa usalama, sharti kuwe na kijia katika saraka yako ya maelezo mafupi ambacho hakina kiungo cha mfumo. Hakuna vijia kama hivyo vilivyopo kwa maelezo yako mafupi.</translation>
 <translation id="641087317769093025">Isingeweza kufungua kiendelezi</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" inaomba idhini ya kufikia kifaa chako kimoja au vingi:</translation>
-<translation id="6566142449942033617"><ph name="PLUGIN_PATH" /> haikuweza kupakiwa kwa ajili ya kiendelezi.</translation>
 <translation id="657064425229075395">Haikuweza kupakia hati ya mandharinyuma '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> kutoka kwa <ph name="VENDOR_NAME" /> (nambari ya ufuatiliaji <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Isingeweza kuunda saraka ya kufungua: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Kiendelezi hiki kilijipakia chenyewe upya kila mara.</translation>
 <translation id="7003844668372540529">Bidhaa isiyojulikana <ph name="PRODUCT_ID" /> kutoka kwa <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Msimamizi wa mashine haya anahitaji <ph name="EXTENSION_NAME" /> kisakinishwe. Hakiwezi kuondolewa au kurekebishwa.</translation>
-<translation id="7581279002575751816">Programu jalizi za NPAPI hazihimiliwi.</translation>
 <translation id="7972881773422714442">Chaguzi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Kamera ya mbele</translation>
 <translation id="8047248493720652249">Kiendelezi hiki kimeshindwa kukipa kipakuliwa jina "<ph name="ATTEMPTED_FILENAME" />" kwa sababu kipakuliwa kingine (<ph name="EXTENSION_NAME" />) kimechagua jina tofauti la faili "<ph name="ACTUAL_FILENAME" />".</translation>

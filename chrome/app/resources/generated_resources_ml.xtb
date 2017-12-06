@@ -43,7 +43,6 @@
 <translation id="106001083577824516">ദോഷകരമായ സോഫ്‌റ്റ്‌വെയർ നീക്കംചെയ്യാനായില്ല</translation>
 <translation id="1062407476771304334">മാറ്റിസ്ഥാപിക്കുക</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK" />സൂപ്പർവൈസുചെയ്‌ത ഉപയോക്താക്കളുടെ ഡാഷ്‌ബോർഡ്<ph name="END_LINK" /> വഴി സൂപ്പർവൈസുചെയ്‌ത ഉപയോക്താക്കളെ നിയന്ത്രിക്കുക.</translation>
-<translation id="1064662184364304002">മീഡിയ ലൈബ്രറി ഫയൽ ചെക്കർ</translation>
 <translation id="1064835277883315402">സ്വകാര്യ നെറ്റ്‌വർക്കിൽ ചേരുക</translation>
 <translation id="1064912851688322329">നിങ്ങളുടെ Google അക്കൗണ്ട് വിച്ഛേദിക്കുക</translation>
 <translation id="1067048845568873861">സൃഷ്‌ടിച്ചു</translation>
@@ -308,7 +307,6 @@
 <translation id="1477301030751268706">ഐഡന്റിറ്റി API ടോക്കൺ കാഷെ</translation>
 <translation id="1478233201128522094">അടുത്ത തവണ, ഈ <ph name="DEVICE_TYPE" /> എന്നത് പുതിയ ഫോൺ അൺലോക്കുചെയ്യും. ക്രമീകരണത്തിൽ Smart Lock ഓഫുചെയ്യുക.</translation>
 <translation id="1478340334823509079">വിശദാംശങ്ങൾ: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544"><ph name="FILE_COUNT" /> പുതിയ ഫോട്ടോകൾ ബാക്കപ്പുചെയ്യാൻ തയ്യാറാണ്</translation>
 <translation id="1483493594462132177">അയയ്‌ക്കുക</translation>
 <translation id="1485015260175968628">ഇതിന് ഇപ്പോൾ ആക്‌സസ്സുചെയ്യാൻ കഴിയുന്നത്:</translation>
 <translation id="1485141095922496924"><ph name="PRODUCT_VERSION" /> പതിപ്പ് (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -529,7 +527,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />മുന്നറിയിപ്പ്:<ph name="END_BOLD" />  ഡിസ്ക് സ്പേസ് സ്വന്തന്ത്രമാക്കുന്നതിന് ഈ ഫയലുകളെ താൽക്കാലികമായി, ഒരു പക്ഷെ ഓട്ടോമാറ്റിക് ആയി ഇല്ലാതാക്കും.  <ph name="BEGIN_LINK" />കൂടുതൽ അറിയുക<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383"><ph name="DEVICE_TYPE" /> ഉപകരണത്തിനായി ഒരു Smart Lock സജ്ജമാക്കുക</translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
-<translation id="1825832322945165090">ഉപകരണത്തിൽ മതിയായ ഇടമില്ല</translation>
 <translation id="1826516787628120939">പരിശോധിക്കുന്നു</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> നിങ്ങൾക്ക് അറിയിപ്പുകൾ അയയ്‌ക്കാൻ താൽപ്പര്യപ്പെടുന്നു.</translation>
 <translation id="1828378091493947763">ഈ പ്ലഗിൻ ഈ ഉപകരണത്തിൽ പിന്തുണയ്‌ക്കുന്നില്ല</translation>
@@ -859,11 +856,6 @@
 <translation id="2384436799579181135">ഒരു പിശക് സംഭവിച്ചു. നിങ്ങളുടെ പ്രിന്‍റർ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2385700042425247848">സേവന നാമം:</translation>
 <translation id="2387458720915042159">പ്രോക്‌സി കണക്ഷൻ തരം</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> പുതിയ ഫോട്ടോകൾ കണ്ടെത്തി
-    <ph name="LINE_BREAK1" />
-        ഉപകരണത്തിൽ മതിയായ ഇടമില്ല.
-    <ph name="LINE_BREAK2" />
-    ആരംഭിക്കാൻ കുറച്ച് ഫോട്ടോകൾ തിരഞ്ഞെടുത്തുകൊണ്ട് ശ്രമിക്കുക.</translation>
 <translation id="2391419135980381625">സാധാരണ ഫോണ്ട്</translation>
 <translation id="2391762656119864333">റദ്ദാക്കുക</translation>
 <translation id="2392369802118427583">സജീവമാക്കുക</translation>
@@ -1245,7 +1237,6 @@
 <translation id="2963151496262057773">ഇനിപ്പറയുന്ന പ്ലഗിൻ പ്രതികരിക്കാത്തതാണ്: <ph name="PLUGIN_NAME" />അത് നിർത്തണോ?</translation>
 <translation id="2966449113954629791">നിങ്ങളുടെ മൊബൈൽ ഡാറ്റ അലവൻസ് പരമാവധി ഉപയോഗിച്ചിരിക്കാനിടയുണ്ട്. കൂടുതൽ ഡാറ്റ വാങ്ങാൻ <ph name="NAME" /> സജീവമാക്കൽ പോർട്ടൽ സന്ദർശിക്കുക.</translation>
 <translation id="2966937470348689686">Android മുൻഗണനകൾ മാനേജുചെയ്യുക</translation>
-<translation id="2971033837577180453">&lt;span&gt;ഐഡി:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">തെളിച്ചം കുറയ്‌ക്കുക</translation>
 <translation id="2972557485845626008">ഫേംവെയര്‍</translation>
 <translation id="2972581237482394796">&amp;വീണ്ടും ചെയ്യുക</translation>
@@ -1375,6 +1366,7 @@
 <translation id="3153862085237805241">കാർഡ് സംരക്ഷിക്കുക</translation>
 <translation id="3154351730702813399">ഉപകരണ അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി നിരീക്ഷിച്ചേക്കാം.</translation>
 <translation id="3154429428035006212">ഒരു മാസത്തിലേറെയായി ഓഫ്‌ലൈനിലാണ്</translation>
+<translation id="3156531245809797194">Chrome ഉപയോഗിക്കാൻ സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="3156815148496352304">OS അപ്‌ഡേറ്റ് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="3157931365184549694">പുനഃസ്ഥാപിക്കുക</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ഹാർഡ്‌വെയർ പിന്തുണയുള്ളത്)</translation>
@@ -1538,6 +1530,7 @@
 <translation id="3429599832623003132">$1 ഇനങ്ങൾ</translation>
 <translation id="3432227430032737297">ദൃശ്യമാക്കിയിരിക്കുന്നതെല്ലാം നീക്കംചെയ്യുക</translation>
 <translation id="3432757130254800023">പ്രാദേശിക നെറ്റ്‌വർക്കിലെ ഡിസ്‌പ്ലേകളിലേക്ക് ഓഡിയോയും വീഡിയോയും അയയ്‌ക്കുക</translation>
+<translation id="3432762828853624962">പങ്കിട്ട വർക്കർമാർ</translation>
 <translation id="3433621910545056227">ക്ഷമിക്കണം! ഉപകരണ ഇൻസ്റ്റാളേഷൻ-സമയ ആട്രിബ്യൂട്ട് ലോക്ക് സ്ഥാപിക്കുന്നതിൽ സിസ്റ്റം പരാജയപ്പെട്ടു.</translation>
 <translation id="3434107140712555581">ബാറ്ററി: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">പരിരക്ഷിത ഉള്ളടക്കത്തിലേക്ക് ആക്‌സസ്സ് അനുവദിക്കുന്നതിന്റെ ആവശ്യകതയ്‌ക്കായി നിങ്ങളെ അദ്വിതീയമായി തിരിച്ചറിയുന്നതിന് ചില ഉള്ളടക്ക സേവനങ്ങൾ മെഷീൻ ഐഡന്റിഫയറുകൾ ഉപയോഗിക്കുന്നു.</translation>
@@ -1555,7 +1548,6 @@
 <translation id="344630545793878684">നിരവധി വെബ്‌സൈറ്റുകളിലെ നിങ്ങളുടെ വിവരം വായിക്കുക</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" /> ലേക്ക് കമാന്‍റുകള്‍‌ അയയ്‌ക്കുന്നതിന് <ph name="SEARCH_KEY" /> അമര്‍‌ത്തുക</translation>
 <translation id="3450157232394774192">നിഷ്ക്രിയ നില ഒക്യുപ്പൻസി ശതമാനം</translation>
-<translation id="3450505713373650336"><ph name="FILE_COUNT" /> ഫോട്ടോകൾ ബാക്കപ്പുചെയ്യുന്നു</translation>
 <translation id="3453612417627951340">അംഗീകാരം ആവശ്യമാണ്</translation>
 <translation id="3454157711543303649">സജീവമാക്കല്‍ പൂര്‍ത്തിയായി</translation>
 <translation id="345693547134384690">പുതിയ ടാബിലെ ഇമേജ് &amp;തുറക്കുക</translation>
@@ -1798,9 +1790,6 @@
 <translation id="381202950560906753">മറ്റൊന്ന് ചേർക്കുക</translation>
 <translation id="3812525830114410218">മോശം സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="3813296892522778813">നിങ്ങൾ തിരയുന്നത് കണ്ടില്ലെങ്കിൽ, <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome സഹായത്തിൽ<ph name="END_LINK_CHROMIUM" /> പോകുക</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> പുതിയ ഫോട്ടോകൾ കണ്ടെത്തി
-    <ph name="LINE_BREAK1" />
-    <ph name="BEGIN_LINK" />Google ഡ്രൈവിലേക്ക്<ph name="END_LINK" /> ബാക്കപ്പുചെയ്യാൻ തയ്യാറാണ്</translation>
 <translation id="3819007103695653773">പശ്ചാത്തല പുഷ് സന്ദേശങ്ങൾ അയയ്‌ക്കാൻ എല്ലാ സൈറ്റുകളെയും അനുവദിക്കുക</translation>
 <translation id="3819752733757735746">ആക്‌സസ്സ് മാറുക (ഒന്നോ രണ്ടോ തവണ മാറുന്നതിലൂടെ കമ്പ്യൂട്ടർ നിയന്ത്രിക്കുക)</translation>
 <translation id="3819800052061700452">&amp;പൂര്‍ണ്ണ സ്‌ക്രീന്‍</translation>
@@ -2070,9 +2059,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K ലൈവ്)</translation>
 <translation id="431076611119798497">&amp;വിശദാംശങ്ങള്‍‌</translation>
 <translation id="4312866146174492540">ബ്ലോക്കുചെയ്യുക (ഡിഫോൾട്ട്)</translation>
-<translation id="4315548163539304064">നിങ്ങളുടെ മീഡിയ ഉപകരണം സ്‌കാൻ ചെയ്യുന്നു...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> പുതിയ ഫോട്ടോകൾ കണ്ടെത്തി</translation>
 <translation id="4316850752623536204">ഡെവലപ്പർ വെബ്‌സൈറ്റ്</translation>
 <translation id="4320177379694898372">ഇന്റർനെറ്റ് കണക്ഷനൊന്നുമില്ല</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ഡൗൺലോഡ് തുടരുക}other{ഡൗൺലോഡുകൾ തുടരുക}}</translation>
@@ -2160,7 +2146,6 @@
 <translation id="4481249487722541506">അൺപാക്ക്ഡ് എക്സ്റ്റന്‍ഷന്‍ ലോഡുചെയ്യൂ...</translation>
 <translation id="4481530544597605423">ജോടി മാറ്റിയ ഉപകരണങ്ങൾ</translation>
 <translation id="4482194545587547824">തിരയലും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
-<translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' നുള്ള തിരയൽ ഫലങ്ങള്‍</translation>
 <translation id="4495419450179050807">ഈ പേജില്‍ കാണിക്കരുത്</translation>
 <translation id="450099669180426158">ആശ്ചര്യചിഹ്നത്തിന്റെ ഐക്കൺ</translation>
 <translation id="4501530680793980440">നീക്കംചെയ്യൽ സ്ഥിരീകരിക്കുക</translation>
@@ -2662,6 +2647,7 @@
 <translation id="5316716239522500219">മോണിറ്ററുകൾ മിറർ ചെയ്യുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5319359161174645648">Google ശുപാർശചെയ്യുന്നത് Chrome ആണ്</translation>
+<translation id="5319566035256672173">ഈ ഉപകരണത്തിന് ഇനി ഏറ്റവും പുതിയ സോഫ്‌റ്റ്‌വെയർ അപ്‌ഡേറ്റുകൾ ലഭിക്കില്ല. അപ്ഗ്രേഡ് ചെയ്യുന്ന കാര്യം പരിഗണിക്കുക.</translation>
 <translation id="532247166573571973">സെർവർ ലഭ്യമല്ലായിരിക്കാം. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="532360961509278431">"$1": $2 തുറക്കാൻ കഴിഞ്ഞില്ല</translation>
 <translation id="5324780743567488672">നിങ്ങളുടെ ലൊക്കേഷൻ ഉപയോഗിച്ച് സമയ മേഖല സ്വയമേവ സജ്ജമാക്കുക</translation>
@@ -3810,7 +3796,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="721331389620694978">ബ്രൗസിംഗ് രീതികൾ പ്രതിഫലിപ്പിക്കുന്ന ചില ക്രമീകരണം മായ്‌ക്കുകയില്ല.</translation>
 <translation id="7216409898977639127">സെല്ലുലാര്‍‌ സേവനദാതാവ്</translation>
 <translation id="7216595297012131718">നിങ്ങളുടെ മുൻഗണന അനുസരിച്ച് ഭാഷകൾ ക്രമപ്പെടുത്തുക</translation>
-<translation id="7219989745826083607">DIAL ഉപകരണ വിവരണ പാർസർ</translation>
 <translation id="722055596168483966">Google സേവനങ്ങൾ വ്യക്തിപരമാക്കുക</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">അറിയിപ്പുകൾ കാണിക്കുക</translation>
@@ -4450,7 +4435,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8261378640211443080">ഈ വിപുലീകരണം <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> എന്നതിൽ ലിസ്റ്റുചെയ്‌തിട്ടില്ല, ഇത് നിങ്ങളുടെ അറിവില്ലാതെ ചേർത്തിരിക്കാനിടയുണ്ട്.</translation>
 <translation id="8261387128019234107"><ph name="PROFILE_NAME" /> എന്നയാൾക്കായി അക്കൗണ്ട് ചേർക്കുക</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
-<translation id="8261673729476082470"><ph name="FILE_COUNT" /> ഫോട്ടോകൾ <ph name="BEGIN_LINK" />Google ഡ്രൈവിലേക്ക്<ph name="END_LINK" /> ബാക്കപ്പുചെയ്യുന്നു</translation>
 <translation id="826246685091802258">ഈ ബിൽഡിൽ <ph name="BAD_FLAG" /> നടപ്പിലാക്കിയിട്ടില്ല</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> നിങ്ങളുടെ മൗസ് കഴ്‌സർ അപ്രാപ്‌തമാക്കി.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" പൂർണ്ണ സ്‌ക്രീനിൽ പ്രവർത്തനക്ഷമമാക്കി.</translation>

@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Škodljive programske opreme ni mogoče odstraniti</translation>
 <translation id="1062407476771304334">Zamenjaj</translation>
 <translation id="1062866675591297858">Zaščitene uporabnike lahko upravljate na <ph name="BEGIN_LINK" />nadzorni plošči za zaščitene uporabnike<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Pripomoček za preverjanje knjižnice predstavnostnih datotek</translation>
 <translation id="1064835277883315402">Pridružite se zasebnemu omrežju</translation>
 <translation id="1064912851688322329">Prekinitev povezave z Google Računom</translation>
 <translation id="1067048845568873861">Ustvarjeno</translation>
@@ -308,7 +307,6 @@
 <translation id="1477301030751268706">Predpomnilnik žetonov za API za identiteto</translation>
 <translation id="1478233201128522094">Naslednjič bo novi telefon odklenil to napravo <ph name="DEVICE_TYPE" />. Smart Lock lahko izklopite v nastavitvah.</translation>
 <translation id="1478340334823509079">Podatki: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Pripravljeno za varnostno kopiranje toliko novih fotografij: <ph name="FILE_COUNT" /></translation>
 <translation id="1483493594462132177">Pošlji</translation>
 <translation id="1485015260175968628">Zdaj lahko:</translation>
 <translation id="1485141095922496924">Različica <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -532,7 +530,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Pozor:<ph name="END_BOLD" /> Te datoteke so začasne in bodo morda samodejno izbrisane, da se sprosti prostor na disku. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Nastavitev funkcije Smart Lock za napravo <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Microsoftova obnovitev datoteke</translation>
-<translation id="1825832322945165090">V napravi ni dovolj prostora</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> vam želi pošiljati obvestila.</translation>
 <translation id="1828378091493947763">Ta vtičnik ni podprt v tej napravi</translation>
@@ -862,11 +859,6 @@
 <translation id="2384436799579181135">Prišlo je do napake. Preverite tiskalnik in poskusite znova.</translation>
 <translation id="2385700042425247848">Ime storitve:</translation>
 <translation id="2387458720915042159">Vrsta povezave strežnika proxy</translation>
-<translation id="2391243203977115091">Št. najdenih novih fotografij: <ph name="FILE_COUNT" />
-    <ph name="LINE_BREAK1" />
-    V napravi ni dovolj prostora.
-    <ph name="LINE_BREAK2" />
-    Če želite začeti, poskusite izbrati manj fotografij.</translation>
 <translation id="2391419135980381625">Standardna pisava</translation>
 <translation id="2391762656119864333">Prekliči</translation>
 <translation id="2392369802118427583">Aktiviraj</translation>
@@ -1248,7 +1240,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2963151496262057773">Ta vtičnik se ne odziva: <ph name="PLUGIN_NAME" />. Ali ga želite ustaviti?</translation>
 <translation id="2966449113954629791">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME" />.</translation>
 <translation id="2966937470348689686">Upravljanje nastavitev Androida</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">zmanjšanje svetlosti</translation>
 <translation id="2972557485845626008">Vdelana programska oprema</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
@@ -1378,6 +1369,7 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3153862085237805241">Shranjevanje kartice</translation>
 <translation id="3154351730702813399">Skrbnik naprave morda nadzira vašo dejavnost brskanja.</translation>
 <translation id="3154429428035006212">Brez povezave več kot mesec dni</translation>
+<translation id="3156531245809797194">Če želite uporabljati Chrome, se prijavite</translation>
 <translation id="3156815148496352304">Namestitev posodobitve operacijskega sistema</translation>
 <translation id="3157931365184549694">Obnovi</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (podprto s strojno opremo)</translation>
@@ -1541,6 +1533,7 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3429599832623003132">Št. elementov: $1</translation>
 <translation id="3432227430032737297">Odstrani vse prikazane</translation>
 <translation id="3432757130254800023">Pošiljanje zvoka in videa zaslonom v lokalnem omrežju</translation>
+<translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">Ojej!  Sistemu ni uspelo zakleniti atributov časa namestitve naprave.</translation>
 <translation id="3434107140712555581">Akumulator: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="343467364461911375">Nekatere vsebinske storitve uporabljajo identifikatorje naprav za enolično identifikacijo zaradi odobritve dostopa do zaščitene vsebine.</translation>
@@ -1558,7 +1551,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="344630545793878684">Branje vaših podatkov na več spletnih mestih</translation>
 <translation id="3449839693241009168">Pritisnite <ph name="SEARCH_KEY" />, če želite poslati ukaze v <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Odstotek zasedenosti stanja nedejavnosti</translation>
-<translation id="3450505713373650336">Varnostno kopiranje toliko fotografij: <ph name="FILE_COUNT" /></translation>
 <translation id="3453612417627951340">Potrebuje pooblastitev</translation>
 <translation id="3454157711543303649">Aktiviranje končano</translation>
 <translation id="345693547134384690">Odpri &amp;sliko v novem zavihku</translation>
@@ -1801,9 +1793,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="381202950560906753">Dodaj še enega</translation>
 <translation id="3812525830114410218">Poškodovano potrdilo</translation>
 <translation id="3813296892522778813">Odprite <ph name="BEGIN_LINK_CHROMIUM" />pomoč za Google Chrome<ph name="END_LINK_CHROMIUM" />, če ne najdete tega, kar iščete</translation>
-<translation id="3815571115159309122">Št. najdenih novih fotografij: <ph name="FILE_COUNT" />
-    <ph name="LINE_BREAK1" />
-    Pripravljen za varnostno kopiranje v <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Vsem spletnim mestom dovoli pošiljanje potisnih sporočil</translation>
 <translation id="3819752733757735746">Preklop dostopa (upravljanje računalnika z enim ali dvema stikaloma)</translation>
 <translation id="3819800052061700452">&amp;Celozaslonsko</translation>
@@ -2074,9 +2063,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> KB (<ph name="NUM_KILOBYTES_LIVE" /> KB dejavno)</translation>
 <translation id="431076611119798497">&amp;Podrobnosti</translation>
 <translation id="4312866146174492540">Blokira (privzeto)</translation>
-<translation id="4315548163539304064">Pregledovanje predstavnostne naprave ...
-    <ph name="LINE_BREAK1" />
-    Št. najdenih novih fotografij: <ph name="FILE_COUNT" /></translation>
 <translation id="4316850752623536204">Spletno mesto razvijalca</translation>
 <translation id="4320177379694898372">Ni internetne povezave</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Nadaljevanje prenosa}one{Nadaljevanje prenosov}two{Nadaljevanje prenosov}few{Nadaljevanje prenosov}other{Nadaljevanje prenosov}}</translation>
@@ -2164,7 +2150,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4481249487722541506">Naloži odpakirano razširitev ...</translation>
 <translation id="4481530544597605423">Naprave, za katere je bila preklicana seznanitev</translation>
 <translation id="4482194545587547824">Google lahko vašo zgodovino brskanja uporabi za prilagajanje Iskanja Google in drugih Googlovih storitev</translation>
-<translation id="4492190037599258964">Rezultati iskanja za »<ph name="SEARCH_STRING" />«</translation>
 <translation id="4495419450179050807">Ne pokaži na tej strani</translation>
 <translation id="450099669180426158">Ikona klicaja</translation>
 <translation id="4501530680793980440">Potrditev odstranitve</translation>
@@ -2666,6 +2651,7 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5316716239522500219">Zrcaljenje monitorjev</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5319359161174645648">Google priporoča Chrome</translation>
+<translation id="5319566035256672173">Ta naprava ne bo več prejemala posodobitev programske opreme. Razmislite o nadgradnji.</translation>
 <translation id="532247166573571973">Strežnik morda ni dosegljiv. Poskusite znova pozneje.</translation>
 <translation id="532360961509278431">Ni mogoče odpreti »$1«: $2</translation>
 <translation id="5324780743567488672">Samodejna nastavitev časovnega pasu na podlagi vaše lokacije</translation>
@@ -3813,7 +3799,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="721331389620694978">Nekatere nastavitve, ki morda odražajo brskalne navade, ne bodo izbrisane.</translation>
 <translation id="7216409898977639127">Ponudnik mobilnih storitev</translation>
 <translation id="7216595297012131718">Razvrstite jezike v želeni vrstni red</translation>
-<translation id="7219989745826083607">Razčlenjevalnik opisa naprave DIAL</translation>
 <translation id="722055596168483966">Prilagajanje Googlovih storitev</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Pokaži obvestila</translation>
@@ -4453,7 +4438,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8261378640211443080">Ta razširitev ni navedena v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in je bila morda dodana brez vaše vednosti.</translation>
 <translation id="8261387128019234107">Dodaj račun za <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Izbriši</translation>
-<translation id="8261673729476082470">Varnostno kopiranje toliko fotografij v <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> ni uvedeno v tej delovni različici.</translation>
 <translation id="8263744495942430914">Stran <ph name="FULLSCREEN_ORIGIN" /> je onemogočila miškin kazalec.</translation>
 <translation id="8264718194193514834">Razširitev »<ph name="EXTENSION_NAME" />« je sprožila celozaslonski način.</translation>

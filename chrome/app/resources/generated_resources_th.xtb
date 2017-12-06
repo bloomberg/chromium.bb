@@ -43,7 +43,6 @@
 <translation id="106001083577824516">ไม่สามารถนำซอฟต์แวร์อันตรายออก</translation>
 <translation id="1062407476771304334">แทนที่</translation>
 <translation id="1062866675591297858">จัดการผู้ใช้ภายใต้การดูแลของคุณผ่าน<ph name="BEGIN_LINK" />หน้าแดชบอร์ดผู้ใช้ภายใต้การดูแล<ph name="END_LINK" /></translation>
-<translation id="1064662184364304002">ตัวตรวจสอบไฟล์ห้องสมุดสื่อ</translation>
 <translation id="1064835277883315402">เข้าร่วมเครือข่ายส่วนบุคคล</translation>
 <translation id="1064912851688322329">หยุดเชื่อมต่อบัญชี Google ของคุณ</translation>
 <translation id="1067048845568873861">สร้างแล้ว</translation>
@@ -307,7 +306,6 @@
 <translation id="1477301030751268706">แคชโทเค็น API ข้อมูลประจำตัว</translation>
 <translation id="1478233201128522094">โทรศัพท์เครื่องใหม่จะปลดล็อก <ph name="DEVICE_TYPE" /> นี้ในครั้งถัดไป คุณสามารถปิด Smart Lock ได้ใน "การตั้งค่า"</translation>
 <translation id="1478340334823509079">รายละเอียด: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">พร้อมที่จะสำรองรูปภาพใหม่ <ph name="FILE_COUNT" /> รูปแล้ว</translation>
 <translation id="1483493594462132177">ส่ง</translation>
 <translation id="1485015260175968628">ส่วนขยายตอนนี้สามารถ:</translation>
 <translation id="1485141095922496924">เวอร์ชัน <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -531,7 +529,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />ข้อควรระวัง:<ph name="END_BOLD" /> ไฟล์เหล่านี้ใช้ชั่วคราวและอาจถูกลบโดยอัตโนมัติเพื่อเพิ่มพื้นที่ว่างในดิสก์ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">ตั้งค่า Smart Lock สำหรับ <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">การกู้คืนไฟล์ของ Microsoft</translation>
-<translation id="1825832322945165090">อุปกรณ์มีพื้นที่ไม่เพียงพอ</translation>
 <translation id="1826516787628120939">กำลังตรวจสอบ</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> ต้องการส่งการแจ้งเตือนถึงคุณ</translation>
 <translation id="1828378091493947763">อุปกรณ์นี้ไม่รองรับปลั๊กอินนี้</translation>
@@ -861,11 +858,6 @@
 <translation id="2384436799579181135">เกิดข้อผิดพลาด โปรดตรวจสอบเครื่องพิมพ์และลองอีกครั้ง</translation>
 <translation id="2385700042425247848">ชื่อบริการ:</translation>
 <translation id="2387458720915042159">ประเภทการเชื่อมต่อพร็อกซี</translation>
-<translation id="2391243203977115091">พบรูปภาพใหม่ <ph name="FILE_COUNT" /> ภาพ
-    <ph name="LINE_BREAK1" />
-    พื้นที่บนอุปกรณ์ไม่เพียงพอ
-    <ph name="LINE_BREAK2" />
-    ลองเลือกรูปภาพจำนวนน้อยลงเพื่อเริ่มต้น</translation>
 <translation id="2391419135980381625">แบบอักษรมาตรฐาน</translation>
 <translation id="2391762656119864333">เพิกถอน</translation>
 <translation id="2392369802118427583">เปิดใช้งาน</translation>
@@ -1247,7 +1239,6 @@
 <translation id="2963151496262057773">ปลั๊กอินต่อไปนี้ไม่ตอบสนอง: <ph name="PLUGIN_NAME" />คุณต้องการหยุดปลั๊กอินดังกล่าวไหม</translation>
 <translation id="2966449113954629791">คุณอาจใช้ข้อมูลมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME" /> เพื่อซื้อข้อมูลเพิ่มเติม</translation>
 <translation id="2966937470348689686">จัดการค่ากำหนด Android</translation>
-<translation id="2971033837577180453">&lt;span&gt;รหัส:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">มืดลง</translation>
 <translation id="2972557485845626008">เฟิร์มแวร์</translation>
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
@@ -1377,6 +1368,7 @@
 <translation id="3153862085237805241">บันทึกบัตร</translation>
 <translation id="3154351730702813399">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="3154429428035006212">ออฟไลน์นานกว่าหนึ่งเดือน</translation>
+<translation id="3156531245809797194">โปรดลงชื่อเข้าใช้เพื่อใช้ Chrome</translation>
 <translation id="3156815148496352304">ติดตั้งอัปเดตระบบปฏิบัติการ</translation>
 <translation id="3157931365184549694">คืนค่า</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ใช้ฮาร์ดแวร์คีย์เข้ารหัสลับ)</translation>
@@ -1540,6 +1532,7 @@
 <translation id="3429599832623003132">$1 รายการ</translation>
 <translation id="3432227430032737297">นำรายการที่แสดงทั้งหมดออก</translation>
 <translation id="3432757130254800023">ส่งภาพและเสียงไปยังจอแสดงผลบนเครือข่ายเฉพาะที่</translation>
+<translation id="3432762828853624962">คนทำงานที่แชร์</translation>
 <translation id="3433621910545056227">อ๊ะ! ระบบไม่สามารถสร้างการล็อกแอตทริบิวต์เวลาการติดตั้งของอุปกรณ์ได้</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">บริการเนื้อหาบางส่วนใช้ตัวระบุคอมพิวเตอร์เพื่อระบุตัวตนของคุณเป็นการเฉพาะโดยมีวัตถุประสงค์เพื่อให้สิทธิ์การเข้าถึงเนื้อหาที่มีการป้องกัน</translation>
@@ -1557,7 +1550,6 @@
 <translation id="344630545793878684">อ่านข้อมูลบนเว็บไซต์จำนวนมาก</translation>
 <translation id="3449839693241009168">กด <ph name="SEARCH_KEY" /> เพื่อส่งคำสั่งไปที่ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">เปอร์เซ็นต์การเกิดขึ้นของสถานะไม่มีการใช้งาน</translation>
-<translation id="3450505713373650336">กำลังสำรองรูปภาพ <ph name="FILE_COUNT" /> รูป</translation>
 <translation id="3453612417627951340">ต้องขออนุมัติก่อน</translation>
 <translation id="3454157711543303649">การเปิดใช้งานเสร็จสมบูรณ์</translation>
 <translation id="345693547134384690">เปิด&amp;รูปภาพในแท็บใหม่</translation>
@@ -1800,9 +1792,6 @@
 <translation id="381202950560906753">เพิ่มลายนิ้วมืออีก</translation>
 <translation id="3812525830114410218">ใบรับรองมีปัญหา</translation>
 <translation id="3813296892522778813">ไปที่<ph name="BEGIN_LINK_CHROMIUM" />ความช่วยเหลือของ Google Chrome<ph name="END_LINK_CHROMIUM" /> หากคุณไม่พบข้อมูลที่กำลังค้นหา</translation>
-<translation id="3815571115159309122">พบรูปภาพใหม่ <ph name="FILE_COUNT" /> ภาพ
-    <ph name="LINE_BREAK1" />
-    พร้อมสำรองข้อมูลไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">อนุญาตให้ทุกไซต์ส่งข้อความพุชในพื้นหลัง</translation>
 <translation id="3819752733757735746">การเข้าถึงด้วยสวิตช์ (ควบคุมคอมพิวเตอร์ด้วยสวิตช์เพียง 1-2 ตัว)</translation>
 <translation id="3819800052061700452">เ&amp;ต็มหน้าจอ</translation>
@@ -2073,9 +2062,6 @@
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (แสดงอยู่ <ph name="NUM_KILOBYTES_LIVE" />K)</translation>
 <translation id="431076611119798497">&amp;รายละเอียด</translation>
 <translation id="4312866146174492540">บล็อก (ค่าเริ่มต้น)</translation>
-<translation id="4315548163539304064">กำลังสแกนอุปกรณ์สื่อ...
-    <ph name="LINE_BREAK1" />
-    พบรูปภาพใหม่ <ph name="FILE_COUNT" /> ภาพ</translation>
 <translation id="4316850752623536204">เว็บไซต์นักพัฒนาซอฟต์แวร์</translation>
 <translation id="4320177379694898372">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{ดำเนินการดาวน์โหลดต่อ}other{ดำเนินการดาวน์โหลดต่อ}}</translation>
@@ -2163,7 +2149,6 @@
 <translation id="4481249487722541506">โหลดส่วนขยายที่คลายการแพคแล้ว...</translation>
 <translation id="4481530544597605423">อุปกรณ์ที่ไม่ได้จับคู่</translation>
 <translation id="4482194545587547824">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
-<translation id="4492190037599258964">ผลการค้นหาคำว่า "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4495419450179050807">ไม่แสดงในหน้านี้อีก</translation>
 <translation id="450099669180426158">ไอคอนเครื่องหมายอัศเจรีย์</translation>
 <translation id="4501530680793980440">ยืนยันการนำออก</translation>
@@ -2665,6 +2650,7 @@
 <translation id="5316716239522500219">แสดงผลบนหน้าจอ</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5319359161174645648">Google ขอแนะนำ Chrome</translation>
+<translation id="5319566035256672173">อุปกรณ์นี้จะไม่ได้รับการอัปเดตซอฟต์แวร์อีกต่อไปโปรดอัปเกรดแทน</translation>
 <translation id="532247166573571973">อาจไม่สามารถเข้าถึงเซิร์ฟเวอร์ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="532360961509278431">ไม่สามารถเปิด "$1": $2</translation>
 <translation id="5324780743567488672">ตั้งค่าเขตเวลาโดยอัตโนมัติโดยใช้ตำแหน่งของคุณ</translation>
@@ -3812,7 +3798,6 @@
 <translation id="721331389620694978">ระบบจะไม่ล้างการตั้งค่าบางอย่างที่อาจส่งผลถึงพฤติกรรมการเรียกดู</translation>
 <translation id="7216409898977639127">ผู้ให้บริการเครือข่ายมือถือ</translation>
 <translation id="7216595297012131718">เรียงลำดับภาษาตามความต้องการของคุณ</translation>
-<translation id="7219989745826083607">โปรแกรมแยกวิเคราะห์รายละเอียดอุปกรณ์ที่ใช้โทร</translation>
 <translation id="722055596168483966">ปรับเปลี่ยนบริการ Google ในแบบของคุณ</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">แสดงการแจ้งเตือน</translation>
@@ -4452,7 +4437,6 @@
 <translation id="8261378640211443080">ส่วนขยายนี้ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="8261387128019234107">เพิ่มบัญชีสำหรับ <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">ลบ</translation>
-<translation id="8261673729476082470">กำลังสำรองรูปภาพ <ph name="FILE_COUNT" /> รูปไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> ไม่มีการใช้งานในเวอร์ชันนี้</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ได้ปิดใช้งานเคอร์เซอร์เมาส์แล้ว</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" เรียกใช้หน้าจอแบบเต็ม</translation>

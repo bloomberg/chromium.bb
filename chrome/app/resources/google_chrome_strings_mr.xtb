@@ -31,7 +31,7 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome एक वेब ब्राउझर आहे जो वेब पृष्ठे आणि अॅप्लिकेशन विजेच्या गतीने चालवितो. तो जलद, स्थिर आणि वापरण्यास सोपा आहे. Google Chrome मध्ये तयार केलेल्या मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
 <translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> निवडा</translation>
-<translation id="174539241580958092">साइन इन करण्यात त्रुटी आल्यामुळे Google Chrome आपला डेटा संकालित करू शकले नाही.</translation>
+<translation id="174539241580958092">साइन इन करण्यात एरर आल्यामुळे Google Chrome आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="1759301979429102118">आपल्या संपर्कांकडील तपशील आपल्याला Chrome मध्ये अधिक द्रुतपणे फॉर्म भरण्यास मदत करू शकतात.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS वापरून मदत मिळवा </translation>
@@ -88,7 +88,7 @@
 <translation id="3282568296779691940">Chrome वर साइन इन करा</translation>
 <translation id="3360895254066713204">Chrome मदतनीस</translation>
 <translation id="3395323229510056640">Chrome OS सह मदत मिळवा</translation>
-<translation id="3396977131400919238">स्थापनेदरम्यान एक ऑपरेटिंग सिस्टम‍ त्रुटी आली. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
+<translation id="3396977131400919238">स्थापनेदरम्यान एक ऑपरेटिंग सिस्टम‍ एरर आली. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="3398288718845740432">Chrome मेनूमध्‍ये लपवा</translation>
 <translation id="3451115285585441894">Chrome मध्‍ये जोडत आहे...</translation>
 <translation id="345171907106878721">Chrome वर आपल्या स्वतःस जोडा</translation>
@@ -158,6 +158,7 @@
 Google Chrome आपली सेटिंग्ज पुर्नप्राप्त करण्‍यात अक्षम आहे.</translation>
 <translation id="5453904507266736060">Google Chrome ला पार्श्वभूमीत चालू द्या</translation>
 <translation id="5495581687705680288">Google Chrome मध्ये लोड केलेली मॉड्यूल</translation>
+<translation id="5524843473235508879">रीडिरेक्‍ट ब्लॉक केले.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दर्शवण्याचा प्रयत्न करत आहे.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-मध्ये)</translation>
 <translation id="557283862590186398">या साइटसाठी Chromeला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>

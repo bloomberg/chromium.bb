@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Det går inte att packa upp tillägget. Ett tillägg kan bara packas upp säkert om det finns en sökväg till din profilkatalog som inte innehåller en symbollänk. Det finns ingen sådan sökväg för din profil.</translation>
 <translation id="641087317769093025">Det gick inte att packa upp tillägget</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> begär åtkomst till en eller flera av dina enheter:</translation>
-<translation id="6566142449942033617">Det gick inte att läsa in <ph name="PLUGIN_PATH" /> för pluginprogrammet.</translation>
 <translation id="657064425229075395">Det gick inte att läsa in bakgrundsskriptet <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> från <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Det gick inte att skapa en katalog för uppackning: <ph name="DIRECTORY_PATH" /></translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Det här tillägget lästes in på nytt för ofta.</translation>
 <translation id="7003844668372540529">Okänd produkt (<ph name="PRODUCT_ID" />) från <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME" /> ska installeras. Det kan inte tas bort eller ändras.</translation>
-<translation id="7581279002575751816">NPAPI-plugin-program stöds inte.</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Vänd mot användaren</translation>
 <translation id="8047248493720652249">Det gick inte att namnge nedladdningen <ph name="ATTEMPTED_FILENAME" /> eftersom ett annat tillägg (<ph name="EXTENSION_NAME" />) valde ett annat filnamn <ph name="ACTUAL_FILENAME" />.</translation>

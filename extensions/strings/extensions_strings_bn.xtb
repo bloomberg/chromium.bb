@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">এক্সটেনশনটি প্যাকমুক্ত করতে পারে না৷  নিরাপদে কোনও এক্সটেনশন প্যাকমুক্ত করতে, আপনার প্রোফাইল ডিরেক্টরিতে অবশ্যই এমন একটি পথ থাকতে হবে যেখানে কোনও সিমলিঙ্ক থাকে না৷  এই জাতীয় কোনও পথ আপনার প্রোফাইলে বিদ্যমান নেই৷</translation>
 <translation id="641087317769093025">এক্সটেনশান আনজিপ করা যায়নি</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" আপনার এক বা একাধিক ডিভাইসে অ্যাক্সেসের জন্য অনুরোধ করছে:</translation>
-<translation id="6566142449942033617">প্লাগইনের জন্য '<ph name="PLUGIN_PATH" />' লোড করা যায়নি৷</translation>
 <translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT" />' লোড করা যায়নি৷</translation>
 <translation id="6580950983454333167"><ph name="VENDOR_NAME" /> এর পক্ষ থেকে <ph name="PRODUCT_NAME" /> (ক্রমিক সংখ্যা <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">এটিকে আনজিপ করার জন্য ডিরেক্টরি তৈরি করা যায়নি: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">এই এক্সটেনশানটি খুব ঘন ঘন নিজের থেকে পুনরায় লোড হয়৷</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME" /> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID" /></translation>
 <translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME" /> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
-<translation id="7581279002575751816">NPAPI প্ল্যাগইনগুলি সমর্থিত নয়৷</translation>
 <translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">ব্যবহারকারীর দিকে মুখ করা</translation>
 <translation id="8047248493720652249">এই এক্সটেনশানটি ডাউনলোড "<ph name="ATTEMPTED_FILENAME" />" এর নাম দিতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশান (<ph name="EXTENSION_NAME" />) একটি ভিন্ন ফাইল নাম "<ph name="ACTUAL_FILENAME" />" নির্ধারণ করেছে৷</translation>

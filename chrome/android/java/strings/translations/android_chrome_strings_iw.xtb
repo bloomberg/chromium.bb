@@ -151,7 +151,6 @@
 <translation id="2351097562818989364">הגדרות התרגום שלך אופסו.</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2369533728426058518">כרטיסיות פתוחות</translation>
-<translation id="2372491353676110880">הורדה אוטומטית של דפים</translation>
 <translation id="2387895666653383613">שינוי גודל טקסט</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2416359993254398973">‏Chrome זקוק להרשאה גישה אל המצלמה בשביל האתר הזה.</translation>
@@ -179,8 +178,8 @@
 <translation id="2621115761605608342">‏אפשר JavaScript לאתר ספציפי.</translation>
 <translation id="2625189173221582860">הסיסמה הועתקה</translation>
 <translation id="2631006050119455616">חסכת</translation>
+<translation id="2647434099613338025">הוסף שפה</translation>
 <translation id="2653659639078652383">שלח</translation>
-<translation id="2671100504997899381">דפים נטענים מהר יותר ואפשר לשמור דפים פופולריים לקריאה במצב לא מקוון</translation>
 <translation id="2677748264148917807">צא</translation>
 <translation id="2704606927547763573">הועתק</translation>
 <translation id="2707726405694321444">רענן את הדף</translation>
@@ -565,7 +564,6 @@
 <translation id="6337234675334993532">הצפנה</translation>
 <translation id="6343192674172527289">לא נמצאו הורדות</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> נוספת}two{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> נוספות}many{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> נוספות}other{‏<ph name="SHIPPING_ADDRESS_PREVIEW" />‎\u2026‎ ו-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> נוספות}}</translation>
-<translation id="6354616574440533128">בטל את הנעילה כדי להמשיך בהגדרת הטלפון</translation>
 <translation id="6364438453358674297">האם להסיר את ההצעה מההיסטוריה?</translation>
 <translation id="6383961787135158834">מחיקת נתוני אתר מהאחסון...</translation>
 <translation id="6388207532828177975">נקה ואפס</translation>

@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Hindi ma-unpack ang extension.  Upang ligtas na ma-unpack ang isang extension, dapat na mayroong daanan patungo sa iyong direktoryo ng profile na walang nilalamang symlink.  Walang naturang daanan ang umiiral para sa iyong profile.</translation>
 <translation id="641087317769093025">Hindi ma-unzip ang extension</translation>
 <translation id="6542618148162044354">Humihiling ang "<ph name="APP_NAME" />" ng access sa isa o higit pa sa iyong mga device:</translation>
-<translation id="6566142449942033617">Maaaring hindi mai-load ang '<ph name="PLUGIN_PATH" />' para sa plugin.</translation>
 <translation id="657064425229075395">Hindi ma-load ang script ng background na '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> mula sa <ph name="VENDOR_NAME" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Hindi malikha ang direktoryo para sa pag-unzip: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Masyadong madalas nag-reload ang extension na ito.</translation>
 <translation id="7003844668372540529">Hindi kilalang produkto na <ph name="PRODUCT_ID" /> mula sa <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Kinakailangan ng administrator ng machine na ito na ma-install ang <ph name="EXTENSION_NAME" />. Hindi ito maaaring alisin o baguhin.</translation>
-<translation id="7581279002575751816">Hindi sinusuportahan ang mga NPAPI na plugin.</translation>
 <translation id="7972881773422714442">Mga Opsyon: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Nakaharap sa user</translation>
 <translation id="8047248493720652249">Nabigong pangalanan ng extension na ito ang download na "<ph name="ATTEMPTED_FILENAME" />" dahil nakatukoy ang isa pang extension (<ph name="EXTENSION_NAME" />) ng ibang filename na "<ph name="ACTUAL_FILENAME" />".</translation>

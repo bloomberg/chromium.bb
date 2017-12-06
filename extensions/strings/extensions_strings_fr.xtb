@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Impossible d'extraire les fichiers de l'extension. Pour effectuer cette opération en toute sécurité, vous devez disposer d'un chemin d'accès à votre répertoire de profils ne contenant pas de lien symbolique. Aucun chemin de ce type n'existe pour votre profil.</translation>
 <translation id="641087317769093025">Impossible de décompresser l'extension.</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> demande l'accès à un ou plusieurs de vos appareils :</translation>
-<translation id="6566142449942033617">Impossible de charger "<ph name="PLUGIN_PATH" />" pour le plug-in.</translation>
 <translation id="657064425229075395">Impossible de charger le script d'arrière-plan "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (numéro de série <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Impossible de créer le répertoire de décompression : "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Cette extension s'est actualisée trop souvent.</translation>
 <translation id="7003844668372540529">Produit inconnu <ph name="PRODUCT_ID" /> fourni par <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME" /> soit installée. Celle-ci ne peut pas être supprimée ni modifiée.</translation>
-<translation id="7581279002575751816">Les plug-ins NPAPI ne sont pas compatibles.</translation>
 <translation id="7972881773422714442">Options : <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Caméra frontale</translation>
 <translation id="8047248493720652249">Échec de l'attribution du nom "<ph name="ATTEMPTED_FILENAME" />" au fichier téléchargé via l'extension, car un nom de fichier différent, "<ph name="ACTUAL_FILENAME" />", a été attribué via une autre extension (<ph name="EXTENSION_NAME" />).</translation>

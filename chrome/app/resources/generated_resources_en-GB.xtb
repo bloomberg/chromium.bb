@@ -43,7 +43,6 @@
 <translation id="106001083577824516">Can't remove harmful software</translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1062866675591297858">Manage your supervised users via the <ph name="BEGIN_LINK" />Supervised Users Dashboard<ph name="END_LINK" />.</translation>
-<translation id="1064662184364304002">Media Library File Checker</translation>
 <translation id="1064835277883315402">Join private network</translation>
 <translation id="1064912851688322329">Disconnect your Google Account</translation>
 <translation id="1067048845568873861">Created</translation>
@@ -308,7 +307,6 @@
 <translation id="1477301030751268706">Identity API Token Cache</translation>
 <translation id="1478233201128522094">Next time, a new phone will unlock this <ph name="DEVICE_TYPE" />. Turn off Smart Lock in Settings.</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
-<translation id="1482124012545051544">Ready to backup <ph name="FILE_COUNT" /> new photos</translation>
 <translation id="1483493594462132177">send</translation>
 <translation id="1485015260175968628">It can now:</translation>
 <translation id="1485141095922496924">Version <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -532,7 +530,6 @@
 <translation id="1815861158988915678"><ph name="BEGIN_BOLD" />Caution:<ph name="END_BOLD" />  These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK" />Learn More<ph name="END_LINK" /></translation>
 <translation id="1817310072033858383">Set up Smart Lock for your <ph name="DEVICE_TYPE" /></translation>
 <translation id="1817871734039893258">Microsoft File Recovery</translation>
-<translation id="1825832322945165090">Not enough space on device</translation>
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1828149253358786390"><ph name="SITE" /> wants to send you notifications.</translation>
 <translation id="1828378091493947763">This plug-in is not supported on this device</translation>
@@ -862,11 +859,6 @@
 <translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
 <translation id="2385700042425247848">Service name:</translation>
 <translation id="2387458720915042159">Proxy connection type</translation>
-<translation id="2391243203977115091"><ph name="FILE_COUNT" /> new photos found
-    <ph name="LINE_BREAK1" />
-    Not enough space on device.
-    <ph name="LINE_BREAK2" />
-    Try selecting a few photos to start.</translation>
 <translation id="2391419135980381625">Standard font</translation>
 <translation id="2391762656119864333">Revoke</translation>
 <translation id="2392369802118427583">Activate</translation>
@@ -1247,7 +1239,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2963151496262057773">The following plug-in is unresponsive: <ph name="PLUGIN_NAME" />Would you like to stop it?</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME" /> activation portal to buy more data.</translation>
 <translation id="2966937470348689686">Manage Android preferences</translation>
-<translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">bright down</translation>
 <translation id="2972557485845626008">Firmware</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
@@ -1377,6 +1368,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3153862085237805241">Save Card</translation>
 <translation id="3154351730702813399">The device admin may monitor your browsing activity.</translation>
 <translation id="3154429428035006212">Offline for more than a month</translation>
+<translation id="3156531245809797194">To use Chrome, please sign in</translation>
 <translation id="3156815148496352304">Install OS update</translation>
 <translation id="3157931365184549694">Restore</translation>
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (hardware-backed)</translation>
@@ -1540,6 +1532,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3429599832623003132">$1 items</translation>
 <translation id="3432227430032737297">Remove all shown</translation>
 <translation id="3432757130254800023">Send audio and video to displays on the local network</translation>
+<translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">Oops!  The system failed to establish the device installation-time attributes lock.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="343467364461911375">Some content services use machine identifiers to uniquely identify you for the purposes of authorising access to protected content.</translation>
@@ -1557,7 +1550,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="344630545793878684">Read your data on a number of websites</translation>
 <translation id="3449839693241009168">Press <ph name="SEARCH_KEY" /> to send commands to <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Idle State Occupancy Percentage</translation>
-<translation id="3450505713373650336">Backing up <ph name="FILE_COUNT" /> photos</translation>
 <translation id="3453612417627951340">Needs authorisation</translation>
 <translation id="3454157711543303649">Activation complete</translation>
 <translation id="345693547134384690">Open &amp;image in new tab</translation>
@@ -1800,9 +1792,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="381202950560906753">Add another</translation>
 <translation id="3812525830114410218">Bad certificate</translation>
 <translation id="3813296892522778813">Go to <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome help<ph name="END_LINK_CHROMIUM" /> if you can't find what you're looking for</translation>
-<translation id="3815571115159309122"><ph name="FILE_COUNT" /> new photos found
-    <ph name="LINE_BREAK1" />
-    Ready to back up to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3819007103695653773">Allow all sites to send background push messages</translation>
 <translation id="3819752733757735746">Switch access (control the computer with just one or two switches)</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
@@ -2073,9 +2062,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K live)</translation>
 <translation id="431076611119798497">&amp;Details</translation>
 <translation id="4312866146174492540">Block (default)</translation>
-<translation id="4315548163539304064">Scanning your media device...
-    <ph name="LINE_BREAK1" />
-    <ph name="FILE_COUNT" /> new photos found</translation>
 <translation id="4316850752623536204">Developer Website</translation>
 <translation id="4320177379694898372">No internet connection</translation>
 <translation id="4321136812570927563">{NUM_DOWNLOAD,plural, =1{Continue download}other{Continue downloads}}</translation>
@@ -2163,7 +2149,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4481249487722541506">Load unpacked extension...</translation>
 <translation id="4481530544597605423">Unpaired devices</translation>
 <translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
-<translation id="4492190037599258964">Search results for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4495419450179050807">Don't show on this page</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
 <translation id="4501530680793980440">Confirm Removal</translation>
@@ -2665,6 +2650,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5319359161174645648">Google recommends Chrome</translation>
+<translation id="5319566035256672173">This device will no longer receive the latest software updates. Please consider upgrading.</translation>
 <translation id="532247166573571973">The server may be unreachable. Try again later.</translation>
 <translation id="532360961509278431">Unable to open "$1": $2</translation>
 <translation id="5324780743567488672">Set time zone automatically using your location</translation>
@@ -3812,7 +3798,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="721331389620694978">Some settings that may reflect browsing habits will not be cleared.</translation>
 <translation id="7216409898977639127">Mobile provider</translation>
 <translation id="7216595297012131718">Order languages based on your preference</translation>
-<translation id="7219989745826083607">DIAL Device Description Parser</translation>
 <translation id="722055596168483966">Personalise Google services</translation>
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">Show notifications</translation>
@@ -4452,7 +4437,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8261378640211443080">This extension is not listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="8261387128019234107">Add account for <ph name="PROFILE_NAME" /></translation>
 <translation id="8261506727792406068">Delete</translation>
-<translation id="8261673729476082470">Backing up <ph name="FILE_COUNT" /> photos to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> is not implemented in this build.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> has disabled your mouse cursor.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" triggered full screen.</translation>

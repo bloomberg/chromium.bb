@@ -405,7 +405,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="9083392325882095631">1 öğe</translation>
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
-<translation id="91549621916703028">Tüm işleriniz için birden fazla sekme oluşturun</translation>
 <translation id="9157836665414082580">İletişim Kutularını Gizle</translation>
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="976982866697960176">Senkronize Edilen Verileri Yönetme…</translation>
 <translation id="988141524645182168">Diğer Cihazlar</translation>
 <translation id="989988560359834682">Adresi Düzenle</translation>
+<translation id="994757059139821576">Makale Önerileri</translation>
 </translationbundle>

@@ -405,7 +405,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9083392325882095631">1 élément</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
-<translation id="91549621916703028">Créez différents onglets pour toutes vos tâches</translation>
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="976982866697960176">Gérer les données synchronisées…</translation>
 <translation id="988141524645182168">Autres appareils</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>
+<translation id="994757059139821576">Articles suggérés</translation>
 </translationbundle>

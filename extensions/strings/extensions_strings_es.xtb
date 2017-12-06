@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">No se puede descomprimir la extensión. Para descomprimir de forma segura una extensión, debe existir una ruta al directorio de tu perfil que no contenga ningún enlace simbólico. No existe ninguna ruta de este tipo para tu perfil.</translation>
 <translation id="641087317769093025">No se ha podido descomprimir la extensión.</translation>
 <translation id="6542618148162044354"><ph name="APP_NAME" /> está solicitando acceso a uno o varios de tus dispositivos:</translation>
-<translation id="6566142449942033617">No se ha podido cargar la ruta "<ph name="PLUGIN_PATH" />" del complemento.</translation>
 <translation id="657064425229075395">No se ha podido cargar la secuencia de comandos en segundo plano "<ph name="BACKGROUND_SCRIPT" />".</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /> (número de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">No se ha podido crear un directorio para descomprimir <ph name="DIRECTORY_PATH" />.</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Esta extensión se ha cargado con demasiada frecuencia.</translation>
 <translation id="7003844668372540529">Producto <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /> desconocido</translation>
 <translation id="7217838517480956708">El administrador de este ordenador necesita que se instale <ph name="EXTENSION_NAME" />. No se puede eliminar ni modificar.</translation>
-<translation id="7581279002575751816">No se admiten los complementos NPAPI.</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Delantera</translation>
 <translation id="8047248493720652249">Esta extensión no ha podido asignar un nombre a la descarga "<ph name="ATTEMPTED_FILENAME" />" porque otra extensión (<ph name="EXTENSION_NAME" />) ha determinado un nombre de archivo diferente "<ph name="ACTUAL_FILENAME" />".</translation>

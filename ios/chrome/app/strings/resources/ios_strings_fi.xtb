@@ -405,7 +405,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="9083392325882095631">1 kohde</translation>
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9148126808321036104">Kirjaudu sisään uudelleen</translation>
-<translation id="91549621916703028">Voit avata useita välilehtiä asioiden hoitamista varten.</translation>
 <translation id="9157836665414082580">Estä valintaikkunat</translation>
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9203116392574189331">Handoff</translation>
@@ -416,4 +415,5 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="976982866697960176">Hallinnoi synkronoituja tietoja</translation>
 <translation id="988141524645182168">Muut laitteet</translation>
 <translation id="989988560359834682">Osoitteen muokkaus</translation>
+<translation id="994757059139821576">Ehdotetut artikkelit</translation>
 </translationbundle>

@@ -46,6 +46,39 @@
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
 <translation id="1151353063931113432">Permet les imatges en aquests llocs</translation>
+<translation id="1151545095291359187">Configura les opcions de gestió d'extensions per a <ph name="PRODUCT_NAME" />.
+
+          Aquesta política controla diverses opcions de configuració, com ara les opcions controlades per qualsevol política actual relacionada amb extensions. Aquesta política substituirà qualsevol política anterior, si totes dues s'han definit.
+
+          Aquesta política assigna un identificador d'extensió o un URL d'actualització a la configuració corresponent. Amb un identificador d'extensió, la configuració s'aplicarà només a l'extensió especificada. Es pot establir una configuració predeterminada per a l'identificador especial <ph name="DEFAULT_SCOPE" />, que s'aplicarà a totes les extensions que no tinguin establerta una configuració personalitzada en aquesta política. Amb un URL d'actualització, la configuració s'aplicarà a totes les extensions que tinguin el mateix URL d'actualització indicat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          La configuració de cada extensió (o d'extensions amb el mateix URL d'actualització) és un altre diccionari que pot incloure els camps indicats a continuació.
+
+          <ph name="INSTALLATION_MODE" />: s'assigna a una cadena que indica el mode d'instal·lació de l'extensió. Les cadenes vàlides són:
+          * <ph name="ALLOWED" />: permet que l'usuari instal·li l'extensió. És el comportament predeterminat.
+          * <ph name="BLOCKED" />: bloqueja la instal·lació de l'extensió.
+          * <ph name="FORCE_INSTALLED" />: l'extensió s'instal·la automàticament i l'usuari no la pot suprimir.
+          * <ph name="NORMAL_INSTALLED" />: l'extensió s'instal·la automàticament, però l'usuari la pot desactivar.
+
+          El camp <ph name="INSTALLATION_MODE" /> també es pot configurar per a diverses extensions, com ara <ph name="DEFAULT_SCOPE" /> (com a configuració predeterminada) i les extensions amb el mateix URL d'actualització. En aquest cas, només es poden utilitzar els valors <ph name="ALLOWED" /> i <ph name="BLOCKED" />.
+
+          Si el mode es defineix en <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, cal configurar també un valor per a <ph name="UPDATE_URL" />. Tingues en compte que l'URL d'actualització establert en aquesta política només s'utilitza a la instal·lació inicial; a les instal·lacions següents de l'extensió s'utilitzarà l'URL d'actualització indicat al fitxer de manifest de l'extensió. L'URL d'actualització ha d'apuntar a un document XML de manifest d'actualització, tal com s'ha descrit abans.
+
+          <ph name="BLOCKED_PERMISSIONS" />: s'assigna a una llista de cadenes que indiquen els permisos de les API bloquejades per a l'extensió. Els noms dels permisos són els mateixos que les cadenes de permís que es mostren al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC3" />. Aquesta opció també es pot configurar per a l'extensió <ph name="DEFAULT_SCOPE" />. Si l'extensió requereix un permís de la llista de bloquejats, no es podrà carregar. Si conté un permís bloquejat com a requisit opcional, es gestionarà com és habitual, però les sol·licituds de permisos en conflicte es rebutjaran automàticament en el temps d'execució.
+
+          <ph name="ALLOWED_PERMISSIONS" />: s'assembla a <ph name="BLOCKED_PERMISSIONS" />, però permet explícitament alguns permisos que poden estar inclosos a la llista general de permisos bloquejats. Per això, no es pot configurar per a l'extensió <ph name="DEFAULT_SCOPE" />. Tingues en compte que aquesta opció de configuració no ofereix automàticament els permisos concedits a les extensions.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: s'assigna a una cadena de versió. El format de la cadena de versió és el mateix que l'utilitzat al fitxer de manifest de l'extensió, tal com es descriu a <ph name="LINK_TO_EXTENSION_DOC4" />. Les extensions anteriors a la versió mínima especificada es desactivaran. Això s'aplica també a les extensions instal·lades de manera forçosa.
+
+          Les opcions següents només es poden utilitzar per a la configuració predeterminada de l'extensió <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: tots els elements d'aquesta llista són un patró de coincidència amb l'estil de l'extensió (consulta (<ph name="LINK_TO_MATCH_PATTERNS" />). Els usuaris podran instal·lar fàcilment els elements de qualsevol URL que coincideixi amb un element d'aquesta llista. Aquests patrons han de permetre tant la ubicació del fitxer <ph name="EXTENSION_SUFFIX_WILDCARD" /> com la pàgina on comença la baixada (és a dir, l'URL de referència).
+
+          <ph name="ALLOWED_TYPES" />: aquesta opció afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME" />. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: <ph name="VALID_ALLOWED_TYPES" />. Consulta la documentació sobre les extensions de <ph name="PRODUCT_NAME" /> per obtenir-ne més informació.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: si un usuari prova d'instal·lar una extensió però la política li ho impedeix, es mostra un missatge d'error genèric a Chrome Web Store. Aquesta opció et permet incloure text al missatge d'error. Això et pot servir per redirigir els usuaris al centre d'ajuda, explicar-los per què s'ha bloquejat una extensió concreta o una altra cosa. Si el missatge d'error té més de 1.000 caràcters, es truncarà.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: accepta una llista d'amfitrions amb què una extensió no pot interaccionar. Això inclou introduir JavaScript, modificar i mostrar els esdeveniments webRequests o webNavigation, i mostrar i modificar galetes. El format s'assembla als patrons de coincidència <ph name="LINK_TO_MATCH_PATTERNS" /> però no es poden definir camins. Per exemple, "*://*.example.com". Això també admet l'ús efectiu de comodins de domini de nivell superior, com ara "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: accepta una llista d'amfitrions amb què una extensió pot interaccionar, independentment de si s'han inclòs a la llista <ph name="RUNTIME_BLOCKED_HOSTS" />. És el mateix format que <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Informa de l'estat del botó per a desenvolupadors en iniciar.
 
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Impressores d'empresa activades</translation>
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="123081309365616809">Activa l'emissió de contingut al dispositiu</translation>
+<translation id="1257550411839719984">Estableix el directori de baixada predeterminat</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
 <translation id="1291880496936992484">Advertiment: RC4 se suprimirà completament del producte <ph name="PRODUCT_NAME" /> a partir de la versió 52 (cap al setembre de 2016) i aquesta política deixarà de funcionar en aquell moment.
 
@@ -536,6 +570,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       </translation>
 <translation id="2769952903507981510">Configuració del nom de domini necessari per als amfitrions d'accés remot</translation>
 <translation id="2787173078141616821">Ofereix informació sobre l'estat d'Android</translation>
+<translation id="2793923553868251161">Els orígens es tracten com a context segur.</translation>
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
        Si aquesta política s'estableix en "false", els usuaris no podran jugar-hi quan el dispositiu estigui sense connexió. En canvi, si s'estableix en "true", els usuaris podran jugar-hi. Si es deixa sense establir, els usuaris no podran jugar a aquest joc en un dispositiu Chrome OS inscrit, però sí que ho podran fer en altres circumstàncies.</translation>
@@ -767,11 +802,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
-<translation id="376931976323225993">Permet establir si els llocs web poden executar automàticament el connector <ph name="FLASH_PLUGIN_NAME" /> o no. L'execució automàtica del connector <ph name="FLASH_PLUGIN_NAME" /> pot permetre's o denegar-se per a tots els llocs web.
-
-          La funció Clic per executar permet que el connector <ph name="FLASH_PLUGIN_NAME" /> s'executi, però l'usuari haurà de fer clic a l'espai reservat per iniciar-ne l'execució.
-
-          Si aquesta política no es defineix, l'usuari podrà canviar l'opció de configuració manualment.</translation>
 <translation id="3780152581321609624">Inclou un port no estàndard a l'SPN de Kerberos</translation>
 <translation id="3780319008680229708">Si aquesta política es defineix com a "true", la icona de la barra d'eines de Cast es mostrarà sempre a la barra d'eines o al menú addicional, i els usuaris no la podran suprimir.
 
@@ -851,6 +881,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals per obrir les Eines per a desenvolupadors o la Consola de JavaScript.
 
       Si aquesta opció es desactiva o no es defineix, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.</translation>
+<translation id="3895557476567727016">Estableix el directori predeterminat que <ph name="PRODUCT_NAME" /> utilitzarà per baixar fitxers.
+
+      Si es defineix aquesta política, es canviarà el directori predeterminat en què <ph name="PRODUCT_NAME" /> baixa els fitxers. Com que aquesta política no és obligatòria, l'usuari pot canviar el directori.
+
+      Si no es defineix aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà el directori predeterminat habitual (específic de la plataforma).
+
+      Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden fer servir.</translation>
 <translation id="3907986150060929099">Estableix les configuracions regionals recomanades per a una sessió pública</translation>
 <translation id="3911737181201537215">Aquesta política no té cap efecte als registres que fa Android.</translation>
 <translation id="391531815696899618">Quan aquesta política s'estableix en True, desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" />. En aquest cas, no es pengen dades a Google Drive.
@@ -1687,7 +1724,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7072406291414141328">Activa l'acceleració de l'amplada de banda de la xarxa</translation>
 <translation id="7079519252486108041">Bloqueja les finestres emergents en aquests llocs</translation>
-<translation id="7091198954851103976">Executa sempre els connectors que requereixen autorització</translation>
 <translation id="7106631983877564505">Permet activar el bloqueig quan els dispositius de <ph name="PRODUCT_OS_NAME" /> estiguin inactius o suspesos.
 
       Si activeu aquesta opció de configuració, es demanarà als usuaris una contrasenya per desbloquejar el dispositiu que estigui inactiu.
@@ -1919,6 +1955,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="787125417158068494">Si s'estableix en SyncDisabled o no es configura, els certificats de <ph name="PRODUCT_OS_NAME" /> no estan disponibles per a les aplicacions ARC.
 
       Si s'estableix en CopyCaCerts, tots els certificats de CA instal·lats amb fitxers ONC amb <ph name="WEB_TRUSTED_BIT" /> estan disponibles per a les aplicacions ARC.</translation>
+<translation id="7872535148622213208">
+        La política especifica una llista d'orígens (URL) que es poden tractar com a context segur. La intenció és permetre que les organitzacions configurin un servidor de fases per als desenvolupaments web interns.
+        És el mateix que la marca --unsafely-treat-insecure-origin-as-secure.
+        Per obtenir més informació sobre els contextos segurs, consulta https://www.w3.org/TR/secure-contexts/.
+        </translation>
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a estalvi de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
@@ -2149,6 +2190,15 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si la política no està configurada o el valor és inferior a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilitzarà la mida predeterminada de la memòria cau.</translation>
 <translation id="8858642179038618439">Força el mode de seguretat de YouTube</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
+<translation id="8867464911288727016">Activa el servei integrat del Traductor de Google a <ph name="PRODUCT_NAME" />.
+
+      Si actives aquesta opció, <ph name="PRODUCT_NAME" /> oferirà a l'usuari la funció de traducció mitjançant una barra d'eines integrada de traducció (si escau) i una opció de traducció al menú contextual.
+
+      Si desactives aquesta opció, les funcions integrades de traducció no estaran activades.
+
+      Si actives o desactives aquesta opció, l'usuari no la podrà canviar ni substituir a <ph name="PRODUCT_NAME" />.
+
+      Si deixes l'opció sense definir, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
 <translation id="8882006618241293596">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /> en aquests llocs</translation>
 <translation id="8906768759089290519">Activa el mode de convidat</translation>

@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">Link aberto no Chrome</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
+<translation id="1566400915470565838">Para usar o app <ph name="APP_NAME" />, conecte-se à Internet.</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
 <translation id="1571304935088121812">Copiar nome de usuário</translation>
 <translation id="1612196535745283361">O Chrome precisa ter acesso ao local para verificar dispositivos. O acesso ao local está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2369533728426058518">abrir guias</translation>
-<translation id="2372491353676110880">Fazer o download de páginas automaticamente</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2416359993254398973">O Chrome precisa de permissão para este site acessar sua câmera.</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">Permitir JavaScript para um site específico.</translation>
 <translation id="2625189173221582860">Senha copiada</translation>
 <translation id="2631006050119455616">Salvo</translation>
+<translation id="2647434099613338025">Adicionar idioma</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2671100504997899381">Carregue páginas mais rapidamente e salve as páginas mais visitadas para leitura off-line</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
@@ -219,7 +219,7 @@
 <translation id="311456632243022227">Vários links abertos no Chrome</translation>
 <translation id="3115898365077584848">Mostrar informações</translation>
 <translation id="3135915540460564231">Onde estão os downloads, favoritos e histórico?</translation>
-<translation id="3137521801621304719">Sair do modo sem rastros</translation>
+<translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
 <translation id="3148434565183091099">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="3157842584138209013">Veja a quantidade de dados que você salvou no botão Mais opções</translation>
 <translation id="3166827708714933426">Atalhos de guias e janelas</translation>
@@ -563,7 +563,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6337234675334993532">Criptografia</translation>
 <translation id="6343192674172527289">Nenhum download encontrado</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
-<translation id="6354616574440533128">Desbloqueie para continuar a configuração do seu smartphone.</translation>
 <translation id="6364438453358674297">Remover sugestão do histórico?</translation>
 <translation id="6383961787135158834">Limpar armaz. de sites…</translation>
 <translation id="6388207532828177975">Limpar e redefinir</translation>
@@ -791,7 +790,8 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8493948351860045254">Liberar espaço</translation>
 <translation id="8497726226069778601">Não há nada para ver aqui... ainda</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
-<translation id="8514577642972634246">Entrar no modo sem rastros</translation>
+<translation id="8514477925623180633">Exportar senhas armazenadas com o Chrome</translation>
+<translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
 <translation id="8523928698583292556">Excluir senha armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">As senhas salvas aparecerão aqui.</translation>
@@ -837,7 +837,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8979405271719829084">Faça o download de vídeos para assistir mais tarde</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8986494364107987395">Enviar estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
-<translation id="8993760627012879038">Abrir uma nova guia no modo sem rastros</translation>
+<translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9050666287014529139">Senha</translation>

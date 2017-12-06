@@ -46,6 +46,39 @@
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
 <translation id="1151353063931113432">Cho phép hình ảnh trên các trang web này</translation>
+<translation id="1151545095291359187">Định cấu hình cài đặt quản lý tiện ích đối với <ph name="PRODUCT_NAME" />.
+
+          Chính sách này kiểm soát nhiều cài đặt, bao gồm cả những cài đặt chịu sự kiểm soát của bất kỳ chính sách hiện có nào liên quan đến tiện ích. Chính sách này sẽ ghi đè bất kỳ chính sách cũ nào nếu đã đặt cả hai.
+
+          Chính sách này ánh xạ một ID tiện ích hoặc một URL cập nhật tới cấu hình của chính sách. Với ID tiện ích, cấu hình sẽ chỉ được áp dụng cho tiện ích đã chỉ định. Bạn có thể đặt cấu hình mặc định cho ID đặc biệt <ph name="DEFAULT_SCOPE" />, cấu hình này sẽ áp dụng cho tất cả các tiện ích chưa đặt cấu hình tùy chỉnh trong chính sách này. Với URL cập nhật, cấu hình sẽ được áp dụng cho tất cả tiện ích có URL cập nhật chính xác đã nêu trong tệp kê khai của tiện ích này, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Cấu hình cho mỗi tiện ích (hoặc các tiện ích có cùng URL cập nhật) là một từ điển khác có thể chứa các trường được nêu dưới đây.
+
+          <ph name="INSTALLATION_MODE" />: ánh xạ tới một chuỗi cho biết chế độ cài đặt của tiện ích. Các chuỗi hợp lệ là:
+          * <ph name="ALLOWED" />: cho phép người dùng cài đặt tiện ích. Đây là hành vi mặc định.
+          * <ph name="BLOCKED" />: chặn cài đặt tiện ích.
+          * <ph name="FORCE_INSTALLED" />: tiện ích tự động cài đặt và người dùng không thể xóa.
+          * <ph name="NORMAL_INSTALLED" />: tiện ích tự động cài đặt nhưng người dùng có thể tắt.
+
+          Bạn cũng có thể định cấu hình <ph name="INSTALLATION_MODE" /> cho nhiều tiện ích, bao gồm cả tiện ích <ph name="DEFAULT_SCOPE" /> (giống như cài đặt mặc định) và các tiện ích có cùng URL cập nhật. Bạn chỉ có thể sử dụng các giá trị <ph name="ALLOWED" /> và <ph name="BLOCKED" /> trong trường hợp này.
+
+          Nếu đặt chế độ thành <ph name="FORCE_INSTALLED" /> hoặc <ph name="NORMAL_INSTALLED" /> thì bạn cũng phải định cấu hình <ph name="UPDATE_URL" />. Lưu ý rằng URL cập nhật được đặt trong chính sách này chỉ dùng cho cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL cập nhật nêu trong tệp kê khai của tiện ích. URL cập nhật phải trỏ tới tài liệu XML của Tệp kê khai cập nhật như đề cập ở trên.
+
+          <ph name="BLOCKED_PERMISSIONS" />: ánh xạ tới một danh sách các chuỗi cho biết các quyền API bị chặn đối với tiện ích. Tên quyền giống với các chuỗi quyền được khai báo trong tệp kê khai của tiện ích như mô tả tại <ph name="LINK_TO_EXTENSION_DOC3" />. Bạn cũng có thể định cấu hình cài đặt này cho tiện ích <ph name="DEFAULT_SCOPE" />. Nếu tiện ích yêu cầu một quyền có trong danh sách chặn thì quyền đó sẽ không được phép tải. Nếu tiện ích chứa một quyền bị chặn dưới dạng yêu cầu tùy chọn, thì quyền đó sẽ được xử lý theo cách thông thường, nhưng việc yêu cầu các quyền xung đột sẽ tự động bị từ chối vào thời gian chạy.
+
+          <ph name="ALLOWED_PERMISSIONS" />: tương tự như <ph name="BLOCKED_PERMISSIONS" />, nhưng cho phép rõ ràng một số quyền có thể bị chặn theo danh sách quyền bị chặn chung nên không thể định cấu hình cho tiện ích <ph name="DEFAULT_SCOPE" />. Xin lưu ý rằng cài đặt này không tự động cung cấp quyền đã cấp cho tiện ích.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: ánh xạ tới một chuỗi phiên bản. Định dạng của chuỗi phiên bản tương tự như định dạng dùng trong tệp kê khai của tiện ích, như mô tả tại <ph name="LINK_TO_EXTENSION_DOC4" />. Tiện ích có phiên bản cũ hơn phiên bản tối thiểu đã chỉ định sẽ bị tắt. Điều này cũng áp dụng cho các tiện ích bị buộc cài đặt.
+
+          Bạn chỉ có thể sử dụng các cài đặt sau cho cấu hình <ph name="DEFAULT_SCOPE" /> mặc định:
+
+          <ph name="INSTALL_SOURCES" />: Mỗi mục trong danh sách này là mẫu khớp với kiểu của tiện ích (<ph name="LINK_TO_MATCH_PATTERNS" />). Người dùng có thể dễ dàng cài đặt các mục từ URL bất kỳ khớp với một mục trong danh sách này. Cả vị trí của tệp <ph name="EXTENSION_SUFFIX_WILDCARD" /> và trang bắt đầu tải xuống (tức là liên kết giới thiệu) phải được các mẫu này cho phép.
+
+          <ph name="ALLOWED_TYPES" />: Cài đặt này cho phép các loại tiện ích/ứng dụng được phép cài đặt trong <ph name="PRODUCT_NAME" />. Giá trị là một danh sách chuỗi, mỗi chuỗi phải thuộc một trong số các loại sau: <ph name="VALID_ALLOWED_TYPES" />. Hãy xem tài liệu về tiện ích <ph name="PRODUCT_NAME" /> để biết thêm thông tin về các loại này.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Nếu người dùng cố cài đặt một tiện ích nhưng tiện ích đó bị chính sách chặn, thì Cửa hàng Chrome trực tuyến sẽ hiển thị thông báo lỗi chung. Cài đặt này cho phép bạn thêm văn bản vào thông báo lỗi. Thông báo này có thể dùng để chuyển hướng người dùng đến bộ phận trợ giúp, giải thích nguyên nhân một tiện ích cụ thể bị chặn hoặc cho mục đích khác. Thông báo lỗi này sẽ bị cắt bớt nếu dài hơn 1000 ký tự.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Chấp nhận một danh sách các máy chủ mà một tiện ích sẽ bị chặn tương tác với các máy chủ đó. Việc này bao gồm chèn javascript, thay đổi và xem webRequests / webNavigation, xem và thay đổi cookie. Định dạng tương tự như Mẫu khớp <ph name="LINK_TO_MATCH_PATTERNS" /> trừ trường hợp không xác định được đường dẫn, ví dụ: "*://*.example.com". Ngoài ra còn hỗ trợ cả ký tự đại diện cho miền cấp cao nhất (TLD) hiệu quả, ví dụ: "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Chấp nhận một danh sách các máy chủ mà một tiện ích có thể tương tác bất kể các máy chủ đó có tên trong <ph name="RUNTIME_BLOCKED_HOSTS" /> hay không. Định dạng tương tự như <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Báo cáo trạng thái của bộ chuyển đổi dành cho nhà phát triển của thiết bị lúc khởi động.
 
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Đã bật máy in dành cho doanh nghiệp</translation>
 <translation id="1221359380862872747">Tải các url đã chỉ định khi đăng nhập ở chế độ trình diễn</translation>
 <translation id="123081309365616809">Bật tính năng truyền nội dung đến thiết bị</translation>
+<translation id="1257550411839719984">Đặt thư mục tải xuống mặc định</translation>
 <translation id="1265053460044691532">Hạn chế thời gian người dùng được xác thực qua SAML có thể đăng nhập ngoại tuyến</translation>
 <translation id="1291880496936992484">Cảnh báo: RC4 sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 52 (khoảng tháng 9 năm 2016) và chính sách này sẽ ngừng hoạt động sau đó.
 
@@ -563,6 +597,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       </translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
+<translation id="2793923553868251161">Ngữ cảnh gốc được coi là ngữ cảnh an toàn.</translation>
 <translation id="2801230735743888564">Cho phép người dùng chơi trò chơi trứng khủng long Phục sinh khi thiết bị ngoại tuyến.
 
 
@@ -804,11 +839,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Việc không đặt các chính sách này sẽ cho phép người dùng tự chọn cài đặt proxy.</translation>
 <translation id="3758249152301468420">Vô hiệu hóa công cụ dành cho nhà phát triển</translation>
 <translation id="3765260570442823273">Thời lượng hiển thị thông điệp cảnh báo đăng xuất khi không hoạt động</translation>
-<translation id="376931976323225993">Cho phép bạn đặt cho phép hay không cho phép các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" />. Bạn có thể cho phép hoặc từ chối tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /> cho tất cả các trang web.
-
-          Tính năng nhấp để phát sẽ cho phép plugin <ph name="FLASH_PLUGIN_NAME" /> chạy nhưng người dùng phải nhấp vào trình giữ chỗ để plugin đó bắt đầu chạy.
-
-          Nếu không thiết lập chính sách này, người dùng có thể thay đổi cài đặt này theo cách thủ công.</translation>
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
 <translation id="3780319008680229708">Nếu chính sách này được đặt thành true thì biểu tượng thanh công cụ Cast sẽ luôn được hiển thị trên thanh công cụ hoặc menu mục bổ sung và người dùng sẽ không thể xóa biểu tượng này.
 
@@ -892,6 +922,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bật cài đặt này, bạn sẽ không thể truy cập Công cụ dành cho nhà phát triển cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
 
       Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.</translation>
+<translation id="3895557476567727016">Định cấu hình thư mục mặc định mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để tải các tệp xuống.
+
+      Nếu bạn đặt chính sách này, chính sách sẽ thay đổi thư mục mặc định mà <ph name="PRODUCT_NAME" /> tải các tệp xuống. Chính sách này không bắt buộc, vì vậy, người dùng sẽ có thể thay đổi thư mục đó.
+
+      Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục mặc định thông thường (dành riêng cho nền tảng).
+
+      Hãy xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.</translation>
 <translation id="3907986150060929099">Đặt ngôn ngữ được đề xuất cho phiên công khai</translation>
 <translation id="3911737181201537215">Chính sách này không ảnh hưởng đến việc ghi nhật ký do Android thực hiện.</translation>
 <translation id="391531815696899618">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi được đặt thành True. Trong trường hợp đó, không có dữ liệu nào được tải lên Google Drive.
@@ -1808,7 +1845,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
 <translation id="7072406291414141328">Bật điều chỉnh băng thông mạng</translation>
 <translation id="7079519252486108041">Chặn cửa sổ bật lên trên các trang web này</translation>
-<translation id="7091198954851103976">Luôn chạy plugin yêu cầu ủy quyền</translation>
 <translation id="7106631983877564505">Bật khóa khi thiết bị chạy <ph name="PRODUCT_OS_NAME" /> không hoạt động hoặc bị treo.
       Nếu bạn bật cài đặt này, người dùng sẽ được yêu cầu cung cấp mật khẩu để mở khóa thiết bị khỏi chế độ ngủ.
 
@@ -2042,6 +2078,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="787125417158068494">Nếu được đặt thành SyncDisabled hoặc không được định cấu hình, các chứng chỉ <ph name="PRODUCT_OS_NAME" /> sẽ không khả dụng cho ứng dụng ARC.
 
       Nếu được đặt thành CopyCaCerts, tất cả các chứng chỉ CA đã cài đặt ONC có <ph name="WEB_TRUSTED_BIT" /> sẽ khả dụng cho ứng dụng ARC.</translation>
+<translation id="7872535148622213208">
+        Chính sách xác định danh sách các URL gốc cần được coi là ngữ cảnh
+        an toàn. Mục đích là nhằm cho phép các tổ chức thiết lập một máy chủ
+        theo giai đoạn để phát triển web nội bộ.
+        Điều này cũng tương tự như cờ --unsafely-treat-insecure-origin-as-secure.
+        Để biết thêm thông tin về ngữ cảnh an toàn, hãy xem https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
@@ -2298,6 +2341,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được định cấu hình hoặc giá trị nhỏ hơn 1 MB, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng kích thước bộ nhớ cache mặc định.</translation>
 <translation id="8858642179038618439">Bật Chế độ an toàn trên YouTube</translation>
 <translation id="8864975621965365890">Loại bỏ lời nhắc từ chối xuất hiện khi một trang web được hiển thị bởi <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Cho phép dịch vụ Google Dịch tích hợp trên <ph name="PRODUCT_NAME" />.
+
+      Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ cung cấp chức năng dịch cho người dùng bằng cách hiển thị thanh công cụ dịch tích hợp (nếu thích hợp) và tùy chọn dịch trên menu ngữ cảnh nhấp chuột phải.
+
+      Nếu bạn tắt cài đặt này, tất cả các tính năng dịch tích hợp sẽ bị tắt.
+
+      Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
+
+      Nếu bạn không thiết lập cài đặt này, người dùng có thể quyết định có sử dụng chức năng này hay không.</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
 <translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>

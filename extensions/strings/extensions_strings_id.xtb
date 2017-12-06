@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Tidak dapat membuka paket ekstensi. Untuk membuka paket ekstensi dengan aman, harus tersedia jalur ke direktori profil Anda yang tidak berisi link simbolik. Tidak ada jalur yang seperti itu untuk profil Anda.</translation>
 <translation id="641087317769093025">Tidak dapat mengekstrak ekstensi</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses ke satu atau beberapa perangkat Anda:</translation>
-<translation id="6566142449942033617">Tidak dapat memuat '<ph name="PLUGIN_PATH" />' untuk plugin.</translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> dari <ph name="VENDOR_NAME" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat membuat direktori untuk pengekstrakan: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Ekstensi ini terlalu sering memuat ulang sendiri.</translation>
 <translation id="7003844668372540529">Produk <ph name="PRODUCT_ID" /> tak dikenal dari <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME" /> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
-<translation id="7581279002575751816">Plugin NPAPI tidak didukung.</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Kamera depan</translation>
 <translation id="8047248493720652249">Ekstensi ini gagal memberi nama download "<ph name="ATTEMPTED_FILENAME" />" karena ekstensi lain (<ph name="EXTENSION_NAME" />) menentukan nama file yang berbeda "<ph name="ACTUAL_FILENAME" />".</translation>

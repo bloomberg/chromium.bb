@@ -46,6 +46,39 @@
 
       Retningslinjeverdien må angis i millisekunder.</translation>
 <translation id="1151353063931113432">Tillat bilder på disse nettstedene</translation>
+<translation id="1151545095291359187">Konfigurerer innstillingene for administrasjon av utvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne regelen kontrollerer flere innstillinger, deriblant innstillinger som kontrolleres av eventuelle eksisterende utvidelsesrelaterte regler. Denne regelen overstyrer eventuelle eldre regler hvis begge er angitt.
+
+          Denne regelen tilordner en utvidelses-ID eller en nettadresse for oppdatering til den tilhørende konfigurasjonen. Med en utvidelses-ID blir konfigurasjonen bare brukt for den angitte utvidelsen. En standardkonfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som brukes for alle utvidelser som ikke har noen tilpasset konfigurasjon angitt i denne regelen. Med en nettadresse for oppdatering blir konfigurasjonen brukt for alle utvidelser med den eksakte nettadressen for oppdatering oppgitt i manifestet til utvidelsen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurasjonen for hver enkelt utvidelse (eller utvidelser med samme nettadresse for oppdatering) er en annen oppslagsliste som kan inneholde feltene dokumentert nedenfor.
+
+          <ph name="INSTALLATION_MODE" />: knyttes til en streng som indikerer installasjonsmodusen for utvidelsen. De gyldige strengene er:
+          * <ph name="ALLOWED" />: gjør det mulig for utvidelsen å installeres av brukeren. Denne funksjonaliteten brukes som standard. 
+          * <ph name="BLOCKED" />: blokkerer installasjon av utvidelsen.
+          * <ph name="FORCE_INSTALLED" />: gjør at utvidelsen installeres automatisk, men kan ikke fjernes av brukeren
+          * <ph name="NORMAL_INSTALLED" />: gjør at utvidelsen installeres automatisk, men brukeren kan slå den av
+
+          <ph name="INSTALLATION_MODE" /> kan også konfigureres for flere utvidelser, inkludert ved bruk av <ph name="DEFAULT_SCOPE" />-utvidelsen (som standardinnstillinger) samt utvidelser med samme nettadresse for oppdatering. Bare verdiene <ph name="ALLOWED" /> og <ph name="BLOCKED" /> kan brukes i dette tilfellet.
+
+          Hvis modusen er angitt som <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, må en <ph name="UPDATE_URL" /> konfigureres også. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – påfølgende oppdateringer av utvidelsen bruker nettadressen for oppdatering oppgitt i utvidelsens manifest. Nettadressen for oppdatering skal peke til et oppdateringsmanifest i XML-format som som nevnt ovenfor.
+
+          <ph name="BLOCKED_PERMISSIONS" />: knyttes til en liste over strenger som indikerer hvilke API-tillatelser som er blokkert for utvidelsen. Tillatelsesnavnene er de samme som tillatelsesstrengene som oppgis i manifestet til utvidelsen, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC3" />. Denne innstillingen kan også konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelser. Hvis utvidelsen krever en tillatelse som er på blokkeringslisten, får den ikke tillatelse til å kjøre. Hvis utvidelsen inneholder en blokkert tillatelse som et valgfritt krav, behandles den som vanlig, men forespørsler om motstridende tillatelser blir avvist automatisk under kjøring.
+
+          <ph name="ALLOWED_PERMISSIONS" />: ligner på <ph name="BLOCKED_PERMISSIONS" />, men tillater i stedet uttrykkelig noen tillatelser som kan være blokkert i listen over globalt blokkerte tillatelser. Denne innstillingen kan derfor ikke konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelser. Merk at denne innstillingen ikke gir innvilgede tillatelser til utvidelser automatisk.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: knyttes til en versjonsstreng. Formatet for versjonsstrengen er det samme som det som er brukt i utvidelsens manifest, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. Utvidelser med en versjon som er eldre enn den spesifiserte minimumsversjonen, blir deaktivert. Dette gjelder også for utvidelser med tvungen installering (FORCE_INSTALLED).
+
+          Følgende innstillinger kan bare bruker for standardkonfigurasjonen <ph name="DEFAULT_SCOPE" />:
+ 
+          <ph name="INSTALL_SOURCES" />: Hvert element i denne listen er et samsvarsmønster av typen som brukes for utvidelser (<ph name="LINK_TO_MATCH_PATTERNS" />). Brukere kan enkelt installere elementer fra alle nettadresser som samsvarer med et element på denne listen. Både plasseringen av <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen og siden der nedlastingen startes fra (dvs. henvisningsadressen), må tillates av disse mønstrene.
+
+          <ph name="ALLOWED_TYPES" />: Denne innstillingen godkjenner de tillatte typene av utvidelser/apper som kan installeres i <ph name="PRODUCT_NAME" />. Verdien er en liste over strenger, der hver streng skal tilhøre én av følgende: <ph name="VALID_ALLOWED_TYPES" />. Se i utvidelsesdokumentasjonen for <ph name="PRODUCT_NAME" /> for å få mer informasjon om disse typene.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruker prøver å installere en utvidelse, men forsøket blir blokkert i henhold til en regel, viser Chrome Nettmarked en generisk feilmelding. Denne innstillingen har støtte for å legge til egendefinert tekst i feilmeldingen. Dette kan brukes til å henvise brukere til brukerstøtten din, forklare hvorfor en bestemt utvidelse er blokkert, eller noe annet. Feilmeldingen blir avkortet hvis den er lengre enn 1000 tegn.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Godtar en liste over verter som en utvidelse blir blokkert fra å interagere med. Dette omfatter injisering av JavaScript-kode, endring og åpning av webRequests/webNavigation samt endring og åpning av informasjonskapsler. Dette formatet ligner på Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, bortsett fra at ingen baner kan defineres – for eksempel «*://*.example.com». Formatet støtter også effektive TLD-jokertegn, for eksempel «*://example.*».
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Godtar en liste over verter som utvidelsen kan interagere med, uansett om de er oppført i <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ikke. Dette er det samme formatet som <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Rapportér tilstanden til enhetens utviklerbryter ved oppstart.
 
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Aktiverte bedriftsskrivere</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="123081309365616809">Slå på casting av innhold til enheten</translation>
+<translation id="1257550411839719984">Angi standard nedlastingskatalog</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
@@ -553,6 +587,7 @@
       </translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
+<translation id="2793923553868251161">Opprinnelser som skal behandles som sikker kontekst.</translation>
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
       Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
@@ -778,11 +813,6 @@
       Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="3765260570442823273">Varighet på advarselmeldingen for inaktiv avlogging</translation>
-<translation id="376931976323225993">Lar deg angi om <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk på nettsteder eller ikke. Du kan enten tillate eller forby automatisk kjøring av <ph name="FLASH_PLUGIN_NAME" />-programtillegget for alle nettsteder.
-
-          Med «Klikk for å spille av» kan <ph name="FLASH_PLUGIN_NAME" />-programtillegget kjøres, men brukeren må klikke på plassholderen for å starte det.
-
-          Hvis denne regelen ikke angis, kan brukeren endre innstillingen manuelt.</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
 <translation id="3780319008680229708">Hvis denne regelen angis som «true» (sann), vises verktøyradikonet for Cast hele tiden i verktøyraden eller overflytsmenyen, og brukere kan ikke fjerne det.
 
@@ -864,6 +894,13 @@
       Hvis du slår på denne innstillingen, fjernes tilgangen til utviklerverktøyene, og nettstedelementene kan ikke inspiseres lenger. Alle hurtigtaster og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir slått av.
 
       Hvis dette alternativet slås av eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
+<translation id="3895557476567727016">Konfigurerer standardkatalogen som <ph name="PRODUCT_NAME" /> skal bruke til å laste ned filer.
+
+      Hvis du angir denne regelen, endres standardkatalogen som <ph name="PRODUCT_NAME" /> laster ned filer til. Denne regelen er ikke obligatorisk, så brukeren kan endre hvilken katalog som skal brukes.
+
+      Hvis du ikke angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den vanlige standardkatalogen (plattformspesifikk).
+
+      Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.</translation>
 <translation id="3907986150060929099">Spesifiser de anbefalte lokalitetene for offentlige økter</translation>
 <translation id="3911737181201537215">Denne regelen har ingen innvirkning på loggføring i Android.</translation>
 <translation id="391531815696899618">Slår av Google Disk-synkronisering i Filer-appen for <ph name="PRODUCT_OS_NAME" /> ved bruk av mobiltilkobling når den har verdien true (sann). I disse tilfellene lastes ikke noen data opp til Google Disk.
@@ -1758,7 +1795,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="706669471845501145">Tillat nettsteder å vise varsler på skrivebordet</translation>
 <translation id="7072406291414141328">Slår på reduksjon av båndbredde for nettverk</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
-<translation id="7091198954851103976">Kjører alltid programtillegg som krever godkjenning</translation>
 <translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderes.
 
       Hvis du slår på denne innstillingen, må brukere angi passord for å låse opp enheten fra hvilemodus.
@@ -2001,6 +2037,10 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke <ph name="PRODUCT_OS_NAME" />-sertifikater tilgjengelige for ARC-apper.
 
       Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
+<translation id="7872535148622213208">
+        Regelen spesifiserer en liste over opprinnelser (nettadresser) som skal behandles som sikker kontekst. Hensikten er å la organisasjoner konfigurere en testtjener for intern nettutvikling. Dette er det samme som flagget --unsafely-treat-insecure-origin-as-secure.
+        For å få mer informasjon om sikre kontekster, se https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
@@ -2234,6 +2274,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne regelen ikke er konfigurert, eller hvis verdien er lavere enn 1 MB, bruker <ph name="PRODUCT_OS_NAME" /> standardbufferstørrelsen.</translation>
 <translation id="8858642179038618439">Bruk tvungen sikkerhetsmodus i YouTube</translation>
 <translation id="8864975621965365890">Ignorerer avslagsforespørselen som vises når et nettsted gjengis av <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8867464911288727016">Aktiverer den integrerte Google Oversetter-tjenesten på <ph name="PRODUCT_NAME" />.
+
+      Hvis du aktiverer denne innstillingen, tilbyr <ph name="PRODUCT_NAME" /> oversettingsfunksjonalitet til brukeren ved å vise en integrert verktøylinje for oversetting (der dette er passende) samt et alternativ for å oversette i den kontekstuelle høyreklikk-menyen.
+
+      Hvis du slår av denne innstillingen, deaktiveres alle integrerte oversettingsfunksjoner.
+
+      Hvis du slår på eller av denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne innstillingen ikke angis, kan brukeren velge å bruke denne funksjonen eller ikke.</translation>
 <translation id="8870318296973696995">Startside</translation>
 <translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>

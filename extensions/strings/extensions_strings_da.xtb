@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Udvidelsen kunne ikke pakkes ud. Hvis du vil udpakke en udvidelse korrekt, skal der angives en sti til din profilmappe, som ikke indeholder et symlink. Der findes ingen sådan sti for din profil.</translation>
 <translation id="641087317769093025">Udvidelsen kunne ikke udpakkes</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" anmoder om adgang til en eller flere af dine enheder:</translation>
-<translation id="6566142449942033617">'<ph name="PLUGIN_PATH" />' til plugin kunne ikke indlæses.</translation>
 <translation id="657064425229075395">Baggrundsscriptet  "<ph name="BACKGROUND_SCRIPT" />" kunne ikke indlæses.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Mappen til udpakning kunne ikke oprettet: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Denne udvidelse har genindlæst sig selv for mange gange.</translation>
 <translation id="7003844668372540529">Ukendt produkt, <ph name="PRODUCT_ID" />, fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administratoren af denne computer kræver, at <ph name="EXTENSION_NAME" /> skal installeres. Den kan ikke fjernes eller ændres.</translation>
-<translation id="7581279002575751816">NPAPI-plugins understøttes ikke.</translation>
 <translation id="7972881773422714442">Valgmuligheder: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Denne udvidelse har ikke navngivet downloaden "<ph name="ATTEMPTED_FILENAME" />", fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) har fastlagt et andet filnavn "<ph name="ACTUAL_FILENAME" />".</translation>

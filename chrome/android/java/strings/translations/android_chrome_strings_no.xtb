@@ -66,13 +66,14 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1539064842193522527">Linken er åpnet i Chrome</translation>
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
+<translation id="1566400915470565838">Koble til Internett for å bruke <ph name="APP_NAME" />.</translation>
 <translation id="1569387923882100876">Tilkoblet enhet</translation>
 <translation id="1571304935088121812">Kopiér brukernavnet</translation>
 <translation id="1612196535745283361">Chrome trenger posisjonstilgang for å søke etter enheter. Posisjonstilgang er <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}other{Fjern # valgte elementer}}</translation>
-<translation id="1641113438599504367">Sikker surfing</translation>
+<translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="164269334534774161">Du ser en lokal kopi av denne siden fra <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Oversetter siden til <ph name="SOURCE_LANGUAGE" /> …</translation>
 <translation id="1644574205037202324">Logg</translation>
@@ -151,7 +152,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2369533728426058518">åpne faner</translation>
-<translation id="2372491353676110880">Last ned sider automatisk</translation>
 <translation id="2387895666653383613">Tekstskalering</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2416359993254398973">Chrome trenger tilgang til kameraet ditt for dette nettstedet.</translation>
@@ -179,8 +179,8 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2621115761605608342">Tillat JavaScript for et bestemt nettsted.</translation>
 <translation id="2625189173221582860">Passordet er kopiert</translation>
 <translation id="2631006050119455616">Spart</translation>
+<translation id="2647434099613338025">Legg til språk</translation>
 <translation id="2653659639078652383">Send</translation>
-<translation id="2671100504997899381">Last inn sider raskere, og lagre populære sider for lesing uten nett</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
@@ -442,7 +442,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5271967389191913893">Enheten kan ikke åpne innholdet som skal lastes ned.</translation>
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="5284584623296338184">Endringer i bokmerker, loggoppføringer, passord og andre innstillinger blir ikke synkronisert med Google-kontoen din lenger. Data som allerede er lagret i Google-kontoen din, blir imidlertid ikke fjernet.</translation>
-<translation id="5301954838959518834">OK, skjønner</translation>
+<translation id="5301954838959518834">Greit</translation>
 <translation id="5304593522240415983">Dette feltet må fylles ut</translation>
 <translation id="5308380583665731573">Koble til</translation>
 <translation id="5308603654685598744">Når denne funksjonen er slått på, blir du spurt om du vil at Chrome skal bruke Google Oversetter til å oversette sider som er skrevet på andre språk.</translation>
@@ -565,7 +565,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="6343192674172527289">Fant ingen nedlastinger</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> til}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> til}}</translation>
-<translation id="6354616574440533128">Lås opp for å fortsette å konfigurere telefonen din</translation>
 <translation id="6364438453358674297">Vil du fjerne forslaget fra loggen?</translation>
 <translation id="6383961787135158834">Slett nettstedslagring…</translation>
 <translation id="6388207532828177975">Slett alt og tilbakestill</translation>
@@ -793,6 +792,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8493948351860045254">Frigjør plass</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
 <translation id="8503813439785031346">Brukernavn</translation>
+<translation id="8514477925623180633">Eksportér passord som er lagret med Chrome</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
 <translation id="8523928698583292556">Slett lagrede passord</translation>
 <translation id="854522910157234410">Åpne denne siden</translation>

@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Extensia nu poate fi dezarhivată. Pentru a dezarhiva în siguranță o extensie, trebuie să existe o cale către directorul tău de profiluri care să nu conțină un link simbolic. Pentru profilul tău nu există nicio astfel de cale.</translation>
 <translation id="641087317769093025">Extensia nu a putut fi dezarhivată</translation>
 <translation id="6542618148162044354">„<ph name="APP_NAME" />” solicită accesul la cel puțin unul dintre dispozitivele tale:</translation>
-<translation id="6566142449942033617">Nu se poate încărca „<ph name="PLUGIN_PATH" />” pentru plugin.</translation>
 <translation id="657064425229075395">Scriptul de fundal „<ph name="BACKGROUND_SCRIPT" />” nu a putut fi încărcat.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> de la <ph name="VENDOR_NAME" /> (număr de serie <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Nu s-a putut crea directorul pentru dezarhivare: „<ph name="DIRECTORY_PATH" />”</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Această extensie s-a reîncărcat automat prea frecvent.</translation>
 <translation id="7003844668372540529">Produs necunoscut <ph name="PRODUCT_ID" /> de la <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Administratorul acestui dispozitiv solicită instalarea extensiei <ph name="EXTENSION_NAME" />. Aceasta nu poate fi eliminată sau modificată.</translation>
-<translation id="7581279002575751816">Pluginurile NPAPI nu sunt acceptate.</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Camera foto frontală</translation>
 <translation id="8047248493720652249">Această extensie nu a reușit să denumească fișierul descărcat „<ph name="ATTEMPTED_FILENAME" />”, deoarece altă extensie (<ph name="EXTENSION_NAME" />) a stabilit alt nume de fișier, „<ph name="ACTUAL_FILENAME" />”.</translation>

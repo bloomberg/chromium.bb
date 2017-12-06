@@ -66,6 +66,7 @@
 <translation id="1539064842193522527">已在 Chrome 中打开此链接</translation>
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
+<translation id="1566400915470565838">若想使用“<ph name="APP_NAME" />”，请连接到互联网。</translation>
 <translation id="1569387923882100876">连接的设备</translation>
 <translation id="1571304935088121812">复制用户名</translation>
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
@@ -151,7 +152,6 @@
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2369533728426058518">打开的标签页</translation>
-<translation id="2372491353676110880">自动下载网页</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2416359993254398973">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头。</translation>
@@ -179,8 +179,8 @@
 <translation id="2621115761605608342">允许特定网站运行 JavaScript。</translation>
 <translation id="2625189173221582860">已复制密码</translation>
 <translation id="2631006050119455616">已节省</translation>
+<translation id="2647434099613338025">添加语言</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2671100504997899381">更快速地加载网页，并保存热门网页以供离线阅读</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2707726405694321444">刷新网页</translation>
@@ -565,7 +565,6 @@
 <translation id="6337234675334993532">加密</translation>
 <translation id="6343192674172527289">未找到任何下载内容</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}}</translation>
-<translation id="6354616574440533128">您需要解锁才能继续设置手机</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
 <translation id="6383961787135158834">清除网站存储数据…</translation>
 <translation id="6388207532828177975">清除并重置</translation>
@@ -793,6 +792,7 @@
 <translation id="8493948351860045254">释放空间</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8503813439785031346">用户名</translation>
+<translation id="8514477925623180633">导出存储在 Chrome 中的密码</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8523928698583292556">删除存储的密码</translation>
 <translation id="854522910157234410">打开此网页</translation>

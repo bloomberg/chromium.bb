@@ -371,7 +371,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
-<translation id="850600235656508448">Abrir em modo sem rastros</translation>
+<translation id="850600235656508448">Abrir em modo de navegação anônima</translation>
 <translation id="8517375800490286174">Licenças de código aberto</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Guias <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8532105204136943229">Ano de vencimento</translation>
@@ -406,7 +406,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>
-<translation id="91549621916703028">Crie várias guias para todas as suas tarefas</translation>
 <translation id="9157836665414082580">Bloquear caixas de diálogo</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
 <translation id="9203116392574189331">Transição</translation>
@@ -417,4 +416,5 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="976982866697960176">Gerenciar dados sincronizados…</translation>
 <translation id="988141524645182168">Outros dispositivos</translation>
 <translation id="989988560359834682">Editar endereço</translation>
+<translation id="994757059139821576">Artigos sugeridos</translation>
 </translationbundle>

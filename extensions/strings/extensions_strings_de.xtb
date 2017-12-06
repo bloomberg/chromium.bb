@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
 <translation id="641087317769093025">Erweiterung kann nicht entpackt werden.</translation>
 <translation id="6542618148162044354">"<ph name="APP_NAME" />" fordert Zugriff auf eines oder mehrere Ihrer Geräte an:</translation>
-<translation id="6566142449942033617">"<ph name="PLUGIN_PATH" />" konnte nicht für Plug-in geladen werden.</translation>
 <translation id="657064425229075395">Hintergrundskript "<ph name="BACKGROUND_SCRIPT" />" konnte nicht geladen werden.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> von <ph name="VENDOR_NAME" /> (Seriennummer <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Fehler beim Erstellen von Verzeichnis zum Entpacken: "<ph name="DIRECTORY_PATH" />"</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Diese Erweiterung hat sich selbst zu häufig neu geladen.</translation>
 <translation id="7003844668372540529">Unbekanntes Produkt <ph name="PRODUCT_ID" /> von <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Der Administrator dieses Computers schreibt die Installation von <ph name="EXTENSION_NAME" /> vor. Die Erweiterung kann nicht entfernt oder geändert werden.</translation>
-<translation id="7581279002575751816">NPAPI-Plug-ins werden nicht unterstützt.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht "<ph name="ATTEMPTED_FILENAME" />" nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME" />) einen anderen Dateinamen "<ph name="ACTUAL_FILENAME" />" festgelegt hat.</translation>

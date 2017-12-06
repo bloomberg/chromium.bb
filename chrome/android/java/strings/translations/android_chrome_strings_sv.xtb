@@ -66,6 +66,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1539064842193522527">Länken öppnades i Chrome</translation>
 <translation id="1549000191223877751">Flytta till annat fönster</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
+<translation id="1566400915470565838">Anslut till internet om du vill använda <ph name="APP_NAME" />.</translation>
 <translation id="1569387923882100876">Ansluten enhet</translation>
 <translation id="1571304935088121812">Kopiera användarnamn</translation>
 <translation id="1612196535745283361">Chrome behöver åtkomst till platsinformation för att kunna söka efter enheter. Platsåtkomst är <ph name="BEGIN_LINK" />inaktiverat för enheten<ph name="END_LINK" />.</translation>
@@ -151,7 +152,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2369533728426058518">öppna flikar</translation>
-<translation id="2372491353676110880">Ladda ned sidor automatiskt</translation>
 <translation id="2387895666653383613">Textskalning</translation>
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2416359993254398973">Du behöver ge Chrome behörighet att använda kameran på den här webbplatsen.</translation>
@@ -179,8 +179,8 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2621115761605608342">Tillåt Javascript på en specifik webbplats.</translation>
 <translation id="2625189173221582860">Lösenordet har kopierats</translation>
 <translation id="2631006050119455616">Sparat</translation>
+<translation id="2647434099613338025">Lägg till språk</translation>
 <translation id="2653659639078652383">Skicka</translation>
-<translation id="2671100504997899381">Läs in sidor snabbare och spara populära sidor för läsning offline</translation>
 <translation id="2677748264148917807">Lämna</translation>
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2707726405694321444">Uppdatera sidan</translation>
@@ -565,7 +565,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="6343192674172527289">Inga nedladdningar hittades</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> till}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> till}}</translation>
-<translation id="6354616574440533128">Lås upp om du vill fortsätta att konfigurera mobilen</translation>
 <translation id="6364438453358674297">Vill du ta bort förslaget från historiken?</translation>
 <translation id="6383961787135158834">Rensa webbplatslagring …</translation>
 <translation id="6388207532828177975">Ta bort och återställ</translation>
@@ -793,6 +792,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8493948351860045254">Frigör lagringsutrymme</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8503813439785031346">Användarnamn</translation>
+<translation id="8514477925623180633">Exportera lösenord som har sparats i Chrome</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="8523928698583292556">Radera sparat lösenord</translation>
 <translation id="854522910157234410">Öppna sidan</translation>

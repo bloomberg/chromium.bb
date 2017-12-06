@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Није могуће отпаковати додатак. Да бисте безбедно отпаковали додатак, мора да постоји путања до директоријума профила која не садржи симболичку везу. За ваш профил не постоји таква путања.</translation>
 <translation id="641087317769093025">Није могуће распаковати додатак</translation>
 <translation id="6542618148162044354">„<ph name="APP_NAME" />“ захтева приступ једном или више уређаја:</translation>
-<translation id="6566142449942033617">Није могуће учитати „<ph name="PLUGIN_PATH" />“ за додатак.</translation>
 <translation id="657064425229075395">Није могуће учитати скрипту у позадини „<ph name="BACKGROUND_SCRIPT" />“.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /> (серијски број <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Није могуће направити директоријум за распакивање: „<ph name="DIRECTORY_PATH" />“</translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Овај додатак се сувише често поново учитавао.</translation>
 <translation id="7003844668372540529">Непознати производ <ph name="PRODUCT_ID" /> продавца <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Администратор овог уређаја захтева да додатак <ph name="EXTENSION_NAME" /> буде инсталиран. Не можете да га уклоните или измените.</translation>
-<translation id="7581279002575751816">NPAPI додатне компоненте нису подржане.</translation>
 <translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Предња</translation>
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME" />“ зато што је један други додатак (<ph name="EXTENSION_NAME" />) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME" />“.</translation>

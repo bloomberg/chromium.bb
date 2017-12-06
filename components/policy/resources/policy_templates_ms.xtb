@@ -46,6 +46,39 @@
 
       Nilai dasar perlu dinyatakan dalam milisaat.</translation>
 <translation id="1151353063931113432">Benarkan imej pada tapak ini</translation>
+<translation id="1151545095291359187">Mengkonfigurasi tetapan pengurusan sambungan untuk <ph name="PRODUCT_NAME" />.
+
+          Dasar ini mengawal berbilang tetapan, termasuk tetapan yang dikawal oleh mana-mana dasar berkaitan sambungan yang sedia ada. Dasar ini akan mengatasi sebarang dasar lama jika kedua-duanya ditetapkan.
+
+          Dasar ini memetakan ID sambungan atau URL kemas kini kepada konfigurasinya. Dengan ID sambungan, konfigurasi akan digunakan pada sambungan yang dinyatakan sahaja. Konfigurasi lalai boleh ditetapkan untuk ID khas <ph name="DEFAULT_SCOPE" />, yang akan digunakan pada semua sambungan yang tidak menetapkan konfigurasi tersuai dalam dasar ini. Dengan URL kemas kini, konfigurasi akan digunakan pada semua sambungan dengan URL kemas kini sebenar yang dinyatakan dalam manifes sambungan ini, seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurasi bagi setiap sambungan (atau sambungan dengan URL kemas kini yang sama) ialah kamus lain yang boleh mengandungi medan yang didokumenkan di bawah.
+
+          <ph name="INSTALLATION_MODE" />: memetakan kepada rentetan yang menunjukkan mod pemasangan bagi sambungan tersebut. Rentetan yang sah adalah:
+          * <ph name="ALLOWED" />: membenarkan sambungan dipasang oleh pengguna. Gelagat ini merupakan gelagat lalai.
+          * <ph name="BLOCKED" />: menyekat pemasangan sambungan.
+          * <ph name="FORCE_INSTALLED" />: sambungan dipasang secara automatik dan tidak boleh dialih keluar oleh pengguna.
+          * <ph name="NORMAL_INSTALLED" />: sambungan dipasang secara automatik tetapi boleh dilumpuhkan oleh pengguna.
+
+          <ph name="INSTALLATION_MODE" /> boleh dikonfigurasikan untuk berbilang sambungan juga, termasuk sambungan <ph name="DEFAULT_SCOPE" /> (sebagai tetapan lalai) dan sambungan dengan URL kemas kini yang sama. Hanya nilai <ph name="ALLOWED" /> dan <ph name="BLOCKED" /> boleh digunakan dalam keadaan ini.
+
+          Jika mod ditetapkan kepada <ph name="FORCE_INSTALLED" /> atau <ph name="NORMAL_INSTALLED" />, maka <ph name="UPDATE_URL" /> mesti dikonfigurasikan juga. Sila ambil perhatian bahawa URL kemas kini yang ditetapkan dalam dasar ini hanya digunakan untuk pemasangan awal; kemas kini yang berikutnya bagi sambungan tersebut akan menggunakan URL kemas kini yang ditunjukkan dalam manifes sambungan. URL kemas kini harus menunjuk kepada dokumen XML Manifes Kemas Kini seperti yang disebut di atas.
+
+          <ph name="BLOCKED_PERMISSIONS" />: memetakan kepada senarai rentetan yang menunjukkan kebenaran API yang disekat untuk sambungan. Nama kebenaran adalah sama seperti rentetan kebenaran yang diisytiharkan dalam manifes sambungan seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC3" />. Tetapan ini turut boleh dikonfigurasikan untuk sambungan <ph name="DEFAULT_SCOPE" />. Jika sambungan memerlukan kebenaran yang terdapat dalam senarai sekat, pemuatan sambungan tersebut tidak akan dibenarkan. Jika sambungan tersebut mengandungi kebenaran yang disekat sebagai keperluan pilihan, sambungan akan dikendalikan seperti biasa, tetapi permintaan kebenaran yang bercanggah akan ditolak secara automatik pada waktu jalan.
+
+          <ph name="ALLOWED_PERMISSIONS" />: serupa dengan <ph name="BLOCKED_PERMISSIONS" />, tetapi membenarkan dengan jelas sesetengah kebenaran yang mungkin disekat oleh senarai kebenaran disekat global, dengan itu tidak boleh dikonfigurasikan untuk sambungan <ph name="DEFAULT_SCOPE" />. Sila ambil perhatian bahawa tetapan ini tidak memberikan kebenaran kepada sambungan secara automatik.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: memetakan kepada rentetan versi. Format rentetan versi adalah sama dengan rentetan yang digunakan dalam manifes sambungan, seperti yang dihuraikan di <ph name="LINK_TO_EXTENSION_DOC4" />. Sambungan dengan versi yang lebih lama daripada versi minimum yang dinyatakan akan dilumpuhkan. Peraturan ini turut dikenakan kepada sambungan yang dipasang secara paksa.
+
+          Tetapan berikut boleh digunakan untuk konfigurasi <ph name="DEFAULT_SCOPE" /> lalai sahaja:
+
+          <ph name="INSTALL_SOURCES" />: Setiap item dalam senarai ini ialah pola padanan gaya sambungan (<ph name="LINK_TO_MATCH_PATTERNS" />). Pengguna boleh memasang item dengan mudah daripada mana-mana URL yang sepadan dengan item dalam senarai ini. Kedua-dua lokasi fail <ph name="EXTENSION_SUFFIX_WILDCARD" /> dan halaman tempat muat turun dimulakan (iaitu perujuk) mestilah dibenarkan oleh pola ini.
+
+          <ph name="ALLOWED_TYPES" />: Tetapan ini menyenarai putih jenis sambungan/apl yang dibenarkan, yang boleh dipasang dalam <ph name="PRODUCT_NAME" />. Nilai ialah senarai rentetan, setiap satu haruslah satu daripada yang berikut: <ph name="VALID_ALLOWED_TYPES" />. Lihat dokumentasi sambungan <ph name="PRODUCT_NAME" /> untuk mendapatkan maklumat lanjut tentang jenis ini.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Jika pengguna cuba memasang sambungan tetapi sambungan tersebut disekat oleh dasar, Gedung Web Chrome akan memaparkan mesej ralat umum. Tetapan ini membenarkan anda melampirkan teks pada mesej ralat tersebut. Mesej ini mungkin boleh digunakan untuk menghalakan pengguna ke meja bantuan anda, menerangkan sebab sambungan tertentu disekat atau sesuatu yang lain. Mesej ralat ini akan dipangkas jika melebihi 1,000 aksara.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Menerima senarai hos yang akan menyekat sambungan daripada berinteraksi dengan hos tersebut. Ini merangkumi menyuntik JavaScript, mengubah dan melihat webRequests/webNavigation, melihat dan mengubah kuki. Format adalah serupa dengan Pola Padanan <ph name="LINK_TO_MATCH_PATTERNS" /> kecuali mungkin tiada laluan ditakrifkan. Mis. "*://*.example.com". Ini turut menyokong kad bebas TLD berkesan, mis. "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Menerima senarai hos yang boleh berinteraksi dengan sambungan tanpa mengira sama ada hos tersebut disenaraikan dalam <ph name="RUNTIME_BLOCKED_HOSTS" />. Format ini sama dengan format <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="1152117524387175066">Laporkan keadaan perubahan pembangun peranti semasa but.
 
       Jika dasar tidak ditetapkan atau ditetapkan kepada tidak benar, keadaan suis pembangun tidak akan dilaporkan.</translation>
@@ -63,6 +96,7 @@
 <translation id="1204263402976895730">Pencetak perusahaan didayakan</translation>
 <translation id="1221359380862872747">Memuatkan url tertentu pada log masuk tunjuk cara</translation>
 <translation id="123081309365616809">Dayakan penghantaran kandungan ke peranti</translation>
+<translation id="1257550411839719984">Tetapkan direktori muat turun lalai</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
 <translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
 
@@ -563,6 +597,7 @@
       </translation>
 <translation id="2769952903507981510">Konfigurasi nama domain yang diperlukan untuk hos akses jauh</translation>
 <translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
+<translation id="2793923553868251161">Asalan akan dianggap sebagai konteks selamat.</translation>
 <translation id="2801230735743888564">Membolehkan pengguna bermain permainan telur easter dinosaur apabila peranti di luar talian.
 
       Jika dasar ini ditetapkan kepada Palsu, pengguna tidak akan dapat bermain permainan telur easter dinosaur apabila peranti di luar talian. Jika tetapan ini ditetapkan kepada Benar, pengguna dibenarkan bermain permainan dinosaur. Jika dasar ini tidak ditetapkan, pengguna tidak dibenarkan bermain permainan telur easter dinosaur pada OS Chrome berdaftar, tetapi dibenarkan bermain menurut keadaan lain.</translation>
@@ -803,11 +838,6 @@
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3758249152301468420">Lumpuhkan Alatan Pembangun</translation>
 <translation id="3765260570442823273">Tempoh mesej amaran log keluar melahu</translation>
-<translation id="376931976323225993">Membolehkan anda menetapkan sama ada tapak web dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik. Tindakan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik boleh dibenarkan atau ditolak untuk semua tapak web.
-
-          Klik untuk main membenarkan pemalam <ph name="FLASH_PLUGIN_NAME" /> dijalankan tetapi pengguna perlu mengklik pada pemegang tempat untuk memulakan pelaksanaannya.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar tetapan ini secara manual.</translation>
 <translation id="3780152581321609624">Termasuk port tidak standard dalam Kerberos SPN</translation>
 <translation id="3780319008680229708">Jika dasar ini ditetapkan kepada benar, ikon bar alat Cast akan sentiasa ditunjukkan di bar alat atau menu limpahan dan pengguna tidak akan dapat mengalih keluar ikon ini.
 
@@ -897,6 +927,13 @@
       Jika anda mendayakan tetapan ini, Alat Pembangun tidak boleh diakses dan elemen tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
 
       Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
+<translation id="3895557476567727016">Mengkonfigurasi direktori lalai yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk memuat turun fail.
+
+      Jika anda menetapkan dasar ini, dasar ini akan menukar direktori lalai tempat <ph name="PRODUCT_NAME" /> menyimpan fail yang dimuat turun. Dasar ini tidak wajib, jadi pengguna akan dapat menukar direktori ini.
+
+      Jika anda tidak menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori lalainya yang biasa (khusus platform).
+
+      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.</translation>
 <translation id="3907986150060929099">Tetapkan penempatan yang disyorkan untuk sesi awam</translation>
 <translation id="3911737181201537215">Dasar ini tidak memberi kesan kepada pengelogan yang dilakukan oleh Android.</translation>
 <translation id="391531815696899618">Melumpuhkan penyegerakan Google Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /> apabila ditetapkan kepada Benar. Jika ini berlaku, tiada data akan dimuat naik ke Google Drive.
@@ -1815,7 +1852,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="706669471845501145">Benarkan tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="7072406291414141328">Mendayakan lebar jalur pendikitan rangkaian</translation>
 <translation id="7079519252486108041">Sekat pop muncul pada tapak ini</translation>
-<translation id="7091198954851103976">Sentiasa jalankan pemalam yang memerlukan kebenaran</translation>
 <translation id="7106631983877564505">Dayakan kunci apabila peranti <ph name="PRODUCT_OS_NAME" /> melahu atau digantung.
 
       Jika anda mendayakan tetapan ini, pengguna akan diminta memberikan kata laluan untuk membuka kunci peranti daripada keadaan tidur.
@@ -2058,6 +2094,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="787125417158068494">Jika ditetapkan kepada SyncDisabled atau tidak dikonfigurasikan, sijil <ph name="PRODUCT_OS_NAME" /> tidak  tersedia untuk apl ARC.
 
       Jika ditetapkan kepada CopyCaCerts, semua sijil CA yang dipasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk apl ARC.</translation>
+<translation id="7872535148622213208">
+        Dasar ini menentukan senarai asalan (URL) untuk dikendalikan sebagai konteks
+        selamat. Tujuannya adalah untuk membolehkan organisasi menyediakan pelayan peringkatan
+        untuk pembangunan web dalaman.
+        Ini adalah sama dengan bendera --unsafely-treat-insecure-origin-as-secure.
+        Untuk mendapatkan maklumat lanjut tentang konteks selamat, lihat https://www.w3.org/TR/secure-contexts/
+        </translation>
 <translation id="7882585827992171421">Dasar ini aktif dalam mod runcit sahaja.
 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
@@ -2302,6 +2345,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
      Jika dasar ini tidak dikonfigurasikan atau nilai tersebut lebih rendah daripada 1 MB, <ph name="PRODUCT_OS_NAME" /> akan menggunakan saiz cache lalai.</translation>
 <translation id="8858642179038618439">Paksa Mod Keselamatan YouTube</translation>
 <translation id="8864975621965365890">Menyekat gesaan penolakan yang dipaparkan apabila tapak dipaparkan oleh <ph name="PRODUCT_FRAME_NAME" /> .</translation>
+<translation id="8867464911288727016">Mendayakan perkhidmatan Google Terjemah bersepadu pada <ph name="PRODUCT_NAME" />.
+
+      Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan menawarkan fungsi terjemahan kepada pengguna dengan memaparkan bar alat terjemah bersepadu (apabila sesuai) dan pilihan terjemah pada menu konteks klik kanan.
+
+      Jika anda melumpuhkan tetapan ini, semua ciri terjemah terbina dalam akan dilumpuhkan.
+
+      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
+
+      Jika tetapan ini dibiarkan tanpa ditetapkan, pengguna boleh menentukan sama ada hendak menggunakan fungsi ini atau tidak.</translation>
 <translation id="8870318296973696995">Halaman utama</translation>
 <translation id="8882006618241293596">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /> pada tapak ini</translation>
 <translation id="8906768759089290519">Dayakan mod tetamu</translation>

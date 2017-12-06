@@ -37,7 +37,6 @@
 <translation id="6143635259298204954">Не удается распаковать расширение. Для безопасной распаковки расширения необходим путь к каталогу вашего профиля, не содержащий символьную ссылку. Такого пути для вашего профиля не существует.</translation>
 <translation id="641087317769093025">Не удалось распаковать расширение</translation>
 <translation id="6542618148162044354">Приложение "<ph name="APP_NAME" />" запрашивает доступ к нескольким устройствам.</translation>
-<translation id="6566142449942033617">Не удается загрузить "<ph name="PLUGIN_PATH" />" для плагина.</translation>
 <translation id="657064425229075395">Не удалось загрузить фоновый скрипт <ph name="BACKGROUND_SCRIPT" />.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" />, поставщик: <ph name="VENDOR_NAME" /> (серийный номер: <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Не удалось создать каталог для распаковки: <ph name="DIRECTORY_PATH" /></translation>
@@ -45,7 +44,6 @@
 <translation id="6840444547062817500">Это расширение слишком часто перезагружалось.</translation>
 <translation id="7003844668372540529">Неизвестный продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME" /> на этом компьютере запрещено администратором.</translation>
-<translation id="7581279002575751816">Плагины NPAPI не поддерживаются.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">Фронтальная</translation>
 <translation id="8047248493720652249">Данному расширению не удалось присвоить скачанному файлу имя "<ph name="ATTEMPTED_FILENAME" />", поскольку другое расширение (<ph name="EXTENSION_NAME" />) уже присвоило ему другое имя: "<ph name="ACTUAL_FILENAME" />".</translation>

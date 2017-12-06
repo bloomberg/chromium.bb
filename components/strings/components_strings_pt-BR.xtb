@@ -285,7 +285,7 @@
 <translation id="3039538478787849737">Salvar cartão no Google?</translation>
 <translation id="3041612393474885105">Informações do certificado</translation>
 <translation id="3063697135517575841">Não foi possível confirmar seu cartão com o Chrome no momento. Tente novamente mais tarde.</translation>
-<translation id="3064966200440839136">Saindo do modo sem rastros para pagar usando um aplicativo externo. Continuar?</translation>
+<translation id="3064966200440839136">Saindo do modo de navegação anônima para pagar usando um aplicativo externo. Continuar?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Nenhuma}=1{1 senha}one{# senha}other{# senhas}}</translation>
 <translation id="3093245981617870298">Você está off-line.</translation>
 <translation id="3096100844101284527">Adicionar endereço de retirada</translation>
@@ -725,7 +725,6 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6451458296329894277">Confirmar reenvio do formulário</translation>
 <translation id="6456339708790392414">Seu pagamento</translation>
-<translation id="6458467102616083041">Ignorado porque a pesquisa padrão foi desativada por uma política.</translation>
 <translation id="647261751007945333">Políticas de dispositivos</translation>
 <translation id="6477321094435799029">O Chrome detectou um código incomum nesta página e a bloqueou para proteger suas informações pessoais (por exemplo, senhas, números de telefone e cartões de crédito).</translation>
 <translation id="6489534406876378309">Iniciar upload de falhas</translation>
