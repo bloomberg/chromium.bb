@@ -9,10 +9,10 @@ Description:
 This directory contains i386 and amd64 binaries of the binutils tools
 (including gold linker).
 
-They were built from binutils-2.28 using the "build-all.sh" script on a
-Ubuntu Trusty.
+They were built from binutils-2.28 using the "build-all.sh" script on Debian
+Testing.
 
-The script creates chroots for 32bit and 64bit Ubuntu Precise and then builds
+The script creates chroots for 32bit and 64bit Ubuntu Xenial and then builds
 binutils inside the roots.
 
 Version 2.28 was released on Thu, 02 Mar 2017

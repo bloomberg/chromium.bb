@@ -6,9 +6,10 @@
 # Script to build binutils for both i386 and AMD64 Linux architectures.
 # Must be run on an AMD64 supporting machine which has debootstrap and sudo
 # installed.
-# Uses Ubuntu Lucid chroots as build environment.
+# Uses Ubuntu Xenial chroots as build environment.
 
 set -e
+set -u
 
 if [ x"$(whoami)" = x"root" ]; then
   echo "Script must not be run as root."
@@ -40,9 +41,12 @@ rm -rf binutils-$VERSION
 tar jxf binutils-$VERSION.tar.bz2
 
 for ARCH in i386 amd64; do
-  if [ ! -d precise-chroot-$ARCH ]; then
+  CHROOT_DIR="xenial-chroot-$ARCH"
+  if [ ! -d ${CHROOT_DIR} ]; then
     # Refresh sudo credentials
     sudo -v
+
+    CHROOT_TEMPDIR=$(mktemp -d ${CHROOT_DIR}.XXXXXX)
 
     # Create the chroot
     echo ""
@@ -51,11 +55,12 @@ for ARCH in i386 amd64; do
     sudo debootstrap \
         --arch=$ARCH \
         --include=build-essential,flex,bison \
-        precise precise-chroot-$ARCH
+        xenial ${CHROOT_TEMPDIR}
     echo "============================="
+    mv ${CHROOT_TEMPDIR} ${CHROOT_DIR}
   fi
 
-  BUILDDIR=precise-chroot-$ARCH/build
+  BUILDDIR=${CHROOT_DIR}/build
 
   # Clean up any previous failed build attempts inside chroot
   if [ -d "$BUILDDIR" ]; then
@@ -82,7 +87,8 @@ for ARCH in i386 amd64; do
   echo ""
   echo "Building binutils for $ARCH"
   LOGFILE="$OUTPUTDIR/build-$ARCH.log"
-  if ! sudo $PREFIX chroot precise-chroot-$ARCH /build/build-one.sh /build/binutils-$VERSION > $LOGFILE 2>&1; then
+  if ! sudo $PREFIX chroot ${CHROOT_DIR} /build/build-one.sh \
+    /build/binutils-$VERSION > $LOGFILE 2>&1; then
     echo "Build failed! See $LOGFILE for details."
     exit 1
   fi
