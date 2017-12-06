@@ -292,6 +292,8 @@ source_set("common") {
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.cc",
     "service_worker/service_worker_utils.h",
+    "site_isolation_policy.cc",
+    "site_isolation_policy.h",
     "speech_recognition_messages.h",
     "swapped_out_messages.cc",
     "swapped_out_messages.h",

@@ -2,19 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/site_isolation_policy.h"
+#include "content/common/site_isolation_policy.h"
 
-#include <algorithm>
-#include <iterator>
 #include <string>
-#include <utility>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "url/gurl.h"
@@ -45,8 +40,7 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
 }
 
 // static
-std::vector<url::Origin>
-SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
+std::vector<url::Origin> SiteIsolationPolicy::GetIsolatedOrigins() {
   std::string cmdline_arg =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kIsolateOrigins);
@@ -61,20 +55,6 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
   }
 
   return std::vector<url::Origin>();
-}
-
-// static
-std::vector<url::Origin> SiteIsolationPolicy::GetIsolatedOrigins() {
-  std::vector<url::Origin> from_environment =
-      GetIsolatedOriginsFromEnvironment();
-  std::vector<url::Origin> from_embedder =
-      GetContentClient()->browser()->GetOriginsRequiringDedicatedProcess();
-
-  std::vector<url::Origin> result = std::move(from_environment);
-  result.reserve(result.size() + from_embedder.size());
-  std::move(from_embedder.begin(), from_embedder.end(),
-            std::back_inserter(result));
-  return result;
 }
 
 // static
