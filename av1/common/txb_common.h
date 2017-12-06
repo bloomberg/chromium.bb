@@ -518,7 +518,7 @@ static INLINE int get_nz_map_ctx_from_stats(
     if (row + col < 2) return ctx + 1;
     if (row + col < 4) return 5 + ctx + 1;
 
-    return 21 + AOMMIN(ctx, 4);
+    return 21 + ctx;
   } else {
     static const int pos_to_offset[3] = {
       SIG_COEF_CONTEXTS_2D, SIG_COEF_CONTEXTS_2D + 5, SIG_COEF_CONTEXTS_2D + 10
