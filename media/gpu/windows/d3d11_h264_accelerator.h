@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_D3D11_H264_ACCELERATOR_H_
-#define MEDIA_GPU_D3D11_H264_ACCELERATOR_H_
+#ifndef MEDIA_GPU_WINDOWS_D3D11_H264_ACCELERATOR_H_
+#define MEDIA_GPU_WINDOWS_D3D11_H264_ACCELERATOR_H_
 
 #include <d3d11.h>
 #include <d3d9.h>
@@ -143,4 +143,4 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_D3D11_H264_ACCELERATOR_H_
+#endif  // MEDIA_GPU_D3D11_WINDOWS_H264_ACCELERATOR_H_
