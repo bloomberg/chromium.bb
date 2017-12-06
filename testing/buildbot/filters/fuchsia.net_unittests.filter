@@ -17,3 +17,6 @@
 
 # Flaky, https://crbug.com/784448.
 -DiskCacheBackendTest.InvalidEntry5
+
+# New test, which fails under Fuchsia. http://crbug.com/792300
+-HTTPSCRLSetTest.CRLSetRevokedBySubject
