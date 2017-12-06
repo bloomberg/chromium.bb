@@ -328,7 +328,8 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
     is_error_response = true;
   }
 
-  delegate_->OnParsedJson(this, *dictionary_value, is_error_response);
+  delegate_->OnParsedJson(response_code(), *dictionary_value,
+                          is_error_response);
 }
 
 void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {

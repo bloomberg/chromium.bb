@@ -1068,11 +1068,10 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_);
   }
 
-  void OnParsedJson(PrivetURLFetcher* fetcher,
+  void OnParsedJson(int response_code,
                     const base::DictionaryValue& value,
                     bool has_error) override {
     NOTREACHED();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_);
   }
 
   bool OnRawData(bool response_is_file,
