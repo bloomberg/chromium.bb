@@ -5506,16 +5506,12 @@ LayoutRect LayoutBox::VisualOverflowRect() const {
                    overflow_->ContentsVisualOverflowRect());
 }
 
-LayoutPoint LayoutBox::OffsetPoint(const Element* parent) const {
-  return AdjustedPositionRelativeTo(PhysicalLocation(), parent);
-}
-
 LayoutUnit LayoutBox::OffsetLeft(const Element* parent) const {
-  return OffsetPoint(parent).X();
+  return AdjustedPositionRelativeTo(PhysicalLocation(), parent).X();
 }
 
 LayoutUnit LayoutBox::OffsetTop(const Element* parent) const {
-  return OffsetPoint(parent).Y();
+  return AdjustedPositionRelativeTo(PhysicalLocation(), parent).Y();
 }
 
 LayoutPoint LayoutBox::FlipForWritingModeForChild(
