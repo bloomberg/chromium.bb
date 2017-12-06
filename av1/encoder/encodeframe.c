@@ -1130,9 +1130,11 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           if (has_second_ref(mbmi))
             // This flag is also updated for 4x4 blocks
             rdc->compound_ref_used_flag = 1;
+#if !CONFIG_REF_ADAPT
           else
             // This flag is also updated for 4x4 blocks
             rdc->single_ref_used_flag = 1;
+#endif  // !CONFIG_REF_ADAPT
           if (is_comp_ref_allowed(bsize)) {
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
@@ -1209,8 +1211,11 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
 
-        if (cm->reference_mode != COMPOUND_REFERENCE &&
-            cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
+        if (cm->allow_interintra_compound &&
+#if !CONFIG_REF_ADAPT
+            cm->reference_mode != COMPOUND_REFERENCE &&
+#endif  // !CONFIG_REF_ADAPT
+            is_interintra_allowed(mbmi)) {
           const int bsize_group = size_group_lookup[bsize];
           if (mbmi->ref_frame[1] == INTRA_FRAME) {
             counts->interintra[bsize_group][1]++;
@@ -4362,7 +4367,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 static void make_consistent_compound_tools(AV1_COMMON *cm) {
   (void)cm;
+#if CONFIG_REF_ADAPT
+  if (frame_is_intra_only(cm))
+#else
   if (frame_is_intra_only(cm) || cm->reference_mode == COMPOUND_REFERENCE)
+#endif  // CONFIG_REF_ADAPT
     cm->allow_interintra_compound = 0;
   if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
     cm->allow_masked_compound = 0;
@@ -4450,7 +4459,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cm->reference_mode = SINGLE_REFERENCE;
     else
       cm->reference_mode = REFERENCE_MODE_SELECT;
-#else
+#else  // !CONFIG_REF_ADAPT
 #if CONFIG_BGSPRITE
     (void)is_alt_ref;
     if (!cpi->allow_comp_inter_inter)
@@ -4479,7 +4488,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
 
     make_consistent_compound_tools(cm);
 
+#if !CONFIG_REF_ADAPT
     rdc->single_ref_used_flag = 0;
+#endif  // !CONFIG_REF_ADAPT
     rdc->compound_ref_used_flag = 0;
 #if CONFIG_EXT_SKIP
     rdc->skip_mode_used_flag = 0;

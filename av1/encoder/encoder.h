@@ -325,7 +325,9 @@ typedef struct RD_COUNTS {
   int64_t comp_pred_diff[REFERENCE_MODES];
   // Stores number of 4x4 blocks using global motion per reference frame.
   int global_motion_used[TOTAL_REFS_PER_FRAME];
+#if !CONFIG_REF_ADAPT
   int single_ref_used_flag;
+#endif  // !CONFIG_REF_ADAPT
   int compound_ref_used_flag;
 #if CONFIG_EXT_SKIP
   int skip_mode_used_flag;

@@ -6038,15 +6038,17 @@ static void estimate_ref_frame_costs(
 
     ref_costs_single[INTRA_FRAME] = x->intra_inter_cost[intra_inter_ctx][0];
 
+    unsigned int base_cost = x->intra_inter_cost[intra_inter_ctx][1];
+
+#if !CONFIG_REF_ADAPT
     if (cm->reference_mode != COMPOUND_REFERENCE) {
+#endif  // !CONFIG_REF_ADAPT
       aom_prob ref_single_p1 = av1_get_pred_prob_single_ref_p1(cm, xd);
       aom_prob ref_single_p2 = av1_get_pred_prob_single_ref_p2(cm, xd);
       aom_prob ref_single_p3 = av1_get_pred_prob_single_ref_p3(cm, xd);
       aom_prob ref_single_p4 = av1_get_pred_prob_single_ref_p4(cm, xd);
       aom_prob ref_single_p5 = av1_get_pred_prob_single_ref_p5(cm, xd);
       aom_prob ref_single_p6 = av1_get_pred_prob_single_ref_p6(cm, xd);
-
-      unsigned int base_cost = x->intra_inter_cost[intra_inter_ctx][1];
 
       ref_costs_single[LAST_FRAME] = ref_costs_single[LAST2_FRAME] =
           ref_costs_single[LAST3_FRAME] = ref_costs_single[BWDREF_FRAME] =
@@ -6078,6 +6080,7 @@ static void estimate_ref_frame_costs(
 
       ref_costs_single[BWDREF_FRAME] += av1_cost_bit(ref_single_p6, 0);
       ref_costs_single[ALTREF2_FRAME] += av1_cost_bit(ref_single_p6, 1);
+#if !CONFIG_REF_ADAPT
     } else {
       ref_costs_single[LAST_FRAME] = 512;
       ref_costs_single[LAST2_FRAME] = 512;
@@ -6087,6 +6090,7 @@ static void estimate_ref_frame_costs(
       ref_costs_single[GOLDEN_FRAME] = 512;
       ref_costs_single[ALTREF_FRAME] = 512;
     }
+#endif  // !CONFIG_REF_ADAPT
 
     if (cm->reference_mode != SINGLE_REFERENCE) {
       aom_prob ref_comp_p = av1_get_pred_prob_comp_ref_p(cm, xd);
@@ -6094,8 +6098,6 @@ static void estimate_ref_frame_costs(
       aom_prob ref_comp_p2 = av1_get_pred_prob_comp_ref_p2(cm, xd);
       aom_prob bwdref_comp_p = av1_get_pred_prob_comp_bwdref_p(cm, xd);
       aom_prob bwdref_comp_p1 = av1_get_pred_prob_comp_bwdref_p1(cm, xd);
-
-      unsigned int base_cost = x->intra_inter_cost[intra_inter_ctx][1];
 
 #if CONFIG_EXT_COMP_REFS
       aom_prob comp_ref_type_p = av1_get_comp_reference_type_prob(cm, xd);
@@ -9624,8 +9626,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       mode_excluded = cm->reference_mode == SINGLE_REFERENCE;
     } else {
+#if CONFIG_REF_ADAPT
+      if (ref_frame != INTRA_FRAME) mode_excluded = 0;
+#else
       if (ref_frame != INTRA_FRAME)
         mode_excluded = cm->reference_mode == COMPOUND_REFERENCE;
+#endif  // CONFIG_REF_ADAPT
     }
 
     if (ref_frame == INTRA_FRAME) {
