@@ -59,6 +59,10 @@ namespace policy {
 
 namespace {
 
+// The name of the template example in policy_test_cases.json that does not need
+// to be parsed.
+const char kTemplateSampleTest[] = "-- Template --";
+
 const char kCrosSettingsPrefix[] = "cros.";
 
 std::string GetPolicyName(const std::string& policy_name_decorated) {
@@ -250,15 +254,10 @@ class PolicyTestCases {
       ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
       return;
     }
-    Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
-    if (!chrome_schema.valid()) {
-      ADD_FAILURE();
-      return;
-    }
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
       const std::string policy_name = GetPolicyName(it.key());
-      if (!chrome_schema.GetKnownProperty(policy_name).valid())
+      if (policy_name == kTemplateSampleTest)
         continue;
       PolicyTestCase* policy_test_case = GetPolicyTestCase(dict, it.key());
       if (policy_test_case)
@@ -300,6 +299,7 @@ class PolicyTestCases {
     policy_test_dict->GetBoolean("can_be_recommended", &can_be_recommended);
     std::string indicator_selector;
     policy_test_dict->GetString("indicator_selector", &indicator_selector);
+
     PolicyTestCase* policy_test_case = new PolicyTestCase(name,
                                                           is_official_only,
                                                           can_be_recommended,
@@ -312,6 +312,7 @@ class PolicyTestCases {
           policy_test_case->AddSupportedOs(os);
       }
     }
+
     const base::DictionaryValue* policy = NULL;
     if (policy_test_dict->GetDictionary("test_policy", &policy))
       policy_test_case->SetTestPolicy(*policy);
@@ -322,8 +323,8 @@ class PolicyTestCases {
         std::string pref;
         if (!pref_mappings->GetDictionary(i, &pref_mapping_dict) ||
             !pref_mapping_dict->GetString("pref", &pref)) {
-          ADD_FAILURE() << "Malformed pref_mappings entry in "
-                        << "policy_test_cases.json.";
+          ADD_FAILURE() << "Malformed pref_mappings entry for " << name
+                        << " in policy_test_cases.json.";
           continue;
         }
         bool is_local_state = false;
@@ -351,8 +352,8 @@ class PolicyTestCases {
             const base::DictionaryValue* policy = NULL;
             if (!indicator_tests->GetDictionary(i, &indicator_test_dict) ||
                 !indicator_test_dict->GetDictionary("policy", &policy)) {
-              ADD_FAILURE() << "Malformed indicator_tests entry in "
-                            << "policy_test_cases.json.";
+              ADD_FAILURE() << "Malformed indicator_tests entry for " << name
+                            << " in policy_test_cases.json.";
               continue;
             }
             std::string value;
@@ -389,8 +390,26 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   PolicyTestCases policy_test_cases;
   for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
        !it.IsAtEnd(); it.Advance()) {
-    EXPECT_TRUE(base::ContainsKey(policy_test_cases.map(), it.key()))
-        << "Missing policy test case for: " << it.key();
+    auto policy = policy_test_cases.map().find(it.key());
+    if (policy == policy_test_cases.map().end()) {
+      ADD_FAILURE() << "Missing policy test case for: " << it.key();
+    } else {
+      bool has_test_case_for_this_os = false;
+      for (PolicyTestCases::PolicyTestCaseVector::const_iterator test_case =
+               policy->second.begin();
+           test_case != policy->second.end() && !has_test_case_for_this_os;
+           ++test_case) {
+        has_test_case_for_this_os |= (*test_case)->IsSupported();
+      }
+      // This can only be a warning as many policies are not really testable
+      // this way and only present as a single line in the file.
+      // Although they could at least contain the "os" and "test_policy" fields.
+      // See http://crbug.com/791125.
+      LOG_IF(WARNING, !has_test_case_for_this_os)
+          << "Policy " << policy->first
+          << " is marked as supported on this OS in policy_templates.json but "
+          << "have a test for this platform in policy_test_cases.json.";
+    }
   }
 }
 
@@ -439,6 +458,8 @@ class PolicyPrefsTest : public InProcessBrowserTest {
 // Verifies that policies make their corresponding preferences become managed,
 // and that the user can't override that setting.
 IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
+  Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
+  ASSERT_TRUE(chrome_schema.valid());
   PrefService* local_state = g_browser_process->local_state();
   PrefService* user_prefs = browser()->profile()->GetPrefs();
 
@@ -451,6 +472,24 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
          test_case != policy->second.end();
          ++test_case) {
       const auto& pref_mappings = (*test_case)->pref_mappings();
+      if (!chrome_schema.GetKnownProperty(policy->first).valid()) {
+        // If the policy is supported on this platform according to the test it
+        // should be known otherwise we signal this as a failure.
+        // =====================================================================
+        // !NOTE! If you see this assertion after changing Chrome's VERSION most
+        // probably the mentioned policy was deprecated and deleted. Verify this
+        // in policy_templates.json and remove the corresponding test entry
+        // in policy_test_cases.json. Don't completely delete it from there just
+        // replace it's definition with a single "note" value stating its
+        // deprecation date (see other examples present in the file already).
+        // =====================================================================
+        EXPECT_FALSE((*test_case)->IsSupported())
+            << "Policy " << policy->first
+            << " is marked as supported on this OS but does not exist in the "
+            << "Chrome policy schema.";
+        continue;
+      }
+
       if (!(*test_case)->IsSupported() || pref_mappings.empty())
         continue;
 
