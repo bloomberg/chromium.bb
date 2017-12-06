@@ -1009,7 +1009,7 @@ hooks = [
     'action': ['vpython',
                'src/build/get_syzygy_binaries.py',
                '--output-dir=src/third_party/syzygy/binaries',
-               '--revision=190dbfe74c6f5b5913820fa66d9176877924d7c5',
+               '--revision=8164b24ebde9c5649c9a09e88a7fc0b0fcbd1bc5',
                '--overwrite',
                '--copy-dia-binaries',
     ],
