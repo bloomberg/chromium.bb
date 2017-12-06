@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS AbsoluteOrientationSensor: Feature-Policy header accelerometer *;gyroscope *;magnetometer * allows the top-level document.
+FAIL AbsoluteOrientationSensor: Feature-Policy header accelerometer *;gyroscope *;magnetometer * allows same-origin iframes. assert_true: 'new AbsoluteOrientationSensor()' expected true got false
+FAIL AbsoluteOrientationSensor: Feature-Policy header accelerometer *;gyroscope *;magnetometer * allows cross-origin iframes. assert_true: 'new AbsoluteOrientationSensor()' expected true got false
+Harness: the test ran to completion.
+

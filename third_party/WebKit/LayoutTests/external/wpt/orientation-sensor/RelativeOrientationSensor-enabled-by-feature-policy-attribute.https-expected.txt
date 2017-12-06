@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL RelativeOrientationSensor: Feature-Policy allow='accelerometer gyroscope' attribute allows same-origin iframe assert_true: 'new RelativeOrientationSensor()' expected true got false
+FAIL RelativeOrientationSensor: Feature-Policy allow='accelerometer gyroscope' attribute allows cross-origin iframe assert_true: 'new RelativeOrientationSensor()' expected true got false
+Harness: the test ran to completion.
+

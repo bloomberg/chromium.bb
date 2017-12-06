@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: GravitySensor is not defined
+FAIL Accelerometer: Feature-Policy allow='accelerometer' attribute allows same-origin relocation assert_true: 'new Accelerometer()' expected true got false
+PASS Accelerometer: Feature-Policy allow='accelerometer' attribute disallows cross-origin relocation
+FAIL LinearAccelerationSensor: Feature-Policy allow='accelerometer' attribute allows same-origin relocation assert_true: 'new LinearAccelerationSensor()' expected true got false
+PASS LinearAccelerationSensor: Feature-Policy allow='accelerometer' attribute disallows cross-origin relocation
+Harness: the test ran to completion.
+

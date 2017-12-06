@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: GravitySensor is not defined
+PASS Accelerometer: Feature-Policy header accelerometer 'self' allows the top-level document.
+FAIL Accelerometer: Feature-Policy header accelerometer 'self' allows same-origin iframes. assert_true: 'new Accelerometer()' expected true got false
+PASS Accelerometer: Feature-Policy header accelerometer 'self' disallows cross-origin iframes.
+PASS LinearAccelerationSensor: Feature-Policy header accelerometer 'self' allows the top-level document.
+FAIL LinearAccelerationSensor: Feature-Policy header accelerometer 'self' allows same-origin iframes. assert_true: 'new LinearAccelerationSensor()' expected true got false
+PASS LinearAccelerationSensor: Feature-Policy header accelerometer 'self' disallows cross-origin iframes.
+Harness: the test ran to completion.
+

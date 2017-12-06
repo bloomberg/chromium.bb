@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL AbsoluteOrientationSensor: Feature-Policy allow='accelerometer gyroscope magnetometer' attribute allows same-origin relocation assert_true: 'new AbsoluteOrientationSensor()' expected true got false
+PASS AbsoluteOrientationSensor: Feature-Policy allow='accelerometer gyroscope magnetometer' attribute disallows cross-origin relocation
+Harness: the test ran to completion.
+

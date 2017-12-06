@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL AbsoluteOrientationSensor: Feature-Policy header accelerometer 'none';gyroscope 'none';magnetometer 'none' disallows the top-level document. assert_throws: function "() => {new sensorType()}" did not throw
+PASS AbsoluteOrientationSensor: Feature-Policy header accelerometer 'none';gyroscope 'none';magnetometer 'none' disallows same-origin iframes.
+PASS AbsoluteOrientationSensor: Feature-Policy header accelerometer 'none';gyroscope 'none';magnetometer 'none' disallows cross-origin iframes.
+Harness: the test ran to completion.
+
