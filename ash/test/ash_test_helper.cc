@@ -45,6 +45,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/display/display.h"
@@ -286,6 +287,8 @@ void AshTestHelper::CreateMashWindowManager() {
   window_tree_client_private_ =
       std::make_unique<aura::WindowTreeClientPrivate>(window_tree_client);
   window_tree_client_private_->CallOnConnect();
+  if (!::switches::IsMusHostingViz())
+    window_tree_client_setup_.NotifyClientAboutAcceleratedWidget();
 }
 
 void AshTestHelper::CreateShell() {
