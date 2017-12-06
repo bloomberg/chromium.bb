@@ -176,7 +176,18 @@ cr.define('extensions', function() {
 
     /** @override */
     reloadItem(id) {
-      chrome.developerPrivate.reload(id, {failQuietly: false});
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.reload(
+            id, {failQuietly: true, populateErrorForUnpacked: true},
+            (loadError) => {
+              if (loadError) {
+                reject(loadError);
+                return;
+              }
+
+              resolve();
+            });
+      });
     }
 
     /** @override */

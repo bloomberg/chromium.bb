@@ -10,8 +10,10 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,6 +42,7 @@
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/mock_external_provider.h"
@@ -733,6 +736,128 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedRetryId) {
         "\"retryGuid\": \"invalid id\"}]",
         profile());
     EXPECT_EQ("Invalid retry id", error);
+  }
+}
+
+// Tests calling "reload" on an unpacked extension with a manifest error,
+// resulting in the reload failing. The reload call should then respond with
+// the load error, which includes a retry GUID to be passed to loadUnpacked().
+TEST_F(DeveloperPrivateApiUnitTest, ReloadBadExtensionToLoadUnpackedRetry) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+
+  // A broken manifest (version's value should be a string).
+  constexpr const char kBadManifest[] =
+      R"({
+           "name": "foo",
+           "description": "bar",
+           "version": 1,
+           "manifest_version": 2
+         })";
+  constexpr const char kGoodManifest[] =
+      R"({
+           "name": "foo",
+           "description": "bar",
+           "version": "1",
+           "manifest_version": 2
+         })";
+
+  // Create a good unpacked extension.
+  TestExtensionDir dir;
+  dir.WriteManifest(kGoodManifest);
+  base::FilePath path = dir.UnpackedPath();
+  api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
+
+  scoped_refptr<const Extension> extension;
+  {
+    ChromeTestExtensionLoader loader(profile());
+    loader.set_pack_extension(false);
+    extension = loader.LoadExtension(path);
+  }
+  ASSERT_TRUE(extension);
+  const ExtensionId id = extension->id();
+
+  std::string reload_args = base::StringPrintf(
+      R"(["%s", {"failQuietly": true, "populateErrorForUnpacked":true}])",
+      id.c_str());
+
+  {
+    // Try reloading while the manifest is still good. This should succeed, and
+    // the extension should still be enabled. Additionally, the function should
+    // wait for the reload to complete, so we should see an unload and reload.
+    class UnloadedRegistryObserver : public ExtensionRegistryObserver {
+     public:
+      UnloadedRegistryObserver(const base::FilePath& expected_path,
+                               ExtensionRegistry* registry)
+          : expected_path_(expected_path), observer_(this) {
+        observer_.Add(registry);
+      }
+
+      void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                               const Extension* extension,
+                               UnloadedExtensionReason reason) override {
+        ASSERT_FALSE(saw_unload_);
+        saw_unload_ = extension->path() == expected_path_;
+      }
+
+      bool saw_unload() const { return saw_unload_; }
+
+     private:
+      bool saw_unload_ = false;
+      base::FilePath expected_path_;
+      ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
+
+      DISALLOW_COPY_AND_ASSIGN(UnloadedRegistryObserver);
+    };
+
+    UnloadedRegistryObserver unload_observer(path, registry());
+    auto function =
+        base::MakeRefCounted<api::DeveloperPrivateReloadFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    api_test_utils::RunFunction(function.get(), reload_args, profile());
+    // Note: no need to validate a saw_load()-type method because the presence
+    // in enabled_extensions() indicates the extension was loaded.
+    EXPECT_TRUE(unload_observer.saw_unload());
+    EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  }
+
+  dir.WriteManifest(kBadManifest);
+
+  DeveloperPrivateAPI::UnpackedRetryId retry_guid;
+  {
+    // Trying to load the extension should result in a load error with the
+    // retry GUID populated.
+    auto function = base::MakeRefCounted<api::DeveloperPrivateReloadFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    std::unique_ptr<base::Value> result =
+        api_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), reload_args, profile());
+    ASSERT_TRUE(result);
+    std::unique_ptr<api::developer_private::LoadError> error =
+        api::developer_private::LoadError::FromValue(*result);
+    ASSERT_TRUE(error);
+    EXPECT_FALSE(error->retry_guid.empty());
+    retry_guid = error->retry_guid;
+    EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+  }
+
+  dir.WriteManifest(kGoodManifest);
+  {
+    // Try reloading the extension by supplying the retry id. It should succeed,
+    // and the extension should be enabled again.
+    auto function =
+        base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
+    function->SetRenderFrameHost(web_contents->GetMainFrame());
+    TestExtensionRegistryObserver observer(registry());
+    std::string args =
+        base::StringPrintf(R"([{"failQuietly": true, "populateError": true,
+                                "retryGuid": "%s"}])",
+                           retry_guid.c_str());
+    api_test_utils::RunFunction(function.get(), args, profile());
+    const Extension* extension = observer.WaitForExtensionLoaded();
+    ASSERT_TRUE(extension);
+    EXPECT_EQ(extension->path(), path);
+    EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
   }
 }
 

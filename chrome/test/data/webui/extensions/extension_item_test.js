@@ -69,6 +69,7 @@ cr.define('extension_item_tests', function() {
     ElementVisibilityDeveloperState:
         'element visibility: after enabling developer mode',
     ClickableItems: 'clickable items',
+    FailedReloadFiresLoadError: 'failed reload fires load error',
     Warnings: 'warnings',
     SourceIndicator: 'source indicator',
     EnableToggle: 'toggle is disabled when necessary',
@@ -167,13 +168,55 @@ cr.define('extension_item_tests', function() {
       item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
       Polymer.dom.flush();
       mockDelegate.testClickingCalls(
-          item.$$('#terminated-reload-button'), 'reloadItem', [item.data.id]);
+          item.$$('#terminated-reload-button'), 'reloadItem', [item.data.id],
+          Promise.resolve());
 
       item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
       item.set('data.state', chrome.developerPrivate.ExtensionState.ENABLED);
       Polymer.dom.flush();
-      mockDelegate.testClickingCalls(
-          item.$$('#dev-reload-button'), 'reloadItem', [item.data.id]);
+    });
+
+    /** Tests that the reload button properly fires the load-error event. */
+    test(assert(TestNames.FailedReloadFiresLoadError), function() {
+      item.set('inDevMode', true);
+      item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+      Polymer.dom.flush();
+      extension_test_util.testVisible(item, '#dev-reload-button', true);
+
+      // Check clicking the reload button. The reload button should fire a
+      // load-error event if and only if the reload fails (indicated by a
+      // rejected promise).
+      // This is a bit of a pain to verify because the promises finish
+      // asynchronously, so we have to use setTimeout()s.
+      var firedLoadError = false;
+      item.addEventListener('load-error', () => { firedLoadError = true; });
+
+      // This is easier to test with a TestBrowserProxy-style delegate.
+      var proxyDelegate = new extensions.TestService();
+      item.delegate = proxyDelegate;
+
+      var verifyEventPromise = function(expectCalled) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            expectEquals(expectCalled, firedLoadError);
+            resolve();
+          });
+        });
+      };
+
+      MockInteractions.tap(item.$$('#dev-reload-button'));
+      return proxyDelegate.whenCalled('reloadItem').then(function(id) {
+        expectEquals(item.data.id, id);
+        return verifyEventPromise(false);
+      }).then(function() {
+        proxyDelegate.resetResolver('reloadItem');
+        proxyDelegate.setForceReloadItemError(true);
+        MockInteractions.tap(item.$$('#dev-reload-button'));
+        return proxyDelegate.whenCalled('reloadItem');
+      }).then(function(id) {
+        expectEquals(item.data.id, id);
+        return verifyEventPromise(true);
+      });
     });
 
     test(assert(TestNames.Warnings), function() {
