@@ -10,11 +10,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/renderer/bindings/api_signature.h"
+#include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
 
 namespace extensions {
@@ -53,9 +53,7 @@ RequestResult TabsHooksDelegate::HandleRequest(
       {&TabsHooksDelegate::HandleConnect, kConnect},
   };
 
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
-  DCHECK(script_context);
+  ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
 
   Handler handler = nullptr;
   for (const auto& handler_entry : kHandlers) {
