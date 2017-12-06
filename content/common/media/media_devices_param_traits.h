@@ -11,9 +11,6 @@
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
-IPC_ENUM_TRAITS_MAX_VALUE(content::MediaDeviceType,
-                          content::NUM_MEDIA_DEVICE_TYPES - 1)
-
 IPC_STRUCT_TRAITS_BEGIN(content::MediaDeviceInfo)
   IPC_STRUCT_TRAITS_MEMBER(device_id)
   IPC_STRUCT_TRAITS_MEMBER(label)

@@ -52,6 +52,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h",
+  "+third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h",
