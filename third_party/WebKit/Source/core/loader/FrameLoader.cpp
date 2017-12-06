@@ -429,7 +429,10 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 
   // Compute this before clearing the frame, because it may need to inherit an
   // aliased security context.
-  bool should_reuse_default_view = frame_->ShouldReuseDefaultView(url);
+  WebGlobalObjectReusePolicy global_object_reuse_policy =
+      frame_->ShouldReuseDefaultView(url)
+          ? WebGlobalObjectReusePolicy::kUseExisting
+          : WebGlobalObjectReusePolicy::kCreateNew;
 
   StopAllLoaders();
   // Don't allow any new child frames to load in this frame: attaching a new
@@ -446,7 +449,7 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   frame_->GetDocument()->Shutdown();
   Client()->TransitionToCommittedForNewPage();
   document_loader_->ReplaceDocumentWhileExecutingJavaScriptURL(
-      url, owner_document, should_reuse_default_view, source);
+      url, owner_document, global_object_reuse_policy, source);
 }
 
 void FrameLoader::FinishedParsing() {

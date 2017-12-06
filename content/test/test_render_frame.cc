@@ -4,6 +4,7 @@
 
 #include "content/test/test_render_frame.h"
 
+#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/frame_messages.h"
@@ -28,6 +29,21 @@ class MockFrameHost : public mojom::FrameHost {
     return std::move(last_commit_params_);
   }
 
+  service_manager::mojom::InterfaceProviderRequest
+  TakeLastInterfaceProviderRequest() {
+    return std::move(last_interface_provider_request_);
+  }
+
+  // Holds on to the request end of the InterfaceProvider interface whose client
+  // end is bound to the corresponding RenderFrame's |remote_interfaces_| to
+  // facilitate retrieving the most recent |interface_provider_request| in
+  // tests.
+  void PassLastInterfaceProviderRequest(
+      service_manager::mojom::InterfaceProviderRequest
+          interface_provider_request) {
+    last_interface_provider_request_ = std::move(interface_provider_request);
+  }
+
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,
@@ -49,9 +65,10 @@ class MockFrameHost : public mojom::FrameHost {
   void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
 
   void DidCommitProvisionalLoad(
-      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params)
-      override {
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
+      service_manager::mojom::InterfaceProviderRequest request) override {
     last_commit_params_ = std::move(params);
+    last_interface_provider_request_ = std::move(request);
   }
 
   void BeginNavigation(const CommonNavigationParams& common_params,
@@ -67,6 +84,8 @@ class MockFrameHost : public mojom::FrameHost {
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;
+  service_manager::mojom::InterfaceProviderRequest
+      last_interface_provider_request_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -79,9 +98,25 @@ RenderFrameImpl* TestRenderFrame::CreateTestRenderFrame(
 
 TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
     : RenderFrameImpl(std::move(params)),
-      mock_frame_host_(std::make_unique<MockFrameHost>()) {}
+      mock_frame_host_(std::make_unique<MockFrameHost>()) {
+  MockRenderThread* mock_render_thread =
+      static_cast<MockRenderThread*>(RenderThread::Get());
+  mock_frame_host_->PassLastInterfaceProviderRequest(
+      mock_render_thread->TakeInitialInterfaceProviderRequestForFrame(
+          params.routing_id));
+}
 
 TestRenderFrame::~TestRenderFrame() {}
+
+void TestRenderFrame::SetURLOverrideForNextWebURLRequest(const GURL& url) {
+  next_request_url_override_ = url;
+}
+
+void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
+  if (next_request_url_override_.has_value())
+    request.SetURL(std::move(next_request_url_override_).value());
+  RenderFrameImpl::WillSendRequest(request);
+}
 
 void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
                                const StartNavigationParams& start_params,
@@ -139,7 +174,8 @@ blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
     const blink::WebFrameClient::NavigationPolicyInfo& info) {
   if (IsBrowserSideNavigationEnabled() &&
       info.url_request.CheckForBrowserSideNavigation() &&
-      GetWebFrame()->Parent() && info.form.IsNull()) {
+      ((GetWebFrame()->Parent() && info.form.IsNull()) ||
+       next_request_url_override_.has_value())) {
     // RenderViewTest::LoadHTML already disables PlzNavigate for the main frame
     // requests. However if the loaded html has a subframe, the WebURLRequest
     // will be created inside Blink and it won't have this flag set.
@@ -151,6 +187,11 @@ blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 TestRenderFrame::TakeLastCommitParams() {
   return mock_frame_host_->TakeLastCommitParams();
+}
+
+service_manager::mojom::InterfaceProviderRequest
+TestRenderFrame::TakeLastInterfaceProviderRequest() {
+  return mock_frame_host_->TakeLastInterfaceProviderRequest();
 }
 
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {

@@ -94,21 +94,12 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
   MockRenderThread* const thread_;
 };
 
-// Returns an InterfaceProvider that is safe to call into, but will not actually
-// service any interface requests.
-service_manager::mojom::InterfaceProviderPtrInfo CreateStubInterfaceProvider() {
-  ::service_manager::mojom::InterfaceProviderPtrInfo info;
-  mojo::MakeRequest(&info);
-  return info;
-}
-
 }  // namespace
 
 MockRenderThread::MockRenderThread()
     : routing_id_(0),
       opener_id_(0),
       new_window_routing_id_(0),
-      new_window_main_frame_routing_id_(0),
       new_window_main_frame_widget_routing_id_(0),
       new_frame_routing_id_(0),
       mock_render_message_filter_(new MockRenderMessageFilterImpl(this)) {
@@ -301,6 +292,29 @@ void MockRenderThread::OnCreateWidget(int opener_id,
   *route_id = routing_id_;
 }
 
+service_manager::mojom::InterfaceProviderRequest
+MockRenderThread::TakeInitialInterfaceProviderRequestForFrame(
+    int32_t routing_id) {
+  auto it =
+      frame_routing_id_to_initial_interface_provider_requests_.find(routing_id);
+  if (it == frame_routing_id_to_initial_interface_provider_requests_.end())
+    return nullptr;
+  auto interface_provider_request = std::move(it->second);
+  frame_routing_id_to_initial_interface_provider_requests_.erase(it);
+  return interface_provider_request;
+}
+
+void MockRenderThread::PassInitialInterfaceProviderRequestForFrame(
+    int32_t routing_id,
+    service_manager::mojom::InterfaceProviderRequest
+        interface_provider_request) {
+  bool did_insertion = false;
+  std::tie(std::ignore, did_insertion) =
+      frame_routing_id_to_initial_interface_provider_requests_.emplace(
+          routing_id, std::move(interface_provider_request));
+  DCHECK(did_insertion);
+}
+
 // The Frame expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
@@ -308,8 +322,11 @@ void MockRenderThread::OnCreateChildFrame(
     mojo::MessagePipeHandle* new_interface_provider,
     base::UnguessableToken* devtools_frame_token) {
   *new_render_frame_id = new_frame_routing_id_++;
+  service_manager::mojom::InterfaceProviderPtr interface_provider;
+  frame_routing_id_to_initial_interface_provider_requests_.emplace(
+      *new_render_frame_id, mojo::MakeRequest(&interface_provider));
   *new_interface_provider =
-      CreateStubInterfaceProvider().PassHandle().release();
+      interface_provider.PassInterface().PassHandle().release();
   *devtools_frame_token = base::UnguessableToken::Create();
 }
 
@@ -347,10 +364,13 @@ void MockRenderThread::OnDuplicateSection(
 void MockRenderThread::OnCreateWindow(
     const mojom::CreateNewWindowParams& params,
     mojom::CreateNewWindowReply* reply) {
-  reply->route_id = new_window_routing_id_;
-  reply->main_frame_route_id = new_window_main_frame_routing_id_;
-  reply->main_frame_interface_provider = CreateStubInterfaceProvider();
-  reply->main_frame_widget_route_id = new_window_main_frame_widget_routing_id_;
+  reply->route_id = new_window_routing_id_++;
+  reply->main_frame_route_id = new_frame_routing_id_++;
+  frame_routing_id_to_initial_interface_provider_requests_.emplace(
+      reply->main_frame_route_id,
+      mojo::MakeRequest(&reply->main_frame_interface_provider));
+  reply->main_frame_widget_route_id =
+      new_window_main_frame_widget_routing_id_++;
   reply->cloned_session_storage_namespace_id = 0;
 }
 

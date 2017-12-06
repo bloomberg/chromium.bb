@@ -5,7 +5,11 @@
 #ifndef CONTENT_BROWSER_INTERFACE_PROVIDER_FILTERING_H_
 #define CONTENT_BROWSER_INTERFACE_PROVIDER_FILTERING_H_
 
+#include <memory>
+
+#include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "content/common/content_export.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
@@ -25,5 +29,23 @@ FilterRendererExposedInterfaces(
     int process_id,
     service_manager::mojom::InterfaceProviderRequest request);
 
+namespace test {
+
+// Allows through all interface requests while in scope. For testing only.
+//
+// TODO(https://crbug.com/792407): See if browser tests can just set up the
+// service_Manager::Connector properly instead of this heavy-handed solution.
+class CONTENT_EXPORT ScopedInterfaceFilterBypass {
+ public:
+  ScopedInterfaceFilterBypass();
+  ~ScopedInterfaceFilterBypass();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedInterfaceFilterBypass);
+};
+
+}  // namespace test
+
 }  // namespace content
+
 #endif  // CONTENT_BROWSER_INTERFACE_PROVIDER_FILTERING_H_

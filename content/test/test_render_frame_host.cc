@@ -450,15 +450,28 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 
 void TestRenderFrameHost::SendNavigateWithParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
+  service_manager::mojom::InterfaceProviderPtr interface_provider;
+  service_manager::mojom::InterfaceProviderRequest interface_provider_request;
+  if (!params->was_within_same_document)
+    interface_provider_request = mojo::MakeRequest(&interface_provider);
+
+  SendNavigateWithParamsAndInterfaceProvider(
+      params, std::move(interface_provider_request));
+}
+
+void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceProvider(
+    FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+    service_manager::mojom::InterfaceProviderRequest request) {
   if (navigation_handle()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
-    response_headers->AddHeader(
-        std::string("Content-Type: ") + contents_mime_type_);
+    response_headers->AddHeader(std::string("Content-Type: ") +
+                                contents_mime_type_);
     navigation_handle()->set_response_headers_for_testing(response_headers);
   }
   DidCommitProvisionalLoad(
-      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params));
+      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>(*params),
+      std::move(request));
   last_commit_was_error_page_ = params->url_is_unreachable;
 }
 

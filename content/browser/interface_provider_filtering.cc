@@ -14,6 +14,8 @@
 namespace content {
 namespace {
 
+bool g_bypass_interface_filtering_for_testing = false;
+
 void FilterInterfacesImpl(
     const char* spec,
     int process_id,
@@ -40,6 +42,9 @@ FilterRendererExposedInterfaces(
     const char* spec,
     int process_id,
     service_manager::mojom::InterfaceProviderRequest request) {
+  if (g_bypass_interface_filtering_for_testing)
+    return request;
+
   service_manager::mojom::InterfaceProviderPtr provider;
   auto filtered_request = mojo::MakeRequest(&provider);
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -53,5 +58,19 @@ FilterRendererExposedInterfaces(
   }
   return filtered_request;
 }
+
+namespace test {
+
+ScopedInterfaceFilterBypass::ScopedInterfaceFilterBypass() {
+  // Nesting not supported.
+  DCHECK(!g_bypass_interface_filtering_for_testing);
+  g_bypass_interface_filtering_for_testing = true;
+}
+
+ScopedInterfaceFilterBypass::~ScopedInterfaceFilterBypass() {
+  g_bypass_interface_filtering_for_testing = false;
+}
+
+}  // namespace test
 
 }  // namespace content

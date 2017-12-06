@@ -56,6 +56,7 @@
 #include "public/platform/WebScopedVirtualTimePauser.h"
 #include "public/platform/WebSuddenTerminationDisablerType.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebGlobalObjectReusePolicy.h"
 #include "public/web/WebTriggeringEventInfo.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "v8/include/v8.h"
@@ -125,7 +126,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                ResourceRequest&) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
-  virtual void DispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
+  virtual void DispatchDidCommitLoad(HistoryItem*,
+                                     HistoryCommitType,
+                                     WebGlobalObjectReusePolicy) = 0;
   virtual void DispatchDidFailProvisionalLoad(const ResourceError&,
                                               HistoryCommitType) = 0;
   virtual void DispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;

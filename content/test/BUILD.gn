@@ -530,7 +530,11 @@ static_library("browsertest_support") {
 mojom("content_test_mojo_bindings") {
   sources = [
     "../public/test/test_service.mojom",
+    "frame_host_test_interface.mojom",
     "test_browser_associated_interfaces.mojom",
+  ]
+  public_deps = [
+    "//url/mojo:url_mojom_gurl",
   ]
 }
 

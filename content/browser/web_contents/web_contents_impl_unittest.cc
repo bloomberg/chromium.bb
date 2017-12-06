@@ -2150,6 +2150,10 @@ TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
   interstitial->Show();
   TestRenderFrameHost* interstitial_rfh =
       static_cast<TestRenderFrameHost*>(interstitial->GetMainFrame());
+
+  // Ensure the InterfaceProvider for the initial empty document is bound.
+  interstitial_rfh->InitializeRenderFrameIfNeeded();
+
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());

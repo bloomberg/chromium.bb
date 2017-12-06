@@ -27,11 +27,13 @@ class DidCommitProvisionalLoadInterceptor : public WebContentsObserver {
   explicit DidCommitProvisionalLoadInterceptor(WebContents* web_contents);
   ~DidCommitProvisionalLoadInterceptor() override;
 
-  // Called just before DidCommitProvisionalLoad with |params| would be
-  // dispatched to |render_frame_host|.
+  // Called just before DidCommitProvisionalLoad with |params| and
+  // |interface_provider_request| would be dispatched to |render_frame_host|.
   virtual void WillDispatchDidCommitProvisionalLoad(
       RenderFrameHost* render_frame_host,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params) = 0;
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      service_manager::mojom::InterfaceProviderRequest*
+          interface_provider_request) = 0;
 
  private:
   class FrameAgent;

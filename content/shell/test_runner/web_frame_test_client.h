@@ -62,9 +62,9 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void DidReceiveServerRedirectForProvisionalLoad() override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
-  void DidCommitProvisionalLoad(
-      const blink::WebHistoryItem& history_item,
-      blink::WebHistoryCommitType history_type) override;
+  void DidCommitProvisionalLoad(const blink::WebHistoryItem& history_item,
+                                blink::WebHistoryCommitType history_type,
+                                blink::WebGlobalObjectReusePolicy) override;
   void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;

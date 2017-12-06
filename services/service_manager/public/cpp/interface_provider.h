@@ -76,9 +76,6 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT InterfaceProvider {
   // be called before any calls to GetInterface() are made.
   void Forward(const ForwardCallback& callback);
 
-  // Returns a raw pointer to the remote InterfaceProvider.
-  mojom::InterfaceProvider* get() { return interface_provider_.get(); }
-
   // Sets a closure to be run when the remote InterfaceProvider pipe is closed.
   void SetConnectionLostClosure(const base::Closure& connection_lost_closure);
 
