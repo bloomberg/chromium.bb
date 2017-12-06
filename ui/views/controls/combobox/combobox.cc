@@ -996,7 +996,7 @@ void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
 }
 
 void Combobox::OnPerformAction() {
-  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, false);
+  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
   SchedulePaint();
 
   // This combobox may be deleted by the listener.
