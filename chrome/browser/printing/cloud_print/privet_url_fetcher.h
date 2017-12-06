@@ -77,9 +77,9 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   static void SetTokenForHost(const std::string& host,
                               const std::string& token);
 
-  static void ResetTokenMapForTests();
+  static void ResetTokenMapForTest();
 
-  void SetMaxRetries(int max_retries);
+  void SetMaxRetriesForTest(int max_retries);
 
   void DoNotRetryOnTransientError();
 
