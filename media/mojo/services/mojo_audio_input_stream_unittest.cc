@@ -114,7 +114,7 @@ class MockClient : public mojom::AudioInputStreamClient {
         mojo::UnwrapSharedMemoryHandle(std::move(shared_buffer), &shmem_handle,
                                        &memory_length, &read_only),
         MOJO_RESULT_OK);
-    EXPECT_FALSE(read_only);
+    EXPECT_TRUE(read_only);
     buffer_ = base::MakeUnique<base::SharedMemory>(shmem_handle, read_only);
 
     GotNotification(initially_muted);
@@ -173,7 +173,10 @@ class MojoAudioInputStreamTest : public Test {
         base::WrapUnique(delegate_));
     EXPECT_TRUE(
         base::CancelableSyncSocket::CreatePair(&local_, foreign_socket_.get()));
-    EXPECT_TRUE(mem_.CreateAnonymous(kShmemSize));
+    base::SharedMemoryCreateOptions shmem_options;
+    shmem_options.size = kShmemSize;
+    shmem_options.share_read_only = true;
+    EXPECT_TRUE(mem_.Create(shmem_options));
     EXPECT_CALL(mock_delegate_factory_, MockCreateDelegate(NotNull()))
         .WillOnce(SaveArg<0>(&delegate_event_handler_));
   }

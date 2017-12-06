@@ -56,7 +56,7 @@ class MockDelegate : public media::AudioInputIPCDelegate {
                        base::SyncSocket::Handle socket_handle,
                        bool initially_muted) override {
     base::SharedMemory sh_mem(
-        mem_handle, /*read_only*/ false);  // Releases the shared memory handle.
+        mem_handle, /*read_only*/ true);  // Releases the shared memory handle.
     base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated(initially_muted);
   }

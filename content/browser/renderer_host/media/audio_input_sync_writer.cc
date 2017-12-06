@@ -145,10 +145,16 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
       media::ComputeAudioInputBufferSizeChecked(params,
                                                 shared_memory_segment_count);
 
+  if (!requested_memory_size.IsValid())
+    return nullptr;
+
+  // Make sure we can share the memory read-only with the client.
+  base::SharedMemoryCreateOptions shmem_options;
+  shmem_options.size = requested_memory_size.ValueOrDie();
+  shmem_options.share_read_only = true;
   auto shared_memory = std::make_unique<base::SharedMemory>();
-  if (!requested_memory_size.IsValid() ||
-      !shared_memory->CreateAndMapAnonymous(
-          requested_memory_size.ValueOrDie())) {
+  if (!shared_memory->Create(shmem_options) ||
+      !shared_memory->Map(shmem_options.size)) {
     return nullptr;
   }
 

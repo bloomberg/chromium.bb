@@ -130,7 +130,7 @@ void SharedMemory::Close() {
   }
 }
 
-SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
   // Untrusted code can't create descriptors or handles, which is needed to
   // drop permissions.
   return SharedMemoryHandle();

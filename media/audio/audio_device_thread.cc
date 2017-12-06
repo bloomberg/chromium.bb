@@ -31,6 +31,7 @@ namespace media {
 
 AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
                                       base::SharedMemoryHandle memory,
+                                      bool read_only_memory,
                                       uint32_t segment_length,
                                       uint32_t total_segments)
     : audio_parameters_(audio_parameters),
@@ -41,7 +42,7 @@ AudioDeviceThread::Callback::Callback(const AudioParameters& audio_parameters,
       // CHECK that the shared memory is large enough. The memory allocated
       // must be at least as large as expected.
       shared_memory_((CHECK(memory_length_ <= memory.GetSize()), memory),
-                     false) {
+                     read_only_memory) {
   CHECK_GT(total_segments_, 0u);
   thread_checker_.DetachFromThread();
 }

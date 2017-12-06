@@ -149,7 +149,7 @@ SharedMemoryHandle SharedMemory::DuplicateHandle(
   return handle.Duplicate();
 }
 
-SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
   zx_handle_t duped_handle;
   const int kNoWriteOrExec =
       ZX_DEFAULT_VMO_RIGHTS &

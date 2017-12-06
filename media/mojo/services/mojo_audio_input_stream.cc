@@ -76,14 +76,15 @@ void MojoAudioInputStream::OnStreamCreated(
   DCHECK(foreign_socket);
 
   base::SharedMemoryHandle foreign_memory_handle =
-      base::SharedMemory::DuplicateHandle(shared_memory->handle());
+      shared_memory->GetReadOnlyHandle();
   if (!base::SharedMemory::IsHandleValid(foreign_memory_handle)) {
     OnStreamError(/*not used*/ 0);
     return;
   }
 
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      foreign_memory_handle, shared_memory->requested_size(), false);
+      foreign_memory_handle, shared_memory->requested_size(),
+      /*read_only*/ true);
   mojo::ScopedHandle socket_handle =
       mojo::WrapPlatformFile(foreign_socket->Release());
 
