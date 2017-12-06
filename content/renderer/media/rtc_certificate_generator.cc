@@ -66,9 +66,8 @@ class RTCCertificateGeneratorRequest
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(observer);
 
-    CertificateCallbackPtr transition(
-        observer.release(),
-        base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+    CertificateCallbackPtr transition(observer.release(),
+                                      base::OnTaskRunnerDeleter(main_thread_));
     worker_thread_->PostTask(
         FROM_HERE,
         base::BindOnce(
@@ -119,35 +118,36 @@ class RTCCertificateGeneratorRequest
 
 void RTCCertificateGenerator::GenerateCertificate(
     const blink::WebRTCKeyParams& key_params,
-    std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
+    std::unique_ptr<blink::WebRTCCertificateCallback> observer,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   generateCertificateWithOptionalExpiration(
-      key_params, rtc::Optional<uint64_t>(), std::move(observer));
+      key_params, rtc::Optional<uint64_t>(), std::move(observer), task_runner);
 }
 
 void RTCCertificateGenerator::GenerateCertificateWithExpiration(
     const blink::WebRTCKeyParams& key_params,
     uint64_t expires_ms,
-    std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
-  generateCertificateWithOptionalExpiration(
-    key_params, rtc::Optional<uint64_t>(expires_ms), std::move(observer));
+    std::unique_ptr<blink::WebRTCCertificateCallback> observer,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  generateCertificateWithOptionalExpiration(key_params,
+                                            rtc::Optional<uint64_t>(expires_ms),
+                                            std::move(observer), task_runner);
 }
 
 void RTCCertificateGenerator::generateCertificateWithOptionalExpiration(
     const blink::WebRTCKeyParams& key_params,
     const rtc::Optional<uint64_t>& expires_ms,
-    std::unique_ptr<blink::WebRTCCertificateCallback> observer) {
+    std::unique_ptr<blink::WebRTCCertificateCallback> observer,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(IsSupportedKeyParams(key_params));
 #if BUILDFLAG(ENABLE_WEBRTC)
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread =
-      base::ThreadTaskRunnerHandle::Get();
   PeerConnectionDependencyFactory* pc_dependency_factory =
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
   pc_dependency_factory->EnsureInitialized();
 
   scoped_refptr<RTCCertificateGeneratorRequest> request =
       new RTCCertificateGeneratorRequest(
-          main_thread,
-          pc_dependency_factory->GetWebRtcWorkerThread());
+          task_runner, pc_dependency_factory->GetWebRtcWorkerThread());
   request->GenerateCertificateAsync(
       key_params, expires_ms, std::move(observer));
 #else

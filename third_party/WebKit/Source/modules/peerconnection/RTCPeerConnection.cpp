@@ -956,12 +956,16 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // Generate certificate. The |certificateObserver| will resolve the promise
   // asynchronously upon completion. The observer will manage its own
   // destruction as well as the resolver's destruction.
+  scoped_refptr<WebTaskRunner> task_runner =
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(blink::TaskType::kUnthrottled);
   if (expires.IsNull()) {
-    certificate_generator->GenerateCertificate(key_params.Get(),
-                                               std::move(certificate_observer));
+    certificate_generator->GenerateCertificate(
+        key_params.Get(), std::move(certificate_observer), task_runner);
   } else {
     certificate_generator->GenerateCertificateWithExpiration(
-        key_params.Get(), expires.Get(), std::move(certificate_observer));
+        key_params.Get(), expires.Get(), std::move(certificate_observer),
+        task_runner);
   }
 
   return promise;
