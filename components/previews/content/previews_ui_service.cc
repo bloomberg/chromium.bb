@@ -37,19 +37,21 @@ void PreviewsUIService::SetIOData(base::WeakPtr<PreviewsIOData> io_data) {
 
 void PreviewsUIService::AddPreviewNavigation(const GURL& url,
                                              PreviewsType type,
-                                             bool opt_out) {
+                                             bool opt_out,
+                                             uint64_t page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsIOData::AddPreviewNavigation, io_data_,
-                            url, opt_out, type));
+                            url, opt_out, type, page_id));
 }
 
 void PreviewsUIService::LogPreviewNavigation(const GURL& url,
                                              PreviewsType type,
                                              bool opt_out,
-                                             base::Time time) {
+                                             base::Time time,
+                                             uint64_t page_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  logger_->LogPreviewNavigation(url, type, opt_out, time);
+  logger_->LogPreviewNavigation(url, type, opt_out, time, page_id);
 }
 
 void PreviewsUIService::LogPreviewDecisionMade(

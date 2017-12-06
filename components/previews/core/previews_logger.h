@@ -86,7 +86,8 @@ class PreviewsLogger {
   virtual void LogPreviewNavigation(const GURL& url,
                                     PreviewsType type,
                                     bool opt_out,
-                                    base::Time time);
+                                    base::Time time,
+                                    uint64_t page_id);
 
   // Add a MessageLog for the a decision that was made about the state of
   // previews and blacklist. |passed_reasons| is an ordered list of

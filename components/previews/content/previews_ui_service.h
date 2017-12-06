@@ -46,7 +46,10 @@ class PreviewsUIService {
   virtual void SetIOData(base::WeakPtr<PreviewsIOData> io_data);
 
   // Adds a navigation to |url| to the black list with result |opt_out|.
-  void AddPreviewNavigation(const GURL& url, PreviewsType type, bool opt_out);
+  void AddPreviewNavigation(const GURL& url,
+                            PreviewsType type,
+                            bool opt_out,
+                            uint64_t page_id);
 
   // Clears the history of the black list between |begin_time| and |end_time|.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
@@ -79,7 +82,8 @@ class PreviewsUIService {
   virtual void LogPreviewNavigation(const GURL& url,
                                     PreviewsType type,
                                     bool opt_out,
-                                    base::Time time);
+                                    base::Time time,
+                                    uint64_t page_id);
 
   // Log the made decision of previews to PreviewsLogger. |passed_reasons| is a
   // collection of PreviewsEligibilityReasons passed the checks before |reason|.

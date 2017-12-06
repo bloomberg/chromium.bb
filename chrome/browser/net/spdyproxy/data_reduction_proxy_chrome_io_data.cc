@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,12 +47,13 @@ void AddPreviewNavigationToBlackListCallback(
     content::BrowserContext* browser_context,
     const GURL& url,
     previews::PreviewsType type,
+    uint64_t page_id,
     bool opt_out) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
   if (previews_service && previews_service->previews_ui_service()) {
-    previews_service->previews_ui_service()->AddPreviewNavigation(url, type,
-                                                                  opt_out);
+    previews_service->previews_ui_service()->AddPreviewNavigation(
+        url, type, opt_out, page_id);
   }
 }
 
@@ -66,6 +68,14 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   previews::PreviewsUIService* previews_ui_service =
       previews_service ? previews_service->previews_ui_service() : nullptr;
 
+  PreviewsInfoBarTabHelper* infobar_tab_helper =
+      PreviewsInfoBarTabHelper::FromWebContents(web_contents);
+
+  uint64_t page_id = 0;
+  if (infobar_tab_helper && infobar_tab_helper->previews_user_data()) {
+    page_id = infobar_tab_helper->previews_user_data()->page_id();
+  }
+
   PreviewsInfoBarDelegate::Create(
       web_contents, previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
@@ -75,11 +85,11 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
                  web_contents->GetController()
                      .GetLastCommittedEntry()
                      ->GetRedirectChain()[0],
-                 previews::PreviewsType::LOFI),
+                 previews::PreviewsType::LOFI, page_id),
       previews_ui_service);
 }
 
-} // namespace
+}  // namespace
 
 std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(

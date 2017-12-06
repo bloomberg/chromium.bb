@@ -37,12 +37,13 @@ namespace {
 void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
                                   const GURL& url,
                                   previews::PreviewsType type,
+                                  uint64_t page_id,
                                   bool opt_out) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
   if (previews_service && previews_service->previews_ui_service()) {
-    previews_service->previews_ui_service()->AddPreviewNavigation(url, type,
-                                                                  opt_out);
+    previews_service->previews_ui_service()->AddPreviewNavigation(
+        url, type, opt_out, page_id);
   }
 }
 
@@ -74,6 +75,8 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   if (nav_data && nav_data->previews_user_data()) {
     previews_user_data_ = nav_data->previews_user_data()->DeepCopy();
   }
+
+  uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;
 
   // The infobar should only be told if the page was a reload if the previous
   // page displayed a timestamp.
@@ -111,7 +114,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
         base::Bind(&AddPreviewNavigationCallback,
                    web_contents()->GetBrowserContext(),
                    navigation_handle->GetRedirectChain()[0],
-                   previews::PreviewsType::OFFLINE),
+                   previews::PreviewsType::OFFLINE, page_id),
         previews_ui_service);
     // Don't try to show other infobars if this is an offline preview.
     return;
@@ -133,7 +136,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
         base::Bind(&AddPreviewNavigationCallback,
                    web_contents()->GetBrowserContext(),
                    navigation_handle->GetRedirectChain()[0],
-                   previews::PreviewsType::LITE_PAGE),
+                   previews::PreviewsType::LITE_PAGE, page_id),
         previews_ui_service);
     return;
   }
@@ -148,7 +151,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
           base::Bind(&AddPreviewNavigationCallback,
                      web_contents()->GetBrowserContext(),
                      navigation_handle->GetRedirectChain()[0],
-                     previews::PreviewsType::NOSCRIPT),
+                     previews::PreviewsType::NOSCRIPT, page_id),
           previews_ui_service);
     }
   }

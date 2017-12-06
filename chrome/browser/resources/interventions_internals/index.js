@@ -58,6 +58,43 @@ function addMoreDetailsButton(element, pageId) {
 }
 
 /**
+ * Helper method to move a row to the top of a html table, below the header
+ * row.
+ * @param {!HTMLElement} row The row to move.
+ * @param {!HTMLElement} table The table to move.
+ */
+function pushRowToTopOfLogsTable(row, table) {
+  let newRow = table.insertRow(1);
+  newRow.className = row.className;
+  newRow.id = row.id;
+  newRow.innerHTML = row.innerHTML;
+  row.remove();
+}
+
+/**
+ * Helper method to move a group of messages to the top of the Logs Table,
+ * including the expansion row corresponding to the |pageId|.
+ *
+ * @param {number} pageId The key of |logTableMap| of the moving row.
+ */
+function pushMessagesToTopOfLogsTable(pageId) {
+  let logsTable = $('message-logs-table');
+  let currentMessageRow = window.logTableMap[pageId];
+
+  // Moving empty row.
+  let emptyRow = logsTable.rows[currentMessageRow.rowIndex + 2];
+  pushRowToTopOfLogsTable(emptyRow, logsTable);
+
+  // Moving expansion row.
+  let expansionRow = logsTable.rows[currentMessageRow.rowIndex + 1];
+  pushRowToTopOfLogsTable(expansionRow, logsTable);
+
+  // Moving the original row.
+  pushRowToTopOfLogsTable(currentMessageRow, logsTable);
+  window.logTableMap[pageId] = logsTable.rows[1];
+}
+
+/**
  * Update the |pageId| log message group. Copy the main row that contains the
  * most updated log message of the group to the expansion row, and update the
  * current main row with new info.
@@ -70,6 +107,8 @@ function addMoreDetailsButton(element, pageId) {
 function updateTableRowByPageId(time, type, description, url, pageId) {
   assert(pageId > 0);
   assert(window.logTableMap[pageId]);
+  pushMessagesToTopOfLogsTable(pageId);
+
   let currentRow = window.logTableMap[pageId];
   let expansionRow = $('expansion-row-' + pageId);
   let newRow = expansionRow.querySelector('.expansion-logs-table').insertRow(0);
@@ -230,9 +269,10 @@ function setupTabControl() {
 function setupLogSearch() {
   $('log-search-bar').addEventListener('keyup', () => {
     let keyword = $('log-search-bar').value.toUpperCase();
-    let rows = document.querySelectorAll('.log-message');
+    let rows = $('message-logs-table').rows;
 
-    rows.forEach((row) => {
+    for (let i = 1; i < rows.length; i++) {
+      let row = rows[i];
       let found = KEY_COLUMNS.some((column) => {
         let cell = row.querySelector('.' + column);
         if (!cell) {
@@ -241,7 +281,7 @@ function setupLogSearch() {
         return cell.textContent.toUpperCase().includes(keyword);
       });
       row.style.display = found ? '' : 'none';
-    });
+    }
   });
 }
 

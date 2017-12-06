@@ -169,12 +169,10 @@ void PreviewsLogger::LogMessage(const std::string& event_type,
 void PreviewsLogger::LogPreviewNavigation(const GURL& url,
                                           PreviewsType type,
                                           bool opt_out,
-                                          base::Time time) {
+                                          base::Time time,
+                                          uint64_t page_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(kMaximumNavigationLogs, navigations_logs_.size());
-  // TODO(thanhdle): Group navigation together with decisions logs.
-  // crbug.com/791778.
-  const uint64_t page_id = 0;  // Non grouped log message.
 
   std::string description = GetDescriptionForPreviewsNavigation(type, opt_out);
   LogMessage(kPreviewNavigationEventType, description, url, time, page_id);
