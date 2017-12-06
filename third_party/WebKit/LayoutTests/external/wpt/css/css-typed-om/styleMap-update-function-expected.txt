@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL styleMap objects provide an 'update' function assert_equals: update expected to apply callback to old value in map expected 62 but got 42
-Harness: the test ran to completion.
-

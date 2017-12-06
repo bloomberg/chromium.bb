@@ -1,14 +1,14 @@
 This is a testharness.js-based test.
-FAIL Updating a StylePropertyMap with an unsupported property name throws TypeError assert_throws: function "() => styleMap.update(property, () => value)" did not throw
-FAIL Updating a StylePropertyMap with an null property name throws TypeError assert_throws: function "() => styleMap.update(property, () => value)" did not throw
-FAIL Updating a StylePropertyMap with an invalid CSSStyleValue throws TypeError assert_throws: function "() => styleMap.update(property, () => value)" did not throw
-FAIL Updating a StylePropertyMap with an invalid String throws TypeError assert_throws: function "() => styleMap.update(property, () => value)" did not throw
-FAIL Updating a property with CSSStyleValue updates its value Cannot read property 'length' of null
-FAIL Updating a list-valued property with CSSStyleValue updates its value assert_equals: expected 1 but got 0
-FAIL Updating a custom property with CSSStyleValue updates its value Cannot read property 'length' of null
+PASS Updating a StylePropertyMap with an unsupported property name throws TypeError
+PASS Updating a StylePropertyMap with an null property name throws TypeError
+PASS Updating a StylePropertyMap with an invalid CSSStyleValue throws TypeError
+PASS Updating a StylePropertyMap with an invalid String throws TypeError
+PASS Updating a property with CSSStyleValue updates its value
+PASS Updating a list-valued property with CSSStyleValue updates its value
+FAIL Updating a custom property with CSSStyleValue updates its value Failed to execute 'update' on 'StylePropertyMap': Invalid propertyName: --foo
 PASS Calling StylePropertyMap.update on an empty property model calls update function with null
 PASS Calling StylePropertyMap.update on an existing property calls update function with old value
 PASS Calling StylePropertyMap.update on an existing list-valued property calls update function with first value
-FAIL StylePropertyMap.update is case-insensitive assert_approx_equals: expected 20 +/- 0.000001 but got 10
+PASS StylePropertyMap.update is case-insensitive
 Harness: the test ran to completion.
 
