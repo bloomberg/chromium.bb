@@ -104,13 +104,13 @@ DispatchEventResult DispatchTextInputEvent(LocalFrame* frame,
   return result;
 }
 
-PlainTextRange GetSelectionOffsets(LocalFrame* frame) {
-  EphemeralRange range = FirstEphemeralRangeOf(
-      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
+PlainTextRange GetSelectionOffsets(const SelectionInDOMTree& selection) {
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+  const EphemeralRange range = FirstEphemeralRangeOf(visible_selection);
   if (range.IsNull())
     return PlainTextRange();
-  ContainerNode* const editable = RootEditableElementOrTreeScopeRootNodeOf(
-      frame->Selection().ComputeVisibleSelectionInDOMTree().Base());
+  ContainerNode* const editable =
+      RootEditableElementOrTreeScopeRootNodeOf(selection.Base());
   DCHECK(editable);
   return PlainTextRange::Create(*editable, range);
 }
@@ -395,7 +395,8 @@ void TypingCommand::InsertText(
   // needs to be audited. see http://crbug.com/590369 for more details.
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  const PlainTextRange selection_offsets = GetSelectionOffsets(frame);
+  const PlainTextRange selection_offsets =
+      GetSelectionOffsets(frame->Selection().GetSelectionInDOMTree());
   if (selection_offsets.IsNull())
     return;
   const size_t selection_start = selection_offsets.Start();
