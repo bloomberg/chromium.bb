@@ -244,7 +244,8 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Ensure that the export menu item is included and hidden behind the overflow menu.
+     * Check that the export menu item is included and hidden behind the overflow menu. Check that
+     * the menu displays the warning before letting the user export passwords.
      */
     @Test
     @SmallTest
@@ -261,8 +262,14 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // Before tapping the menu item for export, pretend that the last successful
+        // reauthentication just happened. This will allow the export flow to continue.
+        ReauthenticationManager.setLastReauthTimeMillis(System.currentTimeMillis());
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
+
+        Espresso.onView(withText(R.string.settings_passwords_export_description))
+                .check(matches(isDisplayed()));
     }
 
     /**

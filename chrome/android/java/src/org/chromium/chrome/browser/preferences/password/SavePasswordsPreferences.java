@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
@@ -127,7 +129,21 @@ public class SavePasswordsPreferences
 
     /** Continues with the password export flow after the user successfully reauthenticated. */
     private void exportAfterReauth() {
-        // TODO(crbug.com/788701): Show the warning, start the export.
+        ExportWarningDialogFragment exportWarningDialogFragment = new ExportWarningDialogFragment();
+        exportWarningDialogFragment.setExportWarningHandler(new DialogInterface.OnClickListener() {
+            /** On positive button response asks the parent to continue with the export flow. */
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == AlertDialog.BUTTON_POSITIVE) {
+                    exportAfterWarning();
+                }
+            }
+        });
+        exportWarningDialogFragment.show(getFragmentManager(), null);
+    }
+
+    private void exportAfterWarning() {
+        // TODO(crbug.com/788701): Start the export.
     }
 
     /**
