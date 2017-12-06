@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<title>Upload files in Windows-1252 form</title>
+<title>Upload files in Windows-1252 form (tentative)</title>
+<!--
+    NOTE: This test is tentative because encoding for filename
+    characters unrepresentable in the form charset is not yet
+    standardized.
+  -->
+<link rel="help"
+      href="https://github.com/whatwg/html/issues/3223">
 <link rel="help"
       href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#multipart-form-data">
+<link rel="help"
+      href="https://html.spec.whatwg.org/multipage/dnd.html#datatransferitemlist">
+<link rel="help"
+      href="https://w3c.github.io/FileAPI/#file-constructor">
 <link rel="author" title="Benjamin C. Wiley Sittler"
       href="mailto:bsittler@chromium.org">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="resources/send-file-form-helper.js"></script>
+<script src="../support/send-file-form-helper.js"></script>
 <script>
 'use strict';
 

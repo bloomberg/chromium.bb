@@ -97,7 +97,7 @@ const kTestFallbackXUserDefined =
 // numeric character reference replacement for filenames, field names,
 // and field values.
 //
-// Uses /xmlhttprequest/resources/post-echo.cgi to echo the upload
+// Uses /fetch/api/resources/echo-content.py to echo the upload
 // POST with UTF-8 byte interpretation, leading to the "UTF-8 goggles"
 // behavior documented below for expectedEncodedBaseName when non-
 // UTF-8-compatible byte sequences appear in the formEncoding-encoded
@@ -140,7 +140,7 @@ const formPostFileUploadTest = ({
 
     const form = Object.assign(document.createElement('form'), {
       acceptCharset: formEncoding,
-      action: '/xmlhttprequest/resources/post-echo.cgi',
+      action: '/fetch/api/resources/echo-content.py',
       method: 'POST',
       enctype: 'multipart/form-data',
       target: formTargetFrame.name,
