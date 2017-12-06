@@ -1003,4 +1003,18 @@ void StyleBuilderFunctions::applyValueCSSPropertyCaretColor(
   }
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyBorderImageSource(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  state.Style()->SetBorderImageSource(
+      state.GetStyleImage(CSSPropertyBorderImageSource, value));
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitMaskBoxImageSource(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  state.Style()->SetMaskBoxImageSource(
+      state.GetStyleImage(CSSPropertyWebkitMaskBoxImageSource, value));
+}
+
 }  // namespace blink
