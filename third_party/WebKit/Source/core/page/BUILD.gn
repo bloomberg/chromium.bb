@@ -12,8 +12,6 @@ blink_core_sources("page") {
     "ChromeClient.h",
     "ChromeClientImpl.cpp",
     "ChromeClientImpl.h",
-    "ContextMenuClient.cpp",
-    "ContextMenuClient.h",
     "ContextMenuController.cpp",
     "ContextMenuController.h",
     "ContextMenuProvider.h",

@@ -172,6 +172,7 @@
 #include "core/loader/HistoryItem.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
+#include "core/page/ContextMenuController.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -1026,10 +1027,9 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
   if (command[command.length() - 1] == UChar(':'))
     command = command.Substring(0, command.length() - 1);
 
-  Node* plugin_lookup_context_node =
-      context_menu_node_ && WebPluginContainerImpl::SupportsCommand(name)
-          ? context_menu_node_
-          : nullptr;
+  Node* plugin_lookup_context_node = nullptr;
+  if (WebPluginContainerImpl::SupportsCommand(name))
+    plugin_lookup_context_node = ContextMenuNodeInner();
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
@@ -1734,7 +1734,6 @@ void WebLocalFrameImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_widget_);
   visitor->Trace(text_finder_);
   visitor->Trace(print_context_);
-  visitor->Trace(context_menu_node_);
   visitor->Trace(input_method_controller_);
   WebFrame::TraceFrames(visitor, this);
 }
@@ -2009,8 +2008,7 @@ WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
 
 void WebLocalFrameImpl::SendPings(const WebURL& destination_url) {
   DCHECK(GetFrame());
-  DCHECK(context_menu_node_.Get());
-  Element* anchor = context_menu_node_->EnclosingLinkEventParentOrSelf();
+  Element* anchor = ContextMenuNodeInner()->EnclosingLinkEventParentOrSelf();
   if (auto* html_anchor = ToHTMLAnchorElementOrNull(anchor))
     html_anchor->SendPings(destination_url);
 }
@@ -2401,6 +2399,10 @@ void WebLocalFrameImpl::SetTickmarks(const WebVector<WebRect>& tickmarks) {
   }
 }
 
+WebNode WebLocalFrameImpl::ContextMenuNode() const {
+  return ContextMenuNodeInner();
+}
+
 void WebLocalFrameImpl::WillBeDetached() {
   if (dev_tools_agent_)
     dev_tools_agent_->WillBeDestroyed();
@@ -2602,6 +2604,15 @@ void WebLocalFrameImpl::SetSpellCheckPanelHostClient(
 
 WebFrameWidgetBase* WebLocalFrameImpl::LocalRootFrameWidget() {
   return LocalRoot()->FrameWidget();
+}
+
+Node* WebLocalFrameImpl::ContextMenuNodeInner() const {
+  if (!ViewImpl() || !ViewImpl()->GetPage())
+    return nullptr;
+  return ViewImpl()
+      ->GetPage()
+      ->GetContextMenuController()
+      .ContextMenuNodeForFrame(GetFrame());
 }
 
 }  // namespace blink
