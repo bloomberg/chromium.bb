@@ -48,7 +48,7 @@ TEST(AnimationEffectInputTest, SortedOffsets) {
       DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       EffectModel::kCompositeReplace, nullptr, scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(1.0, effect->GetFrames()[1]->Offset());
+  EXPECT_EQ(1.0, effect->GetFrames()[1]->CheckedOffset());
 }
 
 TEST(AnimationEffectInputTest, UnsortedOffsets) {
@@ -102,7 +102,7 @@ TEST(AnimationEffectInputTest, LooslySorted) {
       DictionarySequenceOrDictionary::FromDictionarySequence(js_keyframes),
       EffectModel::kCompositeReplace, nullptr, scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(1, effect->GetFrames()[2]->Offset());
+  EXPECT_EQ(1, effect->GetFrames()[2]->CheckedOffset());
 }
 
 TEST(AnimationEffectInputTest, OutOfOrderWithNullOffsets) {

@@ -107,8 +107,7 @@ BuildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
     DCHECK(effect->Model()->IsKeyframeEffectModel());
     const KeyframeVector& keyframes = effect->Model()->GetFrames();
     if (keyframes.size() == 3) {
-      DCHECK(!IsNull(keyframes.at(1)->Offset()));
-      delay = keyframes.at(1)->Offset() * duration;
+      delay = keyframes.at(1)->CheckedOffset() * duration;
       duration -= delay;
       easing = keyframes.at(1)->Easing().ToString();
     } else {
