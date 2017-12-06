@@ -151,7 +151,7 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
   BackgroundPaintLocation paint_location = kBackgroundPaintInScrollingContents;
   const FillLayer* layer = &(Style()->BackgroundLayers());
   for (; layer; layer = layer->Next()) {
-    if (layer->Attachment() == kLocalBackgroundAttachment)
+    if (layer->Attachment() == EFillAttachment::kLocal)
       continue;
 
     // Solid color layers with an effective background clip of the padding box
@@ -159,11 +159,11 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
     if (!layer->GetImage() && !layer->Next() &&
         ResolveColor(CSSPropertyBackgroundColor).Alpha() > 0) {
       EFillBox clip = layer->Clip();
-      if (clip == kPaddingFillBox)
+      if (clip == EFillBox::kPadding)
         continue;
       // A border box can be treated as a padding box if the border is opaque or
       // there is no border and we don't have custom scrollbars.
-      if (clip == kBorderFillBox) {
+      if (clip == EFillBox::kBorder) {
         if (!has_custom_scrollbars &&
             (Style()->BorderTopWidth() == 0 ||
              !ResolveColor(CSSPropertyBorderTopColor).HasAlpha()) &&
@@ -186,7 +186,7 @@ BackgroundPaintLocation LayoutBoxModelObject::GetBackgroundPaintLocation(
       }
       // A content fill box can be treated as a padding fill box if there is no
       // padding.
-      if (clip == kContentFillBox && Style()->PaddingTop().IsZero() &&
+      if (clip == EFillBox::kContent && Style()->PaddingTop().IsZero() &&
           Style()->PaddingLeft().IsZero() && Style()->PaddingRight().IsZero() &&
           Style()->PaddingBottom().IsZero()) {
         continue;

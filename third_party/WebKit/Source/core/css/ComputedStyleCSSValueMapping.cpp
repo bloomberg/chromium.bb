@@ -162,9 +162,11 @@ static CSSValue* ValueForFillRepeat(EFillRepeat x_repeat,
   // return the shorthand.
   if (x_repeat == y_repeat)
     return CSSIdentifierValue::Create(x_repeat);
-  if (x_repeat == kRepeatFill && y_repeat == kNoRepeatFill)
+  if (x_repeat == EFillRepeat::kRepeatFill &&
+      y_repeat == EFillRepeat::kNoRepeatFill)
     return CSSIdentifierValue::Create(CSSValueRepeatX);
-  if (x_repeat == kNoRepeatFill && y_repeat == kRepeatFill)
+  if (x_repeat == EFillRepeat::kNoRepeatFill &&
+      y_repeat == EFillRepeat::kRepeatFill)
     return CSSIdentifierValue::Create(CSSValueRepeatY);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

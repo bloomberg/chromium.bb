@@ -49,11 +49,12 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       x_position_(FillLayer::InitialFillXPosition(type)),
       y_position_(FillLayer::InitialFillYPosition(type)),
       size_length_(FillLayer::InitialFillSizeLength(type)),
-      attachment_(FillLayer::InitialFillAttachment(type)),
-      clip_(FillLayer::InitialFillClip(type)),
-      origin_(FillLayer::InitialFillOrigin(type)),
-      repeat_x_(FillLayer::InitialFillRepeatX(type)),
-      repeat_y_(FillLayer::InitialFillRepeatY(type)),
+      attachment_(
+          static_cast<unsigned>(FillLayer::InitialFillAttachment(type))),
+      clip_(static_cast<unsigned>(FillLayer::InitialFillClip(type))),
+      origin_(static_cast<unsigned>(FillLayer::InitialFillOrigin(type))),
+      repeat_x_(static_cast<unsigned>(FillLayer::InitialFillRepeatX(type))),
+      repeat_y_(static_cast<unsigned>(FillLayer::InitialFillRepeatY(type))),
       composite_(FillLayer::InitialFillComposite(type)),
       size_type_(use_initial_values ? FillLayer::InitialFillSizeType(type)
                                     : kSizeNone),
@@ -71,10 +72,10 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       y_pos_set_(use_initial_values),
       background_x_origin_set_(false),
       background_y_origin_set_(false),
-      composite_set_(use_initial_values || type == kMaskFillLayer),
+      composite_set_(use_initial_values || type == EFillLayerType::kMask),
       blend_mode_set_(use_initial_values),
       mask_source_type_set_(use_initial_values),
-      type_(type),
+      type_(static_cast<unsigned>(type)),
       this_or_next_layers_clip_max_(0),
       this_or_next_layers_use_content_box_(0),
       this_or_next_layers_have_local_attachment_(0),
@@ -333,17 +334,17 @@ void FillLayer::CullEmptyLayers() {
 void FillLayer::ComputeCachedPropertiesIfNeeded() const {
   if (cached_properties_computed_)
     return;
-  this_or_next_layers_clip_max_ = Clip();
+  this_or_next_layers_clip_max_ = static_cast<unsigned>(Clip());
   this_or_next_layers_use_content_box_ =
-      Clip() == kContentFillBox || Origin() == kContentFillBox;
+      Clip() == EFillBox::kContent || Origin() == EFillBox::kContent;
   this_or_next_layers_have_local_attachment_ =
-      Attachment() == kLocalBackgroundAttachment;
+      Attachment() == EFillAttachment::kLocal;
   cached_properties_computed_ = true;
 
   if (next_) {
     next_->ComputeCachedPropertiesIfNeeded();
-    this_or_next_layers_clip_max_ = EnclosingFillBox(
-        ThisOrNextLayersClipMax(), next_->ThisOrNextLayersClipMax());
+    this_or_next_layers_clip_max_ = static_cast<unsigned>(EnclosingFillBox(
+        ThisOrNextLayersClipMax(), next_->ThisOrNextLayersClipMax()));
     this_or_next_layers_use_content_box_ |=
         next_->this_or_next_layers_use_content_box_;
     this_or_next_layers_have_local_attachment_ |=
@@ -391,8 +392,10 @@ bool FillLayer::ImageTilesLayer() const {
   // TODO(schenney) We could relax the repeat mode requirement if we also knew
   // the rect we had to fill, and the portion of the image we need to use, and
   // know that the latter covers the former.
-  return (repeat_x_ == kRepeatFill || repeat_x_ == kRoundFill) &&
-         (repeat_y_ == kRepeatFill || repeat_y_ == kRoundFill);
+  return (static_cast<EFillRepeat>(repeat_x_) == EFillRepeat::kRepeatFill ||
+          static_cast<EFillRepeat>(repeat_x_) == EFillRepeat::kRoundFill) &&
+         (static_cast<EFillRepeat>(repeat_y_) == EFillRepeat::kRepeatFill ||
+          static_cast<EFillRepeat>(repeat_y_) == EFillRepeat::kRoundFill);
 }
 
 bool FillLayer::ImageOccludesNextLayers(const Document& document,

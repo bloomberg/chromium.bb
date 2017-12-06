@@ -410,13 +410,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillAttachment e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kScrollBackgroundAttachment:
+    case EFillAttachment::kScroll:
       value_id_ = CSSValueScroll;
       break;
-    case kLocalBackgroundAttachment:
+    case EFillAttachment::kLocal:
       value_id_ = CSSValueLocal;
       break;
-    case kFixedBackgroundAttachment:
+    case EFillAttachment::kFixed:
       value_id_ = CSSValueFixed;
       break;
   }
@@ -426,33 +426,33 @@ template <>
 inline EFillAttachment CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueScroll:
-      return kScrollBackgroundAttachment;
+      return EFillAttachment::kScroll;
     case CSSValueLocal:
-      return kLocalBackgroundAttachment;
+      return EFillAttachment::kLocal;
     case CSSValueFixed:
-      return kFixedBackgroundAttachment;
+      return EFillAttachment::kFixed;
     default:
       break;
   }
 
   NOTREACHED();
-  return kScrollBackgroundAttachment;
+  return EFillAttachment::kScroll;
 }
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillBox e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kBorderFillBox:
+    case EFillBox::kBorder:
       value_id_ = CSSValueBorderBox;
       break;
-    case kPaddingFillBox:
+    case EFillBox::kPadding:
       value_id_ = CSSValuePaddingBox;
       break;
-    case kContentFillBox:
+    case EFillBox::kContent:
       value_id_ = CSSValueContentBox;
       break;
-    case kTextFillBox:
+    case EFillBox::kText:
       value_id_ = CSSValueText;
       break;
   }
@@ -463,37 +463,37 @@ inline EFillBox CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueBorder:
     case CSSValueBorderBox:
-      return kBorderFillBox;
+      return EFillBox::kBorder;
     case CSSValuePadding:
     case CSSValuePaddingBox:
-      return kPaddingFillBox;
+      return EFillBox::kPadding;
     case CSSValueContent:
     case CSSValueContentBox:
-      return kContentFillBox;
+      return EFillBox::kContent;
     case CSSValueText:
-      return kTextFillBox;
+      return EFillBox::kText;
     default:
       break;
   }
 
   NOTREACHED();
-  return kBorderFillBox;
+  return EFillBox::kBorder;
 }
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillRepeat e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kRepeatFill:
+    case EFillRepeat::kRepeatFill:
       value_id_ = CSSValueRepeat;
       break;
-    case kNoRepeatFill:
+    case EFillRepeat::kNoRepeatFill:
       value_id_ = CSSValueNoRepeat;
       break;
-    case kRoundFill:
+    case EFillRepeat::kRoundFill:
       value_id_ = CSSValueRound;
       break;
-    case kSpaceFill:
+    case EFillRepeat::kSpaceFill:
       value_id_ = CSSValueSpace;
       break;
   }
@@ -503,19 +503,19 @@ template <>
 inline EFillRepeat CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueRepeat:
-      return kRepeatFill;
+      return EFillRepeat::kRepeatFill;
     case CSSValueNoRepeat:
-      return kNoRepeatFill;
+      return EFillRepeat::kNoRepeatFill;
     case CSSValueRound:
-      return kRoundFill;
+      return EFillRepeat::kRoundFill;
     case CSSValueSpace:
-      return kSpaceFill;
+      return EFillRepeat::kSpaceFill;
     default:
       break;
   }
 
   NOTREACHED();
-  return kRepeatFill;
+  return EFillRepeat::kRepeatFill;
 }
 
 template <>

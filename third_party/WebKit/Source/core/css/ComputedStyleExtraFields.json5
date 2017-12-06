@@ -224,7 +224,7 @@
       field_template: "external",
       include_paths: ["core/style/FillLayer.h"],
       type_name: "FillLayer",
-      default_value: "FillLayer(kBackgroundFillLayer, true)",
+      default_value: "FillLayer(EFillLayerType::kBackground, true)",
       field_group: "background",
       computed_style_custom_functions: ["getter", "setter"],
     },
@@ -559,7 +559,7 @@
       field_template: "external",
       type_name: "FillLayer",
       field_group: "*",
-      default_value: "FillLayer(kMaskFillLayer, true)",
+      default_value: "FillLayer(EFillLayerType::kMask, true)",
       computed_style_custom_functions: ["getter", "setter"],
     },
     {

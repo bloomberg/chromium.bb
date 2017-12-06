@@ -230,12 +230,12 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
     return false;
   EFillBox background_clip = Style()->BackgroundClip();
   // Background paints under borders.
-  if (background_clip == kBorderFillBox && Style()->HasBorder() &&
+  if (background_clip == EFillBox::kBorder && Style()->HasBorder() &&
       !Style()->BorderObscuresBackground())
     return false;
   // Background shows in padding area.
-  if ((background_clip == kBorderFillBox ||
-       background_clip == kPaddingFillBox) &&
+  if ((background_clip == EFillBox::kBorder ||
+       background_clip == EFillBox::kPadding) &&
       Style()->HasPadding())
     return false;
   // Object-position may leave parts of the content box empty, regardless of the

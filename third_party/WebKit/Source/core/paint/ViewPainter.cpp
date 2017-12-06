@@ -234,10 +234,10 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   BoxModelObjectPainter box_model_painter(layout_view_);
   for (auto it = reversed_paint_list.rbegin(); it != reversed_paint_list.rend();
        ++it) {
-    DCHECK((*it)->Clip() == kBorderFillBox);
+    DCHECK((*it)->Clip() == EFillBox::kBorder);
 
     bool should_paint_in_viewport_space =
-        (*it)->Attachment() == kFixedBackgroundAttachment;
+        (*it)->Attachment() == EFillAttachment::kFixed;
     if (should_paint_in_viewport_space) {
       box_model_painter.PaintFillLayer(
           paint_info, Color(), **it, LayoutRect(LayoutRect::InfiniteIntRect()),

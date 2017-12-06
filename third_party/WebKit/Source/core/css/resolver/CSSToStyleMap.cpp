@@ -61,13 +61,13 @@ void CSSToStyleMap::MapFillAttachment(StyleResolverState&,
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
   switch (identifier_value.GetValueID()) {
     case CSSValueFixed:
-      layer->SetAttachment(kFixedBackgroundAttachment);
+      layer->SetAttachment(EFillAttachment::kFixed);
       break;
     case CSSValueScroll:
-      layer->SetAttachment(kScrollBackgroundAttachment);
+      layer->SetAttachment(EFillAttachment::kScroll);
       break;
     case CSSValueLocal:
-      layer->SetAttachment(kLocalBackgroundAttachment);
+      layer->SetAttachment(EFillAttachment::kLocal);
       break;
     default:
       return;
@@ -142,7 +142,7 @@ void CSSToStyleMap::MapFillImage(StyleResolverState& state,
     return;
   }
 
-  CSSPropertyID property = layer->GetType() == kBackgroundFillLayer
+  CSSPropertyID property = layer->GetType() == EFillLayerType::kBackground
                                ? CSSPropertyBackgroundImage
                                : CSSPropertyWebkitMaskImage;
   layer->SetImage(state.GetStyleImage(property, value));
