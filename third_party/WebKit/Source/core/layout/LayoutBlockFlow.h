@@ -44,7 +44,6 @@
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/line/TrailingObjects.h"
-#include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 
@@ -59,7 +58,11 @@ class LayoutMultiColumnFlowThread;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 class MarginInfo;
+class NGBreakToken;
+class NGConstraintSpace;
+class NGLayoutResult;
 class NGPaintFragment;
+class NGPhysicalFragment;
 
 struct NGInlineNodeData;
 
@@ -460,17 +463,13 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual NGPaintFragment* PaintFragment() const { return nullptr; }
   virtual scoped_refptr<NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
-      NGBreakToken*) const {
-    return nullptr;
-  }
-  virtual scoped_refptr<NGLayoutResult> CachedLayoutResultForTesting() {
-    return nullptr;
-  }
+      NGBreakToken*) const;
+  virtual scoped_refptr<NGLayoutResult> CachedLayoutResultForTesting();
   virtual void SetCachedLayoutResult(const NGConstraintSpace&,
                                      NGBreakToken*,
-                                     scoped_refptr<NGLayoutResult>) {}
+                                     scoped_refptr<NGLayoutResult>);
   virtual void WillCollectInlines() {}
-  virtual void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) {}
+  virtual void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>);
   virtual void ClearPaintFragment() {}
   virtual const NGPhysicalBoxFragment* CurrentFragment() const {
     return nullptr;

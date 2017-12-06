@@ -9,6 +9,7 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/ng_block_node.h"
 
 namespace blink {
 
