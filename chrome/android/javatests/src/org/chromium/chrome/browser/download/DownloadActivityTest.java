@@ -419,7 +419,8 @@ public class DownloadActivityTest {
 
         // Select an image, download item #6.
         toggleItemSelection(2);
-        Intent shareIntent = mUi.createShareIntent();
+        Intent shareIntent = DownloadUtils.createShareIntent(
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
         Assert.assertEquals("Incorrect intent action", Intent.ACTION_SEND, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "image/png", shareIntent.getType());
         Assert.assertNotNull(
@@ -433,7 +434,8 @@ public class DownloadActivityTest {
 
         // Select another image, download item #0.
         toggleItemSelection(9);
-        shareIntent = mUi.createShareIntent();
+        shareIntent = DownloadUtils.createShareIntent(
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
         Assert.assertEquals(
                 "Incorrect intent action", Intent.ACTION_SEND_MULTIPLE, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "image/*", shareIntent.getType());
@@ -446,7 +448,8 @@ public class DownloadActivityTest {
 
         // Select non-image item, download item #4.
         toggleItemSelection(6);
-        shareIntent = mUi.createShareIntent();
+        shareIntent = DownloadUtils.createShareIntent(
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
         Assert.assertEquals(
                 "Incorrect intent action", Intent.ACTION_SEND_MULTIPLE, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());
@@ -459,7 +462,8 @@ public class DownloadActivityTest {
 
         // Select an offline page #3.
         toggleItemSelection(3);
-        shareIntent = mUi.createShareIntent();
+        shareIntent = DownloadUtils.createShareIntent(
+                mUi.getBackendProvider().getSelectionDelegate().getSelectedItems());
         Assert.assertEquals(
                 "Incorrect intent action", Intent.ACTION_SEND_MULTIPLE, shareIntent.getAction());
         Assert.assertEquals("Incorrect intent mime type", "*/*", shareIntent.getType());

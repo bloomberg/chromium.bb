@@ -263,7 +263,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
 
         if (wrapper.hasBeenExternallyRemoved()) {
             sDeletedFileTracker.add(wrapper);
-            wrapper.remove();
+            wrapper.removePermanently();
             mFilePathsToItemsMap.removeItem(wrapper);
             RecordUserAction.record("Android.DownloadManager.Item.ExternallyDeleted");
             return true;
