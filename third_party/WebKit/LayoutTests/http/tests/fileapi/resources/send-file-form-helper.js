@@ -59,7 +59,7 @@
 //   on the web it is distinct when decoding but unified when encoding
 // - ¤ is inside Latin-1 and helps diagnose problems due to
 //   filesystem encoding or locale; again it is a "simple"
-//   substitution case and also ensures
+//   substitution case
 // - ≈ is inside IBM437 and helps diagnose problems due to filesystem
 //   encoding or locale
 // - ¥‾ are inside a single-byte range of ISO-2022-JP and help
@@ -93,9 +93,6 @@ const kTestFallbackWindows1252 =
 const kTestFallbackXUserDefined =
       kTestChars.replace(/[^\0-\x7F]/gu, x => `&#${x.codePointAt(0)};`);
 
-// Web server hosting helper CGI
-const kWebServer = 'http://127.0.0.1:8000';
-
 // formPostFileUploadTest - verifies multipart upload structure and
 // numeric character reference replacement for filenames, field names,
 // and field values.
@@ -106,12 +103,6 @@ const kWebServer = 'http://127.0.0.1:8000';
 // UTF-8-compatible byte sequences appear in the formEncoding-encoded
 // uploaded data.
 //
-// Uses eventSender.beginDragWithFiles and related methods to upload
-// using drag-n-drop because that is currently the only file upload
-// mechanism available to Blink layout tests, likely leading to the
-// observed renderer crashes on POSIX-like systems using non-UTF-8
-// locales.
-//
 // Fields in the parameter object:
 //
 // - fileNameSource: purely explanatory and gives a clue about which
@@ -119,7 +110,7 @@ const kWebServer = 'http://127.0.0.1:8000';
 //   the fileBaseName, or Unicode if no smaller-than-Unicode source
 //   contains all the characters. Used in the test name.
 // - fileBaseName: the not-necessarily-just-7-bit-ASCII file basename
-//   for the test file. Used in the test name.
+//   used for the constructed test file. Used in the test name.
 // - formEncoding: the acceptCharset of the form used to submit the
 //   test file. Used in the test name.
 // - expectedEncodedBaseName: the expected formEncoding-encoded
@@ -127,12 +118,6 @@ const kWebServer = 'http://127.0.0.1:8000';
 //   numeric character references and non-7-bit-ASCII bytes seen
 //   through UTF-8 goggles; subsequences not interpretable as UTF-8
 //   have each byte represented here by \uFFFD REPLACEMENT CHARACTER.
-//
-// NOTE: This does not correctly account for varying representation of
-// combining characters across platforms and filesystems due to
-// Unicode normalization or similar platform-specific normalization
-// rules. For that reason none of the tests exercise such characters
-// or character sequences.
 const formPostFileUploadTest = ({
   fileNameSource,
   fileBaseName,
@@ -144,35 +129,30 @@ const formPostFileUploadTest = ({
     if (document.readyState !== 'complete') {
       await new Promise(resolve => addEventListener('load', resolve));
     }
-    assert_own_property(
-        window,
-        'eventSender',
-        'This test relies on eventSender.beginDragWithFiles');
 
     const formTargetFrame = Object.assign(document.createElement('iframe'), {
       name: 'formtargetframe',
     });
-    document.body.prepend(formTargetFrame);
+    document.body.append(formTargetFrame);
     testCase.add_cleanup(() => {
       document.body.removeChild(formTargetFrame);
     });
 
     const form = Object.assign(document.createElement('form'), {
       acceptCharset: formEncoding,
-      action: `${kWebServer}/xmlhttprequest/resources/post-echo.cgi`,
+      action: '/xmlhttprequest/resources/post-echo.cgi',
       method: 'POST',
       enctype: 'multipart/form-data',
       target: formTargetFrame.name,
     });
-    // This element must be at the top of the viewport so it can be dragged to.
-    document.body.prepend(form);
+    document.body.append(form);
     testCase.add_cleanup(() => {
       document.body.removeChild(form);
     });
 
     // Used to verify that the browser agrees with the test about
     // which form charset is used.
-    form.appendChild(Object.assign(document.createElement('input'), {
+    form.append(Object.assign(document.createElement('input'), {
       type: 'hidden',
       name: '_charset_',
     }));
@@ -180,7 +160,7 @@ const formPostFileUploadTest = ({
     // Used to verify that the browser agrees with the test about
     // field value replacement and encoding independently of file system
     // idiosyncracies.
-    form.appendChild(Object.assign(document.createElement('input'), {
+    form.append(Object.assign(document.createElement('input'), {
       type: 'hidden',
       name: 'filename',
       value: fileBaseName,
@@ -188,7 +168,7 @@ const formPostFileUploadTest = ({
 
     // Same, but with name and value reversed to ensure field names
     // get the same treatment.
-    form.appendChild(Object.assign(document.createElement('input'), {
+    form.append(Object.assign(document.createElement('input'), {
       type: 'hidden',
       name: fileBaseName,
       value: 'filename',
@@ -198,35 +178,27 @@ const formPostFileUploadTest = ({
       type: 'file',
       name: 'file',
     });
-    form.appendChild(fileInput);
+    form.append(fileInput);
 
-    const fileToDrop = `resources/${fileBaseName}`;
     // Removes c:\fakepath\ or other pseudofolder and returns just the
     // final component of filePath; allows both / and \ as segment
     // delimiters.
     const baseNameOfFilePath = filePath => filePath.split(/[\/\\]/).pop();
-    fileInput.onchange = event => {
-      assert_equals(
-          fileInput.files[0].name,
-          fileBaseName,
-          `Dropped file should be ${fileBaseName}`);
+    await new Promise(resolve => {
+      const dataTransfer = new DataTransfer;
+      dataTransfer.items.add(
+          new File([kTestChars], fileBaseName, {type: 'text/plain'}));
+      fileInput.files = dataTransfer.files;
       // For historical reasons .value will be prefixed with
-      // c:\fakepath\, but the basename should match the dropped file
-      // name exposed through the newer .files[0].name API. This check
+      // c:\fakepath\, but the basename should match the file name
+      // exposed through the newer .files[0].name API. This check
       // verifies that assumption.
       assert_equals(
           fileInput.files[0].name,
           baseNameOfFilePath(fileInput.value),
           `The basename of the field's value should match its files[0].name`);
       form.submit();
-    };
-    await new Promise(resolve => {
       formTargetFrame.onload = resolve;
-      eventSender.beginDragWithFiles([fileToDrop]);
-      const centerX = fileInput.offsetLeft + fileInput.offsetWidth / 2;
-      const centerY = fileInput.offsetTop + fileInput.offsetHeight / 2;
-      eventSender.mouseMoveTo(centerX, centerY);
-      eventSender.mouseUp();
     });
 
     const formDataText = formTargetFrame.contentDocument.body.textContent;
@@ -237,14 +209,14 @@ const formPostFileUploadTest = ({
     assert_greater_than(
         formDataLines.length,
         2,
-        `${fileToDrop}: multipart form data must have at least 3 lines: ${
+        `${fileBaseName}: multipart form data must have at least 3 lines: ${
              JSON.stringify(formDataText)
            }`);
     const boundary = formDataLines[0];
     assert_equals(
         formDataLines[formDataLines.length - 1],
         boundary + '--',
-        `${fileToDrop}: multipart form data must end with ${boundary}--: ${
+        `${fileBaseName}: multipart form data must end with ${boundary}--: ${
              JSON.stringify(formDataText)
            }`);
     const expectedText = [
