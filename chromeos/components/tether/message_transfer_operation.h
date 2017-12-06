@@ -33,10 +33,10 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
 
   // BleConnectionManager::Observer:
   void OnSecureChannelStatusChanged(
-      const cryptauth::RemoteDevice& remote_device,
+      const std::string& device_id,
       const cryptauth::SecureChannel::Status& old_status,
       const cryptauth::SecureChannel::Status& new_status) override;
-  void OnMessageReceived(const cryptauth::RemoteDevice& remote_device,
+  void OnMessageReceived(const std::string& device_id,
                          const std::string& payload) override;
   void OnMessageSent(int sequence_number) override {}
 
@@ -104,6 +104,7 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   void StopTimerForDeviceIfRunning(
       const cryptauth::RemoteDevice& remote_device);
   void OnTimeout(const cryptauth::RemoteDevice& remote_device);
+  cryptauth::RemoteDevice* GetRemoteDevice(const std::string& device_id);
 
   std::vector<cryptauth::RemoteDevice> remote_devices_;
   BleConnectionManager* connection_manager_;

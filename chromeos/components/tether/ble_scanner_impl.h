@@ -30,6 +30,7 @@ namespace chromeos {
 namespace tether {
 
 class BleSynchronizerBase;
+class TetherHostFetcher;
 
 // Concrete BleScanner implementation.
 class BleScannerImpl : public BleScanner,
@@ -40,7 +41,8 @@ class BleScannerImpl : public BleScanner,
     static std::unique_ptr<BleScanner> NewInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-        BleSynchronizerBase* ble_synchronizer);
+        BleSynchronizerBase* ble_synchronizer,
+        TetherHostFetcher* tether_host_fetcher);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -48,7 +50,8 @@ class BleScannerImpl : public BleScanner,
     virtual std::unique_ptr<BleScanner> BuildInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-        BleSynchronizerBase* ble_synchronizer);
+        BleSynchronizerBase* ble_synchronizer,
+        TetherHostFetcher* tether_host_fetcher);
 
    private:
     static Factory* factory_instance_;
@@ -56,14 +59,13 @@ class BleScannerImpl : public BleScanner,
 
   BleScannerImpl(scoped_refptr<device::BluetoothAdapter> adapter,
                  cryptauth::LocalDeviceDataProvider* local_device_data_provider,
-                 BleSynchronizerBase* ble_synchronizer);
+                 BleSynchronizerBase* ble_synchronizer,
+                 TetherHostFetcher* tether_host_fetcher);
   ~BleScannerImpl() override;
 
   // BleScanner:
-  bool RegisterScanFilterForDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
-  bool UnregisterScanFilterForDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
+  bool RegisterScanFilterForDevice(const std::string& device_id) override;
+  bool UnregisterScanFilterForDevice(const std::string& device_id) override;
   bool ShouldDiscoverySessionBeActive() override;
   bool IsDiscoverySessionActive() override;
 
@@ -118,18 +120,23 @@ class BleScannerImpl : public BleScanner,
 
   void HandleDeviceUpdated(device::BluetoothDevice* bluetooth_device);
   void CheckForMatchingScanFilters(device::BluetoothDevice* bluetooth_device,
-                                   std::string& service_data);
+                                   const std::string& service_data);
+  void OnIdentifiedHostFetched(
+      device::BluetoothDevice* bluetooth_device,
+      const std::string& device_id,
+      std::unique_ptr<cryptauth::RemoteDevice> identified_device);
 
   void ScheduleStatusChangeNotification(bool discovery_session_active);
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
   BleSynchronizerBase* ble_synchronizer_;
+  TetherHostFetcher* tether_host_fetcher_;
 
   std::unique_ptr<ServiceDataProvider> service_data_provider_;
   std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
 
-  std::vector<cryptauth::RemoteDevice> registered_remote_devices_;
+  std::vector<std::string> registered_remote_device_ids_;
 
   bool is_initializing_discovery_session_ = false;
   bool is_stopping_discovery_session_ = false;

@@ -29,8 +29,8 @@ class FakeBleScanner : public BleScanner {
   FakeBleScanner(bool automatically_update_discovery_session);
   ~FakeBleScanner() override;
 
-  const std::vector<cryptauth::RemoteDevice>& registered_devices() {
-    return registered_devices_;
+  const std::vector<std::string>& registered_device_ids() {
+    return registered_device_ids_;
   }
 
   void set_should_fail_to_register(bool should_fail_to_register) {
@@ -47,10 +47,8 @@ class FakeBleScanner : public BleScanner {
   void NotifyDiscoverySessionStateChanged(bool discovery_session_active);
 
   // BleScanner:
-  bool RegisterScanFilterForDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
-  bool UnregisterScanFilterForDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
+  bool RegisterScanFilterForDevice(const std::string& device_id) override;
+  bool UnregisterScanFilterForDevice(const std::string& device_id) override;
   bool ShouldDiscoverySessionBeActive() override;
   bool IsDiscoverySessionActive() override;
 
@@ -59,7 +57,7 @@ class FakeBleScanner : public BleScanner {
 
   bool should_fail_to_register_ = false;
   bool is_discovery_session_active_ = false;
-  std::vector<cryptauth::RemoteDevice> registered_devices_;
+  std::vector<std::string> registered_device_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBleScanner);
 };

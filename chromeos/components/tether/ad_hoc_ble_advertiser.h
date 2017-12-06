@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
 
@@ -40,8 +39,7 @@ class AdHocBleAdvertiser {
   // Requests that |remote_device| add GATT services. This should only be called
   // when the device has a stale advertisement with no GATT services. See
   // crbug.com/784968.
-  virtual void RequestGattServicesForDevice(
-      const cryptauth::RemoteDevice& remote_device) = 0;
+  virtual void RequestGattServicesForDevice(const std::string& device_id) = 0;
 
   // Returns whether there are any pending requests for GATT services.
   virtual bool HasPendingRequests() = 0;

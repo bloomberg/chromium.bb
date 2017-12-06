@@ -157,8 +157,8 @@ class HostScannerOperationTest : public testing::Test {
     std::vector<FakeBleConnectionManager::SentMessage>& sent_messages =
         fake_ble_connection_manager_->sent_messages();
     ASSERT_EQ(expected_num_messages_sent, sent_messages.size());
-    EXPECT_EQ(remote_device,
-              sent_messages[expected_num_messages_sent - 1].remote_device);
+    EXPECT_EQ(remote_device.GetDeviceId(),
+              sent_messages[expected_num_messages_sent - 1].device_id);
     EXPECT_EQ(tether_availability_request_string_,
               sent_messages[expected_num_messages_sent - 1].message);
   }
@@ -174,8 +174,8 @@ class HostScannerOperationTest : public testing::Test {
     test_clock_->Advance(kTetherAvailabilityResponseTime);
 
     fake_ble_connection_manager_->ReceiveMessage(
-        remote_device, CreateTetherAvailabilityResponseString(
-                           response_code, cell_provider_name));
+        remote_device.GetDeviceId(), CreateTetherAvailabilityResponseString(
+                                         response_code, cell_provider_name));
 
     bool tether_available =
         response_code ==
@@ -350,17 +350,23 @@ TEST_F(HostScannerOperationTest, TestMultipleDevices) {
 
   // Simulate device 1 failing to connect.
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1], cryptauth::SecureChannel::Status::CONNECTING);
+      test_devices_[1].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1], cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_devices_[1].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1], cryptauth::SecureChannel::Status::CONNECTING);
+      test_devices_[1].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1], cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_devices_[1].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1], cryptauth::SecureChannel::Status::CONNECTING);
+      test_devices_[1].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[1], cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_devices_[1].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
 
   // The scan should still not be over, and no new scan results should have
   // come in.
@@ -369,17 +375,23 @@ TEST_F(HostScannerOperationTest, TestMultipleDevices) {
 
   // Simulate device 3 failing to connect.
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::CONNECTING);
+      test_devices_[3].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_devices_[3].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::CONNECTING);
+      test_devices_[3].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_devices_[3].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::CONNECTING);
+      test_devices_[3].GetDeviceId(),
+      cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_devices_[3].GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
 
   // The scan should still not be over, and no new scan results should have
   // come in.

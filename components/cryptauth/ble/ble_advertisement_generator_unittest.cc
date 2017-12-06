@@ -51,7 +51,8 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
     mock_seed_fetcher_ = base::MakeUnique<MockRemoteBeaconSeedFetcher>();
     std::vector<BeaconSeed> device_0_beacon_seeds =
         CreateFakeBeaconSeedsForDevice(fake_device_);
-    mock_seed_fetcher_->SetSeedsForDevice(fake_device_, &device_0_beacon_seeds);
+    mock_seed_fetcher_->SetSeedsForDeviceId(fake_device_.GetDeviceId(),
+                                            &device_0_beacon_seeds);
 
     mock_local_data_provider_ = base::MakeUnique<MockLocalDeviceDataProvider>();
     mock_local_data_provider_->SetPublicKey(
@@ -68,7 +69,7 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
 
   std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisement() {
     return generator_->GenerateBleAdvertisementInternal(
-        fake_device_, mock_local_data_provider_.get(),
+        fake_device_.GetDeviceId(), mock_local_data_provider_.get(),
         mock_seed_fetcher_.get());
   }
 
@@ -97,13 +98,14 @@ TEST_F(CryptAuthBleAdvertisementGeneratorTest, EmptyPublicKey) {
 }
 
 TEST_F(CryptAuthBleAdvertisementGeneratorTest, NoBeaconSeeds) {
-  mock_seed_fetcher_->SetSeedsForDevice(fake_device_, nullptr);
+  mock_seed_fetcher_->SetSeedsForDeviceId(fake_device_.GetDeviceId(), nullptr);
   EXPECT_EQ(nullptr, GenerateBleAdvertisement());
 }
 
 TEST_F(CryptAuthBleAdvertisementGeneratorTest, EmptyBeaconSeeds) {
   std::vector<BeaconSeed> empty_seeds;
-  mock_seed_fetcher_->SetSeedsForDevice(fake_device_, &empty_seeds);
+  mock_seed_fetcher_->SetSeedsForDeviceId(fake_device_.GetDeviceId(),
+                                          &empty_seeds);
   EXPECT_EQ(nullptr, GenerateBleAdvertisement());
 }
 

@@ -14,7 +14,6 @@
 namespace cryptauth {
 
 class BeaconSeed;
-struct RemoteDevice;
 
 // Mock class for ForegroundEidGenerator. Note that GoogleMock cannot be used to
 // mock this class because GoogleMock's mock functions cannot return a
@@ -39,8 +38,8 @@ class MockForegroundEidGenerator : public ForegroundEidGenerator {
     possible_advertisements_ = std::move(possible_advertisements);
   }
 
-  void set_identified_device(const RemoteDevice* identified_device) {
-    identified_device_ = identified_device;
+  void set_identified_device_id(const std::string& identified_device_id) {
+    identified_device_id_ = identified_device_id;
   }
 
   // ForegroundEidGenerator:
@@ -55,9 +54,9 @@ class MockForegroundEidGenerator : public ForegroundEidGenerator {
       const std::string& advertising_device_public_key,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
       const override;
-  RemoteDevice const* IdentifyRemoteDeviceByAdvertisement(
+  std::string IdentifyRemoteDeviceByAdvertisement(
       const std::string& advertisement_service_data,
-      const std::vector<RemoteDevice>& device_list,
+      const std::vector<std::string>& device_id_list,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds)
       const override;
 
@@ -67,7 +66,7 @@ class MockForegroundEidGenerator : public ForegroundEidGenerator {
   std::unique_ptr<EidData> background_scan_filter_;
   std::unique_ptr<DataWithTimestamp> advertisement_;
   std::unique_ptr<std::vector<std::string>> possible_advertisements_;
-  const RemoteDevice* identified_device_;
+  std::string identified_device_id_;
 
   int num_identify_calls_;
 };

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "components/cryptauth/foreground_eid_generator.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
 namespace tether {
@@ -26,11 +25,11 @@ class RemoteBeaconSeedFetcher;
 // Generates advertisements for the ProximityAuth BLE advertisement scheme.
 class BleAdvertisementGenerator {
  public:
-  // Generates an advertisement from the current device to |remote_device|. The
-  // generated advertisement should be used immediately since it is based on
-  // the current timestamp.
+  // Generates an advertisement from the current device to the device with ID
+  // |device_id|. The generated advertisement should be used immediately since
+  // it is based on the current timestamp.
   static std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisement(
-      const RemoteDevice& remote_device,
+      const std::string& device_id,
       LocalDeviceDataProvider* local_device_data_provider,
       RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
 
@@ -40,7 +39,7 @@ class BleAdvertisementGenerator {
   BleAdvertisementGenerator();
 
   virtual std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisementInternal(
-      const RemoteDevice& remote_device,
+      const std::string& device_id,
       LocalDeviceDataProvider* local_device_data_provider,
       RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher);
 

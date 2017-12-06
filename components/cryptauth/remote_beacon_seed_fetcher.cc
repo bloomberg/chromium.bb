@@ -5,6 +5,7 @@
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
 
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/remote_device.h"
 
 namespace cryptauth {
 
@@ -14,15 +15,11 @@ RemoteBeaconSeedFetcher::RemoteBeaconSeedFetcher(
 
 RemoteBeaconSeedFetcher::~RemoteBeaconSeedFetcher() {}
 
-bool RemoteBeaconSeedFetcher::FetchSeedsForDevice(
-    const RemoteDevice& remote_device,
+bool RemoteBeaconSeedFetcher::FetchSeedsForDeviceId(
+    const std::string& device_id,
     std::vector<BeaconSeed>* beacon_seeds_out) const {
-  if (remote_device.public_key.empty()) {
-    return false;
-  }
-
   for(const auto& device_info : device_manager_->GetSyncedDevices()) {
-    if (device_info.public_key() == remote_device.public_key) {
+    if (RemoteDevice::GenerateDeviceId(device_info.public_key()) == device_id) {
       if (device_info.beacon_seeds_size() == 0) {
         return false;
       }

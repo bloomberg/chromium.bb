@@ -30,13 +30,11 @@ class BleAdvertiser {
   // Starts advertising to |remote_device| by generating a device-specific EID
   // and setting it as the service data for the advertisement. Returns whether
   // the advertisement could be generated.
-  virtual bool StartAdvertisingToDevice(
-      const cryptauth::RemoteDevice& remote_device) = 0;
+  virtual bool StartAdvertisingToDevice(const std::string& device_id) = 0;
 
   // Stops advertising to |remote_device|. Returns whether the advertising was
   // stopped successfully.
-  virtual bool StopAdvertisingToDevice(
-      const cryptauth::RemoteDevice& remote_device) = 0;
+  virtual bool StopAdvertisingToDevice(const std::string& device_id) = 0;
 
   // Returns whether there is currently an advertisement registered. Note that
   // registering and unregistering advertisements are asynchronous operations,

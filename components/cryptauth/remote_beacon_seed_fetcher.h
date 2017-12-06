@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace cryptauth {
 
@@ -24,8 +23,8 @@ class RemoteBeaconSeedFetcher {
   RemoteBeaconSeedFetcher(const CryptAuthDeviceManager* device_manager);
   virtual ~RemoteBeaconSeedFetcher();
 
-  virtual bool FetchSeedsForDevice(
-      const RemoteDevice& remote_device,
+  virtual bool FetchSeedsForDeviceId(
+      const std::string& device_id,
       std::vector<BeaconSeed>* beacon_seeds_out) const;
 
  private:

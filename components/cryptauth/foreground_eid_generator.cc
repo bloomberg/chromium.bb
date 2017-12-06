@@ -112,9 +112,9 @@ ForegroundEidGenerator::GenerateAdvertisement(
                                timestamps->current_period_end_timestamp_ms);
 }
 
-RemoteDevice const* ForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
+std::string ForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
     const std::string& advertisement_service_data,
-    const std::vector<RemoteDevice>& device_list,
+    const std::vector<std::string>& device_ids,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   // Resize the service data to analyze only the first |2 * kNumBytesInEidValue|
   // bytes. The bytes following these are flags, so they are not needed to
@@ -122,18 +122,18 @@ RemoteDevice const* ForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
   std::string service_data_without_flags = advertisement_service_data;
   service_data_without_flags.resize(2 * RawEidGenerator::kNumBytesInEidValue);
 
-  for (const auto& remote_device : device_list) {
+  for (const auto& device_id : device_ids) {
     std::vector<std::string> possible_advertisements =
-        GeneratePossibleAdvertisements(remote_device.public_key,
+        GeneratePossibleAdvertisements(RemoteDevice::DerivePublicKey(device_id),
                                        scanning_device_beacon_seeds);
     for (const auto& possible_advertisement : possible_advertisements) {
       if (service_data_without_flags == possible_advertisement) {
-        return const_cast<RemoteDevice*>(&remote_device);
+        return device_id;
       }
     }
   }
 
-  return nullptr;
+  return std::string();
 }
 
 std::vector<std::string> ForegroundEidGenerator::GeneratePossibleAdvertisements(

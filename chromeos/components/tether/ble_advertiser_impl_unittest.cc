@@ -203,7 +203,8 @@ class BleAdvertiserImplTest : public testing::Test {
 
 TEST_F(BleAdvertiserImplTest, CannotGenerateAdvertisement) {
   fake_generator_->set_advertisement(nullptr);
-  EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
@@ -212,14 +213,16 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully) {
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
 
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
   EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Now, unregister.
-  EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(
+      ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0].GetDeviceId()));
   EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
 
   // The advertisement should have been stopped, but it should not yet have
@@ -241,7 +244,8 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   // Register device 0.
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
   EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
@@ -250,14 +254,16 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   // Register device 1.
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[1]));
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[1]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[1].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(2u, fake_advertisement_factory_->active_advertisements().size());
   EXPECT_TRUE(ble_advertiser_->AreAdvertisementsRegistered());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Unregister device 0.
-  EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(
+      ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->active_advertisements().size());
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[0].GetDeviceId());
@@ -266,7 +272,8 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 
   // Unregister device 1.
-  EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[1]));
+  EXPECT_TRUE(
+      ble_advertiser_->StopAdvertisingToDevice(fake_devices_[1].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[1].GetDeviceId());
@@ -282,28 +289,33 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
   // Register device 0.
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
 
   // Register device 1.
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[1]));
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[1]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[1].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(2u, fake_advertisement_factory_->active_advertisements().size());
 
   // Register device 2. This should fail, since it is over the limit.
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[2]));
-  EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[2]));
+  EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[2].GetDeviceId()));
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(2u, fake_advertisement_factory_->active_advertisements().size());
 
   // Now, stop advertising to device 1. It should now be possible to advertise
   // to device 2.
-  EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[1]));
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[2]));
+  EXPECT_TRUE(
+      ble_advertiser_->StopAdvertisingToDevice(fake_devices_[1].GetDeviceId()));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[2].GetDeviceId()));
 
   // However, the advertisement for device 1 should still be present, and no new
   // advertisement for device 2 should have yet been created.
@@ -345,12 +357,14 @@ TEST_F(BleAdvertiserImplTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
 
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
 
   // Unregister, but do not invoke the stop callback.
-  EXPECT_TRUE(ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(
+      ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0].GetDeviceId()));
   VerifyAdvertisementHasBeenStopped(0u /* index */,
                                     fake_devices_[0].GetDeviceId());
 
@@ -359,7 +373,8 @@ TEST_F(BleAdvertiserImplTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
   // have been created yet.
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
-  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
+  EXPECT_TRUE(ble_advertiser_->StartAdvertisingToDevice(
+      fake_devices_[0].GetDeviceId()));
   EXPECT_EQ(1u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
 
@@ -385,8 +400,8 @@ TEST_F(BleAdvertiserImplTest, ObserverDeletesObjectWhenNotified) {
 
   fake_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
-  ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]);
-  ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]);
+  ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0].GetDeviceId());
+  ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0].GetDeviceId());
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[0].GetDeviceId());
   test_task_runner_->RunUntilIdle();

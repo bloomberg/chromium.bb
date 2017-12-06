@@ -8,6 +8,7 @@
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -43,27 +44,26 @@ AdHocBleAdvertiserImpl::AdHocBleAdvertiserImpl(
 AdHocBleAdvertiserImpl::~AdHocBleAdvertiserImpl() {}
 
 void AdHocBleAdvertiserImpl::RequestGattServicesForDevice(
-    const cryptauth::RemoteDevice& remote_device) {
-  const std::string device_id = remote_device.GetDeviceId();
-
+    const std::string& device_id) {
   // If an advertisement to that device is already in progress, there is nothing
   // to do.
   if (device_id_to_advertisement_with_timer_map_.find(device_id) !=
       device_id_to_advertisement_with_timer_map_.end()) {
     PA_LOG(INFO) << "Advertisement already in progress to device with ID \""
-                 << remote_device.GetTruncatedDeviceIdForLogs() << "\".";
+                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                 << "\".";
     return;
   }
 
-  // Generate a new advertisement to |remote_device|.
+  // Generate a new advertisement to device with ID |device_id|.
   std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
       cryptauth::BleAdvertisementGenerator::GenerateBleAdvertisement(
-          remote_device, local_device_data_provider_,
-          remote_beacon_seed_fetcher_);
+          device_id, local_device_data_provider_, remote_beacon_seed_fetcher_);
   if (!service_data) {
     PA_LOG(WARNING) << "Cannot generate advertisement for device with ID \""
-                    << remote_device.GetTruncatedDeviceIdForLogs() << "\"; "
-                    << "GATT services cannot be requested.";
+                    << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                           device_id)
+                    << "\"; GATT services cannot be requested.";
     return;
   }
 
@@ -72,8 +72,8 @@ void AdHocBleAdvertiserImpl::RequestGattServicesForDevice(
           device_id, std::move(service_data), ble_synchronizer_);
 
   PA_LOG(INFO) << "Requesting GATT services for device with ID \""
-               << remote_device.GetTruncatedDeviceIdForLogs() << "\" by "
-               << "creating a new advertisement to that device.";
+               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << "\" by creating a new advertisement to that device.";
 
   std::unique_ptr<base::Timer> timer = timer_factory_->CreateOneShotTimer();
   timer->Start(FROM_HERE, base::TimeDelta::FromSeconds(kNumSecondsToAdvertise),

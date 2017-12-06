@@ -53,9 +53,9 @@ const std::string kFourthSeed = "fourthSeed";
 
 const std::string kDefaultAdvertisingDevicePublicKey = "publicKey";
 
-static BeaconSeed CreateBeaconSeed(const std::string& data,
-                                   const int64_t start_timestamp_ms,
-                                   const int64_t end_timestamp_ms) {
+BeaconSeed CreateBeaconSeed(const std::string& data,
+                            int64_t start_timestamp_ms,
+                            int64_t end_timestamp_ms) {
   BeaconSeed seed;
   seed.set_data(data);
   seed.set_start_time_millis(start_timestamp_ms);
@@ -63,10 +63,9 @@ static BeaconSeed CreateBeaconSeed(const std::string& data,
   return seed;
 }
 
-static std::string GenerateFakeEidData(
-    const std::string& eid_seed,
-    const int64_t start_of_period_timestamp_ms,
-    const std::string* extra_entropy) {
+std::string GenerateFakeEidData(const std::string& eid_seed,
+                                int64_t start_of_period_timestamp_ms,
+                                const std::string* extra_entropy) {
   std::hash<std::string> string_hash;
   int64_t seed_hash = string_hash(eid_seed);
   int64_t extra_hash = extra_entropy ? string_hash(*extra_entropy) : 0;
@@ -79,9 +78,9 @@ static std::string GenerateFakeEidData(
   return fake_data;
 }
 
-static std::string GenerateFakeAdvertisement(
+std::string GenerateFakeAdvertisement(
     const std::string& scanning_device_eid_seed,
-    const int64_t start_of_period_timestamp_ms,
+    int64_t start_of_period_timestamp_ms,
     const std::string& advertising_device_public_key) {
   std::string fake_scanning_eid = GenerateFakeEidData(
       scanning_device_eid_seed, start_of_period_timestamp_ms, nullptr);
@@ -94,11 +93,6 @@ static std::string GenerateFakeAdvertisement(
   return fake_advertisement;
 }
 
-static RemoteDevice CreateRemoteDevice(const std::string& public_key) {
-  RemoteDevice remote_device;
-  remote_device.public_key = public_key;
-  return remote_device;
-}
 }  //  namespace
 
 class CryptAuthForegroundEidGeneratorTest : public testing::Test {
@@ -533,11 +527,11 @@ TEST_F(CryptAuthForegroundEidGeneratorTest, IdentifyRemoteDevice_NoDevices) {
       GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                 kDefaultAdvertisingDevicePublicKey);
 
-  std::vector<RemoteDevice> device_list;
-  const RemoteDevice* identified_device =
+  std::vector<std::string> device_id_list;
+  const std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_FALSE(identified_device);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_TRUE(identified_device_id.empty());
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -548,13 +542,13 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
       GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                 kDefaultAdvertisingDevicePublicKey);
 
-  RemoteDevice correct_device =
-      CreateRemoteDevice(kDefaultAdvertisingDevicePublicKey);
-  std::vector<RemoteDevice> device_list = {correct_device};
-  const RemoteDevice* identified_device =
+  std::string device_id =
+      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+  std::vector<std::string> device_id_list = {device_id};
+  std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_EQ(correct_device.public_key, identified_device->public_key);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_EQ(device_id, identified_device_id);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -570,13 +564,13 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   service_data.append(
       1, static_cast<char>(ForegroundEidGenerator::kBluetooth4Flag));
 
-  RemoteDevice correct_device =
-      CreateRemoteDevice(kDefaultAdvertisingDevicePublicKey);
-  std::vector<RemoteDevice> device_list = {correct_device};
-  const RemoteDevice* identified_device =
+  std::string device_id =
+      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+  std::vector<std::string> device_id_list = {device_id};
+  std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_EQ(correct_device.public_key, identified_device->public_key);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_EQ(device_id, identified_device_id);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -591,13 +585,13 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   // after the first 4 bytes.
   service_data.append("extra_flag_bytes");
 
-  RemoteDevice correct_device =
-      CreateRemoteDevice(kDefaultAdvertisingDevicePublicKey);
-  std::vector<RemoteDevice> device_list = {correct_device};
-  const RemoteDevice* identified_device =
+  std::string device_id =
+      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+  std::vector<std::string> device_id_list = {device_id};
+  std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_EQ(correct_device.public_key, identified_device->public_key);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_EQ(device_id, identified_device_id);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -608,12 +602,11 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
       GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                 kDefaultAdvertisingDevicePublicKey);
 
-  RemoteDevice wrong_device = CreateRemoteDevice("wrongPublicKey");
-  std::vector<RemoteDevice> device_list = {wrong_device};
-  const RemoteDevice* identified_device =
+  std::vector<std::string> device_id_list = {"wrongDeviceId"};
+  std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_FALSE(identified_device);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_TRUE(identified_device_id.empty());
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -624,14 +617,13 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
       GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                 kDefaultAdvertisingDevicePublicKey);
 
-  RemoteDevice correct_device =
-      CreateRemoteDevice(kDefaultAdvertisingDevicePublicKey);
-  RemoteDevice wrong_device = CreateRemoteDevice("wrongPublicKey");
-  std::vector<RemoteDevice> device_list = {correct_device, wrong_device};
-  const RemoteDevice* identified_device =
+  std::string device_id =
+      RemoteDevice::GenerateDeviceId(kDefaultAdvertisingDevicePublicKey);
+  std::vector<std::string> device_id_list = {device_id, "wrongDeviceId"};
+  std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_EQ(correct_device.public_key, identified_device->public_key);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_EQ(device_id, identified_device_id);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -642,12 +634,11 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
       GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                 kDefaultAdvertisingDevicePublicKey);
 
-  RemoteDevice wrong_device = CreateRemoteDevice("wrongPublicKey");
-  std::vector<RemoteDevice> device_list = {wrong_device, wrong_device};
-  const RemoteDevice* identified_device =
+  std::vector<std::string> device_id_list = {"wrongDeviceId", "wrongDeviceId"};
+  std::string identified_device_id =
       eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-          service_data, device_list, scanning_device_beacon_seeds_);
-  EXPECT_FALSE(identified_device);
+          service_data, device_id_list, scanning_device_beacon_seeds_);
+  EXPECT_TRUE(identified_device_id.empty());
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest, DataWithTimestamp_ContainsTime) {

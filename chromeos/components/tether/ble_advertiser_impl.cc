@@ -9,6 +9,7 @@
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
@@ -64,8 +65,7 @@ BleAdvertiserImpl::BleAdvertiserImpl(
 
 BleAdvertiserImpl::~BleAdvertiserImpl() = default;
 
-bool BleAdvertiserImpl::StartAdvertisingToDevice(
-    const cryptauth::RemoteDevice& remote_device) {
+bool BleAdvertiserImpl::StartAdvertisingToDevice(const std::string& device_id) {
   int index_for_device = -1;
   for (size_t i = 0; i < kMaxConcurrentAdvertisements; ++i) {
     if (!registered_device_metadata_[i]) {
@@ -82,26 +82,25 @@ bool BleAdvertiserImpl::StartAdvertisingToDevice(
 
   std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
       cryptauth::BleAdvertisementGenerator::GenerateBleAdvertisement(
-          remote_device, local_device_data_provider_,
-          remote_beacon_seed_fetcher_);
+          device_id, local_device_data_provider_, remote_beacon_seed_fetcher_);
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
-                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
-                    << "Cannot advertise.";
+                    << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                           device_id)
+                    << ". Cannot advertise.";
     return false;
   }
 
-  registered_device_metadata_[index_for_device].reset(new AdvertisementMetadata(
-      remote_device.GetDeviceId(), std::move(service_data)));
+  registered_device_metadata_[index_for_device].reset(
+      new AdvertisementMetadata(device_id, std::move(service_data)));
   UpdateAdvertisements();
 
   return true;
 }
 
-bool BleAdvertiserImpl::StopAdvertisingToDevice(
-    const cryptauth::RemoteDevice& remote_device) {
+bool BleAdvertiserImpl::StopAdvertisingToDevice(const std::string& device_id) {
   for (auto& metadata : registered_device_metadata_) {
-    if (metadata && metadata->device_id == remote_device.GetDeviceId()) {
+    if (metadata && metadata->device_id == device_id) {
       metadata.reset();
       UpdateAdvertisements();
       return true;

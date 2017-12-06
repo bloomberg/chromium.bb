@@ -23,17 +23,16 @@ void FakeBleAdvertiser::NotifyAllAdvertisementsUnregistered() {
   BleAdvertiser::NotifyAllAdvertisementsUnregistered();
 }
 
-bool FakeBleAdvertiser::StartAdvertisingToDevice(
-    const cryptauth::RemoteDevice& remote_device) {
+bool FakeBleAdvertiser::StartAdvertisingToDevice(const std::string& device_id) {
   if (should_fail_to_start_advertising_)
     return false;
 
-  if (std::find(registered_devices_.begin(), registered_devices_.end(),
-                remote_device) != registered_devices_.end()) {
+  if (std::find(registered_device_ids_.begin(), registered_device_ids_.end(),
+                device_id) != registered_device_ids_.end()) {
     return false;
   }
 
-  registered_devices_.push_back(remote_device);
+  registered_device_ids_.push_back(device_id);
 
   if (automatically_update_active_advertisements_)
     are_advertisements_registered_ = true;
@@ -41,16 +40,15 @@ bool FakeBleAdvertiser::StartAdvertisingToDevice(
   return true;
 }
 
-bool FakeBleAdvertiser::StopAdvertisingToDevice(
-    const cryptauth::RemoteDevice& remote_device) {
-  if (std::find(registered_devices_.begin(), registered_devices_.end(),
-                remote_device) == registered_devices_.end()) {
+bool FakeBleAdvertiser::StopAdvertisingToDevice(const std::string& device_id) {
+  if (std::find(registered_device_ids_.begin(), registered_device_ids_.end(),
+                device_id) == registered_device_ids_.end()) {
     return false;
   }
 
-  base::Erase(registered_devices_, remote_device);
+  base::Erase(registered_device_ids_, device_id);
   if (automatically_update_active_advertisements_ &&
-      registered_devices_.empty()) {
+      registered_device_ids_.empty()) {
     are_advertisements_registered_ = false;
     NotifyAllAdvertisementsUnregistered();
   }
