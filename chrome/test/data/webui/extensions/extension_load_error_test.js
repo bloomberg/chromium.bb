@@ -6,7 +6,8 @@
 cr.define('extension_load_error_tests', function() {
   /** @enum {string} */
   var TestNames = {
-    Interaction: 'Interaction',
+    RetryError: 'RetryError',
+    RetrySuccess: 'RetrySuccess',
     CodeSection: 'Code Section',
   };
 
@@ -36,25 +37,32 @@ cr.define('extension_load_error_tests', function() {
       document.body.appendChild(loadError);
     });
 
-    test(assert(TestNames.Interaction), function() {
+    test(assert(TestNames.RetryError), function() {
       var dialogElement = loadError.$$('dialog');
-      var isDialogVisible = function() {
-        var rect = dialogElement.getBoundingClientRect();
-        return rect.width * rect.height > 0;
-      };
-
-      expectFalse(isDialogVisible());
+      expectFalse(extension_test_util.isElementVisible(dialogElement));
       loadError.show();
-      expectTrue(isDialogVisible());
+      expectTrue(extension_test_util.isElementVisible(dialogElement));
+
+      mockDelegate.setRetryLoadUnpackedError(stubLoadError);
+      MockInteractions.tap(loadError.$$('.action-button'));
+      return mockDelegate.whenCalled('retryLoadUnpacked').then(arg => {
+        expectEquals(fakeGuid, arg);
+        expectTrue(extension_test_util.isElementVisible(dialogElement));
+        MockInteractions.tap(loadError.$$('.cancel-button'));
+        expectFalse(extension_test_util.isElementVisible(dialogElement));
+      });
+    });
+
+    test(assert(TestNames.RetrySuccess), function() {
+      var dialogElement = loadError.$$('dialog');
+      expectFalse(extension_test_util.isElementVisible(dialogElement));
+      loadError.show();
+      expectTrue(extension_test_util.isElementVisible(dialogElement));
 
       MockInteractions.tap(loadError.$$('.action-button'));
       return mockDelegate.whenCalled('retryLoadUnpacked').then(arg => {
         expectEquals(fakeGuid, arg);
-        expectFalse(isDialogVisible());
-
-        loadError.show();
-        MockInteractions.tap(loadError.$$('.cancel-button'));
-        expectFalse(isDialogVisible());
+        expectFalse(extension_test_util.isElementVisible(dialogElement));
       });
     });
 

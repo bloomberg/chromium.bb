@@ -284,8 +284,12 @@ var CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
   }
 };
 
-TEST_F('CrExtensionsLoadErrorTest', 'Interaction', function() {
-  this.runMochaTest(extension_load_error_tests.TestNames.Interaction);
+TEST_F('CrExtensionsLoadErrorTest', 'RetryError', function() {
+  this.runMochaTest(extension_load_error_tests.TestNames.RetryError);
+});
+
+TEST_F('CrExtensionsLoadErrorTest', 'RetrySuccess', function() {
+  this.runMochaTest(extension_load_error_tests.TestNames.RetrySuccess);
 });
 
 TEST_F('CrExtensionsLoadErrorTest', 'CodeSection', function() {
