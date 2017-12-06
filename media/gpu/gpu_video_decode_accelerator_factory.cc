@@ -15,7 +15,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "media/gpu/d3d11_video_decode_accelerator_win.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
 #endif
 #if defined(OS_MACOSX)
@@ -137,7 +136,6 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
                                            const gpu::GpuPreferences&) const;
   const CreateVDAFp create_vda_fps[] = {
 #if defined(OS_WIN)
-    &GpuVideoDecodeAcceleratorFactory::CreateD3D11VDA,
     &GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA,
 #endif
 #if BUILDFLAG(USE_V4L2_CODEC)
@@ -167,21 +165,6 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
 }
 
 #if defined(OS_WIN)
-std::unique_ptr<VideoDecodeAccelerator>
-GpuVideoDecodeAcceleratorFactory::CreateD3D11VDA(
-    const gpu::GpuDriverBugWorkarounds& workarounds,
-    const gpu::GpuPreferences& gpu_preferences) const {
-  std::unique_ptr<VideoDecodeAccelerator> decoder;
-  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoding))
-    return decoder;
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    DVLOG(0) << "Initializing D3D11 HW decoder for windows.";
-    decoder.reset(new D3D11VideoDecodeAccelerator(
-        get_gl_context_cb_, make_context_current_cb_, bind_image_cb_));
-  }
-  return decoder;
-}
-
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,

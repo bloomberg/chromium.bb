@@ -360,18 +360,12 @@ component("gpu") {
 
   if (is_win) {
     sources += [
-      "d3d11_video_decode_accelerator_win.cc",
-      "d3d11_video_decode_accelerator_win.h",
       "dxva_picture_buffer_win.cc",
       "dxva_picture_buffer_win.h",
       "dxva_video_decode_accelerator_win.cc",
       "dxva_video_decode_accelerator_win.h",
       "media_foundation_video_encode_accelerator_win.cc",
       "media_foundation_video_encode_accelerator_win.h",
-      "windows/d3d11_h264_accelerator.cc",
-      "windows/d3d11_h264_accelerator.h",
-      "windows/d3d11_picture_buffer.cc",
-      "windows/d3d11_picture_buffer.h",
       "windows/init_guid.cc",
     ]
     configs += [
@@ -403,6 +397,10 @@ component("gpu") {
     ]
     if (enable_d3d11_video_decoder) {
       sources += [
+        "windows/d3d11_h264_accelerator.cc",
+        "windows/d3d11_h264_accelerator.h",
+        "windows/d3d11_picture_buffer.cc",
+        "windows/d3d11_picture_buffer.h",
         "windows/d3d11_video_decoder.cc",
         "windows/d3d11_video_decoder.h",
         "windows/d3d11_video_decoder_impl.cc",
