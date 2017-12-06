@@ -19,11 +19,10 @@ CPUTimeBudgetPool::CPUTimeBudgetPool(
     BudgetPoolController* budget_pool_controller,
     base::TimeTicks now)
     : BudgetPool(name, budget_pool_controller),
-      current_budget_level_(
-          base::TimeDelta(),
-          "RendererScheduler.BackgroundBudgetMs",
-          budget_pool_controller,
-          [](const base::TimeDelta& value) { return value.InMillisecondsF(); }),
+      current_budget_level_(base::TimeDelta(),
+                            "RendererScheduler.BackgroundBudgetMs",
+                            budget_pool_controller,
+                            TimeDeltaToMilliseconds),
       last_checkpoint_(now),
       cpu_percentage_(1) {}
 

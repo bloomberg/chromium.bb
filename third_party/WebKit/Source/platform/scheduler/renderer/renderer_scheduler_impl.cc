@@ -93,10 +93,6 @@ const char* YesNoStateToString(bool is_yes) {
   }
 }
 
-double TimeDeltaToMilliseconds(const base::TimeDelta& value) {
-  return value.InMillisecondsF();
-}
-
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
