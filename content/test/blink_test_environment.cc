@@ -12,7 +12,6 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_discardable_memory_allocator.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
@@ -92,8 +91,6 @@ void TearDownBlinkTestEnvironment() {
   // http://code.google.com/p/chromium/issues/detail?id=9500
   test_environment->RunUntilIdle();
 
-  if (RunningOnValgrind())
-    blink::WebCache::Clear();
   delete test_environment;
   test_environment = nullptr;
 }
