@@ -231,8 +231,6 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     // Calculate the clipped bounds to determine offscreen state.
     gfx::RectF clipped = bounds;
     // If this is the root web area, make sure we clip the node to fit.
-    // This is disabled as a bugfix for Chrome 63, see crbug.com/786164
-    // if (false) {
     if (container->data().GetBoolAttribute(ui::AX_ATTR_CLIPS_CHILDREN)) {
       if (!intersection.IsEmpty()) {
         // We can simply clip it to the container.
