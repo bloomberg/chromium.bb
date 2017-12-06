@@ -22,19 +22,8 @@ function run() {
     document.head.appendChild(meta);
   }
 
-  var destination;
+  var destination = matches[kRedirect];
   var redirectMatches;
-
-  if (matches[kRedirect] == "none") {
-    destination = "http://mock.http/referrer_policy/referrer-policy-log.html";
-  } else if (redirectMatches = /^(https?)2(https?)$/.exec(matches[kRedirect])) {
-    destination =
-      redirectMatches[1] +
-      "://mock.http/referrer_policy/redirect-to-" +
-      redirectMatches[2] + "-log";
-  } else {
-    destination = matches[kRedirect];
-  }
 
   if (matches[kLink] == "true") {
     var link = document.createElement("a");
