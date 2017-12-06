@@ -697,12 +697,13 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 // Computes the bookmarks table view based on the current root node.
 - (void)computeBookmarkTableViewData {
+  // Regenerate the list of all bookmarks.
+  _bookmarkItems.clear();
+
   if (!self.bookmarkModel->loaded() || !_currentRootNode) {
     return;
   }
 
-  // Regenerate the list of all bookmarks.
-  _bookmarkItems.clear();
   if (_currentRootNode == self.bookmarkModel->root_node()) {
     [self generateTableViewDataForRootNode];
     return;

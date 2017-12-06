@@ -962,6 +962,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)bookmarkNodeDeleted:(const BookmarkNode*)node
                  fromFolder:(const BookmarkNode*)folder {
   [self removeEditNode:node atIndexPath:nil];
+
+  if (_rootNode == node &&
+      base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    [self setTableViewEditing:NO];
+  }
 }
 
 - (void)bookmarkModelRemovedAllNodes {
