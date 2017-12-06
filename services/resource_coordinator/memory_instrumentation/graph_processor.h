@@ -105,6 +105,59 @@ class GraphProcessor {
    * calculated [depth-first post-order traversal].
    */
   static void CalculateDumpSubSizes(GlobalDumpGraph::Node* node);
+
+  /**
+   * Calculate owned and owning coefficients of a memory allocator dump and
+   * its owners.
+   *
+   * The owning coefficient refers to the proportion of a dump's not-owning
+   * sub-size which is attributed to the dump (only relevant to owning MADs).
+   * Conversely, the owned coefficient is the proportion of a dump's
+   * not-owned sub-size, which is attributed to it (only relevant to owned
+   * MADs).
+   *
+   * The not-owned size of the owned dump is split among its owners in the
+   * order of the ownership importance as demonstrated by the following
+   * example:
+   *
+   *                                          memory allocator dumps
+   *                                   OWNED  OWNER1  OWNER2  OWNER3  OWNER4
+   *       not-owned sub-size [given]     10       -       -       -       -
+   *      not-owning sub-size [given]      -       6       7       5       8
+   *               importance [given]      -       2       2       1       0
+   *    attributed not-owned sub-size      2       -       -       -       -
+   *   attributed not-owning sub-size      -       3       4       0       1
+   *                owned coefficient   2/10       -       -       -       -
+   *               owning coefficient      -     3/6     4/7     0/5     1/8
+   *
+   * Explanation: Firstly, 6 bytes are split equally among OWNER1 and OWNER2
+   * (highest importance). OWNER2 owns one more byte, so its attributed
+   * not-owning sub-size is 6/2 + 1 = 4 bytes. OWNER3 is attributed no size
+   * because it is smaller than the owners with higher priority. However,
+   * OWNER4 is larger, so it's attributed the difference 8 - 7 = 1 byte.
+   * Finally, 2 bytes remain unattributed and are hence kept in the OWNED
+   * dump as attributed not-owned sub-size. The coefficients are then
+   * directly calculated as fractions of the sub-sizes and corresponding
+   * attributed sub-sizes.
+   *
+   * Note that we always assume that all ownerships of a dump overlap (e.g.
+   * OWNER3 is subsumed by both OWNER1 and OWNER2). Hence, the table could
+   * be alternatively represented as follows:
+   *
+   *                                 owned memory range
+   *              0   1   2    3    4    5    6        7        8   9  10
+   *   Priority 2 |  OWNER1 + OWNER2 (split)  | OWNER2 |
+   *   Priority 1 | (already attributed) |
+   *   Priority 0 | - - -  (already attributed)  - - - | OWNER4 |
+   *    Remainder | - - - - - (already attributed) - - - - - -  | OWNED |
+   *
+   * This method assumes that (1) the size of the dump [see calculateSizes()]
+   * and (2) the not-owned size of the dump and not-owning sub-sizes of its
+   * owners [see the first step of calculateEffectiveSizes()] have already
+   * been calculated. Note that the method doesn't make any assumptions about
+   * the order in which dumps are visited.
+   */
+  static void CalculateDumpOwnershipCoefficient(GlobalDumpGraph::Node* node);
 };
 
 }  // namespace memory_instrumentation

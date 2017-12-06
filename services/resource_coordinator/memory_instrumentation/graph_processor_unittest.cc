@@ -45,21 +45,21 @@ class GraphProcessorTest : public testing::Test {
 
   void AssignTracingOverhead(base::StringPiece allocator,
                              GlobalDumpGraph* global_graph,
-                             GlobalDumpGraph::Process* process) {
+                             Process* process) {
     GraphProcessor::AssignTracingOverhead(allocator, global_graph, process);
   }
 
   GlobalDumpGraph::Node::Entry AggregateNumericWithNameForNode(
-      GlobalDumpGraph::Node* node,
+      Node* node,
       base::StringPiece name) {
     return GraphProcessor::AggregateNumericWithNameForNode(node, name);
   }
 
-  void AggregateNumericsRecursively(GlobalDumpGraph::Node* node) {
+  void AggregateNumericsRecursively(Node* node) {
     GraphProcessor::AggregateNumericsRecursively(node);
   }
 
-  void PropagateNumericsAndDiagnosticsRecursively(GlobalDumpGraph::Node* node) {
+  void PropagateNumericsAndDiagnosticsRecursively(Node* node) {
     GraphProcessor::PropagateNumericsAndDiagnosticsRecursively(node);
   }
 
@@ -68,12 +68,16 @@ class GraphProcessorTest : public testing::Test {
     return GraphProcessor::AggregateSizeForDescendantNode(root, descendant);
   }
 
-  void CalculateSizeForNode(GlobalDumpGraph::Node* node) {
+  void CalculateSizeForNode(Node* node) {
     GraphProcessor::CalculateSizeForNode(node);
   }
 
   void CalculateDumpSubSizes(Node* node) {
     GraphProcessor::CalculateDumpSubSizes(node);
+  }
+
+  void CalculateDumpOwnershipCoefficient(Node* node) {
+    GraphProcessor::CalculateDumpOwnershipCoefficient(node);
   }
 
  protected:
@@ -603,6 +607,41 @@ TEST_F(GraphProcessorTest, CalculateDumpSubSizes) {
   CalculateDumpSubSizes(process_2->root());
   ASSERT_EQ(process_2->root()->not_owned_sub_size(), 1ul);
   ASSERT_EQ(process_2->root()->not_owning_sub_size(), 5ul);
+}
+
+TEST_F(GraphProcessorTest, CalculateDumpOwnershipCoefficient) {
+  Process* process = graph.CreateGraphForProcess(1);
+
+  Node* owned = process->CreateNode(kEmptyGuid, "owned", false);
+  Node* owner_1 = process->CreateNode(kEmptyGuid, "owner1", false);
+  Node* owner_2 = process->CreateNode(kEmptyGuid, "owner2", false);
+  Node* owner_3 = process->CreateNode(kEmptyGuid, "owner3", false);
+  Node* owner_4 = process->CreateNode(kEmptyGuid, "owner4", false);
+
+  graph.AddNodeOwnershipEdge(owner_1, owned, 2);
+  graph.AddNodeOwnershipEdge(owner_2, owned, 2);
+  graph.AddNodeOwnershipEdge(owner_3, owned, 1);
+  graph.AddNodeOwnershipEdge(owner_4, owned, 0);
+
+  // Ensure the owned node has a size otherwise calculations will not happen.
+  owned->AddEntry("size", Node::Entry::kBytes, 10);
+
+  // Setup the owned/owning sub sizes.
+  owned->add_not_owned_sub_size(10);
+  owner_1->add_not_owning_sub_size(6);
+  owner_2->add_not_owning_sub_size(7);
+  owner_3->add_not_owning_sub_size(5);
+  owner_4->add_not_owning_sub_size(8);
+
+  // Perform the computation.
+  CalculateDumpOwnershipCoefficient(owned);
+
+  // Ensure that the coefficients are correct.
+  ASSERT_DOUBLE_EQ(owned->owned_coefficient(), 2.0 / 10.0);
+  ASSERT_DOUBLE_EQ(owner_1->owning_coefficient(), 3.0 / 6.0);
+  ASSERT_DOUBLE_EQ(owner_2->owning_coefficient(), 4.0 / 7.0);
+  ASSERT_DOUBLE_EQ(owner_3->owning_coefficient(), 0.0 / 5.0);
+  ASSERT_DOUBLE_EQ(owner_4->owning_coefficient(), 1.0 / 8.0);
 }
 
 }  // namespace memory_instrumentation
