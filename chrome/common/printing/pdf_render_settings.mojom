@@ -6,7 +6,7 @@ module printing.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-struct PDFRenderSettings {
+struct PdfRenderSettings {
   enum Mode {
     NORMAL = 0,
     // Modes below are Windows only.

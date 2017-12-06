@@ -12,44 +12,44 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<printing::mojom::PWGRasterSettings::TransformType,
+struct EnumTraits<printing::mojom::PwgRasterSettings::TransformType,
                   printing::PwgRasterTransformType> {
-  static printing::mojom::PWGRasterSettings::TransformType ToMojom(
+  static printing::mojom::PwgRasterSettings::TransformType ToMojom(
       printing::PwgRasterTransformType transform_type) {
     switch (transform_type) {
       case printing::PwgRasterTransformType::TRANSFORM_NORMAL:
-        return printing::mojom::PWGRasterSettings::TransformType::
+        return printing::mojom::PwgRasterSettings::TransformType::
             TRANSFORM_NORMAL;
       case printing::PwgRasterTransformType::TRANSFORM_ROTATE_180:
-        return printing::mojom::PWGRasterSettings::TransformType::
+        return printing::mojom::PwgRasterSettings::TransformType::
             TRANSFORM_ROTATE_180;
       case printing::PwgRasterTransformType::TRANSFORM_FLIP_HORIZONTAL:
-        return printing::mojom::PWGRasterSettings::TransformType::
+        return printing::mojom::PwgRasterSettings::TransformType::
             TRANSFORM_FLIP_HORIZONTAL;
       case printing::PwgRasterTransformType::TRANSFORM_FLIP_VERTICAL:
-        return printing::mojom::PWGRasterSettings::TransformType::
+        return printing::mojom::PwgRasterSettings::TransformType::
             TRANSFORM_FLIP_VERTICAL;
     }
     NOTREACHED() << "Unknown transform type "
                  << static_cast<int>(transform_type);
-    return printing::mojom::PWGRasterSettings::TransformType::TRANSFORM_NORMAL;
+    return printing::mojom::PwgRasterSettings::TransformType::TRANSFORM_NORMAL;
   }
 
-  static bool FromMojom(printing::mojom::PWGRasterSettings::TransformType input,
+  static bool FromMojom(printing::mojom::PwgRasterSettings::TransformType input,
                         printing::PwgRasterTransformType* output) {
     switch (input) {
-      case printing::mojom::PWGRasterSettings::TransformType::TRANSFORM_NORMAL:
+      case printing::mojom::PwgRasterSettings::TransformType::TRANSFORM_NORMAL:
         *output = printing::PwgRasterTransformType::TRANSFORM_NORMAL;
         return true;
-      case printing::mojom::PWGRasterSettings::TransformType::
+      case printing::mojom::PwgRasterSettings::TransformType::
           TRANSFORM_ROTATE_180:
         *output = printing::PwgRasterTransformType::TRANSFORM_ROTATE_180;
         return true;
-      case printing::mojom::PWGRasterSettings::TransformType::
+      case printing::mojom::PwgRasterSettings::TransformType::
           TRANSFORM_FLIP_HORIZONTAL:
         *output = printing::PwgRasterTransformType::TRANSFORM_FLIP_HORIZONTAL;
         return true;
-      case printing::mojom::PWGRasterSettings::TransformType::
+      case printing::mojom::PwgRasterSettings::TransformType::
           TRANSFORM_FLIP_VERTICAL:
         *output = printing::PwgRasterTransformType::TRANSFORM_FLIP_VERTICAL;
         return true;
@@ -60,7 +60,7 @@ struct EnumTraits<printing::mojom::PWGRasterSettings::TransformType,
 };
 
 template <>
-class StructTraits<printing::mojom::PWGRasterSettingsDataView,
+class StructTraits<printing::mojom::PwgRasterSettingsDataView,
                    printing::PwgRasterSettings> {
  public:
   static bool rotate_all_pages(const printing::PwgRasterSettings& settings) {
@@ -74,7 +74,7 @@ class StructTraits<printing::mojom::PWGRasterSettingsDataView,
     return settings.odd_page_transform;
   }
 
-  static bool Read(printing::mojom::PWGRasterSettingsDataView data,
+  static bool Read(printing::mojom::PwgRasterSettingsDataView data,
                    printing::PwgRasterSettings* out_settings);
 };
 

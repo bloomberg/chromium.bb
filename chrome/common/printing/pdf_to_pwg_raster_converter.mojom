@@ -9,7 +9,7 @@ import "chrome/common/printing/pdf_render_settings.mojom";
 const string kPdfToPwgRasterConverterServiceName =
     "pdf_to_pwg_raster_converter";
 
-struct PWGRasterSettings {
+struct PwgRasterSettings {
   enum TransformType {
     TRANSFORM_NORMAL,
     TRANSFORM_ROTATE_180,
@@ -27,9 +27,9 @@ struct PWGRasterSettings {
   bool reverse_page_order;
 };
 
-interface PDFToPWGRasterConverter {
+interface PdfToPwgRasterConverter {
   Convert(handle pdf_file_in,
-          PDFRenderSettings pdf_settings,
-          PWGRasterSettings pwg_raster_settings,
+          PdfRenderSettings pdf_settings,
+          PwgRasterSettings pwg_raster_settings,
           handle pwg_raster_file_out) => (bool success);
 };

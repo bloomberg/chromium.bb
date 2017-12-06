@@ -9,9 +9,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<printing::mojom::PDFRenderSettingsDataView,
+bool StructTraits<printing::mojom::PdfRenderSettingsDataView,
                   printing::PdfRenderSettings>::
-    Read(printing::mojom::PDFRenderSettingsDataView data,
+    Read(printing::mojom::PdfRenderSettingsDataView data,
          printing::PdfRenderSettings* out) {
   out->dpi = data.dpi();
   out->autorotate = data.autorotate();

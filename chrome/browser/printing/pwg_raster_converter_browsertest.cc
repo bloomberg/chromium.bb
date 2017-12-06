@@ -33,11 +33,11 @@ void ResultCallbackImpl(bool* called,
   quit_closure.Run();
 }
 
-class PDFToPWGRasterBrowserTest : public InProcessBrowserTest {
+class PdfToPwgRasterBrowserTest : public InProcessBrowserTest {
  public:
-  PDFToPWGRasterBrowserTest()
+  PdfToPwgRasterBrowserTest()
       : converter_(PWGRasterConverter::CreateDefault()) {}
-  ~PDFToPWGRasterBrowserTest() override {}
+  ~PdfToPwgRasterBrowserTest() override {}
 
   void Convert(base::RefCountedMemory* pdf_data,
                const PdfRenderSettings& conversion_settings,
@@ -66,7 +66,7 @@ std::string HashFile(const std::string& file_data) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PDFToPWGRasterBrowserTest, TestFailure) {
+IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestFailure) {
   scoped_refptr<base::RefCountedStaticMemory> bad_pdf_data =
       base::MakeRefCounted<base::RefCountedStaticMemory>("0123456789", 10);
   base::FilePath temp_file;
@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(PDFToPWGRasterBrowserTest, TestFailure) {
           /*expect_success=*/false, &temp_file);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFToPWGRasterBrowserTest, TestSuccess) {
+IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccess) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::FilePath test_data_dir;

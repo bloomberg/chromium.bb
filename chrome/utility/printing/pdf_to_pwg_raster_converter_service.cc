@@ -12,35 +12,35 @@ namespace printing {
 
 namespace {
 
-void OnPDFToPWGRasterConverterRequest(
+void OnPdfToPwgRasterConverterRequest(
     service_manager::ServiceContextRefFactory* ref_factory,
-    printing::mojom::PDFToPWGRasterConverterRequest request) {
+    printing::mojom::PdfToPwgRasterConverterRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<printing::PDFToPWGRasterConverterImpl>(
+      std::make_unique<printing::PdfToPwgRasterConverterImpl>(
           ref_factory->CreateRef()),
       std::move(request));
 }
 
 }  // namespace
 
-PDFToPWGRasterConverterService::PDFToPWGRasterConverterService() {}
+PdfToPwgRasterConverterService::PdfToPwgRasterConverterService() {}
 
-PDFToPWGRasterConverterService::~PDFToPWGRasterConverterService() {}
+PdfToPwgRasterConverterService::~PdfToPwgRasterConverterService() {}
 
 std::unique_ptr<service_manager::Service>
-PDFToPWGRasterConverterService::CreateService() {
-  return base::MakeUnique<PDFToPWGRasterConverterService>();
+PdfToPwgRasterConverterService::CreateService() {
+  return std::make_unique<PdfToPwgRasterConverterService>();
 }
 
-void PDFToPWGRasterConverterService::OnStart() {
+void PdfToPwgRasterConverterService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context())));
   registry_.AddInterface(
-      base::Bind(&OnPDFToPWGRasterConverterRequest, ref_factory_.get()));
+      base::Bind(&OnPdfToPwgRasterConverterRequest, ref_factory_.get()));
 }
 
-void PDFToPWGRasterConverterService::OnBindInterface(
+void PdfToPwgRasterConverterService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {

@@ -131,7 +131,7 @@ class PWGRasterConverterHelper
 
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
-  mojo::InterfacePtr<printing::mojom::PDFToPWGRasterConverter>
+  mojo::InterfacePtr<printing::mojom::PdfToPwgRasterConverter>
       pdf_to_pwg_raster_converter_ptr_;
   PWGRasterConverter::ResultCallback callback_;
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
