@@ -591,8 +591,6 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   init_params.window_port = std::move(window_port);
   init_params.window_tree_client = this;
   init_params.display_id = display_id;
-  if (window_manager_delegate_ && window_mus_type == WindowMusType::EMBED)
-    init_params.uses_real_accelerated_widget = !::switches::IsMusHostingViz();
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       std::make_unique<WindowTreeHostMus>(std::move(init_params));
   window_tree_host->InitHost();
