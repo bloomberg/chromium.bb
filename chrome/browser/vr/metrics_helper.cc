@@ -43,9 +43,8 @@ const auto kMinLatency = base::TimeDelta::FromMilliseconds(500);
 const auto kMaxLatency = base::TimeDelta::FromHours(1);
 constexpr size_t kLatencyBucketCount = 100;
 
-// Ensure that this stays in sync with VRAssetsComponentEnterStatus in
-// enums.xml.
-enum class AssetsComponentEnterStatus : int {
+// Ensure that this stays in sync with VRComponentStatus in enums.xml.
+enum class ComponentStatus : int {
   kReady = 0,
   kUnreadyOther = 1,
 
@@ -53,19 +52,17 @@ enum class AssetsComponentEnterStatus : int {
   kCount,
 };
 
-void LogStatus(Mode mode, AssetsComponentEnterStatus status) {
+void LogStatus(Mode mode, ComponentStatus status) {
   switch (mode) {
     case Mode::kVr:
-      UMA_HISTOGRAM_ENUMERATION(kStatusVr, status,
-                                AssetsComponentEnterStatus::kCount);
+      UMA_HISTOGRAM_ENUMERATION(kStatusVr, status, ComponentStatus::kCount);
       return;
     case Mode::kVrBrowsing:
       UMA_HISTOGRAM_ENUMERATION(kStatusVrBrowsing, status,
-                                AssetsComponentEnterStatus::kCount);
+                                ComponentStatus::kCount);
       return;
     case Mode::kWebVr:
-      UMA_HISTOGRAM_ENUMERATION(kStatusWebVr, status,
-                                AssetsComponentEnterStatus::kCount);
+      UMA_HISTOGRAM_ENUMERATION(kStatusWebVr, status, ComponentStatus::kCount);
       return;
     default:
       NOTIMPLEMENTED();
@@ -162,8 +159,8 @@ void MetricsHelper::OnEnter(Mode mode) {
     // UMA metrics.
     return;
   }
-  LogStatus(mode, component_ready_ ? AssetsComponentEnterStatus::kReady
-                                   : AssetsComponentEnterStatus::kUnreadyOther);
+  LogStatus(mode, component_ready_ ? ComponentStatus::kReady
+                                   : ComponentStatus::kUnreadyOther);
   if (!component_ready_) {
     enter_time = base::Time::Now();
   }
