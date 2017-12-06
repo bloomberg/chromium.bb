@@ -32,8 +32,7 @@ class FakeAdHocBleAdvertiser : public AdHocBleAdvertiser {
   void NotifyAsynchronousShutdownComplete();
 
   // AdHocBleAdvertiser:
-  void RequestGattServicesForDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
+  void RequestGattServicesForDevice(const std::string& device_id) override;
   bool HasPendingRequests() override;
 
  private:

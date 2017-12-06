@@ -86,7 +86,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
     std::vector<FakeBleConnectionManager::SentMessage>& sent_messages =
         fake_ble_connection_manager_->sent_messages();
     ASSERT_EQ(1u, sent_messages.size());
-    EXPECT_EQ(test_device_, sent_messages[0].remote_device);
+    EXPECT_EQ(test_device_.GetDeviceId(), sent_messages[0].device_id);
     EXPECT_EQ(disconnect_tethering_request_string_, sent_messages[0].message);
 
     test_clock_->Advance(kDisconnectTetheringRequestTime);

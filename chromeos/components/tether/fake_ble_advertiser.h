@@ -25,8 +25,8 @@ class FakeBleAdvertiser : public BleAdvertiser {
   FakeBleAdvertiser(bool automatically_update_active_advertisements);
   ~FakeBleAdvertiser() override;
 
-  const std::vector<cryptauth::RemoteDevice>& registered_devices() {
-    return registered_devices_;
+  const std::vector<std::string>& registered_device_ids() {
+    return registered_device_ids_;
   }
 
   void set_should_fail_to_start_advertising(
@@ -41,10 +41,8 @@ class FakeBleAdvertiser : public BleAdvertiser {
   void NotifyAllAdvertisementsUnregistered();
 
   // BleAdvertiser:
-  bool StartAdvertisingToDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
-  bool StopAdvertisingToDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
+  bool StartAdvertisingToDevice(const std::string& device_id) override;
+  bool StopAdvertisingToDevice(const std::string& device_id) override;
   bool AreAdvertisementsRegistered() override;
 
  private:
@@ -52,7 +50,7 @@ class FakeBleAdvertiser : public BleAdvertiser {
 
   bool should_fail_to_start_advertising_ = false;
   bool are_advertisements_registered_ = false;
-  std::vector<cryptauth::RemoteDevice> registered_devices_;
+  std::vector<std::string> registered_device_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBleAdvertiser);
 };

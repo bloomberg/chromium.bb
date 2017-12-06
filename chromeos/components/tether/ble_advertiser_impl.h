@@ -13,7 +13,6 @@
 #include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/data_with_timestamp.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace base {
 class TaskRunner;
@@ -59,10 +58,8 @@ class BleAdvertiserImpl : public BleAdvertiser {
   ~BleAdvertiserImpl() override;
 
   // BleAdvertiser:
-  bool StartAdvertisingToDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
-  bool StopAdvertisingToDevice(
-      const cryptauth::RemoteDevice& remote_device) override;
+  bool StartAdvertisingToDevice(const std::string& device_id) override;
+  bool StopAdvertisingToDevice(const std::string& device_id) override;
   bool AreAdvertisementsRegistered() override;
 
  private:

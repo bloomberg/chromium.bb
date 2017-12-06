@@ -96,7 +96,8 @@ AsynchronousShutdownObjectContainerImpl::
       ble_scanner_(
           base::MakeUnique<BleScannerImpl>(adapter,
                                            local_device_data_provider_.get(),
-                                           ble_synchronizer_.get())),
+                                           ble_synchronizer_.get(),
+                                           tether_host_fetcher_)),
       ad_hoc_ble_advertiser_(base::MakeUnique<AdHocBleAdvertiserImpl>(
           local_device_data_provider_.get(),
           remote_beacon_seed_fetcher_.get(),

@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
@@ -19,14 +20,14 @@ BleAdvertisementGenerator* BleAdvertisementGenerator::instance_ = nullptr;
 // static
 std::unique_ptr<DataWithTimestamp>
 BleAdvertisementGenerator::GenerateBleAdvertisement(
-    const RemoteDevice& remote_device,
+    const std::string& device_id,
     LocalDeviceDataProvider* local_device_data_provider,
     RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher) {
   if (!instance_)
     instance_ = new BleAdvertisementGenerator();
 
   return instance_->GenerateBleAdvertisementInternal(
-      remote_device, local_device_data_provider, remote_beacon_seed_fetcher);
+      device_id, local_device_data_provider, remote_beacon_seed_fetcher);
 }
 
 // static
@@ -42,7 +43,7 @@ BleAdvertisementGenerator::~BleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    const RemoteDevice& remote_device,
+    const std::string& device_id,
     LocalDeviceDataProvider* local_device_data_provider,
     RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher) {
   std::string local_device_public_key;
@@ -60,17 +61,17 @@ BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
   }
 
   std::vector<BeaconSeed> remote_beacon_seeds;
-  if (!remote_beacon_seed_fetcher->FetchSeedsForDevice(remote_device,
-                                                       &remote_beacon_seeds)) {
+  if (!remote_beacon_seed_fetcher->FetchSeedsForDeviceId(
+          device_id, &remote_beacon_seeds)) {
     PA_LOG(WARNING) << "Error fetching beacon seeds for device with ID "
-                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                    << RemoteDevice::TruncateDeviceIdForLogs(device_id) << ". "
                     << "Cannot advertise without seeds.";
     return nullptr;
   }
 
   if (remote_beacon_seeds.empty()) {
     PA_LOG(WARNING) << "No synced seeds exist for device with ID "
-                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                    << RemoteDevice::TruncateDeviceIdForLogs(device_id) << ". "
                     << "Cannot advertise without seeds.";
     return nullptr;
   }
@@ -80,7 +81,7 @@ BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
                                             remote_beacon_seeds);
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
-                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
+                    << RemoteDevice::TruncateDeviceIdForLogs(device_id) << ". "
                     << "Cannot advertise.";
     return nullptr;
   }

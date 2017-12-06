@@ -17,8 +17,8 @@ void FakeAdHocBleAdvertiser::NotifyAsynchronousShutdownComplete() {
 }
 
 void FakeAdHocBleAdvertiser::RequestGattServicesForDevice(
-    const cryptauth::RemoteDevice& remote_device) {
-  requested_device_ids_.push_back(remote_device.GetDeviceId());
+    const std::string& device_id) {
+  requested_device_ids_.push_back(device_id);
 }
 
 bool FakeAdHocBleAdvertiser::HasPendingRequests() {

@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/connection_priority.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
 
@@ -26,23 +25,24 @@ class BleAdvertisementDeviceQueue {
   BleAdvertisementDeviceQueue();
   virtual ~BleAdvertisementDeviceQueue();
 
-  struct PrioritizedDevice {
-    PrioritizedDevice(const cryptauth::RemoteDevice& remote_device,
-                      const ConnectionPriority& connection_priority);
-    ~PrioritizedDevice();
+  struct PrioritizedDeviceId {
+    PrioritizedDeviceId(const std::string& device_id,
+                        const ConnectionPriority& connection_priority);
+    ~PrioritizedDeviceId();
 
-    cryptauth::RemoteDevice remote_device;
+    std::string device_id;
     ConnectionPriority connection_priority;
   };
 
-  // Updates the queue with the given |devices|. Devices which are already in
-  // the queue and are not in |devices| are removed from the queue, and all
-  // devices which are not in the queue but are in |devices| are added to the
-  // end of the queue. Note devices that are already in the queue will not
-  // change order as a result of this function being called to ensure that the
-  // queue remains in order. Returns whether the device list has changed due to
-  // the function call.
-  bool SetDevices(const std::vector<PrioritizedDevice>& devices);
+  // Updates the queue with the given |prioritized_ids|. Devices which are
+  // already in the queue and are not in |prioritized_ids| are removed from the
+  // queue, and all devices which are not in the queue but are in
+  // |prioritized_ids| are added to the end of the queue. Note devices that are
+  // already in the queue will not change order as a result of this function
+  // being called to ensure that the queue remains in order. Returns whether the
+  // device list has changed due to the function call.
+  bool SetPrioritizedDeviceIds(
+      const std::vector<PrioritizedDeviceId>& prioritized_ids);
 
   // Moves the given device to the end of the queue. If the device was not in
   // the queue to begin with, do nothing.
@@ -51,17 +51,16 @@ class BleAdvertisementDeviceQueue {
   // Returns a list of devices to which to advertise. The devices returned are
   // the first |kMaxConcurrentAdvertisements| devices in the front of the queue,
   // or fewer if the number of devices in the queue is less than that value.
-  std::vector<cryptauth::RemoteDevice> GetDevicesToWhichToAdvertise() const;
+  std::vector<std::string> GetDeviceIdsToWhichToAdvertise() const;
 
   size_t GetSize() const;
 
  private:
   void AddDevicesToVectorForPriority(
       ConnectionPriority connection_priority,
-      std::vector<cryptauth::RemoteDevice>* remote_devices_out) const;
+      std::vector<std::string>* device_ids_out) const;
 
-  std::map<ConnectionPriority, std::deque<cryptauth::RemoteDevice>>
-      priority_to_deque_map_;
+  std::map<ConnectionPriority, std::deque<std::string>> priority_to_deque_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BleAdvertisementDeviceQueue);
 };

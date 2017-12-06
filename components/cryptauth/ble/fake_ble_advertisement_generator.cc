@@ -12,7 +12,7 @@ FakeBleAdvertisementGenerator::~FakeBleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 FakeBleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    const RemoteDevice& remote_device,
+    const std::string& device_id,
     LocalDeviceDataProvider* local_device_data_provider,
     RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher) {
   return std::move(advertisement_);

@@ -18,20 +18,18 @@ class MockRemoteBeaconSeedFetcher : public RemoteBeaconSeedFetcher {
   MockRemoteBeaconSeedFetcher();
   ~MockRemoteBeaconSeedFetcher() override;
 
-  // RemoteBeaconSeedFetcher:
-  bool FetchSeedsForDevice(
-      const RemoteDevice& remote_device,
-      std::vector<BeaconSeed>* beacon_seeds_out) const override;
-
   // If |beacon_seeds| is null, FetchSeedsForDevice() will fail for the same
   // |remote_device|.
-  void SetSeedsForDevice(
-      const RemoteDevice& remote_device,
-      const std::vector<BeaconSeed>* beacon_seeds);
+  void SetSeedsForDeviceId(const std::string& device_id,
+                           const std::vector<BeaconSeed>* beacon_seeds);
+
+  // RemoteBeaconSeedFetcher:
+  bool FetchSeedsForDeviceId(
+      const std::string& device_id,
+      std::vector<BeaconSeed>* beacon_seeds_out) const override;
 
  private:
-  std::map<std::string, std::vector<BeaconSeed>>
-      public_key_to_beacon_seeds_map_;
+  std::map<std::string, std::vector<BeaconSeed>> device_id_to_beacon_seeds_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRemoteBeaconSeedFetcher);
 };

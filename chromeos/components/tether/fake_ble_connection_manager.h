@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
-#include "components/cryptauth/remote_device.h"
 
 namespace chromeos {
 
@@ -23,31 +22,30 @@ class FakeBleConnectionManager : public BleConnectionManager {
   ~FakeBleConnectionManager() override;
 
   struct SentMessage {
-    cryptauth::RemoteDevice remote_device;
+    std::string device_id;
     std::string message;
   };
 
-  void SetDeviceStatus(const cryptauth::RemoteDevice& remote_device,
+  void SetDeviceStatus(const std::string& device_id,
                        const cryptauth::SecureChannel::Status& status);
-  void ReceiveMessage(const cryptauth::RemoteDevice& remote_device,
-                      const std::string& payload);
+  void ReceiveMessage(const std::string& device_id, const std::string& payload);
   void SetMessageSent(int sequence_number);
 
   std::vector<SentMessage>& sent_messages() { return sent_messages_; }
   // Returns -1 if no sequence numbers have been used yet.
   int last_sequence_number() { return next_sequence_number_ - 1; }
 
-  bool IsRegistered(const cryptauth::RemoteDevice& remote_device);
+  bool IsRegistered(const std::string& device_id);
 
   // BleConnectionManager:
-  void RegisterRemoteDevice(const cryptauth::RemoteDevice& remote_device,
+  void RegisterRemoteDevice(const std::string& device_id,
                             const MessageType& connection_reason) override;
-  void UnregisterRemoteDevice(const cryptauth::RemoteDevice& remote_device,
+  void UnregisterRemoteDevice(const std::string& device_id,
                               const MessageType& connection_reason) override;
-  int SendMessage(const cryptauth::RemoteDevice& remote_device,
+  int SendMessage(const std::string& device_id,
                   const std::string& message) override;
   bool GetStatusForDevice(
-      const cryptauth::RemoteDevice& remote_device,
+      const std::string& device_id,
       cryptauth::SecureChannel::Status* status) const override;
 
  private:
@@ -62,8 +60,7 @@ class FakeBleConnectionManager : public BleConnectionManager {
   };
 
   int next_sequence_number_ = 0;
-  std::map<cryptauth::RemoteDevice, StatusAndRegisteredMessageTypes>
-      device_map_;
+  std::map<std::string, StatusAndRegisteredMessageTypes> device_id_map_;
   std::vector<SentMessage> sent_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBleConnectionManager);

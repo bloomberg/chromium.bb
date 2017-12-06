@@ -18,7 +18,6 @@ namespace cryptauth {
 
 class BeaconSeed;
 class RawEidGenerator;
-struct RemoteDevice;
 
 // Generates ephemeral ID (EID) values that are broadcast for foreground BLE
 // advertisements in the ProximityAuth protocol.
@@ -89,11 +88,13 @@ class ForegroundEidGenerator {
       const std::string& advertising_device_public_key,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
-  // Given a list of RemoteDevices, identifies the device which could have
-  // produced the supplied advertisement service data.
-  virtual RemoteDevice const* IdentifyRemoteDeviceByAdvertisement(
+  // Given a list of device IDs, returns the device ID which could have
+  // produced the supplied advertisement service data. If none of the provided
+  // device IDs could have produced the advertisement, an empty string is
+  // returned.
+  virtual std::string IdentifyRemoteDeviceByAdvertisement(
       const std::string& advertisement_service_data,
-      const std::vector<RemoteDevice>& device_list,
+      const std::vector<std::string>& device_ids,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
  private:

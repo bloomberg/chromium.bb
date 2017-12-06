@@ -9,11 +9,7 @@
 namespace cryptauth {
 
 MockForegroundEidGenerator::MockForegroundEidGenerator()
-    : background_scan_filter_(nullptr),
-      advertisement_(nullptr),
-      possible_advertisements_(nullptr),
-      identified_device_(nullptr),
-      num_identify_calls_(0) {}
+    : num_identify_calls_(0) {}
 
 MockForegroundEidGenerator::~MockForegroundEidGenerator() {}
 
@@ -60,17 +56,16 @@ MockForegroundEidGenerator::GeneratePossibleAdvertisements(
   return *possible_advertisements_;
 }
 
-RemoteDevice const*
-MockForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
+std::string MockForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
     const std::string& advertisement_service_data,
-    const std::vector<RemoteDevice>& device_list,
+    const std::vector<std::string>& device_id_list,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
   // Increment num_identify_calls_. Since this overrides a const method, some
   // hacking is needed to modify the num_identify_calls_ instance variable.
   int* num_identify_calls_ptr = const_cast<int*>(&num_identify_calls_);
   *num_identify_calls_ptr = *num_identify_calls_ptr + 1;
 
-  return identified_device_;
+  return identified_device_id_;
 }
 
 }  // namespace cryptauth

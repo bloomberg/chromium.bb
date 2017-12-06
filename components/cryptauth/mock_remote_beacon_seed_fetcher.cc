@@ -13,32 +13,31 @@ MockRemoteBeaconSeedFetcher::MockRemoteBeaconSeedFetcher()
 
 MockRemoteBeaconSeedFetcher::~MockRemoteBeaconSeedFetcher() {}
 
-bool MockRemoteBeaconSeedFetcher::FetchSeedsForDevice(
-    const RemoteDevice& remote_device,
+bool MockRemoteBeaconSeedFetcher::FetchSeedsForDeviceId(
+    const std::string& device_id,
     std::vector<BeaconSeed>* beacon_seeds_out) const {
-  const auto& seeds_iter =
-      public_key_to_beacon_seeds_map_.find(remote_device.public_key);
-  if (seeds_iter == public_key_to_beacon_seeds_map_.end()) {
+  const auto& seeds_iter = device_id_to_beacon_seeds_map_.find(device_id);
+
+  if (seeds_iter == device_id_to_beacon_seeds_map_.end())
     return false;
-  }
 
   *beacon_seeds_out = seeds_iter->second;
   return true;
 }
 
-void MockRemoteBeaconSeedFetcher::SetSeedsForDevice(
-    const RemoteDevice& remote_device,
+void MockRemoteBeaconSeedFetcher::SetSeedsForDeviceId(
+    const std::string& device_id,
     const std::vector<BeaconSeed>* beacon_seeds) {
   if (!beacon_seeds) {
-    const auto& it =
-        public_key_to_beacon_seeds_map_.find(remote_device.public_key);
-    if (it != public_key_to_beacon_seeds_map_.end()) {
-      public_key_to_beacon_seeds_map_.erase(it);
-    }
+    const auto& it = device_id_to_beacon_seeds_map_.find(device_id);
+
+    if (it != device_id_to_beacon_seeds_map_.end())
+      device_id_to_beacon_seeds_map_.erase(it);
+
     return;
   }
 
-  public_key_to_beacon_seeds_map_[remote_device.public_key] = *beacon_seeds;
+  device_id_to_beacon_seeds_map_[device_id] = *beacon_seeds;
 }
 
 }  // namespace cryptauth

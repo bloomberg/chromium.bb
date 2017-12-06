@@ -98,7 +98,7 @@ class KeepAliveOperationTest : public testing::Test {
     std::vector<FakeBleConnectionManager::SentMessage>& sent_messages =
         fake_ble_connection_manager_->sent_messages();
     ASSERT_EQ(1u, sent_messages.size());
-    EXPECT_EQ(test_device_, sent_messages[0].remote_device);
+    EXPECT_EQ(test_device_.GetDeviceId(), sent_messages[0].device_id);
     EXPECT_EQ(keep_alive_tickle_string_, sent_messages[0].message);
   }
 
@@ -126,7 +126,7 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
   test_clock_->Advance(kKeepAliveTickleResponseTime);
 
   fake_ble_connection_manager_->ReceiveMessage(
-      test_device_, CreateKeepAliveTickleResponseString());
+      test_device_.GetDeviceId(), CreateKeepAliveTickleResponseString());
   EXPECT_TRUE(test_observer_->has_run_callback());
   EXPECT_EQ(test_device_, test_observer_->last_remote_device_received());
   ASSERT_TRUE(test_observer_->last_device_status_received());
@@ -141,17 +141,20 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
 TEST_F(KeepAliveOperationTest, TestCannotConnect) {
   // Simulate the device failing to connect.
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_device_, cryptauth::SecureChannel::Status::CONNECTING);
+      test_device_.GetDeviceId(), cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_device_.GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_device_, cryptauth::SecureChannel::Status::CONNECTING);
+      test_device_.GetDeviceId(), cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_device_.GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_device_, cryptauth::SecureChannel::Status::CONNECTING);
+      test_device_.GetDeviceId(), cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
+      test_device_.GetDeviceId(),
+      cryptauth::SecureChannel::Status::DISCONNECTED);
 
   // The maximum number of connection failures has occurred.
   EXPECT_TRUE(test_observer_->has_run_callback());
