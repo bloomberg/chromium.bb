@@ -186,7 +186,8 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
   [field_ addTarget:field_delegate_
                 action:@selector(textFieldDidChange:)
       forControlEvents:UIControlEventEditingChanged];
-  use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0);
+  use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0) &&
+                                  !base::ios::IsRunningOnOrLater(11, 2, 0);
 }
 
 OmniboxViewIOS::~OmniboxViewIOS() {
@@ -662,15 +663,19 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
     }
 
     NSRange strikethroughRange = range.ToNSRange();
-    // TODO(crbug.com/751801): remove this workaround.
-    // In iOS 11, UITextField has a bug: when the first character has
-    // strikethrough attribute, typing and setting text without strikethrough
-    // attribute will still result in strikethrough. The following is a
-    // workaround that prevents crossing out the first character.
-    if (base::ios::IsRunningOnOrLater(11, 0, 0)) {
-      if (strikethroughRange.location == 0 && strikethroughRange.length > 0) {
-        strikethroughRange.location += 1;
-        strikethroughRange.length -= 1;
+
+    if (base::ios::IsRunningOnOrLater(11, 0, 0) &&
+        !base::ios::IsRunningOnOrLater(11, 2, 0)) {
+      // This is a workaround for an iOS bug (crbug.com/751801) fixed in 11.2.
+      // In iOS 11, UITextField has a bug: when the first character has
+      // strikethrough attribute, typing and setting text without strikethrough
+      // attribute will still result in strikethrough. The following is a
+      // workaround that prevents crossing out the first character.
+      if (base::ios::IsRunningOnOrLater(11, 0, 0)) {
+        if (strikethroughRange.location == 0 && strikethroughRange.length > 0) {
+          strikethroughRange.location += 1;
+          strikethroughRange.length -= 1;
+        }
       }
     }
 
