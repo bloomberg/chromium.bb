@@ -34,8 +34,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.PasswordManagerHandler.PasswordListObserver;
 import org.chromium.chrome.browser.PasswordUIView;
-import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.text.SpanApplier;
@@ -214,7 +214,6 @@ public class PasswordEntryEditor extends Fragment {
 
     // Delete was clicked.
     private void removeItem() {
-        final PasswordUIView passwordUIView = new PasswordUIView();
         final PasswordListObserver passwordDeleter = new PasswordListObserver() {
             @Override
             public void passwordListAvailable(int count) {
@@ -222,8 +221,10 @@ public class PasswordEntryEditor extends Fragment {
                     RecordHistogram.recordEnumeratedHistogram(
                             "PasswordManager.Android.PasswordCredentialEntry",
                             PASSWORD_ENTRY_ACTION_DELETED, PASSWORD_ENTRY_ACTION_BOUNDARY);
-                    passwordUIView.removeSavedPasswordEntry(mID);
-                    passwordUIView.destroy();
+                    PasswordManagerHandlerProvider.getInstance()
+                            .getPasswordManagerHandler()
+                            .removeSavedPasswordEntry(mID);
+                    PasswordManagerHandlerProvider.getInstance().removeObserver(this);
                     Toast.makeText(getActivity().getApplicationContext(), R.string.deleted,
                                  Toast.LENGTH_SHORT)
                             .show();
@@ -237,8 +238,10 @@ public class PasswordEntryEditor extends Fragment {
                     RecordHistogram.recordEnumeratedHistogram(
                             "PasswordManager.Android.PasswordExceptionEntry",
                             PASSWORD_ENTRY_ACTION_DELETED, PASSWORD_ENTRY_ACTION_BOUNDARY);
-                    passwordUIView.removeSavedPasswordException(mID);
-                    passwordUIView.destroy();
+                    PasswordManagerHandlerProvider.getInstance()
+                            .getPasswordManagerHandler()
+                            .removeSavedPasswordException(mID);
+                    PasswordManagerHandlerProvider.getInstance().removeObserver(this);
                     Toast.makeText(getActivity().getApplicationContext(), R.string.deleted,
                                  Toast.LENGTH_SHORT)
                             .show();
@@ -247,8 +250,10 @@ public class PasswordEntryEditor extends Fragment {
             }
         };
 
-        passwordUIView.addObserver(passwordDeleter);
-        passwordUIView.updatePasswordLists();
+        PasswordManagerHandlerProvider.getInstance().addObserver(passwordDeleter);
+        PasswordManagerHandlerProvider.getInstance()
+                .getPasswordManagerHandler()
+                .updatePasswordLists();
     }
 
     private void hookupCopyUsernameButton(View usernameView) {
