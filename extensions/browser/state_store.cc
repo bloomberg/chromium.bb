@@ -114,6 +114,9 @@ void StateStore::GetExtensionValue(const std::string& extension_id,
 void StateStore::SetExtensionValue(const std::string& extension_id,
                                    const std::string& key,
                                    std::unique_ptr<base::Value> value) {
+  for (TestObserver& observer : observers_)
+    observer.WillSetExtensionValue(extension_id, key);
+
   task_queue_->InvokeWhenReady(
       base::Bind(&ValueStoreFrontend::Set, base::Unretained(store_.get()),
                  GetFullKey(extension_id, key), base::Passed(&value)));
@@ -124,6 +127,14 @@ void StateStore::RemoveExtensionValue(const std::string& extension_id,
   task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Remove,
                                           base::Unretained(store_.get()),
                                           GetFullKey(extension_id, key)));
+}
+
+void StateStore::AddObserver(TestObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void StateStore::RemoveObserver(TestObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool StateStore::IsInitialized() const {
