@@ -4,6 +4,8 @@
 
 #include "core/css/cssom/CSSUnparsedValue.h"
 
+#include "core/css/CSSVariableData.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -65,9 +67,13 @@ HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToTokens(
 }  // namespace
 
 CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
-    const CSSVariableReferenceValue& css_variable_reference_value) {
-  return CSSUnparsedValue::Create(ParserTokenRangeToTokens(
-      css_variable_reference_value.VariableDataValue()->TokenRange()));
+    const CSSVariableReferenceValue& value) {
+  DCHECK(value.VariableDataValue());
+  return FromCSSValue(*value.VariableDataValue());
+}
+
+CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(const CSSVariableData& value) {
+  return CSSUnparsedValue::Create(ParserTokenRangeToTokens(value.TokenRange()));
 }
 
 const CSSValue* CSSUnparsedValue::ToCSSValue(

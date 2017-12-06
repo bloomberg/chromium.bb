@@ -23,8 +23,7 @@ CSSStyleValueVector ParseCSSStyleValue(
     ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
 
-  // TODO(775804): Handle custom properties
-  if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid property name");
     return CSSStyleValueVector();
   }

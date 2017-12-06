@@ -8,6 +8,16 @@
 <script>
 'use strict';
 
+function assert_string_normalizes_to(property, str, expected) {
+  // From string
+  assert_style_value_equals(CSSStyleValue.parse(property, str), expected);
+  // From CSSOM
+  assert_style_value_equals(
+    newDivWithStyle(property + ':' + str).attributeStyleMap.get(property),
+    expected
+  );
+}
+
 const gTestCases = [
   {
     value: 'var(--A)',
@@ -40,16 +50,13 @@ const gTestCases = [
 ];
 
 for (const {value, expectedResult} of gTestCases) {
-  // TODO(788570): Add similar tests using a custom property instead of 'color'
   test(() => {
-    const result = CSSStyleValue.parse('color', value);
-    assert_style_value_equals(result, new CSSUnparsedValue(...expectedResult));
-  }, 'Normalizing "' + value + '" from String returns correct CSSUnparsedValue');
+    assert_string_normalizes_to('color', value, new CSSUnparsedValue(...expectedResult));
+  }, 'Normalizing "' + value + '" on a CSS property returns correct CSSUnparsedValue');
 
   test(() => {
-    const result = newDivWithStyle('color:' + value).attributeStyleMap.get('color');
-    assert_style_value_equals(result, new CSSUnparsedValue(...expectedResult));
-  }, 'Normalizing "' + value + '" from CSSOM returns correct CSSUnparsedValue');
+    assert_string_normalizes_to('--X', value, new CSSUnparsedValue(...expectedResult));
+  }, 'Normalizing "' + value + '" on a custom property returns correct CSSUnparsedValue');
 }
 
 </script>

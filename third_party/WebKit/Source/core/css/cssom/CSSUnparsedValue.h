@@ -7,11 +7,13 @@
 
 #include "base/macros.h"
 #include "bindings/core/v8/string_or_css_variable_reference_value.h"
-#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
+
+class CSSVariableReferenceValue;
+class CSSVariableData;
 
 class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
@@ -23,6 +25,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   }
 
   static CSSUnparsedValue* FromCSSValue(const CSSVariableReferenceValue&);
+  static CSSUnparsedValue* FromCSSValue(const CSSVariableData&);
 
   const CSSValue* ToCSSValue(SecureContextMode) const override;
 
