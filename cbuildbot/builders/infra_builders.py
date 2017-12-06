@@ -41,10 +41,6 @@ class PuppetPreCqBuilder(generic_builders.PreCqBuilder):
     """Returns the CrOS version info from the chromiumos-overlay."""
     return manifest_version.VersionInfo.from_repo(self._run.buildroot)
 
-  def GetSyncInstance(self):
-    """Returns an instance of a SyncStage that should be run."""
-    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
-
   def RunTestStages(self):
     """Run Puppet RSpec tests."""
     self._RunStage(build_stages.UprevStage)

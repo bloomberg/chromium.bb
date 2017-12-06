@@ -118,16 +118,11 @@ class TestPuppetSpecsStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     """Build infra Go packages."""
-    # TODO(ayatane): Put this into the SDK?
-    commands.RunBuildScript(
-        self._build_root,
-        ['emerge', 'ruby'],
-        sudo=True,
-        enter_chroot=True)
     commands.RunBuildScript(
         self._build_root,
         ['bash', '-c',
-         'cd ../../chromeos-admin/puppet && make -j -O check GEM=gem19'],
+         'cd ../../chromeos-admin/puppet'
+         ' && make -j -O check GEM=gem19'],
         enter_chroot=True)
 
 
