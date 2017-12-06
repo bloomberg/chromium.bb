@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "extensions/common/switches.h"
@@ -117,26 +116,11 @@ FeatureSwitch::FeatureSwitch(const char* switch_name,
                     switch_name,
                     default_value) {}
 
-FeatureSwitch::FeatureSwitch(const char* switch_name,
-                             const char* field_trial_name,
-                             DefaultValue default_value)
-    : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
-                    switch_name,
-                    field_trial_name,
-                    default_value) {}
-
 FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
                              const char* switch_name,
-                             DefaultValue default_value)
-    : FeatureSwitch(command_line, switch_name, nullptr, default_value) {}
-
-FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
-                             const char* switch_name,
-                             const char* field_trial_name,
                              DefaultValue default_value)
     : command_line_(command_line),
       switch_name_(switch_name),
-      field_trial_name_(field_trial_name),
       default_value_(default_value == DEFAULT_ENABLED),
       override_value_(OVERRIDE_NONE) {}
 
@@ -162,23 +146,11 @@ bool FeatureSwitch::ComputeValue() const {
   if (switch_value == "0")
     return false;
 
-  // TODO(imcheng): Don't check |default_value_|. Otherwise, we could improperly
-  // ignore an enable/disable switch if there is a field trial active.
-  // crbug.com/585569
-  if (!default_value_ && command_line_->HasSwitch(GetLegacyEnableFlag()))
+  if (command_line_->HasSwitch(GetLegacyEnableFlag()))
     return true;
 
-  if (default_value_ && command_line_->HasSwitch(GetLegacyDisableFlag()))
+  if (command_line_->HasSwitch(GetLegacyDisableFlag()))
     return false;
-
-  if (field_trial_name_) {
-    std::string group_name =
-        base::FieldTrialList::FindFullName(field_trial_name_);
-    if (base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE))
-      return true;
-    if (base::StartsWith(group_name, "Disabled", base::CompareCase::SENSITIVE))
-      return false;
-  }
 
   return default_value_;
 }
