@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/SharedBuffer.h"
 #include "platform/WebTaskRunner.h"
@@ -204,7 +205,13 @@ static void RasterizeMain(PaintCanvas* canvas, sk_sp<PaintRecord> record) {
   canvas->drawPicture(record);
 }
 
-TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
+// Flaky on Mac. crbug.com/792540.
+#if defined(OS_MACOSX)
+#define MAYBE_decodeOnOtherThread DISABLED_decodeOnOtherThread
+#else
+#define MAYBE_decodeOnOtherThread decodeOnOtherThread
+#endif
+TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
   lazy_decoder_->SetData(data_, true);
   PaintImage image = CreatePaintImageAtIndex(0);
   ASSERT_TRUE(image);
