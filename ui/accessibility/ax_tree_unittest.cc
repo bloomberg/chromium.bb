@@ -265,7 +265,7 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   ASSERT_TRUE(dst_tree.Unserialize(update));
 
   const AXNode* root_node = dst_tree.root();
-  ASSERT_TRUE(root_node != NULL);
+  ASSERT_TRUE(root_node != nullptr);
   EXPECT_EQ(root.id, root_node->id());
   EXPECT_EQ(root.role, root_node->data().role);
 
@@ -464,7 +464,7 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
 
   ASSERT_EQ(true, fake_delegate.root_changed());
 
-  tree.SetDelegate(NULL);
+  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
@@ -501,7 +501,7 @@ TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
   EXPECT_TRUE(fake_delegate.tree_data_changed());
   EXPECT_EQ("New Title", tree.data().title);
 
-  tree.SetDelegate(NULL);
+  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
@@ -578,7 +578,7 @@ TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {
 
   ASSERT_EQ(true, fake_delegate.root_changed());
 
-  tree.SetDelegate(NULL);
+  tree.SetDelegate(nullptr);
 }
 
 // UAF caught by ax_tree_fuzzer
@@ -658,7 +658,7 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   EXPECT_EQ("visited changed to true", change_log[1]);
   EXPECT_EQ("checkedState changed from 2 to 1", change_log[2]);
 
-  tree.SetDelegate(NULL);
+  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, AttributeChangeCallbacks) {
@@ -741,7 +741,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("scrollX changed from 6 to 7", change_log2[9]);
   EXPECT_EQ("scrollXMax changed from 0 to 10", change_log2[10]);
 
-  tree.SetDelegate(NULL);
+  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, IntListChangeCallbacks) {
@@ -800,7 +800,7 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   EXPECT_EQ("radioGroupIds changed from 3 to 2,2", change_log2[1]);
   EXPECT_EQ("flowtoIds changed from  to 3", change_log2[2]);
 
-  tree.SetDelegate(NULL);
+  tree.SetDelegate(nullptr);
 }
 
 // Create a very simple tree and make sure that we can get the bounds of

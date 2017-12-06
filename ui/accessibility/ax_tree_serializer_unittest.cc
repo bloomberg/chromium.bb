@@ -217,12 +217,12 @@ class AXTreeSourceWithInvalidId
     return node->parent();
   }
   bool IsValid(const AXNode* node) const override {
-    return node != NULL && node->id() != invalid_id_;
+    return node != nullptr && node->id() != invalid_id_;
   }
   bool IsEqual(const AXNode* node1, const AXNode* node2) const override {
     return node1 == node2;
   }
-  const AXNode* GetNull() const override { return NULL; }
+  const AXNode* GetNull() const override { return nullptr; }
   void SerializeNode(const AXNode* node, AXNodeData* out_data) const override {
     *out_data = node->data();
     if (node->id() == invalid_id_)

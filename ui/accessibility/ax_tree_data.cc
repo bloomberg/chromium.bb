@@ -13,25 +13,9 @@
 
 namespace ui {
 
-AXTreeData::AXTreeData()
-    : tree_id(-1),
-      parent_tree_id(-1),
-      focused_tree_id(-1),
-      loaded(false),
-      loading_progress(0.0),
-      focus_id(-1),
-      sel_anchor_object_id(-1),
-      sel_anchor_offset(-1),
-      sel_anchor_affinity(AX_TEXT_AFFINITY_UPSTREAM),
-      sel_focus_object_id(-1),
-      sel_focus_offset(-1),
-      sel_focus_affinity(AX_TEXT_AFFINITY_DOWNSTREAM) {
-}
-
+AXTreeData::AXTreeData() = default;
 AXTreeData::AXTreeData(const AXTreeData& other) = default;
-
-AXTreeData::~AXTreeData() {
-}
+AXTreeData::~AXTreeData() = default;
 
 // Note that this includes an initial space character if nonempty, but
 // that works fine because this is normally printed by AXTree::ToString.

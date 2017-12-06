@@ -170,7 +170,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   void FireLiveRegionEvents(AXNode* node);
   void FireActiveDescendantEvents();
 
-  AXTree* tree_;  // Not owned.
+  AXTree* tree_ = nullptr;  // Not owned.
   std::map<AXNode*, std::set<Event>> tree_events_;
 
   // Valid between the call to OnIntAttributeChanged and the call to
