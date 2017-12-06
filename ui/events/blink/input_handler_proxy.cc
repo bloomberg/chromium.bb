@@ -797,10 +797,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     scroll_status = input_handler_->ScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.source_device));
   }
-  UMA_HISTOGRAM_ENUMERATION("Renderer4.CompositorScrollHitTestResult",
-                            scroll_status.thread,
-                            cc::InputHandler::LAST_SCROLL_STATUS + 1);
-
   RecordMainThreadScrollingReasons(gesture_event.source_device,
                                    scroll_status.main_thread_scrolling_reasons);
 
