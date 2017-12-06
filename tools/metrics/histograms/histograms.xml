@@ -80752,6 +80752,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="SimpleCache.NumOpsBlockedByPendingDoom"
+    units="Ops">
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    Number of operations that were queued behind a particular doom operation
+    (with a mass doom counting as a single operation).
+  </summary>
+</histogram>
+
 <histogram base="true" name="SimpleCache.OpenEntryIndexState"
     enum="SimpleCacheOpenEntryIndexState">
   <owner>morlovich@chromium.org</owner>
@@ -80782,6 +80791,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Delay between when the I/O portion of OpenEntry is enqueued and when its
     execution begins.
+  </summary>
+</histogram>
+
+<histogram base="true" name="SimpleCache.QueueLatency.PendingDoom" units="ms">
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    Delay between when an operation is deferred due to a pending doom for its
+    key, and when it can resume execution.
   </summary>
 </histogram>
 
@@ -99737,10 +99754,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SimpleCache.LastClusterLossPercent"/>
   <affected-histogram name="SimpleCache.LastClusterSize"/>
   <affected-histogram name="SimpleCache.MaxCacheSizeOnInit"/>
+  <affected-histogram name="SimpleCache.NumOpsBlockedByPendingDoom"/>
   <affected-histogram name="SimpleCache.OpenEntryIndexState"/>
   <affected-histogram name="SimpleCache.PercentFullOnInit"/>
   <affected-histogram name="SimpleCache.QueueLatency.CreateEntry"/>
   <affected-histogram name="SimpleCache.QueueLatency.OpenEntry"/>
+  <affected-histogram name="SimpleCache.QueueLatency.PendingDoom"/>
   <affected-histogram name="SimpleCache.ReadIsParallelizable"/>
   <affected-histogram name="SimpleCache.ReadResult"/>
   <affected-histogram name="SimpleCache.ReadStream1FromPrefetched"/>
