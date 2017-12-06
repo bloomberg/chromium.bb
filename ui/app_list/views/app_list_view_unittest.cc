@@ -823,24 +823,28 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   SimulateKeyPress(ui::VKEY_SPACE, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" "));
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to expand arrow and type a character.
   apps_grid_view()->expand_arrow_view_for_test()->RequestFocus();
   SimulateKeyPress(ui::VKEY_A, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and type a character.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_B, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" ab"));
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and hitting backspace.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_BACK, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 }
 
 // Tests that the search box textfield has no selection when the focus moves
@@ -861,20 +865,46 @@ TEST_F(AppListViewFocusTest, SearchBoxTextfieldHasNoSelectionWhenFocusLeaves) {
 // SearchBoxTextfield.
 TEST_F(AppListViewFocusTest, SearchBoxSelectionCoversWholeQueryOnFocus) {
   Show();
-
-  // Focus the searchbox and enter "test" into the searchbox.
-  SimulateKeyPress(ui::VKEY_SPACE, false);
-  EXPECT_EQ(search_box_view()->search_box(), focused_view());
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListViewState::HALF);
+  constexpr int kListResults = 1;
+  SetUpSearchResults(0, kListResults, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(base::UTF8ToUTF16("test"), search_box_view()->search_box()->text());
 
-  // Move focus away from the searchbox.
+  // Hit Tab to move focus away from the searchbox.
   SimulateKeyPress(ui::VKEY_TAB, false);
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
-  // Move focus back to the searchbox.
+  // Hit Shift+Tab to move focus back to the searchbox.
   SimulateKeyPress(ui::VKEY_TAB, true);
+  EXPECT_EQ(gfx::Range(0, 4),
+            search_box_view()->search_box()->GetSelectedRange());
 
+  // Hit Shift+Tab to move focus away from the searchbox.
+  SimulateKeyPress(ui::VKEY_TAB, true);
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+
+  // Hit Tab to move focus back to the searchbox.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_EQ(gfx::Range(0, 4),
+            search_box_view()->search_box()->GetSelectedRange());
+
+  // Hit Up to move focus away from the searchbox.
+  SimulateKeyPress(ui::VKEY_UP, false);
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+
+  // Hit Down to move focus back to the searchbox.
+  SimulateKeyPress(ui::VKEY_DOWN, false);
+  EXPECT_EQ(gfx::Range(0, 4),
+            search_box_view()->search_box()->GetSelectedRange());
+
+  // Hit Down to move focus away from the searchbox.
+  SimulateKeyPress(ui::VKEY_DOWN, false);
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+
+  // Hit Up to move focus back to the searchbox.
+  SimulateKeyPress(ui::VKEY_UP, false);
   EXPECT_EQ(gfx::Range(0, 4),
             search_box_view()->search_box()->GetSelectedRange());
 }
