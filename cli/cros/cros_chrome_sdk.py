@@ -868,6 +868,19 @@ class ChromeSDKCommand(command.CliCommand):
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
+    # Disable ThinLTO for simplechrome. Tryjob machines do not have
+    # enough file descriptors to use. crbug.com/789607
+    if 'use_thin_lto' in gn_args:
+      gn_args['use_thin_lto'] = False
+    # We need to remove the flag below from cros_target_extra_ldflags.
+    # The format of ld flags is something like
+    # '-Wl,-O1 -Wl,-O2 -Wl,--as-needed -stdlib=libc++'
+    extra_thinlto_flag = '-Wl,-plugin-opt,-import-instr-limit=30'
+    if 'cros_target_extra_ldflags' in gn_args:
+      if extra_thinlto_flag in gn_args['cros_target_extra_ldflags']:
+        gn_args['cros_target_extra_ldflags'] = \
+          gn_args['cros_target_extra_ldflags'].replace(extra_thinlto_flag, '')
+
     if options.gn_extra_args:
       gn_args.update(gn_helpers.FromGNArgs(options.gn_extra_args))
 
