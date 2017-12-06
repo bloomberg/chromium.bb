@@ -68866,6 +68866,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Renderer4.CompositorScrollHitTestResult"
     enum="CompositorScrollResult">
+  <obsolete>
+    Deprecated in 12/2017. Renderer4.MainThreadGestureScrollReason and
+    Renderer4.MainThreadWheelScrollReason could track more detailed reasons of
+    main thread scrolling.
+  </obsolete>
   <owner>vollick@chromium.org</owner>
   <summary>
     It's possible for compositor hit testing to determine conclusively that
