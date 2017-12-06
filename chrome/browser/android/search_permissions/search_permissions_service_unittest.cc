@@ -283,25 +283,29 @@ TEST_F(SearchPermissionsServiceTest, Migration) {
       profile()));
 }
 
-TEST_F(SearchPermissionsServiceTest, ArePermissionsControlledByDSE) {
+TEST_F(SearchPermissionsServiceTest, IsPermissionControlledByDSE) {
   // True for origin that matches the CCTLD and meets all requirements.
   test_delegate()->ChangeDSEOrigin(kGoogleURL);
-  EXPECT_TRUE(
-      GetService()->ArePermissionsControlledByDSE(ToOrigin(kGoogleURL)));
+  EXPECT_TRUE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ToOrigin(kGoogleURL)));
 
   // False for different origin.
-  EXPECT_FALSE(
-      GetService()->ArePermissionsControlledByDSE(ToOrigin(kGoogleAusURL)));
+  EXPECT_FALSE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, ToOrigin(kGoogleAusURL)));
 
   // False for http origin.
   test_delegate()->ChangeDSEOrigin(kGoogleHTTPURL);
-  EXPECT_FALSE(
-      GetService()->ArePermissionsControlledByDSE(ToOrigin(kGoogleHTTPURL)));
+  EXPECT_FALSE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ToOrigin(kGoogleHTTPURL)));
 
   // True even for non-Google search engines.
   test_delegate()->ChangeDSEOrigin(kExampleURL);
-  EXPECT_TRUE(
-      GetService()->ArePermissionsControlledByDSE(ToOrigin(kExampleURL)));
+  EXPECT_TRUE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, ToOrigin(kExampleURL)));
+
+  // False for permissions not controlled by the DSE.
+  EXPECT_FALSE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_COOKIES, ToOrigin(kExampleURL)));
 }
 
 TEST_F(SearchPermissionsServiceTest, DSEChanges) {
@@ -569,8 +573,7 @@ TEST_F(SearchPermissionsServiceTest, ResetDSEPermission) {
   SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
                     CONTENT_SETTING_BLOCK);
 
-  EXPECT_TRUE(
-      GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
@@ -580,8 +583,7 @@ TEST_F(SearchPermissionsServiceTest, ResetDSEPermission) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 
-  EXPECT_TRUE(
-      GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_EQ(
       CONTENT_SETTING_ALLOW,
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
@@ -590,8 +592,6 @@ TEST_F(SearchPermissionsServiceTest, ResetDSEPermission) {
       GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  EXPECT_FALSE(GetService()->ResetDSEPermission(CONTENT_SETTINGS_TYPE_MIDI));
 }
 
 TEST_F(SearchPermissionsServiceTest, ResetDSEPermissions) {

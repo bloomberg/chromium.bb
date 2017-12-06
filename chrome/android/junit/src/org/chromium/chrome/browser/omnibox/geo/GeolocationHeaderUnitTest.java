@@ -26,6 +26,7 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowRecordHistogram;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowWebsitePreferenceBridge;
@@ -306,7 +307,8 @@ public class GeolocationHeaderUnitTest {
     @Implements(WebsitePreferenceBridge.class)
     public static class ShadowWebsitePreferenceBridge {
         @Implementation
-        public static boolean arePermissionsControlledByDSE(String origin, boolean isIncognito) {
+        public static boolean isPermissionControlledByDSE(
+                @ContentSettingsType int contentSettingsType, String origin, boolean isIncognito) {
             return true;
         }
 
