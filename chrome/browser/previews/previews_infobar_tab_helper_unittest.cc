@@ -188,7 +188,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateNoScriptPreviewsInfoBar) {
       PreviewsInfoBarTabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 
-  SetPreviewsState(content::NOSCRIPT_ON);
+  SetPreviewsState(content::SERVER_LITE_PAGE_ON | content::NOSCRIPT_ON);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
