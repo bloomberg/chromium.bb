@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -19,6 +20,7 @@
 #include "device/geolocation/geolocation_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include "content/common/font_cache_dispatcher_win.h"
@@ -28,21 +30,35 @@ namespace content {
 
 namespace {
 
+bool IsRunningWithMus() {
+#if BUILDFLAG(ENABLE_MUS)
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  return cmdline->HasSwitch(switches::kMus);
+#else
+  return false;
+#endif
+}
+
 class ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl()
       : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    RegisterMainThreadInterface(base::Bind(&device::GeolocationConfig::Create));
+    RegisterMainThreadInterface(
+        base::BindRepeating(&device::GeolocationConfig::Create));
 #if defined(OS_WIN)
-    registry_.AddInterface(base::Bind(&FontCacheDispatcher::Create));
+    registry_.AddInterface(base::BindRepeating(&FontCacheDispatcher::Create));
 #endif
-    auto* browser_main_loop = BrowserMainLoop::GetInstance();
-    if (browser_main_loop) {
-      auto* manager = browser_main_loop->discardable_shared_memory_manager();
-      if (manager) {
-        registry_.AddInterface(base::Bind(
-            &discardable_memory::DiscardableSharedMemoryManager::Bind,
-            base::Unretained(manager)));
+    if (!IsRunningWithMus()) {
+      // For mus, the mojom::discardable_memory::DiscardableSharedMemoryManager
+      // is exposed from ui::Service. So we don't need bind the interface here.
+      auto* browser_main_loop = BrowserMainLoop::GetInstance();
+      if (browser_main_loop) {
+        auto* manager = browser_main_loop->discardable_shared_memory_manager();
+        if (manager) {
+          registry_.AddInterface(base::BindRepeating(
+              &discardable_memory::DiscardableSharedMemoryManager::Bind,
+              base::Unretained(manager)));
+        }
       }
     }
   }
