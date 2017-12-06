@@ -39,7 +39,7 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
   std::vector<memory_instrumentation::mojom::VmRegionPtr> vm_regions;
   return memory_instrumentation::mojom::OSMemDump::New(
       resident_set_kb, private_footprint_kb, shared_footprint_kb,
-      std::move(vm_regions));
+      std::move(vm_regions), 0);
 }
 
 void PopulateMetrics(GlobalMemoryDumpPtr* global_dump,

@@ -66,6 +66,13 @@ void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
                                 pmd->os_dump->private_footprint_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.SharedMemoryFootprint",
                                 pmd->os_dump->shared_footprint_kb / 1024);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateSwapFootprint",
+                                pmd->os_dump->private_footprint_swap_kb / 1024);
+  builder.SetPrivateSwapFootprint(pmd->os_dump->private_footprint_swap_kb /
+                                  1024);
+#endif
+
   builder.SetPrivateMemoryFootprint(pmd->os_dump->private_footprint_kb / 1024);
   builder.SetSharedMemoryFootprint(pmd->os_dump->shared_footprint_kb / 1024);
 
@@ -114,11 +121,21 @@ void EmitRendererMemoryMetrics(
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer2.Malloc",
                                   pmd->chrome_dump->malloc_total_kb / 1024);
 #endif
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Experimental.Renderer2.PrivateSwapFootprint",
+        pmd->os_dump->private_footprint_swap_kb / 1024);
+#endif
   } else {
     RENDERER_MEMORY_UMA_HISTOGRAMS("Extension");
 #if !defined(OS_WIN)
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Extension2.Malloc",
                                   pmd->chrome_dump->malloc_total_kb / 1024);
+#endif
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "Memory.Experimental.Extension2.PrivateSwapFootprint",
+        pmd->os_dump->private_footprint_swap_kb / 1024);
 #endif
   }
   // UKM
@@ -138,6 +155,10 @@ void EmitRendererMemoryMetrics(
   builder.SetBlinkGC(pmd->chrome_dump->blink_gc_total_kb / 1024);
   builder.SetV8(pmd->chrome_dump->v8_total_kb / 1024);
   builder.SetNumberOfExtensions(number_of_extensions);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  builder.SetPrivateSwapFootprint(pmd->os_dump->private_footprint_swap_kb /
+                                  1024);
+#endif
 
   if (!page_info.is_null()) {
     builder.SetIsVisible(page_info->is_visible);
@@ -180,6 +201,12 @@ void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
                                 pmd->os_dump->private_footprint_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.SharedMemoryFootprint",
                                 pmd->os_dump->shared_footprint_kb / 1024);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Gpu.PrivateSwapFootprint",
+                                pmd->os_dump->private_footprint_swap_kb / 1024);
+  builder.SetPrivateSwapFootprint(pmd->os_dump->private_footprint_swap_kb /
+                                  1024);
+#endif
   builder.SetPrivateMemoryFootprint(pmd->os_dump->private_footprint_kb / 1024);
   builder.SetSharedMemoryFootprint(pmd->os_dump->shared_footprint_kb / 1024);
   if (uptime)

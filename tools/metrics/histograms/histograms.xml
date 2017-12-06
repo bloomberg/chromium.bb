@@ -36236,6 +36236,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Browser.PrivateSwapFootprint" units="MB">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    An amount of private memory of the browser process placed in swap (VmSwap).
+    Available only on Android and Linux.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Browser.SharedMemoryFootprint" units="MB">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -36752,6 +36760,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     A rough estimate of the private memory footprint of the gpu process.
     Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Gpu.PrivateSwapFootprint" units="MB">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    An amount of private memory of the GPU process placed in swap (VmSwap).
+    Available only on Android and Linux.
   </summary>
 </histogram>
 
@@ -107683,6 +107699,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="PartitionAlloc" label="Constrained to partition allocator."/>
   <suffix name="BlinkGC" label="Constrained to blink GC allocator."/>
   <suffix name="V8" label="Constrained to v8 allocator."/>
+  <suffix name="PrivateSwapFootprint"
+      label="Only counting private swapped memory. Available only on Android
+             and Linux."/>
   <affected-histogram name="Memory.Experimental.Extension2"/>
   <affected-histogram name="Memory.Experimental.Renderer2"/>
 </histogram_suffixes>
