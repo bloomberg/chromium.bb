@@ -4689,22 +4689,31 @@ void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
     data += src_offset * pixels->TypeSize();
   }
   Vector<uint8_t> temp_data;
-  bool change_unpack_alignment = false;
-  if (data && (unpack_flip_y_ || unpack_premultiply_alpha_)) {
-    if (source_type == kTex2D) {
-      if (!WebGLImageConversion::ExtractTextureData(
-              width, height, format, type, unpack_alignment_, unpack_flip_y_,
-              unpack_premultiply_alpha_, data, temp_data)) {
-        SynthesizeGLError(GL_INVALID_OPERATION, func_name,
-                          "Invalid format/type combination.");
-        return;
-      }
-      data = temp_data.data();
+  bool change_unpack_params = false;
+  if (data && width && height &&
+      (unpack_flip_y_ || unpack_premultiply_alpha_)) {
+    DCHECK_EQ(kTex2D, source_type);
+    // Only enter here if width or height is non-zero. Otherwise, call to the
+    // underlying driver to generate appropriate GL errors if needed.
+    WebGLImageConversion::PixelStoreParams unpack_params =
+        GetUnpackPixelStoreParams(kTex2D);
+    GLint data_store_width =
+        unpack_params.row_length ? unpack_params.row_length : width;
+    if (unpack_params.skip_pixels + width > data_store_width) {
+      SynthesizeGLError(GL_INVALID_OPERATION, func_name,
+                        "Invalid unpack params combination.");
+      return;
     }
-    change_unpack_alignment = true;
+    if (!WebGLImageConversion::ExtractTextureData(
+            width, height, format, type, unpack_params, unpack_flip_y_,
+            unpack_premultiply_alpha_, data, temp_data)) {
+      SynthesizeGLError(GL_INVALID_OPERATION, func_name,
+                        "Invalid format/type combination.");
+      return;
+    }
+    data = temp_data.data();
+    change_unpack_params = true;
   }
-  // TODO(crbug.com/666064): implement flipY and premultiplyAlpha for
-  // tex(Sub)3D.
   if (function_id == kTexImage3D) {
     ContextGL()->TexImage3D(target, level,
                             ConvertTexInternalFormat(internalformat, type),
@@ -4718,7 +4727,7 @@ void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
   }
 
   ScopedUnpackParametersResetRestore temporary_reset_unpack(
-      this, change_unpack_alignment);
+      this, change_unpack_params);
   if (function_id == kTexImage2D)
     TexImage2DBase(target, level, internalformat, width, height, border, format,
                    type, data);
