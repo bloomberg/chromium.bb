@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/audio/audio_logging.h"
 
 namespace media {
 class AudioManager;
@@ -77,6 +78,7 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
   media::AudioManager* const audio_manager_;
   MediaStreamManager* const media_stream_manager_;
   const AudioOutputAuthorizationHandler authorization_handler_;
+  const std::unique_ptr<media::AudioLog> audio_log_;
   const int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererAudioOutputStreamFactoryContextImpl);

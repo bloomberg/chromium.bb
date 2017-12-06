@@ -37,7 +37,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   static std::unique_ptr<AudioOutputDelegate> Create(
       EventHandler* handler,
       media::AudioManager* audio_manager,
-      std::unique_ptr<media::AudioLog> audio_log,
+      media::AudioLog* audio_log,
       AudioMirroringManager* mirroring_manager,
       MediaObserver* media_observer,
       int stream_id,
@@ -52,7 +52,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
       EventHandler* handler,
       media::AudioManager* audio_manager,
-      std::unique_ptr<media::AudioLog> audio_log,
+      media::AudioLog* audio_log,
       AudioMirroringManager* mirroring_manager,
       MediaObserver* media_observer,
       int stream_id,
@@ -83,7 +83,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
 
   // This is the event handler which |this| send notifications to.
   EventHandler* subscriber_;
-  std::unique_ptr<media::AudioLog> const audio_log_;
+  media::AudioLog* const audio_log_;
   // |controller_event_handler_| proxies events from controller to |this|.
   // |controller_event_handler_|, |reader_| and |mirroring_manager_| will
   // outlive |this|, see the destructor for details.

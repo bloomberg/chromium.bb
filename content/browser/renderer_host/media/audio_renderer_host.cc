@@ -27,6 +27,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/render_frame_host.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_logging.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
@@ -68,8 +69,11 @@ AudioRendererHost::AudioRendererHost(int render_process_id,
       media_stream_manager_(media_stream_manager),
       authorization_handler_(audio_system,
                              media_stream_manager,
-                             render_process_id_) {
+                             render_process_id_),
+      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
+          media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)) {
   DCHECK(audio_manager_);
+  DCHECK(audio_log_);
 }
 
 AudioRendererHost::~AudioRendererHost() {
@@ -272,19 +276,16 @@ void AudioRendererHost::OnCreateStream(int stream_id,
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
 
-  MediaInternals* const media_internals = MediaInternals::GetInstance();
-  std::unique_ptr<media::AudioLog> audio_log = media_internals->CreateAudioLog(
-      media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER);
-  audio_log->OnCreated(stream_id, params, device_unique_id);
-  media_internals->SetWebContentsTitleForAudioLogEntry(
-      stream_id, render_process_id_, render_frame_id, audio_log.get());
-
+  audio_log_->OnCreated(stream_id, params, device_unique_id);
+  MediaInternals::GetInstance()->SetWebContentsTitleForAudioLogEntry(
+      stream_id, render_process_id_, render_frame_id, audio_log_.get());
   media::mojom::AudioOutputStreamObserverPtr observer_ptr;
+
   mojo::MakeStrongBinding(std::make_unique<AudioOutputStreamObserverImpl>(
                               render_process_id_, render_frame_id, stream_id),
                           mojo::MakeRequest(&observer_ptr));
   auto delegate = AudioOutputDelegateImpl::Create(
-      this, audio_manager_, std::move(audio_log), mirroring_manager_,
+      this, audio_manager_, audio_log_.get(), mirroring_manager_,
       media_observer, stream_id, render_frame_id, render_process_id_, params,
       std::move(observer_ptr), device_unique_id);
   if (delegate)
