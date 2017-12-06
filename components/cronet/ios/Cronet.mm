@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "components/cronet/ios/accept_languages_table.h"
@@ -132,7 +131,7 @@ class CronetHttpProtocolHandlerDelegate
     (cronet::CronetEnvironment*)cronetEnvironment {
   if (gEnableTestCertVerifierForTesting) {
     std::unique_ptr<TestCertVerifier> test_cert_verifier =
-        base::MakeUnique<TestCertVerifier>();
+        std::make_unique<TestCertVerifier>();
     cronetEnvironment->set_mock_cert_verifier(std::move(test_cert_verifier));
   }
   if (gMockCertVerifier) {
@@ -204,7 +203,7 @@ class CronetHttpProtocolHandlerDelegate
   }
 
   gQuicHints.push_back(
-      base::MakeUnique<cronet::URLRequestContextConfig::QuicHint>(
+      std::make_unique<cronet::URLRequestContextConfig::QuicHint>(
           quic_host, port, altPort));
 
   return YES;
@@ -267,7 +266,7 @@ class CronetHttpProtocolHandlerDelegate
     return NO;
   }
 
-  auto pkp = base::MakeUnique<cronet::URLRequestContextConfig::Pkp>(
+  auto pkp = std::make_unique<cronet::URLRequestContextConfig::Pkp>(
       base::SysNSStringToUTF8(host), includeSubdomains,
       base::Time::FromCFAbsoluteTime(
           [expirationDate timeIntervalSinceReferenceDate]));

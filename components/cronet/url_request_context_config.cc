@@ -8,7 +8,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -502,7 +501,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   if (mock_cert_verifier) {
     // Because |context_builder| expects CachingCertVerifier, wrap
     // |mock_cert_verifier| into a CachingCertVerifier.
-    cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
         std::move(mock_cert_verifier));
   } else {
     // net::CertVerifier::CreateDefault() returns a CachingCertVerifier.
@@ -512,9 +511,9 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   // Certificate Transparency is intentionally ignored in Cronet.
   // See //net/docs/certificate-transparency.md for more details.
   context_builder->set_ct_verifier(
-      base::MakeUnique<net::DoNothingCTVerifier>());
+      std::make_unique<net::DoNothingCTVerifier>());
   context_builder->set_ct_policy_enforcer(
-      base::MakeUnique<DoNothingCTPolicyEnforcer>());
+      std::make_unique<DoNothingCTPolicyEnforcer>());
   // TODO(mef): Use |config| to set cookies.
 }
 
@@ -523,7 +522,7 @@ URLRequestContextConfigBuilder::~URLRequestContextConfigBuilder() {}
 
 std::unique_ptr<URLRequestContextConfig>
 URLRequestContextConfigBuilder::Build() {
-  return base::MakeUnique<URLRequestContextConfig>(
+  return std::make_unique<URLRequestContextConfig>(
       enable_quic, quic_user_agent_id, enable_spdy, enable_brotli, http_cache,
       http_cache_max_size, load_disable_cache, storage_path, user_agent,
       experimental_options, std::move(mock_cert_verifier),

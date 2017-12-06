@@ -16,7 +16,6 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
@@ -386,7 +385,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   [[NSHTTPCookieStorage sharedHTTPCookieStorage]
       setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
   std::unique_ptr<net::CookieStore> cookie_store =
-      base::MakeUnique<net::CookieStoreIOS>(
+      std::make_unique<net::CookieStoreIOS>(
           [NSHTTPCookieStorage sharedHTTPCookieStorage]);
   context_builder.SetCookieAndChannelIdStores(std::move(cookie_store), nullptr);
 
