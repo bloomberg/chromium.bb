@@ -640,6 +640,16 @@ void LayoutInline::AddChildToContinuation(LayoutObject* new_child,
 
 void LayoutInline::Paint(const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset) const {
+  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
+    if (LayoutBlockFlow* block_flow = EnclosingNGBlockFlow()) {
+      if (NGPaintFragment* block_flow_fragment = block_flow->PaintFragment()) {
+        block_flow_fragment->PaintInlineBoxForDescendants(paint_info,
+                                                          paint_offset, this);
+        return;
+      }
+    }
+  }
+
   InlinePainter(*this).Paint(paint_info, paint_offset);
 }
 

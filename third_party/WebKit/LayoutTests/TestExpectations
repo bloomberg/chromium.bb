@@ -591,6 +591,9 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-ch
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-positioned-reparenting.html [ Crash ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
 
+### Crash site: PaintController.cpp
+crbug.com/714962 virtual/layout_ng_paint/fast/inline//continuation-outlines-with-layers-2.html [ Crash Failure ]
+
 ### Image/text failures only on LayoutNGPaintFragments
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/001.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/br-text-decoration.html [ Crash Failure ]

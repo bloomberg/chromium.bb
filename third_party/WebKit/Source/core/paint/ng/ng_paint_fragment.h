@@ -12,6 +12,9 @@
 
 namespace blink {
 
+class LayoutInline;
+struct PaintInfo;
+
 // The NGPaintFragment contains a NGPhysicalFragment and geometry in the paint
 // coordinate system.
 //
@@ -61,6 +64,13 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
                               OverlayScrollbarClipBehavior) const {
     return {location, VisualRect().Size()};
   }
+
+  // Paint all descendant inline box fragments that belong to the specified
+  // LayoutObject.
+  void PaintInlineBoxForDescendants(const PaintInfo&,
+                                    const LayoutPoint& paint_offset,
+                                    const LayoutInline*,
+                                    NGPhysicalOffset = {}) const;
 
   // DisplayItemClient methods.
   String DebugName() const override { return "NGPaintFragment"; }
