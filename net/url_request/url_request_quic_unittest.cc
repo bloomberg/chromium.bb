@@ -99,7 +99,7 @@ class URLRequestQuicTest : public ::testing::Test {
 
   void ExtractNetLog(NetLogEventType type,
                      TestNetLogEntry::List* entry_list) const {
-    net::TestNetLogEntry::List entries;
+    TestNetLogEntry::List entries;
     net_log_.GetEntries(&entries);
 
     for (const auto& entry : entries) {
@@ -112,6 +112,33 @@ class URLRequestQuicTest : public ::testing::Test {
       QuicRstStreamErrorCode error_code) const {
     return (static_cast<QuicSimpleDispatcher*>(server_->dispatcher()))
         ->GetRstErrorCount(error_code);
+  }
+
+  static const NetLogSource FindPushUrlSource(
+      const TestNetLogEntry::List& entries,
+      const std::string& push_url) {
+    std::string entry_push_url;
+    for (const auto& entry : entries) {
+      if (entry.phase == NetLogEventPhase::BEGIN &&
+          entry.source.type ==
+              NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION &&
+          entry.GetStringValue("push_url", &entry_push_url) &&
+          entry_push_url == push_url) {
+        return entry.source;
+      }
+    }
+    return NetLogSource();
+  }
+
+  static const TestNetLogEntry* FindEndBySource(
+      const TestNetLogEntry::List& entries,
+      const NetLogSource& source) {
+    for (const auto& entry : entries) {
+      if (entry.phase == NetLogEventPhase::END &&
+          entry.source.type == source.type && entry.source.id == source.id)
+        return &entry;
+    }
+    return nullptr;
   }
 
  private:
@@ -301,45 +328,24 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
   std::string push_url_2 =
       base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
 
-  ASSERT_EQ(entries[0].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[0].phase, net::NetLogEventPhase::BEGIN);
-  EXPECT_EQ(entries[0].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_TRUE(entries[0].params);
-  EXPECT_TRUE(entries[0].GetStringValue("push_url", &value));
-  EXPECT_EQ(value, push_url_1);
+  const NetLogSource source_1 = FindPushUrlSource(entries, push_url_1);
+  EXPECT_TRUE(source_1.IsValid());
 
-  ASSERT_EQ(entries[1].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[1].phase, net::NetLogEventPhase::BEGIN);
-  EXPECT_EQ(entries[1].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_TRUE(entries[1].params);
-  EXPECT_TRUE(entries[1].GetStringValue("push_url", &value));
-  EXPECT_EQ(value, push_url_2);
+  // No net error code for this lookup transaction, the push is found.
+  const TestNetLogEntry* end_entry_1 = FindEndBySource(entries, source_1);
+  EXPECT_FALSE(end_entry_1->params);
+  EXPECT_FALSE(end_entry_1->GetIntegerValue("net_error", &net_error));
 
-  ASSERT_EQ(entries[2].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[2].phase, net::NetLogEventPhase::END);
-  EXPECT_EQ(entries[2].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[2].source.id, entries[1].source.id);
-  EXPECT_TRUE(entries[2].params);
+  const NetLogSource source_2 = FindPushUrlSource(entries, push_url_2);
+  EXPECT_TRUE(source_2.IsValid());
+  EXPECT_NE(source_1.id, source_2.id);
+
   // Net error code -400 is found for this lookup transaction, the push is not
   // found in the cache.
-  EXPECT_TRUE(entries[2].GetIntegerValue("net_error", &net_error));
+  const TestNetLogEntry* end_entry_2 = FindEndBySource(entries, source_2);
+  EXPECT_TRUE(end_entry_2->params);
+  EXPECT_TRUE(end_entry_2->GetIntegerValue("net_error", &net_error));
   EXPECT_EQ(net_error, -400);
-
-  ASSERT_EQ(entries[3].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[3].phase, net::NetLogEventPhase::END);
-  EXPECT_EQ(entries[3].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[3].source.id, entries[0].source.id);
-  EXPECT_FALSE(entries[3].params);
-  // No net error code for this lookup transaction, the push is found.
-  EXPECT_FALSE(entries[3].GetIntegerValue("net_error", &net_error));
 
   // Verify the reset error count received on the server side.
   EXPECT_LE(1u, GetRstErrorCountReceivedByServer(QUIC_STREAM_CANCELLED));
@@ -416,41 +422,22 @@ TEST_F(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   std::string push_url_2 =
       base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
 
-  ASSERT_EQ(entries[0].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[0].phase, net::NetLogEventPhase::BEGIN);
-  EXPECT_EQ(entries[0].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_TRUE(entries[0].params);
-  EXPECT_TRUE(entries[0].GetStringValue("push_url", &value));
-  EXPECT_EQ(value, push_url_1);
+  const NetLogSource source_1 = FindPushUrlSource(entries, push_url_1);
+  EXPECT_TRUE(source_1.IsValid());
 
-  ASSERT_EQ(entries[1].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[1].phase, net::NetLogEventPhase::BEGIN);
-  EXPECT_EQ(entries[1].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_TRUE(entries[1].params);
-  EXPECT_TRUE(entries[1].GetStringValue("push_url", &value));
-  EXPECT_EQ(value, push_url_2);
-
-  ASSERT_EQ(entries[2].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[2].phase, net::NetLogEventPhase::END);
-  EXPECT_EQ(entries[2].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_FALSE(entries[2].params);
   // No net error code for this lookup transaction, the push is found.
-  EXPECT_FALSE(entries[2].GetIntegerValue("net_error", &net_error));
+  const TestNetLogEntry* end_entry_1 = FindEndBySource(entries, source_1);
+  EXPECT_FALSE(end_entry_1->params);
+  EXPECT_FALSE(end_entry_1->GetIntegerValue("net_error", &net_error));
 
-  ASSERT_EQ(entries[3].type,
-            net::NetLogEventType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_EQ(entries[3].phase, net::NetLogEventPhase::END);
-  EXPECT_EQ(entries[3].source.type,
-            net::NetLogSourceType::SERVER_PUSH_LOOKUP_TRANSACTION);
-  EXPECT_FALSE(entries[3].params);
+  const NetLogSource source_2 = FindPushUrlSource(entries, push_url_2);
+  EXPECT_TRUE(source_1.IsValid());
+  EXPECT_NE(source_1.id, source_2.id);
+
   // No net error code for this lookup transaction, the push is found.
-  EXPECT_FALSE(entries[3].GetIntegerValue("net_error", &net_error));
+  const TestNetLogEntry* end_entry_2 = FindEndBySource(entries, source_2);
+  EXPECT_FALSE(end_entry_2->params);
+  EXPECT_FALSE(end_entry_2->GetIntegerValue("net_error", &net_error));
 
   // Verify the reset error count received on the server side.
   EXPECT_LE(2u, GetRstErrorCountReceivedByServer(QUIC_STREAM_CANCELLED));
@@ -490,14 +477,19 @@ TEST_F(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
   std::string push_url_2 =
       base::StringPrintf("https://%s%s", kTestServerHost, "/favicon.ico");
 
-  EXPECT_TRUE(entries[0].GetStringValue("push_url", &value));
-  EXPECT_EQ(value, push_url_1);
-  EXPECT_TRUE(entries[1].GetIntegerValue("net_error", &net_error));
+  const NetLogSource source_1 = FindPushUrlSource(entries, push_url_1);
+  EXPECT_TRUE(source_1.IsValid());
+  const TestNetLogEntry* end_entry_1 = FindEndBySource(entries, source_1);
+  EXPECT_TRUE(end_entry_1->params);
+  EXPECT_TRUE(end_entry_1->GetIntegerValue("net_error", &net_error));
   EXPECT_EQ(net_error, -400);
 
-  EXPECT_TRUE(entries[2].GetStringValue("push_url", &value));
-  EXPECT_EQ(value, push_url_2);
-  EXPECT_TRUE(entries[3].GetIntegerValue("net_error", &net_error));
+  const NetLogSource source_2 = FindPushUrlSource(entries, push_url_2);
+  EXPECT_TRUE(source_2.IsValid());
+  EXPECT_NE(source_1.id, source_2.id);
+  const TestNetLogEntry* end_entry_2 = FindEndBySource(entries, source_2);
+  EXPECT_TRUE(end_entry_2->params);
+  EXPECT_TRUE(end_entry_2->GetIntegerValue("net_error", &net_error));
   EXPECT_EQ(net_error, -400);
 
   // Verify the reset error count received on the server side.
