@@ -224,7 +224,6 @@ TEST_F(AppListModelTest, AppOrder) {
 class AppListModelFolderTest : public AppListModelTest {
  public:
   AppListModelFolderTest() {
-    model_.SetFoldersEnabled(true);
   }
   ~AppListModelFolderTest() override {}
 
@@ -541,15 +540,6 @@ TEST_F(AppListModelFolderTest, DisableFolders) {
   std::string oem_folder_id = oem_folder->id();
   model_.AddItemToFolder(oem_item, oem_folder_id);
   EXPECT_EQ("folder1,oem_folder", GetModelContents());
-
-  // Disable folders. Ensure non-oem folder is removed.
-  model_.SetFoldersEnabled(false);
-  ASSERT_FALSE(model_.FindFolderItem(folder_id));
-  ASSERT_TRUE(model_.FindFolderItem(oem_folder_id));
-  EXPECT_EQ("Item 0,Item 1,oem_folder", GetModelContents());
-
-  // Ensure folder creation fails.
-  EXPECT_EQ(std::string(), model_.MergeItems(item0->id(), item1->id()));
 }
 
 }  // namespace app_list

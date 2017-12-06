@@ -328,8 +328,6 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   }
 
   if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
-    DCHECK(apps_grid_view_->model()->folders_enabled());
-
     // Draw folder dropping preview circle.
     gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
                                    icon_->y() + icon_->size().height() / 2);

@@ -131,10 +131,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   // has a single child left.
   void DeleteUninstalledItem(const std::string& id);
 
-  // Sets whether or not the folder UI should be enabled. If |folders_enabled|
-  // is false, removes any non-OEM folders.
-  void SetFoldersEnabled(bool folders_enabled);
-
   // Sets whether or not the custom launcher page should be enabled.
   void SetCustomLauncherPageEnabled(bool enabled);
   bool custom_launcher_page_enabled() const {
@@ -167,7 +163,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   AppListItemList* top_level_item_list() { return top_level_item_list_.get(); }
 
   Status status() const { return status_; }
-  bool folders_enabled() const { return folders_enabled_; }
 
  private:
   // AppListItemListObserver
@@ -209,7 +204,6 @@ class APP_LIST_MODEL_EXPORT AppListModel : public AppListItemListObserver {
   // The AppListView state. Controlled by the AppListView.
   AppListViewState state_fullscreen_ = AppListViewState::CLOSED;
   base::ObserverList<AppListModelObserver, true> observers_;
-  bool folders_enabled_ = false;
   bool custom_launcher_page_enabled_ = true;
   std::string custom_launcher_page_name_;
 

@@ -61,7 +61,6 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
     model_.reset(new AppListTestModel);
-    model_->SetFoldersEnabled(true);
 
     delegate_.reset(new TestFolderHeaderViewDelegate);
     folder_header_view_.reset(new FolderHeaderView(delegate_.get()));

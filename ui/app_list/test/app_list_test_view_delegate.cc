@@ -19,7 +19,6 @@ namespace test {
 AppListTestViewDelegate::AppListTestViewDelegate()
     : model_(std::make_unique<AppListTestModel>()),
       search_model_(std::make_unique<SearchModel>()) {
-  model_->SetFoldersEnabled(true);
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
