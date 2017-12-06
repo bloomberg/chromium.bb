@@ -56,7 +56,7 @@ class WatchTimeRecorderTest : public testing::Test {
                   bool is_encrypted) {
     provider_->AcquireWatchTimeRecorder(
         mojom::PlaybackProperties::New(
-            kUnknownAudioCodec, kUnknownVideoCodec, has_audio, has_video,
+            kUnknownAudioCodec, kUnknownVideoCodec, has_audio, has_video, false,
             is_mse, is_encrypted, false, gfx::Size(800, 600),
             url::Origin::Create(GURL(kTestOrigin)), true /* is_top_frame */),
         mojo::MakeRequest(&wtr_));
@@ -149,11 +149,7 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
   constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(25);
   constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(50);
 
-  // Don't include kWatchTimeKeyMax, since we'll use that as a placeholder to
-  // ensure only the keys requested for finalize are finalized.
-  const base::StringPiece kLastKey =
-      WatchTimeKeyToString(WatchTimeKey::kWatchTimeKeyMax);
-  for (int i = 0; i < static_cast<int>(WatchTimeKey::kWatchTimeKeyMax); ++i) {
+  for (int i = 0; i <= static_cast<int>(WatchTimeKey::kWatchTimeKeyMax); ++i) {
     const WatchTimeKey key = static_cast<WatchTimeKey>(i);
     SCOPED_TRACE(WatchTimeKeyToString(key));
 
@@ -170,25 +166,29 @@ TEST_F(WatchTimeRecorderTest, TestBasicReporting) {
     wtr_->FinalizeWatchTime({key});
     base::RunLoop().RunUntilIdle();
 
-    const base::StringPiece key_str = WatchTimeKeyToString(key);
-    ExpectWatchTime({key_str}, kWatchTime2);
+    if (WatchTimeRecorder::ShouldReportUmaForTesting(key)) {
+      const base::StringPiece key_str = WatchTimeKeyToString(key);
+      ExpectWatchTime({key_str}, kWatchTime2);
+    }
 
     // These keys are only reported for a full finalize.
     ExpectMtbrTime({}, base::TimeDelta());
     ExpectZeroRebuffers({});
     ExpectUkmWatchTime({}, base::TimeDelta());
 
-    // Verify our sentinel key is recorded properly at player destruction.
+    // Verify nothing else is recorded except for what we finalized above.
     ResetMetricRecorders();
     wtr_.reset();
     base::RunLoop().RunUntilIdle();
-
-    ExpectWatchTime({kLastKey}, kWatchTime1);
+    ExpectWatchTime({}, base::TimeDelta());
     ExpectMtbrTime({}, base::TimeDelta());
     ExpectZeroRebuffers({});
 
     if (key == WatchTimeKey::kAudioAll || key == WatchTimeKey::kAudioVideoAll ||
-        key == WatchTimeKey::kAudioVideoBackgroundAll) {
+        key == WatchTimeKey::kAudioBackgroundAll ||
+        key == WatchTimeKey::kAudioVideoBackgroundAll ||
+        key == WatchTimeKey::kVideoAll ||
+        key == WatchTimeKey::kVideoBackgroundAll) {
       ExpectUkmWatchTime({UkmEntry::kWatchTimeName}, kWatchTime2);
     } else {
       ExpectUkmWatchTime({}, base::TimeDelta());
@@ -246,7 +246,7 @@ TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
-      kCodecAAC, kCodecH264, true, true, false, false, false,
+      kCodecAAC, kCodecH264, true, true, false, false, false, false,
       gfx::Size(800, 600), url::Origin::Create(GURL(kTestOrigin)), true);
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
@@ -262,7 +262,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
     test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
 
     EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
-    EXPECT_UKM(UkmEntry::kIsBackgroundName, false);
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
@@ -289,8 +289,8 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
-      kCodecOpus, kCodecVP9, true, true, true, true, false, gfx::Size(800, 600),
-      url::Origin::Create(GURL(kTestOrigin)), true);
+      kCodecOpus, kCodecVP9, true, true, false, true, true, false,
+      gfx::Size(800, 600), url::Origin::Create(GURL(kTestOrigin)), true);
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
 
@@ -339,7 +339,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
     EXPECT_UKM(UkmEntry::kMeanTimeBetweenRebuffersName,
                kWatchTime2.InMilliseconds() / 3);
 
-    EXPECT_UKM(UkmEntry::kIsBackgroundName, false);
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
@@ -357,7 +357,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
 
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
-      kCodecAAC, kCodecH264, true, true, false, false, false,
+      kCodecAAC, kCodecH264, true, true, true, false, false, false,
       gfx::Size(800, 600), url::Origin::Create(GURL(kTestOrigin)), true);
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
@@ -373,7 +373,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
     test_recorder_->ExpectEntrySourceHasUrl(entry, GURL(kTestOrigin));
 
     EXPECT_UKM(UkmEntry::kWatchTimeName, kWatchTime.InMilliseconds());
-    EXPECT_UKM(UkmEntry::kIsBackgroundName, true);
+    EXPECT_UKM(UkmEntry::kIsBackgroundName, properties->is_background);
     EXPECT_UKM(UkmEntry::kAudioCodecName, properties->audio_codec);
     EXPECT_UKM(UkmEntry::kVideoCodecName, properties->video_codec);
     EXPECT_UKM(UkmEntry::kHasAudioName, properties->has_audio);
