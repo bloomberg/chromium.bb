@@ -54,10 +54,6 @@ const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
 
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
-#if defined(OS_CHROMEOS)
-const char kNumberOfUsers[] = "num-users";
-#endif
-
 const char kViewCount[] = "view-count";
 
 const char kUserCloudPolicyManagerConnectTrace[] =
@@ -123,9 +119,6 @@ size_t RegisterChromeCrashKeys() {
     {kIsEnterpriseManaged, kSmallSize},
 #endif
     {kInputEventFilterSendFailure, kSmallSize},
-#if defined(OS_CHROMEOS)
-    {kNumberOfUsers, kSmallSize},
-#endif
 #if defined(OS_MACOSX)
     // content/:
     {"text-input-context-client", kMediumSize},
