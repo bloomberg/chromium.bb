@@ -25,6 +25,12 @@ const char* GetComponentName(ui::LatencyComponentType type) {
   switch (type) {
     CASE_TYPE(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
     CASE_TYPE(LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT);
+    CASE_TYPE(LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT);
     CASE_TYPE(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
@@ -53,7 +59,16 @@ const char* GetComponentName(ui::LatencyComponentType type) {
   return "unknown";
 }
 
-bool IsTerminalComponent(ui::LatencyComponentType type) {
+bool IsInputLatencyBeginComponent(ui::LatencyComponentType type) {
+  return type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
+}
+
+bool IsTraceBeginComponent(ui::LatencyComponentType type) {
+  return (IsInputLatencyBeginComponent(type) ||
+          type == ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
+}
+
+bool IsTraceEndComponent(ui::LatencyComponentType type) {
   switch (type) {
     case ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT:
     case ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT:
@@ -64,15 +79,6 @@ bool IsTerminalComponent(ui::LatencyComponentType type) {
     default:
       return false;
   }
-}
-
-bool IsBeginComponent(ui::LatencyComponentType type) {
-  return (type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          type == ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
-}
-
-bool IsInputLatencyBeginComponent(ui::LatencyComponentType type) {
-  return type == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
 }
 
 // This class is for converting latency info to trace buffer friendly format.
@@ -163,6 +169,19 @@ bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
     return false;
   }
   return true;
+}
+
+void LatencyInfo::TraceIntermediateFlowEvents(
+    const std::vector<LatencyInfo>& latency_info,
+    const char* event_name) {
+  for (auto& latency : latency_info) {
+    if (latency.trace_id() == -1)
+      continue;
+    TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
+                           TRACE_ID_DONT_MANGLE(latency.trace_id()),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", event_name);
+  }
 }
 
 void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
@@ -263,7 +282,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
   const unsigned char* latency_info_enabled =
       g_latency_info_enabled.Get().latency_info_enabled;
 
-  if (IsBeginComponent(component)) {
+  if (IsTraceBeginComponent(component)) {
     // Should only ever add begin component once.
     CHECK(!began_);
     began_ = true;
@@ -278,12 +297,9 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       // not when we actually issue the ASYNC_BEGIN trace event.
       LatencyComponent begin_component;
       base::TimeTicks ts;
-      if (FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-                      0,
+      if (FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                       &begin_component) ||
-          FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT,
-                      0,
-                      &begin_component)) {
+          FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &begin_component)) {
         ts = begin_component.event_time;
       } else {
         ts = base::TimeTicks::Now();
@@ -331,7 +347,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     }
   }
 
-  if (IsTerminalComponent(component) && began_) {
+  if (IsTraceEndComponent(component) && began_) {
     // Should only ever add terminal component once.
     CHECK(!terminated_);
     terminated_ = true;

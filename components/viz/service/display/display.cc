@@ -352,6 +352,13 @@ bool Display::DrawAndSwap() {
   if (should_swap) {
     swapped_since_resize_ = true;
 
+    if (scheduler_) {
+      frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
+      frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
+          ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT, 0, 0,
+          scheduler_->CurrentFrameTime(), 1);
+    }
+
     DLOG_IF(WARNING, !presented_callbacks_.empty())
         << "DidReceiveSwapBuffersAck() is not called for the last SwapBuffers!";
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -361,28 +368,41 @@ bool Display::DrawAndSwap() {
         presented_callbacks_.push_back(std::move(callback));
     }
 
-    for (auto& latency : frame.metadata.latency_info) {
-      TRACE_EVENT_WITH_FLOW1(
-          "input,benchmark", "LatencyInfo.Flow",
-          TRACE_ID_DONT_MANGLE(latency.trace_id()),
-          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-          "Display::DrawAndSwap");
-    }
+    ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
+                                                 "Display::DrawAndSwap");
+
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
   } else {
-    if (have_damage && !size_matches)
-      aggregator_->SetFullDamageForSurface(current_surface_id_);
     TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
-    // Do not store more that the allowed size.
-    if (ui::LatencyInfo::Verify(frame.metadata.latency_info,
-                                "Display::DrawAndSwap")) {
-      stored_latency_info_.insert(stored_latency_info_.end(),
-                                  frame.metadata.latency_info.begin(),
-                                  frame.metadata.latency_info.end());
+    if (have_damage && !size_matches)
+      aggregator_->SetFullDamageForSurface(current_surface_id_);
+
+    if (have_damage) {
+      // Do not store more than the allowed size.
+      if (ui::LatencyInfo::Verify(frame.metadata.latency_info,
+                                  "Display::DrawAndSwap")) {
+        stored_latency_info_.swap(frame.metadata.latency_info);
+      }
+    } else {
+      // There was no damage, so tracking latency info at this point isn't
+      // useful unless there's a snapshot request.
+      base::TimeTicks now = base::TimeTicks::Now();
+      while (!frame.metadata.latency_info.empty()) {
+        auto& latency = frame.metadata.latency_info.back();
+        if (latency.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                                nullptr)) {
+          stored_latency_info_.push_back(std::move(latency));
+        } else {
+          latency.AddLatencyNumberWithTimestamp(
+              ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, 0, now,
+              1);
+        }
+        frame.metadata.latency_info.pop_back();
+      }
     }
 
     if (scheduler_) {

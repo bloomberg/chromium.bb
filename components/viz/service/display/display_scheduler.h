@@ -50,6 +50,9 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();
   void SetNeedsOneBeginFrame();
+  base::TimeTicks CurrentFrameTime() {
+    return current_begin_frame_args_.frame_time;
+  }
   virtual void DisplayResized();
   virtual void SetNewRootSurface(const SurfaceId& root_surface_id);
   virtual void ProcessSurfaceDamage(const SurfaceId& surface_id,

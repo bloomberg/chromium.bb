@@ -50,6 +50,8 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& SetBeginFrameAck(const BeginFrameAck& ack);
   CompositorFrameBuilder& SetDeviceScaleFactor(float device_scale_factor);
   CompositorFrameBuilder& AddLatencyInfo(ui::LatencyInfo latency_info);
+  CompositorFrameBuilder& AddLatencyInfos(
+      std::vector<ui::LatencyInfo> latency_info);
   CompositorFrameBuilder& SetReferencedSurfaces(
       std::vector<SurfaceId> referenced_surfaces);
   CompositorFrameBuilder& SetActivationDependencies(
