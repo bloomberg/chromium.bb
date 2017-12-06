@@ -164,6 +164,12 @@ struct OSMemDump {
   // Coordinator.GetVmRegionsForHeapProfiler(), empty in the generic case of
   // RequestGlobalMemoryDump().
   array<VmRegion> memory_maps_for_heap_profiler;
+
+  // This is private swapped memory in kilobytes reported on Linux and Android
+  // only.
+  // TODO(crbug.com/676224): add platform restrictions when preprocessing in
+  // mojoms is supported.
+  uint32 private_footprint_swap_kb = 0;
 };
 
 // This struct is used for the public-facing API

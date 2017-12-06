@@ -1058,6 +1058,12 @@ be describing additional metrics about the same event.
       Measure of total private memory consumed by process.
     </summary>
   </metric>
+  <metric name="PrivateSwapFootprint">
+    <summary>
+      Measure of private swap memory consumed by a process. Available on Linux
+      and Android.
+    </summary>
+  </metric>
   <metric name="ProcessType">
     <summary>
       Type of process (e.g. browser, renderer, GPU --- see

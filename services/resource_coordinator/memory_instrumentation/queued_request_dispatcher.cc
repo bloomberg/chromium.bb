@@ -62,6 +62,10 @@ memory_instrumentation::mojom::OSMemDumpPtr CreatePublicOSDump(
 
   os_dump->resident_set_kb = internal_os_dump.resident_set_kb;
   os_dump->private_footprint_kb = CalculatePrivateFootprintKb(internal_os_dump);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  os_dump->private_footprint_swap_kb =
+      internal_os_dump.platform_private_footprint->vm_swap_bytes / 1024;
+#endif
   return os_dump;
 }
 
