@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
@@ -44,4 +44,4 @@ class MediaRouterUIServiceFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_

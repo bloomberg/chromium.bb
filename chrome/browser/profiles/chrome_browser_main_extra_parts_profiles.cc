@@ -90,9 +90,9 @@
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
-#include "chrome/browser/media/router/media_router_ui_service_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/webui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #endif
 

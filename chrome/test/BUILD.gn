@@ -2933,10 +2933,6 @@ test("unit_tests") {
       "../browser/media/router/event_page_request_manager_unittest.cc",
       "../common/media_router/discovery/media_sink_internal_unittest.cc",
       "../common/media_router/discovery/media_sink_service_base_unittest.cc",
-
-      # TODO(crbug.com/646627):
-      # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
-      "../browser/media/router/media_router_ui_service_factory_unittest.cc",
       "../browser/media/router/mojo/extension_media_route_provider_proxy_unittest.cc",
       "../browser/media/router/mojo/media_route_controller_unittest.cc",
       "../browser/media/router/mojo/media_router_desktop_unittest.cc",
@@ -2958,6 +2954,7 @@ test("unit_tests") {
       "../browser/ui/webui/media_router/media_cast_mode_unittest.cc",
       "../browser/ui/webui/media_router/media_router_dialog_controller_impl_unittest.cc",
       "../browser/ui/webui/media_router/media_router_file_dialog_unittest.cc",
+      "../browser/ui/webui/media_router/media_router_ui_service_factory_unittest.cc",
       "../browser/ui/webui/media_router/media_router_ui_unittest.cc",
       "../browser/ui/webui/media_router/media_router_web_ui_test.cc",
       "../browser/ui/webui/media_router/media_router_web_ui_test.h",
