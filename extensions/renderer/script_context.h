@@ -21,7 +21,6 @@
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_injection_callback.h"
-#include "gin/runner.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
@@ -235,8 +234,6 @@ class ScriptContext : public RequestSender::Source {
                                     int argc,
                                     v8::Local<v8::Value> argv[]) const;
 
-  class Runner;
-
   // Whether this context is valid.
   bool is_valid_;
 
@@ -283,8 +280,6 @@ class ScriptContext : public RequestSender::Source {
   GURL url_;
 
   GURL service_worker_scope_;
-
-  std::unique_ptr<Runner> runner_;
 
   base::ThreadChecker thread_checker_;
 
