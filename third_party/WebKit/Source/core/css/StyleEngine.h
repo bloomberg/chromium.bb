@@ -117,6 +117,7 @@ class CORE_EXPORT StyleEngine final
   void InitialViewportChanged();
   void ViewportRulesChanged();
   void HtmlImportAddedOrRemoved();
+  void V0ShadowAddedOnV1Document();
 
   WebStyleSheetId InjectSheet(StyleSheetContents*,
                               WebDocument::CSSOrigin =

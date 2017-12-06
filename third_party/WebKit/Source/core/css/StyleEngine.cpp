@@ -1134,6 +1134,15 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
   }
 }
 
+void StyleEngine::V0ShadowAddedOnV1Document() {
+  // No need to look into the ScopedStyleResolver for document, as ::slotted
+  // never matches anything in a document tree.
+  for (TreeScope* tree_scope : active_tree_scopes_) {
+    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver())
+      resolver->V0ShadowAddedOnV1Document();
+  }
+}
+
 namespace {
 
 enum RuleSetFlags {

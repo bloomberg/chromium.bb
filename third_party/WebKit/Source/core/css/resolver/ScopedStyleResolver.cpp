@@ -318,6 +318,20 @@ void ScopedStyleResolver::AddTreeBoundaryCrossingRules(
       RuleSubSet::Create(parent_style_sheet, sheet_index, rule_set_for_scope));
 }
 
+void ScopedStyleResolver::V0ShadowAddedOnV1Document() {
+  // See the comment in AddSlottedRules().
+  if (!slotted_rule_set_)
+    return;
+
+  if (!tree_boundary_crossing_rule_set_) {
+    tree_boundary_crossing_rule_set_ = new CSSStyleSheetRuleSubSet();
+    GetTreeScope().GetDocument().GetStyleEngine().AddTreeBoundaryCrossingScope(
+        GetTreeScope());
+  }
+  tree_boundary_crossing_rule_set_->AppendVector(*slotted_rule_set_);
+  slotted_rule_set_ = nullptr;
+}
+
 void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
                                           CSSStyleSheet* parent_style_sheet,
                                           unsigned sheet_index) {
@@ -333,6 +347,9 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
   // StyleResolver misses them.
   // Adding this tree scope to tree boundary crossing scopes may end up in
   // O(N^2) where N is number of scopes which has ::slotted() rules.
+  // Once the document-wide cascade order flag downgrades from V1 to V0,
+  // these slotted rules have to be moved back to tree boundary crossing
+  // rule sets. See V0ShadowAddedOnV1Document().
   if (GetTreeScope().GetDocument().MayContainV0Shadow()) {
     if (!tree_boundary_crossing_rule_set_) {
       tree_boundary_crossing_rule_set_ = new CSSStyleSheetRuleSubSet();
@@ -345,7 +362,6 @@ void ScopedStyleResolver::AddSlottedRules(const RuleSet& author_rules,
         RuleSubSet::Create(parent_style_sheet, sheet_index, slotted_rule_set));
     return;
   }
-
   if (!slotted_rule_set_)
     slotted_rule_set_ = new CSSStyleSheetRuleSubSet();
   slotted_rule_set_->push_back(
