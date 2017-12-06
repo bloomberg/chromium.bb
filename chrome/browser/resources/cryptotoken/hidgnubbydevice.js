@@ -399,7 +399,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
   var frame = this.txqueue[0];
 
   var self = this;
-  function transferComplete() {
+  var transferComplete = function() {
     if (chrome.runtime.lastError) {
       console.log(UTIL_fmt('send got lastError:'));
       console.log(UTIL_fmt(chrome.runtime.lastError.message));
@@ -414,7 +414,7 @@ HidGnubbyDevice.prototype.writePump_ = function() {
         self.writePump_();
       }, 0);
     }
-  }
+  };
 
   var u8 = new Uint8Array(frame);
 

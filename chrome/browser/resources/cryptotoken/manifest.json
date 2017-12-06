@@ -48,6 +48,7 @@
       "factoryregistry.js",
       "closeable.js",
       "requesthelper.js",
+	  "asn1.js",
       "enroller.js",
       "requestqueue.js",
       "signer.js",
