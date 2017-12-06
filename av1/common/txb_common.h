@@ -23,6 +23,8 @@ extern const int8_t av1_coeff_band_16x16[256];
 
 extern const int8_t av1_coeff_band_32x32[1024];
 
+extern const int8_t av1_nz_map_ctx_offset[TX_SIZES_ALL][5][5];
+
 typedef struct txb_ctx {
   int txb_skip_ctx;
   int dc_sign_ctx;
@@ -496,7 +498,7 @@ static INLINE int get_nz_count(const uint8_t *const levels, const int bwl,
 static INLINE int get_nz_map_ctx_from_stats(
     const int stats,
     const int coeff_idx,  // raster order
-    const int bwl, const int height, const TX_CLASS tx_class) {
+    const int bwl, const TX_SIZE tx_size, const TX_CLASS tx_class) {
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int ctx = (stats + 1) >> 1;
@@ -505,10 +507,12 @@ static INLINE int get_nz_map_ctx_from_stats(
 #endif
 
   if (tx_class == TX_CLASS_2D) {
-    const int width = 1 << bwl;
-
     if (row == 0 && col == 0) return 0;
 
+#if 0
+    // This is the algorithm to generate table av1_nz_map_ctx_offset[].
+    const int width = 1 << bwl;
+    const int height = tx_size_high[tx_size];
     if (width < height) {
       if (row < 2) return 11 + ctx;
     } else if (width > height) {
@@ -519,6 +523,8 @@ static INLINE int get_nz_map_ctx_from_stats(
     if (row + col < 4) return 5 + ctx + 1;
 
     return 21 + ctx;
+#endif
+    return ctx + av1_nz_map_ctx_offset[tx_size][AOMMIN(row, 4)][AOMMIN(col, 4)];
   } else {
     static const int pos_to_offset[3] = {
       SIG_COEF_CONTEXTS_2D, SIG_COEF_CONTEXTS_2D + 5, SIG_COEF_CONTEXTS_2D + 10
@@ -541,11 +547,11 @@ static INLINE int get_nz_map_ctx_from_stats(
 
 static INLINE int get_nz_map_ctx(const uint8_t *const levels,
                                  const int coeff_idx, const int bwl,
-                                 const int height,
 #if CONFIG_LV_MAP_MULTI
-                                 const int scan_idx, const int is_eob,
+                                 const int height, const int scan_idx,
+                                 const int is_eob,
 #endif
-                                 const TX_TYPE tx_type) {
+                                 const TX_SIZE tx_size, const TX_TYPE tx_type) {
 #if CONFIG_LV_MAP_MULTI
   if (is_eob) {
     if (scan_idx == 0) return SIG_COEF_CONTEXTS - 4;
@@ -561,7 +567,7 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
 #else
       get_nz_count(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
 #endif
-  return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, height, tx_class);
+  return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
 }
 
 static INLINE void set_dc_sign(int *cul_level, tran_low_t v) {

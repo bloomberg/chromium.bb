@@ -163,8 +163,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     c = *eob - 1 - i;
     const int pos = scan[c];
 #if CONFIG_LV_MAP_MULTI
-    const int coeff_ctx =
-        get_nz_map_ctx(levels, pos, bwl, height, c, c == *eob - 1, tx_type);
+    const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, height, c,
+                                         c == *eob - 1, tx_size, tx_type);
 #if USE_BASE_EOB_ALPHABET
     aom_cdf_prob *cdf;
     int nsymbs;
@@ -214,7 +214,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     }
 #else
     int is_nz;
-    const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, height, tx_type);
+    const int coeff_ctx = get_nz_map_ctx(levels, pos, bwl, tx_size, tx_type);
 
     if (c < *eob - 1) {
       is_nz = av1_read_record_bin(
