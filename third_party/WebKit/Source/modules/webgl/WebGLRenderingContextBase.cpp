@@ -4427,7 +4427,7 @@ void WebGLRenderingContextBase::TexImageImpl(
   Vector<uint8_t> data;
 
   IntRect sub_rect = source_image_rect;
-  if (sub_rect == SentinelEmptyRect()) {
+  if (sub_rect.IsValid() && sub_rect == SentinelEmptyRect()) {
     // Recalculate based on the size of the Image.
     sub_rect = SafeGetImageSize(image);
   }
@@ -5282,6 +5282,12 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     frame_metadata_ptr = &frame_metadata;
   }
 
+  if (!source_image_rect.IsValid()) {
+    SynthesizeGLError(GL_INVALID_OPERATION, func_name,
+                      "source sub-rectangle specified via pixel unpack "
+                      "parameters is invalid");
+    return;
+  }
   bool source_image_rect_is_default =
       source_image_rect == SentinelEmptyRect() ||
       source_image_rect ==
