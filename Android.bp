@@ -1,7 +1,6 @@
 cc_library_static {
-
     name: "libjsoncpp",
-
+    vendor_available: true,
     host_supported: true,
 
     srcs: [
