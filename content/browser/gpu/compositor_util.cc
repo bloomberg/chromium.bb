@@ -5,6 +5,7 @@
 #include "content/browser/gpu/compositor_util.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include <utility>
 
@@ -12,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
@@ -382,11 +382,11 @@ std::unique_ptr<base::ListValue> GetProblems() {
   for (size_t i = 0; !eof; ++i) {
     const GpuFeatureInfo gpu_feature_info = GetGpuFeatureInfo(i, &eof);
     if (gpu_feature_info.disabled) {
-      auto problem = base::MakeUnique<base::DictionaryValue>();
+      auto problem = std::make_unique<base::DictionaryValue>();
       problem->SetString(
           "description", gpu_feature_info.disabled_description);
-      problem->Set("crBugs", base::MakeUnique<base::ListValue>());
-      auto disabled_features = base::MakeUnique<base::ListValue>();
+      problem->Set("crBugs", std::make_unique<base::ListValue>());
+      auto disabled_features = std::make_unique<base::ListValue>();
       disabled_features->AppendString(gpu_feature_info.name);
       problem->Set("affectedGpuSettings", std::move(disabled_features));
       problem->SetString("tag", "disabledFeatures");

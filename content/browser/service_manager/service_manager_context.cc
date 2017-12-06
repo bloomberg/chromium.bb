@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -254,7 +253,7 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
   config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
   config.memory_manager = memory_manager;
   config.should_host_viz = switches::IsMusHostingViz();
-  return base::MakeUnique<ui::Service>(&config);
+  return std::make_unique<ui::Service>(&config);
 }
 
 void RegisterUIServiceInProcessIfNecessary(

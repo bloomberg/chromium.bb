@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/task_runner_util.h"
@@ -119,7 +120,7 @@ void RenderFrameAudioOutputStreamFactory::AuthorizationCompleted(
 
   int stream_id = next_stream_id_++;
   std::unique_ptr<media::mojom::AudioOutputStreamObserver> observer =
-      base::MakeUnique<AudioOutputStreamObserverImpl>(
+      std::make_unique<AudioOutputStreamObserverImpl>(
           context_->GetRenderProcessId(), render_frame_id_, stream_id);
   // Since |context_| outlives |this| and |this| outlives |stream_providers_|,
   // unretained is safe.

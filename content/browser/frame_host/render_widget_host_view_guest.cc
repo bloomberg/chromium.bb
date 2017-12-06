@@ -4,12 +4,12 @@
 
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
@@ -841,7 +841,7 @@ void RenderWidgetHostViewGuest::OnGotEmbedToken(
     return;
 
   guest_->SendMessageToEmbedder(
-      base::MakeUnique<BrowserPluginMsg_SetMusEmbedToken>(
+      std::make_unique<BrowserPluginMsg_SetMusEmbedToken>(
           guest_->browser_plugin_instance_id(), token));
 }
 #endif

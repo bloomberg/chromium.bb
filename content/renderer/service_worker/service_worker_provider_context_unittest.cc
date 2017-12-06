@@ -4,6 +4,8 @@
 
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -366,9 +368,9 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* loader_factory_getter */);
-  auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
+  auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
       thread_safe_sender(), provider_context.get());
-  auto client = base::MakeUnique<MockWebServiceWorkerProviderClientImpl>();
+  auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
   provider_impl->SetClient(client.get());
   ASSERT_FALSE(client->was_dispatch_message_event_called());
 
@@ -403,9 +405,9 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
       std::move(container_request), std::move(host_ptr_info),
       nullptr /* loader_factory_getter */);
-  auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
+  auto provider_impl = std::make_unique<WebServiceWorkerProviderImpl>(
       thread_safe_sender(), provider_context.get());
-  auto client = base::MakeUnique<MockWebServiceWorkerProviderClientImpl>();
+  auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
 
   container_ptr->CountFeature(blink::mojom::WebFeature::kWorkerStart);
   provider_impl->SetClient(client.get());

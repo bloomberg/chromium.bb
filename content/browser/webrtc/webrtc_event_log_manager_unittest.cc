@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -44,7 +43,7 @@ enum class ExpectedResult : bool { kFailure = false, kSuccess = true };
 class WebRtcEventLogManagerTest : public ::testing::Test {
  protected:
   WebRtcEventLogManagerTest()
-      : run_loop_(base::MakeUnique<base::RunLoop>()),
+      : run_loop_(std::make_unique<base::RunLoop>()),
         manager_(new WebRtcEventLogManager) {
     EXPECT_TRUE(
         base::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &base_dir_));

@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -284,7 +285,7 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
 
   if (unbound_remote_decoder.is_valid()) {
     base::AutoLock lock(lock_);
-    decoder_ = base::MakeUnique<media::MojoJpegDecodeAccelerator>(
+    decoder_ = std::make_unique<media::MojoJpegDecodeAccelerator>(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         std::move(unbound_remote_decoder));
 

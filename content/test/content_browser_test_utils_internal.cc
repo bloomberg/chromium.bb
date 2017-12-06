@@ -8,11 +8,11 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/containers/stack.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -356,7 +356,7 @@ void UrlCommitObserver::DidFinishNavigation(
 
 UpdateResizeParamsMessageFilter::UpdateResizeParamsMessageFilter()
     : content::BrowserMessageFilter(FrameMsgStart),
-      frame_rect_run_loop_(base::MakeUnique<base::RunLoop>()),
+      frame_rect_run_loop_(std::make_unique<base::RunLoop>()),
       frame_rect_received_(false) {}
 
 void UpdateResizeParamsMessageFilter::WaitForRect() {

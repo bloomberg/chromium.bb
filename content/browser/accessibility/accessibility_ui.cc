@@ -214,7 +214,7 @@ AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
       web_ui->GetWebContents()->GetBrowserContext();
   WebUIDataSource::Add(browser_context, html_source);
 
-  web_ui->AddMessageHandler(base::MakeUnique<AccessibilityUIMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<AccessibilityUIMessageHandler>());
 }
 
 AccessibilityUI::~AccessibilityUI() {}

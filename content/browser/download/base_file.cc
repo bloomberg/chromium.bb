@@ -4,6 +4,7 @@
 
 #include "content/browser/download/base_file.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -430,7 +431,7 @@ DownloadInterruptReason BaseFile::LogInterruptReason(
            << " os_error:" << os_error
            << " reason:" << DownloadInterruptReasonToString(reason);
   auto error_data =
-      base::MakeUnique<FileErrorData>(operation, os_error, reason);
+      std::make_unique<FileErrorData>(operation, os_error, reason);
   CONDITIONAL_TRACE(INSTANT1("download", "DownloadFileError",
                              TRACE_EVENT_SCOPE_THREAD, "file_error",
                              std::move(error_data)));
