@@ -598,10 +598,11 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   if (result.output_snippet.length() > kOutputSnippetBytesLimit) {
     if (result.status == TestResult::TEST_SUCCESS)
       result.status = TestResult::TEST_EXCESSIVE_OUTPUT;
-    result.output_snippet = StringPrintf(
-        "<truncated (%" PRIuS " bytes)>\n", result.output_snippet.length()) +
-        result.output_snippet.substr(
-            result.output_snippet.length() - kOutputSnippetLinesLimit) +
+    result.output_snippet =
+        StringPrintf("<truncated (%" PRIuS " bytes)>\n",
+                     result.output_snippet.length()) +
+        result.output_snippet.substr(result.output_snippet.length() -
+                                     kOutputSnippetBytesLimit) +
         "\n";
   }
 
