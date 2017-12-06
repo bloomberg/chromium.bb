@@ -1,91 +1,24 @@
-<!DOCTYPE html>
 <html>
-<head>
 <script src="./resources/webgl-test-utils-full.js"></script>
 <script src="./resources/tex-image-and-sub-image-utils.js"></script>
 <script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-</head>
 <body>
 <script>
-var wtu = WebGLTestUtils;
-var tiu = TexImageUtils;
-var gl = null;
-var internalFormat = "RGBA";
-var pixelFormat = "RGBA";
-var pixelType = "UNSIGNED_BYTE";
 
-promise_test(function() {
-    var bitmaps = [];
+var imageData = new ImageData(new Uint8ClampedArray(
+                              [255, 0, 0, 255,
+                               255, 0, 0, 26,
+                               0, 255, 0, 255,
+                               0, 255, 0, 26]),
+                               2, 2);
 
-    var canvas = document.createElement('canvas');
-    canvas.width = 4;
-    canvas.height = 4;
-    gl = canvas.getContext("webgl");
+var testOptions = {sourceName: "ImageData",
+                   imageSource: imageData, sourceIsPremul: false,
+                   resizeWidth: 4, resizeHeight: 4};
 
-    gl.clearColor(0,0,0,1);
-    gl.clearDepth(1);
+prepareWebGLContext();
+prepareResizedImageBitmapsAndRuntTests(testOptions);
 
-    var imageData = new ImageData(new Uint8ClampedArray(
-                                  [255, 0, 0, 255,
-                                   255, 0, 0, 26,
-                                   0, 255, 0, 255,
-                                   0, 255, 0, 26]),
-                                   2, 2);
-
-    var options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
-    var p1 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.defaultOption = imageBitmap });
-
-    options.imageOrientation = "none";
-    options.premultiplyAlpha = "premultiply";
-    var p2 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.noFlipYPremul = imageBitmap });
-
-    options.premultiplyAlpha = "default";
-    var p3 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.noFlipYDefault = imageBitmap });
-
-    options.premultiplyAlpha = "none";
-    var p4 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.noFlipYUnpremul = imageBitmap });
-
-    options.imageOrientation = "flipY";
-    options.premultiplyAlpha = "premultiply";
-    var p5 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
-
-    options.premultiplyAlpha = "default";
-    var p6 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
-
-    options.premultiplyAlpha = "none";
-    var p7 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
-
-    options = {resizeWidth: 4, resizeHeight: 4, resizeQuality: "high"};
-    var p8 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
-
-    options.colorSpaceConversion = "none";
-    var p9 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
-
-    options.colorSpaceConversion = "default";
-    var p10 = createImageBitmap(imageData, options).then(
-        function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
-
-    return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(
-        function() {
-            var alphaVal = 0.5;
-            var testPassed = runTest(bitmaps, alphaVal, false);
-            if (!testPassed)
-                assert_true(false, 'Test failed');
-        }, function() {
-            assert_true(false, 'Promise rejected');
-    });
-}, 'createImageBitmap(ImageData) with resize and other options');
 </script>
-</body>
-</html>
