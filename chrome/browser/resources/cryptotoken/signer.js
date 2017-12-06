@@ -324,7 +324,7 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.allowHttp_ =
       this.sender_.origin ? this.sender_.origin.indexOf('http://') == 0 : false;
-  /** @private {Closeable} */
+  /** @private {RequestHandler} */
   this.handler_ = null;
 }
 
@@ -542,10 +542,9 @@ Signer.prototype.helperComplete_ = function(helperReply, opt_source) {
         'helper reported ' + reply.code.toString(16) + ', returning ' +
         reportedError.errorCode));
     // Log non-expected reply codes if we have an url to send them
-    if (reportedError.errorCode == ErrorCodes.OTHER_ERROR) {
-      var logMsg = 'log=u2fsign&rc=' + reply.code.toString(16);
-      if (this.logMsgUrl_)
-        logMessage(logMsg, this.logMsgUrl_);
+    if ((reportedError.errorCode == ErrorCodes.OTHER_ERROR) &&
+        this.logMsgUrl_) {
+      logMessage('log=u2fsign&rc=' + reply.code.toString(16), this.logMsgUrl_);
     }
     this.notifyError_(reportedError);
   } else {

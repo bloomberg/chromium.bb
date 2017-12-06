@@ -9,6 +9,342 @@
 'use strict';
 
 /**
+ * webSafeBase64ToNormal reencodes a base64-encoded string.
+ *
+ * @param {string} s A string encoded as web-safe base64.
+ * @return {string} A string encoded in normal base64.
+ */
+function webSafeBase64ToNormal(s) {
+  return s.replace(/-/g, '+').replace(/_/g, '/');
+}
+
+/**
+ * decodeWebSafeBase64ToArray decodes a base64-encoded string.
+ *
+ * @param {string} s A base64-encoded string.
+ * @return {!Uint8Array}
+ */
+function decodeWebSafeBase64ToArray(s) {
+  var bytes = atob(webSafeBase64ToNormal(s));
+  var buffer = new ArrayBuffer(bytes.length);
+  var ret = new Uint8Array(buffer);
+  for (var i = 0; i < bytes.length; i++) {
+    ret[i] = bytes.charCodeAt(i);
+  }
+  return ret;
+}
+
+// See "FIDO U2F Authenticator Transports Extension", §3.2.1.
+const transportTypeOID = [1, 3, 6, 1, 4, 1, 45724, 2, 1, 1];
+
+/**
+ * Returns the value of the transport-type X.509 extension from the supplied
+ * attestation certificate, or 0.
+ *
+ * @param {!Uint8Array} der The DER bytes of an attestation certificate.
+ * @returns {Uint8Array} the bytes of the transport-type extension, if present,
+ *     or null.
+ * @throws {Error}
+ */
+function transportType(der) {
+  var topLevel = new ByteString(der);
+  const tbsCert = topLevel.getASN1(Tag.SEQUENCE).getASN1(Tag.SEQUENCE);
+  tbsCert.getOptionalASN1(
+      Tag.CONSTRUCTED | Tag.CONTEXT_SPECIFIC | 0);  // version
+  tbsCert.getASN1(Tag.INTEGER);                     // serialNumber
+  tbsCert.getASN1(Tag.SEQUENCE);                    // signature algorithm
+  tbsCert.getASN1(Tag.SEQUENCE);                    // issuer
+  tbsCert.getASN1(Tag.SEQUENCE);                    // validity
+  tbsCert.getASN1(Tag.SEQUENCE);                    // subject
+  tbsCert.getASN1(Tag.SEQUENCE);                    // SPKI
+  tbsCert.getOptionalASN1(                          // issuerUniqueID
+      Tag.CONSTRUCTED | Tag.CONTEXT_SPECIFIC | 1);
+  tbsCert.getOptionalASN1(  // subjectUniqueID
+      Tag.CONSTRUCTED | Tag.CONTEXT_SPECIFIC | 2);
+  const outerExtensions =
+      tbsCert.getOptionalASN1(Tag.CONSTRUCTED | Tag.CONTEXT_SPECIFIC | 3);
+  if (outerExtensions == null) {
+    return null;
+  }
+  const extensions = outerExtensions.getASN1(Tag.SEQUENCE);
+  if (extensions.empty) {
+    return null;
+  }
+
+  while (!extensions.empty) {
+    const extension = extensions.getASN1(Tag.SEQUENCE);
+    const oid = extension.getASN1ObjectIdentifier();
+    if (oid.length != transportTypeOID.length) {
+      continue;
+    }
+    var matches = true;
+    for (var i = 0; i < oid.length; i++) {
+      if (oid[i] != transportTypeOID[i]) {
+        matches = false;
+        break;
+      }
+    }
+    if (!matches) {
+      continue;
+    }
+
+    extension.getOptionalASN1(Tag.BOOLEAN);  // 'critical' flag
+    const contents = extension.getASN1(Tag.OCTETSTRING);
+    if (!extension.empty) {
+      throw Error('trailing garbage after extension');
+    }
+    return contents.getASN1(Tag.BITSTRING).data;
+  }
+  return null;
+}
+
+/**
+ * makeCertAndKey creates a new ECDSA keypair and returns the private key
+ * and a cert containing the public key.
+ *
+ * @param {!Uint8Array} original The certificate being replaced, as DER bytes.
+ * @return {Promise<{privateKey: !webCrypto.CryptoKey, certDER: !Uint8Array}>}
+ */
+async function makeCertAndKey(original) {
+  var transport = transportType(original);
+  if (transport !== null) {
+    if (transport.length != 2) {
+      throw Error('bad extension length');
+    }
+    if (transport[0] < 3) {
+      throw Error('too many bits set');  // Only 5 bits are defined.
+    }
+  }
+
+  const keyalg = {name: 'ECDSA', namedCurve: 'P-256'};
+  const keypair =
+      await crypto.subtle.generateKey(keyalg, true, ['sign', 'verify']);
+  const publicKey = await crypto.subtle.exportKey('raw', keypair.publicKey);
+  var serialBuffer = new ArrayBuffer(10);
+  var serial = new Uint8Array(serialBuffer);
+  crypto.getRandomValues(serial);
+
+  const ecdsaWithSHA256 = [1, 2, 840, 10045, 4, 3, 2];
+  const ansiX962 = [1, 2, 840, 10045, 2, 1];
+  const secp256R1 = [1, 2, 840, 10045, 3, 1, 7];
+  const commonName = [2, 5, 4, 3];
+  const x509V3 = 2;
+
+  const certBuilder = new ByteBuilder();
+  certBuilder.addASN1(Tag.SEQUENCE, (b) => {
+    b.addASN1(Tag.SEQUENCE, (b) => {  // TBSCertificate
+      b.addASN1(Tag.CONTEXT_SPECIFIC | Tag.CONSTRUCTED | 0, (b) => {
+        b.addASN1Int(x509V3);  // Version
+      });
+      b.addASN1BigInt(serial);          // Serial number
+      b.addASN1(Tag.SEQUENCE, (b) => {  // Signature algorithm
+        b.addASN1ObjectIdentifier(ecdsaWithSHA256);
+      });
+      b.addASN1(Tag.SEQUENCE, (b) => {  // Issuer
+        b.addASN1(Tag.SET, (b) => {
+          b.addASN1(Tag.SEQUENCE, (b) => {
+            b.addASN1ObjectIdentifier(commonName);
+            b.addASN1PrintableString('U2F');
+          });
+        });
+      });
+      b.addASN1(Tag.SEQUENCE, (b) => {  // Validity
+        b.addASN1(Tag.UTCTime, (b) => {
+          b.addBytesFromString('0001010000Z');
+        });
+        b.addASN1(Tag.UTCTime, (b) => {
+          b.addBytesFromString('0001010000Z');
+        });
+      });
+      b.addASN1(Tag.SEQUENCE, (b) => {  // Subject
+        b.addASN1(Tag.SET, (b) => {
+          b.addASN1(Tag.SEQUENCE, (b) => {
+            b.addASN1ObjectIdentifier(commonName);
+            b.addASN1PrintableString('U2F');
+          });
+        });
+      });
+      b.addASN1(Tag.SEQUENCE, (b) => {    // Public key
+        b.addASN1(Tag.SEQUENCE, (b) => {  // Algorithm identifier
+          b.addASN1ObjectIdentifier(ansiX962);
+          b.addASN1ObjectIdentifier(secp256R1);
+        });
+        b.addASN1BitString(new Uint8Array(publicKey));
+      });
+      if (transport !== null) {
+        var t = transport;  // This causes the compiler to see t cannot be null.
+        // Extensions
+        b.addASN1(Tag.CONTEXT_SPECIFIC | Tag.CONSTRUCTED | 3, (b) => {
+          b.addASN1(Tag.SEQUENCE, (b) => {
+            b.addASN1(Tag.SEQUENCE, (b) => {  // Transport-type extension.
+              b.addASN1ObjectIdentifier(transportTypeOID);
+              b.addASN1(Tag.OCTETSTRING, (b) => {
+                b.addASN1(Tag.BITSTRING, (b) => {
+                  b.addBytes(t);
+                });
+              });
+            });
+          });
+        });
+      }
+    });
+    b.addASN1(Tag.SEQUENCE, (b) => {  // Algorithm identifier
+      b.addASN1ObjectIdentifier(ecdsaWithSHA256);
+    });
+    b.addASN1(Tag.BITSTRING, (b) => {  // Signature
+      b.addBytesFromString('\x00');    // (not valid, obviously.)
+    });
+  });
+  return {privateKey: keypair.privateKey, certDER: certBuilder.data};
+}
+
+/**
+ * Registration encodes a registration response success message.  See "FIDO U2F
+ * Raw Message Formats" (§4.3).
+ */
+const Registration = class {
+  /**
+   * @param {string} registrationData the registration response message,
+   *     base64-encoded.
+   * @param {string} appId the application identifier.
+   * @param {string=} opt_clientData the client data, base64-encoded.  This
+   *     field is not really optional; it is an error if it is empty or missing.
+   * @throws {Error}
+   */
+  constructor(registrationData, appId, opt_clientData) {
+    var data = new ByteString(decodeWebSafeBase64ToArray(registrationData));
+    var magic = data.getBytes(1);
+    if (magic[0] != 5) {
+      throw Error('bad magic number');
+    }
+    /** @private {!Uint8Array} */
+    this.publicKey_ = data.getBytes(65);
+    /** @private {!Uint8Array} */
+    this.keyHandleLen_ = data.getBytes(1);
+    /** @private {!Uint8Array} */
+    this.keyHandle_ = data.getBytes(this.keyHandleLen_[0]);
+    /** @private {!Uint8Array} */
+    this.certificate_ = data.getASN1Element(Tag.SEQUENCE).data;
+    /** @private {!Uint8Array} */
+    this.signature_ = data.getASN1Element(Tag.SEQUENCE).data;
+    if (!data.empty) {
+      throw Error('extra trailing bytes');
+    }
+
+    if (!opt_clientData) {
+      throw Error('missing client data');
+    }
+    /** @private {string} */
+    this.clientData_ = atob(webSafeBase64ToNormal(opt_clientData));
+    JSON.parse(this.clientData_);  // Just checking.
+
+    /** @private {string} */
+    this.appId_ = appId;
+  }
+
+  /** @return {!Uint8Array} the attestation certificate, DER-encoded. */
+  get certificate() {
+    return this.certificate_;
+  }
+
+  /** @return {!Uint8Array} the attestation signature, DER-encoded. */
+  get signature() {
+    return this.signature_;
+  }
+
+  /**
+   * toBeSigned marshals the parts of a registration that are signed by the
+   * attestation key, however obtained.
+   *
+   * @return {!Uint8Array} data to be signed.
+   */
+  toBeSigned() {
+    var tbs = new ByteBuilder();
+    tbs.addBytesFromString('\0');
+    tbs.addBytes(sha256HashOfString(this.appId_));
+    tbs.addBytes(sha256HashOfString(this.clientData_));
+    tbs.addBytes(this.keyHandle_);
+    tbs.addBytes(this.publicKey_);
+    return tbs.data;
+  }
+
+  /**
+   * sign signs data from the registration (see toBeSigned()) using the supplied
+   * private key.  This is used in |RANDOMIZE| mode.
+   *
+   * @param {!webCrypto.CryptoKey} key ECDSA P-256 signing key in WebCrypto
+   *     format
+   * @return {Promise<!Uint8Array>} ASN.1 DER encoded ECDSA signature.
+   */
+  async sign(key) {
+    const algo = {name: 'ECDSA', hash: {name: 'SHA-256'}};
+    var signatureBuf = await crypto.subtle.sign(algo, key, this.toBeSigned());
+    var signatureRaw = new ByteString(new Uint8Array(signatureBuf));
+    var signatureASN1 = new ByteBuilder();
+    signatureASN1.addASN1(Tag.SEQUENCE, (b) => {
+      // The P-256 signature from WebCrypto is a pair of 32-byte, big-endian
+      // values concatenated.
+      b.addASN1BigInt(signatureRaw.getBytes(32));
+      b.addASN1BigInt(signatureRaw.getBytes(32));
+    });
+    return signatureASN1.data;
+  }
+
+  /**
+   * withReplacement marshals the registration (to base64) with the certificate
+   * and signature replaced.
+   *
+   * @param {!Uint8Array} certificate new certificate, as DER.
+   * @param {!Uint8Array} signature new signature, as DER.
+   * @return {string} The supplied registration data with certificate and
+   *     signature replaced, base64.
+   */
+  withReplacement(certificate, signature) {
+    var result = new ByteBuilder();
+    result.addBytesFromString('\x05');
+    result.addBytes(this.publicKey_);
+    result.addBytes(this.keyHandleLen_);
+    result.addBytes(this.keyHandle_);
+    result.addBytes(certificate);
+    result.addBytes(signature);
+    return B64_encode(result.data);
+  }
+};
+
+/**
+ * ConveyancePreference describes how to alter (if at all) the attestation
+ * certificate in a registration response.
+ * @enum
+ */
+var ConveyancePreference = {
+  /**
+   * NONE means that the token's attestation certificate should be replaced with
+   * a randomly generated one, and that response should be re-signed using a
+   * corresponding key.
+   */
+  NONE: 1,
+  /**
+   * DIRECT means that the token's attestation cert should be returned unchanged
+   * to the relying party.
+   */
+  DIRECT: 0,
+};
+
+/**
+ * conveyancePreference returns the attestation certificate replacement mode.
+ *
+ * @param {EnrollChallenge} enrollChallenge
+ * @return {ConveyancePreference}
+ */
+function conveyancePreference(enrollChallenge) {
+  if (enrollChallenge.hasOwnProperty('attestation') &&
+      enrollChallenge['attestation'] == 'none') {
+    return ConveyancePreference.NONE;
+  }
+  return ConveyancePreference.DIRECT;
+}
+
+/**
  * Handles a U2F enroll request.
  * @param {MessageSender} messageSender The message sender.
  * @param {Object} request The web page's enroll request.
@@ -26,18 +362,50 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
-  function sendSuccessResponse(u2fVersion, info, clientData) {
+  /**
+   * @param {string} u2fVersion
+   * @param {string} registrationData Registration data, base64
+   * @param {string=} opt_clientData Base64.
+   */
+  function sendSuccessResponse(u2fVersion, registrationData, opt_clientData) {
     var enrollChallenges = request['registerRequests'];
-    var enrollChallenge =
+    var enrollChallengeOrNull =
         findEnrollChallengeOfVersion(enrollChallenges, u2fVersion);
-    if (!enrollChallenge) {
+    if (!enrollChallengeOrNull) {
       sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
       return;
     }
-    var responseData =
-        makeEnrollResponseData(enrollChallenge, u2fVersion, info, clientData);
-    var response = makeU2fSuccessResponse(request, responseData);
-    sendResponseOnce(sentResponse, closeable, response, sendResponse);
+    var enrollChallenge = enrollChallengeOrNull;  // Avoids compiler warning.
+    var appId = request['appId'];
+    if (enrollChallenge.hasOwnProperty('appId')) {
+      appId = enrollChallenge['appId'];
+    }
+
+    var promise = Promise.resolve(registrationData);
+    switch (conveyancePreference(enrollChallenge)) {
+      case ConveyancePreference.NONE: {
+        console.log('randomizing attestation certificate');
+        promise = new Promise(async function(resolve, reject) {
+          const reg = new Registration(registrationData, appId, opt_clientData);
+          const keypair = await makeCertAndKey(reg.certificate);
+          const signature = await reg.sign(keypair.privateKey);
+          resolve(reg.withReplacement(keypair.certDER, signature));
+        });
+        break;
+      }
+    }
+
+    promise.then(
+        (registrationData) => {
+          var responseData = makeEnrollResponseData(
+              enrollChallenge, u2fVersion, registrationData, opt_clientData);
+          var response = makeU2fSuccessResponse(request, responseData);
+          sendResponseOnce(sentResponse, closeable, response, sendResponse);
+        },
+        (err) => {
+          console.warn('attestation certificate replacement failed: ' + err);
+          sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
+        });
   }
 
   function timeout() {
@@ -69,6 +437,7 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
       new WatchdogRequestHandler(watchdogTimeoutValueSeconds, timeout);
   var wrappedErrorCb = watchdog.wrapCallback(sendErrorResponse);
   var wrappedSuccessCb = watchdog.wrapCallback(sendSuccessResponse);
+  // TODO: Fix unused; intended to pass wrapped callbacks to Enroller?
 
   var timer = createAttenuatedTimer(
       FACTORY_REGISTRY.getCountdownFactory(), timeoutValueSeconds);
@@ -262,7 +631,7 @@ function Enroller(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {boolean} */
   this.allowHttp_ =
       this.sender_.origin ? this.sender_.origin.indexOf('http://') == 0 : false;
-  /** @private {Closeable} */
+  /** @private {RequestHandler} */
   this.handler_ = null;
 }
 

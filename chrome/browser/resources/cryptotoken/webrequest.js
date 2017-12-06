@@ -243,7 +243,7 @@ function sendResponseOnce(sentResponse, closeable, response, sendResponse) {
 
 /**
  * @param {!string} string Input string
- * @return {Array<number>} SHA256 hash value of string.
+ * @return {!Array<number>} SHA256 hash value of string.
  */
 function sha256HashOfString(string) {
   var s = new SHA256();

@@ -55,9 +55,9 @@ SHA256.prototype._compress = function(buf) {
   var W = this._W;
   var k = this._k;
 
-  function _rotr(w, r) {
+  var _rotr = function(w, r) {
     return ((w << (32 - r)) | (w >>> r));
-  }
+  };
 
   // get 16 big endian words
   for (var i = 0; i < 64; i += 4) {
@@ -147,7 +147,7 @@ SHA256.prototype.updateRange = function(bytes, start, end) {
  * Optionally update the hash with additional arguments, and return the
  * resulting hash value.
  * @param {...*} var_args Data buffers to hash
- * @return {Array<number>} the SHA256 hash value.
+ * @return {!Array<number>} the SHA256 hash value.
  */
 SHA256.prototype.digest = function(var_args) {
   for (var i = 0; i < arguments.length; ++i)

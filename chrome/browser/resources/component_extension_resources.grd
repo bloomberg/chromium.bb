@@ -155,6 +155,7 @@
       <include name="IDR_CRYPTOTOKEN_GNUBBYFACTORY_JS" file="cryptotoken/gnubbyfactory.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_USBGNUBBYFACTORY_JS" file="cryptotoken/usbgnubbyfactory.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_DEVICESTATUSCODES_JS" file="cryptotoken/devicestatuscodes.js" type="BINDATA" />
+      <include name="IDR_CRYPTOTOKEN_ASN1_JS" file="cryptotoken/asn1.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ENROLLER_JS" file="cryptotoken/enroller.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_USBENROLLHANDLER_JS" file="cryptotoken/usbenrollhandler.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_REQUESTQUEUE_JS" file="cryptotoken/requestqueue.js" type="BINDATA" />
