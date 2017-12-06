@@ -1,7 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -39,11 +39,24 @@ struct BootProgressEvent {
   int64 uptimeMillis;
 };
 
-// Next method ID: 1
+[Extensible]
+enum NativeBridgeType {
+  // Native bridge is not used.
+  NONE = 0,
+  // Using houdini translator.
+  HOUDINI = 1,
+  // Using ndk-translation translator.
+  NDK_TRANSLATION = 2,
+};
+
+// Next method ID: 2
 interface MetricsHost {
-  // Report boot progress events from ARC instance.
+  // Reports boot progress events from ARC instance.
   ReportBootProgress@0(array<BootProgressEvent> events,
                        [MinVersion=1] BootType boot_type);
+
+  // Reports native bridge used by ARC instance.
+  [MinVersion=3] ReportNativeBridge@1(NativeBridgeType native_bridge_type);
 };
 
 // Next method ID: 2
