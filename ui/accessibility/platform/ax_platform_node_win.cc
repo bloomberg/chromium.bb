@@ -3294,6 +3294,22 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
     if (GetData().role != AX_ROLE_ROW)
       IntAttributeToIA2(result, AX_ATTR_ARIA_CELL_COLUMN_INDEX, "colindex");
     IntAttributeToIA2(result, AX_ATTR_ARIA_CELL_ROW_INDEX, "rowindex");
+
+    // Experimental: expose aria-rowtext / aria-coltext. Not standardized
+    // yet, but obscure enough that it's safe to expose.
+    // http://crbug.com/791634
+    for (size_t i = 0; i < GetData().html_attributes.size(); ++i) {
+      const std::string& attr = GetData().html_attributes[i].first;
+      const std::string& value = GetData().html_attributes[i].second;
+      if (attr == "aria-coltext") {
+        result.push_back(base::string16(L"coltext:") +
+                         base::UTF8ToUTF16(value));
+      }
+      if (attr == "aria-rowtext") {
+        result.push_back(base::string16(L"rowtext:") +
+                         base::UTF8ToUTF16(value));
+      }
+    }
   }
 
   // Expose row or column header sort direction.
