@@ -29,6 +29,9 @@ namespace {
 // Help feature to be shown.
 const int kMinChromeOpensRequired = 5;
 
+// The timeout for the load of the feature engagement tracker.
+const NSTimeInterval kWaitForTrackerLoadTimeout = 5.0;
+
 // Matcher for the Reading List Text Badge.
 id<GREYMatcher> ReadingListTextBadge() {
   return grey_accessibilityID(@"kReadingListTextBadgeAccessibilityIdentifier");
@@ -51,12 +54,12 @@ void LoadFeatureEngagementTracker() {
 
   feature_engagement::Tracker* tracker =
       feature_engagement::TrackerFactory::GetForBrowserState(browserState);
-  GREYAssert(testing::WaitUntilConditionOrTimeout(
-                 testing::kWaitForFileOperationTimeout,
-                 ^{
-                   return tracker->IsInitialized();
-                 }),
-             @"Engagement Tracker did not load before timeout.");
+  GREYAssert(
+      testing::WaitUntilConditionOrTimeout(kWaitForTrackerLoadTimeout,
+                                           ^{
+                                             return tracker->IsInitialized();
+                                           }),
+      @"Engagement Tracker did not load before timeout.");
 }
 
 // Enables the Badged Reading List help to be triggered for |feature_list|.
@@ -89,9 +92,7 @@ void EnableBadgedReadingListTriggering(
 
 // Verifies that the Badged Reading List feature shows when triggering
 // conditions are met.
-// TODO(crbug.com/789943): This test is flaky on devices. Reenable it once it is
-// fixed.
-- (void)FLAKY_testBadgedReadingListFeatureShouldShow {
+- (void)testBadgedReadingListFeatureShouldShow {
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableBadgedReadingListTriggering(scoped_feature_list);
