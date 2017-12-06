@@ -320,22 +320,16 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
-      l10n_util::GetStringUTF16(message_id),
-      message_center::IsNewStyleNotificationEnabled()
-          ? gfx::Image()
-          : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                IDR_NOTIFICATION_ALERT),
+      l10n_util::GetStringUTF16(message_id), gfx::Image(),
       l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
       GURL(notification_id), notifier_id, data,
       new SigninNotificationDelegate());
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification.set_accent_color(
-        message_center::kSystemNotificationColorCriticalWarning);
-    notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
-        kNotificationWarningIcon, message_center::kSmallImageSizeMD,
-        message_center::kSystemNotificationColorWarning)));
-    notification.set_vector_small_image(kNotificationWarningIcon);
-  }
+  notification.set_accent_color(
+      message_center::kSystemNotificationColorCriticalWarning);
+  notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
+      kNotificationWarningIcon, message_center::kSmallImageSizeMD,
+      message_center::kSystemNotificationColorWarning)));
+  notification.set_vector_small_image(kNotificationWarningIcon);
   notification.SetSystemPriority();
 
   // Add the notification.

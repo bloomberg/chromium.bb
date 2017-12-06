@@ -60,15 +60,6 @@ base::string16 GetConnectErrorString(const std::string& error_name) {
   return base::string16();
 }
 
-// TODO(tetsui): Remove with IsNewStyleNotificationEnabled switch.
-int GetErrorNotificationIconId(const std::string& network_type) {
-  if (network_type == shill::kTypeVPN)
-    return IDR_AURA_UBER_TRAY_NETWORK_VPN;
-  if (network_type == shill::kTypeCellular)
-    return IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR;
-  return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
-}
-
 const gfx::VectorIcon& GetErrorNotificationVectorIcon(
     const std::string& network_type) {
   if (network_type == shill::kTypeVPN)
@@ -86,25 +77,17 @@ void ShowErrorNotification(const std::string& service_path,
                            const base::Closure& callback) {
   NET_LOG(ERROR) << "ShowErrorNotification: " << service_path << ": "
                  << base::UTF16ToUTF8(title);
-  std::unique_ptr<message_center::Notification> notification;
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification = message_center::Notification::CreateSystemNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
-        message, gfx::Image(), base::string16() /* display_source */, GURL(),
-        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                   ash::system_notifier::kNotifierNetworkError),
-        message_center::RichNotificationData(),
-        new message_center::HandleNotificationClickDelegate(callback),
-        GetErrorNotificationVectorIcon(network_type),
-        message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  } else {
-    const gfx::Image& icon =
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            GetErrorNotificationIconId(network_type));
-    notification = message_center::Notification::CreateSystemNotification(
-        notification_id, title, message, icon,
-        ash::system_notifier::kNotifierNetworkError, callback);
-  }
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
+          message, gfx::Image(), base::string16() /* display_source */, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              ash::system_notifier::kNotifierNetworkError),
+          message_center::RichNotificationData(),
+          new message_center::HandleNotificationClickDelegate(callback),
+          GetErrorNotificationVectorIcon(network_type),
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

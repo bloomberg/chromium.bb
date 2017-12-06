@@ -83,34 +83,20 @@ void ShowLowDiskSpaceErrorNotification(content::BrowserContext* context) {
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();
   notifier_id.profile_id = account_id.GetUserEmail();
 
-  std::unique_ptr<message_center::Notification> notification;
-  if (message_center::IsNewStyleNotificationEnabled()) {
-    notification = message_center::Notification::CreateSystemNotification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskSpaceId,
-        l10n_util::GetStringUTF16(
-            IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE),
-        l10n_util::GetStringUTF16(
-            IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE),
-        gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_DISK_SPACE_NOTIFICATION_CRITICAL)),
-        l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE), GURL(),
-        notifier_id, optional_fields,
-        new LowDiskSpaceErrorNotificationDelegate(context),
-        kNotificationStorageFullIcon,
-        message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  } else {
-    notification = std::make_unique<message_center::Notification>(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskSpaceId,
-        l10n_util::GetStringUTF16(
-            IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE),
-        l10n_util::GetStringUTF16(
-            IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE),
-        gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_DISK_SPACE_NOTIFICATION_CRITICAL)),
-        l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE), GURL(),
-        notifier_id, optional_fields,
-        new LowDiskSpaceErrorNotificationDelegate(context));
-  }
+  std::unique_ptr<message_center::Notification> notification =
+      message_center::Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskSpaceId,
+          l10n_util::GetStringUTF16(
+              IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE),
+          l10n_util::GetStringUTF16(
+              IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE),
+          gfx::Image(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_DISK_SPACE_NOTIFICATION_CRITICAL)),
+          l10n_util::GetStringUTF16(IDS_ARC_NOTIFICATION_DISPLAY_SOURCE),
+          GURL(), notifier_id, optional_fields,
+          new LowDiskSpaceErrorNotificationDelegate(context),
+          kNotificationStorageFullIcon,
+          message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
