@@ -640,7 +640,6 @@ void OfflinePageMetadataStoreSQL::SetStateForTesting(StoreState state,
 
 void OfflinePageMetadataStoreSQL::InitializeInternal(
     base::OnceClosure pending_command) {
-  // TODO(fgorski): Set state to initializing/loading.
   DCHECK_EQ(state_, StoreState::NOT_LOADED);
 
   if (!last_closing_time_.is_null()) {
@@ -654,6 +653,7 @@ void OfflinePageMetadataStoreSQL::InitializeInternal(
     ReportStoreEvent(OfflinePagesStoreEvent::STORE_OPENED_FIRST_TIME);
   }
 
+  state_ = StoreState::INITIALIZING;
   db_.reset(new sql::Connection());
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
@@ -674,6 +674,14 @@ void OfflinePageMetadataStoreSQL::OnInitializeInternalDone(
 
   CHECK(!pending_command.is_null());
   std::move(pending_command).Run();
+
+  // Execute other pending commands.
+  for (auto command_iter = pending_commands_.begin();
+       command_iter != pending_commands_.end();) {
+    std::move(*command_iter++).Run();
+  }
+
+  pending_commands_.clear();
 
   if (state_ == StoreState::FAILED_LOADING)
     state_ = StoreState::NOT_LOADED;
