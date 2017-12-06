@@ -114,7 +114,8 @@ protocol/%-client-protocol-core.h : $(top_srcdir)/protocol/%.xml
 BUILT_SOURCES =					\
 	$(nodist_libwayland_server_la_SOURCES)	\
 	$(nodist_libwayland_client_la_SOURCES)	\
-	$(nodist_headers_test_SOURCES)
+	$(nodist_headers_test_SOURCES)		\
+	$(nodist_display_test_SOURCES)
 
 CLEANFILES = $(BUILT_SOURCES) doc/doxygen/doxygen_sqlite3.db
 DISTCLEANFILES = src/wayland-version.h
@@ -206,6 +207,10 @@ client_test_SOURCES = tests/client-test.c
 client_test_LDADD = libtest-runner.la
 display_test_SOURCES = tests/display-test.c
 display_test_LDADD = libtest-runner.la
+nodist_display_test_SOURCES =				\
+	protocol/tests-server-protocol.h		\
+	protocol/tests-client-protocol.h 		\
+	protocol/tests-protocol.c
 connection_test_SOURCES = tests/connection-test.c
 connection_test_LDADD = libtest-runner.la
 event_loop_test_SOURCES = tests/event-loop-test.c

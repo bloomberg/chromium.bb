@@ -47,6 +47,9 @@
 #include "test-runner.h"
 #include "test-compositor.h"
 
+#include "tests-server-protocol.h"
+#include "tests-client-protocol.h"
+
 struct display_destroy_listener {
 	struct wl_listener listener;
 	int done;
@@ -1060,6 +1063,105 @@ TEST(bind_fails_on_filtered_global)
 
 	/* Try to bind to the interface name when a global filter is in place */
 	client_create(d, force_bind, name);
+	display_run(d);
+
+	wl_global_destroy(g);
+
+	display_destroy(d);
+}
+
+static void
+pre_fd(void *data, struct fd_passer *fdp)
+{
+	fd_passer_destroy(fdp);
+}
+
+static void
+fd(void *data, struct fd_passer *fdp, int32_t fd)
+{
+	/* We destroyed the resource before this event */
+	assert(false);
+}
+
+struct fd_passer_listener fd_passer_listener = {
+	pre_fd,
+	fd,
+};
+
+static void
+zombie_fd_handle_globals(void *data, struct wl_registry *registry,
+			 uint32_t id, const char *intf, uint32_t ver)
+{
+	struct fd_passer *fdp;
+
+	if (!strcmp(intf, "fd_passer")) {
+		fdp = wl_registry_bind(registry, id, &fd_passer_interface, 1);
+		fd_passer_add_listener(fdp, &fd_passer_listener, NULL);
+	}
+}
+
+static const struct wl_registry_listener zombie_fd_registry_listener = {
+	zombie_fd_handle_globals,
+	NULL
+};
+
+static void
+zombie_client(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry, &zombie_fd_registry_listener, NULL);
+
+	/* Gets the registry */
+	wl_display_roundtrip(c->wl_display);
+
+	/* push out the fd_passer bind */
+	wl_display_roundtrip(c->wl_display);
+
+	/* push out our fd_passer.destroy */
+	wl_display_roundtrip(c->wl_display);
+
+	wl_registry_destroy(registry);
+
+	client_disconnect_nocheck(c);
+}
+
+static void
+fd_passer_clobber(struct wl_client *client, struct wl_resource *res)
+{
+	wl_resource_destroy(res);
+}
+
+static const struct fd_passer_interface fdp_interface = {
+	fd_passer_clobber,
+};
+
+static void
+bind_fd_passer(struct wl_client *client, void *data,
+	       uint32_t vers, uint32_t id)
+{
+	struct wl_resource *res;
+
+	res = wl_resource_create(client, &fd_passer_interface, vers, id);
+	wl_resource_set_implementation(res, &fdp_interface, NULL, NULL);
+	assert(res);
+	fd_passer_send_pre_fd(res);
+	fd_passer_send_fd(res, fileno(stdin));
+}
+
+TEST(zombie_fd)
+{
+	struct display *d;
+	struct wl_global *g;
+
+	d = display_create();
+
+	g = wl_global_create(d->wl_display, &fd_passer_interface,
+			     1, d, bind_fd_passer);
+
+	client_create_noarg(d, zombie_client);
 	display_run(d);
 
 	wl_global_destroy(g);
