@@ -67,6 +67,10 @@ class CC_EXPORT Tile {
     required_for_draw_ = is_required;
   }
 
+  bool is_prepaint() const {
+    return !required_for_activation() && !required_for_draw();
+  }
+
   bool use_picture_analysis() const {
     return !!(flags_ & USE_PICTURE_ANALYSIS);
   }
