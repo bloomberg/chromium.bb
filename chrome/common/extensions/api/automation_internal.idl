@@ -82,7 +82,6 @@ namespace automationInternal {
 
   // Arguments for the enableTab function.
   dictionary EnableTabParams {
-    long routingID;
     long? tabID;
   };
 
@@ -120,8 +119,7 @@ namespace automationInternal {
     static void enableFrame(long tree_id);
 
     // Enables desktop automation.
-    static void enableDesktop(long routingID,
-                              EnableDesktopCallback callback);
+    static void enableDesktop(EnableDesktopCallback callback);
 
     // Performs an action on an automation node.
     static void performAction(PerformActionRequiredParams args,

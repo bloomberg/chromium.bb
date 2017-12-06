@@ -295,7 +295,6 @@ AutomationInternalEnableTabFunction::Run() {
   AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
       extension_id(),
       source_process_id(),
-      params->args.routing_id,
       ax_tree_id);
 
   return RespondNow(ArgumentList(
@@ -497,15 +496,9 @@ AutomationInternalEnableDesktopFunction::Run() {
   if (!automation_info || !automation_info->desktop)
     return RespondNow(Error("desktop permission must be requested"));
 
-  using api::automation_internal::EnableDesktop::Params;
-  std::unique_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
   // This gets removed when the extension process dies.
   AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
-      extension_id(),
-      source_process_id(),
-      params->routing_id);
+      extension_id(), source_process_id());
 
   AutomationManagerAura::GetInstance()->Enable(browser_context());
   return RespondNow(NoArguments());

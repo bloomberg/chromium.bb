@@ -108,14 +108,14 @@ IPC_STRUCT_END()
 
 // Forward an accessibility message to an extension process where an
 // extension is using the automation API to listen for accessibility events.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_AccessibilityEvent,
-                    ExtensionMsg_AccessibilityEventParams,
-                    bool /* is_active_profile */)
+IPC_MESSAGE_CONTROL2(ExtensionMsg_AccessibilityEvent,
+                     ExtensionMsg_AccessibilityEventParams,
+                     bool /* is_active_profile */)
 
 // Forward an accessibility location change message to an extension process
 // where an extension is using the automation API to listen for
 // accessibility events.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_AccessibilityLocationChange,
-                    ExtensionMsg_AccessibilityLocationChangeParams)
+IPC_MESSAGE_CONTROL1(ExtensionMsg_AccessibilityLocationChange,
+                     ExtensionMsg_AccessibilityLocationChangeParams)
 
 #endif  // CHROME_COMMON_EXTENSIONS_CHROME_EXTENSION_MESSAGES_H_

@@ -13,7 +13,6 @@ var automationInternal =
 var exceptionHandler = require('uncaught_exception_handler');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
-var GetRoutingID = nativeAutomationInternal.GetRoutingID;
 var DestroyAccessibilityTree =
     nativeAutomationInternal.DestroyAccessibilityTree;
 var GetIntAttribute = nativeAutomationInternal.GetIntAttribute;
@@ -108,7 +107,6 @@ automation.registerCustomHook(function(bindingsAPI) {
 
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
   apiFunctions.setHandleRequest('getTree', function getTree(tabID, callback) {
-    var routingID = GetRoutingID();
     StartCachingAccessibilityTrees();
 
     // enableTab() ensures the renderer for the active or specified tab has
@@ -118,7 +116,7 @@ automation.registerCustomHook(function(bindingsAPI) {
     // the tree is available (either due to having been cached earlier, or after
     // an accessibility event occurs which causes the tree to be populated), the
     // callback can be called.
-    var params = { routingID: routingID, tabID: tabID };
+    var params = { tabID: tabID };
     automationInternal.enableTab(params,
         function onEnable(id) {
           if (hasLastError()) {
@@ -139,11 +137,9 @@ automation.registerCustomHook(function(bindingsAPI) {
       else
         idToCallback[DESKTOP_TREE_ID] = [callback];
 
-      var routingID = GetRoutingID();
-
       // TODO(dtseng): Disable desktop tree once desktop object goes out of
       // scope.
-      automationInternal.enableDesktop(routingID, function() {
+      automationInternal.enableDesktop(function() {
         if (hasLastError()) {
           AutomationRootNode.destroy(DESKTOP_TREE_ID);
           callback();

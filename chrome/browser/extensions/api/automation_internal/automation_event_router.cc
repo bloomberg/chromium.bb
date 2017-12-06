@@ -49,22 +49,18 @@ AutomationEventRouter::~AutomationEventRouter() {
 void AutomationEventRouter::RegisterListenerForOneTree(
     const ExtensionId& extension_id,
     int listener_process_id,
-    int listener_routing_id,
     int source_ax_tree_id) {
   Register(extension_id,
            listener_process_id,
-           listener_routing_id,
            source_ax_tree_id,
            false);
 }
 
 void AutomationEventRouter::RegisterListenerWithDesktopPermission(
     const ExtensionId& extension_id,
-    int listener_process_id,
-    int listener_routing_id) {
+    int listener_process_id) {
   Register(extension_id,
            listener_process_id,
-           listener_routing_id,
            api::automation::kDesktopTreeID,
            true);
 }
@@ -85,8 +81,7 @@ void AutomationEventRouter::DispatchAccessibilityEvent(
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityEvent(listener.routing_id,
-                                                  params,
+    rph->Send(new ExtensionMsg_AccessibilityEvent(params,
                                                   listener.is_active_profile));
   }
 }
@@ -102,9 +97,7 @@ void AutomationEventRouter::DispatchAccessibilityLocationChange(
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityLocationChange(
-        listener.routing_id,
-        params));
+    rph->Send(new ExtensionMsg_AccessibilityLocationChange(params));
   }
 }
 
@@ -154,23 +147,18 @@ AutomationEventRouter::AutomationListener::~AutomationListener() {
 void AutomationEventRouter::Register(
     const ExtensionId& extension_id,
     int listener_process_id,
-    int listener_routing_id,
     int ax_tree_id,
     bool desktop) {
-  auto iter = std::find_if(
-      listeners_.begin(),
-      listeners_.end(),
-      [listener_process_id, listener_routing_id](
-          const AutomationListener& item) {
-        return (item.process_id == listener_process_id &&
-                item.routing_id == listener_routing_id);
-      });
+  auto iter =
+      std::find_if(listeners_.begin(), listeners_.end(),
+                   [listener_process_id](const AutomationListener& item) {
+                     return item.process_id == listener_process_id;
+                   });
 
-  // Add a new entry if we don't have one with that process and routing id.
+  // Add a new entry if we don't have one with that process.
   if (iter == listeners_.end()) {
     AutomationListener listener;
     listener.extension_id = extension_id;
-    listener.routing_id = listener_routing_id;
     listener.process_id = listener_process_id;
     listener.desktop = desktop;
     listener.tree_ids.insert(ax_tree_id);
@@ -179,8 +167,8 @@ void AutomationEventRouter::Register(
     return;
   }
 
-  // We have an entry with that process and routing id, so update the set of
-  // tree ids it wants to listen to, and update its desktop permission.
+  // We have an entry with that process so update the set of tree ids it wants
+  // to listen to, and update its desktop permission.
   iter->tree_ids.insert(ax_tree_id);
   if (desktop)
     iter->desktop = true;
