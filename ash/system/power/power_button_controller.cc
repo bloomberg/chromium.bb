@@ -4,6 +4,8 @@
 
 #include "ash/system/power/power_button_controller.h"
 
+#include <utility>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -31,12 +33,14 @@ constexpr base::TimeDelta kDisplayOffAfterLockDelay =
 
 }  // namespace
 
-PowerButtonController::PowerButtonController()
-    : lock_state_controller_(Shell::Get()->lock_state_controller()),
+PowerButtonController::PowerButtonController(
+    BacklightsForcedOffSetter* backlights_forced_off_setter)
+    : backlights_forced_off_setter_(backlights_forced_off_setter),
+      lock_state_controller_(Shell::Get()->lock_state_controller()),
       tick_clock_(new base::DefaultTickClock) {
   ProcessCommandLine();
-  display_controller_ =
-      std::make_unique<PowerButtonDisplayController>(tick_clock_.get());
+  display_controller_ = std::make_unique<PowerButtonDisplayController>(
+      backlights_forced_off_setter_, tick_clock_.get());
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
@@ -186,7 +190,7 @@ void PowerButtonController::PowerButtonEventReceived(
   // stop forcing the display off if TabletPowerButtonController isn't being
   // used.
   if (down && force_clamshell_power_button_)
-    display_controller_->SetDisplayForcedOff(false);
+    display_controller_->SetBacklightsForcedOff(false);
 
   // Handle tablet mode power button screenshot accelerator.
   if (screenshot_controller_ &&
@@ -228,8 +232,8 @@ void PowerButtonController::SetTickClockForTesting(
   DCHECK(tick_clock);
   tick_clock_ = std::move(tick_clock);
 
-  display_controller_ =
-      std::make_unique<PowerButtonDisplayController>(tick_clock_.get());
+  display_controller_ = std::make_unique<PowerButtonDisplayController>(
+      backlights_forced_off_setter_, tick_clock_.get());
 }
 
 bool PowerButtonController::TriggerDisplayOffTimerForTesting() {
@@ -253,7 +257,7 @@ void PowerButtonController::ProcessCommandLine() {
 }
 
 void PowerButtonController::ForceDisplayOffAfterLock() {
-  display_controller_->SetDisplayForcedOff(true);
+  display_controller_->SetBacklightsForcedOff(true);
 }
 
 }  // namespace ash
