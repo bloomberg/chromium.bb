@@ -49,7 +49,8 @@ std::string GetCookieUniqueID(NSHTTPCookie* cookie) {
 
 namespace net {
 
-CookieCreationTimeManager::CookieCreationTimeManager() {
+CookieCreationTimeManager::CookieCreationTimeManager() : weak_factory_(this) {
+  DETACH_FROM_THREAD(thread_checker_);
 }
 
 CookieCreationTimeManager::~CookieCreationTimeManager() {
@@ -120,6 +121,11 @@ void CookieCreationTimeManager::Clear() {
   DCHECK(thread_checker_.CalledOnValidThread());
   creation_times_.clear();
   unique_times_.clear();
+}
+
+base::WeakPtr<CookieCreationTimeManager>
+CookieCreationTimeManager::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace net

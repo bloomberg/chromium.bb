@@ -74,8 +74,8 @@ class SystemCookieStore {
   base::WeakPtr<SystemCookieStore> GetWeakPtr();
 
  protected:
-  // Compares cookies based on the path lengths and the creation times, as per
-  // RFC6265.
+  // Compares cookies based on the path lengths and the creation times provided
+  // by a non null creation time manager |context|, as per RFC6265.
   static NSInteger CompareCookies(id a, id b, void* context);
 
   // Internal cookie stores doesn't store creation time. This object is used
