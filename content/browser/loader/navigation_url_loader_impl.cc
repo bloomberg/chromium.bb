@@ -120,8 +120,7 @@ void NavigationURLLoaderImpl::NotifyRequestFailed(
     bool should_ssl_errors_be_fatal) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  delegate_->OnRequestFailed(in_cache, net_error, ssl_info,
-                             should_ssl_errors_be_fatal);
+  delegate_->OnRequestFailed(in_cache, net_error, ssl_info);
 }
 
 void NavigationURLLoaderImpl::NotifyRequestStarted(base::TimeTicks timestamp) {

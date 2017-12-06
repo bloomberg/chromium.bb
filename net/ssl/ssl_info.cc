@@ -48,6 +48,7 @@ void SSLInfo::Reset() {
       ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE;
   ct_policy_compliance_required = false;
   ocsp_result = OCSPVerifyResult();
+  is_fatal_cert_error = false;
 }
 
 void SSLInfo::SetCertError(int error) {

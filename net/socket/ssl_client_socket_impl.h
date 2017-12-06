@@ -353,6 +353,10 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // True if PKP is bypassed due to a local trust anchor.
   bool pkp_bypassed_;
 
+  // True if there was a certificate error which should be treated as fatal,
+  // and false otherwise.
+  bool is_fatal_cert_error_;
+
   SSLErrorDetails connect_error_details_;
 
   NetLogWithSource net_log_;

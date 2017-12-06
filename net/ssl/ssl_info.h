@@ -139,6 +139,10 @@ class NET_EXPORT SSLInfo {
 
   // OCSP stapling details.
   OCSPVerifyResult ocsp_result;
+
+  // True if there was a certificate error which should be treated as fatal,
+  // and false otherwise.
+  bool is_fatal_cert_error;
 };
 
 }  // namespace net

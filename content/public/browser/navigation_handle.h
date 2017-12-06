@@ -243,9 +243,6 @@ class CONTENT_EXPORT NavigationHandle {
   // scheme, returns an empty object.
   virtual const net::SSLInfo& GetSSLInfo() = 0;
 
-  // Whether the failure for a certificate error should be fatal.
-  virtual bool ShouldSSLErrorsBeFatal() = 0;
-
   // Returns the ID of the URLRequest associated with this navigation. Can only
   // be called from NavigationThrottle::WillProcessResponse and
   // WebContentsObserver::ReadyToCommitNavigation.

@@ -208,6 +208,53 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         QuicChromiumClientSessionTest,
                         ::testing::ValuesIn(AllSupportedTransportVersions()));
 
+TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  std::unique_ptr<QuicEncryptedPacket> settings_packet(
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  MockWrite writes[] = {
+      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
+  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
+                                             arraysize(writes)));
+  Initialize();
+
+  SSLInfo ssl_info;
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  details.cert_verify_result.cert_status =
+      MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  details.is_fatal_cert_error = false;
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+
+  ASSERT_TRUE(session_->GetSSLInfo(&ssl_info));
+  EXPECT_FALSE(ssl_info.is_fatal_cert_error);
+}
+
+TEST_P(QuicChromiumClientSessionTest, IsFatalErrorSetForFatalError) {
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  std::unique_ptr<QuicEncryptedPacket> settings_packet(
+      client_maker_.MakeInitialSettingsPacket(1, nullptr));
+  MockWrite writes[] = {
+      MockWrite(ASYNC, settings_packet->data(), settings_packet->length(), 1)};
+  socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
+                                             arraysize(writes)));
+  Initialize();
+
+  SSLInfo ssl_info;
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  details.cert_verify_result.cert_status =
+      MapNetErrorToCertStatus(ERR_CERT_DATE_INVALID);
+  details.is_fatal_cert_error = true;
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+  ASSERT_TRUE(session_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.is_fatal_cert_error);
+}
+
 TEST_P(QuicChromiumClientSessionTest, CryptoConnect) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> settings_packet(
