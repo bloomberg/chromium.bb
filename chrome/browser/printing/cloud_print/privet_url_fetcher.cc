@@ -296,40 +296,34 @@ void PrivetURLFetcher::OnURLFetchCompleteParseData(
 
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(response_str);
-  if (!value) {
+  if (!value || !value->is_dict()) {
     delegate_->OnError(0, JSON_PARSE_ERROR);
     return;
   }
 
-  const base::DictionaryValue* dictionary_value = NULL;
-
-  if (!value->GetAsDictionary(&dictionary_value)) {
-    delegate_->OnError(0, JSON_PARSE_ERROR);
-    return;
-  }
-
-  std::string error;
-  if (dictionary_value->GetString(kPrivetKeyError, &error)) {
+  const base::Value* error_value =
+      value->FindKeyOfType(kPrivetKeyError, base::Value::Type::STRING);
+  if (error_value) {
+    const std::string& error = error_value->GetString();
     if (error == kPrivetErrorInvalidXPrivetToken) {
       RequestTokenRefresh();
       return;
-    } else if (PrivetErrorTransient(error)) {
+    }
+    if (PrivetErrorTransient(error)) {
       if (!do_not_retry_on_transient_error_) {
-        int timeout_seconds;
-        if (!dictionary_value->GetInteger(kPrivetKeyTimeout,
-                                          &timeout_seconds)) {
-          timeout_seconds = kPrivetDefaultTimeout;
-        }
-
-        ScheduleRetry(timeout_seconds);
+        const base::Value* timeout_value =
+            value->FindKeyOfType(kPrivetKeyTimeout, base::Value::Type::INTEGER);
+        ScheduleRetry(timeout_value ? timeout_value->GetInt()
+                                    : kPrivetDefaultTimeout);
         return;
       }
     }
     is_error_response = true;
   }
 
-  delegate_->OnParsedJson(response_code(), *dictionary_value,
-                          is_error_response);
+  delegate_->OnParsedJson(
+      response_code(), *static_cast<const base::DictionaryValue*>(value.get()),
+      is_error_response);
 }
 
 void PrivetURLFetcher::ScheduleRetry(int timeout_seconds) {

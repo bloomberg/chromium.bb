@@ -390,46 +390,51 @@ void PrivetLocalPrintOperationImpl::Start() {
       base::BindRepeating(&PrivetLocalPrintOperationImpl::OnPrivetInfoDone,
                           base::Unretained(this)));
   info_operation_->Start();
-
   started_ = true;
 }
 
 void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
     const base::DictionaryValue* value) {
-  if (value && !value->HasKey(kPrivetKeyError)) {
-    has_extended_workflow_ = false;
-    bool has_printing = false;
-
-    const base::ListValue* api_list;
-    if (value->GetList(kPrivetInfoKeyAPIList, &api_list)) {
-      for (size_t i = 0; i < api_list->GetSize(); i++) {
-        std::string api;
-        api_list->GetString(i, &api);
-        if (api == kPrivetSubmitdocPath) {
-          has_printing = true;
-        } else if (api == kPrivetCreatejobPath) {
-          has_extended_workflow_ = true;
-        }
-      }
-    }
-
-    if (!has_printing) {
-      delegate_->OnPrivetPrintingError(this, -1);
-      return;
-    }
-
-    StartInitialRequest();
-  } else {
+  if (!value || value->HasKey(kPrivetKeyError)) {
     delegate_->OnPrivetPrintingError(this, -1);
+    return;
   }
+
+  has_extended_workflow_ = false;
+  bool has_printing = false;
+  const base::Value* api_list =
+      value->FindKeyOfType(kPrivetInfoKeyAPIList, base::Value::Type::LIST);
+  if (api_list) {
+    for (const auto& api : api_list->GetList()) {
+      if (!api.is_string())
+        continue;
+
+      const std::string& api_str = api.GetString();
+      if (!has_printing && api_str == kPrivetSubmitdocPath)
+        has_printing = true;
+      else if (!has_extended_workflow_ && api_str == kPrivetCreatejobPath)
+        has_extended_workflow_ = true;
+
+      if (has_printing && has_extended_workflow_)
+        break;
+    }
+  }
+
+  if (!has_printing) {
+    delegate_->OnPrivetPrintingError(this, -1);
+    return;
+  }
+
+  StartInitialRequest();
 }
 
 void PrivetLocalPrintOperationImpl::StartInitialRequest() {
-  use_pdf_ = false;
   cloud_devices::printer::ContentTypesCapability content_types;
   if (content_types.LoadFrom(capabilities_)) {
     use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
                content_types.Contains(kPrivetContentTypeAny);
+  } else {
+    use_pdf_ = false;
   }
 
   if (use_pdf_) {
