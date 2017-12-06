@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences.password;
 
 import android.app.Fragment;
-import android.app.KeyguardManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -86,7 +85,6 @@ public class PasswordEntryEditor extends Fragment {
     public static final String VIEW_PASSWORDS = "view-passwords";
 
     private ClipboardManager mClipboard;
-    private KeyguardManager mKeyguardManager;
     private Bundle mExtras;
     private View mView;
     private boolean mViewButtonPressed;
@@ -132,9 +130,6 @@ public class PasswordEntryEditor extends Fragment {
                     usernameView.findViewById(R.id.password_entry_editor_row_data);
             usernameDataView.setText(name);
             hookupCopyUsernameButton(usernameView);
-            mKeyguardManager =
-                    (KeyguardManager) getActivity().getApplicationContext().getSystemService(
-                            Context.KEYGUARD_SERVICE);
             if (ReauthenticationManager.isReauthenticationApiAvailable()) {
                 hidePassword();
                 hookupPasswordButtons();
@@ -360,7 +355,8 @@ public class PasswordEntryEditor extends Fragment {
         copyPasswordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mKeyguardManager.isKeyguardSecure()) {
+                if (!ReauthenticationManager.isScreenLockSetUp(
+                            getActivity().getApplicationContext())) {
                     Toast.makeText(getActivity().getApplicationContext(),
                                  R.string.password_entry_editor_set_lock_screen, Toast.LENGTH_LONG)
                             .show();
@@ -379,7 +375,8 @@ public class PasswordEntryEditor extends Fragment {
             public void onClick(View v) {
                 TextView passwordView =
                         (TextView) mView.findViewById(R.id.password_entry_editor_password);
-                if (!mKeyguardManager.isKeyguardSecure()) {
+                if (!ReauthenticationManager.isScreenLockSetUp(
+                            getActivity().getApplicationContext())) {
                     Toast.makeText(getActivity().getApplicationContext(),
                                  R.string.password_entry_editor_set_lock_screen, Toast.LENGTH_LONG)
                             .show();

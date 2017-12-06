@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
 import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.widget.Toast;
 
 /**
  * The "Save passwords" screen in Settings, which allows the user to enable or disable password
@@ -48,6 +49,9 @@ public class SavePasswordsPreferences
 
     // Used to pass the password id into a new activity.
     public static final String PASSWORD_LIST_ID = "id";
+
+    // The key for saving |mExportRequested| to instance bundle.
+    private static final String SAVED_STATE_EXPORT_REQUESTED = "saved-state-export-requested";
 
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
@@ -69,6 +73,9 @@ public class SavePasswordsPreferences
 
     private boolean mNoPasswords;
     private boolean mNoPasswordExceptions;
+    // True if the user triggered the password export flow and this fragment is waiting for the
+    // result of the user's reauthentication.
+    private boolean mExportRequested;
     private Preference mLinkPref;
     private ChromeSwitchPreference mSavePasswordsSwitch;
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
@@ -80,8 +87,14 @@ public class SavePasswordsPreferences
         getActivity().setTitle(R.string.prefs_saved_passwords);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
-        if (ChromeFeatureList.isEnabled(EXPORT_PASSWORDS)) {
+        if (ChromeFeatureList.isEnabled(EXPORT_PASSWORDS)
+                && ReauthenticationManager.isReauthenticationApiAvailable()) {
             setHasOptionsMenu(true);
+        }
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(SAVED_STATE_EXPORT_REQUESTED)) {
+            mExportRequested =
+                    savedInstanceState.getBoolean(SAVED_STATE_EXPORT_REQUESTED, mExportRequested);
         }
     }
 
@@ -95,10 +108,26 @@ public class SavePasswordsPreferences
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.export_passwords) {
-            // TODO(crbug.com/788701): Trigger the exporting dialogue here.
+            if (!ReauthenticationManager.isScreenLockSetUp(getActivity().getApplicationContext())) {
+                Toast.makeText(getActivity().getApplicationContext(),
+                             R.string.password_export_set_lock_screen, Toast.LENGTH_LONG)
+                        .show();
+            } else if (ReauthenticationManager.authenticationStillValid()) {
+                exportAfterReauth();
+            } else {
+                mExportRequested = true;
+                ReauthenticationManager.displayReauthenticationFragment(
+                        R.string.lockscreen_description_export, getView().getId(),
+                        getFragmentManager());
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /** Continues with the password export flow after the user successfully reauthenticated. */
+    private void exportAfterReauth() {
+        // TODO(crbug.com/788701): Show the warning, start the export.
     }
 
     /**
@@ -225,7 +254,17 @@ public class SavePasswordsPreferences
     @Override
     public void onResume() {
         super.onResume();
+        if (mExportRequested) {
+            mExportRequested = false;
+            if (ReauthenticationManager.authenticationStillValid()) exportAfterReauth();
+        }
         rebuildPasswordLists();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(SAVED_STATE_EXPORT_REQUESTED, mExportRequested);
     }
 
     @Override

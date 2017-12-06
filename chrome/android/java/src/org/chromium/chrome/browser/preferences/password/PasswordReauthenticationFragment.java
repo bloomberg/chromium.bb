@@ -14,6 +14,8 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 
+import org.chromium.base.VisibleForTesting;
+
 /** Show the lock screen confirmation and lock the screen. */
 public class PasswordReauthenticationFragment extends Fragment {
     // The key for the description argument, which is used to retrieve an explanation of the
@@ -49,6 +51,7 @@ public class PasswordReauthenticationFragment extends Fragment {
     /**
      * Prevent calling the {@link #lockDevice} method in {@link #onCreate}.
      */
+    @VisibleForTesting
     public static void preventLockingForTesting() {
         sPreventLockDevice = true;
     }
