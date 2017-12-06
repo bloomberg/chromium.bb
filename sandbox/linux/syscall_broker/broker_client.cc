@@ -25,8 +25,113 @@
 #endif
 
 namespace sandbox {
-
 namespace syscall_broker {
+
+BrokerClient::BrokerClient(const BrokerPolicy& broker_policy,
+                           BrokerChannel::EndPoint ipc_channel,
+                           const BrokerCommandSet& allowed_command_set,
+                           bool fast_check_in_client,
+                           bool quiet_failures_for_tests)
+    : broker_policy_(broker_policy),
+      ipc_channel_(std::move(ipc_channel)),
+      allowed_command_set_(allowed_command_set),
+      fast_check_in_client_(fast_check_in_client),
+      quiet_failures_for_tests_(quiet_failures_for_tests) {}
+
+BrokerClient::~BrokerClient() {}
+
+int BrokerClient::Access(const char* pathname, int mode) const {
+  return PathAndFlagsSyscall(COMMAND_ACCESS, pathname, mode);
+}
+
+int BrokerClient::Open(const char* pathname, int flags) const {
+  return PathAndFlagsSyscall(COMMAND_OPEN, pathname, flags);
+}
+
+int BrokerClient::Stat(const char* pathname, struct stat* sb) {
+  return StatFamilySyscall(COMMAND_STAT, pathname, sb, sizeof(*sb));
+}
+
+int BrokerClient::Stat64(const char* pathname, struct stat64* sb) {
+  return StatFamilySyscall(COMMAND_STAT64, pathname, sb, sizeof(*sb));
+}
+
+int BrokerClient::Rename(const char* oldpath, const char* newpath) {
+  if (fast_check_in_client_ &&
+      !CommandRenameIsSafe(allowed_command_set_, broker_policy_, oldpath,
+                           newpath, nullptr, nullptr)) {
+    return -broker_policy_.denied_errno();
+  }
+
+  base::Pickle write_pickle;
+  write_pickle.WriteInt(COMMAND_RENAME);
+  write_pickle.WriteString(oldpath);
+  write_pickle.WriteString(newpath);
+  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+
+  int returned_fd = -1;
+  uint8_t reply_buf[kMaxMessageLength];
+  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsg(
+      ipc_channel_.get(), reply_buf, sizeof(reply_buf), &returned_fd,
+      write_pickle);
+
+  if (msg_len <= 0) {
+    if (!quiet_failures_for_tests_)
+      RAW_LOG(ERROR, "Could not make request to broker process");
+    return -ENOMEM;
+  }
+
+  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
+  base::PickleIterator iter(read_pickle);
+  int return_value = -1;
+  if (!iter.ReadInt(&return_value))
+    return -ENOMEM;
+
+  return return_value;
+}
+
+int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) {
+  if (fast_check_in_client_ &&
+      !CommandReadlinkIsSafe(allowed_command_set_, broker_policy_, path,
+                             nullptr)) {
+    return -broker_policy_.denied_errno();
+  }
+
+  base::Pickle write_pickle;
+  write_pickle.WriteInt(COMMAND_READLINK);
+  write_pickle.WriteString(path);
+  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+
+  int returned_fd = -1;
+  uint8_t reply_buf[kMaxMessageLength];
+  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsg(
+      ipc_channel_.get(), reply_buf, sizeof(reply_buf), &returned_fd,
+      write_pickle);
+
+  if (msg_len <= 0) {
+    if (!quiet_failures_for_tests_)
+      RAW_LOG(ERROR, "Could not make request to broker process");
+    return -ENOMEM;
+  }
+
+  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
+  base::PickleIterator iter(read_pickle);
+  int return_value = -1;
+  int return_length = 0;
+  const char* return_data = nullptr;
+  if (!iter.ReadInt(&return_value))
+    return -ENOMEM;
+  if (return_value < 0)
+    return return_value;
+  if (!iter.ReadData(&return_data, &return_length))
+    return -ENOMEM;
+  if (return_length < 0)
+    return -ENOMEM;
+  if (static_cast<size_t>(return_length) > bufsize)
+    return -ENAMETOOLONG;
+  memcpy(buf, return_data, return_length);
+  return return_value;
+}
 
 // Make a remote system call over IPC for syscalls that take a path and flags
 // as arguments, currently open() and access().
@@ -121,41 +226,13 @@ int BrokerClient::PathAndFlagsSyscall(BrokerCommand syscall_type,
   }
 }
 
-BrokerClient::BrokerClient(const BrokerPolicy& broker_policy,
-                           BrokerChannel::EndPoint ipc_channel,
-                           const BrokerCommandSet& allowed_command_set,
-                           bool fast_check_in_client,
-                           bool quiet_failures_for_tests)
-    : broker_policy_(broker_policy),
-      ipc_channel_(std::move(ipc_channel)),
-      allowed_command_set_(allowed_command_set),
-      fast_check_in_client_(fast_check_in_client),
-      quiet_failures_for_tests_(quiet_failures_for_tests) {}
-
-BrokerClient::~BrokerClient() {}
-
-int BrokerClient::Access(const char* pathname, int mode) const {
-  return PathAndFlagsSyscall(COMMAND_ACCESS, pathname, mode);
-}
-
-int BrokerClient::Open(const char* pathname, int flags) const {
-  return PathAndFlagsSyscall(COMMAND_OPEN, pathname, flags);
-}
-
-int BrokerClient::Stat(const char* pathname, struct stat* sb) {
-  return StatFamilySyscall(COMMAND_STAT, pathname, sb, sizeof(*sb));
-}
-
-int BrokerClient::Stat64(const char* pathname, struct stat64* sb) {
-  return StatFamilySyscall(COMMAND_STAT64, pathname, sb, sizeof(*sb));
-}
-
 int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
                                     const char* pathname,
                                     void* result_ptr,
                                     size_t expected_result_size) const {
   if (fast_check_in_client_ &&
-      !broker_policy_.GetFileNameIfAllowedToAccess(pathname, R_OK, nullptr)) {
+      !CommandStatIsSafe(allowed_command_set_, broker_policy_, pathname,
+                         nullptr)) {
     return -broker_policy_.denied_errno();
   }
 
@@ -190,89 +267,6 @@ int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
   if (static_cast<size_t>(return_length) != expected_result_size)
     return -ENOMEM;
   memcpy(result_ptr, return_data, expected_result_size);
-  return return_value;
-}
-
-int BrokerClient::Rename(const char* oldpath, const char* newpath) {
-  if (fast_check_in_client_) {
-    bool ignore;
-    if (!broker_policy_.GetFileNameIfAllowedToOpen(oldpath, O_RDWR, nullptr,
-                                                   &ignore) ||
-        !broker_policy_.GetFileNameIfAllowedToOpen(newpath, O_RDWR, nullptr,
-                                                   &ignore)) {
-      return -broker_policy_.denied_errno();
-    }
-  }
-
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(COMMAND_RENAME);
-  write_pickle.WriteString(oldpath);
-  write_pickle.WriteString(newpath);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
-
-  int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsg(
-      ipc_channel_.get(), reply_buf, sizeof(reply_buf), &returned_fd,
-      write_pickle);
-
-  if (msg_len <= 0) {
-    if (!quiet_failures_for_tests_)
-      RAW_LOG(ERROR, "Could not make request to broker process");
-    return -ENOMEM;
-  }
-
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
-  int return_value = -1;
-  if (!iter.ReadInt(&return_value))
-    return -ENOMEM;
-
-  return return_value;
-}
-
-int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) {
-  if (fast_check_in_client_) {
-    bool ignore;
-    if (!broker_policy_.GetFileNameIfAllowedToOpen(path, O_RDONLY, nullptr,
-                                                   &ignore)) {
-      return -broker_policy_.denied_errno();
-    }
-  }
-
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(COMMAND_READLINK);
-  write_pickle.WriteString(path);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
-
-  int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsg(
-      ipc_channel_.get(), reply_buf, sizeof(reply_buf), &returned_fd,
-      write_pickle);
-
-  if (msg_len <= 0) {
-    if (!quiet_failures_for_tests_)
-      RAW_LOG(ERROR, "Could not make request to broker process");
-    return -ENOMEM;
-  }
-
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
-  int return_value = -1;
-  int return_length = 0;
-  const char* return_data = nullptr;
-  if (!iter.ReadInt(&return_value))
-    return -ENOMEM;
-  if (return_value < 0)
-    return return_value;
-  if (!iter.ReadData(&return_data, &return_length))
-    return -ENOMEM;
-  if (return_length < 0)
-    return -ENOMEM;
-  if (static_cast<size_t>(return_length) > bufsize)
-    return -ENAMETOOLONG;
-  memcpy(buf, return_data, return_length);
   return return_value;
 }
 
