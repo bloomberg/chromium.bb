@@ -1444,15 +1444,6 @@ float LayoutText::FirstRunY() const {
   return first_text_box_ ? first_text_box_->Y().ToFloat() : 0;
 }
 
-void LayoutText::SetSelectionState(SelectionState state) {
-  LayoutObject::SetSelectionState(state);
-
-  // The containing block can be null in case of an orphaned tree.
-  LayoutBlock* containing_block = ContainingBlock();
-  if (containing_block && !containing_block->IsLayoutView())
-    containing_block->SetSelectionState(state);
-}
-
 void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
                                    unsigned offset,
                                    unsigned len,
