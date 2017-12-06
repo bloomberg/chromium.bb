@@ -23,8 +23,6 @@ crbug.com/417782 [ Linux Mac ] fast/spatial-navigation/snav-media-elements.html 
 crbug.com/417782 [ Linux ] fast/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html [ Failure ]
 crbug.com/417782 html/dialog/form-method-dialog.html [ Crash ]
 crbug.com/417782 http/tests/devtools/device-mode/default-background-color.html [ Failure ]
-crbug.com/417782 http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
-crbug.com/417782 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 crbug.com/417782 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Failure ]
 crbug.com/417782 http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Failure ]

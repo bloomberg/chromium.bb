@@ -16,7 +16,8 @@
         height: 200px;
       }
       </style>
-      <div id="a" style="width: 200px; height: 200px" class="layer">    <div class="layer" id="b1" style="width: 150px; height: 100px"></div>
+      <div id="a" style="width: 200px; height: 200px" class="layer">
+          <div class="layer" id="b1" style="width: 150px; height: 100px"></div>
           <div id="b2" class="layer" style="width: 140px; height: 110px">
               <div id="c" class="layer" style="width: 100px; height: 90px"></div>
           </div>
