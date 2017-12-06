@@ -7080,14 +7080,16 @@ void Document::EnforceInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
 
 void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
   DCHECK_NE(order, ShadowCascadeOrder::kShadowCascadeNone);
-
   if (order == shadow_cascade_order_)
     return;
 
   if (order == ShadowCascadeOrder::kShadowCascadeV0) {
     may_contain_v0_shadow_ = true;
-    if (shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV1)
+    if (shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV1) {
+      // ::slotted() rules has to be moved to tree boundary rule sets.
+      style_engine_->V0ShadowAddedOnV1Document();
       UseCounter::Count(*this, WebFeature::kMixedShadowRootV0AndV1);
+    }
   }
 
   // For V0 -> V1 upgrade, we need style recalculation for the whole document.

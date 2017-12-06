@@ -83,6 +83,7 @@ class ScopedStyleResolver final
   static ContainerNode& InvalidationRootForTreeScope(const TreeScope&);
   CORE_EXPORT static bool HaveSameStyles(const ScopedStyleResolver*,
                                          const ScopedStyleResolver*);
+  void V0ShadowAddedOnV1Document();
 
   void Trace(blink::Visitor*);
 
