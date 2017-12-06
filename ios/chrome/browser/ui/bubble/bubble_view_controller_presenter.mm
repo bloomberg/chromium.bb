@@ -16,7 +16,7 @@
 namespace {
 
 // How long, in seconds, the bubble is visible on the screen.
-const NSTimeInterval kBubbleVisibilityDuration = 3.0;
+const NSTimeInterval kBubbleVisibilityDuration = 4.0;
 // How long, in seconds, the user should be considered engaged with the bubble
 // after the bubble first becomes visible.
 const NSTimeInterval kBubbleEngagementDuration = 30.0;
