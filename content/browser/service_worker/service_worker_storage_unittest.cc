@@ -86,7 +86,7 @@ void StatusCallback(bool* was_called,
 ServiceWorkerStorage::StatusCallback MakeStatusCallback(
     bool* was_called,
     ServiceWorkerStatusCode* result) {
-  return base::Bind(&StatusCallback, was_called, result);
+  return base::BindOnce(&StatusCallback, was_called, result);
 }
 
 void FindCallback(bool* was_called,
@@ -103,7 +103,7 @@ ServiceWorkerStorage::FindRegistrationCallback MakeFindCallback(
     bool* was_called,
     ServiceWorkerStatusCode* result,
     scoped_refptr<ServiceWorkerRegistration>* found) {
-  return base::Bind(&FindCallback, was_called, result, found);
+  return base::BindOnce(&FindCallback, was_called, result, found);
 }
 
 void GetAllCallback(
@@ -132,7 +132,7 @@ ServiceWorkerStorage::GetRegistrationsCallback MakeGetRegistrationsCallback(
     bool* was_called,
     ServiceWorkerStatusCode* status,
     std::vector<scoped_refptr<ServiceWorkerRegistration>>* all) {
-  return base::Bind(&GetAllCallback, was_called, status, all);
+  return base::BindOnce(&GetAllCallback, was_called, status, all);
 }
 
 ServiceWorkerStorage::GetRegistrationsInfosCallback
@@ -140,7 +140,7 @@ MakeGetRegistrationsInfosCallback(
     bool* was_called,
     ServiceWorkerStatusCode* status,
     std::vector<ServiceWorkerRegistrationInfo>* all) {
-  return base::Bind(&GetAllInfosCallback, was_called, status, all);
+  return base::BindOnce(&GetAllInfosCallback, was_called, status, all);
 }
 
 void GetUserDataCallback(bool* was_called,
@@ -356,7 +356,7 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   void LazyInitialize() {
-    storage()->LazyInitialize(base::BindOnce(&base::DoNothing));
+    storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -440,7 +440,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->GetUserData(
         registration_id, keys,
-        base::Bind(&GetUserDataCallback, &was_called, data, &result));
+        base::BindOnce(&GetUserDataCallback, &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -455,7 +455,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->GetUserDataByKeyPrefix(
         registration_id, key_prefix,
-        base::Bind(&GetUserDataCallback, &was_called, data, &result));
+        base::BindOnce(&GetUserDataCallback, &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -508,8 +508,8 @@ class ServiceWorkerStorageTest : public testing::Test {
     bool was_called = false;
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->GetUserDataForAllRegistrations(
-        key, base::Bind(&GetUserDataForAllRegistrationsCallback, &was_called,
-                        data, &result));
+        key, base::BindOnce(&GetUserDataForAllRegistrationsCallback,
+                            &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -1357,10 +1357,11 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
-  storage()->DeleteRegistration(registration_id_, scope_.GetOrigin(),
-                                base::Bind(&VerifyPurgeableListStatusCallback,
-                                           base::Unretained(database()),
-                                           &verify_ids, &was_called, &result));
+  storage()->DeleteRegistration(
+      registration_id_, scope_.GetOrigin(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -1382,10 +1383,11 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   // Deleting the registration should result in the resources being added to the
   // purgeable list and then doomed in the disk cache and removed from that
   // list.
-  storage()->DeleteRegistration(registration_->id(), scope_.GetOrigin(),
-                                base::Bind(&VerifyPurgeableListStatusCallback,
-                                           base::Unretained(database()),
-                                           &verify_ids, &was_called, &result));
+  storage()->DeleteRegistration(
+      registration_->id(), scope_.GetOrigin(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -1416,7 +1418,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Promote the worker to active and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
-      registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      registration_.get(),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
@@ -1430,10 +1433,11 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
-  storage()->DeleteRegistration(registration_->id(), scope_.GetOrigin(),
-                                base::Bind(&VerifyPurgeableListStatusCallback,
-                                           base::Unretained(database()),
-                                           &verify_ids, &was_called, &result));
+  storage()->DeleteRegistration(
+      registration_->id(), scope_.GetOrigin(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -1464,7 +1468,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetActiveVersion(registration_->waiting_version());
   registration_->SetWaitingVersion(nullptr);
   storage()->UpdateToActiveState(
-      registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      registration_.get(),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
@@ -1478,10 +1483,11 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
-  storage()->DeleteRegistration(registration_->id(), scope_.GetOrigin(),
-                                base::Bind(&VerifyPurgeableListStatusCallback,
-                                           base::Unretained(database()),
-                                           &verify_ids, &was_called, &result));
+  storage()->DeleteRegistration(
+      registration_->id(), scope_.GetOrigin(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);
@@ -1548,7 +1554,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
   base::RunLoop run_loop;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   storage()->DeleteAndStartOver(
-      base::Bind(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
+      base::BindOnce(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_EQ(SERVICE_WORKER_OK, status);
@@ -1573,7 +1579,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   base::RunLoop run_loop;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   storage()->DeleteAndStartOver(
-      base::Bind(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
+      base::BindOnce(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
   run_loop.Run();
 
   EXPECT_EQ(SERVICE_WORKER_OK, status);
@@ -1599,7 +1605,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   base::RunLoop run_loop;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   storage()->DeleteAndStartOver(
-      base::Bind(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
+      base::BindOnce(&StatusAndQuitCallback, &status, run_loop.QuitClosure()));
   run_loop.Run();
 
 #if defined(OS_WIN)
@@ -1620,7 +1626,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Promote the worker to active worker and add a controllee.
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(
-      registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      registration_.get(),
+      base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
   std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
       33 /* dummy render process id */, 1 /* dummy provider_id */,
@@ -1646,11 +1653,11 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Writing the registration should move the old version's resources to the
   // purgeable list but keep them available.
-  storage()->StoreRegistration(registration_.get(),
-                               registration_->waiting_version(),
-                               base::Bind(&VerifyPurgeableListStatusCallback,
-                                          base::Unretained(database()),
-                                          &verify_ids, &was_called, &result));
+  storage()->StoreRegistration(
+      registration_.get(), registration_->waiting_version(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(was_called);
   EXPECT_EQ(SERVICE_WORKER_OK, result);

@@ -152,21 +152,21 @@ base::OnceClosure CreatePrepareReceiver(bool* is_prepared) {
 
 void ReceiveFindRegistrationStatus(
     BrowserThread::ID run_quit_thread,
-    const base::Closure& quit,
+    base::OnceClosure quit,
     ServiceWorkerStatusCode* out_status,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   *out_status = status;
   if (!quit.is_null())
-    BrowserThread::PostTask(run_quit_thread, FROM_HERE, quit);
+    BrowserThread::PostTask(run_quit_thread, FROM_HERE, std::move(quit));
 }
 
 ServiceWorkerStorage::FindRegistrationCallback CreateFindRegistrationReceiver(
     BrowserThread::ID run_quit_thread,
-    const base::Closure& quit,
+    base::OnceClosure quit,
     ServiceWorkerStatusCode* status) {
-  return base::Bind(&ReceiveFindRegistrationStatus, run_quit_thread, quit,
-                    status);
+  return base::BindOnce(&ReceiveFindRegistrationStatus, run_quit_thread,
+                        std::move(quit), status);
 }
 
 void ReadResponseBody(std::string* body,
@@ -762,14 +762,15 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(expected_status, status);
   }
 
-  void FindRegistrationForIdOnIOThread(const base::Closure& done,
+  void FindRegistrationForIdOnIOThread(base::OnceClosure done,
                                        ServiceWorkerStatusCode* result,
                                        int64_t id,
                                        const GURL& origin) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     wrapper()->context()->storage()->FindRegistrationForId(
         id, origin,
-        CreateFindRegistrationReceiver(BrowserThread::UI, done, result));
+        CreateFindRegistrationReceiver(BrowserThread::UI, std::move(done),
+                                       result));
   }
 
   void NotifyDoneInstallingRegistrationOnIOThread(

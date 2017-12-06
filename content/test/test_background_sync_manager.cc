@@ -36,16 +36,18 @@ void TestBackgroundSyncManager::StoreDataInBackend(
     const GURL& origin,
     const std::string& key,
     const std::string& data,
-    const ServiceWorkerStorage::StatusCallback& callback) {
+    ServiceWorkerStorage::StatusCallback callback) {
   EXPECT_FALSE(continuation_);
   if (corrupt_backend_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, SERVICE_WORKER_ERROR_FAILED));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
     return;
   }
-  continuation_ = base::BindOnce(
-      &TestBackgroundSyncManager::StoreDataInBackendContinue,
-      base::Unretained(this), sw_registration_id, origin, key, data, callback);
+  continuation_ =
+      base::BindOnce(&TestBackgroundSyncManager::StoreDataInBackendContinue,
+                     base::Unretained(this), sw_registration_id, origin, key,
+                     data, std::move(callback));
   if (delay_backend_)
     return;
 
@@ -54,19 +56,19 @@ void TestBackgroundSyncManager::StoreDataInBackend(
 
 void TestBackgroundSyncManager::GetDataFromBackend(
     const std::string& key,
-    const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
-        callback) {
+    ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback) {
   EXPECT_FALSE(continuation_);
   if (corrupt_backend_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(callback, std::vector<std::pair<int64_t, std::string>>(),
+        base::BindOnce(std::move(callback),
+                       std::vector<std::pair<int64_t, std::string>>(),
                        SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   continuation_ =
       base::BindOnce(&TestBackgroundSyncManager::GetDataFromBackendContinue,
-                     base::Unretained(this), key, callback);
+                     base::Unretained(this), key, std::move(callback));
   if (delay_backend_)
     return;
 
@@ -100,16 +102,15 @@ void TestBackgroundSyncManager::StoreDataInBackendContinue(
     const GURL& origin,
     const std::string& key,
     const std::string& data,
-    const ServiceWorkerStorage::StatusCallback& callback) {
+    ServiceWorkerStorage::StatusCallback callback) {
   BackgroundSyncManager::StoreDataInBackend(sw_registration_id, origin, key,
-                                            data, callback);
+                                            data, std::move(callback));
 }
 
 void TestBackgroundSyncManager::GetDataFromBackendContinue(
     const std::string& key,
-    const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
-        callback) {
-  BackgroundSyncManager::GetDataFromBackend(key, callback);
+    ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback) {
+  BackgroundSyncManager::GetDataFromBackend(key, std::move(callback));
 }
 
 }  // namespace content

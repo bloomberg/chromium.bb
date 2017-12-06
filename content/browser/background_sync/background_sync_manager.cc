@@ -636,7 +636,7 @@ BackgroundSyncRegistration* BackgroundSyncManager::LookupActiveRegistration(
 
 void BackgroundSyncManager::StoreRegistrations(
     int64_t sw_registration_id,
-    const ServiceWorkerStorage::StatusCallback& callback) {
+    ServiceWorkerStorage::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Serialize the data.
@@ -664,7 +664,8 @@ void BackgroundSyncManager::StoreRegistrations(
   DCHECK(success);
 
   StoreDataInBackend(sw_registration_id, registrations.origin,
-                     kBackgroundSyncUserDataKey, serialized, callback);
+                     kBackgroundSyncUserDataKey, serialized,
+                     std::move(callback));
 }
 
 void BackgroundSyncManager::RegisterDidStore(
@@ -740,21 +741,21 @@ void BackgroundSyncManager::StoreDataInBackend(
     const GURL& origin,
     const std::string& backend_key,
     const std::string& data,
-    const ServiceWorkerStorage::StatusCallback& callback) {
+    ServiceWorkerStorage::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->StoreRegistrationUserData(
-      sw_registration_id, origin, {{backend_key, data}}, callback);
+      sw_registration_id, origin, {{backend_key, data}},
+      base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 void BackgroundSyncManager::GetDataFromBackend(
     const std::string& backend_key,
-    const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
-        callback) {
+    ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->GetUserDataForAllRegistrations(backend_key,
-                                                          callback);
+                                                          std::move(callback));
 }
 
 void BackgroundSyncManager::DispatchSyncEvent(
@@ -967,11 +968,11 @@ void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
 
     service_worker_context_->FindReadyRegistrationForId(
         service_worker_id, active_registrations_[service_worker_id].origin,
-        base::AdaptCallbackForRepeating(base::BindOnce(
+        base::BindOnce(
             &BackgroundSyncManager::FireReadyEventsDidFindRegistration,
             weak_ptr_factory_.GetWeakPtr(), sw_id_and_tag.second,
             registration->id(), events_fired_barrier_closure,
-            events_completed_barrier_closure)));
+            events_completed_barrier_closure));
   }
 }
 

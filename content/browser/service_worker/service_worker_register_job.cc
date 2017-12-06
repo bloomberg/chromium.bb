@@ -100,22 +100,23 @@ void ServiceWorkerRegisterJob::StartImpl() {
   SetPhase(START);
   ServiceWorkerStorage::FindRegistrationCallback next_step;
   if (job_type_ == REGISTRATION_JOB) {
-    next_step = base::Bind(
-        &ServiceWorkerRegisterJob::ContinueWithRegistration,
-        weak_factory_.GetWeakPtr());
+    next_step =
+        base::BindOnce(&ServiceWorkerRegisterJob::ContinueWithRegistration,
+                       weak_factory_.GetWeakPtr());
   } else {
-    next_step = base::Bind(
-        &ServiceWorkerRegisterJob::ContinueWithUpdate,
-        weak_factory_.GetWeakPtr());
+    next_step = base::BindOnce(&ServiceWorkerRegisterJob::ContinueWithUpdate,
+                               weak_factory_.GetWeakPtr());
   }
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->storage()->GetUninstallingRegistration(pattern_);
   if (registration.get())
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(next_step, SERVICE_WORKER_OK, registration));
+        FROM_HERE,
+        base::BindOnce(std::move(next_step), SERVICE_WORKER_OK, registration));
   else
-    context_->storage()->FindRegistrationForPattern(pattern_, next_step);
+    context_->storage()->FindRegistrationForPattern(pattern_,
+                                                    std::move(next_step));
 }
 
 void ServiceWorkerRegisterJob::Abort() {

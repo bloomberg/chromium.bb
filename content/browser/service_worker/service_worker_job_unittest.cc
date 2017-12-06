@@ -120,10 +120,8 @@ ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration) {
   *called = false;
-  return base::Bind(&SaveFoundRegistrationCallback,
-                    expected_status,
-                    called,
-                    registration);
+  return base::BindOnce(&SaveFoundRegistrationCallback, expected_status, called,
+                        registration);
 }
 
 void SaveUnregistrationCallback(ServiceWorkerStatusCode expected_status,
