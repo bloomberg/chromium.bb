@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 
 // Returns common timeouts to use in tests. Makes it possible to adjust
-// the timeouts for different environments (like Valgrind).
+// the timeouts for different environments (like TSan).
 class TestTimeouts {
  public:
   // Argument that can be passed on the command line to indicate "no timeout".

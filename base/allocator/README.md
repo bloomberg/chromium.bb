@@ -41,8 +41,8 @@ config and can vary (typically *dlmalloc* or *jemalloc* on most Nexus devices).
 **Mac/iOS**  
 `use_allocator: none`, we always use the system's allocator implementation.
 
-In addition, when building for `asan` / `msan` / `syzyasan` `valgrind`, the
-both the allocator and the shim layer are disabled.
+In addition, when building for `asan` / `msan` / `syzyasan`, both the allocator
+and the shim layer are disabled.
 
 Layering and build deps
 -----------------------

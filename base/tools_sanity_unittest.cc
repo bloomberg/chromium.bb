@@ -41,14 +41,15 @@ if (debug::IsBinaryInstrumented()) { EXPECT_DEATH(action, \
 #define HARMFUL_ACCESS(action,error_regexp) EXPECT_DEATH(action,error_regexp)
 #endif  // !OS_IOS && !SYZYASAN
 #else
-#define HARMFUL_ACCESS(action,error_regexp) \
-do { if (RunningOnValgrind()) { action; } } while (0)
+#define HARMFUL_ACCESS(action, error_regexp)
+#define HARMFUL_ACCESS_IS_NOOP
 #endif
 
 void DoReadUninitializedValue(char *ptr) {
   // Comparison with 64 is to prevent clang from optimizing away the
   // jump -- valgrind only catches jumps and conditional moves, but clang uses
-  // the borrow flag if the condition is just `*ptr == '\0'`.
+  // the borrow flag if the condition is just `*ptr == '\0'`.  We no longer
+  // support valgrind, but this constant should be fine to keep as-is.
   if (*ptr == 64) {
     VLOG(1) << "Uninit condition is true";
   } else {
@@ -65,6 +66,7 @@ void ReadUninitializedValue(char *ptr) {
 #endif
 }
 
+#ifndef HARMFUL_ACCESS_IS_NOOP
 void ReadValueOutOfArrayBoundsLeft(char *ptr) {
   char c = ptr[-2];
   VLOG(1) << "Reading a byte out of bounds: " << c;
@@ -75,15 +77,14 @@ void ReadValueOutOfArrayBoundsRight(char *ptr, size_t size) {
   VLOG(1) << "Reading a byte out of bounds: " << c;
 }
 
-// This is harmless if you run it under Valgrind thanks to redzones.
 void WriteValueOutOfArrayBoundsLeft(char *ptr) {
   ptr[-1] = kMagicValue;
 }
 
-// This is harmless if you run it under Valgrind thanks to redzones.
 void WriteValueOutOfArrayBoundsRight(char *ptr, size_t size) {
   ptr[size] = kMagicValue;
 }
+#endif  // HARMFUL_ACCESS_IS_NOOP
 
 void MakeSomeErrors(char *ptr, size_t size) {
   ReadUninitializedValue(ptr);
@@ -149,44 +150,37 @@ TEST(ToolsSanityTest, MAYBE_AccessesToMallocMemory) {
   HARMFUL_ACCESS(foo[5] = 0, "heap-use-after-free");
 }
 
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+
 static int* allocateArray() {
   // Clang warns about the mismatched new[]/delete if they occur in the same
   // function.
   return new int[10];
 }
 
+// This test may corrupt memory if not compiled with AddressSanitizer.
 TEST(ToolsSanityTest, MAYBE_ArrayDeletedWithoutBraces) {
-#if !defined(ADDRESS_SANITIZER) && !defined(SYZYASAN)
-  // This test may corrupt memory if not run under Valgrind or compiled with
-  // AddressSanitizer.
-  if (!RunningOnValgrind())
-    return;
-#endif
-
   // Without the |volatile|, clang optimizes away the next two lines.
   int* volatile foo = allocateArray();
   delete foo;
 }
+#endif
 
+#if defined(ADDRESS_SANITIZER)
 static int* allocateScalar() {
   // Clang warns about the mismatched new/delete[] if they occur in the same
   // function.
   return new int;
 }
 
+// This test may corrupt memory if not compiled with AddressSanitizer.
 TEST(ToolsSanityTest, MAYBE_SingleElementDeletedWithBraces) {
-#if !defined(ADDRESS_SANITIZER)
-  // This test may corrupt memory if not run under Valgrind or compiled with
-  // AddressSanitizer.
-  if (!RunningOnValgrind())
-    return;
-#endif
-
   // Without the |volatile|, clang optimizes away the next two lines.
   int* volatile foo = allocateScalar();
   (void) foo;
   delete [] foo;
 }
+#endif
 
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 
@@ -221,6 +215,7 @@ TEST(ToolsSanityTest, DISABLED_AddressSanitizerGlobalOOBCrashTest) {
   *access = 43;
 }
 
+#ifndef HARMFUL_ACCESS_IS_NOOP
 TEST(ToolsSanityTest, AsanHeapOverflow) {
   HARMFUL_ACCESS(debug::AsanHeapOverflow() ,"to the right");
 }
@@ -233,7 +228,7 @@ TEST(ToolsSanityTest, AsanHeapUseAfterFree) {
   HARMFUL_ACCESS(debug::AsanHeapUseAfterFree(), "heap-use-after-free");
 }
 
-#if defined(SYZYASAN)
+#if defined(SYZYASAN) && defined(COMPILER_MSVC)
 TEST(ToolsSanityTest, AsanCorruptHeapBlock) {
   HARMFUL_ACCESS(debug::AsanCorruptHeapBlock(), "");
 }
@@ -243,7 +238,8 @@ TEST(ToolsSanityTest, AsanCorruptHeap) {
   // particular string to look for in the stack trace.
   EXPECT_DEATH(debug::AsanCorruptHeap(), "");
 }
-#endif  // SYZYASAN
+#endif  // SYZYASAN && COMPILER_MSVC
+#endif  // !HARMFUL_ACCESS_IS_NOOP
 
 #endif  // ADDRESS_SANITIZER || SYZYASAN
 
@@ -422,5 +418,13 @@ TEST(ToolsSanityTest, BadUnrelatedCast) {
 #endif  // BUILDFLAG(CFI_CAST_CHECK)
 
 #endif  // CFI_ERROR_MSG
+
+#undef CFI_ERROR_MSG
+#undef MAYBE_AccessesToNewMemory
+#undef MAYBE_AccessesToMallocMemory
+#undef MAYBE_ArrayDeletedWithoutBraces
+#undef MAYBE_SingleElementDeletedWithBraces
+#undef HARMFUL_ACCESS
+#undef HARMFUL_ACCESS_IS_NOOP
 
 }  // namespace base

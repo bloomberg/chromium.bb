@@ -54,17 +54,6 @@ NOINLINE Type HideValueFromCompiler(volatile Type value) {
 #define MALLOC_OVERFLOW_TEST(function) DISABLED_##function
 #endif
 
-#if defined(OS_LINUX) && defined(__x86_64__)
-// Detect runtime TCMalloc bypasses.
-bool IsTcMallocBypassed() {
-  // This should detect a TCMalloc bypass from Valgrind.
-  char* g_slice = getenv("G_SLICE");
-  if (g_slice && !strcmp(g_slice, "always-malloc"))
-    return true;
-  return false;
-}
-#endif
-
 // There are platforms where these tests are known to fail. We would like to
 // be able to easily check the status on the bots, but marking tests as
 // FAILS_ is too clunky.
@@ -133,8 +122,6 @@ bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
 
 // Check if TCMalloc uses an underlying random memory allocator.
 TEST(SecurityTest, MALLOC_OVERFLOW_TEST(RandomMemoryAllocations)) {
-  if (IsTcMallocBypassed())
-    return;
   size_t kPageSize = 4096;  // We support x86_64 only.
   // Check that malloc() returns an address that is neither the kernel's
   // un-hinted mmap area, nor the current brk() area. The first malloc() may

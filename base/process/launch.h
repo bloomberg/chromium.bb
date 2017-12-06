@@ -364,9 +364,7 @@ BASE_EXPORT LaunchOptions LaunchOptionsForTest();
 //
 // This function uses the libc clone wrapper (which updates libc's pid cache)
 // internally, so callers may expect things like getpid() to work correctly
-// after in both the child and parent. An exception is when this code is run
-// under Valgrind. Valgrind does not support the libc clone wrapper, so the libc
-// pid cache may be incorrect after this function is called under Valgrind.
+// after in both the child and parent.
 //
 // As with fork(), callers should be extremely careful when calling this while
 // multiple threads are running, since at the time the fork happened, the

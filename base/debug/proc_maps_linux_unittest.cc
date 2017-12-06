@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -210,23 +209,7 @@ void CheckProcMapsRegions(const std::vector<MappedMemoryRegion> &regions) {
       found_exe = true;
     }
 
-    // Valgrind uses its own allocated stacks instead of the kernel-provided
-    // stack without letting the kernel know via prctl(PR_SET_MM_START_STACK).
-    // Depending on which kernel you're running it'll impact the output of
-    // /proc/self/maps.
-    //
-    // Prior to version 3.4, the kernel completely ignores other stacks and
-    // always prints out the vma lying within mm->start_stack as [stack] even
-    // if the program was currently executing on a different stack.
-    //
-    // Starting in 3.4, the kernel will print out the vma containing the current
-    // stack pointer as [stack:TID] as long as that vma does not lie within
-    // mm->start_stack.
-    //
-    // Because this has gotten too complicated and brittle of a test, completely
-    // ignore checking for the stack and address when running under Valgrind.
-    // See http://crbug.com/431702 for more details.
-    if (!RunningOnValgrind() && regions[i].path == "[stack]") {
+    if (regions[i].path == "[stack]") {
 // On Android the test is run on a background thread, since [stack] is for
 // the main thread, we cannot test this.
 #if !defined(OS_ANDROID)
@@ -248,10 +231,8 @@ void CheckProcMapsRegions(const std::vector<MappedMemoryRegion> &regions) {
   }
 
   EXPECT_TRUE(found_exe);
-  if (!RunningOnValgrind()) {
-    EXPECT_TRUE(found_stack);
-    EXPECT_TRUE(found_address);
-  }
+  EXPECT_TRUE(found_stack);
+  EXPECT_TRUE(found_address);
 }
 
 TEST(ProcMapsTest, ReadProcMaps) {
