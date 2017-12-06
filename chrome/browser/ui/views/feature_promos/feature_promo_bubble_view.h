@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 namespace gfx {
@@ -62,12 +63,14 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  gfx::Rect GetBubbleBounds() override;
 
   // Starts a timer to close the promo bubble.
   void StartAutoCloseTimer(base::TimeDelta auto_close_duration);
 
   // Timer used to auto close the bubble.
   base::OneShotTimer timer_;
+  const ActivationAction activation_action_;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePromoBubbleView);
 };
