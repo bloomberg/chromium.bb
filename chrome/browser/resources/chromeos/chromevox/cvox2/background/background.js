@@ -377,12 +377,12 @@ Background.prototype = {
       var start = this.currentRange_.start.node;
       start.makeVisible();
 
-      var root = start.root;
+      var root = AutomationUtil.getTopLevelRoot(start);
       if (!root || root.role == RoleType.DESKTOP)
         return;
 
       var position = {};
-      var loc = start.location;
+      var loc = start.unclippedLocation;
       position.x = loc.left + loc.width / 2;
       position.y = loc.top + loc.height / 2;
       var url = root.docUrl;
