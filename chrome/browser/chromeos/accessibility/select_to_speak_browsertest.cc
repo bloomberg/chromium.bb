@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <vector>
+
+#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/pattern.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
@@ -20,8 +27,15 @@
 namespace chromeos {
 
 class SelectToSpeakTest : public InProcessBrowserTest {
+ public:
+  void OnFocusRingChanged() {
+    if (loop_runner_) {
+      loop_runner_->Quit();
+    }
+  }
+
  protected:
-  SelectToSpeakTest() {}
+  SelectToSpeakTest() : weak_ptr_factory_(this) {}
   ~SelectToSpeakTest() override {}
 
   void SetUpOnMainThread() override {
@@ -56,7 +70,23 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
   }
 
+  void PrepareToWaitForFocusRingChanged() {
+    loop_runner_ = new content::MessageLoopRunner();
+  }
+
+  // Blocks until the focus ring is changed.
+  void WaitForFocusRingChanged() {
+    loop_runner_->Run();
+    loop_runner_ = nullptr;
+  }
+
+  base::WeakPtr<SelectToSpeakTest> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
+  scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  base::WeakPtrFactory<SelectToSpeakTest> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTest);
 };
 
@@ -127,6 +157,73 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
                                  "First paragraph*"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
                                  "Second paragraph*"));
+}
+
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
+  ash::AccessibilityFocusRingController* controller =
+      ash::AccessibilityFocusRingController::GetInstance();
+  // Create a callback for the focus ring observer.
+  base::RepeatingCallback<void()> callback =
+      base::BindRepeating(&SelectToSpeakTest::OnFocusRingChanged, GetWeakPtr());
+  controller->set_focus_ring_observer_for_testing(callback);
+
+  std::vector<std::unique_ptr<ash::AccessibilityFocusRingLayer>> const&
+      focus_rings = controller->focus_ring_layers_for_testing();
+
+  // No focus rings to start.
+  EXPECT_EQ(focus_rings.size(), 0u);
+
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/html;charset=utf-8,"
+                                               "<p>This is some text</p>"));
+  gfx::Rect bounds = browser()->window()->GetBounds();
+  PrepareToWaitForFocusRingChanged();
+  generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
+  generator_->MoveMouseTo(bounds.x() + 8, bounds.y() + 50);
+  generator_->PressLeftButton();
+
+  // Expect a focus ring to have been drawn.
+  WaitForFocusRingChanged();
+  EXPECT_EQ(focus_rings.size(), 1u);
+
+  gfx::Rect target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();
+
+  // Make sure it's in a reasonable position.
+  EXPECT_LT(abs(target_bounds.x() - (bounds.x() + 8)), 50);
+  EXPECT_LT(abs(target_bounds.y() - (bounds.y() + 50)), 50);
+  EXPECT_LT(target_bounds.width(), 50);
+  EXPECT_LT(target_bounds.height(), 50);
+
+  // Move the mouse.
+  PrepareToWaitForFocusRingChanged();
+  generator_->MoveMouseTo(bounds.x() + 108, bounds.y() + 158);
+
+  // Expect focus ring to have moved with the mouse.
+  // The size should have grown to be over 100 (the rect is now size 100,
+  // and the focus ring has some buffer). Position should be unchanged.
+  WaitForFocusRingChanged();
+  target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();
+  EXPECT_LT(abs(target_bounds.x() - (bounds.x() + 8)), 50);
+  EXPECT_LT(abs(target_bounds.y() - (bounds.y() + 50)), 50);
+  EXPECT_GT(target_bounds.width(), 100);
+  EXPECT_GT(target_bounds.height(), 100);
+
+  // Move the mouse smaller again, it should shrink.
+  PrepareToWaitForFocusRingChanged();
+  generator_->MoveMouseTo(bounds.x() + 18, bounds.y() + 68);
+  WaitForFocusRingChanged();
+  target_bounds = focus_rings.at(0)->layer()->GetTargetBounds();
+  EXPECT_LT(target_bounds.width(), 50);
+  EXPECT_LT(target_bounds.height(), 50);
+
+  // Cancel this by releasing the key before the mouse.
+  PrepareToWaitForFocusRingChanged();
+  generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
+  generator_->ReleaseLeftButton();
+
+  // Expect focus ring to have been cleared, this was canceled in STS
+  // by releasing the key before the button.
+  WaitForFocusRingChanged();
+  EXPECT_EQ(focus_rings.size(), 0u);
 }
 
 }  // namespace chromeos

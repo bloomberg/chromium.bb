@@ -100,11 +100,15 @@ void AccessibilityFocusRingController::SetFocusRing(
   OnLayerChange(&focus_animation_info_);
   focus_rects_ = rects;
   UpdateFocusRingsFromFocusRects();
+  if (focus_ring_observer_for_testing_)
+    focus_ring_observer_for_testing_.Run();
 }
 
 void AccessibilityFocusRingController::HideFocusRing() {
   focus_rects_.clear();
   UpdateFocusRingsFromFocusRects();
+  if (focus_ring_observer_for_testing_)
+    focus_ring_observer_for_testing_.Run();
 }
 
 void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
