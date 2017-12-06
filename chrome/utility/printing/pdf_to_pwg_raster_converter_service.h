@@ -11,10 +11,10 @@
 
 namespace printing {
 
-class PDFToPWGRasterConverterService : public service_manager::Service {
+class PdfToPwgRasterConverterService : public service_manager::Service {
  public:
-  PDFToPWGRasterConverterService();
-  ~PDFToPWGRasterConverterService() override;
+  PdfToPwgRasterConverterService();
+  ~PdfToPwgRasterConverterService() override;
 
   // Factory method for creating the service.
   static std::unique_ptr<service_manager::Service> CreateService();
@@ -30,7 +30,7 @@ class PDFToPWGRasterConverterService : public service_manager::Service {
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(PDFToPWGRasterConverterService);
+  DISALLOW_COPY_AND_ASSIGN(PdfToPwgRasterConverterService);
 };
 
 }  // namespace printing

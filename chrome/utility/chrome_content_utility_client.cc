@@ -222,7 +222,7 @@ void ChromeContentUtilityClient::RegisterServices(
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   service_manager::EmbeddedServiceInfo pdf_to_pwg_converter_info;
   pdf_to_pwg_converter_info.factory =
-      base::Bind(&printing::PDFToPWGRasterConverterService::CreateService);
+      base::Bind(&printing::PdfToPwgRasterConverterService::CreateService);
   services->emplace(printing::mojom::kPdfToPwgRasterConverterServiceName,
                     pdf_to_pwg_converter_info);
 #endif

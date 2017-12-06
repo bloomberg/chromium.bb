@@ -12,52 +12,52 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<printing::mojom::PDFRenderSettings::Mode,
+struct EnumTraits<printing::mojom::PdfRenderSettings::Mode,
                   printing::PdfRenderSettings::Mode> {
-  static printing::mojom::PDFRenderSettings::Mode ToMojom(
+  static printing::mojom::PdfRenderSettings::Mode ToMojom(
       printing::PdfRenderSettings::Mode mode) {
     switch (mode) {
       case printing::PdfRenderSettings::Mode::NORMAL:
-        return printing::mojom::PDFRenderSettings::Mode::NORMAL;
+        return printing::mojom::PdfRenderSettings::Mode::NORMAL;
 #if defined(OS_WIN)
       case printing::PdfRenderSettings::Mode::TEXTONLY:
-        return printing::mojom::PDFRenderSettings::Mode::TEXTONLY;
+        return printing::mojom::PdfRenderSettings::Mode::TEXTONLY;
       case printing::PdfRenderSettings::Mode::GDI_TEXT:
-        return printing::mojom::PDFRenderSettings::Mode::GDI_TEXT;
+        return printing::mojom::PdfRenderSettings::Mode::GDI_TEXT;
       case printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
-        return printing::mojom::PDFRenderSettings::Mode::POSTSCRIPT_LEVEL2;
+        return printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2;
       case printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
-        return printing::mojom::PDFRenderSettings::Mode::POSTSCRIPT_LEVEL3;
+        return printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
 #endif
     }
     NOTREACHED() << "Unknown mode " << static_cast<int>(mode);
-    return printing::mojom::PDFRenderSettings::Mode::NORMAL;
+    return printing::mojom::PdfRenderSettings::Mode::NORMAL;
   }
 
-  static bool FromMojom(printing::mojom::PDFRenderSettings::Mode input,
+  static bool FromMojom(printing::mojom::PdfRenderSettings::Mode input,
                         printing::PdfRenderSettings::Mode* output) {
     switch (input) {
-      case printing::mojom::PDFRenderSettings::Mode::NORMAL:
+      case printing::mojom::PdfRenderSettings::Mode::NORMAL:
         *output = printing::PdfRenderSettings::Mode::NORMAL;
         return true;
 #if defined(OS_WIN)
-      case printing::mojom::PDFRenderSettings::Mode::TEXTONLY:
+      case printing::mojom::PdfRenderSettings::Mode::TEXTONLY:
         *output = printing::PdfRenderSettings::Mode::TEXTONLY;
         return true;
-      case printing::mojom::PDFRenderSettings::Mode::GDI_TEXT:
+      case printing::mojom::PdfRenderSettings::Mode::GDI_TEXT:
         *output = printing::PdfRenderSettings::Mode::GDI_TEXT;
         return true;
-      case printing::mojom::PDFRenderSettings::Mode::POSTSCRIPT_LEVEL2:
+      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
         *output = printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2;
         return true;
-      case printing::mojom::PDFRenderSettings::Mode::POSTSCRIPT_LEVEL3:
+      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
         *output = printing::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3;
         return true;
 #else
-      case printing::mojom::PDFRenderSettings::Mode::TEXTONLY:
-      case printing::mojom::PDFRenderSettings::Mode::GDI_TEXT:
-      case printing::mojom::PDFRenderSettings::Mode::POSTSCRIPT_LEVEL2:
-      case printing::mojom::PDFRenderSettings::Mode::POSTSCRIPT_LEVEL3:
+      case printing::mojom::PdfRenderSettings::Mode::TEXTONLY:
+      case printing::mojom::PdfRenderSettings::Mode::GDI_TEXT:
+      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
+      case printing::mojom::PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
         NOTREACHED() << "Unsupported mode " << static_cast<int>(input)
                      << " on non Windows platform ";
         return false;
@@ -69,7 +69,7 @@ struct EnumTraits<printing::mojom::PDFRenderSettings::Mode,
 };
 
 template <>
-class StructTraits<printing::mojom::PDFRenderSettingsDataView,
+class StructTraits<printing::mojom::PdfRenderSettingsDataView,
                    printing::PdfRenderSettings> {
  public:
   static gfx::Rect area(const printing::PdfRenderSettings& settings) {
@@ -89,7 +89,7 @@ class StructTraits<printing::mojom::PDFRenderSettingsDataView,
     return settings.mode;
   }
 
-  static bool Read(printing::mojom::PDFRenderSettingsDataView data,
+  static bool Read(printing::mojom::PdfRenderSettingsDataView data,
                    printing::PdfRenderSettings* out_settings);
 };
 

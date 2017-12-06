@@ -14,15 +14,15 @@
 
 namespace printing {
 
-class PDFToPWGRasterConverterImpl
-    : public printing::mojom::PDFToPWGRasterConverter {
+class PdfToPwgRasterConverterImpl
+    : public printing::mojom::PdfToPwgRasterConverter {
  public:
-  explicit PDFToPWGRasterConverterImpl(
+  explicit PdfToPwgRasterConverterImpl(
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-  ~PDFToPWGRasterConverterImpl() override;
+  ~PdfToPwgRasterConverterImpl() override;
 
  private:
-  // printing::mojom::PDFToPWGRasterConverter
+  // printing::mojom::PdfToPwgRasterConverter
   void Convert(mojo::ScopedHandle pdf_file_in,
                const PdfRenderSettings& pdf_settings,
                const PwgRasterSettings& pwg_raster_settings,
@@ -31,7 +31,7 @@ class PDFToPWGRasterConverterImpl
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
-  DISALLOW_COPY_AND_ASSIGN(PDFToPWGRasterConverterImpl);
+  DISALLOW_COPY_AND_ASSIGN(PdfToPwgRasterConverterImpl);
 };
 
 }  // namespace printing

@@ -7,6 +7,6 @@ sources = [
 ]
 public_deps = []
 type_mappings = [
-  "printing.mojom.PWGRasterTransformType=printing::PwgRasterTransformType",
-  "printing.mojom.PWGRasterSettings=printing::PwgRasterSettings",
+  "printing.mojom.PwgRasterTransformType=printing::PwgRasterTransformType",
+  "printing.mojom.PwgRasterSettings=printing::PwgRasterSettings",
 ]

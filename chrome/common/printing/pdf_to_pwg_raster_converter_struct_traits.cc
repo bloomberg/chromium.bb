@@ -7,9 +7,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<printing::mojom::PWGRasterSettingsDataView,
+bool StructTraits<printing::mojom::PwgRasterSettingsDataView,
                   printing::PwgRasterSettings>::
-    Read(printing::mojom::PWGRasterSettingsDataView data,
+    Read(printing::mojom::PwgRasterSettingsDataView data,
          printing::PwgRasterSettings* out) {
   out->rotate_all_pages = data.rotate_all_pages();
   out->reverse_page_order = data.reverse_page_order();
