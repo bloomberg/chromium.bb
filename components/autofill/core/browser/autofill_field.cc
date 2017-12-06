@@ -91,18 +91,19 @@ void AutofillField::SetTypeTo(ServerFieldType type) {
 }
 
 AutofillType AutofillField::Type() const {
+  // If autocomplete=tel/tel-* and server confirms it really is a phone field,
+  // we always user the server prediction as html types are not very reliable.
+  if ((GroupTypeOfHtmlFieldType(html_type_, html_mode_) == PHONE_BILLING ||
+       GroupTypeOfHtmlFieldType(html_type_, html_mode_) == PHONE_HOME) &&
+      (GroupTypeOfServerFieldType(overall_server_type_) == PHONE_BILLING ||
+       GroupTypeOfServerFieldType(overall_server_type_) == PHONE_HOME)) {
+    return AutofillType(overall_server_type_);
+  }
+
   // Use the html type specified by the website unless it is unrecognized and
   // autofill predicts a credit card type.
   if (html_type_ != HTML_TYPE_UNSPECIFIED &&
       !(html_type_ == HTML_TYPE_UNRECOGNIZED && IsCreditCardPrediction())) {
-    // If autocomplete=tel and server says it's a phone field without country
-    // code, we override html prediction(autocomplete=tel leads to whole number
-    // prediction).
-    if (html_type_ == HTML_TYPE_TEL &&
-        overall_server_type_ == PHONE_HOME_CITY_AND_NUMBER) {
-      return AutofillType(PHONE_HOME_CITY_AND_NUMBER);
-    }
-
     return AutofillType(html_type_, html_mode_);
   }
 
