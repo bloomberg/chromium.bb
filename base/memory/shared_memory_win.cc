@@ -338,7 +338,7 @@ bool SharedMemory::Unmap() {
   return true;
 }
 
-SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
   HANDLE result;
   ProcessHandle process = GetCurrentProcess();
   if (!::DuplicateHandle(process, shm_.GetHandle(), process, &result,

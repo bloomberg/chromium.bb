@@ -68,7 +68,7 @@ class AudioInputDevice::AudioThreadCallback
   const double bytes_per_ms_;
   size_t current_segment_id_;
   uint32_t last_buffer_id_;
-  std::vector<std::unique_ptr<media::AudioBus>> audio_buses_;
+  std::vector<std::unique_ptr<const media::AudioBus>> audio_buses_;
   CaptureCallback* capture_callback_;
 
   // Used for informing AudioInputDevice that we have gotten data, i.e. the
@@ -369,6 +369,7 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
     : AudioDeviceThread::Callback(
           audio_parameters,
           memory,
+          /*read only*/ true,
           ComputeAudioInputBufferSize(audio_parameters, 1u),
           total_segments),
       bytes_per_ms_(static_cast<double>(audio_parameters.GetBytesPerSecond()) /
@@ -387,12 +388,12 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
   shared_memory_.Map(memory_length_);
 
   // Create vector of audio buses by wrapping existing blocks of memory.
-  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_.memory());
+  const uint8_t* ptr = static_cast<const uint8_t*>(shared_memory_.memory());
   for (uint32_t i = 0; i < total_segments_; ++i) {
-    media::AudioInputBuffer* buffer =
-        reinterpret_cast<media::AudioInputBuffer*>(ptr);
+    const media::AudioInputBuffer* buffer =
+        reinterpret_cast<const media::AudioInputBuffer*>(ptr);
     audio_buses_.push_back(
-        media::AudioBus::WrapMemory(audio_parameters_, buffer->audio));
+        media::AudioBus::WrapReadOnlyMemory(audio_parameters_, buffer->audio));
     ptr += segment_length_;
   }
 
@@ -407,9 +408,10 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
-  uint8_t* ptr = static_cast<uint8_t*>(shared_memory_.memory());
+  const uint8_t* ptr = static_cast<const uint8_t*>(shared_memory_.memory());
   ptr += current_segment_id_ * segment_length_;
-  AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
+  const AudioInputBuffer* buffer =
+      reinterpret_cast<const AudioInputBuffer*>(ptr);
 
   // Usually this will be equal but in the case of low sample rate (e.g. 8kHz,
   // the buffer may be bigger (on mac at least)).
@@ -434,7 +436,7 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   last_buffer_id_ = buffer->params.id;
 
   // Use pre-allocated audio bus wrapping existing block of shared memory.
-  media::AudioBus* audio_bus = audio_buses_[current_segment_id_].get();
+  const media::AudioBus* audio_bus = audio_buses_[current_segment_id_].get();
 
   // Regularly inform that we have gotten data.
   frames_since_last_got_data_callback_ += audio_bus->frames();

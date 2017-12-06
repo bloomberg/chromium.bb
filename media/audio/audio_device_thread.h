@@ -31,6 +31,7 @@ class MEDIA_EXPORT AudioDeviceThread : public base::PlatformThread::Delegate {
    public:
     Callback(const AudioParameters& audio_parameters,
              base::SharedMemoryHandle memory,
+             bool read_only_memory,
              uint32_t segment_length,
              uint32_t total_segments);
 

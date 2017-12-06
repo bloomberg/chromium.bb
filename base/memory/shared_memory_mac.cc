@@ -244,7 +244,7 @@ void SharedMemory::Close() {
   }
 }
 
-SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
   if (shm_.type_ == SharedMemoryHandle::POSIX) {
     // We could imagine re-opening the file from /dev/fd, but that can't make it
     // readonly on Mac: https://codereview.chromium.org/27265002/#msg10.

@@ -461,8 +461,9 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     : AudioDeviceThread::Callback(
           audio_parameters,
           memory,
+          /*read only*/ false,
           ComputeAudioOutputBufferSize(audio_parameters),
-          1),
+          /*segment count*/ 1),
       render_callback_(render_callback),
       callback_num_(0) {}
 

@@ -208,7 +208,7 @@ class BASE_EXPORT SharedMemory {
   // that takes ownership of the handle. As such, it's not valid to pass the
   // sample handle to the IPC subsystem twice. Returns an invalid handle on
   // failure.
-  SharedMemoryHandle GetReadOnlyHandle();
+  SharedMemoryHandle GetReadOnlyHandle() const;
 
   // Returns an ID for the mapped region. This is ID of the SharedMemoryHandle
   // that was mapped. The ID is valid even after the SharedMemoryHandle is

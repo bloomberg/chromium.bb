@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -146,6 +147,16 @@ std::unique_ptr<AudioBus> AudioBus::WrapMemory(const AudioParameters& params,
   return base::WrapUnique(new AudioBus(params.channels(),
                                        params.frames_per_buffer(),
                                        static_cast<float*>(data)));
+}
+
+std::unique_ptr<const AudioBus> AudioBus::WrapReadOnlyMemory(
+    const AudioParameters& params,
+    const void* data) {
+  // Note: const_cast is generally dangerous but is used in this case since
+  // AudioBus accomodates both read-only and read/write use cases. A const
+  // AudioBus object is returned to ensure noone accidentally writes to the
+  // read-only data.
+  return WrapMemory(params, const_cast<void*>(data));
 }
 
 void AudioBus::SetChannelData(int channel, float* data) {

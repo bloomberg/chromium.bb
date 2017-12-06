@@ -363,7 +363,7 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
 }
 #endif  // !defined(OS_ANDROID)
 
-SharedMemoryHandle SharedMemory::GetReadOnlyHandle() {
+SharedMemoryHandle SharedMemory::GetReadOnlyHandle() const {
   CHECK(readonly_shm_.IsValid());
   return readonly_shm_.Duplicate();
 }

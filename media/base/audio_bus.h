@@ -55,6 +55,9 @@ class MEDIA_SHMEM_EXPORT AudioBus {
                                               void* data);
   static std::unique_ptr<AudioBus> WrapMemory(const AudioParameters& params,
                                               void* data);
+  static std::unique_ptr<const AudioBus> WrapReadOnlyMemory(
+      const AudioParameters& params,
+      const void* data);
 
   // Based on the given number of channels and frames, calculates the minimum
   // required size in bytes of a contiguous block of memory to be passed to
