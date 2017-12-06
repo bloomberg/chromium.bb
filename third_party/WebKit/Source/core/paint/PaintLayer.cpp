@@ -3224,14 +3224,14 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
     CompositorFilterOperations& operations) const {
   const auto& style = GetLayoutObject().StyleRef();
   float zoom = style.EffectiveZoom();
-  FloatRect reference_box = FilterReferenceBox(style.Filter(), zoom);
+  auto filter = FilterOperationsIncludingReflection();
+  FloatRect reference_box = FilterReferenceBox(filter, zoom);
   if (!operations.IsEmpty() && !filter_on_effect_node_dirty_ &&
       reference_box == operations.ReferenceBox())
     return;
 
-  operations =
-      FilterEffectBuilder(EnclosingNode(), reference_box, zoom)
-          .BuildFilterOperations(FilterOperationsIncludingReflection());
+  operations = FilterEffectBuilder(EnclosingNode(), reference_box, zoom)
+                   .BuildFilterOperations(filter);
 }
 
 CompositorFilterOperations
