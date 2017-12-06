@@ -50,7 +50,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
     // |response_code| is only needed for RESPONSE_CODE_ERROR.
     virtual void OnError(int response_code, ErrorType error) = 0;
-    virtual void OnParsedJson(PrivetURLFetcher* fetcher,
+    virtual void OnParsedJson(int response_code,
                               const base::DictionaryValue& value,
                               bool has_error) = 0;
 

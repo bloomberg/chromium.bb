@@ -118,7 +118,7 @@ void PrivetInfoOperationImpl::OnError(int response_code,
   callback_.Run(nullptr);
 }
 
-void PrivetInfoOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
+void PrivetInfoOperationImpl::OnParsedJson(int response_code,
                                            const base::DictionaryValue& value,
                                            bool has_error) {
   callback_.Run(&value);
@@ -192,7 +192,7 @@ void PrivetRegisterOperationImpl::OnError(int response_code,
 }
 
 void PrivetRegisterOperationImpl::OnParsedJson(
-    PrivetURLFetcher* fetcher,
+    int response_code,
     const base::DictionaryValue& value,
     bool has_error) {
   if (has_error) {
@@ -200,11 +200,8 @@ void PrivetRegisterOperationImpl::OnParsedJson(
     value.GetString(kPrivetKeyError, &error);
 
     ongoing_ = false;
-    delegate_->OnPrivetRegisterError(this,
-                                     current_action_,
-                                     FAILURE_JSON_ERROR,
-                                     fetcher->response_code(),
-                                     &value);
+    delegate_->OnPrivetRegisterError(this, current_action_, FAILURE_JSON_ERROR,
+                                     response_code, &value);
     return;
   }
 
@@ -318,10 +315,9 @@ void PrivetRegisterOperationImpl::Cancelation::OnError(
     PrivetURLFetcher::ErrorType error) {}
 
 void PrivetRegisterOperationImpl::Cancelation::OnParsedJson(
-    PrivetURLFetcher* fetcher,
+    int response_code,
     const base::DictionaryValue& value,
-    bool has_error) {
-}
+    bool has_error) {}
 
 void PrivetRegisterOperationImpl::Cancelation::Cleanup() {
   // Nothing needs to be done, as base::Owned will delete this object,
@@ -358,7 +354,7 @@ void PrivetJSONOperationImpl::OnError(int response_code,
   callback_.Run(nullptr);
 }
 
-void PrivetJSONOperationImpl::OnParsedJson(PrivetURLFetcher* fetcher,
+void PrivetJSONOperationImpl::OnParsedJson(int response_code,
                                            const base::DictionaryValue& value,
                                            bool has_error) {
   callback_.Run(&value);
@@ -609,7 +605,7 @@ void PrivetLocalPrintOperationImpl::OnError(int response_code,
 }
 
 void PrivetLocalPrintOperationImpl::OnParsedJson(
-    PrivetURLFetcher* fetcher,
+    int response_code,
     const base::DictionaryValue& value,
     bool has_error) {
   DCHECK(!current_response_.is_null());
