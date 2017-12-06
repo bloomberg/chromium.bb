@@ -133,6 +133,36 @@ TEST_F(BookmarkButtonTest, MouseEnterExitRedirect) {
   EXPECT_EQ(2, delegate.get()->exited_);
 }
 
+// Tests to see if the bookmark button is properly highlighted on mouse up/down
+// events.
+TEST_F(BookmarkButtonTest, MouseUpAndDownHighlight) {
+  NSEvent* moveEvent = cocoa_test_event_utils::MouseEventAtPoint(
+      NSMakePoint(510, 510), NSMouseMoved, 0);
+  base::scoped_nsobject<BookmarkButton> button;
+  base::scoped_nsobject<BookmarkButtonCell> cell;
+  base::scoped_nsobject<FakeButtonDelegate> delegate(
+      [[FakeButtonDelegate alloc] init]);
+  button.reset(
+      [[BookmarkButton alloc] initWithFrame:NSMakeRect(0, 0, 500, 500)]);
+  cell.reset([[BookmarkButtonCell alloc] initTextCell:@"nightjar"]);
+  [button setCell:cell];
+  [button setDelegate:delegate];
+  [cell updateTrackingAreas];
+
+  EXPECT_FALSE([cell isMouseInside]);
+
+  moveEvent = cocoa_test_event_utils::MouseEventAtPoint(NSMakePoint(10, 10),
+                                                        NSMouseMoved, 0);
+  [cell mouseEntered:moveEvent];
+  EXPECT_TRUE([cell isMouseInside]);
+
+  [button mouseDown:moveEvent];
+  EXPECT_TRUE([cell isMouseInside]);
+
+  [button mouseUp:moveEvent];
+  EXPECT_EQ([cell isMouseReallyInside], [cell isMouseInside]);
+}
+
 TEST_F(BookmarkButtonTest, DragToTrash) {
   base::scoped_nsobject<BookmarkButton> button;
   base::scoped_nsobject<BookmarkButtonCell> cell;
