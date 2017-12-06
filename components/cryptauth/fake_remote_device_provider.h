@@ -13,16 +13,17 @@ namespace cryptauth {
 class FakeRemoteDeviceProvider : public RemoteDeviceProvider {
  public:
   FakeRemoteDeviceProvider();
-
   ~FakeRemoteDeviceProvider() override;
-
-  // RemoteDeviceProvider:
-  const RemoteDeviceList GetSyncedDevices() const override;
 
   void set_synced_remote_devices(
       const RemoteDeviceList& synced_remote_devices) {
     synced_remote_devices_ = synced_remote_devices;
   }
+
+  void NotifyObserversDeviceListChanged();
+
+  // RemoteDeviceProvider:
+  const RemoteDeviceList& GetSyncedDevices() const override;
 
  private:
   RemoteDeviceList synced_remote_devices_;

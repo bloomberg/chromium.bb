@@ -15,6 +15,8 @@
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/tether_component_impl.h"
 #include "components/cryptauth/fake_cryptauth_service.h"
+#include "components/cryptauth/fake_remote_device_provider.h"
+#include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -22,10 +24,32 @@
 
 using testing::Invoke;
 using testing::NiceMock;
+using testing::Return;
 
 namespace chromeos {
 
 namespace tether {
+
+namespace {
+
+class FakeRemoteDeviceProviderFactory
+    : public cryptauth::RemoteDeviceProviderImpl::Factory {
+ public:
+  FakeRemoteDeviceProviderFactory() = default;
+  virtual ~FakeRemoteDeviceProviderFactory() = default;
+
+  // cryptauth::RemoteDeviceProviderImpl::Factory:
+  std::unique_ptr<cryptauth::RemoteDeviceProvider> BuildInstance(
+      cryptauth::CryptAuthDeviceManager* device_manager,
+      const std::string& user_id,
+      const std::string& user_private_key,
+      cryptauth::SecureMessageDelegate::Factory*
+          secure_message_delegate_factory) override {
+    return base::MakeUnique<cryptauth::FakeRemoteDeviceProvider>();
+  }
+};
+
+}  // namespace
 
 class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
  protected:
@@ -43,6 +67,11 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
             Invoke(this, &AsynchronousShutdownObjectContainerImplTest::
                              MockIsAdapterPowered));
 
+    fake_remote_device_provider_factory_ =
+        base::WrapUnique(new FakeRemoteDeviceProviderFactory());
+    cryptauth::RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
+        fake_remote_device_provider_factory_.get());
+
     fake_cryptauth_service_ =
         base::MakeUnique<cryptauth::FakeCryptAuthService>();
 
@@ -55,7 +84,7 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     // of objects created by the container.
     container_ = base::MakeUnique<AsynchronousShutdownObjectContainerImpl>(
         mock_adapter_, fake_cryptauth_service_.get(),
-        nullptr /* network_state_handler */,
+        nullptr /* tether_host_fetcher */, nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,
         nullptr /* network_connection_handler */,
         test_pref_service_.get() /* pref_service */);
@@ -92,6 +121,8 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
+  std::unique_ptr<FakeRemoteDeviceProviderFactory>
+      fake_remote_device_provider_factory_;
   FakeBleAdvertiser* fake_ble_advertiser_;
   FakeBleScanner* fake_ble_scanner_;
   FakeDisconnectTetheringRequestSender*

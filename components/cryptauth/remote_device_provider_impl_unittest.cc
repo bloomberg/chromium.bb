@@ -46,9 +46,9 @@ class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
 };
 
 class FakeSecureMessageDelegateFactory
-    : public cryptauth::SecureMessageDelegateFactory {
+    : public cryptauth::SecureMessageDelegate::Factory {
  public:
-  // cryptauth::SecureMessageDelegateFactory:
+  // cryptauth::SecureMessageDelegate::Factory:
   std::unique_ptr<cryptauth::SecureMessageDelegate>
   CreateSecureMessageDelegate() override {
     cryptauth::FakeSecureMessageDelegate* delegate =

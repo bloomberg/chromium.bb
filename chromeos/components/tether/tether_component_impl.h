@@ -37,6 +37,7 @@ class AsynchronousShutdownObjectContainer;
 class CrashRecoveryManager;
 class NotificationPresenter;
 class SynchronousShutdownObjectContainer;
+class TetherHostFetcher;
 
 // Initializes the Tether component.
 class TetherComponentImpl : public TetherComponent {
@@ -47,6 +48,7 @@ class TetherComponentImpl : public TetherComponent {
    public:
     static std::unique_ptr<TetherComponent> NewInstance(
         cryptauth::CryptAuthService* cryptauth_service,
+        TetherHostFetcher* tether_host_fetcher,
         NotificationPresenter* notification_presenter,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
@@ -61,6 +63,7 @@ class TetherComponentImpl : public TetherComponent {
    protected:
     virtual std::unique_ptr<TetherComponent> BuildInstance(
         cryptauth::CryptAuthService* cryptauth_service,
+        TetherHostFetcher* tether_host_fetcher,
         NotificationPresenter* notification_presenter,
         PrefService* pref_service,
         NetworkStateHandler* network_state_handler,
@@ -76,6 +79,7 @@ class TetherComponentImpl : public TetherComponent {
 
   TetherComponentImpl(
       cryptauth::CryptAuthService* cryptauth_service,
+      TetherHostFetcher* tether_host_fetcher,
       NotificationPresenter* notification_presenter,
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,

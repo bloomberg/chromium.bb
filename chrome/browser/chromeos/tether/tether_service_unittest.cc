@@ -22,7 +22,9 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_component.h"
+#include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_component_impl.h"
+#include "chromeos/components/tether/tether_host_fetcher_impl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
@@ -35,7 +37,13 @@
 #include "chromeos/network/network_state_test.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/cryptauth_enroller.h"
+#include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "components/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/cryptauth/fake_cryptauth_service.h"
+#include "components/cryptauth/fake_remote_device_provider.h"
+#include "components/cryptauth/remote_device_provider_impl.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -52,12 +60,32 @@ using testing::Return;
 
 namespace {
 
-class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
- public:
-  ~MockCryptAuthDeviceManager() override {}
+const char kTestUserPrivateKey[] = "kTestUserPrivateKey";
+const size_t kNumTestDevices = 5;
 
-  MOCK_CONST_METHOD0(GetTetherHosts,
-                     std::vector<cryptauth::ExternalDeviceInfo>());
+cryptauth::RemoteDeviceList CreateTestDevices() {
+  cryptauth::RemoteDeviceList list =
+      cryptauth::GenerateTestRemoteDevices(kNumTestDevices);
+  for (auto& remote_device : list)
+    remote_device.supports_mobile_hotspot = true;
+  return list;
+}
+
+class MockCryptAuthEnrollmentManager
+    : public cryptauth::CryptAuthEnrollmentManager {
+ public:
+  explicit MockCryptAuthEnrollmentManager(
+      cryptauth::FakeCryptAuthGCMManager* fake_cryptauth_gcm_manager)
+      : cryptauth::CryptAuthEnrollmentManager(
+            nullptr /* clock */,
+            nullptr /* enroller_factory */,
+            nullptr /* secure_message_delegate */,
+            cryptauth::GcmDeviceInfo(),
+            fake_cryptauth_gcm_manager,
+            nullptr /* pref_service */) {}
+  ~MockCryptAuthEnrollmentManager() override = default;
+
+  MOCK_CONST_METHOD0(GetUserPrivateKey, std::string());
 };
 
 class MockExtendedBluetoothAdapter : public device::MockBluetoothAdapter {
@@ -142,6 +170,7 @@ class TestTetherComponentFactory final
   // chromeos::tether::TetherComponentImpl::Factory:
   std::unique_ptr<chromeos::tether::TetherComponent> BuildInstance(
       cryptauth::CryptAuthService* cryptauth_service,
+      chromeos::tether::TetherHostFetcher* tether_host_fetcher,
       chromeos::tether::NotificationPresenter* notification_presenter,
       PrefService* pref_service,
       chromeos::NetworkStateHandler* network_state_handler,
@@ -162,14 +191,62 @@ class TestTetherComponentFactory final
   FakeTetherComponentWithDestructorCallback* active_tether_component_ = nullptr;
 };
 
+class FakeRemoteDeviceProviderFactory
+    : public cryptauth::RemoteDeviceProviderImpl::Factory {
+ public:
+  FakeRemoteDeviceProviderFactory() = default;
+  virtual ~FakeRemoteDeviceProviderFactory() = default;
+
+  // cryptauth::RemoteDeviceProviderImpl::Factory:
+  std::unique_ptr<cryptauth::RemoteDeviceProvider> BuildInstance(
+      cryptauth::CryptAuthDeviceManager* device_manager,
+      const std::string& user_id,
+      const std::string& user_private_key,
+      cryptauth::SecureMessageDelegate::Factory*
+          secure_message_delegate_factory) override {
+    return base::MakeUnique<cryptauth::FakeRemoteDeviceProvider>();
+  }
+};
+
+class FakeTetherHostFetcherFactory
+    : public chromeos::tether::TetherHostFetcherImpl::Factory {
+ public:
+  FakeTetherHostFetcherFactory(
+      const cryptauth::RemoteDeviceList& initial_devices)
+      : initial_devices_(initial_devices) {}
+  virtual ~FakeTetherHostFetcherFactory() = default;
+
+  chromeos::tether::FakeTetherHostFetcher* last_created() {
+    return last_created_;
+  }
+
+  void SetNoInitialDevices() { initial_devices_.clear(); }
+
+  // chromeos::tether::TetherHostFetcherImpl::Factory :
+  std::unique_ptr<chromeos::tether::TetherHostFetcher> BuildInstance(
+      cryptauth::RemoteDeviceProvider* remote_device_provider) override {
+    last_created_ =
+        new chromeos::tether::FakeTetherHostFetcher(initial_devices_);
+    return base::WrapUnique(last_created_);
+  }
+
+ private:
+  cryptauth::RemoteDeviceList initial_devices_;
+  chromeos::tether::FakeTetherHostFetcher* last_created_ = nullptr;
+};
+
 }  // namespace
 
 class TetherServiceTest : public chromeos::NetworkStateTest {
  protected:
-  TetherServiceTest() : NetworkStateTest() {}
+  TetherServiceTest()
+      : NetworkStateTest(), test_devices_(CreateTestDevices()) {}
   ~TetherServiceTest() override {}
 
   void SetUp() override {
+    fake_notification_presenter_ = nullptr;
+    mock_timer_ = nullptr;
+
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkStateTest::SetUp();
 
@@ -183,17 +260,17 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     fake_power_manager_client_ =
         base::MakeUnique<chromeos::FakePowerManagerClient>();
 
-    std::vector<cryptauth::ExternalDeviceInfo> test_device_infos;
-    test_device_infos.push_back(cryptauth::ExternalDeviceInfo());
-    test_device_infos.push_back(cryptauth::ExternalDeviceInfo());
-    mock_cryptauth_device_manager_ =
-        base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
-    ON_CALL(*mock_cryptauth_device_manager_, GetTetherHosts())
-        .WillByDefault(Return(test_device_infos));
     fake_cryptauth_service_ =
         base::MakeUnique<cryptauth::FakeCryptAuthService>();
-    fake_cryptauth_service_->set_cryptauth_device_manager(
-        mock_cryptauth_device_manager_.get());
+    fake_cryptauth_gcm_manager_ =
+        base::MakeUnique<cryptauth::FakeCryptAuthGCMManager>("registrationId");
+    mock_enrollment_manager_ =
+        base::WrapUnique(new NiceMock<MockCryptAuthEnrollmentManager>(
+            fake_cryptauth_gcm_manager_.get()));
+    ON_CALL(*mock_enrollment_manager_, GetUserPrivateKey())
+        .WillByDefault(Return(kTestUserPrivateKey));
+    fake_cryptauth_service_->set_cryptauth_enrollment_manager(
+        mock_enrollment_manager_.get());
 
     mock_adapter_ =
         base::MakeRefCounted<NiceMock<MockExtendedBluetoothAdapter>>();
@@ -209,6 +286,16 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
         base::WrapUnique(new TestTetherComponentFactory());
     chromeos::tether::TetherComponentImpl::Factory::SetInstanceForTesting(
         test_tether_component_factory_.get());
+
+    fake_remote_device_provider_factory_ =
+        base::WrapUnique(new FakeRemoteDeviceProviderFactory());
+    cryptauth::RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
+        fake_remote_device_provider_factory_.get());
+
+    fake_tether_host_fetcher_factory_ =
+        base::WrapUnique(new FakeTetherHostFetcherFactory(test_devices_));
+    chromeos::tether::TetherHostFetcherImpl::Factory::SetInstanceForTesting(
+        fake_tether_host_fetcher_factory_.get());
   }
 
   void TearDown() override {
@@ -230,12 +317,11 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     fake_notification_presenter_ =
         new chromeos::tether::FakeNotificationPresenter();
-    tether_service_->SetNotificationPresenterForTest(
-        base::WrapUnique(fake_notification_presenter_));
-
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
-    tether_service_->SetTimerForTest(base::WrapUnique(mock_timer_));
+    tether_service_->SetTestDoubles(
+        base::WrapUnique(fake_notification_presenter_),
+        base::WrapUnique(mock_timer_));
 
     // Ensure that TetherService does not prematurely update its TechnologyState
     // before it fetches the BluetoothAdapter.
@@ -309,18 +395,25 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
         test_tether_component_factory_->active_tether_component() != nullptr);
   }
 
+  const cryptauth::RemoteDeviceList test_devices_;
   const content::TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<chromeos::FakePowerManagerClient> fake_power_manager_client_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
-  std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>>
-      mock_cryptauth_device_manager_;
   std::unique_ptr<TestTetherComponentFactory> test_tether_component_factory_;
+  std::unique_ptr<FakeRemoteDeviceProviderFactory>
+      fake_remote_device_provider_factory_;
+  std::unique_ptr<FakeTetherHostFetcherFactory>
+      fake_tether_host_fetcher_factory_;
   chromeos::tether::FakeNotificationPresenter* fake_notification_presenter_;
   base::MockTimer* mock_timer_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
+  std::unique_ptr<cryptauth::FakeCryptAuthGCMManager>
+      fake_cryptauth_gcm_manager_;
+  std::unique_ptr<NiceMock<MockCryptAuthEnrollmentManager>>
+      mock_enrollment_manager_;
 
   scoped_refptr<MockExtendedBluetoothAdapter> mock_adapter_;
   bool is_adapter_present_;
@@ -531,9 +624,7 @@ TEST_F(TetherServiceTest, TestFeatureFlagEnabled) {
 }
 
 TEST_F(TetherServiceTest, TestNoTetherHosts) {
-  ON_CALL(*mock_cryptauth_device_manager_, GetTetherHosts())
-      .WillByDefault(Return(std::vector<cryptauth::ExternalDeviceInfo>()));
-
+  fake_tether_host_fetcher_factory_->SetNoInitialDevices();
   CreateTetherService();
 
   EXPECT_EQ(
@@ -541,6 +632,9 @@ TEST_F(TetherServiceTest, TestNoTetherHosts) {
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(false /* expected_active */);
+
+  // Simulate this being the final state of Tether by passing time.
+  mock_timer_->Fire();
 
   VerifyTetherFeatureStateRecorded(
       TetherService::TetherFeatureState::NO_AVAILABLE_HOSTS,
@@ -571,6 +665,7 @@ TEST_F(TetherServiceTest, TestBluetoothNotPresent) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  VerifyTetherActiveStatus(false /* expected_active */);
 
   // Simulate this being the final state of Tether by passing time.
   mock_timer_->Fire();
@@ -580,23 +675,37 @@ TEST_F(TetherServiceTest, TestBluetoothNotPresent) {
       1 /* expected_count */);
 }
 
-TEST_F(TetherServiceTest, TestBluetoothNotPresent_FalsePositive) {
+TEST_F(TetherServiceTest, TestMetricsFalsePositives) {
   set_is_adapter_present(false);
-
+  fake_tether_host_fetcher_factory_->SetNoInitialDevices();
   CreateTetherService();
 
   set_is_adapter_present(true);
   SetIsBluetoothPowered(true);
+
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+  VerifyTetherActiveStatus(false /* expected_active */);
+
+  fake_tether_host_fetcher_factory_->last_created()->set_tether_hosts(
+      test_devices_);
+  fake_tether_host_fetcher_factory_->last_created()->NotifyTetherHostsUpdated();
 
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
   VerifyTetherActiveStatus(true /* expected_active */);
 
+  // No metric should have been recorded for BLE_NOT_PRESENT and
+  // NO_AVAILABLE_HOSTS, but ENABLED should have been recorded.
   VerifyTetherFeatureStateRecorded(
       TetherService::TetherFeatureState::BLE_NOT_PRESENT,
       0 /* expected_count */);
-
+  VerifyTetherFeatureStateRecorded(
+      TetherService::TetherFeatureState::NO_AVAILABLE_HOSTS,
+      0 /* expected_count */);
   VerifyTetherFeatureStateRecorded(TetherService::TetherFeatureState::ENABLED,
                                    1 /* expected_count */);
 

@@ -195,8 +195,8 @@ class HostScannerTest : public NetworkStateTest {
 
     scanned_device_infos_from_current_scan_.clear();
 
-    fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
-        test_devices_, false /* synchronously_reply_with_results */);
+    fake_tether_host_fetcher_ =
+        base::MakeUnique<FakeTetherHostFetcher>(test_devices_);
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
     fake_host_scan_device_prioritizer_ =
         base::MakeUnique<FakeHostScanDevicePrioritizer>();
@@ -412,8 +412,6 @@ TEST_F(HostScannerTest, TestScan_ConnectingToExistingNetwork) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -451,8 +449,6 @@ TEST_F(HostScannerTest, TestNotificationNotDisplayedMultipleTimes) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -487,8 +483,6 @@ TEST_F(HostScannerTest, TestScan_ResultsFromAllDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -523,8 +517,6 @@ TEST_F(HostScannerTest, TestScan_ResultsFromNoDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -545,8 +537,6 @@ TEST_F(HostScannerTest, TestScan_ResultsFromSomeDevices) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -577,22 +567,12 @@ TEST_F(HostScannerTest, TestScan_MultipleScanCallsDuringOperation) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  // Call StartScan() again before the tether host fetcher has finished. This
-  // should be a no-op.
-  host_scanner_->StartScan();
-  EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  // No devices should have been received yet.
-  EXPECT_EQ(0u, fake_host_scan_cache_->size());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
-  // Call StartScan again after the tether host fetcher has finished but before
-  // the final scan result has been received. This should be a no-op.
+  // Call StartScan again before the final scan result has been received. This
+  // should be a no-op.
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
 
@@ -631,8 +611,6 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(1u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -678,8 +656,6 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(2u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());
@@ -720,8 +696,6 @@ TEST_F(HostScannerTest, TestScan_MultipleCompleteScanSessions) {
   EXPECT_FALSE(host_scanner_->IsScanActive());
   host_scanner_->StartScan();
   EXPECT_TRUE(host_scanner_->IsScanActive());
-
-  fake_tether_host_fetcher_->InvokePendingCallbacks();
   ASSERT_EQ(3u,
             fake_host_scanner_operation_factory_->created_operations().size());
   EXPECT_TRUE(host_scanner_->IsScanActive());

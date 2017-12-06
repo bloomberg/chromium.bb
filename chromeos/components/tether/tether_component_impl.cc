@@ -37,6 +37,7 @@ TetherComponentImpl::Factory* TetherComponentImpl::Factory::factory_instance_ =
 // static
 std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     cryptauth::CryptAuthService* cryptauth_service,
+    TetherHostFetcher* tether_host_fetcher,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
@@ -48,9 +49,10 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      cryptauth_service, notification_presenter, pref_service,
-      network_state_handler, managed_network_configuration_handler,
-      network_connect, network_connection_handler, adapter);
+      cryptauth_service, tether_host_fetcher, notification_presenter,
+      pref_service, network_state_handler,
+      managed_network_configuration_handler, network_connect,
+      network_connection_handler, adapter);
 }
 
 // static
@@ -69,6 +71,7 @@ void TetherComponentImpl::RegisterProfilePrefs(
 
 std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     cryptauth::CryptAuthService* cryptauth_service,
+    TetherHostFetcher* tether_host_fetcher,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
@@ -77,13 +80,15 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     NetworkConnectionHandler* network_connection_handler,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   return base::MakeUnique<TetherComponentImpl>(
-      cryptauth_service, notification_presenter, pref_service,
-      network_state_handler, managed_network_configuration_handler,
-      network_connect, network_connection_handler, adapter);
+      cryptauth_service, tether_host_fetcher, notification_presenter,
+      pref_service, network_state_handler,
+      managed_network_configuration_handler, network_connect,
+      network_connection_handler, adapter);
 }
 
 TetherComponentImpl::TetherComponentImpl(
     cryptauth::CryptAuthService* cryptauth_service,
+    TetherHostFetcher* tether_host_fetcher,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
     NetworkStateHandler* network_state_handler,
@@ -95,6 +100,7 @@ TetherComponentImpl::TetherComponentImpl(
           AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
               adapter,
               cryptauth_service,
+              tether_host_fetcher,
               network_state_handler,
               managed_network_configuration_handler,
               network_connection_handler,

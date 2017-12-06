@@ -11,43 +11,31 @@ namespace chromeos {
 namespace tether {
 
 FakeTetherHostFetcher::FakeTetherHostFetcher(
-    std::vector<cryptauth::RemoteDevice> tether_hosts,
-    bool synchronously_reply_with_results)
-    : TetherHostFetcher(nullptr),
-      tether_hosts_(tether_hosts),
-      synchronously_reply_with_results_(synchronously_reply_with_results) {}
+    const std::vector<cryptauth::RemoteDevice>& tether_hosts)
+    : tether_hosts_(tether_hosts) {}
 
-FakeTetherHostFetcher::FakeTetherHostFetcher(
-    bool synchronously_reply_with_results)
-    : FakeTetherHostFetcher(std::vector<cryptauth::RemoteDevice>(),
-                            synchronously_reply_with_results) {}
+FakeTetherHostFetcher::FakeTetherHostFetcher()
+    : FakeTetherHostFetcher(std::vector<cryptauth::RemoteDevice>()) {}
 
 FakeTetherHostFetcher::~FakeTetherHostFetcher() = default;
 
-void FakeTetherHostFetcher::SetTetherHosts(
-    const std::vector<cryptauth::RemoteDevice> tether_hosts) {
-  tether_hosts_ = tether_hosts;
+void FakeTetherHostFetcher::NotifyTetherHostsUpdated() {
+  TetherHostFetcher::NotifyTetherHostsUpdated();
 }
 
-void FakeTetherHostFetcher::InvokePendingCallbacks() {
-  OnRemoteDevicesLoaded(tether_hosts_);
+bool FakeTetherHostFetcher::HasSyncedTetherHosts() {
+  return !tether_hosts_.empty();
 }
 
 void FakeTetherHostFetcher::FetchAllTetherHosts(
     const TetherHostFetcher::TetherHostListCallback& callback) {
-  requests_.push_back(TetherHostFetchRequest(callback));
-  if (synchronously_reply_with_results_) {
-    InvokePendingCallbacks();
-  }
+  ProcessFetchAllTetherHostsRequest(tether_hosts_, callback);
 }
 
 void FakeTetherHostFetcher::FetchTetherHost(
     const std::string& device_id,
     const TetherHostFetcher::TetherHostCallback& callback) {
-  requests_.push_back(TetherHostFetchRequest(device_id, callback));
-  if (synchronously_reply_with_results_) {
-    InvokePendingCallbacks();
-  }
+  ProcessFetchSingleTetherHostRequest(device_id, tether_hosts_, callback);
 }
 
 }  // namespace tether
