@@ -33,7 +33,7 @@ const CGFloat kFontSize = 16.0f;
 
 // Margin between the bubble view's bounds and its content. This margin is on
 // all sides of the bubble.
-const CGFloat kBubbleMargin = 8.0f;
+const CGFloat kBubbleMargin = 4.0f;
 // Padding between the top and bottom the bubble's background and the top and
 // bottom of the label.
 const CGFloat kLabelVerticalPadding = 8.0f;

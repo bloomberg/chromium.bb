@@ -794,9 +794,11 @@ using ios::material::TimingFunction;
 #pragma mark - BubbleViewAnchorPointProvider methods.
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint = bubble_util::AnchorPoint(stackButton_.frame, direction);
-  return [stackButton_.superview convertPoint:anchorPoint
-                                       toView:stackButton_.window];
+  CGPoint anchorPoint =
+      bubble_util::AnchorPoint(stackButton_.imageView.frame, direction);
+  return [stackButton_.imageView.superview
+      convertPoint:anchorPoint
+            toView:stackButton_.imageView.window];
 }
 
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {

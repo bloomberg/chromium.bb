@@ -675,9 +675,10 @@ UIColor* BackgroundColor() {
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
   CGPoint anchorPoint =
-      bubble_util::AnchorPoint(_tabSwitcherButton.frame, direction);
-  return [_tabSwitcherButton.superview convertPoint:anchorPoint
-                                             toView:_tabSwitcherButton.window];
+      bubble_util::AnchorPoint(_tabSwitcherButton.imageView.frame, direction);
+  return [_tabSwitcherButton.imageView.superview
+      convertPoint:anchorPoint
+            toView:_tabSwitcherButton.imageView.window];
 }
 
 #pragma mark -
