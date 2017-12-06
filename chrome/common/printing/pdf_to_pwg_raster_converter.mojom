@@ -4,27 +4,10 @@
 
 module printing.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "chrome/common/printing/pdf_render_settings.mojom";
 
 const string kPdfToPwgRasterConverterServiceName =
     "pdf_to_pwg_raster_converter";
-
-struct PDFRenderSettings {
-  enum Mode {
-    NORMAL = 0,
-    // Modes below are Windows only.
-    TEXTONLY,
-    GDI_TEXT,
-    POSTSCRIPT_LEVEL2,
-    POSTSCRIPT_LEVEL3
-  };
-
-  gfx.mojom.Rect area;
-  gfx.mojom.Point offsets;
-  int32 dpi;
-  bool autorotate;
-  Mode mode;
-};
 
 struct PWGRasterSettings {
   enum TransformType {

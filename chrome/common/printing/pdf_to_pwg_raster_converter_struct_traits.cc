@@ -4,22 +4,9 @@
 
 #include "chrome/common/printing/pdf_to_pwg_raster_converter_struct_traits.h"
 
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
-
 namespace mojo {
 
 // static
-bool StructTraits<printing::mojom::PDFRenderSettingsDataView,
-                  printing::PdfRenderSettings>::
-    Read(printing::mojom::PDFRenderSettingsDataView data,
-         printing::PdfRenderSettings* out) {
-  out->dpi = data.dpi();
-  out->autorotate = data.autorotate();
-
-  return data.ReadArea(&out->area) && data.ReadOffsets(&out->offsets) &&
-         data.ReadMode(&out->mode);
-}
-
 bool StructTraits<printing::mojom::PWGRasterSettingsDataView,
                   printing::PwgRasterSettings>::
     Read(printing::mojom::PWGRasterSettingsDataView data,

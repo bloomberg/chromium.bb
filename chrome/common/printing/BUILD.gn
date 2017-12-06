@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "pdf_render_settings.mojom",
     "pdf_to_pwg_raster_converter.mojom",
   ]
 
