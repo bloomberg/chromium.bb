@@ -24,6 +24,7 @@ OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
 OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(
+    const SkMatrix44& output_color_matrix,
     cc::DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     cc::OverlayCandidateList* candidate_list,
@@ -34,8 +35,8 @@ bool OverlayStrategySingleOnTop::Attempt(
   auto best_quad_it = quad_list->end();
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     cc::OverlayCandidate candidate;
-    if (cc::OverlayCandidate::FromDrawQuad(resource_provider, *it,
-                                           &candidate) &&
+    if (cc::OverlayCandidate::FromDrawQuad(
+            resource_provider, output_color_matrix, *it, &candidate) &&
         !cc::OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
       // We currently reject quads with alpha that do not request alpha blending
       // since the alpha channel might not be set to 1 and we're not disabling

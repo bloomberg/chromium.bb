@@ -166,6 +166,23 @@ void Display::Resize(const gfx::Size& size) {
     scheduler_->DisplayResized();
 }
 
+void Display::SetColorMatrix(const SkMatrix44& matrix) {
+  if (output_surface_)
+    output_surface_->set_color_matrix(matrix);
+
+  // Force a redraw.
+  if (aggregator_) {
+    if (current_surface_id_.is_valid())
+      aggregator_->SetFullDamageForSurface(current_surface_id_);
+  }
+
+  if (scheduler_) {
+    BeginFrameAck ack;
+    ack.has_damage = true;
+    scheduler_->ProcessSurfaceDamage(current_surface_id_, ack, true);
+  }
+}
+
 void Display::SetColorSpace(const gfx::ColorSpace& blending_color_space,
                             const gfx::ColorSpace& device_color_space) {
   blending_color_space_ = blending_color_space;

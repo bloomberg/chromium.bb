@@ -17,6 +17,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/pixel_test.h"
+#include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -892,6 +893,73 @@ TEST_F(GLRendererPixelTest, SolidColorBlend) {
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("dark_grey.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(GLRendererPixelTest, SolidColorWithTemperature) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+
+  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(shared_state, rect, rect, SK_ColorYELLOW, false);
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  SkMatrix44 color_matrix(SkMatrix44::kIdentity_Constructor);
+  color_matrix.set(0, 0, 0.7f);
+  color_matrix.set(1, 1, 0.4f);
+  color_matrix.set(2, 2, 0.5f);
+  output_surface_->set_color_matrix(color_matrix);
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("temperature_brown.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(GLRendererPixelTest, SolidColorWithTemperature_NonRootRenderPass) {
+  // Create a root and a child passes with two different solid color quads.
+  RenderPassList render_passes_in_draw_order;
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+  gfx::Rect root_rect(0, 0, viewport_rect.width(), viewport_rect.height() / 2);
+  gfx::Rect child_rect(0, root_rect.bottom(), viewport_rect.width(),
+                       root_rect.height());
+
+  // Child pass.
+  int child_pass_id = 2;
+  RenderPass* child_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order, child_pass_id, viewport_rect,
+      gfx::Transform(), cc::FilterOperations());
+  cc::AddQuad(child_pass, child_rect, SK_ColorGREEN);
+
+  // Root pass.
+  int root_pass_id = 1;
+  RenderPass* root_pass = cc::AddRenderPass(
+      &render_passes_in_draw_order, root_pass_id, viewport_rect,
+      gfx::Transform(), cc::FilterOperations());
+  cc::AddQuad(root_pass, root_rect, SK_ColorYELLOW);
+
+  SharedQuadState* pass_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), viewport_rect, root_pass);
+  CreateTestRenderPassDrawQuad(pass_shared_state, viewport_rect, child_pass_id,
+                               root_pass);
+
+  // Set a non-identity output color matrix on the output surface, and expect
+  // that the colors will be transformed.
+  SkMatrix44 color_matrix(SkMatrix44::kIdentity_Constructor);
+  color_matrix.set(0, 0, 0.7f);
+  color_matrix.set(1, 1, 0.4f);
+  color_matrix.set(2, 2, 0.5f);
+  output_surface_->set_color_matrix(color_matrix);
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &render_passes_in_draw_order,
+      base::FilePath(FILE_PATH_LITERAL("temperature_brown_non_root.png")),
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 

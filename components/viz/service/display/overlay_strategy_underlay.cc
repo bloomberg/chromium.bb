@@ -19,6 +19,7 @@ OverlayStrategyUnderlay::OverlayStrategyUnderlay(
 OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
+    const SkMatrix44& output_color_matrix,
     cc::DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     cc::OverlayCandidateList* candidate_list,
@@ -26,8 +27,10 @@ bool OverlayStrategyUnderlay::Attempt(
   QuadList& quad_list = render_pass->quad_list;
   for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
     cc::OverlayCandidate candidate;
-    if (!cc::OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate))
+    if (!cc::OverlayCandidate::FromDrawQuad(
+            resource_provider, output_color_matrix, *it, &candidate)) {
       continue;
+    }
 
     // Add the overlay.
     cc::OverlayCandidateList new_candidate_list = *candidate_list;

@@ -77,6 +77,11 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     return software_device_.get();
   }
 
+  void set_color_matrix(const SkMatrix44& color_matrix) {
+    color_matrix_ = color_matrix;
+  }
+  const SkMatrix44& color_matrix() const { return color_matrix_; }
+
   virtual void BindToClient(OutputSurfaceClient* client) = 0;
 
   virtual void EnsureBackbuffer() = 0;
@@ -180,6 +185,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   std::unique_ptr<SoftwareOutputDevice> software_device_;
 
  private:
+  SkMatrix44 color_matrix_;
+
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 

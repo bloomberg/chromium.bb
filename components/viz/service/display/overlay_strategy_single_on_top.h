@@ -20,7 +20,8 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
       OverlayCandidateValidator* capability_checker);
   ~OverlayStrategySingleOnTop() override;
 
-  bool Attempt(cc::DisplayResourceProvider* resource_provider,
+  bool Attempt(const SkMatrix44& output_color_matrix,
+               cc::DisplayResourceProvider* resource_provider,
                RenderPass* render_pass,
                cc::OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;

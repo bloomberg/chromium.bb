@@ -31,7 +31,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
     // |render_passes|.
-    virtual bool Attempt(cc::DisplayResourceProvider* resource_provider,
+    virtual bool Attempt(const SkMatrix44& output_color_matrix,
+                         cc::DisplayResourceProvider* resource_provider,
                          RenderPass* render_pass,
                          cc::OverlayCandidateList* candidates,
                          std::vector<gfx::Rect>* content_bounds) = 0;
@@ -53,6 +54,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   void ProcessForOverlays(
       cc::DisplayResourceProvider* resource_provider,
       RenderPassList* render_passes,
+      const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_background_filters,
       cc::OverlayCandidateList* overlay_candidates,

@@ -294,6 +294,9 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   ColorConversionMode color_conversion_mode_ = COLOR_CONVERSION_MODE_NONE;
   const gfx::ColorTransform* color_transform_ = nullptr;
 
+  bool has_output_color_matrix_ = false;
+  int output_color_matrix_location_ = -1;
+
   // YUV uniform locations.
   int y_texture_location_ = -1;
   int u_texture_location_ = -1;

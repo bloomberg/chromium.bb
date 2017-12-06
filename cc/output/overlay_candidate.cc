@@ -194,8 +194,13 @@ OverlayCandidate::~OverlayCandidate() = default;
 
 // static
 bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
+                                    const SkMatrix44& output_color_matrix,
                                     const viz::DrawQuad* quad,
                                     OverlayCandidate* candidate) {
+  // Overlays are not compatible with output color matrices.
+  if (!output_color_matrix.isIdentity())
+    return false;
+
   // We don't support an opacity value different than one for an overlay plane.
   if (quad->shared_quad_state->opacity != 1.f)
     return false;

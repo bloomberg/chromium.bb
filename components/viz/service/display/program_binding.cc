@@ -34,7 +34,8 @@ bool ProgramKey::operator==(const ProgramKey& other) const {
          yuv_alpha_texture_mode_ == other.yuv_alpha_texture_mode_ &&
          uv_texture_mode_ == other.uv_texture_mode_ &&
          color_conversion_mode_ == other.color_conversion_mode_ &&
-         color_transform_ == other.color_transform_;
+         color_transform_ == other.color_transform_ &&
+         has_output_color_matrix_ == other.has_output_color_matrix_;
 }
 
 bool ProgramKey::operator!=(const ProgramKey& other) const {
