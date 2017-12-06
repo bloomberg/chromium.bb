@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Gyroscope: Feature-Policy header gyroscope 'none' disallows the top-level document. assert_throws: function "() => {new sensorType()}" did not throw
+PASS Gyroscope: Feature-Policy header gyroscope 'none' disallows same-origin iframes.
+PASS Gyroscope: Feature-Policy header gyroscope 'none' disallows cross-origin iframes.
+Harness: the test ran to completion.
+

@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught ReferenceError: UncalibratedMagnetometer is not defined
+PASS Magnetometer: Feature-Policy header magnetometer 'self' allows the top-level document.
+FAIL Magnetometer: Feature-Policy header magnetometer 'self' allows same-origin iframes. assert_true: 'new Magnetometer()' expected true got false
+PASS Magnetometer: Feature-Policy header magnetometer 'self' disallows cross-origin iframes.
+Harness: the test ran to completion.
+

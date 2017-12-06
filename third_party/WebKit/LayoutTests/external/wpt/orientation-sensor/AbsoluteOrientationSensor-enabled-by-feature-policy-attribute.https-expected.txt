@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL AbsoluteOrientationSensor: Feature-Policy allow='accelerometer gyroscope magnetometer' attribute allows same-origin iframe assert_true: 'new AbsoluteOrientationSensor()' expected true got false
+FAIL AbsoluteOrientationSensor: Feature-Policy allow='accelerometer gyroscope magnetometer' attribute allows cross-origin iframe assert_true: 'new AbsoluteOrientationSensor()' expected true got false
+Harness: the test ran to completion.
+

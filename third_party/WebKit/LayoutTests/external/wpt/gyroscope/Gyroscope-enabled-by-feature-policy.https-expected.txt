@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Gyroscope: Feature-Policy header gyroscope * allows the top-level document.
+FAIL Gyroscope: Feature-Policy header gyroscope * allows same-origin iframes. assert_true: 'new Gyroscope()' expected true got false
+FAIL Gyroscope: Feature-Policy header gyroscope * allows cross-origin iframes. assert_true: 'new Gyroscope()' expected true got false
+Harness: the test ran to completion.
+
