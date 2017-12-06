@@ -296,7 +296,7 @@ ServiceWorkerInstalledScriptsSender::ServiceWorkerInstalledScriptsSender(
 
 ServiceWorkerInstalledScriptsSender::~ServiceWorkerInstalledScriptsSender() {}
 
-mojom::ServiceWorkerInstalledScriptsInfoPtr
+blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
 ServiceWorkerInstalledScriptsSender::CreateInfoAndBind() {
   DCHECK_EQ(State::kNotStarted, state_);
 
@@ -312,7 +312,7 @@ ServiceWorkerInstalledScriptsSender::CreateInfoAndBind() {
   DCHECK(!installed_urls.empty())
       << "At least the main script should be installed.";
 
-  auto info = mojom::ServiceWorkerInstalledScriptsInfo::New();
+  auto info = blink::mojom::ServiceWorkerInstalledScriptsInfo::New();
   info->manager_request = mojo::MakeRequest(&manager_);
   info->installed_urls = std::move(installed_urls);
   binding_.Bind(mojo::MakeRequest(&info->manager_host_ptr));
@@ -355,7 +355,7 @@ void ServiceWorkerInstalledScriptsSender::SendScriptInfoToRenderer(
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
       "ServiceWorker", "SendScriptInfoToRenderer", this, "body_size", body_size,
       "meta_data_size", meta_data_size);
-  auto script_info = mojom::ServiceWorkerScriptInfo::New();
+  auto script_info = blink::mojom::ServiceWorkerScriptInfo::New();
   script_info->script_url = current_sending_url_;
   script_info->headers = std::move(headers);
   script_info->encoding = std::move(encoding);

@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/common/service_worker/service_worker.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -83,7 +84,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
         const EmbeddedWorkerStartParams& params,
         mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
         mojom::ControllerServiceWorkerRequest controller_request,
-        mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+        blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
+            installed_scripts_info,
         blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
         mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
         mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
@@ -197,7 +199,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info);
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
+          installed_scripts_info);
   virtual void OnResumeAfterDownload(int embedded_worker_id);
   // StopWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
   // This calls SimulateWorkerStopped() by default.
@@ -306,7 +309,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info);
+      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
+          installed_scripts_info);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
@@ -417,7 +421,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   std::map<int /* embedded_worker_id */, ServiceWorkerRemoteProviderEndpoint>
       embedded_worker_id_remote_provider_map_;
   std::map<int /* embedded_worker_id */,
-           mojom::ServiceWorkerInstalledScriptsInfoPtr>
+           blink::mojom::ServiceWorkerInstalledScriptsInfoPtr>
       embedded_worker_id_installed_scripts_info_map_;
 
   std::vector<Event> events_;
