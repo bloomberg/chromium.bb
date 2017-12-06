@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is defined here to ensure the D3D11, D3D9, and DXVA includes through
-// this header have their GUIDs intialized.
-#define INITGUID
 #include "media/gpu/d3d11_video_decode_accelerator_win.h"
-#undef INITGUID
 
 #include "base/bits.h"
 #include "base/memory/ptr_util.h"
@@ -16,6 +12,7 @@
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/windows/d3d11_h264_accelerator.h"
+#include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"

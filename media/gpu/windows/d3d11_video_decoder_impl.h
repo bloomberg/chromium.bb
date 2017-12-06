@@ -28,7 +28,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
                                                public D3D11VideoDecoderClient {
  public:
   D3D11VideoDecoderImpl(base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
-                        OutputWithReleaseMailboxCB output_cb);
+                        deprecated::OutputWithReleaseMailboxCB output_cb);
   ~D3D11VideoDecoderImpl() override;
 
   // VideoDecoder implementation:
@@ -84,7 +84,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
 
   std::vector<std::unique_ptr<D3D11PictureBuffer>> picture_buffers_;
 
-  OutputWithReleaseMailboxCB output_cb_;
+  deprecated::OutputWithReleaseMailboxCB output_cb_;
 
   base::WeakPtrFactory<D3D11VideoDecoderImpl> weak_factory_;
 
