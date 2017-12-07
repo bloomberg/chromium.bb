@@ -47,7 +47,7 @@ const char kEctFlagLink[] = "chrome://flags/#force-effective-connection-type";
 const char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 const char kOfflinePageFlagLink[] = "chrome://flags/#enable-offline-previews";
 
-const char kDefaultFlagValue[] = "Not Forced";
+const char kDefaultFlagValue[] = "Default";
 
 // Check if the flag status of the flag is a forced value or not.
 std::string GetFeatureFlagStatus(const std::string& feature_name) {
@@ -55,13 +55,13 @@ std::string GetFeatureFlagStatus(const std::string& feature_name) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kEnableFeatures);
   if (enabled_features.find(feature_name) != std::string::npos) {
-    return "Forced Enabled";
+    return "Enabled";
   }
   std::string disabled_features =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kDisableFeatures);
   if (disabled_features.find(feature_name) != std::string::npos) {
-    return "Forced Disabled";
+    return "Disabled";
   }
   return kDefaultFlagValue;
 }
