@@ -79,8 +79,7 @@ const std::set<UiElementType> kHitTestableElementTypes = {
     kTypeButtonHitTarget, kTypeTextInputText,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
-    kScreenDimmer, kExitWarning,
-};
+    kScreenDimmer, kExitWarningBackground, kExitWarningText};
 const std::vector<std::string> kElementsInDrawOrder = {
     "kBackgroundFront",
     "kBackgroundLeft",
@@ -141,7 +140,8 @@ const std::vector<std::string> kElementsInDrawOrder = {
     "kLaser",
     "kReticle",
     "kKeyboard",
-    "kExitWarning",
+    "kExitWarningBackground",
+    "kExitWarningText",
     "kWebVrUrlToast",
     "kExclusiveScreenToastViewportAware",
     "kSplashScreenText",

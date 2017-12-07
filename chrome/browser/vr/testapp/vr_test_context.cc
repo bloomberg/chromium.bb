@@ -190,6 +190,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
         CreateFakeTextInput();
         break;
       }
+      case ui::DomCode::US_E:
+        model_->exiting_vr = !model_->exiting_vr;
+        break;
       default:
         break;
     }

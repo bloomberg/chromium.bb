@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/elements/exclusive_screen_toast_texture.h"
-#include "chrome/browser/vr/elements/exit_warning_texture.h"
 #include "chrome/browser/vr/elements/system_indicator_texture.h"
 #include "chrome/browser/vr/elements/textured_element.h"
 #include "chrome/browser/vr/elements/transient_element.h"
@@ -35,9 +34,6 @@ class SimpleTexturedElement : public TexturedElement {
   DISALLOW_COPY_AND_ASSIGN(SimpleTexturedElement);
 };
 
-typedef SimpleTexturedElement<ExitWarningTexture,
-                              TexturedElement::ResizeVertically>
-    ExitWarning;
 typedef SimpleTexturedElement<ExclusiveScreenToastTexture,
                               TexturedElement::ResizeHorizontally>
     ExclusiveScreenToast;
