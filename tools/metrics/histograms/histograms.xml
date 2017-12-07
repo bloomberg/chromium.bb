@@ -6925,7 +6925,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Blink.ResourceLoadScheduler.RequestCounts"
+<histogram name="Blink.ResourceLoadScheduler.RequestCount"
     enum="ResourceLoadSchedulerCircumstance">
   <owner>toyoshim@chromium.org</owner>
   <summary>
