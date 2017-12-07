@@ -4551,13 +4551,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // pending navigation information should be applied to state information.
   [self setDocumentURL:webViewURL];
 
-  if (!_lastRegisteredRequestURL.is_valid() &&
-      _documentURL != _lastRegisteredRequestURL) {
-    // if |_lastRegisteredRequestURL| is an invalid URL, then |_documentURL|
-    // will be "about:blank".
-    self.navigationManagerImpl->UpdatePendingItemUrl(_documentURL);
-  }
-
   // If |navigation| is nil (which happens for windows open by DOM), then it
   // should be the first and the only pending navigation.
   BOOL isLastNavigation =
