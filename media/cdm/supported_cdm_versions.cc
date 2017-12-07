@@ -24,6 +24,7 @@ bool IsSupportedCdmInterfaceVersion(int version) {
                 "update the code below");
   switch (version) {
     // Supported versions in decreasing order.
+    case cdm::ContentDecryptionModule_10::kVersion:
     case cdm::ContentDecryptionModule_9::kVersion:
     case cdm::ContentDecryptionModule_8::kVersion:
       return true;
@@ -38,6 +39,7 @@ bool IsSupportedCdmHostVersion(int version) {
                 "update the code below");
   switch (version) {
     // Supported versions in decreasing order.
+    case cdm::Host_10::kVersion:
     case cdm::Host_9::kVersion:
     case cdm::Host_8::kVersion:
       return true;
