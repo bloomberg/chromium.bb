@@ -63,7 +63,6 @@ class voyabr2 ⠼âêîôûëïüœ./,●
 
 #punctuation ' 56		so the line below compiles
 letsign 56
-#nocontractsign 56
 #multind 56-46 letsign capsletter
 noletsignafter '.\X2019\X0092
 hyphen - 36
@@ -81,7 +80,7 @@ nofor midword ackb 1-14-13-12
 nofor midword ackl 1-14-13-123
 noback always ai 34
 nofor partword ai 34
-nofor begword aïk 1-12456-13
+nofor before voy begmidword aïk 1-12456-13
 nofor word aïoli 1-12456-135-123-24
 #nofor before punctuation begword aïss 1-12456-2346
 
@@ -121,7 +120,8 @@ nofor before voyabr before voyabr2 midword aufr 13-16
 nofor always eau 15-13
 nofor always yau 13456-13
 nofor before conabr always au 13
-nofor midword auss 13-2346
+nofor begmidword auss 13-2346
+nofor before conabr begword autoex 13-2345-135-1346
 
 nofor endword az 1-1356
 nofor begword æch 345-12356
@@ -133,6 +133,7 @@ nofor begword æsch 345-234-14-125
 nofor word æolidia 345-135-123-24-145-24-1
 nofor word æolis 345-135-123-24-234
 
+nofor partword back 12-1-14-13
 nofor always bâi 12-16-24
 nofor begword biaur 12-24-13-1235
 nofor midword bigüit 12-24-1245-1256-24-2345
@@ -162,7 +163,7 @@ nofor endword bres 23-156
 nofor partword brown 23-135-2456-1345
 
 partword ch 12356
-nofor begmidword chau 12356-13
+nofor before conabr begmidword chau 12356-13
 nofor endword ck 14-13
 nofor endword cks 14-13-234
 nofor before voyabr midword ck 14-13
@@ -170,7 +171,8 @@ noback before voy always cl 146
 nofor before voyabr begmidword cl 146
 nofor always clai 146-34
 nofor before conabr always clan 146-2
-nofor before conabr begword clin 146-35
+nofor before conabr always clin 146-35
+nofor word clin 146-35
 nofor before conabr begmidword clien 146-256
 nofor before voyabr2 midword cl 146
 nofor before con begword clô 146-1456
@@ -243,7 +245,7 @@ noback endword es 156
 nofor after conabr after voyabr endword es 156
 word eu 15-136
 always eu 5
-nofor midword euc 5-14
+nofor partword euc 5-14
 nofor partword eup 5-1234
 nofor before voyabr before voyabr2 always eugl 5-345
 nofor before voyabr before voyabr2 always eur 5-1235
@@ -253,7 +255,8 @@ nofor before conabr midword eur 46
 endword eur 46
 nofor before punctuation midendword eur 46
 noback before con always ex 1346
-nofor before conabr always ex 1346
+nofor after conabr before conabr midword ex 1346
+nofor before conabr begword ex 1346
 nofor midendword xau 1346-13
 nofor midendword exable 15-1346-45
 
@@ -312,6 +315,12 @@ nofor always grê 12456-126
 nofor endword güe 1245-1256-15
 nofor endword gües 1245-1256-156
 
+nofor always kh 13-125
+nofor midword kk 13-13
+nofor after voyabr before voyabr always k 13
+nofor after voyabr after voyabr2 always kr 13-1235
+nofor begword klax 13-123-1-1346
+
 noback midword ien 256
 nofor after con before conabr midword ien 256
 nofor before voyabr before voyabr2 midword iendr 256-1456
@@ -322,6 +331,10 @@ noback midendword ieu 6
 nofor endword ieu 6
 nofor before punctuation always ieu 6
 nofor before con midword ieu 6
+nofor endword ieue 6-15
+nofor endword ieues 6-156
+
+
 before bmp begmidword im 246
 nofor before bmpabr begmidword im 246
 
@@ -371,6 +384,12 @@ nofor before voyabr before voyabr2 always ombr 2456-23
 nofor before voyabr before voyabr2 always omn 2456-1345
 after conabr endword om 2456
 after conabr endword oms 2456-234
+before con midword öl 246-123 
+before con midword öm 246-134 
+endword öm 246-134 
+before con partword ön 246-1345 
+before con partword ör 246-1235 
+endword ón 346-1345
 
 noback before con always on 346
 nofor before conabr always on 346
@@ -405,12 +424,18 @@ nofor before con always ow 135-2456
 nofor midword piègl 1234-24-2346-345
 noback before voy always pl 1246
 nofor before voyabr begmidword pl 1246
+nofor begmidword plâ 1246-16
+nofor midendword plable 1246-45
 nofor always plai 1246-34
+nofor begmidword plien 1246-256
+nofor always plin 1246-35
+nofor always plou 1246-1256
 nofor begmidword plui 1246-23
 nofor before conabr always plan 1246-2
 nofor before voyabr2 midword pl 1246
 noback before voy always pr 235
 nofor before conabr begmidword prâ 235-16
+nofor  midendword prelle 235-456
 nofor before conabr begmidword prê 235-126
 nofor before conabr begmidword prî 235-146
 nofor before conabr begmidword prô 235-1456
@@ -483,6 +508,8 @@ endword uins 136-35-234
 nofor endword yen 13456-26
 nofor endword zz 1356-1356
 nofor midword wee 2456-15-15
+
+nofor begmidword zw 1356-2456
 
 endword bilité 12-123-2345
 endword bilités 12-123-2345-234
@@ -696,6 +723,7 @@ word auquel		13-12345-123
 word aussi		13-234
 word aussitôt		13-2345
 word autour		13-1235
+word kr 56-13-1235
 word autre		13-356
 word autres		13-356-234
 word autrefois		13-124
@@ -1392,9 +1420,11 @@ word heureuses		125-234-156
 word heureusement	125-234-134
 word heureux		125-1346
 word hier		125-236
-prfword histoire		125-2345
+word histoire		125-2345
+word histoires		125-2345-234
 contraction ht
-prfword histoires		125-2345-234
+word préhistoire 235-123456-125-2345
+word préhistoires 235-123456-125-2345-234
 prfword historique		125-2345-12345
 prfword historiques	125-2345-12345-234
 prfword historiquement	125-2345-12345-134
@@ -1665,8 +1695,10 @@ nofor word soumissions		324-1256-134-3456-234
 
 prfword missionnaire	134-3456-1235
 prfword missionnaires	134-3456-1235-234
-prfword mobile		134-12
-prfword mobiles		134-12-234
+word mobile		134-12
+word mobiles		134-12-234
+word immobile 246-134-12
+word immobiles 246-134-12-234
 prfword mobilisation	134-12-16
 prfword mobilisations	134-12-16-234
 prfword mobilité		134-12-2345
@@ -2452,11 +2484,6 @@ nofor before conabr begword gnosti 2356-135-234-2345-24	gnosticisme
 
 
 
-nofor always kh 13-125
-nofor midword kk 13-13
-nofor after voyabr before voyabr always k 13
-nofor after voyabr after voyabr2 always kr 13-1235
-nofor begword klax 13-123-1-1346
 nofor word çà 12346-12356
 nofor begword wh 2456-125
 nofor word € 45-15
