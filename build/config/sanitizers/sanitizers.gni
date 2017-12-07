@@ -96,8 +96,6 @@ declare_args() {
 
   # Value for -fsanitize-coverage flag. Setting this causes
   # use_sanitizer_coverage to be enabled.
-  # Default value when unset and use_afl=true or use_libfuzzer=true:
-  #     trace-pc-guard
   # Default value when unset and use_sanitizer_coverage=true:
   #     trace-pc-guard,indirect-calls
   sanitizer_coverage_flags = ""
@@ -138,9 +136,7 @@ if (current_toolchain != default_toolchain) {
 # declare_args block. User overrides are only applied at the end of a
 # declare_args block.
 declare_args() {
-  # Enable -fsanitize-coverage.
-  use_sanitizer_coverage =
-      use_libfuzzer || use_afl || sanitizer_coverage_flags != ""
+  use_sanitizer_coverage = false
 
   # Detect overflow/underflow for global objects.
   #
@@ -148,9 +144,19 @@ declare_args() {
   asan_globals = !is_mac
 }
 
-if ((use_afl || use_libfuzzer) && sanitizer_coverage_flags == "") {
-  sanitizer_coverage_flags = "trace-pc-guard"
-} else if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
+# Whether we are doing a fuzzer build. Normally this should be checked instead
+# of checking "use_libfuzzer || use_afl" because often developers forget to
+# check for "use_afl".
+use_fuzzing_engine = use_libfuzzer || use_afl
+
+assert(
+    !(use_fuzzing_engine &&
+          (use_sanitizer_coverage || sanitizer_coverage_flags != "")),
+    "Sanitizer coverage (either use_sanitizer_coverage or " +
+        "sanitizer_coverage_flags) should not be used if use_fuzzing_engine " +
+        "is true, i.e. when libFuzzer or AFL is being used.")
+
+if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
   sanitizer_coverage_flags = "trace-pc-guard,indirect-calls"
 }
 
@@ -160,11 +166,6 @@ if ((use_afl || use_libfuzzer) && sanitizer_coverage_flags == "") {
 using_sanitizer =
     is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_null ||
     is_ubsan_vptr || is_ubsan_security || use_sanitizer_coverage || use_cfi_diag
-
-# Whether we are doing a fuzzer build. Normally this should be checked instead
-# of checking "use_libfuzzer || use_afl" because often developers forget to
-# check for "use_afl".
-use_fuzzing_engine = use_libfuzzer || use_afl
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
