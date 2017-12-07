@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/common/features.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -91,6 +92,7 @@ class URLRequestJobFactoryImpl;
 namespace policy {
 class PolicyCertVerifier;
 class PolicyHeaderIOHelper;
+class URLBlacklistManager;
 }  // namespace policy
 
 namespace previews {
@@ -243,6 +245,11 @@ class ProfileIOData {
   previews::PreviewsIOData* previews_io_data() const {
     return previews_io_data_.get();
   }
+
+  // This function is to be used to check if the |url| is defined in
+  // blacklist or whitelist policy.
+  virtual policy::URLBlacklist::URLBlacklistState GetURLBlacklistState(
+      const GURL& url) const;
 
   // Returns the predictor service for this Profile. Returns nullptr if there is
   // no Predictor, as is the case with OffTheRecord profiles.
@@ -574,6 +581,7 @@ class ProfileIOData {
   BooleanPrefMember enable_metrics_;
 
   // Pointed to by NetworkDelegate.
+  mutable std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
   mutable std::unique_ptr<policy::PolicyHeaderIOHelper> policy_header_helper_;
 
   // Pointed to by URLRequestContext.

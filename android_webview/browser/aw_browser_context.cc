@@ -86,6 +86,24 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService() {
   return config_service;
 }
 
+bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
+  // We don't have URLs that should never be blacklisted here.
+  return false;
+}
+
+policy::URLBlacklistManager* CreateURLBlackListManager(
+    PrefService* pref_service) {
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+
+  return new policy::URLBlacklistManager(pref_service, background_task_runner,
+                                         io_task_runner,
+                                         base::Bind(OverrideBlacklistForURL));
+}
+
 std::unique_ptr<AwSafeBrowsingWhitelistManager>
 CreateSafeBrowsingWhitelistManager() {
   // Should not be called until the end of PreMainMessageLoopRun,
@@ -155,6 +173,8 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       new AwFormDatabaseService(context_storage_path_));
 
   EnsureResourceContextInitialized(this);
+
+  blacklist_manager_.reset(CreateURLBlackListManager(user_pref_service_.get()));
 
   AwMetricsServiceClient::GetInstance()->Initialize(
       user_pref_service_.get(),
@@ -347,6 +367,13 @@ AwBrowserContext::CreateMediaRequestContextForStoragePartition(
     bool in_memory) {
   NOTREACHED();
   return NULL;
+}
+
+policy::URLBlacklistManager* AwBrowserContext::GetURLBlacklistManager() {
+  // Should not be called until the end of PreMainMessageLoopRun, where
+  // blacklist_manager_ is initialized.
+  DCHECK(blacklist_manager_);
+  return blacklist_manager_.get();
 }
 
 web_restrictions::WebRestrictionsClient*

@@ -971,17 +971,12 @@ void NavigationRequest::OnStartChecksComplete(
       result.action() == NavigationThrottle::CANCEL ||
       result.action() == NavigationThrottle::BLOCK_REQUEST ||
       result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
-#if DCHECK_IS_ON()
-    if (result.action() == NavigationThrottle::BLOCK_REQUEST) {
-      DCHECK(result.net_error_code() == net::ERR_BLOCKED_BY_CLIENT ||
-             result.net_error_code() == net::ERR_BLOCKED_BY_ADMINISTRATOR);
-    }
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
-    else if ((result.action() == NavigationThrottle::CANCEL ||
-              result.action() == NavigationThrottle::CANCEL_AND_IGNORE)) {
-      DCHECK_EQ(result.net_error_code(), net::ERR_ABORTED);
-    }
-#endif
+    DCHECK_EQ((result.action() == NavigationThrottle::CANCEL ||
+               result.action() == NavigationThrottle::CANCEL_AND_IGNORE)
+                  ? net::ERR_ABORTED
+                  : net::ERR_BLOCKED_BY_CLIENT,
+              result.net_error_code());
 
     // If the start checks completed synchronously, which could happen if there
     // is no onbeforeunload handler or if a NavigationThrottle cancelled it,
