@@ -144,6 +144,11 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // center observers.
   virtual void ClickOnSettingsButton(const std::string& id) = 0;
 
+  // This should be called by UI classes when a user select from notification
+  // inline settings to disable notifications from the same origin of the
+  // notification.
+  virtual void DisableNotification(const std::string& id) = 0;
+
   // This should be called by UI classes after a visible notification popup
   // closes, indicating that the notification has been shown to the user.
   // |mark_notification_as_read|, if false, will unset the read bit on a

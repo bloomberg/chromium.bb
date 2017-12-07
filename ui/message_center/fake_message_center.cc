@@ -102,6 +102,8 @@ void FakeMessageCenter::ClickOnNotificationButtonWithReply(
 
 void FakeMessageCenter::ClickOnSettingsButton(const std::string& id) {}
 
+void FakeMessageCenter::DisableNotification(const std::string& id) {}
+
 void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
 }

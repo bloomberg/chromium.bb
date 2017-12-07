@@ -55,6 +55,7 @@ class FakeMessageCenter : public MessageCenter {
                                           int button_index,
                                           const base::string16& reply) override;
   void ClickOnSettingsButton(const std::string& id) override;
+  void DisableNotification(const std::string& id) override;
   void MarkSinglePopupAsShown(const std::string& id,
                               bool mark_notification_as_read) override;
   void DisplayedNotification(const std::string& id,
