@@ -299,7 +299,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
 
     if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
-      FloatRoundedRect border = style.GetRoundedBorderFor(paint_rect);
+      FloatRoundedRect border = style.GetRoundedBorderFor(
+          paint_rect, border_edges_.line_left, border_edges_.line_right);
       paint_info.context.ClipRoundedRect(border);
 
       if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer)
