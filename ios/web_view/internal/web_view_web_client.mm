@@ -48,7 +48,7 @@ base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-NSString* WebViewWebClient::GetEarlyPageScript(
+NSString* WebViewWebClient::GetEarlyPageScriptForMainFrame(
     web::BrowserState* browser_state) const {
   return WebViewEarlyPageScriptProvider::FromBrowserState(browser_state)
       .GetScript();

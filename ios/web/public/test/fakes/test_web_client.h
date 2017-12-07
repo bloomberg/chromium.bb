@@ -28,7 +28,8 @@ class TestWebClient : public web::WebClient {
   // Returns true for kTestWebUIScheme and kTestNativeContentScheme URL schemes.
   bool IsAppSpecificURL(const GURL& url) const override;
   base::RefCountedMemory* GetDataResourceBytes(int id) const override;
-  NSString* GetEarlyPageScript(BrowserState* browser_state) const override;
+  NSString* GetEarlyPageScriptForMainFrame(
+      BrowserState* browser_state) const override;
   void AllowCertificateError(WebState*,
                              int cert_error,
                              const net::SSLInfo&,

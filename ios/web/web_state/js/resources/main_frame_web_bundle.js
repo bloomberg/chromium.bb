@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Set of scripts required by web layer backed up by WKWebView.
-goog.provide('__crWeb.webBundle');
+goog.provide('__crWeb.mainFrameWebBundle');
 
 goog.require('__crWeb.console');
 goog.require('__crWeb.contextMenu');

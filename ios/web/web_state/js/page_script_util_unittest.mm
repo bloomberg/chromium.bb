@@ -30,7 +30,8 @@ typedef WebTest PageScriptUtilTest;
 // __gCrWeb object.
 TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
   WKWebView* web_view = BuildWKWebView(CGRectZero, GetBrowserState());
-  ExecuteJavaScript(web_view, GetEarlyPageScript(GetBrowserState()));
+  ExecuteJavaScript(web_view,
+                    GetEarlyPageScriptForMainFrame(GetBrowserState()));
   EXPECT_NSEQ(@"object", ExecuteJavaScript(web_view, @"typeof __gCrWeb"));
 }
 
@@ -38,7 +39,8 @@ TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
 TEST_F(PageScriptUtilTest, WKEmbedderScript) {
   GetWebClient()->SetEarlyPageScript(@"__gCrEmbedder = {};");
   WKWebView* web_view = BuildWKWebView(CGRectZero, GetBrowserState());
-  ExecuteJavaScript(web_view, GetEarlyPageScript(GetBrowserState()));
+  ExecuteJavaScript(web_view,
+                    GetEarlyPageScriptForMainFrame(GetBrowserState()));
   EXPECT_NSEQ(@"object", ExecuteJavaScript(web_view, @"typeof __gCrEmbedder"));
 }
 

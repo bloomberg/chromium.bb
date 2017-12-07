@@ -10,10 +10,22 @@
 
 goog.provide('__crWeb.form');
 
-goog.require('__crWeb.message');
-
 /** Beginning of anonymous object */
 (function() {
+  // Skip iframes that have the same origin as the main frame. For such frames
+  // no form related actions (eg. filling, saving) are supported.
+  try {
+    // The following line generates exception for iframes that have different
+    // origin that.
+    // TODO(crbug.com/792642): implement sending messages instead of using
+    // window.top, when messaging framework is ready.
+    if (!window.top.document)
+      return;
+  }
+  catch(error) {
+    return;
+  }
+
 
   /**
    * Focus and input events for form elements are messaged to the main
@@ -30,13 +42,15 @@ goog.require('__crWeb.message');
 
     var msg = {
       'command': 'form.activity',
-      'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement.form),
-      'fieldName': __gCrWeb.common.getFieldIdentifier(srcElement),
+      'formName': window.top.__gCrWeb.common.
+                      getFormIdentifier(evt.srcElement.form),
+      'fieldName': window.top.__gCrWeb.common.
+                      getFieldIdentifier(srcElement),
       'fieldType': fieldType,
       'type': evt.type,
       'value': value
     };
-    __gCrWeb.message.invokeOnHost(msg);
+    window.top.__gCrWeb.message.invokeOnHost(msg);
   };
 
   /**
@@ -66,9 +80,10 @@ goog.require('__crWeb.message');
     if (!action) {
       action = document.location.href;
     }
-    __gCrWeb.message.invokeOnHost({
+    window.top.__gCrWeb.message.invokeOnHost({
              'command': 'document.submit',
-            'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement),
+            'formName': window.top.__gCrWeb.common.
+                            getFormIdentifier(evt.srcElement),
                 'href': getFullyQualifiedUrl_(action)
     });
   }, false);
@@ -83,8 +98,8 @@ goog.require('__crWeb.message');
   };
 
   /** Flush the message queue. */
-  if (__gCrWeb.message) {
-    __gCrWeb.message.invokeQueues();
+  if (window.top.__gCrWeb.message) {
+    window.top.__gCrWeb.message.invokeQueues();
   }
 
 }());  // End of anonymous object

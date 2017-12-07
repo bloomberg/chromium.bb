@@ -127,7 +127,8 @@ class WebClient {
   //
   // TODO(crbug.com/703964): Change the return value to NSArray<NSString*> to
   // improve performance.
-  virtual NSString* GetEarlyPageScript(BrowserState* browser_state) const;
+  virtual NSString* GetEarlyPageScriptForMainFrame(
+      BrowserState* browser_state) const;
 
   using StaticServiceMap =
       std::map<std::string, service_manager::EmbeddedServiceInfo>;

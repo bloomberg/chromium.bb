@@ -74,7 +74,8 @@ base::RefCountedMemory* WebClient::GetDataResourceBytes(int resource_id) const {
   return nullptr;
 }
 
-NSString* WebClient::GetEarlyPageScript(BrowserState* browser_state) const {
+NSString* WebClient::GetEarlyPageScriptForMainFrame(
+    BrowserState* browser_state) const {
   return @"";
 }
 

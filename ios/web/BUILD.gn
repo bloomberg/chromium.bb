@@ -578,9 +578,9 @@ js_compile_bundle("web_ui_bundle") {
   ]
 }
 
-js_compile_bundle("web_bundle") {
+js_compile_bundle("main_frame_web_bundle") {
   visibility = [ ":js_resources" ]
-  closure_entry_point = "__crWeb.webBundle"
+  closure_entry_point = "__crWeb.mainFrameWebBundle"
 
   sources = [
     "web_state/js/resources/base.js",
@@ -590,10 +590,21 @@ js_compile_bundle("web_bundle") {
     "web_state/js/resources/error.js",
     "web_state/js/resources/form.js",
     "web_state/js/resources/legacy.js",
+    "web_state/js/resources/main_frame_web_bundle.js",
     "web_state/js/resources/message.js",
     "web_state/js/resources/navigation.js",
     "web_state/js/resources/scroll_workaround.js",
-    "web_state/js/resources/web_bundle.js",
+  ]
+}
+
+js_compile_bundle("all_frames_web_bundle") {
+  visibility = [ ":js_resources" ]
+  closure_entry_point = "__crWeb.allFramesWebBundle"
+
+  sources = [
+    "web_state/js/resources/all_frames_web_bundle.js",
+    "web_state/js/resources/base.js",
+    "web_state/js/resources/form.js",
   ]
 }
 
@@ -608,8 +619,9 @@ js_compile_bundle("nav_bundle") {
 
 js_compile_checked("js_resources") {
   public_deps = [
+    ":all_frames_web_bundle",
+    ":main_frame_web_bundle",
     ":nav_bundle",
-    ":web_bundle",
     ":web_ui_bundle",
   ]
 
