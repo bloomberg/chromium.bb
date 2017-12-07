@@ -15,7 +15,7 @@
 #include "base/process/process.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
-#include "sandbox/linux/syscall_broker/broker_policy.h"
+#include "sandbox/linux/syscall_broker/broker_permission_list.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
@@ -111,7 +111,8 @@ class SANDBOX_EXPORT BrokerProcess {
   const bool fast_check_in_client_;
   const bool quiet_failures_for_tests_;
   syscall_broker::BrokerCommandSet allowed_command_set_;
-  syscall_broker::BrokerPolicy broker_policy_;  // File access whitelist.
+  syscall_broker::BrokerPermissionList
+      broker_permission_list_;  // File access whitelist.
   std::unique_ptr<syscall_broker::BrokerClient> broker_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcess);

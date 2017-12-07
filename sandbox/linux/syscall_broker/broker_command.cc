@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "sandbox/linux/syscall_broker/broker_command.h"
-#include "sandbox/linux/syscall_broker/broker_policy.h"
+#include "sandbox/linux/syscall_broker/broker_permission_list.h"
 
 namespace sandbox {
 namespace syscall_broker {
 
 bool CommandAccessIsSafe(const BrokerCommandSet& command_set,
-                         const BrokerPolicy& policy,
+                         const BrokerPermissionList& policy,
                          const char* requested_filename,
                          int requested_mode,
                          const char** filename_to_use) {
@@ -19,7 +19,7 @@ bool CommandAccessIsSafe(const BrokerCommandSet& command_set,
 }
 
 bool CommandOpenIsSafe(const BrokerCommandSet& command_set,
-                       const BrokerPolicy& policy,
+                       const BrokerPermissionList& policy,
                        const char* requested_filename,
                        int requested_flags,
                        const char** filename_to_use,
@@ -30,7 +30,7 @@ bool CommandOpenIsSafe(const BrokerCommandSet& command_set,
 }
 
 bool CommandReadlinkIsSafe(const BrokerCommandSet& command_set,
-                           const BrokerPolicy& policy,
+                           const BrokerPermissionList& policy,
                            const char* requested_filename,
                            const char** filename_to_use) {
   return command_set.test(COMMAND_READLINK) &&
@@ -39,7 +39,7 @@ bool CommandReadlinkIsSafe(const BrokerCommandSet& command_set,
 }
 
 bool CommandRenameIsSafe(const BrokerCommandSet& command_set,
-                         const BrokerPolicy& policy,
+                         const BrokerPermissionList& policy,
                          const char* old_filename,
                          const char* new_filename,
                          const char** old_filename_to_use,
@@ -52,7 +52,7 @@ bool CommandRenameIsSafe(const BrokerCommandSet& command_set,
 }
 
 bool CommandStatIsSafe(const BrokerCommandSet& command_set,
-                       const BrokerPolicy& policy,
+                       const BrokerPermissionList& policy,
                        const char* requested_filename,
                        const char** filename_to_use) {
   return command_set.test(COMMAND_STAT) &&

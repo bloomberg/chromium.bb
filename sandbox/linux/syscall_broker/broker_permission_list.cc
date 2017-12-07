@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/syscall_broker/broker_policy.h"
+#include "sandbox/linux/syscall_broker/broker_permission_list.h"
 
 #include <fcntl.h>
 #include <stddef.h>
@@ -18,8 +18,9 @@
 namespace sandbox {
 namespace syscall_broker {
 
-BrokerPolicy::BrokerPolicy(int denied_errno,
-                           const std::vector<BrokerFilePermission>& permissions)
+BrokerPermissionList::BrokerPermissionList(
+    int denied_errno,
+    const std::vector<BrokerFilePermission>& permissions)
     : denied_errno_(denied_errno),
       permissions_(permissions),
       num_of_permissions_(permissions.size()) {
@@ -33,8 +34,7 @@ BrokerPolicy::BrokerPolicy(int denied_errno,
   }
 }
 
-BrokerPolicy::~BrokerPolicy() {
-}
+BrokerPermissionList::~BrokerPermissionList() {}
 
 // Check if calling access() should be allowed on |requested_filename| with
 // mode |requested_mode|.
@@ -47,7 +47,7 @@ BrokerPolicy::~BrokerPolicy() {
 // return true if calling access() on this file should be allowed, false
 // otherwise.
 // Async signal safe if and only if |file_to_access| is NULL.
-bool BrokerPolicy::GetFileNameIfAllowedToAccess(
+bool BrokerPermissionList::GetFileNameIfAllowedToAccess(
     const char* requested_filename,
     int requested_mode,
     const char** file_to_access) const {
@@ -75,10 +75,11 @@ bool BrokerPolicy::GetFileNameIfAllowedToAccess(
 // string comparison mechanism.
 // Return true if opening should be allowed, false otherwise.
 // Async signal safe if and only if |file_to_open| is NULL.
-bool BrokerPolicy::GetFileNameIfAllowedToOpen(const char* requested_filename,
-                                              int requested_flags,
-                                              const char** file_to_open,
-                                              bool* unlink_after_open) const {
+bool BrokerPermissionList::GetFileNameIfAllowedToOpen(
+    const char* requested_filename,
+    int requested_flags,
+    const char** file_to_open,
+    bool* unlink_after_open) const {
   if (file_to_open && *file_to_open) {
     // Make sure that callers never pass a non-empty string. In case callers
     // wrongly forget to check the return value and look at the string
