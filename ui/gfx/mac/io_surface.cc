@@ -126,7 +126,9 @@ void IOSurfaceMachPortTraits::Release(mach_port_t port) {
 
 }  // namespace internal
 
-IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
+IOSurfaceRef CreateIOSurface(const gfx::Size& size,
+                             gfx::BufferFormat format,
+                             bool should_clear) {
   TRACE_EVENT0("ui", "CreateIOSurface");
   base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -182,7 +184,8 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   // https://crbug.com/594343.
   // IOSurface clearing causes significant performance regression on about half
   // of all devices running Yosemite. https://crbug.com/606850#c22.
-  bool should_clear = !base::mac::IsOS10_9() && !base::mac::IsOS10_10();
+  if (base::mac::IsOS10_9() || base::mac::IsOS10_10())
+    should_clear = false;
 
   if (should_clear) {
     // Zero-initialize the IOSurface. Calling IOSurfaceLock/IOSurfaceUnlock

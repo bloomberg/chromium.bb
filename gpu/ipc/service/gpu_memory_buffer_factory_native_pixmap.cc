@@ -134,7 +134,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    unsigned internalformat) {
+    unsigned internalformat,
+    bool* is_cleared) {
   scoped_refptr<gfx::NativePixmap> pixmap;
 #if defined(USE_OZONE)
   pixmap =
@@ -156,6 +157,7 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
                << static_cast<int>(format);
     return nullptr;
   }
+  *is_cleared = true;
   return image;
 }
 

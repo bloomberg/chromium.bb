@@ -29,6 +29,8 @@ class GFX_EXPORT GenericSharedMemoryId {
   GenericSharedMemoryId& operator=(const GenericSharedMemoryId& other) =
       default;
 
+  bool is_valid() const { return id >= 0; }
+
   bool operator==(const GenericSharedMemoryId& other) const {
     return id == other.id;
   }

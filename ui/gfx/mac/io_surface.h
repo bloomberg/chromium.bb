@@ -43,7 +43,12 @@ struct ScopedInUseIOSurfaceTraits {
 using IOSurfaceId = GenericSharedMemoryId;
 
 // Helper function to create an IOSurface with a specified size and format.
-GFX_EXPORT IOSurfaceRef CreateIOSurface(const Size& size, BufferFormat format);
+// The surface is zero-initialized if |should_clear| is true. This is not
+// necessary for anonymous surfaces that are not exported to renderers and used
+// as render targets only.
+GFX_EXPORT IOSurfaceRef CreateIOSurface(const Size& size,
+                                        BufferFormat format,
+                                        bool should_clear = true);
 
 // A scoper for handling Mach port names that are send rights for IOSurfaces.
 // This scoper is both copyable and assignable, which will increase the kernel
