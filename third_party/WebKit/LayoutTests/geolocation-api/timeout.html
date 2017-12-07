@@ -18,12 +18,6 @@ var mockAccuracy = 100.0;
 
 var position;
 
-let mock = geolocationMock;
-mock.setGeolocationPermission(true);
-mock.setGeolocationPosition(mockLatitude,
-                            mockLongitude,
-                            mockAccuracy);
-
 navigator.geolocation.getCurrentPosition(function(p) {
     position = p;
     shouldBe('position.coords.latitude', 'mockLatitude');
@@ -36,6 +30,12 @@ navigator.geolocation.getCurrentPosition(function(p) {
 }, {
     timeout: 1000
 });
+
+// Set the mock position after calling getCurrentPosition to ensure the age of
+// the estimate is younger than maximumAge, which defaults to 0.
+let mock = geolocationMock;
+mock.setGeolocationPermission(true);
+mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 
 window.jsTestIsAsync = true;
 </script>

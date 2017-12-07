@@ -331,25 +331,6 @@ void Geolocation::StopTimer(GeoNotifierVector& notifiers) {
     notifier->StopTimer();
 }
 
-void Geolocation::StopTimersForOneShots() {
-  GeoNotifierVector copy;
-  CopyToVector(one_shots_, copy);
-
-  StopTimer(copy);
-}
-
-void Geolocation::StopTimersForWatchers() {
-  GeoNotifierVector copy;
-  watchers_.GetNotifiersVector(copy);
-
-  StopTimer(copy);
-}
-
-void Geolocation::StopTimers() {
-  StopTimersForOneShots();
-  StopTimersForWatchers();
-}
-
 void Geolocation::CancelRequests(GeoNotifierVector& notifiers) {
   for (GeoNotifier* notifier : notifiers)
     notifier->SetFatalError(PositionError::Create(
@@ -435,17 +416,40 @@ void Geolocation::MakeSuccessCallbacks() {
   // further callbacks to these notifiers.
   one_shots_.clear();
 
-  SendPosition(one_shots_copy, last_position_);
-  SendPosition(watchers_copy, last_position_);
+  // Only fire the success callback if the latest position estimate is recent
+  // enough to satisfy the |maximumAge| option.
+  GeoNotifierVector one_shots_success;
+  one_shots_success.ReserveInitialCapacity(one_shots_copy.size());
+  for (const auto& notifier : one_shots_copy) {
+    if (notifier->CheckPositionAge(*last_position_))
+      one_shots_success.push_back(notifier);
+    else
+      one_shots_.insert(notifier);
+  }
+  StopTimer(one_shots_success);
+
+  GeoNotifierVector watchers_success;
+  watchers_success.ReserveInitialCapacity(watchers_copy.size());
+  for (const auto& notifier : watchers_copy) {
+    if (notifier->CheckPositionAge(*last_position_)) {
+      // In case of a |watchPosition|, the |maximumAge| refers to the first
+      // position object returned by the implementation. Set the notifier to
+      // ignore the |maximumAge| option for future position estimates.
+      notifier->SetIgnoreMaximumAge();
+
+      watchers_success.push_back(notifier);
+    }
+  }
+  StopTimer(watchers_success);
+
+  SendPosition(one_shots_success, last_position_);
+  SendPosition(watchers_success, last_position_);
 
   if (!HasListeners())
     StopUpdating();
 }
 
 void Geolocation::PositionChanged() {
-  // Stop all currently running timers.
-  StopTimers();
-
   MakeSuccessCallbacks();
 }
 

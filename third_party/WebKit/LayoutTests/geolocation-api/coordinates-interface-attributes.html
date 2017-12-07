@@ -60,7 +60,7 @@ var watchId = navigator.geolocation.watchPosition(function(position) {
 }, function(e) {
     debug("Error!: the error callback was called.");
     finishJSTest();
-});
+}, { maximumAge: 1000 });
 
 runNextTest();
 

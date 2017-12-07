@@ -28,7 +28,7 @@ navigator.geolocation.getCurrentPosition(function(p) {
     shouldBe('error.message', '"User denied Geolocation"');
     debug('');
     continueTest();
-});
+}, { maximumAge: 1000 });
 
 function continueTest()
 {
@@ -42,7 +42,7 @@ function continueTest()
         shouldBe('error.message', '"User denied Geolocation"');
         navigator.geolocation.clearWatch(watchId);
         window.setTimeout(finishJSTest, 0);
-    });
+    }, { maximumAge: 1000 });
 }
 
 window.jsTestIsAsync = true;

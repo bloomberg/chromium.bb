@@ -13,7 +13,10 @@ function loadNext() {
     mock.setGeolocationPermission(true);
     mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 
-    navigator.geolocation.watchPosition(window.opener.gotPosition);
+    navigator.geolocation.watchPosition(
+        window.opener.gotPosition,
+        function () {},
+        { maximumAge: 1000 });
 }
 </script>
 <body onload="loadNext()"></body>

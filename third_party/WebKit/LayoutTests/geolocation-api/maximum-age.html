@@ -43,15 +43,29 @@ mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 // Initialize the cached Position
 navigator.geolocation.getCurrentPosition(function(p) {
     checkPosition(p);
-    testZeroMaximumAge();
+    testZeroMaximumAgeWithStaleEstimateError();
 }, function(e) {
     testFailed('Error callback invoked unexpectedly');
     finishJSTest();
-});
+}, { maximumAge: 1000 });
 
-function testZeroMaximumAge() {
-    // Update the position provided by the mock service.
-    mock.setGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
+function testZeroMaximumAgeWithStaleEstimateError() {
+    let fixTime = new Date().getTime() - 10000; // 10 seconds ago
+    mock.setGeolocationPositionAndTime(++mockLatitude,
+                                       ++mockLongitude,
+                                       ++mockAccuracy,
+                                       fixTime);
+
+    // The default maximumAge is zero, so the stale data should not be returned.
+    navigator.geolocation.getCurrentPosition(function(p) {
+        testFailed('Success callback invoked unexpectedly');
+        finishJSTest();
+    }, function(e) {
+        testZeroMaximumAgeWithNewEstimate();
+    }, { timeout: 100 });
+}
+
+function testZeroMaximumAgeWithNewEstimate() {
     // The default maximumAge is zero, so we expect the updated position from the service.
     navigator.geolocation.getCurrentPosition(function(p) {
         checkPosition(p);
@@ -60,6 +74,11 @@ function testZeroMaximumAge() {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
     });
+
+    // Update the position provided by the mock service. This must be done after
+    // calling getCurrentPosition to ensure the position's age is newer than the
+    // position request.
+    mock.setGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
 }
 
 function testNonZeroMaximumAge() {
@@ -76,8 +95,6 @@ function testNonZeroMaximumAge() {
 }
 
 function testNegativeValueMaximumAge() {
-    // Update the position provided by the mock service.
-    mock.setGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
     // The maximumAge is same as zero, so we expect the updated position from the service.
     navigator.geolocation.getCurrentPosition(function(p) {
         checkPosition(p);
@@ -86,6 +103,9 @@ function testNegativeValueMaximumAge() {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
     }, {maximumAge: -1000});
+
+    // Update the position provided by the mock service.
+    mock.setGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
 }
 
 function testOverSignedIntMaximumAge() {

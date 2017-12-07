@@ -26,9 +26,9 @@ var watchId = navigator.geolocation.watchPosition(function() {
     navigator.geolocation.clearWatch(watchId);
     finishJSTest();
 }, function(e) {
-    navigator.geolocation.clearWatch(watchId);
+    testFailed('Error callback invoked unexpectedly');
     finishJSTest();
-});
+}, { maximumAge: 1000 });
 
 window.jsTestIsAsync = true;
 </script>

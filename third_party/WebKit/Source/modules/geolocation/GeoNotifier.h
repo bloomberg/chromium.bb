@@ -7,6 +7,7 @@
 
 #include "bindings/modules/v8/v8_position_callback.h"
 #include "bindings/modules/v8/v8_position_error_callback.h"
+#include "core/dom/DOMTimeStamp.h"
 #include "modules/geolocation/PositionOptions.h"
 #include "platform/Timer.h"
 #include "platform/bindings/TraceWrapperMember.h"
@@ -44,6 +45,10 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   // an interval of 0.
   void SetUseCachedPosition();
 
+  // Tells the notifier to not check the age of position estimates against
+  // the maximum age option.
+  void SetIgnoreMaximumAge();
+
   void RunSuccessCallback(Geoposition*);
   void RunErrorCallback(PositionError*);
 
@@ -54,6 +59,10 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   // cached position must be used, registers itself for receiving one.
   // Otherwise, the notifier has expired, and its error callback is run.
   void TimerFired(TimerBase*);
+
+  // Returns true if the position estimate is younger than the maximum age
+  // specified in PositionOptions, as measured from the time of the request.
+  bool CheckPositionAge(const Geoposition&);
 
  private:
   GeoNotifier(Geolocation*,
@@ -68,6 +77,8 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   TaskRunnerTimer<GeoNotifier> timer_;
   Member<PositionError> fatal_error_;
   bool use_cached_position_;
+  bool ignore_maximum_age_;
+  const DOMTimeStamp request_time_;
 };
 
 }  // namespace blink
