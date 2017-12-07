@@ -276,6 +276,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;
 #endif
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
   base::WeakPtrFactory<BrowserPlugin> weak_ptr_factory_;
