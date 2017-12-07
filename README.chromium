@@ -253,3 +253,8 @@ D. Local Modifications
   - patches/script_extension.patch 
     upstream bug: https://ssl.icu-project.org/trac/ticket/13462
     (fixed in 60maint branch)
+
+6. Fix -Wsign-compare warning in EnumSet::isValidEnum()
+
+  - patches/isvalidenum.patch
+    upstream bug: https://ssl.icu-project.org/trac/ticket/13509
