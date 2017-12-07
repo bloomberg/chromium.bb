@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
   for (const auto& kv : test_ukm_recorder_->GetSources()) {
-    EXPECT_NE(iframe_url, kv.second->url());
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
   }
 }
 
@@ -110,7 +110,79 @@ IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
   for (const auto& kv : test_ukm_recorder_->GetSources()) {
-    EXPECT_NE(iframe_url, kv.second->url());
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
+                       CorrectSourceForUnownedAddressCheckout) {
+  GURL main_frame_url =
+      https_server_->GetURL("a.com", "/autofill_unowned_address_checkout.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  // Make sure the UKM were logged for the main frame url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_EQ(main_frame_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillMetricsMetricsBrowserTest,
+                       CorrectSourceForUnownedCreditCardCheckout) {
+  GURL main_frame_url = https_server_->GetURL(
+      "a.com", "/autofill_unowned_credit_card_checkout.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  // Make sure the UKM were logged for the main frame url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_EQ(main_frame_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AutofillMetricsMetricsBrowserTest,
+    CorrectSourceForCrossSiteEmbeddedUnownedAddressCheckout) {
+  GURL main_frame_url =
+      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL iframe_url =
+      https_server_->GetURL("b.com", "/autofill_unowned_address_checkout.html");
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
+
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+  content::RenderFrameHost* frame = ChildFrameAt(tab->GetMainFrame(), 0);
+  EXPECT_TRUE(frame);
+
+  // Make sure the UKM were logged for the main frame url and none for the
+  // iframe url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AutofillMetricsMetricsBrowserTest,
+    CorrectSourceForCrossSiteEmbeddedUnownedCreditCardCheckout) {
+  GURL main_frame_url =
+      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL iframe_url = https_server_->GetURL(
+      "b.com", "/autofill_unowned_credit_card_checkout.html");
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
+
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+  content::RenderFrameHost* frame = ChildFrameAt(tab->GetMainFrame(), 0);
+  EXPECT_TRUE(frame);
+
+  // Make sure the UKM were logged for the main frame url and none for the
+  // iframe url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
   }
 }
 
@@ -153,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
   for (const auto& kv : test_ukm_recorder_->GetSources()) {
-    EXPECT_NE(iframe_url, kv.second->url());
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
   }
 }
 
@@ -177,6 +249,80 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
   // Make sure the UKM were logged for the main frame url and none for the
   // iframe url.
   for (const auto& kv : test_ukm_recorder_->GetSources()) {
-    EXPECT_NE(iframe_url, kv.second->url());
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
+                       CorrectSourceForUnownedAddressCheckout) {
+  GURL main_frame_url =
+      https_server_->GetURL("a.com", "/autofill_unowned_address_checkout.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  // Make sure the UKM were logged for the main frame url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_EQ(main_frame_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessAutofillMetricsMetricsBrowserTest,
+                       CorrectSourceForUnownedCreditCardCheckout) {
+  GURL main_frame_url = https_server_->GetURL(
+      "a.com", "/autofill_unowned_credit_card_checkout.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  // Make sure the UKM were logged for the main frame url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_EQ(main_frame_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessAutofillMetricsMetricsBrowserTest,
+    CorrectSourceForCrossSiteEmbeddedUnownedAddressCheckout) {
+  GURL main_frame_url =
+      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL iframe_url =
+      https_server_->GetURL("b.com", "/autofill_unowned_address_checkout.html");
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
+
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+  content::RenderFrameHost* frame = ChildFrameAt(tab->GetMainFrame(), 0);
+  EXPECT_TRUE(frame);
+  EXPECT_NE(frame->GetSiteInstance(), tab->GetMainFrame()->GetSiteInstance());
+
+  // Make sure the UKM were logged for the main frame url and none for the
+  // iframe url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessAutofillMetricsMetricsBrowserTest,
+    CorrectSourceForCrossSiteEmbeddedUnownedCreditCardCheckout) {
+  GURL main_frame_url =
+      https_server_->GetURL("a.com", "/autofill_iframe_embedder.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL iframe_url = https_server_->GetURL(
+      "b.com", "/autofill_unowned_credit_card_checkout.html");
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "test", iframe_url));
+
+  EXPECT_TRUE(tab->GetRenderWidgetHostView()->IsShowing());
+  content::RenderFrameHost* frame = ChildFrameAt(tab->GetMainFrame(), 0);
+  EXPECT_TRUE(frame);
+  EXPECT_NE(frame->GetSiteInstance(), tab->GetMainFrame()->GetSiteInstance());
+
+  // Make sure the UKM were logged for the main frame url and none for the
+  // iframe url.
+  for (const auto& kv : test_ukm_recorder_->GetSources()) {
+    EXPECT_NE(iframe_url.host(), kv.second->url().host());
   }
 }

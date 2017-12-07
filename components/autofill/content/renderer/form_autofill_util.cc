@@ -1142,8 +1142,12 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     FormData* form,
     FormFieldData* field) {
   form->origin = GetCanonicalOriginForDocument(document);
-  DCHECK(document.GetFrame()->Top());
-  form->main_frame_origin = document.GetFrame()->Top()->GetSecurityOrigin();
+  if (document.GetFrame()) {
+    form->main_frame_origin = document.GetFrame()->Top()->GetSecurityOrigin();
+  } else {
+    form->main_frame_origin = url::Origin();
+    NOTREACHED();
+  }
 
   form->is_form_tag = false;
 
@@ -1470,8 +1474,12 @@ bool WebFormElementToFormData(
   form->name = GetFormIdentifier(form_element);
   form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = frame->GetDocument().CompleteURL(form_element.Action());
-  DCHECK(frame->Top());
-  form->main_frame_origin = frame->Top()->GetSecurityOrigin();
+  if (frame->Top()) {
+    form->main_frame_origin = frame->Top()->GetSecurityOrigin();
+  } else {
+    form->main_frame_origin = url::Origin();
+    NOTREACHED();
+  }
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
   if (!form->action.is_valid())
