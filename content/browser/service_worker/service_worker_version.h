@@ -450,6 +450,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestNowTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestNowTimeoutKill);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestCustomizedTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RestartWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, MixedRequestTimeouts);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
