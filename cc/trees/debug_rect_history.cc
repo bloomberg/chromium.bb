@@ -72,10 +72,10 @@ void DebugRectHistory::SavePaintRects(LayerTreeImpl* tree_impl) {
     if (invalidation_region.IsEmpty() || !layer->DrawsContent())
       continue;
 
-    for (Region::Iterator it(invalidation_region); it.has_rect(); it.next()) {
-      debug_rects_.push_back(DebugRect(
-          PAINT_RECT_TYPE, MathUtil::MapEnclosingClippedRect(
-                               layer->ScreenSpaceTransform(), it.rect())));
+    for (gfx::Rect rect : invalidation_region) {
+      debug_rects_.push_back(
+          DebugRect(PAINT_RECT_TYPE, MathUtil::MapEnclosingClippedRect(
+                                         layer->ScreenSpaceTransform(), rect)));
     }
   }
 }
@@ -136,10 +136,10 @@ void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
        touch_action_index != kTouchActionMax; ++touch_action_index) {
     auto touch_action = static_cast<TouchAction>(touch_action_index);
     Region region = touch_action_region.GetRegionForTouchAction(touch_action);
-    for (Region::Iterator iter(region); iter.has_rect(); iter.next()) {
+    for (gfx::Rect rect : region) {
       debug_rects_.emplace_back(TOUCH_EVENT_HANDLER_RECT_TYPE,
                                 MathUtil::MapEnclosingClippedRect(
-                                    layer->ScreenSpaceTransform(), iter.rect()),
+                                    layer->ScreenSpaceTransform(), rect),
                                 touch_action);
     }
   }
@@ -187,12 +187,10 @@ void DebugRectHistory::SaveNonFastScrollableRects(LayerTreeImpl* tree_impl) {
 }
 
 void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
-  for (Region::Iterator iter(layer->non_fast_scrollable_region());
-       iter.has_rect(); iter.next()) {
-    debug_rects_.push_back(
-        DebugRect(NON_FAST_SCROLLABLE_RECT_TYPE,
-                  MathUtil::MapEnclosingClippedRect(
-                      layer->ScreenSpaceTransform(), iter.rect())));
+  for (gfx::Rect rect : layer->non_fast_scrollable_region()) {
+    debug_rects_.push_back(DebugRect(NON_FAST_SCROLLABLE_RECT_TYPE,
+                                     MathUtil::MapEnclosingClippedRect(
+                                         layer->ScreenSpaceTransform(), rect)));
   }
 }
 

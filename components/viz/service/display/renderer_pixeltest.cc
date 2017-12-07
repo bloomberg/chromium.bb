@@ -3347,8 +3347,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   cc::Region outside(layer_rect);
   outside.Subtract(gfx::ToEnclosingRect(union_layer_rect));
-  for (cc::Region::Iterator iter(outside); iter.has_rect(); iter.next()) {
-    recording->add_draw_rect_with_flags(iter.rect(), red_flags);
+  for (gfx::Rect rect : outside) {
+    recording->add_draw_rect_with_flags(rect, red_flags);
   }
 
   cc::PaintFlags blue_flags;

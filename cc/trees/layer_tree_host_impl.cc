@@ -817,9 +817,7 @@ static void AppendQuadsToFillScreen(
                             are_contents_opaque, opacity, SkBlendMode::kSrcOver,
                             sorting_context_id);
 
-  for (Region::Iterator fill_rects(fill_region); fill_rects.has_rect();
-       fill_rects.next()) {
-    gfx::Rect screen_space_rect = fill_rects.rect();
+  for (gfx::Rect screen_space_rect : fill_region) {
     gfx::Rect visible_screen_space_rect = screen_space_rect;
     // Skip the quad culler and just append the quads directly to avoid
     // occlusion checks.
