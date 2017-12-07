@@ -514,11 +514,19 @@ class SyntheticKeyEventTest : public DevToolsProtocolTest {
 
 class SyntheticMouseEventTest : public DevToolsProtocolTest {
  protected:
-  void SendMouseEvent(const std::string& type, int x, int y, bool wait) {
+  void SendMouseEvent(const std::string& type,
+                      int x,
+                      int y,
+                      const std::string& button,
+                      bool wait) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("type", type);
     params->SetInteger("x", x);
     params->SetInteger("y", y);
+    if (!button.empty()) {
+      params->SetString("button", button);
+      params->SetInteger("clickCount", 1);
+    }
     SendCommand("Input.dispatchMouseEvent", std::move(params), wait);
   }
 };
@@ -582,20 +590,20 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyboardEventAck) {
   EXPECT_EQ(3u, result_ids_.size());
 }
 
-IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, DISABLED_MouseEventAck) {
+IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
-      "document.body.addEventListener('mousemove', () => {debugger;});"));
+      "document.body.addEventListener('mousedown', () => {debugger;});"));
 
   auto filter = std::make_unique<InputMsgWatcher>(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
-      blink::WebInputEvent::kMouseMove);
+      blink::WebInputEvent::kMouseDown);
 
   SendCommand("Debugger.enable", nullptr);
-  SendMouseEvent("mouseMoved", 15, 15, false);
+  SendMouseEvent("mousePressed", 15, 15, "left", false);
 
   // We expect that the debugger message event arrives *before* the input
   // event ack, and the subsequent command response for
