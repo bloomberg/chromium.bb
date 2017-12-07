@@ -106,6 +106,7 @@ struct ColorScheme {
   SkColor omnibox_background;
   SkColor omnibox_icon;
   SkColor omnibox_text;
+  SkColor omnibox_hint;
   SkColor omnibox_suggestion_content;
   SkColor omnibox_suggestion_description;
 

@@ -43,6 +43,7 @@ class TextInput : public UiElement {
   void SetHintText(const base::string16& text);
   void SetTextColor(SkColor color);
   void SetCursorColor(SkColor color);
+  void SetHintColor(SkColor color);
   void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
 
   bool OnBeginFrame(const base::TimeTicks& time,
