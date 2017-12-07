@@ -10,6 +10,7 @@ import android.app.Application;
 import android.app.Application.ActivityLifecycleCallbacks;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.Window;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -435,8 +436,9 @@ public class ApplicationStatus {
      * @return The state of the specified activity (see {@link ActivityState}).
      */
     @ActivityState
-    public static int getStateForActivity(Activity activity) {
+    public static int getStateForActivity(@Nullable Activity activity) {
         ApplicationStatus.assertInitialized();
+        if (activity == null) return ActivityState.DESTROYED;
         ActivityInfo info = sActivityInfo.get(activity);
         return info != null ? info.getStatus() : ActivityState.DESTROYED;
     }
