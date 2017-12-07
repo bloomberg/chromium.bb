@@ -2351,8 +2351,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "OfflinePagesAsyncDownload",
-                        "OfflinePagesSvelte"
+                        "OfflinePagesAsyncDownload"
                     ]
                 }
             ]
