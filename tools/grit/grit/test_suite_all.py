@@ -45,7 +45,6 @@ class TestSuiteAll(unittest.TestSuite):
     import grit.gather.admin_template_unittest
     import grit.gather.chrome_html_unittest
     import grit.gather.chrome_scaled_image_unittest
-    import grit.gather.igoogle_strings_unittest
     import grit.gather.muppet_strings_unittest
     import grit.gather.policy_json_unittest
     import grit.gather.rc_unittest
@@ -91,7 +90,6 @@ class TestSuiteAll(unittest.TestSuite):
         grit.gather.admin_template_unittest.AdmGathererUnittest,
         grit.gather.chrome_html_unittest.ChromeHtmlUnittest,
         grit.gather.chrome_scaled_image_unittest.ChromeScaledImageUnittest,
-        grit.gather.igoogle_strings_unittest.IgoogleStringsUnittest,
         grit.gather.muppet_strings_unittest.MuppetStringsUnittest,
         grit.gather.policy_json_unittest.PolicyJsonUnittest,
         grit.gather.rc_unittest.RcUnittest,

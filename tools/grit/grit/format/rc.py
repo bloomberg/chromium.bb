@@ -413,7 +413,7 @@ def FormatInclude(item, lang, output_dir, type=None, process_html=False):
     relative_path = item.attrs['relativepath'] == 'true'
   else:
     assert (isinstance(item, structure.StructureNode) and item.attrs['type'] in
-        ['admin_template', 'chrome_html', 'chrome_scaled_image', 'igoogle',
+        ['admin_template', 'chrome_html', 'chrome_scaled_image',
          'muppet', 'tr_html', 'txt'])
     filename_only = False
     relative_path = False
@@ -461,7 +461,6 @@ _STRUCTURE_FORMATTERS = {
   'chrome_html'         : partial(FormatInclude, type='BINDATA',
                                                  process_html=True),
   'chrome_scaled_image' : partial(FormatInclude, type='BINDATA'),
-  'igoogle'             : partial(FormatInclude, type='XML'),
   'muppet'              : partial(FormatInclude, type='XML'),
   'tr_html'             : partial(FormatInclude, type='HTML'),
   'txt'                 : partial(FormatInclude, type='TXT'),

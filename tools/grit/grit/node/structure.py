@@ -18,7 +18,6 @@ from grit.node import variant
 import grit.gather.admin_template
 import grit.gather.chrome_html
 import grit.gather.chrome_scaled_image
-import grit.gather.igoogle_strings
 import grit.gather.muppet_strings
 import grit.gather.policy_json
 import grit.gather.rc
@@ -34,7 +33,6 @@ _GATHERERS = {
   'chrome_html'         : grit.gather.chrome_html.ChromeHtml,
   'chrome_scaled_image' : grit.gather.chrome_scaled_image.ChromeScaledImage,
   'dialog'              : grit.gather.rc.Dialog,
-  'igoogle'             : grit.gather.igoogle_strings.IgoogleStrings,
   'menu'                : grit.gather.rc.Menu,
   'muppet'              : grit.gather.muppet_strings.MuppetStrings,
   'rcdata'              : grit.gather.rc.RCData,
@@ -241,7 +239,7 @@ class StructureNode(base.Node):
 
   def HasFileForLanguage(self):
     return self.attrs['type'] in ['tr_html', 'admin_template', 'txt',
-                                  'muppet', 'igoogle', 'chrome_scaled_image',
+                                  'muppet', 'chrome_scaled_image',
                                   'chrome_html']
 
   def ExpandVariables(self):
