@@ -37,7 +37,7 @@ class InspectorResourceContentLoader::ResourceClient final
   explicit ResourceClient(InspectorResourceContentLoader* loader)
       : loader_(loader) {}
 
-  void WaitForResource(Resource* resource) { resource->AddClient(this); }
+  void WaitForResource(Resource* resource) { SetResource(resource); }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(loader_);
@@ -50,7 +50,7 @@ class InspectorResourceContentLoader::ResourceClient final
   void NotifyFinished(Resource* resource) override {
     if (loader_)
       loader_->ResourceFinished(this);
-    resource->RemoveClient(this);
+    ClearResource();
   }
 
   String DebugName() const override {

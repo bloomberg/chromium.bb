@@ -514,7 +514,7 @@ ScriptStreamer::ScriptStreamer(
     v8::ScriptCompiler::CompileOptions compile_options,
     scoped_refptr<WebTaskRunner> loading_task_runner)
     : pending_script_(script),
-      resource_(script->GetResource()),
+      resource_(ToScriptResource(script->GetResource())),
       detached_(false),
       stream_(nullptr),
       loading_finished_(false),
@@ -579,7 +579,7 @@ void ScriptStreamer::StartStreaming(
     scoped_refptr<WebTaskRunner> loading_task_runner) {
   DCHECK(IsMainThread());
   DCHECK(script_state->ContextIsValid());
-  ScriptResource* resource = script->GetResource();
+  ScriptResource* resource = ToScriptResource(script->GetResource());
   if (!resource->Url().ProtocolIsInHTTPFamily()) {
     RecordNotStreamingReasonHistogram(script_type, kNotHTTP);
     RecordStartedStreamingHistogram(script_type, 0);

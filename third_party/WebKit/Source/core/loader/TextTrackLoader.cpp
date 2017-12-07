@@ -180,7 +180,7 @@ void TextTrackLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(cue_parser_);
   visitor->Trace(document_);
-  ResourceOwner<RawResource>::Trace(visitor);
+  RawResourceClient::Trace(visitor);
   VTTParserClient::Trace(visitor);
 }
 

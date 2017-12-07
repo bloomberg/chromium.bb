@@ -29,7 +29,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/css/CSSValue.h"
 #include "core/loader/resource/FontResource.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -103,7 +102,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   class FontResourceHelper
       : public GarbageCollectedFinalized<FontResourceHelper>,
-        public ResourceOwner<FontResource> {
+        public FontResourceClient {
     USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
 
    public:
@@ -112,7 +111,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
     }
 
     virtual void Trace(blink::Visitor* visitor) {
-      ResourceOwner<FontResource>::Trace(visitor);
+      FontResourceClient::Trace(visitor);
     }
 
    private:

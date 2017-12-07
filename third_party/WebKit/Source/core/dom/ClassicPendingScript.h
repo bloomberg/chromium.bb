@@ -12,7 +12,6 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 
 namespace blink {
 
@@ -24,10 +23,9 @@ namespace blink {
 // A RefPtr alone does not prevent the underlying Resource from purging its data
 // buffer. This class holds a dummy client open for its lifetime in order to
 // guarantee that the data buffer will not be purged.
-class CORE_EXPORT ClassicPendingScript final
-    : public PendingScript,
-      public ResourceOwner<ScriptResource>,
-      public MemoryCoordinatorClient {
+class CORE_EXPORT ClassicPendingScript final : public PendingScript,
+                                               public ResourceClient,
+                                               public MemoryCoordinatorClient {
   USING_GARBAGE_COLLECTED_MIXIN(ClassicPendingScript);
   USING_PRE_FINALIZER(ClassicPendingScript, Prefinalize);
 

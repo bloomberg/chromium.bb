@@ -30,7 +30,6 @@
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/RawResource.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 
 namespace blink {
 
@@ -46,7 +45,7 @@ class TextTrackLoaderClient : public GarbageCollectedMixin {
 };
 
 class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
-                              public ResourceOwner<RawResource>,
+                              public RawResourceClient,
                               private VTTParserClient {
   USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 

@@ -38,8 +38,6 @@ class ResourceFetcher;
 
 class CORE_EXPORT DocumentResource final : public TextResource {
  public:
-  using ClientType = ResourceClient;
-
   static DocumentResource* FetchSVGDocument(FetchParameters&, ResourceFetcher*);
   ~DocumentResource() override;
   void Trace(blink::Visitor*) override;

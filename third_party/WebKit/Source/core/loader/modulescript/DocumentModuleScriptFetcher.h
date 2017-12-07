@@ -11,7 +11,6 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Optional.h"
 
@@ -24,11 +23,10 @@ class ConsoleMessage;
 //
 // DocumentModuleScriptFetcher emits FetchParameters to ResourceFetcher
 // (via ScriptResource::Fetch). Then, it keeps track of the fetch progress by
-// being a ResourceOwner. Finally, it returns its client a fetched resource as
+// being a ResourceClient. Finally, it returns its client a fetched resource as
 // ModuleScriptCreationParams.
-class CORE_EXPORT DocumentModuleScriptFetcher
-    : public ModuleScriptFetcher,
-      public ResourceOwner<ScriptResource> {
+class CORE_EXPORT DocumentModuleScriptFetcher : public ModuleScriptFetcher,
+                                                public ResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
 
  public:
@@ -36,7 +34,7 @@ class CORE_EXPORT DocumentModuleScriptFetcher
 
   void Fetch(FetchParameters&, ModuleScriptFetcher::Client*) final;
 
-  // Implements ScriptResourceClient
+  // Implements ResourceClient
   void NotifyFinished(Resource*) final;
   String DebugName() const final { return "DocumentModuleScriptFetcher"; }
 

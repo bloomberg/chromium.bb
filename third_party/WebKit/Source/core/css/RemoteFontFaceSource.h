@@ -115,8 +115,6 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
   // Our owning font face.
   Member<CSSFontFace> face_;
-  // Cleared once load is finished.
-  Member<FontResource> font_;
   Member<FontSelector> font_selector_;
 
   // |nullptr| if font is not loaded or failed to decode.

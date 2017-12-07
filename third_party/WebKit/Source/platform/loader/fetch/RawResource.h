@@ -41,8 +41,6 @@ class SubstituteData;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
-  using ClientType = RawResourceClient;
-
   static RawResource* FetchSynchronously(FetchParameters&, ResourceFetcher*);
   static RawResource* Fetch(FetchParameters&, ResourceFetcher*);
   static RawResource* FetchMainResource(FetchParameters&,

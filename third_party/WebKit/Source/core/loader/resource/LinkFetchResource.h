@@ -15,8 +15,6 @@ class ResourceFetcher;
 
 class LinkFetchResource final : public Resource {
  public:
-  using ClientType = ResourceClient;
-
   static Resource* Fetch(Resource::Type, FetchParameters&, ResourceFetcher*);
   ~LinkFetchResource() override;
 

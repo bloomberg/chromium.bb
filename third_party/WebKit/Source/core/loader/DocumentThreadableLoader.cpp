@@ -1379,7 +1379,7 @@ ExecutionContext* DocumentThreadableLoader::GetExecutionContext() const {
 void DocumentThreadableLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(loading_context_);
   ThreadableLoader::Trace(visitor);
-  ResourceOwner<RawResource>::Trace(visitor);
+  RawResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

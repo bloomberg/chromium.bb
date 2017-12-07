@@ -257,31 +257,31 @@ class RequestSameResourceOnComplete
 
  public:
   explicit RequestSameResourceOnComplete(Resource* resource)
-      : resource_(resource), notify_finished_called_(false) {}
+      : notify_finished_called_(false) {
+    SetResource(resource);
+  }
 
   void NotifyFinished(Resource* resource) override {
-    EXPECT_EQ(resource_, resource);
+    EXPECT_EQ(GetResource(), resource);
     MockFetchContext* context =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
     ResourceFetcher* fetcher2 = ResourceFetcher::Create(context);
-    ResourceRequest resource_request2(resource_->Url());
+    ResourceRequest resource_request2(GetResource()->Url());
     resource_request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
     FetchParameters fetch_params2(resource_request2);
     Resource* resource2 = MockResource::Fetch(fetch_params2, fetcher2);
-    EXPECT_EQ(resource_, resource2);
+    EXPECT_EQ(GetResource(), resource2);
     notify_finished_called_ = true;
   }
   bool NotifyFinishedCalled() const { return notify_finished_called_; }
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(resource_);
     RawResourceClient::Trace(visitor);
   }
 
   String DebugName() const override { return "RequestSameResourceOnComplete"; }
 
  private:
-  Member<Resource> resource_;
   bool notify_finished_called_;
 };
 
