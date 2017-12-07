@@ -2560,6 +2560,7 @@ split_static_library("browser") {
       "resource_coordinator/discard_reason.h",
       "resource_coordinator/lifecycle_unit.cc",
       "resource_coordinator/lifecycle_unit.h",
+      "resource_coordinator/lifecycle_unit_source.h",
       "resource_coordinator/lifecycle_unit_source_observer.h",
       "resource_coordinator/tab_lifecycle_observer.h",
       "resource_coordinator/tab_lifecycle_unit_external.cc",
