@@ -14,7 +14,6 @@
 # note: this passes locally but fails on bot.
 -BrowserTest.CancelBeforeUnloadResetsURL
 -BrowserTest.ClearPendingOnFailUnlessNTP
--BrowserTest.GetSizeForNewRenderView
 -BrowserTest.InterstitialCancelsGuestViewDialogs
 -BrowsingDataRemoverBrowserTest.Cache
 -BrowsingDataRemoverBrowserTest.CookieDeletion
@@ -24,8 +23,6 @@
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe
 -ContentFaviconDriverTest.ReloadBypassingCache
--ContentScriptApiTests/ContentScriptApiTest.CannotScriptTheNewTabPage/0
--ContentScriptApiTests/ContentScriptApiTest.CannotScriptTheNewTabPage/1
 -ContentVerifierTest.DotSlashPaths
 -ContentVerifierTest.FailOnDone
 -ContentVerifierTest.FailOnRead
@@ -74,7 +71,6 @@
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
 -ExperimentalAppWindowApiTest.SetIcon
--ExtensionApiTabTest.OnUpdatedDiscardedState
 -ExtensionApiTabTest.TabsOnUpdated
 -ExtensionApiTest.ContentSecurityPolicy
 -ExtensionApiTest.Cookies
@@ -99,8 +95,6 @@
 -FeedbackTest.ShowLoginFeedback
 -FileProxyScriptBrowserTest.Verify
 -FtpProxyScriptBrowserTest.Verify
--HttpProxyScriptBrowserTest.Verify
--InlineLoginUISafeIframeBrowserTest.LoadSuccessContinueURL
 -InProcessBrowserTest.ExternalConnectionFail
 -InstantThemeTest.ThemeBackgroundAccess
 -IsolatedAppTest.CookieIsolation
@@ -123,9 +117,7 @@
 -MediaStreamDevicesControllerTest.ExtensionRequestMicCam
 -NaClBrowserTestGLibcVcacheExtension.ValidationCacheOfMainNexe
 -NaClBrowserTestNewlibVcacheExtension.ValidationCacheOfMainNexe
--NetInternalsTest.netInternalsPrerenderViewFail
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
--NewTabUIProcessPerTabTest.NavBeforeNTPCommits
 -NewlibPackagedAppTest.MulticastPermissions
 -NewlibPackagedAppTest.NoSocketPermissions
 -NewlibPackagedAppTest.SocketPermissions
@@ -147,12 +139,9 @@
 -PlatformAppBrowserTest.Isolation
 -PlatformAppDevToolsBrowserTest.ReOpenedWithID
 -PlatformAppDevToolsBrowserTest.ReOpenedWithURL
--PolicyTest.BookmarkBarEnabled
 -PolicyTest.DefaultCookiesSetting
--PolicyTest.HomepageLocation
 -PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
--ProcessManagementTest.ProcessOverflow
 -ProcessManagerBrowserTest.ExtensionProcessReuse
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
 -ProfileWindowBrowserTest.GuestClearsCookies
@@ -191,15 +180,10 @@
 -SSLUITest.TestBadHTTPSDownload
 -SSLUITest.TestHTTPSOCSPOk
 -SSLUITest.TestHTTPSOCSPRevoked
--SSLUITestIgnoreLocalhostCertErrors.TestNoInterstitialOnLocalhost
--SSLUITestCommitted.ProceedLinkOverridable/0
--SSLUITestTransientAndCommitted.MarkBlobAsNonSecure/0
--SSLUITestTransientAndCommitted.MarkBlobAsNonSecure/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPOk/0
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPOk/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPRevoked/1
 -SSLUITestTransientAndCommitted.TestHTTPSOCSPRevoked/0
--SSLUIWorkerFetchTest.TestUnsafeContentsInWorkerWithUserException/0
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -SuperfishSSLUITest.NoSuperfishRecorded
 -SuperfishSSLUITest.SuperfishInterstitial
@@ -215,26 +199,7 @@
 -TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
 -TtsApiTest.NetworkSpeechEngine
 -V4SafeBrowsingServiceTest.Prefetch
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsEmitsGatheringStateChange
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsGetStatsCallback
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsOfferEcdsaAnswerEcdsa
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsOfferEcdsaAnswerRsa
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsOfferRsaAnswerEcdsa
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsOfferRsaAnswerRsa
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateEcdsa
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateRsa
--WebRtcDisableEncryptionFlagBrowserTest.VerifyEncryption
--WebRtcFromWebAccessibleResourceTest.GetUserMediaInWebAccessibleResourceFail
 -WebRtcFromWebAccessibleResourceTest.GetUserMediaInWebAccessibleResourceSuccess
--WebRtcRtpBrowserTest.AddAndRemoveTracksWithIndividualStreams
--WebRtcRtpBrowserTest.AddAndRemoveTracksWithoutStream
--WebRtcRtpBrowserTest.AddAndRemoveTracksWithSharedStream
--WebRtcRtpBrowserTest.GetReceivers
--WebRtcRtpBrowserTest.GetReceiversSetRemoteDescription
--WebRtcRtpBrowserTest.GetSenders
--WebRtcRtpBrowserTest.SwitchRemoteStreamAndBackAgain
--WebRtcRtpBrowserTest.SwitchRemoteStreamWithoutWaitingForPromisesToResolve
 # This test is flaky.
 -WebRtcRtpBrowserTest.TrackAddedToSecondStream
 -WebRtcRtpBrowserTest.TrackSwitchingStream
@@ -262,8 +227,6 @@
 -WebViewTests/WebViewTest.DownloadPermission/1
 -WebViewTests/WebViewTest.OpenURLFromTab_CurrentTab_Succeed/0
 -WebViewTests/WebViewTest.OpenURLFromTab_CurrentTab_Succeed/1
--WebViewTests/WebViewTest.Shim_TestLoadStartLoadRedirect/0
--WebViewTests/WebViewTest.Shim_TestLoadStartLoadRedirect/1
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/1
 -WebViewTests/WebViewTest.StoragePersistence/0
@@ -388,11 +351,6 @@
 -PolicyTest.FileURLBlacklist
 -PolicyTest.URLBlacklist
 -PolicyTest.URLBlacklistSubresources
-
-# crbug.com/751738 Service worker subresource loader doesn't yet support request bodies.
-# crbug.com/778821 Null response body is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP8
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP9
 
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
@@ -677,9 +635,6 @@
 -ErrorPageTest.SniffSmallHttpErrorResponseAsDownload
 -ErrorPageTest.StaleCacheStatus
 
-# Likely started to fail after around r519412.
--ErrorPageNavigationCorrectionsFailTest.FetchCorrectionsFails
-
 # Switch test from using a net::URLRequestFileJob that adds load timing to
 # to using a test URLLoaderFactory via SetNetworkFactoryForTesting.
 -LoadTimingBrowserTest.Basic
@@ -739,16 +694,11 @@
 -PrerenderBrowserTest.FirstContentfulPaintTimingNoCommit
 -PrerenderBrowserTest.FirstContentfulPaintTimingReuse
 -PrerenderBrowserTest.PrerenderBeforeUnload
--PrerenderBrowserTest.PrerenderCancelMainFrameRedirectUnsupportedScheme
 -PrerenderBrowserTest.PrerenderCancelSubresourceRedirectUnsupportedScheme
 -PrerenderBrowserTest.PrerenderCancelSubresourceUnsupportedScheme
--PrerenderBrowserTest.PrerenderCrx
 -PrerenderBrowserTest.PrerenderDeferredImage
 -PrerenderBrowserTest.PrerenderDeferredImageAfterRedirect
 -PrerenderBrowserTest.PrerenderDeferredSynchronousXHR
--PrerenderBrowserTest.PrerenderDownloadClientRedirect
--PrerenderBrowserTest.PrerenderDownloadIframe
--PrerenderBrowserTest.PrerenderDownloadLocation
 -PrerenderBrowserTest.PrerenderLocationReplaceGWSHistograms
 -PrerenderBrowserTest.PrerenderNoCommitNoSwap
 -PrerenderBrowserTest.PrerenderNoCommitNoSwap2
