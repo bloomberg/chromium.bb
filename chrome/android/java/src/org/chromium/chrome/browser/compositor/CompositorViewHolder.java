@@ -703,6 +703,13 @@ public class CompositorViewHolder extends FrameLayout
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         if (changed) {
             onViewportChanged();
+        } else {
+            // Have content pick up the size and browser control information
+            // when the content view got laid out with non-zero dimension after
+            // initialization. Successive calls with the same values are ignored
+            // by ViewAndroid that stores the size.
+            View v = getActiveView();
+            if (v != null) setSize(getActiveWebContents(), v, v.getWidth(), v.getHeight());
         }
         super.onLayout(changed, l, t, r, b);
 
@@ -935,7 +942,6 @@ public class CompositorViewHolder extends FrameLayout
         if (view == null || (tab.isNativePage() && view == tab.getView())) return;
         tab.setTopControlsHeight(getTopControlsHeightPixels(), controlsResizeView());
         tab.setBottomControlsHeight(getBottomControlsHeightPixels());
-        setSize(tab.getWebContents(), view, getWidth(), getHeight());
     }
 
     /**
