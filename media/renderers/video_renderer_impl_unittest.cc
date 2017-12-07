@@ -74,8 +74,7 @@ class VideoRendererImplTest : public testing::Test {
   }
 
   VideoRendererImplTest()
-      : tick_clock_(new base::SimpleTestTickClock()),
-        decoder_(nullptr),
+      : decoder_(nullptr),
         demuxer_stream_(DemuxerStream::VIDEO),
         simulate_decode_delay_(false),
         expect_init_success_(true) {
@@ -95,10 +94,9 @@ class VideoRendererImplTest : public testing::Test {
         true,
         nullptr,  // gpu_factories
         &media_log_));
-    renderer_->SetTickClockForTesting(
-        std::unique_ptr<base::TickClock>(tick_clock_));
-    null_video_sink_->set_tick_clock_for_testing(tick_clock_);
-    time_source_.set_tick_clock_for_testing(tick_clock_);
+    renderer_->SetTickClockForTesting(&tick_clock_);
+    null_video_sink_->set_tick_clock_for_testing(&tick_clock_);
+    time_source_.set_tick_clock_for_testing(&tick_clock_);
 
     // Start wallclock time at a non-zero value.
     AdvanceWallclockTimeInMs(12345);
@@ -290,7 +288,7 @@ class VideoRendererImplTest : public testing::Test {
   void AdvanceWallclockTimeInMs(int time_ms) {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     base::AutoLock l(lock_);
-    tick_clock_->Advance(base::TimeDelta::FromMilliseconds(time_ms));
+    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(time_ms));
   }
 
   void AdvanceTimeInMs(int time_ms) {
@@ -458,7 +456,7 @@ class VideoRendererImplTest : public testing::Test {
   // Fixture members.
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<VideoRendererImpl> renderer_;
-  base::SimpleTestTickClock* tick_clock_;  // Owned by |renderer_|.
+  base::SimpleTestTickClock tick_clock_;
   NiceMock<MockVideoDecoder>* decoder_;    // Owned by |renderer_|.
   NiceMock<MockDemuxerStream> demuxer_stream_;
   bool simulate_decode_delay_;
@@ -492,7 +490,7 @@ class VideoRendererImplTest : public testing::Test {
       return;
 
     if (simulate_decode_delay_)
-      tick_clock_->Advance(OnSimulateDecodeDelay());
+      tick_clock_.Advance(OnSimulateDecodeDelay());
 
     SatisfyPendingDecode();
   }

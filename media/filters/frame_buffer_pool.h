@@ -92,8 +92,7 @@ class MEDIA_EXPORT FrameBufferPool
 
   bool registered_dump_provider_ = false;
 
-  // |tick_clock_| is always &|default_tick_clock_| outside of testing.
-  base::DefaultTickClock default_tick_clock_;
+  // |tick_clock_| is always a DefaultTickClock outside of testing.
   base::TickClock* tick_clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);

@@ -28,11 +28,11 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
  public:
   using GetPipelineStatsCB = base::Callback<PipelineStatistics(void)>;
 
-  VideoDecodeStatsReporter(mojom::VideoDecodeStatsRecorderPtr recorder_ptr,
-                           GetPipelineStatsCB get_pipeline_stats_cb,
-                           const VideoDecoderConfig& video_config,
-                           std::unique_ptr<base::TickClock> tick_clock =
-                               base::MakeUnique<base::DefaultTickClock>());
+  VideoDecodeStatsReporter(
+      mojom::VideoDecodeStatsRecorderPtr recorder_ptr,
+      GetPipelineStatsCB get_pipeline_stats_cb,
+      const VideoDecoderConfig& video_config,
+      base::TickClock* tick_clock = base::DefaultTickClock::GetInstance());
   ~VideoDecodeStatsReporter();
 
   void OnPlaying();
@@ -151,7 +151,7 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
 
   // Clock for |stats_cb_timer_| and getting current tick count (NowTicks()).
   // Tests may supply a mock clock via the constructor.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Timer for all stats callbacks. Timer interval will be dynamically set based
   // on state of reporter. See calls to RunStatsTimerAtIntervalMs().

@@ -133,7 +133,7 @@ VideoRendererImpl::VideoRendererImpl(
       frames_decoded_(0),
       frames_dropped_(0),
       frames_decoded_power_efficient_(0),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       was_background_rendering_(false),
       time_progressing_(false),
       last_video_memory_usage_(0),
@@ -398,9 +398,8 @@ void VideoRendererImpl::OnConfigChange(const VideoDecoderConfig& config) {
   }
 }
 
-void VideoRendererImpl::SetTickClockForTesting(
-    std::unique_ptr<base::TickClock> tick_clock) {
-  tick_clock_.swap(tick_clock);
+void VideoRendererImpl::SetTickClockForTesting(base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void VideoRendererImpl::SetGpuMemoryBufferVideoForTesting(

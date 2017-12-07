@@ -178,7 +178,7 @@ CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
       network_monitor_(network_monitor),
       task_runner_(cast_socket_service_->task_runner()),
       url_request_context_getter_(url_request_context_getter),
-      clock_(new base::DefaultClock()),
+      clock_(base::DefaultClock::GetInstance()),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(cast_socket_service_);
@@ -227,9 +227,8 @@ CastMediaSinkServiceImpl::~CastMediaSinkServiceImpl() {
   cast_socket_service_->RemoveObserver(this);
 }
 
-void CastMediaSinkServiceImpl::SetClockForTest(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void CastMediaSinkServiceImpl::SetClockForTest(base::Clock* clock) {
+  clock_ = clock;
 }
 
 void CastMediaSinkServiceImpl::Start() {

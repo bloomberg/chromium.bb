@@ -85,7 +85,7 @@ CastRemotingSender::CastRemotingSender(
                 media::cast::RtpPayloadType::REMOTE_AUDIO),
       logging_flush_interval_(logging_flush_interval),
       frame_event_cb_(cb),
-      clock_(new base::DefaultTickClock()),
+      clock_(base::DefaultTickClock::GetInstance()),
       binding_(this),
       max_ack_delay_(kMaxAckDelay),
       last_sent_frame_id_(media::cast::FrameId::first() - 1),

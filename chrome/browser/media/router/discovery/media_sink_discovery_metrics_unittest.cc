@@ -19,8 +19,8 @@ namespace media_router {
 
 TEST(DialDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
   DialDeviceCountMetrics metrics;
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  metrics.SetClockForTest(base::WrapUnique(clock));
+  base::SimpleTestClock clock;
+  metrics.SetClockForTest(&clock);
   base::HistogramTester tester;
   tester.ExpectTotalCount(
       DialDeviceCountMetrics::kHistogramDialAvailableDeviceCount, 0);
@@ -28,7 +28,7 @@ TEST(DialDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
       DialDeviceCountMetrics::kHistogramDialKnownDeviceCount, 0);
 
   // Only record one count within one hour.
-  clock->SetNow(base::Time::Now());
+  clock.SetNow(base::Time::Now());
   metrics.RecordDeviceCountsIfNeeded(6, 10);
   metrics.RecordDeviceCountsIfNeeded(7, 10);
   tester.ExpectTotalCount(
@@ -41,7 +41,7 @@ TEST(DialDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
       DialDeviceCountMetrics::kHistogramDialKnownDeviceCount, 10, 1);
 
   // Record another count.
-  clock->Advance(base::TimeDelta::FromHours(2));
+  clock.Advance(base::TimeDelta::FromHours(2));
   metrics.RecordDeviceCountsIfNeeded(7, 10);
   tester.ExpectTotalCount(
       DialDeviceCountMetrics::kHistogramDialAvailableDeviceCount, 2);
@@ -57,8 +57,8 @@ TEST(DialDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
 
 TEST(CastDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
   CastDeviceCountMetrics metrics;
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  metrics.SetClockForTest(base::WrapUnique(clock));
+  base::SimpleTestClock clock;
+  metrics.SetClockForTest(&clock);
   base::HistogramTester tester;
   tester.ExpectTotalCount(
       CastDeviceCountMetrics::kHistogramCastConnectedDeviceCount, 0);
@@ -66,7 +66,7 @@ TEST(CastDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
       CastDeviceCountMetrics::kHistogramCastKnownDeviceCount, 0);
 
   // Only record one count within one hour.
-  clock->SetNow(base::Time::Now());
+  clock.SetNow(base::Time::Now());
   metrics.RecordDeviceCountsIfNeeded(6, 10);
   metrics.RecordDeviceCountsIfNeeded(7, 10);
   tester.ExpectTotalCount(
@@ -79,7 +79,7 @@ TEST(CastDeviceCountMetricsTest, RecordDeviceCountsIfNeeded) {
       CastDeviceCountMetrics::kHistogramCastKnownDeviceCount, 10, 1);
 
   // Record another count.
-  clock->Advance(base::TimeDelta::FromHours(2));
+  clock.Advance(base::TimeDelta::FromHours(2));
   metrics.RecordDeviceCountsIfNeeded(7, 10);
   tester.ExpectTotalCount(
       CastDeviceCountMetrics::kHistogramCastConnectedDeviceCount, 2);

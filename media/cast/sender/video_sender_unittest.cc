@@ -149,21 +149,19 @@ class TransportClient : public CastTransport::Client {
 class VideoSenderTest : public ::testing::Test {
  protected:
   VideoSenderTest()
-      : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(new CastEnvironment(
-            std::unique_ptr<base::TickClock>(testing_clock_),
-            task_runner_,
-            task_runner_,
-            task_runner_)),
+      : task_runner_(new FakeSingleThreadTaskRunner(&testing_clock_)),
+        cast_environment_(new CastEnvironment(&testing_clock_,
+                                              task_runner_,
+                                              task_runner_,
+                                              task_runner_)),
         operational_status_(STATUS_UNINITIALIZED),
         vea_factory_(task_runner_) {
-    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
+    testing_clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
     vea_factory_.SetAutoRespond(true);
     last_pixel_value_ = kPixelValue;
     transport_ = new TestPacketSender();
     transport_sender_.reset(new CastTransportImpl(
-        testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
+        &testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
         base::WrapUnique(transport_), task_runner_));
   }
 
@@ -205,24 +203,24 @@ class VideoSenderTest : public ::testing::Test {
 
   scoped_refptr<media::VideoFrame> GetNewVideoFrame() {
     if (first_frame_timestamp_.is_null())
-      first_frame_timestamp_ = testing_clock_->NowTicks();
+      first_frame_timestamp_ = testing_clock_.NowTicks();
     gfx::Size size(kWidth, kHeight);
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
             PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
-            testing_clock_->NowTicks() - first_frame_timestamp_);
+            testing_clock_.NowTicks() - first_frame_timestamp_);
     PopulateVideoFrame(video_frame.get(), last_pixel_value_++);
     return video_frame;
   }
 
   scoped_refptr<media::VideoFrame> GetLargeNewVideoFrame() {
     if (first_frame_timestamp_.is_null())
-      first_frame_timestamp_ = testing_clock_->NowTicks();
+      first_frame_timestamp_ = testing_clock_.NowTicks();
     gfx::Size size(kWidth, kHeight);
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
             PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
-            testing_clock_->NowTicks() - first_frame_timestamp_);
+            testing_clock_.NowTicks() - first_frame_timestamp_);
     PopulateVideoFrameWithNoise(video_frame.get());
     return video_frame;
   }
@@ -231,7 +229,7 @@ class VideoSenderTest : public ::testing::Test {
     task_runner_->Sleep(base::TimeDelta::FromMilliseconds(during_ms));
   }
 
-  base::SimpleTestTickClock* const testing_clock_;  // Owned by CastEnvironment.
+  base::SimpleTestTickClock testing_clock_;
   const scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   const scoped_refptr<CastEnvironment> cast_environment_;
   OperationalStatus operational_status_;
@@ -252,7 +250,7 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  const base::TimeTicks reference_time = testing_clock_->NowTicks();
+  const base::TimeTicks reference_time = testing_clock_.NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
   task_runner_->RunTasks();
@@ -270,7 +268,7 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
   // underlying ExternalVideoEncoder instance.
   if (vea_factory_.vea_response_count() == 0) {
     video_sender_->InsertRawVideoFrame(GetNewVideoFrame(),
-                                       testing_clock_->NowTicks());
+                                       testing_clock_.NowTicks());
     task_runner_->RunTasks();
   }
   ASSERT_EQ(STATUS_INITIALIZED, operational_status_);
@@ -284,7 +282,7 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
   for (int i = 0; i < 3; ++i) {
-    const base::TimeTicks reference_time = testing_clock_->NowTicks();
+    const base::TimeTicks reference_time = testing_clock_.NowTicks();
     video_sender_->InsertRawVideoFrame(video_frame, reference_time);
     RunTasks(33);
     // VideoSender re-created the encoder for the 320x240 frames we're
@@ -308,7 +306,7 @@ TEST_F(VideoSenderTest, ExternalEncoderInitFails) {
   if (operational_status_ == STATUS_INITIALIZED ||
       operational_status_ == STATUS_CODEC_REINIT_PENDING) {
     video_sender_->InsertRawVideoFrame(GetNewVideoFrame(),
-                                       testing_clock_->NowTicks());
+                                       testing_clock_.NowTicks());
     task_runner_->RunTasks();
   }
   EXPECT_EQ(STATUS_CODEC_INIT_FAILED, operational_status_);
@@ -323,7 +321,7 @@ TEST_F(VideoSenderTest, RtcpTimer) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  const base::TimeTicks reference_time = testing_clock_->NowTicks();
+  const base::TimeTicks reference_time = testing_clock_.NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
   // Make sure that we send at least one RTCP packet.
@@ -348,7 +346,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  const base::TimeTicks reference_time = testing_clock_->NowTicks();
+  const base::TimeTicks reference_time = testing_clock_.NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
   // ACK the key frame.
@@ -381,7 +379,7 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   for (int i = 0; i < num_frames; i++) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-    const base::TimeTicks reference_time = testing_clock_->NowTicks();
+    const base::TimeTicks reference_time = testing_clock_.NowTicks();
     video_sender_->InsertRawVideoFrame(video_frame, reference_time);
     RunTasks(33);
   }
@@ -411,13 +409,13 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   // Send a stream of frames and don't ACK; by default we shouldn't have more
   // than 4 frames in flight.
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
   RunTasks(33);
 
   // Send 3 more frames and record the number of packets sent.
   for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
   const int number_of_packets_sent = transport_->number_of_rtp_packets();
@@ -426,7 +424,7 @@ TEST_F(VideoSenderTest, StopSendingInTheAbsenceOfAck) {
   // any acks.
   for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
 
@@ -454,7 +452,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
   ASSERT_EQ(STATUS_INITIALIZED, operational_status_);
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
   RunTasks(33);
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
@@ -463,7 +461,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmit) {
   // Send 3 more frames but don't ACK.
   for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
   const int number_of_packets_sent = transport_->number_of_rtp_packets();
@@ -497,7 +495,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
   ASSERT_EQ(STATUS_INITIALIZED, operational_status_);
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
   RunTasks(33);
   RtcpCastMessage cast_feedback(1);
   cast_feedback.remote_ssrc = 2;
@@ -506,7 +504,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
   // Send 2 more frames but don't ACK.
   for (int i = 0; i < 2; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
   // Pause the transport
@@ -514,7 +512,7 @@ TEST_F(VideoSenderTest, DuplicateAckRetransmitDoesNotCancelRetransmits) {
 
   // Insert one more video frame.
   video_frame = GetLargeNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
   RunTasks(33);
 
   const int number_of_packets_sent = transport_->number_of_rtp_packets();
@@ -552,7 +550,7 @@ TEST_F(VideoSenderTest, AcksCancelRetransmits) {
 
   transport_->SetPause(true);
   scoped_refptr<media::VideoFrame> video_frame = GetLargeNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
   RunTasks(33);
 
   // Frame should be in buffer, waiting. Now let's ack it.
@@ -582,7 +580,7 @@ TEST_F(VideoSenderTest, PopulatesResourceUtilizationInFrameMetadata) {
     ASSERT_FALSE(video_frame->metadata()->HasKey(
         media::VideoFrameMetadata::RESOURCE_UTILIZATION));
 
-    const base::TimeTicks reference_time = testing_clock_->NowTicks();
+    const base::TimeTicks reference_time = testing_clock_.NowTicks();
     video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
     // Run encode tasks.  VideoSender::OnEncodedVideoFrame() will be called once
@@ -609,7 +607,7 @@ TEST_F(VideoSenderTest, CancelSendingOnReceivingPli) {
 
   // Send a frame and ACK it.
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+  video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
   RunTasks(33);
 
   RtcpCastMessage cast_feedback(1);
@@ -621,7 +619,7 @@ TEST_F(VideoSenderTest, CancelSendingOnReceivingPli) {
   // Send three more frames.
   for (int i = 0; i < 3; i++) {
     video_frame = GetNewVideoFrame();
-    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_->NowTicks());
+    video_sender_->InsertRawVideoFrame(video_frame, testing_clock_.NowTicks());
     RunTasks(33);
   }
   EXPECT_EQ(1, transport_->number_of_rtp_packets());
@@ -632,7 +630,7 @@ TEST_F(VideoSenderTest, CancelSendingOnReceivingPli) {
   video_frame = GetNewVideoFrame();
   video_sender_->InsertRawVideoFrame(
       video_frame,
-      testing_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(1000));
+      testing_clock_.NowTicks() + base::TimeDelta::FromMilliseconds(1000));
   RunTasks(33);
   transport_->SetPause(false);
   RunTasks(33);

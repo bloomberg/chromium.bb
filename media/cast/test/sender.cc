@@ -239,9 +239,8 @@ int main(int argc, char** argv) {
   // Running transport on the main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::CastEnvironment(
-          base::WrapUnique<base::TickClock>(new base::DefaultTickClock()),
-          io_message_loop.task_runner(), audio_thread.task_runner(),
-          video_thread.task_runner()));
+          base::DefaultTickClock::GetInstance(), io_message_loop.task_runner(),
+          audio_thread.task_runner(), video_thread.task_runner()));
 
   // SendProcess initialization.
   std::unique_ptr<media::cast::FakeMediaSource> fake_media_source(

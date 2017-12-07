@@ -545,13 +545,13 @@ TEST_F(WebMediaPlayerImplTest, IdleSuspendBeforeLoadingBegins) {
 TEST_F(WebMediaPlayerImplTest,
        IdleSuspendIsDisabledIfLoadingProgressedRecently) {
   InitializeWebMediaPlayerImpl();
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->Advance(base::TimeDelta::FromSeconds(1));
-  SetTickClock(clock);
+  base::SimpleTestTickClock clock;
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+  SetTickClock(&clock);
   AddBufferedRanges();
   wmpi_->DidLoadingProgress();
   // Advance less than the loading timeout.
-  clock->Advance(base::TimeDelta::FromSeconds(1));
+  clock.Advance(base::TimeDelta::FromSeconds(1));
   EXPECT_FALSE(delegate_.ExpireForTesting());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsSuspended());
@@ -560,13 +560,13 @@ TEST_F(WebMediaPlayerImplTest,
 TEST_F(WebMediaPlayerImplTest, IdleSuspendIsEnabledIfLoadingHasStalled) {
   InitializeWebMediaPlayerImpl();
   SetNetworkState(blink::WebMediaPlayer::kNetworkStateLoading);
-  base::SimpleTestTickClock* clock = new base::SimpleTestTickClock();
-  clock->Advance(base::TimeDelta::FromSeconds(1));
-  SetTickClock(clock);
+  base::SimpleTestTickClock clock;
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+  SetTickClock(&clock);
   AddBufferedRanges();
   wmpi_->DidLoadingProgress();
   // Advance more than the loading timeout.
-  clock->Advance(base::TimeDelta::FromSeconds(4));
+  clock.Advance(base::TimeDelta::FromSeconds(4));
   EXPECT_TRUE(delegate_.ExpireForTesting());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsSuspended());

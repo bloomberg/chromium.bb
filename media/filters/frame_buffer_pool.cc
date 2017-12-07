@@ -27,7 +27,8 @@ struct FrameBufferPool::FrameBuffer {
   base::TimeTicks last_use_time;
 };
 
-FrameBufferPool::FrameBufferPool() : tick_clock_(&default_tick_clock_) {
+FrameBufferPool::FrameBufferPool()
+    : tick_clock_(base::DefaultTickClock::GetInstance()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

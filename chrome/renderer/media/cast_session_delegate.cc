@@ -68,11 +68,11 @@ void CastSessionDelegateBase::StartUDP(
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // TODO(hubbe): Create cast environment in ctor instead.
-  cast_environment_ = new CastEnvironment(
-      std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
-      base::ThreadTaskRunnerHandle::Get(),
-      g_cast_threads.Get().GetAudioEncodeTaskRunner(),
-      g_cast_threads.Get().GetVideoEncodeTaskRunner());
+  cast_environment_ =
+      new CastEnvironment(base::DefaultTickClock::GetInstance(),
+                          base::ThreadTaskRunnerHandle::Get(),
+                          g_cast_threads.Get().GetAudioEncodeTaskRunner(),
+                          g_cast_threads.Get().GetVideoEncodeTaskRunner());
 
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportIPC, and they both share the same thread.

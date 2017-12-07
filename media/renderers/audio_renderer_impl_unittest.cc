@@ -117,7 +117,6 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
                          SampleFormatToBytesPerChannel(kSampleFormat) * 8,
                          512),
         sink_(new FakeAudioRendererSink(hardware_params_)),
-        tick_clock_(new base::SimpleTestTickClock()),
         demuxer_stream_(DemuxerStream::AUDIO),
         expected_init_result_(true),
         enter_pending_decoder_init_(false),
@@ -139,8 +138,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         base::Bind(&AudioRendererImplTest::CreateAudioDecoderForTest,
                    base::Unretained(this)),
         &media_log_));
-    renderer_->tick_clock_.reset(tick_clock_);
-    tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
+    renderer_->tick_clock_ = &tick_clock_;
+    tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
   }
 
   virtual ~AudioRendererImplTest() {
@@ -519,7 +518,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   MediaLog media_log_;
   std::unique_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
-  base::SimpleTestTickClock* tick_clock_;
+  base::SimpleTestTickClock tick_clock_;
   PipelineStatistics last_statistics_;
 
   MockDemuxerStream demuxer_stream_;
@@ -904,7 +903,7 @@ TEST_F(AudioRendererImplTest, CurrentMediaTimeBehavior) {
 
   // Render() has not be called yet, thus no data has been consumed, so
   // advancing tick clock must not change the media time.
-  tick_clock_->Advance(kConsumptionDuration);
+  tick_clock_.Advance(kConsumptionDuration);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 
   // Consume some audio data.
@@ -916,7 +915,7 @@ TEST_F(AudioRendererImplTest, CurrentMediaTimeBehavior) {
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 
   // Advancing the tick clock now should result in an estimated media time.
-  tick_clock_->Advance(kConsumptionDuration);
+  tick_clock_.Advance(kConsumptionDuration);
   EXPECT_EQ(timestamp_helper.GetTimestamp() + kConsumptionDuration,
             CurrentMediaTime());
 
@@ -930,7 +929,7 @@ TEST_F(AudioRendererImplTest, CurrentMediaTimeBehavior) {
   // Advance current time well past all played audio to simulate an irregular or
   // delayed OS callback. The value should be clamped to whats been rendered.
   timestamp_helper.AddFrames(frames_to_consume.value);
-  tick_clock_->Advance(kConsumptionDuration * 2);
+  tick_clock_.Advance(kConsumptionDuration * 2);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 
   // Consume some more audio data.
@@ -939,7 +938,7 @@ TEST_F(AudioRendererImplTest, CurrentMediaTimeBehavior) {
   // Stop ticking, the media time should be clamped to what's been rendered.
   StopTicking();
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
-  tick_clock_->Advance(kConsumptionDuration * 2);
+  tick_clock_.Advance(kConsumptionDuration * 2);
   timestamp_helper.AddFrames(frames_to_consume.value);
   EXPECT_EQ(timestamp_helper.GetTimestamp(), CurrentMediaTime());
 }
@@ -1115,29 +1114,29 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
 
   // Time shouldn't change just yet because we've only sent the initial audio
   // data to the hardware.
-  EXPECT_EQ(tick_clock_->NowTicks(),
+  EXPECT_EQ(tick_clock_.NowTicks(),
             ConvertMediaTime(base::TimeDelta(), &is_time_moving));
   EXPECT_TRUE(is_time_moving);
 
   // A system suspend should freeze the time state and resume restart it.
   renderer_->OnSuspend();
-  EXPECT_EQ(tick_clock_->NowTicks(),
+  EXPECT_EQ(tick_clock_.NowTicks(),
             ConvertMediaTime(base::TimeDelta(), &is_time_moving));
   EXPECT_FALSE(is_time_moving);
   renderer_->OnResume();
-  EXPECT_EQ(tick_clock_->NowTicks(),
+  EXPECT_EQ(tick_clock_.NowTicks(),
             ConvertMediaTime(base::TimeDelta(), &is_time_moving));
   EXPECT_TRUE(is_time_moving);
 
   // Consume some more audio data.
   frames_to_consume = frames_buffered();
-  tick_clock_->Advance(
+  tick_clock_.Advance(
       base::TimeDelta::FromSecondsD(1.0 / kOutputSamplesPerSecond));
   EXPECT_TRUE(ConsumeBufferedData(frames_to_consume));
 
   // Time should change now that the audio hardware has called back.
   const base::TimeTicks wall_clock_time_zero =
-      tick_clock_->NowTicks() -
+      tick_clock_.NowTicks() -
       timestamp_helper.GetFrameDuration(frames_to_consume.value);
   EXPECT_EQ(wall_clock_time_zero,
             ConvertMediaTime(base::TimeDelta(), &is_time_moving));
@@ -1154,8 +1153,8 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
       timestamp_helper.GetFrameDuration(frames_to_consume.value) / kSteps;
 
   for (int i = 0; i < kSteps; ++i) {
-    tick_clock_->Advance(kAdvanceDelta);
-    EXPECT_EQ(tick_clock_->NowTicks(),
+    tick_clock_.Advance(kAdvanceDelta);
+    EXPECT_EQ(tick_clock_.NowTicks(),
               CurrentMediaWallClockTime(&is_time_moving));
     EXPECT_TRUE(is_time_moving);
   }
@@ -1168,8 +1167,8 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
   // Advancing once more will exceed the amount of played out frames finally.
   const base::TimeDelta kOneSample =
       base::TimeDelta::FromSecondsD(1.0 / kOutputSamplesPerSecond);
-  base::TimeTicks current_time = tick_clock_->NowTicks();
-  tick_clock_->Advance(kOneSample);
+  base::TimeTicks current_time = tick_clock_.NowTicks();
+  tick_clock_.Advance(kOneSample);
   EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
   EXPECT_TRUE(is_time_moving);
 
@@ -1178,7 +1177,7 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
 
   // Elapse a lot of time between StopTicking() and the next Render() call.
   const base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
-  tick_clock_->Advance(kOneSecond);
+  tick_clock_.Advance(kOneSecond);
   StartTicking();
 
   // Time should be stopped until the next render call.
@@ -1194,14 +1193,14 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
   EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, delay_time));
 
   // Verify time is adjusted for the current delay.
-  current_time = tick_clock_->NowTicks() + delay_time;
+  current_time = tick_clock_.NowTicks() + delay_time;
   EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
   EXPECT_TRUE(is_time_moving);
   EXPECT_EQ(current_time,
             ConvertMediaTime(renderer_->CurrentMediaTime(), &is_time_moving));
   EXPECT_TRUE(is_time_moving);
 
-  tick_clock_->Advance(kOneSample);
+  tick_clock_.Advance(kOneSample);
   renderer_->SetPlaybackRate(2);
   EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
   EXPECT_TRUE(is_time_moving);
@@ -1211,7 +1210,7 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
 
   // Advance far enough that we shouldn't be clamped to current time (tested
   // already above).
-  tick_clock_->Advance(kOneSecond);
+  tick_clock_.Advance(kOneSecond);
   EXPECT_EQ(
       current_time + timestamp_helper.GetFrameDuration(frames_to_consume.value),
       CurrentMediaWallClockTime(&is_time_moving));

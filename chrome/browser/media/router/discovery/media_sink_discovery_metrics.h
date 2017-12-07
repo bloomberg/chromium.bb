@@ -47,7 +47,7 @@ class DeviceCountMetrics {
                                   size_t known_device_count);
 
   // Allows tests to swap in a fake clock.
-  void SetClockForTest(std::unique_ptr<base::Clock> clock);
+  void SetClockForTest(base::Clock* clock);
 
  protected:
   // Record device counts.
@@ -57,7 +57,7 @@ class DeviceCountMetrics {
  private:
   base::Time device_count_metrics_record_time_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 };
 
 // Metrics for DIAL device counts.

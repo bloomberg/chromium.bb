@@ -358,10 +358,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
   net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
   net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
 
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  base::SimpleTestClock clock;
   base::Time start_time = base::Time::Now();
-  clock->SetNow(start_time);
-  media_sink_service_impl_.SetClockForTest(base::WrapUnique(clock));
+  clock.SetNow(start_time);
+  media_sink_service_impl_.SetClockForTest(&clock);
 
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint1, _, _));
@@ -379,7 +379,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
   socket2.SetErrorState(cast_channel::ChannelError::NONE);
 
   base::TimeDelta delta = base::TimeDelta::FromSeconds(2);
-  clock->Advance(delta);
+  clock.Advance(delta);
   base::HistogramTester tester;
 
   media_sink_service_impl_.OnChannelOpened(

@@ -46,7 +46,7 @@ DialRegistry::DialRegistry()
       refresh_interval_delta_(TimeDelta::FromSeconds(kDialRefreshIntervalSecs)),
       expiration_delta_(TimeDelta::FromSeconds(kDialExpirationSecs)),
       max_devices_(kDialMaxDevices),
-      clock_(new base::DefaultClock()) {
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(max_devices_, 0U);
   // This is a leaky singleton, so there's no code to remove |this| as an
@@ -126,8 +126,8 @@ void DialRegistry::AddDeviceForTest(const DialDeviceData& device_data) {
       std::make_pair(device_data.device_id(), std::move(test_data)));
 }
 
-void DialRegistry::SetClockForTest(std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void DialRegistry::SetClockForTest(base::Clock* clock) {
+  clock_ = clock;
 }
 
 bool DialRegistry::ReadyToDiscover() {

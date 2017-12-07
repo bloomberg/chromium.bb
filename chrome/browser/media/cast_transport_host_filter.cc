@@ -184,7 +184,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
   udp_transport->SetUdpOptions(options);
   std::unique_ptr<media::cast::CastTransport> transport =
       media::cast::CastTransport::Create(
-          &clock_, kSendEventsInterval,
+          base::DefaultTickClock::GetInstance(), kSendEventsInterval,
           base::MakeUnique<TransportClient>(channel_id, this),
           std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
   transport->SetOptions(options);

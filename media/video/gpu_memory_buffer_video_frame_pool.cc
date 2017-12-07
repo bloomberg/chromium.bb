@@ -53,7 +53,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
         worker_task_runner_(worker_task_runner),
         gpu_factories_(gpu_factories),
         output_format_(GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED),
-        tick_clock_(&default_tick_clock_),
+        tick_clock_(base::DefaultTickClock::GetInstance()),
         in_shutdown_(false) {
     DCHECK(media_task_runner_);
     DCHECK(worker_task_runner_);
@@ -176,8 +176,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
   GpuVideoAcceleratorFactories::OutputFormat output_format_;
 
-  // |tick_clock_| is always &|default_tick_clock_| outside of testing.
-  base::DefaultTickClock default_tick_clock_;
+  // |tick_clock_| is always a DefaultTickClock outside of testing.
   base::TickClock* tick_clock_;
 
   bool in_shutdown_;

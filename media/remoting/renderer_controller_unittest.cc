@@ -110,9 +110,8 @@ class RendererControllerTest : public ::testing::Test,
     EXPECT_FALSE(is_rendering_remotely_);
     EXPECT_TRUE(sink_name_.empty());
     controller_ = base::MakeUnique<RendererController>(shared_session);
-    clock_ = new base::SimpleTestTickClock();
-    controller_->clock_.reset(clock_);
-    clock_->Advance(base::TimeDelta::FromSeconds(1));
+    controller_->clock_ = &clock_;
+    clock_.Advance(base::TimeDelta::FromSeconds(1));
     controller_->SetClient(this);
     RunUntilIdle();
     EXPECT_FALSE(is_rendering_remotely_);
@@ -145,7 +144,7 @@ class RendererControllerTest : public ::testing::Test,
   void DelayedStartEnds(double frame_rate = 30) {
     EXPECT_TRUE(IsInDelayedStart());
     decoded_frames_ = frame_rate * kDelayedStartDuration.InSeconds();
-    clock_->Advance(kDelayedStartDuration);
+    clock_.Advance(kDelayedStartDuration);
     RunUntilIdle();
     const base::Closure callback =
         controller_->delayed_start_stability_timer_.user_task();
@@ -185,7 +184,7 @@ class RendererControllerTest : public ::testing::Test,
   bool disable_pipeline_suspend_ = false;
   size_t decoded_bytes_ = 0;
   unsigned decoded_frames_ = 0;
-  base::SimpleTestTickClock* clock_;  // Own by |controller_|;
+  base::SimpleTestTickClock clock_;
   std::string sink_name_;
   std::unique_ptr<RendererController> controller_;
   double duration_in_sec_ = 120;  // 2m duration.

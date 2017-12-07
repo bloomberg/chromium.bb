@@ -41,7 +41,7 @@ constexpr double kMinRemotingMediaDurationInSec = 60;
 
 RendererController::RendererController(scoped_refptr<SharedSession> session)
     : session_(std::move(session)),
-      clock_(new base::DefaultTickClock()),
+      clock_(base::DefaultTickClock::GetInstance()),
       weak_factory_(this) {
   session_->AddClient(this);
 }

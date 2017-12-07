@@ -198,7 +198,7 @@ class RendererController final : public SharedSession::Client,
   // remote the content while this timer is running.
   base::OneShotTimer delayed_start_stability_timer_;
 
-  std::unique_ptr<base::TickClock> clock_;
+  base::TickClock* clock_;
 
   base::WeakPtrFactory<RendererController> weak_factory_;
 

@@ -175,8 +175,8 @@ MediaEngagementContentsObserver::GetPlayerState(const MediaPlayerId& id) {
   if (state != player_states_.end())
     return state->second;
 
-  auto iter = player_states_.insert(
-      std::make_pair(id, PlayerState(service_->clock_.get())));
+  auto iter =
+      player_states_.insert(std::make_pair(id, PlayerState(service_->clock_)));
   return iter.first->second;
 }
 

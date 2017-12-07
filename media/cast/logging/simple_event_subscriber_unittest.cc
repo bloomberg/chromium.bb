@@ -21,13 +21,11 @@ namespace cast {
 class SimpleEventSubscriberTest : public ::testing::Test {
  protected:
   SimpleEventSubscriberTest()
-      : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new FakeSingleThreadTaskRunner(testing_clock_)),
-        cast_environment_(new CastEnvironment(
-            std::unique_ptr<base::TickClock>(testing_clock_),
-            task_runner_,
-            task_runner_,
-            task_runner_)) {
+      : task_runner_(new FakeSingleThreadTaskRunner(&testing_clock_)),
+        cast_environment_(new CastEnvironment(&testing_clock_,
+                                              task_runner_,
+                                              task_runner_,
+                                              task_runner_)) {
     cast_environment_->logger()->Subscribe(&event_subscriber_);
   }
 
@@ -35,7 +33,7 @@ class SimpleEventSubscriberTest : public ::testing::Test {
     cast_environment_->logger()->Unsubscribe(&event_subscriber_);
   }
 
-  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  base::SimpleTestTickClock testing_clock_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   SimpleEventSubscriber event_subscriber_;
@@ -44,7 +42,7 @@ class SimpleEventSubscriberTest : public ::testing::Test {
 TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   // Log some frame events.
   std::unique_ptr<FrameEvent> encode_event(new FrameEvent());
-  encode_event->timestamp = testing_clock_->NowTicks();
+  encode_event->timestamp = testing_clock_.NowTicks();
   encode_event->type = FRAME_ENCODED;
   encode_event->media_type = AUDIO_EVENT;
   encode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
@@ -57,7 +55,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   cast_environment_->logger()->DispatchFrameEvent(std::move(encode_event));
 
   std::unique_ptr<FrameEvent> playout_event(new FrameEvent());
-  playout_event->timestamp = testing_clock_->NowTicks();
+  playout_event->timestamp = testing_clock_.NowTicks();
   playout_event->type = FRAME_PLAYOUT;
   playout_event->media_type = AUDIO_EVENT;
   playout_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(100));
@@ -66,7 +64,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   cast_environment_->logger()->DispatchFrameEvent(std::move(playout_event));
 
   std::unique_ptr<FrameEvent> decode_event(new FrameEvent());
-  decode_event->timestamp = testing_clock_->NowTicks();
+  decode_event->timestamp = testing_clock_.NowTicks();
   decode_event->type = FRAME_DECODED;
   decode_event->media_type = AUDIO_EVENT;
   decode_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
@@ -75,7 +73,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
 
   // Log some packet events.
   std::unique_ptr<PacketEvent> receive_event(new PacketEvent());
-  receive_event->timestamp = testing_clock_->NowTicks();
+  receive_event->timestamp = testing_clock_.NowTicks();
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = AUDIO_EVENT;
   receive_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));
@@ -86,7 +84,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   cast_environment_->logger()->DispatchPacketEvent(std::move(receive_event));
 
   receive_event.reset(new PacketEvent());
-  receive_event->timestamp = testing_clock_->NowTicks();
+  receive_event->timestamp = testing_clock_.NowTicks();
   receive_event->type = PACKET_RECEIVED;
   receive_event->media_type = VIDEO_EVENT;
   receive_event->rtp_timestamp = RtpTimeTicks().Expand(UINT32_C(200));

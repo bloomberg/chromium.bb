@@ -113,12 +113,11 @@ void MediaEngagementService::RegisterProfilePrefs(
 }
 
 MediaEngagementService::MediaEngagementService(Profile* profile)
-    : MediaEngagementService(profile, base::MakeUnique<base::DefaultClock>()) {}
+    : MediaEngagementService(profile, base::DefaultClock::GetInstance()) {}
 
-MediaEngagementService::MediaEngagementService(
-    Profile* profile,
-    std::unique_ptr<base::Clock> clock)
-    : profile_(profile), clock_(std::move(clock)) {
+MediaEngagementService::MediaEngagementService(Profile* profile,
+                                               base::Clock* clock)
+    : profile_(profile), clock_(clock) {
   DCHECK(IsEnabled());
 
   // May be null in tests.
@@ -283,8 +282,7 @@ MediaEngagementScore MediaEngagementService::CreateEngagementScore(
   // the original profile migrated in, so all engagement scores in incognito
   // will be initialised to the values from the original profile.
   return MediaEngagementScore(
-      clock_.get(), url,
-      HostContentSettingsMapFactory::GetForProfile(profile_));
+      clock_, url, HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 MediaEngagementContentsObserver* MediaEngagementService::GetContentsObserverFor(

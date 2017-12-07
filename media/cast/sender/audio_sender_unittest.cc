@@ -95,12 +95,10 @@ class AudioSenderTest : public ::testing::Test {
  protected:
   AudioSenderTest() {
     InitializeMediaLibrary();
-    testing_clock_ = new base::SimpleTestTickClock();
-    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
-    task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
-    cast_environment_ =
-        new CastEnvironment(std::unique_ptr<base::TickClock>(testing_clock_),
-                            task_runner_, task_runner_, task_runner_);
+    testing_clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
+    task_runner_ = new FakeSingleThreadTaskRunner(&testing_clock_);
+    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+                                            task_runner_, task_runner_);
     audio_config_.codec = CODEC_AUDIO_OPUS;
     audio_config_.use_external_encoder = false;
     audio_config_.rtp_timebase = kDefaultAudioSamplingRate;
@@ -110,7 +108,7 @@ class AudioSenderTest : public ::testing::Test {
 
     transport_ = new TestPacketSender();
     transport_sender_.reset(new CastTransportImpl(
-        testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
+        &testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
         base::WrapUnique(transport_), task_runner_));
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(
@@ -124,7 +122,7 @@ class AudioSenderTest : public ::testing::Test {
 
   ~AudioSenderTest() override = default;
 
-  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  base::SimpleTestTickClock testing_clock_;
   TestPacketSender* transport_;               // Owned by CastTransport.
   std::unique_ptr<CastTransportImpl> transport_sender_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
@@ -140,7 +138,7 @@ TEST_F(AudioSenderTest, Encode20ms) {
                           TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
           .NextAudioBus(kDuration));
 
-  audio_sender_->InsertAudio(std::move(bus), testing_clock_->NowTicks());
+  audio_sender_->InsertAudio(std::move(bus), testing_clock_.NowTicks());
   task_runner_->RunTasks();
   EXPECT_LE(1, transport_->number_of_rtp_packets());
   EXPECT_LE(1, transport_->number_of_rtcp_packets());
@@ -153,13 +151,13 @@ TEST_F(AudioSenderTest, RtcpTimer) {
                           TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
           .NextAudioBus(kDuration));
 
-  audio_sender_->InsertAudio(std::move(bus), testing_clock_->NowTicks());
+  audio_sender_->InsertAudio(std::move(bus), testing_clock_.NowTicks());
   task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =
       base::TimeDelta::FromMilliseconds(1 + kRtcpReportIntervalMs * 3 / 2);
-  testing_clock_->Advance(max_rtcp_timeout);
+  testing_clock_.Advance(max_rtcp_timeout);
   task_runner_->RunTasks();
   EXPECT_LE(1, transport_->number_of_rtp_packets());
   EXPECT_LE(1, transport_->number_of_rtcp_packets());

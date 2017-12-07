@@ -16,14 +16,14 @@ namespace media {
 namespace cast {
 
 CastEnvironment::CastEnvironment(
-    std::unique_ptr<base::TickClock> clock,
+    base::TickClock* clock,
     scoped_refptr<SingleThreadTaskRunner> main_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> audio_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> video_thread_proxy)
     : main_thread_proxy_(main_thread_proxy),
       audio_thread_proxy_(audio_thread_proxy),
       video_thread_proxy_(video_thread_proxy),
-      clock_(std::move(clock)),
+      clock_(clock),
       logger_(this) {}
 
 CastEnvironment::~CastEnvironment() = default;

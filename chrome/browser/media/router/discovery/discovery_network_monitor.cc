@@ -96,7 +96,7 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(base::MayBlock())),
       network_info_function_(strategy),
       metric_observer_(base::MakeUnique<DiscoveryNetworkMonitorMetricObserver>(
-          base::MakeUnique<base::DefaultTickClock>(),
+          base::DefaultTickClock::GetInstance(),
           base::MakeUnique<DiscoveryNetworkMonitorMetrics>())) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   AddObserver(metric_observer_.get());

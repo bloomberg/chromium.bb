@@ -94,14 +94,13 @@ class MediaEngagementSessionTest : public testing::Test {
   }
 
   MediaEngagementSessionTest()
-      : origin_(url::Origin::Create(GURL("https://example.com"))),
-        test_clock_(new base::SimpleTestClock()) {}
+      : origin_(url::Origin::Create(GURL("https://example.com"))) {}
 
   ~MediaEngagementSessionTest() override = default;
 
   void SetUp() override {
-    service_ = base::WrapUnique(
-        new MediaEngagementService(&profile_, base::WrapUnique(test_clock_)));
+    service_ =
+        base::WrapUnique(new MediaEngagementService(&profile_, &test_clock_));
   }
 
   MediaEngagementService* service() const { return service_.get(); }
@@ -112,12 +111,11 @@ class MediaEngagementSessionTest : public testing::Test {
     return test_ukm_recorder_;
   }
 
-  base::SimpleTestClock* test_clock() { return test_clock_; }
+  base::SimpleTestClock* test_clock() { return &test_clock_; }
 
  private:
   const url::Origin origin_;
-  // Owned by |service_| but keeping a reference to it to manipulate.
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
 
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;

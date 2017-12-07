@@ -58,14 +58,14 @@ class VideoFramePool::PoolImpl
 
   base::circular_deque<FrameEntry> frames_;
 
-  // |tick_clock_| is always &|default_tick_clock_| outside of testing.
-  base::DefaultTickClock default_tick_clock_;
+  // |tick_clock_| is always a DefaultTickClock outside of testing.
   base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
 
-VideoFramePool::PoolImpl::PoolImpl() : tick_clock_(&default_tick_clock_) {}
+VideoFramePool::PoolImpl::PoolImpl()
+    : tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 VideoFramePool::PoolImpl::~PoolImpl() {
   DCHECK(is_shutdown_);
