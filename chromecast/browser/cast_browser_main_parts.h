@@ -42,6 +42,12 @@ class URLRequestContextFactory;
 
 class CastBrowserMainParts : public content::BrowserMainParts {
  public:
+  // Creates an implementation of CastBrowserMainParts. Platform should
+  // link in an implementation as needed.
+  static std::unique_ptr<CastBrowserMainParts> Create(
+      const content::MainFunctionParams& parameters,
+      URLRequestContextFactory* url_request_context_factory);
+
   // This class does not take ownership of |url_request_content_factory|.
   CastBrowserMainParts(const content::MainFunctionParams& parameters,
                        URLRequestContextFactory* url_request_context_factory);
