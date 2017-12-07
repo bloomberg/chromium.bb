@@ -3670,7 +3670,6 @@ crbug.com/783229 external/wpt/cookie-store/one_simple_origin_cookie_static.tenta
 
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
-crbug.com/785662 [ Debug ] http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
 
 # Flaky DevTools
 crbug.com/667560 http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
