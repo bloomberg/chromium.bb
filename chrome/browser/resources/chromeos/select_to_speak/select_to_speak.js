@@ -714,6 +714,9 @@ SelectToSpeak.prototype = {
                 }
                 if (prefs['highlightColor']) {
                   this.highlightColor_ = prefs['highlightColor'];
+                } else {
+                  chrome.storage.sync.set(
+                      {'highlightColor': this.highlightColor_});
                 }
               }).bind(this));
         }).bind(this);
