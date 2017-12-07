@@ -268,8 +268,9 @@ class ThreadPoolTest(unittest.TestCase):
       actual = pool.join()
     self.assertEqual(['a', 'c', 'b'], actual)
 
+  # Disabled due to https://crbug.com/778055
   @timeout(30)
-  def test_abort(self):
+  def disabled_test_abort(self):
     # Trigger a ridiculous amount of tasks, and abort the remaining.
     completed = False
     results = []
