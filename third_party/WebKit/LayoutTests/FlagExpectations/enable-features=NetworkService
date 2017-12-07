@@ -232,3 +232,9 @@ crbug.com/721408 http/tests/inspector-protocol/network/navigation-xfer-size.js [
 
 # Started flaking after test was rewritten in r517585.
 Bug(none) http/tests/devtools/service-workers/service-worker-agents.js [ Crash Pass ]
+
+crbug.com/777879 external/wpt/FileAPI/file/send-file-form-iso-2022-jp.tentative.html [ Crash ]
+crbug.com/777879 external/wpt/FileAPI/file/send-file-form-utf-8.html [ Crash ]
+crbug.com/777879 external/wpt/FileAPI/file/send-file-form-windows-1252.tentative.html [ Crash ]
+crbug.com/777879 external/wpt/FileAPI/file/send-file-form-x-user-defined.tentative.html [ Crash ]
+crbug.com/777879 external/wpt/FileAPI/file/send-file-form.html [ Crash ]
