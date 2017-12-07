@@ -32,7 +32,7 @@ class ChromeKeySystemsProvider {
   // less fragile (don't assume AddSupportedKeySystems has just one caller).
   bool IsKeySystemsUpdateNeeded();
 
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
   void SetProviderDelegateForTesting(
       const KeySystemsProviderDelegate& test_provider);
@@ -49,7 +49,7 @@ class ChromeKeySystemsProvider {
   // Throttle how often we signal an update is needed to avoid unnecessary high
   // frequency of expensive IPC calls.
   base::TimeTicks last_update_time_ticks_;
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Ensure all methods are called from the same (Main) thread.
   base::ThreadChecker thread_checker_;

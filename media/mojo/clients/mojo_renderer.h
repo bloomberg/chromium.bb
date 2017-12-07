@@ -158,7 +158,6 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
 
   // Lock used to serialize access for |time_interpolator_|.
   mutable base::Lock lock_;
-  base::DefaultTickClock media_clock_;
   media::TimeDeltaInterpolator media_time_interpolator_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRenderer);

@@ -88,9 +88,8 @@ class TestKeySystemsProviderDelegate {
 TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
   ChromeKeySystemsProvider key_systems_provider;
 
-  base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
-  key_systems_provider.SetTickClockForTesting(
-      std::unique_ptr<base::TickClock>(tick_clock));
+  base::SimpleTestTickClock tick_clock;
+  key_systems_provider.SetTickClockForTesting(&tick_clock);
 
   std::unique_ptr<TestKeySystemsProviderDelegate> provider_delegate(
       new TestKeySystemsProviderDelegate());
@@ -113,9 +112,9 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
 
   // This is timing related. The update interval for Widevine is 1000 ms.
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock->Advance(base::TimeDelta::FromMilliseconds(990));
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(990));
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock->Advance(base::TimeDelta::FromMilliseconds(10));
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(10));
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
   // Require update once enough time has passed for builds that install Widevine
@@ -139,9 +138,9 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
 
   // Update not needed now, nor later because Widevine has been described.
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
-  tick_clock->Advance(base::TimeDelta::FromMilliseconds(1000));
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(1000));
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
 #else
   // No update needed for builds that either don't offer Widevine or do so

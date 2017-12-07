@@ -104,26 +104,25 @@ media::cast::FrameReceiverConfig WithAesKeyAndIvSet(
 
 class SkewedCastEnvironment : public media::cast::StandaloneCastEnvironment {
  public:
-  explicit SkewedCastEnvironment(const base::TimeDelta& delta) :
-      StandaloneCastEnvironment() {
-    auto skewed_clock =
-        base::MakeUnique<media::cast::test::SkewedTickClock>(&default_clock_);
+  explicit SkewedCastEnvironment(const base::TimeDelta& delta)
+      : StandaloneCastEnvironment(),
+        skewed_clock_(base::DefaultTickClock::GetInstance()) {
     // If testing with a receiver clock that is ahead or behind the sender
     // clock, fake a clock that is offset and also ticks at a rate of 50 parts
     // per million faster or slower than the local sender's clock. This is the
     // worst-case scenario for skew in-the-wild.
     if (!delta.is_zero()) {
       const double skew = delta < base::TimeDelta() ? 0.999950 : 1.000050;
-      skewed_clock->SetSkew(skew, delta);
+      skewed_clock_.SetSkew(skew, delta);
     }
-    clock_ = std::move(skewed_clock);
+    clock_ = &skewed_clock_;
   }
 
  protected:
   ~SkewedCastEnvironment() override {}
 
  private:
-  base::DefaultTickClock default_clock_;
+  media::cast::test::SkewedTickClock skewed_clock_;
 };
 
 // We log one of these for each call to OnAudioFrame/OnVideoFrame.

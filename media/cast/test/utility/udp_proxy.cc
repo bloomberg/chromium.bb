@@ -761,9 +761,9 @@ class UDPProxyImpl : public UDPProxy {
     BuildPipe(&to_dest_pipe_, new PacketSender(this, &destination_));
     BuildPipe(&from_dest_pipe_, new PacketSender(this, &return_address_));
     to_dest_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
-                                  &tick_clock_);
+                                  base::DefaultTickClock::GetInstance());
     from_dest_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
-                                    &tick_clock_);
+                                    base::DefaultTickClock::GetInstance());
 
     VLOG(0) << "From:" << local_port_.ToString();
     if (!destination_is_mutable_)
@@ -844,7 +844,6 @@ class UDPProxyImpl : public UDPProxy {
   net::IPEndPoint return_address_;
   bool set_destination_next_;
 
-  base::DefaultTickClock tick_clock_;
   base::Thread proxy_thread_;
   std::unique_ptr<net::UDPServerSocket> socket_;
   std::unique_ptr<PacketPipe> to_dest_pipe_;

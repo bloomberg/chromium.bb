@@ -82,8 +82,8 @@ class DiscoveryNetworkMonitorMetricObserverTest : public ::testing::Test {
         start_ticks_(mock_clock_->NowTicks()),
         metrics_(base::MakeUnique<MockMetrics>()),
         mock_metrics_(metrics_.get()),
-        metric_observer_(task_runner_->GetMockTickClock(),
-                         std::move(metrics_)) {}
+        clock_(task_runner_->GetMockTickClock()),
+        metric_observer_(clock_.get(), std::move(metrics_)) {}
 
  protected:
   base::TimeDelta time_advance_ = base::TimeDelta::FromMilliseconds(10);
@@ -94,6 +94,11 @@ class DiscoveryNetworkMonitorMetricObserverTest : public ::testing::Test {
   const base::TimeTicks start_ticks_;
   std::unique_ptr<MockMetrics> metrics_;
   MockMetrics* mock_metrics_;
+
+  // TODO(tzik): Remove |clock_| after updating GetMockTickClock to own the
+  // instance.
+  std::unique_ptr<base::TickClock> clock_;
+
   DiscoveryNetworkMonitorMetricObserver metric_observer_;
 };
 

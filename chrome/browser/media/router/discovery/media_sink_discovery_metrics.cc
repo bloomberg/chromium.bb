@@ -15,7 +15,8 @@ const int kDeviceCountMetricThresholdMins = 60;
 
 namespace media_router {
 
-DeviceCountMetrics::DeviceCountMetrics() : clock_(new base::DefaultClock()) {}
+DeviceCountMetrics::DeviceCountMetrics()
+    : clock_(base::DefaultClock::GetInstance()) {}
 DeviceCountMetrics::~DeviceCountMetrics() = default;
 
 void DeviceCountMetrics::RecordDeviceCountsIfNeeded(
@@ -30,7 +31,7 @@ void DeviceCountMetrics::RecordDeviceCountsIfNeeded(
   device_count_metrics_record_time_ = now;
 }
 
-void DeviceCountMetrics::SetClockForTest(std::unique_ptr<base::Clock> clock) {
+void DeviceCountMetrics::SetClockForTest(base::Clock* clock) {
   clock_ = std::move(clock);
 }
 

@@ -29,8 +29,7 @@ class MediaEngagementContentsObserverTest
     : public ChromeRenderViewHostTestHarness {
  public:
   MediaEngagementContentsObserverTest()
-      : task_runner_(new base::TestMockTimeTaskRunner()),
-        test_clock_(new base::SimpleTestClock()) {}
+      : task_runner_(new base::TestMockTimeTaskRunner()) {}
 
   void SetUp() override {
     scoped_feature_list_.InitFromCommandLine("RecordMediaEngagementScores",
@@ -41,8 +40,8 @@ class MediaEngagementContentsObserverTest
     SetContents(content::WebContentsTester::CreateTestWebContents(
         browser_context(), nullptr));
 
-    service_ = base::WrapUnique(
-        new MediaEngagementService(profile(), base::WrapUnique(test_clock_)));
+    service_ =
+        base::WrapUnique(new MediaEngagementService(profile(), &test_clock_));
     contents_observer_ = CreateContentsObserverFor(web_contents());
 
     // Navigate to an initial URL to setup the |session|.
@@ -120,7 +119,7 @@ class MediaEngagementContentsObserverTest
   void SimulatePlaybackStoppedWithTime(int id,
                                        bool finished,
                                        base::TimeDelta elapsed) {
-    test_clock_->Advance(elapsed);
+    test_clock_.Advance(elapsed);
 
     content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
     content::WebContentsObserver::MediaPlayerId player_id =
@@ -367,10 +366,10 @@ class MediaEngagementContentsObserverTest
     EXPECT_EQ(expected_time, score.last_media_playback_time());
   }
 
-  base::Time Now() const { return test_clock_->Now(); }
+  base::Time Now() { return test_clock_.Now(); }
 
   void Advance15Minutes() {
-    test_clock_->Advance(base::TimeDelta::FromMinutes(15));
+    test_clock_.Advance(base::TimeDelta::FromMinutes(15));
   }
 
   ukm::TestAutoSetUkmRecorder& test_ukm_recorder() {
@@ -391,7 +390,7 @@ class MediaEngagementContentsObserverTest
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
-  base::SimpleTestClock* test_clock_;
+  base::SimpleTestClock test_clock_;
 
   const base::TimeDelta kMaxWaitingTime =
       MediaEngagementContentsObserver::kSignificantMediaPlaybackTime +

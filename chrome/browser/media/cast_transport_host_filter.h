@@ -101,9 +101,6 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
 
   base::IDMap<std::unique_ptr<media::cast::CastTransport>> id_map_;
 
-  // Clock used by Cast transport.
-  base::DefaultTickClock clock_;
-
   // While |id_map_| is non-empty, we use |wake_lock_| to request and
   // hold a wake lock. This prevents Chrome from being suspended while remoting
   // content. If any wake lock is held upon destruction, it's implicitly

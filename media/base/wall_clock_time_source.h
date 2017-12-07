@@ -37,9 +37,6 @@ class MEDIA_EXPORT WallClockTimeSource : public TimeSource {
   base::TimeDelta CurrentMediaTime_Locked();
 
   // Allow for an injectable tick clock for testing.
-  base::DefaultTickClock default_tick_clock_;
-
-  // If specified, used instead of |default_tick_clock_|.
   base::TickClock* tick_clock_;
 
   bool ticking_;

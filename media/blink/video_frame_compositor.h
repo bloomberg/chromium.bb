@@ -123,8 +123,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Must be called on the compositor thread.
   virtual void SetOnNewProcessedFrameCallback(const OnNewProcessedFrameCB& cb);
 
-  void set_tick_clock_for_testing(std::unique_ptr<base::TickClock> tick_clock) {
-    tick_clock_ = std::move(tick_clock);
+  void set_tick_clock_for_testing(base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
   }
 
   void clear_current_frame_for_testing() { current_frame_ = nullptr; }
@@ -178,7 +178,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // media thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Allows tests to disable the background rendering task.
   bool background_rendering_enabled_;

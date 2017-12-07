@@ -105,15 +105,13 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
  public:
   AudioEncoderTest() {
     InitializeMediaLibrary();
-    testing_clock_ = new base::SimpleTestTickClock();
-    testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
+    testing_clock_.Advance(base::TimeTicks::Now() - base::TimeTicks());
   }
 
   void SetUp() final {
-    task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
-    cast_environment_ =
-        new CastEnvironment(std::unique_ptr<base::TickClock>(testing_clock_),
-                            task_runner_, task_runner_, task_runner_);
+    task_runner_ = new FakeSingleThreadTaskRunner(&testing_clock_);
+    cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
+                                            task_runner_, task_runner_);
   }
 
   virtual ~AudioEncoderTest() = default;
@@ -131,16 +129,16 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
       const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
           std::abs(scenario.durations_in_ms[i]));
       receiver_->SetCaptureTimeBounds(
-          testing_clock_->NowTicks() - frame_duration,
-          testing_clock_->NowTicks() + duration);
+          testing_clock_.NowTicks() - frame_duration,
+          testing_clock_.NowTicks() + duration);
       if (simulate_missing_data) {
         task_runner_->RunTasks();
-        testing_clock_->Advance(duration);
+        testing_clock_.Advance(duration);
       } else {
         audio_encoder_->InsertAudio(audio_bus_factory_->NextAudioBus(duration),
-                                    testing_clock_->NowTicks());
+                                    testing_clock_.NowTicks());
         task_runner_->RunTasks();
-        testing_clock_->Advance(duration);
+        testing_clock_.Advance(duration);
       }
     }
 
@@ -170,7 +168,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
     receiver_->SetSamplesPerFrame(audio_encoder_->GetSamplesPerFrame());
   }
 
-  base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
+  base::SimpleTestTickClock testing_clock_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   std::unique_ptr<TestAudioBusFactory> audio_bus_factory_;
   std::unique_ptr<TestEncodedAudioFrameReceiver> receiver_;

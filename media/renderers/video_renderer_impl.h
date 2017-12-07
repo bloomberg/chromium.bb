@@ -73,7 +73,7 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnTimeProgressing() override;
   void OnTimeStopped() override;
 
-  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  void SetTickClockForTesting(base::TickClock* tick_clock);
   void SetGpuMemoryBufferVideoForTesting(
       std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool);
   size_t frames_queued_for_testing() const {
@@ -299,7 +299,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // Keeps track of the number of power efficient decoded frames.
   int frames_decoded_power_efficient_;
 
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Algorithm for selecting which frame to render; manages frames and all
   // timing related information. Ensure this is destructed before

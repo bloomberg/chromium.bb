@@ -339,14 +339,12 @@ void RunSimulation(const base::FilePath& source_path,
   base::ThreadTaskRunnerHandle task_runner_handle(task_runner);
 
   // CastEnvironments.
+  test::SkewedTickClock sender_clock(&testing_clock);
   scoped_refptr<CastEnvironment> sender_env =
-      new CastEnvironment(std::unique_ptr<base::TickClock>(
-                              new test::SkewedTickClock(&testing_clock)),
-                          task_runner, task_runner, task_runner);
-  scoped_refptr<CastEnvironment> receiver_env =
-      new CastEnvironment(std::unique_ptr<base::TickClock>(
-                              new test::SkewedTickClock(&testing_clock)),
-                          task_runner, task_runner, task_runner);
+      new CastEnvironment(&sender_clock, task_runner, task_runner, task_runner);
+  test::SkewedTickClock receiver_clock(&testing_clock);
+  scoped_refptr<CastEnvironment> receiver_env = new CastEnvironment(
+      &receiver_clock, task_runner, task_runner, task_runner);
 
   // Event subscriber. Store at most 1 hour of events.
   EncodingEventSubscriber audio_event_subscriber(AUDIO_EVENT,

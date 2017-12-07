@@ -17,7 +17,7 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
     mojom::VideoDecodeStatsRecorderPtr recorder_ptr,
     GetPipelineStatsCB get_pipeline_stats_cb,
     const VideoDecoderConfig& video_config,
-    std::unique_ptr<base::TickClock> tick_clock)
+    base::TickClock* tick_clock)
     : kRecordingInterval(
           base::TimeDelta::FromMilliseconds(kRecordingIntervalMs)),
       kTinyFpsWindowDuration(
@@ -26,8 +26,8 @@ VideoDecodeStatsReporter::VideoDecodeStatsReporter(
       get_pipeline_stats_cb_(std::move(get_pipeline_stats_cb)),
       video_config_(video_config),
       natural_size_(GetSizeBucket(video_config.natural_size())),
-      tick_clock_(std::move(tick_clock)),
-      stats_cb_timer_(tick_clock_.get()) {
+      tick_clock_(tick_clock),
+      stats_cb_timer_(tick_clock_) {
   DCHECK(recorder_ptr_.is_bound());
   DCHECK(!get_pipeline_stats_cb_.is_null());
   DCHECK(video_config_.IsValidConfig());

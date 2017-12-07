@@ -110,10 +110,9 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
 
-    test_clock_ = new base::SimpleTestClock();
-    test_clock_->SetNow(GetReferenceTime());
-    service_ = base::WrapUnique(
-        new MediaEngagementService(profile(), base::WrapUnique(test_clock_)));
+    test_clock_.SetNow(GetReferenceTime());
+    service_ =
+        base::WrapUnique(new MediaEngagementService(profile(), &test_clock_));
   }
 
   MediaEngagementService* StartNewMediaEngagementService() {
@@ -133,7 +132,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
   void AdvanceClock() {
-    test_clock_->SetNow(Now() + base::TimeDelta::FromHours(1));
+    test_clock_.SetNow(Now() + base::TimeDelta::FromHours(1));
   }
 
   void RecordVisit(GURL url) { service_->RecordVisit(url); }
@@ -191,11 +190,11 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     service_->ClearDataBetweenTime(begin, end);
   }
 
-  base::Time Now() const { return test_clock_->Now(); }
+  base::Time Now() { return test_clock_.Now(); }
 
   base::Time TimeNotSet() const { return base::Time(); }
 
-  void SetNow(base::Time now) { test_clock_->SetNow(now); }
+  void SetNow(base::Time now) { test_clock_.SetNow(now); }
 
   std::vector<media::mojom::MediaEngagementScoreDetailsPtr> GetAllScoreDetails()
       const {
@@ -209,7 +208,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   void SetSchemaVersion(int version) { service_->SetSchemaVersion(version); }
 
  private:
-  base::SimpleTestClock* test_clock_ = nullptr;
+  base::SimpleTestClock test_clock_;
 
   std::unique_ptr<MediaEngagementService> service_;
 

@@ -88,7 +88,7 @@ class QueueManager {
       packet_pipe_ = std::move(tmp);
     }
     packet_pipe_->InitOnIOThread(base::ThreadTaskRunnerHandle::Get(),
-                                 &tick_clock_);
+                                 base::DefaultTickClock::GetInstance());
   }
 
  private:
@@ -111,7 +111,6 @@ class QueueManager {
   std::unique_ptr<PacketPipe> packet_pipe_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller>
       read_socket_watch_controller_;
-  base::DefaultTickClock tick_clock_;
 };
 
 }  // namespace test

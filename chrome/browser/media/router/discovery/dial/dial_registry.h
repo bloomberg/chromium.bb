@@ -97,7 +97,7 @@ class DialRegistry : public DialService::Observer,
   void AddDeviceForTest(const DialDeviceData& device_data);
 
   // Allows tests to swap in a fake clock.
-  void SetClockForTest(std::unique_ptr<base::Clock> clock);
+  void SetClockForTest(base::Clock* clock);
 
  protected:
   // Returns a new instance of the DIAL service.  Overridden by tests.
@@ -203,7 +203,7 @@ class DialRegistry : public DialService::Observer,
   // Set just after construction, only used on the IO thread.
   net::NetLog* net_log_ = nullptr;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestAddRemoveListeners);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNoDevicesDiscovered);

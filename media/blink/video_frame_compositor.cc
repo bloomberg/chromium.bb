@@ -25,7 +25,7 @@ VideoFrameCompositor::VideoFrameCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     std::unique_ptr<blink::WebVideoFrameSubmitter> submitter)
     : task_runner_(task_runner),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       background_rendering_enabled_(true),
       background_rendering_timer_(
           FROM_HERE,

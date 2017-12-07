@@ -30,7 +30,7 @@ MojoRenderer::MojoRenderer(
       video_renderer_sink_(video_renderer_sink),
       remote_renderer_info_(remote_renderer.PassInterface()),
       client_binding_(this),
-      media_time_interpolator_(&media_clock_) {
+      media_time_interpolator_(base::DefaultTickClock::GetInstance()) {
   DVLOG(1) << __func__;
 }
 
@@ -185,7 +185,7 @@ void MojoRenderer::StartPlayingFrom(base::TimeDelta time) {
 
   {
     base::AutoLock auto_lock(lock_);
-    media_time_interpolator_.SetBounds(time, time, media_clock_.NowTicks());
+    media_time_interpolator_.SetBounds(time, time, base::TimeTicks::Now());
     media_time_interpolator_.StartInterpolating();
   }
 

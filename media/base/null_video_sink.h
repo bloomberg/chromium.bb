@@ -78,10 +78,9 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
   base::TimeTicks current_render_time_;
 
   // Allow for an injectable tick clock for testing.
-  base::DefaultTickClock default_tick_clock_;
   base::TimeTicks last_now_;
 
-  // If specified, used instead of |default_tick_clock_|.
+  // If specified, used instead of a DefaultTickClock.
   base::TickClock* tick_clock_;
 
   // If set, called when Stop() is called.

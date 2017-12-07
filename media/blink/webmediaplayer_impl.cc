@@ -211,10 +211,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       last_reported_memory_usage_(0),
       supports_save_(true),
       chunk_demuxer_(NULL),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       buffered_data_source_host_(
           base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr()),
-          tick_clock_.get()),
+          tick_clock_),
       url_index_(url_index),
       context_provider_(params->context_provider()),
       vfc_task_runner_(params->video_frame_compositor_task_runner()),
@@ -2872,7 +2872,7 @@ void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
 #undef UMA_HISTOGRAM_VIDEO_HEIGHT
 
 void WebMediaPlayerImpl::SetTickClockForTest(base::TickClock* tick_clock) {
-  tick_clock_.reset(tick_clock);
+  tick_clock_ = tick_clock;
   buffered_data_source_host_.SetTickClockForTest(tick_clock);
 }
 

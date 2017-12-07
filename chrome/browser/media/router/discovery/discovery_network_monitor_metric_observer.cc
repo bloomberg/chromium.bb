@@ -52,11 +52,11 @@ DiscoveryNetworkMonitorConnectionType ConnectionTypeFromIdAndType(
 }  // namespace
 
 DiscoveryNetworkMonitorMetricObserver::DiscoveryNetworkMonitorMetricObserver(
-    std::unique_ptr<base::TickClock> tick_clock,
+    base::TickClock* tick_clock,
     std::unique_ptr<DiscoveryNetworkMonitorMetrics> metrics)
-    : tick_clock_(std::move(tick_clock)),
+    : tick_clock_(tick_clock),
       metrics_(std::move(metrics)),
-      disconnect_timer_(tick_clock_.get()) {
+      disconnect_timer_(tick_clock_) {
   DCHECK(tick_clock_);
   DCHECK(metrics_);
 }

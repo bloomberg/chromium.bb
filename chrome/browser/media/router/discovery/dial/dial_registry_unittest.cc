@@ -45,10 +45,7 @@ class MockDialService : public DialService {
 
 class MockDialRegistry : public DialRegistry {
  public:
-  MockDialRegistry() : DialRegistry(), clock_(new base::SimpleTestClock()) {
-    // Takes ownership of |clock|.
-    SetClockForTest(base::WrapUnique(clock_));
-  }
+  MockDialRegistry() : DialRegistry() { SetClockForTest(&clock_); }
 
   ~MockDialRegistry() override {
     // Don't let the DialRegistry delete this.
@@ -59,7 +56,7 @@ class MockDialRegistry : public DialRegistry {
 
   // Returns the mock Dial service.
   MockDialService& mock_service() { return mock_service_; }
-  base::SimpleTestClock* clock() const { return clock_; }
+  base::SimpleTestClock* clock() { return &clock_; }
 
  protected:
   std::unique_ptr<DialService> CreateDialService() override {
@@ -74,8 +71,7 @@ class MockDialRegistry : public DialRegistry {
  private:
   MockDialService mock_service_;
 
-  // Owned by DialRegistry.
-  base::SimpleTestClock* const clock_;
+  base::SimpleTestClock clock_;
 };
 
 class DialRegistryTest : public testing::Test {

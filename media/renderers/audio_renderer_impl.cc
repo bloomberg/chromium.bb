@@ -49,7 +49,7 @@ AudioRendererImpl::AudioRendererImpl(
       sink_(sink),
       media_log_(media_log),
       client_(nullptr),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       last_audio_memory_usage_(0),
       last_decoded_sample_rate_(0),
       last_decoded_channel_layout_(CHANNEL_LAYOUT_NONE),

@@ -22,9 +22,8 @@ NullVideoSink::NullVideoSink(
       task_runner_(task_runner),
       started_(false),
       callback_(nullptr),
-      tick_clock_(&default_tick_clock_),
-      background_render_(false) {
-}
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      background_render_(false) {}
 
 NullVideoSink::~NullVideoSink() {
   DCHECK(!started_);

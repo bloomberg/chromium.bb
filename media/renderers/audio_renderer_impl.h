@@ -242,7 +242,7 @@ class MEDIA_EXPORT AudioRendererImpl
   base::Closure flush_cb_;
 
   // Overridable tick clock for testing.
-  std::unique_ptr<base::TickClock> tick_clock_;
+  base::TickClock* tick_clock_;
 
   // Memory usage of |algorithm_| recorded during the last
   // HandleDecodedBuffer_Locked() call.
