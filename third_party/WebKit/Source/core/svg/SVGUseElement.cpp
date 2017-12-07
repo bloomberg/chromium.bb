@@ -89,7 +89,7 @@ SVGUseElement* SVGUseElement::Create(Document& document) {
 SVGUseElement::~SVGUseElement() {}
 
 void SVGUseElement::Dispose() {
-  SetDocumentResource(nullptr);
+  ClearResource();
 }
 
 void SVGUseElement::Trace(blink::Visitor* visitor) {
@@ -99,7 +99,6 @@ void SVGUseElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(height_);
   visitor->Trace(target_element_instance_);
   visitor->Trace(target_id_observer_);
-  visitor->Trace(resource_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
   ResourceClient::Trace(visitor);
@@ -204,18 +203,18 @@ void SVGUseElement::UpdateTargetReference() {
   element_url_ = GetDocument().CompleteURL(url_string);
   element_url_is_local_ = url_string.StartsWith('#');
   if (!IsStructurallyExternal()) {
-    SetDocumentResource(nullptr);
+    ClearResource();
     return;
   }
   if (!element_url_.HasFragmentIdentifier() ||
-      (resource_ &&
-       EqualIgnoringFragmentIdentifier(element_url_, resource_->Url())))
+      (GetResource() &&
+       EqualIgnoringFragmentIdentifier(element_url_, GetResource()->Url())))
     return;
 
   ResourceLoaderOptions options;
   options.initiator_info.name = localName();
   FetchParameters params(ResourceRequest(element_url_), options);
-  SetDocumentResource(
+  SetResource(
       DocumentResource::FetchSVGDocument(params, GetDocument().Fetcher()));
 }
 
@@ -317,7 +316,9 @@ Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
   }
   if (!ResourceIsValid())
     return nullptr;
-  return resource_->GetDocument()->getElementById(element_identifier);
+  return ToDocumentResource(GetResource())
+      ->GetDocument()
+      ->getElementById(element_identifier);
 }
 
 void SVGUseElement::BuildPendingResource() {
@@ -704,7 +705,7 @@ void SVGUseElement::DispatchPendingEvent() {
 }
 
 void SVGUseElement::NotifyFinished(Resource* resource) {
-  DCHECK_EQ(resource_, resource);
+  DCHECK_EQ(GetResource(), resource);
   if (!isConnected())
     return;
 
@@ -727,12 +728,13 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
 }
 
 bool SVGUseElement::ResourceIsStillLoading() const {
-  return resource_ && resource_->IsLoading();
+  return GetResource() && GetResource()->IsLoading();
 }
 
 bool SVGUseElement::ResourceIsValid() const {
-  return resource_ && resource_->IsLoaded() && !resource_->ErrorOccurred() &&
-         resource_->GetDocument();
+  return GetResource() && GetResource()->IsLoaded() &&
+         !GetResource()->ErrorOccurred() &&
+         ToDocumentResource(GetResource())->GetDocument();
 }
 
 bool SVGUseElement::InstanceTreeIsLoading() const {
@@ -742,18 +744,6 @@ bool SVGUseElement::InstanceTreeIsLoading() const {
       return true;
   }
   return false;
-}
-
-void SVGUseElement::SetDocumentResource(DocumentResource* resource) {
-  if (resource_ == resource)
-    return;
-
-  if (resource_)
-    resource_->RemoveClient(this);
-
-  resource_ = resource;
-  if (resource_)
-    resource_->AddClient(this);
 }
 
 }  // namespace blink

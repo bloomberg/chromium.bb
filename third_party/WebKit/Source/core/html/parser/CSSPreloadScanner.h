@@ -33,7 +33,6 @@
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -122,7 +121,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
 
  private:
   void ScanCSS(const CSSStyleSheetResource*);
-  void ClearResource();
+  void MaybeClearResource();
 
   enum PreloadPolicy {
     kScanOnly,
@@ -131,7 +130,6 @@ class CORE_EXPORT CSSPreloaderResourceClient
 
   const PreloadPolicy policy_;
   WeakMember<HTMLResourcePreloader> preloader_;
-  WeakMember<CSSStyleSheetResource> resource_;
   bool received_first_data_ = false;
 };
 

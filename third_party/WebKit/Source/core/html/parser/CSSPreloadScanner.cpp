@@ -264,15 +264,14 @@ CSSPreloaderResourceClient::CSSPreloaderResourceClient(
                       ->GetCSSExternalScannerPreload()
                   ? kScanAndPreload
                   : kScanOnly),
-      preloader_(preloader),
-      resource_(ToCSSStyleSheetResource(resource)) {
-  resource_->AddClient(this);
+      preloader_(preloader) {
+  SetResource(resource);
 }
 
 CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}
 
 void CSSPreloaderResourceClient::NotifyFinished(Resource*) {
-  ClearResource();
+  MaybeClearResource();
 }
 
 // Only attach for one appendData call, as that's where most imports will likely
@@ -285,7 +284,7 @@ void CSSPreloaderResourceClient::DataReceived(Resource* resource,
   received_first_data_ = true;
   if (preloader_)
     ScanCSS(ToCSSStyleSheetResource(resource));
-  ClearResource();
+  MaybeClearResource();
 }
 
 void CSSPreloaderResourceClient::ScanCSS(
@@ -344,7 +343,7 @@ void CSSPreloaderResourceClient::FetchPreloads(PreloadRequestStream& preloads) {
   }
 }
 
-void CSSPreloaderResourceClient::ClearResource() {
+void CSSPreloaderResourceClient::MaybeClearResource() {
   // Do not remove the client for unused, speculative markup preloads. This will
   // trigger cancellation of the request and potential removal from memory
   // cache. Link preloads are an exception because they support dynamic removal
@@ -352,19 +351,16 @@ void CSSPreloaderResourceClient::ClearResource() {
   // Note: Speculative preloads which remain unused for their lifetime will
   // never have this client removed. This should be fine because we only hold
   // weak references to the resource.
-  if (resource_ && resource_->IsUnusedPreload() &&
-      !resource_->IsLinkPreload()) {
+  if (GetResource() && GetResource()->IsUnusedPreload() &&
+      !GetResource()->IsLinkPreload()) {
     return;
   }
 
-  if (resource_)
-    resource_->RemoveClient(this);
-  resource_.Clear();
+  ClearResource();
 }
 
 void CSSPreloaderResourceClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(preloader_);
-  visitor->Trace(resource_);
   ResourceClient::Trace(visitor);
 }
 

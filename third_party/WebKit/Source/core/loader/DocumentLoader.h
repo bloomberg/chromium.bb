@@ -276,7 +276,6 @@ class CORE_EXPORT DocumentLoader
   LocalFrameClient& GetLocalFrameClient() const;
 
   void CommitData(const char* bytes, size_t length);
-  void ClearMainResourceHandle();
 
   bool MaybeCreateArchive();
 
@@ -316,7 +315,6 @@ class CORE_EXPORT DocumentLoader
   Member<LocalFrame> frame_;
   Member<ResourceFetcher> fetcher_;
 
-  Member<RawResource> main_resource_;
   Member<HistoryItem> history_item_;
 
   // The parser that was created when the current Document was installed.

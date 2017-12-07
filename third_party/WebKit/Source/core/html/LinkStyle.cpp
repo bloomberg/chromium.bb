@@ -406,7 +406,7 @@ void LinkStyle::OwnerRemoved() {
 void LinkStyle::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_);
   LinkResource::Trace(visitor);
-  ResourceOwner<CSSStyleSheetResource>::Trace(visitor);
+  ResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

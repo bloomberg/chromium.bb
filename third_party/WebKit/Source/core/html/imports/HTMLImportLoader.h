@@ -35,7 +35,6 @@
 #include "core/dom/DocumentParserClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/RawResource.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -45,12 +44,12 @@ class Document;
 class HTMLImportChild;
 class HTMLImportsController;
 
-// Owning imported Document lifetime. It also implements ResourceClient through
-// ResourceOwner to feed fetched bytes to the DocumentParser of the imported
+// Owning imported Document lifetime. It also implements RawResourceClient
+// to feed fetched bytes to the DocumentParser of the imported
 // document.  HTMLImportLoader is owned by HTMLImportsController.
 class HTMLImportLoader final
     : public GarbageCollectedFinalized<HTMLImportLoader>,
-      public ResourceOwner<RawResource>,
+      public RawResourceClient,
       public DocumentParserClient {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLImportLoader);
 

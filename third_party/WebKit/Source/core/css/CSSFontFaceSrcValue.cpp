@@ -107,7 +107,7 @@ FontResource* CSSFontFaceSrcValue::Fetch(ExecutionContext* context) const {
     // is processed by StyleResolver / StyleEngine.
     RestoreCachedResourceIfNeeded(context);
   }
-  return fetched_->GetResource();
+  return ToFontResource(fetched_->GetResource());
 }
 
 void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(

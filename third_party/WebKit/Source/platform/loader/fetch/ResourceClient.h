@@ -28,13 +28,15 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-class Resource;
 
 class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
+  USING_PRE_FINALIZER(ResourceClient, ClearResource);
+
  public:
   enum ResourceClientType {
     kBaseResourceType,
@@ -62,13 +64,39 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
     return kBaseResourceType;
   }
 
+  Resource* GetResource() const { return resource_; }
+
   // Name for debugging, e.g. shown in memory-infra.
   virtual String DebugName() const = 0;
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(blink::Visitor* visitor) override { visitor->Trace(resource_); }
 
  protected:
   ResourceClient() {}
+
+  // TODO(japhet): There isn't a clean way for SVGResourceClients to determine
+  // whether SVGElementProxy is holding a Resource that it should register with,
+  // so SVGElementProxy handles it for those clients. SVGResourceClients should
+  // have a better way to register themselves as clients. crbug.com/789198
+  friend class SVGElementProxy;
+
+  void ClearResource() { SetResource(nullptr); }
+
+  void SetResource(Resource* new_resource) {
+    if (new_resource == resource_)
+      return;
+
+    // Some ResourceClient implementations reenter this so
+    // we need to prevent double removal.
+    if (Resource* old_resource = resource_.Release())
+      old_resource->RemoveClient(this);
+    resource_ = new_resource;
+    if (resource_)
+      resource_->AddClient(this);
+  }
+
+ private:
+  Member<Resource> resource_;
 };
 
 }  // namespace blink

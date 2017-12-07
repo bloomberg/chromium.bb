@@ -34,7 +34,6 @@ class MockFontResourceClient final
   }
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(resource_);
     FontResourceClient::Trace(visitor);
   }
 
@@ -43,7 +42,6 @@ class MockFontResourceClient final
  private:
   void Dispose();
 
-  Member<Resource> resource_;
   bool font_load_short_limit_exceeded_called_;
   bool font_load_long_limit_exceeded_called_;
 };

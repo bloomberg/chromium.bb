@@ -77,8 +77,10 @@ void SVGElementProxy::AddClient(SVGResourceClient* client) {
   if (id_.IsEmpty())
     return;
   if (!is_local_) {
-    if (document_)
-      document_->AddClient(client);
+    if (document_) {
+      DCHECK(!client->GetResource());
+      client->SetResource(document_);
+    }
     return;
   }
   TreeScope* client_scope = client->GetTreeScope();
@@ -113,8 +115,8 @@ void SVGElementProxy::RemoveClient(SVGResourceClient* client) {
   if (id_.IsEmpty())
     return;
   if (!is_local_) {
-    if (document_)
-      document_->RemoveClient(client);
+    DCHECK_EQ(client->GetResource(), document_);
+    client->ClearResource();
     return;
   }
   auto entry = clients_.find(client);

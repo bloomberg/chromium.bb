@@ -39,7 +39,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/Forward.h"
@@ -57,9 +56,8 @@ class ThreadableLoadingContext;
 
 // TODO(horo): We are using this class not only in documents, but also in
 // workers. We should change the name to ThreadableLoaderImpl.
-class CORE_EXPORT DocumentThreadableLoader final
-    : public ThreadableLoader,
-      private ResourceOwner<RawResource> {
+class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
+                                                   private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
 
  public:

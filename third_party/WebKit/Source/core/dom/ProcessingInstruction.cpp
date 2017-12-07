@@ -287,7 +287,7 @@ void ProcessingInstruction::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_);
   visitor->Trace(listener_for_xslt_);
   CharacterData::Trace(visitor);
-  ResourceOwner<TextResource>::Trace(visitor);
+  ResourceClient::Trace(visitor);
 }
 
 }  // namespace blink

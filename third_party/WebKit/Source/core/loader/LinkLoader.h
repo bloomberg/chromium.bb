@@ -37,7 +37,7 @@
 #include "core/loader/LinkLoaderClient.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PrerenderClient.h"
-#include "platform/loader/fetch/ResourceOwner.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {

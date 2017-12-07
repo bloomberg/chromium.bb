@@ -120,7 +120,6 @@ class SVGUseElement final : public SVGGraphicsElement,
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "SVGUseElement"; }
   void UpdateTargetReference();
-  void SetDocumentResource(DocumentResource*);
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;
@@ -133,7 +132,6 @@ class SVGUseElement final : public SVGGraphicsElement,
   bool needs_shadow_tree_recreation_;
   Member<SVGElement> target_element_instance_;
   Member<IdTargetObserver> target_id_observer_;
-  Member<DocumentResource> resource_;
 };
 
 }  // namespace blink

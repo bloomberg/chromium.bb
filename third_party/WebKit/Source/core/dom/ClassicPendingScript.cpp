@@ -224,7 +224,7 @@ void ClassicPendingScript::DataReceived(Resource* resource,
 
 void ClassicPendingScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(streamer_);
-  ResourceOwner<ScriptResource>::Trace(visitor);
+  ResourceClient::Trace(visitor);
   MemoryCoordinatorClient::Trace(visitor);
   PendingScript::Trace(visitor);
 }
@@ -243,12 +243,12 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   }
 
   DCHECK(GetResource()->IsLoaded());
+  ScriptResource* resource = ToScriptResource(GetResource());
   bool streamer_ready = (ready_state_ == kReady) && streamer_ &&
                         !streamer_->StreamingSuppressed();
-  ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr,
-                               GetResource());
+  ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr, resource);
   return ClassicScript::Create(source_code, options_,
-                               GetResource()->CalculateAccessControlStatus());
+                               resource->CalculateAccessControlStatus());
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {

@@ -15,8 +15,6 @@ namespace blink {
 
 class CORE_EXPORT TextResource : public Resource {
  public:
-  using ClientType = ResourceClient;
-
   // Returns the decoded data in text form. The data has to be available at
   // call time.
   String DecodedText() const;

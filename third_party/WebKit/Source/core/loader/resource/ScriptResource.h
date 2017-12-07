@@ -43,7 +43,6 @@ class ScriptResource;
 
 class CORE_EXPORT ScriptResource final : public TextResource {
  public:
-  using ClientType = ResourceClient;
   static ScriptResource* Fetch(FetchParameters&, ResourceFetcher*);
 
   // Public for testing

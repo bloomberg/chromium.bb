@@ -56,8 +56,6 @@ class CORE_EXPORT ImageResource final
   USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
 
  public:
-  using ClientType = ResourceClient;
-
   // Use ImageResourceContent::Fetch() unless ImageResource is required.
   // TODO(hiroshige): Make Fetch() private.
   static ImageResource* Fetch(FetchParameters&, ResourceFetcher*);

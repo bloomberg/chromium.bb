@@ -231,7 +231,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // This is used only to keep the ScriptResource of a classic script alive
   // and thus to keep it on MemoryCache, even after script execution, as long
   // as ScriptLoader is alive. crbug.com/778799
-  Member<ScriptResource> resource_keep_alive_;
+  Member<Resource> resource_keep_alive_;
 
   // The context document at the time when PrepareScript() is executed.
   // This is only used to check whether the script element is moved between
