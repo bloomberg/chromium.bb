@@ -64,7 +64,7 @@ class NET_EXPORT SSLClientSessionCache : public base::MemoryCoordinatorClient {
   // Removes all entries from the cache.
   void Flush();
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // Dumps memory allocation stats. |pmd| is the ProcessMemoryDump of the
   // browser process.
@@ -101,7 +101,7 @@ class NET_EXPORT SSLClientSessionCache : public base::MemoryCoordinatorClient {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   Config config_;
   base::HashingMRUCache<std::string, Entry> cache_;
   size_t lookups_since_flush_;

@@ -9028,9 +9028,9 @@ TEST(HttpCache, SkipVaryCheckStar) {
 // transactions unless LOAD_SKIP_CACHE_VALIDATION is set.
 TEST(HttpCache, ValidLoadOnlyFromCache) {
   MockHttpCache cache;
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  cache.http_cache()->SetClockForTesting(base::WrapUnique(clock));
-  cache.network_layer()->SetClock(clock);
+  base::SimpleTestClock clock;
+  cache.http_cache()->SetClockForTesting(&clock);
+  cache.network_layer()->SetClock(&clock);
 
   // Write a resource that will expire in 100 seconds.
   ScopedMockTransaction transaction(kSimpleGET_Transaction);
@@ -9038,7 +9038,7 @@ TEST(HttpCache, ValidLoadOnlyFromCache) {
   RunTransactionTest(cache.http_cache(), transaction);
 
   // Move forward in time such that the cached response is no longer valid.
-  clock->Advance(base::TimeDelta::FromSeconds(101));
+  clock.Advance(base::TimeDelta::FromSeconds(101));
 
   // Skipping cache validation should still return a response.
   transaction.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
@@ -9915,9 +9915,8 @@ class HttpCachePrefetchValidationTest : public ::testing::Test {
   HttpCachePrefetchValidationTest() : transaction_(kSimpleGET_Transaction) {
     DCHECK_LT(kMaxAgeSecs, prefetch_reuse_mins() * kNumSecondsPerMinute);
 
-    clock_ = new base::SimpleTestClock();
-    cache_.http_cache()->SetClockForTesting(base::WrapUnique(clock_));
-    cache_.network_layer()->SetClock(clock_);
+    cache_.http_cache()->SetClockForTesting(&clock_);
+    cache_.network_layer()->SetClock(&clock_);
 
     transaction_.response_headers = "Cache-Control: max-age=100\n";
   }
@@ -9930,7 +9929,7 @@ class HttpCachePrefetchValidationTest : public ::testing::Test {
   }
 
   void AdvanceTime(int seconds) {
-    clock_->Advance(base::TimeDelta::FromSeconds(seconds));
+    clock_.Advance(base::TimeDelta::FromSeconds(seconds));
   }
 
   int prefetch_reuse_mins() { return HttpCache::kPrefetchReuseMins; }
@@ -9945,7 +9944,7 @@ class HttpCachePrefetchValidationTest : public ::testing::Test {
   MockHttpCache cache_;
   ScopedMockTransaction transaction_;
   std::string response_headers_;
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
 };
 
 TEST_F(HttpCachePrefetchValidationTest, SkipValidationShortlyAfterPrefetch) {

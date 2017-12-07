@@ -361,9 +361,9 @@ class PtrRecordCopyContainer {
   int ttl_;
 };
 
-class MockClock : public base::DefaultClock {
+class MockClock : public base::Clock {
  public:
-  MockClock() : base::DefaultClock() {}
+  MockClock() = default;
   virtual ~MockClock() = default;
 
   MOCK_METHOD0(Now, base::Time());
@@ -557,15 +557,14 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   // Use a nonzero starting time as a base.
   base::Time start_time = base::Time() + base::TimeDelta::FromSeconds(1);
 
-  MockClock* clock = new MockClock;
+  MockClock clock;
   MockTimer* timer = new MockTimer;
 
-  test_client_.reset(
-      new MDnsClientImpl(base::WrapUnique(clock), base::WrapUnique(timer)));
+  test_client_.reset(new MDnsClientImpl(&clock, base::WrapUnique(timer)));
   test_client_->StartListening(&socket_factory_);
 
   EXPECT_CALL(*timer, StartObserver(_, _, _)).Times(1);
-  EXPECT_CALL(*clock, Now())
+  EXPECT_CALL(clock, Now())
       .Times(3)
       .WillRepeatedly(Return(start_time))
       .RetiresOnSaturation();
@@ -600,10 +599,10 @@ TEST_F(MDnsTest, CacheCleanupWithShortTTL) {
   // Set the clock to 2.0s, which should clean up the 'privet' record, but not
   // the printer. The mock clock will change Now() mid-execution from 2s to 4s.
   // Note: expectations are FILO-ordered -- t+2 seconds is returned, then t+4.
-  EXPECT_CALL(*clock, Now())
+  EXPECT_CALL(clock, Now())
       .WillOnce(Return(start_time + base::TimeDelta::FromSeconds(4)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*clock, Now())
+  EXPECT_CALL(clock, Now())
       .WillOnce(Return(start_time + base::TimeDelta::FromSeconds(2)))
       .RetiresOnSaturation();
 

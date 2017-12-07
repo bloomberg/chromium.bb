@@ -209,11 +209,11 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
   FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
 
   // Test constructor, takes a mock clock and mock timer.
-  MDnsClientImpl(std::unique_ptr<base::Clock> clock,
+  MDnsClientImpl(base::Clock* clock,
                  std::unique_ptr<base::Timer> cleanup_timer);
 
   std::unique_ptr<Core> core_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   std::unique_ptr<base::Timer> cleanup_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MDnsClientImpl);

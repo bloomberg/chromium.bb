@@ -34,8 +34,8 @@ class ReportingContextImpl : public ReportingContext {
   ReportingContextImpl(const ReportingPolicy& policy,
                        URLRequestContext* request_context)
       : ReportingContext(policy,
-                         std::make_unique<base::DefaultClock>(),
-                         std::make_unique<base::DefaultTickClock>(),
+                         base::DefaultClock::GetInstance(),
+                         base::DefaultTickClock::GetInstance(),
                          ReportingUploader::Create(request_context),
                          ReportingDelegate::Create(request_context)) {}
 };
@@ -67,13 +67,13 @@ void ReportingContext::NotifyCacheUpdated() {
 }
 
 ReportingContext::ReportingContext(const ReportingPolicy& policy,
-                                   std::unique_ptr<base::Clock> clock,
-                                   std::unique_ptr<base::TickClock> tick_clock,
+                                   base::Clock* clock,
+                                   base::TickClock* tick_clock,
                                    std::unique_ptr<ReportingUploader> uploader,
                                    std::unique_ptr<ReportingDelegate> delegate)
     : policy_(policy),
-      clock_(std::move(clock)),
-      tick_clock_(std::move(tick_clock)),
+      clock_(clock),
+      tick_clock_(tick_clock),
       uploader_(std::move(uploader)),
       delegate_(std::move(delegate)),
       cache_(ReportingCache::Create(this)),

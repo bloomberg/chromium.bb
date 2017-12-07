@@ -253,8 +253,6 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
           recently_broken_alternative_services,
       base::DictionaryValue* http_server_properties_dict);
 
-  base::DefaultTickClock default_clock_;
-
   // Used to post cache update tasks.
   base::OneShotTimer pref_cache_update_timer_;
 

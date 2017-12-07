@@ -17,7 +17,7 @@
 namespace net {
 
 SSLClientSessionCache::SSLClientSessionCache(const Config& config)
-    : clock_(new base::DefaultClock),
+    : clock_(base::DefaultClock::GetInstance()),
       config_(config),
       cache_(config.max_entries),
       lookups_since_flush_(0) {
@@ -87,9 +87,8 @@ void SSLClientSessionCache::Flush() {
   cache_.Clear();
 }
 
-void SSLClientSessionCache::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void SSLClientSessionCache::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 bool SSLClientSessionCache::IsExpired(SSL_SESSION* session, time_t now) {

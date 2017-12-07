@@ -126,12 +126,12 @@ TEST(ThroughputAnalyzerTest, MaximumRequests) {
                }};
 
   for (const auto& test : tests) {
-    base::DefaultTickClock tick_clock;
+    base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
     TestNetworkQualityProvider network_quality_provider;
     std::map<std::string, std::string> variation_params;
     NetworkQualityEstimatorParams params(variation_params);
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
-                                               &params, &tick_clock);
+                                               &params, tick_clock);
 
     TestDelegate test_delegate;
     TestURLRequestContext context;
@@ -168,7 +168,7 @@ TEST(ThroughputAnalyzerTest, MaximumRequests) {
 // Tests that the throughput observation is taken only if there are sufficient
 // number of requests in-flight.
 TEST(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
-  base::DefaultTickClock tick_clock;
+  base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityProvider network_quality_provider;
   std::map<std::string, std::string> variation_params;
   NetworkQualityEstimatorParams params(variation_params);
@@ -177,7 +177,7 @@ TEST(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
        num_requests <= params.throughput_min_requests_in_flight() + 1;
        ++num_requests) {
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
-                                               &params, &tick_clock);
+                                               &params, tick_clock);
     TestDelegate test_delegate;
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
@@ -270,7 +270,7 @@ TEST(ThroughputAnalyzerTest, TestHangingRequests) {
 
   for (const auto& test : tests) {
     base::HistogramTester histogram_tester;
-    base::DefaultTickClock tick_clock;
+    base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
     TestNetworkQualityProvider network_quality_provider;
     if (test.http_rtt >= base::TimeDelta())
       network_quality_provider.SetHttpRtt(test.http_rtt);
@@ -283,7 +283,7 @@ TEST(ThroughputAnalyzerTest, TestHangingRequests) {
 
     const size_t num_requests = params.throughput_min_requests_in_flight();
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
-                                               &params, &tick_clock);
+                                               &params, tick_clock);
     TestDelegate test_delegate;
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
@@ -557,13 +557,13 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
   };
 
   for (const auto& test : tests) {
-    base::DefaultTickClock tick_clock;
+    base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
     TestNetworkQualityProvider network_quality_provider;
     // Localhost requests are not allowed for estimation purposes.
     std::map<std::string, std::string> variation_params;
     NetworkQualityEstimatorParams params(variation_params);
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
-                                               &params, &tick_clock);
+                                               &params, tick_clock);
 
     TestDelegate test_delegate;
     TestURLRequestContext context;
@@ -658,7 +658,7 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
   };
 
   for (const auto& test : tests) {
-    base::DefaultTickClock tick_clock;
+    base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
     TestNetworkQualityProvider network_quality_provider;
     // Localhost requests are not allowed for estimation purposes.
     std::map<std::string, std::string> variation_params;
@@ -666,7 +666,7 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
         base::IntToString(test.throughput_min_requests_in_flight);
     NetworkQualityEstimatorParams params(variation_params);
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
-                                               &params, &tick_clock);
+                                               &params, tick_clock);
     TestDelegate test_delegate;
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
@@ -716,13 +716,13 @@ TEST(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 // of network requests overlap, and the minimum number of in flight requests
 // when taking an observation is more than 1.
 TEST(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
-  base::DefaultTickClock tick_clock;
+  base::DefaultTickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityProvider network_quality_provider;
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "3";
   NetworkQualityEstimatorParams params(variation_params);
   TestThroughputAnalyzer throughput_analyzer(&network_quality_provider, &params,
-                                             &tick_clock);
+                                             tick_clock);
   TestDelegate test_delegate;
   TestURLRequestContext context;
   throughput_analyzer.AddIPAddressResolution(&context);
