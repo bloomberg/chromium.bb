@@ -3209,6 +3209,10 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
   if (cm->frame_type == KEY_FRAME) {
     // Reset all frame contexts, as all reference frames will be lost.
     for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
+  } else if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+    // Store the frame context into a special slot (not associated with any
+    // reference buffer), so that we can set up cm->pre_fc correctly later
+    cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
   }
 #else
   if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
@@ -3216,15 +3220,8 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
     // Reset all frame contexts.
     for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
   } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    // Reset the frame context of the first specified ref frame.
-    if (cm->frame_refs[0].idx >= 0) {
-      cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
-    }
-#else
     // Reset only the frame context specified in the frame header.
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   }
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 }

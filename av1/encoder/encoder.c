@@ -356,16 +356,24 @@ static void setup_frame(AV1_COMP *cpi) {
 #if CONFIG_REFERENCE_BUFFER
     set_use_reference_buffer(cm, 0);
 #endif  // CONFIG_REFERENCE_BUFFER
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+#else
+    cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
   } else {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
-        cm->frame_refs[0].idx < 0) {
+    if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
       *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+      cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
     } else {
+      assert(cm->frame_refs[0].idx >= 0);
       *cm->fc = cm->frame_contexts[cm->frame_refs[0].idx];
+      cm->pre_fc = &cm->frame_contexts[cm->frame_refs[0].idx];
     }
 #else
     *cm->fc = cm->frame_contexts[cm->frame_context_idx];
+    cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
     av1_zero(cpi->interp_filter_selected[0]);
   }
@@ -375,18 +383,6 @@ static void setup_frame(AV1_COMP *cpi) {
     cpi->rc.is_bipred_frame = 1;
   }
 #endif  // !CONFIG_EXT_COMP_REFS
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
-      cm->frame_refs[0].idx < 0) {
-    // use default frame context values
-    cm->pre_fc = &cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
-  } else {
-    *cm->fc = cm->frame_contexts[cm->frame_refs[0].idx];
-    cm->pre_fc = &cm->frame_contexts[cm->frame_refs[0].idx];
-  }
-#else
-  cm->pre_fc = &cm->frame_contexts[cm->frame_context_idx];
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
 
   cpi->vaq_refresh = 0;
 }
