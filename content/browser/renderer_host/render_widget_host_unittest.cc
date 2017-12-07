@@ -1196,9 +1196,9 @@ TEST_F(RenderWidgetHostMojoInputDisabledTest, SendEditCommandsBeforeKeyEvent) {
 
   // Make sure we sent commands and key event to the renderer.
   EXPECT_EQ(2U, process_->sink().message_count());
-  EXPECT_EQ(InputMsg_SetEditCommandsForNextKeyEvent::ID,
+  EXPECT_EQ(static_cast<uint32_t>(InputMsg_SetEditCommandsForNextKeyEvent::ID),
             process_->sink().GetMessageAt(0)->type());
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID,
+  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
             process_->sink().GetMessageAt(1)->type());
   process_->sink().ClearMessages();
 
@@ -1255,7 +1255,7 @@ TEST_F(RenderWidgetHostMojoInputDisabledTest, PreHandleRawKeyDownEvent) {
   // Simulate a new RawKeyDown event.
   SimulateKeyboardEvent(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID,
+  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
             process_->sink().GetMessageAt(0)->type());
   process_->sink().ClearMessages();
 
@@ -2348,7 +2348,8 @@ void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
   EXPECT_EQ(process->sink().message_count(), 1U);
 
   const IPC::Message* message = process->sink().GetMessageAt(0);
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
+  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
+            message->type());
   InputMsg_HandleInputEvent::Param params;
   EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
 
@@ -2367,7 +2368,8 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
     int64_t component_id) {
   EXPECT_EQ(process->sink().message_count(), 2U);
   const IPC::Message* message = process->sink().GetMessageAt(0);
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
+  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
+            message->type());
   InputMsg_HandleInputEvent::Param params;
   EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
 
@@ -2377,7 +2379,8 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
   EXPECT_TRUE(event->GetType() == WebInputEvent::kTouchScrollStarted);
 
   message = process->sink().GetMessageAt(1);
-  EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
+  EXPECT_EQ(static_cast<uint32_t>(InputMsg_HandleInputEvent::ID),
+            message->type());
   EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
 
   event = std::get<0>(params);

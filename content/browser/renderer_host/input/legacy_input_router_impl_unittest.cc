@@ -104,7 +104,7 @@ WebInputEvent& GetEventWithType(WebInputEvent::Type type) {
 
 template <typename MSG_T, typename ARG_T1>
 void ExpectIPCMessageWithArg1(const IPC::Message* msg, const ARG_T1& arg1) {
-  ASSERT_EQ(MSG_T::ID, msg->type());
+  ASSERT_EQ(static_cast<uint32_t>(MSG_T::ID), msg->type());
   typename MSG_T::Schema::Param param;
   ASSERT_TRUE(MSG_T::Read(msg, &param));
   EXPECT_EQ(arg1, std::get<0>(param));
@@ -114,7 +114,7 @@ template <typename MSG_T, typename ARG_T1, typename ARG_T2>
 void ExpectIPCMessageWithArg2(const IPC::Message* msg,
                               const ARG_T1& arg1,
                               const ARG_T2& arg2) {
-  ASSERT_EQ(MSG_T::ID, msg->type());
+  ASSERT_EQ(static_cast<uint32_t>(MSG_T::ID), msg->type());
   typename MSG_T::Schema::Param param;
   ASSERT_TRUE(MSG_T::Read(msg, &param));
   EXPECT_EQ(arg1, std::get<0>(param));

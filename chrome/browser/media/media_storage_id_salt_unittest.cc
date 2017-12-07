@@ -20,7 +20,7 @@ TEST(MediaStorageIdSalt, Create) {
 
   MediaStorageIdSalt::RegisterProfilePrefs(prefs.registry());
   std::vector<uint8_t> salt = MediaStorageIdSalt::GetSalt(&prefs);
-  EXPECT_EQ(MediaStorageIdSalt::kSaltLength, salt.size());
+  EXPECT_EQ(static_cast<size_t>(MediaStorageIdSalt::kSaltLength), salt.size());
 }
 
 TEST(MediaStorageIdSalt, Recreate) {
@@ -28,13 +28,15 @@ TEST(MediaStorageIdSalt, Recreate) {
 
   MediaStorageIdSalt::RegisterProfilePrefs(prefs.registry());
   std::vector<uint8_t> original_salt = MediaStorageIdSalt::GetSalt(&prefs);
-  EXPECT_EQ(MediaStorageIdSalt::kSaltLength, original_salt.size());
+  EXPECT_EQ(static_cast<size_t>(MediaStorageIdSalt::kSaltLength),
+            original_salt.size());
 
   // Now that the salt is created, mess it up and then try fetching it again
   // (should generate a new salt and log an error).
   prefs.SetString(prefs::kMediaStorageIdSalt, "123");
   std::vector<uint8_t> new_salt = MediaStorageIdSalt::GetSalt(&prefs);
-  EXPECT_EQ(MediaStorageIdSalt::kSaltLength, new_salt.size());
+  EXPECT_EQ(static_cast<size_t>(MediaStorageIdSalt::kSaltLength),
+            new_salt.size());
   EXPECT_NE(original_salt, new_salt);
 }
 
@@ -43,10 +45,10 @@ TEST(MediaStorageIdSalt, FetchTwice) {
 
   MediaStorageIdSalt::RegisterProfilePrefs(prefs.registry());
   std::vector<uint8_t> salt1 = MediaStorageIdSalt::GetSalt(&prefs);
-  EXPECT_EQ(MediaStorageIdSalt::kSaltLength, salt1.size());
+  EXPECT_EQ(static_cast<size_t>(MediaStorageIdSalt::kSaltLength), salt1.size());
 
   // Fetch the salt again. Should be the same value.
   std::vector<uint8_t> salt2 = MediaStorageIdSalt::GetSalt(&prefs);
-  EXPECT_EQ(MediaStorageIdSalt::kSaltLength, salt2.size());
+  EXPECT_EQ(static_cast<size_t>(MediaStorageIdSalt::kSaltLength), salt2.size());
   EXPECT_EQ(salt1, salt2);
 }

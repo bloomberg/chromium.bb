@@ -84,7 +84,7 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFamilyCount) {
 
   EXPECT_EQ(3u, family_count);
   ASSERT_EQ(1u, fake_collection_->MessageCount());
-  EXPECT_EQ(DWriteFontProxyMsg_GetFamilyCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFamilyCount::ID),
             fake_collection_->GetMessage(0)->type());
 
   // Calling again should not cause another message to be sent.
@@ -104,9 +104,9 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldFindFamily) {
   EXPECT_EQ(1u, index);
   EXPECT_TRUE(exists);
   ASSERT_EQ(2u, fake_collection_->MessageCount());
-  EXPECT_EQ(DWriteFontProxyMsg_FindFamily::ID,
+  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_FindFamily::ID),
             fake_collection_->GetMessage(0)->type());
-  EXPECT_EQ(DWriteFontProxyMsg_GetFamilyCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFamilyCount::ID),
             fake_collection_->GetMessage(1)->type());
 }
 
@@ -121,7 +121,7 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldReturnUINTMAXWhenNotFound) {
   EXPECT_EQ(UINT32_MAX, index);
   EXPECT_FALSE(exists);
   ASSERT_EQ(1u, fake_collection_->MessageCount());
-  EXPECT_EQ(DWriteFontProxyMsg_FindFamily::ID,
+  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_FindFamily::ID),
             fake_collection_->GetMessage(0)->type());
 }
 
@@ -202,7 +202,7 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNames) {
   hr = family->GetFamilyNames(&names);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(3u, fake_collection_->MessageCount());
-  EXPECT_EQ(DWriteFontProxyMsg_GetFamilyNames::ID,
+  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFamilyNames::ID),
             fake_collection_->GetMessage(2)->type());
 
   EXPECT_EQ(2u, names->GetCount());
@@ -288,7 +288,7 @@ TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
   UINT32 font_count = family->GetFontCount();
   EXPECT_LT(0u, font_count);
   EXPECT_EQ(3u, fake_collection_->MessageCount());
-  EXPECT_EQ(DWriteFontProxyMsg_GetFontFiles::ID,
+  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFontFiles::ID),
             fake_collection_->GetMessage(2)->type());
   mswr::ComPtr<IDWriteFont> font;
   hr = family->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL,

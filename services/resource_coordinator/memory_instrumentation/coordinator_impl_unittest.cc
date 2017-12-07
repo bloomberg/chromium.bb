@@ -590,10 +590,9 @@ TEST_F(CoordinatorImplTest, VmRegionsForHeapProfiler) {
   // and friends makes it too easy to accidentally odr-use this variable
   // causing all sorts of compiler-toolchain divergent fun when trying
   // to decide of the lambda capture is necessary.
-  enum {
-    kBrowserPid = 1,
-    kRendererPid = 2,
-  };
+  static constexpr base::ProcessId kBrowserPid = 1;
+  static constexpr base::ProcessId kRendererPid = 2;
+
   MockClientProcess browser_client(this, kBrowserPid,
                                    mojom::ProcessType::BROWSER);
   MockClientProcess renderer_client(this, kRendererPid,

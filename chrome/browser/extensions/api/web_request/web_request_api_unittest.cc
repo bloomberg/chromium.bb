@@ -133,7 +133,8 @@ bool HasWarning(const WarningSet& warnings,
 void GetPartOfMessageArguments(IPC::Message* message,
                                const base::DictionaryValue** out,
                                ExtensionMsg_DispatchEvent::Param* param) {
-  ASSERT_EQ(ExtensionMsg_DispatchEvent::ID, message->type());
+  ASSERT_EQ(static_cast<uint32_t>(ExtensionMsg_DispatchEvent::ID),
+            message->type());
   ASSERT_TRUE(ExtensionMsg_DispatchEvent::Read(message, param));
   const base::ListValue& list = std::get<1>(*param);
   ASSERT_EQ(1u, list.GetSize());
@@ -167,7 +168,8 @@ class TestIPCSender : public IPC::Sender {
  private:
   // IPC::Sender
   bool Send(IPC::Message* message) override {
-    EXPECT_EQ(ExtensionMsg_DispatchEvent::ID, message->type());
+    EXPECT_EQ(static_cast<uint32_t>(ExtensionMsg_DispatchEvent::ID),
+              message->type());
 
     EXPECT_FALSE(task_queue_.empty());
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

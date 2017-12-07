@@ -364,7 +364,7 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Bounds) {
 
     change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
     EXPECT_EQ(1, observer.display_changed());
-    EXPECT_EQ(DisplayObserver::DISPLAY_METRIC_BOUNDS,
+    EXPECT_EQ(static_cast<uint32_t>(DisplayObserver::DISPLAY_METRIC_BOUNDS),
               observer.latest_metrics_change());
 
     change_notifier.RemoveObserver(&observer);
@@ -384,7 +384,7 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Rotation) {
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
   EXPECT_EQ(1, observer.display_changed());
-  EXPECT_EQ(DisplayObserver::DISPLAY_METRIC_ROTATION,
+  EXPECT_EQ(static_cast<uint32_t>(DisplayObserver::DISPLAY_METRIC_ROTATION),
             observer.latest_metrics_change());
 }
 
@@ -401,7 +401,7 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_WorkArea) {
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
   EXPECT_EQ(1, observer.display_changed());
-  EXPECT_EQ(DisplayObserver::DISPLAY_METRIC_WORK_AREA,
+  EXPECT_EQ(static_cast<uint32_t>(DisplayObserver::DISPLAY_METRIC_WORK_AREA),
             observer.latest_metrics_change());
 }
 
@@ -418,7 +418,8 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_DSF) {
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
   EXPECT_EQ(1, observer.display_changed());
-  EXPECT_EQ(DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR,
+  EXPECT_EQ(static_cast<uint32_t>(
+                DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR),
             observer.latest_metrics_change());
 }
 

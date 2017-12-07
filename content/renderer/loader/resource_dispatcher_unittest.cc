@@ -86,7 +86,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     }
 
     ResourceHostMsg_RequestResource::Param params;
-    if (ResourceHostMsg_RequestResource::ID != message_queue_[0].type() ||
+    if (static_cast<uint32_t>(ResourceHostMsg_RequestResource::ID) !=
+            message_queue_[0].type() ||
         !ResourceHostMsg_RequestResource::Read(&message_queue_[0], &params)) {
       ADD_FAILURE() << "Expected ResourceHostMsg_RequestResource message";
       return -1;
@@ -100,7 +101,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   void ConsumeFollowRedirect(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
     std::tuple<int> args;
-    ASSERT_EQ(ResourceHostMsg_FollowRedirect::ID, message_queue_[0].type());
+    ASSERT_EQ(static_cast<uint32_t>(ResourceHostMsg_FollowRedirect::ID),
+              message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_FollowRedirect::Read(
         &message_queue_[0], &args));
     EXPECT_EQ(expected_request_id, std::get<0>(args));
@@ -110,7 +112,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   void ConsumeDataReceived_ACK(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
     std::tuple<int> args;
-    ASSERT_EQ(ResourceHostMsg_DataReceived_ACK::ID, message_queue_[0].type());
+    ASSERT_EQ(static_cast<uint32_t>(ResourceHostMsg_DataReceived_ACK::ID),
+              message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_DataReceived_ACK::Read(
         &message_queue_[0], &args));
     EXPECT_EQ(expected_request_id, std::get<0>(args));
@@ -120,7 +123,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   void ConsumeReleaseDownloadedFile(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
     std::tuple<int> args;
-    ASSERT_EQ(ResourceHostMsg_ReleaseDownloadedFile::ID,
+    ASSERT_EQ(static_cast<uint32_t>(ResourceHostMsg_ReleaseDownloadedFile::ID),
               message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_ReleaseDownloadedFile::Read(
         &message_queue_[0], &args));
@@ -131,7 +134,8 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   void ConsumeCancelRequest(int expected_request_id) {
     ASSERT_FALSE(message_queue_.empty());
     std::tuple<int> args;
-    ASSERT_EQ(ResourceHostMsg_CancelRequest::ID, message_queue_[0].type());
+    ASSERT_EQ(static_cast<uint32_t>(ResourceHostMsg_CancelRequest::ID),
+              message_queue_[0].type());
     ASSERT_TRUE(ResourceHostMsg_CancelRequest::Read(
         &message_queue_[0], &args));
     EXPECT_EQ(expected_request_id, std::get<0>(args));

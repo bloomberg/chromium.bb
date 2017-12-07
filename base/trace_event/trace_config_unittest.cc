@@ -653,8 +653,8 @@ TEST(TraceConfigTest, EmptyMemoryDumpConfigTest) {
             tc.ToString());
   EXPECT_EQ(0u, tc.memory_dump_config().triggers.size());
   EXPECT_EQ(
-      TraceConfig::MemoryDumpConfig::HeapProfiler ::
-          kDefaultBreakdownThresholdBytes,
+      static_cast<uint32_t>(TraceConfig::MemoryDumpConfig::HeapProfiler::
+                                kDefaultBreakdownThresholdBytes),
       tc.memory_dump_config().heap_profiler_options.breakdown_threshold_bytes);
 }
 
@@ -664,8 +664,8 @@ TEST(TraceConfigTest, LegacyStringToMemoryDumpConfig) {
   EXPECT_NE(std::string::npos, tc.ToString().find("memory_dump_config"));
   EXPECT_EQ(0u, tc.memory_dump_config().triggers.size());
   EXPECT_EQ(
-      TraceConfig::MemoryDumpConfig::HeapProfiler ::
-          kDefaultBreakdownThresholdBytes,
+      static_cast<uint32_t>(TraceConfig::MemoryDumpConfig::HeapProfiler::
+                                kDefaultBreakdownThresholdBytes),
       tc.memory_dump_config().heap_profiler_options.breakdown_threshold_bytes);
 }
 

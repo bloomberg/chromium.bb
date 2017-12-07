@@ -120,7 +120,9 @@ class SubresourceFilterContentRulesetServiceTest : public ::testing::Test {
   void AssertSetRulesetForProcessMessageWithContent(
       const IPC::Message* message,
       const std::string& expected_contents) {
-    ASSERT_EQ(SubresourceFilterMsg_SetRulesetForProcess::ID, message->type());
+    ASSERT_EQ(
+        static_cast<uint32_t>(SubresourceFilterMsg_SetRulesetForProcess::ID),
+        message->type());
     base::File ruleset_file = ExtractRulesetFromMessage(message);
     ASSERT_TRUE(ruleset_file.IsValid());
     ASSERT_EQ(expected_contents, ReadFileContents(&ruleset_file));

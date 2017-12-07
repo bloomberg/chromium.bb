@@ -1162,7 +1162,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     view()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
-    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+              msg->type());
     ViewHostMsg_TextInputStateChanged::Param params;
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
     TextInputState p = std::get<0>(params);
@@ -1183,7 +1184,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     view()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
-    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+              msg->type());
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
     p = std::get<0>(params);
     type = p.type;
@@ -1208,7 +1210,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       base::RunLoop().RunUntilIdle();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != nullptr);
-      EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
+      EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+                msg->type());
       ViewHostMsg_TextInputStateChanged::Read(msg, &params);
       p = std::get<0>(params);
       type = p.type;

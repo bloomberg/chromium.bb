@@ -347,7 +347,8 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
 
     EXPECT_EQ(expected_count, reject_reasons.size());
     for (size_t i = 0; i < reject_reasons.size(); ++i) {
-      EXPECT_EQ(expected_handshake_failures[i], reject_reasons[i]);
+      EXPECT_EQ(static_cast<QuicTag>(expected_handshake_failures[i]),
+                reject_reasons[i]);
     }
   }
 

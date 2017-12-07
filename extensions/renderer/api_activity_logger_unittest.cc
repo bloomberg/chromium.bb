@@ -66,7 +66,9 @@ TEST_F(ActivityLoggerTest, DontCrashOnUnconvertedValues) {
 
   ASSERT_EQ(1u, sink.message_count());
   const IPC::Message* message = sink.GetMessageAt(0u);
-  ASSERT_EQ(ExtensionHostMsg_AddAPIActionToActivityLog::ID, message->type());
+  ASSERT_EQ(
+      static_cast<uint32_t>(ExtensionHostMsg_AddAPIActionToActivityLog::ID),
+      message->type());
   ExtensionHostMsg_AddAPIActionToActivityLog::Param full_params;
   ASSERT_TRUE(
       ExtensionHostMsg_AddAPIActionToActivityLog::Read(message, &full_params));

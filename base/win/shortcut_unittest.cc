@@ -99,7 +99,8 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   ShortcutProperties properties_read_1;
   ASSERT_TRUE(ResolveShortcutProperties(
       file_1, ShortcutProperties::PROPERTIES_ALL, &properties_read_1));
-  EXPECT_EQ(ShortcutProperties::PROPERTIES_ALL, properties_read_1.options);
+  EXPECT_EQ(static_cast<unsigned>(ShortcutProperties::PROPERTIES_ALL),
+            properties_read_1.options);
   ValidatePathsAreEqual(link_properties_.target, properties_read_1.target);
   ValidatePathsAreEqual(link_properties_.working_dir,
                         properties_read_1.working_dir);
@@ -122,7 +123,8 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   ShortcutProperties properties_read_2;
   ASSERT_TRUE(ResolveShortcutProperties(
       file_2, ShortcutProperties::PROPERTIES_ALL, &properties_read_2));
-  EXPECT_EQ(ShortcutProperties::PROPERTIES_ALL, properties_read_2.options);
+  EXPECT_EQ(static_cast<unsigned>(ShortcutProperties::PROPERTIES_ALL),
+            properties_read_2.options);
   ValidatePathsAreEqual(only_target_properties.target,
                         properties_read_2.target);
   ValidatePathsAreEqual(FilePath(), properties_read_2.working_dir);

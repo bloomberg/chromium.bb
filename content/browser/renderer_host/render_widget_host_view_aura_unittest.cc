@@ -1490,7 +1490,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   parent2->SetBounds(gfx::Rect(20, 20, 200, 200));
   ASSERT_EQ(1U, sink_->message_count());
   const IPC::Message* msg = sink_->GetMessageAt(0);
-  ASSERT_EQ(ViewMsg_UpdateScreenRects::ID, msg->type());
+  ASSERT_EQ(static_cast<uint32_t>(ViewMsg_UpdateScreenRects::ID), msg->type());
   ViewMsg_UpdateScreenRects::Param params;
   ViewMsg_UpdateScreenRects::Read(msg, &params);
   EXPECT_EQ(gfx::Rect(24, 24, 100, 100), std::get<0>(params));
@@ -1504,7 +1504,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   parent1->SetBounds(gfx::Rect(10, 10, 300, 300));
   ASSERT_EQ(1U, sink_->message_count());
   msg = sink_->GetMessageAt(0);
-  ASSERT_EQ(ViewMsg_UpdateScreenRects::ID, msg->type());
+  ASSERT_EQ(static_cast<uint32_t>(ViewMsg_UpdateScreenRects::ID), msg->type());
   ViewMsg_UpdateScreenRects::Read(msg, &params);
   EXPECT_EQ(gfx::Rect(33, 33, 100, 100), std::get<0>(params));
   EXPECT_EQ(gfx::Rect(10, 10, 300, 300), std::get<1>(params));
@@ -2277,10 +2277,11 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   view_->SetSize(gfx::Size(100, 100));
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
   EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
+  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
+            sink_->GetMessageAt(0)->type());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ("100x100", std::get<0>(params).new_size.ToString());  // dip size
@@ -2299,7 +2300,8 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   // RenderWidgetHostViewAura::OnDisplayMetricsChanged() observer callback,
   // which sends a ViewMsg_Resize::ID message to the renderer.
   EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
+  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
+            sink_->GetMessageAt(0)->type());
   auto* view_delegate = static_cast<MockRenderWidgetHostDelegate*>(
       static_cast<RenderWidgetHostImpl*>(view_->GetRenderWidgetHost())
           ->delegate());
@@ -2311,7 +2313,8 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
   // Extra ScreenInfoChanged message for |parent_view_|.
   EXPECT_EQ(1u, sink_->message_count());
-  EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
+  EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
+            sink_->GetMessageAt(0)->type());
   EXPECT_EQ(1.0f, view_delegate->get_last_device_scale_factor());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
 }
@@ -2341,7 +2344,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_SetLocalSurfaceIdForAutoResize::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
+              msg->type());
     ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
     ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
     EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
@@ -2356,7 +2360,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   EXPECT_EQ(2u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(1);
-    EXPECT_EQ(ViewMsg_SetLocalSurfaceIdForAutoResize::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
+              msg->type());
     ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
     ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
     EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
@@ -2606,7 +2611,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   {
     // 0 is CreatingNew message.
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ(
@@ -2633,7 +2638,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ(
@@ -2739,7 +2744,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   EXPECT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID), msg->type());
     ViewMsg_Resize::Param params;
     ViewMsg_Resize::Read(msg, &params);
     EXPECT_EQ(size2.ToString(), std::get<0>(params).new_size.ToString());

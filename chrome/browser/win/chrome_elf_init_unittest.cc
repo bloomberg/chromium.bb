@@ -79,7 +79,8 @@ TEST_F(ChromeBlacklistTrialTest, DefaultRun) {
 
   // Ensure the beacon values are now correct, indicating the
   // blacklist beacon was setup.
-  ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
+  ASSERT_EQ(static_cast<DWORD>(blacklist::BLACKLIST_ENABLED),
+            GetBlacklistState());
   base::string16 version(base::UTF8ToUTF16(version_info::GetVersionNumber()));
   ASSERT_EQ(version, GetBlacklistVersion());
 }
@@ -105,7 +106,8 @@ TEST_F(ChromeBlacklistTrialTest, BlacklistDisabledRun) {
 
   // Ensure invalid values are returned to indicate that the beacon
   // values are indeed gone.
-  ASSERT_EQ(blacklist::BLACKLIST_STATE_MAX, GetBlacklistState());
+  ASSERT_EQ(static_cast<DWORD>(blacklist::BLACKLIST_STATE_MAX),
+            GetBlacklistState());
   ASSERT_EQ(base::string16(), GetBlacklistVersion());
 }
 
@@ -113,7 +115,8 @@ TEST_F(ChromeBlacklistTrialTest, VerifyFirstRun) {
   BrowserBlacklistBeaconSetup();
 
   // Verify the state is properly set after the first run.
-  ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
+  ASSERT_EQ(static_cast<DWORD>(blacklist::BLACKLIST_ENABLED),
+            GetBlacklistState());
 
   base::string16 version(base::UTF8ToUTF16(version_info::GetVersionNumber()));
   ASSERT_EQ(version, GetBlacklistVersion());
@@ -129,7 +132,8 @@ TEST_F(ChromeBlacklistTrialTest, BlacklistFailed) {
 
   BrowserBlacklistBeaconSetup();
 
-  ASSERT_EQ(blacklist::BLACKLIST_DISABLED, GetBlacklistState());
+  ASSERT_EQ(static_cast<DWORD>(blacklist::BLACKLIST_DISABLED),
+            GetBlacklistState());
 }
 
 TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
@@ -146,7 +150,8 @@ TEST_F(ChromeBlacklistTrialTest, VersionChanged) {
   BrowserBlacklistBeaconSetup();
 
   // The beacon should now be marked as enabled for the current version.
-  ASSERT_EQ(blacklist::BLACKLIST_ENABLED, GetBlacklistState());
+  ASSERT_EQ(static_cast<DWORD>(blacklist::BLACKLIST_ENABLED),
+            GetBlacklistState());
 
   base::string16 expected_version(
       base::UTF8ToUTF16(version_info::GetVersionNumber()));

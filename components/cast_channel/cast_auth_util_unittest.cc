@@ -74,7 +74,8 @@ TEST_F(CastAuthUtilTest, VerifySuccess) {
       auth_response, signed_data, cast_certificate::CRLPolicy::CRL_OPTIONAL,
       nullptr, nullptr, now);
   EXPECT_TRUE(result.success());
-  EXPECT_EQ(AuthResult::POLICY_NONE, result.channel_policies);
+  EXPECT_EQ(static_cast<unsigned>(AuthResult::POLICY_NONE),
+            result.channel_policies);
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadCA) {
