@@ -255,8 +255,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
   if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
-    int idx;
-    for (idx = 0; idx < 2; ++idx) {
+    for (int idx = 0; idx < 2; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1 || CONFIG_OPT_REF_MV) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
@@ -267,11 +266,10 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     }
   }
   if (have_nearmv_in_inter_mode(mbmi->mode)) {
-    int idx;
     // Offset the NEARESTMV mode.
     // TODO(jingning): Unify the two syntax decoding loops after the NEARESTMV
     // mode is factored in.
-    for (idx = 1; idx < 3; ++idx) {
+    for (int idx = 1; idx < 3; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1 || CONFIG_OPT_REF_MV) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
@@ -558,8 +556,6 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
   const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
-  FRAME_COUNTS *counts = xd->counts;
-  int segment_id;
 
   if (!seg->enabled) return 0;  // Default for disabled segmentation
 
@@ -571,14 +567,15 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   } else {
     if (cm->preskip_segid) return mbmi->segment_id;
   }
-  segment_id =
+  const int segment_id =
       read_segment_id(cm, xd, mi_row, mi_col, r, preskip ? 0 : mbmi->skip);
 #else
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)preskip;
   (void)mbmi;
-  segment_id = read_segment_id(r, &ec_ctx->seg);
+  const int segment_id = read_segment_id(r, &ec_ctx->seg);
 #endif
+  FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->seg.tree_total[segment_id];
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;
@@ -1025,7 +1022,6 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
                             const int_mv *ref_mv, int mi_row, int mi_col,
                             BLOCK_SIZE bsize, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)cm;
   read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, MV_SUBPEL_NONE);
   // DV should not have sub-pel.
   assert((mv->as_mv.col & 7) == 0);
@@ -1050,23 +1046,22 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     const BLOCK_SIZE bsize = mbmi->sb_type;
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
     const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-    int idx, idy;
     if ((cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
          !xd->lossless[mbmi->segment_id] && !mbmi->skip)) {
       const TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, 0);
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
       mbmi->min_tx_size = TX_SIZES_ALL;
-      for (idy = 0; idy < height; idy += bh) {
-        for (idx = 0; idx < width; idx += bw) {
+      for (int idy = 0; idy < height; idy += bh) {
+        for (int idx = 0; idx < width; idx += bw) {
           read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, 0, idy, idx,
                              r);
         }
       }
     } else {
       mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
-      for (idy = 0; idy < height; ++idy)
-        for (idx = 0; idx < width; ++idx)
+      for (int idy = 0; idy < height; ++idy)
+        for (int idx = 0; idx < width; ++idx)
           mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
@@ -1398,8 +1393,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int ctx = av1_get_pred_context_uni_comp_ref_p(xd);
-        int bit;
-        bit = READ_REF_BIT2(uni_comp_ref_p);
+        const int bit = READ_REF_BIT2(uni_comp_ref_p);
         if (counts) ++counts->uni_comp_ref[ctx][0][bit];
 
         if (bit) {
@@ -1407,14 +1401,12 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
           ref_frame[1] = ALTREF_FRAME;
         } else {
           const int ctx1 = av1_get_pred_context_uni_comp_ref_p1(xd);
-          int bit1;
-          bit1 = READ_REF_BIT2(uni_comp_ref_p1);
+          const int bit1 = READ_REF_BIT2(uni_comp_ref_p1);
           if (counts) ++counts->uni_comp_ref[ctx1][1][bit1];
 
           if (bit1) {
             const int ctx2 = av1_get_pred_context_uni_comp_ref_p2(xd);
-            int bit2;
-            bit2 = READ_REF_BIT2(uni_comp_ref_p2);
+            const int bit2 = READ_REF_BIT2(uni_comp_ref_p2);
             if (counts) ++counts->uni_comp_ref[ctx2][2][bit2];
 
             if (bit2) {
@@ -1814,9 +1806,8 @@ static void fpm_sync(void *const data, int mi_row) {
 static void dec_dump_logs(AV1_COMMON *cm, MODE_INFO *const mi, int mi_row,
                           int mi_col, int16_t mode_ctx) {
   int_mv mv[2] = { { 0 } };
-  int ref;
   MB_MODE_INFO *const mbmi = &mi->mbmi;
-  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
+  for (int ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
     mv[ref].as_mv = mbmi->mv[ref].as_mv;
 
   const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
@@ -2196,11 +2187,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         findSamples(cm, xd, mi_row, mi_col, pts, pts_inref, pts_mv, pts_wm);
 
     // Find a warped neighbor.
-    int cand;
     int best_weight = 0;
 
     // if (mbmi->mode == NEARESTMV)
-    for (cand = 0; cand < mbmi->num_proj_ref[0]; cand++) {
+    for (int cand = 0; cand < mbmi->num_proj_ref[0]; cand++) {
       if (pts_wm[cand * 2 + 1] > best_weight) {
         best_weight = pts_wm[cand * 2 + 1];
         best_cand = cand;
