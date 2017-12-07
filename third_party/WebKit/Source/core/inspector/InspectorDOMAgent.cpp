@@ -1740,7 +1740,7 @@ void InspectorDOMAgent::CollectNodes(
     Node* node,
     int depth,
     bool pierce,
-    const WTF::RepeatingFunction<bool(Node*)>& filter,
+    base::RepeatingCallback<bool(Node*)> filter,
     HeapVector<Member<Node>>* result) {
   if (filter && filter.Run(node))
     result->push_back(node);

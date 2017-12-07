@@ -7,6 +7,7 @@
 
 #include <limits>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/intersection_observer/IntersectionObserver.h"
@@ -29,7 +30,7 @@ class Element;
 class CORE_EXPORT ElementVisibilityObserver final
     : public GarbageCollectedFinalized<ElementVisibilityObserver> {
  public:
-  using VisibilityCallback = WTF::RepeatingFunction<void(bool)>;
+  using VisibilityCallback = base::RepeatingCallback<void(bool)>;
 
   ElementVisibilityObserver(Element*, VisibilityCallback);
   virtual ~ElementVisibilityObserver();

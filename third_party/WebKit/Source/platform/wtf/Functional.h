@@ -85,14 +85,8 @@ namespace WTF {
 // 3. To create a same-thread callback that may be called multiple times
 //
 // Use WTF::BindRepeating(), and receive the returned callback as
-// WTF::RepeatingFunction or WTF::RepeatingClosure. Those types are now an
-// alias of base::RepeatingCallback, so you can just use it interchangably.
-//
-// You can copy WTF::RepeatingFunction.
-//
-// To invoke the callback function, simply do:
-//
-//     function.Run(<arguments...>);
+// base::RepeatingCallback or base::RepeatingClosure (WTF::RepeatingFunction
+// is gone).
 
 // Thread Safety:
 //
@@ -420,9 +414,6 @@ BindRepeating(FunctionType function, BoundParameters&&... bound_parameters) {
 }
 
 // TODO(yutak): Replace WTF::Function with base::OnceCallback.
-template <typename T>
-using RepeatingFunction = base::RepeatingCallback<T>;
-using RepeatingClosure = base::RepeatingCallback<void()>;
 using Closure = Function<void()>;
 
 template <typename T>

@@ -5,11 +5,11 @@
 #ifndef WaitUntilObserver_h
 #define WaitUntilObserver_h
 
+#include "base/callback.h"
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Functional.h"
 
 namespace blink {
 
@@ -23,7 +23,7 @@ class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollectedFinalized<WaitUntilObserver> {
  public:
   using PromiseSettledCallback =
-      WTF::RepeatingFunction<void(const ScriptValue&)>;
+      base::RepeatingCallback<void(const ScriptValue&)>;
 
   enum EventType {
     kAbortPayment,

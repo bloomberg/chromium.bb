@@ -5,8 +5,8 @@
 #ifndef MediaControlsWindowEventListener_h
 #define MediaControlsWindowEventListener_h
 
+#include "base/callback.h"
 #include "core/dom/events/EventListener.h"
-#include "platform/wtf/Functional.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ class MediaControlsImpl;
 
 class MediaControlsWindowEventListener final : public EventListener {
  public:
-  using Callback = WTF::RepeatingFunction<void()>;
+  using Callback = base::RepeatingCallback<void()>;
 
   static MediaControlsWindowEventListener* Create(MediaControlsImpl*, Callback);
 

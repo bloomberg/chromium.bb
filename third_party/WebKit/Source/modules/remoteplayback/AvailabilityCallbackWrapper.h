@@ -7,11 +7,11 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/Functional.h"
 
 namespace blink {
 
@@ -27,7 +27,7 @@ class AvailabilityCallbackWrapper final
 
  public:
   explicit AvailabilityCallbackWrapper(V8RemotePlaybackAvailabilityCallback*);
-  explicit AvailabilityCallbackWrapper(WTF::RepeatingClosure);
+  explicit AvailabilityCallbackWrapper(base::RepeatingClosure);
   ~AvailabilityCallbackWrapper() = default;
 
   void Run(RemotePlayback*, bool new_availability);
@@ -38,7 +38,7 @@ class AvailabilityCallbackWrapper final
  private:
   // Only one of these callbacks must be set.
   TraceWrapperMember<V8RemotePlaybackAvailabilityCallback> bindings_cb_;
-  WTF::RepeatingClosure internal_cb_;
+  base::RepeatingClosure internal_cb_;
 };
 
 }  // namespace blink

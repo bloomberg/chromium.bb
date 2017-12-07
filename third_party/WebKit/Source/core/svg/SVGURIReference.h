@@ -22,10 +22,10 @@
 #define SVGURIReference_h
 
 #include <memory>
+#include "base/callback.h"
 #include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedHref.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Functional.h"
 
 namespace blink {
 
@@ -71,7 +71,7 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
   static Element* ObserveTarget(Member<IdTargetObserver>&,
                                 TreeScope&,
                                 const AtomicString& id,
-                                WTF::RepeatingClosure);
+                                base::RepeatingClosure);
   // Unregister and destroy the observer.
   static void UnobserveTarget(Member<IdTargetObserver>&);
 

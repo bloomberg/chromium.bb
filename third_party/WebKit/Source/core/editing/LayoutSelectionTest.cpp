@@ -12,6 +12,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 
@@ -63,7 +64,7 @@ static bool TestLayoutObjectState(LayoutObject* object,
 }
 
 using IsTypeOf =
-    WTF::RepeatingFunction<bool(const LayoutObject& layout_object)>;
+    base::RepeatingCallback<bool(const LayoutObject& layout_object)>;
 using IsTypeOfSimple = bool(const LayoutObject& layout_object);
 #define USING_LAYOUTOBJECT_FUNC(member_func)                   \
   static bool member_func(const LayoutObject& layout_object) { \

@@ -31,11 +31,11 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "modules/ModulesExport.h"
 #include "modules/webdatabase/DatabaseError.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Functional.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/ThreadingPrimitives.h"
@@ -79,7 +79,7 @@ class MODULES_EXPORT DatabaseTracker {
 
   void CloseDatabasesImmediately(const SecurityOrigin*, const String& name);
 
-  using DatabaseCallback = WTF::RepeatingFunction<void(Database*)>;
+  using DatabaseCallback = base::RepeatingCallback<void(Database*)>;
   void ForEachOpenDatabaseInPage(Page*, DatabaseCallback);
 
   void PrepareToOpenDatabase(Database*);

@@ -31,6 +31,7 @@
 #define InspectorDOMAgent_h
 
 #include <memory>
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/EventListenerMap.h"
@@ -254,7 +255,7 @@ class CORE_EXPORT InspectorDOMAgent final
   static void CollectNodes(Node* root,
                            int depth,
                            bool pierce,
-                           const WTF::RepeatingFunction<bool(Node*)>&,
+                           base::RepeatingCallback<bool(Node*)>,
                            HeapVector<Member<Node>>* result);
 
   protocol::Response AssertNode(int node_id, Node*&);

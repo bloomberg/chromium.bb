@@ -26,6 +26,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/xlink_names.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/Functional.h"
 
 namespace blink {
 
@@ -35,13 +36,13 @@ class SVGElementReferenceObserver : public IdTargetObserver {
  public:
   SVGElementReferenceObserver(TreeScope& tree_scope,
                               const AtomicString& id,
-                              WTF::RepeatingClosure closure)
+                              base::RepeatingClosure closure)
       : IdTargetObserver(tree_scope.GetIdTargetObserverRegistry(), id),
         closure_(std::move(closure)) {}
 
  private:
   void IdTargetChanged() override { closure_.Run(); }
-  WTF::RepeatingClosure closure_;
+  base::RepeatingClosure closure_;
 };
 }
 
@@ -134,7 +135,7 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
 Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
                                         TreeScope& tree_scope,
                                         const AtomicString& id,
-                                        WTF::RepeatingClosure closure) {
+                                        base::RepeatingClosure closure) {
   DCHECK(!observer);
   if (id.IsEmpty())
     return nullptr;
