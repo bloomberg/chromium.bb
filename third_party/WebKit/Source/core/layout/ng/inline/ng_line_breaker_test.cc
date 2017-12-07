@@ -48,9 +48,9 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     NGExclusionSpace exclusion_space;
     NGLineInfo line_info;
     while (!break_token || !break_token->IsFinished()) {
-      NGLineBreaker line_breaker(node, *space, &positioned_floats,
-                                 &unpositioned_floats, &exclusion_space, 0u,
-                                 break_token.get());
+      NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, *space,
+                                 &positioned_floats, &unpositioned_floats,
+                                 &exclusion_space, 0u, break_token.get());
       if (!line_breaker.NextLine(
               NGLayoutOpportunity(
                   NGBfcOffset(),

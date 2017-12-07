@@ -593,7 +593,8 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
         std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
 
     NGLineInfo line_info;
-    NGLineBreaker line_breaker(Node(), constraint_space_, &positioned_floats,
+    NGLineBreaker line_breaker(Node(), NGLineBreakerMode::kContent,
+                               constraint_space_, &positioned_floats,
                                &unpositioned_floats_, exclusion_space.get(),
                                handled_item_index, break_token);
 
