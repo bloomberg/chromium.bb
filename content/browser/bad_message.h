@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BAD_MESSAGE_H_
 #define CONTENT_BROWSER_BAD_MESSAGE_H_
 
+#include "base/debug/crash_logging.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -234,6 +235,10 @@ CONTENT_EXPORT void ReceivedBadMessage(int render_process_id,
 // renderer or other child process. Logs the event, records a histogram metric
 // for the |reason|, and terminates the process for |filter|.
 void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason);
+
+// Returns a crash key named "mojo-message-error" for storing Mojo error
+// messages.
+base::debug::CrashKeyString* GetMojoErrorCrashKey();
 
 }  // namespace bad_message
 }  // namespace content

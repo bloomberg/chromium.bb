@@ -322,8 +322,11 @@ void InputEventFilter::SendMessageOnIOThread(
     return;
   static size_t s_send_failure_count_ = 0;
   s_send_failure_count_++;
-  base::debug::SetCrashKeyValue("input-event-filter-send-failure",
-                                base::IntToString(s_send_failure_count_));
+
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "input-event-filter-send-failure", base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(crash_key,
+                                 base::IntToString(s_send_failure_count_));
 }
 
 }  // namespace content

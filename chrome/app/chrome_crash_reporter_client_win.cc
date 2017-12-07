@@ -37,7 +37,6 @@ namespace {
 // RegisterCrashKeys function in the crash_keys::CrashReporterClient interface
 // and the snprintf function defined here.
 constexpr char kActiveURL[] = "url-chunk";
-constexpr char kFontKeyName[] = "font_key_name";
 
 // Installed extensions. |kExtensionID| should be formatted with an integer,
 // in the range [0, kExtensionIDMaxCount).
@@ -58,8 +57,6 @@ constexpr char kHungRendererOutstandingEventType[] =
     "hung-outstanding-event-type";
 constexpr char kHungRendererLastEventType[] = "hung-last-event-type";
 constexpr char kHungRendererReason[] = "hung-reason";
-constexpr char kInputEventFilterSendFailure[] =
-    "input-event-filter-send-failure";
 
 constexpr char kIsEnterpriseManaged[] = "is-enterprise-managed";
 
@@ -114,12 +111,8 @@ size_t RegisterCrashKeysHelper() {
       {kIsEnterpriseManaged, kSmallSize},
 
       // content/:
-      {"bad_message_reason", kSmallSize},
       {"discardable-memory-allocated", kSmallSize},
       {"discardable-memory-free", kSmallSize},
-      {kFontKeyName, kSmallSize},
-      {"mojo-message-error", kMediumSize},
-      {"ppapi_path", kMediumSize},
       {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},
       {kViewCount, kSmallSize},
@@ -127,7 +120,6 @@ size_t RegisterCrashKeysHelper() {
       {kHungRendererOutstandingEventType, kSmallSize},
       {kHungRendererLastEventType, kSmallSize},
       {kHungRendererReason, kSmallSize},
-      {kInputEventFilterSendFailure, kSmallSize},
 
       // media/:
       {kZeroEncodeDetails, kSmallSize},
@@ -144,10 +136,6 @@ size_t RegisterCrashKeysHelper() {
 
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", kMediumSize},
-
-      // Accessibility keys. Temporary for http://crbug.com/765490.
-      {"ax_tree_error", kSmallSize},
-      {"ax_tree_update", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

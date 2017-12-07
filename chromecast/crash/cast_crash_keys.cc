@@ -42,15 +42,10 @@ size_t RegisterCastCrashKeys() {
       {gpu::crash_keys::kGPUGLContextIsVirtual, ::crash_keys::kSmallSize},
 
       // content/:
-      {"bad_message_reason", ::crash_keys::kSmallSize},
       {"discardable-memory-allocated", ::crash_keys::kSmallSize},
       {"discardable-memory-free", ::crash_keys::kSmallSize},
-      {"font_key_name", ::crash_keys::kSmallSize},
-      {"mojo-message-error", ::crash_keys::kMediumSize},
-      {"ppapi_path", ::crash_keys::kMediumSize},
       {"subresource_url", ::crash_keys::kLargeSize},
       {"total-discardable-memory-allocated", ::crash_keys::kSmallSize},
-      {"input-event-filter-send-failure", ::crash_keys::kSmallSize},
       {"view-count", ::crash_keys::kSmallSize},
 
       // media/:
@@ -68,10 +63,6 @@ size_t RegisterCastCrashKeys() {
 
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", ::crash_keys::kMediumSize},
-
-      // Accessibility keys. Temporary for http://crbug.com/765490.
-      {"ax_tree_error", ::crash_keys::kSmallSize},
-      {"ax_tree_update", ::crash_keys::kMediumSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),

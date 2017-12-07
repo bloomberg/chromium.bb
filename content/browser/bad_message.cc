@@ -5,7 +5,6 @@
 #include "content/browser/bad_message.h"
 
 #include "base/bind.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,10 +19,12 @@ namespace bad_message {
 namespace {
 
 void LogBadMessage(BadMessageReason reason) {
+  static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
+      "bad_message_reason", base::debug::CrashKeySize::Size32);
+
   LOG(ERROR) << "Terminating renderer for bad IPC message, reason " << reason;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.Content", reason);
-  base::debug::SetCrashKeyValue("bad_message_reason",
-                                base::IntToString(reason));
+  base::debug::SetCrashKeyString(bad_message_reason, base::IntToString(reason));
 }
 
 void ReceivedBadMessageOnUIThread(int render_process_id,
@@ -64,6 +65,12 @@ void ReceivedBadMessage(int render_process_id, BadMessageReason reason) {
 void ReceivedBadMessage(BrowserMessageFilter* filter, BadMessageReason reason) {
   LogBadMessage(reason);
   filter->ShutdownForBadMessage();
+}
+
+base::debug::CrashKeyString* GetMojoErrorCrashKey() {
+  static auto* crash_key = base::debug::AllocateCrashKeyString(
+      "mojo-message-error", base::debug::CrashKeySize::Size256);
+  return crash_key;
 }
 
 }  // namespace bad_message

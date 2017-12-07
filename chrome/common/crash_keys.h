@@ -91,10 +91,6 @@ extern const char kApValue[];
 extern const char kCohortName[];
 #endif
 
-// Number of input event send IPC failures. Added to debug
-// crbug.com/615090.
-extern const char kInputEventFilterSendFailure[];
-
 // The user's printers, up to kPrinterInfoCount. Should be set with
 // ScopedPrinterInfo.
 const size_t kPrinterInfoCount = 4;
