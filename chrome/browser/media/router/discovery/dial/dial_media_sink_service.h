@@ -72,13 +72,14 @@ class DialMediaSinkService {
   friend class DialMediaSinkServiceTest;
 
   // Marked virtual for tests.
-  virtual std::unique_ptr<DialMediaSinkServiceImpl> CreateImpl(
+  virtual std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
+  CreateImpl(
       const OnSinksDiscoveredCallback& sink_discovery_cb,
       const OnDialSinkAddedCallback& dial_sink_added_cb,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
   // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
-  std::unique_ptr<DialMediaSinkServiceImpl> impl_;
+  std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
 
   // Passed to |impl_| when |Start| is called.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

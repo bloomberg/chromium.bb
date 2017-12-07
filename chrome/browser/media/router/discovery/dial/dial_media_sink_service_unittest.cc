@@ -71,13 +71,17 @@ class TestDialMediaSinkService : public DialMediaSinkService {
       : DialMediaSinkService(context), task_runner_(task_runner) {}
   ~TestDialMediaSinkService() override = default;
 
-  std::unique_ptr<DialMediaSinkServiceImpl> CreateImpl(
-      const OnSinksDiscoveredCallback& sinks_discovered_cb,
-      const OnDialSinkAddedCallback& dial_sink_added_cb,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context)
+  std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
+  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb,
+             const OnDialSinkAddedCallback& dial_sink_added_cb,
+             const scoped_refptr<net::URLRequestContextGetter>& request_context)
       override {
-    auto mock_impl = std::make_unique<MockDialMediaSinkServiceImpl>(
-        sinks_discovered_cb, dial_sink_added_cb, request_context, task_runner_);
+    auto mock_impl = std::unique_ptr<MockDialMediaSinkServiceImpl,
+                                     base::OnTaskRunnerDeleter>(
+        new MockDialMediaSinkServiceImpl(sinks_discovered_cb,
+                                         dial_sink_added_cb, request_context,
+                                         task_runner_),
+        base::OnTaskRunnerDeleter(task_runner_));
     mock_impl_ = mock_impl.get();
     return mock_impl;
   }

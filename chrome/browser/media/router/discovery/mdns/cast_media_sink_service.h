@@ -68,8 +68,8 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   virtual void OnUserGesture();
 
   // Marked virtual for tests.
-  virtual std::unique_ptr<CastMediaSinkServiceImpl> CreateImpl(
-      const OnSinksDiscoveredCallback& sinks_discovered_cb);
+  virtual std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
+  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb);
   void SetDnsSdRegistryForTest(DnsSdRegistry* registry);
 
  private:
@@ -91,7 +91,7 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   DnsSdRegistry* dns_sd_registry_ = nullptr;
 
   // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
-  std::unique_ptr<CastMediaSinkServiceImpl> impl_;
+  std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
 
   // List of cast sinks found in current round of mDNS discovery.
   std::vector<MediaSinkInternal> cast_sinks_;
