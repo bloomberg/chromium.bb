@@ -7,7 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_controller_delegate.h"
-#include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,7 +34,7 @@ DownloadController* DownloadController::FromBrowserState(
 DownloadControllerImpl::DownloadControllerImpl() = default;
 
 DownloadControllerImpl::~DownloadControllerImpl() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   for (DownloadTaskImpl* task : alive_tasks_)
     task->ShutDown();
 
@@ -52,7 +51,7 @@ void DownloadControllerImpl::CreateDownloadTask(
     const std::string& content_disposition,
     int64_t total_bytes,
     const std::string& mime_type) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   if (!delegate_)
     return;
 
@@ -64,12 +63,17 @@ void DownloadControllerImpl::CreateDownloadTask(
 }
 
 void DownloadControllerImpl::SetDelegate(DownloadControllerDelegate* delegate) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   delegate_ = delegate;
 }
 
+DownloadControllerDelegate* DownloadControllerImpl::GetDelegate() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  return delegate_;
+}
+
 void DownloadControllerImpl::OnTaskDestroyed(DownloadTaskImpl* task) {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   auto it = alive_tasks_.find(task);
   DCHECK(it != alive_tasks_.end());
   alive_tasks_.erase(it);

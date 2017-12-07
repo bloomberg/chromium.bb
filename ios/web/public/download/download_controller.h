@@ -106,6 +106,9 @@ class DownloadController {
   // DownloadControllerDelegate::OnDownloadControllerDestroyed().
   virtual void SetDelegate(DownloadControllerDelegate* delegate) = 0;
 
+  // Returns DownloadControllerDelegate.
+  virtual DownloadControllerDelegate* GetDelegate() const = 0;
+
   DownloadController() = default;
   virtual ~DownloadController() = default;
 

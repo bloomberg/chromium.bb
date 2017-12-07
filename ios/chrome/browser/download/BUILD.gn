@@ -4,6 +4,10 @@
 
 source_set("download") {
   sources = [
+    "browser_download_service.h",
+    "browser_download_service.mm",
+    "browser_download_service_factory.h",
+    "browser_download_service_factory.mm",
     "pass_kit_tab_helper.h",
     "pass_kit_tab_helper.mm",
     "pass_kit_tab_helper_delegate.h",
@@ -11,6 +15,9 @@ source_set("download") {
 
   deps = [
     "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//ios/chrome/browser/browser_state",
     "//ios/web/public",
     "//ios/web/public/download",
   ]
@@ -24,13 +31,19 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "browser_download_service_factory_unittest.mm",
+    "browser_download_service_unittest.mm",
     "pass_kit_tab_helper_unittest.mm",
   ]
   deps = [
     ":test_support",
     "//base/test:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/download",
     "//ios/chrome/test/fakes",
+    "//ios/web/public",
+    "//ios/web/public/download",
+    "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",
     "//testing/gtest",
