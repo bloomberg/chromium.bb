@@ -477,8 +477,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
             mSecurityButton.setImageResource(getToolbarDataProvider().getSecurityIconResource());
-            mSecurityButton.setTint(LocationBarLayout.getColorStateList(getToolbarDataProvider(),
-                    getResources(), false /* omnibox is not opaque */, false));
+            mSecurityButton.setTint(LocationBarLayout.getColorStateList(
+                    getToolbarDataProvider(), getResources(), false));
         }
 
         if (showSecurityButton) {
