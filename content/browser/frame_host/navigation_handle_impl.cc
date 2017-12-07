@@ -926,6 +926,8 @@ NavigationHandleImpl::CheckWillStartRequest() {
   DCHECK(state_ != DEFERRING_START || next_index_ != 0);
   base::WeakPtr<NavigationHandleImpl> weak_ref = weak_factory_.GetWeakPtr();
   for (size_t i = next_index_; i < throttles_.size(); ++i) {
+    TRACE_EVENT1("navigation", "NavigationThrottle::WillStartRequest",
+                 "throttle", throttles_[i]->GetNameForLogging());
     NavigationThrottle::ThrottleCheckResult result =
         throttles_[i]->WillStartRequest();
     if (!weak_ref) {
@@ -933,6 +935,9 @@ NavigationHandleImpl::CheckWillStartRequest() {
       // Return immediately.
       return NavigationThrottle::DEFER;
     }
+    // TODO(csharrison): It would be nice if the Check* traces also included
+    // synchronous time in the throttle's respective method, and did not include
+    // time spent in the next throttle's method.
     TRACE_EVENT_ASYNC_STEP_INTO0(
         "navigation", "NavigationHandle", this,
         base::StringPrintf("CheckWillStartRequest: %s: %d",
