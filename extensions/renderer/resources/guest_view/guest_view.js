@@ -259,7 +259,10 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
   GuestViewInternal.destroyGuest(
       this.id, $Function.bind(this.handleCallback, this, callback));
 
-  // Reset the state of the destroyed guest;
+  // Reset the state of the destroyed guest; it's ok to do this after shipping
+  // the callback to the GuestViewInternal api, since it runs asynchronously,
+  // and the changes below will happen before the next item from the action
+  // queue is executed.
   this.contentWindow = null;
   this.id = 0;
   this.internalInstanceId = 0;
