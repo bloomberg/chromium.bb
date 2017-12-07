@@ -478,6 +478,7 @@ void BookmarkAppNavigationThrottle::OpenInNewTab() {
 
 scoped_refptr<const Extension>
 BookmarkAppNavigationThrottle::GetAppForWindow() {
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BookmarkApp.GetAppForWindowDuration");
   content::WebContents* source = navigation_handle()->GetWebContents();
   content::BrowserContext* context = source->GetBrowserContext();
   Browser* browser = chrome::FindBrowserWithWebContents(source);
@@ -501,12 +502,15 @@ BookmarkAppNavigationThrottle::GetAppForWindow() {
 }
 
 scoped_refptr<const Extension> BookmarkAppNavigationThrottle::GetTargetApp() {
+  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BookmarkApp.GetTargetAppDuration");
   return GetAppForURL(navigation_handle()->GetURL(),
                       navigation_handle()->GetWebContents());
 }
 
 scoped_refptr<const Extension>
 BookmarkAppNavigationThrottle::GetAppForCurrentURL() {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Extensions.BookmarkApp.GetAppForCurrentURLDuration");
   return GetAppForURL(navigation_handle()
                           ->GetWebContents()
                           ->GetMainFrame()
