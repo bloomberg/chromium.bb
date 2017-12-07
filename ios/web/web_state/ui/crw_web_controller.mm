@@ -4866,6 +4866,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
+  web::NavigationContextImpl* existingContext =
+      [self contextForPendingNavigationWithURL:webViewURL];
+
   if (!navigationWasCommitted && ![_pendingNavigationInfo cancelled]) {
     // A fast back-forward navigation does not call |didCommitNavigation:|, so
     // signal page change explicitly.
@@ -4875,14 +4878,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self setDocumentURL:webViewURL];
     [self webPageChanged];
 
-    web::NavigationContextImpl* existingContext =
-        [self contextForPendingNavigationWithURL:webViewURL];
     if (!existingContext) {
       // This URL was not seen before, so register new load request.
       std::unique_ptr<web::NavigationContextImpl> newContext =
           [self registerLoadRequestForURL:webViewURL
                    sameDocumentNavigation:isSameDocumentNavigation];
       _webStateImpl->OnNavigationFinished(newContext.get());
+      // TODO(crbug.com/792515): It is OK, but very brittle, to call
+      // |didFinishNavigation:| here because the gating condition is mutually
+      // exclusive with the condition below. Refactor this method after
+      // deprecating _pendingNavigationInfo.
+      if (newContext->GetWKNavigationType() == WKNavigationTypeBackForward) {
+        [self didFinishNavigation:nil];
+      }
     } else {
       // Same document navigation does not contain response headers.
       net::HttpResponseHeaders* headers =
@@ -4896,9 +4904,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self updateSSLStatusForCurrentNavigationItem];
 
-  // Fast back forward navigation may not call |didFinishNavigation:|, so
-  // signal did finish navigation explicitly.
-  if (_lastRegisteredRequestURL == _documentURL) {
+  // WKWebView does not trigger |webView:didFinishNavigation| for back-forward
+  // navigations. So signal did finish navigation explicitly.
+  if (existingContext &&
+      existingContext->GetWKNavigationType() == WKNavigationTypeBackForward) {
     [self didFinishNavigation:nil];
   }
 }
