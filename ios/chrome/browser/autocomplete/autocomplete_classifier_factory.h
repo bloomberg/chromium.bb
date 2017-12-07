@@ -29,9 +29,8 @@ class AutocompleteClassifierFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
   static AutocompleteClassifierFactory* GetInstance();
 
-  // Returns the default factory used to build AutocompleteClassifier. Can be
-  // registered with SetTestingFactory to use the AutocompleteClassifier
-  // instance during testing.
+  // Returns the default factory used to build AutocompleteClassifiers. Can be
+  // registered with SetTestingFactory to use real instances during testing.
   static TestingFactoryFunction GetDefaultFactory();
 
  private:

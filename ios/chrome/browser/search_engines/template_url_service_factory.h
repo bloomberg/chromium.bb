@@ -27,11 +27,11 @@ class TemplateURLServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static TemplateURLService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
+
   static TemplateURLServiceFactory* GetInstance();
 
-  // Returns the default factory used to build TemplateURLService. Can be
-  // registered with SetTestingFactory to use the TemplateURLService instance
-  // during testing.
+  // Returns the default factory used to build TemplateURLServices. Can be
+  // registered with SetTestingFactory to use real instances during testing.
   static TestingFactoryFunction GetDefaultFactory();
 
  private:

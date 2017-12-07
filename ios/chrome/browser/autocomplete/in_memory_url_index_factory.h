@@ -29,9 +29,8 @@ class InMemoryURLIndexFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state);
   static InMemoryURLIndexFactory* GetInstance();
 
-  // Returns the default factory used to build InMemoryURLIndex. Can be
-  // registered with SetTestingFactory to use the InMemoryURLIndex instance
-  // during testing.
+  // Returns the default factory used to build InMemoryURLIndexs. Can be
+  // registered with SetTestingFactory to use real instances during testing.
   static TestingFactoryFunction GetDefaultFactory();
 
  private:
