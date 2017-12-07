@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,10 +45,12 @@ void FakeChannelAuthenticator::SecureAndAuthenticate(
     } else {
       scoped_refptr<net::IOBuffer> write_buf = new net::IOBuffer(1);
       write_buf->data()[0] = 0;
+      // TODO(crbug.com/656607): Add proper annotation.
       int result = socket_->Write(
           write_buf.get(), 1,
           base::Bind(&FakeChannelAuthenticator::OnAuthBytesWritten,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+          NO_TRAFFIC_ANNOTATION_BUG_656607);
       if (result != net::ERR_IO_PENDING) {
         // This will not call the callback because |did_read_bytes_| is
         // still set to false.

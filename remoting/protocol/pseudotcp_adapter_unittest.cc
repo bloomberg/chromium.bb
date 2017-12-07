@@ -21,6 +21,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -221,9 +222,9 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
       int bytes_to_write = std::min(output_buffer_->BytesRemaining(),
                                     kMessageSize);
       result = client_socket_->Write(
-          output_buffer_.get(),
-          bytes_to_write,
-          base::Bind(&TCPChannelTester::OnWritten, base::Unretained(this)));
+          output_buffer_.get(), bytes_to_write,
+          base::Bind(&TCPChannelTester::OnWritten, base::Unretained(this)),
+          TRAFFIC_ANNOTATION_FOR_TESTS);
       HandleWriteResult(result);
     }
   }

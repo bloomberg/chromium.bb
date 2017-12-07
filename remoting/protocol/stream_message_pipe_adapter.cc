@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/message_serialization.h"
@@ -51,8 +52,10 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
 
 void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
                                     const base::Closure& done) {
+  // TODO(crbug.com/656607): Add proper annotation.
   if (writer_)
-    writer_->Write(SerializeAndFrameMessage(*message), done);
+    writer_->Write(SerializeAndFrameMessage(*message), done,
+                   NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void StreamMessagePipeAdapter::CloseOnError(int error) {

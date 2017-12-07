@@ -36,12 +36,11 @@ class PseudoTcpAdapter : public P2PStreamSocket {
   // P2PStreamSocket implementation.
   int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
            const net::CompletionCallback& callback) override;
-  // TODO(crbug.com/656607): Remove default value.
-  int Write(const scoped_refptr<net::IOBuffer>& buffer,
-            int buffer_size,
-            const net::CompletionCallback& callback,
-            const net::NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
+  int Write(
+      const scoped_refptr<net::IOBuffer>& buffer,
+      int buffer_size,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   int Connect(const net::CompletionCallback& callback);
 

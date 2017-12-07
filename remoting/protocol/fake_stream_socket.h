@@ -74,12 +74,11 @@ class FakeStreamSocket : public P2PStreamSocket {
   // P2PStreamSocket interface.
   int Read(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
            const net::CompletionCallback& callback) override;
-  // TODO(crbug.com/656607): Remove default value.
-  int Write(const scoped_refptr<net::IOBuffer>& buf,
-            int buf_len,
-            const net::CompletionCallback& callback,
-            const net::NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607) override;
+  int Write(
+      const scoped_refptr<net::IOBuffer>& buf,
+      int buf_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
 
  private:
   void DoAsyncWrite(const scoped_refptr<net::IOBuffer>& buf, int buf_len,

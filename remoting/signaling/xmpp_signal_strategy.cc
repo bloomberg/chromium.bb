@@ -27,6 +27,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/logging.h"
@@ -275,8 +276,11 @@ void XmppSignalStrategy::Core::SendMessage(const std::string& message) {
   scoped_refptr<net::IOBufferWithSize> buffer =
       new net::IOBufferWithSize(message.size());
   memcpy(buffer->data(), message.data(), message.size());
+
+  // TODO(crbug.com/656607): Add proper annotation.
   writer_->Write(buffer,
-                 base::Bind(&Core::OnMessageSent, base::Unretained(this)));
+                 base::Bind(&Core::OnMessageSent, base::Unretained(this)),
+                 NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void XmppSignalStrategy::Core::StartTls() {

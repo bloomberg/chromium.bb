@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/proto/mux.pb.h"
 #include "remoting/protocol/message_reader.h"
@@ -58,7 +59,8 @@ class ChannelMultiplexer : public StreamChannelFactory {
 
   // Called by MuxChannel.
   void DoWrite(std::unique_ptr<MultiplexPacket> packet,
-               const base::Closure& done_task);
+               const base::Closure& done_task,
+               const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Factory used to create |base_channel_|. Set to nullptr once creation is
   // finished or failed.
