@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Web Locks API: Resources DOMString edge cases</title>
+<link rel=help href="https://github.com/inexorabletash/web-locks">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+function code_points(s) {
+  return [...s]
+    .map(c => '0x' + c.charCodeAt(0).toString(16).toUpperCase())
+    .join(' ');
+}
+
+[
+  '', // Empty strings
+  'abc\x00def', // Embedded NUL
+  '\uD800', // Unpaired low surrogage
+  '\uDC00', // Unpaired high surrogage
+  '\uDC00\uD800', // Swapped surrogate pair
+  '\uFFFF' // Non-character
+].forEach(string => {
+  promise_test(async t => {
+    await navigator.locks.acquire(string, lock => {
+      assert_array_equals(lock.scope, [string],
+                          'Requested name matches granted name');
+    });
+  }, 'DOMString: ' + code_points(string));
+});
+
+promise_test(async t => {
+  // '\uD800' treated as a USVString would become '\uFFFD'.
+  await navigator.locks.acquire('\uD800', async lock => {
+    assert_array_equals(lock.scope, ['\uD800']);
+
+    // |lock| is held for the duration of this scope. It
+    // Should not block acquiring |lock2| with a distinct
+    // DOMString.
+    await navigator.locks.acquire('\uFFFD', lock2 => {
+      assert_array_equals(lock2.scope, ['\uFFFD']);
+    });
+
+    // If we did not time out, this passed.
+  });
+}, 'Resource names that are not valid UTF-16 are not mangled');
+
+</script>

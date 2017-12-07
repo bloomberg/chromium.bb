@@ -1,0 +1,36 @@
+
+typedef (DOMString or sequence<DOMString>) LockScope;
+
+enum LockMode { "shared", "exclusive" };
+
+dictionary LockOptions {
+  LockMode mode = "exclusive";
+  boolean ifAvailable = false;
+};
+
+callback LockGrantedCallback = any (Lock lock);
+
+[Exposed=Window]
+partial interface Navigator {
+  [SecureContext] readonly attribute LockManager locks;
+};
+
+[Exposed=Worker]
+partial interface WorkerNavigator {
+  [SecureContext] readonly attribute LockManager locks;
+};
+
+[Exposed=(Window,Worker), SecureContext]
+interface LockManager {
+  Promise<any> acquire(LockScope scope,
+                       LockRequestCallback callback);
+  Promise<any> acquire(LockScope scope,
+                       LockOptions options,
+                       LockRequestCallback callback);
+};
+
+[Exposed=(Window,Worker), SecureContext]
+interface Lock {
+  readonly attribute FrozenArray<DOMString> scope;
+  readonly attribute LockMode mode;
+};

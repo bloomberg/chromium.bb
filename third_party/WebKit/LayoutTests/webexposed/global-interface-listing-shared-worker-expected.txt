@@ -637,6 +637,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter width
 [Worker]     method constructor
 [Worker]     method getColorSettings
+[Worker] interface Lock
+[Worker]     attribute @@toStringTag
+[Worker]     getter mode
+[Worker]     getter scope
+[Worker]     method constructor
+[Worker] interface LockManager
+[Worker]     attribute @@toStringTag
+[Worker]     method acquire
+[Worker]     method constructor
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1
@@ -2457,6 +2466,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter budget
 [Worker]     getter connection
 [Worker]     getter hardwareConcurrency
+[Worker]     getter locks
 [Worker]     getter onLine
 [Worker]     getter permissions
 [Worker]     getter platform

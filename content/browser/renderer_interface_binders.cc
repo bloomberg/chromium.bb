@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
+#include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -122,6 +123,13 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)
             ->permission_service_context()
             .CreateService(std::move(request));
+      }));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::LockManagerRequest request, RenderProcessHost* host,
+         const url::Origin& origin) {
+        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+            ->GetLockManager()
+            ->CreateService(std::move(request));
       }));
   parameterized_binder_registry_.AddInterface(
       base::Bind(&CreateDedicatedWorkerHostFactory));

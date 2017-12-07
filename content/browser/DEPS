@@ -91,6 +91,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebTouchEvent.h",
   "+third_party/WebKit/public/platform/WebTextInputType.h",
   "+third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
+  "+third_party/WebKit/public/platform/modules/locks/lock_manager.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",

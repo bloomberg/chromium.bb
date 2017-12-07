@@ -122,6 +122,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/installation",
     "//third_party/WebKit/Source/modules/installedapp",
     "//third_party/WebKit/Source/modules/keyboard_lock",
+    "//third_party/WebKit/Source/modules/locks",
     "//third_party/WebKit/Source/modules/media_capabilities",
     "//third_party/WebKit/Source/modules/media_controls",
     "//third_party/WebKit/Source/modules/mediacapturefromelement",
