@@ -24,17 +24,29 @@ std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     const FrameSinkId& frame_sink_id,
     bool is_root,
     bool needs_sync_tokens) {
-  std::unique_ptr<CompositorFrameSinkSupport> support =
-      base::WrapUnique(new CompositorFrameSinkSupport(
-          client, frame_sink_id, is_root, needs_sync_tokens));
-  support->Init(frame_sink_manager);
-  return support;
+  return std::make_unique<CompositorFrameSinkSupport>(
+      client, frame_sink_manager, frame_sink_id, is_root, needs_sync_tokens);
+}
+
+CompositorFrameSinkSupport::CompositorFrameSinkSupport(
+    mojom::CompositorFrameSinkClient* client,
+    FrameSinkManagerImpl* frame_sink_manager,
+    const FrameSinkId& frame_sink_id,
+    bool is_root,
+    bool needs_sync_tokens)
+    : client_(client),
+      frame_sink_manager_(frame_sink_manager),
+      surface_manager_(frame_sink_manager->surface_manager()),
+      frame_sink_id_(frame_sink_id),
+      surface_resource_holder_(this),
+      is_root_(is_root),
+      needs_sync_tokens_(needs_sync_tokens),
+      weak_factory_(this) {
+  // This may result in SetBeginFrameSource() being called.
+  frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
-  // No video capture clients should remain at this point.
-  DCHECK(capture_clients_.empty());
-
   if (!destruction_callback_.is_null())
     std::move(destruction_callback_).Run();
 
@@ -51,7 +63,10 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   }
 
   EvictCurrentSurface();
-  frame_sink_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
+  frame_sink_manager_->UnregisterCompositorFrameSinkSupport(frame_sink_id_);
+
+  // No video capture clients should remain at this point.
+  DCHECK(capture_clients_.empty());
 }
 
 void CompositorFrameSinkSupport::SetAggregatedDamageCallback(
@@ -62,6 +77,16 @@ void CompositorFrameSinkSupport::SetAggregatedDamageCallback(
 void CompositorFrameSinkSupport::SetDestructionCallback(
     base::OnceCallback<void()> callback) {
   destruction_callback_ = std::move(callback);
+}
+
+void CompositorFrameSinkSupport::SetBeginFrameSource(
+    BeginFrameSource* begin_frame_source) {
+  if (begin_frame_source_ && added_frame_observer_) {
+    begin_frame_source_->RemoveObserver(this);
+    added_frame_observer_ = false;
+  }
+  begin_frame_source_ = begin_frame_source;
+  UpdateNeedsBeginFramesInternal();
 }
 
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
@@ -101,16 +126,6 @@ void CompositorFrameSinkSupport::ReturnResources(
 void CompositorFrameSinkSupport::ReceiveFromChild(
     const std::vector<TransferableResource>& resources) {
   surface_resource_holder_.ReceiveFromChild(resources);
-}
-
-void CompositorFrameSinkSupport::SetBeginFrameSource(
-    BeginFrameSource* begin_frame_source) {
-  if (begin_frame_source_ && added_frame_observer_) {
-    begin_frame_source_->RemoveObserver(this);
-    added_frame_observer_ = false;
-  }
-  begin_frame_source_ = begin_frame_source;
-  UpdateNeedsBeginFramesInternal();
 }
 
 void CompositorFrameSinkSupport::EvictCurrentSurface() {
@@ -328,25 +343,6 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
       client_->DidDiscardCompositorFrame(presentation_token);
     }
   }
-}
-
-CompositorFrameSinkSupport::CompositorFrameSinkSupport(
-    mojom::CompositorFrameSinkClient* client,
-    const FrameSinkId& frame_sink_id,
-    bool is_root,
-    bool needs_sync_tokens)
-    : client_(client),
-      frame_sink_id_(frame_sink_id),
-      surface_resource_holder_(this),
-      is_root_(is_root),
-      needs_sync_tokens_(needs_sync_tokens),
-      weak_factory_(this) {}
-
-void CompositorFrameSinkSupport::Init(
-    FrameSinkManagerImpl* frame_sink_manager) {
-  frame_sink_manager_ = frame_sink_manager;
-  surface_manager_ = frame_sink_manager->surface_manager();
-  frame_sink_manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {

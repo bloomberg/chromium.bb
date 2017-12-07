@@ -99,7 +99,6 @@ viz_component("service") {
     "frame_sinks/compositor_frame_sink_support_manager.h",
     "frame_sinks/direct_layer_tree_frame_sink.cc",
     "frame_sinks/direct_layer_tree_frame_sink.h",
-    "frame_sinks/frame_sink_manager_client.h",
     "frame_sinks/frame_sink_manager_impl.cc",
     "frame_sinks/frame_sink_manager_impl.h",
     "frame_sinks/primary_begin_frame_source.cc",
