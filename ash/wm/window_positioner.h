@@ -19,6 +19,7 @@ class Display;
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace ash {
@@ -73,12 +74,11 @@ class ASH_EXPORT WindowPositioner {
   WindowPositioner();
   ~WindowPositioner();
 
-  // Find a suitable screen position for a popup window and return it. The
-  // passed input position is only used to retrieve the width and height.
+  // Find a suitable screen position for a popup window and return it.
   // The position is determined on the left / right / top / bottom first. If
   // no smart space is found, the position will follow the standard what other
   // operating systems do (default cascading style).
-  gfx::Rect GetPopupPosition(const gfx::Rect& old_pos);
+  gfx::Rect GetPopupPosition(const gfx::Size& popup_size);
 
   // Accessor to set a flag indicating whether the first window in ASH should
   // be maximized.
@@ -89,34 +89,32 @@ class ASH_EXPORT WindowPositioner {
 
   // Find a smart way to position the popup window. If there is no space this
   // function will return an empty rectangle.
-  gfx::Rect SmartPopupPosition(const gfx::Rect& old_pos,
-                               const gfx::Rect& work_area,
-                               int grid);
+  static gfx::Rect SmartPopupPosition(const gfx::Size& popup_size,
+                                      const gfx::Rect& work_area);
 
   // Find the next available cascading popup position (on the given screen).
-  gfx::Rect NormalPopupPosition(const gfx::Rect& old_pos,
+  gfx::Rect NormalPopupPosition(const gfx::Size& popup_size,
                                 const gfx::Rect& work_area);
 
   // Align the location to the grid / snap to the right / bottom corner.
-  gfx::Rect AlignPopupPosition(const gfx::Rect& pos,
-                               const gfx::Rect& work_area,
-                               int grid);
+  static gfx::Rect AlignPopupPosition(const gfx::Rect& pos,
+                                      const gfx::Rect& work_area);
 
-  // Constant exposed for unittest.
-  static const int kMinimumWindowOffset;
+  // The grid size in DIPs used to align popup windows.
+  static constexpr int kPopupGridSize = 32;
 
   // The offset in X and Y for the next popup which opens.
-  int pop_position_offset_increment_x;
-  int pop_position_offset_increment_y;
+  static constexpr int kNextPopupOffset = 32;
 
   // The position on the screen for the first popup which gets shown if no
   // empty space can be found.
-  int popup_position_offset_from_screen_corner_x;
-  int popup_position_offset_from_screen_corner_y;
+  static constexpr int kFirstPopupOffset = 32;
 
   // The last used position.
-  int last_popup_position_x_;
-  int last_popup_position_y_;
+  // TODO(jamescook): These seem more like *next* popup position.
+  int last_popup_position_x_ = 0;
+  int last_popup_position_y_ = 0;
+  bool has_last_popup_position_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPositioner);
 };
