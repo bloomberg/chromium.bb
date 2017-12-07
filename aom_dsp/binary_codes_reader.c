@@ -68,48 +68,50 @@ uint16_t aom_read_primitive_subexpfin_(aom_reader *r, uint16_t n,
                                        uint16_t k ACCT_STR_PARAM) {
   int i = 0;
   int mk = 0;
-  uint16_t v;
+
   while (1) {
     int b = (i ? k + i - 1 : k);
     int a = (1 << b);
+
     if (n <= mk + 3 * a) {
-      v = aom_read_primitive_quniform(r, n - mk, ACCT_STR_NAME) + mk;
-      break;
-    } else {
-      if (aom_read_bit(r, ACCT_STR_NAME)) {
-        i = i + 1;
-        mk += a;
-      } else {
-        v = aom_read_literal(r, b, ACCT_STR_NAME) + mk;
-        break;
-      }
+      return aom_read_primitive_quniform(r, n - mk, ACCT_STR_NAME) + mk;
     }
+
+    if (!aom_read_bit(r, ACCT_STR_NAME)) {
+      return aom_read_literal(r, b, ACCT_STR_NAME) + mk;
+    }
+
+    i = i + 1;
+    mk += a;
   }
-  return v;
+
+  assert(0);
+  return 0;
 }
 
 static uint16_t aom_rb_read_primitive_subexpfin(struct aom_read_bit_buffer *rb,
                                                 uint16_t n, uint16_t k) {
   int i = 0;
   int mk = 0;
-  uint16_t v;
+
   while (1) {
     int b = (i ? k + i - 1 : k);
     int a = (1 << b);
+
     if (n <= mk + 3 * a) {
-      v = aom_rb_read_primitive_quniform(rb, n - mk) + mk;
-      break;
-    } else {
-      if (aom_rb_read_bit(rb)) {
-        i = i + 1;
-        mk += a;
-      } else {
-        v = aom_rb_read_literal(rb, b) + mk;
-        break;
-      }
+      return aom_rb_read_primitive_quniform(rb, n - mk) + mk;
     }
+
+    if (!aom_rb_read_bit(rb)) {
+      return aom_rb_read_literal(rb, b) + mk;
+    }
+
+    i = i + 1;
+    mk += a;
   }
-  return v;
+
+  assert(0);
+  return 0;
 }
 
 uint16_t aom_read_primitive_refsubexpfin_(aom_reader *r, uint16_t n, uint16_t k,
