@@ -25265,6 +25265,7 @@ from previous Chrome versions.
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
+  <int value="28272521" label="ash-enable-display-move-window-accels"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>

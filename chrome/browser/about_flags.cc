@@ -3590,6 +3590,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
+    {"ash-enable-display-move-window-accels",
+     flag_descriptions::kAshEnableDisplayMoveWindowAccelsName,
+     flag_descriptions::kAshEnableDisplayMoveWindowAccelsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableDisplayMoveWindowAccels)},
+
     {"ash-enable-keyboard-shortcut-viewer",
      flag_descriptions::kAshEnableKeyboardShortcutViewerName,
      flag_descriptions::kAshEnableKeyboardShortcutViewerDescription, kOsCrOS,
