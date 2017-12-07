@@ -15,6 +15,22 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Make sure that script is injected only once. For example, content of
+// WKUserScript can be injected into the same page multiple times
+// without notifying WKNavigationDelegate (e.g. after window.document.write
+// JavaScript call). Injecting the script multiple times invalidates the
+// __gCrWeb.windowId variable and will break the ability to send messages from
+// JS to the native code. Wrapping injected script into "if (!injected)" check
+// prevents multiple injections into the same page.
+NSString* MakeScriptInjectableOnce(NSString* script) {
+  NSString* kScriptTemplate = @"if (typeof __gCrWeb !== 'object') { %@; }";
+  return [NSString stringWithFormat:kScriptTemplate, script];
+}
+
+}  // namespace
+
 namespace web {
 
 NSString* GetPageScript(NSString* script_file_name) {
@@ -34,30 +50,28 @@ NSString* GetPageScript(NSString* script_file_name) {
   return content;
 }
 
-NSString* GetEarlyPageScript(BrowserState* browser_state) {
+NSString* GetEarlyPageScriptForMainFrame(BrowserState* browser_state) {
   DCHECK(GetWebClient());
   NSString* embedder_page_script =
-      GetWebClient()->GetEarlyPageScript(browser_state);
+      GetWebClient()->GetEarlyPageScriptForMainFrame(browser_state);
   DCHECK(embedder_page_script);
 
-  // Make sure that script is injected only once. For example, content of
-  // WKUserScript can be injected into the same page multiple times
-  // without notifying WKNavigationDelegate (e.g. after window.document.write
-  // JavaScript call). Injecting the script multiple times invalidates the
-  // __gCrWeb.windowId variable and will break the ability to send messages from
-  // JS to the native code. Wrapping injected script into "if (!injected)" check
-  // prevents multiple injections into the same page.
-  NSString* kScriptTemplate = @"if (typeof __gCrWeb !== 'object') { %@; %@ }";
+  NSString* web_bundle = GetPageScript(@"main_frame_web_bundle");
 
-  NSString* web_bundle = GetPageScript(@"web_bundle");
   // The WKBackForwardList based navigation manager doesn't need to inject
   // JavaScript to intercept navigation calls.
   if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
     web_bundle = [NSString
         stringWithFormat:@"%@; %@", web_bundle, GetPageScript(@"nav_bundle")];
   }
-  return [NSString
-      stringWithFormat:kScriptTemplate, web_bundle, embedder_page_script];
+
+  NSString* script =
+      [NSString stringWithFormat:@"%@; %@", web_bundle, embedder_page_script];
+  return MakeScriptInjectableOnce(script);
+}
+
+NSString* GetEarlyPageScriptForAllFrames(BrowserState* browser_state) {
+  return MakeScriptInjectableOnce(GetPageScript(@"all_frames_web_bundle"));
 }
 
 }  // namespace web

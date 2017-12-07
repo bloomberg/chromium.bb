@@ -25,11 +25,22 @@ const char kWKWebViewConfigProviderKeyName[] = "wk_web_view_config_provider";
 
 // Returns an autoreleased instance of WKUserScript to be added to
 // configuration's userContentController.
-WKUserScript* InternalGetEarlyPageScript(BrowserState* browser_state) {
+WKUserScript* InternalGetEarlyPageScriptForMainFrame(
+    BrowserState* browser_state) {
   return [[WKUserScript alloc]
-        initWithSource:GetEarlyPageScript(browser_state)
+        initWithSource:GetEarlyPageScriptForMainFrame(browser_state)
          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
       forMainFrameOnly:YES];
+}
+
+// Returns an autoreleased instance of WKUserScript to be added to
+// configuration's userContentController.
+WKUserScript* InternalGetEarlyPageScriptForAllFrames(
+    BrowserState* browser_state) {
+  return [[WKUserScript alloc]
+        initWithSource:GetEarlyPageScriptForAllFrames(browser_state)
+         injectionTime:WKUserScriptInjectionTimeAtDocumentStart
+      forMainFrameOnly:NO];
 }
 
 }  // namespace
@@ -70,7 +81,9 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
     [[configuration_ userContentController]
-        addUserScript:InternalGetEarlyPageScript(browser_state_)];
+        addUserScript:InternalGetEarlyPageScriptForMainFrame(browser_state_)];
+    [[configuration_ userContentController]
+        addUserScript:InternalGetEarlyPageScriptForAllFrames(browser_state_)];
   }
   // Prevent callers from changing the internals of configuration.
   return [configuration_ copy];

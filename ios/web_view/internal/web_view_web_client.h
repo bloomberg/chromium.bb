@@ -26,7 +26,8 @@ class WebViewWebClient : public web::WebClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
-  NSString* GetEarlyPageScript(web::BrowserState* browser_state) const override;
+  NSString* GetEarlyPageScriptForMainFrame(
+      web::BrowserState* browser_state) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebViewWebClient);

@@ -96,7 +96,8 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
-  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
+  NSString* script =
+      web_client.Get()->GetEarlyPageScriptForMainFrame(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));
@@ -110,14 +111,15 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
-  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
+  NSString* script =
+      web_client.Get()->GetEarlyPageScriptForMainFrame(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
                                 web_view, @"typeof navigator.credentials"));
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kCredentialManager);
-  script = web_client.Get()->GetEarlyPageScript(browser_state());
+  script = web_client.Get()->GetEarlyPageScriptForMainFrame(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object", web::ExecuteJavaScript(
                              web_view, @"typeof navigator.credentials"));
@@ -133,7 +135,8 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestEnabled) {
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(payments::features::kWebPayments);
-  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
+  NSString* script =
+      web_client.Get()->GetEarlyPageScriptForMainFrame(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"function", web::ExecuteJavaScript(
                                web_view, @"typeof window.PaymentRequest"));
@@ -149,7 +152,8 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequestDisabled) {
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(payments::features::kWebPayments);
-  NSString* script = web_client.Get()->GetEarlyPageScript(browser_state());
+  NSString* script =
+      web_client.Get()->GetEarlyPageScriptForMainFrame(browser_state());
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"undefined", web::ExecuteJavaScript(
                                 web_view, @"typeof window.PaymentRequest"));
