@@ -98,3 +98,10 @@ wheel: <
   name: "infra/python/wheels/boto-py2_py3"
   version: "version:2.48.0"
 >
+
+# Used by:
+#   testing/buildbot/generate_buildbot_json_coveragetest.py
+wheel: <
+  name: "infra/python/wheels/coverage/${vpython_platform}"
+  version: "version:4.3.4"
+>
