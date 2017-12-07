@@ -171,7 +171,9 @@ class ReportingCacheImpl : public ReportingCache {
                  const GURL& endpoint,
                  ReportingClient::Subdomains subdomains,
                  const std::string& group,
-                 base::TimeTicks expires) override {
+                 base::TimeTicks expires,
+                 int priority,
+                 int weight) override {
     DCHECK(endpoint.SchemeIsCryptographic());
 
     base::TimeTicks last_used = tick_clock()->NowTicks();
@@ -183,9 +185,10 @@ class ReportingCacheImpl : public ReportingCache {
       RemoveClient(old_client);
     }
 
-    AddClient(std::make_unique<ReportingClient>(origin, endpoint, subdomains,
-                                                group, expires),
-              last_used);
+    AddClient(
+        std::make_unique<ReportingClient>(origin, endpoint, subdomains, group,
+                                          expires, priority, weight),
+        last_used);
 
     if (client_last_used_.size() > context_->policy().max_client_count) {
       // There should only ever be one extra client, added above.

@@ -42,6 +42,14 @@ class ReportingDeliveryAgentTest : public ReportingTestBase {
     return tick_clock()->NowTicks() + base::TimeDelta::FromDays(1);
   }
 
+  void SetClient(const url::Origin& origin,
+                 const GURL& endpoint,
+                 const std::string& group) {
+    cache()->SetClient(origin, endpoint, ReportingClient::Subdomains::EXCLUDE,
+                       group, tomorrow(), ReportingClient::kDefaultPriority,
+                       ReportingClient::kDefaultWeight);
+  }
+
   const GURL kUrl_ = GURL("https://origin/path");
   const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
@@ -55,8 +63,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulUpload) {
   base::DictionaryValue body;
   body.SetString("key", "value");
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
   cache()->AddReport(kUrl_, kGroup_, kType_, body.CreateDeepCopy(),
                      tick_clock()->NowTicks(), 0);
 
@@ -94,8 +101,7 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulUpload) {
 }
 
 TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
                      tick_clock()->NowTicks(), 0);
@@ -124,10 +130,8 @@ TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
   static const url::Origin kDifferentOrigin =
       url::Origin::Create(GURL("https://origin2/"));
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
-  cache()->SetClient(kDifferentOrigin, kEndpoint_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  SetClient(kDifferentOrigin, kEndpoint_, kGroup_);
   ASSERT_TRUE(FindClientInCache(cache(), kOrigin_, kEndpoint_));
   ASSERT_TRUE(FindClientInCache(cache(), kDifferentOrigin, kEndpoint_));
 
@@ -159,8 +163,7 @@ TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
 }
 
 TEST_F(ReportingDeliveryAgentTest, ConcurrentRemove) {
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
                      tick_clock()->NowTicks(), 0);
@@ -200,10 +203,8 @@ TEST_F(ReportingDeliveryAgentTest,
   static const url::Origin kDifferentOrigin =
       url::Origin::Create(kDifferentUrl);
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
-  cache()->SetClient(kDifferentOrigin, kEndpoint_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  SetClient(kDifferentOrigin, kEndpoint_, kGroup_);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
@@ -228,10 +229,8 @@ TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
   static const url::Origin kDifferentOrigin =
       url::Origin::Create(kDifferentUrl);
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
-  cache()->SetClient(kDifferentOrigin, kEndpoint_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  SetClient(kDifferentOrigin, kEndpoint_, kGroup_);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
@@ -266,10 +265,8 @@ TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
 TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToGroup) {
   static const GURL kDifferentEndpoint("https://endpoint2/");
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
-  cache()->SetClient(kOrigin_, kDifferentEndpoint,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup_, tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  SetClient(kOrigin_, kDifferentEndpoint, kGroup_);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
@@ -304,11 +301,8 @@ TEST_F(ReportingDeliveryAgentTest, ParallelizeUploadsAcrossGroups) {
   static const GURL kDifferentEndpoint("https://endpoint2/");
   static const std::string kDifferentGroup("group2");
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
-  cache()->SetClient(kOrigin_, kDifferentEndpoint,
-                     ReportingClient::Subdomains::EXCLUDE, kDifferentGroup,
-                     tomorrow());
+  SetClient(kOrigin_, kEndpoint_, kGroup_);
+  SetClient(kOrigin_, kDifferentEndpoint, kDifferentGroup);
 
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),

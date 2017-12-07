@@ -32,6 +32,13 @@ class ReportingNetworkChangeObserverTest : public ReportingTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetClient() {
+    cache()->SetClient(
+        kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE, kGroup_,
+        tick_clock()->NowTicks() + base::TimeDelta::FromDays(7),
+        ReportingClient::kDefaultPriority, ReportingClient::kDefaultWeight);
+  }
+
   size_t report_count() {
     std::vector<const ReportingReport*> reports;
     cache()->GetReports(&reports);
@@ -60,9 +67,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearNothing) {
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
                      tick_clock()->NowTicks(), 0);
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_,
-                     tick_clock()->NowTicks() + base::TimeDelta::FromDays(7));
+  SetClient();
   ASSERT_EQ(1u, report_count());
   ASSERT_EQ(1u, client_count());
 
@@ -81,9 +86,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearReports) {
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
                      tick_clock()->NowTicks(), 0);
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_,
-                     tick_clock()->NowTicks() + base::TimeDelta::FromDays(7));
+  SetClient();
   ASSERT_EQ(1u, report_count());
   ASSERT_EQ(1u, client_count());
 
@@ -102,9 +105,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearClients) {
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
                      tick_clock()->NowTicks(), 0);
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_,
-                     tick_clock()->NowTicks() + base::TimeDelta::FromDays(7));
+  SetClient();
   ASSERT_EQ(1u, report_count());
   ASSERT_EQ(1u, client_count());
 
@@ -123,9 +124,7 @@ TEST_F(ReportingNetworkChangeObserverTest, ClearReportsAndClients) {
   cache()->AddReport(kUrl_, kGroup_, kType_,
                      std::make_unique<base::DictionaryValue>(),
                      tick_clock()->NowTicks(), 0);
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_,
-                     tick_clock()->NowTicks() + base::TimeDelta::FromDays(7));
+  SetClient();
   ASSERT_EQ(1u, report_count());
   ASSERT_EQ(1u, client_count());
 

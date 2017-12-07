@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
 
@@ -49,6 +50,10 @@ enum class HeaderEndpointOutcome {
   SET_REJECTED_BY_DELEGATE = 10,
   SET = 11,
 
+  DISCARDED_PRIORITY_NOT_INTEGER = 12,
+  DISCARDED_WEIGHT_NOT_INTEGER = 13,
+  DISCARDED_WEIGHT_NOT_POSITIVE = 14,
+
   MAX
 };
 
@@ -68,6 +73,8 @@ const char kIncludeSubdomainsKey[] = "includeSubdomains";
 const char kGroupKey[] = "group";
 const char kGroupDefaultValue[] = "default";
 const char kMaxAgeKey[] = "max-age";
+const char kPriorityKey[] = "priority";
+const char kWeightKey[] = "weight";
 
 // Processes a single endpoint tuple received in a Report-To header.
 //
@@ -121,6 +128,16 @@ HeaderEndpointOutcome ProcessEndpoint(ReportingDelegate* delegate,
     subdomains = ReportingClient::Subdomains::INCLUDE;
   }
 
+  int priority = ReportingClient::kDefaultPriority;
+  if (dict->HasKey(kPriorityKey) && !dict->GetInteger(kPriorityKey, &priority))
+    return HeaderEndpointOutcome::DISCARDED_PRIORITY_NOT_INTEGER;
+
+  int weight = ReportingClient::kDefaultWeight;
+  if (dict->HasKey(kWeightKey) && !dict->GetInteger(kWeightKey, &weight))
+    return HeaderEndpointOutcome::DISCARDED_WEIGHT_NOT_INTEGER;
+  if (weight <= 0)
+    return HeaderEndpointOutcome::DISCARDED_WEIGHT_NOT_POSITIVE;
+
   *endpoint_url_out = endpoint_url;
 
   if (ttl_sec == 0) {
@@ -132,7 +149,8 @@ HeaderEndpointOutcome ProcessEndpoint(ReportingDelegate* delegate,
     return HeaderEndpointOutcome::SET_REJECTED_BY_DELEGATE;
 
   cache->SetClient(origin, endpoint_url, subdomains, group,
-                   now + base::TimeDelta::FromSeconds(ttl_sec));
+                   now + base::TimeDelta::FromSeconds(ttl_sec), priority,
+                   weight);
   return HeaderEndpointOutcome::SET;
 }
 

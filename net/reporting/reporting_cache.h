@@ -87,14 +87,16 @@ class NET_EXPORT ReportingCache {
   // endpoint.
   //
   // All parameters correspond to the desired values for the fields in
-  // |Client|.
+  // ReportingClient.
   //
   // |endpoint| must use a cryptographic scheme.
   virtual void SetClient(const url::Origin& origin,
                          const GURL& endpoint,
                          ReportingClient::Subdomains subdomains,
                          const std::string& group,
-                         base::TimeTicks expires) = 0;
+                         base::TimeTicks expires,
+                         int priority,
+                         int client) = 0;
 
   virtual void MarkClientUsed(const url::Origin& origin,
                               const GURL& endpoint) = 0;

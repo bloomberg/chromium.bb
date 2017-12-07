@@ -121,6 +121,10 @@ class TestReportingContext : public ReportingContext {
   }
 
  private:
+  int RandIntCallback(int min, int max);
+
+  int rand_counter_;
+
   // Owned by the DeliveryAgent and GarbageCollector, respectively, but
   // referenced here to preserve type:
 

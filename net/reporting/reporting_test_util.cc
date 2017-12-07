@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
@@ -128,11 +130,15 @@ bool TestReportingDelegate::CanUseClient(const url::Origin& origin,
 TestReportingContext::TestReportingContext(base::Clock* clock,
                                            base::TickClock* tick_clock,
                                            const ReportingPolicy& policy)
-    : ReportingContext(policy,
-                       clock,
-                       tick_clock,
-                       std::make_unique<TestReportingUploader>(),
-                       std::make_unique<TestReportingDelegate>()),
+    : ReportingContext(
+          policy,
+          clock,
+          tick_clock,
+          base::BindRepeating(&TestReportingContext::RandIntCallback,
+                              base::Unretained(this)),
+          std::make_unique<TestReportingUploader>(),
+          std::make_unique<TestReportingDelegate>()),
+      rand_counter_(0),
       delivery_timer_(new base::MockTimer(/* retain_user_task= */ false,
                                           /* is_repeating= */ false)),
       garbage_collection_timer_(
@@ -146,6 +152,11 @@ TestReportingContext::TestReportingContext(base::Clock* clock,
 TestReportingContext::~TestReportingContext() {
   delivery_timer_ = nullptr;
   garbage_collection_timer_ = nullptr;
+}
+
+int TestReportingContext::RandIntCallback(int min, int max) {
+  DCHECK_LE(min, max);
+  return min + (rand_counter_++ % (max - min + 1));
 }
 
 ReportingTestBase::ReportingTestBase() {

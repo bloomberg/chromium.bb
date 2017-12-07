@@ -60,6 +60,18 @@ class ReportingCacheTest : public ReportingTestBase {
     return clients.size();
   }
 
+  void SetClient(const url::Origin& origin,
+                 const GURL& endpoint,
+                 bool subdomains,
+                 const std::string& group,
+                 base::TimeTicks expires) {
+    cache()->SetClient(origin, endpoint,
+                       subdomains ? ReportingClient::Subdomains::INCLUDE
+                                  : ReportingClient::Subdomains::EXCLUDE,
+                       group, expires, ReportingClient::kDefaultPriority,
+                       ReportingClient::kDefaultWeight);
+  }
+
   const GURL kUrl1_ = GURL("https://origin1/path");
   const url::Origin kOrigin1_ = url::Origin::Create(GURL("https://origin1/"));
   const url::Origin kOrigin2_ = url::Origin::Create(GURL("https://origin2/"));
@@ -195,9 +207,7 @@ TEST_F(ReportingCacheTest, RemoveAllPendingReports) {
 }
 
 TEST_F(ReportingCacheTest, Endpoints) {
-  cache()->SetClient(kOrigin1_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
   EXPECT_EQ(1, observer()->cache_update_count());
 
   const ReportingClient* client =
@@ -209,8 +219,7 @@ TEST_F(ReportingCacheTest, Endpoints) {
   EXPECT_EQ(kGroup1_, client->group);
   EXPECT_EQ(kExpires1_, client->expires);
 
-  cache()->SetClient(kOrigin1_, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup2, kExpires2_);
+  SetClient(kOrigin1_, kEndpoint1_, true, kGroup2, kExpires2_);
   EXPECT_EQ(2, observer()->cache_update_count());
 
   client = FindClientInCache(cache(), kOrigin1_, kEndpoint1_);
@@ -229,14 +238,9 @@ TEST_F(ReportingCacheTest, Endpoints) {
 }
 
 TEST_F(ReportingCacheTest, GetClientsForOriginAndGroup) {
-  cache()->SetClient(kOrigin1_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
-  cache()->SetClient(kOrigin1_, kEndpoint2_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup2, kExpires1_);
-  cache()->SetClient(kOrigin2_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
+  SetClient(kOrigin1_, kEndpoint2_, false, kGroup2, kExpires1_);
+  SetClient(kOrigin2_, kEndpoint1_, false, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin1_, kGroup1_, &clients);
@@ -248,14 +252,9 @@ TEST_F(ReportingCacheTest, GetClientsForOriginAndGroup) {
 }
 
 TEST_F(ReportingCacheTest, RemoveClientForOriginAndEndpoint) {
-  cache()->SetClient(kOrigin1_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
-  cache()->SetClient(kOrigin1_, kEndpoint2_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup2, kExpires1_);
-  cache()->SetClient(kOrigin2_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
+  SetClient(kOrigin1_, kEndpoint2_, false, kGroup2, kExpires1_);
+  SetClient(kOrigin2_, kEndpoint1_, false, kGroup1_, kExpires1_);
   EXPECT_EQ(3, observer()->cache_update_count());
 
   cache()->RemoveClientForOriginAndEndpoint(kOrigin1_, kEndpoint1_);
@@ -273,14 +272,9 @@ TEST_F(ReportingCacheTest, RemoveClientForOriginAndEndpoint) {
 }
 
 TEST_F(ReportingCacheTest, RemoveClientsForEndpoint) {
-  cache()->SetClient(kOrigin1_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
-  cache()->SetClient(kOrigin1_, kEndpoint2_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup2, kExpires1_);
-  cache()->SetClient(kOrigin2_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
+  SetClient(kOrigin1_, kEndpoint2_, false, kGroup2, kExpires1_);
+  SetClient(kOrigin2_, kEndpoint1_, false, kGroup1_, kExpires1_);
   EXPECT_EQ(3, observer()->cache_update_count());
 
   cache()->RemoveClientsForEndpoint(kEndpoint1_);
@@ -298,12 +292,8 @@ TEST_F(ReportingCacheTest, RemoveClientsForEndpoint) {
 }
 
 TEST_F(ReportingCacheTest, RemoveAllClients) {
-  cache()->SetClient(kOrigin1_, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
-  cache()->SetClient(kOrigin2_, kEndpoint2_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
+  SetClient(kOrigin2_, kEndpoint2_, false, kGroup1_, kExpires1_);
   EXPECT_EQ(2, observer()->cache_update_count());
 
   cache()->RemoveAllClients();
@@ -319,9 +309,7 @@ TEST_F(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
   const url::Origin kDifferentPortOrigin =
       url::Origin::Create(GURL("https://example:444/"));
 
-  cache()->SetClient(kDifferentPortOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kDifferentPortOrigin, kEndpoint1_, false, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -333,9 +321,7 @@ TEST_F(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
   const url::Origin kSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
 
-  cache()->SetClient(kSuperOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kSuperOrigin, kEndpoint1_, false, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -347,9 +333,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
   const url::Origin kDifferentPortOrigin =
       url::Origin::Create(GURL("https://example:444/"));
 
-  cache()->SetClient(kDifferentPortOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kDifferentPortOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -362,9 +346,7 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
   const url::Origin kSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
 
-  cache()->SetClient(kSuperOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kSuperOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -377,11 +359,8 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
   const url::Origin kDifferentPortOrigin =
       url::Origin::Create(GURL("https://example:444/"));
 
-  cache()->SetClient(kOrigin, kEndpoint1_, ReportingClient::Subdomains::INCLUDE,
-                     kGroup1_, kExpires1_);
-  cache()->SetClient(kDifferentPortOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
+  SetClient(kDifferentPortOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -394,11 +373,8 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
   const url::Origin kSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
 
-  cache()->SetClient(kOrigin, kEndpoint1_, ReportingClient::Subdomains::INCLUDE,
-                     kGroup1_, kExpires1_);
-  cache()->SetClient(kSuperOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
+  SetClient(kSuperOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -414,12 +390,8 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferMoreSpecificSuperdomain) {
   const url::Origin kSuperSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
 
-  cache()->SetClient(kSuperOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup1_,
-                     kExpires1_);
-  cache()->SetClient(kSuperSuperOrigin, kEndpoint1_,
-                     ReportingClient::Subdomains::INCLUDE, kGroup1_,
-                     kExpires1_);
+  SetClient(kSuperOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
+  SetClient(kSuperSuperOrigin, kEndpoint1_, true, kGroup1_, kExpires1_);
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin, kGroup1_, &clients);
@@ -502,9 +474,7 @@ TEST_F(ReportingCacheTest, EvictLRUClient) {
   ASSERT_GT(std::numeric_limits<size_t>::max(), max_client_count);
 
   for (size_t i = 0; i < max_client_count; ++i) {
-    cache()->SetClient(kOrigin1_, MakeEndpoint(i),
-                       ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                       tomorrow());
+    SetClient(kOrigin1_, MakeEndpoint(i), false, kGroup1_, tomorrow());
   }
   EXPECT_EQ(max_client_count, client_count());
 
@@ -515,9 +485,8 @@ TEST_F(ReportingCacheTest, EvictLRUClient) {
   }
 
   // Add one more client, forcing the cache to evict the LRU.
-  cache()->SetClient(kOrigin1_, MakeEndpoint(max_client_count),
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     tomorrow());
+  SetClient(kOrigin1_, MakeEndpoint(max_client_count), false, kGroup1_,
+            tomorrow());
   EXPECT_EQ(max_client_count, client_count());
   EXPECT_FALSE(FindClientInCache(cache(), kOrigin1_,
                                  MakeEndpoint(max_client_count - 1)));
@@ -532,15 +501,13 @@ TEST_F(ReportingCacheTest, EvictExpiredClient) {
   for (size_t i = 0; i < max_client_count; ++i) {
     base::TimeTicks expires =
         (i == max_client_count - 1) ? yesterday() : tomorrow();
-    cache()->SetClient(kOrigin1_, MakeEndpoint(i),
-                       ReportingClient::Subdomains::EXCLUDE, kGroup1_, expires);
+    SetClient(kOrigin1_, MakeEndpoint(i), false, kGroup1_, expires);
   }
   EXPECT_EQ(max_client_count, client_count());
 
   // Add one more client, forcing the cache to evict the expired one.
-  cache()->SetClient(kOrigin1_, MakeEndpoint(max_client_count),
-                     ReportingClient::Subdomains::EXCLUDE, kGroup1_,
-                     tomorrow());
+  SetClient(kOrigin1_, MakeEndpoint(max_client_count), false, kGroup1_,
+            tomorrow());
   EXPECT_EQ(max_client_count, client_count());
   EXPECT_FALSE(FindClientInCache(cache(), kOrigin1_,
                                  MakeEndpoint(max_client_count - 1)));
