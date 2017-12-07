@@ -309,7 +309,8 @@ class BBJSONGenerator(object):
       test = self.dictionary_merge(test, modifications)
     for k in self.get_test_key_removals(test_name, tester_name):
       del test[k]
-    self.clean_swarming_dictionary(test['swarming'])
+    if 'swarming' in test:
+      self.clean_swarming_dictionary(test['swarming'])
     return test
 
   def generate_gtest(self, waterfall, tester_name, tester_config, test_name,
@@ -378,6 +379,7 @@ class BBJSONGenerator(object):
       'name': test_name,
       'script': test_config['script']
     }
+    result = self.update_and_cleanup_test(result, test_name, tester_name)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
