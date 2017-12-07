@@ -7431,6 +7431,15 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Finished with &quot;Keep Exploring&quot; button"/>
 </enum>
 
+<enum name="CrosSelectToSpeakSpeechRate">
+  <int value="50" label="0.5: Slowest"/>
+  <int value="75" label="0.75: Slow"/>
+  <int value="100" label="1.0: Normal"/>
+  <int value="125" label="1.25: Fast"/>
+  <int value="150" label="1.5: Faster"/>
+  <int value="200" label="2.0: Fastest"/>
+</enum>
+
 <enum name="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
