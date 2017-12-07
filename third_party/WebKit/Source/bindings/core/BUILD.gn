@@ -39,3 +39,10 @@ generate_global_constructors("core_global_constructors_idls") {
     ":core_global_objects",
   ]
 }
+
+generate_web_idl_collection("core_web_idl_collection") {
+  sources = core_static_interface_idl_files - core_testing_definition_idl_files
+  output = "WebIdlCollectionForCore.pickle"
+  component = "core"
+  output_dir = bindings_core_output_dir
+}
