@@ -564,6 +564,7 @@ void TouchEventManager::HandleTouchPoint(
     const EventHandlingUtil::PointerEventTarget& pointer_event_target) {
   DCHECK_GE(event.GetType(), WebInputEvent::kPointerTypeFirst);
   DCHECK_LE(event.GetType(), WebInputEvent::kPointerTypeLast);
+  DCHECK_NE(event.GetType(), WebInputEvent::kPointerCausedUaAction);
 
   if (touch_attribute_map_.IsEmpty()) {
     // Ideally we'd DCHECK(!m_touchSequenceDocument) here since we should

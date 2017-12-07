@@ -145,6 +145,7 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,
                                const IntPoint& point,
                                int modifiers) {
   WebMouseEvent result(type, modifiers, WebInputEvent::kTimeStampForTesting);
+  result.pointer_type = WebPointerProperties::PointerType::kMouse;
   result.SetPositionInWidget(point.X(), point.Y());
   result.SetPositionInScreen(point.X(), point.Y());
   result.button = button;

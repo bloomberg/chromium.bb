@@ -34,6 +34,7 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
                                  const WebTouchPoint& touch_point)
     : WebInputEvent(sizeof(WebPointerEvent)),
       WebPointerProperties(touch_point),
+      scroll_capable(true),
       width(touch_point.radius_x * 2.f),
       height(touch_point.radius_y * 2.f) {
   // WebInutEvent attributes
@@ -55,6 +56,7 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
                                  const WebMouseEvent& mouse_event)
     : WebInputEvent(sizeof(WebPointerEvent)),
       WebPointerProperties(mouse_event),
+      scroll_capable(false),
       width(1),
       height(1) {
   DCHECK_GE(type, WebInputEvent::kPointerTypeFirst);
@@ -64,6 +66,14 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
   SetTimeStampSeconds(mouse_event.TimeStampSeconds());
   SetType(type);
   SetModifiers(mouse_event.GetModifiers());
+}
+
+WebPointerEvent::WebPointerEvent(WebPointerProperties::PointerType type,
+                                 double time_stamp_seconds)
+    : WebPointerEvent() {
+  pointer_type = type;
+  SetTimeStampSeconds(time_stamp_seconds);
+  SetType(WebInputEvent::Type::kPointerCausedUaAction);
 }
 
 WebPointerEvent WebPointerEvent::WebPointerEventInRootFrame() const {
