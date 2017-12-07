@@ -39,7 +39,8 @@ FakeCompositorTimingHistory::~FakeCompositorTimingHistory() = default;
 void FakeCompositorTimingHistory::SetAllEstimatesTo(base::TimeDelta duration) {
   begin_main_frame_queue_duration_critical_ = duration;
   begin_main_frame_queue_duration_not_critical_ = duration;
-  begin_main_frame_start_to_commit_duration_ = duration;
+  begin_main_frame_start_to_ready_to_commit_duration_ = duration;
+  commit_duration_ = duration;
   commit_to_ready_to_activate_duration_ = duration;
   prepare_tiles_duration_ = duration;
   activate_duration_ = duration;
@@ -58,8 +59,14 @@ void FakeCompositorTimingHistory::
 }
 
 void FakeCompositorTimingHistory::
-    SetBeginMainFrameStartToCommitDurationEstimate(base::TimeDelta duration) {
-  begin_main_frame_start_to_commit_duration_ = duration;
+    SetBeginMainFrameStartToReadyToCommitDurationEstimate(
+        base::TimeDelta duration) {
+  begin_main_frame_start_to_ready_to_commit_duration_ = duration;
+}
+
+void FakeCompositorTimingHistory::SetCommitDurationEstimate(
+    base::TimeDelta duration) {
+  commit_duration_ = duration;
 }
 
 void FakeCompositorTimingHistory::SetCommitToReadyToActivateDurationEstimate(
@@ -94,10 +101,13 @@ FakeCompositorTimingHistory::BeginMainFrameQueueDurationNotCriticalEstimate()
   return begin_main_frame_queue_duration_not_critical_;
 }
 
-base::TimeDelta
-FakeCompositorTimingHistory::BeginMainFrameStartToCommitDurationEstimate()
-    const {
-  return begin_main_frame_start_to_commit_duration_;
+base::TimeDelta FakeCompositorTimingHistory::
+    BeginMainFrameStartToReadyToCommitDurationEstimate() const {
+  return begin_main_frame_start_to_ready_to_commit_duration_;
+}
+
+base::TimeDelta FakeCompositorTimingHistory::CommitDurationEstimate() const {
+  return commit_duration_;
 }
 
 base::TimeDelta

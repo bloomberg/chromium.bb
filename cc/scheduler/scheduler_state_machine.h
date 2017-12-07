@@ -293,6 +293,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool previous_pending_tree_was_impl_side() const {
     return previous_pending_tree_was_impl_side_;
   }
+  bool critical_begin_main_frame_to_activate_is_fast() const {
+    return critical_begin_main_frame_to_activate_is_fast_;
+  }
 
  protected:
   bool BeginFrameRequiredForAction() const;
