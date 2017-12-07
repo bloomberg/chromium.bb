@@ -1188,19 +1188,6 @@ void UiSceneCreator::CreateOmnibox() {
 
   scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
 
-  auto close_button = Create<Button>(
-      kOmniboxCloseButton, kPhaseForeground,
-      base::Bind([](Model* m) { m->omnibox_input_active = false; },
-                 base::Unretained(model_)),
-      vector_icons::kClose16Icon);
-  close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
-                        kOmniboxCloseButtonDiameterDMM);
-  close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
-  close_button->set_hover_offset(kButtonZOffsetHoverDMM);
-  BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
-                   &Button::SetButtonColors);
-  scene_->AddUiElement(kOmniboxContainer, std::move(close_button));
-
   // Set up the vector binding to manage suggestions dynamically.
   SuggestionSetBinding::ModelAddedCallback added_callback =
       base::Bind(&OnSuggestionModelAdded, base::Unretained(scene_),
@@ -1219,6 +1206,20 @@ void UiSceneCreator::CreateOmnibox() {
       &model_->omnibox_suggestions, added_callback, removed_callback));
 
   scene_->AddUiElement(kOmniboxContainer, std::move(suggestions_layout));
+
+  auto close_button = Create<Button>(
+      kOmniboxCloseButton, kPhaseForeground,
+      base::BindRepeating([](Model* m) { m->omnibox_input_active = false; },
+                          base::Unretained(model_)),
+      vector_icons::kClose16Icon);
+  close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
+                        kOmniboxCloseButtonDiameterDMM);
+  close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
+  close_button->SetRotate(1, 0, 0, atan(kOmniboxCloseButtonVerticalOffsetDMM));
+  close_button->set_hover_offset(kButtonZOffsetHoverDMM);
+  BindButtonColors(model_, close_button.get(), &ColorScheme::button_colors,
+                   &Button::SetButtonColors);
+  scene_->AddUiElement(kOmniboxRoot, std::move(close_button));
 }
 
 void UiSceneCreator::CreateWebVrUrlToast() {
