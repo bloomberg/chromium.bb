@@ -431,6 +431,8 @@ template("linux_package") {
       rebase_path(root_out_dir, root_build_dir),
       "-s",
       rebase_path(sysroot, root_build_dir),
+      "-t",
+      target_os,
     ]
     if (is_official_build) {
       args += [ "-f" ]
@@ -481,6 +483,8 @@ template("linux_package") {
         branding_path_component,
         "-o",
         rebase_path(root_out_dir, root_build_dir),
+        "-t",
+        target_os,
       ]
       if (is_official_build) {
         args += [ "-f" ]

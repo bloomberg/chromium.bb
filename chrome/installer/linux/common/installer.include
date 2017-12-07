@@ -329,10 +329,25 @@ stage_install_common() {
     exit 1
   fi
 
+  # Check to make sure no ELF binaries set RPATH.
+  if [ "${TARGET_OS}" != "chromeos" ]; then
+    RPATH_BINS=
+    for elf in $(find "${STAGEDIR}/${INSTALLDIR}/" -type f | xargs file |
+                   grep ELF | awk '{print $1;}' | sed 's/:$//'); do
+      if readelf -d ${elf} | grep "(RPATH)" >/dev/null; then
+        RPATH_BINS="${RPATH_BINS} $(basename ${elf})"
+      fi
+    done
+    if [ -n "${RPATH_BINS}" ]; then
+      echo "ERROR: Found binaries with RPATH set:${RPATH_BINS}" 1>&2
+      exit 1
+    fi
+  fi
+
   # Make sure ELF binaries live in INSTALLDIR exclusively.
   ELF_OUTSIDE_INSTALLDIR=$(find "${STAGEDIR}/" -not -path \
     "${STAGEDIR}${INSTALLDIR}/*" -type f | xargs file -b |
-    grep -ce "^ELF" || true)
+                             grep -ce "^ELF" || true)
   if [ "${ELF_OUTSIDE_INSTALLDIR}" -ne 0 ]; then
     echo "ERROR: Found ${ELF_OUTSIDE_INSTALLDIR} ELF binaries" \
       "outside of ${INSTALLDIR}" 1>&2
