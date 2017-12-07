@@ -499,27 +499,6 @@ source_set("common") {
     sources -= [ "cursors/webcursor_aurawin.cc" ]
   }
 
-  if (!use_seccomp_bpf) {
-    if (is_linux && current_cpu != "s390x" && current_cpu != "ppc64") {
-      sources -= [
-        "sandbox_linux/bpf_base_policy_linux.cc",
-        "sandbox_linux/bpf_base_policy_linux.h",
-        "sandbox_linux/bpf_cros_amd_gpu_policy_linux.cc",
-        "sandbox_linux/bpf_cros_amd_gpu_policy_linux.h",
-        "sandbox_linux/bpf_cros_arm_gpu_policy_linux.cc",
-        "sandbox_linux/bpf_cros_arm_gpu_policy_linux.h",
-        "sandbox_linux/bpf_gpu_policy_linux.cc",
-        "sandbox_linux/bpf_gpu_policy_linux.h",
-        "sandbox_linux/bpf_ppapi_policy_linux.cc",
-        "sandbox_linux/bpf_ppapi_policy_linux.h",
-        "sandbox_linux/bpf_renderer_policy_linux.cc",
-        "sandbox_linux/bpf_renderer_policy_linux.h",
-        "sandbox_linux/bpf_utility_policy_linux.cc",
-        "sandbox_linux/bpf_utility_policy_linux.h",
-      ]
-    }
-  }
-
   if (is_mac) {
     deps += [ "//media/gpu" ]
   }
