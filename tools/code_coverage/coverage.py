@@ -408,17 +408,15 @@ def _IsTargetGTestTarget(target):
   return target in GTEST_TARGET_NAMES
 
 
-def _ValidateCommandsAreRelativeToSrcRoot(commands):
+def _VerifyTargetExecutablesAreInBuildDirectory(commands):
+  """Verifies that the target executables specified in the commands are inside
+  the given build directory."""
   for command in commands:
     binary_path = _GetBinaryPath(command)
-    assert binary_path.startswith(BUILD_DIR), ('Target executable "%s" is '
-                                               'outside of the given build '
-                                               'directory: "%s". Please make '
-                                               'sure the command: "%s" is '
-                                               'relative to the root of the '
-                                               'checkout.' %
-                                               (binary_path, BUILD_DIR,
-                                                command))
+    binary_absolute_path = os.path.abspath(os.path.normpath(binary_path))
+    assert binary_absolute_path.startswith(os.path.abspath(BUILD_DIR)), (
+        'Target executable "%s" in command: "%s" is outside of '
+        'the given build directory: "%s".' % (binary_path, command, BUILD_DIR))
 
 
 def _ValidateBuildingWithClangCoverage():
@@ -553,7 +551,7 @@ def Main():
       'Build directory: {} doesn\'t exist. '
       'Please run "gn gen" to generate.').format(BUILD_DIR)
   _ValidateBuildingWithClangCoverage()
-  _ValidateCommandsAreRelativeToSrcRoot(args.command)
+  _VerifyTargetExecutablesAreInBuildDirectory(args.command)
 
   absolute_filter_paths = []
   if args.filters:
