@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -59,8 +60,9 @@ class FreezerCgroupProcessManager::FileWorker {
                base::PathIsWritable(to_be_frozen_state_path_);
 
     if (!enabled_) {
-      LOG(WARNING) << "Cgroup freezer does not exist or is not writable. "
-                   << "Unable to freeze renderer processes.";
+      LOG_IF(WARNING, base::SysInfo::IsRunningOnChromeOS())
+          << "Cgroup freezer does not exist or is not writable. "
+          << "Unable to freeze renderer processes.";
       return;
     }
 

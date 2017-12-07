@@ -24,6 +24,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/ash_config.h"
@@ -1028,7 +1029,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
       extension_ime_util::GetComponentIDByInputMethodID(descriptor.id());
   if (engine_map_.find(profile) == engine_map_.end() ||
       engine_map_[profile].find(extension_id) == engine_map_[profile].end()) {
-    LOG(ERROR) << "IMEEngine for \"" << extension_id << "\" is not registered";
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "IMEEngine for \"" << extension_id << "\" is not registered";
   }
   engine = engine_map_[profile][extension_id];
 
