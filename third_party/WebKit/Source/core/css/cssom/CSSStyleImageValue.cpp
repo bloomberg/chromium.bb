@@ -7,21 +7,21 @@
 namespace blink {
 
 double CSSStyleImageValue::intrinsicWidth(bool& is_null) const {
-  is_null = IsCachePending();
+  is_null = Status() != ResourceStatus::kCached;
   if (is_null)
     return 0;
   return ImageSize().Width();
 }
 
 double CSSStyleImageValue::intrinsicHeight(bool& is_null) const {
-  is_null = IsCachePending();
+  is_null = Status() != ResourceStatus::kCached;
   if (is_null)
     return 0;
   return ImageSize().Height();
 }
 
 double CSSStyleImageValue::intrinsicRatio(bool& is_null) {
-  is_null = IsCachePending();
+  is_null = Status() != ResourceStatus::kCached;
   if (is_null || intrinsicHeight(is_null) == 0) {
     is_null = true;
     return 0;
