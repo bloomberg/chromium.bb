@@ -323,8 +323,11 @@
     'metrics_python_tests': {},
     'telemetry_gpu_unittests': {},
     'telemetry_unittests': {
+      'args': [
+        '--jobs=1',
+      ],
       'swarming': {
-        'shards': 2,
+        'shards': 4,
       },
     },
     'webkit_layout_tests': {
