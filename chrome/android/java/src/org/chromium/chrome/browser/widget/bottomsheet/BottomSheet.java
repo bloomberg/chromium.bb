@@ -18,9 +18,7 @@ import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -90,7 +88,8 @@ import java.util.List;
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
 public class BottomSheet
-        extends FrameLayout implements FadingBackgroundView.FadingViewObserver, NativePageHost {
+        extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
+                                       FadingBackgroundView.FadingViewObserver, NativePageHost {
     /** The different states that the bottom sheet can have. */
     @IntDef({SHEET_STATE_NONE, SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL,
             SHEET_STATE_SCROLLING})
@@ -155,9 +154,6 @@ public class BottomSheet
     /** This is similar to {@link #THRESHOLD_TO_NEXT_STATE_3} but for 2 states instead of 3. */
     private static final float THRESHOLD_TO_NEXT_STATE_2 = 0.3f;
 
-    /** The minimum y/x ratio that a scroll must have to be considered vertical. */
-    private static final float MIN_VERTICAL_SCROLL_SLOPE = 2.0f;
-
     /** The height ratio for the sheet in the SHEET_STATE_HALF state. */
     private static final float HALF_HEIGHT_RATIO = 0.55f;
 
@@ -184,9 +180,6 @@ public class BottomSheet
     /** The list of observers of this sheet. */
     private final ObserverList<BottomSheetObserver> mObservers = new ObserverList<>();
 
-    /** This is a cached array for getting the window location of different views. */
-    private final int[] mLocationArray = new int[2];
-
     /** The visible rect for the screen taking the keyboard into account. */
     private final Rect mVisibleViewportRect = new Rect();
 
@@ -203,13 +196,7 @@ public class BottomSheet
     private BottomSheetNewTabController mNtpController;
 
     /** For detecting scroll and fling events on the bottom sheet. */
-    private GestureDetector mGestureDetector;
-
-    /** Whether or not the user is scrolling the bottom sheet. */
-    private boolean mIsScrolling;
-
-    /** Track the velocity of the user's scrolls to determine up or down direction. */
-    private VelocityTracker mVelocityTracker;
+    private BottomSheetSwipeDetector mGestureDetector;
 
     /** The animator used to move the sheet to a fixed state when released by the user. */
     private ValueAnimator mSettleAnimator;
@@ -373,81 +360,6 @@ public class BottomSheet
     }
 
     /**
-     * This class is responsible for detecting swipe and scroll events on the bottom sheet or
-     * ignoring them when appropriate.
-     */
-    private class BottomSheetSwipeDetector extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDown(MotionEvent e) {
-            if (e == null) return false;
-            return shouldGestureMoveSheet(e, e);
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e1 == null || !shouldGestureMoveSheet(e1, e2)) return false;
-
-            // Only start scrolling if the scroll is up or down. If the user is already scrolling,
-            // continue moving the sheet.
-            float slope = Math.abs(distanceX) > 0f ? Math.abs(distanceY) / Math.abs(distanceX) : 0f;
-            if (!mIsScrolling && slope < MIN_VERTICAL_SCROLL_SLOPE) {
-                mVelocityTracker.clear();
-                return false;
-            }
-
-            // Cancel the settling animation if it is running so it doesn't conflict with where the
-            // user wants to move the sheet.
-            cancelAnimation();
-
-            mVelocityTracker.addMovement(e2);
-
-            float currentShownRatio =
-                    mContainerHeight > 0 ? getSheetOffsetFromBottom() / mContainerHeight : 0;
-            boolean isSheetInMaxPosition =
-                    MathUtils.areFloatsEqual(currentShownRatio, getFullRatio());
-
-            // Allow the bottom sheet's content to be scrolled up without dragging the sheet down.
-            if (!isTouchEventInToolbar(e2) && isSheetInMaxPosition && mSheetContent != null
-                    && mSheetContent.getVerticalScrollOffset() > 0) {
-                return false;
-            }
-
-            // If the sheet is in the max position, don't move the sheet if the scroll is upward.
-            // Instead, allow the sheet's content to handle it if it needs to.
-            if (isSheetInMaxPosition && distanceY > 0) return false;
-
-            // Similarly, if the sheet is in the min position, don't move if the scroll is downward.
-            if (currentShownRatio <= getPeekRatio() && distanceY < 0) return false;
-
-            float newOffset = getSheetOffsetFromBottom() + distanceY;
-            setSheetOffsetFromBottom(MathUtils.clamp(newOffset, getMinOffset(), getMaxOffset()));
-
-            setInternalCurrentState(SHEET_STATE_SCROLLING, StateChangeReason.SWIPE);
-
-            mIsScrolling = true;
-            return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (e1 == null || !shouldGestureMoveSheet(e1, e2) || !mIsScrolling) return false;
-
-            cancelAnimation();
-
-            // Figure out the projected state of the sheet and animate there. Note that a swipe up
-            // will have a negative velocity, swipe down will have a positive velocity. Negate this
-            // values so that the logic is more intuitive.
-            @SheetState
-            int targetState = getTargetSheetState(
-                    getSheetOffsetFromBottom() + getFlingDistance(-velocityY), -velocityY);
-            setSheetState(targetState, true, StateChangeReason.SWIPE);
-            mIsScrolling = false;
-
-            return true;
-        }
-    }
-
-    /**
      * Returns whether the provided bottom sheet state is in one of the stable open or closed
      * states: {@link #SHEET_STATE_FULL}, {@link #SHEET_STATE_PEEK} or {@link #SHEET_STATE_HALF}
      * @param sheetState A {@link SheetState} to test.
@@ -467,14 +379,8 @@ public class BottomSheet
         }
     }
 
-    /**
-     * Check if a particular gesture or touch event should move the bottom sheet when in peeking
-     * mode. If the "chrome-home-swipe-logic" flag is not set this function returns true.
-     * @param initialEvent The event that started the scroll.
-     * @param currentEvent The current motion event.
-     * @return True if the bottom sheet should move.
-     */
-    private boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
+    @Override
+    public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
         if (mActivity == null || isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
@@ -559,13 +465,10 @@ public class BottomSheet
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
 
-        mVelocityTracker = VelocityTracker.obtain();
-
-        mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
-        mGestureDetector.setIsLongpressEnabled(false);
-
         mMetrics = new BottomSheetMetrics();
         addObserver(mMetrics);
+
+        mGestureDetector = new BottomSheetSwipeDetector(context, this);
 
         BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                 .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
@@ -715,12 +618,7 @@ public class BottomSheet
 
         if (!canMoveSheet()) return false;
 
-        // The incoming motion event may have been adjusted by the view sending it down. Create a
-        // motion event with the raw (x, y) coordinates of the original so the gesture detector
-        // functions properly.
-        mGestureDetector.onTouchEvent(createRawMotionEvent(e));
-
-        return mIsScrolling;
+        return mGestureDetector.onInterceptTouchEvent(e);
     }
 
     @Override
@@ -731,32 +629,7 @@ public class BottomSheet
 
         if (isToolbarAndroidViewHidden()) return false;
 
-        // The down event is interpreted above in onInterceptTouchEvent, it does not need to be
-        // interpreted a second time.
-        if (e.getActionMasked() != MotionEvent.ACTION_DOWN) {
-            mGestureDetector.onTouchEvent(createRawMotionEvent(e));
-        }
-
-        // If the user is scrolling and the event is a cancel or up action, update scroll state
-        // and return.
-        if (mIsScrolling
-                && (e.getActionMasked() == MotionEvent.ACTION_UP
-                           || e.getActionMasked() == MotionEvent.ACTION_CANCEL)) {
-            mIsScrolling = false;
-
-            mVelocityTracker.computeCurrentVelocity(1000);
-
-            for (BottomSheetObserver o : mObservers) o.onSheetReleased();
-
-            // If an animation was not created to settle the sheet at some state, do it now.
-            if (mSettleAnimator == null) {
-                // Negate velocity so a positive number indicates a swipe up.
-                float currentVelocity = -mVelocityTracker.getYVelocity();
-                @SheetState
-                int targetState = getTargetSheetState(getSheetOffsetFromBottom(), currentVelocity);
-                setSheetState(targetState, true, StateChangeReason.SWIPE);
-            }
-        }
+        mGestureDetector.onTouchEvent(e);
 
         return true;
     }
@@ -898,7 +771,7 @@ public class BottomSheet
                     // If we are in the middle of a touch event stream (i.e. scrolling while
                     // keyboard is up) don't set the sheet state. Instead allow the gesture detector
                     // to position the sheet and make sure the keyboard hides.
-                    if (mIsScrolling) {
+                    if (mGestureDetector.isScrolling()) {
                         UiUtils.hideKeyboard(BottomSheet.this);
                     } else {
                         cancelAnimation();
@@ -923,7 +796,7 @@ public class BottomSheet
                 mToolbarHeight = bottom - top;
                 updateSheetStateRatios();
 
-                if (!mIsScrolling) {
+                if (!mGestureDetector.isScrolling()) {
                     cancelAnimation();
 
                     // This onLayoutChange() will be called after the user enters fullscreen video
@@ -1099,20 +972,29 @@ public class BottomSheet
         return mCurrentState != SHEET_STATE_PEEK;
     }
 
-    /**
-     * Gets the minimum offset of the bottom sheet.
-     * @return The min offset.
-     */
-    public float getMinOffset() {
+    @Override
+    public boolean isContentScrolledToTop() {
+        return mSheetContent == null || mSheetContent.getVerticalScrollOffset() <= 0;
+    }
+
+    @Override
+    public float getCurrentOffsetPx() {
+        return mContainerHeight - getTranslationY();
+    }
+
+    @Override
+    public float getMinOffsetPx() {
         return getPeekRatio() * mContainerHeight;
     }
 
-    /**
-     * Gets the sheet's offset from the bottom of the screen.
-     * @return The sheet's distance from the bottom of the screen.
-     */
-    public float getSheetOffsetFromBottom() {
-        return mContainerHeight - getTranslationY();
+    @Override
+    public float getMaxOffsetPx() {
+        return getFullRatio() * mContainerHeight;
+    }
+
+    @Override
+    public float getContainerHeightPx() {
+        return mContainerHeight;
     }
 
     /**
@@ -1266,20 +1148,6 @@ public class BottomSheet
     }
 
     /**
-     * Determines if a touch event is inside the toolbar. This assumes the toolbar is the full
-     * width of the screen and that the toolbar is at the top of the bottom sheet.
-     * @param e The motion event to test.
-     * @return True if the event occurred in the toolbar region.
-     */
-    private boolean isTouchEventInToolbar(MotionEvent e) {
-        if (mControlContainer == null) return false;
-
-        mControlContainer.getLocationInWindow(mLocationArray);
-
-        return e.getRawY() < mLocationArray[1] + mToolbarHeight;
-    }
-
-    /**
      * A notification that the sheet is exiting the peek state into one that shows content.
      * @param reason The reason the sheet was opened, if any.
      */
@@ -1345,17 +1213,6 @@ public class BottomSheet
     }
 
     /**
-     * Creates an unadjusted version of a MotionEvent.
-     * @param e The original event.
-     * @return The unadjusted version of the event.
-     */
-    private MotionEvent createRawMotionEvent(MotionEvent e) {
-        MotionEvent rawEvent = MotionEvent.obtain(e);
-        rawEvent.setLocation(e.getRawX(), e.getRawY());
-        return rawEvent;
-    }
-
-    /**
      * Updates the bottom sheet's state ratios and adjusts the sheet's state if necessary.
      */
     private void updateSheetStateRatios() {
@@ -1392,8 +1249,8 @@ public class BottomSheet
     private void createSettleAnimation(
             @SheetState final int targetState, @StateChangeReason final int reason) {
         mTargetState = targetState;
-        mSettleAnimator = ValueAnimator.ofFloat(
-                getSheetOffsetFromBottom(), getSheetHeightForState(targetState));
+        mSettleAnimator =
+                ValueAnimator.ofFloat(getCurrentOffsetPx(), getSheetHeightForState(targetState));
         mSettleAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
         mSettleAnimator.setInterpolator(mInterpolator);
 
@@ -1421,34 +1278,34 @@ public class BottomSheet
     }
 
     /**
-     * Gets the distance of a fling based on the velocity and the base animation time. This formula
-     * assumes the deceleration curve is quadratic (t^2), hence the displacement formula should be:
-     * displacement = initialVelocity * duration / 2.
-     * @param velocity The velocity of the fling.
-     * @return The distance the fling would cover.
-     */
-    private float getFlingDistance(float velocity) {
-        // This includes conversion from seconds to ms.
-        return velocity * BASE_ANIMATION_DURATION_MS / 2000f;
-    }
-
-    /**
-     * Gets the maximum offset of the bottom sheet.
-     * @return The max offset.
-     */
-    private float getMaxOffset() {
-        return getFullRatio() * mContainerHeight;
-    }
-
-    /**
      * Sets the sheet's offset relative to the bottom of the screen.
      * @param offset The offset that the sheet should be.
      */
     private void setSheetOffsetFromBottom(float offset) {
-        if (MathUtils.areFloatsEqual(offset, getSheetOffsetFromBottom())) return;
+        if (MathUtils.areFloatsEqual(offset, getCurrentOffsetPx())) return;
 
         setTranslationY(mContainerHeight - offset);
         sendOffsetChangeEvents();
+    }
+
+    @Override
+    public void setSheetOffset(float offset, boolean shouldAnimate) {
+        cancelAnimation();
+
+        if (shouldAnimate) {
+            float velocityY = getCurrentOffsetPx() - offset;
+
+            @BottomSheet.SheetState
+            int targetState = getTargetSheetState(offset, -velocityY);
+
+            setSheetState(targetState, true, BottomSheet.StateChangeReason.SWIPE);
+
+            for (BottomSheetObserver o : mObservers) o.onSheetReleased();
+        } else {
+            setInternalCurrentState(
+                    BottomSheet.SHEET_STATE_SCROLLING, BottomSheet.StateChangeReason.SWIPE);
+            setSheetOffsetFromBottom(offset);
+        }
     }
 
     /**
@@ -1510,8 +1367,7 @@ public class BottomSheet
      * sheet is between the peeking and half states.
      */
     private void sendOffsetChangeEvents() {
-        float screenRatio =
-                mContainerHeight > 0 ? getSheetOffsetFromBottom() / mContainerHeight : 0;
+        float screenRatio = mContainerHeight > 0 ? getCurrentOffsetPx() / mContainerHeight : 0;
 
         // This ratio is relative to the peek and full positions of the sheet.
         float peekFullRatio = MathUtils.clamp(
@@ -1610,7 +1466,7 @@ public class BottomSheet
         // TODO(mdjones): This shouldn't be able to happen, but does occasionally during layout.
         //                Fix the race condition that is making this happen.
         if (state == SHEET_STATE_NONE) {
-            setSheetState(getTargetSheetState(getSheetOffsetFromBottom(), 0), false);
+            setSheetState(getTargetSheetState(getCurrentOffsetPx(), 0), false);
             return;
         }
 
@@ -1699,8 +1555,8 @@ public class BottomSheet
      */
     @SheetState
     private int getTargetSheetState(float sheetHeight, float yVelocity) {
-        if (sheetHeight <= getMinOffset()) return SHEET_STATE_PEEK;
-        if (sheetHeight >= getMaxOffset()) return SHEET_STATE_FULL;
+        if (sheetHeight <= getMinOffsetPx()) return SHEET_STATE_PEEK;
+        if (sheetHeight >= getMaxOffsetPx()) return SHEET_STATE_FULL;
 
         boolean isMovingDownward = yVelocity < 0;
         boolean shouldSkipHalfState = isMovingDownward || isSmallScreen();
