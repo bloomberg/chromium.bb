@@ -255,13 +255,14 @@ public class SingleWebsitePreferences extends PreferenceFragment
                         && other.getBackgroundSyncException() != null) {
                     merged.setBackgroundSyncException(other.getBackgroundSyncException());
                 }
+                if (merged.getPopupException() == null && other.getPopupException() != null) {
+                    merged.setPopupException(other.getPopupException());
+                }
             }
 
             // TODO(crbug.com/763982): Deal with this TODO colony.
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
             // supports reading the origin or host.
-            // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It uses a pattern, and is never
-            // set on Android.
             // TODO(lshang): Merge in CookieException? It will use patterns.
         }
         return merged;
