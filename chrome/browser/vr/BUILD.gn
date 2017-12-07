@@ -49,8 +49,6 @@ static_library("vr_common") {
     "elements/exit_prompt.h",
     "elements/exit_prompt_texture.cc",
     "elements/exit_prompt_texture.h",
-    "elements/exit_warning_texture.cc",
-    "elements/exit_warning_texture.h",
     "elements/full_screen_rect.cc",
     "elements/full_screen_rect.h",
     "elements/grid.cc",

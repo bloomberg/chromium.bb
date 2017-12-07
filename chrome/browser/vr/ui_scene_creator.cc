@@ -329,25 +329,37 @@ void UiSceneCreator::CreateWebVRExitWarning() {
                                  scrim.get(), SetVisible));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(scrim));
 
-  // TODO(mthiesse): Programatically compute the proper texture size for these
-  // textured UI elements.
   // Create transient exit warning.
-  auto exit_warning = base::MakeUnique<ExitWarning>(1024);
-  exit_warning->SetName(kExitWarning);
-  exit_warning->SetDrawPhase(kPhaseOverlayForeground);
-  exit_warning->SetSize(kExitWarningWidth, kExitWarningHeight);
-  exit_warning->SetTranslate(0, 0, -kExitWarningDistance);
-  exit_warning->SetScale(kExitWarningDistance, kExitWarningDistance, 1);
-  exit_warning->SetVisible(false);
-  exit_warning->set_hit_testable(false);
-  exit_warning->AddBinding(VR_BIND_FUNC(bool, Model, model_, exiting_vr,
-                                        UiElement, exit_warning.get(),
-                                        SetVisible));
-  BindColor(model_, exit_warning.get(), &ColorScheme::exit_warning_background,
-            &TexturedElement::SetBackgroundColor);
-  BindColor(model_, exit_warning.get(), &ColorScheme::exit_warning_foreground,
-            &TexturedElement::SetForegroundColor);
-  scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(exit_warning));
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kExitWarningDistance);
+  auto exit_warning_text =
+      base::MakeUnique<Text>(1024, kExitWarningFontHeightDMM);
+  exit_warning_text->SetName(kExitWarningText);
+  exit_warning_text->SetDrawPhase(kPhaseOverlayForeground);
+  exit_warning_text->SetText(
+      l10n_util::GetStringUTF16(IDS_VR_BROWSER_UNSUPPORTED_PAGE));
+  exit_warning_text->SetSize(kExitWarningTextWidthDMM, 0);
+  exit_warning_text->SetMultiLine(true);
+  exit_warning_text->SetVisible(true);
+  exit_warning_text->set_hit_testable(false);
+  BindColor(model_, exit_warning_text.get(),
+            &ColorScheme::exit_warning_foreground, &Text::SetColor);
+
+  auto exit_warning_bg = base::MakeUnique<Rect>();
+  exit_warning_bg->SetName(kExitWarningBackground);
+  exit_warning_bg->SetDrawPhase(kPhaseOverlayForeground);
+  exit_warning_bg->set_bounds_contain_children(true);
+  exit_warning_bg->set_padding(kExitWarningXPaddingDMM,
+                               kExitWarningYPaddingDMM);
+  exit_warning_bg->set_corner_radius(kExitWarningCornerRadiusDMM);
+  exit_warning_bg->set_hit_testable(false);
+  exit_warning_bg->AddChild(std::move(exit_warning_text));
+  exit_warning_bg->AddBinding(VR_BIND_FUNC(bool, Model, model_, exiting_vr,
+                                           UiElement, exit_warning_bg.get(),
+                                           SetVisible));
+  BindColor(model_, exit_warning_bg.get(),
+            &ColorScheme::exit_warning_background, &Rect::SetColor);
+  scaler->AddChild(std::move(exit_warning_bg));
+  scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(scaler));
 }
 
 void UiSceneCreator::CreateSystemIndicators() {

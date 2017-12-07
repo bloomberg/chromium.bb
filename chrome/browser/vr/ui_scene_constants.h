@@ -18,8 +18,11 @@ static constexpr float kTransientWarningHeightDMM = 0.160f;
 static constexpr float kTransientWarningWidthDMM = 0.512f;
 
 static constexpr float kExitWarningDistance = 0.6f;
-static constexpr float kExitWarningHeight = 0.160f;
-static constexpr float kExitWarningWidth = 0.512f;
+static constexpr float kExitWarningTextWidthDMM = 0.44288f;
+static constexpr float kExitWarningFontHeightDMM = 0.024576f;
+static constexpr float kExitWarningXPaddingDMM = 0.033f;
+static constexpr float kExitWarningYPaddingDMM = 0.023f;
+static constexpr float kExitWarningCornerRadiusDMM = 0.008f;
 
 static constexpr float kContentDistance = 2.5;
 static constexpr float kContentWidthDMM = 0.96f;
