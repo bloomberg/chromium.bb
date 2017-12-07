@@ -40,8 +40,19 @@ struct TestItem {
         base::ASCIIToUTF16("view-source:www.google.com"),
     },
     {
+        GURL("chrome://newtab/"), base::string16(),
+    },
+    {
         GURL("view-source:chrome://newtab/"),
         base::ASCIIToUTF16("view-source:chrome://newtab"),
+    },
+    {
+        GURL("chrome-search://local-ntp/local-ntp.html"), base::string16(),
+    },
+    {
+        GURL("view-source:chrome-search://local-ntp/local-ntp.html"),
+        base::ASCIIToUTF16(
+            "view-source:chrome-search://local-ntp/local-ntp.html"),
     },
     {
         GURL("chrome-extension://fooooooooooooooooooooooooooooooo/bar.html"),
@@ -120,23 +131,23 @@ void ToolbarModelTest::NavigateAndCheckText(
     const base::string16& expected_text) {
   // Check while loading.
   content::NavigationController* controller =
-      &browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
   EXPECT_EQ(expected_text, toolbar_model->GetFormattedURL(nullptr));
-  EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
+  EXPECT_NE(expected_text.empty(), toolbar_model->ShouldDisplayURL());
 
   // Check after commit.
   CommitPendingLoad(controller);
   EXPECT_EQ(expected_text, toolbar_model->GetFormattedURL(nullptr));
-  EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
+  EXPECT_NE(expected_text.empty(), toolbar_model->ShouldDisplayURL());
 }
 
 void ToolbarModelTest::NavigateAndCheckElided(const GURL& url) {
   // Check while loading.
   content::NavigationController* controller =
-      &browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller->LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                       std::string());
   ToolbarModel* toolbar_model = browser()->toolbar_model();
@@ -173,4 +184,32 @@ TEST_F(ToolbarModelTest, ShouldElideLongURLs) {
   NavigateAndCheckElided(
       GURL(std::string("https://www.foo.com/?") + long_text));
   NavigateAndCheckElided(GURL(std::string("data:abc") + long_text));
+}
+
+// Regression test for crbug.com/792401.
+TEST_F(ToolbarModelTest, ShouldDisplayURLWhileNavigatingAwayFromNTP) {
+  ToolbarModel* toolbar_model = browser()->toolbar_model();
+
+  // Open an NTP. Its URL should not be displayed.
+  AddTab(browser(), GURL("chrome://newtab"));
+  ASSERT_FALSE(toolbar_model->ShouldDisplayURL());
+  ASSERT_TRUE(toolbar_model->GetFormattedURL(nullptr).empty());
+
+  const std::string other_url = "https://www.foo.com";
+
+  // Start loading another page. Its URL should be displayed, even though the
+  // current page is still the NTP.
+  content::NavigationController* controller =
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+  controller->LoadURL(GURL(other_url), content::Referrer(),
+                      ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
+  EXPECT_EQ(base::ASCIIToUTF16(other_url),
+            toolbar_model->GetFormattedURL(nullptr));
+
+  // Of course the same should still hold after committing.
+  CommitPendingLoad(controller);
+  EXPECT_TRUE(toolbar_model->ShouldDisplayURL());
+  EXPECT_EQ(base::ASCIIToUTF16(other_url),
+            toolbar_model->GetFormattedURL(nullptr));
 }
