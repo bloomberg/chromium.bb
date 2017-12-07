@@ -10,25 +10,16 @@ namespace exo {
 // XdgShellSurface, public:
 
 XdgShellSurface::XdgShellSurface(Surface* surface,
-                                 BoundsMode bounds_mode,
                                  const gfx::Point& origin,
                                  bool activatable,
                                  bool can_minimize,
                                  int container)
     : ShellSurface(surface,
-                   bounds_mode,
                    origin,
                    activatable,
                    can_minimize,
                    container) {}
 
 XdgShellSurface::~XdgShellSurface() {}
-
-void XdgShellSurface::SetBoundsMode(BoundsMode mode) {
-  TRACE_EVENT1("exo", "XdgShellSurface::SetBoundsMode", "mode",
-               static_cast<int>(mode));
-
-  bounds_mode_ = mode;
-}
 
 }  // namespace exo

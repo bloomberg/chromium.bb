@@ -41,21 +41,14 @@ class Surface;
 // This class implements shell surface for XDG protocol.
 class XdgShellSurface : public ShellSurface {
  public:
-  // The |origin| is in screen coordinates. When bounds are controlled by the
-  // shell or fixed, it determines the initial position of the shell surface.
-  // In that case, the position specified as part of the geometry is relative
-  // to the shell surface.
-  // TODO(reveman|oshima): Remove bounds_mode.
+  // The |origin| is the initial position in screen coordinates. The position
+  // specified as part of the geometry is relative to the shell surface.
   XdgShellSurface(Surface* surface,
-                  BoundsMode bounds_mode,
                   const gfx::Point& origin,
                   bool activatable,
                   bool can_minimize,
                   int container);
   ~XdgShellSurface() override;
-
-  // Set bounds mode for surface.
-  void SetBoundsMode(BoundsMode mode);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(XdgShellSurface);

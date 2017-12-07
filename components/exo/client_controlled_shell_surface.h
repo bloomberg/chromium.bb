@@ -26,9 +26,10 @@ class Surface;
 
 enum class Orientation { PORTRAIT, LANDSCAPE };
 
-// This class implements shell surface for remote shell protocol. It's
-// window state, bounds are controlled by the client rather than window
-// manager.
+// This class implements a ShellSurface whose window state and bounds are
+// controlled by a remote shell client rather than the window manager. The
+// position specified as part of the geometry is relative to the origin of
+// the screen coordinate system.
 class ClientControlledShellSurface
     : public ShellSurface,
       public display::DisplayObserver,
@@ -39,11 +40,6 @@ class ClientControlledShellSurface
                                bool can_minimize,
                                int container);
   ~ClientControlledShellSurface() override;
-
-  // Overridden from ShellSurface:
-  void InitializeWindowState(ash::wm::WindowState* window_state) override;
-  void AttemptToStartDrag(int component) override;
-  void UpdateBackdrop() override;
 
   // Pin/unpin the surface. Pinned surface cannot be switched to
   // other windows unless its explicitly unpinned.
@@ -66,15 +62,11 @@ class ClientControlledShellSurface
   // Set top inset for surface.
   void SetTopInset(int height);
 
-  // Overridden from ShellSurface:
-  void Move() override;
-  void Resize(int component) override;
-  float GetScale() const override;
-
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
 
   // Overridden from views::WidgetDelegate:
+  bool CanResize() const override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   bool GetSavedWindowPlacement(const views::Widget* widget,
@@ -98,6 +90,20 @@ class ClientControlledShellSurface
   void CompositorLockTimedOut() override;
 
  private:
+  // Overridden from ShellSurface:
+  void SetWidgetBounds(const gfx::Rect& bounds) override;
+  void InitializeWindowState(ash::wm::WindowState* window_state) override;
+  void UpdateBackdrop() override;
+  float GetScale() const override;
+  bool CanAnimateWindowStateTransitions() const override;
+  aura::Window* GetDragWindow() override;
+  std::unique_ptr<ash::WindowResizer> CreateWindowResizer(
+      aura::Window* window,
+      int component) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  gfx::Point GetWidgetOrigin() const override;
+  gfx::Point GetSurfaceOrigin() const override;
+
   // Lock the compositor if it's not already locked, or extends the
   // lock timeout if it's already locked.
   // TODO(reveman): Remove this when using configure callbacks for orientation.
