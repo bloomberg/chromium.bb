@@ -21,6 +21,8 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
 
   // ProcessDiceHeaderDelegate:
   void EnableSync(const std::string& account_id) override;
+  void HandleTokenExchangeFailure(const std::string& email,
+                                  const GoogleServiceAuthError& error) override;
 
  private:
   // Returns true if sync should be enabled after the user signs in.
