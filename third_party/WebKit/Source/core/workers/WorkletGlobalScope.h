@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/SecurityContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkletModuleResponsesMapProxy.h"
@@ -28,7 +27,6 @@ struct GlobalScopeCreationParams;
 
 class CORE_EXPORT WorkletGlobalScope
     : public WorkerOrWorkletGlobalScope,
-      public SecurityContext,
       public ActiveScriptWrappable<WorkletGlobalScope> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
@@ -58,13 +56,11 @@ class CORE_EXPORT WorkletGlobalScope
   SecurityContext& GetSecurityContext() final { return *this; }
   bool IsSecureContext(String& error_message) const final;
 
-  using SecurityContext::GetSecurityOrigin;
-  using SecurityContext::GetContentSecurityPolicy;
-
   DOMTimerCoordinator* Timers() final {
+    // WorkletGlobalScopes don't have timers.
     NOTREACHED();
     return nullptr;
-  }  // WorkletGlobalScopes don't have timers.
+  }
 
   // Implementation of the "fetch and invoke a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
@@ -98,7 +94,6 @@ class CORE_EXPORT WorkletGlobalScope
 
  private:
   EventTarget* ErrorEventTarget() final { return nullptr; }
-  void DidUpdateSecurityOrigin() final {}
 
   // The |url_| and |user_agent_| are inherited from the parent Document.
   const KURL url_;

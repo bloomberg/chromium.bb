@@ -49,6 +49,7 @@
 #include "core/loader/PingLoader.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkletGlobalScope.h"
 #include "platform/json/JSONValues.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -1378,6 +1379,10 @@ void ContentSecurityPolicy::DispatchViolationEvents(
   // between the violation occuring and this event dispatch, exit early.
   EventQueue* queue = execution_context_->GetEventQueue();
   if (!queue)
+    return;
+
+  // Worklets don't support Events in general.
+  if (execution_context_->IsWorkletGlobalScope())
     return;
 
   SecurityPolicyViolationEvent* event = SecurityPolicyViolationEvent::Create(

@@ -61,16 +61,12 @@ struct GlobalScopeCreationParams;
 class CORE_EXPORT WorkerGlobalScope
     : public WorkerOrWorkletGlobalScope,
       public ActiveScriptWrappable<WorkerGlobalScope>,
-      public SecurityContext,
       public Supplementable<WorkerGlobalScope>,
       public DOMWindowBase64 {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
 
  public:
-  using SecurityContext::GetSecurityOrigin;
-  using SecurityContext::GetContentSecurityPolicy;
-
   ~WorkerGlobalScope() override;
 
   // Returns null if caching is not supported.
@@ -153,8 +149,6 @@ class CORE_EXPORT WorkerGlobalScope
 
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
-  void ApplyContentSecurityPolicyFromVector(
-      const Vector<CSPHeaderAndType>& headers);
 
   // |kNotHandled| is used when the script was not in
   // InstalledScriptsManager, which means it was not an installed script.
@@ -184,9 +178,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }
-
-  // SecurityContext
-  void DidUpdateSecurityOrigin() final {}
 
   const KURL url_;
   const String user_agent_;

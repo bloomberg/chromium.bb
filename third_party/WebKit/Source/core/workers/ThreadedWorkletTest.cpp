@@ -88,6 +88,30 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
         ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
   }
 
+  void TestContentSecurityPolicy() {
+    EXPECT_TRUE(IsCurrentThread());
+    ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
+
+    // The "script-src 'self'" directive is specified but the Worklet has a
+    // unique opaque origin, so this should not be allowed.
+    EXPECT_FALSE(csp->AllowScriptFromSource(GlobalScope()->Url(), String(),
+                                            IntegrityMetadataSet(),
+                                            kParserInserted));
+
+    // The "script-src https://allowed.example.com" should allow this.
+    EXPECT_TRUE(csp->AllowScriptFromSource(KURL("https://allowed.example.com"),
+                                           String(), IntegrityMetadataSet(),
+                                           kParserInserted));
+
+    EXPECT_FALSE(csp->AllowScriptFromSource(
+        KURL("https://disallowed.example.com"), String(),
+        IntegrityMetadataSet(), kParserInserted));
+
+    GetParentFrameTaskRunners()
+        ->Get(TaskType::kUnspecedTimer)
+        ->PostTask(BLINK_FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+  }
+
   // Emulates API use on ThreadedWorkletGlobalScope.
   void CountFeature(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
@@ -147,13 +171,13 @@ class ThreadedWorkletMessagingProxyForTest
   void Start() {
     Document* document = ToDocument(GetExecutionContext());
     std::unique_ptr<Vector<char>> cached_meta_data = nullptr;
-    Vector<CSPHeaderAndType> content_security_policy_headers;
     WorkerClients* worker_clients = nullptr;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             document->Url(), document->UserAgent(), "" /* source_code */,
-            std::move(cached_meta_data), &content_security_policy_headers,
+            std::move(cached_meta_data),
+            document->GetContentSecurityPolicy()->Headers().get(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             worker_clients, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
@@ -214,6 +238,26 @@ TEST_F(ThreadedWorkletTest, SecurityOrigin) {
           BLINK_FROM_HERE,
           CrossThreadBind(&ThreadedWorkletThreadForTest::TestSecurityOrigin,
                           CrossThreadUnretained(GetWorkerThread())));
+  testing::EnterRunLoop();
+}
+
+TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
+  // Set up the CSP for Document before starting ThreadedWorklet because
+  // ThreadedWorklet inherits the owner Document's CSP.
+  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+  GetDocument().InitContentSecurityPolicy(csp);
+
+  MessagingProxy()->Start();
+
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedTimer)
+      ->PostTask(BLINK_FROM_HERE,
+                 CrossThreadBind(
+                     &ThreadedWorkletThreadForTest::TestContentSecurityPolicy,
+                     CrossThreadUnretained(GetWorkerThread())));
   testing::EnterRunLoop();
 }
 

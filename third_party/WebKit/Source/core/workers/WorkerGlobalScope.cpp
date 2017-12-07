@@ -382,20 +382,6 @@ void WorkerGlobalScope::SetWorkerSettings(
       worker_settings_->GetGenericFontFamilySettings());
 }
 
-void WorkerGlobalScope::ApplyContentSecurityPolicyFromVector(
-    const Vector<CSPHeaderAndType>& headers) {
-  if (!GetContentSecurityPolicy()) {
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
-    SetContentSecurityPolicy(csp);
-  }
-  for (const auto& policy_and_type : headers) {
-    GetContentSecurityPolicy()->DidReceiveHeader(
-        policy_and_type.first, policy_and_type.second,
-        kContentSecurityPolicyHeaderSourceHTTP);
-  }
-  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
-}
-
 void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(location_);
   visitor->Trace(navigator_);
@@ -403,7 +389,6 @@ void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_error_events_);
   visitor->Trace(font_selector_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
-  SecurityContext::Trace(visitor);
   Supplementable<WorkerGlobalScope>::Trace(visitor);
 }
 

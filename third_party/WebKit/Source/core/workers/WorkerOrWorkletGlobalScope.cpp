@@ -184,6 +184,20 @@ scoped_refptr<WebTaskRunner> WorkerOrWorkletGlobalScope::GetTaskRunner(
   return GetThread()->GetTaskRunner(type);
 }
 
+void WorkerOrWorkletGlobalScope::ApplyContentSecurityPolicyFromVector(
+    const Vector<CSPHeaderAndType>& headers) {
+  if (!GetContentSecurityPolicy()) {
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    SetContentSecurityPolicy(csp);
+  }
+  for (const auto& policy_and_type : headers) {
+    GetContentSecurityPolicy()->DidReceiveHeader(
+        policy_and_type.first, policy_and_type.second,
+        kContentSecurityPolicyHeaderSourceHTTP);
+  }
+  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
+}
+
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_);
   visitor->Trace(script_controller_);
@@ -192,6 +206,7 @@ void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContext::Trace(visitor);
+  SecurityContext::Trace(visitor);
 }
 
 void WorkerOrWorkletGlobalScope::TraceWrappers(

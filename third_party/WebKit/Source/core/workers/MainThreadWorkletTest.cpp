@@ -47,12 +47,21 @@ class MainThreadWorkletTest : public ::testing::Test {
     Document* document = page_->GetFrame().GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+
+    // Set up the CSP for Document before starting MainThreadWorklet because
+    // MainThreadWorklet inherits the owner Document's CSP.
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
+                          kContentSecurityPolicyHeaderTypeEnforce,
+                          kContentSecurityPolicyHeaderSourceHTTP);
+    document->InitContentSecurityPolicy(csp);
+
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         document->Url(), document->UserAgent(), String() /* source_code */,
         nullptr /* cached_meta_data */,
-        nullptr /* content_security_policy_parsed_headers */,
+        document->GetContentSecurityPolicy()->Headers().get(),
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         nullptr /* worker_clients */, document->AddressSpace(),
         OriginTrialContext::GetTokens(document).get(),
@@ -75,6 +84,24 @@ TEST_F(MainThreadWorkletTest, SecurityOrigin) {
   // the owner Document's SecurityOrigin shouldn't.
   EXPECT_TRUE(global_scope_->GetSecurityOrigin()->IsUnique());
   EXPECT_FALSE(global_scope_->DocumentSecurityOrigin()->IsUnique());
+}
+
+TEST_F(MainThreadWorkletTest, ContentSecurityPolicy) {
+  ContentSecurityPolicy* csp = global_scope_->GetContentSecurityPolicy();
+
+  // The "script-src 'self'" directive is specified but the Worklet has a
+  // unique opaque origin, so this should not be allowed.
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      global_scope_->Url(), String(), IntegrityMetadataSet(), kParserInserted));
+
+  // The "script-src https://allowed.example.com" should allow this.
+  EXPECT_TRUE(csp->AllowScriptFromSource(KURL("https://allowed.example.com"),
+                                         String(), IntegrityMetadataSet(),
+                                         kParserInserted));
+
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      KURL("https://disallowed.example.com"), String(), IntegrityMetadataSet(),
+      kParserInserted));
 }
 
 TEST_F(MainThreadWorkletTest, UseCounter) {
