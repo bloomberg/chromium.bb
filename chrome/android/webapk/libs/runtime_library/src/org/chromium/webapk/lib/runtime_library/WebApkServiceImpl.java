@@ -4,7 +4,6 @@
 
 package org.chromium.webapk.lib.runtime_library;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -84,16 +83,17 @@ public class WebApkServiceImpl extends IWebApkApi.Stub {
         return NotificationManagerCompat.from(mContext).areNotificationsEnabled();
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
+    @SuppressWarnings("NewApi")
     @Override
     public void notifyNotificationWithChannel(
             String platformTag, int platformID, Notification notification, String channelName) {
         NotificationManager notificationManager = getNotificationManager();
-        if (notification.getChannelId() != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notification.getChannelId() != null) {
             NotificationChannel channel = new NotificationChannel(notification.getChannelId(),
                     channelName, NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
+
         notificationManager.notify(platformTag, platformID, notification);
     }
 
