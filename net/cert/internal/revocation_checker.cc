@@ -242,6 +242,12 @@ CRLSet::Result CheckChainRevocationUsingCRLSet(
         crypto::SHA256HashString(cert->tbs().spki_tlv.AsStringPiece());
     CRLSet::Result result = crl_set->CheckSPKI(spki_hash);
 
+    // Check for revocation using the certificate's Subject.
+    if (result != CRLSet::REVOKED) {
+      result = crl_set->CheckSubject(cert->tbs().subject_tlv.AsStringPiece(),
+                                     spki_hash);
+    }
+
     // Check for revocation using the certificate's serial number and issuer's
     // SPKI.
     if (result != CRLSet::REVOKED && !is_root) {
