@@ -2823,6 +2823,11 @@ const char kAshDisableSmoothScreenRotationName[] =
 const char kAshDisableSmoothScreenRotationDescription[] =
     "Disable smooth rotation animations.";
 
+const char kAshEnableDisplayMoveWindowAccelsName[] =
+    "Enable shortcuts for moving window between displays.";
+const char kAshEnableDisplayMoveWindowAccelsDescription[] =
+    "Enable shortcuts for moving window between displays.";
+
 const char kAshEnableKeyboardShortcutViewerName[] =
     "Enable keyboard shortcut viewer.";
 const char kAshEnableKeyboardShortcutViewerDescription[] =
