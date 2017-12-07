@@ -53,6 +53,10 @@ void ChromeCleanerStateChangeObserver::OnScanning() {
   OnCleanupStateChange();
 }
 
+void ChromeCleanerStateChangeObserver::OnReporterRunning() {
+  OnCleanupStateChange();
+}
+
 void ChromeCleanerStateChangeObserver::OnInfected(
     const ChromeCleanerScannerResults& reported_results) {
   OnCleanupStateChange();

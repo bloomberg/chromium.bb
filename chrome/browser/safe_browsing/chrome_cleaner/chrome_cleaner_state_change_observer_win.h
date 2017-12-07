@@ -30,6 +30,7 @@ class ChromeCleanerStateChangeObserver
   // ChromeCleanerController::Observer implementation.
   void OnIdle(ChromeCleanerController::IdleReason idle_reason) override;
   void OnScanning() override;
+  void OnReporterRunning() override;
   void OnInfected(const ChromeCleanerScannerResults& scanner_results) override;
   void OnCleaning(const ChromeCleanerScannerResults& scanner_results) override;
   void OnRebootRequired() override;

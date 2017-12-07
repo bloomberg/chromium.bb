@@ -18,7 +18,7 @@
 <dom-module id="settings-chrome-cleanup-page">
   <template>
     <style include="settings-shared">
-      #cleaning-spinner {
+      #waiting-spinner {
         height: 20px;
         width: 20px;
       }
@@ -86,30 +86,25 @@
         padding: 15px var(--settings-box-row-padding);
       }
     </style>
-    <div class$="settings-box first [[getTopSettingsBoxClass_(showDetails_)]]">
+    <div class$="settings-box first
+                 [[getTopSettingsBoxClass_(showExplanation_)]]">
       <div class="status-icon-container">
-        <paper-spinner id="cleaning-spinner" active="[[isRemoving_]]"
-            hidden="[[!isRemoving_]]">
+        <paper-spinner id="waiting-spinner" hidden="[[!isWaitingForResult_]]"
+            active="[[isWaitingForResult_]]">
         </paper-spinner>
-        <iron-icon icon="[[statusIcon_]]" hidden="[[isRemoving_]]"
-            class$="[[statusIconClassName_]]" id="status-icon"></iron-icon>
+        <iron-icon id="status-icon" hidden="[[isWaitingForResult_]]"
+            icon="[[statusIcon_]]" class$="[[statusIconClassName_]]">
+        </iron-icon>
       </div>
       <div class="start">
-        <span>[[title_]]</span>
-        <template is="dom-if" if="[[showDetails_]]">
-          <!-- Force line break to display learn-more inlined with
-               chromeCleanupExplanationRemove or with the title_ (if
-               showDetails_ is false) despite these two elements being on
-               different lines. -->
-          <div></div>
-          <span class="secondary">
-            $i18n{chromeCleanupExplanationRemove}
-          </span>
-        </template>
-        <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"
-            on-tap="learnMore_" target="_blank" hidden="[[!showLearnMore_]]">
-          $i18n{learnMore}
-        </a>
+        <div>[[title_]]</div>
+        <div hidden="[[!showExplanation_]]">
+          <span class="secondary">[[explanation_]]</span>
+          <a id="learn-more" href="$i18n{chromeCleanupLearnMoreUrl}"
+              on-tap="learnMore_" target="_blank" hidden="[[!showLearnMore_]]">
+            $i18n{learnMore}
+          </a>
+        </div>
       </div>
       <template is="dom-if" if="[[showActionButton_]]">
         <div class="separator"></div>
@@ -126,7 +121,7 @@
         on-settings-boolean-control-change="changeLogsPermission_">
     </settings-toggle-button>
     <div id="show-files-button" class="settings-box" actionable
-        on-tap="toggleExpandButton_" hidden="[[!showDetails_]]">
+        on-tap="toggleExpandButton_" hidden="[[!showItemsToRemove_]]">
       <div class="start">
         $i18n{chromeCleanupLinkShowFiles}
       </div>

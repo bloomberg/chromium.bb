@@ -17378,8 +17378,15 @@ should be able to be added at any place in this file.
 <action name="SoftwareReporter.CleanupWebui_StartCleanup">
   <owner>alito@chromium.org</owner>
   <description>
-    The cleaner accepted the cleanup operation offered on the Chrome Cleaner
+    The cleaner started the cleanup operation offered on the Chrome Cleaner
     webui.
+  </description>
+</action>
+
+<action name="SoftwareReporter.CleanupWebui_StartScanning">
+  <owner>ftirelo@chromium.org</owner>
+  <description>
+    The cleaner started the scan operation offered on the Chrome Cleaner webui.
   </description>
 </action>
 

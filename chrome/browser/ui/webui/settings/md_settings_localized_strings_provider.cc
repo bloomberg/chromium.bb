@@ -814,8 +814,16 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+    {"resetPageTitle", safe_browsing::UserInitiatedCleanupsEnabled()
+                           ? IDS_SETTINGS_RESET_AND_CLEANUP
+                           : IDS_SETTINGS_RESET},
+#else
     {"resetPageTitle", IDS_SETTINGS_RESET},
-    {"resetPageDescription", IDS_SETTINGS_RESET_PROFILE_SETTINGS_DESCRIPTION},
+#endif
+    {"resetTrigger", IDS_SETTINGS_RESET},
+    {"resetTriggerDescription",
+     IDS_SETTINGS_RESET_PROFILE_SETTINGS_DESCRIPTION},
     {"resetPageExplanation", IDS_RESET_PROFILE_SETTINGS_EXPLANATION},
     {"triggeredResetPageExplanation",
      IDS_TRIGGERED_RESET_PROFILE_SETTINGS_EXPLANATION},
@@ -834,8 +842,6 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"resetProfileBannerButton", IDS_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT},
     {"resetProfileBannerDescription", IDS_SETTINGS_RESET_BANNER_TEXT},
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    // The page title to be used if user initiated cleanups are enabled.
-    {"resetAndCleanupPageTitle", IDS_SETTINGS_RESET_AND_CLEANUP},
     {"resetCleanupComputerTrigger",
      IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER},
     {"resetCleanupComputerTriggerDescription",
