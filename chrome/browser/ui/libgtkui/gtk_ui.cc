@@ -73,6 +73,10 @@
 #include "chrome/browser/ui/libgtkui/nav_button_provider_gtk3.h"  // nogncheck
 #endif
 
+#if defined(USE_GIO)
+#include "chrome/browser/ui/libgtkui/nav_button_layout_manager_gsettings.h"
+#endif
+
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing/printing_context_linux.h"
 #endif
@@ -281,10 +285,13 @@ std::unique_ptr<NavButtonLayoutManager> CreateNavButtonLayoutManager(
   if (GtkVersionCheck(3, 14))
     return std::make_unique<NavButtonLayoutManagerGtk3>(gtk_ui);
 #endif
-#if defined(USE_GCONF)
+#if defined(USE_GIO)
+  return std::make_unique<NavButtonLayoutManagerGSettings>(gtk_ui);
+#elif defined(USE_GCONF)
   return std::make_unique<NavButtonLayoutManagerGconf>(gtk_ui);
-#endif
+#else
   return nullptr;
+#endif
 }
 
 // Returns a gfx::FontRenderParams corresponding to GTK's configuration.

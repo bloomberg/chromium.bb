@@ -78,6 +78,14 @@ template("libgtkui") {
       configs += [ "//build/config/linux/gconf" ]
     }
 
+    if (use_gio) {
+      sources += [
+        "nav_button_layout_manager_gsettings.cc",
+        "nav_button_layout_manager_gsettings.h",
+      ]
+      configs += [ "//build/linux:gio_config" ]
+    }
+
     if (use_cups) {
       configs += [ "//printing:cups" ]
     }
