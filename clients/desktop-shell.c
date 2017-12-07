@@ -128,6 +128,8 @@ struct output {
 	uint32_t server_output_id;
 	struct wl_list link;
 
+	int x;
+	int y;
 	struct panel *panel;
 	struct background *background;
 };
@@ -1245,6 +1247,9 @@ output_handle_geometry(void *data,
 {
 	struct output *output = data;
 
+	output->x = x;
+	output->y = y;
+
 	if (output->panel)
 		window_set_buffer_transform(output->panel->window, transform);
 	if (output->background)
@@ -1329,6 +1334,49 @@ create_output(struct desktop *desktop, uint32_t id)
 }
 
 static void
+output_remove(struct desktop *desktop, struct output *output)
+{
+	struct output *cur;
+	struct output *rep = NULL;
+
+	if (!output->background) {
+		output_destroy(output);
+		return;
+	}
+
+	/* Find a wl_output that is a clone of the removed wl_output.
+	 * We don't want to leave the clone without a background or panel. */
+	wl_list_for_each(cur, &desktop->outputs, link) {
+		if (cur == output)
+			continue;
+
+		/* XXX: Assumes size matches. */
+		if (cur->x == output->x && cur->y == output->y) {
+			rep = cur;
+			break;
+		}
+	}
+
+	if (rep) {
+		/* If found, hand over the background and panel so they don't
+		 * get destroyed. */
+		assert(!rep->background);
+		assert(!rep->panel);
+
+		rep->background = output->background;
+		output->background = NULL;
+		rep->background->owner = rep;
+
+		rep->panel = output->panel;
+		output->panel = NULL;
+		if (rep->panel)
+			rep->panel->owner = rep;
+	}
+
+	output_destroy(output);
+}
+
+static void
 global_handler(struct display *display, uint32_t id,
 	       const char *interface, uint32_t version, void *data)
 {
@@ -1357,7 +1405,7 @@ global_handler_remove(struct display *display, uint32_t id,
 	if (!strcmp(interface, "wl_output")) {
 		wl_list_for_each(output, &desktop->outputs, link) {
 			if (output->server_output_id == id) {
-				output_destroy(output);
+				output_remove(desktop, output);
 				break;
 			}
 		}
