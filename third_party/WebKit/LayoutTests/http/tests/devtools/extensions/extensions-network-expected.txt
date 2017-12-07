@@ -1,18 +1,13 @@
 Tests WebInspector extension API
 
- 
-Page reloaded.
 Started extension.
 Running tests...
 RUNNING TEST: extension_testGetHAR
-resource: http://127.0.0.1:8000/inspector/extensions-network-test.js
-resource: http://127.0.0.1:8000/inspector/extensions-test.js
-resource: http://127.0.0.1:8000/inspector/extensions/extensions-network.html
-resource: http://127.0.0.1:8000/inspector/extensions/extensions-network.html
-resource: http://127.0.0.1:8000/inspector/extensions/resources/abe.png
-resource: http://127.0.0.1:8000/inspector/extensions/resources/audits-style1.css
-resource: http://127.0.0.1:8000/inspector/extensions/resources/missing-image.png
-resource: http://127.0.0.1:8000/inspector/inspector-test.js
+resource: http://127.0.0.1:8000/devtools/extensions/resources/abe.png
+resource: http://127.0.0.1:8000/devtools/extensions/resources/audits-style1.css
+resource: http://127.0.0.1:8000/devtools/extensions/resources/extensions-network.html
+resource: http://127.0.0.1:8000/devtools/extensions/resources/extensions-network.html
+resource: http://127.0.0.1:8000/devtools/extensions/resources/missing-image.png
 resource: http://127.0.0.1:8000/resources/Ahem.ttf
 RUNNING TEST: extension_testGetRequestContent
 {
@@ -27,6 +22,6 @@ RUNNING TEST: extension_testGetResourceContentEncoded
     1 : "base64"
 }
 RUNNING TEST: extension_testRequestNotification
-Request finished: .../inspector/extensions/extensions-network.html
+Request finished: .../extensions/resources/extensions-network.html
 All tests done.
 

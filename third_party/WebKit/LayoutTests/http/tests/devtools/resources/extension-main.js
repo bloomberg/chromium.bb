@@ -52,31 +52,28 @@ function evaluateOnFrontend(expression, callback)
 
 function invokePageFunctionAsync(functionName, callback)
 {
-    evaluateOnFrontend("InspectorTest.callFunctionInPageAsync('" + functionName + "').then(() => reply())", callback);
+    evaluateOnFrontend("TestRunner.callFunctionInPageAsync('" + functionName + "').then(() => reply())", callback);
 }
 
 function output(message)
 {
-    evaluateOnFrontend("InspectorTest.addResult(unescape('" + escape(message) + "'));");
+    evaluateOnFrontend("TestRunner.addResult(unescape('" + escape(message) + "'));");
 }
 
 function onError(event)
 {
     window.removeEventListener("error", onError);
     output("Uncaught exception in extension context: " + event.message + " [" + event.filename + ":" + event.lineno + "]\n");
-    evaluateOnFrontend("InspectorTest.completeTest();");
+    evaluateOnFrontend("TestRunner.completeTest();");
 }
 
 window.addEventListener("error", onError);
 
-function fetchTests()
-{
-    function callback(result)
-    {
-         window.eval(result);
-         runTests();
-    }
-    webInspector.inspectedWindow.eval("extensionFunctions()", callback);
+function fetchTests() {
+  evaluateOnFrontend('reply(ExtensionsTestRunner._pendingTests)', result => {
+    window.eval(result);
+    runTests();
+  });
 }
 
 function runTests()
@@ -97,7 +94,35 @@ function runTests()
 function extension_onTestsDone()
 {
     output("All tests done.");
-    evaluateOnFrontend("InspectorTest.completeTest();");
+    evaluateOnFrontend("TestRunner.completeTest();");
+}
+
+function extension_showPanel(panelId, callback)
+{
+    evaluateOnFrontend("ExtensionsTestRunner.showPanel(unescape('" + escape(panelId) + "')).then(function() { reply(); });", callback);
+}
+
+function extension_runAudits(callback) {
+    evaluateOnFrontend('ExtensionsTestRunner.startExtensionAudits(reply);', callback);
+}
+
+function extension_getRequestByUrl(urls, callback)
+{
+    function onHAR(response)
+    {
+        var entries = response.entries;
+        for (var i = 0; i < entries.length; ++i) {
+            for (var url = 0; url < urls.length; ++url) {
+                if (urls[url].test(entries[i].request.url)) {
+                    callback(entries[i]);
+                    return;
+                }
+            }
+        }
+        output("no item found");
+        callback(null);
+    }
+    webInspector.network.getHAR(onHAR);
 }
 
 function runTest(test, name)
