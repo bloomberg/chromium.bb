@@ -16,8 +16,6 @@ source_set("snapshots") {
     "snapshot_cache_web_state_list_observer.mm",
     "snapshot_constants.h",
     "snapshot_constants.mm",
-    "snapshot_manager.h",
-    "snapshot_manager.mm",
     "snapshot_overlay.h",
     "snapshot_overlay.mm",
     "snapshots_util.h",
@@ -66,6 +64,7 @@ source_set("snapshots_internal") {
   deps = [
     ":snapshots",
     "//base",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/web",

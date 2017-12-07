@@ -49,7 +49,11 @@ void SnapshotCacheWrapper::Shutdown() {
   [snapshot_cache_ shutdown];
   snapshot_cache_ = nil;
 }
+
+std::unique_ptr<KeyedService> BuildSnapshotCacheWrapper(web::BrowserState*) {
+  return std::make_unique<SnapshotCacheWrapper>([[SnapshotCache alloc] init]);
 }
+}  // namespace
 
 // static
 SnapshotCache* SnapshotCacheFactory::GetForBrowserState(
@@ -64,6 +68,12 @@ SnapshotCacheFactory* SnapshotCacheFactory::GetInstance() {
   return base::Singleton<SnapshotCacheFactory>::get();
 }
 
+// static
+BrowserStateKeyedServiceFactory::TestingFactoryFunction
+SnapshotCacheFactory::GetDefaultFactory() {
+  return &BuildSnapshotCacheWrapper;
+}
+
 SnapshotCacheFactory::SnapshotCacheFactory()
     : BrowserStateKeyedServiceFactory(
           "SnapshotCache",
@@ -73,7 +83,7 @@ SnapshotCacheFactory::~SnapshotCacheFactory() = default;
 
 std::unique_ptr<KeyedService> SnapshotCacheFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  return base::MakeUnique<SnapshotCacheWrapper>([[SnapshotCache alloc] init]);
+  return BuildSnapshotCacheWrapper(context);
 }
 
 web::BrowserState* SnapshotCacheFactory::GetBrowserStateToUse(
