@@ -2550,12 +2550,10 @@ public class Tab
         destroyContentViewCore(deleteOldNativeWebContents);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
-        // Size of the new ContentViewCore is zero at this point. If we don't call onSizeChanged(),
-        // next onShow() call would send a resize message with the current ContentViewCore size
-        // (zero) to the renderer process, although the new size will be set soon.
-        // However, this size fluttering may confuse Blink and rendered result can be broken
-        // (see http://crbug.com/340987).
-        newContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
+        // Size of the new content is zero at this point. Set the view size in advance
+        // so that next onShow() call won't send a resize message with zero size
+        // to the renderer process. This prevents the size fluttering that may confuse
+        // Blink and break rendered result (see http://crbug.com/340987).
         newContentViewCore.getWebContents().setSize(originalWidth, originalHeight);
 
         if (!bounds.isEmpty()) {
@@ -3186,7 +3184,6 @@ public class Tab
         Rect bounds = getEstimatedContentSize(context);
         int width = bounds.right - bounds.left;
         int height = bounds.bottom - bounds.top;
-        tab.getContentViewCore().onSizeChanged(width, height, 0, 0);
         tab.getWebContents().setSize(width, height);
 
         tab.detach();

@@ -809,12 +809,6 @@ public class ContentViewCoreImpl
         }
     }
 
-    @SuppressWarnings("javadoc")
-    @Override
-    public void onSizeChanged(int wPix, int hPix, int owPix, int ohPix) {
-        updateAfterSizeChanged();
-    }
-
     @CalledByNative
     private void onTouchDown(MotionEvent event) {
         if (mShouldRequestUnbufferedDispatch) requestUnbufferedDispatch(event);

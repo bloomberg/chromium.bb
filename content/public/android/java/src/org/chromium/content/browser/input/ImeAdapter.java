@@ -442,6 +442,25 @@ public class ImeAdapter {
         return mFocusPreOSKViewportRect;
     }
 
+    @CalledByNative
+    private void updateAfterViewSizeChanged() {
+        // Execute a delayed form focus operation because the OSK was brought up earlier.
+        if (!mFocusPreOSKViewportRect.isEmpty()) {
+            Rect rect = new Rect();
+            mContainerView.getWindowVisibleDisplayFrame(rect);
+            if (!rect.equals(mFocusPreOSKViewportRect)) {
+                // Only assume the OSK triggered the onSizeChanged if width was preserved.
+                if (rect.width() == mFocusPreOSKViewportRect.width()) {
+                    assert mWebContents != null;
+                    mWebContents.scrollFocusedEditableNodeIntoView();
+                }
+                // Zero the rect to prevent the above operation from issuing the delayed
+                // form focus event.
+                mFocusPreOSKViewportRect.setEmpty();
+            }
+        }
+    }
+
     @VisibleForTesting
     public ResultReceiver getNewShowKeyboardReceiver() {
         if (mShowKeyboardResultReceiver == null) {
