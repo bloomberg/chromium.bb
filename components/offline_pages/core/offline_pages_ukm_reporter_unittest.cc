@@ -33,7 +33,8 @@ TEST_F(OfflinePagesUkmReporterTest, RecordOfflinePageVisit) {
       ukm::builders::OfflinePages_SavePageRequested::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* entry : entries) {
-    test_recorder()->ExpectEntrySourceHasUrl(entry, gurl);
+    // TODO(petewil): re-enable once crbug/792197 is addressed.
+    // test_recorder()->ExpectEntrySourceHasUrl(entry, gurl);
     test_recorder()->ExpectEntryMetric(
         entry,
         ukm::builders::OfflinePages_SavePageRequested::
