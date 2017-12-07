@@ -7,8 +7,10 @@
 
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/SecurityContext.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/frame/WebFeatureForward.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerEventQueue.h"
 #include "platform/wtf/BitVector.h"
@@ -23,8 +25,12 @@ class WorkerReportingProxy;
 class WorkerThread;
 
 class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
-                                               public ExecutionContext {
+                                               public ExecutionContext,
+                                               public SecurityContext {
  public:
+  using SecurityContext::GetSecurityOrigin;
+  using SecurityContext::GetContentSecurityPolicy;
+
   WorkerOrWorkletGlobalScope(v8::Isolate*,
                              WorkerClients*,
                              WorkerReportingProxy&);
@@ -48,6 +54,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   EventQueue* GetEventQueue() const final;
+
+  // SecurityContext
+  void DidUpdateSecurityOrigin() final {}
 
   // Evaluates the given main script as a classic script (as opposed to a module
   // script).
@@ -99,6 +108,10 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
+
+ protected:
+  void ApplyContentSecurityPolicyFromVector(
+      const Vector<CSPHeaderAndType>& headers);
 
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;

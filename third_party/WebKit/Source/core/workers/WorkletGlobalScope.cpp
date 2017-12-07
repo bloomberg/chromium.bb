@@ -43,6 +43,12 @@ WorkletGlobalScope::WorkletGlobalScope(
 
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
   SetReferrerPolicy(creation_params->referrer_policy);
+
+  // https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
+  // Step 6: "Invoke the initialize a global object's CSP list algorithm given
+  // workletGlobalScope."
+  ApplyContentSecurityPolicyFromVector(
+      *creation_params->content_security_policy_parsed_headers);
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
@@ -145,7 +151,6 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
 
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_responses_map_proxy_);
-  SecurityContext::Trace(visitor);
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }
 
