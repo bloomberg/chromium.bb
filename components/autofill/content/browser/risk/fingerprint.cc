@@ -205,10 +205,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // Callbacks for asynchronously loaded data.
   void OnGotFonts(std::unique_ptr<base::ListValue> fonts);
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
-  void OnGotGeoposition(
-      device::mojom::GeolocationContextPtr geolocation_context,
-      device::mojom::GeolocationPtr geolocation,
-      device::mojom::GeopositionPtr geoposition);
+  void OnGotGeoposition(device::mojom::GeopositionPtr geoposition);
 
   // If all of the asynchronous data has been loaded, calls |callback_| with
   // the fingerprint data.
@@ -243,6 +240,8 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   std::vector<content::WebPluginInfo> plugins_;
   bool waiting_on_plugins_;
   device::mojom::Geoposition geoposition_;
+  device::mojom::GeolocationPtr geolocation_;
+  device::mojom::GeolocationContextPtr geolocation_context_;
 
   // Timer to enforce a maximum timeout before the |callback_| is called, even
   // if not all asynchronous data has been loaded.
@@ -316,18 +315,13 @@ FingerprintDataLoader::FingerprintDataLoader(
 
   // Load geolocation data.
   DCHECK(connector);
-  device::mojom::GeolocationContextPtr geolocation_context;
-  device::mojom::GeolocationPtr geolocation;
   connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&geolocation_context));
-  geolocation_context->BindGeolocation(mojo::MakeRequest(&geolocation));
-  geolocation->SetHighAccuracy(false);
-  geolocation->QueryNextPosition(
-      // Pass the ownership of |geolocation_context| and |geolocation| to ensure
-      // the connections are kept alive until the callback is received.
+                           mojo::MakeRequest(&geolocation_context_));
+  geolocation_context_->BindGeolocation(mojo::MakeRequest(&geolocation_));
+  geolocation_->SetHighAccuracy(false);
+  geolocation_->QueryNextPosition(
       base::BindOnce(&FingerprintDataLoader::OnGotGeoposition,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(geolocation_context), std::move(geolocation)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FingerprintDataLoader::OnGpuInfoUpdate() {
@@ -353,8 +347,6 @@ void FingerprintDataLoader::OnGotPlugins(
 }
 
 void FingerprintDataLoader::OnGotGeoposition(
-    device::mojom::GeolocationContextPtr geolocation_context,
-    device::mojom::GeolocationPtr geolocation,
     device::mojom::GeopositionPtr geoposition) {
   DCHECK(!device::ValidateGeoposition(geoposition_));
 
@@ -362,6 +354,9 @@ void FingerprintDataLoader::OnGotGeoposition(
   DCHECK(device::ValidateGeoposition(geoposition_) ||
          geoposition_.error_code !=
              device::mojom::Geoposition::ErrorCode::NONE);
+
+  geolocation_.reset();
+  geolocation_context_.reset();
 
   MaybeFillFingerprint();
 }
