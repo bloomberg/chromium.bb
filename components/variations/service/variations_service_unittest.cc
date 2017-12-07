@@ -917,7 +917,7 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
   fetcher->SetResponseString(response);
   service.OnURLFetchComplete(fetcher);
 
-  // Verify that the streaks were rest.
+  // Verify that the streaks were reset.
   EXPECT_EQ(0, prefs_.GetInteger(prefs::kVariationsCrashStreak));
   EXPECT_EQ(0, prefs_.GetInteger(prefs::kVariationsFailedToFetchSeedStreak));
 }
