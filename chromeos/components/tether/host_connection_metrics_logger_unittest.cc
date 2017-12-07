@@ -204,6 +204,31 @@ TEST_F(HostConnectionMetricsLoggerTest,
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
 }
 
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailureTetheringUnsupported) {
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED);
+
+  VerifyFailure(
+      HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
+          TETHERING_UNSUPPORTED);
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailureNoCellData) {
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_NO_CELL_DATA);
+
+  VerifyFailure(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_FailureEventType::NO_CELL_DATA);
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE);
+}
+
 }  // namespace tether
 
 }  // namespace chromeos

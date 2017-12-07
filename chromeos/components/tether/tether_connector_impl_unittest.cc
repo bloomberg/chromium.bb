@@ -438,6 +438,25 @@ TEST_F(TetherConnectorImplTest,
 }
 
 TEST_F(TetherConnectorImplTest,
+       TestConnectTetheringOperationFails_TetheringUnsupported) {
+  VerifyConnectTetheringOperationFails(
+      ConnectTetheringResponse_ResponseCode::
+          ConnectTetheringResponse_ResponseCode_TETHERING_UNSUPPORTED,
+      false /* setup_required */,
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED);
+}
+
+TEST_F(TetherConnectorImplTest, TestConnectTetheringOperationFails_NoCellData) {
+  VerifyConnectTetheringOperationFails(
+      ConnectTetheringResponse_ResponseCode::
+          ConnectTetheringResponse_ResponseCode_NO_CELL_DATA,
+      false /* setup_required */,
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_NO_CELL_DATA);
+}
+
+TEST_F(TetherConnectorImplTest,
        ConnectionToHostFailedNotificationRemovedWhenConnectionStarts) {
   // Start with the "connection to host failed" notification showing.
   fake_notification_presenter_->NotifyConnectionToHostFailed();

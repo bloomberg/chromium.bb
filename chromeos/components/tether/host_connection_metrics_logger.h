@@ -25,7 +25,9 @@ class HostConnectionMetricsLogger {
     CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_USER,
     CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_INTERNAL_ERROR,
     CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED,
-    CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED
+    CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED,
+    CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED,
+    CONNECTION_RESULT_FAILURE_NO_CELL_DATA
   };
 
   // Record the result of an attempted host connection.
@@ -57,6 +59,10 @@ class HostConnectionMetricsLogger {
   FRIEND_TEST_ALL_PREFIXES(
       HostConnectionMetricsLoggerTest,
       RecordConnectionResultFailureTetheringTimeout_SetupNotRequired);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectionResultFailureTetheringUnsupported);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectionResultFailureNoCellData);
 
   // An Instant Tethering connection can fail for several different reasons.
   // Though traditionally success and each failure case would be logged to a
@@ -88,6 +94,8 @@ class HostConnectionMetricsLogger {
     UNKNOWN_ERROR = 0,
     TETHERING_TIMED_OUT = 1,
     CLIENT_CONNECTION_ERROR = 2,
+    TETHERING_UNSUPPORTED = 3,
+    NO_CELL_DATA = 4,
     FAILURE_MAX
   };
 

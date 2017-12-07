@@ -384,6 +384,19 @@ TetherConnectorImpl::GetConnectionToHostResultFromErrorCode(
         CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED;
   }
 
+  if (error_code ==
+      ConnectTetheringResponse_ResponseCode::
+          ConnectTetheringResponse_ResponseCode_TETHERING_UNSUPPORTED) {
+    return HostConnectionMetricsLogger::ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED;
+  }
+
+  if (error_code == ConnectTetheringResponse_ResponseCode::
+                        ConnectTetheringResponse_ResponseCode_NO_CELL_DATA) {
+    return HostConnectionMetricsLogger::ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_NO_CELL_DATA;
+  }
+
   return HostConnectionMetricsLogger::ConnectionToHostResult::
       CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR;
 }

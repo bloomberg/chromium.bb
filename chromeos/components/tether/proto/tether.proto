@@ -88,6 +88,8 @@ message ConnectTetheringResponse {
     SUCCESS = 1;
     PROVISIONING_FAILED = 2;
     TETHERING_TIMEOUT = 3;
+    TETHERING_UNSUPPORTED = 4;
+    NO_CELL_DATA = 5;
   }
 
   optional ResponseCode response_code = 1;
