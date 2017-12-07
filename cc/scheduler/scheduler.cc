@@ -156,6 +156,7 @@ void Scheduler::SetTreePrioritiesAndScrollState(
 
 void Scheduler::NotifyReadyToCommit() {
   TRACE_EVENT0("cc", "Scheduler::NotifyReadyToCommit");
+  compositor_timing_history_->NotifyReadyToCommit();
   state_machine_.NotifyReadyToCommit();
   ProcessScheduledActions();
 }
@@ -383,7 +384,8 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
 
   base::TimeDelta bmf_start_to_activate =
       compositor_timing_history_
-          ->BeginMainFrameStartToCommitDurationEstimate() +
+          ->BeginMainFrameStartToReadyToCommitDurationEstimate() +
+      compositor_timing_history_->CommitDurationEstimate() +
       compositor_timing_history_->CommitToReadyToActivateDurationEstimate() +
       compositor_timing_history_->ActivateDurationEstimate();
 
@@ -670,6 +672,7 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::Action::COMMIT: {
         bool commit_has_no_updates = false;
         state_machine_.WillCommit(commit_has_no_updates);
+        compositor_timing_history_->WillCommit();
         client_->ScheduledActionCommit();
         break;
       }

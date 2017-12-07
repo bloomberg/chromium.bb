@@ -45,7 +45,9 @@ class CC_EXPORT CompositorTimingHistory {
   virtual base::TimeDelta BeginMainFrameQueueDurationCriticalEstimate() const;
   virtual base::TimeDelta BeginMainFrameQueueDurationNotCriticalEstimate()
       const;
-  virtual base::TimeDelta BeginMainFrameStartToCommitDurationEstimate() const;
+  virtual base::TimeDelta BeginMainFrameStartToReadyToCommitDurationEstimate()
+      const;
+  virtual base::TimeDelta CommitDurationEstimate() const;
   virtual base::TimeDelta CommitToReadyToActivateDurationEstimate() const;
   virtual base::TimeDelta PrepareTilesDurationEstimate() const;
   virtual base::TimeDelta ActivateDurationEstimate() const;
@@ -66,6 +68,8 @@ class CC_EXPORT CompositorTimingHistory {
                           base::TimeTicks main_frame_time);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
   void BeginMainFrameAborted();
+  void NotifyReadyToCommit();
+  void WillCommit();
   void DidCommit();
   void WillPrepareTiles();
   void DidPrepareTiles();
@@ -110,7 +114,9 @@ class CC_EXPORT CompositorTimingHistory {
   RollingTimeDeltaHistory begin_main_frame_queue_duration_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_critical_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_not_critical_history_;
-  RollingTimeDeltaHistory begin_main_frame_start_to_commit_duration_history_;
+  RollingTimeDeltaHistory
+      begin_main_frame_start_to_ready_to_commit_duration_history_;
+  RollingTimeDeltaHistory commit_duration_history_;
   RollingTimeDeltaHistory commit_to_ready_to_activate_duration_history_;
   RollingTimeDeltaHistory prepare_tiles_duration_history_;
   RollingTimeDeltaHistory activate_duration_history_;
@@ -120,6 +126,7 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks begin_main_frame_frame_time_;
   base::TimeTicks begin_main_frame_sent_time_;
   base::TimeTicks begin_main_frame_start_time_;
+  base::TimeTicks commit_start_time_;
   base::TimeTicks pending_tree_main_frame_time_;
   base::TimeTicks pending_tree_creation_time_;
   base::TimeTicks pending_tree_ready_to_activate_time_;
