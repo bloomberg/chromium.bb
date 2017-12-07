@@ -113,6 +113,10 @@ if (widevine_cdm_binary_files != []) {
     if (is_posix && !is_mac) {
       cflags = [ "-fvisibility=hidden" ]
     }
+
+    if (is_mac) {
+      ldflags = [ "-Wl,-install_name,@loader_path/libwidevinecdm.dylib" ]
+    }
   }
 } else {
   group("widevinecdm") {
