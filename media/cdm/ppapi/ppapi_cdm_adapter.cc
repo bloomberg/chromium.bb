@@ -334,6 +334,9 @@ PP_CdmMessageType CdmMessageTypeToPpMessageType(cdm::MessageType message) {
       return PP_CDMMESSAGETYPE_LICENSE_RENEWAL;
     case cdm::kLicenseRelease:
       return PP_CDMMESSAGETYPE_LICENSE_RELEASE;
+    case cdm::kIndividualizationRequest:
+      PP_NOTREACHED();
+      return PP_CDMMESSAGETYPE_LICENSE_REQUEST;
   }
 
   PP_NOTREACHED();

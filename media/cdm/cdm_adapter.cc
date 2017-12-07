@@ -149,6 +149,9 @@ CdmMessageType ToMediaMessageType(cdm::MessageType message_type) {
       return CdmMessageType::LICENSE_RENEWAL;
     case cdm::kLicenseRelease:
       return CdmMessageType::LICENSE_RELEASE;
+    // TODO(xhwang): Support kIndividualizationRequest.
+    case cdm::kIndividualizationRequest:
+      return CdmMessageType::LICENSE_REQUEST;
   }
 
   NOTREACHED() << "Unexpected cdm::MessageType " << message_type;
@@ -400,15 +403,13 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
   // If this check fails, update this function and DCHECK or update
   // IsSupportedCdmHostVersion.
 
-  DCHECK(
-      // Future version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_9::kVersion + 1) &&
-      // Current version is supported.
-      IsSupportedCdmHostVersion(cdm::Host_9::kVersion) &&
-      // Include all previous supported versions (if any) here.
-      IsSupportedCdmHostVersion(cdm::Host_8::kVersion) &&
-      // One older than the oldest supported version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_8::kVersion - 1));
+  // TODO(xhwang): Static assert these at compile time.
+  const int kMinVersion = cdm::ContentDecryptionModule_8::kVersion;
+  const int kMaxVersion = cdm::ContentDecryptionModule_10::kVersion;
+  DCHECK(!IsSupportedCdmInterfaceVersion(kMinVersion - 1));
+  for (int version = kMinVersion; version <= kMaxVersion; ++version)
+    DCHECK(IsSupportedCdmInterfaceVersion(version));
+  DCHECK(!IsSupportedCdmInterfaceVersion(kMaxVersion + 1));
   DCHECK(IsSupportedCdmHostVersion(host_interface_version));
 
   CdmAdapter* cdm_adapter = static_cast<CdmAdapter*>(user_data);
@@ -418,6 +419,8 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
       return static_cast<cdm::Host_8*>(cdm_adapter);
     case cdm::Host_9::kVersion:
       return static_cast<cdm::Host_9*>(cdm_adapter);
+    case cdm::Host_10::kVersion:
+      return static_cast<cdm::Host_10*>(cdm_adapter);
     default:
       NOTREACHED() << "Unexpected host interface version "
                    << host_interface_version;
@@ -1167,6 +1170,12 @@ void CdmAdapter::RequestStorageId(uint32_t version) {
 
   helper_->GetStorageId(version, base::Bind(&CdmAdapter::OnStorageIdObtained,
                                             weak_factory_.GetWeakPtr()));
+}
+
+cdm::CdmProxy* CdmAdapter::CreateCdmProxy() {
+  // TODO(xhwang): Implement this!
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 void CdmAdapter::OnStorageIdObtained(uint32_t version,
