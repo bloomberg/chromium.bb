@@ -2418,11 +2418,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-ui/text-overflow-020.html [ Failur
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 
-crbug.com/655701 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
-crbug.com/655701 http/tests/devtools/bindings/suspendtarget-navigator.js [ Skip ]
-crbug.com/655701 http/tests/devtools/startup/console-exception-source-url.html [ Skip ]
-crbug.com/655701 http/tests/devtools/startup/console-stack-overflow-source-url.html [ Skip ]
-
 # css-multicol tests failing on initial import from web-platform-tests
 crbug.com/788337 external/wpt/css/css-multicol/multicol-block-no-clip-001.xht [ Failure ]
 crbug.com/788337 external/wpt/css/css-multicol/multicol-block-no-clip-002.xht [ Failure ]
