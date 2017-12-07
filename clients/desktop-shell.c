@@ -92,6 +92,8 @@ struct surface {
 			  int32_t width, int32_t height);
 };
 
+struct output;
+
 struct panel {
 	struct surface base;
 	struct window *window;
@@ -106,6 +108,9 @@ struct panel {
 
 struct background {
 	struct surface base;
+
+	struct output *owner;
+
 	struct window *window;
 	struct widget *widget;
 	int painted;
@@ -813,13 +818,25 @@ background_draw(struct widget *widget, void *data)
 }
 
 static void
+background_destroy(struct background *background);
+
+static void
 background_configure(void *data,
 		     struct weston_desktop_shell *desktop_shell,
 		     uint32_t edges, struct window *window,
 		     int32_t width, int32_t height)
 {
+	struct output *owner;
 	struct background *background =
 		(struct background *) window_get_user_data(window);
+
+	if (width < 1 || height < 1) {
+		/* Shell plugin configures 0x0 for redundant background. */
+		owner = background->owner;
+		background_destroy(background);
+		owner->background = NULL;
+		return;
+	}
 
 	widget_schedule_resize(background->widget, width, height);
 }
@@ -1094,13 +1111,14 @@ background_destroy(struct background *background)
 }
 
 static struct background *
-background_create(struct desktop *desktop)
+background_create(struct desktop *desktop, struct output *output)
 {
 	struct background *background;
 	struct weston_config_section *s;
 	char *type;
 
 	background = xzalloc(sizeof *background);
+	background->owner = output;
 	background->base.configure = background_configure;
 	background->window = window_create_custom(desktop->display);
 	background->widget = window_add_widget(background->window, background);
@@ -1178,7 +1196,8 @@ grab_surface_create(struct desktop *desktop)
 static void
 output_destroy(struct output *output)
 {
-	background_destroy(output->background);
+	if (output->background)
+		background_destroy(output->background);
 	if (output->panel)
 		panel_destroy(output->panel);
 	wl_output_destroy(output->output);
@@ -1212,7 +1231,8 @@ output_handle_geometry(void *data,
 
 	if (output->panel)
 		window_set_buffer_transform(output->panel->window, transform);
-	window_set_buffer_transform(output->background->window, transform);
+	if (output->background)
+		window_set_buffer_transform(output->background->window, transform);
 }
 
 static void
@@ -1240,7 +1260,8 @@ output_handle_scale(void *data,
 
 	if (output->panel)
 		window_set_buffer_scale(output->panel->window, scale);
-	window_set_buffer_scale(output->background->window, scale);
+	if (output->background)
+		window_set_buffer_scale(output->background->window, scale);
 }
 
 static const struct wl_output_listener output_listener = {
@@ -1262,7 +1283,7 @@ output_init(struct output *output, struct desktop *desktop)
 					       output->output, surface);
 	}
 
-	output->background = background_create(desktop);
+	output->background = background_create(desktop, output);
 	surface = window_get_wl_surface(output->background->window);
 	weston_desktop_shell_set_background(desktop->shell,
 					    output->output, surface);
