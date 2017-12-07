@@ -351,10 +351,6 @@
       name: "DocumentWrite",
     },
     {
-      name: "DoubleTapToJumpOnVideo",
-      settable_from_internals: true
-    },
-    {
       name: "EmbedderCSPEnforcement",
       status: "stable",
     },
