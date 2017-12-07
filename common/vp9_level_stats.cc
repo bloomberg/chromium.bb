@@ -17,21 +17,21 @@
 namespace vp9_parser {
 
 const Vp9LevelRow Vp9LevelStats::Vp9LevelTable[kNumVp9Levels] = {
-    {LEVEL_1, 829440, 36864, 200, 400, 2, 1, 4, 8},
-    {LEVEL_1_1, 2764800, 73728, 800, 1000, 2, 1, 4, 8},
-    {LEVEL_2, 4608000, 122880, 1800, 1500, 2, 1, 4, 8},
-    {LEVEL_2_1, 9216000, 245760, 3600, 2800, 2, 2, 4, 8},
-    {LEVEL_3, 20736000, 552960, 7200, 6000, 2, 4, 4, 8},
-    {LEVEL_3_1, 36864000, 983040, 12000, 10000, 2, 4, 4, 8},
-    {LEVEL_4, 83558400, 2228224, 18000, 16000, 4, 4, 4, 8},
-    {LEVEL_4_1, 160432128, 2228224, 30000, 18000, 4, 4, 5, 6},
-    {LEVEL_5, 311951360, 8912896, 60000, 36000, 6, 8, 6, 4},
-    {LEVEL_5_1, 588251136, 8912896, 120000, 46000, 8, 8, 10, 4},
-    {LEVEL_5_2, 1176502272, 8912896, 180000, 0, 8, 8, 10, 4},  // CPB Size = 0
-    {LEVEL_6, 1176502272, 35651584, 180000, 0, 8, 16, 10, 4},  // CPB Size = 0
-    {LEVEL_6_1, 2353004544, 35651584, 240000, 0, 8, 16, 10, 4},  // CPB Size = 0
-    {LEVEL_6_2, 4706009088, 35651584, 480000, 0, 8, 16, 10, 4}  // CPB Size = 0
-};
+    {LEVEL_1, 829440, 36864, 200, 400, 2, 1, 4, 8, 512},
+    {LEVEL_1_1, 2764800, 73728, 800, 1000, 2, 1, 4, 8, 768},
+    {LEVEL_2, 4608000, 122880, 1800, 1500, 2, 1, 4, 8, 960},
+    {LEVEL_2_1, 9216000, 245760, 3600, 2800, 2, 2, 4, 8, 1344},
+    {LEVEL_3, 20736000, 552960, 7200, 6000, 2, 4, 4, 8, 2048},
+    {LEVEL_3_1, 36864000, 983040, 12000, 10000, 2, 4, 4, 8, 2752},
+    {LEVEL_4, 83558400, 2228224, 18000, 16000, 4, 4, 4, 8, 4160},
+    {LEVEL_4_1, 160432128, 2228224, 30000, 18000, 4, 4, 5, 6, 4160},
+    {LEVEL_5, 311951360, 8912896, 60000, 36000, 6, 8, 6, 4, 8384},
+    {LEVEL_5_1, 588251136, 8912896, 120000, 46000, 8, 8, 10, 4, 8384},
+    // CPB Size = 0 for levels 5_2 to 6_2
+    {LEVEL_5_2, 1176502272, 8912896, 180000, 0, 8, 8, 10, 4, 8384},
+    {LEVEL_6, 1176502272, 35651584, 180000, 0, 8, 16, 10, 4, 16832},
+    {LEVEL_6_1, 2353004544, 35651584, 240000, 0, 8, 16, 10, 4, 16832},
+    {LEVEL_6_2, 4706009088, 35651584, 480000, 0, 8, 16, 10, 4, 16832}};
 
 void Vp9LevelStats::AddFrame(const Vp9HeaderParser& parser, int64_t time_ns) {
   ++frames;
@@ -42,8 +42,11 @@ void Vp9LevelStats::AddFrame(const Vp9HeaderParser& parser, int64_t time_ns) {
   const int width = parser.width();
   const int height = parser.height();
   const int64_t luma_picture_size = width * height;
+  const int64_t luma_picture_breadth = (width > height) ? width : height;
   if (luma_picture_size > max_luma_picture_size_)
     max_luma_picture_size_ = luma_picture_size;
+  if (luma_picture_breadth > max_luma_picture_breadth_)
+    max_luma_picture_breadth_ = luma_picture_breadth;
 
   total_compressed_size_ += parser.frame_size();
 
@@ -123,6 +126,7 @@ void Vp9LevelStats::AddFrame(const Vp9HeaderParser& parser, int64_t time_ns) {
 Vp9Level Vp9LevelStats::GetLevel() const {
   const int64_t max_luma_sample_rate = GetMaxLumaSampleRate();
   const int64_t max_luma_picture_size = GetMaxLumaPictureSize();
+  const int64_t max_luma_picture_breadth = GetMaxLumaPictureBreadth();
   const double average_bitrate = GetAverageBitRate();
   const double max_cpb_size = GetMaxCpbSize();
   const double compresion_ratio = GetCompressionRatio();
@@ -146,6 +150,15 @@ Vp9Level Vp9LevelStats::GetLevel() const {
   }
   for (int i = 0; i < kNumVp9Levels; ++i) {
     if (max_luma_picture_size <= Vp9LevelTable[i].max_luma_picture_size) {
+      if (max_level < Vp9LevelTable[i].level) {
+        max_level = Vp9LevelTable[i].level;
+        level_index = i;
+      }
+      break;
+    }
+  }
+  for (int i = 0; i < kNumVp9Levels; ++i) {
+    if (max_luma_picture_breadth <= Vp9LevelTable[i].max_luma_picture_breadth) {
       if (max_level < Vp9LevelTable[i].level) {
         max_level = Vp9LevelTable[i].level;
         level_index = i;
@@ -211,6 +224,10 @@ int64_t Vp9LevelStats::GetMaxLumaSampleRate() const { return max_luma_size_; }
 
 int64_t Vp9LevelStats::GetMaxLumaPictureSize() const {
   return max_luma_picture_size_;
+}
+
+int64_t Vp9LevelStats::GetMaxLumaPictureBreadth() const {
+  return max_luma_picture_breadth_;
 }
 
 double Vp9LevelStats::GetAverageBitRate() const {

@@ -1313,15 +1313,15 @@ int main(int argc, char* argv[]) {
     level_stats.set_duration(segment->GetInfo()->GetDuration());
     const vp9_parser::Vp9Level level = level_stats.GetLevel();
     fprintf(out, "VP9 Level:%d\n", level);
-    fprintf(out, "mlsr:%" PRId64 " mlps:%" PRId64
-                 " abr:%g mcs:%g cr:%g mct:%d"
-                 " mad:%d mrf:%d\n",
-            level_stats.GetMaxLumaSampleRate(),
-            level_stats.GetMaxLumaPictureSize(),
-            level_stats.GetAverageBitRate(), level_stats.GetMaxCpbSize(),
-            level_stats.GetCompressionRatio(), level_stats.GetMaxColumnTiles(),
-            level_stats.GetMinimumAltrefDistance(),
-            level_stats.GetMaxReferenceFrames());
+    fprintf(
+        out, "mlsr:%" PRId64 " mlps:%" PRId64 " mlpb:%" PRId64
+             " abr:%g mcs:%g cr:%g mct:%d"
+             " mad:%d mrf:%d\n",
+        level_stats.GetMaxLumaSampleRate(), level_stats.GetMaxLumaPictureSize(),
+        level_stats.GetMaxLumaPictureBreadth(), level_stats.GetAverageBitRate(),
+        level_stats.GetMaxCpbSize(), level_stats.GetCompressionRatio(),
+        level_stats.GetMaxColumnTiles(), level_stats.GetMinimumAltrefDistance(),
+        level_stats.GetMaxReferenceFrames());
   }
   return EXIT_SUCCESS;
 }

@@ -50,6 +50,7 @@ struct Vp9LevelRow {
   Vp9Level level;
   int64_t max_luma_sample_rate;
   int64_t max_luma_picture_size;
+  int64_t max_luma_picture_breadth;
   double average_bitrate;
   double max_cpb_size;
   double compresion_ratio;
@@ -70,6 +71,7 @@ class Vp9LevelStats {
         end_ns_(-1),
         duration_ns_(-1),
         max_luma_picture_size_(0),
+        max_luma_picture_breadth_(0),
         current_luma_size_(0),
         max_luma_size_(0),
         max_luma_end_ns_(0),
@@ -112,6 +114,9 @@ class Vp9LevelStats {
 
   // The maximum frame size (width * height) in samples.
   int64_t GetMaxLumaPictureSize() const;
+
+  // The maximum frame breadth (max of width and height) in samples.
+  int64_t GetMaxLumaPictureBreadth() const;
 
   // The average bitrate of the video in kbps.
   double GetAverageBitRate() const;
@@ -161,6 +166,7 @@ class Vp9LevelStats {
   int64_t duration_ns_;
 
   int64_t max_luma_picture_size_;
+  int64_t max_luma_picture_breadth_;
 
   // This is used to calculate the maximum number of luma samples per second.
   // The first value is the luma picture size and the second value is the time
