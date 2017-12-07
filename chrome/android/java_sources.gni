@@ -585,6 +585,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfo.java",
   "java/src/org/chromium/chrome/browser/media/remote/PositionExtrapolator.java",
   "java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java",
+  "java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
   "java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
   "java/src/org/chromium/chrome/browser/media/router/DiscoveryDelegate.java",
