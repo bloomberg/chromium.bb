@@ -80,8 +80,12 @@ Quaternion Quaternion::Lerp(const Quaternion& q, double t) const {
   return (((1.0 - t) * *this) + (t * q)).Normalized();
 }
 
+double Quaternion::Length() const {
+  return x_ * x_ + y_ * y_ + z_ * z_ + w_ * w_;
+}
+
 Quaternion Quaternion::Normalized() const {
-  double length = x_ * x_ + y_ * y_ + z_ * z_ + w_ * w_;
+  double length = Length();
   if (length < kEpsilon)
     return *this;
   return *this / sqrt(length);
