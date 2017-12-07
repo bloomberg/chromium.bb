@@ -12,10 +12,6 @@ namespace net {
 class URLRequest;
 }
 
-namespace policy {
-class URLBlacklistManager;
-}
-
 namespace android_webview {
 
 // WebView's implementation of the NetworkDelegate.
@@ -26,9 +22,6 @@ class AwNetworkDelegate : public net::NetworkDelegateImpl {
 
  private:
   // NetworkDelegate implementation.
-  int OnBeforeURLRequest(net::URLRequest* request,
-                         const net::CompletionCallback& callback,
-                         GURL* new_url) override;
   int OnBeforeStartTransaction(net::URLRequest* request,
                                const net::CompletionCallback& callback,
                                net::HttpRequestHeaders* headers) override;
@@ -61,9 +54,6 @@ class AwNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
-
-  // Used to filter URL requests. Owned by AwBrowserContext.
-  const policy::URLBlacklistManager* url_blacklist_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AwNetworkDelegate);
 };

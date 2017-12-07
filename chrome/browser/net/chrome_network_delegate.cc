@@ -36,7 +36,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/domain_reliability/monitor.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -205,7 +204,6 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       force_google_safe_search_(nullptr),
       force_youtube_restrict_(nullptr),
       allowed_domains_for_apps_(nullptr),
-      url_blacklist_manager_(NULL),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalWebPlatformFeatures)),
@@ -278,23 +276,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  // TODO(joaodasilva): This prevents extensions from seeing URLs that are
-  // blocked. However, an extension might redirect the request to another URL,
-  // which is not blocked.
-
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  int error = net::ERR_BLOCKED_BY_ADMINISTRATOR;
-  if (info && content::IsResourceTypeFrame(info->GetResourceType()) &&
-      url_blacklist_manager_ &&
-      url_blacklist_manager_->ShouldBlockRequestForFrame(
-          request->url(), &error)) {
-    // URL access blocked by policy.
-    request->net_log().AddEvent(
-        net::NetLogEventType::CHROME_POLICY_ABORTED_REQUEST,
-        net::NetLog::StringCallback("url",
-                                    &request->url().possibly_invalid_spec()));
-    return error;
-  }
 
   extensions_delegate_->ForwardStartRequestStatus(request);
 

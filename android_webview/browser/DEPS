@@ -18,6 +18,7 @@ include_rules = [
   "+components/navigation_interception",
   "+components/policy/core/browser",
   "+components/policy/core/common",
+  "+components/policy/content",
   "+components/pref_registry",
   "+components/printing/browser",
   "+components/printing/common",

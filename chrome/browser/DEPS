@@ -16,6 +16,7 @@ include_rules = [
   "+chrome_elf/dll_hash",
   "+chromeos",
   "+components",
+  "+components/policy/throttle/",
   "+content/public/browser",
   "+courgette",
   "+device/base",

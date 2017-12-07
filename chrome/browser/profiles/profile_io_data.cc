@@ -64,7 +64,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -556,17 +555,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         policy::PolicyCertServiceFactory::CreateForProfile(profile);
   }
 #endif
-  // The URLBlacklistManager has to be created on the UI thread to register
-  // observers of |pref_service|, and it also has to clean up on
-  // ShutdownOnUIThread to release these observers on the right thread.
-  // Don't pass it in |profile_params_| to make sure it is correctly cleaned up,
-  // in particular when this ProfileIOData isn't |initialized_| during deletion.
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND});
-  url_blacklist_manager_.reset(new policy::URLBlacklistManager(
-      pref_service, background_task_runner, io_task_runner,
-      base::Bind(policy::OverrideBlacklistForURL)));
 
   // The CTPolicyManager shares the same constraints of needing to be cleaned
   // up on the UI thread.
@@ -1094,8 +1082,6 @@ void ProfileIOData::Init(
   }
 #endif
 
-  chrome_network_delegate->set_url_blacklist_manager(
-      url_blacklist_manager_.get());
   chrome_network_delegate->set_profile(profile_params_->profile);
   chrome_network_delegate->set_profile_path(profile_params_->path);
   chrome_network_delegate->set_cookie_settings(
@@ -1446,8 +1432,6 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();
   network_prediction_options_.Destroy();
-  if (url_blacklist_manager_)
-    url_blacklist_manager_->ShutdownOnUIThread();
   if (ct_policy_manager_)
     ct_policy_manager_->Shutdown();
   if (chrome_http_user_agent_settings_)
@@ -1504,9 +1488,4 @@ void ProfileIOData::SetCookieSettingsForTesting(
     content_settings::CookieSettings* cookie_settings) {
   DCHECK(!cookie_settings_.get());
   cookie_settings_ = cookie_settings;
-}
-
-policy::URLBlacklist::URLBlacklistState ProfileIOData::GetURLBlacklistState(
-    const GURL& url) const {
-  return url_blacklist_manager_->GetURLBlacklistState(url);
 }
