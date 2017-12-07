@@ -471,6 +471,8 @@ pipe, but the impl-side won't notice this until it receives the sent `Log`
 message. Thus the `impl` above will first log our message and *then* see a
 connection error and break out of the run loop.
 
+## Types
+
 ### Enums
 
 [Mojom enums](/mojo/public/tools/bindings#Enumeration-Types) translate directly
@@ -1447,6 +1449,10 @@ generates the function in the same namespace as the generated C++ enum type:
 ```cpp
 inline bool IsKnownEnumValue(Department value);
 ```
+
+### Using Mojo Bindings in Chrome
+
+See [Converting Legacy Chrome IPC To Mojo](/ipc).
 
 ### Additional Documentation
 
