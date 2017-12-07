@@ -52,6 +52,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -487,23 +488,14 @@ void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
 }
 #endif
 
-ukm::UkmRecorder* ChromePasswordManagerClient::GetUkmRecorder() {
-  return ukm::UkmRecorder::Get();
-}
-
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
-  // TODO(crbug.com/732846): The UKM Source should be recycled (e.g. from the
-  // web contents), once the UKM framework provides a mechanism for that.
-  if (!ukm_source_id_)
-    ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
-  return *ukm_source_id_;
+  return ukm::GetSourceIdForWebContentsDocument(web_contents());
 }
 
 PasswordManagerMetricsRecorder&
 ChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmRecorder(), GetUkmSourceId(),
-                              GetMainFrameURL());
+    metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL());
   }
   return metrics_recorder_.value();
 }
@@ -514,7 +506,6 @@ void ChromePasswordManagerClient::DidFinishNavigation(
     return;
 
   if (!navigation_handle->IsSameDocument()) {
-    ukm_source_id_.reset();
     // Send any collected metrics by destroying the metrics recorder.
     metrics_recorder_.reset();
   }

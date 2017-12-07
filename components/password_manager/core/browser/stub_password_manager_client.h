@@ -61,7 +61,6 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       bool password_field_exists) override;
   void LogPasswordReuseDetectedEvent() override;
 #endif
-  ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   PasswordManagerMetricsRecorder& GetMetricsRecorder() override;
 

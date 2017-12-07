@@ -261,8 +261,7 @@ void PasswordFormManager::Init(
   metrics_recorder_ = std::move(metrics_recorder);
   if (!metrics_recorder_) {
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        client_->IsMainFrameSecure(), client_->GetUkmRecorder(),
-        client_->GetUkmSourceId(), client_->GetMainFrameURL());
+        client_->IsMainFrameSecure(), client_->GetUkmSourceId());
   }
 
   if (owned_form_fetcher_)
