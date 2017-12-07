@@ -63,12 +63,13 @@ class TryserverApi(recipe_api.RecipeApi):
 
     cwd = self.m.context.cwd or self.m.path['start_dir'].join(patch_root)
     with self.m.context(cwd=cwd):
-      step_result = self.m.git('diff', '--cached', '--name-only',
-                               name='git diff to analyze patch',
-                               stdout=self.m.raw_io.output(),
-                               step_test_data=lambda:
-                                 self.m.raw_io.test_api.stream_output('foo.cc'),
-                               **kwargs)
+      step_result = self.m.git(
+          '-c', 'core.quotePath=false', 'diff', '--cached', '--name-only',
+          name='git diff to analyze patch',
+          stdout=self.m.raw_io.output(),
+          step_test_data=lambda:
+            self.m.raw_io.test_api.stream_output('foo.cc'),
+          **kwargs)
     paths = [self.m.path.join(patch_root, p) for p in
              step_result.stdout.split()]
     if self.m.platform.is_win:
@@ -84,11 +85,12 @@ class TryserverApi(recipe_api.RecipeApi):
     cwd = self.m.path['checkout'].join(issue_root) if issue_root else None
 
     with self.m.context(cwd=cwd):
-      step_result = self.m.git('diff', '--cached', '--name-only',
-                               name='git diff to analyze patch',
-                               stdout=self.m.raw_io.output(),
-                               step_test_data=lambda:
-                                 self.m.raw_io.test_api.stream_output('foo.cc'))
+      step_result = self.m.git(
+          '-c', 'core.quotePath=false', 'diff', '--cached', '--name-only',
+          name='git diff to analyze patch',
+          stdout=self.m.raw_io.output(),
+          step_test_data=lambda:
+            self.m.raw_io.test_api.stream_output('foo.cc'))
     paths = step_result.stdout.split()
     if issue_root:
       paths = [self.m.path.join(issue_root, path) for path in paths]
