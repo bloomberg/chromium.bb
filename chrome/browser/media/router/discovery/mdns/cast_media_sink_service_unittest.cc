@@ -91,10 +91,13 @@ class TestCastMediaSinkService : public CastMediaSinkService {
         network_monitor_(network_monitor) {}
   ~TestCastMediaSinkService() override = default;
 
-  std::unique_ptr<CastMediaSinkServiceImpl> CreateImpl(
-      const OnSinksDiscoveredCallback& sinks_discovered_cb) override {
-    auto mock_impl = std::make_unique<MockCastMediaSinkServiceImpl>(
-        sinks_discovered_cb, cast_socket_service_, network_monitor_);
+  std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
+  CreateImpl(const OnSinksDiscoveredCallback& sinks_discovered_cb) override {
+    auto mock_impl = std::unique_ptr<MockCastMediaSinkServiceImpl,
+                                     base::OnTaskRunnerDeleter>(
+        new MockCastMediaSinkServiceImpl(
+            sinks_discovered_cb, cast_socket_service_, network_monitor_),
+        base::OnTaskRunnerDeleter(cast_socket_service_->task_runner()));
     mock_impl_ = mock_impl.get();
     return mock_impl;
   }

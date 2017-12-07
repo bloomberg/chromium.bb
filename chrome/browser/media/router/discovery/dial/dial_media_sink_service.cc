@@ -25,7 +25,8 @@ void RunDialSinkAddedCallbackOnSequence(
 
 }  // namespace
 
-DialMediaSinkService::DialMediaSinkService(content::BrowserContext* context) {
+DialMediaSinkService::DialMediaSinkService(content::BrowserContext* context)
+    : impl_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* profile = Profile::FromBrowserContext(context);
   request_context_ = profile->GetRequestContext();
@@ -34,8 +35,6 @@ DialMediaSinkService::DialMediaSinkService(content::BrowserContext* context) {
 
 DialMediaSinkService::~DialMediaSinkService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (impl_)
-    impl_->task_runner()->DeleteSoon(FROM_HERE, impl_.release());
 }
 
 void DialMediaSinkService::Start(
@@ -80,7 +79,8 @@ void DialMediaSinkService::OnUserGesture() {
                                 base::Unretained(impl_.get())));
 }
 
-std::unique_ptr<DialMediaSinkServiceImpl> DialMediaSinkService::CreateImpl(
+std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
+DialMediaSinkService::CreateImpl(
     const OnSinksDiscoveredCallback& sink_discovery_cb,
     const OnDialSinkAddedCallback& dial_sink_added_cb,
     const scoped_refptr<net::URLRequestContextGetter>& request_context) {
@@ -92,11 +92,14 @@ std::unique_ptr<DialMediaSinkServiceImpl> DialMediaSinkService::CreateImpl(
 
   // Note: The SequencedTaskRunner needs to be IO thread because DialRegistry
   // and URLRequestContextGetter run on IO thread.
-  return std::make_unique<DialMediaSinkServiceImpl>(
-      std::move(connector), sink_discovery_cb, dial_sink_added_cb,
-      request_context,
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
       content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
+          content::BrowserThread::IO);
+  return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
+      new DialMediaSinkServiceImpl(std::move(connector), sink_discovery_cb,
+                                   dial_sink_added_cb, request_context,
+                                   task_runner),
+      base::OnTaskRunnerDeleter(task_runner));
 }
 
 }  // namespace media_router

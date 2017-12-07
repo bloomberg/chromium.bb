@@ -90,7 +90,8 @@ const char CastMediaSinkService::kCastServiceType[] = "_googlecast._tcp.local";
 
 CastMediaSinkService::CastMediaSinkService(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : impl_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
+      browser_context_(browser_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -101,8 +102,6 @@ CastMediaSinkService::~CastMediaSinkService() {
     dns_sd_registry_->RemoveObserver(this);
     dns_sd_registry_ = nullptr;
   }
-  if (impl_)
-    impl_->task_runner()->DeleteSoon(FROM_HERE, impl_.release());
 }
 
 void CastMediaSinkService::Start(
@@ -128,12 +127,19 @@ void CastMediaSinkService::Start(
   }
 }
 
-std::unique_ptr<CastMediaSinkServiceImpl> CastMediaSinkService::CreateImpl(
+std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>
+CastMediaSinkService::CreateImpl(
     const OnSinksDiscoveredCallback& sinks_discovered_cb) {
-  return std::make_unique<CastMediaSinkServiceImpl>(
-      sinks_discovered_cb, cast_channel::CastSocketService::GetInstance(),
-      DiscoveryNetworkMonitor::GetInstance(),
-      Profile::FromBrowserContext(browser_context_)->GetRequestContext());
+  cast_channel::CastSocketService* cast_socket_service =
+      cast_channel::CastSocketService::GetInstance();
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      cast_socket_service->task_runner();
+  return std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
+      new CastMediaSinkServiceImpl(
+          sinks_discovered_cb, cast_socket_service,
+          DiscoveryNetworkMonitor::GetInstance(),
+          Profile::FromBrowserContext(browser_context_)->GetRequestContext()),
+      base::OnTaskRunnerDeleter(task_runner));
 }
 
 void CastMediaSinkService::ForceSinkDiscoveryCallback() {
