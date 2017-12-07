@@ -5229,6 +5229,7 @@ drm_destroy(struct weston_compositor *ec)
 	wl_array_release(&b->unused_connectors);
 
 	close(b->drm.fd);
+	free(b->drm.filename);
 	free(b);
 }
 
