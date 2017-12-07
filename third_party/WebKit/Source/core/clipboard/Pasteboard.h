@@ -26,10 +26,10 @@
 #ifndef Pasteboard_h
 #define Pasteboard_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebClipboard.h"
 
@@ -40,7 +40,6 @@ class Image;
 class KURL;
 
 class CORE_EXPORT Pasteboard {
-  WTF_MAKE_NONCOPYABLE(Pasteboard);
   USING_FAST_MALLOC(Pasteboard);
 
  public:
@@ -76,6 +75,7 @@ class CORE_EXPORT Pasteboard {
   Pasteboard();
 
   mojom::ClipboardBuffer buffer_;
+  DISALLOW_COPY_AND_ASSIGN(Pasteboard);
 };
 
 }  // namespace blink
