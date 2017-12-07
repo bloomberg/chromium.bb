@@ -74,7 +74,7 @@ const char kExternalDeviceFriendlyName[] = "friendlyDeviceName";
 const char kExternalDeviceBluetoothAddress[] = "bluetoothAddress";
 const char kExternalDeviceUnlockKey[] = "unlockKey";
 const char kExternalDeviceMobileHotspot[] = "hasMobileHotspot";
-const char kExternalDeviceSupportsArcPlusPlus[] = "supportsArcPlusPlus";
+const char kExternalDeviceIsArcPlusPlusEnrollment[] = "isArcPlusPlusEnrollment";
 const char kExternalDeviceIsPixelPhone[] = "isPixelPhone";
 const char kExternalDeviceConnectionStatus[] = "connectionStatus";
 const char kExternalDeviceRemoteState[] = "remoteState";
@@ -533,7 +533,7 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   dictionary->SetBoolean(kExternalDeviceUnlockKey, device_info.unlock_key());
   dictionary->SetBoolean(kExternalDeviceMobileHotspot,
                          device_info.mobile_hotspot_supported());
-  dictionary->SetBoolean(kExternalDeviceSupportsArcPlusPlus,
+  dictionary->SetBoolean(kExternalDeviceIsArcPlusPlusEnrollment,
                          device_info.arc_plus_plus());
   dictionary->SetBoolean(kExternalDeviceIsPixelPhone,
                          device_info.pixel_phone());
