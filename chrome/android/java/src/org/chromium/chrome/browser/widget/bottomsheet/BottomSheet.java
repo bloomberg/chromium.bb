@@ -1406,7 +1406,7 @@ public class BottomSheet
      * @param animate If true, the sheet will animate to the provided state, otherwise it will
      *                move there instantly.
      * @param reason The reason the sheet state is changing. This can be specified to indicate to
-     *               observers that a more specific event has occured, otherwise
+     *               observers that a more specific event has occurred, otherwise
      *               STATE_CHANGE_REASON_NONE can be used.
      */
     public void setSheetState(

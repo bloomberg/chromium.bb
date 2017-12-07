@@ -1050,6 +1050,9 @@ extern const char kChromeHomePersonalizedOmniboxSuggestionsDescription[];
 extern const char kChromeHomePromoName[];
 extern const char kChromeHomePromoDescription[];
 
+extern const char kChromeHomeShowGoogleGName[];
+extern const char kChromeHomeShowGoogleGDescription[];
+
 extern const char kChromeHomeSwipeLogicName[];
 extern const char kChromeHomeSwipeLogicDescription[];
 extern const char kChromeHomeSwipeLogicRestrictArea[];

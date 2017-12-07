@@ -25848,6 +25848,7 @@ from previous Chrome versions.
   <int value="1665349789" label="spurious-power-button-window"/>
   <int value="1668611601" label="enable-encrypted-media"/>
   <int value="1670161209" label="ClickToOpenPDFPlaceholder:enabled"/>
+  <int value="1670799163" label="ChromeHomeShowGoogleGWhenUrlCleared:enabled"/>
   <int value="1672878289" label="PwaMinimalUi:disabled"/>
   <int value="1673427566" label="ChromeHomeExpandButton:disabled"/>
   <int value="1689123607" label="enable-app-link"/>
@@ -26007,6 +26008,7 @@ from previous Chrome versions.
   <int value="2085186092" label="BulkPrinters:disabled"/>
   <int value="2085438501" label="ChromeHome:enabled"/>
   <int value="2089897928" label="enable-audio-focus"/>
+  <int value="2092605092" label="ChromeHomeShowGoogleGWhenUrlCleared:disabled"/>
   <int value="2093235103" label="default-tile-width"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098714203" label="enable-generic-sensors"/>

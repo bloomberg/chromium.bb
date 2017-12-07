@@ -1707,6 +1707,11 @@ const char kChromeHomePromoName[] = "Chrome Home Promo";
 const char kChromeHomePromoDescription[] =
     "Enable showing the opt-in/out Chrome Home promo.";
 
+const char kChromeHomeShowGoogleGName[] = "Chrome Home Show Google G";
+const char kChromeHomeShowGoogleGDescription[] =
+    "Show the Google G when the url is cleared. The flag to clear the url "
+    "when the sheet is opened must also be set.";
+
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =
     "Various swipe logic options for Chrome Home for sheet expansion.";
