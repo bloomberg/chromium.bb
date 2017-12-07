@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance.account_info()->is_managed);
 
-  arc_bridge_service->auth()->SetInstance(nullptr, 0);
+  arc_bridge_service->auth()->CloseInstance(&auth_instance);
 }
 
 }  // namespace arc

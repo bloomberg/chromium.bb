@@ -106,7 +106,9 @@ class ArcBluetoothBridgeTest : public testing::Test {
   }
 
   void TearDown() override {
-    arc_bridge_service_->bluetooth()->SetInstance(nullptr, 0);
+    arc_bridge_service_->bluetooth()->CloseInstance(
+        fake_bluetooth_instance_.get());
+    fake_bluetooth_instance_.reset();
     arc_bluetooth_bridge_.reset();
     arc_bridge_service_.reset();
   }

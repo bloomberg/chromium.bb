@@ -64,8 +64,8 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
   }
 
   void TearDown() override {
-    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-        nullptr, 0);
+    arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
+        &fake_file_system_);
   }
 
  protected:

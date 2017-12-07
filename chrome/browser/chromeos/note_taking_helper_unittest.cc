@@ -222,7 +222,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
       arc::ArcServiceManager::Get()
           ->arc_bridge_service()
           ->intent_helper()
-          ->SetInstance(nullptr);
+          ->CloseInstance(&intent_helper_);
       NoteTakingHelper::Shutdown();
       intent_helper_bridge_.reset();
       arc_test_.TearDown();

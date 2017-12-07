@@ -259,13 +259,13 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
     ArcServiceManager::Get()
         ->arc_bridge_service()
         ->backup_settings()
-        ->SetInstance(nullptr);
+        ->CloseInstance(fake_backup_settings_instance_.get());
     fake_backup_settings_instance_.reset();
 
     ArcServiceManager::Get()
         ->arc_bridge_service()
         ->intent_helper()
-        ->SetInstance(nullptr);
+        ->CloseInstance(fake_intent_helper_instance_.get());
     fake_intent_helper_instance_.reset();
   }
 

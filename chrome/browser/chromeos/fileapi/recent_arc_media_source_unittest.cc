@@ -80,8 +80,8 @@ class RecentArcMediaSourceTest : public testing::Test {
   }
 
   void TearDown() override {
-    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-        nullptr);
+    arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
+        &fake_file_system_);
   }
 
  protected:
