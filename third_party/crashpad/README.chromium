@@ -37,3 +37,5 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - fix two -Wsign-compare warnings.
+ - ProcessInfo.OtherProcess disabled due to flake, investigation pending.
+   See https://crbug.com/792619.
