@@ -338,19 +338,25 @@ RenderText::~RenderText() {
 }
 
 // static
-RenderText* RenderText::CreateInstance() {
-#if defined(OS_MACOSX)
-  const bool use_native = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableHarfBuzzRenderText);
-  if (use_native)
-    return new RenderTextMac;
-#endif  // defined(OS_MACOSX)
-  return new RenderTextHarfBuzz;
+std::unique_ptr<RenderText> RenderText::CreateHarfBuzzInstance() {
+  return std::make_unique<RenderTextHarfBuzz>();
 }
 
 // static
-RenderText* RenderText::CreateInstanceForEditing() {
-  return new RenderTextHarfBuzz;
+std::unique_ptr<RenderText> RenderText::CreateInstanceForPlatformUI() {
+#if defined(OS_MACOSX)
+  static const bool use_native =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHarfBuzzRenderText);
+  if (use_native)
+    return std::make_unique<RenderTextMac>();
+#endif  // defined(OS_MACOSX)
+  return CreateHarfBuzzInstance();
+}
+
+// static
+std::unique_ptr<RenderText> RenderText::CreateInstanceDeprecated() {
+  return CreateInstanceForPlatformUI();
 }
 
 std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(

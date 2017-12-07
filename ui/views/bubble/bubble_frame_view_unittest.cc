@@ -849,12 +849,15 @@ TEST_F(BubbleFrameViewTest, NoElideTitle) {
   // The title/bubble should now be bigger than in multiline tail-eliding mode.
   EXPECT_LT(empty_bubble_width, title_label->size().width());
   EXPECT_LT(empty_bubble_width, bubble->GetClientAreaBoundsInScreen().width());
-  // Make sure the bubble is wide enough to fit the title's full size.
+
+  // Make sure the bubble is wide enough to fit the title's full size. Frame
+  // sizing is done off the title label's minimum size. But since that label is
+  // set to NO_ELIDE, the minimum size should match the preferred size.
   EXPECT_GE(bubble->GetClientAreaBoundsInScreen().width(),
             title_label->GetPreferredSize().width());
-  // Make sure the title's actual size has enough room for all its text.
-  EXPECT_EQ(gfx::GetStringWidth(title, title_label->font_list()),
+  EXPECT_LE(title_label->GetPreferredSize().width(),
             title_label->size().width());
+  EXPECT_EQ(title, title_label->GetDisplayTextForTesting());
 }
 
 }  // namespace views

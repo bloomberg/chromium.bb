@@ -652,10 +652,8 @@ void DOMAgent::OnPaintLayer(const ui::PaintContext& context) {
   constexpr SkScalar intervals[] = {1.f, 4.f};
   flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
 
-  if (!render_text_) {
-    render_text_ =
-        base::WrapUnique<gfx::RenderText>(gfx::RenderText::CreateInstance());
-  }
+  if (!render_text_)
+    render_text_ = gfx::RenderText::CreateHarfBuzzInstance();
   DrawRulers(screen_bounds, canvas, render_text_.get());
 
   // Display guide lines if |highlight_rect_config_| is NO_DRAW.

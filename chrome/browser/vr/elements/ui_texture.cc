@@ -139,8 +139,7 @@ std::vector<std::unique_ptr<gfx::RenderText>> UiTexture::PrepareDrawStringRect(
 }
 
 std::unique_ptr<gfx::RenderText> UiTexture::CreateRenderText() {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
 
   // Subpixel rendering is counterproductive when drawing VR textures.
   render_text->set_subpixel_rendering_suppressed(true);

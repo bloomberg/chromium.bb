@@ -76,7 +76,7 @@ const gfx::FontList& Label::GetDefaultFontList() {
 
 void Label::SetFontList(const gfx::FontList& font_list) {
   is_first_paint_text_ = true;
-  render_text_->SetFontList(font_list);
+  full_text_->SetFontList(font_list);
   ResetLayout();
 }
 
@@ -84,7 +84,7 @@ void Label::SetText(const base::string16& new_text) {
   if (new_text == text())
     return;
   is_first_paint_text_ = true;
-  render_text_->SetText(new_text);
+  full_text_->SetText(new_text);
   ResetLayout();
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
@@ -134,10 +134,10 @@ void Label::SetSelectionBackgroundColor(SkColor color) {
 }
 
 void Label::SetShadows(const gfx::ShadowValues& shadows) {
-  if (render_text_->shadows() == shadows)
+  if (full_text_->shadows() == shadows)
     return;
   is_first_paint_text_ = true;
-  render_text_->set_shadows(shadows);
+  full_text_->set_shadows(shadows);
   ResetLayout();
 }
 
@@ -159,7 +159,7 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   if (horizontal_alignment() == alignment)
     return;
   is_first_paint_text_ = true;
-  render_text_->SetHorizontalAlignment(alignment);
+  full_text_->SetHorizontalAlignment(alignment);
   ResetLayout();
 }
 
@@ -167,7 +167,7 @@ void Label::SetLineHeight(int height) {
   if (line_height() == height)
     return;
   is_first_paint_text_ = true;
-  render_text_->SetMinLineHeight(height);
+  full_text_->SetMinLineHeight(height);
   ResetLayout();
 }
 
@@ -178,9 +178,8 @@ void Label::SetMultiLine(bool multi_line) {
     return;
   is_first_paint_text_ = true;
   multi_line_ = multi_line;
-  if (render_text_->MultilineSupported())
-    render_text_->SetMultiline(multi_line);
-  render_text_->SetReplaceNewlineCharsWithSymbols(!multi_line);
+  full_text_->SetMultiline(multi_line);
+  full_text_->SetReplaceNewlineCharsWithSymbols(!multi_line);
   ResetLayout();
 }
 
@@ -196,7 +195,7 @@ void Label::SetObscured(bool obscured) {
   if (this->obscured() == obscured)
     return;
   is_first_paint_text_ = true;
-  render_text_->SetObscured(obscured);
+  full_text_->SetObscured(obscured);
   if (obscured)
     SetSelectable(false);
   ResetLayout();
@@ -205,9 +204,9 @@ void Label::SetObscured(bool obscured) {
 void Label::SetAllowCharacterBreak(bool allow_character_break) {
   const gfx::WordWrapBehavior behavior =
       allow_character_break ? gfx::WRAP_LONG_WORDS : gfx::TRUNCATE_LONG_WORDS;
-  if (render_text_->word_wrap_behavior() == behavior)
+  if (full_text_->word_wrap_behavior() == behavior)
     return;
-  render_text_->SetWordWrapBehavior(behavior);
+  full_text_->SetWordWrapBehavior(behavior);
   if (multi_line()) {
     is_first_paint_text_ = true;
     ResetLayout();
@@ -248,21 +247,13 @@ void Label::SetMaximumWidth(int max_width) {
 }
 
 base::string16 Label::GetDisplayTextForTesting() {
-  ClearRenderTextLines();
-  MaybeBuildRenderTextLines();
-  base::string16 result;
-  if (lines_.empty())
-    return result;
-  result.append(lines_[0]->GetDisplayText());
-  for (size_t i = 1; i < lines_.size(); ++i) {
-    result.append(1, '\n');
-    result.append(lines_[i]->GetDisplayText());
-  }
-  return result;
+  ClearDisplayText();
+  MaybeBuildDisplayText();
+  return display_text_ ? display_text_->GetDisplayText() : base::string16();
 }
 
 bool Label::IsSelectionSupported() const {
-  return !obscured() && render_text_->IsSelectionSupported();
+  return !obscured() && full_text_->IsSelectionSupported();
 }
 
 bool Label::SetSelectable(bool value) {
@@ -375,30 +366,27 @@ int Label::GetHeightForWidth(int w) const {
   int base_line_height = std::max(line_height(), font_list().GetHeight());
   if (!multi_line() || text().empty() || w <= 0) {
     height = base_line_height;
-  } else if (render_text_->MultilineSupported()) {
+  } else {
     // SetDisplayRect() has a side effect for later calls of GetStringSize().
-    // Be careful to invoke |render_text_->SetDisplayRect(gfx::Rect())| to
+    // Be careful to invoke |full_text_->SetDisplayRect(gfx::Rect())| to
     // cancel this effect before the next time GetStringSize() is called.
     // It would be beneficial not to cancel here, considering that some layout
     // managers invoke GetHeightForWidth() for the same width multiple times
-    // and |render_text_| can cache the height.
-    render_text_->SetDisplayRect(gfx::Rect(0, 0, w, 0));
-    int string_height = render_text_->GetStringSize().height();
+    // and |full_text_| can cache the height.
+    full_text_->SetDisplayRect(gfx::Rect(0, 0, w, 0));
+    int string_height = full_text_->GetStringSize().height();
     // Cap the number of lines to |max_lines()| if multi-line and non-zero
     // |max_lines()|.
     height = multi_line() && max_lines() > 0
                  ? std::min(max_lines() * base_line_height, string_height)
                  : string_height;
-  } else {
-    std::vector<base::string16> lines = GetLinesForWidth(w);
-    height = lines.size() * std::max(line_height(), font_list().GetHeight());
   }
-  height -= gfx::ShadowValue::GetMargin(render_text_->shadows()).height();
+  height -= gfx::ShadowValue::GetMargin(full_text_->shadows()).height();
   return height + GetInsets().height();
 }
 
 void Label::Layout() {
-  ClearRenderTextLines();
+  ClearDisplayText();
 }
 
 const char* Label::GetClassName() const {
@@ -423,8 +411,7 @@ WordLookupClient* Label::GetWordLookupClient() {
 
 void Label::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_STATIC_TEXT;
-  // Note that |render_text_| is never elided (see the comment in Init() too).
-  node_data->SetName(render_text_->GetDisplayText());
+  node_data->SetName(full_text_->GetDisplayText());
 }
 
 bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
@@ -437,30 +424,41 @@ bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   }
 
   if (ShouldShowDefaultTooltip()) {
-    // Note that |render_text_| is never elided (see the comment in Init() too).
-    tooltip->assign(render_text_->GetDisplayText());
+    tooltip->assign(full_text_->GetDisplayText());
     return true;
   }
 
   return false;
 }
 
-std::unique_ptr<gfx::RenderText> Label::CreateRenderText(
-    const base::string16& text,
-    gfx::HorizontalAlignment alignment,
-    gfx::DirectionalityMode directionality,
-    gfx::ElideBehavior elide_behavior) const {
-  std::unique_ptr<gfx::RenderText> render_text(
-      render_text_->CreateInstanceOfSameType());
-  render_text->SetHorizontalAlignment(alignment);
-  render_text->SetDirectionalityMode(directionality);
+std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
+  // Multi-line labels only support NO_ELIDE and ELIDE_TAIL for now.
+  // TODO(warx): Investigate more elide text support.
+  gfx::ElideBehavior elide_behavior =
+      multi_line() && (elide_behavior_ != gfx::NO_ELIDE) ? gfx::ELIDE_TAIL
+                                                         : elide_behavior_;
+
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
+  render_text->SetHorizontalAlignment(horizontal_alignment());
+  render_text->SetDirectionalityMode(full_text_->directionality_mode());
   render_text->SetElideBehavior(elide_behavior);
   render_text->SetObscured(obscured());
   render_text->SetMinLineHeight(line_height());
   render_text->SetFontList(font_list());
   render_text->set_shadows(shadows());
   render_text->SetCursorEnabled(false);
-  render_text->SetText(text);
+  render_text->SetText(text());
+  render_text->SetMultiline(multi_line());
+  render_text->SetMaxLines(multi_line() ? max_lines() : 0);
+  render_text->SetWordWrapBehavior(full_text_->word_wrap_behavior());
+
+  // Setup render text for selection controller.
+  if (selectable()) {
+    render_text->set_focused(HasFocus());
+    if (stored_selection_range_.IsValid())
+      render_text->SelectRange(stored_selection_range_);
+  }
+
   return render_text;
 }
 
@@ -469,17 +467,14 @@ void Label::PaintFocusRing(gfx::Canvas* canvas) const {
 }
 
 gfx::Rect Label::GetFocusRingBounds() const {
-  MaybeBuildRenderTextLines();
+  MaybeBuildDisplayText();
 
   gfx::Rect focus_bounds;
-  if (lines_.empty()) {
+  if (!display_text_) {
     focus_bounds = gfx::Rect(GetTextSize());
   } else {
-    for (size_t i = 0; i < lines_.size(); ++i) {
-      gfx::Point origin;
-      origin += lines_[i]->GetLineOffset(0);
-      focus_bounds.Union(gfx::Rect(origin, lines_[i]->GetStringSize()));
-    }
+    focus_bounds = gfx::Rect(gfx::Point() + display_text_->GetLineOffset(0),
+                             display_text_->GetStringSize());
   }
 
   focus_bounds.Inset(-NonBorderInsets(*this));
@@ -488,16 +483,16 @@ gfx::Rect Label::GetFocusRingBounds() const {
 }
 
 void Label::PaintText(gfx::Canvas* canvas) {
-  MaybeBuildRenderTextLines();
+  MaybeBuildDisplayText();
 
-  for (size_t i = 0; i < lines_.size(); ++i)
-    lines_[i]->Draw(canvas);
+  if (display_text_)
+    display_text_->Draw(canvas);
 
 #if DCHECK_IS_ON()
   // Attempt to ensure that if we're using subpixel rendering, we're painting
   // to an opaque background. What we don't want to find is an ancestor in the
   // hierarchy that paints to a non-opaque layer.
-  if (lines_.empty() || lines_[0]->subpixel_rendering_suppressed())
+  if (!display_text_ || display_text_->subpixel_rendering_suppressed())
     return;
 
   for (View* view = this; view; view = view->parent()) {
@@ -675,7 +670,7 @@ void Label::OnDeviceScaleFactorChanged(float old_device_scale_factor,
 
 void Label::VisibilityChanged(View* starting_from, bool is_visible) {
   if (!is_visible)
-    ClearRenderTextLines();
+    ClearDisplayText();
 }
 
 void Label::ShowContextMenuForView(View* source,
@@ -810,26 +805,23 @@ bool Label::GetAcceleratorForCommandId(int command_id,
 const gfx::RenderText* Label::GetRenderTextForSelectionController() const {
   if (!selectable())
     return nullptr;
-  MaybeBuildRenderTextLines();
+  MaybeBuildDisplayText();
 
-  // This may happen when the content bounds of the view are empty.
-  if (lines_.empty())
-    return nullptr;
-
-  DCHECK_EQ(1u, lines_.size());
-  return lines_[0].get();
+  // This may be null when the content bounds of the view are empty.
+  return display_text_.get();
 }
 
 void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
-  render_text_.reset(gfx::RenderText::CreateInstance());
-  render_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  render_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
-  // NOTE: |render_text_| should not be elided at all. This is used to keep some
-  // properties and to compute the size of the string.
-  render_text_->SetElideBehavior(gfx::NO_ELIDE);
-  render_text_->SetFontList(font_list);
-  render_text_->SetCursorEnabled(false);
-  render_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
+  full_text_ = gfx::RenderText::CreateHarfBuzzInstance();
+  DCHECK(full_text_->MultilineSupported());
+  full_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  full_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
+  // NOTE: |full_text_| should not be elided at all. This is used to keep
+  // some properties and to compute the size of the string.
+  full_text_->SetElideBehavior(gfx::NO_ELIDE);
+  full_text_->SetFontList(font_list);
+  full_text_->SetCursorEnabled(false);
+  full_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
 
   elide_behavior_ = gfx::ELIDE_TAIL;
   stored_selection_range_ = gfx::Range::InvalidRange();
@@ -861,11 +853,11 @@ void Label::ResetLayout() {
   InvalidateLayout();
   PreferredSizeChanged();
   SchedulePaint();
-  ClearRenderTextLines();
+  ClearDisplayText();
 }
 
-void Label::MaybeBuildRenderTextLines() const {
-  if (!lines_.empty())
+void Label::MaybeBuildDisplayText() const {
+  if (display_text_)
     return;
 
   gfx::Rect rect = GetContentsBounds();
@@ -874,105 +866,25 @@ void Label::MaybeBuildRenderTextLines() const {
     return;
 
   rect.Inset(-gfx::ShadowValue::GetMargin(shadows()));
-
-  gfx::HorizontalAlignment alignment = horizontal_alignment();
-  gfx::DirectionalityMode directionality = render_text_->directionality_mode();
-  if (multi_line()) {
-    // Force the directionality and alignment of the first line on other lines.
-    bool rtl =
-        render_text_->GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT;
-    if (alignment == gfx::ALIGN_TO_HEAD)
-      alignment = rtl ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
-    directionality =
-        rtl ? gfx::DIRECTIONALITY_FORCE_RTL : gfx::DIRECTIONALITY_FORCE_LTR;
-  }
-
-  // Multi-line labels only support NO_ELIDE and ELIDE_TAIL for now.
-  // TODO(warx): Investigate more elide text support.
-  gfx::ElideBehavior elide_behavior =
-      multi_line() && (elide_behavior_ != gfx::NO_ELIDE) ? gfx::ELIDE_TAIL
-                                                         : elide_behavior_;
-  if (!multi_line() || render_text_->MultilineSupported()) {
-    std::unique_ptr<gfx::RenderText> render_text =
-        CreateRenderText(text(), alignment, directionality, elide_behavior);
-    render_text->SetDisplayRect(rect);
-    render_text->SetMultiline(multi_line());
-    render_text->SetMaxLines(multi_line() ? max_lines() : 0);
-    render_text->SetWordWrapBehavior(render_text_->word_wrap_behavior());
-
-    // Setup render text for selection controller.
-    if (selectable()) {
-      render_text->set_focused(HasFocus());
-      if (stored_selection_range_.IsValid())
-        render_text->SelectRange(stored_selection_range_);
-    }
-
-    lines_.push_back(std::move(render_text));
-  } else {
-    // TODO(warx): Apply max_lines property when RenderText doesn't support
-    // multi-line (crbug.com/758720).
-    std::vector<base::string16> lines = GetLinesForWidth(rect.width());
-    if (lines.size() > 1)
-      rect.set_height(std::max(line_height(), font_list().GetHeight()));
-
-    const int bottom = GetContentsBounds().bottom();
-    for (size_t i = 0; i < lines.size() && rect.y() <= bottom; ++i) {
-      std::unique_ptr<gfx::RenderText> line =
-          CreateRenderText(lines[i], alignment, directionality, elide_behavior);
-      line->SetDisplayRect(rect);
-      lines_.push_back(std::move(line));
-      rect.set_y(rect.y() + rect.height());
-    }
-    // Append the remaining text to the last visible line.
-    for (size_t i = lines_.size(); i < lines.size(); ++i)
-      lines_.back()->SetText(lines_.back()->text() + lines[i]);
-  }
-
+  display_text_ = CreateRenderText();
+  display_text_->SetDisplayRect(rect);
   stored_selection_range_ = gfx::Range::InvalidRange();
   ApplyTextColors();
-}
-
-std::vector<base::string16> Label::GetLinesForWidth(int width) const {
-  std::vector<base::string16> lines;
-  // |width| can be 0 when getting the default text size, in that case
-  // the ideal lines (i.e. broken at newline characters) are wanted.
-  if (width <= 0) {
-    lines = base::SplitString(
-        render_text_->GetDisplayText(), base::string16(1, '\n'),
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  } else {
-    gfx::ElideRectangleText(render_text_->GetDisplayText(), font_list(), width,
-                            std::numeric_limits<int>::max(),
-                            render_text_->word_wrap_behavior(), &lines);
-  }
-  return lines;
 }
 
 gfx::Size Label::GetTextSize() const {
   gfx::Size size;
   if (text().empty()) {
     size = gfx::Size(0, std::max(line_height(), font_list().GetHeight()));
-  } else if (!multi_line() || render_text_->MultilineSupported()) {
-    // Cancel the display rect of |render_text_|. The display rect may be
+  } else {
+    // Cancel the display rect of |full_text_|. The display rect may be
     // specified in GetHeightForWidth(), and specifying empty Rect cancels
     // its effect. See also the comment in GetHeightForWidth().
     // TODO(mukai): use gfx::Rect() to compute the ideal size rather than
     // the current width(). See crbug.com/468494, crbug.com/467526, and
     // the comment for MultilinePreferredSizeTest in label_unittest.cc.
-    render_text_->SetDisplayRect(gfx::Rect(0, 0, width(), 0));
-    size = render_text_->GetStringSize();
-  } else {
-    // Get the natural text size, unelided and only wrapped on newlines.
-    std::vector<base::string16> lines = GetLinesForWidth(width());
-    std::unique_ptr<gfx::RenderText> render_text(
-        gfx::RenderText::CreateInstance());
-    render_text->SetFontList(font_list());
-    for (size_t i = 0; i < lines.size(); ++i) {
-      render_text->SetText(lines[i]);
-      const gfx::Size line = render_text->GetStringSize();
-      size.set_width(std::max(size.width(), line.width()));
-      size.set_height(std::max(line_height(), size.height() + line.height()));
-    }
+    full_text_->SetDisplayRect(gfx::Rect(0, 0, width(), 0));
+    size = full_text_->GetStringSize();
   }
   const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(shadows());
   size.Enlarge(shadow_margin.width(), shadow_margin.height());
@@ -995,16 +907,18 @@ void Label::RecalculateColors() {
 }
 
 void Label::ApplyTextColors() const {
+  if (!display_text_)
+    return;
+
   bool subpixel_rendering_suppressed =
       SkColorGetA(background_color_) != SK_AlphaOPAQUE ||
       !subpixel_rendering_enabled_;
-  for (size_t i = 0; i < lines_.size(); ++i) {
-    lines_[i]->SetColor(actual_enabled_color_);
-    lines_[i]->set_selection_color(actual_selection_text_color_);
-    lines_[i]->set_selection_background_focused_color(
-        selection_background_color_);
-    lines_[i]->set_subpixel_rendering_suppressed(subpixel_rendering_suppressed);
-  }
+  display_text_->SetColor(actual_enabled_color_);
+  display_text_->set_selection_color(actual_selection_text_color_);
+  display_text_->set_selection_background_focused_color(
+      selection_background_color_);
+  display_text_->set_subpixel_rendering_suppressed(
+      subpixel_rendering_suppressed);
 }
 
 void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
@@ -1034,10 +948,10 @@ bool Label::ShouldShowDefaultTooltip() const {
                          (multi_line() && text_size.height() > size.height()));
 }
 
-void Label::ClearRenderTextLines() const {
-  // The HasSelection() call below will build |lines_| in case it is empty.
-  // Return early to avoid this.
-  if (lines_.empty())
+void Label::ClearDisplayText() const {
+  // The HasSelection() call below will build |display_text_| in case it is
+  // empty. Return early to avoid this.
+  if (!display_text_)
     return;
 
   // Persist the selection range if there is an active selection.
@@ -1045,7 +959,7 @@ void Label::ClearRenderTextLines() const {
     stored_selection_range_ =
         GetRenderTextForSelectionController()->selection();
   }
-  lines_.clear();
+  display_text_ = nullptr;
 }
 
 base::string16 Label::GetSelectedText() const {

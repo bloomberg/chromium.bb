@@ -503,8 +503,7 @@ int OmniboxResultView::DrawRenderText(
 
 std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
     const base::string16& text) const {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   render_text->SetCursorEnabled(false);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);

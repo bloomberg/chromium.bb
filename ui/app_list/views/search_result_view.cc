@@ -154,8 +154,7 @@ void SearchResultView::UpdateAccessibleName() {
 }
 
 void SearchResultView::CreateTitleRenderText() {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetText(result_->title());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(
@@ -184,8 +183,7 @@ void SearchResultView::CreateDetailsRenderText() {
     details_text_.reset();
     return;
   }
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetText(result_->details());
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   render_text->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));

@@ -578,15 +578,15 @@ TEST_F(LabelTest, TextChangeWithoutLayout) {
 
   gfx::Canvas canvas(gfx::Size(200, 200), 1.0f, true);
   label()->OnPaint(&canvas);
-  EXPECT_EQ(1u, label()->lines_.size());
-  EXPECT_EQ(ASCIIToUTF16("Example"), label()->lines_[0]->GetDisplayText());
+  EXPECT_TRUE(label()->display_text_);
+  EXPECT_EQ(ASCIIToUTF16("Example"), label()->display_text_->GetDisplayText());
 
   label()->SetText(ASCIIToUTF16("Altered"));
   // The altered text should be painted even though Layout() or SetBounds() are
   // not called.
   label()->OnPaint(&canvas);
-  EXPECT_EQ(1u, label()->lines_.size());
-  EXPECT_EQ(ASCIIToUTF16("Altered"), label()->lines_[0]->GetDisplayText());
+  EXPECT_TRUE(label()->display_text_);
+  EXPECT_EQ(ASCIIToUTF16("Altered"), label()->display_text_->GetDisplayText());
 }
 
 TEST_F(LabelTest, EmptyLabelSizing) {
@@ -849,46 +849,42 @@ TEST_F(LabelTest, ResetRenderTextData) {
   gfx::Size preferred_size = label()->GetPreferredSize();
 
   EXPECT_NE(gfx::Size(), preferred_size);
-  EXPECT_EQ(0u, label()->lines_.size());
+  EXPECT_FALSE(label()->display_text_);
 
   gfx::Canvas canvas(preferred_size, 1.0f, true);
   label()->OnPaint(&canvas);
-  EXPECT_EQ(1u, label()->lines_.size());
+  EXPECT_TRUE(label()->display_text_);
 
   // Label should recreate its RenderText object when it's invisible, to release
   // the layout structures and data.
   label()->SetVisible(false);
-  EXPECT_EQ(0u, label()->lines_.size());
+  EXPECT_FALSE(label()->display_text_);
 
   // Querying fields or size information should not recompute the layout
   // unnecessarily.
   EXPECT_EQ(ASCIIToUTF16("Example"), label()->text());
-  EXPECT_EQ(0u, label()->lines_.size());
+  EXPECT_FALSE(label()->display_text_);
 
   EXPECT_EQ(preferred_size, label()->GetPreferredSize());
-  EXPECT_EQ(0u, label()->lines_.size());
+  EXPECT_FALSE(label()->display_text_);
 
   // RenderText data should be back when it's necessary.
   label()->SetVisible(true);
-  EXPECT_EQ(0u, label()->lines_.size());
+  EXPECT_FALSE(label()->display_text_);
 
   label()->OnPaint(&canvas);
-  EXPECT_EQ(1u, label()->lines_.size());
+  EXPECT_TRUE(label()->display_text_);
 
-  // Changing layout just resets |lines_|. It'll recover next time it's drawn.
+  // Changing layout just resets |display_text_|. It'll recover next time it's
+  // drawn.
   label()->SetBounds(0, 0, 10, 10);
-  EXPECT_EQ(0u, label()->lines_.size());
+  EXPECT_FALSE(label()->display_text_);
 
   label()->OnPaint(&canvas);
-  EXPECT_EQ(1u, label()->lines_.size());
+  EXPECT_TRUE(label()->display_text_);
 }
 
-#if !defined(OS_MACOSX)
 TEST_F(LabelTest, MultilineSupportedRenderText) {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
-  ASSERT_TRUE(render_text->MultilineSupported());
-
   label()->SetText(ASCIIToUTF16("Example of\nmultilined label"));
   label()->SetMultiLine(true);
   label()->SizeToPreferredSize();
@@ -896,10 +892,10 @@ TEST_F(LabelTest, MultilineSupportedRenderText) {
   gfx::Canvas canvas(label()->GetPreferredSize(), 1.0f, true);
   label()->OnPaint(&canvas);
 
-  // There's only one 'line', RenderText itself supports multiple lines.
-  EXPECT_EQ(1u, label()->lines_.size());
+  // There's only RenderText instance, which should have multiple lines.
+  ASSERT_TRUE(label()->display_text_);
+  EXPECT_EQ(2u, label()->display_text_->GetNumLines());
 }
-#endif
 
 // Ensures SchedulePaint() calls are not made in OnPaint().
 TEST_F(LabelTest, NoSchedulePaintInOnPaint) {
