@@ -123,6 +123,17 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoCheck) {
   Browser* incognito_browser = CreateIncognitoBrowser();
   EXPECT_FALSE(ukm_enabled());
 
+  // Opening another regular browser mustn't enable UKM.
+  Browser* regular_browser = CreateBrowser(profile);
+  EXPECT_FALSE(ukm_enabled());
+
+  // Opening and closing another Incognito browser mustn't enable UKM.
+  CloseBrowserSynchronously(CreateIncognitoBrowser());
+  EXPECT_FALSE(ukm_enabled());
+
+  CloseBrowserSynchronously(regular_browser);
+  EXPECT_FALSE(ukm_enabled());
+
   CloseBrowserSynchronously(incognito_browser);
   EXPECT_TRUE(ukm_enabled());
   // Client ID should not have been reset.
