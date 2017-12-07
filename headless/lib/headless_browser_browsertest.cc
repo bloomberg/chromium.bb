@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -262,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpProtocolHandler) {
   const std::string kResponseBody = "<p>HTTP response body</p>";
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpScheme] =
-      base::MakeUnique<TestProtocolHandler>(kResponseBody);
+      std::make_unique<TestProtocolHandler>(kResponseBody);
 
   HeadlessBrowserContext* browser_context =
       browser()
@@ -290,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, HttpsProtocolHandler) {
   const std::string kResponseBody = "<p>HTTPS response body</p>";
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpsScheme] =
-      base::MakeUnique<TestProtocolHandler>(kResponseBody);
+      std::make_unique<TestProtocolHandler>(kResponseBody);
 
   HeadlessBrowserContext* browser_context =
       browser()
@@ -483,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ReadCookiesInProtocolHandler) {
   net::CookieList sent_cookies;
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpsScheme] =
-      base::MakeUnique<ProtocolHandlerWithCookies>(&sent_cookies);
+      std::make_unique<ProtocolHandlerWithCookies>(&sent_cookies);
 
   HeadlessBrowserContext* browser_context =
       browser()
@@ -830,7 +829,7 @@ class TraceHelper : public tracing::ExperimentalObserver {
       : browser_test_(browser_test),
         target_(target),
         client_(HeadlessDevToolsClient::Create()),
-        tracing_data_(base::MakeUnique<base::ListValue>()) {
+        tracing_data_(std::make_unique<base::ListValue>()) {
     EXPECT_FALSE(target_->IsAttached());
     target_->AttachClient(client_.get());
     EXPECT_TRUE(target_->IsAttached());

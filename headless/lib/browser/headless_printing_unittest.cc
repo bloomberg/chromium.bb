@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
 #include "headless/lib/browser/headless_print_manager.h"
@@ -16,7 +17,7 @@ TEST(ParsePrintSettingsTest, Landscape) {
   HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.landscape);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("landscape", true);
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
@@ -28,7 +29,7 @@ TEST(ParsePrintSettingsTest, HeaderFooter) {
   HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.display_header_footer);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("displayHeaderFooter", true);
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
@@ -40,7 +41,7 @@ TEST(ParsePrintSettingsTest, PrintBackground) {
   HeadlessPrintSettings settings;
   EXPECT_FALSE(settings.should_print_backgrounds);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("printBackground", true);
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
@@ -52,7 +53,7 @@ TEST(ParsePrintSettingsTest, Scale) {
   HeadlessPrintSettings settings;
   EXPECT_DOUBLE_EQ(1, settings.scale);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetDouble("scale", 0.5);
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
@@ -72,7 +73,7 @@ TEST(ParsePrintSettingsTest, PageRanges) {
   HeadlessPrintSettings settings;
   EXPECT_EQ("", settings.page_ranges);
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetString("pageRanges", "abcd");
   params->SetBoolean("ignoreInvalidPageRanges", true);
   std::unique_ptr<base::DictionaryValue> response =
@@ -88,7 +89,7 @@ TEST(ParsePrintSettingsTest, PageRanges) {
 TEST(ParsePrintSettingsTest, Paper) {
   HeadlessPrintSettings settings;
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
   EXPECT_EQ(printing::kLetterWidthInch * printing::kPointsPerInch,
@@ -120,7 +121,7 @@ TEST(ParsePrintSettingsTest, Paper) {
 TEST(ParsePrintSettingsTest, Margin) {
   HeadlessPrintSettings settings;
 
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> response =
       ParsePrintSettings(0, params.get(), &settings);
   int default_margin =

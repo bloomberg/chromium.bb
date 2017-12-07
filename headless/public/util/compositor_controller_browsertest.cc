@@ -4,6 +4,8 @@
 
 #include "headless/public/util/compositor_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
@@ -42,8 +44,8 @@ class CompositorControllerBrowserTest
 
   void RunDevTooledTest() override {
     virtual_time_controller_ =
-        base::MakeUnique<VirtualTimeController>(devtools_client_.get());
-    compositor_controller_ = base::MakeUnique<CompositorController>(
+        std::make_unique<VirtualTimeController>(devtools_client_.get());
+    compositor_controller_ = std::make_unique<CompositorController>(
         browser()->BrowserMainThread(), devtools_client_.get(),
         virtual_time_controller_.get(), kAnimationFrameInterval,
         kWaitForCompositorReadyFrameDelay);

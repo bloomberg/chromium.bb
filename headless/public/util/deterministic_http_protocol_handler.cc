@@ -4,8 +4,9 @@
 
 #include "headless/public/util/deterministic_http_protocol_handler.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/util/deterministic_dispatcher.h"
 #include "headless/public/util/generic_url_request_job.h"
@@ -65,7 +66,7 @@ net::URLRequestJob* DeterministicHttpProtocolHandler::MaybeCreateJob(
   }
   return new GenericURLRequestJob(
       request, network_delegate, deterministic_dispatcher_,
-      base::MakeUnique<HttpURLFetcher>(url_request_context_.get()),
+      std::make_unique<HttpURLFetcher>(url_request_context_.get()),
       nop_delegate_.get(), headless_browser_context_);
 }
 

@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
@@ -123,7 +122,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
         std::unique_ptr<net::CookieStore> cookie_store =
             CreateCookieStore(cookie_config);
         std::unique_ptr<net::ChannelIDService> channel_id_service =
-            base::MakeUnique<net::ChannelIDService>(
+            std::make_unique<net::ChannelIDService>(
                 new net::DefaultChannelIDStore(nullptr));
 
         cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
@@ -147,7 +146,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     {
       base::AutoLock lock(lock_);
       builder.set_network_delegate(
-          base::MakeUnique<HeadlessNetworkDelegate>(headless_browser_context_));
+          std::make_unique<HeadlessNetworkDelegate>(headless_browser_context_));
     }
 
     if (!host_resolver_rules_.empty()) {

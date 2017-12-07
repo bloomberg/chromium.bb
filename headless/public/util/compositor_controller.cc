@@ -4,11 +4,12 @@
 
 #include "headless/public/util/compositor_controller.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -116,7 +117,7 @@ CompositorController::CompositorController(
     : task_runner_(std::move(task_runner)),
       devtools_client_(devtools_client),
       virtual_time_controller_(virtual_time_controller),
-      animation_task_(base::MakeUnique<AnimationBeginFrameTask>(this)),
+      animation_task_(std::make_unique<AnimationBeginFrameTask>(this)),
       animation_begin_frame_interval_(animation_begin_frame_interval),
       wait_for_compositor_ready_begin_frame_delay_(
           wait_for_compositor_ready_begin_frame_delay),

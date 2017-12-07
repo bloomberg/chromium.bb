@@ -4,10 +4,11 @@
 
 #include "headless/public/util/compositor_controller.h"
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
@@ -59,12 +60,12 @@ class CompositorControllerTest : public ::testing::Test {
     EXPECT_CALL(*mock_host_, AttachClient(&client_));
     client_.AttachToHost(mock_host_.get());
     virtual_time_controller_ =
-        base::MakeUnique<TestVirtualTimeController>(&client_);
+        std::make_unique<TestVirtualTimeController>(&client_);
     EXPECT_CALL(*virtual_time_controller_,
                 ScheduleRepeatingTask(_, kAnimationFrameInterval))
         .WillOnce(testing::SaveArg<0>(&task_));
     ExpectHeadlessExperimentalEnable();
-    controller_ = base::MakeUnique<CompositorController>(
+    controller_ = std::make_unique<CompositorController>(
         task_runner_, &client_, virtual_time_controller_.get(),
         kAnimationFrameInterval, kWaitForCompositorReadyFrameDelay);
     EXPECT_NE(nullptr, task_);

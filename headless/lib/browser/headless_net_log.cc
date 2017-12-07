@@ -4,12 +4,12 @@
 
 #include "headless/lib/browser/headless_net_log.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -24,7 +24,7 @@ std::unique_ptr<base::DictionaryValue> GetHeadlessConstants() {
       net::GetNetConstants();
 
   // Add a dictionary with client information
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
 
   dict->SetString("name", "headless");
   dict->SetString(

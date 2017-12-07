@@ -4,10 +4,11 @@
 
 #include "headless/test/headless_browser_test.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -197,7 +198,7 @@ void HeadlessBrowserTest::RunAsynchronousTest() {
   base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
       base::MessageLoop::current());
   EXPECT_FALSE(run_loop_);
-  run_loop_ = base::MakeUnique<base::RunLoop>();
+  run_loop_ = std::make_unique<base::RunLoop>();
   PreRunAsynchronousTest();
   run_loop_->Run();
   PostRunAsynchronousTest();

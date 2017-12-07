@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
@@ -160,12 +159,12 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
 
     ProtocolHandlerMap protocol_handlers;
     protocol_handlers[url::kHttpScheme] =
-        base::MakeUnique<DeterministicHttpProtocolHandler>(
+        std::make_unique<DeterministicHttpProtocolHandler>(
             deterministic_dispatcher_.get(), browser->BrowserIOThread());
     http_handler = static_cast<DeterministicHttpProtocolHandler*>(
         protocol_handlers[url::kHttpScheme].get());
     protocol_handlers[url::kHttpsScheme] =
-        base::MakeUnique<DeterministicHttpProtocolHandler>(
+        std::make_unique<DeterministicHttpProtocolHandler>(
             deterministic_dispatcher_.get(), browser->BrowserIOThread());
     https_handler = static_cast<DeterministicHttpProtocolHandler*>(
         protocol_handlers[url::kHttpsScheme].get());
@@ -378,7 +377,7 @@ void HeadlessShell::OnRequestIntercepted(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (params.GetIsNavigationRequest()) {
     deterministic_dispatcher_->NavigationRequested(
-        base::MakeUnique<ShellNavigationRequest>(weak_factory_.GetWeakPtr(),
+        std::make_unique<ShellNavigationRequest>(weak_factory_.GetWeakPtr(),
                                                  params.GetInterceptionId()));
     return;
   }
@@ -519,7 +518,7 @@ void HeadlessShell::WriteFile(const std::string& file_path_switch,
     return;
   }
 
-  file_proxy_ = base::MakeUnique<base::FileProxy>(file_task_runner_.get());
+  file_proxy_ = std::make_unique<base::FileProxy>(file_task_runner_.get());
   if (!file_proxy_->CreateOrOpen(
           file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
           base::Bind(&HeadlessShell::OnFileOpened, weak_factory_.GetWeakPtr(),

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -83,7 +85,7 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
     devtools_client_->GetRuntime()->Enable();
 
     // Enabling the runtime domain will send us the current context.
-    run_loop_ = base::MakeUnique<base::RunLoop>(
+    run_loop_ = std::make_unique<base::RunLoop>(
         base::RunLoop::Type::kNestableTasksAllowed);
     run_loop_->Run();
     run_loop_ = nullptr;
@@ -106,7 +108,7 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetPage()->AddObserver(this);
 
-    run_loop_ = base::MakeUnique<base::RunLoop>(
+    run_loop_ = std::make_unique<base::RunLoop>(
         base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->Enable(run_loop_->QuitClosure());
     run_loop_->Run();

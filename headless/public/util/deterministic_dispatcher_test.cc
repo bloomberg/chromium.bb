@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -154,7 +153,7 @@ TEST_F(DeterministicDispatcherTest, NavigationBlocksUrlRequests) {
                                            &notifications));
   base::Closure navigation_done_closure;
   deterministic_dispatcher_->NavigationRequested(
-      base::MakeUnique<NavigationRequestForTest>(&navigation_done_closure));
+      std::make_unique<NavigationRequestForTest>(&navigation_done_closure));
   std::unique_ptr<FakeManagedDispatchURLRequestJob> job2(
       new FakeManagedDispatchURLRequestJob(deterministic_dispatcher_.get(), 2,
                                            &notifications));

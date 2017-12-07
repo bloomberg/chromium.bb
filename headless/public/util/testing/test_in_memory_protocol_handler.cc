@@ -4,7 +4,8 @@
 
 #include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "headless/public/util/expedited_dispatcher.h"
 #include "headless/public/util/generic_url_request_job.h"
 #include "headless/public/util/url_fetcher.h"
@@ -121,7 +122,7 @@ net::URLRequestJob* TestInMemoryProtocolHandler::MaybeCreateJob(
     net::NetworkDelegate* network_delegate) const {
   return new GenericURLRequestJob(
       request, network_delegate, dispatcher_.get(),
-      base::MakeUnique<MockURLFetcher>(
+      std::make_unique<MockURLFetcher>(
           const_cast<TestInMemoryProtocolHandler*>(this)),
       test_delegate_.get(), headless_browser_context_);
 }

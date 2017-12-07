@@ -10,7 +10,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -157,7 +156,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       net::NetworkDelegate* network_delegate) const override {
     return new GenericURLRequestJob(
         request, network_delegate, dispatcher_,
-        base::MakeUnique<MockFetcher>(fetch_request_, received_post_data_,
+        std::make_unique<MockFetcher>(fetch_request_, received_post_data_,
                                       json_fetch_reply_map_,
                                       on_request_callback_),
         job_delegate_, nullptr);
@@ -210,7 +209,7 @@ class GenericURLRequestJobTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS));
     request->set_method("POST");
     request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
-        base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
+        std::make_unique<net::UploadBytesElementReader>(post_data.data(),
                                                         post_data.size()),
         0));
     request->Start();
@@ -292,7 +291,7 @@ TEST_F(GenericURLRequestJobTest, BasicPostRequestParams) {
 
   std::string post_data = "lorem ipsom";
   request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
-      base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
+      std::make_unique<net::UploadBytesElementReader>(post_data.data(),
                                                       post_data.size()),
       0));
   request->Start();
@@ -338,7 +337,7 @@ TEST_F(GenericURLRequestJobTest, LargePostData) {
     post_data[i] = i & 127;
 
   request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
-      base::MakeUnique<net::UploadBytesElementReader>(&post_data[0],
+      std::make_unique<net::UploadBytesElementReader>(&post_data[0],
                                                       post_data.size()),
       0));
   request->Start();
@@ -662,7 +661,7 @@ TEST_F(GenericURLRequestJobTest, GetPostDataAsync) {
   json_fetch_reply_map_[url.spec()] = json_reply;
 
   request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
-      base::MakeUnique<ByteAtATimeUploadElementReader>("payload"), 0));
+      std::make_unique<ByteAtATimeUploadElementReader>("payload"), 0));
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -695,7 +694,7 @@ TEST_F(GenericURLRequestJobTest, LargePostDataNotByteReader) {
     post_data.at(i) = i & 127;
 
   request->set_upload(net::ElementsUploadDataStream::CreateWithReader(
-      base::MakeUnique<ByteAtATimeUploadElementReader>(post_data), 0));
+      std::make_unique<ByteAtATimeUploadElementReader>(post_data), 0));
   request->Start();
   base::RunLoop().RunUntilIdle();
 
@@ -728,13 +727,13 @@ TEST_F(GenericURLRequestJobTest, PostWithMultipleElements) {
 
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   element_readers.push_back(
-      base::MakeUnique<ByteAtATimeUploadElementReader>("Does "));
+      std::make_unique<ByteAtATimeUploadElementReader>("Does "));
   element_readers.push_back(
-      base::MakeUnique<ByteAtATimeUploadElementReader>("this "));
+      std::make_unique<ByteAtATimeUploadElementReader>("this "));
   element_readers.push_back(
-      base::MakeUnique<ByteAtATimeUploadElementReader>("work?"));
+      std::make_unique<ByteAtATimeUploadElementReader>("work?"));
 
-  request->set_upload(base::MakeUnique<net::ElementsUploadDataStream>(
+  request->set_upload(std::make_unique<net::ElementsUploadDataStream>(
       std::move(element_readers), 0));
   request->Start();
   base::RunLoop().RunUntilIdle();
