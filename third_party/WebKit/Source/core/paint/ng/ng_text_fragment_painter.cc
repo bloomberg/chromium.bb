@@ -17,6 +17,29 @@
 
 namespace blink {
 
+namespace {
+
+inline bool ShouldPaintTextFragment(const NGPhysicalTextFragment& text_fragment,
+                                    const ComputedStyle& style) {
+  if (style.Visibility() != EVisibility::kVisible)
+    return false;
+
+  // When painting selection, we want to include a highlight when the
+  // selection spans line breaks. In other cases such as invisible elements
+  // or those with no text that are not line breaks, we can skip painting
+  // wholesale.
+  // TODO(wkorman): Constrain line break painting to appropriate paint phase.
+  // This code path is only called in PaintPhaseForeground whereas we would
+  // expect PaintPhaseSelection. The existing haveSelection logic in paint()
+  // tests for != PaintPhaseTextClip.
+  if (!text_fragment.Length() || !text_fragment.TextShapeResult())
+    return false;
+
+  return true;
+}
+
+}  // namespace
+
 NGTextFragmentPainter::NGTextFragmentPainter(
     const NGPaintFragment& text_fragment)
     : fragment_(text_fragment) {
@@ -26,7 +49,12 @@ NGTextFragmentPainter::NGTextFragmentPainter(
 void NGTextFragmentPainter::Paint(const Document& document,
                                   const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset) {
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
+
+  if (!ShouldPaintTextFragment(text_fragment, style))
+    return;
 
   NGPhysicalSize size_;
   NGPhysicalOffset offset_;
@@ -78,9 +106,6 @@ void NGTextFragmentPainter::Paint(const Document& document,
   // 2. Now paint the foreground, including text and decorations.
   int selection_start = 0;
   int selection_end = 0;
-
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
 
   LayoutRect box_rect(box_origin, fragment_.Size().ToLayoutSize());
   Optional<GraphicsContextStateSaver> state_saver;
