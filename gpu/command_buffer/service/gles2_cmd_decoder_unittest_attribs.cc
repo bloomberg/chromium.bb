@@ -274,7 +274,7 @@ TEST_P(GLES2DecoderWithShaderTest, VertexAttribPointer) {
 
 class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
  public:
-  GLES2DecoderVertexArraysOESTest() {}
+  GLES2DecoderVertexArraysOESTest() = default;
 
   bool vertex_array_deleted_manually_;
 
@@ -414,7 +414,7 @@ INSTANTIATE_TEST_CASE_P(Service,
 class GLES2DecoderEmulatedVertexArraysOESTest
     : public GLES2DecoderVertexArraysOESTest {
  public:
-  GLES2DecoderEmulatedVertexArraysOESTest() {}
+  GLES2DecoderEmulatedVertexArraysOESTest() = default;
 
   void SetUp() override {
     InitState init;

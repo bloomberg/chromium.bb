@@ -107,11 +107,9 @@ const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 const unsigned int GLES2Implementation::kStartingOffset;
 #endif
 
-GLES2Implementation::GLStaticState::GLStaticState() {
-}
+GLES2Implementation::GLStaticState::GLStaticState() = default;
 
-GLES2Implementation::GLStaticState::~GLStaticState() {
-}
+GLES2Implementation::GLStaticState::~GLStaticState() = default;
 
 GLES2Implementation::SingleThreadChecker::SingleThreadChecker(
     GLES2Implementation* gles2_implementation)

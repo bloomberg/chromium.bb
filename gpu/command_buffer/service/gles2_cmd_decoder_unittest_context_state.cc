@@ -68,7 +68,7 @@ using namespace cmds;
 
 class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
  public:
-  GLES2DecoderRestoreStateTest() {}
+  GLES2DecoderRestoreStateTest() = default;
 
  protected:
   void AddExpectationsForActiveTexture(GLenum unit);

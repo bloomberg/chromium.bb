@@ -43,8 +43,7 @@ Config::Config(EGLint surface_type)
   DCHECK(surface_type == EGL_WINDOW_BIT || surface_type == EGL_PBUFFER_BIT);
 }
 
-Config::~Config() {
-}
+Config::~Config() = default;
 
 bool Config::Matches(const EGLint* attrib_list) const {
   DCHECK(ValidateAttributeList(attrib_list));

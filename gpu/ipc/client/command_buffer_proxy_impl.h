@@ -71,7 +71,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
     virtual void OnWillDeleteImpl() = 0;
 
    protected:
-    virtual ~DeletionObserver() {}
+    virtual ~DeletionObserver() = default;
   };
 
   typedef base::Callback<void(const std::string& msg, int id)>

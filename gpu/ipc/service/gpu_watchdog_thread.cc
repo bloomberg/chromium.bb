@@ -133,7 +133,8 @@ GpuWatchdogThread::GpuWatchdogTaskObserver::GpuWatchdogTaskObserver(
     GpuWatchdogThread* watchdog)
     : watchdog_(watchdog) {}
 
-GpuWatchdogThread::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() {}
+GpuWatchdogThread::GpuWatchdogTaskObserver::~GpuWatchdogTaskObserver() =
+    default;
 
 void GpuWatchdogThread::GpuWatchdogTaskObserver::WillProcessTask(
     const base::PendingTask& pending_task) {

@@ -30,7 +30,7 @@ namespace gles2 {
 
 class GLES2DecoderTest1 : public GLES2DecoderTestBase {
  public:
-  GLES2DecoderTest1() { }
+  GLES2DecoderTest1() = default;
 };
 
 class GLES3DecoderTest1 : public GLES2DecoderTest1 {

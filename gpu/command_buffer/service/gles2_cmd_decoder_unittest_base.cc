@@ -134,7 +134,7 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
-GLES2DecoderTestBase::~GLES2DecoderTestBase() {}
+GLES2DecoderTestBase::~GLES2DecoderTestBase() = default;
 
 void GLES2DecoderTestBase::OnConsoleMessage(int32_t id,
                                             const std::string& message) {}
@@ -2252,7 +2252,7 @@ GLES2DecoderPassthroughTestBase::GLES2DecoderPassthroughTestBase(
   context_creation_attribs_.context_type = context_type;
 }
 
-GLES2DecoderPassthroughTestBase::~GLES2DecoderPassthroughTestBase() {}
+GLES2DecoderPassthroughTestBase::~GLES2DecoderPassthroughTestBase() = default;
 
 void GLES2DecoderPassthroughTestBase::OnConsoleMessage(
     int32_t id,

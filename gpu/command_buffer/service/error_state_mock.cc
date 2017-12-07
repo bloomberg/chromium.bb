@@ -10,7 +10,7 @@ namespace gles2 {
 MockErrorState::MockErrorState()
     : ErrorState() {}
 
-MockErrorState::~MockErrorState() {}
+MockErrorState::~MockErrorState() = default;
 
 }  // namespace gles2
 }  // namespace gpu

@@ -21,7 +21,7 @@ IdAllocator::IdAllocator() {
   used_ids_.insert(std::make_pair(0u, 0u));
 }
 
-IdAllocator::~IdAllocator() {}
+IdAllocator::~IdAllocator() = default;
 
 ResourceId IdAllocator::AllocateID() {
   return AllocateIDRange(1u);

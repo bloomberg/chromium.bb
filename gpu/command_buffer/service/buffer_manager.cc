@@ -117,8 +117,7 @@ Buffer::MappedRange::MappedRange(
   DCHECK(shm.get() && GetShmPointer());
 }
 
-Buffer::MappedRange::~MappedRange() {
-}
+Buffer::MappedRange::~MappedRange() = default;
 
 void* Buffer::MappedRange::GetShmPointer() const {
   DCHECK(shm.get());

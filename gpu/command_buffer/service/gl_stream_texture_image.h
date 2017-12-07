@@ -28,7 +28,7 @@ class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
                                    int display_height) = 0;
 
  protected:
-  ~GLStreamTextureImage() override {}
+  ~GLStreamTextureImage() override = default;
 
   // Convenience function for subclasses that deal with SurfaceTextures, whose
   // coordinate system has (0,0) at the bottom left of the image.

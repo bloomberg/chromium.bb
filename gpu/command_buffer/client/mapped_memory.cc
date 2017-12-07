@@ -40,7 +40,7 @@ MemoryChunk::MemoryChunk(int32_t shm_id,
                  helper,
                  shm->memory()) {}
 
-MemoryChunk::~MemoryChunk() {}
+MemoryChunk::~MemoryChunk() = default;
 
 MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
                                          size_t unused_memory_reclaim_limit)

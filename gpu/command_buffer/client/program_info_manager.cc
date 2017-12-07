@@ -34,8 +34,7 @@ ProgramInfoManager::Program::VertexAttrib::VertexAttrib(
       name(_name) {
 }
 
-ProgramInfoManager::Program::VertexAttrib::~VertexAttrib() {
-}
+ProgramInfoManager::Program::VertexAttrib::~VertexAttrib() = default;
 
 ProgramInfoManager::Program::UniformInfo::UniformInfo(
     GLsizei _size, GLenum _type, const std::string& _name)
@@ -49,8 +48,7 @@ ProgramInfoManager::Program::UniformInfo::UniformInfo(
 ProgramInfoManager::Program::UniformInfo::UniformInfo(
     const UniformInfo& other) = default;
 
-ProgramInfoManager::Program::UniformInfo::~UniformInfo() {
-}
+ProgramInfoManager::Program::UniformInfo::~UniformInfo() = default;
 
 ProgramInfoManager::Program::UniformES3::UniformES3()
     : block_index(-1),
@@ -60,8 +58,7 @@ ProgramInfoManager::Program::UniformES3::UniformES3()
       is_row_major(0) {
 }
 
-ProgramInfoManager::Program::UniformES3::~UniformES3() {
-}
+ProgramInfoManager::Program::UniformES3::~UniformES3() = default;
 
 ProgramInfoManager::Program::UniformBlock::UniformBlock()
     : binding(0),
@@ -73,8 +70,7 @@ ProgramInfoManager::Program::UniformBlock::UniformBlock()
 ProgramInfoManager::Program::UniformBlock::UniformBlock(
     const UniformBlock& other) = default;
 
-ProgramInfoManager::Program::UniformBlock::~UniformBlock() {
-}
+ProgramInfoManager::Program::UniformBlock::~UniformBlock() = default;
 
 ProgramInfoManager::Program::TransformFeedbackVarying::
 TransformFeedbackVarying()
@@ -83,8 +79,7 @@ TransformFeedbackVarying()
 }
 
 ProgramInfoManager::Program::TransformFeedbackVarying::
-~TransformFeedbackVarying() {
-}
+    ~TransformFeedbackVarying() = default;
 
 ProgramInfoManager::Program::Program()
     : cached_es2_(false),
@@ -101,8 +96,7 @@ ProgramInfoManager::Program::Program()
 
 ProgramInfoManager::Program::Program(const Program& other) = default;
 
-ProgramInfoManager::Program::~Program() {
-}
+ProgramInfoManager::Program::~Program() = default;
 
 // TODO(gman): Add a faster lookup.
 GLint ProgramInfoManager::Program::GetAttribLocation(
@@ -591,12 +585,9 @@ bool ProgramInfoManager::Program::IsCached(ProgramInfoType type) const {
   }
 }
 
+ProgramInfoManager::ProgramInfoManager() = default;
 
-ProgramInfoManager::ProgramInfoManager() {
-}
-
-ProgramInfoManager::~ProgramInfoManager() {
-}
+ProgramInfoManager::~ProgramInfoManager() = default;
 
 ProgramInfoManager::Program* ProgramInfoManager::GetProgramInfo(
     GLES2Implementation* gl, GLuint program, ProgramInfoType type) {

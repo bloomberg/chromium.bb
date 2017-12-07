@@ -31,7 +31,7 @@ CopyTexImageResourceManager::CopyTexImageResourceManager(
   DCHECK(feature_info->gl_version_info().is_desktop_core_profile);
 }
 
-CopyTexImageResourceManager::~CopyTexImageResourceManager() {}
+CopyTexImageResourceManager::~CopyTexImageResourceManager() = default;
 
 void CopyTexImageResourceManager::Initialize(
     const gles2::GLES2Decoder* decoder) {

@@ -50,6 +50,6 @@ bool GpuInProcessThreadService::BlockThreadOnWaitSyncToken() const {
   return false;
 }
 
-GpuInProcessThreadService::~GpuInProcessThreadService() {}
+GpuInProcessThreadService::~GpuInProcessThreadService() = default;
 
 }  // namespace gpu

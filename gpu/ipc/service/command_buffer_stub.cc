@@ -176,7 +176,7 @@ class DevToolsChannelData : public base::trace_event::ConvertableToTraceFormat {
  public:
   static std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   CreateForChannel(GpuChannel* channel);
-  ~DevToolsChannelData() override {}
+  ~DevToolsChannelData() override = default;
 
   void AppendAsTraceFormat(std::string* out) const override {
     std::string tmp;

@@ -23,7 +23,7 @@ SharedMemoryBufferBacking::SharedMemoryBufferBacking(
     size_t size)
     : shared_memory_(std::move(shared_memory)), size_(size) {}
 
-SharedMemoryBufferBacking::~SharedMemoryBufferBacking() {}
+SharedMemoryBufferBacking::~SharedMemoryBufferBacking() = default;
 
 base::SharedMemoryHandle SharedMemoryBufferBacking::shared_memory_handle()
     const {
@@ -43,7 +43,7 @@ Buffer::Buffer(std::unique_ptr<BufferBacking> backing)
   DCHECK(memory_) << "The memory must be mapped to create a Buffer";
 }
 
-Buffer::~Buffer() {}
+Buffer::~Buffer() = default;
 
 void* Buffer::GetDataAddress(uint32_t data_offset, uint32_t data_size) const {
   base::CheckedNumeric<uint32_t> end = data_offset;

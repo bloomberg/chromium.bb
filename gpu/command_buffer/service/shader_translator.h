@@ -34,7 +34,7 @@ typedef base::RefCountedData<std::string> OptionsAffectingCompilationString;
 class ShaderTranslatorInterface
     : public base::RefCounted<ShaderTranslatorInterface> {
  public:
-  ShaderTranslatorInterface() {}
+  ShaderTranslatorInterface() = default;
 
   // Initializes the translator.
   // Must be called once before using the translator object.
@@ -66,7 +66,7 @@ class ShaderTranslatorInterface
   GetStringForOptionsThatWouldAffectCompilation() const = 0;
 
  protected:
-  virtual ~ShaderTranslatorInterface() {}
+  virtual ~ShaderTranslatorInterface() = default;
 
  private:
   friend class base::RefCounted<ShaderTranslatorInterface>;

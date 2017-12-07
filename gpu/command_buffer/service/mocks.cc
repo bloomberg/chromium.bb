@@ -24,7 +24,7 @@ AsyncAPIMock::AsyncAPIMock(bool default_do_commands,
   }
 }
 
-AsyncAPIMock::~AsyncAPIMock() {}
+AsyncAPIMock::~AsyncAPIMock() = default;
 
 error::Error AsyncAPIMock::FakeDoCommands(unsigned int num_commands,
                                           const volatile void* buffer,
@@ -72,15 +72,15 @@ void AsyncAPIMock::SetToken(unsigned int command,
 
 namespace gles2 {
 
-MockShaderTranslator::MockShaderTranslator() {}
+MockShaderTranslator::MockShaderTranslator() = default;
 
-MockShaderTranslator::~MockShaderTranslator() {}
+MockShaderTranslator::~MockShaderTranslator() = default;
 
 MockProgramCache::MockProgramCache() : ProgramCache(0) {}
-MockProgramCache::~MockProgramCache() {}
+MockProgramCache::~MockProgramCache() = default;
 
-MockMemoryTracker::MockMemoryTracker() {}
-MockMemoryTracker::~MockMemoryTracker() {}
+MockMemoryTracker::MockMemoryTracker() = default;
+MockMemoryTracker::~MockMemoryTracker() = default;
 
 }  // namespace gles2
 }  // namespace gpu

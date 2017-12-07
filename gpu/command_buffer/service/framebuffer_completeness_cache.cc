@@ -7,9 +7,9 @@
 namespace gpu {
 namespace gles2 {
 
-FramebufferCompletenessCache::FramebufferCompletenessCache() {}
+FramebufferCompletenessCache::FramebufferCompletenessCache() = default;
 
-FramebufferCompletenessCache::~FramebufferCompletenessCache() {}
+FramebufferCompletenessCache::~FramebufferCompletenessCache() = default;
 
 bool FramebufferCompletenessCache::IsComplete(
     const std::string& signature) const {

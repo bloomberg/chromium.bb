@@ -80,8 +80,9 @@ class GPU_EXPORT ShaderTranslatorCache
     }
 
    private:
-    ShaderTranslatorInitParams();
-    ShaderTranslatorInitParams& operator=(const ShaderTranslatorInitParams&);
+    ShaderTranslatorInitParams() = delete;
+    ShaderTranslatorInitParams& operator=(const ShaderTranslatorInitParams&) =
+        delete;
   };
 
   const GpuPreferences gpu_preferences_;

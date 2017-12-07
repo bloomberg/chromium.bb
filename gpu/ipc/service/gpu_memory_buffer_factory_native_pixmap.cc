@@ -15,9 +15,11 @@
 
 namespace gpu {
 
-GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap() {}
+GpuMemoryBufferFactoryNativePixmap::GpuMemoryBufferFactoryNativePixmap() =
+    default;
 
-GpuMemoryBufferFactoryNativePixmap::~GpuMemoryBufferFactoryNativePixmap() {}
+GpuMemoryBufferFactoryNativePixmap::~GpuMemoryBufferFactoryNativePixmap() =
+    default;
 
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(

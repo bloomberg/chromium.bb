@@ -99,7 +99,7 @@ TEST_F(SchedulerTest, ContinuedTasksRunFirst) {
 
 class SchedulerTaskRunOrderTest : public SchedulerTest {
  public:
-  SchedulerTaskRunOrderTest() {}
+  SchedulerTaskRunOrderTest() = default;
   ~SchedulerTaskRunOrderTest() override {
     for (auto info_it : sequence_info_) {
       info_it.second.release_state->Destroy();

@@ -41,7 +41,7 @@ GpuMemoryBufferImplNativePixmap::GpuMemoryBufferImplNativePixmap(
       planes_(planes),
       fd_(std::move(fd)) {}
 
-GpuMemoryBufferImplNativePixmap::~GpuMemoryBufferImplNativePixmap() {}
+GpuMemoryBufferImplNativePixmap::~GpuMemoryBufferImplNativePixmap() = default;
 
 // static
 std::unique_ptr<GpuMemoryBufferImplNativePixmap>

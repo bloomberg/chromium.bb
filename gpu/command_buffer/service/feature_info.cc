@@ -207,7 +207,7 @@ GpuTextureResultR16_L16 GpuTextureUMAHelper() {
 
 }  // anonymous namespace.
 
-FeatureInfo::FeatureFlags::FeatureFlags() {}
+FeatureInfo::FeatureFlags::FeatureFlags() = default;
 
 FeatureInfo::FeatureInfo() {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
@@ -1762,8 +1762,7 @@ void FeatureInfo::AddExtensionString(const base::StringPiece& extension) {
   extensions_.insert(extension);
 }
 
-FeatureInfo::~FeatureInfo() {
-}
+FeatureInfo::~FeatureInfo() = default;
 
 }  // namespace gles2
 }  // namespace gpu

@@ -8,11 +8,9 @@
 
 namespace gpu {
 
-ImageFactory::ImageFactory() {
-}
+ImageFactory::ImageFactory() = default;
 
-ImageFactory::~ImageFactory() {
-}
+ImageFactory::~ImageFactory() = default;
 
 scoped_refptr<gl::GLImage> ImageFactory::CreateAnonymousImage(
     const gfx::Size& size,

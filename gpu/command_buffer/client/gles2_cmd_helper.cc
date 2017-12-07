@@ -11,8 +11,7 @@ GLES2CmdHelper::GLES2CmdHelper(CommandBuffer* command_buffer)
     : CommandBufferHelper(command_buffer) {
 }
 
-GLES2CmdHelper::~GLES2CmdHelper() {
-}
+GLES2CmdHelper::~GLES2CmdHelper() = default;
 
 }  // namespace gles2
 }  // namespace gpu

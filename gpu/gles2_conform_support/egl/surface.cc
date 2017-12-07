@@ -12,8 +12,7 @@ Surface::Surface(gl::GLSurface* gl_surface, const Config* config)
       gl_surface_(gl_surface),
       config_(config) {}
 
-Surface::~Surface() {
-}
+Surface::~Surface() = default;
 
 gl::GLSurface* Surface::gl_surface() const {
   return gl_surface_.get();

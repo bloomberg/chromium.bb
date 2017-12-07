@@ -31,8 +31,8 @@ struct SyncToken;
 // Common interface for GpuControl implementations.
 class GPU_EXPORT GpuControl {
  public:
-  GpuControl() {}
-  virtual ~GpuControl() {}
+  GpuControl() = default;
+  virtual ~GpuControl() = default;
 
   virtual void SetGpuControlClient(GpuControlClient* gpu_control_client) = 0;
 

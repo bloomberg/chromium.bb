@@ -30,9 +30,7 @@ SRGBConverter::SRGBConverter(
     : feature_info_(feature_info) {
 }
 
-SRGBConverter::~SRGBConverter() {}
-
-
+SRGBConverter::~SRGBConverter() = default;
 
 void SRGBConverter::InitializeSRGBConverterProgram() {
   if (srgb_converter_program_) {

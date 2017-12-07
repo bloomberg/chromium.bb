@@ -12,11 +12,9 @@
 namespace gpu {
 namespace gles2 {
 
-ImageManager::ImageManager() {
-}
+ImageManager::ImageManager() = default;
 
-ImageManager::~ImageManager() {
-}
+ImageManager::~ImageManager() = default;
 
 void ImageManager::AddImage(gl::GLImage* image, int32_t service_id) {
   DCHECK(images_.find(service_id) == images_.end());

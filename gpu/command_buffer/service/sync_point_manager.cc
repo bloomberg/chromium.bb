@@ -42,7 +42,7 @@ SyncPointOrderData::OrderFence::OrderFence(
 
 SyncPointOrderData::OrderFence::OrderFence(const OrderFence& other) = default;
 
-SyncPointOrderData::OrderFence::~OrderFence() {}
+SyncPointOrderData::OrderFence::~OrderFence() = default;
 
 SyncPointOrderData::SyncPointOrderData(SyncPointManager* sync_point_manager,
                                        SequenceId sequence_id)
@@ -185,7 +185,7 @@ SyncPointClientState::ReleaseCallback::ReleaseCallback(
 SyncPointClientState::ReleaseCallback::ReleaseCallback(
     const ReleaseCallback& other) = default;
 
-SyncPointClientState::ReleaseCallback::~ReleaseCallback() {}
+SyncPointClientState::ReleaseCallback::~ReleaseCallback() = default;
 
 SyncPointClientState::SyncPointClientState(
     SyncPointManager* sync_point_manager,

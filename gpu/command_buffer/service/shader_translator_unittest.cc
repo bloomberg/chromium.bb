@@ -19,7 +19,7 @@ class ShaderTranslatorTest : public testing::Test {
             gl::GLVersionInfo("2.0", "", gl::ExtensionSet()));
   }
 
-  ~ShaderTranslatorTest() override {}
+  ~ShaderTranslatorTest() override = default;
 
  protected:
   void SetUp() override {
@@ -58,7 +58,7 @@ class ES3ShaderTranslatorTest : public testing::Test {
             gl::GLVersionInfo("3.0", "", gl::ExtensionSet()));
   }
 
-  ~ES3ShaderTranslatorTest() override {}
+  ~ES3ShaderTranslatorTest() override = default;
 
  protected:
   void SetUp() override {

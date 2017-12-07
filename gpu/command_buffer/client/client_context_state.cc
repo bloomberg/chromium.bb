@@ -9,11 +9,9 @@
 namespace gpu {
 namespace gles2 {
 
-ClientContextState::ClientContextState() {
-}
+ClientContextState::ClientContextState() = default;
 
-ClientContextState::~ClientContextState() {
-}
+ClientContextState::~ClientContextState() = default;
 
 void ClientContextState::SetViewport(
     GLint x, GLint y, GLsizei width, GLsizei height) {

@@ -35,7 +35,7 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
   DCHECK(IsSizeValidForFormat(size, format));
 }
 
-GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {}
+GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() = default;
 
 // static
 std::unique_ptr<GpuMemoryBufferImplSharedMemory>

@@ -33,7 +33,7 @@ using namespace cmds;
 
 class GLES2DecoderTest3 : public GLES2DecoderTestBase {
  public:
-  GLES2DecoderTest3() { }
+  GLES2DecoderTest3() = default;
 };
 
 class GLES3DecoderTest3 : public GLES2DecoderTest3 {

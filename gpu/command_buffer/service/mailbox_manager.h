@@ -23,7 +23,7 @@ class TextureBase;
 // Manages resources scoped beyond the context or context group level.
 class GPU_EXPORT MailboxManager {
  public:
-  virtual ~MailboxManager() {}
+  virtual ~MailboxManager() = default;
 
   // Look up the texture definition from the named mailbox.
   virtual TextureBase* ConsumeTexture(const Mailbox& mailbox) = 0;

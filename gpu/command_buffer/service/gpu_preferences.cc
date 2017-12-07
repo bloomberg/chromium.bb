@@ -10,6 +10,6 @@ GpuPreferences::GpuPreferences() = default;
 
 GpuPreferences::GpuPreferences(const GpuPreferences& other) = default;
 
-GpuPreferences::~GpuPreferences() {}
+GpuPreferences::~GpuPreferences() = default;
 
 }  // namespace gpu

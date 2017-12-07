@@ -7,11 +7,9 @@
 namespace gpu {
 namespace gles2 {
 
-GLES2InterfaceStub::GLES2InterfaceStub() {
-}
+GLES2InterfaceStub::GLES2InterfaceStub() = default;
 
-GLES2InterfaceStub::~GLES2InterfaceStub() {
-}
+GLES2InterfaceStub::~GLES2InterfaceStub() = default;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

@@ -21,7 +21,7 @@ class ImageFactory;
 
 class GPU_EXPORT GpuMemoryBufferFactory {
  public:
-  virtual ~GpuMemoryBufferFactory() {}
+  virtual ~GpuMemoryBufferFactory() = default;
 
   // Creates a new factory instance for native GPU memory buffers. Returns null
   // if native buffers are not supported.
@@ -46,7 +46,7 @@ class GPU_EXPORT GpuMemoryBufferFactory {
   virtual ImageFactory* AsImageFactory() = 0;
 
  protected:
-  GpuMemoryBufferFactory() {}
+  GpuMemoryBufferFactory() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactory);

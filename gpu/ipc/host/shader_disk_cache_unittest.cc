@@ -21,9 +21,9 @@ const char kCacheValue[] = "cached value";
 
 class ShaderDiskCacheTest : public testing::Test {
  public:
-  ShaderDiskCacheTest() {}
+  ShaderDiskCacheTest() = default;
 
-  ~ShaderDiskCacheTest() override {}
+  ~ShaderDiskCacheTest() override = default;
 
   const base::FilePath& cache_path() { return temp_dir_.GetPath(); }
 

@@ -151,7 +151,7 @@ void ThreadState::ReleaseThread() {
 
 ThreadState::ThreadState() : error_code_(EGL_SUCCESS) {}
 
-ThreadState::~ThreadState() {}
+ThreadState::~ThreadState() = default;
 
 EGLint ThreadState::ConsumeErrorCode() {
   EGLint current_error_code = error_code_;

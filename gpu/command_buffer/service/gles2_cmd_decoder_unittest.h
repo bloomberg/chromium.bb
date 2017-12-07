@@ -29,7 +29,7 @@ namespace gles2 {
 
 class GLES2DecoderTest : public GLES2DecoderTestBase {
  public:
-  GLES2DecoderTest() {}
+  GLES2DecoderTest() = default;
 
  protected:
   void CheckReadPixelsOutOfRange(GLint in_read_x,
@@ -49,14 +49,14 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
 
 class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
  public:
-  GLES2DecoderRGBBackbufferTest() {}
+  GLES2DecoderRGBBackbufferTest() = default;
 
   void SetUp() override;
 };
 
 class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
  public:
-  GLES2DecoderManualInitTest() {}
+  GLES2DecoderManualInitTest() = default;
 
   // Override default setup so nothing gets setup.
   void SetUp() override {}

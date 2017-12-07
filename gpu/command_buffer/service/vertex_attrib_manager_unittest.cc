@@ -24,10 +24,9 @@ class VertexAttribManagerTest : public GpuServiceTest {
  public:
   static const uint32_t kNumVertexAttribs = 8;
 
-  VertexAttribManagerTest() {
-  }
+  VertexAttribManagerTest() = default;
 
-  ~VertexAttribManagerTest() override {}
+  ~VertexAttribManagerTest() override = default;
 
  protected:
   void SetUp() override {

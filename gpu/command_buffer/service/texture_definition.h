@@ -32,8 +32,8 @@ class NativeImageBuffer : public base::RefCountedThreadSafe<NativeImageBuffer> {
 
  protected:
   friend class base::RefCountedThreadSafe<NativeImageBuffer>;
-  NativeImageBuffer() {}
-  virtual ~NativeImageBuffer() {}
+  NativeImageBuffer() = default;
+  virtual ~NativeImageBuffer() = default;
 
   DISALLOW_COPY_AND_ASSIGN(NativeImageBuffer);
 };

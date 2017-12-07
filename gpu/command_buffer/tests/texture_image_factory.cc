@@ -45,7 +45,7 @@ class TextureImage : public gl::GLImage {
                     const std::string& dump_name) override {}
 
  private:
-  ~TextureImage() override {}
+  ~TextureImage() override = default;
   gfx::Size size_;
 };
 

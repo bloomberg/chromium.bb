@@ -12,8 +12,7 @@ DebugMarkerManager::Group::Group(const std::string& name)
       marker_(name) {
 }
 
-DebugMarkerManager::Group::~Group() {
-}
+DebugMarkerManager::Group::~Group() = default;
 
 void DebugMarkerManager::Group::SetMarker(const std::string& marker) {
   marker_ = name_ + "." + marker;
@@ -24,8 +23,7 @@ DebugMarkerManager::DebugMarkerManager() {
   group_stack_.push(Group(std::string()));
 }
 
-DebugMarkerManager::~DebugMarkerManager() {
-}
+DebugMarkerManager::~DebugMarkerManager() = default;
 
 void DebugMarkerManager::SetMarker(const std::string& marker) {
   group_stack_.top().SetMarker(marker);

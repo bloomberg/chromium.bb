@@ -60,7 +60,7 @@ class GPU_EXPORT CommandBufferStub
     virtual void OnWillDestroyStub() = 0;
 
    protected:
-    virtual ~DestructionObserver() {}
+    virtual ~DestructionObserver() = default;
   };
 
   CommandBufferStub(GpuChannel* channel,

@@ -75,7 +75,7 @@ class TextureManagerTest : public GpuServiceTest {
     feature_info_ = new FeatureInfo(gpu_driver_bug_workaround);
   }
 
-  ~TextureManagerTest() override {}
+  ~TextureManagerTest() override = default;
 
  protected:
   void SetUp() override {
@@ -145,7 +145,7 @@ const GLint TextureManagerTest::kMax3dLevels;
 
 class GLStreamTextureImageStub : public GLStreamTextureImage {
  public:
-  GLStreamTextureImageStub() {}
+  GLStreamTextureImageStub() = default;
 
   // Overridden from GLImage:
   gfx::Size GetSize() override { return gfx::Size(); }
@@ -181,7 +181,7 @@ class GLStreamTextureImageStub : public GLStreamTextureImage {
                            int display_height) override {}
 
  protected:
-  ~GLStreamTextureImageStub() override {}
+  ~GLStreamTextureImageStub() override = default;
 };
 
 TEST_F(TextureManagerTest, Basic) {
@@ -2203,7 +2203,7 @@ class CountingMemoryTracker : public MemoryTracker {
   uint64_t ShareGroupTracingGUID() const override { return 0; }
 
  private:
-  ~CountingMemoryTracker() override {}
+  ~CountingMemoryTracker() override = default;
 
   size_t current_size_;
   DISALLOW_COPY_AND_ASSIGN(CountingMemoryTracker);
@@ -2215,7 +2215,7 @@ class SharedTextureTest : public GpuServiceTest {
 
   SharedTextureTest() : feature_info_(new FeatureInfo()) {}
 
-  ~SharedTextureTest() override {}
+  ~SharedTextureTest() override = default;
 
   void SetUp() override {
     GpuServiceTest::SetUp();
@@ -2500,8 +2500,8 @@ TEST_F(SharedTextureTest, Images) {
 
 class TextureFormatTypeValidationTest : public TextureManagerTest {
  public:
-  TextureFormatTypeValidationTest() {}
-  ~TextureFormatTypeValidationTest() override {}
+  TextureFormatTypeValidationTest() = default;
+  ~TextureFormatTypeValidationTest() override = default;
 
  protected:
   void ExpectValid(

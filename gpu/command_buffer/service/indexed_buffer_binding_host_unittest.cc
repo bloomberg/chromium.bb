@@ -26,7 +26,7 @@ class IndexedBufferBindingHostTest : public GpuServiceTest {
     DCHECK(buffer_.get());
   }
 
-  ~IndexedBufferBindingHostTest() override {}
+  ~IndexedBufferBindingHostTest() override = default;
 
  protected:
   void SetUp() override {

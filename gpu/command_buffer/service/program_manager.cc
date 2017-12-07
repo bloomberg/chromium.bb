@@ -382,7 +382,7 @@ Program::UniformInfo::UniformInfo(const std::string& client_name,
 
 Program::UniformInfo::UniformInfo(const UniformInfo& other) = default;
 
-Program::UniformInfo::~UniformInfo() {}
+Program::UniformInfo::~UniformInfo() = default;
 
 bool ProgramManager::HasBuiltInPrefix(const std::string& name) {
   return name.length() >= 3 && name[0] == 'g' && name[1] == 'l' &&

@@ -60,9 +60,9 @@ std::ostream& operator << (std::ostream& out, const TestOsWithFamily& os) {
 
 class GPUTestExpectationsParserTest : public testing::Test {
  public:
-  GPUTestExpectationsParserTest() { }
+  GPUTestExpectationsParserTest() = default;
 
-  ~GPUTestExpectationsParserTest() override {}
+  ~GPUTestExpectationsParserTest() override = default;
 
   const GPUTestBotConfig& bot_config() const {
     return bot_config_;
@@ -93,9 +93,9 @@ class GPUTestExpectationsParserParamTest
     : public GPUTestExpectationsParserTest,
       public testing::WithParamInterface<TestOsWithFamily> {
  public:
-  GPUTestExpectationsParserParamTest() { }
+  GPUTestExpectationsParserParamTest() = default;
 
-  ~GPUTestExpectationsParserParamTest() override {}
+  ~GPUTestExpectationsParserParamTest() override = default;
 
  protected:
   const GPUTestBotConfig& GetBotConfig() {

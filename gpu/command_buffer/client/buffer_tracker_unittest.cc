@@ -28,7 +28,7 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
   MockClientCommandBufferImpl()
       : MockClientCommandBuffer(),
         context_lost_(false) {}
-  ~MockClientCommandBufferImpl() override {}
+  ~MockClientCommandBufferImpl() override = default;
 
   scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
                                                   int32_t* id) override {

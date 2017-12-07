@@ -24,7 +24,7 @@ class GpuTestSuite : public base::TestSuite {
 GpuTestSuite::GpuTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {}
 
-GpuTestSuite::~GpuTestSuite() {}
+GpuTestSuite::~GpuTestSuite() = default;
 
 }  // namespace
 

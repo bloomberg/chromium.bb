@@ -12,8 +12,7 @@ GLES2TraceImplementation::GLES2TraceImplementation(GLES2Interface* gl)
     : gl_(gl) {
 }
 
-GLES2TraceImplementation::~GLES2TraceImplementation() {
-}
+GLES2TraceImplementation::~GLES2TraceImplementation() = default;
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

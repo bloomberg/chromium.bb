@@ -20,8 +20,8 @@ namespace gpu {
 // is responsible for de-multiplexing commands and their arguments.
 class GPU_EXPORT AsyncAPIInterface {
  public:
-  AsyncAPIInterface() {}
-  virtual ~AsyncAPIInterface() {}
+  AsyncAPIInterface() = default;
+  virtual ~AsyncAPIInterface() = default;
 
   virtual void BeginDecoding() = 0;
   virtual void EndDecoding() = 0;

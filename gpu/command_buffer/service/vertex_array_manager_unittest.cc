@@ -25,10 +25,9 @@ class VertexArrayManagerTest : public GpuServiceTest {
  public:
   static const uint32_t kNumVertexAttribs = 8;
 
-  VertexArrayManagerTest() {
-  }
+  VertexArrayManagerTest() = default;
 
-  ~VertexArrayManagerTest() override {}
+  ~VertexArrayManagerTest() override = default;
 
  protected:
   void SetUp() override {

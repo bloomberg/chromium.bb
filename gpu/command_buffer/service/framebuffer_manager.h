@@ -73,7 +73,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
    protected:
     friend class base::RefCounted<Attachment>;
-    virtual ~Attachment() {}
+    virtual ~Attachment() = default;
   };
 
   Framebuffer(FramebufferManager* manager, GLuint service_id);

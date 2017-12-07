@@ -25,8 +25,7 @@ DecoderFramebufferState::DecoderFramebufferState()
       bound_draw_framebuffer(NULL) {
 }
 
-DecoderFramebufferState::~DecoderFramebufferState() {
-}
+DecoderFramebufferState::~DecoderFramebufferState() = default;
 
 class RenderbufferAttachment
     : public Framebuffer::Attachment {
@@ -125,7 +124,7 @@ class RenderbufferAttachment
   bool EmulatingRGB() const override { return false; }
 
  protected:
-  ~RenderbufferAttachment() override {}
+  ~RenderbufferAttachment() override = default;
 
  private:
   scoped_refptr<Renderbuffer> renderbuffer_;
@@ -303,7 +302,7 @@ class TextureAttachment
   }
 
  protected:
-  ~TextureAttachment() override {}
+  ~TextureAttachment() override = default;
 
  private:
   scoped_refptr<TextureRef> texture_ref_;

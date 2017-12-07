@@ -18,7 +18,7 @@ namespace gles2 {
 template <typename T>
 class ValueValidator {
  public:
-  ValueValidator() {}
+  ValueValidator() = default;
 
   ValueValidator(const T* valid_values, int num_values) {
     AddValues(valid_values, num_values);

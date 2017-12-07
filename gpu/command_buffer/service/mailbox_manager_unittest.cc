@@ -27,8 +27,8 @@ static const SyncToken g_sync_token(gpu::CommandBufferNamespace::GPU_IO,
 
 class MailboxManagerTest : public GpuServiceTest {
  public:
-  MailboxManagerTest() {}
-  ~MailboxManagerTest() override {}
+  MailboxManagerTest() = default;
+  ~MailboxManagerTest() override = default;
 
  protected:
   void SetUp() override {
@@ -190,8 +190,8 @@ const GLsizei kMaxTextureDepth = 1;
 
 class MailboxManagerSyncTest : public MailboxManagerTest {
  public:
-  MailboxManagerSyncTest() {}
-  ~MailboxManagerSyncTest() override {}
+  MailboxManagerSyncTest() = default;
+  ~MailboxManagerSyncTest() override = default;
 
  protected:
   void SetUp() override {

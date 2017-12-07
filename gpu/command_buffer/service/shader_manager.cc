@@ -38,8 +38,7 @@ Shader::Shader(GLuint service_id, GLenum shader_type)
         valid_(false) {
 }
 
-Shader::~Shader() {
-}
+Shader::~Shader() = default;
 
 void Shader::Destroy() {
   if (service_id_) {

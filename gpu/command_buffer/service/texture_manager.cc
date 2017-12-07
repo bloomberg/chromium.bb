@@ -429,9 +429,9 @@ DecoderTextureState::DecoderTextureState(
       unpack_image_height_workaround_with_unpack_buffer(
           workarounds.unpack_image_height_workaround_with_unpack_buffer) {}
 
-TextureManager::DestructionObserver::DestructionObserver() {}
+TextureManager::DestructionObserver::DestructionObserver() = default;
 
-TextureManager::DestructionObserver::~DestructionObserver() {}
+TextureManager::DestructionObserver::~DestructionObserver() = default;
 
 TextureManager::~TextureManager() {
   for (unsigned int i = 0; i < destruction_observers_.size(); i++)
@@ -648,8 +648,7 @@ Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
       estimated_size(rhs.estimated_size),
       internal_workaround(rhs.internal_workaround) {}
 
-Texture::LevelInfo::~LevelInfo() {
-}
+Texture::LevelInfo::~LevelInfo() = default;
 
 Texture::FaceInfo::FaceInfo()
     : num_mip_levels(0) {
@@ -657,8 +656,7 @@ Texture::FaceInfo::FaceInfo()
 
 Texture::FaceInfo::FaceInfo(const FaceInfo& other) = default;
 
-Texture::FaceInfo::~FaceInfo() {
-}
+Texture::FaceInfo::~FaceInfo() = default;
 
 Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
   if (target_ == 0)

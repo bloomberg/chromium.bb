@@ -58,8 +58,8 @@ class ShareGroupContextData {
 // Base class for IdHandlers
 class IdHandlerInterface {
  public:
-  IdHandlerInterface() { }
-  virtual ~IdHandlerInterface() { }
+  IdHandlerInterface() = default;
+  virtual ~IdHandlerInterface() = default;
 
   // Makes some ids at or above id_offset.
   virtual void MakeIds(
@@ -100,8 +100,8 @@ class IdHandlerInterface {
 
 class RangeIdHandlerInterface {
  public:
-  RangeIdHandlerInterface() {}
-  virtual ~RangeIdHandlerInterface() {}
+  RangeIdHandlerInterface() = default;
+  virtual ~RangeIdHandlerInterface() = default;
 
   // Makes a continuous range of ids. Stores the first allocated id to
   // |first_id| or 0 if allocation failed.

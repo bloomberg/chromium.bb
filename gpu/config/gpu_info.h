@@ -291,7 +291,7 @@ struct GPU_EXPORT GPUInfo {
     virtual void EndAuxAttributes() = 0;
 
    protected:
-    virtual ~Enumerator() {}
+    virtual ~Enumerator() = default;
   };
 
   // Outputs the fields in this structure to the provided enumerator.

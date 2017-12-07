@@ -20,9 +20,9 @@ using ::testing::Invoke;
 
 namespace gpu {
 
-FakeCommandBufferServiceBase::FakeCommandBufferServiceBase() {}
+FakeCommandBufferServiceBase::FakeCommandBufferServiceBase() = default;
 
-FakeCommandBufferServiceBase::~FakeCommandBufferServiceBase() {}
+FakeCommandBufferServiceBase::~FakeCommandBufferServiceBase() = default;
 
 CommandBuffer::State FakeCommandBufferServiceBase::GetState() {
   return state_;
@@ -105,7 +105,7 @@ MockClientCommandBuffer::MockClientCommandBuffer() {
   DelegateToFake();
 }
 
-MockClientCommandBuffer::~MockClientCommandBuffer() {}
+MockClientCommandBuffer::~MockClientCommandBuffer() = default;
 
 CommandBuffer::State MockClientCommandBuffer::GetLastState() {
   return GetState();
@@ -158,7 +158,7 @@ MockClientCommandBufferMockFlush::MockClientCommandBufferMockFlush() {
   DelegateToFake();
 }
 
-MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() {}
+MockClientCommandBufferMockFlush::~MockClientCommandBufferMockFlush() = default;
 
 void MockClientCommandBufferMockFlush::DelegateToFake() {
   MockClientCommandBuffer::DelegateToFake();
@@ -170,8 +170,8 @@ void MockClientCommandBufferMockFlush::DoFlush(int32_t put_offset) {
   MockClientCommandBuffer::Flush(put_offset);
 }
 
-MockClientGpuControl::MockClientGpuControl() {}
+MockClientGpuControl::MockClientGpuControl() = default;
 
-MockClientGpuControl::~MockClientGpuControl() {}
+MockClientGpuControl::~MockClientGpuControl() = default;
 
 }  // namespace gpu

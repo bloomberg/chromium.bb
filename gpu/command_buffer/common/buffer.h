@@ -27,7 +27,7 @@ namespace gpu {
 
 class GPU_EXPORT BufferBacking {
  public:
-  virtual ~BufferBacking() {}
+  virtual ~BufferBacking() = default;
   virtual base::SharedMemoryHandle shared_memory_handle() const;
   virtual void* GetMemory() const = 0;
   virtual size_t GetSize() const = 0;

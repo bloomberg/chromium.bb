@@ -20,10 +20,9 @@ const GLuint kTransformFeedbackServiceId = 1076;
 
 class TransformFeedbackManagerTest : public GpuServiceTest {
  public:
-  TransformFeedbackManagerTest() {
-  }
+  TransformFeedbackManagerTest() = default;
 
-  ~TransformFeedbackManagerTest() override {}
+  ~TransformFeedbackManagerTest() override = default;
 
  protected:
   void SetUp() override {

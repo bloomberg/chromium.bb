@@ -20,7 +20,7 @@ namespace gpu {
 namespace gles2 {
 
 ShareGroupContextData::IdHandlerData::IdHandlerData() : flush_generation_(0) {}
-ShareGroupContextData::IdHandlerData::~IdHandlerData() {}
+ShareGroupContextData::IdHandlerData::~IdHandlerData() = default;
 
 static_assert(gpu::kInvalidResource == 0,
               "GL expects kInvalidResource to be 0");
@@ -28,8 +28,8 @@ static_assert(gpu::kInvalidResource == 0,
 // The standard id handler.
 class IdHandler : public IdHandlerInterface {
  public:
-  IdHandler() { }
-  ~IdHandler() override {}
+  IdHandler() = default;
+  ~IdHandler() override = default;
 
   // Overridden from IdHandlerInterface.
   void MakeIds(GLES2Implementation* /* gl_impl */,
@@ -111,7 +111,7 @@ class IdHandler : public IdHandlerInterface {
 class StrictIdHandler : public IdHandlerInterface {
  public:
   explicit StrictIdHandler(int id_namespace) : id_namespace_(id_namespace) {}
-  ~StrictIdHandler() override {}
+  ~StrictIdHandler() override = default;
 
   // Overridden from IdHandler.
   void MakeIds(GLES2Implementation* gl_impl,
@@ -263,7 +263,7 @@ class StrictIdHandler : public IdHandlerInterface {
 class NonReusedIdHandler : public IdHandlerInterface {
  public:
   NonReusedIdHandler() : last_id_(0) {}
-  ~NonReusedIdHandler() override {}
+  ~NonReusedIdHandler() override = default;
 
   // Overridden from IdHandlerInterface.
   void MakeIds(GLES2Implementation* /* gl_impl */,
@@ -322,7 +322,7 @@ class NonReusedIdHandler : public IdHandlerInterface {
 
 class RangeIdHandler : public RangeIdHandlerInterface {
  public:
-  RangeIdHandler() {}
+  RangeIdHandler() = default;
 
   void MakeIdRange(GLES2Implementation* /*gl_impl*/,
                    GLsizei n,
@@ -393,7 +393,7 @@ void ShareGroup::SetProgramInfoManagerForTesting(ProgramInfoManager* manager) {
   program_info_manager_.reset(manager);
 }
 
-ShareGroup::~ShareGroup() {}
+ShareGroup::~ShareGroup() = default;
 
 }  // namespace gles2
 }  // namespace gpu

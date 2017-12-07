@@ -50,8 +50,7 @@ class FeatureInfoTest
     : public GpuServiceTest,
       public ::testing::WithParamInterface<MockedGLVersionKind> {
  public:
-  FeatureInfoTest() {
-  }
+  FeatureInfoTest() = default;
 
   void SetupInitExpectations(const char* extensions) {
     std::string extensions_str = extensions;

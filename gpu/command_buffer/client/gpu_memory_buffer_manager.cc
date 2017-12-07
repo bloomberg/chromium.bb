@@ -6,10 +6,8 @@
 
 namespace gpu {
 
-GpuMemoryBufferManager::GpuMemoryBufferManager() {
-}
+GpuMemoryBufferManager::GpuMemoryBufferManager() = default;
 
-GpuMemoryBufferManager::~GpuMemoryBufferManager() {
-}
+GpuMemoryBufferManager::~GpuMemoryBufferManager() = default;
 
 }  // namespace gpu
