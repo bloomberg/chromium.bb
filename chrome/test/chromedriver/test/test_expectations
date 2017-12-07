@@ -274,6 +274,9 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
         'CorrectEventFiringTest.testShouldReportTheXAndYCoordinatesWhenClicking',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2077
         'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
+        'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
+        'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
     ]
 )
 
