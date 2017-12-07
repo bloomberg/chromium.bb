@@ -997,6 +997,7 @@ std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
           },
           base::Unretained(text_input_model)));
   text_input->set_draw_phase(kPhaseNone);
+  text_input->set_hit_testable(false);
   text_input->SetTextInputDelegate(text_input_delegate);
   text_input->AddBinding(base::MakeUnique<Binding<TextInputInfo>>(
       base::BindRepeating([](TextInputInfo* info) { return *info; },

@@ -75,10 +75,8 @@ const std::set<UiElementName> kHitTestableElements = {
     kWebVrTimeoutMessageButtonText,
     kSpeechRecognitionResultBackplane,
 };
-const std::set<UiElementName> kSpecialHitTestableElements = {
-    kCloseButton,        kWebVrTimeoutMessageButton,
-    kVoiceSearchButton,  kSpeechRecognitionListeningCloseButton,
-    kOmniboxCloseButton, kOmniboxTextField,
+const std::set<UiElementType> kHitTestableElementTypes = {
+    kTypeButtonHitTarget, kTypeTextInputText,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
@@ -164,30 +162,6 @@ static constexpr float kSmallDelaySeconds = 0.1f;
 MATCHER_P2(SizeFsAreApproximatelyEqual, other, tolerance, "") {
   return base::IsApproximatelyEqual(arg.width(), other.width(), tolerance) &&
          base::IsApproximatelyEqual(arg.height(), other.height(), tolerance);
-}
-
-void CheckHitTestableRecursive(UiElement* element) {
-  // This shouldn't be necessary in the future once crbug.com/782395 is fixed.
-  // we can use class name to identify a child element in a composited element
-  // such as Button.
-  if (kSpecialHitTestableElements.find(element->name()) !=
-      kSpecialHitTestableElements.end()) {
-    bool has_hittestable_child = false;
-    for (auto& child : *element) {
-      if (child.hit_testable())
-        has_hittestable_child = true;
-    }
-    EXPECT_TRUE(has_hittestable_child)
-        << "element name: " << UiElementNameToString(element->name());
-    return;
-  }
-  const bool should_be_hit_testable =
-      kHitTestableElements.find(element->name()) != kHitTestableElements.end();
-  EXPECT_EQ(should_be_hit_testable, element->hit_testable())
-      << "element name: " << UiElementNameToString(element->name());
-  for (const auto& child : element->children()) {
-    CheckHitTestableRecursive(child.get());
-  }
 }
 
 void VerifyButtonColor(Button* button,
@@ -678,8 +652,21 @@ TEST_F(UiTest, PropagateContentBoundsOnFullscreen) {
 
 TEST_F(UiTest, HitTestableElements) {
   CreateScene(kNotInCct, kNotInWebVr);
-  EXPECT_TRUE(RunFor(MsToDelta(0)));
-  CheckHitTestableRecursive(&scene_->root_element());
+  for (const auto& element : scene_->root_element()) {
+    if (element.type() != kTypeNone) {
+      const bool should_be_hit_testable =
+          kHitTestableElementTypes.find(element.type()) !=
+          kHitTestableElementTypes.end();
+      EXPECT_EQ(should_be_hit_testable, element.hit_testable())
+          << "element type: " << UiElementTypeToString(element.type());
+    } else {
+      const bool should_be_hit_testable =
+          kHitTestableElements.find(element.name()) !=
+          kHitTestableElements.end();
+      EXPECT_EQ(should_be_hit_testable, element.hit_testable())
+          << "element name: " << UiElementNameToString(element.name());
+    }
+  }
 }
 
 TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
