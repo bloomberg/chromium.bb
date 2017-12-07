@@ -12,6 +12,10 @@ struct LocalSurfaceId {
   // With surface synchronization enabled, this is allocated by the parent.
   uint32 parent_id;
 
+  // An identifier allocated by the client for when the client wants to allocate
+  // its own surface.
+  uint32 child_sequence_number;
+
   mojo.common.mojom.UnguessableToken nonce;
 };
 
