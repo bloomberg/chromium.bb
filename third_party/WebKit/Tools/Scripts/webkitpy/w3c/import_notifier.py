@@ -1,0 +1,268 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Sends notifications after automatic imports (WIP).
+
+Automatically file bugs for new failures caused by WPT imports for opted-in
+directories.
+
+Design doc: https://docs.google.com/document/d/1W3V81l94slAC_rPcTKWXgv3YxRxtlSIAxi3yj6NsbBw/edit?usp=sharing
+
+During the implementation phase, we do not open bugs but log everything instead.
+"""
+
+from collections import defaultdict
+import logging
+import re
+
+from webkitpy.common.path_finder import PathFinder
+from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
+from webkitpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
+
+_log = logging.getLogger(__name__)
+
+GITHUB_COMMIT_PREFIX = 'https://github.com/w3c/web-platform-tests/commit/'
+SHORT_GERRIT_PREFIX = 'https://crrev.com/c/'
+
+
+class ImportNotifier(object):
+
+    def __init__(self, host, chromium_git, local_wpt):
+        self.host = host
+        self.git = chromium_git
+        self.local_wpt = local_wpt
+
+        self.default_port = host.port_factory.get()
+        self.finder = PathFinder(host.filesystem)
+        self.owners_extractor = DirectoryOwnersExtractor(host.filesystem)
+        self.new_failures_by_directory = defaultdict(list)
+
+    def main(self, wpt_revision_start, wpt_revision_end, rebaselined_tests, test_expectations, issue, patchset):
+        """Files bug reports for new failures.
+
+        Args:
+            wpt_revision_start: The start of the imported WPT revision range
+                (exclusive), i.e. the last imported revision.
+            wpt_revision_end: The end of the imported WPT revision range
+                (inclusive), i.e. the current imported revision.
+            rebaselined_tests: A list of test names that have been rebaselined.
+            test_expectations: A dictionary mapping names of tests that cannot
+                be rebaselined to a list of new test expectation lines.
+            issue: The issue number of the import CL (a string).
+            patchset: The patchset number of the import CL (a string).
+
+        Note: "test names" are paths of the tests relative to LayoutTests.
+        """
+        gerrit_url = SHORT_GERRIT_PREFIX + issue
+        gerrit_url_with_ps = gerrit_url + '/' + patchset + '/'
+
+        changed_test_baselines = self.find_changed_baselines_of_tests(rebaselined_tests)
+        self.examine_baseline_changes(changed_test_baselines, gerrit_url_with_ps)
+        self.examine_new_test_expectations(test_expectations)
+
+        self.file_new_failures(wpt_revision_start, wpt_revision_end, issue, gerrit_url)
+
+    def find_changed_baselines_of_tests(self, rebaselined_tests):
+        """Finds the corresponding changed baselines of each test.
+
+        Args:
+            rebaselined_tests: A list of test names that have been rebaselined.
+
+        Returns:
+            A dictionary mapping test names to paths of their baselines changed
+            in this import CL (paths relative to the root of Chromium repo).
+        """
+        test_baselines = {}
+        changed_files = self.git.changed_files()
+        for test_name in rebaselined_tests:
+            test_without_ext, _ = self.host.filesystem.splitext(test_name)
+            changed_baselines = []
+            # TODO(robertma): Refactor this into layout_tests.port.base.
+            baseline_name = test_without_ext + '-expected.txt'
+            for changed_file in changed_files:
+                if changed_file.endswith(baseline_name):
+                    changed_baselines.append(changed_file)
+            if changed_baselines:
+                test_baselines[test_name] = changed_baselines
+        return test_baselines
+
+    def examine_baseline_changes(self, changed_test_baselines, gerrit_url_with_ps):
+        """Examines all changed baselines to find new failures.
+
+        Args:
+            changed_test_baselines: A dictionary mapping test names to paths of
+                changed baselines.
+            gerrit_url_with_ps: Gerrit URL of this CL with the patchset number.
+        """
+        for test_name, changed_baselines in changed_test_baselines.iteritems():
+            directory = self._find_owned_directory(test_name)
+            if not directory:
+                _log.warning('Cannot find OWNERS of %s', test_name)
+                continue
+
+            for baseline in changed_baselines:
+                if self.more_failures_in_baseline(baseline):
+                    self.new_failures_by_directory[directory].append(
+                        TestFailure(TestFailure.BASELINE_CHANGE, test_name,
+                                    baseline_path=baseline, gerrit_url_with_ps=gerrit_url_with_ps)
+                    )
+
+    def more_failures_in_baseline(self, baseline):
+        diff = self.git.run(['diff', '-U0', 'origin/master', '--', baseline])
+        delta_failures = 0
+        for line in diff.splitlines():
+            if line.startswith('+FAIL'):
+                delta_failures += 1
+            if line.startswith('-FAIL'):
+                delta_failures -= 1
+        return delta_failures > 0
+
+    def examine_new_test_expectations(self, test_expectations):
+        """Examines new test expectations to find new failures.
+
+        Args:
+            test_expectations: A dictionary mapping names of tests that cannot
+                be rebaselined to a list of new test expectation lines.
+        """
+        for test_name, expectation_lines in test_expectations.iteritems():
+            directory = self._find_owned_directory(test_name)
+            if not directory:
+                _log.warning('Cannot find OWNERS of %s', test_name)
+                continue
+
+            for expectation_line in expectation_lines:
+                self.new_failures_by_directory[directory].append(
+                    TestFailure(TestFailure.NEW_EXPECTATION, test_name,
+                                expectation_line=expectation_line)
+                )
+
+    # TODO(robertma): This method should populate a MonorailIssue (TBD) so that
+    # it can be passed to Monorail API and easily tested.
+    def file_new_failures(self, wpt_revision_start, wpt_revision_end, issue, gerrit_url):
+        """Files bug reports for new failures.
+
+        Args:
+            wpt_revision_start: The start of the imported WPT revision range
+                (exclusive), i.e. the last imported revision.
+            wpt_revision_end: The end of the imported WPT revision range
+                (inclusive), i.e. the current imported revision.
+            issue: The issue number of the import CL (a string).
+            gerrit_url: Gerrit URL of the CL.
+        """
+        imported_commits = self.local_wpt.commits_in_range(wpt_revision_start, wpt_revision_end)
+        for directory, failures in self.new_failures_by_directory.iteritems():
+            title = '[WPT] New failures introduced in {} by import {}'.format(directory, issue)
+            _log.info(title)
+
+            full_directory = self.host.filesystem.join(self.finder.layout_tests_dir(), directory)
+            owners_file = self.host.filesystem.join(full_directory, 'OWNERS')
+            owners = self.owners_extractor.extract_owners(owners_file)
+            _log.info("Owners: %s", ' '.join(owners))
+
+            prologue = ('WPT import {} introduced new failures in {}:\n\n'
+                        'List of new failures:\n'.format(gerrit_url, directory))
+            failure_list = ''
+            for failure in failures:
+                failure_list += str(failure) + '\n'
+
+            epilogue = '\nThis import contains upstream changes from {} to {}:\n'.format(
+                wpt_revision_start, wpt_revision_end
+            )
+            commit_list = self.format_commit_list(imported_commits, full_directory)
+
+            description = prologue + failure_list + epilogue + commit_list
+            _log.info(description)
+
+    def format_commit_list(self, imported_commits, directory):
+        """Formats the list of imported WPT commits.
+
+        Imports affecting the given directory will be highlighted.
+
+        Args:
+            imported_commits: A list of imported WPT commits (SHAs).
+            directory: The directory for which the list is formatted (a path
+                relative to the root of Chromium repo).
+
+        Returns:
+            A multi-line string.
+        """
+        commit_list = ''
+        for commit in imported_commits:
+            line = '{}: {}'.format(self.local_wpt.commit_subject(commit), GITHUB_COMMIT_PREFIX + commit)
+            if self.local_wpt.is_commit_affecting_directory(commit, directory):
+                line += ' [affecting this directory]'
+            commit_list += line + '\n'
+        return commit_list
+
+    def _find_owned_directory(self, test_name):
+        """Finds the lowest directory that contains the test and has OWNERS.
+
+        Args:
+            The name of the test (a path relative to LayoutTests).
+
+        Returns:
+            The path of the found directory relative to LayoutTests.
+        """
+        abs_test_path = self.finder.path_from_layout_tests(test_name)
+        owners_file = self.owners_extractor.find_owners_file(self.host.filesystem.dirname(abs_test_path))
+        if not owners_file:
+            return None
+        owned_directory = self.host.filesystem.dirname(owners_file)
+        short_directory = self.host.filesystem.relpath(owned_directory, self.finder.layout_tests_dir())
+        return short_directory
+
+
+class TestFailure(object):
+    """A simple abstraction of a new test failure for the notifier."""
+
+    # Failure types:
+    BASELINE_CHANGE = 1
+    NEW_EXPECTATION = 2
+
+    def __init__(self, failure_type, test_name, expectation_line='', baseline_path='', gerrit_url_with_ps=''):
+        if failure_type == self.BASELINE_CHANGE:
+            assert baseline_path and gerrit_url_with_ps
+        else:
+            assert failure_type == self.NEW_EXPECTATION
+            assert expectation_line
+
+        self.failure_type = failure_type
+        self.test_name = test_name
+        self.expectation_line = expectation_line
+        self.baseline_path = baseline_path
+        self.gerrit_url_with_ps = gerrit_url_with_ps
+
+    def __str__(self):
+        if self.failure_type == self.BASELINE_CHANGE:
+            return self._format_baseline_change()
+        else:
+            return self._format_new_expectation()
+
+    def __eq__(self, other):
+        return (
+            self.failure_type == other.failure_type and
+            self.test_name == other.test_name and
+            self.expectation_line == other.expectation_line and
+            self.baseline_path == other.baseline_path and
+            self.gerrit_url_with_ps == other.gerrit_url_with_ps
+        )
+
+    def _format_baseline_change(self):
+        assert self.failure_type == self.BASELINE_CHANGE
+        result = ''
+        # TODO(robertma): Is there any better way than using regexp?
+        platform = re.search(r'/platform/([^/]+)/', self.baseline_path)
+        if platform:
+            result += '[ {} ] '.format(platform.group(1).capitalize())
+        result += '{} new failing tests: {}{}'.format(
+            self.test_name, self.gerrit_url_with_ps, self.baseline_path)
+        return result
+
+    def _format_new_expectation(self):
+        assert self.failure_type == self.NEW_EXPECTATION
+        # TODO(robertma): Are there saner ways to remove the link to the umbrella bug?
+        line = self.expectation_line
+        if line.startswith(UMBRELLA_BUG):
+            line = line[len(UMBRELLA_BUG):].lstrip()
+        return line

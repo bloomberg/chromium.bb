@@ -12,15 +12,24 @@ Specifically, this class fetches results from try bots for the current CL, then
 import argparse
 import copy
 import logging
+from collections import defaultdict, namedtuple
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.path_finder import PathFinder
+from webkitpy.common.system.executive import ScriptError
+from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
 MARKER_COMMENT = '# ====== New tests from wpt-importer added here ======'
+UMBRELLA_BUG = 'crbug.com/626703'
+
+# TODO(robertma): Investigate reusing layout_tests.models.test_expectations and
+# alike in this module.
+
+SimpleTestResult = namedtuple('SimpleTestResult', ['expected', 'actual', 'bug'])
 
 
 class WPTExpectationsUpdater(object):
@@ -34,24 +43,33 @@ class WPTExpectationsUpdater(object):
         self.ports_with_all_pass = set()
 
     def run(self, args=None):
-        """Downloads text new baselines and adds test expectations lines."""
         parser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument('-v', '--verbose', action='store_true', help='More verbose logging.')
         args = parser.parse_args(args)
 
         log_level = logging.DEBUG if args.verbose else logging.INFO
-        logging.basicConfig(level=log_level, format='%(message)s')
+        configure_logging(logging_level=log_level, include_time=True)
 
+        self.update_expectations()
+
+        return 0
+
+    def update_expectations(self):
+        """Downloads text new baselines and adds test expectations lines.
+
+        Returns:
+            A pair: A set of tests that are rebaselined, and a dictionary
+            mapping tests that couldn't be rebaselined to lists of expectation
+            lines written to TestExpectations.
+        """
         issue_number = self.get_issue_number()
         if issue_number == 'None':
-            _log.error('No issue on current branch.')
-            return 1
+            raise ScriptError('No issue on current branch.')
 
         build_to_status = self.get_latest_try_jobs()
         _log.debug('Latest try jobs: %r', build_to_status)
         if not build_to_status:
-            _log.error('No try job information was collected.')
-            return 1
+            raise ScriptError('No try job information was collected.')
 
         # The manifest may be used below to do check which tests are reference tests.
         WPTManifest.ensure_manifest(self.host)
@@ -71,10 +89,17 @@ class WPTExpectationsUpdater(object):
             # platform_result is a dict mapping platforms to results.
             test_expectations[test_name] = self.merge_same_valued_keys(platform_result)
 
-        test_expectations = self.download_text_baselines(test_expectations)
-        test_expectation_lines = self.create_line_list(test_expectations)
+        # At this point, test_expectations looks like: {
+        #     'test-with-failing-result': {
+        #         ('port-name1', 'port-name2'): SimpleTestResult,
+        #         'port-name3': SimpleTestResult
+        #     }
+        # }
+
+        rebaselined_tests, test_expectations = self.download_text_baselines(test_expectations)
+        test_expectation_lines = self.create_line_dict(test_expectations)
         self.write_to_test_expectations(test_expectation_lines)
-        return 0
+        return rebaselined_tests, test_expectation_lines
 
     def get_issue_number(self):
         """Returns current CL number. Can be replaced in unit tests."""
@@ -96,12 +121,8 @@ class WPTExpectationsUpdater(object):
 
         Returns:
             A dictionary with the structure: {
-                test-with-failing-result: {
-                    'full-port-name': {
-                        'expected': 'TIMEOUT',
-                        'actual': 'CRASH',
-                        'bug': 'crbug.com/11111'
-                    }
+                'test-with-failing-result': {
+                    'full-port-name': SimpleTestResult
                 }
             }
             If results could be fetched but none are failing,
@@ -116,37 +137,40 @@ class WPTExpectationsUpdater(object):
             _log.warning('No results for build %s', build)
             self.ports_with_no_results.add(self.port_name(build))
             return {}
-        test_results = [result for result in layout_test_results.didnt_run_as_expected_results() if not result.did_pass()]
-        return self.generate_results_dict(self.port_name(build), test_results)
+        failing_test_results = [result for result in layout_test_results.didnt_run_as_expected_results() if not result.did_pass()]
+        return self.generate_results_dict(self.port_name(build), failing_test_results)
 
     @memoized
     def port_name(self, build):
         return self.host.builders.port_name_for_builder_name(build.builder_name)
 
-    def generate_results_dict(self, full_port_name, test_results):
+    def generate_results_dict(self, full_port_name, layout_test_results):
         """Makes a dict with results for one platform.
 
         Args:
             full_port_name: The fully-qualified port name, e.g. "win-win10".
-            test_results: A list of LayoutTestResult objects.
+            layout_test_results: A list of LayoutTestResult objects.
 
         Returns:
-            A dict mapping the full port name to a dict with the results for
-            the given test and platform.
+            A dictionary with the structure: {
+                'test-name': {
+                    'full-port-name': SimpleTestResult
+                }
+            }
         """
         test_dict = {}
-        for result in test_results:
+        for result in layout_test_results:
             test_name = result.test_name()
 
             if not self.port.is_wpt_test(test_name):
                 continue
 
             test_dict[test_name] = {
-                full_port_name: {
-                    'expected': result.expected_results(),
-                    'actual': result.actual_results(),
-                    'bug': 'crbug.com/626703'
-                }
+                full_port_name: SimpleTestResult(
+                    expected=result.expected_results(),
+                    actual=result.actual_results(),
+                    bug=UMBRELLA_BUG
+                )
             }
         return test_dict
 
@@ -220,22 +244,15 @@ class WPTExpectationsUpdater(object):
             matching_value_keys = set()
         return merged_dict
 
-    def get_expectations(self, results, test_name=''):
-        """Returns a set of test expectations to use based on results.
+    def get_expectations(self, result, test_name=''):
+        """Returns a set of test expectations based on the result of a test.
 
         Returns a set of one or more test expectations based on the expected
         and actual results of a given test name. This function is to decide
         expectations for tests that could not be rebaselined.
 
         Args:
-            results: A dictionary that maps one test to its results. Example:
-                {
-                    'test_name': {
-                        'expected': 'PASS',
-                        'actual': 'FAIL',
-                        'bug': 'crbug.com/11111'
-                    }
-                }
+            result: A SimpleTestResult.
             test_name: The test name string (optional).
 
         Returns:
@@ -248,52 +265,61 @@ class WPTExpectationsUpdater(object):
         # expectation is correct.
         # We also want to skip any new manual tests that are not automated;
         # see crbug.com/708241 for context.
-        if (results['actual'] == 'MISSING' or
-                '-manual.' in test_name and results['actual'] == 'TIMEOUT'):
+        if (result.actual == 'MISSING' or
+                '-manual.' in test_name and result.actual == 'TIMEOUT'):
             return {'Skip'}
         expectations = set()
         failure_types = ('TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO')
         other_types = ('TIMEOUT', 'CRASH', 'PASS')
-        for actual in results['actual'].split():
+        for actual in result.actual.split():
             if actual in failure_types:
                 expectations.add('Failure')
             if actual in other_types:
                 expectations.add(actual.capitalize())
         return expectations
 
-    def create_line_list(self, merged_results):
+    def create_line_dict(self, merged_results):
         """Creates list of test expectations lines.
 
         Traverses through the given |merged_results| dictionary and parses the
         value to create one test expectations line per key.
 
+        Test expectation lines have the following format:
+            ['BUG_URL [PLATFORM(S)] TEST_NAME [EXPECTATION(S)]']
+
         Args:
             merged_results: A dictionary with the format:
                 {
-                    'test_name': {
-                        'platform': {
-                            'expected: 'PASS',
-                            'actual': 'FAIL',
-                            'bug': 'crbug.com/11111'
-                        }
+                    'test-with-failing-result': {
+                        ('port-name1', 'port-name2'): SimpleTestResult,
+                        'port-name3': SimpleTestResult
                     }
                 }
 
         Returns:
-            A list of test expectations lines with the format:
-            ['BUG_URL [PLATFORM(S)] TEST_NAME [EXPECTATION(S)]']
+            A dictionary from test names to a list of test expectation lines
+            (each SimpleTestResult turns into a line).
         """
-        line_list = []
+        line_dict = defaultdict(list)
         for test_name, port_results in sorted(merged_results.iteritems()):
             if not self.port.is_wpt_test(test_name):
-                _log.warning('Non-WPT test "%s" unexpectedly passed to create_line_list.', test_name)
+                _log.warning('Non-WPT test "%s" unexpectedly passed to create_line_dict.', test_name)
                 continue
-            for port_names, results in sorted(port_results.iteritems()):
-                line_list.append(self._create_line(test_name, port_names, results))
-        return line_list
+            for port_names, result in sorted(port_results.iteritems()):
+                line_dict[test_name].append(self._create_line(test_name, port_names, result))
+        return line_dict
 
-    def _create_line(self, test_name, port_names, results):
-        """Constructs and returns a test expectation line string."""
+    def _create_line(self, test_name, port_names, result):
+        """Constructs a test expectation line string.
+
+        Args:
+            test_name: The test name string.
+            port_names: A list of full port names that the line should apply to.
+            result: A SimpleTestResult.
+
+        Returns:
+            A string that contains a line of test expectation.
+        """
         port_names = self.tuple_or_value_to_list(port_names)
 
         # The set of ports with no results is assumed to have have no
@@ -307,22 +333,22 @@ class WPTExpectationsUpdater(object):
         # also apply to any ports that we weren't able to get results for.
         port_names.extend(self.ports_with_no_results)
 
-        specifier_part = self.specifier_part(port_names, test_name)
+        specifier_part = self.specifier_part(test_name, port_names)
 
-        line_parts = [results['bug']]
+        line_parts = [result.bug]
         if specifier_part:
             line_parts.append(specifier_part)
         line_parts.append(test_name)
-        line_parts.append('[ %s ]' % ' '.join(self.get_expectations(results, test_name)))
+        line_parts.append('[ %s ]' % ' '.join(self.get_expectations(result, test_name)))
 
         return ' '.join(line_parts)
 
-    def specifier_part(self, port_names, test_name):
+    def specifier_part(self, test_name, port_names):
         """Returns the specifier part for a new test expectations line.
 
         Args:
+            test_name: The test name string.
             port_names: A list of full port names that the line should apply to.
-            test_name: The test name for the expectation line.
 
         Returns:
             The specifier part of the new expectation line, e.g. "[ Mac ]".
@@ -411,7 +437,7 @@ class WPTExpectationsUpdater(object):
                 self.host.builders.platform_specifier_for_builder(builder_name).lower())
         return frozenset(all_platform_specifiers)
 
-    def write_to_test_expectations(self, line_list):
+    def write_to_test_expectations(self, line_dict):
         """Writes the given lines to the TestExpectations file.
 
         The place in the file where the new lines are inserted is after a marker
@@ -419,14 +445,18 @@ class WPTExpectationsUpdater(object):
         including the marker line is appended to the end of the file.
 
         Args:
-            line_list: A list of lines to add to the TestExpectations file.
+            line_dict: A dictionary from test names to a list of test expectation lines.
         """
-        if not line_list:
+        if not line_dict:
             _log.info('No lines to write to TestExpectations.')
             return
+
         _log.info('Lines to write to TestExpectations:')
-        for line in line_list:
-            _log.info('  %s', line)
+        line_list = []
+        for lines in line_dict.itervalues():
+            for line in lines:
+                line_list.append(line)
+                _log.info('  %s', line)
 
         expectations_file_path = self.port.path_to_generic_test_expectations_file()
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
@@ -441,6 +471,7 @@ class WPTExpectationsUpdater(object):
 
         self.host.filesystem.write_text_file(expectations_file_path, file_contents)
 
+    # TODO(robertma): Unit test this method.
     def download_text_baselines(self, test_results):
         """Fetches new baseline files for tests that should be rebaselined.
 
@@ -450,16 +481,18 @@ class WPTExpectationsUpdater(object):
         failure test dictionary and the resulting dictionary is returned.
 
         Args:
-            test_results: A dict mapping test name to platform to test results.
+            test_results: A dictionary of failing test results, mapping test
+                names to lists of platforms to SimpleTestResult.
 
         Returns:
-            An updated test_results dictionary which should only contain
-            test failures for tests that couldn't be rebaselined.
+            A pair: A set of tests that are rebaselined, and a modified copy of
+            the test_results dictionary containing only tests that couldn't be
+            rebaselined.
         """
         tests_to_rebaseline, test_results = self.get_tests_to_rebaseline(test_results)
         if not tests_to_rebaseline:
             _log.info('No tests to rebaseline.')
-            return test_results
+            return tests_to_rebaseline, test_results
         _log.info('Tests to rebaseline:')
         for test in tests_to_rebaseline:
             _log.info('  %s', test)
@@ -473,43 +506,49 @@ class WPTExpectationsUpdater(object):
             '--no-trigger-jobs',
             '--fill-missing',
         ] + tests_to_rebaseline)
-        return test_results
+        return tests_to_rebaseline, test_results
 
     def get_tests_to_rebaseline(self, test_results):
-        """Returns a list of tests to download new baselines for.
+        """Filters failing tests that can be rebaselined.
 
         Creates a list of tests to rebaseline depending on the tests' platform-
         specific results. In general, this will be non-ref tests that failed
         due to a baseline mismatch (rather than crash or timeout).
 
         Args:
-            test_results: A dictionary of failing test results, mapping tests
-                to platforms to result dicts.
+            test_results: A dictionary of failing test results, mapping test
+                names to lists of platforms to SimpleTestResult.
 
         Returns:
             A pair: A set of tests to be rebaselined, and a modified copy of
-            the test results dictionary. The tests to be rebaselined should
+            the test_results dictionary. The tests to be rebaselined should
             include testharness.js tests that failed due to a baseline mismatch.
         """
         new_test_results = copy.deepcopy(test_results)
         tests_to_rebaseline = set()
-        for test_path in test_results:
-            for platform, result in test_results[test_path].iteritems():
-                if self.can_rebaseline(test_path, result):
-                    del new_test_results[test_path][platform]
-                    tests_to_rebaseline.add(test_path)
+        for test_name in test_results:
+            for platforms, result in test_results[test_name].iteritems():
+                if self.can_rebaseline(test_name, result):
+                    del new_test_results[test_name][platforms]
+                    tests_to_rebaseline.add(test_name)
         return sorted(tests_to_rebaseline), new_test_results
 
-    def can_rebaseline(self, test_path, result):
-        if self.is_reference_test(test_path):
+    def can_rebaseline(self, test_name, result):
+        """Checks if a test can be rebaselined.
+
+        Args:
+            test_name: The test name string.
+            result: A SimpleTestResult.
+        """
+        if self.is_reference_test(test_name):
             return False
-        if result['actual'] in ('CRASH', 'TIMEOUT', 'MISSING'):
+        if result.actual in ('CRASH', 'TIMEOUT', 'MISSING'):
             return False
         return True
 
-    def is_reference_test(self, test_path):
-        """Checks whether a given file is a testharness.js test."""
-        return bool(self.port.reference_files(test_path))
+    def is_reference_test(self, test_name):
+        """Checks whether a given test is a reference test."""
+        return bool(self.port.reference_files(test_name))
 
     def _get_try_bots(self):
         return self.host.builders.all_try_builder_names()

@@ -162,6 +162,35 @@ class LocalWPT(object):
         """
         return self.run(['git', 'log', '-1', '--grep', grep_str])
 
+    def commits_in_range(self, revision_start, revision_end):
+        """Finds all commits in the given range.
+
+        Args:
+            revision_start: The start of the revision range (exclusive).
+            revision_end: The end of the revision range (inclusive).
+
+        Return:
+            A list of (SHA, commit subject) pairs ordered reverse-chronologically.
+        """
+        revision_range = revision_start + '..' + revision_end
+        output = self.run(['git', 'rev-list', '--pretty=oneline', revision_range])
+        commits = []
+        for line in output.splitlines():
+            # Split at the first space.
+            commits.append(tuple(line.strip().split(' ', 1)))
+        return commits
+
+    def is_commit_affecting_directory(self, commit, directory):
+        """Checks if a commit affects a directory."""
+        exit_code = self.run(['git', 'diff-tree', '--quiet', '--no-commit-id', commit, '--', directory],
+                             return_exit_code=True)
+        return exit_code == 1
+
+    def commit_subject(self, commit):
+        """Returns the subject of a commit."""
+        output = self.run(['git', 'show', '--format=%s', '-q', commit])
+        return output.strip()
+
     # Note: the regexes in the two following methods use the start-of-line
     # anchor ^ to prevent matching quoted text in commit messages. The end-of-
     # line anchor $ is omitted to accommodate trailing whitespaces and non-

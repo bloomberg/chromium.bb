@@ -43,52 +43,48 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
              ('b@chromium.org',): ['external/wpt/baz/x']}
         )
 
-    def test_find_and_extract_owners_current_dir(self):
+    def test_find_owners_file_current_dir(self):
         self.filesystem.files = {
             ABS_WPT_BASE + '/foo/OWNERS': 'a@chromium.org'
         }
-        self.assertEqual(self.extractor.find_and_extract_owners(REL_WPT_BASE + '/foo'),
-                         (ABS_WPT_BASE + '/foo/OWNERS', ['a@chromium.org']))
+        self.assertEqual(self.extractor.find_owners_file(REL_WPT_BASE + '/foo'), ABS_WPT_BASE + '/foo/OWNERS')
 
-    def test_find_and_extract_owners_ancestor(self):
+    def test_find_owners_file_ancestor(self):
         self.filesystem.files = {
             ABS_WPT_BASE + '/x/OWNERS': 'a@chromium.org',
             ABS_WPT_BASE + '/x/y/z.html': '',
         }
-        self.assertEqual(self.extractor.find_and_extract_owners(REL_WPT_BASE + '/x/y'),
-                         (ABS_WPT_BASE + '/x/OWNERS', ['a@chromium.org']))
+        self.assertEqual(self.extractor.find_owners_file(REL_WPT_BASE + '/x/y'), ABS_WPT_BASE + '/x/OWNERS')
 
-    def test_find_and_extract_owners_not_found(self):
+    def test_find_owners_file_not_found(self):
         self.filesystem.files = {
             ABS_WPT_BASE + '/foo/OWNERS': 'a@chromium.org',
             '/mock-checkout/third_party/WebKit/LayoutTests/external/OWNERS': 'a@chromium.org',
             ABS_WPT_BASE + '/x/y/z.html': '',
         }
-        self.assertEqual(self.extractor.find_and_extract_owners(REL_WPT_BASE + '/x/y'),
-                         (None, None))
+        self.assertEqual(self.extractor.find_owners_file(REL_WPT_BASE + '/x/y'), None)
 
-    def test_find_and_extract_owners_skip_empty(self):
+    def test_find_owners_file_skip_empty(self):
         self.filesystem.files = {
             ABS_WPT_BASE + '/x/OWNERS': 'a@chromium.org',
             ABS_WPT_BASE + '/x/y/OWNERS': '# b@chromium.org',
             ABS_WPT_BASE + '/x/y/z.html': '',
         }
-        self.assertEqual(self.extractor.find_and_extract_owners(REL_WPT_BASE + '/x/y'),
-                         (ABS_WPT_BASE + '/x/OWNERS', ['a@chromium.org']))
+        self.assertEqual(self.extractor.find_owners_file(REL_WPT_BASE + '/x/y'), ABS_WPT_BASE + '/x/OWNERS')
 
-    def test_find_and_extract_owners_absolute_path(self):
-        with self.assertRaises(AssertionError):
-            self.extractor.find_and_extract_owners('/absolute/path')
+    def test_find_owners_file_absolute_path(self):
+        self.filesystem.files = {
+            ABS_WPT_BASE + '/foo/OWNERS': 'a@chromium.org'
+        }
+        self.assertEqual(self.extractor.find_owners_file(ABS_WPT_BASE + '/foo'), ABS_WPT_BASE + '/foo/OWNERS')
 
-    def test_find_and_extract_owners_out_of_tree(self):
+    def test_find_owners_file_out_of_tree(self):
         with self.assertRaises(AssertionError):
-            self.extractor.find_and_extract_owners('third_party/WebKit/LayoutTests/other')
+            self.extractor.find_owners_file('third_party/WebKit/LayoutTests/other')
         self.assertEqual(
-            self.extractor.find_and_extract_owners('third_party/WebKit/LayoutTests'),
-            (None, None))
+            self.extractor.find_owners_file('third_party/WebKit/LayoutTests'), None)
         self.assertEqual(
-            self.extractor.find_and_extract_owners('third_party/WebKit/LayoutTests/FlagExpectations/foo-bar'),
-            (None, None))
+            self.extractor.find_owners_file('third_party/WebKit/LayoutTests/FlagExpectations/foo-bar'), None)
 
     def test_extract_owners(self):
         self.filesystem.files = {
