@@ -56,20 +56,14 @@ class ShellSurface : public SurfaceTreeHost,
                      public ash::wm::WindowStateObserver,
                      public wm::ActivationChangeObserver {
  public:
-  enum class BoundsMode { SHELL, CLIENT, FIXED };
-
-  // The |origin| is in screen coordinates. When bounds are controlled by the
-  // shell or fixed, it determines the initial position of the shell surface.
-  // In that case, the position specified as part of the geometry is relative
-  // to the shell surface.
-  // TODO(reveman|oshima): Remove bounds_mode.
+  // The |origin| is the initial position in screen coordinates. The position
+  // specified as part of the geometry is relative to the shell surface.
   ShellSurface(Surface* surface,
-               BoundsMode bounds_mode,
                const gfx::Point& origin,
                bool activatable,
                bool can_minimize,
                int container);
-  ShellSurface(Surface* surface);
+  explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
 
   // Set the callback to run when the user wants the shell surface to be closed.
@@ -132,12 +126,12 @@ class ShellSurface : public SurfaceTreeHost,
   void SetFullscreen(bool fullscreen);
 
   // Start an interactive move of surface.
-  virtual void Move();
+  void Move();
 
   // Start an interactive resize of surface. |component| is one of the windows
   // HT constants (see ui/base/hit_test.h) and describes in what direction the
   // surface should be resized.
-  virtual void Resize(int component);
+  void Resize(int component);
 
   // Set title for the surface.
   void SetTitle(const base::string16& title);
@@ -147,6 +141,9 @@ class ShellSurface : public SurfaceTreeHost,
 
   // Sets the system modality.
   void SetSystemModal(bool system_modal);
+
+  // Prevents shell surface from being moved.
+  void DisableMovement();
 
   // Sets the application ID for the window. The application ID identifies the
   // general class of applications to which the window belongs.
@@ -278,17 +275,14 @@ class ShellSurface : public SurfaceTreeHost,
   // Asks the client to configure its surface.
   void Configure();
 
-  // Returns the window that has capture during dragging.
-  aura::Window* GetDragWindow();
-
-  // End current drag operation.
-  void EndDrag(bool revert);
-
   // Returns true if surface is currently being resized.
   bool IsResizing() const;
 
   // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
+
+  // Called by UpdateWidgetBounds to set widget bounds.
+  virtual void SetWidgetBounds(const gfx::Rect& bounds);
 
   // Updates the bounds of surface to match the current widget bounds.
   void UpdateSurfaceBounds();
@@ -300,25 +294,15 @@ class ShellSurface : public SurfaceTreeHost,
   // Applies |system_modal_| to |widget_|.
   void UpdateSystemModal();
 
+  // Returns the "visible bounds" for the surface from the user's perspective.
+  gfx::Rect GetVisibleBounds() const;
+
   // In the coordinate system of the parent root window.
   gfx::Point GetMouseLocation() const;
 
-  virtual void InitializeWindowState(ash::wm::WindowState* window_state);
-
-  // Attempt to start a drag operation. The type of drag operation to start is
-  // determined by |component|.
-  virtual void AttemptToStartDrag(int component);
-
-  virtual float GetScale() const;
-
-  // Updates the backdrop state of the shell surface based on the
-  // bounds mode and window state.
-  virtual void UpdateBackdrop();
-
   views::Widget* widget_ = nullptr;
   aura::Window* parent_ = nullptr;
-  // TODO(oshima): Move to xdg private or internal.
-  BoundsMode bounds_mode_ = BoundsMode::SHELL;
+  bool movement_disabled_ = false;
   gfx::Point origin_;
 
   // Container Window Id (see ash/public/cpp/shell_window_ids.h)
@@ -338,12 +322,40 @@ class ShellSurface : public SurfaceTreeHost,
 
   class ScopedAnimationsDisabled;
 
-  // Returns the "visible bounds" for the surface from the user's perspective.
-  gfx::Rect GetVisibleBounds() const;
+  // Called on widget creation to initialize its window state.
+  virtual void InitializeWindowState(ash::wm::WindowState* window_state);
 
-  // Returns the origin for the surface taking visible bounds and current
+  // Updates the backdrop of the shell surface based on the window state.
+  virtual void UpdateBackdrop();
+
+  // Returns the scale of the surface tree relative to the shell surface.
+  virtual float GetScale() const;
+
+  // Returns whether window state transitions should be animated.
+  virtual bool CanAnimateWindowStateTransitions() const;
+
+  // Returns the window that has capture during dragging.
+  virtual aura::Window* GetDragWindow();
+
+  // Creates the resizer for a dragging/resizing operation.
+  virtual std::unique_ptr<ash::WindowResizer> CreateWindowResizer(
+      aura::Window* window,
+      int component);
+
+  // Called on mouse motion during a drag operation.
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+
+  // Attempt to start a drag operation. The type of drag operation to start is
+  // determined by |component|.
+  void AttemptToStartDrag(int component);
+
+  // End current drag operation.
+  void EndDrag(bool revert);
+
+  // Return the origin of the widget/surface taking visible bounds and current
   // resize direction into account.
-  gfx::Point GetSurfaceOrigin() const;
+  virtual gfx::Point GetWidgetOrigin() const;
+  virtual gfx::Point GetSurfaceOrigin() const;
 
   // Set the parent window of this surface.
   void SetParentWindow(aura::Window* parent);

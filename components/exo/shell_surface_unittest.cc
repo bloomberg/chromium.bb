@@ -53,16 +53,13 @@ uint32_t ConfigureFullscreen(uint32_t serial,
   return serial;
 }
 
-class ShellSurfaceBoundsModeTest
+class ShellSurfaceTestWithClientControlledParam
     : public ShellSurfaceTest,
-      public testing::WithParamInterface<ShellSurface::BoundsMode> {
+      public testing::WithParamInterface<bool> {
  public:
-  ShellSurfaceBoundsModeTest() {}
-  ~ShellSurfaceBoundsModeTest() override {}
+  ShellSurfaceTestWithClientControlledParam() = default;
 
-  bool IsClientBoundsMode() const {
-    return GetParam() == ShellSurface::BoundsMode::CLIENT;
-  }
+  bool IsClientControlled() const { return GetParam(); }
 
   bool HasBackdrop() {
     ash::WorkspaceController* wc =
@@ -71,20 +68,18 @@ class ShellSurfaceBoundsModeTest
   }
 
   std::unique_ptr<ShellSurface> CreateDefaultShellSurface(Surface* surface) {
-    if (IsClientBoundsMode())
-      return exo_test_helper()->CreateClientControlledShellSurface(surface);
-    else
-      return Display().CreateShellSurface(surface);
+    return IsClientControlled()
+               ? exo_test_helper()->CreateClientControlledShellSurface(surface)
+               : Display().CreateShellSurface(surface);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceBoundsModeTest);
+  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceTestWithClientControlledParam);
 };
 
 INSTANTIATE_TEST_CASE_P(,
-                        ShellSurfaceBoundsModeTest,
-                        testing::Values(ShellSurface::BoundsMode::CLIENT,
-                                        ShellSurface::BoundsMode::SHELL));
+                        ShellSurfaceTestWithClientControlledParam,
+                        testing::Values(true, false));
 
 TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
   gfx::Size buffer_size(32, 32);
@@ -160,7 +155,7 @@ TEST_F(ShellSurfaceTest, SetParent) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
 }
 
-TEST_P(ShellSurfaceBoundsModeTest, Maximize) {
+TEST_P(ShellSurfaceTestWithClientControlledParam, Maximize) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -172,10 +167,10 @@ TEST_P(ShellSurfaceBoundsModeTest, Maximize) {
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
   shell_surface->Maximize();
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
   surface->Commit();
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
-  if (!IsClientBoundsMode()) {
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
+  if (!IsClientControlled()) {
     EXPECT_EQ(CurrentContext()->bounds().width(),
               shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
   }
@@ -191,7 +186,7 @@ TEST_P(ShellSurfaceBoundsModeTest, Maximize) {
 
   ash::wm::GetWindowState(window)->OnWMEvent(&maximize_event);
   EXPECT_TRUE(shell_surface->GetWidget()->IsMaximized());
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
 }
 
 TEST_F(ShellSurfaceTest, Minimize) {
@@ -217,7 +212,7 @@ TEST_F(ShellSurfaceTest, Minimize) {
   EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
 }
 
-TEST_P(ShellSurfaceBoundsModeTest, Restore) {
+TEST_P(ShellSurfaceTestWithClientControlledParam, Restore) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -230,10 +225,10 @@ TEST_P(ShellSurfaceBoundsModeTest, Restore) {
   EXPECT_FALSE(HasBackdrop());
   // Note: Remove contents to avoid issues with maximize animations in tests.
   shell_surface->Maximize();
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
   shell_surface->Restore();
   EXPECT_FALSE(HasBackdrop());
-  if (!IsClientBoundsMode()) {
+  if (!IsClientControlled()) {
     EXPECT_EQ(buffer_size.ToString(), shell_surface->GetWidget()
                                           ->GetWindowBoundsInScreen()
                                           .size()
@@ -241,7 +236,7 @@ TEST_P(ShellSurfaceBoundsModeTest, Restore) {
   }
 }
 
-TEST_P(ShellSurfaceBoundsModeTest, SetFullscreen) {
+TEST_P(ShellSurfaceTestWithClientControlledParam, SetFullscreen) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -252,8 +247,8 @@ TEST_P(ShellSurfaceBoundsModeTest, SetFullscreen) {
   shell_surface->SetFullscreen(true);
   surface->Attach(buffer.get());
   surface->Commit();
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
-  if (!IsClientBoundsMode()) {
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
+  if (!IsClientControlled()) {
     EXPECT_EQ(CurrentContext()->bounds().ToString(),
               shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
   }
@@ -366,7 +361,8 @@ TEST_F(ShellSurfaceTest, SetMaximumSize) {
   EXPECT_EQ(size, shell_surface->GetMaximumSize());
 }
 
-TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorForcedScaleFactor) {
+TEST_P(ShellSurfaceTestWithClientControlledParam,
+       DefaultDeviceScaleFactorForcedScaleFactor) {
   double scale = 1.5;
   display::Display::SetForceDeviceScaleFactor(scale);
 
@@ -382,7 +378,7 @@ TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorForcedScaleFactor) {
   surface->Attach(buffer.get());
   surface->Commit();
   gfx::Transform transform;
-  if (IsClientBoundsMode())
+  if (IsClientControlled())
     transform.Scale(1.0 / scale, 1.0 / scale);
 
   EXPECT_EQ(
@@ -390,7 +386,8 @@ TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorForcedScaleFactor) {
       shell_surface->host_window()->layer()->GetTargetTransform().ToString());
 }
 
-TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorFromDisplayManager) {
+TEST_P(ShellSurfaceTestWithClientControlledParam,
+       DefaultDeviceScaleFactorFromDisplayManager) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::Display::SetInternalDisplayId(display_id);
   gfx::Size size(1920, 1080);
@@ -429,7 +426,7 @@ TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorFromDisplayManager) {
   surface->Commit();
 
   gfx::Transform transform;
-  if (IsClientBoundsMode())
+  if (IsClientControlled())
     transform.Scale(1.0 / scale, 1.0 / scale);
 
   EXPECT_EQ(
@@ -545,7 +542,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   EXPECT_TRUE(is_resizing);
 }
 
-TEST_P(ShellSurfaceBoundsModeTest, ToggleFullscreen) {
+TEST_P(ShellSurfaceTestWithClientControlledParam, ToggleFullscreen) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -556,15 +553,15 @@ TEST_P(ShellSurfaceBoundsModeTest, ToggleFullscreen) {
   surface->Attach(buffer.get());
   surface->Commit();
   EXPECT_FALSE(HasBackdrop());
-  if (!IsClientBoundsMode()) {
+  if (!IsClientControlled()) {
     EXPECT_EQ(buffer_size.ToString(), shell_surface->GetWidget()
                                           ->GetWindowBoundsInScreen()
                                           .size()
                                           .ToString());
   }
   shell_surface->Maximize();
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
-  if (!IsClientBoundsMode()) {
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
+  if (!IsClientControlled()) {
     EXPECT_EQ(CurrentContext()->bounds().width(),
               shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
   }
@@ -575,18 +572,18 @@ TEST_P(ShellSurfaceBoundsModeTest, ToggleFullscreen) {
   // Enter fullscreen mode.
   ash::wm::GetWindowState(window)->OnWMEvent(&event);
 
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
-  if (!IsClientBoundsMode()) {
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
+  if (!IsClientControlled()) {
     EXPECT_EQ(CurrentContext()->bounds().ToString(),
               shell_surface->GetWidget()->GetWindowBoundsInScreen().ToString());
   }
 
   // Leave fullscreen mode.
   ash::wm::GetWindowState(window)->OnWMEvent(&event);
-  EXPECT_EQ(IsClientBoundsMode(), HasBackdrop());
+  EXPECT_EQ(IsClientControlled(), HasBackdrop());
 
   // Check that shell surface is maximized.
-  if (!IsClientBoundsMode()) {
+  if (!IsClientControlled()) {
     EXPECT_EQ(CurrentContext()->bounds().width(),
               shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
   }

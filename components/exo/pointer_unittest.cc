@@ -200,9 +200,10 @@ TEST_F(PointerTest, OnPointerMotion) {
                         gfx::Vector2d(1, 1));
 
   std::unique_ptr<Surface> child_surface(new Surface);
-  std::unique_ptr<ShellSurface> child_shell_surface(new ShellSurface(
-      child_surface.get(), ShellSurface::BoundsMode::FIXED, gfx::Point(9, 9),
-      true, false, ash::kShellWindowId_DefaultContainer));
+  std::unique_ptr<ShellSurface> child_shell_surface(
+      new ShellSurface(child_surface.get(), gfx::Point(9, 9), true, false,
+                       ash::kShellWindowId_DefaultContainer));
+  child_shell_surface->DisableMovement();
   child_shell_surface->SetParent(shell_surface.get());
   gfx::Size child_buffer_size(15, 15);
   std::unique_ptr<Buffer> child_buffer(
@@ -333,9 +334,10 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
 
   // Create surface for modal window.
   std::unique_ptr<Surface> surface2(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface2(new ShellSurface(
-      surface2.get(), ShellSurface::BoundsMode::FIXED, gfx::Point(), true,
-      false, ash::kShellWindowId_SystemModalContainer));
+  std::unique_ptr<ShellSurface> shell_surface2(
+      new ShellSurface(surface2.get(), gfx::Point(), true, false,
+                       ash::kShellWindowId_SystemModalContainer));
+  shell_surface2->DisableMovement();
   std::unique_ptr<Buffer> buffer2(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());

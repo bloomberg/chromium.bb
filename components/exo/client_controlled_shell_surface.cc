@@ -71,7 +71,6 @@ ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
                                                            bool can_minimize,
                                                            int container)
     : ShellSurface(surface,
-                   BoundsMode::CLIENT,
                    gfx::Point(),
                    true,
                    can_minimize,
@@ -158,28 +157,6 @@ void ClientControlledShellSurface::SetTopInset(int height) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellSurface overrides:
-
-void ClientControlledShellSurface::Move() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::Move");
-
-  if (!widget_)
-    return;
-
-  AttemptToStartDrag(HTCAPTION);
-}
-
-void ClientControlledShellSurface::Resize(int component) {
-  TRACE_EVENT1("exo", "ClientControlledShellSurface::Resize", "component",
-               component);
-  // TODO(oshima): Implement this.
-}
-
-float ClientControlledShellSurface::GetScale() const {
-  return scale_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
 
 void ClientControlledShellSurface::OnSurfaceCommit() {
@@ -219,6 +196,10 @@ void ClientControlledShellSurface::OnWindowBoundsChanged(
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::WidgetDelegate overrides:
+
+bool ClientControlledShellSurface::CanResize() const {
+  return false;
+}
 
 void ClientControlledShellSurface::SaveWindowPlacement(
     const gfx::Rect& bounds,
@@ -295,7 +276,31 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellSurface, private:
+// ShellSurface overrides:
+
+void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
+  if (!resizer_) {
+    ShellSurface::SetWidgetBounds(bounds);
+    return;
+  }
+
+  // TODO(domlaskowski): Synchronize window state transitions with the client,
+  // and abort client-side dragging on transition to fullscreen.
+  // See crbug.com/699746.
+  DLOG_IF(ERROR, widget_->GetWindowBoundsInScreen().size() != bounds.size())
+      << "Window size changed during client-driven drag";
+
+  // Convert from screen to display coordinates.
+  gfx::Point origin = bounds.origin();
+  wm::ConvertPointFromScreen(widget_->GetNativeWindow()->parent(), &origin);
+
+  // Move the window relative to the current display.
+  widget_->GetNativeWindow()->SetBounds(gfx::Rect(origin, bounds.size()));
+  UpdateSurfaceBounds();
+
+  // Render phantom windows when beyond the current display.
+  resizer_->Drag(GetMouseLocation(), 0);
+}
 
 void ClientControlledShellSurface::InitializeWindowState(
     ash::wm::WindowState* window_state) {
@@ -306,17 +311,30 @@ void ClientControlledShellSurface::InitializeWindowState(
   window_state->set_ignore_keyboard_bounds_change(true);
 }
 
-void ClientControlledShellSurface::AttemptToStartDrag(int component) {
-  DCHECK(widget_);
+void ClientControlledShellSurface::UpdateBackdrop() {
+  aura::Window* window = widget_->GetNativeWindow();
+  bool enable_backdrop = widget_->IsFullscreen() || widget_->IsMaximized();
+  if (window->GetProperty(aura::client::kHasBackdrop) != enable_backdrop)
+    window->SetProperty(aura::client::kHasBackdrop, enable_backdrop);
+}
 
-  // Cannot start another drag if one is already taking place.
-  if (resizer_)
-    return;
+float ClientControlledShellSurface::GetScale() const {
+  return scale_;
+}
 
-  aura::Window* window = GetDragWindow();
-  if (!window || window->HasCapture())
-    return;
+bool ClientControlledShellSurface::CanAnimateWindowStateTransitions() const {
+  // TODO(domlaskowski): The configure callback does not yet support window
+  // state changes. See crbug.com/699746.
+  return false;
+}
 
+aura::Window* ClientControlledShellSurface::GetDragWindow() {
+  return root_surface() ? root_surface()->window() : nullptr;
+}
+
+std::unique_ptr<ash::WindowResizer>
+ClientControlledShellSurface::CreateWindowResizer(aura::Window* window,
+                                                  int component) {
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());
   DCHECK(!window_state->drag_details());
@@ -327,29 +345,29 @@ void ClientControlledShellSurface::AttemptToStartDrag(int component) {
   // Chained with a CustomWindowResizer, DragWindowResizer does not handle
   // dragging. It only renders phantom windows and moves the window to the
   // target root window when dragging ends.
-  resizer_.reset(ash::DragWindowResizer::Create(
+  return std::unique_ptr<ash::WindowResizer>(ash::DragWindowResizer::Create(
       new CustomWindowResizer(window_state), window_state));
-
-  WMHelper::GetInstance()->AddPreTargetHandler(this);
-  window->SetCapture();
-
-  // Notify client that resizing state has changed.
-  if (IsResizing())
-    Configure();
 }
 
-void ClientControlledShellSurface::UpdateBackdrop() {
-  aura::Window* window = widget_->GetNativeWindow();
-  // Enable the black backdrop layer behind the window if the window
-  // is in immersive fullscreen, maximized, yet the window can control
-  // the bounds of the window in fullscreen/tablet mode (thus the
-  // background can be visible).
-  bool enable_backdrop =
-      (widget_->IsFullscreen() || widget_->IsMaximized()) &&
-      ash::wm::GetWindowState(window)->allow_set_bounds_direct();
-  if (window->GetProperty(aura::client::kHasBackdrop) != enable_backdrop)
-    window->SetProperty(aura::client::kHasBackdrop, enable_backdrop);
+bool ClientControlledShellSurface::OnMouseDragged(const ui::MouseEvent&) {
+  // TODO(domlaskowski): When VKEY_ESCAPE is pressed during dragging, the client
+  // destroys the window, but should instead revert the drag to be consistent
+  // with ShellSurface::OnKeyEvent. See crbug.com/699746.
+  return false;
 }
+
+gfx::Point ClientControlledShellSurface::GetWidgetOrigin() const {
+  return origin_ - GetSurfaceOrigin().OffsetFromOrigin();
+}
+
+gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
+  DCHECK(resize_component_ == HTCAPTION);
+  gfx::Rect visible_bounds = GetVisibleBounds();
+  return origin_ + origin_offset_ - visible_bounds.OffsetFromOrigin();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ClientControlledShellSurface, private:
 
 void ClientControlledShellSurface::
     EnsureCompositorIsLockedForOrientationChange() {
