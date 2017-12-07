@@ -8,13 +8,13 @@
  */
 suite('CrActionMenu', function() {
   /** @type {?CrActionMenuElement} */
-  var menu = null;
+  let menu = null;
 
   /** @type {?NodeList<HTMLElement>} */
-  var items = null;
+  let items = null;
 
   /** @type {HTMLElement} */
-  var dots = null;
+  let dots = null;
 
   setup(function() {
     PolymerTest.clearBody();
@@ -109,7 +109,7 @@ suite('CrActionMenu', function() {
 
   test('can navigate to dynamically added items', function() {
     // Can modify children after attached() and before showAt().
-    var item = document.createElement('button');
+    const item = document.createElement('button');
     item.classList.add('dropdown-item');
     menu.insertBefore(item, items[0]);
     menu.showAt(dots);
@@ -165,7 +165,7 @@ suite('CrActionMenu', function() {
 
   test('mouse movement focus options', function() {
     function makeMouseoverEvent(node) {
-      var e = new MouseEvent('mouseover', {bubbles: true});
+      const e = new MouseEvent('mouseover', {bubbles: true});
       node.dispatchEvent(e);
     }
 
@@ -196,7 +196,7 @@ suite('CrActionMenu', function() {
   });
 
   test('items automatically given accessibility role', function() {
-    var newItem = document.createElement('button');
+    const newItem = document.createElement('button');
     newItem.classList.add('dropdown-item');
 
     items[1].setAttribute('role', 'checkbox');
@@ -215,7 +215,7 @@ suite('CrActionMenu', function() {
 
   test('positioning', function() {
     // A 40x10 box at (100, 250).
-    var config = {
+    const config = {
       left: 100,
       top: 250,
       width: 40,
@@ -235,8 +235,8 @@ suite('CrActionMenu', function() {
     menu.showAtPosition(Object.assign({}, config, {
       anchorAlignmentX: AnchorAlignment.CENTER,
     }));
-    var menuWidth = menu.offsetWidth;
-    var menuHeight = menu.offsetHeight;
+    const menuWidth = menu.offsetWidth;
+    const menuHeight = menu.offsetHeight;
     assertEquals(`${120 - menuWidth / 2}px`, menu.style.left);
     assertEquals('250px', menu.style.top);
     menu.close();
@@ -304,14 +304,14 @@ suite('CrActionMenu', function() {
   });
 
   suite('offscreen scroll positioning', function() {
-    var bodyHeight = 10000;
-    var bodyWidth = 20000;
-    var containerLeft = 5000;
-    var containerTop = 10000;
-    var containerWidth = 500;
-    var containerHeight = 500;
-    var menuWidth = 100;
-    var menuHeight = 200;
+    const bodyHeight = 10000;
+    const bodyWidth = 20000;
+    const containerLeft = 5000;
+    const containerTop = 10000;
+    const containerWidth = 500;
+    const containerHeight = 500;
+    const menuWidth = 100;
+    const menuHeight = 200;
 
     setup(function() {
       document.body.scrollTop = 0;
@@ -373,7 +373,7 @@ suite('CrActionMenu', function() {
     test('offscreen and out of scroll container viewport', function() {
       document.body.scrollLeft = bodyWidth;
       document.body.scrollTop = bodyHeight;
-      var container = document.querySelector('#container');
+      const container = document.querySelector('#container');
 
       container.scrollLeft = containerLeft;
       container.scrollTop = containerTop;
@@ -387,13 +387,13 @@ suite('CrActionMenu', function() {
     // Show the menu for an already onscreen button. The anchor should be
     // overridden so that no scrolling happens.
     test('onscreen forces anchor change', function() {
-      var rect = dots.getBoundingClientRect();
+      const rect = dots.getBoundingClientRect();
       document.body.scrollLeft = rect.right - document.body.clientWidth + 10;
       document.body.scrollTop = rect.bottom - document.body.clientHeight + 10;
 
       menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
-      var buttonWidth = dots.offsetWidth;
-      var buttonHeight = dots.offsetHeight;
+      const buttonWidth = dots.offsetWidth;
+      const buttonHeight = dots.offsetHeight;
       assertEquals(containerLeft - menuWidth + buttonWidth, menu.offsetLeft);
       assertEquals(containerTop - menuHeight + buttonHeight, menu.offsetTop);
       menu.close();

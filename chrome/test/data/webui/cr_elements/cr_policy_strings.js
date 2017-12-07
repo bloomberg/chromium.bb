@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 /** @fileoverview Sets up strings used by policy indicator elements. */
+// eslint-disable-next-line no-var
 var CrPolicyStrings = CrPolicyStrings || {
   controlledSettingPolicy: 'policy',
   controlledSettingRecommendedMatches: 'matches',

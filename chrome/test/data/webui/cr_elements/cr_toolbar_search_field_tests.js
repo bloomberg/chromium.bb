@@ -7,10 +7,10 @@ cr.define('cr_toolbar_search_field', function() {
   function registerTests() {
     suite('cr-toolbar-search-field', function() {
       /** @type {?CrToolbarSearchFieldElement} */
-      var field = null;
+      let field = null;
 
       /** @type {?Array<string>} */
-      var searches = null;
+      let searches = null;
 
       /** @param {string} term */
       function simulateSearch(term) {
@@ -38,8 +38,8 @@ cr.define('cr_toolbar_search_field', function() {
       // Test that no initial 'search-changed' event is fired during
       // construction and initialization of the cr-toolbar-search-field element.
       test('no initial search-changed event', function() {
-        var didFire = false;
-        var onSearchChanged = function () { didFire = true; };
+        let didFire = false;
+        const onSearchChanged = function () { didFire = true; };
 
         // Need to attach listener event before the element is created, to catch
         // the unnecessary initial event.
@@ -76,7 +76,7 @@ cr.define('cr_toolbar_search_field', function() {
         Polymer.dom.flush();
         assertTrue(field.hasSearchText);
 
-        var clearSearch = field.$$('#clearSearch');
+        const clearSearch = field.$$('#clearSearch');
         clearSearch.focus();
         MockInteractions.tap(clearSearch);
         assertTrue(field.showingSearch);
@@ -124,7 +124,7 @@ cr.define('cr_toolbar_search_field', function() {
       // Tests that calling setValue() from within a 'search-changed' callback
       // does not result in an infinite loop.
       test('no infinite loop', function() {
-        var counter = 0;
+        let counter = 0;
         field.addEventListener('search-changed', function(event) {
           counter++;
           // Calling setValue() with the already existing value should not
@@ -155,7 +155,7 @@ cr.define('cr_toolbar_search_field', function() {
         assertTrue(field.hasSearchText);
         Polymer.dom.flush();
 
-        var clearSearch = field.$$('#clearSearch');
+        const clearSearch = field.$$('#clearSearch');
         assertFalse(clearSearch.hidden);
         assertTrue(field.showingSearch);
       });

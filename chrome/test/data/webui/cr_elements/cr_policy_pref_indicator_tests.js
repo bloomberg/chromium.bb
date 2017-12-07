@@ -5,10 +5,10 @@
 /** @fileoverview Suite of tests for cr_policy-pref-indicator. */
 suite('CrPolicyPrefIndicator', function() {
   /** @type {!CrPolicyPrefIndicatorElement|undefined} */
-  var indicator;
+  let indicator;
 
   /** @type {!CrTooltipIconElement|undefined} */
-  var icon;
+  let icon;
 
   setup(function() {
     PolymerTest.clearBody();

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 suite('cr-scrollable-behavior', function() {
-  /** @type {CrScrollableListElement} */ var testElement;
-  /** @type {HTMLDivElement} */ var container;
-  /** @type {IronListElement} */ var ironList;
+  /** @type {CrScrollableListElement} */ let testElement;
+  /** @type {HTMLDivElement} */ let container;
+  /** @type {IronListElement} */ let ironList;
 
   suiteSetup(function() {
     document.body.innerHTML = `
@@ -82,7 +82,7 @@ suite('cr-scrollable-behavior', function() {
     scrollToIndex(2);
     assertTrue(container.classList.contains('can-scroll'));
     assertTrue(container.classList.contains('is-scrolled'));
-    var scrollTop = container.scrollTop;
+    const scrollTop = container.scrollTop;
     testElement.saveScroll(ironList);
     testElement.items = ['apple', 'bannana', 'cactus', 'cucumber', 'doughnut'];
     testElement.restoreScroll(ironList);

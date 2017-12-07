@@ -5,10 +5,10 @@
 /** @fileoverview Suite of tests for cr_policy-network-indicator. */
 suite('cr-policy-network-indicator', function() {
   /** @type {!CrPolicyNetworkIndicatorElement|undefined} */
-  var indicator;
+  let indicator;
 
   /** @type {!CrTooltipIconElement|undefined} */
-  var icon;
+  let icon;
 
   // Prevent 'Cannot read property of undefined' errors in cr_onc_types.js.
   chrome.networkingPrivate = {};

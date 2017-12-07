@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('cr-toast', function() {
-  var toast;
+  let toast;
 
   setup(function() {
     PolymerTest.clearBody();
