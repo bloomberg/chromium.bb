@@ -394,8 +394,8 @@ video::-internal-media-controls-overflow-menu-list-item {
 }
 
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
-  margin-left: -22px;
-  margin-right: 2px;
+  margin-left: -9px;
+  margin-right: 6px;
 }
 
 audio::-internal-media-controls-text-track-list-header:hover,
