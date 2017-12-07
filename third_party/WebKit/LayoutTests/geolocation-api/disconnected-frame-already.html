@@ -33,7 +33,7 @@ function onSecondIframeLoaded() {
     }, function(e) {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
-    });
+    }, { maximumAge: 1000 });
     setTimeout(finishTest, 1000);
 }
 

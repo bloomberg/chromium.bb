@@ -48,7 +48,7 @@
               console.log(serializeGeolocationError(error));
           }
 
-          navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
+          navigator.geolocation.getCurrentPosition(testSuccess, testFailed, { maximumAge: Infinity, timeout: 1000 });
       }
 
       function overridenTimestampGeolocation()
@@ -66,7 +66,7 @@
               console.log(serializeGeolocationError(error));
           }
 
-          navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
+          navigator.geolocation.getCurrentPosition(testSuccess, testFailed, { maximumAge: Infinity, timeout: 1000 });
       }
   `);
 

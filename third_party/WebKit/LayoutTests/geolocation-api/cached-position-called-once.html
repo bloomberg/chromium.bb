@@ -56,7 +56,7 @@ navigator.geolocation.getCurrentPosition(function(position) {
     getPosition(200);
 }, function(error) {
     testFailed('Error callback invoked unexpectedly');
-});
+}, { maximumAge: 1000 });
 
 window.jsTestIsAsync = true;
 </script>

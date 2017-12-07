@@ -39,7 +39,7 @@ navigator.geolocation.watchPosition(function(p) {
     // yield to allow a chance for the success callback to be invoked.
     mock.setGeolocationPosition(55.478, -0.166, 100);
     window.setTimeout(finishJSTest, 0);
-});
+}, { maximumAge: 1000 });
 
 window.jsTestIsAsync = true;
 </script>

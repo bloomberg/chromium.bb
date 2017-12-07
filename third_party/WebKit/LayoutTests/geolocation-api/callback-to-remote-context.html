@@ -15,7 +15,7 @@ function onIframeReady() {
     }, function() {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
-    });
+    }, { maximumAge: 1000 });
 }
 
 var iframe = document.createElement('iframe');

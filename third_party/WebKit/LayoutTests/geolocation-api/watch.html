@@ -69,7 +69,7 @@ navigator.geolocation.watchPosition(function(p) {
             testFailed('Error callback invoked unexpectedly');
             finishJSTest();
     }
-});
+}, { maximumAge: 1000 });
 
 window.jsTestIsAsync = true;
 </script>

@@ -26,7 +26,7 @@ function onIframeLoaded() {
         shouldBe('error.message', '"User denied Geolocation"');
         debug('');
         iframe.src = 'data:text/html,This frame should be visible when the test completes';
-    });
+    }, { maximumAge: 1000 });
 }
 
 function onIframeUnloaded() {
@@ -37,7 +37,7 @@ function onIframeUnloaded() {
     }, function(e) {
         testFailed('Error callback invoked unexpectedly');
         finishJSTest();
-    });
+    }, { maximumAge: 1000 });
     setTimeout(function() {
         testPassed('No callbacks invoked');
         finishJSTest();

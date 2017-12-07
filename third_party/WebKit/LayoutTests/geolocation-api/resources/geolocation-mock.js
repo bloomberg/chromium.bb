@@ -103,6 +103,11 @@ class GeolocationMock {
     this.geoposition_.valid = true;
   }
 
+  setGeolocationPositionAndTime(latitude, longitude, accuracy, time) {
+    this.setGeolocationPosition(latitude, longitude, accuracy);
+    this.geoposition_.timestamp = time / 1000;
+  }
+
   /**
    * Sets the error message to return to the next queryNextPosition() call. If
    * any queryNextPosition() requests are outstanding, they will all receive
