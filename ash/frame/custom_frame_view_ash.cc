@@ -506,17 +506,19 @@ void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {
 }
 
 void CustomFrameViewAsh::OnOverviewModeStarting() {
+  in_overview_mode_ = true;
   SetShouldPaintHeader(false);
 }
 
 void CustomFrameViewAsh::OnOverviewModeEnded() {
+  in_overview_mode_ = false;
   SetShouldPaintHeader(true);
 }
 
 void CustomFrameViewAsh::OnSplitViewStateChanged(
     SplitViewController::State /* previous_state */,
     SplitViewController::State state) {
-  if (Shell::Get()->window_selector_controller()->IsSelecting())
+  if (in_overview_mode_)
     MaybePaintHeaderForSplitview(state);
 }
 

@@ -155,6 +155,13 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
   static bool use_empty_minimum_size_for_test_;
 
+  // Track whether the device is in overview mode. Set this to true when
+  // overview mode started and false when overview mode finished. Use this to
+  // check whether we should paint when splitview state changes instead of
+  // Shell::Get()->window_selector_controller()->IsSelecting() because the later
+  // actually may be still be false after overview mode has started.
+  bool in_overview_mode_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);
 };
 
