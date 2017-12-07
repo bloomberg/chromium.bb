@@ -115,13 +115,6 @@ UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 # TODO(jbudorick): Remove once unused.
 DEVICE_LOCAL_PROPERTIES_PATH = '/data/local.prop'
 
-# Configure ubsan to print stack traces in the format understood by "stack" so
-# that they will be symbolized, and disable signal handlers because they
-# interfere with the breakpad and sandbox tests.
-UBSAN_OPTIONS = (
-    'print_stacktrace=1 stack_trace_format=\'#%n pc %o %m\' '
-    'handle_segv=0 handle_sigbus=0 handle_sigfpe=0')
-
 # TODO(jbudorick): Rework this into testing/buildbot/
 PYTHON_UNIT_TEST_SUITES = {
   'pylib_py_unittests': {
