@@ -21,6 +21,7 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -492,7 +493,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   textRectLayout.position.leading += textInset + kTextAreaLeadingOffset;
   textRectLayout.size.width -= textInset - kTextAreaLeadingOffset;
 
-  if (IsIPadIdiom()) {
+  if (IsIPadIdiom() && !base::FeatureList::IsEnabled(kCleanToolbar)) {
     if (!IsCompactTablet()) {
       // Adjust the width so that the text doesn't overlap with the bookmark and
       // voice search buttons which are displayed inside the omnibox.
@@ -930,7 +931,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   if ([self rightView]) {
     CGSize rightViewSize = self.rightView.bounds.size;
     CGFloat leadingOffset = 0;
-    if (IsIPadIdiom() && !IsCompactTablet()) {
+    if (IsIPadIdiom() && !IsCompactTablet() &&
+        !base::FeatureList::IsEnabled(kCleanToolbar)) {
       leadingOffset = bounds.size.width - kVoiceSearchButtonWidth -
                       rightViewSize.width - kClearButtonRightMarginIpad;
     } else {
