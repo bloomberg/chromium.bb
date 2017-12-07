@@ -111,10 +111,11 @@ class DevToolsAgent::IOSession : public mojom::DevToolsSession {
  public:
   IOSession(int session_id,
             base::SequencedTaskRunner* session_task_runner,
+            scoped_refptr<base::SingleThreadTaskRunner> agent_task_runner,
             base::WeakPtr<DevToolsAgent> agent,
             mojom::DevToolsSessionRequest request)
       : session_id_(session_id),
-        agent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        agent_task_runner_(agent_task_runner),
         agent_(std::move(agent)),
         binding_(this) {
     session_task_runner->PostTask(
@@ -226,8 +227,9 @@ void DevToolsAgent::AttachDevToolsSession(
   io_sessions_.emplace(
       session_id,
       std::unique_ptr<IOSession, base::OnTaskRunnerDeleter>(
-          new IOSession(session_id, io_task_runner, weak_factory_.GetWeakPtr(),
-                        std::move(io_session)),
+          new IOSession(session_id, io_task_runner,
+                        frame_->GetTaskRunner(blink::TaskType::kUnthrottled),
+                        weak_factory_.GetWeakPtr(), std::move(io_session)),
           base::OnTaskRunnerDeleter(io_task_runner)));
 
   hosts_[session_id].Bind(std::move(host));
