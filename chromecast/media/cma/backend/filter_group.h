@@ -110,10 +110,8 @@ class FilterGroup {
   // Sets the active channel.
   void UpdatePlayoutChannel(int playout_channel);
 
-  // Get loudest content type
-  AudioContentType loudest_content_type() const {
-    return loudest_content_type_;
-  }
+  // Get content type
+  AudioContentType content_type() const { return content_type_; }
 
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
@@ -131,7 +129,7 @@ class FilterGroup {
   int frames_zeroed_;
   float last_volume_;
   int64_t delay_frames_;
-  AudioContentType loudest_content_type_;
+  AudioContentType content_type_;
 
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and
