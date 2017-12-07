@@ -113,10 +113,6 @@ void LoginDisplayHostViews::StartAppLaunch(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::StartDemoAppLaunch() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayHostViews::StartArcKiosk(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }

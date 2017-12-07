@@ -131,7 +131,6 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   void StartAppLaunch(const std::string& app_id,
                       bool diagnostic_mode,
                       bool is_auto_launch) override {}
-  void StartDemoAppLaunch() override {}
   void StartArcKiosk(const AccountId& account_id) override {}
   void StartVoiceInteractionOobe() override {
     is_voice_interaction_oobe_ = true;
