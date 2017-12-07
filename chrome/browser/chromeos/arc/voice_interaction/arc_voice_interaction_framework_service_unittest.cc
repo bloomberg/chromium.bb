@@ -204,7 +204,8 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
   }
 
   void TearDown() override {
-    arc_bridge_service_->voice_interaction_framework()->SetInstance(nullptr);
+    arc_bridge_service_->voice_interaction_framework()->CloseInstance(
+        framework_instance_.get());
     framework_instance_.reset();
     framework_service_.reset();
     arc_bridge_service_.reset();
@@ -298,7 +299,8 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, StartSessionWithoutFlag) {
 
 TEST_F(ArcVoiceInteractionFrameworkServiceTest, StartSessionWithoutInstance) {
   // Reset the framework instance.
-  arc_bridge_service()->voice_interaction_framework()->SetInstance(nullptr);
+  arc_bridge_service()->voice_interaction_framework()->CloseInstance(
+      framework_instance());
 
   framework_service()->StartSessionFromUserInteraction(gfx::Rect());
   // A notification should be sent if the container is not ready yet.
@@ -373,7 +375,8 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
 
   // Clear the framework instance to simulate the container crash.
   // The client should become detached.
-  arc_bridge_service()->voice_interaction_framework()->SetInstance(nullptr);
+  arc_bridge_service()->voice_interaction_framework()->CloseInstance(
+      framework_instance());
   FlushHighlighterControllerMojo();
   EXPECT_FALSE(highlighter_controller()->client_attached());
 

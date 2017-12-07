@@ -129,16 +129,28 @@ class ConnectionHolderImpl {
     OnChanged();
   }
 
-  // Sets (or resets if |instance| is nullptr) the instance.
+  // Sets the instance.
   void SetInstance(InstanceType* instance,
                    uint32_t version = InstanceType::version_) {
-    // Note: This can be called with nullptr even if |instance_| is still
-    // nullptr for just in case clean up purpose. No-op in such a case.
-    if (instance == instance_)
-      return;
+    DCHECK(instance);
+    DCHECK(instance_ != instance);
 
     instance_ = instance;
     instance_version_ = version;
+    OnChanged();
+  }
+
+  // Resets the instance if it matches |instance|.
+  void CloseInstance(InstanceType* instance) {
+    DCHECK(instance);
+
+    if (instance != instance_) {
+      DVLOG(1) << "Dropping request to close a stale instance";
+      return;
+    }
+
+    instance_ = nullptr;
+    instance_version_ = 0;
     OnChanged();
   }
 
@@ -298,24 +310,31 @@ class ConnectionHolderImpl<InstanceType, void> {
     NOTREACHED();
   }
 
-  // Sets (or resets if |instance| is nullptr) the instance.
+  // Sets the instance.
   void SetInstance(InstanceType* instance,
                    uint32_t version = InstanceType::version_) {
-    DCHECK(instance == nullptr || instance_ == nullptr);
-
-    // Note: This can be called with nullptr even if |instance_| is still
-    // nullptr for just in case clean up purpose. No-op in such a case.
-    if (instance == instance_)
-      return;
+    DCHECK(instance);
+    DCHECK(instance_ != instance);
 
     instance_ = instance;
     instance_version_ = version;
 
     // There is nothing more than setting in this case. Notify observers.
-    if (instance_)
-      connection_notifier_->NotifyConnectionReady();
-    else
-      connection_notifier_->NotifyConnectionClosed();
+    connection_notifier_->NotifyConnectionReady();
+  }
+
+  // Resets the instance if it matches |instance|.
+  void CloseInstance(InstanceType* instance) {
+    DCHECK(instance);
+
+    if (instance != instance_) {
+      DVLOG(1) << "Dropping request to close a stale instance";
+      return;
+    }
+
+    instance_ = nullptr;
+    instance_version_ = 0;
+    connection_notifier_->NotifyConnectionClosed();
   }
 
  private:
@@ -398,12 +417,19 @@ class ConnectionHolder {
   }
 
   // Sets |instance| with |version|.
-  // This can be called in both case; on ready, and on closed.
-  // Passing nullptr to |instance| means closing.
   void SetInstance(InstanceType* instance,
                    uint32_t version = InstanceType::Version_) {
+    DCHECK(instance);
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     impl_.SetInstance(instance, version);
+  }
+
+  // Closes |instance|, if it matches against the current instance. Otherwise,
+  // it is a no-op.
+  void CloseInstance(InstanceType* instance) {
+    DCHECK(instance);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    impl_.CloseInstance(instance);
   }
 
  private:

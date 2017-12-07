@@ -90,7 +90,8 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    arc_app_list_pref_->app_connection_holder()->SetInstance(nullptr);
+    arc_app_list_pref_->app_connection_holder()->CloseInstance(
+        app_instance_.get());
     app_instance_.reset();
     ArcSessionManager::Get()->Shutdown();
   }

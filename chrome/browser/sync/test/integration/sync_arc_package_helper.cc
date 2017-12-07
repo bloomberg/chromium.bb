@@ -128,7 +128,6 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile) {
   instance_map_[profile] =
       std::make_unique<FakeAppInstance>(arc_app_list_prefs);
   DCHECK(instance_map_[profile].get());
-  arc_app_list_prefs->app_connection_holder()->SetInstance(nullptr);
   arc_app_list_prefs->app_connection_holder()->SetInstance(
       instance_map_[profile].get());
   WaitForInstanceReady(arc_app_list_prefs->app_connection_holder());

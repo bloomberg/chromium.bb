@@ -57,8 +57,8 @@ class ArcFileSystemOperationRunnerTest : public testing::Test {
   }
 
   void TearDown() override {
-    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-        nullptr, 0);
+    arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
+        &file_system_instance_);
     // Explicitly calls Shutdown() to detach from services.
     if (runner_)
       runner_->Shutdown();
@@ -168,8 +168,8 @@ TEST_F(ArcFileSystemOperationRunnerTest, DeferAndDiscard) {
 }
 
 TEST_F(ArcFileSystemOperationRunnerTest, FileInstanceUnavailable) {
-  arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
-      nullptr);
+  arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
+      &file_system_instance_);
 
   int counter = 0;
   CallSetShouldDefer(false);

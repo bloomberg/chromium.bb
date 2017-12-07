@@ -200,12 +200,13 @@ void ArcAppTest::TearDown() {
 }
 
 void ArcAppTest::StopArcInstance() {
-  arc_service_manager_->arc_bridge_service()->app()->SetInstance(nullptr);
+  arc_service_manager_->arc_bridge_service()->app()->CloseInstance(
+      app_instance_.get());
 }
 
 void ArcAppTest::RestartArcInstance() {
   auto* bridge_service = arc_service_manager_->arc_bridge_service();
-  bridge_service->app()->SetInstance(nullptr);
+  bridge_service->app()->CloseInstance(app_instance_.get());
   app_instance_ = base::MakeUnique<arc::FakeAppInstance>(arc_app_list_pref_);
   bridge_service->app()->SetInstance(app_instance_.get());
   WaitForInstanceReady(bridge_service->app());

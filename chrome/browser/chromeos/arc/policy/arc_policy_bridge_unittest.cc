@@ -153,7 +153,7 @@ class ArcPolicyBridgeTest : public testing::Test {
   }
 
   void TearDown() override {
-    bridge_service_->policy()->SetInstance(nullptr, 0);
+    bridge_service_->policy()->CloseInstance(policy_instance_.get());
     policy_instance_.reset();
   }
 

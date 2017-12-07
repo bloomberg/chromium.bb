@@ -74,7 +74,7 @@ class ArcFileSystemBridgeTest : public testing::Test {
 
   void TearDown() override {
     integration_service_factory_scope_.reset();
-    arc_bridge_service_.file_system()->SetInstance(nullptr, 0);
+    arc_bridge_service_.file_system()->CloseInstance(&fake_file_system_);
     arc_file_system_bridge_.reset();
     profile_manager_.reset();
     chromeos::DBusThreadManager::Shutdown();

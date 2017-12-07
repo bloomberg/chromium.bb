@@ -140,7 +140,7 @@ class ArcCertStoreBridgeTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     ASSERT_TRUE(arc_bridge());
-    arc_bridge()->cert_store()->SetInstance(nullptr, 0);
+    arc_bridge()->cert_store()->CloseInstance(instance_.get());
     instance_.reset();
 
     // Since ArcServiceLauncher is (re-)set up with profile() in

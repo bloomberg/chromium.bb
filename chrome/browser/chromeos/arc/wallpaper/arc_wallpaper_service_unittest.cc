@@ -131,8 +131,8 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
   }
 
   void TearDown() override {
-    arc_service_manager_.arc_bridge_service()->wallpaper()->SetInstance(
-        nullptr);
+    arc_service_manager_.arc_bridge_service()->wallpaper()->CloseInstance(
+        wallpaper_instance_.get());
     wallpaper_instance_.reset();
 
     wallpaper_controller_client_.reset();
