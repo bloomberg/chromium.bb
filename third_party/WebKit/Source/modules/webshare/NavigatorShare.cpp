@@ -140,8 +140,8 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
 
     frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
-    service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
-        &NavigatorShare::OnConnectionError, WrapWeakPersistent(this))));
+    service_.set_connection_error_handler(WTF::Bind(
+        &NavigatorShare::OnConnectionError, WrapWeakPersistent(this)));
     DCHECK(service_);
   }
 
@@ -150,11 +150,10 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   clients_.insert(client);
   ScriptPromise promise = resolver->Promise();
 
-  service_->Share(share_data.hasTitle() ? share_data.title() : g_empty_string,
-                  share_data.hasText() ? share_data.text() : g_empty_string,
-                  full_url,
-                  ConvertToBaseCallback(WTF::Bind(&ShareClientImpl::Callback,
-                                                  WrapPersistent(client))));
+  service_->Share(
+      share_data.hasTitle() ? share_data.title() : g_empty_string,
+      share_data.hasText() ? share_data.text() : g_empty_string, full_url,
+      WTF::Bind(&ShareClientImpl::Callback, WrapPersistent(client)));
 
   return promise;
 }

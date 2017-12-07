@@ -78,9 +78,9 @@ void MediaDownloadInProductHelpManager::
   if (!media_in_product_help_.is_bound()) {
     frame->Client()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&media_in_product_help_));
-    media_in_product_help_.set_connection_error_handler(ConvertToBaseCallback(
+    media_in_product_help_.set_connection_error_handler(
         WTF::Bind(&MediaDownloadInProductHelpManager::DismissInProductHelp,
-                  WrapWeakPersistent(this))));
+                  WrapWeakPersistent(this)));
     DCHECK(media_in_product_help_.is_bound());
   }
 

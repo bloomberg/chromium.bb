@@ -97,9 +97,8 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   device_manager_requests_.insert(resolver);
   device_manager_->GetDevices(
-      nullptr,
-      ConvertToBaseCallback(WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
-                                      WrapPersistent(resolver))));
+      nullptr, WTF::Bind(&USB::OnGetDevices, WrapPersistent(this),
+                         WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -125,9 +124,8 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   if (!chooser_service_) {
     GetFrame()->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&chooser_service_));
-    chooser_service_.set_connection_error_handler(
-        ConvertToBaseCallback(WTF::Bind(&USB::OnChooserServiceConnectionError,
-                                        WrapWeakPersistent(this))));
+    chooser_service_.set_connection_error_handler(WTF::Bind(
+        &USB::OnChooserServiceConnectionError, WrapWeakPersistent(this)));
   }
 
   if (!Frame::ConsumeTransientUserActivation(frame)) {
@@ -148,9 +146,8 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   chooser_service_requests_.insert(resolver);
   chooser_service_->GetPermission(
-      std::move(filters), ConvertToBaseCallback(WTF::Bind(
-                              &USB::OnGetPermission, WrapPersistent(this),
-                              WrapPersistent(resolver))));
+      std::move(filters), WTF::Bind(&USB::OnGetPermission, WrapPersistent(this),
+                                    WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -272,8 +269,8 @@ void USB::EnsureDeviceManagerConnection() {
   DCHECK(GetFrame());
   GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&device_manager_));
-  device_manager_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
-      &USB::OnDeviceManagerConnectionError, WrapWeakPersistent(this))));
+  device_manager_.set_connection_error_handler(WTF::Bind(
+      &USB::OnDeviceManagerConnectionError, WrapWeakPersistent(this)));
 
   DCHECK(!client_binding_.is_bound());
 

@@ -69,9 +69,9 @@ ScriptPromise NotificationManager::RequestPermission(
   if (!permission_service_) {
     ConnectToPermissionService(context,
                                mojo::MakeRequest(&permission_service_));
-    permission_service_.set_connection_error_handler(ConvertToBaseCallback(
+    permission_service_.set_connection_error_handler(
         WTF::Bind(&NotificationManager::OnPermissionServiceConnectionError,
-                  WrapWeakPersistent(this))));
+                  WrapWeakPersistent(this)));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -82,10 +82,9 @@ ScriptPromise NotificationManager::RequestPermission(
       CreatePermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
       context->GetSecurityOrigin(),
       Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
-      ConvertToBaseCallback(
-          WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
-                    WrapPersistent(this), WrapPersistent(resolver),
-                    WrapPersistent(deprecated_callback))));
+      WTF::Bind(&NotificationManager::OnPermissionRequestComplete,
+                WrapPersistent(this), WrapPersistent(resolver),
+                WrapPersistent(deprecated_callback)));
 
   return promise;
 }
@@ -115,9 +114,9 @@ NotificationManager::GetNotificationService() {
     if (auto* provider = GetSupplementable()->GetInterfaceProvider()) {
       provider->GetInterface(mojo::MakeRequest(&notification_service_));
 
-      notification_service_.set_connection_error_handler(ConvertToBaseCallback(
+      notification_service_.set_connection_error_handler(
           WTF::Bind(&NotificationManager::OnNotificationServiceConnectionError,
-                    WrapWeakPersistent(this))));
+                    WrapWeakPersistent(this)));
     }
   }
 

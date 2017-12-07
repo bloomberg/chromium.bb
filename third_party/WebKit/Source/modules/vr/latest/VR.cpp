@@ -37,7 +37,7 @@ VR::VR(LocalFrame& frame)
       binding_(this) {
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
   service_.set_connection_error_handler(
-      ConvertToBaseCallback(WTF::Bind(&VR::Dispose, WrapWeakPersistent(this))));
+      WTF::Bind(&VR::Dispose, WrapWeakPersistent(this)));
 
   device::mojom::blink::VRServiceClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
@@ -45,8 +45,7 @@ VR::VR(LocalFrame& frame)
   // Setting the client kicks off a request for the details of any connected
   // VRDevices.
   service_->SetClient(std::move(client),
-                      ConvertToBaseCallback(WTF::Bind(&VR::OnDevicesSynced,
-                                                      WrapPersistent(this))));
+                      WTF::Bind(&VR::OnDevicesSynced, WrapPersistent(this)));
 }
 
 ExecutionContext* VR::GetExecutionContext() const {

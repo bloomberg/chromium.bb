@@ -118,9 +118,8 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* script_state) {
 
   service->RemoteServerConnect(
       device_->id(), std::move(ptr_info),
-      ConvertToBaseCallback(
-          WTF::Bind(&BluetoothRemoteGATTServer::ConnectCallback,
-                    WrapPersistent(this), WrapPersistent(resolver))));
+      WTF::Bind(&BluetoothRemoteGATTServer::ConnectCallback,
+                WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -235,10 +234,9 @@ ScriptPromise BluetoothRemoteGATTServer::GetPrimaryServicesImpl(
       device_->GetBluetooth()->Service();
   service->RemoteServerGetPrimaryServices(
       device_->id(), quantity, services_uuid,
-      ConvertToBaseCallback(
-          WTF::Bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
-                    WrapPersistent(this), services_uuid, quantity,
-                    WrapPersistent(resolver))));
+      WTF::Bind(&BluetoothRemoteGATTServer::GetPrimaryServicesCallback,
+                WrapPersistent(this), services_uuid, quantity,
+                WrapPersistent(resolver)));
   return promise;
 }
 

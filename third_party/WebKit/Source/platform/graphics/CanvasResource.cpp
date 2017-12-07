@@ -122,8 +122,7 @@ void CanvasResource::PrepareTransferableResource(
   scoped_refptr<CanvasResource> this_ref(this);
   auto func = WTF::Bind(&ReleaseFrameResources, provider_,
                         WTF::Passed(std::move(this_ref)));
-  *out_callback = viz::SingleReleaseCallback::Create(
-      ConvertToBaseCallback(std::move(func)));
+  *out_callback = viz::SingleReleaseCallback::Create(std::move(func));
 }
 
 GrContext* CanvasResource::GetGrContext() const {

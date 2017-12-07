@@ -107,7 +107,7 @@ ScriptPromise WebGLGetBufferSubDataAsync::getBufferSubDataAsync(
   auto callback = WTF::Bind(&WebGLGetBufferSubDataAsyncCallback::Resolve,
                             WrapPersistent(callback_object));
   context->GetDrawingBuffer()->ContextProvider()->SignalQuery(
-      query_id, ConvertToBaseCallback(std::move(callback)));
+      query_id, std::move(callback));
 
   return promise;
 }

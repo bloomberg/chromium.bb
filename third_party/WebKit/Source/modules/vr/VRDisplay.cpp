@@ -207,8 +207,8 @@ void VRDisplay::RequestVSync() {
     return;
 
   if (!is_presenting_) {
-    magic_window_provider_->GetPose(ConvertToBaseCallback(
-        WTF::Bind(&VRDisplay::OnMagicWindowPose, WrapWeakPersistent(this))));
+    magic_window_provider_->GetPose(
+        WTF::Bind(&VRDisplay::OnMagicWindowPose, WrapWeakPersistent(this)));
     pending_vsync_ = true;
     pending_vsync_id_ =
         doc->RequestAnimationFrame(new VRDisplayFrameRequestCallback(this));
@@ -238,8 +238,8 @@ void VRDisplay::RequestVSync() {
   // all, there won't be future frames.
 
   pending_vsync_ = true;
-  vr_presentation_provider_->GetVSync(ConvertToBaseCallback(
-      WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this))));
+  vr_presentation_provider_->GetVSync(
+      WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
 
   DVLOG(2) << __FUNCTION__ << " done: pending_vsync_=" << pending_vsync_;
 }
@@ -446,12 +446,10 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     display_->RequestPresent(
         std::move(submit_frame_client),
         mojo::MakeRequest(&vr_presentation_provider_),
-        ConvertToBaseCallback(
-            WTF::Bind(&VRDisplay::OnPresentComplete, WrapPersistent(this))));
+        WTF::Bind(&VRDisplay::OnPresentComplete, WrapPersistent(this)));
     vr_presentation_provider_.set_connection_error_handler(
-        ConvertToBaseCallback(
-            WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
-                      WrapWeakPersistent(this))));
+        WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
+                  WrapWeakPersistent(this)));
     pending_present_request_ = true;
   } else {
     UpdateLayerBounds();

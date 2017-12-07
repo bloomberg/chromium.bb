@@ -71,16 +71,8 @@ namespace WTF {
 //
 // 2. To create a same-thread callback that's called only once
 //
-// Use WTF::Bind(), and receive the returned callback as WTF::Function or
-// WTF::Closure. To convert it to base::OnceCallback, use
-// ConvertToBaseCallback().
-//
-// You should not copy WTF::Function so we can ensure it's called only once.
-// It should be always passed by move.
-//
-// To invoke the callback function, do:
-//
-//     std::move(function).Run(<arguments...>);
+// Use WTF::Bind(), and receive the returned callback as base::OnceCallback
+// or base::OnceClosure. Read //docs/callback.md for how to use them.
 //
 // 3. To create a same-thread callback that may be called multiple times
 //
@@ -324,12 +316,6 @@ template <typename Signature>
 using Function = base::OnceCallback<Signature>;
 
 template <typename Signature>
-base::OnceCallback<Signature> ConvertToBaseCallback(
-    Function<Signature> function) {
-  return function;
-}
-
-template <typename Signature>
 class CrossThreadFunction;
 
 template <typename R, typename... Args>
@@ -460,7 +446,5 @@ using WTF::CrossThreadUnretained;
 using WTF::Function;
 using WTF::CrossThreadFunction;
 using WTF::CrossThreadClosure;
-
-using WTF::ConvertToBaseCallback;
 
 #endif  // WTF_Functional_h

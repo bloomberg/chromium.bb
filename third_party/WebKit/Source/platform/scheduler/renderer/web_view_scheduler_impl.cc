@@ -193,8 +193,7 @@ void WebViewSchedulerImpl::GrantVirtualTimeBudget(
     base::TimeDelta budget,
     WTF::Closure budget_exhausted_callback) {
   renderer_scheduler_->VirtualTimeControlTaskQueue()->PostDelayedTask(
-      FROM_HERE, ConvertToBaseCallback(std::move(budget_exhausted_callback)),
-      budget);
+      FROM_HERE, std::move(budget_exhausted_callback), budget);
 }
 
 void WebViewSchedulerImpl::AddVirtualTimeObserver(

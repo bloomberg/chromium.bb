@@ -53,9 +53,8 @@ void BackgroundFetchBridge::Fetch(const String& developer_id,
       GetSupplementable()->WebRegistration()->RegistrationId(),
       GetSecurityOrigin(), developer_id, std::move(requests),
       mojom::blink::BackgroundFetchOptions::From(options),
-      ConvertToBaseCallback(
-          WTF::Bind(&BackgroundFetchBridge::DidGetRegistration,
-                    WrapPersistent(this), WTF::Passed(std::move(callback)))));
+      WTF::Bind(&BackgroundFetchBridge::DidGetRegistration,
+                WrapPersistent(this), WTF::Passed(std::move(callback))));
 }
 
 void BackgroundFetchBridge::Abort(const String& developer_id,
@@ -63,15 +62,14 @@ void BackgroundFetchBridge::Abort(const String& developer_id,
                                   AbortCallback callback) {
   GetService()->Abort(GetSupplementable()->WebRegistration()->RegistrationId(),
                       GetSecurityOrigin(), developer_id, unique_id,
-                      ConvertToBaseCallback(std::move(callback)));
+                      std::move(callback));
 }
 
 void BackgroundFetchBridge::UpdateUI(const String& developer_id,
                                      const String& unique_id,
                                      const String& title,
                                      UpdateUICallback callback) {
-  GetService()->UpdateUI(unique_id, title,
-                         ConvertToBaseCallback(std::move(callback)));
+  GetService()->UpdateUI(unique_id, title, std::move(callback));
 }
 
 void BackgroundFetchBridge::GetRegistration(const String& developer_id,
@@ -79,9 +77,8 @@ void BackgroundFetchBridge::GetRegistration(const String& developer_id,
   GetService()->GetRegistration(
       GetSupplementable()->WebRegistration()->RegistrationId(),
       GetSecurityOrigin(), developer_id,
-      ConvertToBaseCallback(
-          WTF::Bind(&BackgroundFetchBridge::DidGetRegistration,
-                    WrapPersistent(this), WTF::Passed(std::move(callback)))));
+      WTF::Bind(&BackgroundFetchBridge::DidGetRegistration,
+                WrapPersistent(this), WTF::Passed(std::move(callback))));
 }
 
 void BackgroundFetchBridge::DidGetRegistration(
@@ -102,7 +99,7 @@ void BackgroundFetchBridge::DidGetRegistration(
 void BackgroundFetchBridge::GetDeveloperIds(GetDeveloperIdsCallback callback) {
   GetService()->GetDeveloperIds(
       GetSupplementable()->WebRegistration()->RegistrationId(),
-      GetSecurityOrigin(), ConvertToBaseCallback(std::move(callback)));
+      GetSecurityOrigin(), std::move(callback));
 }
 
 void BackgroundFetchBridge::AddRegistrationObserver(

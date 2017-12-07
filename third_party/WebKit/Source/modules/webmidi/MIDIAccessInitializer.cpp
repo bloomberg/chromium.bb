@@ -46,8 +46,8 @@ ScriptPromise MIDIAccessInitializer::Start() {
       CreateMidiPermissionDescriptor(options_.hasSysex() && options_.sysex()),
       GetExecutionContext()->GetSecurityOrigin(),
       Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
-      ConvertToBaseCallback(WTF::Bind(
-          &MIDIAccessInitializer::OnPermissionsUpdated, WrapPersistent(this))));
+      WTF::Bind(&MIDIAccessInitializer::OnPermissionsUpdated,
+                WrapPersistent(this)));
 
   return promise;
 }

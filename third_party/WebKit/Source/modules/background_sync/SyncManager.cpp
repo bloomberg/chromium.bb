@@ -48,8 +48,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
   GetBackgroundSyncServicePtr()->Register(
       std::move(sync_registration),
       registration_->WebRegistration()->RegistrationId(),
-      ConvertToBaseCallback(
-          WTF::Bind(SyncManager::RegisterCallback, WrapPersistent(resolver))));
+      WTF::Bind(SyncManager::RegisterCallback, WrapPersistent(resolver)));
 
   return promise;
 }
@@ -60,8 +59,8 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
 
   GetBackgroundSyncServicePtr()->GetRegistrations(
       registration_->WebRegistration()->RegistrationId(),
-      ConvertToBaseCallback(WTF::Bind(&SyncManager::GetRegistrationsCallback,
-                                      WrapPersistent(resolver))));
+      WTF::Bind(&SyncManager::GetRegistrationsCallback,
+                WrapPersistent(resolver)));
 
   return promise;
 }

@@ -339,8 +339,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   auto func = WTF::Bind(&DrawingBuffer::MailboxReleasedSoftware,
                         scoped_refptr<DrawingBuffer>(this),
                         WTF::Passed(std::move(bitmap)), size_);
-  *out_release_callback = viz::SingleReleaseCallback::Create(
-      ConvertToBaseCallback(std::move(func)));
+  *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
   if (preserve_drawing_buffer_ == kDiscard) {
     SetBufferClearNeeded(true);
@@ -425,8 +424,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
     auto func =
         WTF::Bind(&DrawingBuffer::MailboxReleasedGpu,
                   scoped_refptr<DrawingBuffer>(this), color_buffer_for_mailbox);
-    *out_release_callback = viz::SingleReleaseCallback::Create(
-        ConvertToBaseCallback(std::move(func)));
+    *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   }
 
   // Point |m_frontColorBuffer| to the buffer that we are now presenting.

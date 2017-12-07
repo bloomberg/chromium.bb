@@ -21,8 +21,8 @@ BatteryDispatcher& BatteryDispatcher::Instance() {
 BatteryDispatcher::BatteryDispatcher() : has_latest_data_(false) {}
 
 void BatteryDispatcher::QueryNextStatus() {
-  monitor_->QueryNextStatus(ConvertToBaseCallback(
-      WTF::Bind(&BatteryDispatcher::OnDidChange, WrapPersistent(this))));
+  monitor_->QueryNextStatus(
+      WTF::Bind(&BatteryDispatcher::OnDidChange, WrapPersistent(this)));
 }
 
 void BatteryDispatcher::OnDidChange(

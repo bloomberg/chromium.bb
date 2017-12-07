@@ -102,9 +102,8 @@ ScriptPromise GamepadHapticActuator::playEffect(
     return promise;
   }
 
-  auto callback = ConvertToBaseCallback(
-      WTF::Bind(&GamepadHapticActuator::OnPlayEffectCompleted,
-                WrapPersistent(this), WrapPersistent(resolver)));
+  auto callback = WTF::Bind(&GamepadHapticActuator::OnPlayEffectCompleted,
+                            WrapPersistent(this), WrapPersistent(resolver));
 
   GamepadDispatcher::Instance().PlayVibrationEffectOnce(
       pad_index_, EffectTypeFromString(type),
@@ -129,9 +128,8 @@ void GamepadHapticActuator::OnPlayEffectCompleted(
 ScriptPromise GamepadHapticActuator::reset(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
-  auto callback = ConvertToBaseCallback(
-      WTF::Bind(&GamepadHapticActuator::OnResetCompleted, WrapPersistent(this),
-                WrapPersistent(resolver)));
+  auto callback = WTF::Bind(&GamepadHapticActuator::OnResetCompleted,
+                            WrapPersistent(this), WrapPersistent(resolver));
 
   GamepadDispatcher::Instance().ResetVibrationActuator(pad_index_,
                                                        std::move(callback));

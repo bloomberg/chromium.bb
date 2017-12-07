@@ -64,8 +64,8 @@ void SensorProxy::Initialize() {
   }
 
   state_ = kInitializing;
-  auto callback = ConvertToBaseCallback(
-      WTF::Bind(&SensorProxy::OnSensorCreated, WrapWeakPersistent(this)));
+  auto callback =
+      WTF::Bind(&SensorProxy::OnSensorCreated, WrapWeakPersistent(this));
   provider_->GetSensorProvider()->GetSensor(type_, std::move(callback));
 }
 
@@ -73,8 +73,7 @@ void SensorProxy::AddConfiguration(SensorConfigurationPtr configuration,
                                    Function<void(bool)> callback) {
   DCHECK(IsInitialized());
   AddActiveFrequency(configuration->frequency);
-  sensor_->AddConfiguration(std::move(configuration),
-                            ConvertToBaseCallback(std::move(callback)));
+  sensor_->AddConfiguration(std::move(configuration), std::move(callback));
 }
 
 void SensorProxy::RemoveConfiguration(SensorConfigurationPtr configuration) {
@@ -209,8 +208,7 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params) {
 
   auto error_callback =
       WTF::Bind(&SensorProxy::HandleSensorError, WrapWeakPersistent(this));
-  sensor_.set_connection_error_handler(
-      ConvertToBaseCallback(std::move(error_callback)));
+  sensor_.set_connection_error_handler(std::move(error_callback));
 
   state_ = kInitialized;
 

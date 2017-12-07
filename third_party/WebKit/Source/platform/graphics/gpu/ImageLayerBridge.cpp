@@ -114,8 +114,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
     auto func =
         WTF::Bind(&ImageLayerBridge::ResourceReleasedGpu,
                   WrapWeakPersistent(this), std::move(image_for_compositor));
-    *out_release_callback = viz::SingleReleaseCallback::Create(
-        ConvertToBaseCallback(std::move(func)));
+    *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   } else {
     std::unique_ptr<viz::SharedBitmap> bitmap =
         CreateOrRecycleBitmap(image_for_compositor->Size());
@@ -144,8 +143,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
     auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
                           WrapWeakPersistent(this), base::Passed(&bitmap),
                           image_for_compositor->Size());
-    *out_release_callback = viz::SingleReleaseCallback::Create(
-        ConvertToBaseCallback(std::move(func)));
+    *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   }
 
   // TODO(junov): Figure out how to get the color space info.
