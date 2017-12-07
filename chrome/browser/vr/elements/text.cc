@@ -145,19 +145,21 @@ std::vector<std::unique_ptr<gfx::RenderText>> TextTexture::LayOutText(
   GetDefaultFontList(pixel_font_height, text_, &fonts);
   gfx::Rect text_bounds(texture_size.width(), 0);
 
+  TextRenderParameters parameters;
+  parameters.color = color_;
+  parameters.text_alignment = alignment_;
+  parameters.wrapping_behavior =
+      multiline_ ? kWrappingBehaviorWrap : kWrappingBehaviorNoWrap;
+  parameters.cursor_enabled = cursor_enabled_;
+  parameters.cursor_position = cursor_position_;
+
   std::vector<std::unique_ptr<gfx::RenderText>> lines =
       // TODO(vollick): if this subsumes all text, then we should probably move
       // this function into this class.
-      PrepareDrawStringRect(
-          text_, fonts, color_, &text_bounds, alignment_,
-          multiline_ ? kWrappingBehaviorWrap : kWrappingBehaviorNoWrap);
+      PrepareDrawStringRect(text_, fonts, &text_bounds, parameters);
 
-  if (cursor_enabled_) {
-    DCHECK(!multiline_);
-    lines.front()->SetCursorEnabled(true);
-    lines.front()->SetCursorPosition(cursor_position_);
+  if (cursor_enabled_)
     cursor_bounds_ = lines.front()->GetUpdatedCursorBounds();
-  }
 
   // Note, there is no padding here whatsoever.
   size_ = gfx::SizeF(text_bounds.size());
