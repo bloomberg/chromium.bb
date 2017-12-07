@@ -13055,7 +13055,7 @@
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"porbeagle\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo360\",\n    \"test_suites\": []\n}",
-            "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"santa\",\n    \"test_suites\": [\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"santa\",\n    \"test_suites\": [\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-perbuild\"\n    ]\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
@@ -13208,7 +13208,7 @@
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"porbeagle\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"robo360\",\n    \"test_suites\": []\n}",
-            "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"santa\",\n    \"test_suites\": [\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"santa\",\n    \"test_suites\": [\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-perbuild\"\n    ]\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
             "{\n    \"lab_board_name\": \"coral\",\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
@@ -46201,7 +46201,8 @@
         "important": true,
         "models": [
             "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"basking\",\n    \"test_suites\": []\n}",
-            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"electro\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}"
+            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"electro\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"reef\",\n    \"test_suites\": []\n}"
         ],
         "vm_tests": [],
         "vm_tests_override": null
@@ -46342,7 +46343,8 @@
         "important": true,
         "models": [
             "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"basking\",\n    \"test_suites\": []\n}",
-            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"electro\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}"
+            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"electro\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\"\n    ]\n}",
+            "{\n    \"lab_board_name\": \"reef\",\n    \"name\": \"reef\",\n    \"test_suites\": []\n}"
         ],
         "paygen": false,
         "push_image": false,
