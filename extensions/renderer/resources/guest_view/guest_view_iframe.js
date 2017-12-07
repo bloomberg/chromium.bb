@@ -127,8 +127,6 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
     GuestViewInternalNatives.DetachGuest(this.internalInstanceId);
   }
 
-  this.handleCallback(callback);
-
   // Reset the state of the destroyed guest;
   this.contentWindow = null;
   this.id = 0;
@@ -137,4 +135,8 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
   if (ResizeEvent.hasListener(this.callOnResize)) {
     ResizeEvent.removeListener(this.callOnResize);
   }
+
+  // Handle callback at end to avoid handling items in the action queue out of
+  // order, since the callback is run synchronously here.
+  this.handleCallback(callback);
 };
