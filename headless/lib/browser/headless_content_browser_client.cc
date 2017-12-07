@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -124,7 +123,7 @@ HeadlessContentBrowserClient::~HeadlessContentBrowserClient() = default;
 content::BrowserMainParts* HeadlessContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams&) {
   std::unique_ptr<HeadlessBrowserMainParts> browser_main_parts =
-      base::MakeUnique<HeadlessBrowserMainParts>(browser_);
+      std::make_unique<HeadlessBrowserMainParts>(browser_);
   browser_->set_browser_main_parts(browser_main_parts.get());
   return browser_main_parts.release();
 }

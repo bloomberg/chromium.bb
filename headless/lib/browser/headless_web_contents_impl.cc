@@ -4,13 +4,13 @@
 
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -243,7 +243,7 @@ std::unique_ptr<HeadlessWebContentsImpl> HeadlessWebContentsImpl::Create(
 
   if (builder->tab_sockets_allowed_) {
     headless_web_contents->headless_tab_socket_ =
-        base::MakeUnique<HeadlessTabSocketImpl>(
+        std::make_unique<HeadlessTabSocketImpl>(
             headless_web_contents->web_contents_.get());
     headless_web_contents->inject_mojo_services_into_isolated_world_ = true;
 
@@ -277,7 +277,7 @@ HeadlessWebContentsImpl::CreateForChildContents(
   child->mojo_services_ = parent->mojo_services_;
   if (parent->headless_tab_socket_) {
     child->headless_tab_socket_ =
-        base::MakeUnique<HeadlessTabSocketImpl>(child_contents);
+        std::make_unique<HeadlessTabSocketImpl>(child_contents);
     child->inject_mojo_services_into_isolated_world_ =
         parent->inject_mojo_services_into_isolated_world_;
   }
@@ -566,7 +566,7 @@ void HeadlessWebContentsImpl::SendNeedsBeginFramesEvent(int session_id) {
                "session_id", session_id, "needs_begin_frames",
                needs_external_begin_frames_);
   DCHECK(agent_host_);
-  auto params = base::MakeUnique<base::DictionaryValue>();
+  auto params = std::make_unique<base::DictionaryValue>();
   params->SetBoolean("needsBeginFrames", needs_external_begin_frames_);
 
   base::DictionaryValue event;
@@ -590,7 +590,7 @@ void HeadlessWebContentsImpl::DidReceiveCompositorFrame() {
     base::DictionaryValue event;
     event.SetString("method",
                     "HeadlessExperimental.mainFrameReadyForScreenshots");
-    event.Set("params", base::MakeUnique<base::DictionaryValue>());
+    event.Set("params", std::make_unique<base::DictionaryValue>());
 
     std::string json_result;
     CHECK(base::JSONWriter::Write(event, &json_result));
@@ -615,7 +615,7 @@ void HeadlessWebContentsImpl::PendingFrameReadbackComplete(
       "headless", "HeadlessWebContentsImpl::PendingFrameReadbackComplete",
       "sequence_number", pending_frame->sequence_number, "response", response);
   if (response == content::READBACK_SUCCESS) {
-    pending_frame->bitmap = base::MakeUnique<SkBitmap>(bitmap);
+    pending_frame->bitmap = std::make_unique<SkBitmap>(bitmap);
   } else {
     LOG(WARNING) << "Readback from surface failed with response " << response;
   }
@@ -643,7 +643,7 @@ void HeadlessWebContentsImpl::BeginFrame(
 
   uint64_t sequence_number = begin_frame_sequence_number_++;
 
-  auto pending_frame = base::MakeUnique<PendingFrame>();
+  auto pending_frame = std::make_unique<PendingFrame>();
   pending_frame->sequence_number = sequence_number;
   pending_frame->callback = frame_finished_callback;
 

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "headless/public/util/error_reporter.h"
 
 namespace headless {
@@ -32,22 +31,22 @@ struct FromValue {
 // partially specialize vector types.
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(int value, T*) {
-  return base::MakeUnique<base::Value>(value);
+  return std::make_unique<base::Value>(value);
 }
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(double value, T*) {
-  return base::MakeUnique<base::Value>(value);
+  return std::make_unique<base::Value>(value);
 }
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(bool value, T*) {
-  return base::MakeUnique<base::Value>(value);
+  return std::make_unique<base::Value>(value);
 }
 
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(const std::string& value, T*) {
-  return base::MakeUnique<base::Value>(value);
+  return std::make_unique<base::Value>(value);
 }
 
 template <typename T>

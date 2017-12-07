@@ -50,9 +50,9 @@ std::unique_ptr<base::DictionaryValue> CreateSuccessResponse(
     int command_id,
     std::unique_ptr<base::Value> result) {
   if (!result)
-    result = base::MakeUnique<base::DictionaryValue>();
+    result = std::make_unique<base::DictionaryValue>();
 
-  auto response = base::MakeUnique<base::DictionaryValue>();
+  auto response = std::make_unique<base::DictionaryValue>();
   response->SetInteger(kIdParam, command_id);
   response->Set(kResultParam, std::move(result));
   return response;
@@ -62,11 +62,11 @@ std::unique_ptr<base::DictionaryValue> CreateErrorResponse(
     int command_id,
     int error_code,
     const std::string& error_message) {
-  auto error_object = base::MakeUnique<base::DictionaryValue>();
+  auto error_object = std::make_unique<base::DictionaryValue>();
   error_object->SetInteger(kErrorCodeParam, error_code);
   error_object->SetString(kErrorMessageParam, error_message);
 
-  auto response = base::MakeUnique<base::DictionaryValue>();
+  auto response = std::make_unique<base::DictionaryValue>();
   response->SetInteger(kIdParam, command_id);
   response->Set(kErrorParam, std::move(error_object));
   return response;
@@ -82,7 +82,7 @@ std::unique_ptr<base::DictionaryValue> CreateInvalidParamResponse(
 
 std::unique_ptr<base::DictionaryValue> CreateBoundsDict(
     const HeadlessWebContentsImpl* web_contents) {
-  auto bounds_object = base::MakeUnique<base::DictionaryValue>();
+  auto bounds_object = std::make_unique<base::DictionaryValue>();
   gfx::Rect bounds = web_contents->web_contents()->GetContainerBounds();
   bounds_object->SetInteger("left", bounds.x());
   bounds_object->SetInteger("top", bounds.y());
@@ -157,7 +157,7 @@ void OnBeginFrameFinished(
     bool has_damage,
     bool main_frame_content_updated,
     std::unique_ptr<SkBitmap> bitmap) {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetBoolean("hasDamage", has_damage);
   result->SetBoolean("mainFrameContentUpdated", main_frame_content_updated);
 
@@ -621,7 +621,7 @@ HeadlessDevToolsManagerDelegate::GetWindowForTarget(
                                "No web contents for the given target id");
   }
 
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetInteger("windowId", web_contents->window_id());
   result->Set("bounds", CreateBoundsDict(web_contents));
   return CreateSuccessResponse(command_id, std::move(result));
@@ -655,7 +655,7 @@ HeadlessDevToolsManagerDelegate::GetWindowBounds(
                                "Browser window not found");
   }
 
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->Set("bounds", CreateBoundsDict(web_contents));
   return CreateSuccessResponse(command_id, std::move(result));
 }

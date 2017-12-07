@@ -4,8 +4,9 @@
 
 #include "headless/public/util/virtual_time_controller.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
@@ -31,7 +32,7 @@ class VirtualTimeControllerTest : public ::testing::Test {
     EXPECT_CALL(*mock_host_, IsAttached()).WillOnce(Return(false));
     EXPECT_CALL(*mock_host_, AttachClient(&client_));
     client_.AttachToHost(mock_host_.get());
-    controller_ = base::MakeUnique<VirtualTimeController>(&client_, 0);
+    controller_ = std::make_unique<VirtualTimeController>(&client_, 0);
   }
 
   ~VirtualTimeControllerTest() override = default;
@@ -78,7 +79,7 @@ class VirtualTimeControllerTest : public ::testing::Test {
 };
 
 TEST_F(VirtualTimeControllerTest, AdvancesTimeWithoutTasks) {
-  controller_ = base::MakeUnique<VirtualTimeController>(&client_, 1000);
+  controller_ = std::make_unique<VirtualTimeController>(&client_, 1000);
 
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(

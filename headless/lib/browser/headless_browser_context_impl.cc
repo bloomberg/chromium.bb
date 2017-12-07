@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -510,9 +509,9 @@ HeadlessBrowserContext* HeadlessBrowserContext::Builder::Build() {
     // context with mojo bindings.
     if (!enable_http_and_https_if_mojo_used_) {
       options_->protocol_handlers_[url::kHttpScheme] =
-          base::MakeUnique<BlackHoleProtocolHandler>();
+          std::make_unique<BlackHoleProtocolHandler>();
       options_->protocol_handlers_[url::kHttpsScheme] =
-          base::MakeUnique<BlackHoleProtocolHandler>();
+          std::make_unique<BlackHoleProtocolHandler>();
     }
   }
 

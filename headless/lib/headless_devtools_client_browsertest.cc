@@ -1128,7 +1128,7 @@ class DevToolsHeaderStrippingTest : public HeadlessAsyncDevTooledBrowserTest,
     const std::string kResponseBody = "<p>HTTP response body</p>";
     ProtocolHandlerMap protocol_handlers;
     protocol_handlers[url::kHttpScheme] =
-        base::MakeUnique<TestProtocolHandler>(kResponseBody);
+        std::make_unique<TestProtocolHandler>(kResponseBody);
     test_handler_ = static_cast<TestProtocolHandler*>(
         protocol_handlers[url::kHttpScheme].get());
     return protocol_handlers;

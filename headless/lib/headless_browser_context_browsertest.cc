@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/render_view_host.h"
@@ -157,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
   const std::string kResponseBody = "<p>HTTP response body</p>";
   ProtocolHandlerMap protocol_handlers;
   protocol_handlers[url::kHttpScheme] =
-      base::MakeUnique<TestProtocolHandler>(kResponseBody);
+      std::make_unique<TestProtocolHandler>(kResponseBody);
 
   // Load a page which doesn't actually exist, but which is fetched by our
   // custom protocol handler.

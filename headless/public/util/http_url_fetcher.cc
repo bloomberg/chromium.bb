@@ -4,6 +4,8 @@
 
 #include "headless/public/util/http_url_fetcher.h"
 
+#include <memory>
+
 #include "headless/public/util/generic_url_request_job.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
@@ -107,7 +109,7 @@ HttpURLFetcher::Delegate::Delegate(
 
   if (!post_data.empty()) {
     request_->set_upload(net::ElementsUploadDataStream::CreateWithReader(
-        base::MakeUnique<net::UploadBytesElementReader>(post_data.data(),
+        std::make_unique<net::UploadBytesElementReader>(post_data.data(),
                                                         post_data.size()),
         0));
   }

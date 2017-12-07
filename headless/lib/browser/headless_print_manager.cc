@@ -4,11 +4,11 @@
 
 #include "headless/lib/browser/headless_print_manager.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -89,7 +89,7 @@ std::unique_ptr<base::DictionaryValue>
 HeadlessPrintManager::PDFContentsToDictionaryValue(const std::string& data) {
   std::string base_64_data;
   base::Base64Encode(data, &base_64_data);
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   result->SetString("data", base_64_data);
   return result;
 }
@@ -198,7 +198,7 @@ HeadlessPrintManager::GetPrintParamsFromSettings(
   print_settings.SetPrinterPrintableArea(settings.paper_size_in_points,
                                          printable_area_device_units, true);
 
-  auto print_params = base::MakeUnique<PrintMsg_PrintPages_Params>();
+  auto print_params = std::make_unique<PrintMsg_PrintPages_Params>();
   printing::RenderParamsFromPrintSettings(print_settings,
                                           &print_params->params);
   print_params->params.document_cookie = printing::PrintSettings::NewCookie();
@@ -306,7 +306,7 @@ void HeadlessPrintManager::OnDidPrintPage(
       return;
     }
     auto shared_buf =
-        base::MakeUnique<base::SharedMemory>(params.metafile_data_handle, true);
+        std::make_unique<base::SharedMemory>(params.metafile_data_handle, true);
     if (!shared_buf->Map(params.data_size)) {
       ReleaseJob(METAFILE_MAP_ERROR);
       return;
