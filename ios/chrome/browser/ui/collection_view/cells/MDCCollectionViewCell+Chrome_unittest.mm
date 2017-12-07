@@ -46,8 +46,7 @@ TEST_F(MDCCollectionViewCellChrome, PreferredHeightCallsConfigureCell) {
   EXPECT_EQ(1, item.configureCount);
 }
 
-// TODO(crbug.com/776593): Enable this test.
-TEST_F(MDCCollectionViewCellChrome, FLAKY_PreferredHeight) {
+TEST_F(MDCCollectionViewCellChrome, PreferredHeight) {
   CollectionViewFooterItem* footerItem =
       [[CollectionViewFooterItem alloc] initWithType:0];
   footerItem.text = @"This is a pretty lengthy sentence.";
