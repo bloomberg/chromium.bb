@@ -984,10 +984,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return [snapshotOverlayProvider_ snapshotOverlaysForTab:self];
 }
 
-- (void)webViewRemoved {
-  [_openInController disable];
-}
-
 - (BOOL)webController:(CRWWebController*)webController
         shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL {
