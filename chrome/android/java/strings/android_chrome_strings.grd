@@ -2660,7 +2660,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         URL copied.
       </message>
       <message name="IDS_CHROME_HOME_SURVEY_PROMPT" desc="Message shown that invites the user to take a survey about Chrome. 'Help' and 'improve' are imperative verbs. 'Take survey' is a tappable link. When tapped, a survey about Chrome opens.">
-        Help improve Chrome. <ph name="BEGIN_LINK">&lt;LINK&gt;</ph>Take survey.<ph name="END_LINK">&lt;/LINK&gt;</ph>
+        Help improve Chrome. <ph name="BEGIN_LINK">&lt;LINK&gt;</ph>Take survey<ph name="END_LINK">&lt;/LINK&gt;</ph>
       </message>
 
       <!-- Accessibility -->
