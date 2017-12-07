@@ -15,7 +15,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/referenced_surface_tracker.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
@@ -34,7 +33,6 @@ class SurfaceManager;
 class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
-      public FrameSinkManagerClient,
       public SurfaceClient,
       public CapturableFrameSink,
       public mojom::CompositorFrameSink {
@@ -45,6 +43,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   static const uint64_t kFrameIndexStart = 2;
 
+  // DEPRECATED(kylechar): It's now possible to use the constructor directly.
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       mojom::CompositorFrameSinkClient* client,
       FrameSinkManagerImpl* frame_sink_manager,
@@ -52,6 +51,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       bool is_root,
       bool needs_sync_tokens);
 
+  CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
+                             FrameSinkManagerImpl* frame_sink_manager,
+                             const FrameSinkId& frame_sink_id,
+                             bool is_root,
+                             bool needs_sync_tokens);
   ~CompositorFrameSinkSupport() override;
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
@@ -71,6 +75,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // Sets callback called on destruction.
   void SetDestructionCallback(base::OnceCallback<void()> callback);
 
+  // This allows the FrameSinkManagerImpl to pass a BeginFrameSource to use.
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source);
+
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
   void RefResources(
@@ -79,9 +86,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void ReturnResources(const std::vector<ReturnedResource>& resources) override;
   void ReceiveFromChild(
       const std::vector<TransferableResource>& resources) override;
-
-  // FrameSinkManagerClient implementation.
-  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
 
   // mojom::CompositorFrameSink implementation.
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -114,13 +118,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
  private:
   friend class FrameSinkManagerTest;
 
-  CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
-                             const FrameSinkId& frame_sink_id,
-                             bool is_root,
-                             bool needs_sync_tokens);
-
-  void Init(FrameSinkManagerImpl* frame_sink_manager);
-
   // Updates surface references using |active_referenced_surfaces| from the most
   // recent CompositorFrame. This will add and remove top-level root references
   // if |is_root_| is true and |local_surface_id| has changed. Modifies surface
@@ -152,8 +149,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   mojom::CompositorFrameSinkClient* const client_;
 
-  FrameSinkManagerImpl* frame_sink_manager_ = nullptr;
-  SurfaceManager* surface_manager_ = nullptr;
+  FrameSinkManagerImpl* const frame_sink_manager_;
+  SurfaceManager* const surface_manager_;
 
   const FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;
