@@ -243,6 +243,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   //
 
   AddFilter(filters, "hint=*");
+  AddFilter(filters, "interesting", Filter::DENY);
 
   //
   // General
@@ -320,6 +321,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAOnclick) {
   RunHtmlTest(FILE_PATH_LITERAL("a-onclick.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAIsInteresting) {
+  RunHtmlTest(FILE_PATH_LITERAL("isInteresting.html"));
+}
 
 #if defined(THREAD_SANITIZER)
 // See (crbug.com/708759).

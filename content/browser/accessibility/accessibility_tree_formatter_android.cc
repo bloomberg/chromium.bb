@@ -24,28 +24,12 @@ namespace content {
 namespace {
 
 const char* const BOOL_ATTRIBUTES[] = {
-  "checkable",
-  "checked",
-  "clickable",
-  "collection",
-  "collection_item",
-  "content_invalid",
-  "disabled",
-  "dismissable",
-  "editable_text",
-  "focusable",
-  "focused",
-  "has_non_empty_value",
-  "heading",
-  "hierarchical",
-  "invisible",
-  "link",
-  "multiline",
-  "password",
-  "range",
-  "scrollable",
-  "selected"
-};
+    "checkable",       "checked",         "clickable", "collection",
+    "collection_item", "content_invalid", "disabled",  "dismissable",
+    "editable_text",   "focusable",       "focused",   "has_non_empty_value",
+    "heading",         "hierarchical",    "invisible", "link",
+    "multiline",       "password",        "range",     "scrollable",
+    "selected",        "interesting"};
 
 const char* const STRING_ATTRIBUTES[] = {
     "name", "hint",
@@ -131,6 +115,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
   dict->SetBoolean("password", android_node->IsPassword());
   dict->SetBoolean("scrollable", android_node->IsScrollable());
   dict->SetBoolean("selected", android_node->IsSelected());
+  dict->SetBoolean("interesting", android_node->IsInterestingOnAndroid());
 
   // String attributes.
   dict->SetString("name", android_node->GetText());
