@@ -35,6 +35,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/cert/symantec_certs.h"
+#include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -120,16 +121,13 @@ void PopulateResourceResponse(
           request->ssl_info().key_exchange_group;
       response->head.signed_certificate_timestamps =
           request->ssl_info().signed_certificate_timestamps;
-      std::string encoded;
-      bool rv = net::X509Certificate::GetDEREncoded(
-          request->ssl_info().cert->os_cert_handle(), &encoded);
-      DCHECK(rv);
-      response->head.certificate.push_back(encoded);
-      for (auto* cert :
-           request->ssl_info().cert->GetIntermediateCertificates()) {
-        rv = net::X509Certificate::GetDEREncoded(cert, &encoded);
-        DCHECK(rv);
-        response->head.certificate.push_back(encoded);
+      response->head.certificate.emplace_back(
+          net::x509_util::CryptoBufferAsStringPiece(
+              request->ssl_info().cert->cert_buffer()));
+      for (const auto& cert :
+           request->ssl_info().cert->intermediate_buffers()) {
+        response->head.certificate.emplace_back(
+            net::x509_util::CryptoBufferAsStringPiece(cert.get()));
       }
     }
   } else {

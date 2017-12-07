@@ -224,11 +224,13 @@ IOSPaymentInstrumentLauncher::SerializeCertificateChain(
   scoped_refptr<net::X509Certificate> cert = item->GetSSL().certificate;
   std::vector<base::StringPiece> cert_chain;
 
-  cert_chain.reserve(1 + cert->GetIntermediateCertificates().size());
+  cert_chain.reserve(1 + cert->intermediate_buffers().size());
   cert_chain.push_back(
-      net::x509_util::CryptoBufferAsStringPiece(cert->os_cert_handle()));
-  for (auto* handle : cert->GetIntermediateCertificates())
-    cert_chain.push_back(net::x509_util::CryptoBufferAsStringPiece(handle));
+      net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
+  for (const auto& handle : cert->intermediate_buffers()) {
+    cert_chain.push_back(
+        net::x509_util::CryptoBufferAsStringPiece(handle.get()));
+  }
 
   std::unique_ptr<base::ListValue> byte_array;
   for (const auto& cert_string : cert_chain) {

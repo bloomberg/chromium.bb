@@ -309,14 +309,8 @@ void GetCandidateEVPolicy(const X509Certificate* cert_input,
                           std::string* ev_policy_oid) {
   ev_policy_oid->clear();
 
-  std::string der_cert;
-  if (!X509Certificate::GetDEREncoded(cert_input->os_cert_handle(),
-                                      &der_cert)) {
-    return;
-  }
-
   scoped_refptr<ParsedCertificate> cert(ParsedCertificate::Create(
-      x509_util::CreateCryptoBuffer(der_cert), {}, nullptr));
+      x509_util::DupCryptoBuffer(cert_input->cert_buffer()), {}, nullptr));
   if (!cert)
     return;
 
@@ -342,27 +336,24 @@ void GetCandidateEVPolicy(const X509Certificate* cert_input,
 bool CheckCertChainEV(const X509Certificate* cert,
                       const std::string& ev_policy_oid_string) {
   der::Input ev_policy_oid(&ev_policy_oid_string);
-  X509Certificate::OSCertHandles os_cert_chain =
-      cert->GetIntermediateCertificates();
+  const std::vector<bssl::UniquePtr<CRYPTO_BUFFER>>& cert_chain =
+      cert->intermediate_buffers();
 
   // Root should have matching policy in EVRootCAMetadata.
-  if (os_cert_chain.empty())
+  if (cert_chain.empty())
     return false;
   SHA256HashValue fingerprint =
-      X509Certificate::CalculateFingerprint256(os_cert_chain.back());
+      X509Certificate::CalculateFingerprint256(cert_chain.back().get());
   EVRootCAMetadata* metadata = EVRootCAMetadata::GetInstance();
   if (!metadata->HasEVPolicyOID(fingerprint, ev_policy_oid))
     return false;
 
   // Intermediates should have Certificate Policies extension with the EV policy
   // or AnyPolicy.
-  for (size_t i = 0; i < os_cert_chain.size() - 1; ++i) {
-    std::string der_cert;
-    if (!X509Certificate::GetDEREncoded(os_cert_chain[i], &der_cert))
-      return false;
+  for (size_t i = 0; i < cert_chain.size() - 1; ++i) {
     scoped_refptr<ParsedCertificate> intermediate_cert(
-        ParsedCertificate::Create(x509_util::CreateCryptoBuffer(der_cert), {},
-                                  nullptr));
+        ParsedCertificate::Create(
+            x509_util::DupCryptoBuffer(cert_chain[i].get()), {}, nullptr));
     if (!intermediate_cert)
       return false;
     if (!HasPolicyOrAnyPolicy(intermediate_cert.get(), ev_policy_oid))

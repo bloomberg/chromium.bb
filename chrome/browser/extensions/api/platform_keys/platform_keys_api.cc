@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 namespace extensions {
 
@@ -273,9 +274,8 @@ void PlatformKeysInternalSelectClientCertificatesFunction::
     }
 
     api_pk::Match result_match;
-    std::string der_encoded_cert;
-    net::X509Certificate::GetDEREncoded(match->os_cert_handle(),
-                                        &der_encoded_cert);
+    base::StringPiece der_encoded_cert =
+        net::x509_util::CryptoBufferAsStringPiece(match->cert_buffer());
     result_match.certificate.assign(der_encoded_cert.begin(),
                                     der_encoded_cert.end());
 

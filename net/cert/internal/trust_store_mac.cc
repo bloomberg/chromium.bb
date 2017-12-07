@@ -347,7 +347,7 @@ base::ScopedCFTypeRef<CFDataRef> TrustStoreMac::GetMacNormalizedIssuer(
       x509_util::CreateSecCertificateFromBytes(cert->der_cert().UnsafeData(),
                                                cert->der_cert().Length()));
   if (!cert_handle) {
-    LOG(ERROR) << "CreateOSCertHandleFromBytes";
+    LOG(ERROR) << "CreateCertBufferFromBytes";
     return name_data;
   }
   {

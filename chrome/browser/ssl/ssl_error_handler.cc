@@ -101,10 +101,9 @@ bool IsSuperfish(const scoped_refptr<net::X509Certificate>& cert) {
       {0xB6, 0xFE, 0x91, 0x51, 0x40, 0x2B, 0xAD, 0x1C, 0x06, 0xD7, 0xE6,
        0x6D, 0xB6, 0x7A, 0x26, 0xAA, 0x73, 0x56, 0xF2, 0xE6, 0xC6, 0x44,
        0xDB, 0xCF, 0x9F, 0x98, 0x96, 0x8F, 0xF6, 0x32, 0xE1, 0xB7}};
-  for (const net::X509Certificate::OSCertHandle& intermediate :
-       cert->GetIntermediateCertificates()) {
+  for (const auto& intermediate : cert->intermediate_buffers()) {
     net::SHA256HashValue hash =
-        net::X509Certificate::CalculateFingerprint256(intermediate);
+        net::X509Certificate::CalculateFingerprint256(intermediate.get());
     if (hash == kSuperfishFingerprint) {
       return true;
     }

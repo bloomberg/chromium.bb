@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(ArcCertStoreBridgeTest, ListCertificatesTest) {
   mojom_cert1->alias = client_cert1_->nickname;
   auto x509_cert = net::x509_util::CreateX509CertificateFromCERTCertificate(
       client_cert1_.get());
-  net::X509Certificate::GetPEMEncoded(x509_cert->os_cert_handle(),
+  net::X509Certificate::GetPEMEncoded(x509_cert->cert_buffer(),
                                       &mojom_cert1->cert);
 
   std::vector<mojom::CertificatePtr> expected_certs;

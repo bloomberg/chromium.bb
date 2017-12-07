@@ -126,6 +126,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_info.h"
@@ -374,13 +375,10 @@ std::string EncodeQuery(const std::string& query) {
 }
 
 // Returns the Sha256 hash of the SPKI of |cert|.
-net::HashValue GetSPKIHash(net::X509Certificate* cert) {
-  std::string der_data;
-  EXPECT_TRUE(
-      net::X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_data));
-  base::StringPiece der_bytes(der_data);
+net::HashValue GetSPKIHash(const CRYPTO_BUFFER* cert) {
   base::StringPiece spki_bytes;
-  EXPECT_TRUE(net::asn1::ExtractSPKIFromDERCert(der_bytes, &spki_bytes));
+  EXPECT_TRUE(net::asn1::ExtractSPKIFromDERCert(
+      net::x509_util::CryptoBufferAsStringPiece(cert), &spki_bytes));
   net::HashValue sha256(net::HASH_VALUE_SHA256);
   crypto::SHA256HashString(spki_bytes, sha256.data(), crypto::kSHA256Length);
   return sha256;
@@ -904,7 +902,7 @@ class SSLUITestIgnoreCertErrors : public SSLUITest {
 };
 
 static std::string MakeCertSPKIFingerprint(net::X509Certificate* cert) {
-  net::HashValue hash = GetSPKIHash(cert);
+  net::HashValue hash = GetSPKIHash(cert->cert_buffer());
   std::string hash_base64;
   base::Base64Encode(
       base::StringPiece(reinterpret_cast<const char*>(hash.data()),
@@ -5303,7 +5301,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
 
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
-      GetSPKIHash(https_server_mismatched_.GetCertificate().get());
+      GetSPKIHash(https_server_mismatched_.GetCertificate()->cert_buffer());
   SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
       kLargeVersionId, std::set<std::string>{server_spki_hash.ToString()}));
   ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
@@ -5344,7 +5342,7 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Enabled_FromProto) {
 
   // Mark the server's cert as a captive portal cert.
   const net::HashValue server_spki_hash =
-      GetSPKIHash(https_server_mismatched_.GetCertificate().get());
+      GetSPKIHash(https_server_mismatched_.GetCertificate()->cert_buffer());
   SSLErrorHandler::SetErrorAssistantProto(MakeCaptivePortalConfig(
       kLargeVersionId, std::set<std::string>{server_spki_hash.ToString()}));
   ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() > 0);
@@ -6230,14 +6228,11 @@ class SuperfishSSLUITest : public CertVerifierBrowserTest {
 
     // Collect the hashes of the leaf and intermediates.
     verify_result.public_key_hashes.push_back(
-        GetSPKIHash(verify_result.verified_cert.get()));
-    for (const net::X509Certificate::OSCertHandle& intermediate :
-         verify_result.verified_cert->GetIntermediateCertificates()) {
-      scoped_refptr<net::X509Certificate> intermediate_x509 =
-          net::X509Certificate::CreateFromHandle(
-              intermediate, net::X509Certificate::OSCertHandles());
+        GetSPKIHash(verify_result.verified_cert->cert_buffer()));
+    for (const auto& intermediate :
+         verify_result.verified_cert->intermediate_buffers()) {
       verify_result.public_key_hashes.push_back(
-          GetSPKIHash(intermediate_x509.get()));
+          GetSPKIHash(intermediate.get()));
     }
 
     mock_cert_verifier()->AddResultForCert(https_server_.GetCertificate().get(),
@@ -6452,15 +6447,11 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
 
     // Collect the hashes of the leaf and intermediates.
     verify_result.public_key_hashes.push_back(
-        GetSPKIHash(verify_result.verified_cert.get()));
-    for (const net::X509Certificate::OSCertHandle& intermediate :
-         verify_result.verified_cert->GetIntermediateCertificates()) {
-      scoped_refptr<net::X509Certificate> intermediate_x509 =
-          net::X509Certificate::CreateFromHandle(
-              intermediate, net::X509Certificate::OSCertHandles());
-      ASSERT_TRUE(intermediate_x509);
+        GetSPKIHash(verify_result.verified_cert->cert_buffer()));
+    for (const auto& intermediate :
+         verify_result.verified_cert->intermediate_buffers()) {
       verify_result.public_key_hashes.push_back(
-          GetSPKIHash(intermediate_x509.get()));
+          GetSPKIHash(intermediate.get()));
     }
 
     mock_cert_verifier()->AddResultForCert(https_server_.GetCertificate().get(),

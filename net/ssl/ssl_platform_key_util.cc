@@ -12,6 +12,7 @@
 #include "crypto/openssl_util.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
@@ -54,11 +55,10 @@ bool GetClientCertInfo(const X509Certificate* certificate,
                        size_t* out_max_length) {
   crypto::OpenSSLErrStackTracer tracker(FROM_HERE);
 
-  std::string der_encoded;
   base::StringPiece spki;
-  if (!X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
-                                      &der_encoded) ||
-      !asn1::ExtractSPKIFromDERCert(der_encoded, &spki)) {
+  if (!asn1::ExtractSPKIFromDERCert(
+          x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
+          &spki)) {
     LOG(ERROR) << "Could not extract SPKI from certificate.";
     return false;
   }

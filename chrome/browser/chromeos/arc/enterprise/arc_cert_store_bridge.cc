@@ -293,7 +293,7 @@ void ArcCertStoreBridge::OnCertificatesListed(
             x509_cert, Profile::FromBrowserContext(context_)->GetPrefs())) {
       mojom::CertificatePtr certificate = mojom::Certificate::New();
       certificate->alias = cert->nickname;
-      net::X509Certificate::GetPEMEncoded(x509_cert->os_cert_handle(),
+      net::X509Certificate::GetPEMEncoded(x509_cert->cert_buffer(),
                                           &certificate->cert);
       permitted_certs.emplace_back(std::move(certificate));
     }

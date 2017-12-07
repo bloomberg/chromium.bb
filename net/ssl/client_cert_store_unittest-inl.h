@@ -152,7 +152,7 @@ TYPED_TEST_P(ClientCertStoreTest, PrintableStringContainingUTF8) {
   X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   scoped_refptr<X509Certificate> cert =
-      X509Certificate::CreateFromHandleUnsafeOptions(cert_handle.get(), {},
+      X509Certificate::CreateFromBufferUnsafeOptions(std::move(cert_handle), {},
                                                      options);
   ASSERT_TRUE(cert);
 

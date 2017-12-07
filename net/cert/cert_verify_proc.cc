@@ -30,6 +30,7 @@
 #include "net/cert/known_roots.h"
 #include "net/cert/ocsp_revocation_status.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "url/url_canon.h"
 
@@ -152,7 +153,7 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
       cert->valid_start() >= kBaselineEffectiveDate &&
       cert->valid_expiry() >= kBaselineKeysizeEffectiveDate;
 
-  X509Certificate::GetPublicKeyInfo(cert->os_cert_handle(), &size_bits, &type);
+  X509Certificate::GetPublicKeyInfo(cert->cert_buffer(), &size_bits, &type);
   if (should_histogram) {
     RecordPublicKeyHistogram(kLeafCert, baseline_keysize_applies, size_bits,
                              type);
@@ -160,10 +161,11 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
   if (IsWeakKey(type, size_bits))
     weak_key = true;
 
-  const X509Certificate::OSCertHandles& intermediates =
-      cert->GetIntermediateCertificates();
+  const std::vector<bssl::UniquePtr<CRYPTO_BUFFER>>& intermediates =
+      cert->intermediate_buffers();
   for (size_t i = 0; i < intermediates.size(); ++i) {
-    X509Certificate::GetPublicKeyInfo(intermediates[i], &size_bits, &type);
+    X509Certificate::GetPublicKeyInfo(intermediates[i].get(), &size_bits,
+                                      &type);
     if (should_histogram) {
       RecordPublicKeyHistogram(
           (i < intermediates.size() - 1) ? kIntermediateCert : kRootCert,
@@ -199,31 +201,24 @@ void BestEffortCheckOCSP(const std::string& raw_response,
     return;
   }
 
-  std::string cert_der;
-  if (!X509Certificate::GetDEREncoded(certificate.os_cert_handle(),
-                                      &cert_der)) {
-    *verify_result = OCSPVerifyResult();
-    return;
-  }
+  base::StringPiece cert_der =
+      x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer());
 
   // Try to get the certificate that signed |certificate|. This will run into
   // problems if the CertVerifyProc implementation doesn't return the ordered
   // certificates. If that happens the OCSP verification may be incorrect.
-  std::string issuer_der;
-  const X509Certificate::OSCertHandles& intermediates =
-      certificate.GetIntermediateCertificates();
-  if (intermediates.empty()) {
-    if (X509Certificate::IsSelfSigned(certificate.os_cert_handle())) {
+  base::StringPiece issuer_der;
+  if (certificate.intermediate_buffers().empty()) {
+    if (X509Certificate::IsSelfSigned(certificate.cert_buffer())) {
       issuer_der = cert_der;
     } else {
       // A valid cert chain wasn't provided.
       *verify_result = OCSPVerifyResult();
       return;
     }
-  } else if (!X509Certificate::GetDEREncoded(intermediates.front(),
-                                             &issuer_der)) {
-    *verify_result = OCSPVerifyResult();
-    return;
+  } else {
+    issuer_der = x509_util::CryptoBufferAsStringPiece(
+        certificate.intermediate_buffers().front().get());
   }
 
   verify_result->revocation_status =
@@ -238,16 +233,13 @@ void BestEffortCheckOCSP(const std::string& raw_response,
 void RecordTLSFeatureExtensionWithPrivateRoot(
     X509Certificate* cert,
     const OCSPVerifyResult& ocsp_result) {
-  std::string cert_der;
-  if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(), &cert_der))
-    return;
-
   // This checks only for the presence of the TLS Feature Extension, but
   // does not check the feature list, and in particular does not verify that
   // its value is 'status_request' or 'status_request2'. In practice the
   // only use of the TLS feature extension is for OCSP stapling, so
   // don't bother to check the value.
-  bool has_extension = asn1::HasTLSFeatureExtension(cert_der);
+  bool has_extension = asn1::HasTLSFeatureExtension(
+      x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
 
   UMA_HISTOGRAM_BOOLEAN("Net.Certificate.TLSFeatureExtensionWithPrivateRoot",
                         has_extension);
@@ -345,16 +337,15 @@ void MapAlgorithmToBool(DigestAlgorithm hash, CertVerifyResult* verify_result) {
 //
 // Returns false if the signature algorithm was unknown or mismatched.
 WARN_UNUSED_RESULT bool InspectSignatureAlgorithmForCert(
-    X509Certificate::OSCertHandle cert,
+    const CRYPTO_BUFFER* cert,
     CertVerifyResult* verify_result) {
-  std::string cert_der;
   base::StringPiece cert_algorithm_sequence;
   base::StringPiece tbs_algorithm_sequence;
 
   // Extract the AlgorithmIdentifier SEQUENCEs
-  if (!X509Certificate::GetDEREncoded(cert, &cert_der) ||
-      !asn1::ExtractSignatureAlgorithmsFromDERCert(
-          cert_der, &cert_algorithm_sequence, &tbs_algorithm_sequence)) {
+  if (!asn1::ExtractSignatureAlgorithmsFromDERCert(
+          x509_util::CryptoBufferAsStringPiece(cert), &cert_algorithm_sequence,
+          &tbs_algorithm_sequence)) {
     return false;
   }
 
@@ -412,8 +403,8 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmForCert(
 // in order to prevent such confusion.
 WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
     CertVerifyResult* verify_result) {
-  const X509Certificate::OSCertHandles& intermediates =
-      verify_result->verified_cert->GetIntermediateCertificates();
+  const std::vector<bssl::UniquePtr<CRYPTO_BUFFER>>& intermediates =
+      verify_result->verified_cert->intermediate_buffers();
 
   // If there are no intermediates, then the leaf is trusted or verification
   // failed.
@@ -424,7 +415,7 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
 
   // Fill in hash algorithms for the leaf certificate.
   if (!InspectSignatureAlgorithmForCert(
-          verify_result->verified_cert->os_cert_handle(), verify_result)) {
+          verify_result->verified_cert->cert_buffer(), verify_result)) {
     return false;
   }
 
@@ -434,7 +425,8 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
   // final one (which is presumably the trust anchor; may be incorrect for
   // partial chains).
   for (size_t i = 0; i + 1 < intermediates.size(); ++i) {
-    if (!InspectSignatureAlgorithmForCert(intermediates[i], verify_result))
+    if (!InspectSignatureAlgorithmForCert(intermediates[i].get(),
+                                          verify_result))
       return false;
   }
 

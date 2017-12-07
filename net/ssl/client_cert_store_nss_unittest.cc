@@ -110,9 +110,9 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     ASSERT_EQ(1u, selected_identities.size());
     scoped_refptr<X509Certificate> selected_cert =
         selected_identities[0]->certificate();
-    EXPECT_TRUE(X509Certificate::IsSameOSCert(client_1->os_cert_handle(),
-                                              selected_cert->os_cert_handle()));
-    ASSERT_EQ(0u, selected_cert->GetIntermediateCertificates().size());
+    EXPECT_TRUE(x509_util::CryptoBufferEqual(client_1->cert_buffer(),
+                                             selected_cert->cert_buffer()));
+    ASSERT_EQ(0u, selected_cert->intermediate_buffers().size());
 
     scoped_refptr<SSLPrivateKey> ssl_private_key;
     base::RunLoop key_loop;
@@ -144,12 +144,12 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     ASSERT_EQ(1u, selected_identities.size());
     scoped_refptr<X509Certificate> selected_cert =
         selected_identities[0]->certificate();
-    EXPECT_TRUE(X509Certificate::IsSameOSCert(client_1->os_cert_handle(),
-                                              selected_cert->os_cert_handle()));
-    ASSERT_EQ(1u, selected_cert->GetIntermediateCertificates().size());
-    EXPECT_TRUE(X509Certificate::IsSameOSCert(
-        client_1_ca->os_cert_handle(),
-        selected_cert->GetIntermediateCertificates()[0]));
+    EXPECT_TRUE(x509_util::CryptoBufferEqual(client_1->cert_buffer(),
+                                             selected_cert->cert_buffer()));
+    ASSERT_EQ(1u, selected_cert->intermediate_buffers().size());
+    EXPECT_TRUE(x509_util::CryptoBufferEqual(
+        client_1_ca->cert_buffer(),
+        selected_cert->intermediate_buffers()[0].get()));
 
     scoped_refptr<SSLPrivateKey> ssl_private_key;
     base::RunLoop key_loop;
@@ -221,7 +221,7 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
   scoped_refptr<X509Certificate> selected_cert =
       selected_identities[0]->certificate();
   EXPECT_TRUE(x509_util::IsSameCertificate(cert.get(), selected_cert.get()));
-  EXPECT_EQ(0u, selected_cert->GetIntermediateCertificates().size());
+  EXPECT_EQ(0u, selected_cert->intermediate_buffers().size());
 
   scoped_refptr<SSLPrivateKey> ssl_private_key;
   base::RunLoop key_loop;

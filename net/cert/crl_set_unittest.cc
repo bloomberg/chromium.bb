@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/cert/crl_set.h"
+
 #include "base/files/file_util.h"
 #include "crypto/sha2.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/crl_set.h"
 #include "net/cert/crl_set_storage.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -335,9 +337,8 @@ TEST(CRLSetTest, BlockedSubjects) {
   scoped_refptr<X509Certificate> root = CreateCertificateChainFromFile(
       GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
-  std::string root_der;
-  ASSERT_TRUE(
-      X509Certificate::GetDEREncoded(root->os_cert_handle(), &root_der));
+  base::StringPiece root_der =
+      net::x509_util::CryptoBufferAsStringPiece(root->cert_buffer());
 
   base::StringPiece spki;
   ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(root_der, &spki));

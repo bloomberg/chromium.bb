@@ -25,6 +25,7 @@
 #include "net/ssl/ssl_platform_key_util.h"
 #include "net/ssl/ssl_platform_key_win.h"
 #include "net/ssl/ssl_private_key.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace net {
 
@@ -273,16 +274,16 @@ bool ClientCertStoreWin::SelectClientCertsForTesting(
     return false;
 
   // Add available certificates to the test store.
-  for (size_t i = 0; i < input_certs.size(); ++i) {
+  for (const auto& input_cert : input_certs) {
     // Add the certificate to the test store.
     PCCERT_CONTEXT cert = NULL;
-    std::string der_cert;
-    X509Certificate::GetDEREncoded(input_certs[i]->os_cert_handle(), &der_cert);
     if (!CertAddEncodedCertificateToStore(
             test_store, X509_ASN_ENCODING,
-            reinterpret_cast<const BYTE*>(der_cert.data()),
-            base::checked_cast<DWORD>(der_cert.size()), CERT_STORE_ADD_NEW,
-            &cert)) {
+            reinterpret_cast<const BYTE*>(
+                CRYPTO_BUFFER_data(input_cert->cert_buffer())),
+            base::checked_cast<DWORD>(
+                CRYPTO_BUFFER_len(input_cert->cert_buffer())),
+            CERT_STORE_ADD_NEW, &cert)) {
       return false;
     }
     // Hold the reference to the certificate (since we requested a copy).

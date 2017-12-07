@@ -317,12 +317,12 @@ bool VerifyFromAndroidTrustManager(
 
 void GetChainDEREncodedBytes(X509Certificate* cert,
                              std::vector<std::string>* chain_bytes) {
-  chain_bytes->reserve(1 + cert->GetIntermediateCertificates().size());
+  chain_bytes->reserve(1 + cert->intermediate_buffers().size());
   chain_bytes->emplace_back(
-      net::x509_util::CryptoBufferAsStringPiece(cert->os_cert_handle()));
-  for (auto* handle : cert->GetIntermediateCertificates()) {
+      net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
+  for (const auto& handle : cert->intermediate_buffers()) {
     chain_bytes->emplace_back(
-        net::x509_util::CryptoBufferAsStringPiece(handle));
+        net::x509_util::CryptoBufferAsStringPiece(handle.get()));
   }
 }
 

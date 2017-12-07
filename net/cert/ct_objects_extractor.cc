@@ -12,6 +12,7 @@
 #include "crypto/sha2.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
@@ -174,15 +175,12 @@ bool ParseSCTListFromExtensions(const CBS& extensions,
 // |*out_single_response| to the body of the SingleResponse starting at the
 // |certStatus| field.
 bool FindMatchingSingleResponse(CBS* responses,
-                                X509Certificate::OSCertHandle issuer,
+                                const CRYPTO_BUFFER* issuer,
                                 const std::string& cert_serial_number,
                                 CBS* out_single_response) {
-  std::string issuer_der;
-  if (!X509Certificate::GetDEREncoded(issuer, &issuer_der))
-    return false;
-
   base::StringPiece issuer_spki;
-  if (!asn1::ExtractSPKIFromDERCert(issuer_der, &issuer_spki))
+  if (!asn1::ExtractSPKIFromDERCert(
+          x509_util::CryptoBufferAsStringPiece(issuer), &issuer_spki))
     return false;
 
   // In OCSP, only the key itself is under hash.
@@ -245,13 +243,9 @@ bool FindMatchingSingleResponse(CBS* responses,
 
 }  // namespace
 
-bool ExtractEmbeddedSCTList(X509Certificate::OSCertHandle cert,
-                            std::string* sct_list) {
-  std::string der;
-  if (!X509Certificate::GetDEREncoded(cert, &der))
-    return false;
+bool ExtractEmbeddedSCTList(const CRYPTO_BUFFER* cert, std::string* sct_list) {
   CBS cert_cbs;
-  CBS_init(&cert_cbs, reinterpret_cast<const uint8_t*>(der.data()), der.size());
+  CBS_init(&cert_cbs, CRYPTO_BUFFER_data(cert), CRYPTO_BUFFER_len(cert));
   CBS cert_body, tbs_cert, extensions_wrap, extensions;
   if (!CBS_get_asn1(&cert_cbs, &cert_body, CBS_ASN1_SEQUENCE) ||
       CBS_len(&cert_cbs) != 0 ||
@@ -269,19 +263,14 @@ bool ExtractEmbeddedSCTList(X509Certificate::OSCertHandle cert,
                                     sizeof(kEmbeddedSCTOid), sct_list);
 }
 
-bool GetPrecertSignedEntry(X509Certificate::OSCertHandle leaf,
-                           X509Certificate::OSCertHandle issuer,
+bool GetPrecertSignedEntry(const CRYPTO_BUFFER* leaf,
+                           const CRYPTO_BUFFER* issuer,
                            SignedEntryData* result) {
   result->Reset();
 
-  std::string leaf_der;
-  if (!X509Certificate::GetDEREncoded(leaf, &leaf_der))
-    return false;
-
   // Parse the TBSCertificate.
   CBS cert_cbs;
-  CBS_init(&cert_cbs, reinterpret_cast<const uint8_t*>(leaf_der.data()),
-           leaf_der.size());
+  CBS_init(&cert_cbs, CRYPTO_BUFFER_data(leaf), CRYPTO_BUFFER_len(leaf));
   CBS cert_body, tbs_cert;
   if (!CBS_get_asn1(&cert_cbs, &cert_body, CBS_ASN1_SEQUENCE) ||
       CBS_len(&cert_cbs) != 0 ||
@@ -336,10 +325,9 @@ bool GetPrecertSignedEntry(X509Certificate::OSCertHandle leaf,
   bssl::UniquePtr<uint8_t> scoped_new_tbs_cert_der(new_tbs_cert_der);
 
   // Extract the issuer's public key.
-  std::string issuer_der;
   base::StringPiece issuer_key;
-  if (!X509Certificate::GetDEREncoded(issuer, &issuer_der) ||
-      !asn1::ExtractSPKIFromDERCert(issuer_der, &issuer_key)) {
+  if (!asn1::ExtractSPKIFromDERCert(
+          x509_util::CryptoBufferAsStringPiece(issuer), &issuer_key)) {
     return false;
   }
 
@@ -353,21 +341,17 @@ bool GetPrecertSignedEntry(X509Certificate::OSCertHandle leaf,
   return true;
 }
 
-bool GetX509SignedEntry(X509Certificate::OSCertHandle leaf,
-                        SignedEntryData* result) {
+bool GetX509SignedEntry(const CRYPTO_BUFFER* leaf, SignedEntryData* result) {
   DCHECK(leaf);
-
-  std::string encoded;
-  if (!X509Certificate::GetDEREncoded(leaf, &encoded))
-    return false;
 
   result->Reset();
   result->type = ct::SignedEntryData::LOG_ENTRY_TYPE_X509;
-  result->leaf_certificate.swap(encoded);
+  result->leaf_certificate =
+      std::string(x509_util::CryptoBufferAsStringPiece(leaf));
   return true;
 }
 
-bool ExtractSCTListFromOCSPResponse(X509Certificate::OSCertHandle issuer,
+bool ExtractSCTListFromOCSPResponse(const CRYPTO_BUFFER* issuer,
                                     const std::string& cert_serial_number,
                                     base::StringPiece ocsp_response,
                                     std::string* sct_list) {

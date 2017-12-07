@@ -93,14 +93,12 @@ void MultiLogCTVerifier::Verify(
   output_scts->clear();
 
   std::string embedded_scts;
-  if (!cert->GetIntermediateCertificates().empty() &&
-      ct::ExtractEmbeddedSCTList(
-          cert->os_cert_handle(),
-          &embedded_scts)) {
+  if (!cert->intermediate_buffers().empty() &&
+      ct::ExtractEmbeddedSCTList(cert->cert_buffer(), &embedded_scts)) {
     ct::SignedEntryData precert_entry;
 
-    if (ct::GetPrecertSignedEntry(cert->os_cert_handle(),
-                                  cert->GetIntermediateCertificates().front(),
+    if (ct::GetPrecertSignedEntry(cert->cert_buffer(),
+                                  cert->intermediate_buffers().front().get(),
                                   &precert_entry)) {
       VerifySCTs(embedded_scts, precert_entry,
                  ct::SignedCertificateTimestamp::SCT_EMBEDDED, cert,
@@ -109,10 +107,9 @@ void MultiLogCTVerifier::Verify(
   }
 
   std::string sct_list_from_ocsp;
-  if (!stapled_ocsp_response.empty() &&
-      !cert->GetIntermediateCertificates().empty()) {
+  if (!stapled_ocsp_response.empty() && !cert->intermediate_buffers().empty()) {
     ct::ExtractSCTListFromOCSPResponse(
-        cert->GetIntermediateCertificates().front(), cert->serial_number(),
+        cert->intermediate_buffers().front().get(), cert->serial_number(),
         stapled_ocsp_response, &sct_list_from_ocsp);
   }
 
@@ -126,7 +123,7 @@ void MultiLogCTVerifier::Verify(
                    net_log_callback);
 
   ct::SignedEntryData x509_entry;
-  if (ct::GetX509SignedEntry(cert->os_cert_handle(), &x509_entry)) {
+  if (ct::GetX509SignedEntry(cert->cert_buffer(), &x509_entry)) {
     VerifySCTs(sct_list_from_ocsp, x509_entry,
                ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE, cert,
                output_scts);

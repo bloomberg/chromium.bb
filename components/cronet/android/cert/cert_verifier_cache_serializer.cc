@@ -15,6 +15,7 @@
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 namespace cronet {
 
@@ -27,40 +28,27 @@ typedef std::map<size_t, std::string> DeserializedCertMap;
 
 // Determine if |cert_handle| was already serialized. If so, simply return a
 // reference to that entry. Otherwise, add a new entry to the set of certs to
-// be serialized (|serialized_certs|). Returns true if |cert_handle| is
-// serialized correctly.
-bool SerializeCertHandle(const net::X509Certificate::OSCertHandle& cert_handle,
-                         SerializedCertMap* serialized_certs,
-                         size_t* cert_number) {
-  std::string encoded;
-  if (!net::X509Certificate::GetDEREncoded(cert_handle, &encoded))
-    return false;
-  auto result =
-      serialized_certs->insert({encoded, serialized_certs->size() + 1});
-  *cert_number = result.first->second;
-  return true;
+// be serialized (|serialized_certs|).
+size_t SerializeCertHandle(const CRYPTO_BUFFER* cert_handle,
+                           SerializedCertMap* serialized_certs) {
+  auto result = serialized_certs->insert(
+      {std::string(net::x509_util::CryptoBufferAsStringPiece(cert_handle)),
+       serialized_certs->size() + 1});
+  return result.first->second;
 }
 
 // Update |certificate| with certificate number and updates |serialized_certs|
 // with DER-encoded representation of certificate if the certicate is not in
 // |serialized_certs|. Returns true if data is serialized correctly.
-bool SerializeCertificate(net::X509Certificate* cert,
+void SerializeCertificate(net::X509Certificate* cert,
                           SerializedCertMap* serialized_certs,
                           cronet_pb::CertVerificationCertificate* certificate) {
-  size_t cert_number = 0;
-  if (!SerializeCertHandle(cert->os_cert_handle(), serialized_certs,
-                           &cert_number)) {
-    return false;
+  certificate->add_cert_numbers(
+      SerializeCertHandle(cert->cert_buffer(), serialized_certs));
+  for (const auto& intermediate : cert->intermediate_buffers()) {
+    certificate->add_cert_numbers(
+        SerializeCertHandle(intermediate.get(), serialized_certs));
   }
-  certificate->add_cert_numbers(cert_number);
-  const net::X509Certificate::X509Certificate::OSCertHandles&
-      intermediate_ca_certs = cert->GetIntermediateCertificates();
-  for (auto* const intermediate : intermediate_ca_certs) {
-    if (!SerializeCertHandle(intermediate, serialized_certs, &cert_number))
-      return false;
-    certificate->add_cert_numbers(cert_number);
-  }
-  return true;
 }
 
 // Deserializes |certificate| using the certificate database provided in
@@ -87,31 +75,27 @@ scoped_refptr<net::X509Certificate> DeserializeCertificate(
 // Serializes |params| into |request_params|, updating |serialized_certs| with
 // the set of raw certificates that will be needed to deserialize the
 // certificate in |request_params| via DeserializeCertificate().
-bool SerializeRequestParams(
+void SerializeRequestParams(
     const net::CertVerifier::RequestParams& params,
     SerializedCertMap* serialized_certs,
     cronet_pb::CertVerificationRequestParams* request_params) {
   cronet_pb::CertVerificationCertificate* certificate =
       request_params->mutable_certificate();
-  if (!SerializeCertificate(params.certificate().get(), serialized_certs,
-                            certificate)) {
-    return false;
-  }
+  SerializeCertificate(params.certificate().get(), serialized_certs,
+                       certificate);
   request_params->set_hostname(params.hostname());
   request_params->set_flags(params.flags());
   request_params->set_ocsp_response(params.ocsp_response());
   for (const auto& cert : params.additional_trust_anchors()) {
     certificate = request_params->add_additional_trust_anchors();
-    if (!SerializeCertificate(cert.get(), serialized_certs, certificate))
-      return false;
+    SerializeCertificate(cert.get(), serialized_certs, certificate);
   }
-  return true;
 }
 
 // Serializes |result| into |cached_result|, updating |serialized_certs| with
 // the set of raw certificates that will be needed to deserialize the
 // certificate in |cached_result| via DeserializeCertificate().
-bool SerializeCachedResult(
+void SerializeCachedResult(
     const net::CertVerifyResult& result,
     SerializedCertMap* serialized_certs,
     cronet_pb::CertVerificationCachedResult* cached_result) {
@@ -119,10 +103,8 @@ bool SerializeCachedResult(
       cached_result->mutable_result();
   cronet_pb::CertVerificationCertificate* certificate =
       cert_verification_result->mutable_verified_cert();
-  if (!SerializeCertificate(result.verified_cert.get(), serialized_certs,
-                            certificate)) {
-    return false;
-  }
+  SerializeCertificate(result.verified_cert.get(), serialized_certs,
+                       certificate);
   cert_verification_result->set_cert_status(result.cert_status);
   cert_verification_result->set_has_md2(result.has_md2);
   cert_verification_result->set_has_md4(result.has_md4);
@@ -137,7 +119,6 @@ bool SerializeCachedResult(
       result.is_issued_by_additional_trust_anchor);
   cert_verification_result->set_common_name_fallback_used(
       result.common_name_fallback_used);
-  return true;
 }
 
 // Deserializes |cached_result| using the certificate database provided in
@@ -192,7 +173,7 @@ bool DeserializeCachedResult(
 // |cert_cache|, updating |serialized_certs| with the set of raw certificates
 // that will be needed to deserialize the certificate in |cert_cache| via
 // DeserializeCertificate().
-bool SerializeCachedEntry(const net::CachingCertVerifier::RequestParams& params,
+void SerializeCachedEntry(const net::CachingCertVerifier::RequestParams& params,
                           int error,
                           const net::CertVerifyResult& verify_result,
                           base::Time verification_time,
@@ -203,17 +184,14 @@ bool SerializeCachedEntry(const net::CachingCertVerifier::RequestParams& params,
 
   cronet_pb::CertVerificationRequestParams* request_params =
       cache_entry->mutable_request_params();
-  if (!SerializeRequestParams(params, serialized_certs, request_params))
-    return false;
+  SerializeRequestParams(params, serialized_certs, request_params);
 
   cronet_pb::CertVerificationCachedResult* cached_result =
       cache_entry->mutable_cached_result();
-  if (!SerializeCachedResult(verify_result, serialized_certs, cached_result))
-    return false;
+  SerializeCachedResult(verify_result, serialized_certs, cached_result);
   cached_result->set_error(error);
 
   cache_entry->set_verification_time(verification_time.ToInternalValue());
-  return true;
 }
 
 class CacheVisitor : public net::CachingCertVerifier::CacheVisitor {
@@ -226,11 +204,8 @@ class CacheVisitor : public net::CachingCertVerifier::CacheVisitor {
                   const net::CertVerifyResult& verify_result,
                   base::Time verification_time,
                   base::Time expiration_time) override {
-    if (!SerializeCachedEntry(params, error, verify_result, verification_time,
-                              &cert_cache_, &serialized_certs_)) {
-      Reset();
-      return false;
-    }
+    SerializeCachedEntry(params, error, verify_result, verification_time,
+                         &cert_cache_, &serialized_certs_);
     return true;
   }
 

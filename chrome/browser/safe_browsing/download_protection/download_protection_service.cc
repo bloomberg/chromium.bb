@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
+#include "net/cert/x509_util.h"
 
 using content::BrowserThread;
 namespace safe_browsing {
@@ -345,9 +346,8 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
     paths_to_check.insert(ou_tokens[i]);
   }
 
-  std::string issuer_der;
-  net::X509Certificate::GetDEREncoded(issuer.os_cert_handle(), &issuer_der);
-  std::string hashed = base::SHA1HashString(issuer_der);
+  std::string hashed = base::SHA1HashString(std::string(
+      net::x509_util::CryptoBufferAsStringPiece(issuer.cert_buffer())));
   std::string issuer_fp = base::HexEncode(hashed.data(), hashed.size());
   for (std::set<std::string>::iterator it = paths_to_check.begin();
        it != paths_to_check.end(); ++it) {

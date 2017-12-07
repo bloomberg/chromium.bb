@@ -134,7 +134,13 @@ bool IsIssuedByInKeychain(const std::vector<std::string>& valid_issuers,
   if (!new_cert || !new_cert->IsIssuedByEncoded(valid_issuers))
     return false;
 
-  identity->SetIntermediates(new_cert->GetIntermediateCertificates());
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediate_buffers;
+  intermediate_buffers.reserve(new_cert->intermediate_buffers().size());
+  for (const auto& intermediate : new_cert->intermediate_buffers()) {
+    intermediate_buffers.push_back(
+        x509_util::DupCryptoBuffer(intermediate.get()));
+  }
+  identity->SetIntermediates(std::move(intermediate_buffers));
   return true;
 }
 
@@ -195,7 +201,7 @@ bool SupportsSSLClientAuth(SecCertificateRef cert) {
 // storing the matching certificates in |selected_identities|.
 // If |query_keychain| is true, Keychain Services will be queried to construct
 // full certificate chains. If it is false, only the the certificates and their
-// intermediates (available via X509Certificate::GetIntermediateCertificates())
+// intermediates (available via X509Certificate::intermediate_buffers())
 // will be considered.
 void GetClientCertsImpl(std::unique_ptr<ClientCertIdentity> preferred_identity,
                         ClientCertIdentityList regular_identities,
@@ -221,9 +227,9 @@ void GetClientCertsImpl(std::unique_ptr<ClientCertIdentity> preferred_identity,
         selected_identities->begin(), selected_identities->end(),
         [&cert](
             const std::unique_ptr<ClientCertIdentity>& other_cert_identity) {
-          return X509Certificate::IsSameOSCert(
-              cert->certificate()->os_cert_handle(),
-              other_cert_identity->certificate()->os_cert_handle());
+          return x509_util::CryptoBufferEqual(
+              cert->certificate()->cert_buffer(),
+              other_cert_identity->certificate()->cert_buffer());
         });
     if (cert_iter != selected_identities->end())
       continue;
@@ -238,14 +244,14 @@ void GetClientCertsImpl(std::unique_ptr<ClientCertIdentity> preferred_identity,
   }
 
   // Preferred cert should appear first in the ui, so exclude it from the
-  // sorting.  Compare the os_cert_handle since the X509Certificate object may
+  // sorting.  Compare the cert_buffer since the X509Certificate object may
   // have changed if intermediates were added.
   ClientCertIdentityList::iterator sort_begin = selected_identities->begin();
   ClientCertIdentityList::iterator sort_end = selected_identities->end();
   if (preferred_cert_orig && sort_begin != sort_end &&
-      X509Certificate::IsSameOSCert(
-          sort_begin->get()->certificate()->os_cert_handle(),
-          preferred_cert_orig->os_cert_handle())) {
+      x509_util::CryptoBufferEqual(
+          sort_begin->get()->certificate()->cert_buffer(),
+          preferred_cert_orig->cert_buffer())) {
     ++sort_begin;
   }
   sort(sort_begin, sort_end, ClientCertIdentitySorter());

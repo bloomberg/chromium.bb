@@ -11189,14 +11189,13 @@ TEST_F(HTTPSAIATest, AIAFetching) {
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
     ASSERT_TRUE(r->ssl_info().cert);
-    EXPECT_EQ(2u, r->ssl_info().cert->GetIntermediateCertificates().size());
+    EXPECT_EQ(2u, r->ssl_info().cert->intermediate_buffers().size());
   } else {
     EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID,
               cert_status & CERT_STATUS_ALL_ERRORS);
   }
   ASSERT_TRUE(r->ssl_info().unverified_cert);
-  EXPECT_EQ(
-      0u, r->ssl_info().unverified_cert->GetIntermediateCertificates().size());
+  EXPECT_EQ(0u, r->ssl_info().unverified_cert->intermediate_buffers().size());
 }
 
 class HTTPSHardFailTest : public HTTPSOCSPTest {

@@ -115,25 +115,22 @@ void ClientCertStoreNSS::FilterCertsOnWorkerThread(
       continue;
     }
 
-    X509Certificate::OSCertHandles intermediates_raw;
-    intermediates_raw.reserve(nss_intermediates.size());
     std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
     intermediates.reserve(nss_intermediates.size());
     for (const ScopedCERTCertificate& nss_intermediate : nss_intermediates) {
       bssl::UniquePtr<CRYPTO_BUFFER> intermediate_cert_handle(
-          X509Certificate::CreateOSCertHandleFromBytes(
+          X509Certificate::CreateCertBufferFromBytes(
               reinterpret_cast<const char*>(nss_intermediate->derCert.data),
               nss_intermediate->derCert.len));
       if (!intermediate_cert_handle)
         break;
-      intermediates_raw.push_back(intermediate_cert_handle.get());
       intermediates.push_back(std::move(intermediate_cert_handle));
     }
 
     // Retain a copy of the intermediates. Some deployments expect the client to
     // supply intermediates out of the local store. See
     // https://crbug.com/548631.
-    (*examine_iter)->SetIntermediates(intermediates_raw);
+    (*examine_iter)->SetIntermediates(std::move(intermediates));
 
     if (examine_iter == keep_iter)
       ++keep_iter;

@@ -33,11 +33,13 @@ JNI_CertificateChainHelper_GetCertificateChain(
     return ScopedJavaLocalRef<jobjectArray>();
 
   std::vector<std::string> cert_chain;
-  cert_chain.reserve(1 + cert->GetIntermediateCertificates().size());
+  cert_chain.reserve(1 + cert->intermediate_buffers().size());
   cert_chain.emplace_back(
-      net::x509_util::CryptoBufferAsStringPiece(cert->os_cert_handle()));
-  for (auto* handle : cert->GetIntermediateCertificates())
-    cert_chain.emplace_back(net::x509_util::CryptoBufferAsStringPiece(handle));
+      net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
+  for (const auto& handle : cert->intermediate_buffers()) {
+    cert_chain.emplace_back(
+        net::x509_util::CryptoBufferAsStringPiece(handle.get()));
+  }
 
   return base::android::ToJavaArrayOfByteArray(env, cert_chain);
 }

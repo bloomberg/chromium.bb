@@ -59,7 +59,7 @@ class MerkleTreeLeafTest : public ::testing::Test {
         GetTestCertsDirectory(), "ct-test-embedded-cert.pem",
         X509Certificate::FORMAT_AUTO);
     ASSERT_TRUE(test_precert_);
-    ASSERT_EQ(1u, test_precert_->GetIntermediateCertificates().size());
+    ASSERT_EQ(1u, test_precert_->intermediate_buffers().size());
     GetPrecertSCT(&precert_sct_);
     precert_sct_->origin = SignedCertificateTimestamp::SCT_EMBEDDED;
   }

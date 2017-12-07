@@ -13,6 +13,7 @@
 #include "net/cert/internal/test_helpers.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
@@ -64,8 +65,8 @@ class MockCertNetFetcher : public CertNetFetcher {
 std::unique_ptr<CertNetFetcher::Request> CreateMockRequestFromX509Certificate(
     Error error,
     const scoped_refptr<X509Certificate>& cert) {
-  std::string der;
-  EXPECT_TRUE(X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der));
+  base::StringPiece der =
+      x509_util::CryptoBufferAsStringPiece(cert->cert_buffer());
   return std::make_unique<TestCertNetFetcherRequest>(
       error, std::vector<uint8_t>(der.data(), der.data() + der.length()));
 }
@@ -121,18 +122,18 @@ CreateMockRequestWithInvalidCertificate() {
   ::testing::AssertionResult r = ReadTestCert(files[0], &leaf);
   if (!r)
     return r;
-  CertificateList intermediates;
-  X509Certificate::OSCertHandles intermediate_os_cert_handles;
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediate_buffers;
   for (size_t i = 1; i < files.size(); i++) {
     scoped_refptr<X509Certificate> intermediate;
     r = ReadTestCert(files[i], &intermediate);
     if (!r)
       return r;
-    intermediates.push_back(intermediate);
-    intermediate_os_cert_handles.push_back(intermediate->os_cert_handle());
+    intermediate_buffers.push_back(
+        x509_util::DupCryptoBuffer(intermediate->cert_buffer()));
   }
-  *result = X509Certificate::CreateFromHandle(leaf->os_cert_handle(),
-                                              intermediate_os_cert_handles);
+  *result = X509Certificate::CreateFromBuffer(
+      x509_util::DupCryptoBuffer(leaf->cert_buffer()),
+      std::move(intermediate_buffers));
   return ::testing::AssertionSuccess();
 }
 

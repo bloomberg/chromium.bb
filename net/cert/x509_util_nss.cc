@@ -142,8 +142,8 @@ bool IsSameCertificate(CERTCertificate* a, CERTCertificate* b) {
 }
 
 bool IsSameCertificate(CERTCertificate* a, const X509Certificate* b) {
-  return a->derCert.len == CRYPTO_BUFFER_len(b->os_cert_handle()) &&
-         memcmp(a->derCert.data, CRYPTO_BUFFER_data(b->os_cert_handle()),
+  return a->derCert.len == CRYPTO_BUFFER_len(b->cert_buffer()) &&
+         memcmp(a->derCert.data, CRYPTO_BUFFER_data(b->cert_buffer()),
                 a->derCert.len) == 0;
 }
 bool IsSameCertificate(const X509Certificate* a, CERTCertificate* b) {
@@ -170,9 +170,8 @@ ScopedCERTCertificate CreateCERTCertificateFromBytes(const uint8_t* data,
 
 ScopedCERTCertificate CreateCERTCertificateFromX509Certificate(
     const X509Certificate* cert) {
-  return CreateCERTCertificateFromBytes(
-      CRYPTO_BUFFER_data(cert->os_cert_handle()),
-      CRYPTO_BUFFER_len(cert->os_cert_handle()));
+  return CreateCERTCertificateFromBytes(CRYPTO_BUFFER_data(cert->cert_buffer()),
+                                        CRYPTO_BUFFER_len(cert->cert_buffer()));
 }
 
 ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
@@ -185,16 +184,16 @@ ScopedCERTCertificateList CreateCERTCertificateListFromX509Certificate(
     const X509Certificate* cert,
     InvalidIntermediateBehavior invalid_intermediate_behavior) {
   ScopedCERTCertificateList nss_chain;
-  nss_chain.reserve(1 + cert->GetIntermediateCertificates().size());
+  nss_chain.reserve(1 + cert->intermediate_buffers().size());
   ScopedCERTCertificate nss_cert =
       CreateCERTCertificateFromX509Certificate(cert);
   if (!nss_cert)
     return {};
   nss_chain.push_back(std::move(nss_cert));
-  for (net::X509Certificate::OSCertHandle intermediate :
-       cert->GetIntermediateCertificates()) {
-    ScopedCERTCertificate nss_intermediate = CreateCERTCertificateFromBytes(
-        CRYPTO_BUFFER_data(intermediate), CRYPTO_BUFFER_len(intermediate));
+  for (const auto& intermediate : cert->intermediate_buffers()) {
+    ScopedCERTCertificate nss_intermediate =
+        CreateCERTCertificateFromBytes(CRYPTO_BUFFER_data(intermediate.get()),
+                                       CRYPTO_BUFFER_len(intermediate.get()));
     if (!nss_intermediate) {
       if (invalid_intermediate_behavior == InvalidIntermediateBehavior::kFail)
         return {};
@@ -249,7 +248,7 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
   if (!nss_cert || !nss_cert->derCert.len)
     return nullptr;
   bssl::UniquePtr<CRYPTO_BUFFER> cert_handle(
-      X509Certificate::CreateOSCertHandleFromBytes(
+      X509Certificate::CreateCertBufferFromBytes(
           reinterpret_cast<const char*>(nss_cert->derCert.data),
           nss_cert->derCert.len));
   if (!cert_handle)
@@ -257,23 +256,20 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromCERTCertificate(
 
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
   intermediates.reserve(nss_chain.size());
-  X509Certificate::OSCertHandles intermediates_raw;
-  intermediates_raw.reserve(nss_chain.size());
   for (const CERTCertificate* nss_intermediate : nss_chain) {
     if (!nss_intermediate || !nss_intermediate->derCert.len)
       return nullptr;
     bssl::UniquePtr<CRYPTO_BUFFER> intermediate_cert_handle(
-        X509Certificate::CreateOSCertHandleFromBytes(
+        X509Certificate::CreateCertBufferFromBytes(
             reinterpret_cast<const char*>(nss_intermediate->derCert.data),
             nss_intermediate->derCert.len));
     if (!intermediate_cert_handle)
       return nullptr;
-    intermediates_raw.push_back(intermediate_cert_handle.get());
     intermediates.push_back(std::move(intermediate_cert_handle));
   }
   scoped_refptr<X509Certificate> result(
-      X509Certificate::CreateFromHandleUnsafeOptions(
-          cert_handle.get(), intermediates_raw, options));
+      X509Certificate::CreateFromBufferUnsafeOptions(
+          std::move(cert_handle), std::move(intermediates), options));
   return result;
 }
 

@@ -11,6 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/win/win_util.h"
 #include "net/cert/x509_certificate.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace net {
 
@@ -143,12 +144,12 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
   // happen.
   g_capi_injector.Get();
 
-  std::string der_cert;
-  X509Certificate::GetDEREncoded(certificate->os_cert_handle(), &der_cert);
   BOOL ok = CertAddEncodedCertificateToStore(
       temporary_roots_, X509_ASN_ENCODING,
-      reinterpret_cast<const BYTE*>(der_cert.data()),
-      base::checked_cast<DWORD>(der_cert.size()), CERT_STORE_ADD_NEW, NULL);
+      reinterpret_cast<const BYTE*>(
+          CRYPTO_BUFFER_data(certificate->cert_buffer())),
+      base::checked_cast<DWORD>(CRYPTO_BUFFER_len(certificate->cert_buffer())),
+      CERT_STORE_ADD_NEW, NULL);
   if (!ok) {
     // If the certificate is already added, return successfully.
     return GetLastError() == static_cast<DWORD>(CRYPT_E_EXISTS);

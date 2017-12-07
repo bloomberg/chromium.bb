@@ -139,9 +139,8 @@ bool CertificateProviderInternalReportCertificatesFunction::
   size_t public_key_length_in_bits = 0;
   net::X509Certificate::PublicKeyType type =
       net::X509Certificate::kPublicKeyTypeUnknown;
-  net::X509Certificate::GetPublicKeyInfo(
-      out_info->certificate->os_cert_handle(), &public_key_length_in_bits,
-      &type);
+  net::X509Certificate::GetPublicKeyInfo(out_info->certificate->cert_buffer(),
+                                         &public_key_length_in_bits, &type);
 
   switch (type) {
     case net::X509Certificate::kPublicKeyTypeRSA:

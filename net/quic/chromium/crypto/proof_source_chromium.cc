@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "crypto/openssl_util.h"
+#include "net/cert/x509_util.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
@@ -41,12 +42,8 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
 
   std::vector<string> certs;
   for (const scoped_refptr<X509Certificate>& cert : certs_in_file) {
-    std::string der_encoded_cert;
-    if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(),
-                                        &der_encoded_cert)) {
-      return false;
-    }
-    certs.push_back(der_encoded_cert);
+    certs.emplace_back(
+        x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
   }
   chain_ = new ProofSource::Chain(certs);
 

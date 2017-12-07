@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
+#include "net/cert/x509_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -188,12 +189,11 @@ TEST_F(SslHmacChannelAuthenticatorTest, InvalidCertificate) {
   // Import a second certificate for the client to expect.
   scoped_refptr<net::X509Certificate> host_cert2(
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
-  std::string host_cert2_der;
-  ASSERT_TRUE(net::X509Certificate::GetDEREncoded(host_cert2->os_cert_handle(),
-                                                  &host_cert2_der));
 
   client_auth_ = SslHmacChannelAuthenticator::CreateForClient(
-      host_cert2_der, kTestSharedSecret);
+      std::string(
+          net::x509_util::CryptoBufferAsStringPiece(host_cert2->cert_buffer())),
+      kTestSharedSecret);
   host_auth_ = SslHmacChannelAuthenticator::CreateForHost(
       host_cert_, key_pair_, kTestSharedSecret);
 

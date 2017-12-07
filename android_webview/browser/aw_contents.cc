@@ -81,6 +81,7 @@
 #include "jni/AwContents_jni.h"
 #include "net/base/auth.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -841,9 +842,8 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
     return ScopedJavaLocalRef<jbyteArray>();
 
   // Convert the certificate and return it
-  std::string der_string;
-  net::X509Certificate::GetDEREncoded(
-      entry->GetSSL().certificate->os_cert_handle(), &der_string);
+  base::StringPiece der_string = net::x509_util::CryptoBufferAsStringPiece(
+      entry->GetSSL().certificate->cert_buffer());
   return base::android::ToJavaByteArray(
       env, reinterpret_cast<const uint8_t*>(der_string.data()),
       der_string.length());

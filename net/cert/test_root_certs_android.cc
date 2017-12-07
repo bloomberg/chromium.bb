@@ -8,16 +8,14 @@
 #include "base/logging.h"
 #include "net/android/network_library.h"
 #include "net/cert/x509_certificate.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace net {
 
 bool TestRootCerts::Add(X509Certificate* certificate) {
-  std::string cert_bytes;
-  if (!X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
-                                      &cert_bytes))
-      return false;
   android::AddTestRootCertificate(
-      reinterpret_cast<const uint8_t*>(cert_bytes.data()), cert_bytes.size());
+      CRYPTO_BUFFER_data(certificate->cert_buffer()),
+      CRYPTO_BUFFER_len(certificate->cert_buffer()));
   empty_ = false;
   return true;
 }

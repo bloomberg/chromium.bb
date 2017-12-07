@@ -38,15 +38,6 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 class NET_EXPORT X509Certificate
     : public base::RefCountedThreadSafe<X509Certificate> {
  public:
-  // An OSCertHandle is a handle to a certificate object in the underlying
-  // crypto library. We assume that OSCertHandle is a pointer type on all
-  // platforms and that NULL represents an invalid OSCertHandle.
-  // TODO(mattm): Remove OSCertHandle type and clean up the interfaces once all
-  // platforms use the CRYPTO_BUFFER version.
-  typedef CRYPTO_BUFFER* OSCertHandle;
-
-  typedef std::vector<OSCertHandle> OSCertHandles;
-
   enum PublicKeyType {
     kPublicKeyTypeUnknown,
     kPublicKeyTypeRSA,
@@ -78,15 +69,15 @@ class NET_EXPORT X509Certificate
                   FORMAT_PKCS7,
   };
 
-  // Create an X509Certificate from a handle to the certificate object in the
-  // underlying crypto library. Returns NULL on failure to parse or extract
-  // data from the the certificate. Note that this does not guarantee the
-  // certificate is fully parsed and validated, only that the members of this
-  // class, such as subject, issuer, expiry times, and serial number, could be
-  // successfully initialized from the certificate.
-  static scoped_refptr<X509Certificate> CreateFromHandle(
-      OSCertHandle cert_handle,
-      const OSCertHandles& intermediates);
+  // Create an X509Certificate from a CRYPTO_BUFFER containing the DER-encoded
+  // representation. Returns NULL on failure to parse or extract data from the
+  // the certificate. Note that this does not guarantee the certificate is
+  // fully parsed and validated, only that the members of this class, such as
+  // subject, issuer, expiry times, and serial number, could be successfully
+  // initialized from the certificate.
+  static scoped_refptr<X509Certificate> CreateFromBuffer(
+      bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer,
+      std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates);
 
   // Options for configuring certificate parsing.
   // Do not use without consulting //net owners.
@@ -95,9 +86,9 @@ class NET_EXPORT X509Certificate
   };
   // Create an X509Certificate with non-standard parsing options.
   // Do not use without consulting //net owners.
-  static scoped_refptr<X509Certificate> CreateFromHandleUnsafeOptions(
-      OSCertHandle cert_handle,
-      const OSCertHandles& intermediates,
+  static scoped_refptr<X509Certificate> CreateFromBufferUnsafeOptions(
+      bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer,
+      std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates,
       UnsafeCreateOptions options);
 
   // Create an X509Certificate from a chain of DER encoded certificates. The
@@ -187,14 +178,6 @@ class NET_EXPORT X509Certificate
   // Does not consider any associated intermediates.
   bool Equals(const X509Certificate* other) const;
 
-  // Returns the associated intermediate certificates that were specified
-  // during creation of this object, if any.
-  // Ownership follows the "get" rule: it is the caller's responsibility to
-  // retain the elements of the result.
-  const OSCertHandles& GetIntermediateCertificates() const {
-    return intermediate_ca_certs_;
-  }
-
   // Do any of the given issuer names appear in this cert's chain of trust?
   // |valid_issuers| is a list of DER-encoded X.509 DistinguishedNames.
   bool IsIssuedByEncoded(const std::vector<std::string>& valid_issuers);
@@ -208,20 +191,15 @@ class NET_EXPORT X509Certificate
   bool VerifyNameMatch(const std::string& hostname,
                        bool allow_common_name_fallback) const;
 
-  // Obtains the DER encoded certificate data for |cert_handle|. On success,
-  // returns true and writes the DER encoded certificate to |*der_encoded|.
-  static bool GetDEREncoded(OSCertHandle cert_handle,
-                            std::string* der_encoded);
-
   // Returns the PEM encoded data from a DER encoded certificate. If the return
   // value is true, then the PEM encoded certificate is written to
   // |pem_encoded|.
-  static bool GetPEMEncodedFromDER(const std::string& der_encoded,
+  static bool GetPEMEncodedFromDER(base::StringPiece der_encoded,
                                    std::string* pem_encoded);
 
-  // Returns the PEM encoded data from an OSCertHandle. If the return value is
+  // Returns the PEM encoded data from a CRYPTO_BUFFER. If the return value is
   // true, then the PEM encoded certificate is written to |pem_encoded|.
-  static bool GetPEMEncoded(OSCertHandle cert_handle,
+  static bool GetPEMEncoded(const CRYPTO_BUFFER* cert_buffer,
                             std::string* pem_encoded);
 
   // Encodes the entire certificate chain (this certificate and any
@@ -234,40 +212,42 @@ class NET_EXPORT X509Certificate
   // Sets |*size_bits| to be the length of the public key in bits, and sets
   // |*type| to one of the |PublicKeyType| values. In case of
   // |kPublicKeyTypeUnknown|, |*size_bits| will be set to 0.
-  static void GetPublicKeyInfo(OSCertHandle cert_handle,
+  static void GetPublicKeyInfo(const CRYPTO_BUFFER* cert_buffer,
                                size_t* size_bits,
                                PublicKeyType* type);
 
-  // Returns the OSCertHandle of this object. Because of caching, this may
-  // differ from the OSCertHandle originally supplied during initialization.
-  // Note: On Windows, CryptoAPI may return unexpected results if this handle
-  // is used across multiple threads. For more details, see
-  // CreateOSCertChainForCert().
-  OSCertHandle os_cert_handle() const { return cert_handle_; }
+  // Returns the CRYPTO_BUFFER holding this certificate's DER encoded data. The
+  // data is not guaranteed to be valid DER or to encode a valid Certificate
+  // object.
+  CRYPTO_BUFFER* cert_buffer() const { return cert_buffer_.get(); }
 
-  // Returns true if two OSCertHandles refer to identical certificates.
-  static bool IsSameOSCert(OSCertHandle a, OSCertHandle b);
+  // Returns the associated intermediate certificates that were specified
+  // during creation of this object, if any. The intermediates are not
+  // guaranteed to be valid DER or to encode valid Certificate objects.
+  // Ownership follows the "get" rule: it is the caller's responsibility to
+  // retain the elements of the result.
+  const std::vector<bssl::UniquePtr<CRYPTO_BUFFER>>& intermediate_buffers()
+      const {
+    return intermediate_ca_certs_;
+  }
 
-  // Creates an OS certificate handle from the DER-encoded representation.
+  // Creates a CRYPTO_BUFFER from the DER-encoded representation. Unlike
+  // creating a CRYPTO_BUFFER directly, this function does some minimal
+  // checking to reject obviously invalid inputs.
   // Returns NULL on failure.
-  static OSCertHandle CreateOSCertHandleFromBytes(const char* data,
-                                                  size_t length);
+  static bssl::UniquePtr<CRYPTO_BUFFER> CreateCertBufferFromBytes(
+      const char* data,
+      size_t length);
 
-  // Creates all possible OS certificate handles from |data| encoded in a
-  // specific |format|. Returns an empty collection on failure.
-  static OSCertHandles CreateOSCertHandlesFromBytes(const char* data,
-                                                    size_t length,
-                                                    Format format);
-
-  // Duplicates (or adds a reference to) an OS certificate handle.
-  static OSCertHandle DupOSCertHandle(OSCertHandle cert_handle);
-
-  // Frees (or releases a reference to) an OS certificate handle.
-  static void FreeOSCertHandle(OSCertHandle cert_handle);
+  // Creates all possible CRYPTO_BUFFERs from |data| encoded in a specific
+  // |format|. Returns an empty collection on failure.
+  static std::vector<bssl::UniquePtr<CRYPTO_BUFFER>>
+  CreateCertBuffersFromBytes(const char* data, size_t length, Format format);
 
   // Calculates the SHA-256 fingerprint of the certificate.  Returns an empty
   // (all zero) fingerprint on failure.
-  static SHA256HashValue CalculateFingerprint256(OSCertHandle cert_handle);
+  static SHA256HashValue CalculateFingerprint256(
+      const CRYPTO_BUFFER* cert_buffer);
 
   // Calculates the SHA-256 fingerprint for the complete chain, including the
   // leaf certificate and all intermediate CA certificates. Returns an empty
@@ -275,7 +255,7 @@ class NET_EXPORT X509Certificate
   SHA256HashValue CalculateChainFingerprint256() const;
 
   // Returns true if the certificate is self-signed.
-  static bool IsSelfSigned(OSCertHandle cert_handle);
+  static bool IsSelfSigned(const CRYPTO_BUFFER* cert_buffer);
 
  private:
   friend class base::RefCountedThreadSafe<X509Certificate>;
@@ -284,12 +264,12 @@ class NET_EXPORT X509Certificate
   FRIEND_TEST_ALL_PREFIXES(X509CertificateNameVerifyTest, VerifyHostname);
   FRIEND_TEST_ALL_PREFIXES(X509CertificateTest, SerialNumbers);
 
-  // Construct an X509Certificate from a handle to the certificate object
-  // in the underlying crypto library.
-  X509Certificate(OSCertHandle cert_handle,
-                  const OSCertHandles& intermediates);
-  X509Certificate(OSCertHandle cert_handle,
-                  const OSCertHandles& intermediates,
+  // Construct an X509Certificate from a CRYPTO_BUFFER containing the
+  // DER-encoded representation.
+  X509Certificate(bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer,
+                  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates);
+  X509Certificate(bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer,
+                  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates,
                   UnsafeCreateOptions options);
 
   ~X509Certificate();
@@ -330,12 +310,12 @@ class NET_EXPORT X509Certificate
   // The serial number of this certificate, DER encoded.
   std::string serial_number_;
 
-  // A handle to the certificate object in the underlying crypto library.
-  OSCertHandle cert_handle_;
+  // A handle to the DER encoded certificate data.
+  bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer_;
 
   // Untrusted intermediate certificates associated with this certificate
   // that may be needed for chain building.
-  OSCertHandles intermediate_ca_certs_;
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediate_ca_certs_;
 
   DISALLOW_COPY_AND_ASSIGN(X509Certificate);
 };

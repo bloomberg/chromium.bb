@@ -7,6 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "net/base/hash_value.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,11 +38,9 @@ typedef NS_ENUM(NSInteger, DeprecatedSerializationIndices) {
 
 // Converts |certificate| to NSData for serialization.
 NSData* CertificateToNSData(net::X509Certificate* certificate) {
-  std::string cert_string;
-  bool success = net::X509Certificate::GetDEREncoded(
-      certificate->os_cert_handle(), &cert_string);
-  DCHECK(success);
-  return [NSData dataWithBytes:cert_string.c_str() length:cert_string.length()];
+  base::StringPiece cert_string =
+      net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer());
+  return [NSData dataWithBytes:cert_string.data() length:cert_string.length()];
 }
 
 // Converts serialized NSData to a certificate.

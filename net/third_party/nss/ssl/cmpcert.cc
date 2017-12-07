@@ -35,8 +35,8 @@ bool GetIssuerAndSubject(X509Certificate* cert,
   der::Input tbs_certificate_tlv;
   der::Input signature_algorithm_tlv;
   der::BitString signature_value;
-  if (!ParseCertificate(der::Input(CRYPTO_BUFFER_data(cert->os_cert_handle()),
-                                   CRYPTO_BUFFER_len(cert->os_cert_handle())),
+  if (!ParseCertificate(der::Input(CRYPTO_BUFFER_data(cert->cert_buffer()),
+                                   CRYPTO_BUFFER_len(cert->cert_buffer())),
                         &tbs_certificate_tlv, &signature_algorithm_tlv,
                         &signature_value, nullptr)) {
     return false;

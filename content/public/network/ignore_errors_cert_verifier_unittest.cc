@@ -17,6 +17,7 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
@@ -50,11 +51,12 @@ static std::vector<std::string> MakeWhitelist() {
   base::FilePath certs_dir = net::GetTestCertsDirectory();
   net::CertificateList certs = net::CreateCertificateListFromFile(
       certs_dir, "x509_verify_results.chain.pem", X509Certificate::FORMAT_AUTO);
-  std::string cert_der, hash_base64;
+  std::string hash_base64;
   base::StringPiece cert_spki;
   SHA256HashValue hash;
-  X509Certificate::GetDEREncoded(certs[1]->os_cert_handle(), &cert_der);
-  net::asn1::ExtractSPKIFromDERCert(cert_der, &cert_spki);
+  net::asn1::ExtractSPKIFromDERCert(
+      net::x509_util::CryptoBufferAsStringPiece(certs[1]->cert_buffer()),
+      &cert_spki);
 
   crypto::SHA256HashString(cert_spki, &hash, sizeof(SHA256HashValue));
   base::Base64Encode(base::StringPiece(reinterpret_cast<const char*>(hash.data),
@@ -100,17 +102,10 @@ static CertVerifier::RequestParams MakeRequestParams(
 
 static void GetWhitelistedTestCert(scoped_refptr<X509Certificate>* out) {
   base::FilePath certs_dir = net::GetTestCertsDirectory();
-  net::CertificateList certs = net::CreateCertificateListFromFile(
+  *out = net::CreateCertificateChainFromFile(
       certs_dir, "x509_verify_results.chain.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, certs.size());
-  X509Certificate::OSCertHandles intermediates;
-  intermediates.push_back(certs[1]->os_cert_handle());
-  intermediates.push_back(certs[2]->os_cert_handle());
-  scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromHandle(
-      certs[0]->os_cert_handle(), intermediates);
-  ASSERT_TRUE(cert_chain);
-  ASSERT_EQ(2U, cert_chain->GetIntermediateCertificates().size());
-  out->swap(cert_chain);
+  ASSERT_TRUE(*out);
+  ASSERT_EQ(2U, (*out)->intermediate_buffers().size());
 }
 
 TEST_F(IgnoreErrorsCertVerifierTest, TestNoMatchCertOk) {
