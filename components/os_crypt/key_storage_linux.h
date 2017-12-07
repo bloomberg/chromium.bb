@@ -12,6 +12,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class WaitableEvent;
 }
 
 namespace os_crypt {
@@ -53,6 +54,15 @@ class KeyStorageLinux {
  private:
   // Performs Init() on the backend's preferred thread.
   bool WaitForInitOnTaskRunner();
+
+  // Perform the blocking calls to the backend to get the Key. Store it in
+  // |password| and signal completion on |on_password_received|.
+  void BlockOnGetKeyImplThenSignal(base::WaitableEvent* on_password_received,
+                                   std::string* password);
+
+  // Perform the blocking calls to the backend to initialise. Store the
+  // initialisation result in |success| and signal completion on |on_inited|.
+  void BlockOnInitThenSignal(base::WaitableEvent* on_inited, bool* success);
 
   DISALLOW_COPY_AND_ASSIGN(KeyStorageLinux);
 };
