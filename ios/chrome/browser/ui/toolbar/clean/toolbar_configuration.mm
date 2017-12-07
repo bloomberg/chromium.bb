@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,6 +22,16 @@
     _style = style;
   }
   return self;
+}
+
+- (UIColor*)NTPBackgroundColor {
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor whiteColor];
+    case INCOGNITO:
+      return [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
+                               alpha:1.0];
+  }
 }
 
 - (UIColor*)backgroundColor {

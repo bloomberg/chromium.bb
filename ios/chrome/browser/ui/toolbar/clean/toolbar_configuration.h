@@ -19,6 +19,10 @@
 // Style of this configuration.
 @property(nonatomic, assign) ToolbarStyle style;
 
+// Background color of the NTP. Used to do as if the toolbar was transparent and
+// the NTP is visible behind it.
+@property(nonatomic, readonly) UIColor* NTPBackgroundColor;
+
 // Background color of the toolbar.
 @property(nonatomic, readonly) UIColor* backgroundColor;
 
