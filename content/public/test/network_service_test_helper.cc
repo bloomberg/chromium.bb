@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
+#include "base/process/process.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_host_resolver.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -45,7 +47,11 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   }
 
   void SimulateCrash() override {
-    CHECK(false) << "Crash NetworkService process for testing.";
+    LOG(ERROR) << "Intentionally issuing kill signal to current process to"
+               << " simulate NetworkService crash for testing.";
+    // Use |Process::Terminate()| instead of |CHECK()| to avoid 'Fatal error'
+    // dialog on Windows debug.
+    base::Process::Current().Terminate(1, false);
   }
 
   void BindRequest(content::mojom::NetworkServiceTestRequest request) {
