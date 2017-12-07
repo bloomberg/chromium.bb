@@ -991,3 +991,16 @@ TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapIgnore) {
   ASSERT_EQ(InPrefIgnoredHandlerCount(), 1);
   ASSERT_EQ(InMemoryIgnoredHandlerCount(), 4);
 }
+
+TEST_F(ProtocolHandlerRegistryTest, TestMultiplePlaceholders) {
+  ProtocolHandler ph =
+      CreateProtocolHandler("test", GURL("http://example.com/%s/url=%s"));
+  registry()->OnAcceptRegisterProtocolHandler(ph);
+
+  GURL translated_url = ph.TranslateUrl(GURL("test:duplicated_placeholders"));
+
+  // When URL contains multiple placeholders, only the first placeholder should
+  // be changed to the given URL.
+  ASSERT_EQ(translated_url,
+            GURL("http://example.com/test%3Aduplicated_placeholders/url=%s"));
+}
