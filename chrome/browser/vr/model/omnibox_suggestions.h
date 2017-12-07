@@ -31,6 +31,19 @@ struct OmniboxSuggestions {
   std::vector<OmniboxSuggestion> suggestions;
 };
 
+// This struct represents the current request to the AutocompleteController.
+struct AutocompleteStatus {
+  bool active = false;
+  base::string16 input;
+
+  bool operator==(const AutocompleteStatus& other) const {
+    return active == other.active && input == other.input;
+  }
+  bool operator!=(const AutocompleteStatus& other) const {
+    return !(*this == other);
+  }
+};
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_MODEL_OMNIBOX_SUGGESTIONS_H_

@@ -37,6 +37,7 @@ void AutocompleteController::Start(const base::string16& text) {
 
 void AutocompleteController::Stop() {
   autocomplete_controller_->Stop(true);
+  ui_->SetOmniboxSuggestions(base::MakeUnique<vr::OmniboxSuggestions>());
 }
 
 GURL AutocompleteController::GetUrlFromVoiceInput(const base::string16& input) {
