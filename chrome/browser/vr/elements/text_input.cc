@@ -26,6 +26,7 @@ TextInput::TextInput(int maximum_width_pixels,
   text->set_type(kTypeTextInputHint);
   text->set_draw_phase(kPhaseForeground);
   text->set_hit_testable(false);
+  text->set_focusable(false);
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
   text->SetSize(1, 1);
@@ -38,6 +39,7 @@ TextInput::TextInput(int maximum_width_pixels,
   text->set_type(kTypeTextInputText);
   text->set_draw_phase(kPhaseForeground);
   text->set_hit_testable(true);
+  text->set_focusable(false);
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
   text->set_bubble_events(true);
@@ -53,6 +55,7 @@ TextInput::TextInput(int maximum_width_pixels,
   cursor->set_type(kTypeTextInputCursor);
   cursor->set_draw_phase(kPhaseForeground);
   cursor->set_hit_testable(false);
+  cursor->set_focusable(false);
   cursor->set_x_anchoring(LEFT);
   cursor->set_y_anchoring(BOTTOM);
   cursor->SetColor(SK_ColorBLUE);
@@ -66,10 +69,6 @@ TextInput::~TextInput() {}
 
 void TextInput::SetTextInputDelegate(TextInputDelegate* text_input_delegate) {
   delegate_ = text_input_delegate;
-}
-
-bool TextInput::IsEditable() {
-  return true;
 }
 
 void TextInput::OnButtonUp(const gfx::PointF& position) {

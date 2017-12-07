@@ -140,10 +140,6 @@ class UiElement : public cc::AnimationTarget {
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
 
-  // Indicates whether the element is an editable element. Editable elements
-  // such as the input field should override this.
-  virtual bool IsEditable();
-
   virtual void Render(UiElementRenderer* renderer,
                       const CameraModel& model) const;
 
@@ -200,6 +196,10 @@ class UiElement : public cc::AnimationTarget {
 
   bool hit_testable() const { return hit_testable_; }
   void set_hit_testable(bool hit_testable) { hit_testable_ = hit_testable; }
+
+  bool focusable() const { return focusable_; }
+  void set_focusable(bool focusable);
+  virtual void OnSetFocusable();
 
   bool scrollable() const { return scrollable_; }
   void set_scrollable(bool scrollable) { scrollable_ = scrollable; }
@@ -429,6 +429,9 @@ class UiElement : public cc::AnimationTarget {
 
   // If false, the reticle will not hit the element, even if visible.
   bool hit_testable_ = true;
+
+  // If false, clicking on the element doesn't give it focus.
+  bool focusable_ = true;
 
   // A signal to the input routing machinery that this element accepts scrolls.
   bool scrollable_ = false;
