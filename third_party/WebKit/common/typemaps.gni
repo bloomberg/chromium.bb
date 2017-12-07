@@ -5,4 +5,5 @@
 typemaps = [
   "//third_party/WebKit/common/message_port/cloneable_message.typemap",
   "//third_party/WebKit/common/message_port/transferable_message.typemap",
+  "//third_party/WebKit/common/feature_policy/feature_policy.typemap",
 ]

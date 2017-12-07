@@ -4,6 +4,10 @@
 
 #include "content/test/test_render_frame.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -80,6 +84,16 @@ class MockFrameHost : public mojom::FrameHost {
                                   ResourceType resource_type,
                                   const std::string& ip,
                                   uint32_t cert_status) override {}
+
+  void DidChangeName(const std::string& name,
+                     const std::string& unique_name) override {}
+
+  void EnforceInsecureRequestPolicy(
+      blink::WebInsecureRequestPolicy policy) override {}
+
+  void DidSetFramePolicyHeaders(
+      blink::WebSandboxFlags sandbox_flags,
+      const blink::ParsedFeaturePolicy& parsed_header) override {}
 
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

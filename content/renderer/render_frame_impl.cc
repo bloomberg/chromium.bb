@@ -170,6 +170,7 @@
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -3535,8 +3536,7 @@ void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
     // avoid breaking back/forward navigations: https://crbug.com/607205
     unique_name_helper_.UpdateName(name.Utf8());
   }
-  Send(new FrameHostMsg_DidChangeName(routing_id_, name.Utf8(),
-                                      unique_name_helper_.value()));
+  GetFrameHost()->DidChangeName(name.Utf8(), unique_name_helper_.value());
 
   if (!committed_first_load_)
     name_changed_before_first_commit_ = true;
@@ -3544,7 +3544,7 @@ void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
 
 void RenderFrameImpl::DidEnforceInsecureRequestPolicy(
     blink::WebInsecureRequestPolicy policy) {
-  Send(new FrameHostMsg_EnforceInsecureRequestPolicy(routing_id_, policy));
+  GetFrameHost()->EnforceInsecureRequestPolicy(policy);
 }
 
 void RenderFrameImpl::DidChangeFramePolicy(
@@ -3562,8 +3562,7 @@ void RenderFrameImpl::DidSetFramePolicyHeaders(
   // If either Feature Policy or Sandbox Flags are different from the default
   // (empty) values, then send them to the browser.
   if (!parsed_header.empty() || flags != blink::WebSandboxFlags::kNone) {
-    Send(new FrameHostMsg_DidSetFramePolicyHeaders(routing_id_, flags,
-                                                   parsed_header));
+    GetFrameHost()->DidSetFramePolicyHeaders(flags, parsed_header);
   }
 }
 

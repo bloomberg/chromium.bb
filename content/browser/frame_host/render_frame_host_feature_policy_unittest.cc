@@ -57,7 +57,7 @@ class RenderFrameHostFeaturePolicyTest
                                      const std::vector<std::string>& origins) {
     RenderFrameHost* current = *rfh;
     SimulateNavigation(&current, current->GetLastCommittedURL());
-    static_cast<TestRenderFrameHost*>(current)->OnDidSetFramePolicyHeaders(
+    static_cast<TestRenderFrameHost*>(current)->DidSetFramePolicyHeaders(
         blink::WebSandboxFlags::kNone, CreateFPHeader(feature, origins));
     *rfh = current;
   }

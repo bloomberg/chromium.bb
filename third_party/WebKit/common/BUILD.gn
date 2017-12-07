@@ -111,6 +111,7 @@ mojom("mojo_platform_bindings") {
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
     "clipboard/clipboard.mojom",
+    "feature_policy/feature_policy.mojom",
     "page/page_visibility_state.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker.mojom",
@@ -128,6 +129,7 @@ mojom("mojo_platform_bindings") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//url/mojo:url_mojom_gurl",
+    "//url/mojo:url_mojom_origin",
   ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
