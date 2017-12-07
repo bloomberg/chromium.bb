@@ -616,6 +616,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=752291)
 
     # Nexus 5X
+    # The following two tests just started timing out randomly on the
+    # android_optional_gpu_tests_rel tryserver with no apparent cause.
+    self.Flaky('deqp/data/gles2/shaders/conversions.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
+    self.Flaky('deqp/data/gles2/shaders/swizzles.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     # This one is causing intermittent timeouts on the device, and it
     # looks like when that happens, the next test also always times
     # out. Skip it for now until it's fixed and running reliably.
