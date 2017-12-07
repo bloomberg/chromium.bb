@@ -16,7 +16,7 @@ namespace gles2 {
 
 class PathManagerTest : public GpuServiceTest {
  public:
-  PathManagerTest() {}
+  PathManagerTest() = default;
 
  protected:
   void SetUp() override {

@@ -180,7 +180,7 @@ class CommandBufferCheckLostContext : public CommandBufferDirect {
       : CommandBufferDirect(transfer_buffer_manager, sync_point_manager),
         context_lost_allowed_(context_lost_allowed) {}
 
-  ~CommandBufferCheckLostContext() override {}
+  ~CommandBufferCheckLostContext() override = default;
 
   void Flush(int32_t put_offset) override {
     CommandBufferDirect::Flush(put_offset);

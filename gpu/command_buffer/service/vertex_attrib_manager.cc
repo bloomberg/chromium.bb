@@ -43,8 +43,7 @@ VertexAttrib::VertexAttrib()
 
 VertexAttrib::VertexAttrib(const VertexAttrib& other) = default;
 
-VertexAttrib::~VertexAttrib() {
-}
+VertexAttrib::~VertexAttrib() = default;
 
 void VertexAttrib::SetInfo(
     Buffer* buffer,

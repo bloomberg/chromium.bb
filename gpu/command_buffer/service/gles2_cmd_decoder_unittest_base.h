@@ -739,8 +739,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
           bound_vertex_array_object_(0) {
     }
 
-    ~MockGLStates() {
-    }
+    ~MockGLStates() = default;
 
     void OnBindArrayBuffer(GLuint id) {
       bound_array_buffer_object_ = id;

@@ -46,7 +46,7 @@ using GpuChannelEstablishedCallback =
 
 class GPU_EXPORT GpuChannelEstablishFactory {
  public:
-  virtual ~GpuChannelEstablishFactory() {}
+  virtual ~GpuChannelEstablishFactory() = default;
 
   virtual void EstablishGpuChannel(
       const GpuChannelEstablishedCallback& callback) = 0;

@@ -23,7 +23,7 @@ class GLContextVirtualTest : public GpuServiceTest {
  public:
   GLContextVirtualTest()
       : decoder_(new MockGLES2Decoder(&command_buffer_service_, &outputter_)) {}
-  ~GLContextVirtualTest() override {}
+  ~GLContextVirtualTest() override = default;
 
  protected:
   FakeCommandBufferServiceBase command_buffer_service_;

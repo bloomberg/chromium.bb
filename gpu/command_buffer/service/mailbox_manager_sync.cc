@@ -97,8 +97,7 @@ MailboxManagerSync::TextureGroup::TextureGroup(
     : definition_(definition) {
 }
 
-MailboxManagerSync::TextureGroup::~TextureGroup() {
-}
+MailboxManagerSync::TextureGroup::~TextureGroup() = default;
 
 void MailboxManagerSync::TextureGroup::AddName(const Mailbox& name) {
   g_lock.Get().AssertAcquired();
@@ -170,11 +169,9 @@ MailboxManagerSync::TextureGroupRef::TextureGroupRef(unsigned version,
 MailboxManagerSync::TextureGroupRef::TextureGroupRef(
     const TextureGroupRef& other) = default;
 
-MailboxManagerSync::TextureGroupRef::~TextureGroupRef() {
-}
+MailboxManagerSync::TextureGroupRef::~TextureGroupRef() = default;
 
-MailboxManagerSync::MailboxManagerSync() {
-}
+MailboxManagerSync::MailboxManagerSync() = default;
 
 MailboxManagerSync::~MailboxManagerSync() {
   DCHECK_EQ(0U, texture_to_group_.size());

@@ -13,8 +13,7 @@
 namespace gpu {
 namespace gles2 {
 
-MailboxManagerImpl::MailboxManagerImpl() {
-}
+MailboxManagerImpl::MailboxManagerImpl() = default;
 
 MailboxManagerImpl::~MailboxManagerImpl() {
   DCHECK(mailbox_to_textures_.empty());

@@ -33,7 +33,7 @@ namespace gles2 {
 
 class GLES2DecoderTest2 : public GLES2DecoderTestBase {
  public:
-  GLES2DecoderTest2() { }
+  GLES2DecoderTest2() = default;
 
   void TestAcceptedUniform(GLenum uniform_type,
                            uint32_t accepts_apis,

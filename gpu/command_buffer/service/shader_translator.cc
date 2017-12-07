@@ -136,11 +136,9 @@ ShShaderOutput ShaderTranslator::GetShaderOutputLanguageForContext(
   return SH_GLSL_COMPATIBILITY_OUTPUT;
 }
 
-ShaderTranslator::DestructionObserver::DestructionObserver() {
-}
+ShaderTranslator::DestructionObserver::DestructionObserver() = default;
 
-ShaderTranslator::DestructionObserver::~DestructionObserver() {
-}
+ShaderTranslator::DestructionObserver::~DestructionObserver() = default;
 
 ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),

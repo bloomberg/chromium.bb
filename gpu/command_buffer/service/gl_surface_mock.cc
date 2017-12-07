@@ -6,9 +6,7 @@
 
 namespace gpu {
 
-GLSurfaceMock::GLSurfaceMock() {
-}
+GLSurfaceMock::GLSurfaceMock() = default;
 
-GLSurfaceMock::~GLSurfaceMock() {
-}
+GLSurfaceMock::~GLSurfaceMock() = default;
 }  // namespace gpu

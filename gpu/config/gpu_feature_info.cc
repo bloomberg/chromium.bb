@@ -20,7 +20,7 @@ GpuFeatureInfo::GpuFeatureInfo(const GpuFeatureInfo&) = default;
 
 GpuFeatureInfo::GpuFeatureInfo(GpuFeatureInfo&&) = default;
 
-GpuFeatureInfo::~GpuFeatureInfo() {}
+GpuFeatureInfo::~GpuFeatureInfo() = default;
 
 GpuFeatureInfo& GpuFeatureInfo::operator=(const GpuFeatureInfo&) = default;
 

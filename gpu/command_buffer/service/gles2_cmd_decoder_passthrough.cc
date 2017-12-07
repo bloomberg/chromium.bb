@@ -76,9 +76,9 @@ void RequestExtensions(gl::GLApi* api,
 
 }  // anonymous namespace
 
-PassthroughResources::PassthroughResources() {}
+PassthroughResources::PassthroughResources() = default;
 
-PassthroughResources::~PassthroughResources() {}
+PassthroughResources::~PassthroughResources() = default;
 
 void PassthroughResources::Destroy(gl::GLApi* api) {
   bool have_context = !!api;
@@ -453,7 +453,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
   DCHECK(group);
 }
 
-GLES2DecoderPassthroughImpl::~GLES2DecoderPassthroughImpl() {}
+GLES2DecoderPassthroughImpl::~GLES2DecoderPassthroughImpl() = default;
 
 GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommands(
     unsigned int num_commands,

@@ -86,8 +86,7 @@ GPUTestConfig::GPUTestConfig()
 
 GPUTestConfig::GPUTestConfig(const GPUTestConfig& other) = default;
 
-GPUTestConfig::~GPUTestConfig() {
-}
+GPUTestConfig::~GPUTestConfig() = default;
 
 void GPUTestConfig::set_os(int32_t os) {
   DCHECK_EQ(0, os & ~(kOsAndroid | kOsWin | kOsMac | kOsLinux | kOsChromeOS));
@@ -154,8 +153,7 @@ void GPUTestConfig::ClearGPUVendor() {
   gpu_vendor_.clear();
 }
 
-GPUTestBotConfig::~GPUTestBotConfig() {
-}
+GPUTestBotConfig::~GPUTestBotConfig() = default;
 
 void GPUTestBotConfig::AddGPUVendor(uint32_t gpu_vendor) {
   DCHECK_EQ(0u, GPUTestConfig::gpu_vendor().size());

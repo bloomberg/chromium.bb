@@ -1101,7 +1101,7 @@ class SizeOnlyMemoryTracker : public MemoryTracker {
   uint64_t ShareGroupTracingGUID() const override { return 0; }
 
  private:
-  virtual ~SizeOnlyMemoryTracker() {}
+  virtual ~SizeOnlyMemoryTracker() = default;
   struct PoolInfo {
     PoolInfo() : initial_size(0), size(0) {}
     size_t initial_size;
@@ -1586,8 +1586,7 @@ TEST_P(GLES2DecoderDoCommandsTest, DoCommandsBadArgSize) {
 
 class GLES2DecoderDescheduleUntilFinishedTest : public GLES2DecoderTest {
  public:
-  GLES2DecoderDescheduleUntilFinishedTest() {
-  }
+  GLES2DecoderDescheduleUntilFinishedTest() = default;
 
   void SetUp() override {
     InitState init;

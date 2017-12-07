@@ -30,8 +30,7 @@ const GpuDriverBugWorkaroundInfo kFeatureList[] = {
 GpuDriverBugList::GpuDriverBugList(const GpuControlListData& data)
     : GpuControlList(data) {}
 
-GpuDriverBugList::~GpuDriverBugList() {
-}
+GpuDriverBugList::~GpuDriverBugList() = default;
 
 // static
 std::unique_ptr<GpuDriverBugList> GpuDriverBugList::Create() {

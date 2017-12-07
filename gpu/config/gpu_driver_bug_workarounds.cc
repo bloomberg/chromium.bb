@@ -53,7 +53,7 @@ GLint LowerMax(GLint max0, GLint max1) {
 
 namespace gpu {
 
-GpuDriverBugWorkarounds::GpuDriverBugWorkarounds() {}
+GpuDriverBugWorkarounds::GpuDriverBugWorkarounds() = default;
 
 GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
     const std::vector<int>& enabled_driver_bug_workarounds) {
@@ -63,7 +63,7 @@ GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
 GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
     const GpuDriverBugWorkarounds& other) = default;
 
-GpuDriverBugWorkarounds::~GpuDriverBugWorkarounds() {}
+GpuDriverBugWorkarounds::~GpuDriverBugWorkarounds() = default;
 
 void GpuDriverBugWorkarounds::Append(const GpuDriverBugWorkarounds& extra) {
 #define GPU_OP(type, name) name |= extra.name;

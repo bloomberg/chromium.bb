@@ -58,7 +58,7 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
   struct QueryInfo {
     QueryInfo(Bucket* bucket, uint32_t index)
         : bucket(bucket), sync(bucket->syncs + index) {}
-    QueryInfo() {}
+    QueryInfo() = default;
 
     uint32_t index() const { return sync - bucket->syncs; }
 

@@ -58,7 +58,7 @@ using namespace cmds;
 
 class GLES2DecoderTestWithExtensionsOnGLES2 : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestWithExtensionsOnGLES2() {}
+  GLES2DecoderTestWithExtensionsOnGLES2() = default;
 
   void SetUp() override {}
   void Init(const char* extensions) {

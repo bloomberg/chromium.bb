@@ -26,8 +26,8 @@ namespace gles2 {
 
 class ProgramInfoManagerTest : public testing::Test {
  public:
-  ProgramInfoManagerTest() {}
-  ~ProgramInfoManagerTest() override {}
+  ProgramInfoManagerTest() = default;
+  ~ProgramInfoManagerTest() override = default;
 
  protected:
   typedef ProgramInfoManager::Program Program;

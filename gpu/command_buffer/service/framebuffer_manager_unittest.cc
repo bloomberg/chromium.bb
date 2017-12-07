@@ -1297,7 +1297,7 @@ class FramebufferInfoFloatTest : public FramebufferInfoTestBase {
  public:
   FramebufferInfoFloatTest()
       : FramebufferInfoTestBase(CONTEXT_TYPE_OPENGLES3) {}
-  ~FramebufferInfoFloatTest() override {}
+  ~FramebufferInfoFloatTest() override = default;
 
  protected:
   void SetUp() override {

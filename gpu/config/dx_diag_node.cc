@@ -6,10 +6,10 @@
 
 namespace gpu {
 
-DxDiagNode::DxDiagNode() {}
+DxDiagNode::DxDiagNode() = default;
 
 DxDiagNode::DxDiagNode(const DxDiagNode& other) = default;
 
-DxDiagNode::~DxDiagNode() {}
+DxDiagNode::~DxDiagNode() = default;
 
 }  // namespace gpu

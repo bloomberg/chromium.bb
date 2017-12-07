@@ -22,7 +22,7 @@ class TransferBufferManager;
 
 class GPU_EXPORT CommandBufferServiceBase {
  public:
-  virtual ~CommandBufferServiceBase() {}
+  virtual ~CommandBufferServiceBase() = default;
 
   // Gets the current state of the service.
   virtual CommandBuffer::State GetState() = 0;
@@ -53,7 +53,7 @@ class GPU_EXPORT CommandBufferServiceClient {
     kPauseExecution,
   };
 
-  virtual ~CommandBufferServiceClient() {}
+  virtual ~CommandBufferServiceClient() = default;
 
   // Called every time a batch of commands was processed by the
   // CommandBufferService. The return value indicates whether the

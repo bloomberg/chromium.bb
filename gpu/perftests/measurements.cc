@@ -12,14 +12,8 @@
 
 namespace gpu {
 
-Measurement::Measurement() : name(), wall_time(), cpu_time(), gpu_time() {
-}
-Measurement::Measurement(const Measurement& m)
-    : name(m.name),
-      wall_time(m.wall_time),
-      cpu_time(m.cpu_time),
-      gpu_time(m.gpu_time) {
-}
+Measurement::Measurement() = default;
+Measurement::Measurement(const Measurement& m) = default;
 Measurement::Measurement(const std::string& name,
                          const base::TimeDelta wall_time,
                          const base::TimeDelta cpu_time,
@@ -51,8 +45,7 @@ Measurement Measurement::Divide(int a) const {
   return Measurement(name, wall_time / a, cpu_time / a, gpu_time / a);
 }
 
-Measurement::~Measurement() {
-}
+Measurement::~Measurement() = default;
 
 MeasurementTimers::MeasurementTimers(gl::GPUTimingClient* gpu_timing_client)
     : wall_time_start_(), cpu_time_start_(), gpu_timer_() {

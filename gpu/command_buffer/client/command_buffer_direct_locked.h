@@ -13,7 +13,7 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
   explicit CommandBufferDirectLocked(
       TransferBufferManager* transfer_buffer_manager)
       : CommandBufferDirect(transfer_buffer_manager) {}
-  ~CommandBufferDirectLocked() override {}
+  ~CommandBufferDirectLocked() override = default;
 
   // Overridden from CommandBufferDirect
   void Flush(int32_t put_offset) override;

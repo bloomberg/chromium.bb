@@ -50,7 +50,7 @@ class GpuChannelManagerDelegate {
   virtual void SetActiveURL(const GURL& url) = 0;
 
  protected:
-  virtual ~GpuChannelManagerDelegate() {}
+  virtual ~GpuChannelManagerDelegate() = default;
 };
 
 }  // namespace gpu

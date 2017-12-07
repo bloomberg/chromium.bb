@@ -10,9 +10,9 @@ namespace gpu {
 
 class GPUTestConfigTest : public testing::Test {
  public:
-  GPUTestConfigTest() { }
+  GPUTestConfigTest() = default;
 
-  ~GPUTestConfigTest() override {}
+  ~GPUTestConfigTest() override = default;
 
  protected:
   void SetUp() override {}

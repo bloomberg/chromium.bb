@@ -16,7 +16,7 @@ namespace gpu {
 class GpuChannelManagerTest : public GpuChannelTestCommon {
  public:
   GpuChannelManagerTest() : GpuChannelTestCommon() {}
-  ~GpuChannelManagerTest() override {}
+  ~GpuChannelManagerTest() override = default;
 
 #if defined(OS_ANDROID)
   void TestOnApplicationStateChange(gles2::ContextType type,

@@ -179,7 +179,7 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
 NativeImageBufferEGL::ClientInfo::ClientInfo(gl::GLImage* client)
     : client(client), needs_wait_before_read(true) {}
 
-NativeImageBufferEGL::ClientInfo::~ClientInfo() {}
+NativeImageBufferEGL::ClientInfo::~ClientInfo() = default;
 
 NativeImageBufferEGL::NativeImageBufferEGL(EGLDisplay display,
                                            EGLImageKHR image)
@@ -242,7 +242,7 @@ class NativeImageBufferStub : public NativeImageBuffer {
   NativeImageBufferStub() : NativeImageBuffer() {}
 
  private:
-  ~NativeImageBufferStub() override {}
+  ~NativeImageBufferStub() override = default;
   void AddClient(gl::GLImage* client) override {}
   void RemoveClient(gl::GLImage* client) override {}
   bool IsClient(gl::GLImage* client) override { return true; }
@@ -309,7 +309,7 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
 
 TextureDefinition::LevelInfo::LevelInfo(const LevelInfo& other) = default;
 
-TextureDefinition::LevelInfo::~LevelInfo() {}
+TextureDefinition::LevelInfo::~LevelInfo() = default;
 
 TextureDefinition::TextureDefinition()
     : version_(0),
@@ -358,8 +358,7 @@ TextureDefinition::TextureDefinition(
 
 TextureDefinition::TextureDefinition(const TextureDefinition& other) = default;
 
-TextureDefinition::~TextureDefinition() {
-}
+TextureDefinition::~TextureDefinition() = default;
 
 Texture* TextureDefinition::CreateTexture() const {
   GLuint texture_id;

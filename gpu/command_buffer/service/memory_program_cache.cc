@@ -297,7 +297,7 @@ MemoryProgramCache::MemoryProgramCache(
       store_(ProgramMRUCache::NO_AUTO_EVICT),
       activity_flags_(activity_flags) {}
 
-MemoryProgramCache::~MemoryProgramCache() {}
+MemoryProgramCache::~MemoryProgramCache() = default;
 
 void MemoryProgramCache::ClearBackend() {
   store_.Clear();

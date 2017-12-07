@@ -26,8 +26,8 @@ class GpuControlListEntryTest : public testing::Test {
  public:
   typedef GpuControlList::Entry Entry;
 
-  GpuControlListEntryTest() {}
-  ~GpuControlListEntryTest() override {}
+  GpuControlListEntryTest() = default;
+  ~GpuControlListEntryTest() override = default;
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;
@@ -422,8 +422,8 @@ TEST_F(GpuControlListEntryTest, MachineModelVersionException) {
 
 class GpuControlListEntryDualGPUTest : public GpuControlListEntryTest {
  public:
-  GpuControlListEntryDualGPUTest() { }
-  ~GpuControlListEntryDualGPUTest() override {}
+  GpuControlListEntryDualGPUTest() = default;
+  ~GpuControlListEntryDualGPUTest() override = default;
 
   void SetUp() override {
     // Set up a NVIDIA/Intel dual, with NVIDIA as primary and Intel as

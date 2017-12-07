@@ -14,8 +14,8 @@ namespace gpu {
 
 class GpuDriverBugListTest : public testing::Test {
  public:
-  GpuDriverBugListTest() {}
-  ~GpuDriverBugListTest() override {}
+  GpuDriverBugListTest() = default;
+  ~GpuDriverBugListTest() override = default;
 };
 
 #if defined(OS_ANDROID)

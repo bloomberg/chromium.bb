@@ -62,8 +62,8 @@ static const size_t kSmallTextureSize = 4 * kSmallTextureDim * kSmallTextureDim;
 
 class ServiceDiscardableManagerTest : public GpuServiceTest {
  public:
-  ServiceDiscardableManagerTest() {}
-  ~ServiceDiscardableManagerTest() override {}
+  ServiceDiscardableManagerTest() = default;
+  ~ServiceDiscardableManagerTest() override = default;
 
  protected:
   void SetUp() override {

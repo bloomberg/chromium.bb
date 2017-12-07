@@ -55,7 +55,8 @@ VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities()
 VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities(
     const VideoDecodeAcceleratorCapabilities& other) = default;
 
-VideoDecodeAcceleratorCapabilities::~VideoDecodeAcceleratorCapabilities() {}
+VideoDecodeAcceleratorCapabilities::~VideoDecodeAcceleratorCapabilities() =
+    default;
 
 GPUInfo::GPUDevice::GPUDevice()
     : vendor_id(0),
@@ -63,7 +64,7 @@ GPUInfo::GPUDevice::GPUDevice()
       active(false) {
 }
 
-GPUInfo::GPUDevice::~GPUDevice() { }
+GPUInfo::GPUDevice::~GPUDevice() = default;
 
 GPUInfo::GPUInfo()
     : optimus(false),
@@ -91,7 +92,7 @@ GPUInfo::GPUInfo()
 
 GPUInfo::GPUInfo(const GPUInfo& other) = default;
 
-GPUInfo::~GPUInfo() { }
+GPUInfo::~GPUInfo() = default;
 
 const GPUInfo::GPUDevice& GPUInfo::active_gpu() const {
   if (gpu.active)

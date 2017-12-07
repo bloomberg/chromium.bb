@@ -500,8 +500,7 @@ GpuControlList::GpuControlList(const GpuControlListData& data)
   max_entry_id_ = entries_[entry_count_ - 1].id;
 }
 
-GpuControlList::~GpuControlList() {
-}
+GpuControlList::~GpuControlList() = default;
 
 std::set<int32_t> GpuControlList::MakeDecision(GpuControlList::OsType os,
                                                const std::string& os_version,

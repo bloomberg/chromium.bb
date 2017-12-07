@@ -60,7 +60,7 @@ struct ContextCreationAttribHelper;
 struct ContextState;
 
 struct DisallowedFeatures {
-  DisallowedFeatures() {}
+  DisallowedFeatures() = default;
 
   void AllowExtensions() {
     chromium_color_buffer_float_rgba = false;
@@ -83,7 +83,7 @@ struct DisallowedFeatures {
 
 class GPU_EXPORT GLES2DecoderClient {
  public:
-  virtual ~GLES2DecoderClient() {}
+  virtual ~GLES2DecoderClient() = default;
 
   // Prints a message (error/warning) to the console.
   virtual void OnConsoleMessage(int32_t id, const std::string& message) = 0;

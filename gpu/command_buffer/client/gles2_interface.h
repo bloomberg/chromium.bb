@@ -23,8 +23,8 @@ namespace gles2 {
 // This class is the interface for all client side GL functions.
 class GLES2Interface {
  public:
-  GLES2Interface() {}
-  virtual ~GLES2Interface() {}
+  GLES2Interface() = default;
+  virtual ~GLES2Interface() = default;
 
   virtual void FreeSharedMemory(void*) {};
 

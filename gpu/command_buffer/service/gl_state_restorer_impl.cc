@@ -14,8 +14,7 @@ GLStateRestorerImpl::GLStateRestorerImpl(
     : decoder_(decoder) {
 }
 
-GLStateRestorerImpl::~GLStateRestorerImpl() {
-}
+GLStateRestorerImpl::~GLStateRestorerImpl() = default;
 
 bool GLStateRestorerImpl::IsInitialized() {
   DCHECK(decoder_.get());

@@ -18,7 +18,7 @@ namespace gles2 {
 
 ProgramCache::ProgramCache(size_t max_cache_size_bytes)
     : max_size_bytes_(max_cache_size_bytes) {}
-ProgramCache::~ProgramCache() {}
+ProgramCache::~ProgramCache() = default;
 
 void ProgramCache::Clear() {
   ClearBackend();

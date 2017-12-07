@@ -17,7 +17,7 @@ MockGLES2Decoder::MockGLES2Decoder(
       .WillByDefault(testing::Return(true));
 }
 
-MockGLES2Decoder::~MockGLES2Decoder() {}
+MockGLES2Decoder::~MockGLES2Decoder() = default;
 
 base::WeakPtr<GLES2Decoder> MockGLES2Decoder::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();

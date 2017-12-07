@@ -105,7 +105,7 @@ class GPU_EXPORT GPUTestConfig {
 
 class GPU_EXPORT GPUTestBotConfig : public GPUTestConfig {
  public:
-  GPUTestBotConfig() { }
+  GPUTestBotConfig() = default;
   ~GPUTestBotConfig() override;
 
   // This should only be called when no gpu_vendor is added.

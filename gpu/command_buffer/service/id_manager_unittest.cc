@@ -10,8 +10,7 @@ namespace gles2 {
 
 class IdManagerTest : public testing::Test {
  public:
-  IdManagerTest() {
-  }
+  IdManagerTest() = default;
 
  protected:
   void SetUp() override {}

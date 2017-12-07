@@ -28,8 +28,8 @@ class GpuControlListTest : public testing::Test {
  public:
   typedef GpuControlList::Entry Entry;
 
-  GpuControlListTest() {}
-  ~GpuControlListTest() override {}
+  GpuControlListTest() = default;
+  ~GpuControlListTest() override = default;
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;

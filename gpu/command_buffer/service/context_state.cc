@@ -91,8 +91,7 @@ TextureUnit::TextureUnit()
 
 TextureUnit::TextureUnit(const TextureUnit& other) = default;
 
-TextureUnit::~TextureUnit() {
-}
+TextureUnit::~TextureUnit() = default;
 
 bool Vec4::Equal(const Vec4& other) const {
   if (type_ != other.type_)
@@ -226,8 +225,7 @@ ContextState::ContextState(FeatureInfo* feature_info,
   Initialize();
 }
 
-ContextState::~ContextState() {
-}
+ContextState::~ContextState() = default;
 
 void ContextState::SetLineWidthBounds(GLfloat min, GLfloat max) {
   line_width_min_ = min;

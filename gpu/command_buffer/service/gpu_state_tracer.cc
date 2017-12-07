@@ -22,7 +22,7 @@ class Snapshot : public base::trace_event::ConvertableToTraceFormat {
  public:
   static std::unique_ptr<Snapshot> Create(const ContextState* state);
 
-  ~Snapshot() override {}
+  ~Snapshot() override = default;
 
   // Save a screenshot of the currently bound framebuffer.
   bool SaveScreenshot(const gfx::Size& size);

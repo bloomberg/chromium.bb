@@ -130,7 +130,7 @@ class MockTransferBuffer : public TransferBufferInterface {
     }
   }
 
-  ~MockTransferBuffer() override {}
+  ~MockTransferBuffer() override = default;
 
   base::SharedMemoryHandle shared_memory_handle() const override;
   bool Initialize(unsigned int starting_buffer_size,

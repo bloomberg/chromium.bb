@@ -80,8 +80,8 @@ class ContextSupport {
       uint32_t texture_id) = 0;
 
  protected:
-  ContextSupport() {}
-  virtual ~ContextSupport() {}
+  ContextSupport() = default;
+  virtual ~ContextSupport() = default;
 };
 
 }

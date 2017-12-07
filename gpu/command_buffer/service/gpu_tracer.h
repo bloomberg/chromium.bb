@@ -105,7 +105,7 @@ class GPU_EXPORT GPUTracer {
 
 class GPU_EXPORT Outputter {
  public:
-  virtual ~Outputter() {}
+  virtual ~Outputter() = default;
 
   virtual void TraceDevice(GpuTracerSource source,
                            const std::string& category,

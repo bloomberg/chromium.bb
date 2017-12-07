@@ -189,8 +189,7 @@ GPUTestExpectationsParser::GPUTestExpectationsParser() {
             sizeof(kErrorMessage) / sizeof(kErrorMessage[0]));
 }
 
-GPUTestExpectationsParser::~GPUTestExpectationsParser() {
-}
+GPUTestExpectationsParser::~GPUTestExpectationsParser() = default;
 
 bool GPUTestExpectationsParser::LoadTestExpectations(const std::string& data) {
   entries_.clear();

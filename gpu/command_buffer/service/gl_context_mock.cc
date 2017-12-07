@@ -6,9 +6,7 @@
 
 namespace gpu {
 
-GLContextMock::GLContextMock() {
-}
-GLContextMock::~GLContextMock() {
-}
+GLContextMock::GLContextMock() = default;
+GLContextMock::~GLContextMock() = default;
 
 }  // namespace gpu

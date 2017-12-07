@@ -74,9 +74,9 @@ class ErrorStateImpl : public ErrorState {
   DISALLOW_COPY_AND_ASSIGN(ErrorStateImpl);
 };
 
-ErrorState::ErrorState() {}
+ErrorState::ErrorState() = default;
 
-ErrorState::~ErrorState() {}
+ErrorState::~ErrorState() = default;
 
 ErrorState* ErrorState::Create(ErrorStateClient* client, Logger* logger) {
   return new ErrorStateImpl(client, logger);
@@ -85,7 +85,7 @@ ErrorState* ErrorState::Create(ErrorStateClient* client, Logger* logger) {
 ErrorStateImpl::ErrorStateImpl(ErrorStateClient* client, Logger* logger)
     : error_bits_(0), client_(client), logger_(logger) {}
 
-ErrorStateImpl::~ErrorStateImpl() {}
+ErrorStateImpl::~ErrorStateImpl() = default;
 
 uint32_t ErrorStateImpl::GetGLError() {
   // Check the GL error first, then our wrapped error.

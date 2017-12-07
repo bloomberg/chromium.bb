@@ -2563,7 +2563,7 @@ class ProgramManagerDualSourceBlendingTest
       public testing::WithParamInterface<
           testing::tuple<const char*, const char*>> {
  public:
-  ProgramManagerDualSourceBlendingTest() {}
+  ProgramManagerDualSourceBlendingTest() = default;
 
  protected:
   void SetUpWithFeatureInfo(FeatureInfo* feature_info) {

@@ -32,7 +32,7 @@ const CommonDecoder::CommandInfo CommonDecoder::command_info[] = {
 
 CommonDecoder::Bucket::Bucket() : size_(0) {}
 
-CommonDecoder::Bucket::~Bucket() {}
+CommonDecoder::Bucket::~Bucket() = default;
 
 void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
   if (OffsetSizeValid(offset, size)) {
@@ -132,7 +132,7 @@ CommonDecoder::CommonDecoder(CommandBufferServiceBase* command_buffer_service)
   DCHECK(command_buffer_service_);
 }
 
-CommonDecoder::~CommonDecoder() {}
+CommonDecoder::~CommonDecoder() = default;
 
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int data_offset,

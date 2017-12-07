@@ -41,9 +41,8 @@ class QueryManagerTest : public GpuServiceTest {
   static const uint32_t kInitialResult = 0xBDBDBDBDu;
   static const uint8_t kInitialMemoryValue = 0xBDu;
 
-  QueryManagerTest() {
-  }
-  ~QueryManagerTest() override {}
+  QueryManagerTest() = default;
+  ~QueryManagerTest() override = default;
 
  protected:
   void SetUp() override {

@@ -39,7 +39,7 @@ class ContextGroupTest : public GpuServiceTest {
  public:
   static const bool kBindGeneratesResource = false;
 
-  ContextGroupTest() {}
+  ContextGroupTest() = default;
 
  protected:
   void SetUp() override {

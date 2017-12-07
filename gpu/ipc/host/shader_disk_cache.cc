@@ -419,9 +419,9 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShaderCacheFactory
 
-ShaderCacheFactory::ShaderCacheFactory() {}
+ShaderCacheFactory::ShaderCacheFactory() = default;
 
-ShaderCacheFactory::~ShaderCacheFactory() {}
+ShaderCacheFactory::~ShaderCacheFactory() = default;
 
 void ShaderCacheFactory::SetCacheInfo(int32_t client_id,
                                       const base::FilePath& path) {

@@ -25,8 +25,8 @@ IndexedBufferBindingHost::IndexedBufferBinding::IndexedBufferBinding(
       effective_full_buffer_size(other.effective_full_buffer_size) {
 }
 
-IndexedBufferBindingHost::IndexedBufferBinding::~IndexedBufferBinding() {
-}
+IndexedBufferBindingHost::IndexedBufferBinding::~IndexedBufferBinding() =
+    default;
 
 bool IndexedBufferBindingHost::IndexedBufferBinding::operator==(
     const IndexedBufferBindingHost::IndexedBufferBinding& other) const {
@@ -84,8 +84,7 @@ IndexedBufferBindingHost::IndexedBufferBindingHost(
   buffer_bindings_.resize(max_bindings);
 }
 
-IndexedBufferBindingHost::~IndexedBufferBindingHost() {
-}
+IndexedBufferBindingHost::~IndexedBufferBindingHost() = default;
 
 void IndexedBufferBindingHost::DoBindBufferBase(
     GLenum target, GLuint index, Buffer* buffer) {

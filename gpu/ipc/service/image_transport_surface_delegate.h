@@ -59,7 +59,7 @@ class GPU_EXPORT ImageTransportSurfaceDelegate {
   virtual int32_t GetRouteID() const = 0;
 
  protected:
-  virtual ~ImageTransportSurfaceDelegate() {}
+  virtual ~ImageTransportSurfaceDelegate() = default;
 };
 
 }  // namespace gpu

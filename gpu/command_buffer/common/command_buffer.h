@@ -65,11 +65,9 @@ class GPU_EXPORT CommandBuffer {
     std::string message;
   };
 
-  CommandBuffer() {
-  }
+  CommandBuffer() = default;
 
-  virtual ~CommandBuffer() {
-  }
+  virtual ~CommandBuffer() = default;
 
   // Check if a value is between a start and end value, inclusive, allowing
   // for wrapping if start > end.

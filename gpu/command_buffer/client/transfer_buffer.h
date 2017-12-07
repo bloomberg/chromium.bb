@@ -30,8 +30,8 @@ class CommandBufferHelper;
 // Interface for managing the transfer buffer.
 class GPU_EXPORT TransferBufferInterface {
  public:
-  TransferBufferInterface() { }
-  virtual ~TransferBufferInterface() { }
+  TransferBufferInterface() = default;
+  virtual ~TransferBufferInterface() = default;
 
   // Returns the shared memory's handle when the back end is base::SharedMemory.
   // Otherwise, this returns an invalid handle.

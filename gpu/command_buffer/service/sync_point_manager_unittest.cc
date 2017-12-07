@@ -17,7 +17,7 @@ namespace gpu {
 class SyncPointManagerTest : public testing::Test {
  public:
   SyncPointManagerTest() : sync_point_manager_(new SyncPointManager) {}
-  ~SyncPointManagerTest() override {}
+  ~SyncPointManagerTest() override = default;
 
  protected:
   // Simple static function which can be used to test callbacks.

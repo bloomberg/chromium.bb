@@ -49,8 +49,8 @@ class GPUInfoCollectorTest
     : public testing::Test,
       public ::testing::WithParamInterface<MockedOperatingSystemKind> {
  public:
-  GPUInfoCollectorTest() {}
-  ~GPUInfoCollectorTest() override {}
+  GPUInfoCollectorTest() = default;
+  ~GPUInfoCollectorTest() override = default;
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -248,8 +248,8 @@ TEST_P(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
 
 class CollectDriverInfoGLTest : public testing::Test {
  public:
-  CollectDriverInfoGLTest() {}
-  ~CollectDriverInfoGLTest() override {}
+  CollectDriverInfoGLTest() = default;
+  ~CollectDriverInfoGLTest() override = default;
 
   void SetUp() override {}
   void TearDown() override {}

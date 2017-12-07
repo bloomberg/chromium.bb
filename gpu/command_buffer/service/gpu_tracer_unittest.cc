@@ -33,8 +33,8 @@ int64_t FakeCpuTime() {
 
 class MockOutputter : public Outputter {
  public:
-  MockOutputter() {}
-  ~MockOutputter() override {}
+  MockOutputter() = default;
+  ~MockOutputter() override = default;
 
   MOCK_METHOD5(TraceDevice,
                void(GpuTracerSource source,
@@ -61,7 +61,7 @@ class GPUTracerTester : public GPUTracer {
     gpu_trace_dev_category = &tracing_enabled_;
   }
 
-  ~GPUTracerTester() override {}
+  ~GPUTracerTester() override = default;
 
   void SetTracingEnabled(bool enabled) {
     tracing_enabled_ = enabled ? 1 : 0;

@@ -26,8 +26,8 @@ constexpr auto kAny = GpuControlList::kAny;
 
 class VersionTest : public testing::Test {
  public:
-  VersionTest() {}
-  ~VersionTest() override {}
+  VersionTest() = default;
+  ~VersionTest() override = default;
 
   typedef GpuControlList::Version Version;
 };

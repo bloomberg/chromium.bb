@@ -512,8 +512,7 @@ GLES2Decoder::GLES2Decoder(CommandBufferServiceBase* command_buffer_service,
   DCHECK(outputter_);
 }
 
-GLES2Decoder::~GLES2Decoder() {
-}
+GLES2Decoder::~GLES2Decoder() = default;
 
 void GLES2Decoder::BeginDecoding() {}
 
@@ -3193,8 +3192,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
   DCHECK(group);
 }
 
-GLES2DecoderImpl::~GLES2DecoderImpl() {
-}
+GLES2DecoderImpl::~GLES2DecoderImpl() = default;
 
 base::WeakPtr<GLES2Decoder> GLES2DecoderImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();

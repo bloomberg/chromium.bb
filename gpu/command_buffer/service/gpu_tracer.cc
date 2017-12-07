@@ -41,7 +41,7 @@ TraceMarker::TraceMarker(const std::string& category, const std::string& name)
 
 TraceMarker::TraceMarker(const TraceMarker& other) = default;
 
-TraceMarker::~TraceMarker() {}
+TraceMarker::~TraceMarker() = default;
 
 TraceOutputter::TraceOutputter() : named_thread_("Dummy Trace") {}
 
@@ -50,7 +50,7 @@ TraceOutputter::TraceOutputter(const std::string& name) : named_thread_(name) {
   named_thread_.Stop();
 }
 
-TraceOutputter::~TraceOutputter() {}
+TraceOutputter::~TraceOutputter() = default;
 
 void TraceOutputter::TraceDevice(GpuTracerSource source,
                                  const std::string& category,
@@ -130,7 +130,7 @@ GPUTrace::GPUTrace(Outputter* outputter,
     gpu_timer_ = gpu_timing_client->CreateGPUTimer(false);
 }
 
-GPUTrace::~GPUTrace() {}
+GPUTrace::~GPUTrace() = default;
 
 void GPUTrace::Destroy(bool have_context) {
   if (gpu_timer_.get()) {
@@ -188,7 +188,7 @@ GPUTracer::GPUTracer(GLES2Decoder* decoder)
   disjoint_time_ = gpu_timing_client_->GetCurrentCPUTime();
 }
 
-GPUTracer::~GPUTracer() {}
+GPUTracer::~GPUTracer() = default;
 
 void GPUTracer::Destroy(bool have_context) {
   ClearOngoingTraces(have_context);

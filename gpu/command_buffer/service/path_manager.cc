@@ -101,8 +101,7 @@ static typename IteratorSelector<MapType>::iterator GetContainingOrNextRange(
 
 }  // anonymous namespace
 
-PathManager::PathManager() {
-}
+PathManager::PathManager() = default;
 
 PathManager::~PathManager() {
   DCHECK(path_map_.empty());

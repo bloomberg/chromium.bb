@@ -25,7 +25,7 @@ Logger::Logger(const DebugMarkerManager* debug_marker_manager,
       base::HexEncode(&this_temp, sizeof(this_temp));
 }
 
-Logger::~Logger() {}
+Logger::~Logger() = default;
 
 void Logger::LogMessage(
     const char* filename, int line, const std::string& msg) {

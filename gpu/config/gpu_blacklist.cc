@@ -12,8 +12,7 @@ namespace gpu {
 GpuBlacklist::GpuBlacklist(const GpuControlListData& data)
     : GpuControlList(data) {}
 
-GpuBlacklist::~GpuBlacklist() {
-}
+GpuBlacklist::~GpuBlacklist() = default;
 
 // static
 std::unique_ptr<GpuBlacklist> GpuBlacklist::Create() {

@@ -21,7 +21,7 @@ namespace gpu {
 
 class GPU_EXPORT GpuSandboxHelper {
  public:
-  virtual ~GpuSandboxHelper() {}
+  virtual ~GpuSandboxHelper() = default;
 
   virtual void PreSandboxStartup() = 0;
 

@@ -27,7 +27,7 @@ namespace gles2 {
 // enabled or extension is not present.
 class GLES2DecoderTestDisabledExtensions : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestDisabledExtensions() {}
+  GLES2DecoderTestDisabledExtensions() = default;
 };
 INSTANTIATE_TEST_CASE_P(Service,
                         GLES2DecoderTestDisabledExtensions,
@@ -482,7 +482,7 @@ INSTANTIATE_TEST_CASE_P(Service,
 
 class GLES2DecoderTestWithBlendEquationAdvanced : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestWithBlendEquationAdvanced() {}
+  GLES2DecoderTestWithBlendEquationAdvanced() = default;
   void SetUp() override {
     InitState init;
     init.gl_version = "opengl es 2.0";
@@ -503,7 +503,7 @@ INSTANTIATE_TEST_CASE_P(Service,
 class GLES2DecoderTestWithEXTMultisampleCompatibility
     : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestWithEXTMultisampleCompatibility() {}
+  GLES2DecoderTestWithEXTMultisampleCompatibility() = default;
 
   void SetUp() override {
     InitState init;
@@ -523,7 +523,7 @@ INSTANTIATE_TEST_CASE_P(Service,
 
 class GLES2DecoderTestWithBlendFuncExtended : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestWithBlendFuncExtended() {}
+  GLES2DecoderTestWithBlendFuncExtended() = default;
   void SetUp() override {
     InitState init;
     init.gl_version = "opengl es 3.0";
@@ -543,7 +543,7 @@ INSTANTIATE_TEST_CASE_P(Service,
 class GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples
     : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples() {}
+  GLES2DecoderTestWithCHROMIUMFramebufferMixedSamples() = default;
   void SetUp() override {
     InitState init;
     init.gl_version = "opengl es 3.1";
@@ -1726,7 +1726,7 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
 
 class GLES2DecoderTestWithCHROMIUMRasterTransport : public GLES2DecoderTest {
  public:
-  GLES2DecoderTestWithCHROMIUMRasterTransport() {}
+  GLES2DecoderTestWithCHROMIUMRasterTransport() = default;
   void SetUp() override {
     InitState init;
     init.gl_version = "opengl es 2.0";
@@ -1746,7 +1746,7 @@ INSTANTIATE_TEST_CASE_P(Service,
 
 class GLES3DecoderTestWithEXTWindowRectangles : public GLES3DecoderTest {
  public:
-  GLES3DecoderTestWithEXTWindowRectangles() {}
+  GLES3DecoderTestWithEXTWindowRectangles() = default;
   void SetUp() override {
     InitState init;
     init.context_type = CONTEXT_TYPE_OPENGLES3;
