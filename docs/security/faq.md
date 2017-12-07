@@ -58,6 +58,11 @@ believe that tracking the latest stable upstream is usually less work for
 greater benefit in the long run than backporting. We strongly recommend that you
 track the latest stable branches, and we support only the latest stable branch.
 
+<a name="TOC-Severity-Guidelines"></a>
+## How does the Chrome team determine severity of security bugs?
+
+See the [severity guidelines](severity-guidelines.md) for more information.
+
 <a name="TOC-Are-privacy-issues-considered-security-bugs-"></a>
 ## Are privacy issues considered security bugs?
 
@@ -514,6 +519,18 @@ violation of the [priority of
 constituencies](http://www.schemehostport.com/2011/10/priority-of-constituencies.html).
 For a longer discussion on this, see the [mailing list
 announcement](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/zhhj7hCip5c).
+
+<a name="TOC-Signout-of-Chrome"></a>
+## Signing out of Chrome does not delete previously-synced data?
+
+If you have signed into Chrome and subsequently sign out of Chrome, previously
+saved passwords and other data are not deleted from your device unless you
+select that option when signing out of Chrome.
+
+If you change your Google password, synced data will no longer be updated in
+Chrome instances until you provide the new password to Chrome on each device
+configured to sync. However, previously synced data [remains available](https://crbug.com/792967)
+on each previously-syncing device unless manually removed.
 
 <a name="TOC-Why-doesn-t-the-Password-Manager-save-my-Google-password-if-I-am-using-Chrome-Sync-"></a>
 ## Why doesn't the Password Manager save my Google password if I am using Chrome Sync?
