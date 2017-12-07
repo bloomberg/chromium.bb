@@ -453,19 +453,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)webDidUpdateSessionForLoadWithURL:(const GURL&)URL {
-  // After a crash the NTP is loaded by default.
-  if (URL.host() != kChromeUINewTabHost) {
-    static BOOL hasLoadedPage = NO;
-    if (!hasLoadedPage) {
-      // As soon as load is initialted, a crash shouldn't be counted as a
-      // startup crash. Since initiating a url load requires user action and is
-      // a significant source of crashes that could lead to false positives in
-      // crash loop detection.
-      crash_util::ResetFailedStartupAttemptCount();
-      hasLoadedPage = YES;
-    }
-  }
-
   web::NavigationItem* navigationItem =
       [self navigationManager]->GetPendingItem();
 
@@ -816,6 +803,19 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
+  // After a crash the NTP is loaded by default.
+  if (navigation->GetUrl().host() != kChromeUINewTabHost) {
+    static BOOL hasLoadedPage = NO;
+    if (!hasLoadedPage) {
+      // As soon as load is initialted, a crash shouldn't be counted as a
+      // startup crash. Since initiating a url load requires user action and is
+      // a significant source of crashes that could lead to false positives in
+      // crash loop detection.
+      crash_util::ResetFailedStartupAttemptCount();
+      hasLoadedPage = YES;
+    }
+  }
+
   if (!navigation->IsSameDocument() &&
       !base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     // Move the toolbar to visible during page load.
