@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/connection_tester.h"
 #include "remoting/protocol/fake_stream_socket.h"
@@ -242,9 +243,11 @@ TEST_F(ChannelMultiplexerTest, WriteFailSync) {
   EXPECT_CALL(cb2, Run(net::ERR_FAILED));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf.get(), buf->size(), cb1.Get()));
+            host_socket1_->Write(buf.get(), buf->size(), cb1.Get(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf.get(), buf->size(), cb2.Get()));
+            host_socket2_->Write(buf.get(), buf->size(), cb2.Get(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -268,9 +271,11 @@ TEST_F(ChannelMultiplexerTest, WriteFailAsync) {
   EXPECT_CALL(cb2, Run(net::ERR_FAILED));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf.get(), buf->size(), cb1.Get()));
+            host_socket1_->Write(buf.get(), buf->size(), cb1.Get(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf.get(), buf->size(), cb2.Get()));
+            host_socket2_->Write(buf.get(), buf->size(), cb2.Get(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -297,9 +302,11 @@ TEST_F(ChannelMultiplexerTest, DeleteWhenFailed) {
       .WillOnce(InvokeWithoutArgs(this, &ChannelMultiplexerTest::DeleteAll));
 
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket1_->Write(buf.get(), buf->size(), cb1.Get()));
+            host_socket1_->Write(buf.get(), buf->size(), cb1.Get(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(net::ERR_IO_PENDING,
-            host_socket2_->Write(buf.get(), buf->size(), cb2.Get()));
+            host_socket2_->Write(buf.get(), buf->size(), cb2.Get(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();
 

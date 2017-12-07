@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/buffered_socket_writer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
@@ -128,7 +129,8 @@ TEST_F(ClientVideoDispatcherTest, WithoutAcks) {
   packet.set_data(std::string());
 
   // Send a VideoPacket and verify that the client receives it.
-  writer_.Write(SerializeAndFrameMessage(packet), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(packet), base::Closure(),
+                TRAFFIC_ANNOTATION_FOR_TESTS);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, video_packets_.size());
 
@@ -148,7 +150,8 @@ TEST_F(ClientVideoDispatcherTest, WithAcks) {
   packet.set_frame_id(kTestFrameId);
 
   // Send a VideoPacket and verify that the client receives it.
-  writer_.Write(SerializeAndFrameMessage(packet), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(packet), base::Closure(),
+                TRAFFIC_ANNOTATION_FOR_TESTS);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, video_packets_.size());
 
@@ -184,7 +187,8 @@ TEST_F(ClientVideoDispatcherTest, VideoLayout) {
       .WillOnce(testing::SaveArg<0>(&layout));
 
   // Send a VideoPacket and verify that the client receives it.
-  writer_.Write(SerializeAndFrameMessage(packet), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(packet), base::Closure(),
+                TRAFFIC_ANNOTATION_FOR_TESTS);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1, layout.video_track_size());
@@ -205,11 +209,13 @@ TEST_F(ClientVideoDispatcherTest, AcksOrder) {
   packet.set_frame_id(kTestFrameId);
 
   // Send two VideoPackets.
-  writer_.Write(SerializeAndFrameMessage(packet), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(packet), base::Closure(),
+                TRAFFIC_ANNOTATION_FOR_TESTS);
   base::RunLoop().RunUntilIdle();
 
   packet.set_frame_id(kTestFrameId + 1);
-  writer_.Write(SerializeAndFrameMessage(packet), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(packet), base::Closure(),
+                TRAFFIC_ANNOTATION_FOR_TESTS);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2U, video_packets_.size());

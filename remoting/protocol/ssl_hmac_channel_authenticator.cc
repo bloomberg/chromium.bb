@@ -94,12 +94,11 @@ class NetStreamSocketAdapter : public net::StreamSocket {
            const net::CompletionCallback& callback) override {
     return socket_->Read(buf, buf_len, callback);
   }
-  // TODO(crbug.com/656607): Remove default value.
-  int Write(net::IOBuffer* buf,
-            int buf_len,
-            const net::CompletionCallback& callback,
-            const net::NetworkTrafficAnnotationTag& traffic_annotation =
-                NO_TRAFFIC_ANNOTATION_BUG_656607) override {
+  int Write(
+      net::IOBuffer* buf,
+      int buf_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     return socket_->Write(buf, buf_len, callback, traffic_annotation);
   }
 

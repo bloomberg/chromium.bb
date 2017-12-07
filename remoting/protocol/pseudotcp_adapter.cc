@@ -38,8 +38,10 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   // Functions used to implement net::StreamSocket.
   int Read(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
            const net::CompletionCallback& callback);
-  int Write(const scoped_refptr<net::IOBuffer>& buffer, int buffer_size,
-            const net::CompletionCallback& callback);
+  int Write(const scoped_refptr<net::IOBuffer>& buffer,
+            int buffer_size,
+            const net::CompletionCallback& callback,
+            const net::NetworkTrafficAnnotationTag& traffic_annotation);
   int Connect(const net::CompletionCallback& callback);
 
   // cricket::IPseudoTcpNotify interface.
@@ -153,14 +155,17 @@ int PseudoTcpAdapter::Core::Read(const scoped_refptr<net::IOBuffer>& buffer,
   return result;
 }
 
-int PseudoTcpAdapter::Core::Write(const scoped_refptr<net::IOBuffer>& buffer,
-                                  int buffer_size,
-                                  const net::CompletionCallback& callback) {
+int PseudoTcpAdapter::Core::Write(
+    const scoped_refptr<net::IOBuffer>& buffer,
+    int buffer_size,
+    const net::CompletionCallback& callback,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(write_callback_.is_null());
 
   // Reference the Core in case a callback deletes the adapter.
   scoped_refptr<Core> core(this);
 
+  // TODO(crbug.com/656607): Handle traffic annotation.
   int result = pseudo_tcp_.Send(buffer->data(), buffer_size);
   if (result < 0) {
     result = net::MapSystemError(pseudo_tcp_.GetError());
@@ -473,8 +478,7 @@ int PseudoTcpAdapter::Write(
     const net::CompletionCallback& callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/656607): Handle traffic annotation.
-  return core_->Write(buffer, buffer_size, callback);
+  return core_->Write(buffer, buffer_size, callback, traffic_annotation);
 }
 
 int PseudoTcpAdapter::SetReceiveBufferSize(int32_t size) {

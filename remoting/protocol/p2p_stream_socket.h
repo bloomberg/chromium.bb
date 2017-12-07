@@ -40,12 +40,11 @@ class P2PStreamSocket {
   // the callback is invoked or the socket is closed. Implementations of this
   // method should not modify the contents of the actual buffer that is written
   // to the socket.
-  // TODO(crbug.com/656607): Remove default value.
-  virtual int Write(const scoped_refptr<net::IOBuffer>& buf,
-                    int buf_len,
-                    const net::CompletionCallback& callback,
-                    const net::NetworkTrafficAnnotationTag& traffic_annotation =
-                        NO_TRAFFIC_ANNOTATION_BUG_656607) = 0;
+  virtual int Write(
+      const scoped_refptr<net::IOBuffer>& buf,
+      int buf_len,
+      const net::CompletionCallback& callback,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 };
 
 }  // namespace protocol

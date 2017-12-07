@@ -63,7 +63,8 @@ void BufferedSocketWriter::Start(
 
 void BufferedSocketWriter::Write(
     const scoped_refptr<net::IOBufferWithSize>& data,
-    const base::Closure& done_task) {
+    const base::Closure& done_task,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data.get());
 
@@ -71,6 +72,7 @@ void BufferedSocketWriter::Write(
   if (closed_)
     return;
 
+  // TODO(crbug.com/656607): Handle traffic annotation.
   queue_.push_back(base::MakeUnique<PendingPacket>(
       new net::DrainableIOBuffer(data.get(), data->size()), done_task));
 
