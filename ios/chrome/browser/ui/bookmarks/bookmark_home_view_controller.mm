@@ -1067,19 +1067,20 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   const BookmarkNode* node = bookmark_utils_ios::FindFolderById(
       self.bookmarks, [[mutablePath firstObject] longLongValue]);
   DCHECK(node);
-  if (node) {
-    BookmarkHomeViewController* controller =
-        [self createControllerWithRootFolder:node];
-    // We only scroll to the last viewing position for the leaf
-    // node.
-    if (mutablePath.count == 1 && pathCache.position) {
-      [controller
-          setCachedContentPosition:[NSNumber
-                                       numberWithFloat:pathCache.position]];
-    }
-    controller.isReconstructingFromCache = YES;
-    [self.navigationController pushViewController:controller animated:NO];
+  // if node is an empty permanent node, return.
+  if (node->empty() && IsPrimaryPermanentNode(node, self.bookmarks)) {
+    return;
   }
+
+  BookmarkHomeViewController* controller =
+      [self createControllerWithRootFolder:node];
+  // Only scroll to the last viewing position for the leaf node.
+  if (mutablePath.count == 1 && pathCache.position) {
+    [controller
+        setCachedContentPosition:[NSNumber numberWithFloat:pathCache.position]];
+  }
+  controller.isReconstructingFromCache = YES;
+  [self.navigationController pushViewController:controller animated:NO];
 }
 
 // Set up context bar for the new UI.
