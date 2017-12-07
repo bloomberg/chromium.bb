@@ -65,6 +65,8 @@ ios_web_view_sources = [
   "internal/autofill/cwv_autofill_controller_internal.h",
   "internal/autofill/cwv_autofill_suggestion.mm",
   "internal/autofill/cwv_autofill_suggestion_internal.h",
+  "internal/autofill/web_view_autofill_client_ios.h",
+  "internal/autofill/web_view_autofill_client_ios.mm",
   "internal/autofill/web_view_personal_data_manager_factory.cc",
   "internal/autofill/web_view_personal_data_manager_factory.h",
   "internal/content_settings/web_view_cookie_settings_factory.cc",

@@ -1,47 +1,39 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_CLIENT_IOS_H_
-#define COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_CLIENT_IOS_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_AUTOFILL_WEB_VIEW_AUTOFILL_CLIENT_IOS_H_
+#define IOS_WEB_VIEW_INTERNAL_AUTOFILL_WEB_VIEW_AUTOFILL_CLIENT_IOS_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/card_unmask_delegate.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
-
-class IdentityProvider;
-
-namespace syncer {
-class SyncService;
-}
-
-namespace web {
-class WebState;
-}
-
-class PrefService;
+#include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "google_apis/gaia/identity_provider.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace autofill {
 
-class PersonalDataManager;
-
-// iOS implementation of AutofillClient.
-class AutofillClientIOS : public AutofillClient {
+// WebView implementation of AutofillClient.
+class WebViewAutofillClientIOS : public AutofillClient {
  public:
-  AutofillClientIOS(
+  WebViewAutofillClientIOS(
       PrefService* pref_service,
       PersonalDataManager* personal_data_manager,
       web::WebState* web_state,
       id<AutofillClientIOSBridge> bridge,
       std::unique_ptr<IdentityProvider> identity_provider,
       scoped_refptr<AutofillWebDataService> autofill_web_data_service);
-  ~AutofillClientIOS() override;
+  ~WebViewAutofillClientIOS() override;
 
   // AutofillClient implementation.
   PersonalDataManager* GetPersonalDataManager() override;
@@ -91,9 +83,6 @@ class AutofillClientIOS : public AutofillClient {
   bool IsAutofillSupported() override;
   void ExecuteCommand(int id) override;
 
- protected:
-  web::WebState* web_state() { return web_state_; }
-
  private:
   PrefService* pref_service_;
   PersonalDataManager* personal_data_manager_;
@@ -102,9 +91,9 @@ class AutofillClientIOS : public AutofillClient {
   std::unique_ptr<IdentityProvider> identity_provider_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillClientIOS);
+  DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_CLIENT_IOS_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_AUTOFILL_WEB_VIEW_AUTOFILL_CLIENT_IOS_H_
