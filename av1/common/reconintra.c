@@ -2566,6 +2566,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   BLOCK_SIZE bsize = mbmi->sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
+  const int txh = tx_size_high_unit[tx_size];
   const int have_top = row_off || (pd->subsampling_y ? xd->chroma_up_available
                                                      : xd->up_available);
   const int have_left =
@@ -2591,7 +2592,10 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   const int right_available = mi_col + ((col_off + txw) << pd->subsampling_x >>
                                         (MI_SIZE_LOG2 - tx_size_wide_log2[0])) <
                               xd->tile.mi_col_end;
-  const int bottom_available = (yd > 0);
+  const int bottom_available =
+      (yd > 0) && (mi_row + (((row_off + txh) << pd->subsampling_y) >>
+                             (MI_SIZE_LOG2 - tx_size_high_log2[0])) <
+                   xd->tile.mi_row_end);
 
 #if CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = mbmi->partition;
