@@ -582,4 +582,9 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   EXPECT_EQ(1u, instances().size());
 }
 
+TEST_F(ServiceManagerTest, ClonesDisconnectedConnectors) {
+  Connector connector((mojom::ConnectorPtrInfo()));
+  EXPECT_TRUE(connector.Clone());
+}
+
 }  // namespace service_manager

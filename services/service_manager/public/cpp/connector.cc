@@ -87,12 +87,11 @@ void Connector::BindInterface(const Identity& target,
 }
 
 std::unique_ptr<Connector> Connector::Clone() {
-  if (!BindConnectorIfNecessary())
-    return nullptr;
-
-  mojom::ConnectorPtr connector;
-  connector_->Clone(mojo::MakeRequest(&connector));
-  return std::make_unique<Connector>(connector.PassInterface());
+  mojom::ConnectorPtrInfo connector;
+  auto request = mojo::MakeRequest(&connector);
+  if (BindConnectorIfNecessary())
+    connector_->Clone(std::move(request));
+  return std::make_unique<Connector>(std::move(connector));
 }
 
 bool Connector::IsBound() const {
