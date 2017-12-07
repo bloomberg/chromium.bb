@@ -188,4 +188,17 @@ std::vector<std::string> LowercaseAndTokenizeAttributeString(
                            base::SPLIT_WANT_NONEMPTY);
 }
 
+bool SanitizedFieldIsEmpty(const base::string16& value) {
+  // Some sites enter values such as ____-____-____-____ or (___)-___-____ in
+  // their fields. Check if the field value is empty after the removal of the
+  // formatting characters.
+  static base::string16 formatting =
+      (base::ASCIIToUTF16("-_()/") +
+       base::char16(base::i18n::kRightToLeftMark) +
+       base::char16(base::i18n::kLeftToRightMark))
+          .append(base::kWhitespaceUTF16);
+
+  return (value.find_first_not_of(formatting) == base::StringPiece::npos);
+}
+
 }  // namespace autofill

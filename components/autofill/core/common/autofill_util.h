@@ -89,6 +89,11 @@ void SetCheckStatus(FormFieldData* form_field_data,
 std::vector<std::string> LowercaseAndTokenizeAttributeString(
     const std::string& attribute);
 
+// Returns true if and only if the field value has no character except the
+// formatting characters. This means that the field value is a formatting string
+// entered by the website and not a real value entered by the user.
+bool SanitizedFieldIsEmpty(const base::string16& value);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_UTIL_H_

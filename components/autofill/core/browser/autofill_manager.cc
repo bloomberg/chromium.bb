@@ -122,8 +122,7 @@ base::string16 SanitizeCreditCardFieldValue(const base::string16& value) {
                    &sanitized);
   // Some sites have ____-____-____-____ in their credit card number fields, for
   // example.
-  base::ReplaceChars(sanitized, base::ASCIIToUTF16("-_"),
-                     base::ASCIIToUTF16(""), &sanitized);
+  base::RemoveChars(sanitized, base::ASCIIToUTF16("-_"), &sanitized);
   return sanitized;
 }
 
