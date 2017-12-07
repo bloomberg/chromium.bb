@@ -4440,15 +4440,19 @@ int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
           return 0;
         }
         av1_merge_rd_stats(rd_stats, &pn_rd_stats);
-        this_rd += AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
-                          RDCOST(x->rdmult, 0, pn_rd_stats.sse));
+        this_rd +=
+            AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
+                   RDCOST(x->rdmult, pn_rd_stats.zero_rate, pn_rd_stats.sse));
         block += step;
       }
     }
   }
-
-  this_rd = AOMMIN(RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
-                   RDCOST(x->rdmult, 0, rd_stats->sse));
+  int64_t zero_rd = RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse);
+  this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+  if (zero_rd < this_rd) {
+    this_rd = zero_rd;
+    rd_stats->skip = 1;
+  }
   if (this_rd > ref_best_rd) is_cost_valid = 0;
 
   if (!is_cost_valid) {
@@ -5025,7 +5029,7 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int plane;
   int is_cost_valid = 1;
-  int64_t this_rd;
+  int64_t this_rd = 0;
 
   if (ref_best_rd < 0) is_cost_valid = 0;
 
@@ -5034,12 +5038,6 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
   if (x->skip_chroma_rd) return is_cost_valid;
   const BLOCK_SIZE bsizec = scale_chroma_bsize(
       bsize, xd->plane[1].subsampling_x, xd->plane[1].subsampling_y);
-
-#if 0   // CONFIG_EXT_TX
-  if (is_rect_tx(mbmi->tx_size)) {
-    return super_block_uvrd(cpi, x, rd_stats, bsize, ref_best_rd);
-  }
-#endif  // CONFIG_EXT_TX
 
   if (is_inter_block(mbmi) && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)
@@ -5094,7 +5092,7 @@ int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
       av1_merge_rd_stats(rd_stats, &pn_rd_stats);
 
       this_rd = AOMMIN(RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
-                       RDCOST(x->rdmult, 0, rd_stats->sse));
+                       RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse));
 
       if (this_rd > ref_best_rd) {
         is_cost_valid = 0;
