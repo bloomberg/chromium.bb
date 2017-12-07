@@ -19,11 +19,8 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -209,29 +206,12 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     private void updateGoogleG() {
-        // The Google 'G' is not shown in Chrome Home.
-        if (mBottomSheet != null) return;
-
         // The toolbar data provider can be null during startup, before the ToolbarManager has been
         // initialized.
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
         if (toolbarDataProvider == null) return;
 
-        LocaleManager localeManager = LocaleManager.getInstance();
-        if (localeManager.hasCompletedSearchEnginePromo()
-                || localeManager.hasShownSearchEnginePromoThisSession()) {
-            mGoogleGContainer.setVisibility(View.GONE);
-            return;
-        }
-
-        // Only access ChromeFeatureList and TemplateUrlService after the NTP check,
-        // to prevent native method calls before the native side has been initialized.
-        NewTabPage ntp = toolbarDataProvider.getNewTabPageForCurrentTab();
-        boolean isShownInRegularNtp = ntp != null && ntp.isLocationBarShownInNTP()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)
-                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
-
-        if (!isShownInRegularNtp) {
+        if (!getToolbarDataProvider().shouldShowGoogleG(mUrlBar.getEditableText().toString())) {
             mGoogleGContainer.setVisibility(View.GONE);
             return;
         }
@@ -364,6 +344,13 @@ public class LocationBarPhone extends LocationBarLayout {
             @Override
             public void onSheetOpened(@StateChangeReason int reason) {
                 if (reason == StateChangeReason.OMNIBOX_FOCUS) mCloseSheetOnBackButton = true;
+
+                updateGoogleG();
+            }
+
+            @Override
+            public void onSheetClosed(@StateChangeReason int reason) {
+                updateGoogleG();
             }
 
             @Override
@@ -378,14 +365,12 @@ public class LocationBarPhone extends LocationBarLayout {
             }
         });
 
-        // The Google 'G' is not shown in Chrome Home.
-        removeView(mGoogleGContainer);
-        mGoogleGContainer = null;
-        mGoogleG = null;
-
         // Chrome Home does not use the incognito badge. Remove the View to save memory.
         removeView(mIncognitoBadge);
         mIncognitoBadge = null;
+
+        // TODO(twellington): remove and null out mGoogleG and mGoogleGContainer if we remove
+        //                    support for the Google 'G' to save memory.
     }
 
     @Override

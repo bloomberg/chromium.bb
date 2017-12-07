@@ -70,6 +70,12 @@ public interface ToolbarDataProvider {
     boolean isOfflinePage();
 
     /**
+     * @param urlBarText The text currently displayed in the url bar.
+     * @return Whether the Google 'G' should be shown in the location bar.
+     */
+    boolean shouldShowGoogleG(String urlBarText);
+
+    /**
      * @return Whether the security icon should be displayed.
      */
     boolean shouldShowSecurityIcon();
