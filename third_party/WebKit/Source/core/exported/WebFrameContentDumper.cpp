@@ -26,6 +26,8 @@ namespace blink {
 
 namespace {
 
+const int text_dumper_max_depth = 512;
+
 bool IsRenderedAndVisible(const Node& node) {
   if (node.GetLayoutObject() &&
       node.GetLayoutObject()->Style()->Visibility() == EVisibility::kVisible)
@@ -67,18 +69,20 @@ class TextDumper final {
   void DumpTextFrom(const Node& node) {
     DCHECK(!has_emitted_);
     DCHECK(!required_line_breaks_);
-    HandleNode(node);
+    HandleNode(node, 0);
   }
 
  private:
-  void HandleNode(const Node& node) {
+  void HandleNode(const Node& node, int depth) {
     const size_t required_line_breaks_around = RequiredLineBreaksAround(node);
     AddRequiredLineBreaks(required_line_breaks_around);
 
-    for (const Node& child : NodeTraversal::ChildrenOf(node)) {
-      HandleNode(child);
-      if (builder_.length() >= max_length_)
-        return;
+    if (depth < text_dumper_max_depth) {
+      for (const Node& child : NodeTraversal::ChildrenOf(node)) {
+        HandleNode(child, depth + 1);
+        if (builder_.length() >= max_length_)
+          return;
+      }
     }
 
     if (!IsRenderedAndVisible(node))
