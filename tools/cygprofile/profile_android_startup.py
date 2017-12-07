@@ -16,7 +16,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 
 _SRC_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
@@ -59,6 +58,21 @@ def _DownloadFromCloudStorage(bucket, sha1_file_name):
   process.wait()
   if process.returncode != 0:
     raise Exception('Exception executing command %s' % ' '.join(cmd))
+
+
+def _SimulateSwipe(device, x1, y1, x2, y2):
+  """Simulates a swipe on a device from (x1, y1) to (x2, y2).
+
+  Coordinates are in (device dependent) pixels, and the origin is at the upper
+  left corner.
+  The simulated swipe will take 300ms.
+
+  Args:
+    device: (device_utils.DeviceUtils) device to run the command on.
+    x1, y1, x2, y2: (int) Coordinates.
+  """
+  args = [str(x) for x in (x1, y1, x2, y2)]
+  device.RunShellCommand(['input', 'swipe'] + args)
 
 
 class WprManager(object):
@@ -109,7 +123,7 @@ class WprManager(object):
     self._host_https_port = ports['https']
 
   def _StopWpr(self):
-    """ Stop the WPR and forwarder. """
+    """ Stop the WPR and forwarder."""
     print 'Stopping WPR on host...'
     if self._wpr_server:
       self._wpr_server.StopServer()
@@ -168,28 +182,35 @@ class AndroidProfileTool(object):
 
   _DEVICE_CYGLOG_DIR = '/data/local/tmp/chrome/cyglog'
 
-  # TEST_URL must be a url in the WPR_ARCHIVE.
-  _TEST_URL = 'https://www.google.com/#hl=en&q=science'
+  TEST_URL = 'https://www.google.com/#hl=en&q=science'
   _WPR_ARCHIVE = os.path.join(
       os.path.dirname(__file__), 'memory_top_10_mobile_000.wprgo')
 
-  # TODO(jbudorick): Make host_cyglog_dir mandatory after updating
-  # downstream clients. See crbug.com/639831 for context.
-  def __init__(self, output_directory, host_cyglog_dir=None):
+  def __init__(self, output_directory, host_cyglog_dir, use_wpr, urls,
+               simulate_user):
+    """Constructor.
+
+    Args:
+      output_directory: (str) Chrome build directory.
+      host_cyglog_dir: (str) Where to store the profiles.
+      use_wpr: (bool) Whether to use Web Page Replay.
+      urls: (str) URLs to load. Have to be contained in the WPR archive if
+                  use_wpr is True.
+      simulate_user: (bool) Whether to simulate a user.
+    """
     devices = device_utils.DeviceUtils.HealthyDevices()
     self._device = devices[0]
     self._cygprofile_tests = os.path.join(
         output_directory, 'cygprofile_unittests')
-    self._host_cyglog_dir = host_cyglog_dir or os.path.join(
-        output_directory, 'cyglog_data')
+    self._host_cyglog_dir = host_cyglog_dir
+    self._use_wpr = use_wpr
+    self._urls = urls
+    self._simulate_user = simulate_user
     self._SetUpDevice()
 
   def RunCygprofileTests(self):
     """Run the cygprofile unit tests suite on the device.
 
-    Args:
-      path_to_tests: The location on the host machine with the compiled
-                     cygprofile test binary.
     Returns:
       The exit code for the tests.
     """
@@ -223,24 +244,51 @@ class AndroidProfileTool(object):
     try:
       changer = self._SetChromeFlags(package_info)
       self._SetUpDeviceFolders()
-      # Start up chrome once with a blank page, just to get the one-off
-      # activities out of the way such as apk resource extraction and profile
-      # creation.
-      self._StartChrome(package_info, 'about:blank')
-      time.sleep(15)
-      self._KillChrome(package_info)
-      self._SetUpDeviceFolders()
-      with WprManager(self._WPR_ARCHIVE, self._device,
-                      package_info.cmdline_file, package_info.package):
-        self._StartChrome(package_info, self._TEST_URL)
-        time.sleep(90)
-        self._KillChrome(package_info)
+      if self._use_wpr:
+        with WprManager(self._WPR_ARCHIVE, self._device,
+                        package_info.cmdline_file, package_info.package):
+          self._RunProfileCollection(package_info, self._simulate_user)
+      else:
+        self._RunProfileCollection(package_info, self._simulate_user)
     finally:
       self._RestoreChromeFlags(changer)
 
     data = self._PullCyglogData()
     self._DeleteDeviceData()
     return data
+
+  def _RunProfileCollection(self, package_info, simulate_user):
+    """Runs the profile collection tasks.
+
+    If |simulate_user| is True, then try to simulate a real user, with swiping.
+    Also do a first load of the page instead of about:blank, in order to
+    exercise the cache. This is not desirable with a page that only contains
+    cachable resources, as in this instance the network code will not be called.
+
+    Args:
+      package_info: Which Chrome package to use.
+      simulate_user: (bool) Whether to try to simulate a user interacting with
+                     the browser.
+    """
+    initial_url = self._urls[0] if simulate_user else 'about:blank'
+    # Start up chrome once with a page, just to get the one-off
+    # activities out of the way such as apk resource extraction and profile
+    # creation.
+    self._StartChrome(package_info, initial_url)
+    time.sleep(15)
+    self._KillChrome(package_info)
+    self._SetUpDeviceFolders()
+    for url in self._urls:
+      self._StartChrome(package_info, url)
+      time.sleep(15)
+      if simulate_user:
+        # Down, down, up, up.
+        _SimulateSwipe(self._device, 200, 700, 200, 300)
+        _SimulateSwipe(self._device, 200, 700, 200, 300)
+        _SimulateSwipe(self._device, 200, 700, 200, 1000)
+        _SimulateSwipe(self._device, 200, 700, 200, 1000)
+      time.sleep(30)
+      self._KillChrome(package_info)
 
   def Cleanup(self):
     """Delete all local and device files left over from profiling. """
@@ -249,10 +297,9 @@ class AndroidProfileTool(object):
 
   def _Install(self, apk):
     """Installs Chrome.apk on the device.
+
     Args:
       apk: The location of the chrome apk to profile.
-      package_info: A PackageInfo structure describing the chrome apk,
-                    as from pylib/constants.
     """
     print 'Installing apk...'
     self._device.Install(apk)
@@ -287,7 +334,7 @@ class AndroidProfileTool(object):
       changer.Restore()
 
   def _SetUpDeviceFolders(self):
-    """Creates folders on the device to store cyglog data. """
+    """Creates folders on the device to store cyglog data."""
     print 'Setting up device folders...'
     self._DeleteDeviceData()
     self._device.RunShellCommand(
@@ -349,7 +396,19 @@ class AndroidProfileTool(object):
     return [os.path.join(cyglog_dir, x) for x in files]
 
 
-def main():
+def AddProfileCollectionArguments(parser):
+  """Adds the profiling collection arguments to |parser|."""
+  parser.add_argument(
+      '--no-wpr', action='store_true', help='Don\'t use WPR.')
+  parser.add_argument('--urls', type=str, help='URLs to load.',
+                      default=[AndroidProfileTool.TEST_URL],
+                      nargs='+')
+  parser.add_argument(
+      '--simulate-user', action='store_true', help='More realistic collection.')
+
+
+def CreateArgumentParser():
+  """Creates and return the argument parser."""
   parser = argparse.ArgumentParser()
   parser.add_argument(
       '--adb-path', type=os.path.realpath,
@@ -364,7 +423,12 @@ def main():
       '--trace-directory', type=os.path.realpath,
       help='Directory in which cyglog traces will be stored. '
            'Defaults to <output-directory>/cyglog_data')
+  AddProfileCollectionArguments(parser)
+  return parser
 
+
+def main():
+  parser = CreateArgumentParser()
   args = parser.parse_args()
 
   devil_chromium.Initialize(
@@ -380,7 +444,8 @@ def main():
     raise Exception('Unable to determine package info for %s' % args.apk_path)
 
   profiler = AndroidProfileTool(
-      args.output_directory, host_cyglog_dir=args.trace_directory)
+      args.output_directory, host_cyglog_dir=args.trace_directory,
+      use_wpr=not args.no_wpr, urls=args.urls, simulate_user=args.simulate_user)
   profiler.CollectProfile(args.apk_path, package_info)
   return 0
 
