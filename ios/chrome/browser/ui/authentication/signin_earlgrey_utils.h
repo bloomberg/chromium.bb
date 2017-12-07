@@ -12,8 +12,15 @@
 // Methods used for the EarlGrey tests.
 @interface SigninEarlGreyUtils : NSObject
 
-// Checks that the sign-in promo view is visible using the right mode.
+// Checks that the sign-in promo view (with a close button) is visible using the
+// right mode.
 + (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode;
+
+// Checks that the sign-in promo view is visible using the right mode. If
+// |closeButton| is set to YES, the close button in the sign-in promo has to be
+// visible.
++ (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode
+                            closeButton:(BOOL)closeButton;
 
 // Checks that the sign-in promo view is not visible.
 + (void)checkSigninPromoNotVisible;

@@ -21,6 +21,9 @@ class ChromeBrowserState;
 @protocol ApplicationCommands;
 @protocol RecentTabsHandsetViewControllerCommand;
 
+// Key for saving collapsed session state in the UserDefaults.
+extern NSString* const kCollapsedSectionsKey;
+
 @protocol RecentTabsTableViewControllerDelegate<NSObject>
 // Tells the delegate when the table view content scrolled or changed size.
 - (void)recentTabsTableViewContentMoved:(UITableView*)tableView;
