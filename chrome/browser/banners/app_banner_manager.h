@@ -97,6 +97,10 @@ class AppBannerManager : public content::WebContentsObserver,
     COMPLETE,
   };
 
+  // Installable describes whether a site satisifes the installablity
+  // requirements.
+  enum class Installable { INSTALLABLE_YES, INSTALLABLE_NO, UNKNOWN };
+
   // Returns the current time.
   static base::Time GetCurrentTime();
 
@@ -141,6 +145,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // provided from the Play Store rather than the web manifest. Not used on
   // desktop platforms.
   virtual void OnAppIconFetched(const SkBitmap& bitmap) {}
+
+  // Returns the installability status of a site.
+  static Installable GetInstallable(content::WebContents* web_contents);
 
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
@@ -301,6 +308,10 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
+  // Returns the installability status of the site pertaining to the
+  // AppBannerManager.
+  Installable installable() const;
+
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
 
@@ -322,8 +333,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Whether the current flow was begun via devtools.
   bool triggered_by_devtools_;
 
- private:
   std::unique_ptr<StatusReporter> status_reporter_;
+  Installable installable_;
 
   // The concrete subclasses of this class are expected to have their lifetimes
   // scoped to the WebContents which they are observing. This allows us to use
