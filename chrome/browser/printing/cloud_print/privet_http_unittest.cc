@@ -43,192 +43,197 @@ using testing::ValuesIn;
 using content::BrowserThread;
 using net::EmbeddedTestServer;
 
-const char kSampleInfoResponse[] = "{"
-    "       \"version\": \"1.0\","
-    "       \"name\": \"Common printer\","
-    "       \"description\": \"Printer connected through Chrome connector\","
-    "       \"url\": \"https://www.google.com/cloudprint\","
-    "       \"type\": ["
-    "               \"printer\""
-    "       ],"
-    "       \"id\": \"\","
-    "       \"device_state\": \"idle\","
-    "       \"connection_state\": \"online\","
-    "       \"manufacturer\": \"Google\","
-    "       \"model\": \"Google Chrome\","
-    "       \"serial_number\": \"1111-22222-33333-4444\","
-    "       \"firmware\": \"24.0.1312.52\","
-    "       \"uptime\": 600,"
-    "       \"setup_url\": \"http://support.google.com/\","
-    "       \"support_url\": \"http://support.google.com/cloudprint/?hl=en\","
-    "       \"update_url\": \"http://support.google.com/cloudprint/?hl=en\","
-    "       \"x-privet-token\": \"SampleTokenForTesting\","
-    "       \"api\": ["
-    "               \"/privet/accesstoken\","
-    "               \"/privet/capabilities\","
-    "               \"/privet/printer/submitdoc\","
-    "       ]"
-    "}";
+const char kSampleInfoResponse[] =
+    R"({
+         "version": "1.0",
+         "name": "Common printer",
+         "description": "Printer connected through Chrome connector",
+         "url": "https://www.google.com/cloudprint",
+         "type": [ "printer" ],
+         "id": "",
+         "device_state": "idle",
+         "connection_state": "online",
+         "manufacturer": "Google",
+         "model": "Google Chrome",
+         "serial_number": "1111-22222-33333-4444",
+         "firmware": "24.0.1312.52",
+         "uptime": 600,
+         "setup_url": "http://support.google.com/",
+         "support_url": "http://support.google.com/cloudprint/?hl=en",
+         "update_url": "http://support.google.com/cloudprint/?hl=en",
+         "x-privet-token": "SampleTokenForTesting",
+         "api": [
+           "/privet/accesstoken",
+           "/privet/capabilities",
+           "/privet/printer/submitdoc",
+         ]
+       })";
 
-const char kSampleInfoResponseRegistered[] = "{"
-    "       \"version\": \"1.0\","
-    "       \"name\": \"Common printer\","
-    "       \"description\": \"Printer connected through Chrome connector\","
-    "       \"url\": \"https://www.google.com/cloudprint\","
-    "       \"type\": ["
-    "               \"printer\""
-    "       ],"
-    "       \"id\": \"MyDeviceID\","
-    "       \"device_state\": \"idle\","
-    "       \"connection_state\": \"online\","
-    "       \"manufacturer\": \"Google\","
-    "       \"model\": \"Google Chrome\","
-    "       \"serial_number\": \"1111-22222-33333-4444\","
-    "       \"firmware\": \"24.0.1312.52\","
-    "       \"uptime\": 600,"
-    "       \"setup_url\": \"http://support.google.com/\","
-    "       \"support_url\": \"http://support.google.com/cloudprint/?hl=en\","
-    "       \"update_url\": \"http://support.google.com/cloudprint/?hl=en\","
-    "       \"x-privet-token\": \"SampleTokenForTesting\","
-    "       \"api\": ["
-    "               \"/privet/accesstoken\","
-    "               \"/privet/capabilities\","
-    "               \"/privet/printer/submitdoc\","
-    "       ]"
-    "}";
+const char kSampleInfoResponseRegistered[] =
+    R"({
+         "version": "1.0",
+         "name": "Common printer",
+         "description": "Printer connected through Chrome connector",
+         "url": "https://www.google.com/cloudprint",
+         "type": [ "printer" ],
+         "id": "MyDeviceID",
+         "device_state": "idle",
+         "connection_state": "online",
+         "manufacturer": "Google",
+         "model": "Google Chrome",
+         "serial_number": "1111-22222-33333-4444",
+         "firmware": "24.0.1312.52",
+         "uptime": 600,
+         "setup_url": "http://support.google.com/",
+         "support_url": "http://support.google.com/cloudprint/?hl=en",
+         "update_url": "http://support.google.com/cloudprint/?hl=en",
+         "x-privet-token": "SampleTokenForTesting",
+         "api": [
+           "/privet/accesstoken",
+           "/privet/capabilities",
+           "/privet/printer/submitdoc",
+         ]
+       })";
 
-const char kSampleRegisterStartResponse[] = "{"
-    "\"user\": \"example@google.com\","
-    "\"action\": \"start\""
-    "}";
+const char kSampleRegisterStartResponse[] =
+    R"({
+         "user": "example@google.com",
+         "action": "start"
+       })";
 
-const char kSampleRegisterGetClaimTokenResponse[] = "{"
-    "       \"action\": \"getClaimToken\","
-    "       \"user\": \"example@google.com\","
-    "       \"token\": \"MySampleToken\","
-    "       \"claim_url\": \"https://domain.com/SoMeUrL\""
-    "}";
+const char kSampleRegisterGetClaimTokenResponse[] =
+    R"({
+         "action": "getClaimToken",
+         "user": "example@google.com",
+         "token": "MySampleToken",
+         "claim_url": "https://domain.com/SoMeUrL"
+       })";
 
-const char kSampleRegisterCompleteResponse[] = "{"
-    "\"user\": \"example@google.com\","
-    "\"action\": \"complete\","
-    "\"device_id\": \"MyDeviceID\""
-    "}";
+const char kSampleRegisterCompleteResponse[] =
+    R"({
+         "user": "example@google.com",
+         "action": "complete",
+         "device_id": "MyDeviceID"
+       })";
 
 const char kSampleXPrivetErrorResponse[] =
-    "{ \"error\": \"invalid_x_privet_token\" }";
+    R"({ "error": "invalid_x_privet_token" })";
 
 const char kSampleRegisterErrorTransient[] =
-    "{ \"error\": \"device_busy\", \"timeout\": 1}";
+    R"({ "error": "device_busy", "timeout": 1})";
 
 const char kSampleRegisterErrorPermanent[] =
-    "{ \"error\": \"user_cancel\" }";
+    R"({ "error": "user_cancel" })";
 
 const char kSampleInfoResponseBadJson[] = "{";
 
-const char kSampleRegisterCancelResponse[] = "{"
-    "\"user\": \"example@google.com\","
-    "\"action\": \"cancel\""
-    "}";
+const char kSampleRegisterCancelResponse[] =
+    R"({
+         "user": "example@google.com",
+         "action": "cancel"
+       })";
 
-const char kSampleCapabilitiesResponse[] = "{"
-    "\"version\" : \"1.0\","
-    "\"printer\" : {"
-    "  \"supported_content_type\" : ["
-    "   { \"content_type\" : \"application/pdf\" },"
-    "   { \"content_type\" : \"image/pwg-raster\" }"
-    "  ]"
-    "}"
-    "}";
+const char kSampleCapabilitiesResponse[] =
+    R"({
+         "version" : "1.0",
+         "printer" : {
+           "supported_content_type" : [
+             { "content_type" : "application/pdf" },
+             { "content_type" : "image/pwg-raster" }
+           ]
+         }
+       })";
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-const char kSampleInfoResponseWithCreatejob[] = "{"
-    "       \"version\": \"1.0\","
-    "       \"name\": \"Common printer\","
-    "       \"description\": \"Printer connected through Chrome connector\","
-    "       \"url\": \"https://www.google.com/cloudprint\","
-    "       \"type\": ["
-    "               \"printer\""
-    "       ],"
-    "       \"id\": \"\","
-    "       \"device_state\": \"idle\","
-    "       \"connection_state\": \"online\","
-    "       \"manufacturer\": \"Google\","
-    "       \"model\": \"Google Chrome\","
-    "       \"serial_number\": \"1111-22222-33333-4444\","
-    "       \"firmware\": \"24.0.1312.52\","
-    "       \"uptime\": 600,"
-    "       \"setup_url\": \"http://support.google.com/\","
-    "       \"support_url\": \"http://support.google.com/cloudprint/?hl=en\","
-    "       \"update_url\": \"http://support.google.com/cloudprint/?hl=en\","
-    "       \"x-privet-token\": \"SampleTokenForTesting\","
-    "       \"api\": ["
-    "               \"/privet/accesstoken\","
-    "               \"/privet/capabilities\","
-    "               \"/privet/printer/createjob\","
-    "               \"/privet/printer/submitdoc\","
-    "       ]"
-    "}";
+const char kSampleInfoResponseWithCreatejob[] =
+    R"({
+         "version": "1.0",
+         "name": "Common printer",
+         "description": "Printer connected through Chrome connector",
+         "url": "https://www.google.com/cloudprint",
+         "type": [ "printer" ],
+         "id": "",
+         "device_state": "idle",
+         "connection_state": "online",
+         "manufacturer": "Google",
+         "model": "Google Chrome",
+         "serial_number": "1111-22222-33333-4444",
+         "firmware": "24.0.1312.52",
+         "uptime": 600,
+         "setup_url": "http://support.google.com/",
+         "support_url": "http://support.google.com/cloudprint/?hl=en",
+         "update_url": "http://support.google.com/cloudprint/?hl=en",
+         "x-privet-token": "SampleTokenForTesting",
+         "api": [
+           "/privet/accesstoken",
+           "/privet/capabilities",
+           "/privet/printer/createjob",
+           "/privet/printer/submitdoc",
+         ]
+       })";
 
-const char kSampleLocalPrintResponse[] = "{"
-    "\"job_id\": \"123\","
-    "\"expires_in\": 500,"
-    "\"job_type\": \"application/pdf\","
-    "\"job_size\": 16,"
-    "\"job_name\": \"Sample job name\","
-    "}";
+const char kSampleLocalPrintResponse[] =
+    R"({
+         "job_id": "123",
+         "expires_in": 500,
+         "job_type": "application/pdf",
+         "job_size": 16,
+         "job_name": "Sample job name",
+       })";
 
-const char kSampleCapabilitiesResponsePWGOnly[] = "{"
-    "\"version\" : \"1.0\","
-    "\"printer\" : {"
-    "  \"supported_content_type\" : ["
-    "   { \"content_type\" : \"image/pwg-raster\" }"
-    "  ]"
-    "}"
-    "}";
+const char kSampleCapabilitiesResponsePWGOnly[] =
+    R"({
+         "version" : "1.0",
+         "printer" : {
+           "supported_content_type" : [
+              { "content_type" : "image/pwg-raster" }
+           ]
+         }
+       })";
 
-const char kSampleErrorResponsePrinterBusy[] = "{"
-    "\"error\": \"invalid_print_job\","
-    "\"timeout\": 1 "
-    "}";
+const char kSampleErrorResponsePrinterBusy[] =
+    R"({
+         "error": "invalid_print_job",
+         "timeout": 1
+       })";
 
-const char kSampleInvalidDocumentTypeResponse[] = "{"
-    "\"error\" : \"invalid_document_type\""
-    "}";
+const char kSampleInvalidDocumentTypeResponse[] =
+    R"({ "error" : "invalid_document_type" })";
 
-const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
+const char kSampleCreatejobResponse[] = R"({ "job_id": "1234" })";
 
-const char kSampleCapabilitiesResponseWithAnyMimetype[] = "{"
-    "\"version\" : \"1.0\","
-    "\"printer\" : {"
-    "  \"supported_content_type\" : ["
-    "   { \"content_type\" : \"*/*\" },"
-    "   { \"content_type\" : \"image/pwg-raster\" }"
-    "  ]"
-    "}"
-    "}";
+const char kSampleCapabilitiesResponseWithAnyMimetype[] =
+    R"({
+         "version" : "1.0",
+         "printer" : {
+           "supported_content_type" : [
+             { "content_type" : "*/*" },
+             { "content_type" : "image/pwg-raster" }
+           ]
+         }
+       })";
 
-const char kSampleCJT[] = "{ \"version\" : \"1.0\" }";
+const char kSampleCJT[] = R"({ "version" : "1.0" })";
 
 const char kSampleCapabilitiesResponsePWGSettings[] =
-    "{"
-    "\"version\" : \"1.0\","
-    "\"printer\" : {"
-    " \"pwg_raster_config\" : {"
-    "   \"document_sheet_back\" : \"MANUAL_TUMBLE\","
-    "   \"reverse_order_streaming\": true"
-    "  },"
-    "  \"supported_content_type\" : ["
-    "   { \"content_type\" : \"image/pwg-raster\" }"
-    "  ]"
-    "}"
-    "}";
+    R"({
+         "version" : "1.0",
+         "printer" : {
+           "pwg_raster_config" : {
+             "document_sheet_back" : "MANUAL_TUMBLE",
+             "reverse_order_streaming": true
+           },
+           "supported_content_type" : [
+             { "content_type" : "image/pwg-raster" }
+           ]
+         }
+       })";
 
 const char kSampleCJTDuplex[] =
-    "{"
-    "\"version\" : \"1.0\","
-    "\"print\": { \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
-    "}";
+    R"({
+         "version" : "1.0",
+         "print": { "duplex": {"type": "SHORT_EDGE"} }
+       })";
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 const char* const kTestParams[] = {"8.8.4.4", "2001:4860:4860::8888"};
@@ -282,10 +287,13 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
   bool SuccessfulResponseToURL(const GURL& url,
                                const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-    EXPECT_TRUE(fetcher);
-    EXPECT_EQ(url, fetcher->GetOriginalURL());
+    if (!fetcher) {
+      ADD_FAILURE();
+      return false;
+    }
 
-    if (!fetcher || url != fetcher->GetOriginalURL())
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
+    if (url != fetcher->GetOriginalURL())
       return false;
 
     fetcher->SetResponseString(response);
@@ -300,11 +308,12 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
                                       const std::string& data,
                                       const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-    EXPECT_TRUE(fetcher);
-    EXPECT_EQ(url, fetcher->GetOriginalURL());
-
-    if (!fetcher)
+    if (!fetcher) {
+      ADD_FAILURE();
       return false;
+    }
+
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
 
     EXPECT_EQ(data, fetcher->upload_data());
     if (data != fetcher->upload_data())
@@ -317,11 +326,12 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
                                           const std::string& data,
                                           const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-    EXPECT_TRUE(fetcher);
-    EXPECT_EQ(url, fetcher->GetOriginalURL());
-
-    if (!fetcher)
+    if (!fetcher) {
+      ADD_FAILURE();
       return false;
+    }
+
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
 
     std::string normalized_data = NormalizeJson(data);
     std::string normalized_upload_data = NormalizeJson(fetcher->upload_data());
@@ -336,11 +346,12 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
                                           const base::FilePath& file_path,
                                           const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-    EXPECT_TRUE(fetcher);
-    EXPECT_EQ(url, fetcher->GetOriginalURL());
-
-    if (!fetcher)
+    if (!fetcher) {
+      ADD_FAILURE();
       return false;
+    }
+
+    EXPECT_EQ(url, fetcher->GetOriginalURL());
 
     EXPECT_EQ(file_path, fetcher->upload_file_path());
     if (file_path != fetcher->upload_file_path())
@@ -500,9 +511,13 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   bool SuccessfulResponseToURL(const GURL& url,
                                const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-    EXPECT_TRUE(fetcher);
+    if (!fetcher) {
+      ADD_FAILURE();
+      return false;
+    }
+
     EXPECT_EQ(url, fetcher->GetOriginalURL());
-    if (!fetcher || url != fetcher->GetOriginalURL())
+    if (url != fetcher->GetOriginalURL())
       return false;
 
     fetcher->SetResponseString(response);
@@ -807,7 +822,6 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrint) {
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com&"
@@ -832,7 +846,6 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithAnyMimetype) {
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com&"
@@ -856,7 +869,6 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com"
@@ -891,7 +903,6 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com"
@@ -926,7 +937,6 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com&"
@@ -956,7 +966,6 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
 
   EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com&"
@@ -984,7 +993,6 @@ TEST_P(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
       SuccessfulResponseToURLAndJSONData(GetUrl("/privet/printer/createjob"),
                                          kSampleCJT, kSampleCreatejobResponse));
 
-  // TODO(noamsml): Is encoding spaces as pluses standard?
   EXPECT_TRUE(SuccessfulResponseToURLAndData(
       GetUrl("/privet/printer/submitdoc?"
              "client_name=Chrome&user_name=sample%40gmail.com&"
