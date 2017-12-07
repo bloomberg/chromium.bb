@@ -146,8 +146,7 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
 void NavigationURLLoaderImplCore::NotifyRequestFailed(
     bool in_cache,
     int net_error,
-    const base::Optional<net::SSLInfo>& ssl_info,
-    bool should_ssl_errors_be_fatal) {
+    const base::Optional<net::SSLInfo>& ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
@@ -157,8 +156,7 @@ void NavigationURLLoaderImplCore::NotifyRequestFailed(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestFailed, loader_,
-                     in_cache, net_error, ssl_info,
-                     should_ssl_errors_be_fatal));
+                     in_cache, net_error, ssl_info));
 }
 
 }  // namespace content

@@ -64,11 +64,10 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
   // Notifies the delegate the the request has failed. If |net_error| is a
   // certificate error, the caller must pass valid values for |ssl_info| and
   // |fatal_cert_error|. If |net_error| is not a certificate error, |ssl_info|
-  // and |fatal_cert_error| are ignored.
+  // is ignored.
   void NotifyRequestFailed(bool in_cache,
                            int net_error,
-                           base::Optional<net::SSLInfo> ssl_info,
-                           bool should_ssl_errors_be_fatal);
+                           base::Optional<net::SSLInfo> ssl_info);
 
   // Notifies the delegate the begin navigation request was handled and a
   // potential first network request is about to be made.

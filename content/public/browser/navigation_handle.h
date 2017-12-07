@@ -295,8 +295,7 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Simulates the network request failing.
   virtual NavigationThrottle::ThrottleCheckResult CallWillFailRequestForTesting(
-      base::Optional<net::SSLInfo> ssl_info,
-      bool should_ssl_errors_be_fatal) = 0;
+      base::Optional<net::SSLInfo> ssl_info) = 0;
 
   // Simulates the reception of the network response.
   virtual NavigationThrottle::ThrottleCheckResult

@@ -449,8 +449,7 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
 
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillFailRequestForTesting(
-    base::Optional<net::SSLInfo> ssl_info,
-    bool should_ssl_errors_be_fatal) {
+    base::Optional<net::SSLInfo> ssl_info) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillFailRequest(ssl_info, base::Bind(&UpdateThrottleCheckResult, &result));
 

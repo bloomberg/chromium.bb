@@ -158,8 +158,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
   NavigationThrottle::ThrottleCheckResult CallWillFailRequestForTesting(
-      base::Optional<net::SSLInfo> ssl_info,
-      bool should_ssl_errors_be_fatal) override;
+      base::Optional<net::SSLInfo> ssl_info) override;
   NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
       RenderFrameHost* render_frame_host,
       const std::string& raw_response_header) override;

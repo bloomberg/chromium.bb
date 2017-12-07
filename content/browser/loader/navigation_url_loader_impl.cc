@@ -113,8 +113,7 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
 void NavigationURLLoaderImpl::NotifyRequestFailed(
     bool in_cache,
     int net_error,
-    base::Optional<net::SSLInfo> ssl_info,
-    bool should_ssl_errors_be_fatal) {
+    base::Optional<net::SSLInfo> ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->OnRequestFailed(in_cache, net_error, ssl_info);
