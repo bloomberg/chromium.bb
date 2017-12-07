@@ -1464,12 +1464,9 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                      PICK_MODE_CONTEXT *ctx, int *rate) {
   TileInfo *const tile = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
-#if CONFIG_NCOBMC || CONFIG_EXT_DELTA_Q
+#if CONFIG_EXT_DELTA_Q
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi;
-#if CONFIG_NCOBMC
-  int check_ncobmc;
-#endif
 #endif
 
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
@@ -1477,24 +1474,6 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   x->e_mbd.mi[0]->mbmi.partition = partition;
 #endif
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
-#if CONFIG_NCOBMC
-  mbmi = &xd->mi[0]->mbmi;
-  set_ref_ptrs(&cpi->common, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
-#endif
-
-#if CONFIG_NCOBMC
-  const MOTION_MODE motion_allowed =
-      motion_mode_allowed(0, xd->global_motion, xd, xd->mi[0]);
-#endif
-
-#if CONFIG_NCOBMC
-  check_ncobmc = is_inter_block(mbmi) && motion_allowed >= OBMC_CAUSAL;
-  if (!dry_run && check_ncobmc) {
-    av1_check_ncobmc_rd(cpi, x, mi_row, mi_col);
-    av1_setup_dst_planes(x->e_mbd.plane, bsize,
-                         get_frame_new_buffer(&cpi->common), mi_row, mi_col);
-  }
-#endif
 
 #if CONFIG_LV_MAP
   av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
@@ -4984,12 +4963,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, block_size);
 
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-#if CONFIG_NCOBMC
-      if (dry_run == OUTPUT_ENABLED)
-        av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
-      else
-#endif
-        av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
+      av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
     }
 
     av1_encode_sb((AV1_COMMON *)cm, x, block_size, mi_row, mi_col);

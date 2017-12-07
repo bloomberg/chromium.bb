@@ -267,7 +267,6 @@ EXPERIMENT_LIST="
     ext_partition_types
     ext_partition_types_ab
     ext_tile
-    ncobmc
     q_adapt_probs
     inter_stats_only
     palette_delta_encoding

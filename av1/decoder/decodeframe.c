@@ -498,11 +498,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 
     if (mbmi->motion_mode == OBMC_CAUSAL) {
-#if CONFIG_NCOBMC
-      av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
-#else
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
-#endif
     }
     // Reconstruction
     if (!mbmi->skip) {

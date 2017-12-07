@@ -22,11 +22,7 @@ extern "C" {
 
 #undef MAX_SB_SIZE
 
-#if CONFIG_NCOBMC
-#define NC_MODE_INFO 1
-#else
 #define NC_MODE_INFO 0
-#endif
 
 // Max superblock size
 #if CONFIG_EXT_PARTITION
