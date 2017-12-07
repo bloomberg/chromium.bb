@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SMB_CLIENT_SMB_SERVICE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -41,6 +42,7 @@ class SmbService : public KeyedService, public ProviderInterface {
       const ProvidedFileSystemInfo& file_system_info) override;
   const Capabilities& GetCapabilities() const override;
   const ProviderId& GetId() const override;
+  const std::string& GetName() const override;
 
  private:
   Service* GetProviderService() const;
@@ -48,6 +50,7 @@ class SmbService : public KeyedService, public ProviderInterface {
   Profile* profile_;
   ProviderId provider_id_;
   Capabilities capabilities_;
+  std::string name_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

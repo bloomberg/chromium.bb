@@ -304,48 +304,8 @@ ProvidedFileSystemInterface* Service::GetProvidedFileSystem(
   return file_system_it->second.get();
 }
 
-std::vector<ProvidingExtensionInfo> Service::GetProvidingExtensionInfoList()
-    const {
-  extensions::ExtensionRegistry* const registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  DCHECK(registry);
-
-  std::vector<ProvidingExtensionInfo> result;
-  for (const auto& extension : registry->enabled_extensions()) {
-    ProvidingExtensionInfo info;
-    if (GetProvidingExtensionInfo(extension->id(), &info))
-      result.push_back(info);
-  }
-
-  return result;
-}
-
-// TODO(mtomasz): Refactor providers into per-filesystem, enabling this code
-// duplication to be removed.
-bool Service::GetProvidingExtensionInfo(
-    const extensions::ExtensionId& extension_id,
-    ProvidingExtensionInfo* result) const {
-  DCHECK(result);
-  extensions::ExtensionRegistry* const registry =
-      extensions::ExtensionRegistry::Get(profile_);
-  DCHECK(registry);
-
-  const extensions::Extension* const extension = registry->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
-  if (!extension ||
-      !extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kFileSystemProvider)) {
-    return false;
-  }
-
-  result->extension_id = extension->id();
-  result->name = extension->name();
-  const extensions::FileSystemProviderCapabilities* const capabilities =
-      extensions::FileSystemProviderCapabilities::Get(extension);
-  DCHECK(capabilities);
-  result->capabilities = *capabilities;
-
-  return true;
+const Service::ProviderMap& Service::GetProviders() const {
+  return provider_map_;
 }
 
 void Service::OnExtensionUnloaded(content::BrowserContext* browser_context,

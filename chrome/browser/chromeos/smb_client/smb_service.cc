@@ -15,7 +15,10 @@ namespace smb_client {
 SmbService::SmbService(Profile* profile)
     : profile_(profile),
       provider_id_(ProviderId::CreateFromNativeId("smb")),
-      capabilities_(false, false, false, extensions::SOURCE_NETWORK) {
+      capabilities_(false, false, false, extensions::SOURCE_NETWORK),
+      // TODO(baileyberro): Localize this string, so it shows correctly in all
+      // languages. See l10n_util::GetStringUTF8.
+      name_("SMB Shares") {
   GetProviderService()->RegisterProvider(std::make_unique<SmbService>(profile));
 }
 
@@ -44,6 +47,10 @@ const Capabilities& SmbService::GetCapabilities() const {
 
 const ProviderId& SmbService::GetId() const {
   return provider_id_;
+}
+
+const std::string& SmbService::GetName() const {
+  return name_;
 }
 
 }  // namespace smb_client

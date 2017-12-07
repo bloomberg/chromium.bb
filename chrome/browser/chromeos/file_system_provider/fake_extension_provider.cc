@@ -45,11 +45,16 @@ const ProviderId& FakeExtensionProvider::GetId() const {
   return provider_id_;
 }
 
+const std::string& FakeExtensionProvider::GetName() const {
+  return name_;
+}
+
 FakeExtensionProvider::FakeExtensionProvider(
     const extensions::ExtensionId& extension_id,
     const Capabilities& capabilities)
     : provider_id_(ProviderId::CreateFromExtensionId(extension_id)),
-      capabilities_(capabilities) {}
+      capabilities_(capabilities),
+      name_("Fake Extension Provider") {}
 
 }  // namespace file_system_provider
 }  // namespace chromeos

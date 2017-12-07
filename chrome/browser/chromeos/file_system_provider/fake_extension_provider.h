@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FAKE_EXTENSION_PROVIDER_H_
 
 #include <memory>
+#include <string>
 
 #include "chrome/browser/chromeos/file_system_provider/extension_provider.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -32,6 +33,7 @@ class FakeExtensionProvider : public ProviderInterface {
       const ProvidedFileSystemInfo& file_system_info) override;
   const Capabilities& GetCapabilities() const override;
   const ProviderId& GetId() const override;
+  const std::string& GetName() const override;
 
  protected:
   FakeExtensionProvider(const extensions::ExtensionId& extension_id,
@@ -39,6 +41,7 @@ class FakeExtensionProvider : public ProviderInterface {
 
   ProviderId provider_id_;
   Capabilities capabilities_;
+  std::string name_;
 };
 
 }  // namespace file_system_provider

@@ -80,6 +80,10 @@ const ProviderId& ExtensionProvider::GetId() const {
   return provider_id_;
 }
 
+const std::string& ExtensionProvider::GetName() const {
+  return name_;
+}
+
 ExtensionProvider::ExtensionProvider(
     const extensions::ExtensionId& extension_id,
     const ProvidingExtensionInfo& info)
@@ -88,6 +92,7 @@ ExtensionProvider::ExtensionProvider(
   capabilities_.watchable = info.capabilities.watchable();
   capabilities_.multiple_mounts = info.capabilities.multiple_mounts();
   capabilities_.source = info.capabilities.source();
+  name_ = info.name;
 }
 
 }  // namespace file_system_provider
