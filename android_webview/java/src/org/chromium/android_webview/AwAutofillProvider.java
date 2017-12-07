@@ -352,7 +352,6 @@ public class AwAutofillProvider extends AutofillProvider {
     @Override
     protected void setNativeAutofillProvider(long nativeAutofillProvider) {
         if (nativeAutofillProvider == mNativeAutofillProvider) return;
-        mNativeAutofillProvider = nativeAutofillProvider;
         // Setting the mNativeAutofillProvider to 0 may occur as a
         // result of WebView.destroy, or because a WebView has been
         // gc'ed. In the former case we can go ahead and clean up the
@@ -362,10 +361,9 @@ public class AwAutofillProvider extends AutofillProvider {
         // possible to know which case we're in, so just catch and
         // ignore the exception.
         try {
-            reset();
-            if (nativeAutofillProvider == 0) {
-                mAutofillManager.destroy();
-            }
+            if (mNativeAutofillProvider != 0) reset();
+            mNativeAutofillProvider = nativeAutofillProvider;
+            if (nativeAutofillProvider == 0) mAutofillManager.destroy();
         } catch (IllegalStateException e) {
         }
     }
@@ -373,8 +371,8 @@ public class AwAutofillProvider extends AutofillProvider {
     @Override
     public void setWebContents(WebContents webContents) {
         if (webContents == mWebContents) return;
+        if (mWebContents != null) reset();
         mWebContents = webContents;
-        reset();
     }
 
     @Override
