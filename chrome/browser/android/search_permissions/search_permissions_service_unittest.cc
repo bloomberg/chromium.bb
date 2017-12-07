@@ -613,3 +613,100 @@ TEST_F(SearchPermissionsServiceTest, ResetDSEPermissions) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
+
+TEST_F(SearchPermissionsServiceTest, GrantNotificationsToDSEFeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kGrantNotificationsToDSE);
+
+  SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_DEFAULT);
+  SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_DEFAULT);
+  ReinitializeService(true /* clear_pref */);
+  test_delegate()->ChangeDSEOrigin(kGoogleURL);
+
+  // Only geolocation should be granted to the DSE.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // Only geolocation should be granted when changing DSEs.
+  test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_ASK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  EXPECT_TRUE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, ToOrigin(kGoogleAusURL)));
+  EXPECT_FALSE(GetService()->IsPermissionControlledByDSE(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ToOrigin(kGoogleAusURL)));
+
+  // Resetting the DSE setting should only impact geolocation.
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                    CONTENT_SETTING_BLOCK);
+  SetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_BLOCK);
+  GetService()->ResetDSEPermissions();
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      GetContentSetting(kGoogleAusURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+}
+
+TEST_F(SearchPermissionsServiceTest,
+       GrantNotificationsToDSEFeatureEnabledThenDisabled) {
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  // When the feature flag was enabled previously and is then disabled, the
+  // notifications permission should be restored to its previous value.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kGrantNotificationsToDSE);
+
+    ReinitializeService(false /* clear_pref */);
+
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    EXPECT_EQ(
+        CONTENT_SETTING_ASK,
+        GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  }
+
+  // The setting should be restored correctly even if it was non-ask.
+  SetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_BLOCK);
+  ReinitializeService(true /* clear_pref */);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kGrantNotificationsToDSE);
+
+    ReinitializeService(false /* clear_pref */);
+
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    EXPECT_EQ(
+        CONTENT_SETTING_BLOCK,
+        GetContentSetting(kGoogleURL, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  }
+}
