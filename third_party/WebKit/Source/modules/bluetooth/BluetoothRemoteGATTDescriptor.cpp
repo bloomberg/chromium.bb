@@ -72,9 +72,8 @@ ScriptPromise BluetoothRemoteGATTDescriptor::readValue(
   GetGatt()->AddToActiveAlgorithms(resolver);
   GetService()->RemoteDescriptorReadValue(
       descriptor_->instance_id,
-      ConvertToBaseCallback(
-          WTF::Bind(&BluetoothRemoteGATTDescriptor::ReadValueCallback,
-                    WrapPersistent(this), WrapPersistent(resolver))));
+      WTF::Bind(&BluetoothRemoteGATTDescriptor::ReadValueCallback,
+                WrapPersistent(this), WrapPersistent(resolver)));
 
   return promise;
 }
@@ -138,9 +137,8 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   GetGatt()->AddToActiveAlgorithms(resolver);
   GetService()->RemoteDescriptorWriteValue(
       descriptor_->instance_id, value_vector,
-      ConvertToBaseCallback(WTF::Bind(
-          &BluetoothRemoteGATTDescriptor::WriteValueCallback,
-          WrapPersistent(this), WrapPersistent(resolver), value_vector)));
+      WTF::Bind(&BluetoothRemoteGATTDescriptor::WriteValueCallback,
+                WrapPersistent(this), WrapPersistent(resolver), value_vector));
 
   return promise;
 }

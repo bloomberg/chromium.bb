@@ -124,14 +124,14 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
   // channel.
   mojom::blink::BroadcastChannelClientAssociatedPtrInfo local_client_info;
   binding_.Bind(mojo::MakeRequest(&local_client_info));
-  binding_.set_connection_error_handler(ConvertToBaseCallback(
-      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this))));
+  binding_.set_connection_error_handler(
+      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this)));
 
   // Remote BroadcastChannelClient for messages send from this channel to the
   // browser.
   auto remote_cient_request = mojo::MakeRequest(&remote_client_);
-  remote_client_.set_connection_error_handler(ConvertToBaseCallback(
-      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this))));
+  remote_client_.set_connection_error_handler(
+      WTF::Bind(&BroadcastChannel::OnError, WrapWeakPersistent(this)));
 
   provider->ConnectToChannel(origin_, name_, std::move(local_client_info),
                              std::move(remote_cient_request));

@@ -173,8 +173,8 @@ void VRFrameProvider::ScheduleExclusiveFrame() {
 
   pending_exclusive_vsync_ = true;
 
-  device_->vrMagicWindowProviderPtr()->GetPose(ConvertToBaseCallback(WTF::Bind(
-      &VRFrameProvider::OnNonExclusivePose, WrapWeakPersistent(this))));
+  device_->vrMagicWindowProviderPtr()->GetPose(WTF::Bind(
+      &VRFrameProvider::OnNonExclusivePose, WrapWeakPersistent(this)));
   doc->RequestAnimationFrame(new VRFrameProviderRequestCallback(this));
 }
 
@@ -192,8 +192,8 @@ void VRFrameProvider::ScheduleNonExclusiveFrame() {
 
   pending_non_exclusive_vsync_ = true;
 
-  device_->vrMagicWindowProviderPtr()->GetPose(ConvertToBaseCallback(WTF::Bind(
-      &VRFrameProvider::OnNonExclusivePose, WrapWeakPersistent(this))));
+  device_->vrMagicWindowProviderPtr()->GetPose(WTF::Bind(
+      &VRFrameProvider::OnNonExclusivePose, WrapWeakPersistent(this)));
   doc->RequestAnimationFrame(new VRFrameProviderRequestCallback(this));
 }
 

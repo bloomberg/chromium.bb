@@ -104,8 +104,8 @@ void DevToolsFrontendImpl::SetupDevToolsFrontend(
   DCHECK(GetSupplementable()->IsMainFrame());
   api_script_ = api_script;
   host_.Bind(std::move(host));
-  host_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
-      &DevToolsFrontendImpl::DestroyOnHostGone, WrapWeakPersistent(this))));
+  host_.set_connection_error_handler(WTF::Bind(
+      &DevToolsFrontendImpl::DestroyOnHostGone, WrapWeakPersistent(this)));
   GetSupplementable()->GetPage()->SetDefaultPageScaleLimits(1.f, 1.f);
 }
 

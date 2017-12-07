@@ -25,8 +25,8 @@ TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
     interface_provider->GetInterface(std::move(request));
   }
 
-  text_service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
-      &TextDetector::OnTextServiceConnectionError, WrapWeakPersistent(this))));
+  text_service_.set_connection_error_handler(WTF::Bind(
+      &TextDetector::OnTextServiceConnectionError, WrapWeakPersistent(this)));
 }
 
 ScriptPromise TextDetector::DoDetect(ScriptPromiseResolver* resolver,
@@ -38,10 +38,10 @@ ScriptPromise TextDetector::DoDetect(ScriptPromiseResolver* resolver,
     return promise;
   }
   text_service_requests_.insert(resolver);
-  text_service_->Detect(std::move(bitmap),
-                        ConvertToBaseCallback(WTF::Bind(
-                            &TextDetector::OnDetectText, WrapPersistent(this),
-                            WrapPersistent(resolver))));
+  text_service_->Detect(
+      std::move(bitmap),
+      WTF::Bind(&TextDetector::OnDetectText, WrapPersistent(this),
+                WrapPersistent(resolver)));
   return promise;
 }
 

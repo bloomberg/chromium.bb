@@ -301,8 +301,7 @@ ScriptPromise CookieStore::DoRead(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   backend_->GetAllForUrl(
       cookie_url, site_for_cookies, std::move(backend_options),
-      ConvertToBaseCallback(
-          WTF::Bind(backend_result_converter, WrapPersistent(resolver))));
+      WTF::Bind(backend_result_converter, WrapPersistent(resolver)));
   return resolver->Promise();
 }
 
@@ -381,8 +380,8 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   backend_->SetCanonicalCookie(
       std::move(canonical_cookie), cookie_url, site_for_cookies,
-      ConvertToBaseCallback(WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
-                                      WrapPersistent(resolver))));
+      WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
+                WrapPersistent(resolver)));
   return resolver->Promise();
 }
 

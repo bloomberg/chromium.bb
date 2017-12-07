@@ -1272,8 +1272,8 @@ void AXObjectCacheImpl::RequestAOMEventListenerPermission() {
           mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
       document_->GetExecutionContext()->GetSecurityOrigin(),
       Frame::HasTransientUserActivation(document_->GetFrame()),
-      ConvertToBaseCallback(WTF::Bind(
-          &AXObjectCacheImpl::OnPermissionStatusChange, WrapPersistent(this))));
+      WTF::Bind(&AXObjectCacheImpl::OnPermissionStatusChange,
+                WrapPersistent(this)));
 }
 
 void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {

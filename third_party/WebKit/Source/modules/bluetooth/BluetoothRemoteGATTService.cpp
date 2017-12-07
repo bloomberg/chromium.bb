@@ -148,10 +148,9 @@ ScriptPromise BluetoothRemoteGATTService::GetCharacteristicsImpl(
       device_->GetBluetooth()->Service();
   service->RemoteServiceGetCharacteristics(
       service_->instance_id, quantity, characteristics_uuid,
-      ConvertToBaseCallback(
-          WTF::Bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
-                    WrapPersistent(this), service_->instance_id,
-                    characteristics_uuid, quantity, WrapPersistent(resolver))));
+      WTF::Bind(&BluetoothRemoteGATTService::GetCharacteristicsCallback,
+                WrapPersistent(this), service_->instance_id,
+                characteristics_uuid, quantity, WrapPersistent(resolver)));
 
   return promise;
 }

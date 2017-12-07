@@ -56,9 +56,8 @@ ScriptPromise NavigatorKeyboardLock::requestKeyboardLock(
 
   request_keylock_resolver_ = ScriptPromiseResolver::Create(state);
   service_->RequestKeyboardLock(
-      keycodes,
-      ConvertToBaseCallback(WTF::Bind(
-          &NavigatorKeyboardLock::LockRequestFinished, WrapPersistent(this))));
+      keycodes, WTF::Bind(&NavigatorKeyboardLock::LockRequestFinished,
+                          WrapPersistent(this)));
   return request_keylock_resolver_->Promise();
 }
 

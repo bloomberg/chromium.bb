@@ -219,9 +219,9 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
   DCHECK(!monitor_.is_bound());
   Platform::Current()->GetConnector()->BindInterface(
       device::mojom::blink::kServiceName, mojo::MakeRequest(&monitor_));
-  monitor_->IsAutoRotateEnabledByUser(ConvertToBaseCallback(WTF::Bind(
+  monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,
-      WrapPersistent(this))));
+      WrapPersistent(this)));
 #else
   GotIsAutoRotateEnabledByUser(true);  // Assume always enabled on other OSes.
 #endif  // defined(OS_ANDROID)

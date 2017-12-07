@@ -22,14 +22,14 @@ VRController::VRController(NavigatorVR* navigator_vr)
       binding_(this) {
   navigator_vr->GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&service_));
-  service_.set_connection_error_handler(ConvertToBaseCallback(
-      WTF::Bind(&VRController::Dispose, WrapWeakPersistent(this))));
+  service_.set_connection_error_handler(
+      WTF::Bind(&VRController::Dispose, WrapWeakPersistent(this)));
 
   device::mojom::blink::VRServiceClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
-  service_->SetClient(std::move(client), ConvertToBaseCallback(WTF::Bind(
-                                             &VRController::OnDisplaysSynced,
-                                             WrapPersistent(this))));
+  service_->SetClient(
+      std::move(client),
+      WTF::Bind(&VRController::OnDisplaysSynced, WrapPersistent(this)));
 }
 
 VRController::~VRController() {}

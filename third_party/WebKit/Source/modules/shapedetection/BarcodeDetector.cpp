@@ -25,9 +25,9 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
     interface_provider->GetInterface(std::move(request));
   }
 
-  barcode_service_.set_connection_error_handler(ConvertToBaseCallback(
+  barcode_service_.set_connection_error_handler(
       WTF::Bind(&BarcodeDetector::OnBarcodeServiceConnectionError,
-                WrapWeakPersistent(this))));
+                WrapWeakPersistent(this)));
 }
 
 ScriptPromise BarcodeDetector::DoDetect(ScriptPromiseResolver* resolver,
@@ -40,9 +40,9 @@ ScriptPromise BarcodeDetector::DoDetect(ScriptPromiseResolver* resolver,
   }
   barcode_service_requests_.insert(resolver);
   barcode_service_->Detect(
-      std::move(bitmap), ConvertToBaseCallback(WTF::Bind(
-                             &BarcodeDetector::OnDetectBarcodes,
-                             WrapPersistent(this), WrapPersistent(resolver))));
+      std::move(bitmap),
+      WTF::Bind(&BarcodeDetector::OnDetectBarcodes, WrapPersistent(this),
+                WrapPersistent(resolver)));
   return promise;
 }
 

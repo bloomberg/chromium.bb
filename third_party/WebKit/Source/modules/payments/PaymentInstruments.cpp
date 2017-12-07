@@ -82,9 +82,9 @@ ScriptPromise PaymentInstruments::deleteInstrument(
   ScriptPromise promise = resolver->Promise();
 
   manager_->DeletePaymentInstrument(
-      instrument_key, ConvertToBaseCallback(WTF::Bind(
-                          &PaymentInstruments::onDeletePaymentInstrument,
-                          WrapPersistent(this), WrapPersistent(resolver))));
+      instrument_key,
+      WTF::Bind(&PaymentInstruments::onDeletePaymentInstrument,
+                WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -100,9 +100,9 @@ ScriptPromise PaymentInstruments::get(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   manager_->GetPaymentInstrument(
-      instrument_key, ConvertToBaseCallback(WTF::Bind(
-                          &PaymentInstruments::onGetPaymentInstrument,
-                          WrapPersistent(this), WrapPersistent(resolver))));
+      instrument_key,
+      WTF::Bind(&PaymentInstruments::onGetPaymentInstrument,
+                WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -116,9 +116,9 @@ ScriptPromise PaymentInstruments::keys(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  manager_->KeysOfPaymentInstruments(ConvertToBaseCallback(
+  manager_->KeysOfPaymentInstruments(
       WTF::Bind(&PaymentInstruments::onKeysOfPaymentInstruments,
-                WrapPersistent(this), WrapPersistent(resolver))));
+                WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -134,9 +134,9 @@ ScriptPromise PaymentInstruments::has(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   manager_->HasPaymentInstrument(
-      instrument_key, ConvertToBaseCallback(WTF::Bind(
-                          &PaymentInstruments::onHasPaymentInstrument,
-                          WrapPersistent(this), WrapPersistent(resolver))));
+      instrument_key,
+      WTF::Bind(&PaymentInstruments::onHasPaymentInstrument,
+                WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -205,9 +205,8 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 
   manager_->SetPaymentInstrument(
       instrument_key, std::move(instrument),
-      ConvertToBaseCallback(
-          WTF::Bind(&PaymentInstruments::onSetPaymentInstrument,
-                    WrapPersistent(this), WrapPersistent(resolver))));
+      WTF::Bind(&PaymentInstruments::onSetPaymentInstrument,
+                WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 
@@ -221,9 +220,9 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  manager_->ClearPaymentInstruments(ConvertToBaseCallback(
+  manager_->ClearPaymentInstruments(
       WTF::Bind(&PaymentInstruments::onClearPaymentInstruments,
-                WrapPersistent(this), WrapPersistent(resolver))));
+                WrapPersistent(this), WrapPersistent(resolver)));
   return promise;
 }
 

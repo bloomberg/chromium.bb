@@ -45,9 +45,9 @@ namespace blink {
 
 WebAuthenticationClient::WebAuthenticationClient(LocalFrame& frame) {
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&authenticator_));
-  authenticator_.set_connection_error_handler(ConvertToBaseCallback(
+  authenticator_.set_connection_error_handler(
       WTF::Bind(&WebAuthenticationClient::OnAuthenticatorConnectionError,
-                WrapWeakPersistent(this))));
+                WrapWeakPersistent(this)));
 }
 
 WebAuthenticationClient::~WebAuthenticationClient() {}
@@ -69,10 +69,9 @@ void WebAuthenticationClient::DispatchMakeCredential(
     return;
   }
 
-  authenticator_->MakeCredential(
-      std::move(options),
-      ConvertToBaseCallback(WTF::Bind(&RespondToPublicKeyCallback,
-                                      WTF::Passed(std::move(callbacks)))));
+  authenticator_->MakeCredential(std::move(options),
+                                 WTF::Bind(&RespondToPublicKeyCallback,
+                                           WTF::Passed(std::move(callbacks))));
 }
 
 void WebAuthenticationClient::GetAssertion(

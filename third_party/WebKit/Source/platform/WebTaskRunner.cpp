@@ -133,8 +133,7 @@ void WebTaskRunner::PostDelayedTask(const WebTraceLocation& location,
 void WebTaskRunner::PostTask(const WebTraceLocation& location,
                              WTF::Closure task) {
   DCHECK(RunsTasksInCurrentSequence());
-  PostDelayedTask(location, ConvertToBaseCallback(std::move(task)),
-                  base::TimeDelta());
+  PostDelayedTask(location, std::move(task), base::TimeDelta());
 }
 
 TaskHandle WebTaskRunner::PostCancellableTask(const WebTraceLocation& location,

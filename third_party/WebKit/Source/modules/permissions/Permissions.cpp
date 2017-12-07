@@ -172,10 +172,9 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   GetService(ExecutionContext::From(script_state))
       .HasPermission(std::move(descriptor),
                      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-                     ConvertToBaseCallback(WTF::Bind(
-                         &Permissions::TaskComplete, WrapPersistent(this),
-                         WrapPersistent(resolver),
-                         WTF::Passed(std::move(descriptor_copy)))));
+                     WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
+                               WrapPersistent(resolver),
+                               WTF::Passed(std::move(descriptor_copy))));
   return promise;
 }
 
@@ -198,13 +197,13 @@ ScriptPromise Permissions::request(ScriptState* script_state,
   Document* doc = ToDocumentOrNull(context);
   Frame* frame = doc ? doc->GetFrame() : nullptr;
   GetService(ExecutionContext::From(script_state))
-      .RequestPermission(std::move(descriptor), context->GetSecurityOrigin(),
-                         Frame::HasTransientUserActivation(
-                             frame, true /* checkIfMainThread */),
-                         ConvertToBaseCallback(WTF::Bind(
-                             &Permissions::TaskComplete, WrapPersistent(this),
-                             WrapPersistent(resolver),
-                             WTF::Passed(std::move(descriptor_copy)))));
+      .RequestPermission(
+          std::move(descriptor), context->GetSecurityOrigin(),
+          Frame::HasTransientUserActivation(frame,
+                                            true /* checkIfMainThread */),
+          WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
+                    WrapPersistent(resolver),
+                    WTF::Passed(std::move(descriptor_copy))));
   return promise;
 }
 
@@ -226,10 +225,9 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
       .RevokePermission(
           std::move(descriptor),
           ExecutionContext::From(script_state)->GetSecurityOrigin(),
-          ConvertToBaseCallback(
-              WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
-                        WrapPersistent(resolver),
-                        WTF::Passed(std::move(descriptor_copy)))));
+          WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
+                    WrapPersistent(resolver),
+                    WTF::Passed(std::move(descriptor_copy))));
   return promise;
 }
 
@@ -282,11 +280,10 @@ ScriptPromise Permissions::requestAll(
           std::move(internal_permissions), context->GetSecurityOrigin(),
           Frame::HasTransientUserActivation(frame,
                                             true /* checkIfMainThread */),
-          ConvertToBaseCallback(WTF::Bind(
-              &Permissions::BatchTaskComplete, WrapPersistent(this),
-              WrapPersistent(resolver),
-              WTF::Passed(std::move(internal_permissions_copy)),
-              WTF::Passed(std::move(caller_index_to_internal_index)))));
+          WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
+                    WrapPersistent(resolver),
+                    WTF::Passed(std::move(internal_permissions_copy)),
+                    WTF::Passed(std::move(caller_index_to_internal_index))));
   return promise;
 }
 
@@ -294,8 +291,8 @@ PermissionService& Permissions::GetService(
     ExecutionContext* execution_context) {
   if (!service_) {
     ConnectToPermissionService(execution_context, mojo::MakeRequest(&service_));
-    service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
-        &Permissions::ServiceConnectionError, WrapWeakPersistent(this))));
+    service_.set_connection_error_handler(WTF::Bind(
+        &Permissions::ServiceConnectionError, WrapWeakPersistent(this)));
   }
   return *service_;
 }

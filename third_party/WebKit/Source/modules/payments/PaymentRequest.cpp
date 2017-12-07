@@ -1040,9 +1040,9 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
 
   GetFrame()->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&payment_provider_));
-  payment_provider_.set_connection_error_handler(ConvertToBaseCallback(
+  payment_provider_.set_connection_error_handler(
       WTF::Bind(&PaymentRequest::OnError, WrapWeakPersistent(this),
-                PaymentErrorReason::UNKNOWN)));
+                PaymentErrorReason::UNKNOWN));
 
   payments::mojom::blink::PaymentRequestClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
