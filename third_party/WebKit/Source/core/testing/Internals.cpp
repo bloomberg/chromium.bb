@@ -29,6 +29,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/macros.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
@@ -175,7 +176,6 @@ namespace blink {
 namespace {
 
 class UseCounterObserverImpl final : public UseCounter::Observer {
-  WTF_MAKE_NONCOPYABLE(UseCounterObserverImpl);
 
  public:
   UseCounterObserverImpl(ScriptPromiseResolver* resolver, WebFeature feature)
@@ -196,6 +196,7 @@ class UseCounterObserverImpl final : public UseCounter::Observer {
  private:
   Member<ScriptPromiseResolver> resolver_;
   WebFeature feature_;
+  DISALLOW_COPY_AND_ASSIGN(UseCounterObserverImpl);
 };
 
 }  // namespace

@@ -32,12 +32,12 @@
 #define DummyPageHolder_h
 
 #include <memory>
+#include "base/macros.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -63,7 +63,6 @@ typedef void (*FrameSettingOverrideFunction)(Settings&);
 // references to the LocalFrame.
 
 class DummyPageHolder {
-  WTF_MAKE_NONCOPYABLE(DummyPageHolder);
   USING_FAST_MALLOC(DummyPageHolder);
 
  public:
@@ -95,6 +94,7 @@ class DummyPageHolder {
   CrossThreadPersistent<LocalFrame> frame_;
 
   Persistent<LocalFrameClient> local_frame_client_;
+  DISALLOW_COPY_AND_ASSIGN(DummyPageHolder);
 };
 
 }  // namespace blink
