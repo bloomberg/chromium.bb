@@ -104,6 +104,13 @@ public class SavePasswordsPreferences
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.save_password_preferences_action_bar_menu, menu);
+        menu.findItem(R.id.export_passwords).setEnabled(false);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.export_passwords).setEnabled(!mNoPasswords);
+        super.onPrepareOptionsMenu(menu);
     }
 
     @Override
