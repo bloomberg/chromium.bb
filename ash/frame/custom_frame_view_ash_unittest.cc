@@ -374,6 +374,15 @@ TEST_F(CustomFrameViewAshTest, HeaderVisibilityInSplitview) {
   EXPECT_TRUE(delegate1->header_view()->should_paint());
   EXPECT_TRUE(delegate2->header_view()->should_paint());
 
+  // Toggle overview mode so we return back to left snapped mode. Verify that
+  // the header is again drawn for the snapped window, but not for the unsnapped
+  // window.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
+            Shell::Get()->split_view_controller()->state());
+  EXPECT_TRUE(delegate1->header_view()->should_paint());
+  EXPECT_FALSE(delegate2->header_view()->should_paint());
+
   Shell::Get()->split_view_controller()->EndSplitView();
 }
 
