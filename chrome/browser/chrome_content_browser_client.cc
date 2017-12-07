@@ -157,7 +157,6 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/patch_service/public/interfaces/constants.mojom.h"
-#include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -3548,9 +3547,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       TabUnderNavigationThrottle::MaybeCreate(handle);
   if (tab_under_throttle)
     throttles.push_back(std::move(tab_under_throttle));
-
-  throttles.push_back(base::MakeUnique<PolicyBlacklistNavigationThrottle>(
-      handle, handle->GetWebContents()->GetBrowserContext()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCommittedInterstitials)) {

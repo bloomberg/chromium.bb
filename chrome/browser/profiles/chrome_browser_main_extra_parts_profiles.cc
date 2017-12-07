@@ -44,7 +44,6 @@
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
-#include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -81,7 +80,6 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/features.h"
 #include "components/feature_engagement/features.h"
-#include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
@@ -335,8 +333,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   prerender::PrerenderMessageFilter::EnsureShutdownNotifierFactoryBuilt();
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
-  PolicyBlacklistFactory::GetInstance()->SetBlacklistOverride(
-      base::BindRepeating(policy::OverrideBlacklistForURL));
 #if defined(OS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
 #endif

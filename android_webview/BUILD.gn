@@ -681,7 +681,6 @@ source_set("common") {
     "//components/crash/content/app",
     "//components/crash/content/browser",
     "//components/google/core/browser",
-    "//components/keyed_service/content",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
@@ -689,9 +688,7 @@ source_set("common") {
     "//components/navigation_interception",
     "//components/network_session_configurator/common",
     "//components/policy:generated",
-    "//components/policy/content/",
     "//components/policy/core/browser",
-    "//components/policy/core/common",
     "//components/prefs",
     "//components/printing/browser",
     "//components/printing/common",
@@ -947,9 +944,7 @@ android_library("android_webview_platform_services_java") {
 }
 
 android_library("android_webview_commandline_java") {
-  java_files = [
-    "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
-  ]
+  java_files = [ "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java" ]
 
   deps = [
     "//base:base_java",

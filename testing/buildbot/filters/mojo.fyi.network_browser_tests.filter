@@ -384,6 +384,11 @@
 # Added in r519342.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
 
+# crbug.com/756642 Need to add support for URL blacklist.
+-PolicyTest.FileURLBlacklist
+-PolicyTest.URLBlacklist
+-PolicyTest.URLBlacklistSubresources
+
 # crbug.com/751738 Service worker subresource loader doesn't yet support request bodies.
 # crbug.com/778821 Null response body is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP8
