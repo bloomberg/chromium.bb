@@ -76,13 +76,6 @@ class VariationsService
 
   ~VariationsService() override;
 
-  // Creates field trials based on the variations seed loaded from local state.
-  // If there is a problem loading the seed data, all trials specified by the
-  // seed may not be created. Some field trials are configured to override or
-  // associate with (for reporting) specific features. These associations are
-  // registered with |feature_list|.
-  bool CreateTrialsFromSeed(base::FeatureList* feature_list);
-
   // Should be called before startup of the main message loop.
   void PerformPreMainMessageLoopStartup();
 

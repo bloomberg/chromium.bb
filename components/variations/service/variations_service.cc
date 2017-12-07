@@ -746,11 +746,6 @@ bool VariationsService::SetupFieldTrials(
       std::move(feature_list), variation_ids, platform_field_trials);
 }
 
-bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
-  return field_trial_creator_.CreateTrialsFromSeed(CreateLowEntropyProvider(),
-                                                   feature_list);
-}
-
 std::string VariationsService::GetStoredPermanentCountry() {
   const base::ListValue* list_value =
       local_state_->GetList(prefs::kVariationsPermanentConsistencyCountry);
