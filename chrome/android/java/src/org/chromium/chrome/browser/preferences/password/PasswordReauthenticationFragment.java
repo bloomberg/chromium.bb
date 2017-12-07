@@ -32,7 +32,8 @@ public class PasswordReauthenticationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFragmentManager = getFragmentManager();
-        if (!sPreventLockDevice) {
+        boolean isFirstTime = savedInstanceState == null;
+        if (!sPreventLockDevice && isFirstTime) {
             lockDevice();
         }
     }
