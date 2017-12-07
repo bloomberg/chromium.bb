@@ -144,8 +144,7 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   }
 
   TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-                          "SubmitCompositorFrame",
-                          local_surface_id_.parent_id());
+                          "SubmitCompositorFrame", local_surface_id_.hash());
   bool tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                                      &tracing_enabled);

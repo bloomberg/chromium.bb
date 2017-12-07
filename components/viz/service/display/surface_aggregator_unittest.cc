@@ -51,8 +51,8 @@ constexpr bool kChildIsRoot = false;
 constexpr bool kNeedsSyncPoints = false;
 
 SurfaceId InvalidSurfaceId() {
-  static SurfaceId invalid(FrameSinkId(),
-                           LocalSurfaceId(0xdeadbeef, kArbitraryToken));
+  static SurfaceId invalid(
+      FrameSinkId(), LocalSurfaceId(0xdeadbeef, 0xdeadbeef, kArbitraryToken));
   return invalid;
 }
 

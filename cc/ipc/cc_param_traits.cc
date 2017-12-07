@@ -626,6 +626,7 @@ void ParamTraits<viz::FrameSinkId>::Log(const param_type& p, std::string* l) {
 void ParamTraits<viz::LocalSurfaceId>::Write(base::Pickle* m,
                                              const param_type& p) {
   WriteParam(m, p.parent_id());
+  WriteParam(m, p.child_sequence_number());
   WriteParam(m, p.nonce());
 }
 
@@ -636,11 +637,15 @@ bool ParamTraits<viz::LocalSurfaceId>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &parent_id))
     return false;
 
+  uint32_t child_sequence_number;
+  if (!ReadParam(m, iter, &child_sequence_number))
+    return false;
+
   base::UnguessableToken nonce;
   if (!ReadParam(m, iter, &nonce))
     return false;
 
-  *p = viz::LocalSurfaceId(parent_id, nonce);
+  *p = viz::LocalSurfaceId(parent_id, child_sequence_number, nonce);
   return true;
 }
 
@@ -648,6 +653,8 @@ void ParamTraits<viz::LocalSurfaceId>::Log(const param_type& p,
                                            std::string* l) {
   l->append("viz::LocalSurfaceId(");
   LogParam(p.parent_id(), l);
+  l->append(", ");
+  LogParam(p.child_sequence_number(), l);
   l->append(", ");
   LogParam(p.nonce(), l);
   l->append(")");
