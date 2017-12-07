@@ -12057,7 +12057,7 @@ Called by update_net_error_codes.py.-->
   <int value="400" label="UnsafelyTreatInsecureOriginAsSecure"/>
   <int value="401" label="DefaultDownloadDirectory"/>
   <int value="402" label="SecurityKeyPermitAttestation"/>
-  <int value="403" label="NetworkHostname"/>
+  <int value="403" label="DeviceHostnameTemplate"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
