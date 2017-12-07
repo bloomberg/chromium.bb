@@ -254,6 +254,9 @@ struct macroblock {
   int64_t skip_mode_dist;
   MV_REFERENCE_FRAME skip_mode_ref_frame[2];
   int_mv skip_mode_mv[2];
+#if CONFIG_JNT_COMP
+  int compound_idx;
+#endif  // CONFIG_JNT_COMP
   int skip_mode_index_candidate;
   int skip_mode_index;
 #endif  // CONFIG_EXT_SKIP

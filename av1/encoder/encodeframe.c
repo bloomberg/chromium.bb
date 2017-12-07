@@ -872,6 +872,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   if (!frame_is_intra_only(cm)) {
     RD_COUNTS *rdc = &td->rd_counts;
 
+    FRAME_COUNTS *const counts = td->counts;
+
 #if CONFIG_EXT_SKIP
     if (mbmi->skip_mode) {
       rdc->skip_mode_used_flag = 1;
@@ -879,12 +881,24 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         assert(has_second_ref(mbmi));
         rdc->compound_ref_used_flag = 1;
       }
+#if CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
+      const int cur_offset = (int)cm->frame_offset;
+      const int cur_to_fwd = cur_offset - cm->ref_frame_idx_0;
+      const int cur_to_bwd = abs(cm->ref_frame_idx_1 - cur_offset);
+      if (cur_to_fwd != cur_to_bwd && xd->all_one_sided_refs) {
+        const int comp_index_ctx = get_comp_index_context(cm, xd);
+        ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+        if (allow_update_cdf)
+          update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
+                     2);
+      }
+#endif  // CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
       set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+
       return;
     }
 #endif  // CONFIG_EXT_SKIP
 
-    FRAME_COUNTS *const counts = td->counts;
     const int inter_block = is_inter_block(mbmi);
 
     if (!seg_ref_active) {
@@ -3555,19 +3569,6 @@ static int is_screen_content(const uint8_t *src,
 }
 
 #if CONFIG_FRAME_MARKER
-static int refs_are_one_sided(const AV1_COMMON *cm) {
-  int one_sided_refs = 1;
-  if (cm->cur_frame->lst_frame_offset > cm->frame_offset ||
-      cm->cur_frame->lst2_frame_offset > cm->frame_offset ||
-      cm->cur_frame->lst3_frame_offset > cm->frame_offset ||
-      cm->cur_frame->gld_frame_offset > cm->frame_offset ||
-      cm->cur_frame->bwd_frame_offset > cm->frame_offset ||
-      cm->cur_frame->alt2_frame_offset > cm->frame_offset ||
-      cm->cur_frame->alt_frame_offset > cm->frame_offset)
-    one_sided_refs = 0;
-  return one_sided_refs;
-}
-
 // Enforce the number of references for each arbitrary frame limited to
 // (INTER_REFS_PER_FRAME - 1)
 static void enforce_max_ref_frames(AV1_COMP *cpi) {
@@ -4014,9 +4015,19 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_setup_motion_field(cm);
 #endif  // CONFIG_MFMV
 
+#if CONFIG_FRAME_MARKER
+  cpi->all_one_sided_refs =
+      frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
+#endif  // CONFIG_FRAME_MARKER
+
 #if CONFIG_EXT_SKIP
   av1_setup_skip_mode_allowed(cm);
   cm->skip_mode_flag = cm->is_skip_mode_allowed;
+  if (cm->skip_mode_flag && cpi->all_one_sided_refs &&
+      cpi->oxcf.lag_in_frames > 0) {
+    // High latency: Turn off skip mode if all refs are fwd.
+    cm->skip_mode_flag = 0;
+  }
   if (cm->skip_mode_flag) {
     if (cm->reference_mode == SINGLE_REFERENCE) {
       cm->skip_mode_flag = 0;
@@ -4036,22 +4047,19 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         cm->skip_mode_flag = 0;
     }
   }
+  xd->all_one_sided_refs = cm->skip_mode_flag ? cpi->all_one_sided_refs : 0;
 #if 0
   printf(
       "\nENCODER: Frame=%d, frame_offset=%d, show_frame=%d, "
       "show_existing_frame=%d, is_skip_mode_allowed=%d, "
       "ref_frame_idx=(%d,%d), frame_reference_mode=%d, "
-      "tpl_frame_ref0_idx=%d, skip_mode_flag=%d\n",
+      "tpl_frame_ref0_idx=%d, skip_mode_flag=%d, lag_in_frames=%d\n",
       cm->current_video_frame, cm->frame_offset, cm->show_frame,
       cm->show_existing_frame, cm->is_skip_mode_allowed, cm->ref_frame_idx_0,
       cm->ref_frame_idx_1, cm->reference_mode, cm->tpl_frame_ref0_idx,
-      cm->skip_mode_flag);
+      cm->skip_mode_flag, cpi->oxcf.lag_in_frames);
 #endif  // 0
 #endif  // CONFIG_EXT_SKIP
-
-#if CONFIG_FRAME_MARKER
-  cpi->all_one_sided_refs = refs_are_one_sided(cm);
-#endif  // CONFIG_FRAME_MARKER
 
   {
     struct aom_usec_timer emr_timer;

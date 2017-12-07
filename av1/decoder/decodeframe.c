@@ -2996,6 +2996,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #if CONFIG_EXT_SKIP
   av1_setup_skip_mode_allowed(cm);
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
+  xd->all_one_sided_refs = cm->skip_mode_flag ? av1_refs_are_one_sided(cm) : 0;
 #if 0
   printf(
       "DECODER: Frame=%d, frame_offset=%d, show_frame=%d, "

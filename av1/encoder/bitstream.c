@@ -1410,7 +1410,19 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   }
 
 #if CONFIG_EXT_SKIP
-  if (mbmi->skip_mode) return;
+  if (mbmi->skip_mode) {
+#if CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
+    const int cur_offset = (int)cm->frame_offset;
+    const int cur_to_fwd = cur_offset - cm->ref_frame_idx_0;
+    const int cur_to_bwd = abs(cm->ref_frame_idx_1 - cur_offset);
+    if (cur_to_fwd != cur_to_bwd && xd->all_one_sided_refs) {
+      const int comp_index_ctx = get_comp_index_context(cm, xd);
+      aom_write_symbol(w, mbmi->compound_idx,
+                       ec_ctx->compound_index_cdf[comp_index_ctx], 2);
+    }
+#endif  // CONFIG_JNT_COMP && SKIP_MODE_WITH_JNT_COMP
+    return;
+  }
 #endif  // CONFIG_EXT_SKIP
 
   if (!is_inter) {
@@ -4305,7 +4317,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
     aom_wb_write_literal(wb, arf_offset, FRAME_OFFSET_BITS);
   }
-#endif
+
+#if CONFIG_EXT_SKIP
+  if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
+#endif  // CONFIG_EXT_SKIP
+#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
