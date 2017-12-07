@@ -188,8 +188,9 @@ public class AwContentsClientFullScreenTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"AndroidWebView"})
+    //@MediumTest
+    //@Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/789306")
     public void testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView() throws Throwable {
         mContentsClient.setOnHideCustomViewRunnable(
                 () -> mContentsClient.getExitCallback().onCustomViewHidden());
