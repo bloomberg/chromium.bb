@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "content/common/appcache.mojom.h"
 #include "content/common/appcache_interfaces.h"
 #include "ipc/ipc_sender.h"
 
@@ -17,7 +18,8 @@ namespace content {
 // Sends appcache related messages to the main process.
 class AppCacheBackendProxy : public AppCacheBackend {
  public:
-  explicit AppCacheBackendProxy(IPC::Sender* sender) : sender_(sender) {}
+  explicit AppCacheBackendProxy(IPC::Sender* sender);
+  ~AppCacheBackendProxy() override;
 
   IPC::Sender* sender() const { return sender_; }
 
@@ -41,6 +43,10 @@ class AppCacheBackendProxy : public AppCacheBackend {
       std::vector<AppCacheResourceInfo>* resource_infos) override;
 
  private:
+  mojom::AppCacheBackend* GetAppCacheBackendPtr();
+
+  mojom::AppCacheBackendPtr app_cache_backend_ptr_;
+
   IPC::Sender* sender_;
 };
 

@@ -42,15 +42,13 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   bool MarkAsForeignEntry(int host_id,
                           const GURL& document_url,
                           int64_t cache_document_was_loaded_from);
-  bool GetStatusWithCallback(int host_id,
-                             GetStatusCallback callback,
-                             void* callback_param);
-  bool StartUpdateWithCallback(int host_id,
-                               StartUpdateCallback callback,
-                               void* callback_param);
-  bool SwapCacheWithCallback(int host_id,
-                             SwapCacheCallback callback,
-                             void* callback_param);
+
+  // The xxxWithCallback functions take ownership of the callback iff the host
+  // is found (and the return value is true). If the result is false, the
+  // callback is still available to the caller of these methods.
+  bool GetStatusWithCallback(int host_id, GetStatusCallback* callback);
+  bool StartUpdateWithCallback(int host_id, StartUpdateCallback* callback);
+  bool SwapCacheWithCallback(int host_id, SwapCacheCallback* callback);
 
   // Returns a pointer to a registered host. The backend retains ownership.
   AppCacheHost* GetHost(int host_id) {
