@@ -198,7 +198,10 @@ base::string16 ElideText(const base::string16& text,
                          ElideBehavior behavior) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   DCHECK_NE(behavior, FADE_TAIL);
-  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
+  // TODO(tapted): Update callers of this that draw into Cocoa UI to use
+  // RenderText directly. See http://crbug.com/791391.
+  auto render_text = RenderText::CreateInstanceDeprecated();
+
   render_text->SetCursorEnabled(false);
   // TODO(bshe): 5000 is out dated. We should remove it. See crbug.com/551660.
   // Do not bother accurately sizing strings over 5000 characters here, for

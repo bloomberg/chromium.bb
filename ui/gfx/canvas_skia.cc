@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -113,7 +114,10 @@ void Canvas::SizeStringFloat(const base::string16& text,
     ElideRectangleText(text, font_list, *width, INT_MAX, wrap_behavior,
                        &strings);
     Rect rect(base::saturated_cast<int>(*width), INT_MAX);
-    std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
+
+    // This needs to match the instance used in ElideRectangleText.
+    auto render_text = RenderText::CreateInstanceDeprecated();
+
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
 
@@ -131,7 +135,11 @@ void Canvas::SizeStringFloat(const base::string16& text,
     *width = w;
     *height = h;
   } else {
-    std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
+    // This is mostly used by calls from GetStringWidth(), which doesn't have
+    // the required drawing context. TODO(tapted): Ensure Cocoa UI never calls
+    // this method and change the next line to CreateHarfBuzzInstance().
+    auto render_text = RenderText::CreateInstanceDeprecated();
+
     Rect rect(base::saturated_cast<int>(*width),
               base::saturated_cast<int>(*height));
     base::string16 adjusted_text = text;
@@ -157,9 +165,15 @@ void Canvas::DrawStringRectWithFlags(const base::string16& text,
 
   Rect rect(text_bounds);
 
-  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
+  auto render_text = gfx::RenderText::CreateInstanceDeprecated();
 
   if (flags & MULTI_LINE) {
+#if defined(OS_MACOSX)
+    // Currently not supported on Mac. ElideRectangleText() is not yet aware
+    // that the typesetting below is not being done by CoreText.
+    // See http://crbug.com/791391.
+    NOTREACHED();
+#endif
     WordWrapBehavior wrap_behavior = IGNORE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
       wrap_behavior = WRAP_LONG_WORDS;
@@ -244,7 +258,8 @@ void Canvas::DrawFadedString(const base::string16& text,
     flags |= TEXT_ALIGN_TO_HEAD;
   flags |= NO_ELLIPSIS;
 
-  std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
+  // TODO(tapted): Remove Canvas::DrawFadedString() - it's unused.
+  auto render_text = RenderText::CreateInstanceDeprecated();
   Rect rect = display_rect;
   UpdateRenderText(rect, text, font_list, flags, color, render_text.get());
   render_text->SetElideBehavior(FADE_TAIL);

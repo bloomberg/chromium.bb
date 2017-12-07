@@ -159,7 +159,7 @@ void PublicAccountUserDetails::Layout() {
   gfx::Point position = contents_area.origin();
   gfx::Range display_name(gfx::Range::InvalidRange());
   for (auto it = lines.begin(); it != lines.end(); ++it) {
-    auto line = base::WrapUnique(gfx::RenderText::CreateInstance());
+    auto line = gfx::RenderText::CreateHarfBuzzInstance();
     line->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_UI);
     line->SetText(*it);
     const gfx::Size size(contents_area.width(), line->GetStringSize().height());

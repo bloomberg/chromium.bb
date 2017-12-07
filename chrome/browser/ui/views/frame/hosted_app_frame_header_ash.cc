@@ -41,8 +41,7 @@ HostedAppFrameHeaderAsh::HostedAppFrameHeaderAsh(
 HostedAppFrameHeaderAsh::~HostedAppFrameHeaderAsh() {}
 
 std::unique_ptr<gfx::RenderText> HostedAppFrameHeaderAsh::CreateRenderText() {
-  std::unique_ptr<gfx::RenderText> render_text(
-      gfx::RenderText::CreateInstance());
+  auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetFontList(views::NativeWidgetAura::GetWindowTitleFontList());
   render_text->SetCursorEnabled(false);
   render_text->SetColor(GetTitleColor());
