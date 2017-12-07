@@ -60,7 +60,8 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
-#import "ios/chrome/browser/snapshots/snapshot_manager.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
@@ -191,9 +192,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   UIImageView* _pagePlaceholder;
 }
 
-// Handles caching and retrieving of snapshots.
-@property(nonatomic, strong) SnapshotManager* snapshotManager;
-
 // Returns the OpenInController for this tab.
 - (OpenInController*)openInController;
 
@@ -268,7 +266,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
 @synthesize legacyFullscreenControllerDelegate =
     legacyFullscreenControllerDelegate_;
-@synthesize snapshotManager = _snapshotManager;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   DCHECK(webState);
@@ -286,10 +283,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self updateLastVisitedTimestamp];
     [[self webController] setDelegate:self];
 
-    _snapshotManager = [[SnapshotManager alloc] initWithWebState:webState];
-    _webControllerSnapshotHelper = [[WebControllerSnapshotHelper alloc]
-        initWithSnapshotManager:_snapshotManager
-                            tab:self];
+    _webControllerSnapshotHelper =
+        [[WebControllerSnapshotHelper alloc] initWithTab:self];
   }
   return self;
 }
@@ -1029,8 +1024,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // In other cases, such as during startup, either disk access or a greyspace
   // conversion is required, as there will be no grey snapshots in memory.
   if (useGreyImageCache_) {
-    [self.snapshotManager greyImageForSessionID:sessionID
-                                       callback:completionHandler];
+    [SnapshotCacheFactory::GetForBrowserState(self.browserState)
+        greyImageForSessionID:sessionID
+                     callback:completionHandler];
   } else {
     [_webControllerSnapshotHelper
         retrieveGreySnapshotForWebController:self.webController
@@ -1090,7 +1086,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)removeSnapshot {
   DCHECK(self.tabId);
-  [self.snapshotManager removeImageWithSessionID:self.tabId];
+  [SnapshotCacheFactory::GetForBrowserState(self.browserState)
+      removeImageWithSessionID:self.tabId];
 }
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods

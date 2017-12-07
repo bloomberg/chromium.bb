@@ -24,7 +24,8 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/history_tab_helper.h"
-#import "ios/chrome/browser/snapshots/snapshot_manager.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -52,10 +53,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+// When C++ exceptions are disabled, the C++ library defines |try| and
+// |catch| so as to allow exception-expecting C++ code to build properly when
+// language support for exceptions is not present.  These macros interfere
+// with the use of |@try| and |@catch| in Objective-C files such as this one.
+// Undefine these macros here, after everything has been #included, since
+// there will be no C++ uses and only Objective-C uses from this point on.
+#undef try
+#undef catch
 
 namespace {
 const char kAppSettingsUrl[] = "app-settings://";
@@ -73,10 +84,6 @@ const char kContentDispositionWithoutFilename[] =
 const char kInvalidFilenameUrl[] = "http://www.hostname.com/";
 const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 }  // namespace
-
-@interface Tab (Testing)
-@property(nonatomic, strong) SnapshotManager* snapshotManager;
-@end
 
 @interface ArrayTabModel : TabModel {
  @private
@@ -166,6 +173,9 @@ class TabTest : public BlockCleanupTest {
 
     // Set up the testing profiles.
     TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        SnapshotCacheFactory::GetInstance(),
+        SnapshotCacheFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
     chrome_browser_state_->CreateBookmarkModel(false);
     bookmarks::test::WaitForBookmarkModelToLoad(
@@ -408,26 +418,29 @@ TEST_F(TabTest, GetSuggestedFilenameFromDefaultName) {
   EXPECT_NSEQ(@"Document.pdf", [[tab_ openInController] suggestedFilename]);
 }
 
-TEST_F(TabTest, SnapshotIsNotRemovedDuringShutdown) {
-  id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
-  tab_.snapshotManager = mockSnapshotManager;
-  [[mockSnapshotManager reject] removeImageWithSessionID:[OCMArg any]];
-  web_state_impl_.reset();
-}
-
 TEST_F(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
-  id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
-  tab_.snapshotManager = mockSnapshotManager;
-  [[mockSnapshotManager reject] removeImageWithSessionID:[OCMArg any]];
-  web_state_impl_.reset();
+  id partialMock = OCMPartialMock(
+      SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
+  [[partialMock reject] removeImageWithSessionID:tab_.tabId];
+
+  // Use @try/@catch as -reject raises an exception.
+  @try {
+    web_state_impl_.reset();
+    EXPECT_OCMOCK_VERIFY(partialMock);
+  } @catch (NSException* exception) {
+    // The exception is raised when -removeImageWithSessionID: is invoked. As
+    // this should not happen, mark the test as failed.
+    GTEST_FAIL();
+  }
 }
 
 TEST_F(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
-  id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
-  tab_.snapshotManager = mockSnapshotManager;
+  id partialMock = OCMPartialMock(
+      SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
+  OCMExpect([partialMock removeImageWithSessionID:tab_.tabId]);
+
   [tab_ removeSnapshot];
-  [[mockSnapshotManager verify] removeImageWithSessionID:[OCMArg any]];
-  web_state_impl_.reset();
+  EXPECT_OCMOCK_VERIFY(partialMock);
 }
 
 }  // namespace
