@@ -30,9 +30,11 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/CSSViewportRule.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleKeyframe.h"
 #include "core/css/StyleRuleNamespace.h"
+#include "core/css/parser/CSSLazyPropertyParser.h"
 
 namespace blink {
 

@@ -31,7 +31,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSMarkup.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementShadow.h"

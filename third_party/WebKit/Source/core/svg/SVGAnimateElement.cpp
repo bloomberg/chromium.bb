@@ -23,7 +23,7 @@
 #include "core/svg/SVGAnimateElement.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"

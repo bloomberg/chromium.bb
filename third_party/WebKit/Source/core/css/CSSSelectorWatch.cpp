@@ -30,7 +30,7 @@
 
 #include "core/css/CSSSelectorWatch.h"
 
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/ImmutableCSSPropertyValueSet.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"

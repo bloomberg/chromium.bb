@@ -38,7 +38,7 @@
 #include "bindings/modules/v8/rendering_context.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"

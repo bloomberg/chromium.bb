@@ -31,7 +31,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"

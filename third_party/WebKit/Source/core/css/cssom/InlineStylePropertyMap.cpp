@@ -10,6 +10,7 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
 #include "core/css/properties/CSSProperty.h"

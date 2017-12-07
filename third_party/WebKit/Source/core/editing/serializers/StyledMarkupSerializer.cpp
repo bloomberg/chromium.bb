@@ -30,7 +30,7 @@
 #include "core/editing/serializers/StyledMarkupSerializer.h"
 
 #include "base/macros.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"

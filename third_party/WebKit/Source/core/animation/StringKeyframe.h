@@ -6,7 +6,7 @@
 #define StringKeyframe_h
 
 #include "core/animation/Keyframe.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 
 #include "platform/wtf/HashMap.h"
 

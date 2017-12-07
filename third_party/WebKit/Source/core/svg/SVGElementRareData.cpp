@@ -4,6 +4,7 @@
 
 #include "core/svg/SVGElementRareData.h"
 
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGElementProxy.h"
