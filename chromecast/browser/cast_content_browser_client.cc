@@ -182,8 +182,6 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif  // defined(USE_AURA)
 }
 
-void CastContentBrowserClient::PreCreateThreads() {}
-
 std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
@@ -282,10 +280,14 @@ bool CastContentBrowserClient::EnableRemoteDebuggingImmediately() {
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(!cast_browser_main_parts_);
-  cast_browser_main_parts_ =
-      new CastBrowserMainParts(parameters, url_request_context_factory_.get());
+  auto main_parts = CastBrowserMainParts::Create(
+      parameters, url_request_context_factory_.get());
+  cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
-  return cast_browser_main_parts_;
+
+  // TODO(halliwell): would like to change CreateBrowserMainParts to return
+  // unique_ptr, then we don't have to release.
+  return main_parts.release();
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(

@@ -442,9 +442,6 @@ int CastBrowserMainParts::PreCreateThreads() {
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
-  // Hook for internal code
-  cast_browser_process_->browser_client()->PreCreateThreads();
-
 #if defined(USE_AURA)
   cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen()));
   DCHECK(!display::Screen::GetScreen());

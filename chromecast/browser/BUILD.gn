@@ -70,6 +70,7 @@ cast_source_set("browser") {
 
   if (chromecast_branding == "public") {
     sources += [
+      "cast_browser_main_parts_simple.cc",
       "cast_content_browser_client_simple.cc",
       "cast_network_delegate_simple.cc",
       "pref_service_helper_simple.cc",
