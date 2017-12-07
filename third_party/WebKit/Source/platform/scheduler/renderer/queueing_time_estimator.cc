@@ -242,6 +242,13 @@ void QueueingTimeEstimator::Calculator::EndStep(
     client->OnReportSplitExpectedQueueingTime(it.first,
                                               it.second / steps_per_window_);
   }
+  // TODO(npm): Report fine grained for other splits. See crbug.com/792965.
+  client->OnReportFineGrainedExpectedQueueingTime(
+      "RendererScheduler.ExpectedQueueingTimeByFrameStatus."
+      "MainFrameBackground",
+      delta_by_message[GetReportingMessageFromFrameStatus(
+          FrameStatus::kMainFrameBackground)] /
+          steps_per_window_);
   std::fill(eqt_by_queue_type_.begin(), eqt_by_queue_type_.end(),
             base::TimeDelta());
   std::fill(eqt_by_frame_status_.begin(), eqt_by_frame_status_.end(),
@@ -368,6 +375,10 @@ class RecordQueueingTimeClient : public QueueingTimeEstimator::Client {
   }
 
   void OnReportSplitExpectedQueueingTime(
+      const char* split_description,
+      base::TimeDelta queueing_time) override {}
+
+  void OnReportFineGrainedExpectedQueueingTime(
       const char* split_description,
       base::TimeDelta queueing_time) override {}
 

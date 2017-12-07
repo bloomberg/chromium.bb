@@ -5,6 +5,7 @@
 #include "platform/scheduler/renderer/queueing_time_estimator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
 #include "platform/testing/HistogramTester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,6 +31,12 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
     if (is_disjoint_window) {
       UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
                           queueing_time);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "RendererScheduler.ExpectedTaskQueueingDuration2",
+          queueing_time.InMicroseconds(),
+          RendererSchedulerImpl::kMinExpectedQueueingTimeBucket,
+          RendererSchedulerImpl::kMaxExpectedQueueingTimeBucket,
+          RendererSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
     }
   }
   void OnReportSplitExpectedQueueingTime(
@@ -40,6 +47,15 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
     split_eqts_[split_description].push_back(queueing_time);
     // Mimic RendererSchedulerImpl::OnReportSplitExpectedQueueingTime.
     base::UmaHistogramTimes(split_description, queueing_time);
+  }
+  void OnReportFineGrainedExpectedQueueingTime(const char* split_description,
+                                               base::TimeDelta queueing_time) {
+    // Mimic RendererSchedulerImpl::OnReportFineGrainedExpectedQueueingTime.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        split_description, queueing_time.InMicroseconds(),
+        RendererSchedulerImpl::kMinExpectedQueueingTimeBucket,
+        RendererSchedulerImpl::kMaxExpectedQueueingTimeBucket,
+        RendererSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
   }
   const std::vector<base::TimeDelta>& expected_queueing_times() {
     return expected_queueing_times_;
@@ -79,6 +95,16 @@ struct BucketExpectation {
 
 class QueueingTimeEstimatorTest : public ::testing::Test {
  protected:
+  static std::vector<BucketExpectation> GetFineGrained(
+      const std::vector<BucketExpectation>& expected) {
+    std::vector<BucketExpectation> fine_grained(expected.size());
+    for (size_t i = 0; i < expected.size(); ++i) {
+      fine_grained[i].sample = expected[i].sample * 1000;
+      fine_grained[i].count = expected[i].count;
+    }
+    return fine_grained;
+  }
+
   void TestHistogram(const std::string& name,
                      int total,
                      const std::vector<BucketExpectation>& expectations) {
@@ -134,6 +160,9 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
   std::vector<BucketExpectation> expected = {{300, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 1, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 1,
+                fine_grained);
 }
 
 // One 20 second long task, starting 3 seconds into the first window.
@@ -171,6 +200,11 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
   std::vector<BucketExpectation> expected = {
       {900, 1}, {5500, 1}, {7600, 1}, {10500, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 5, expected);
+  // Split here is different: 4 values go into the highest bucket.
+  std::vector<BucketExpectation> fine_grained = {{900 * 1000, 1},
+                                                 {5500 * 1000, 4}};
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 5,
+                fine_grained);
 }
 
 // The main thread is considered unresponsive during a single long task. In this
@@ -198,6 +232,7 @@ TEST_F(QueueingTimeEstimatorTest,
   // Window time was not completed, so no UMA should be recorded.
   histogram_tester.ExpectTotalCount(
       "RendererScheduler.ExpectedTaskQueueingDuration", 0);
+  histogram_tester.ExpectTotalCount("ExpectedTaskQueueingDuration2", 0);
 }
 
 // The main thread is considered unresponsive during a single long task, which
@@ -261,6 +296,8 @@ TEST_F(QueueingTimeEstimatorTest,
   // completion, so UMA should not have been reported yet.
   histogram_tester.ExpectTotalCount(
       "RendererScheduler.ExpectedTaskQueueingDuration", 0);
+  histogram_tester.ExpectTotalCount(
+      "RendererScheduler.ExpectedTaskQueueingDuration2", 0);
 }
 
 //                        Estimate
@@ -299,6 +336,7 @@ TEST_F(QueueingTimeEstimatorTest,
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(25), estimated_queueing_time);
   std::vector<BucketExpectation> expected = {{0, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 1, expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 1, expected);
 }
 
 // Tasks containing nested run loops may be extremely long without
@@ -334,6 +372,9 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
                                      base::TimeDelta::FromMilliseconds(100)));
   std::vector<BucketExpectation> expected = {{0, 1}, {100, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 2,
+                fine_grained);
 }
 
 // If a task is too long, we assume it's invalid. Perhaps the user's machine
@@ -382,6 +423,9 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
                                      base::TimeDelta::FromMilliseconds(100)));
   std::vector<BucketExpectation> expected = {{100, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 2,
+                fine_grained);
 }
 
 // If we idle for too long, ignore idling time, even if the renderer is on the
@@ -428,6 +472,9 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
                                      base::TimeDelta::FromMilliseconds(100)));
   std::vector<BucketExpectation> expected = {{100, 2}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 2,
+                fine_grained);
 }
 
 // ^ Instantaneous queuing time
@@ -524,6 +571,9 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
               ::testing::ElementsAreArray(expected_durations));
   std::vector<BucketExpectation> expected = {{0, 1}, {725, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 2,
+                fine_grained);
 }
 
 // ^ Instantaneous queuing time
@@ -581,6 +631,9 @@ TEST_F(QueueingTimeEstimatorTest,
               ::testing::ElementsAreArray(expected_durations));
   std::vector<BucketExpectation> expected = {{325, 1}, {400, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 2,
+                fine_grained);
 }
 
 // There are multiple windows, but some of the EQTs are not reported due to
@@ -635,6 +688,9 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithSingleStepPerWindow) {
   std::vector<BucketExpectation> expected = {
       {0, 1}, {20, 1}, {125, 1}, {1000, 1}};
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 4, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 4,
+                fine_grained);
 }
 
 // We only ignore steps that contain some part that is backgrounded. Thus a
@@ -922,6 +978,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByFrameType.Other", 5,
                 expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 5, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 5,
+                fine_grained);
   TestSplitSumsTotal(expected_sums, 6);
 }
 
@@ -1104,6 +1163,10 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   TestHistogram(
       "RendererScheduler.ExpectedQueueingTimeByFrameType.MainFrameBackground",
       5, expected);
+  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
+  TestHistogram(
+      "RendererScheduler.ExpectedQueueingTimeByFrameStatus.MainFrameBackground",
+      5, fine_grained);
 
   EXPECT_THAT(client.FrameStatusValues(FrameStatus::kMainFrameVisible),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
@@ -1184,6 +1247,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Other",
                 5, expected);
   TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 5, expected);
+  fine_grained = GetFineGrained(expected);
+  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration2", 5,
+                fine_grained);
   TestSplitSumsTotal(expected_sums, 6);
 }
 
