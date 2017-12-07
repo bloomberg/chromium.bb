@@ -8,6 +8,8 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/ui/rtl_geometry.h"
+
 // All kxxxColor constants are RGB values stored in a Hex integer. These will be
 // converted into UIColors using the UIColorFromRGB() function, from
 // uikit_ui_util.h
@@ -46,5 +48,8 @@ extern const CGFloat kForwardButtonImageInset;
 
 // Maximum number of tabs displayed by the button containing the tab count.
 extern const NSInteger kShowTabStripButtonMaxTabCount;
+
+// Animation constants.
+extern const LayoutOffset kToolbarButtonAnimationOffset;
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSTANTS_H_

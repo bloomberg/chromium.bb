@@ -70,6 +70,7 @@ source_set("toolbar_ui") {
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/voice",
+    "//ios/chrome/common",
     "//ios/third_party/material_components_ios",
   ]
   libs = [ "UIKit.framework" ]
