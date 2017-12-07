@@ -109,15 +109,22 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=764519
     'FrameSwitchingTest.testShouldBeAbleToClickInAFrameThatRewritesTopWindowLocation',
+]
+
+_REVISION_NEGATIVE_FILTER['64'] = (
+    _REVISION_NEGATIVE_FILTER['HEAD'] + [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
     'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
-]
+    ]
+)
 
 _REVISION_NEGATIVE_FILTER['63'] = (
     _REVISION_NEGATIVE_FILTER['HEAD'] + [
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
         'MiscTest.testStimulatesStrangeOnloadInteractionInFirefox',
-	'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+        'PageLoadingTest.testShouldNotHangIfDocumentOpenCallIsNeverFollowedByDocumentCloseCall',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
+        'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
     ]
 )
 
