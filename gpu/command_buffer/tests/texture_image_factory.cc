@@ -63,7 +63,9 @@ scoped_refptr<gl::GLImage> TextureImageFactory::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    unsigned internalformat) {
+    unsigned internalformat,
+    bool* is_cleared) {
+  *is_cleared = true;
   return new TextureImage(size);
 }
 

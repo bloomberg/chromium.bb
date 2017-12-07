@@ -121,7 +121,8 @@ scoped_refptr<gl::GLImage> GpuMemoryBufferFactoryDXGI::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    unsigned internalformat) {
+    unsigned internalformat,
+    bool* is_cleared) {
   NOTIMPLEMENTED();
   return nullptr;
 }
