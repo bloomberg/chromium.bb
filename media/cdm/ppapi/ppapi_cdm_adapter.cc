@@ -1389,9 +1389,9 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
 
   PP_DCHECK(
       // Future version is not supported.
-      !IsSupportedCdmHostVersion(cdm::Host_9::kVersion + 1) &&
+      !IsSupportedCdmHostVersion(cdm::Host_10::kVersion + 1) &&
       // Current version is supported.
-      IsSupportedCdmHostVersion(cdm::Host_9::kVersion) &&
+      IsSupportedCdmHostVersion(cdm::Host_10::kVersion) &&
       // Include all previous supported versions (if any) here.
       IsSupportedCdmHostVersion(cdm::Host_8::kVersion) &&
       // One older than the oldest supported version is not supported.
