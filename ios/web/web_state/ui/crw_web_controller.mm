@@ -289,9 +289,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // TODO(crbug.com/549616): Remove this in favor of just updating the
   // navigation manager and treating that as authoritative.
   GURL _documentURL;
-  // Last URL change reported to webWill/DidStartLoadingURL. Used to detect page
-  // location changes (client redirects) in practice.
-  GURL _lastRegisteredRequestURL;
   // Page loading phase.
   web::LoadPhase _loadPhase;
   // The web::PageDisplayState recorded when the page starts loading.
@@ -1391,7 +1388,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   _loadPhase = web::LOAD_REQUESTED;
-  _lastRegisteredRequestURL = requestURL;
 
   if (!redirect) {
     if (!self.nativeController) {
@@ -1554,21 +1550,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [script appendString:[self javaScriptToDispatchHashChangeWithOldURL:oldURL
                                                                  newURL:URL]];
   }
-  __weak CRWWebController* weakSelf = self;
-  [self executeJavaScript:script
-        completionHandler:^(id, NSError*) {
-          CRWWebController* strongSelf = weakSelf;
-          if (strongSelf &&
-              !strongSelf->_isBeingDestroyed
-              // Make sure that no new navigation has started since URL value
-              // was captured to avoid clobbering _lastRegisteredRequestURL.
-              // See crbug.com/788231.
-              // TODO(crbug.com/788465): simplify history state handling to
-              // avoid this hack.
-              && currentItem == self.currentNavItem) {
-            strongSelf->_lastRegisteredRequestURL = URL;
-          }
-        }];
+  [self executeJavaScript:script completionHandler:nil];
 }
 
 // Load the current URL in a web view, first ensuring the web view is visible.
@@ -2587,7 +2569,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   }
   NSString* stateObject = base::SysUTF8ToNSString(stateObjectJSON);
-  _lastRegisteredRequestURL = pushURL;
 
   // If the user interacted with the page, categorize it as a link navigation.
   // If not, categorize it is a client redirect as it occurred without user
@@ -2654,7 +2635,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   }
   NSString* stateObject = base::SysUTF8ToNSString(stateObjectJSON);
-  _lastRegisteredRequestURL = replaceURL;
   [self replaceStateWithPageURL:replaceURL stateObject:stateObject];
   NSString* replaceStateJS = [self javaScriptToReplaceWebViewURL:replaceURL
                                                  stateObjectJSON:stateObject];
@@ -4373,8 +4353,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
         item->SetVirtualURL(webViewURL);
         item->SetURL(webViewURL);
       }
-
-      _lastRegisteredRequestURL = webViewURL;
     }
     _webStateImpl->OnNavigationStarted(context);
     return;
@@ -5264,7 +5242,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   [self removeWebView];
 
-  _lastRegisteredRequestURL = _defaultURL;
   [_containerView displayWebViewContentView:webViewContentView];
   [self setWebView:static_cast<WKWebView*>(webViewContentView.webView)];
 }
