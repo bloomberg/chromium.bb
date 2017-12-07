@@ -5,6 +5,7 @@
 
 """Utilities for capturing traces for chromecast devices."""
 
+import base64
 import json
 import logging
 import math
@@ -45,6 +46,7 @@ class TracingBackend(object):
     self._excluded_categories = []
     self._pending_read_ids = []
     self._stream_handle = None
+    self._output_file = None
 
   def Connect(self):
     """Connect to cast_shell."""
@@ -82,6 +84,8 @@ class TracingBackend(object):
         'params': {
             'transferMode':
                 'ReturnAsStream' if systrace else 'ReportEvents',
+            'streamCompression':
+                'gzip' if systrace else 'none',
             'traceConfig': {
                 'enableSystrace':
                     systrace,
@@ -99,28 +103,39 @@ class TracingBackend(object):
     }
     self._SendRequest(req)
 
-  def StopTracing(self, output_file):
+  def StopTracing(self, output_path_base):
     """End a tracing session on device.
 
     Args:
-      output_file: Path to the file to store the trace.
+      output_path_base: Path to the file to store the trace. A .gz extension
+        will be appended to this path if the trace is compressed.
+
+    Returns:
+      Final output filename.
     """
     self._socket.settimeout(self._timeout)
     req = {'method': 'Tracing.end'}
     self._SendRequest(req)
+    self._output_path_base = output_path_base
 
-    with open(output_file, 'w') as f:
+    try:
       while self._socket:
         res = self._ReceiveResponse()
         has_error = 'error' in res
         if has_error:
           logging.error('Tracing error: ' + str(res.get('error')))
-        if has_error or self._HandleResponse(res, f):
+        if has_error or self._HandleResponse(res):
           self._tracing_client = None
           if not self._stream_handle:
-            json.dump(self._tracing_data, f)
+            # Compression not supported for ReportEvents transport.
+            self._output_path = self._output_path_base
+            with open(self._output_path, 'w') as output_file:
+              json.dump(self._tracing_data, output_file)
           self._tracing_data = []
-          return
+          return self._output_path
+    finally:
+      if self._output_file:
+        self._output_file.close()
 
   def _SendRequest(self, req):
     """Sends request to remote devtools.
@@ -159,7 +174,7 @@ class TracingBackend(object):
     while len(self._pending_read_ids) < 2:
       self._pending_read_ids.append(self._SendRequest(req))
 
-  def _HandleResponse(self, res, output_file):
+  def _HandleResponse(self, res):
     """Handle response from remote devtools.
 
     Args:
@@ -179,7 +194,13 @@ class TracingBackend(object):
       self._tracing_client.BufferUsage(value)
     elif 'Tracing.tracingComplete' == method:
       self._stream_handle = res.get('params', {}).get('stream')
+      compression = res.get('params', {}).get('streamCompression')
       if self._stream_handle:
+        compression_suffix = '.gz' if compression == 'gzip' else ''
+        self._output_path = self._output_path_base
+        if not self._output_path.endswith(compression_suffix):
+          self._output_path += compression_suffix
+        self._output_file = open(self._output_path, 'w')
         self._SendReadRequest()
       else:
         return True
@@ -187,7 +208,12 @@ class TracingBackend(object):
       self._pending_read_ids.remove(response_id)
       data = res.get('result', {}).get('data')
       eof = res.get('result', {}).get('eof')
-      output_file.write(data.encode('utf-8'))
+      base64_encoded = res.get('result', {}).get('base64Encoded')
+      if base64_encoded:
+        data = base64.b64decode(data)
+      else:
+        data = data.encode('utf-8')
+      self._output_file.write(data)
       if eof:
         return True
       else:
@@ -262,6 +288,7 @@ class TracingBackendAndroid(object):
         break
 
     self._AdbCommand(['pull', self._file, output_file])
+    return output_file
 
   def _AdbCommand(self, command):
     args = ['adb', '-s', self.device]

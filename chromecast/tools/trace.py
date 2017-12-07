@@ -100,11 +100,11 @@ def main():
     tracing_backend.StartTracing(options.category_filter,
                                  options.record_continuously, options.systrace)
     raw_input('Capturing trace. Press Enter to stop...')
-    filepath = GetOutputFilePath(options)
-    tracing_backend.StopTracing(filepath)
+    output_path_base = GetOutputFilePath(options)
+    output_path = tracing_backend.StopTracing(output_path_base)
 
   print('Done')
-  print('Trace written to file://%s' % filepath)
+  print('Trace written to file://%s' % output_path)
 
 
 if __name__ == '__main__':
