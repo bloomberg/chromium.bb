@@ -6,6 +6,8 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -34,11 +36,46 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
   focus_observer.Wait();
 
   const base::string16 expected_title = base::UTF8ToUTF16(rtf_content);
-  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   shell()->web_contents()->Paste();
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, ImageCopy) {
+  BrowserTestClipboardScope clipboard;
+  clipboard.SetText("");
+
+  base::string16 expected_types;
+#if !defined(OS_MACOSX)
+  // See comments in WebClipboardImpl::WriteImage for why the expected types
+  // are platform-specific.
+  expected_types = base::ASCIIToUTF16("file;image/png string;text/html");
+#else
+  expected_types = base::ASCIIToUTF16("file;image/png");
+#endif
+
+  NavigateToURL(shell(), GetTestUrl(".", "image_copy_types.html"));
+  WebContents* web_contents = shell()->web_contents();
+  FrameFocusedObserver focus_observer(web_contents->GetMainFrame());
+  focus_observer.Wait();
+
+  // Populate an iframe with an image, and wait for load to complete.
+  NavigateIframeToURL(web_contents, "copyme",
+                      GetTestUrl(".", "media/blackwhite.png"));
+
+  // Run script to copy image contents and wait for completion.
+  web_contents->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::ASCIIToUTF16("frames[0].document.execCommand('copy');"
+                         "document.title = 'copied';"));
+  TitleWatcher watcher1(web_contents, base::ASCIIToUTF16("copied"));
+  EXPECT_EQ(base::ASCIIToUTF16("copied"), watcher1.WaitAndGetTitle());
+
+  // Paste and check the types.
+  web_contents->Paste();
+  TitleWatcher watcher2(web_contents, expected_types);
+  EXPECT_EQ(expected_types, watcher2.WaitAndGetTitle());
 }
 
-} // namespace content
+}  // namespace
+
+}  // namespace content
