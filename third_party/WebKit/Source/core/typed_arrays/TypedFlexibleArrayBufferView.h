@@ -5,9 +5,9 @@
 #ifndef TypedFlexibleArrayBufferView_h
 #define TypedFlexibleArrayBufferView_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/typed_arrays/FlexibleArrayBufferView.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -15,7 +15,6 @@ template <typename WTFTypedArray>
 class CORE_TEMPLATE_CLASS_EXPORT TypedFlexibleArrayBufferView final
     : public FlexibleArrayBufferView {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(TypedFlexibleArrayBufferView);
 
  public:
   using ValueType = typename WTFTypedArray::ValueType;
@@ -30,6 +29,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TypedFlexibleArrayBufferView final
     DCHECK_EQ(ByteLength() % sizeof(ValueType), 0u);
     return ByteLength() / sizeof(ValueType);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TypedFlexibleArrayBufferView);
 };
 
 using FlexibleFloat32ArrayView =

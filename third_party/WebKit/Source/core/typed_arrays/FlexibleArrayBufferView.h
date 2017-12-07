@@ -5,16 +5,15 @@
 #ifndef FlexibleArrayBufferView_h
 #define FlexibleArrayBufferView_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 
 class CORE_EXPORT FlexibleArrayBufferView {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(FlexibleArrayBufferView);
 
  public:
   FlexibleArrayBufferView() : small_data_(nullptr), small_length_(0) {}
@@ -64,6 +63,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
 
   void* small_data_;
   size_t small_length_;
+  DISALLOW_COPY_AND_ASSIGN(FlexibleArrayBufferView);
 };
 
 }  // namespace blink
