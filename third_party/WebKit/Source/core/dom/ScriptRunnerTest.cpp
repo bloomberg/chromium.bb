@@ -29,6 +29,7 @@ class MockPendingScript : public PendingScript {
   ~MockPendingScript() override {}
 
   MOCK_CONST_METHOD0(GetScriptType, ScriptType());
+  MOCK_CONST_METHOD1(CheckMIMETypeBeforeRunScript, bool(Document*));
   MOCK_CONST_METHOD2(GetSource, Script*(const KURL&, bool&));
   MOCK_CONST_METHOD0(IsReady, bool());
   MOCK_CONST_METHOD0(IsExternal, bool());

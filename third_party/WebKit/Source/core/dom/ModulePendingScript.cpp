@@ -85,6 +85,12 @@ void ModulePendingScript::NotifyModuleTreeLoadFinished() {
     Client()->PendingScriptFinished(this);
 }
 
+bool ModulePendingScript::CheckMIMETypeBeforeRunScript(Document*) const {
+  // We don't check MIME type here because we check the MIME type in
+  // ModuleScriptLoader::WasModuleLoadSuccessful().
+  return true;
+}
+
 Script* ModulePendingScript::GetSource(const KURL& document_url,
                                        bool& error_occurred) const {
   CHECK(IsReady());

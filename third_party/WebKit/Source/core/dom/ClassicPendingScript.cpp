@@ -11,6 +11,7 @@
 #include "core/dom/DocumentWriteIntervention.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/frame/LocalFrame.h"
+#include "core/loader/AllowedByNosniff.h"
 #include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/bindings/ScriptState.h"
@@ -227,6 +228,15 @@ void ClassicPendingScript::Trace(blink::Visitor* visitor) {
   ResourceClient::Trace(visitor);
   MemoryCoordinatorClient::Trace(visitor);
   PendingScript::Trace(visitor);
+}
+
+bool ClassicPendingScript::CheckMIMETypeBeforeRunScript(
+    Document* context_document) const {
+  if (!is_external_)
+    return true;
+
+  return AllowedByNosniff::MimeTypeAsScript(context_document,
+                                            GetResource()->GetResponse());
 }
 
 ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,

@@ -760,12 +760,6 @@ ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
     }
   }
 
-  if (is_external_script_) {
-    if (!script->CheckMIMETypeBeforeRunScript(
-            context_document, element_->GetDocument().GetSecurityOrigin()))
-      return ExecuteScriptResult::kShouldFireErrorEvent;
-  }
-
   const bool is_imported_script = context_document != element_document;
 
   // 3. "If the script is from an external file,
@@ -844,19 +838,27 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
     return;
   }
 
+  // Do not execute module scripts if they are moved between documents.
+  // TODO(hiroshige): Also do not execute classic scripts. crbug.com/721914
+  if (original_document_ != context_document &&
+      GetScriptType() == ScriptType::kModule) {
+    pending_script->Dispose();
+    return;
+  }
+
   bool error_occurred = false;
   Script* script = pending_script->GetSource(document_url, error_occurred);
+
+  // Consider as if "the script's script is null" retrospectively,
+  // if the MIME check fails, which is considered as load failure.
+  if (!pending_script->CheckMIMETypeBeforeRunScript(context_document))
+    error_occurred = true;
+
   const bool was_canceled = pending_script->WasCanceled();
   const bool is_external = pending_script->IsExternal();
   const double parser_blocking_load_start_time =
       pending_script->ParserBlockingLoadStartTime();
   pending_script->Dispose();
-
-  // Do not execute module scripts if they are moved between documents.
-  // TODO(hiroshige): Also do not execute classic scripts. crbug.com/721914
-  if (original_document_ != context_document &&
-      GetScriptType() == ScriptType::kModule)
-    return;
 
   // 2. "If the script's script is null, fire an event named error at the
   //     element, and abort these steps."

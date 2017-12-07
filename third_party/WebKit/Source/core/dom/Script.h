@@ -13,7 +13,6 @@
 
 namespace blink {
 
-class Document;
 class LocalFrame;
 class SecurityOrigin;
 
@@ -27,10 +26,6 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
   virtual ~Script() {}
 
   virtual ScriptType GetScriptType() const = 0;
-
-  // Returns false if the script should not be run due to MIME type check.
-  virtual bool CheckMIMETypeBeforeRunScript(Document* context_document,
-                                            const SecurityOrigin*) const = 0;
 
   // https://html.spec.whatwg.org/#run-a-classic-script or
   // https://html.spec.whatwg.org/#run-a-module-script,

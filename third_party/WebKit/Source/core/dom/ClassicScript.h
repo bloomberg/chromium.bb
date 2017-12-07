@@ -38,8 +38,6 @@ class CORE_EXPORT ClassicScript final : public Script {
         access_control_status_(access_control_status) {}
 
   ScriptType GetScriptType() const override { return ScriptType::kClassic; }
-  bool CheckMIMETypeBeforeRunScript(Document* context_document,
-                                    const SecurityOrigin*) const override;
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override {
     return script_source_code_.Source();
