@@ -702,22 +702,6 @@ base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
   return base::TimeTicks::Now();
 }
 
-void DataReductionProxyConfig::OnInsecureProxyWarmupURLProbeStatusChange(
-    bool insecure_proxies_allowed,
-    bool is_core_proxy) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  bool old_status =
-      network_properties_manager_->IsInsecureProxyAllowed(is_core_proxy);
-  network_properties_manager_->SetHasWarmupURLProbeFailed(
-      false, is_core_proxy, !insecure_proxies_allowed);
-
-  if (old_status ==
-      network_properties_manager_->IsInsecureProxyAllowed(is_core_proxy)) {
-    return;
-  }
-  ReloadConfig();
-}
-
 net::ProxyConfig DataReductionProxyConfig::ProxyConfigIgnoringHoldback() const {
   if (!enabled_by_user_ || config_values_->proxies_for_http().empty())
     return net::ProxyConfig::CreateDirect();

@@ -274,56 +274,6 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
-TEST_F(DataReductionProxyConfigTest,
-       TestOnInsecureProxyWarmupURLProbeStatusChange) {
-  base::FieldTrialList field_trial_list(nullptr);
-
-  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
-      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
-  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
-      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
-  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
-
-  ResetSettings();
-
-  test_config()->UpdateConfigForTesting(true /* enabled */,
-                                        false /* secure_proxies_allowed */,
-                                        true /* insecure_proxies_allowed */);
-  test_config()->OnNewClientConfigFetched();
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
-            GetConfiguredProxiesForHttp());
-
-  test_config()->UpdateConfigForTesting(true, true, false);
-  test_config()->OnNewClientConfigFetched();
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
-            GetConfiguredProxiesForHttp());
-
-  test_config()->UpdateConfigForTesting(true, false, false);
-  test_config()->OnNewClientConfigFetched();
-  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
-
-  test_config()->UpdateConfigForTesting(true, true, true);
-  test_config()->OnNewClientConfigFetched();
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
-            GetConfiguredProxiesForHttp());
-
-  // Calling OnInsecureProxyWarmupURLProbeStatusChange should reload the config.
-  test_config()->OnInsecureProxyWarmupURLProbeStatusChange(
-      false /* insecure_proxies_allowed */, false /* is_core_proxy */);
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
-            GetConfiguredProxiesForHttp());
-
-  // Calling OnInsecureProxyWarmupURLProbeStatusChange again with the same
-  // status has no effect.
-  test_config()->OnInsecureProxyWarmupURLProbeStatusChange(false, false);
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
-            GetConfiguredProxiesForHttp());
-
-  test_config()->OnInsecureProxyWarmupURLProbeStatusChange(true, false);
-  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
-            GetConfiguredProxiesForHttp());
-}
-
 TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
   base::FieldTrialList field_trial_list(nullptr);
 
