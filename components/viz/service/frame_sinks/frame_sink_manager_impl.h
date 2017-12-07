@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
-#include <unordered_map>
-#include <vector>
+#include <memory>
+#include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -158,16 +159,23 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
                            uint32_t frame_token);
 
  private:
+  friend class FrameSinkManagerTest;
+
   // BeginFrameSource routing information for a FrameSinkId.
   struct FrameSinkSourceMapping {
     FrameSinkSourceMapping();
-    FrameSinkSourceMapping(const FrameSinkSourceMapping& other);
+    FrameSinkSourceMapping(FrameSinkSourceMapping&& other);
     ~FrameSinkSourceMapping();
+    FrameSinkSourceMapping& operator=(FrameSinkSourceMapping&& other);
+
     bool has_children() const { return !children.empty(); }
     // The currently assigned begin frame source for this client.
     BeginFrameSource* source = nullptr;
     // This represents a dag of parent -> children mapping.
-    std::vector<FrameSinkId> children;
+    base::flat_set<FrameSinkId> children;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FrameSinkSourceMapping);
   };
 
   struct SinkAndSupport {
@@ -182,6 +190,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
 
     // This can be owned by |sink| or owned externally.
     CompositorFrameSinkSupport* support = nullptr;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SinkAndSupport);
   };
 
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
@@ -202,13 +213,16 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
   // Provides a Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 
-  std::unordered_map<FrameSinkId, FrameSinkSourceMapping, FrameSinkIdHash>
-      frame_sink_source_map_;
-
   // Set of BeginFrameSource along with associated FrameSinkIds. Any child
-  // that is implicitly using this framesink must be reachable by the
+  // that is implicitly using this frame sink must be reachable by the
   // parent in the dag.
-  std::unordered_map<BeginFrameSource*, FrameSinkId> registered_sources_;
+  base::flat_map<BeginFrameSource*, FrameSinkId> registered_sources_;
+
+  // Contains FrameSinkId hierarchy and BeginFrameSource mapping.
+  base::flat_map<FrameSinkId, FrameSinkSourceMapping> frame_sink_source_map_;
+
+  // Contains (and maybe owns) the CompositorFrameSinkSupport.
+  base::flat_map<FrameSinkId, SinkAndSupport> compositor_frame_sinks_;
 
   PrimaryBeginFrameSource primary_source_;
 
@@ -218,17 +232,15 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
 
   HitTestManager hit_test_manager_;
 
-  base::flat_map<FrameSinkId, SinkAndSupport> compositor_frame_sinks_;
-
   THREAD_CHECKER(thread_checker_);
-
-  // This will point to |client_ptr_| if using Mojo or a provided client if
-  // directly connected. Use this to make function calls.
-  mojom::FrameSinkManagerClient* client_ = nullptr;
 
   // |video_detector_| is instantiated lazily in order to avoid overhead on
   // platforms that don't need video detection.
   std::unique_ptr<VideoDetector> video_detector_;
+
+  // This will point to |client_ptr_| if using Mojo or a provided client if
+  // directly connected. Use this to make function calls.
+  mojom::FrameSinkManagerClient* client_ = nullptr;
 
   mojom::FrameSinkManagerClientPtr client_ptr_;
   mojo::Binding<mojom::FrameSinkManager> binding_;

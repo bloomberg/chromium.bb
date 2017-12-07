@@ -34,6 +34,12 @@ class FrameSinkManagerTest : public testing::Test {
     return support->begin_frame_source_;
   }
 
+  // testing::Test implementation.
+  void TearDown() override {
+    // Make sure that all FrameSinkSourceMappings have been deleted.
+    EXPECT_TRUE(manager_.frame_sink_source_map_.empty());
+  }
+
  protected:
   FrameSinkManagerImpl manager_;
 };
@@ -256,6 +262,10 @@ TEST_F(FrameSinkManagerTest, ParentWithoutClientRetained) {
   manager_.UnregisterBeginFrameSource(&root_source);
   EXPECT_EQ(nullptr, GetBeginFrameSource(root));
   EXPECT_EQ(nullptr, GetBeginFrameSource(client_c));
+
+  // Unregister all registered hierarchy.
+  manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
+  manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdC);
 }
 
 // This test sets up the same hierarchy as ParentWithoutClientRetained.
@@ -296,6 +306,10 @@ TEST_F(FrameSinkManagerTest,
   manager_.UnregisterBeginFrameSource(&root_source);
   EXPECT_EQ(nullptr, GetBeginFrameSource(root));
   EXPECT_EQ(nullptr, GetBeginFrameSource(client_c));
+
+  // Unregister all registered hierarchy.
+  manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
+  manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdC);
 }
 
 namespace {
