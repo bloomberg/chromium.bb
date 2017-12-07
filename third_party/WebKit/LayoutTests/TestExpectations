@@ -1971,6 +1971,7 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass 
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1i.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1j.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-page/body-margin-1k.html [ Failure ]
