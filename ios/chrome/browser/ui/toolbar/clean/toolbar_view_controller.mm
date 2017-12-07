@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/web_toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
@@ -40,8 +41,10 @@
 @property(nonatomic, strong) UIView* locationBarContainer;
 @property(nonatomic, strong) UIStackView* trailingStackView;
 
-// Array containing all the toolbar buttons, lazily instantiated.
-@property(nonatomic, strong) NSArray<ToolbarButton*>* allButtons;
+// Array containing all the |_leadingStackView| buttons, lazily instantiated.
+@property(nonatomic, strong) NSArray<ToolbarButton*>* leadingStackViewButtons;
+// Array containing all the |_trailingStackView| buttons, lazily instantiated.
+@property(nonatomic, strong) NSArray<ToolbarButton*>* trailingStackViewButtons;
 @property(nonatomic, strong) ToolbarButton* backButton;
 @property(nonatomic, strong) ToolbarButton* forwardButton;
 @property(nonatomic, strong) ToolbarButton* tabSwitchStripButton;
@@ -76,7 +79,8 @@
 @end
 
 @implementation ToolbarViewController
-@synthesize allButtons = _allButtons;
+@synthesize leadingStackViewButtons = _leadingStackViewButtons;
+@synthesize trailingStackViewButtons = _trailingStackViewButtons;
 @synthesize backgroundView = _backgroundView;
 @synthesize buttonFactory = _buttonFactory;
 @synthesize buttonUpdater = _buttonUpdater;
@@ -129,10 +133,37 @@
   DCHECK(!IsIPadIdiom());
   [NSLayoutConstraint deactivateConstraints:self.regularToolbarConstraints];
   [NSLayoutConstraint activateConstraints:self.expandedToolbarConstraints];
+  // By unhiding the button we will make it layout into the correct position in
+  // the StackView.
+  self.contractButton.hidden = NO;
+  self.contractButton.alpha = 0;
   [animator addAnimations:^{
     [self.view layoutIfNeeded];
-    self.contractButton.hidden = NO;
-    self.contractButton.alpha = 1;
+    [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
+                              forButtons:self.leadingStackViewButtons];
+    [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
+                              forButtons:self.trailingStackViewButtons];
+    [self setAllVisibleToolbarButtonsOpacity:0];
+  }];
+  // When the locationBarContainer has been expanded the Contract button will
+  // fade in.
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
+                              forButtons:@[ self.contractButton ]];
+
+    [UIViewPropertyAnimator
+        runningPropertyAnimatorWithDuration:ios::material::kDuration1
+                                      delay:ios::material::kDuration4
+                                    options:UIViewAnimationOptionCurveEaseOut
+                                 animations:^{
+                                   self.contractButton.alpha = 1;
+                                   [self
+                                       setHorizontalTranslationOffset:0
+                                                           forButtons:@[
+                                                             self.contractButton
+                                                           ]];
+                                 }
+                                 completion:nil];
   }];
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     CGFloat borderWidth = (finalPosition == UIViewAnimatingPositionEnd)
@@ -149,11 +180,38 @@
   DCHECK(!IsIPadIdiom());
   [NSLayoutConstraint deactivateConstraints:self.expandedToolbarConstraints];
   [NSLayoutConstraint activateConstraints:self.regularToolbarConstraints];
+  // Change the Toolbar buttons opacity to 0 since these will fade in once the
+  // locationBarContainer has been contracted.
+  [self setAllVisibleToolbarButtonsOpacity:0];
   [animator addAnimations:^{
     self.locationBarContainer.layer.borderWidth = kLocationBarBorderWidth;
     [self.view layoutIfNeeded];
     self.contractButton.hidden = YES;
     self.contractButton.alpha = 0;
+  }];
+  // Once the locationBarContainer has been contracted fade in ToolbarButtons.
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
+                              forButtons:self.leadingStackViewButtons];
+    [self setHorizontalTranslationOffset:-kToolbarButtonAnimationOffset
+                              forButtons:self.trailingStackViewButtons];
+    [UIViewPropertyAnimator
+        runningPropertyAnimatorWithDuration:ios::material::kDuration1
+                                      delay:ios::material::kDuration4
+                                    options:UIViewAnimationOptionCurveEaseOut
+                                 animations:^{
+                                   [self.view layoutIfNeeded];
+                                   [self
+                                       setHorizontalTranslationOffset:0
+                                                           forButtons:
+                                                 self.leadingStackViewButtons];
+                                   [self
+                                       setHorizontalTranslationOffset:0
+                                                           forButtons:
+                                                self.trailingStackViewButtons];
+                                   [self setAllVisibleToolbarButtonsOpacity:1];
+                                 }
+                                 completion:nil];
   }];
   self.expanded = NO;
 }
@@ -671,22 +729,32 @@
 
 // Updates all Buttons visibility to match any recent WebState change.
 - (void)updateAllButtonsVisibility {
-  for (ToolbarButton* button in self.allButtons) {
+  NSMutableArray* allButtons = [[NSMutableArray alloc] init];
+  [allButtons addObjectsFromArray:self.leadingStackViewButtons];
+  [allButtons addObjectsFromArray:self.trailingStackViewButtons];
+  [allButtons
+      addObjectsFromArray:@[ self.voiceSearchButton, self.bookmarkButton ]];
+  for (ToolbarButton* button in allButtons) {
     [button updateHiddenInCurrentSizeClass];
   }
 }
 
 #pragma mark - Setters & Getters.
 
-- (NSArray<ToolbarButton*>*)allButtons {
-  if (!_allButtons) {
-    _allButtons = [NSArray
-        arrayWithObjects:self.backButton, self.forwardButton, self.reloadButton,
-                         self.stopButton, self.shareButton,
-                         self.tabSwitchStripButton, self.toolsMenuButton,
-                         self.bookmarkButton, self.voiceSearchButton, nil];
+- (NSArray<ToolbarButton*>*)leadingStackViewButtons {
+  if (!_leadingStackViewButtons) {
+    _leadingStackViewButtons =
+        [self toolbarButtonsInStackView:self.leadingStackView];
   }
-  return _allButtons;
+  return _leadingStackViewButtons;
+}
+
+- (NSArray<ToolbarButton*>*)trailingStackViewButtons {
+  if (!_trailingStackViewButtons) {
+    _trailingStackViewButtons =
+        [self toolbarButtonsInStackView:self.trailingStackView];
+  }
+  return _trailingStackViewButtons;
 }
 
 - (UIView*)backgroundView {
@@ -792,6 +860,39 @@
   StartVoiceSearchCommand* command =
       [[StartVoiceSearchCommand alloc] initWithOriginView:view];
   [self.dispatcher startVoiceSearch:command];
+}
+
+// Sets all Visible Toolbar Buttons opacity to |alpha|.
+- (void)setAllVisibleToolbarButtonsOpacity:(CGFloat)alpha {
+  for (UIButton* button in [self.leadingStackViewButtons
+           arrayByAddingObjectsFromArray:self.trailingStackViewButtons]) {
+    if (!button.hidden)
+      button.alpha = alpha;
+  }
+}
+
+// Offsets the horizontal translation transform of all visible Toolbar Buttons
+// in |array| by |offset|. Used for fade in animations.
+- (void)setHorizontalTranslationOffset:(LayoutOffset)offset
+                            forButtons:(NSArray<ToolbarButton*>*)array {
+  for (UIButton* button in array) {
+    if (!button.hidden)
+      button.transform = (offset != 0)
+                             ? CGAffineTransformMakeTranslation(offset, 0)
+                             : CGAffineTransformIdentity;
+  }
+}
+
+// Returns all the ToolbarButtons in a given UIStackView.
+- (NSArray<ToolbarButton*>*)toolbarButtonsInStackView:(UIStackView*)stackView {
+  NSMutableArray<ToolbarButton*>* buttons = [[NSMutableArray alloc] init];
+  for (UIView* view in stackView.arrangedSubviews) {
+    if ([view isKindOfClass:[ToolbarButton class]]) {
+      ToolbarButton* button = base::mac::ObjCCastStrict<ToolbarButton>(view);
+      [buttons addObject:button];
+    }
+  }
+  return buttons;
 }
 
 @end

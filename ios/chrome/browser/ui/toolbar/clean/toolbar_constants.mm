@@ -36,3 +36,5 @@ const CGFloat kBackButtonImageInset = -9;
 const CGFloat kForwardButtonImageInset = -7;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
+
+const LayoutOffset kToolbarButtonAnimationOffset = -10.0;
