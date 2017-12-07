@@ -28,10 +28,10 @@ constexpr float kDisplacementScaleFactor = 300.0f;
 // If the user does not move outside of the slop, no gesture is detected.
 // Gestures start to be detected when the user moves outside of the slop.
 // Vertical distance from the border to the center of slop.
-constexpr float kSlopVertical = 0.165f;
+constexpr float kSlopVertical = 0.185f;
 
 // Horizontal distance from the border to the center of slop.
-constexpr float kSlopHorizontal = 0.15f;
+constexpr float kSlopHorizontal = 0.17f;
 
 // Minimum distance needed in at least one direction to call two vectors
 // not equal. Also, minimum time distance needed to call two timestamps
