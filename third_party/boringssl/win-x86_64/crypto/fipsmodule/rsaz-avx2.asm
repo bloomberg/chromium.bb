@@ -103,7 +103,7 @@ $L$sqr_1024_no_n_copy:
 	vmovdqu	ymm8,YMMWORD[((256-128))+rsi]
 
 	lea	rbx,[192+rsp]
-	vpbroadcastq	ymm15,QWORD[$L$and_mask]
+	vmovdqu	ymm15,YMMWORD[$L$and_mask]
 	jmp	NEAR $L$OOP_GRANDE_SQR_1024
 
 ALIGN	32
@@ -891,10 +891,10 @@ $L$oop_mul_1024:
 	vpmuludq	ymm12,ymm11,YMMWORD[((192-128))+rcx]
 	vpaddq	ymm6,ymm6,ymm12
 	vpmuludq	ymm13,ymm11,YMMWORD[((224-128))+rcx]
-	vpblendd	ymm9,ymm9,ymm14,3
+	vpblendd	ymm12,ymm9,ymm14,3
 	vpaddq	ymm7,ymm7,ymm13
 	vpmuludq	ymm0,ymm11,YMMWORD[((256-128))+rcx]
-	vpaddq	ymm3,ymm3,ymm9
+	vpaddq	ymm3,ymm3,ymm12
 	vpaddq	ymm8,ymm8,ymm0
 
 	mov	rax,rbx
@@ -907,7 +907,9 @@ $L$oop_mul_1024:
 	vmovdqu	ymm13,YMMWORD[((-8+64-128))+rsi]
 
 	mov	rax,r10
+	vpblendd	ymm9,ymm9,ymm14,0xfc
 	imul	eax,r8d
+	vpaddq	ymm4,ymm4,ymm9
 	and	eax,0x1fffffff
 
 	imul	rbx,QWORD[((16-128))+rsi]
@@ -1136,7 +1138,6 @@ $L$oop_mul_1024:
 
 	dec	r14d
 	jnz	NEAR $L$oop_mul_1024
-	vpermq	ymm15,ymm15,0
 	vpaddq	ymm0,ymm12,YMMWORD[rsp]
 
 	vpsrlq	ymm12,ymm0,29
@@ -1823,7 +1824,7 @@ rsaz_avx2_eligible:
 
 ALIGN	64
 $L$and_mask:
-	DQ	0x1fffffff,0x1fffffff,0x1fffffff,-1
+	DQ	0x1fffffff,0x1fffffff,0x1fffffff,0x1fffffff
 $L$scatter_permd:
 	DD	0,2,4,6,7,7,7,7
 $L$gather_permd:
