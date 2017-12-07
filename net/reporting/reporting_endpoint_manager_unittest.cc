@@ -22,6 +22,11 @@ namespace {
 
 class ReportingEndpointManagerTest : public ReportingTestBase {
  protected:
+  void SetClient(const GURL& endpoint, int priority, int weight) {
+    cache()->SetClient(kOrigin_, endpoint, ReportingClient::Subdomains::EXCLUDE,
+                       kGroup_, tomorrow(), priority, weight);
+  }
+
   const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
@@ -35,8 +40,8 @@ TEST_F(ReportingEndpointManagerTest, NoEndpoint) {
 }
 
 TEST_F(ReportingEndpointManagerTest, Endpoint) {
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
+  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
+            ReportingClient::kDefaultWeight);
 
   GURL endpoint_url;
   bool found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
@@ -46,8 +51,11 @@ TEST_F(ReportingEndpointManagerTest, Endpoint) {
 }
 
 TEST_F(ReportingEndpointManagerTest, ExpiredEndpoint) {
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, yesterday());
+  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
+            ReportingClient::kDefaultWeight);
+
+  // Default expiration is "tomorrow", so make sure we're past that.
+  tick_clock()->Advance(base::TimeDelta::FromDays(2));
 
   GURL endpoint_url;
   bool found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
@@ -56,8 +64,8 @@ TEST_F(ReportingEndpointManagerTest, ExpiredEndpoint) {
 }
 
 TEST_F(ReportingEndpointManagerTest, PendingEndpoint) {
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
+  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
+            ReportingClient::kDefaultWeight);
 
   endpoint_manager()->SetEndpointPending(kEndpoint_);
 
@@ -80,8 +88,8 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   base::TimeDelta initial_delay = base::TimeDelta::FromMilliseconds(
       policy().endpoint_backoff_policy.initial_delay_ms);
 
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_, tomorrow());
+  SetClient(kEndpoint_, ReportingClient::kDefaultPriority,
+            ReportingClient::kDefaultWeight);
 
   endpoint_manager()->InformOfEndpointRequest(kEndpoint_, false);
 
@@ -142,28 +150,28 @@ TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
 // Make sure that multiple endpoints will all be returned at some point, to
 // avoid accidentally or intentionally implementing any priority ordering.
 TEST_F(ReportingEndpointManagerTest, RandomEndpoint) {
-  static const GURL kEndpoint_1("https://endpoint1/");
-  static const GURL kEndpoint_2("https://endpoint2/");
+  static const GURL kEndpoint1("https://endpoint1/");
+  static const GURL kEndpoint2("https://endpoint2/");
   static const int kMaxAttempts = 20;
 
-  cache()->SetClient(kOrigin_, kEndpoint_1,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup_, tomorrow());
-  cache()->SetClient(kOrigin_, kEndpoint_2,
-                     ReportingClient::Subdomains::EXCLUDE, kGroup_, tomorrow());
+  SetClient(kEndpoint1, ReportingClient::kDefaultPriority,
+            ReportingClient::kDefaultWeight);
+  SetClient(kEndpoint2, ReportingClient::kDefaultPriority,
+            ReportingClient::kDefaultWeight);
 
   bool endpoint1_seen = false;
   bool endpoint2_seen = false;
 
-  for (int i = 0; i < kMaxAttempts; i++) {
+  for (int i = 0; i < kMaxAttempts; ++i) {
     GURL endpoint_url;
     bool found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
         kOrigin_, kGroup_, &endpoint_url);
     ASSERT_TRUE(found_endpoint);
-    ASSERT_TRUE(endpoint_url == kEndpoint_1 || endpoint_url == kEndpoint_2);
+    ASSERT_TRUE(endpoint_url == kEndpoint1 || endpoint_url == kEndpoint2);
 
-    if (endpoint_url == kEndpoint_1)
+    if (endpoint_url == kEndpoint1)
       endpoint1_seen = true;
-    else if (endpoint_url == kEndpoint_2)
+    else if (endpoint_url == kEndpoint2)
       endpoint2_seen = true;
 
     if (endpoint1_seen && endpoint2_seen)
@@ -172,6 +180,69 @@ TEST_F(ReportingEndpointManagerTest, RandomEndpoint) {
 
   EXPECT_TRUE(endpoint1_seen);
   EXPECT_TRUE(endpoint2_seen);
+}
+
+TEST_F(ReportingEndpointManagerTest, Priority) {
+  static const GURL kPrimaryEndpoint("https://endpoint1/");
+  static const GURL kBackupEndpoint("https://endpoint2/");
+
+  SetClient(kPrimaryEndpoint, 10, ReportingClient::kDefaultWeight);
+  SetClient(kBackupEndpoint, 20, ReportingClient::kDefaultWeight);
+
+  GURL endpoint_url;
+
+  bool found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
+      kOrigin_, kGroup_, &endpoint_url);
+  ASSERT_TRUE(found_endpoint);
+  EXPECT_EQ(kPrimaryEndpoint, endpoint_url);
+
+  endpoint_manager()->SetEndpointPending(kPrimaryEndpoint);
+
+  found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
+      kOrigin_, kGroup_, &endpoint_url);
+  ASSERT_TRUE(found_endpoint);
+  EXPECT_EQ(kBackupEndpoint, endpoint_url);
+
+  endpoint_manager()->ClearEndpointPending(kPrimaryEndpoint);
+
+  found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
+      kOrigin_, kGroup_, &endpoint_url);
+  ASSERT_TRUE(found_endpoint);
+  EXPECT_EQ(kPrimaryEndpoint, endpoint_url);
+}
+
+// Note: This test depends on the deterministic mock RandIntCallback set up in
+// TestReportingContext, which returns consecutive integers starting at 0
+// (modulo the requested range, plus the requested minimum).
+TEST_F(ReportingEndpointManagerTest, Weight) {
+  static const GURL kEndpoint1("https://endpoint1/");
+  static const GURL kEndpoint2("https://endpoint2/");
+
+  static const int kEndpoint1Weight = 5;
+  static const int kEndpoint2Weight = 2;
+  static const int kTotalEndpointWeight = kEndpoint1Weight + kEndpoint2Weight;
+
+  SetClient(kEndpoint1, ReportingClient::kDefaultPriority, kEndpoint1Weight);
+  SetClient(kEndpoint2, ReportingClient::kDefaultPriority, kEndpoint2Weight);
+
+  int endpoint1_count = 0;
+  int endpoint2_count = 0;
+
+  for (int i = 0; i < kTotalEndpointWeight; ++i) {
+    GURL endpoint_url;
+    bool found_endpoint = endpoint_manager()->FindEndpointForOriginAndGroup(
+        kOrigin_, kGroup_, &endpoint_url);
+    ASSERT_TRUE(found_endpoint);
+    ASSERT_TRUE(endpoint_url == kEndpoint1 || endpoint_url == kEndpoint2);
+
+    if (endpoint_url == kEndpoint1)
+      ++endpoint1_count;
+    else if (endpoint_url == kEndpoint2)
+      ++endpoint2_count;
+  }
+
+  EXPECT_EQ(kEndpoint1Weight, endpoint1_count);
+  EXPECT_EQ(kEndpoint2Weight, endpoint2_count);
 }
 
 }  // namespace

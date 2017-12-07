@@ -49,6 +49,16 @@ TEST_F(ReportingHeaderParserTest, Invalid) {
       // Note that a non-boolean includeSubdomains field is *not* invalid, per
       // the spec.
 
+      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"priority\":\"\"}",
+       "non-integer priority"},
+
+      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"weight\":\"\"}",
+       "non-integer weight"},
+      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"weight\":-1}",
+       "negative weight"},
+      {"{\"url\":\"https://endpoint/\",\"max-age\":1,\"weight\":0}",
+       "zero weight"},
+
       {"[{\"url\":\"https://a/\",\"max-age\":1},"
        "{\"url\":\"https://b/\",\"max-age\":1}]",
        "wrapped in list"}};
@@ -78,6 +88,21 @@ TEST_F(ReportingHeaderParserTest, Valid) {
   EXPECT_EQ(kEndpoint_, client->endpoint);
   EXPECT_EQ(ReportingClient::Subdomains::EXCLUDE, client->subdomains);
   EXPECT_EQ(86400, (client->expires - tick_clock()->NowTicks()).InSeconds());
+  EXPECT_EQ(ReportingClient::kDefaultPriority, client->priority);
+  EXPECT_EQ(ReportingClient::kDefaultWeight, client->weight);
+}
+
+TEST_F(ReportingHeaderParserTest, ZeroMaxAge) {
+  cache()->SetClient(
+      kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE, kGroup_,
+      tick_clock()->NowTicks() + base::TimeDelta::FromDays(1),
+      ReportingClient::kDefaultPriority, ReportingClient::kDefaultWeight);
+
+  ReportingHeaderParser::ParseHeader(
+      context(), kUrl_,
+      "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":0}");
+
+  EXPECT_EQ(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
 }
 
 TEST_F(ReportingHeaderParserTest, Subdomains) {
@@ -92,16 +117,40 @@ TEST_F(ReportingHeaderParserTest, Subdomains) {
   EXPECT_EQ(ReportingClient::Subdomains::INCLUDE, client->subdomains);
 }
 
-TEST_F(ReportingHeaderParserTest, ZeroMaxAge) {
-  cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
-                     kGroup_,
-                     tick_clock()->NowTicks() + base::TimeDelta::FromDays(1));
+TEST_F(ReportingHeaderParserTest, PriorityPositive) {
+  ReportingHeaderParser::ParseHeader(context(), kUrl_,
+                                     "{\"url\":\"" + kEndpoint_.spec() +
+                                         "\",\"max-age\":86400,"
+                                         "\"priority\":2}");
 
-  ReportingHeaderParser::ParseHeader(
-      context(), kUrl_,
-      "{\"url\":\"" + kEndpoint_.spec() + "\",\"max-age\":0}");
+  const ReportingClient* client =
+      FindClientInCache(cache(), kOrigin_, kEndpoint_);
+  ASSERT_TRUE(client);
+  EXPECT_EQ(2, client->priority);
+}
 
-  EXPECT_EQ(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
+TEST_F(ReportingHeaderParserTest, PriorityNegative) {
+  ReportingHeaderParser::ParseHeader(context(), kUrl_,
+                                     "{\"url\":\"" + kEndpoint_.spec() +
+                                         "\",\"max-age\":86400,"
+                                         "\"priority\":-2}");
+
+  const ReportingClient* client =
+      FindClientInCache(cache(), kOrigin_, kEndpoint_);
+  ASSERT_TRUE(client);
+  EXPECT_EQ(-2, client->priority);
+}
+
+TEST_F(ReportingHeaderParserTest, Weight) {
+  ReportingHeaderParser::ParseHeader(context(), kUrl_,
+                                     "{\"url\":\"" + kEndpoint_.spec() +
+                                         "\",\"max-age\":86400,"
+                                         "\"weight\":3}");
+
+  const ReportingClient* client =
+      FindClientInCache(cache(), kOrigin_, kEndpoint_);
+  ASSERT_TRUE(client);
+  EXPECT_EQ(3, client->weight);
 }
 
 TEST_F(ReportingHeaderParserTest, RemoveOld) {

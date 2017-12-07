@@ -36077,6 +36077,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Removed (max-age = 0)"/>
   <int value="10" label="Set rejected by delegate (max-age &gt; 0)"/>
   <int value="11" label="Set (max-age &gt; 0)"/>
+  <int value="12" label="Discarded: priority not an integer"/>
+  <int value="13" label="Discarded: weight not an integer"/>
+  <int value="14" label="Discarded: weight not positive"/>
 </enum>
 
 <enum name="ReportingHeaderOutcome">

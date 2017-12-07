@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/base/rand_callback.h"
 #include "net/reporting/reporting_context.h"
 
 class GURL;
@@ -27,7 +28,8 @@ class NET_EXPORT ReportingEndpointManager {
  public:
   // |context| must outlive the ReportingEndpointManager.
   static std::unique_ptr<ReportingEndpointManager> Create(
-      ReportingContext* context);
+      ReportingContext* context,
+      const RandIntCallback& rand_callback);
 
   virtual ~ReportingEndpointManager();
 

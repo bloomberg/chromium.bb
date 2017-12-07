@@ -12,16 +12,26 @@
 
 namespace net {
 
+const char ReportingClient::kDefaultGroup[] = "default";
+const int ReportingClient::kDefaultPriority = 0;
+const int ReportingClient::kDefaultWeight = 1;
+
 ReportingClient::ReportingClient(const url::Origin& origin,
                                  const GURL& endpoint,
                                  Subdomains subdomains,
                                  const std::string& group,
-                                 base::TimeTicks expires)
+                                 base::TimeTicks expires,
+                                 int priority,
+                                 int weight)
     : origin(origin),
       endpoint(endpoint),
       subdomains(subdomains),
       group(group),
-      expires(expires) {}
+      expires(expires),
+      priority(priority),
+      weight(weight) {
+  DCHECK_LT(0, weight);
+}
 
 ReportingClient::~ReportingClient() = default;
 
