@@ -13,11 +13,11 @@ class EnabledStateProvider {
   virtual ~EnabledStateProvider() {}
 
   // Indicates that the user has provided consent to collect and report metrics.
-  virtual bool IsConsentGiven() = 0;
+  virtual bool IsConsentGiven() const = 0;
 
   // Should collection and reporting be enabled. This should depend on consent
   // being given.
-  virtual bool IsReportingEnabled();
+  virtual bool IsReportingEnabled() const;
 };
 
 }  // namespace metrics

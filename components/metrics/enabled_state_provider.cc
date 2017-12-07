@@ -6,7 +6,7 @@
 
 namespace metrics {
 
-bool EnabledStateProvider::IsReportingEnabled() {
+bool EnabledStateProvider::IsReportingEnabled() const {
   return IsConsentGiven();
 }
 

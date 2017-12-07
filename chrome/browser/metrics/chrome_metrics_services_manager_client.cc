@@ -121,11 +121,11 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
   ChromeEnabledStateProvider() {}
   ~ChromeEnabledStateProvider() override {}
 
-  bool IsConsentGiven() override {
+  bool IsConsentGiven() const override {
     return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   }
 
-  bool IsReportingEnabled() override {
+  bool IsReportingEnabled() const override {
     return IsConsentGiven() &&
            ChromeMetricsServicesManagerClient::IsClientInSample();
   }

@@ -41,7 +41,7 @@ class IOSChromeMetricsServicesManagerClient::IOSChromeEnabledStateProvider
   IOSChromeEnabledStateProvider() {}
   ~IOSChromeEnabledStateProvider() override {}
 
-  bool IsConsentGiven() override {
+  bool IsConsentGiven() const override {
     return IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
   }
 

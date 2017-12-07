@@ -84,7 +84,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
   base::TimeDelta GetStandardUploadInterval() override;
 
   // ::metrics::EnabledStateProvider:
-  bool IsConsentGiven() override;
+  bool IsConsentGiven() const override;
 
   // Starts/stops the metrics service.
   void EnableMetricsService(bool enabled);
