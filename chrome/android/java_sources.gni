@@ -409,6 +409,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/feature_engagement/ScreenshotMonitor.java",
   "java/src/org/chromium/chrome/browser/feature_engagement/ScreenshotMonitorDelegate.java",
   "java/src/org/chromium/chrome/browser/feedback/AsyncFeedbackSource.java",
+  "java/src/org/chromium/chrome/browser/feedback/AsyncFeedbackSourceAdapter.java",
   "java/src/org/chromium/chrome/browser/feedback/ChromeHomeFeedbackSource.java",
   "java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java",
   "java/src/org/chromium/chrome/browser/feedback/ConnectivityFeedbackSource.java",
