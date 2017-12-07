@@ -4,7 +4,7 @@
 
 #include "core/editing/commands/ApplyStyleCommand.h"
 
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"

@@ -29,6 +29,7 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Element.h"

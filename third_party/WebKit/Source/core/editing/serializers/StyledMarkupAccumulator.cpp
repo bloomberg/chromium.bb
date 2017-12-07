@@ -29,7 +29,7 @@
 
 #include "core/editing/serializers/StyledMarkupAccumulator.h"
 
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"

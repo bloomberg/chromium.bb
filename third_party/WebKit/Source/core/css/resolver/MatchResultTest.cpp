@@ -4,7 +4,7 @@
 
 #include "core/css/resolver/MatchResult.h"
 
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

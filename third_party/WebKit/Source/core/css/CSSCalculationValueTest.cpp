@@ -31,8 +31,8 @@
 #include "core/css/CSSCalculationValue.h"
 
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSToLengthConversionData.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"

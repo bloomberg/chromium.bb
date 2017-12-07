@@ -25,7 +25,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSColorValue.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/html/forms/HTMLOptGroupElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html_names.h"

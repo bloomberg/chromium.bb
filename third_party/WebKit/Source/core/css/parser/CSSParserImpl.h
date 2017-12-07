@@ -11,7 +11,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSPropertyValue.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/MutableCSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"

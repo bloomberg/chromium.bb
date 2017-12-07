@@ -5,7 +5,7 @@
 #ifndef CSSLazyPropertyParserImpl_h
 #define CSSLazyPropertyParserImpl_h
 
-#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/parser/CSSLazyPropertyParser.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
 
