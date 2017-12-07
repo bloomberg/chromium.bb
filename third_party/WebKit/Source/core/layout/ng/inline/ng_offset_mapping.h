@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class LayoutBlockFlow;
 class LayoutObject;
 class Node;
 
@@ -184,6 +185,9 @@ class CORE_EXPORT NGOffsetMapping {
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };
+
+CORE_EXPORT const LayoutBlockFlow* NGInlineFormattingContextOf(const Position&);
+const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
 
 }  // namespace blink
 
