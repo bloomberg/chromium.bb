@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
+#include "chromeos/dbus/smb_provider_client.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
@@ -43,6 +44,8 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
   explicit SmbFileSystem(
       const file_system_provider::ProvidedFileSystemInfo& file_system_info);
   ~SmbFileSystem() override;
+
+  static base::File::Error TranslateError(smbprovider::ErrorType);
 
   // ProvidedFileSystemInterface overrides.
   file_system_provider::AbortCallback RequestUnmount(
@@ -164,6 +167,14 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
+  void HandleRequestUnmountCallback(
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      smbprovider::ErrorType smb_error) const;
+
+  int32_t GetMountId() const;
+
+  SmbProviderClient* GetSmbProviderClient() const;
+
   file_system_provider::ProvidedFileSystemInfo file_system_info_;
   file_system_provider::OpenedFiles opened_files_;
   storage::AsyncFileUtil::EntryList entry_list_;
