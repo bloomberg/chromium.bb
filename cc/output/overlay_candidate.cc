@@ -197,7 +197,9 @@ bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
                                     const SkMatrix44& output_color_matrix,
                                     const viz::DrawQuad* quad,
                                     OverlayCandidate* candidate) {
-  // Overlays are not compatible with output color matrices.
+  // It is currently not possible to set a color conversion matrix on an HW
+  // overlay plane.
+  // TODO(dcastagna): Remove this check once crbug.com/792757 is resolved.
   if (!output_color_matrix.isIdentity())
     return false;
 
