@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 403
+#   For your editing convenience: highest ID currently used: 404
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10767,7 +10767,28 @@
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. '''
     },
+    {
+      'name': 'AbusiveExperienceInterventionEnforce',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:65-', 'chrome_os:65-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 404,
+      'caption': '''Abusive Experience Intervention Enforce''',
+      'tags': [],
+      'desc': '''Allows you to set whether sites with abusive experiences should be prevented from opening new windows or tabs.
+
+      If this policy is set to True, sites with abusive experiences will be prevented from opening new windows or tabs.
+      However this behavior will not trigger if SafeBrowsingEnabled policy is set to False.
+      If this policy is set to False, sites with abusive experiences will be allowed to open new windows or tabs.
+      If this policy is left not set, True will be used.''',
+    },
   ],
+
   'messages': {
     # Messages that are not associated to any policies.
     'win_supported_winxpsp2': {

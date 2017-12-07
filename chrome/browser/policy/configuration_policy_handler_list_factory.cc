@@ -724,6 +724,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSitePerProcess,
     prefs::kSitePerProcess,
     base::Value::Type::BOOLEAN },
+
+  { key::kAbusiveExperienceInterventionEnforce,
+    prefs::kAbusiveExperienceInterventionEnforce,
+    base::Value::Type::BOOLEAN },
+
 };
 // clang-format on
 
