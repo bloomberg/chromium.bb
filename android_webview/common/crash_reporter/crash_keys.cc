@@ -16,8 +16,6 @@ namespace crash_keys {
 
 const char kActiveURL[] = "url-chunk";
 
-const char kFontKeyName[] = "font_key_name";
-
 const char kShutdownType[] = "shutdown-type";
 const char kBrowserUnpinTrace[] = "browser-unpin-trace";
 
@@ -25,8 +23,6 @@ const char kAppPackageName[] = "app-package-name";
 const char kAppPackageVersionCode[] = "app-package-version-code";
 
 const char kAndroidSdkInt[] = "android-sdk-int";
-
-const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
 
 const char kViewCount[] = "view-count";
 
@@ -56,15 +52,10 @@ size_t RegisterWebViewCrashKeys() {
       {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
       // content/:
-      {"bad_message_reason", kSmallSize},
       {"discardable-memory-allocated", kSmallSize},
       {"discardable-memory-free", kSmallSize},
-      {kFontKeyName, kSmallSize},
-      {"mojo-message-error", kMediumSize},
-      {"ppapi_path", kMediumSize},
       {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},
-      {kInputEventFilterSendFailure, kSmallSize},
       {kViewCount, kSmallSize},
 
       // media/:
@@ -85,10 +76,6 @@ size_t RegisterWebViewCrashKeys() {
 
       // TODO(sunnyps): Remove after fixing crbug.com/724999.
       {"gl-context-set-current-stack-trace", kMediumSize},
-
-      // Accessibility keys. Temporary for http://crbug.com/765490.
-      {"ax_tree_error", kSmallSize},
-      {"ax_tree_update", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

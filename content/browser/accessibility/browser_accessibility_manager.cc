@@ -177,13 +177,17 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
 void BrowserAccessibilityManager::Initialize(
     const ui::AXTreeUpdate& initial_tree) {
   if (!tree_->Unserialize(initial_tree)) {
+    static auto* ax_tree_error = base::debug::AllocateCrashKeyString(
+        "ax_tree_error", base::debug::CrashKeySize::Size32);
+    static auto* ax_tree_update = base::debug::AllocateCrashKeyString(
+        "ax_tree_update", base::debug::CrashKeySize::Size64);
     // Temporarily log some additional crash keys so we can try to
     // figure out why we're getting bad accessibility trees here.
     // http://crbug.com/765490
     // Be sure to re-enable BrowserAccessibilityManagerTest.TestFatalError
     // when done (or delete it if no longer needed).
-    base::debug::SetCrashKeyValue("ax_tree_error", tree_->error());
-    base::debug::SetCrashKeyValue("ax_tree_update", initial_tree.ToString());
+    base::debug::SetCrashKeyString(ax_tree_error, tree_->error());
+    base::debug::SetCrashKeyString(ax_tree_update, initial_tree.ToString());
     LOG(FATAL) << tree_->error();
   }
 }

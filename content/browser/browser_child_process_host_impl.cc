@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/histogram_controller.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
@@ -599,7 +600,8 @@ void BrowserChildProcessHostImpl::OnMojoError(
   // Create a memory dump with the error message captured in a crash key value.
   // This will make it easy to determine details about what interface call
   // failed.
-  base::debug::ScopedCrashKey error_key_value("mojo-message-error", error);
+  base::debug::ScopedCrashKeyString scoped_error_key(
+      bad_message::GetMojoErrorCrashKey(), error);
   base::debug::DumpWithoutCrashing();
   process->child_process_->GetProcess().Terminate(
       RESULT_CODE_KILLED_BAD_MESSAGE, false);

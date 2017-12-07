@@ -275,7 +275,9 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
                                const ppapi::PpapiPermissions& permissions) {
   // In case of crashes, the crash dump doesn't indicate which plugin
   // it came from.
-  base::debug::SetCrashKeyValue("ppapi_path", path.MaybeAsASCII());
+  static auto* ppapi_path_key = base::debug::AllocateCrashKeyString(
+      "ppapi_path", base::debug::CrashKeySize::Size64);
+  base::debug::SetCrashKeyString(ppapi_path_key, path.MaybeAsASCII());
 
   SavePluginName(path);
 

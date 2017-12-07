@@ -28,8 +28,6 @@ namespace crash_keys {
 
 const char kActiveURL[] = "url-chunk";
 
-const char kFontKeyName[] = "font_key_name";
-
 const char kExtensionID[] = "extension-%" PRIuS;
 const char kNumExtensionsCount[] = "num-extensions";
 
@@ -49,8 +47,6 @@ const char kIsEnterpriseManaged[] = "is-enterprise-managed";
 const char kApValue[] = "ap";
 const char kCohortName[] = "cohort-name";
 #endif
-
-const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
 
 const char kPrinterInfo[] = "prn-info-%" PRIuS;
 
@@ -103,12 +99,8 @@ size_t RegisterChromeCrashKeys() {
     {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
     // content/:
-    {"bad_message_reason", kSmallSize},
     {"discardable-memory-allocated", kSmallSize},
     {"discardable-memory-free", kSmallSize},
-    {kFontKeyName, kSmallSize},
-    {"mojo-message-error", kMediumSize},
-    {"ppapi_path", kMediumSize},
     {"subresource_url", kLargeSize},
     {"total-discardable-memory-allocated", kSmallSize},
 #if defined(OS_WIN)
@@ -117,12 +109,6 @@ size_t RegisterChromeCrashKeys() {
     {kHungRendererLastEventType, kSmallSize},
     {kHungRendererReason, kSmallSize},
     {kIsEnterpriseManaged, kSmallSize},
-#endif
-    {kInputEventFilterSendFailure, kSmallSize},
-#if defined(OS_MACOSX)
-    // content/:
-    {"text-input-context-client", kMediumSize},
-// media/:
 #endif
     {kViewCount, kSmallSize},
 
@@ -143,10 +129,6 @@ size_t RegisterChromeCrashKeys() {
 
     // TODO(sunnyps): Remove after fixing crbug.com/724999.
     {"gl-context-set-current-stack-trace", kMediumSize},
-
-    // Accessibility keys. Temporary for http://crbug.com/765490.
-    {"ax_tree_error", kSmallSize},
-    {"ax_tree_update", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
