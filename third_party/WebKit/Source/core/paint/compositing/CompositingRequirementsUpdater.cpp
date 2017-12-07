@@ -26,7 +26,9 @@
 
 #include "core/paint/compositing/CompositingRequirementsUpdater.h"
 
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
@@ -400,7 +402,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   bool will_be_composited_or_squashed =
       can_be_composited && RequiresCompositingOrSquashing(reasons_to_composite);
   if (will_be_composited_or_squashed) {
-    // This layer now acts as the ancestor for kids.
+    // This layer now acts as the ancestor for child layers.
     child_recursion_data.compositing_ancestor_ = layer;
 
     // Here we know that all children and the layer's own contents can blindly
@@ -496,6 +498,14 @@ void CompositingRequirementsUpdater::UpdateRecursive(
         child_recursion_data.has_unisolated_composited_blending_descendant_;
   }
 
+  // Embedded objects treat the embedded document as a child for the purposes
+  // of composited layer decisions. Look into the embedded document to determine
+  // if it is composited.
+  bool contains_composited_iframe =
+      layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
+      ToLayoutEmbeddedContent(layer->GetLayoutObject())
+          .RequiresAcceleratedCompositing();
+
   // Subsequent layers in the parent's stacking context may also need to
   // composite.
   if (child_recursion_data.subtree_is_compositing_)
@@ -503,7 +513,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 
   // Set the flag to say that this SC has compositing children.
   layer->SetHasCompositingDescendant(
-      child_recursion_data.subtree_is_compositing_);
+      child_recursion_data.subtree_is_compositing_ ||
+      contains_composited_iframe);
 
   if (layer->IsRootLayer()) {
     // The root layer needs to be composited if anything else in the tree is

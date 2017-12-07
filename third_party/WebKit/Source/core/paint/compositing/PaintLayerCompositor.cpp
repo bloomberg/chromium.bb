@@ -923,9 +923,9 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
 }
 
 // Return true if the given layer is a stacking context and has compositing
-// child layers that it needs to clip. In this case we insert a clipping
-// GraphicsLayer into the hierarchy between this layer and its children in the
-// z-order hierarchy.
+// child layers that it needs to clip, or is an embedded object with a border
+// radius. In these cases we insert a clipping GraphicsLayer into the hierarchy
+// between this layer and its children in the z-order hierarchy.
 bool PaintLayerCompositor::ClipsCompositingDescendants(
     const PaintLayer* layer) const {
   if (!layer->HasCompositingDescendant())
@@ -933,7 +933,8 @@ bool PaintLayerCompositor::ClipsCompositingDescendants(
   if (!layer->GetLayoutObject().IsBox())
     return false;
   const LayoutBox& box = ToLayoutBox(layer->GetLayoutObject());
-  return box.ShouldClipOverflow() || box.HasClip();
+  return box.ShouldClipOverflow() || box.HasClip() ||
+         (box.IsLayoutEmbeddedContent() && box.StyleRef().HasBorderRadius());
 }
 
 // If an element has composited negative z-index children, those children paint
