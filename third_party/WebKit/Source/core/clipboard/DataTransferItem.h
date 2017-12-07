@@ -31,6 +31,7 @@
 #ifndef DataTransferItem_h
 #define DataTransferItem_h
 
+#include "base/macros.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
@@ -48,7 +49,6 @@ class V8FunctionStringCallback;
 
 class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(DataTransferItem);
 
  public:
   static DataTransferItem* Create(DataTransfer*, DataObjectItem*);
@@ -75,6 +75,7 @@ class CORE_EXPORT DataTransferItem final : public ScriptWrappable {
   Member<DataTransfer> data_transfer_;
   Member<DataObjectItem> item_;
   HeapVector<TraceWrapperMember<V8FunctionStringCallback>> callbacks_;
+  DISALLOW_COPY_AND_ASSIGN(DataTransferItem);
 };
 
 }  // namespace blink
