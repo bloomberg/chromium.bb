@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
@@ -290,17 +291,15 @@ void WebLayerImpl::SetNonFastScrollableRegion(const WebVector<WebRect>& rects) {
 
 WebVector<WebRect> WebLayerImpl::NonFastScrollableRegion() const {
   size_t num_rects = 0;
-  for (cc::Region::Iterator region_rects(layer_->non_fast_scrollable_region());
-       region_rects.has_rect();
-       region_rects.next())
+  for (gfx::Rect rect : layer_->non_fast_scrollable_region()) {
+    ALLOW_UNUSED_LOCAL(rect);
     ++num_rects;
+  }
 
   WebVector<WebRect> result(num_rects);
   size_t i = 0;
-  for (cc::Region::Iterator region_rects(layer_->non_fast_scrollable_region());
-       region_rects.has_rect();
-       region_rects.next()) {
-    result[i] = region_rects.rect();
+  for (gfx::Rect rect : layer_->non_fast_scrollable_region()) {
+    result[i] = rect;
     ++i;
   }
   return result;
@@ -316,17 +315,15 @@ void WebLayerImpl::SetTouchEventHandlerRegion(
 
 WebVector<WebRect> WebLayerImpl::TouchEventHandlerRegion() const {
   size_t num_rects = 0;
-  for (cc::Region::Iterator region_rects(
-           layer_->touch_action_region().region());
-       region_rects.has_rect(); region_rects.next())
+  for (gfx::Rect rect : layer_->touch_action_region().region()) {
+    ALLOW_UNUSED_LOCAL(rect);
     ++num_rects;
+  }
 
   WebVector<WebRect> result(num_rects);
   size_t i = 0;
-  for (cc::Region::Iterator region_rects(
-           layer_->touch_action_region().region());
-       region_rects.has_rect(); region_rects.next()) {
-    result[i] = region_rects.rect();
+  for (gfx::Rect rect : layer_->touch_action_region().region()) {
+    result[i] = rect;
     ++i;
   }
   return result;
@@ -336,17 +333,17 @@ WebVector<WebRect>
 WebLayerImpl::TouchEventHandlerRegionForTouchActionForTesting(
     cc::TouchAction touch_action) const {
   size_t num_rects = 0;
-  for (cc::Region::Iterator region_rects(
-           layer_->touch_action_region().GetRegionForTouchAction(touch_action));
-       region_rects.has_rect(); region_rects.next())
+  for (gfx::Rect rect :
+       layer_->touch_action_region().GetRegionForTouchAction(touch_action)) {
+    ALLOW_UNUSED_LOCAL(rect);
     ++num_rects;
+  }
 
   WebVector<WebRect> result(num_rects);
   size_t i = 0;
-  for (cc::Region::Iterator region_rects(
-           layer_->touch_action_region().GetRegionForTouchAction(touch_action));
-       region_rects.has_rect(); region_rects.next()) {
-    result[i] = region_rects.rect();
+  for (gfx::Rect rect :
+       layer_->touch_action_region().GetRegionForTouchAction(touch_action)) {
+    result[i] = rect;
     ++i;
   }
   return result;

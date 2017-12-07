@@ -614,8 +614,8 @@ Surface::GetHitTestShapeRects() const {
     return nullptr;
 
   auto rects = std::make_unique<aura::WindowTargeter::HitTestRects>();
-  for (cc::Region::Iterator it(hit_test_region_); it.has_rect(); it.next())
-    rects->push_back(it.rect());
+  for (gfx::Rect rect : hit_test_region_)
+    rects->push_back(rect);
   return rects;
 }
 

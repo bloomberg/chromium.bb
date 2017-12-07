@@ -912,8 +912,8 @@ void Layer::SendDamagedRects() {
   if (content_layer_ && deferred_paint_requests_)
     return;
 
-  for (cc::Region::Iterator iter(damaged_region_); iter.has_rect(); iter.next())
-    cc_layer_->SetNeedsDisplayRect(iter.rect());
+  for (gfx::Rect damaged_rect : damaged_region_)
+    cc_layer_->SetNeedsDisplayRect(damaged_rect);
   if (layer_mask_)
     layer_mask_->SendDamagedRects();
 

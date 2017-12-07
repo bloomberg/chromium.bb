@@ -94,8 +94,8 @@ TEST(RegionTest, EmptySpan) {
   r.Union(gfx::Rect(0, 5, 10, 10));
   r.Subtract(gfx::Rect(7, 7, 10, 0));
 
-  for (Region::Iterator it(r); it.has_rect(); it.next())
-    EXPECT_FALSE(it.rect().IsEmpty());
+  for (gfx::Rect rect : r)
+    EXPECT_FALSE(rect.IsEmpty());
 }
 
 #define TEST_NO_INTERSECT(a, b) {  \

@@ -586,9 +586,9 @@ gfx::Rect PictureLayerTilingSet::CoverageIterator::geometry_rect() const {
   // If we don't have any more tilings to process, then return the region
   // iterator rect that we need to fill, so that the caller can checkerboard it.
   if (!tiling_iter_) {
-    if (!region_iter_.has_rect())
+    if (region_iter_ == current_region_.end())
       return gfx::Rect();
-    return region_iter_.rect();
+    return *region_iter_;
   }
   return tiling_iter_.geometry_rect();
 }
@@ -670,14 +670,14 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
     // If the set of current rects for this tiling is done, go to the next
     // tiling and set up to iterate through all of the remaining holes.
     // This will also happen the first time through the loop.
-    if (!region_iter_.has_rect()) {
+    if (region_iter_ == current_region_.end()) {
       current_tiling_ = NextTiling();
       current_region_.Swap(&missing_region_);
       missing_region_.Clear();
-      region_iter_ = Region::Iterator(current_region_);
+      region_iter_ = current_region_.begin();
 
       // All done and all filled.
-      if (!region_iter_.has_rect()) {
+      if (region_iter_ == current_region_.end()) {
         current_tiling_ = set_->tilings_.size();
         return *this;
       }
@@ -689,8 +689,8 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
 
     // Pop a rect off.  If there are no more tilings, then these will be
     // treated as geometry with null tiles that the caller can checkerboard.
-    gfx::Rect last_rect = region_iter_.rect();
-    region_iter_.next();
+    gfx::Rect last_rect = *region_iter_;
+    ++region_iter_;
 
     // Done, found next checkerboard rect to return.
     if (current_tiling_ >= set_->tilings_.size())
@@ -706,7 +706,8 @@ PictureLayerTilingSet::CoverageIterator::operator++() {
 }
 
 PictureLayerTilingSet::CoverageIterator::operator bool() const {
-  return current_tiling_ < set_->tilings_.size() || region_iter_.has_rect();
+  return current_tiling_ < set_->tilings_.size() ||
+         region_iter_ != current_region_.end();
 }
 
 void PictureLayerTilingSet::AsValueInto(
