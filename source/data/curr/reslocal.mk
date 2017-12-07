@@ -34,7 +34,7 @@ CURR_SOURCE =\
  de.txt de_CH.txt\
  el.txt\
  en.txt en_001.txt en_150.txt\
- en_AU.txt en_CA.txt en_GB.txt en_IN.txt en_NZ.txt en_ZA.txt\
+ en_AU.txt en_CA.txt en_GB.txt en_HK.txt en_IN.txt en_NG.txt en_NZ.txt en_SG.txt en_ZA.txt\
  es.txt es_419.txt es_AR.txt es_MX.txt es_US.txt\
  et.txt\
  fa.txt\

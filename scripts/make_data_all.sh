@@ -2,7 +2,7 @@
 
 set -x
 
-ICUROOT=$HOME/cr/t/src/third_party/icu
+ICUROOT="$(dirname "$0")/.."
 
 $ICUROOT/scripts/trim_data.sh
 $ICUROOT/scripts/make_data.sh

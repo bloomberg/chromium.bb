@@ -250,7 +250,7 @@ D. Local Modifications
 
 5. Fix ScriptExtensions property for 5 characters
 
-  - patches/script_extension.patch 
+  - patches/script_extension.patch
     upstream bug: https://ssl.icu-project.org/trac/ticket/13462
     (fixed in 60maint branch)
 
@@ -258,3 +258,8 @@ D. Local Modifications
 
   - patches/isvalidenum.patch
     upstream bug: https://ssl.icu-project.org/trac/ticket/13509
+
+7. Currency display name fix for Seribian locale
+
+ - patches/curr_sr.patch
+   upstream bug: https://unicode.org/cldr/trac/ticket/10794

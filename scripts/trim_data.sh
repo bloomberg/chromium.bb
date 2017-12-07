@@ -149,7 +149,15 @@ function filter_currency_data {
        }
        /^    [cC]urrency(Map|Meta|Spacing|UnitPatterns)\{$/, /^    \}$/ p
        /^    Version\{.*\}$/p
-       /^\}$/p' $i
+       /^\}$/p' "${i}"
+
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/791318.
+    sed -r -i \
+      '/^    Currenc(ie.*|yPlurals)\{$/ {
+         N
+         /^    Currenc(ie.*|yPlurals)\{\n    \}/ d
+      }' "${i}"
   done
 }
 
