@@ -87,6 +87,9 @@ void BlinkMediaTestSuite::Initialize() {
   gin::V8Initializer::LoadV8Snapshot();
   gin::V8Initializer::LoadV8Natives();
 #endif
+#ifdef USE_V8_CONTEXT_SNAPSHOT
+  gin::V8Initializer::LoadV8ContextSnapshot();
+#endif
 
 // Initialize mojo firstly to enable Blink initialization to use it.
 #if !defined(OS_IOS)

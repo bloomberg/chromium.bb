@@ -120,6 +120,7 @@ test("media_blink_unittests") {
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:test_support",
+    "//tools/v8_context_snapshot",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//url",
@@ -127,6 +128,7 @@ test("media_blink_unittests") {
 
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
+    "//tools/v8_context_snapshot:use_v8_context_snapshot",
     "//v8:external_startup_data",
   ]
 
