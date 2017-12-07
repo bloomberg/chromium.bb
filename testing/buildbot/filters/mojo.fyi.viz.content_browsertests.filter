@@ -85,3 +85,9 @@
 
 # TODO: investigate flaky failure http://crbug.com/790683
 -SitePerProcessBrowserTest.CrossSiteIframeBlockedByXFrameOptionsOrCSP
+
+# TODO: investigate flaky failure http://crbug.com/792739
+-SitePerProcessFeaturePolicyBrowserTest.TestFeaturePolicyReplicationFromRemoteFrames
+
+# TODO: investigate flaky failure http://crbug.com/792740
+-IsolatedOriginTest.ProcessLimit
