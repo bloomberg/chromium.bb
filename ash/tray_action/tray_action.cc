@@ -6,14 +6,22 @@
 
 #include <utility>
 
+#include "ash/lock_screen_action/lock_screen_note_display_state_handler.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/stylus_state.h"
 
 namespace ash {
 
-TrayAction::TrayAction() : binding_(this) {}
+TrayAction::TrayAction(BacklightsForcedOffSetter* backlights_forced_off_setter)
+    : backlights_forced_off_setter_(backlights_forced_off_setter),
+      binding_(this),
+      stylus_observer_(this) {
+  stylus_observer_.Add(ui::InputDeviceManager::GetInstance());
+}
 
 TrayAction::~TrayAction() = default;
 
@@ -51,6 +59,12 @@ void TrayAction::SetClient(mojom::TrayActionClientPtr tray_action_client,
         base::Bind(&TrayAction::SetClient, base::Unretained(this), nullptr,
                    mojom::TrayActionState::kNotAvailable));
     lock_screen_note_state_ = lock_screen_note_state;
+
+    lock_screen_note_display_state_handler_ =
+        std::make_unique<LockScreenNoteDisplayStateHandler>(
+            backlights_forced_off_setter_);
+  } else {
+    lock_screen_note_display_state_handler_.reset();
   }
 
   // Setting action handler value can change effective state - notify observers
@@ -64,6 +78,9 @@ void TrayAction::UpdateLockScreenNoteState(mojom::TrayActionState state) {
     return;
 
   lock_screen_note_state_ = state;
+
+  if (lock_screen_note_state_ == mojom::TrayActionState::kNotAvailable)
+    lock_screen_note_display_state_handler_->Reset();
 
   // If the client is not set, the effective state has not changed, so no need
   // to notify observers of a state change.
@@ -83,6 +100,11 @@ void TrayAction::RequestNewLockScreenNote(mojom::LockScreenNoteOrigin origin) {
 void TrayAction::CloseLockScreenNote(mojom::CloseLockScreenNoteReason reason) {
   if (tray_action_client_)
     tray_action_client_->CloseLockScreenNote(reason);
+}
+
+void TrayAction::OnStylusStateChanged(ui::StylusState state) {
+  if (state == ui::StylusState::REMOVED)
+    lock_screen_note_display_state_handler_->AttemptNoteLaunchForStylusEject();
 }
 
 void TrayAction::FlushMojoForTesting() {

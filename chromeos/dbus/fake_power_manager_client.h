@@ -5,7 +5,9 @@
 #ifndef CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
 
+#include <queue>
 #include <string>
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
@@ -47,6 +49,15 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   bool backlights_forced_off() const { return backlights_forced_off_; }
   int num_set_backlights_forced_off_calls() const {
     return num_set_backlights_forced_off_calls_;
+  }
+  void set_enqueue_brightness_changes_on_backlights_forced_off(bool enqueue) {
+    enqueue_brightness_changes_on_backlights_forced_off_ = enqueue;
+  }
+  const std::queue<double>& pending_brightness_changes() const {
+    return pending_brightness_changes_;
+  }
+  void set_user_activity_callback(base::RepeatingClosure callback) {
+    user_activity_callback_ = std::move(callback);
   }
 
   // PowerManagerClient overrides:
@@ -117,6 +128,12 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // lock has been created.
   void SetPowerPolicyQuitClosure(base::OnceClosure quit_closure);
 
+  // Updates screen brightness to the first pending value in
+  // |pending_brightness_changes_|.
+  // Returns whether the screen brightness change was applied - this will
+  // return false if there are no pending brightness changes.
+  bool ApplyPendingBrightnessChange();
+
   // Sets the screen brightness percent to be returned.
   // The nullopt |percent| means an error. In case of success,
   // |percent| must be in the range of [0, 100].
@@ -150,8 +167,15 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // Number of pending suspend readiness callbacks.
   int num_pending_suspend_readiness_callbacks_ = 0;
 
-  // The ratio of the screen brightness.
+  // Current screen brightness in the range [0.0, 100.0].
   base::Optional<double> screen_brightness_percent_;
+
+  // Last screen brightness requested via SetScreenBrightnessPercent().
+  // Unlike |screen_brightness_percent_|, this value will not be changed by
+  // SetBacklightsForcedOff() method - a method that implicitly changes screen
+  // brightness.
+  // Initially set to an arbitrary non-null value.
+  double requested_screen_brightness_percent_ = 80;
 
   // Last projecting state set in SetIsProjecting().
   bool is_projecting_ = false;
@@ -159,6 +183,20 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // Display and keyboard backlights (if present) forced off state set in
   // SetBacklightsForcedOff().
   bool backlights_forced_off_ = false;
+
+  // Whether screen brightness changes in SetBacklightsForcedOff() should be
+  // enqueued.
+  // If not set, SetBacklightsForcedOff() will update current screen
+  // brightness and send a brightness change event (provided undimmed
+  // brightness percent is set).
+  // If set, brightness changes will be enqueued to
+  // pending_brightness_changes_, and will have to be applied explicitly by
+  // calling ApplyPendingBrightnessChange().
+  bool enqueue_brightness_changes_on_backlights_forced_off_ = false;
+
+  // Pending brightness changes caused by SetBacklightsForcedOff().
+  // ApplyPendingBrightnessChange() applies the first pending change.
+  std::queue<double> pending_brightness_changes_;
 
   // States returned by GetSwitchStates().
   LidState lid_state_ = LidState::OPEN;
@@ -173,6 +211,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // If non-empty, called by SetPowerPolicy().
   base::OnceClosure power_policy_quit_closure_;
+
+  // If non-empty, called by NotifyUserActivity().
+  base::RepeatingClosure user_activity_callback_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
