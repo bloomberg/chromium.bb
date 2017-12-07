@@ -192,7 +192,8 @@ void SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
 
 void SearchPermissionsService::ResetDSEPermissions() {
   ResetDSEPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-  ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  if (base::FeatureList::IsEnabled(features::kGrantNotificationsToDSE))
+    ResetDSEPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void SearchPermissionsService::Shutdown() {
