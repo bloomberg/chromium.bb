@@ -133,8 +133,7 @@ TEST_P(SSLErrorNavigationThrottleTest, NoSSLInfo) {
                << "Asynchronous MockHandleSSLError: " << async_);
 
   content::NavigationThrottle::ThrottleCheckResult result =
-      handle_->CallWillFailRequestForTesting(
-          base::nullopt, false /* should_ssl_errors_be_fatal */);
+      handle_->CallWillFailRequestForTesting(base::nullopt);
 
   EXPECT_FALSE(handle_->GetSSLInfo().is_valid());
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
@@ -151,8 +150,7 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithoutCertError) {
   net::SSLInfo ssl_info;
   ssl_info.cert_status = net::CERT_STATUS_IS_EV;
   content::NavigationThrottle::ThrottleCheckResult result =
-      handle_->CallWillFailRequestForTesting(
-          ssl_info, false /* should_ssl_errors_be_fatal */);
+      handle_->CallWillFailRequestForTesting(ssl_info);
 
   EXPECT_EQ(net::CERT_STATUS_IS_EV, handle_->GetSSLInfo().cert_status);
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
@@ -171,8 +169,7 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   ssl_info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
   content::NavigationThrottle::ThrottleCheckResult synchronous_result =
-      handle_->CallWillFailRequestForTesting(
-          ssl_info, false /* should_ssl_errors_be_fatal */);
+      handle_->CallWillFailRequestForTesting(ssl_info);
 
   EXPECT_EQ(content::NavigationThrottle::DEFER, synchronous_result.action());
   base::RunLoop().RunUntilIdle();
