@@ -12,6 +12,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/StringView.h"
 #include "public/platform/WebBlobInfo.h"
 #include "v8/include/v8.h"
 
@@ -27,6 +28,29 @@ class SerializedScriptValue;
 class SharedBuffer;
 
 // Logic for serializing V8 values for storage in IndexedDB.
+//
+// An IDBValueWrapper instance drives the serialization of a single V8 value to
+// IndexedDB. An instance's lifecycle goes through the following stages:
+// 1) Cloning - Right after an instance is constructed, its internal
+//    representation is optimized for structured cloning via the Clone() method.
+//    This may be necessary when extracting the primary key and/or index keys
+//    for the serialized value.
+// 2) Wrapping - DoneCloning() transitions the instance to an internal
+//    reprensetation optimized for wrapping via WrapIfBiggerThan().
+// 3) Reading results - After any desired wrapping is performed, the Take*()
+//    methods yield the serialized value components passed to the backing store.
+//    To avoid unnecessary copies, the Take*() methods move out parts of the
+//    internal representation, so each Take*() method can be called at most
+//    once.
+//
+// Example usage:
+//     auto wrapper = new IDBValueWrapper();
+//     wrapper.Clone(...);  // Structured clone used to extract keys.
+//     wrapper.DoneCloning();
+//     wrapper.WrapIfBiggerThan(kWrapThreshold);
+//     wrapper.TakeWireBytes();
+//     wrapper.TakeBlobDataHandles();
+//     wrapper.TakeBlobInfo();
 //
 // V8 values are stored on disk using the format implemented in
 // SerializedScriptValue (SSV), which is essentialy a byte array plus an array
@@ -62,6 +86,10 @@ class MODULES_EXPORT IDBValueWrapper {
   //
   // The serialization process can throw an exception. The caller is responsible
   // for checking exception_state.
+  //
+  // The wrapper's internal representation is optimized for cloning the
+  // serialized value. DoneCloning() must be called to transition to an internal
+  // representation optimized for writing.
   IDBValueWrapper(
       v8::Isolate*,
       v8::Local<v8::Value>,
@@ -75,41 +103,55 @@ class MODULES_EXPORT IDBValueWrapper {
   // a value's key and index keys are extracted from a structured clone of the
   // value, which avoids the issue of side-effects in custom getters.
   //
-  // This method cannot be called after WrapIfBiggerThan().
+  // This method cannot be called after DoneCloning().
   void Clone(ScriptState*, ScriptValue* clone);
+
+  // Optimizes the serialized value's internal representation for writing to
+  // disk.
+  //
+  // This must be called before Take*() methods can be called. After this method
+  // is called, Clone() cannot be called anymore.
+  void DoneCloning();
 
   // Conditionally wraps the serialized value's byte array into a Blob.
   //
   // The byte array is wrapped if its size exceeds max_bytes. In production, the
   // max_bytes threshold is currently always kWrapThreshold.
   //
-  // This method must be called before ExtractWireBytes() and cannot be called
-  // after ExtractWireBytes().
+  // This method must be called before the Take*() methods are called.
   bool WrapIfBiggerThan(unsigned max_bytes);
-
-  // Obtains the BlobDataHandles from the serialized value's Blob array.
-  //
-  // This method must be called at most once, and must be called after
-  // WrapIfBiggerThan().
-  void ExtractBlobDataHandles(
-      Vector<scoped_refptr<BlobDataHandle>>* blob_data_handles);
 
   // Obtains the byte array for the serialized value.
   //
   // This method must be called at most once, and must be called after
   // WrapIfBiggerThan().
-  scoped_refptr<SharedBuffer> ExtractWireBytes();
+  scoped_refptr<SharedBuffer> TakeWireBytes();
+
+  // Obtains the BlobDataHandles from the serialized value's Blob array.
+  //
+  // This method must be called at most once, and must be called after
+  // DoneCloning().
+  Vector<scoped_refptr<BlobDataHandle>> TakeBlobDataHandles() {
+#if DCHECK_IS_ON()
+    DCHECK(done_cloning_) << __func__ << " called before DoneCloning()";
+    DCHECK(owns_blob_handles_) << __func__ << " called twice";
+    owns_blob_handles_ = false;
+#endif  // DCHECK_IS_ON()
+
+    return std::move(blob_handles_);
+  }
 
   // Obtains WebBlobInfos for the serialized value's Blob array.
   //
   // This method must be called at most once, and must be called after
-  // WrapIfBiggerThan().
-  inline Vector<WebBlobInfo>& WrappedBlobInfo() {
+  // DoneCloning().
+  inline Vector<WebBlobInfo> TakeBlobInfo() {
 #if DCHECK_IS_ON()
-    DCHECK(!had_exception_)
-        << "WrapBlobInfo() called on wrapper with serialization exception";
+    DCHECK(done_cloning_) << __func__ << " called before DoneCloning()";
+    DCHECK(owns_blob_info_) << __func__ << " called twice";
+    owns_blob_info_ = false;
 #endif  // DCHECK_IS_ON()
-    return blob_info_;
+    return std::move(blob_info_);
   }
 
   size_t DataLengthBeforeWrapInBytes() { return original_data_length_; }
@@ -128,17 +170,32 @@ class MODULES_EXPORT IDBValueWrapper {
       "application/vnd.blink-idb-value-wrapper";
 
   // Used to serialize the wrapped value. Exposed for testing.
-  static void WriteVarint(unsigned value, Vector<char>& output);
+  static void WriteVarInt(unsigned value, Vector<char>& output);
+  static void WriteBytes(const Vector<uint8_t>& bytes, Vector<char>& output);
 
  private:
+  // V8 value serialization state.
   scoped_refptr<SerializedScriptValue> serialized_value_;
-  scoped_refptr<BlobDataHandle> wrapper_handle_;
+  Vector<scoped_refptr<BlobDataHandle>> blob_handles_;
   Vector<WebBlobInfo> blob_info_;
-  Vector<char> wire_bytes_;
+
+  // Buffer for wire data that is not stored in SerializedScriptValue.
+  //
+  // This buffer ends up storing metadata generated by wrapping operations.
+  Vector<char> wire_data_buffer_;
+
+  // Points into SerializedScriptValue's data buffer, or into wire_data_buffer_.
+  StringView wire_data_;
+
   size_t original_data_length_ = 0;
+
 #if DCHECK_IS_ON()
+  // Accounting for lifecycle stages.
   bool had_exception_ = false;
-  bool wrap_called_ = false;
+  bool done_cloning_ = false;
+  bool owns_blob_handles_ = true;
+  bool owns_blob_info_ = true;
+  bool owns_wire_bytes_ = true;
 #endif  // DCHECK_IS_ON()
 };
 
@@ -189,10 +246,11 @@ class MODULES_EXPORT IDBValueUnwrapper {
 
  private:
   // Only present in tests.
-  friend class IDBValueUnwrapperReadVarintTestHelper;
+  friend class IDBValueUnwrapperReadTestHelper;
 
   // Used to deserialize the wrapped value.
-  bool ReadVarint(unsigned& value);
+  bool ReadVarInt(unsigned&);
+  bool ReadBytes(Vector<uint8_t>&);
 
   // Resets the parsing state.
   bool Reset();

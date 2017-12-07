@@ -28,19 +28,20 @@ scoped_refptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
   IDBValueWrapper wrapper(isolate, v8_array,
                           SerializedScriptValue::SerializeOptions::kSerialize,
                           non_throwable_exception_state);
+  wrapper.DoneCloning();
   wrapper.WrapIfBiggerThan(create_wrapped_value ? 0 : 1024 * element_count);
 
-  std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data_handles =
-      std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>();
-  wrapper.ExtractBlobDataHandles(blob_data_handles.get());
-  Vector<WebBlobInfo>& blob_infos = wrapper.WrappedBlobInfo();
-  scoped_refptr<SharedBuffer> wrapped_marker_buffer =
-      wrapper.ExtractWireBytes();
+  Vector<scoped_refptr<BlobDataHandle>> blob_data_handles =
+      wrapper.TakeBlobDataHandles();
+  Vector<WebBlobInfo> blob_infos = wrapper.TakeBlobInfo();
+  scoped_refptr<SharedBuffer> wrapped_marker_buffer = wrapper.TakeWireBytes();
   IDBKey* key = IDBKey::CreateNumber(42.0);
   IDBKeyPath key_path(String("primaryKey"));
 
   scoped_refptr<IDBValue> idb_value = IDBValue::Create(
-      std::move(wrapped_marker_buffer), std::move(blob_data_handles),
+      std::move(wrapped_marker_buffer),
+      std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>(
+          blob_data_handles),
       std::make_unique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
   DCHECK_EQ(create_wrapped_value,

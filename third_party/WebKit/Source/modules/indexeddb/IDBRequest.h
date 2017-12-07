@@ -296,8 +296,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // (which hangs onto the BlobDataHandle) may get garbage-collected. IDBRequest
   // needs to hang onto the BlobDataHandle as well, to avoid having the
   // browser-side Blob get destroyed before the IndexedDB request is processed.
-  inline Vector<scoped_refptr<BlobDataHandle>>* transit_blob_handles() {
-    return &transit_blob_handles_;
+  inline Vector<scoped_refptr<BlobDataHandle>>& transit_blob_handles() {
+    return transit_blob_handles_;
   }
 
 #if DCHECK_IS_ON()
