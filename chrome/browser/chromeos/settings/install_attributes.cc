@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -92,7 +93,8 @@ void InstallAttributes::Init(const base::FilePath& cache_file) {
                  weak_ptr_factory_.GetWeakPtr()));
 
   if (!base::PathExists(cache_file)) {
-    LOG(WARNING) << "Install attributes missing, first sign in";
+    LOG_IF(WARNING, base::SysInfo::IsRunningOnChromeOS())
+        << "Install attributes missing, first sign in";
     return;
   }
 
