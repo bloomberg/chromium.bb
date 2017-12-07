@@ -2971,16 +2971,27 @@ desktop_shell_set_background(struct wl_client *client,
 	weston_surface_set_label_func(surface, background_get_label);
 	surface->output = weston_output_from_resource(output_resource);
 	view->output = surface->output;
-	weston_desktop_shell_send_configure(resource, 0,
-					    surface_resource,
-					    surface->output->width,
-					    surface->output->height);
 
 	sh_output = find_shell_output_from_weston_output(shell, surface->output);
-	sh_output->background_surface = surface;
+	if (sh_output->background_surface) {
+		/* The output already has a background, tell our helper
+		 * there is no need for another one. */
+		weston_desktop_shell_send_configure(resource, 0,
+						    surface_resource,
+						    0, 0);
+	} else {
+		weston_desktop_shell_send_configure(resource, 0,
+						    surface_resource,
+						    surface->output->width,
+						    surface->output->height);
 
-	sh_output->background_surface_listener.notify = handle_background_surface_destroy;
-	wl_signal_add(&surface->destroy_signal, &sh_output->background_surface_listener);
+		sh_output->background_surface = surface;
+
+		sh_output->background_surface_listener.notify =
+					handle_background_surface_destroy;
+		wl_signal_add(&surface->destroy_signal,
+			      &sh_output->background_surface_listener);
+	}
 }
 
 static int
