@@ -88,9 +88,15 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
       return E_FAIL;
     }
 
-    // Windows uses coordinate system where Z axis points down from device
-    // screen, therefore, using right hand notation, we have to reverse
-    // sign for each axis. Values are converted from G/s^2 to m/s^2.
+    // Windows HW sensor integration requirements specify accelerometer
+    // measurements conventions such as, the accelerometer sensor must expose
+    // values that are proportional and in the same direction as the force of
+    // gravity. Therefore, sensor hosted by the device at rest on a leveled
+    // surface while the screen is facing towards the sky, must report -1G along
+    // the Z axis.
+    // https://msdn.microsoft.com/en-us/library/windows/hardware/dn642102(v=vs.85).aspx
+    // Change sign of values, to report 'reaction force', and convert values
+    // from G/s^2 to m/s^2 units.
     reading->accel.x = -x * kMeanGravity;
     reading->accel.y = -y * kMeanGravity;
     reading->accel.z = -z * kMeanGravity;
@@ -119,12 +125,10 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
       return E_FAIL;
     }
 
-    // Windows uses coordinate system where Z axis points down from device
-    // screen, therefore, using right hand notation, we have to reverse
-    // sign for each axis. Values are converted from deg to rad.
-    reading->gyro.x = gfx::DegToRad(-x);
-    reading->gyro.y = gfx::DegToRad(-y);
-    reading->gyro.z = gfx::DegToRad(-z);
+    // Values are converted from degrees to radians.
+    reading->gyro.x = gfx::DegToRad(x);
+    reading->gyro.y = gfx::DegToRad(y);
+    reading->gyro.z = gfx::DegToRad(z);
     return S_OK;
   };
   return params;
@@ -150,13 +154,10 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
       return E_FAIL;
     }
 
-    // Windows uses coordinate system where Z axis points down from device
-    // screen, therefore, using right hand notation, we have to reverse
-    // sign for each axis. Values are converted from Milligaus to
-    // Microtesla.
-    reading->magn.x = -x * kMicroteslaInMilligauss;
-    reading->magn.y = -y * kMicroteslaInMilligauss;
-    reading->magn.z = -z * kMicroteslaInMilligauss;
+    // Values are converted from Milligaus to Microtesla.
+    reading->magn.x = x * kMicroteslaInMilligauss;
+    reading->magn.y = y * kMicroteslaInMilligauss;
+    reading->magn.z = z * kMicroteslaInMilligauss;
     return S_OK;
   };
   return params;
@@ -204,13 +205,10 @@ CreateAbsoluteOrientationQuaternionReaderInitParams() {
 
     float* quat = reinterpret_cast<float*>(quat_variant.get().caub.pElems);
 
-    // Windows uses coordinate system where Z axis points down from device
-    // screen, therefore, using right hand notation, we have to reverse
-    // sign for each quaternion component.
-    reading->orientation_quat.x = -quat[0];  // x*sin(Theta/2)
-    reading->orientation_quat.y = -quat[1];  // y*sin(Theta/2)
-    reading->orientation_quat.z = -quat[2];  // z*sin(Theta/2)
-    reading->orientation_quat.w = quat[3];   // cos(Theta/2)
+    reading->orientation_quat.x = quat[0];  // x*sin(Theta/2)
+    reading->orientation_quat.y = quat[1];  // y*sin(Theta/2)
+    reading->orientation_quat.z = quat[2];  // z*sin(Theta/2)
+    reading->orientation_quat.w = quat[3];  // cos(Theta/2)
     return S_OK;
   };
   return params;
