@@ -27,13 +27,13 @@
         <div class="settings-box first two-line" id="resetProfile"
             on-tap="onShowResetProfileDialog_" actionable>
           <div class="start">
-            $i18n{resetPageTitle}
+            $i18n{resetTrigger}
             <div class="secondary" id="resetProfileSecondary">
-              $i18n{resetPageDescription}
+              $i18n{resetTriggerDescription}
             </div>
           </div>
           <button id="resetProfileArrow" is="paper-icon-button-light"
-              class="subpage-arrow" aria-label="$i18n{resetPageTitle}"
+              class="subpage-arrow" aria-label="$i18n{resetTrigger}"
               aria-describedby="resetProfileSecondary"></button>
         </div>
         <!-- Keep a single instance of reset-profile-dialog on purpose, to
@@ -60,7 +60,6 @@
           </settings-powerwash-dialog>
         </template>
 </if>
-<!-- This needs to be conditioned to a feature being enabled. -->
 <if expr="_google_chrome and is_win">
         <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]" restamp>
           <div class="settings-box two-line" id="chromeCleanupSubpageTrigger"

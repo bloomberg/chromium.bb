@@ -33,6 +33,7 @@ class ChromeCleanupHandler
   // ChromeCleanerController::Observer implementation.
   void OnIdle(
       safe_browsing::ChromeCleanerController::IdleReason idle_reason) override;
+  void OnReporterRunning() override;
   void OnScanning() override;
   void OnInfected(const safe_browsing::ChromeCleanerScannerResults&
                       reported_results) override;
@@ -50,6 +51,10 @@ class ChromeCleanupHandler
   // this object as an observer of the Chrome Cleanup global state and
   // and retrieves the current cleanup state.
   void HandleRegisterChromeCleanerObserver(const base::ListValue* args);
+
+  // Callback for the "startScanning" message to start scanning the user's
+  // system to detect unwanted software.
+  void HandleStartScanning(const base::ListValue* args);
 
   // Callback for the "restartComputer" message to finalize the cleanup with a
   // system restart.
