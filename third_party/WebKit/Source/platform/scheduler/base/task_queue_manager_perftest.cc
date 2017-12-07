@@ -86,7 +86,7 @@ class TaskQueueManagerPerfTest : public ::testing::Test {
     message_loop_.reset(new base::MessageLoop());
     manager_ = CreateTaskQueueManagerForTest(
         message_loop_.get(), message_loop_->task_runner(),
-        std::make_unique<base::DefaultTickClock>());
+        base::DefaultTickClock::GetInstance());
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
     virtual_time_domain_.reset(new PerfTestTimeDomain());

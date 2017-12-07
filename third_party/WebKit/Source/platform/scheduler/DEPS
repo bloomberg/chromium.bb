@@ -25,7 +25,6 @@ include_rules = [
   "+base/strings/string_number_conversions.h",
   "+base/synchronization/atomic_flag.h",
   "+base/synchronization/lock.h",
-  "+base/test_time_source.h",
   "+base/threading/platform_thread.h",
   "+base/threading/thread.h",
   "+base/threading/thread_checker.h",

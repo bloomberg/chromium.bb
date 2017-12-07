@@ -18,12 +18,12 @@ namespace internal {
 ThreadControllerImpl::ThreadControllerImpl(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<base::TickClock> time_source)
+    base::TickClock* time_source)
     : message_loop_(message_loop),
       task_runner_(task_runner),
       message_loop_task_runner_(message_loop ? message_loop->task_runner()
                                              : nullptr),
-      time_source_(std::move(time_source)),
+      time_source_(time_source),
       weak_factory_(this) {
   immediate_do_work_closure_ = base::BindRepeating(
       &ThreadControllerImpl::DoWork, weak_factory_.GetWeakPtr(),
@@ -37,9 +37,9 @@ ThreadControllerImpl::~ThreadControllerImpl() {}
 
 std::unique_ptr<ThreadControllerImpl> ThreadControllerImpl::Create(
     base::MessageLoop* message_loop,
-    std::unique_ptr<base::TickClock> time_source) {
+    base::TickClock* time_source) {
   return base::WrapUnique(new ThreadControllerImpl(
-      message_loop, message_loop->task_runner(), std::move(time_source)));
+      message_loop, message_loop->task_runner(), time_source));
 }
 
 void ThreadControllerImpl::SetSequence(Sequence* sequence) {
@@ -78,7 +78,7 @@ bool ThreadControllerImpl::RunsTasksInCurrentSequence() {
 }
 
 base::TickClock* ThreadControllerImpl::GetClock() {
-  return time_source_.get();
+  return time_source_;
 }
 
 void ThreadControllerImpl::SetDefaultTaskRunner(

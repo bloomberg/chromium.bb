@@ -24,7 +24,7 @@ std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerWithUnownedClockForTest(
 std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerForTest(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<base::TickClock> clock);
+    base::TickClock* clock);
 
 }  // namespace scheduler
 }  // namespace blink

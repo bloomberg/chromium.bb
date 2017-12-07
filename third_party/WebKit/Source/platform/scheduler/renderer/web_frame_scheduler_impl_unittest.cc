@@ -11,7 +11,6 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
@@ -30,13 +29,12 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
   ~WebFrameSchedulerImplTest() override {}
 
   void SetUp() override {
-    clock_.reset(new base::SimpleTestTickClock());
-    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+    clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
+        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_.reset(
         new RendererSchedulerImpl(CreateTaskQueueManagerWithUnownedClockForTest(
-            nullptr, mock_task_runner_, clock_.get())));
+            nullptr, mock_task_runner_, &clock_)));
     web_view_scheduler_.reset(
         new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
     web_frame_scheduler_ = web_view_scheduler_->CreateWebFrameSchedulerImpl(
@@ -71,7 +69,7 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
     return web_frame_scheduler_->UnpausableTaskQueue();
   }
 
-  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler_;
@@ -326,7 +324,7 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
   web_view_scheduler_->SetPageVisible(false);
 
   // Wait 100 secs virtually and run pending tasks just in case.
-  clock_->Advance(base::TimeDelta::FromSeconds(100));
+  clock_.Advance(base::TimeDelta::FromSeconds(100));
   mock_task_runner_->RunUntilIdle();
 
   observer->CheckObserverState(throttled_count, not_throttled_count,

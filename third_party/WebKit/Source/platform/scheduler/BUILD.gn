@@ -144,8 +144,6 @@ jumbo_source_set("test_support") {
 
   sources = [
     "base/test_task_time_observer.h",
-    "base/test_time_source.cc",
-    "base/test_time_source.h",
     "test/create_task_queue_manager_for_test.cc",
     "test/create_task_queue_manager_for_test.h",
     "test/fake_renderer_scheduler.cc",
