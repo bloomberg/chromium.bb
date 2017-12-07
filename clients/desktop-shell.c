@@ -96,6 +96,9 @@ struct output;
 
 struct panel {
 	struct surface base;
+
+	struct output *owner;
+
 	struct window *window;
 	struct widget *widget;
 	struct wl_list launcher_list;
@@ -526,6 +529,9 @@ panel_resize_handler(struct widget *widget,
 }
 
 static void
+panel_destroy(struct panel *panel);
+
+static void
 panel_configure(void *data,
 		struct weston_desktop_shell *desktop_shell,
 		uint32_t edges, struct window *window,
@@ -534,6 +540,15 @@ panel_configure(void *data,
 	struct desktop *desktop = data;
 	struct surface *surface = window_get_user_data(window);
 	struct panel *panel = container_of(surface, struct panel, base);
+	struct output *owner;
+
+	if (width < 1 || height < 1) {
+		/* Shell plugin configures 0x0 for redundant panel. */
+		owner = panel->owner;
+		panel_destroy(panel);
+		owner->panel = NULL;
+		return;
+	}
 
 	switch (desktop->panel_position) {
 	case WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP:
@@ -593,13 +608,14 @@ panel_destroy(struct panel *panel)
 }
 
 static struct panel *
-panel_create(struct desktop *desktop)
+panel_create(struct desktop *desktop, struct output *output)
 {
 	struct panel *panel;
 	struct weston_config_section *s;
 
 	panel = xzalloc(sizeof *panel);
 
+	panel->owner = output;
 	panel->base.configure = panel_configure;
 	panel->window = window_create_custom(desktop->display);
 	panel->widget = window_add_widget(panel->window, panel);
@@ -1277,7 +1293,7 @@ output_init(struct output *output, struct desktop *desktop)
 	struct wl_surface *surface;
 
 	if (desktop->want_panel) {
-		output->panel = panel_create(desktop);
+		output->panel = panel_create(desktop, output);
 		surface = window_get_wl_surface(output->panel->window);
 		weston_desktop_shell_set_panel(desktop->shell,
 					       output->output, surface);
