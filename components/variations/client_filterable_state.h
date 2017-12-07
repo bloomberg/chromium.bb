@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VARIATIONS_CLIENT_FILTERABLE_STATE_H_
 #define COMPONENTS_VARIATIONS_CLIENT_FILTERABLE_STATE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/version.h"
