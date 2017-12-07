@@ -44,6 +44,8 @@ _EXTRA_TEST = (
 _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')
+_EXTRA_UBSAN_OPTIONS = (
+    'org.chromium.native_test.NativeTest.UBSAN_OPTIONS')
 
 _MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
@@ -171,6 +173,8 @@ class _ApkDelegate(object):
         device.adb, dir=device.GetExternalStoragePath(), suffix='.gtest_out')
     extras[_EXTRA_STDOUT_FILE] = stdout_file.name
 
+    extras[_EXTRA_UBSAN_OPTIONS] = constants.UBSAN_OPTIONS
+
     if self._wait_for_java_debugger:
       cmd = ['am', 'set-debug-app', '-w', self._package]
       device.RunShellCommand(cmd, check_return=True)
@@ -245,7 +249,8 @@ class _ExeDelegate(object):
     cwd = constants.TEST_EXECUTABLE_DIR
 
     env = {
-      'LD_LIBRARY_PATH': self._device_dist_dir
+      'LD_LIBRARY_PATH': self._device_dist_dir,
+      'UBSAN_OPTIONS': constants.UBSAN_OPTIONS,
     }
     try:
       gcov_strip_depth = os.environ['NATIVE_COVERAGE_DEPTH_STRIP']
