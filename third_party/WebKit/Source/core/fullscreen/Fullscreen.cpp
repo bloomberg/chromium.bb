@@ -29,6 +29,7 @@
 
 #include "core/fullscreen/Fullscreen.h"
 
+#include "base/macros.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -193,7 +194,6 @@ bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
 // deferring changes in |DidEnterFullscreen()|.
 class RequestFullscreenScope {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(RequestFullscreenScope);
 
  public:
   RequestFullscreenScope() {
@@ -210,6 +210,7 @@ class RequestFullscreenScope {
 
  private:
   static bool running_request_fullscreen_;
+  DISALLOW_COPY_AND_ASSIGN(RequestFullscreenScope);
 };
 
 bool RequestFullscreenScope::running_request_fullscreen_ = false;
