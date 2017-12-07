@@ -4,8 +4,6 @@ include_rules = [
     "+base/allocator/partition_allocator/oom.h",
     "+base/bind.h",
     "+base/bind_helpers.h",
-    "+base/callback.h",
-    "+base/callback_forward.h",
     "+base/feature_list.h",
     "+base/files",
     "+base/guid.h",
