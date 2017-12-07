@@ -39,7 +39,12 @@ struct HarfBuzzFontData {
   WTF_MAKE_NONCOPYABLE(HarfBuzzFontData);
 
  public:
-  HarfBuzzFontData() : paint_(), vertical_data_(nullptr), range_set_(nullptr) {}
+  HarfBuzzFontData()
+      : paint_(),
+        space_in_gpos_(SpaceGlyphInOpenTypeTables::Unknown),
+        space_in_gsub_(SpaceGlyphInOpenTypeTables::Unknown),
+        vertical_data_(nullptr),
+        range_set_(nullptr) {}
 
   // The vertical origin and vertical advance functions in HarfBuzzFace require
   // the ascent and height metrics as fallback in case no specific vertical
@@ -94,6 +99,11 @@ struct HarfBuzzFontData {
   float size_per_unit_;
   float ascent_fallback_;
   float height_fallback_;
+
+  enum class SpaceGlyphInOpenTypeTables { Unknown, Present, NotPresent };
+
+  SpaceGlyphInOpenTypeTables space_in_gpos_;
+  SpaceGlyphInOpenTypeTables space_in_gsub_;
 
   scoped_refptr<OpenTypeVerticalData> vertical_data_;
   scoped_refptr<UnicodeRangeSet> range_set_;
