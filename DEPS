@@ -232,6 +232,11 @@ deps = {
       'condition': 'checkout_ios',
   },
 
+  'src/ios/third_party/motion_transitioning_objc/src': {
+      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-transitioning-objc.git' + '@' + '994fd02d1de3d80ed284f0c1a4b5f459b8b051a6',
+      'condition': 'checkout_ios',
+  },
+
   'src/ios/third_party/ochamcrest/src': {
       'url': Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + '92d9c14d13bb864255e65c09383564653896916b',
       'condition': 'checkout_ios',

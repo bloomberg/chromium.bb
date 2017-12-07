@@ -188,6 +188,7 @@ vs-chromium-project.txt
 /ios/third_party/material_text_accessibility_ios/src
 /ios/third_party/motion_animator_objc/src
 /ios/third_party/motion_interchange_objc/src
+/ios/third_party/motion_transitioning_objc/src
 /ios/third_party/ochamcrest/src
 /ios_internal
 /libassistant
