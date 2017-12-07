@@ -34,9 +34,8 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
                                  const WebTouchPoint& touch_point)
     : WebInputEvent(sizeof(WebPointerEvent)),
       WebPointerProperties(touch_point),
-      // TODO(crbug.com/731725): This mapping needs a times by 2.
-      width(touch_point.radius_x),
-      height(touch_point.radius_y) {
+      width(touch_point.radius_x * 2.f),
+      height(touch_point.radius_y * 2.f) {
   // WebInutEvent attributes
   SetFrameScale(touch_event.FrameScale());
   SetFrameTranslate(touch_event.FrameTranslate());

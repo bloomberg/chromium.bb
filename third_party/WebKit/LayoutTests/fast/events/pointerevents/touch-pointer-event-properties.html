@@ -39,9 +39,9 @@ async_test(function() {
     for (var i = 0 ; i < POINTER_PROPERTIES.length; ++i) {
       var pp = POINTER_PROPERTIES[i];
       if (i != POINTER_PROPERTIES.length-1)
-        eventSender.addTouchPoint(x + i, y + i, pp["width"], pp["height"], pp["pressure"], pp["tiltX"], pp["tiltY"], pp["pointerType"]);
+        eventSender.addTouchPoint(x + i, y + i, pp["width"] / 2.0, pp["height"] / 2.0, pp["pressure"], pp["tiltX"], pp["tiltY"], pp["pointerType"]);
       else // Test default pointerType
-        eventSender.addTouchPoint(x + i, y + i, pp["width"], pp["height"], pp["pressure"], pp["tiltX"], pp["tiltY"]);
+        eventSender.addTouchPoint(x + i, y + i, pp["width"] / 2.0, pp["height"] / 2.0, pp["pressure"], pp["tiltX"], pp["tiltY"]);
     }
     eventSender.touchStart();
 
