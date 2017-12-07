@@ -87,6 +87,13 @@ void UiElement::set_draw_phase(DrawPhase draw_phase) {
 
 void UiElement::OnSetDrawPhase() {}
 
+void UiElement::set_focusable(bool focusable) {
+  focusable_ = focusable;
+  OnSetFocusable();
+}
+
+void UiElement::OnSetFocusable() {}
+
 void UiElement::Render(UiElementRenderer* renderer,
                        const CameraModel& model) const {
   // Elements without an overridden implementation of Render should have their
@@ -188,10 +195,6 @@ bool UiElement::OnBeginFrame(const base::TimeTicks& time,
 
 bool UiElement::IsHitTestable() const {
   return IsVisible() && hit_testable_;
-}
-
-bool UiElement::IsEditable() {
-  return false;
 }
 
 void UiElement::SetSize(float width, float height) {

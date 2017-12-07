@@ -34,6 +34,7 @@ class Keyboard : public UiElement {
                     const gfx::Vector3dF& head_direction) override;
   void Render(UiElementRenderer* renderer,
               const CameraModel& camera_model) const final;
+  void OnSetFocusable() override;
 
   void UpdateDelegateVisibility();
 

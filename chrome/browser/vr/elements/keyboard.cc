@@ -12,6 +12,7 @@ namespace vr {
 
 Keyboard::Keyboard() {
   set_name(kKeyboard);
+  set_focusable(false);
   SetVisibleImmediately(false);
 }
 
@@ -84,6 +85,10 @@ void Keyboard::Render(UiElementRenderer* renderer,
     return;
 
   delegate_->Draw(camera_model);
+}
+
+void Keyboard::OnSetFocusable() {
+  DCHECK(!focusable());
 }
 
 void Keyboard::UpdateDelegateVisibility() {

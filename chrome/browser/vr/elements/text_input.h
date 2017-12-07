@@ -31,7 +31,6 @@ class TextInput : public UiElement {
             OnInputEditedCallback input_edit_callback);
   ~TextInput() override;
 
-  bool IsEditable() override;
   void OnButtonUp(const gfx::PointF& position) override;
   void OnFocusChanged(bool focused) override;
   void OnInputEdited(const TextInputInfo& info) override;

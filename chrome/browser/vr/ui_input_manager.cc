@@ -326,7 +326,7 @@ void UiInputManager::SendButtonDown(UiElement* target,
     // Clicking outside of the focused element causes it to lose focus.
     // TODO(ymalik): We will lose focus if we hit an element inside the focused
     // element, which is incorrect behavior.
-    if (target->id() != focused_element_id_ && target->name() != kKeyboard) {
+    if (target->id() != focused_element_id_ && target->focusable()) {
       UnfocusFocusedElement();
     }
   } else {
@@ -433,7 +433,7 @@ void UiInputManager::UnfocusFocusedElement() {
     return;
 
   UiElement* focused = scene_->GetUiElementById(focused_element_id_);
-  if (focused && focused->IsEditable()) {
+  if (focused && focused->focusable()) {
     focused->OnFocusChanged(false);
   }
   focused_element_id_ = -1;
@@ -446,7 +446,7 @@ void UiInputManager::RequestFocus(int element_id) {
   UnfocusFocusedElement();
 
   UiElement* focused = scene_->GetUiElementById(element_id);
-  if (!focused || !focused->IsEditable())
+  if (!focused || !focused->focusable())
     return;
 
   focused_element_id_ = element_id;
@@ -455,15 +455,17 @@ void UiInputManager::RequestFocus(int element_id) {
 
 void UiInputManager::OnInputEdited(const TextInputInfo& info) {
   UiElement* focused = scene_->GetUiElementById(focused_element_id_);
-  if (!focused || !focused->IsEditable())
+  if (!focused)
     return;
+  DCHECK(focused->focusable());
   focused->OnInputEdited(info);
 }
 
 void UiInputManager::OnInputCommitted(const TextInputInfo& info) {
   UiElement* focused = scene_->GetUiElementById(focused_element_id_);
-  if (!focused || !focused->IsEditable())
+  if (!focused || !focused->focusable())
     return;
+  DCHECK(focused->focusable());
   focused->OnInputCommitted(info);
 }
 
