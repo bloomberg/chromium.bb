@@ -180,8 +180,13 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(
   StyleAttributeMutationScope mutation_scope(this);
   WillMutate();
 
-  PropertySet().ParseDeclarationList(
-      text, execution_context->GetSecureContextMode(), ContextStyleSheet());
+  // A null execution_context may be passed in by the inspector, this shouldn't
+  // occur normally.
+  const SecureContextMode mode = execution_context
+                                     ? execution_context->GetSecureContextMode()
+                                     : SecureContextMode::kInsecureContext;
+
+  PropertySet().ParseDeclarationList(text, mode, ContextStyleSheet());
 
   DidMutate(kPropertyChanged);
 
