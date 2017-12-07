@@ -196,8 +196,12 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
  public:
   Member() : Parent() {}
   Member(std::nullptr_t) : Parent(nullptr) {}
-  Member(T* raw) : Parent(raw) { WriteBarrier(this->raw_); }
-  Member(T& raw) : Parent(raw) { WriteBarrier(this->raw_); }
+  Member(T* raw) : Parent(raw) {
+    // No write barrier for initializing stores.
+  }
+  Member(T& raw) : Parent(raw) {
+    // No write barrier for initializing stores.
+  }
   Member(WTF::HashTableDeletedValueType x) : Parent(x) {}
 
   Member(const Member& other) : Parent(other) { WriteBarrier(this->raw_); }
