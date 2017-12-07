@@ -62,28 +62,6 @@ static uint16_t aom_rb_read_primitive_quniform(struct aom_read_bit_buffer *rb,
   return v < m ? v : (v << 1) - m + aom_rb_read_bit(rb);
 }
 
-uint16_t aom_read_primitive_refbilevel_(aom_reader *r, uint16_t n, uint16_t p,
-                                        uint16_t ref ACCT_STR_PARAM) {
-  if (n <= 1) return 0;
-  assert(p > 0 && p <= n);
-  assert(ref < n);
-  int lolimit = ref - p / 2;
-  const int hilimit = lolimit + p - 1;
-  if (lolimit < 0) {
-    lolimit = 0;
-  } else if (hilimit >= n) {
-    lolimit = n - p;
-  }
-  int v;
-  if (aom_read_bit(r, ACCT_STR_NAME)) {
-    v = aom_read_primitive_quniform(r, p, ACCT_STR_NAME) + lolimit;
-  } else {
-    v = aom_read_primitive_quniform(r, n - p, ACCT_STR_NAME);
-    if (v >= lolimit) v += p;
-  }
-  return v;
-}
-
 // Decode finite subexponential code that for a symbol v in [0, n-1] with
 // parameter k
 uint16_t aom_read_primitive_subexpfin_(aom_reader *r, uint16_t n,
