@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -52,12 +54,28 @@ void GetLogLinesFromSystemLogsResponse(const SystemLogsResponse& response,
   }
 }
 
+// Anonymizes the strings in |result|.
+void AnonymizeResults(
+    scoped_refptr<feedback::AnonymizerToolContainer> anonymizer_container,
+    ReadLogSourceResult* result) {
+  feedback::AnonymizerTool* anonymizer = anonymizer_container->Get();
+  for (std::string& line : result->log_lines)
+    line = anonymizer->Anonymize(line);
+}
+
 }  // namespace
 
 LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
     : context_(context),
       tick_clock_(std::make_unique<base::DefaultTickClock>()),
-      anonymizer_(std::make_unique<feedback::AnonymizerTool>()),
+      task_runner_for_anonymizer_(base::CreateSequencedTaskRunnerWithTraits(
+          // User visible as the feedback_api is used by the Chrome (OS)
+          // feedback extension while the user may be looking at a spinner.
+          {base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      anonymizer_container_(
+          base::MakeRefCounted<feedback::AnonymizerToolContainer>(
+              task_runner_for_anonymizer_)),
       weak_factory_(this) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}
@@ -95,7 +113,8 @@ bool LogSourceAccessManager::FetchFromSource(
   // perspective, there is no new data. There is no need for the caller to keep
   // track of the time since last access.
   if (!UpdateSourceAccessTime(resource_id)) {
-    callback.Run({});
+    callback.Run(
+        std::make_unique<api::feedback_private::ReadLogSourceResult>());
     return true;
   }
 
@@ -117,22 +136,28 @@ void LogSourceAccessManager::OnFetchComplete(
     bool delete_resource,
     const ReadLogSourceCallback& callback,
     std::unique_ptr<SystemLogsResponse> response) {
-  ReadLogSourceResult result;
+  auto result = std::make_unique<ReadLogSourceResult>();
+
   // Always return invalid resource ID if there is a cleanup.
-  result.reader_id = delete_resource ? kInvalidResourceId : resource_id;
+  result->reader_id = delete_resource ? kInvalidResourceId : resource_id;
 
-  GetLogLinesFromSystemLogsResponse(*response, &result.log_lines);
+  GetLogLinesFromSystemLogsResponse(*response, &result->log_lines);
 
-  for (std::string& line : result.log_lines)
-    line = anonymizer_->Anonymize(line);
+  // Retrieve result pointer before the PostTaskAndReply to fix issues with
+  // an undefined execution order of arguments in a function call
+  // (std::move(result) being executed before result.get()).
+  ReadLogSourceResult* result_ptr = result.get();
+  task_runner_for_anonymizer_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(AnonymizeResults, anonymizer_container_,
+                     base::Unretained(result_ptr)),
+      base::BindOnce(callback, std::move(result)));
 
   if (delete_resource) {
     // This should also remove the entry from |sources_|.
     ApiResourceManager<LogSourceResource>::Get(context_)->Remove(extension_id,
                                                                  resource_id);
   }
-
-  callback.Run(result);
 }
 
 void LogSourceAccessManager::RemoveHandle(ResourceId id) {

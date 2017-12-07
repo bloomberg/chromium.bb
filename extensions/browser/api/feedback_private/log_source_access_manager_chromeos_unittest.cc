@@ -33,7 +33,7 @@ TEST_F(LogSourceAccessManagerTest, MaxNumberOfOpenLogSourcesSameExtension) {
 
   // Create a dummy callback to pass to FetchFromSource().
   LogSourceAccessManager::ReadLogSourceCallback callback =
-      base::Bind([](const ReadLogSourceResult&) {});
+      base::Bind([](std::unique_ptr<ReadLogSourceResult>) {});
 
   const std::string extension_id = "extension";
 
@@ -84,7 +84,7 @@ TEST_F(LogSourceAccessManagerTest,
 
   // Create a dummy callback to pass to FetchFromSource().
   LogSourceAccessManager::ReadLogSourceCallback callback =
-      base::Bind([](const ReadLogSourceResult&) {});
+      base::Bind([](std::unique_ptr<ReadLogSourceResult>) {});
 
   int count = 0;
 

@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "components/feedback/feedback_common.h"
 #include "components/feedback/system_logs/system_logs_source.h"
@@ -72,6 +73,7 @@ class SystemLogsFetcher {
   size_t num_pending_requests_;  // The number of callbacks it should get.
 
   std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_for_anonymizer_;
 
   base::WeakPtrFactory<SystemLogsFetcher> weak_ptr_factory_;
 
