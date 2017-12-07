@@ -974,9 +974,11 @@
     'ipc': {
       'filepath': 'ipc/ipc',
     },
+    'libaom': {
+      'filepath': 'third_party/libaom/',
+    },
     'libvpx': {
-      'filepath': 'third_party/libaom/|'\
-                  'third_party/libvpx/',
+      'filepath': 'third_party/libvpx/',
     },
     'libwebp': {
       'filepath': 'third_party/libwebp'
@@ -2079,9 +2081,15 @@
     'ios_web': ['ios-reviews+web@chromium.org',
                 'eugenebut@chromium.org'],
     'ipc': ['jam@chromium.org'],
-    'libvpx': ['fgalligan@chromium.org',
+    'libaom': ['fgalligan@chromium.org',
                'johannkoenig@chromium.org',
                'jzern@chromium.org',
+               'tomfinegan@chromium.org'],
+    'libvpx': ['fgalligan@chromium.org',
+               'jianj@chromium.org',
+               'johannkoenig@chromium.org',
+               'jzern@chromium.org',
+               'marpan@chromium.org',
                'tomfinegan@chromium.org'],
     'libwebp': ['jzern@chromium.org',
                 'skal@google.com',
