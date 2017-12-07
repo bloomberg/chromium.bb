@@ -323,6 +323,9 @@ void BackgroundTracingManagerImpl::OnHistogramTrigger(
     return;
   }
 
+  if (!config_)
+    return;
+
   for (const auto& rule : config_->rules()) {
     if (rule->ShouldTriggerNamedEvent(histogram_name))
       OnRuleTriggered(rule.get(), StartedFinalizingCallback());
