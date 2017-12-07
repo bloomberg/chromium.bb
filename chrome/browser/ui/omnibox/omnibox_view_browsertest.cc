@@ -1208,13 +1208,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_TRUE(omnibox_view->GetText().empty());
 }
 
-#if defined(OS_WIN)
-#define MAYBE_NonSubstitutingKeywordTest NonSubstitutingKeywordTest
-#else
-// https://crbug.com/751031.
-#define MAYBE_NonSubstitutingKeywordTest DISABLED_NonSubstitutingKeywordTest
-#endif
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_NonSubstitutingKeywordTest) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
