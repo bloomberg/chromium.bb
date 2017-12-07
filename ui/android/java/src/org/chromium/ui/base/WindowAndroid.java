@@ -41,7 +41,6 @@ import org.chromium.ui.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 /**
  * The window base class that has the minimum functionality.
@@ -125,8 +124,8 @@ public class WindowAndroid {
     public interface KeyboardVisibilityListener {
         public void keyboardVisibilityChanged(boolean isShowing);
     }
-    private LinkedList<KeyboardVisibilityListener> mKeyboardVisibilityListeners =
-            new LinkedList<>();
+    private ObserverList<KeyboardVisibilityListener> mKeyboardVisibilityListeners =
+            new ObserverList<>();
 
     /**
      * An interface to notify listeners that a context menu is closed.
@@ -641,14 +640,14 @@ public class WindowAndroid {
         if (mKeyboardVisibilityListeners.isEmpty()) {
             registerKeyboardVisibilityCallbacks();
         }
-        mKeyboardVisibilityListeners.add(listener);
+        mKeyboardVisibilityListeners.addObserver(listener);
     }
 
     /**
      * @see #addKeyboardVisibilityListener(KeyboardVisibilityListener)
      */
     public void removeKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
-        mKeyboardVisibilityListeners.remove(listener);
+        mKeyboardVisibilityListeners.removeObserver(listener);
         if (mKeyboardVisibilityListeners.isEmpty()) {
             unregisterKeyboardVisibilityCallbacks();
         }
@@ -689,10 +688,7 @@ public class WindowAndroid {
         if (mIsKeyboardShowing == isShowing) return;
         mIsKeyboardShowing = isShowing;
 
-        // Clone the list in case a listener tries to remove itself during the callback.
-        LinkedList<KeyboardVisibilityListener> listeners =
-                new LinkedList<>(mKeyboardVisibilityListeners);
-        for (KeyboardVisibilityListener listener : listeners) {
+        for (KeyboardVisibilityListener listener : mKeyboardVisibilityListeners) {
             listener.keyboardVisibilityChanged(isShowing);
         }
     }
