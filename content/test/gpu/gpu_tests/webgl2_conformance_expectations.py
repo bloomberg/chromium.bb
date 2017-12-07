@@ -333,6 +333,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
+    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
 
     # Regressions in 10.12.4.
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
