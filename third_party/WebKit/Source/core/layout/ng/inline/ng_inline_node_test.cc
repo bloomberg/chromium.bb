@@ -354,6 +354,43 @@ TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
   EXPECT_EQ(60, sizes.max_size);
 }
 
+TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+      #left { float: left; width: 50px; }
+    </style>
+    <div id=t style="font: 10px Ahem">
+      XXX <div id="left"></div> XXXX
+    </div>
+  )HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSize sizes = node.ComputeMinMaxSize();
+
+  EXPECT_EQ(50, sizes.min_size);
+  EXPECT_EQ(130, sizes.max_size);
+}
+
+TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
+  LoadAhem();
+  SetupHtml("t", R"HTML(
+    <style>
+      #left { float: left; width: 40px; }
+      #right { float: right; clear: left; width: 50px; }
+    </style>
+    <div id=t style="font: 10px Ahem">
+      XXX <div id="left"></div><div id="right"></div><div id="left"></div> XXX
+    </div>
+  )HTML");
+
+  NGInlineNodeForTest node = CreateInlineNode();
+  MinMaxSize sizes = node.ComputeMinMaxSize();
+
+  EXPECT_EQ(50, sizes.min_size);
+  EXPECT_EQ(160, sizes.max_size);
+}
+
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   SetupHtml("t", "<div id=t>before</div>");
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());

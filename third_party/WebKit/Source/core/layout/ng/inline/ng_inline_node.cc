@@ -658,9 +658,11 @@ scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
 }
 
 static LayoutUnit ComputeContentSize(NGInlineNode node,
-                                     LayoutUnit available_inline_size) {
+                                     NGLineBreakerMode mode) {
   const ComputedStyle& style = node.Style();
   WritingMode writing_mode = style.GetWritingMode();
+  LayoutUnit available_inline_size =
+      mode == NGLineBreakerMode::kMaxContent ? LayoutUnit::Max() : LayoutUnit();
 
   scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpaceBuilder(
@@ -678,7 +680,9 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   NGExclusionSpace empty_exclusion_space;
   LayoutUnit result;
   while (!break_token || !break_token->IsFinished()) {
-    NGLineBreaker line_breaker(node, *space, &positioned_floats,
+    unpositioned_floats.clear();
+
+    NGLineBreaker line_breaker(node, mode, *space, &positioned_floats,
                                &unpositioned_floats, &empty_exclusion_space, 0u,
                                break_token.get());
     if (!line_breaker.NextLine(
@@ -692,7 +696,52 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
     LayoutUnit inline_size = line_info.TextIndent();
     for (const NGInlineItemResult item_result : line_info.Results())
       inline_size += item_result.inline_size;
-    result = std::max(inline_size, result);
+
+    // There should be no positioned floats while determining the min/max sizes.
+    DCHECK_EQ(positioned_floats.size(), 0u);
+
+    // These variables are only used for the max-content calculation.
+    LayoutUnit floats_inline_size;
+    EFloat previous_float_type = EFloat::kNone;
+
+    for (const auto& unpositioned_float : unpositioned_floats) {
+      NGBlockNode float_node = unpositioned_float->node;
+      const ComputedStyle& float_style = float_node.Style();
+
+      Optional<MinMaxSize> child_minmax;
+      if (NeedMinMaxSizeForContentContribution(float_style)) {
+        child_minmax = float_node.ComputeMinMaxSize();
+      }
+
+      MinMaxSize child_sizes =
+          ComputeMinAndMaxContentContribution(float_style, child_minmax);
+      LayoutUnit child_inline_margins =
+          ComputeMinMaxMargins(style, float_node).InlineSum();
+
+      if (mode == NGLineBreakerMode::kMinContent) {
+        result = std::max(result, child_sizes.min_size + child_inline_margins);
+      } else {
+        const EClear float_clear = float_style.Clear();
+
+        // If this float clears the previous float we start a new "line".
+        // This is subtly different to block layout which will only reset either
+        // the left or the right float size trackers.
+        if ((previous_float_type == EFloat::kLeft &&
+             (float_clear == EClear::kBoth || float_clear == EClear::kLeft)) ||
+            (previous_float_type == EFloat::kRight &&
+             (float_clear == EClear::kBoth || float_clear == EClear::kRight))) {
+          result = std::max(result, inline_size + floats_inline_size);
+          floats_inline_size = LayoutUnit();
+        }
+
+        floats_inline_size += child_sizes.max_size + child_inline_margins;
+        previous_float_type = float_style.Floating();
+      }
+    }
+
+    // NOTE: floats_inline_size will be zero for the min-content calculation,
+    // and will just take the inline size of the un-breakable line.
+    result = std::max(result, inline_size + floats_inline_size);
   }
 
   return result;
@@ -710,13 +759,13 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize() {
   // size. This gives the min-content, the width where lines wrap at every
   // break opportunity.
   MinMaxSize sizes;
-  sizes.min_size = ComputeContentSize(*this, LayoutUnit());
+  sizes.min_size = ComputeContentSize(*this, NGLineBreakerMode::kMinContent);
 
   // Compute the sum of inline sizes of all inline boxes with no line breaks.
   // TODO(kojii): NGConstraintSpaceBuilder does not allow NGSizeIndefinite
   // inline available size. We can allow it, or make this more efficient
   // without using NGLineBreaker.
-  sizes.max_size = ComputeContentSize(*this, LayoutUnit::Max());
+  sizes.max_size = ComputeContentSize(*this, NGLineBreakerMode::kMaxContent);
 
   // Negative text-indent can make min > max. Ensure min is the minimum size.
   sizes.min_size = std::min(sizes.min_size, sizes.max_size);

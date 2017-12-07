@@ -22,6 +22,9 @@ class NGInlineItem;
 class NGInlineLayoutStateStack;
 struct NGPositionedFloat;
 
+// The line breaker needs to know which mode its in to properly handle floats.
+enum class NGLineBreakerMode { kContent, kMinContent, kMaxContent };
+
 // Represents a line breaker.
 //
 // This class measures each NGInlineItem and determines items to form a line,
@@ -31,6 +34,7 @@ class CORE_EXPORT NGLineBreaker {
 
  public:
   NGLineBreaker(NGInlineNode,
+                NGLineBreakerMode,
                 const NGConstraintSpace&,
                 Vector<NGPositionedFloat>*,
                 Vector<scoped_refptr<NGUnpositionedFloat>>*,
@@ -140,6 +144,7 @@ class CORE_EXPORT NGLineBreaker {
 
   LineData line_;
   NGInlineNode node_;
+  NGLineBreakerMode mode_;
   const NGConstraintSpace& constraint_space_;
   Vector<NGPositionedFloat>* positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats_;

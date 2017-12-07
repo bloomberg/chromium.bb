@@ -20,6 +20,7 @@ namespace blink {
 
 NGLineBreaker::NGLineBreaker(
     NGInlineNode node,
+    NGLineBreakerMode mode,
     const NGConstraintSpace& space,
     Vector<NGPositionedFloat>* positioned_floats,
     Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
@@ -27,6 +28,7 @@ NGLineBreaker::NGLineBreaker(
     unsigned handled_float_index,
     const NGInlineBreakToken* break_token)
     : node_(node),
+      mode_(mode),
       constraint_space_(space),
       positioned_floats_(positioned_floats),
       unpositioned_floats_(unpositioned_floats),
@@ -511,11 +513,15 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
   //  - It can't fit.
   //  - It will be moved down due to block-start edge alignment.
   //  - It will be moved down due to clearance.
+  //  - We are currently computing our min/max-content size. (We use the
+  //    unpositioned_floats to manually adjust the min/max-content size after
+  //    the line breaker has run).
   bool float_after_line =
       !line_.CanFit(inline_margin_size) ||
       exclusion_space_->LastFloatBlockStart() > bfc_block_offset_ ||
       exclusion_space_->ClearanceOffset(float_style.Clear()) >
-          bfc_block_offset_;
+          bfc_block_offset_ ||
+      mode_ != NGLineBreakerMode::kContent;
 
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
