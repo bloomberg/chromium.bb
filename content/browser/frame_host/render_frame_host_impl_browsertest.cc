@@ -1036,33 +1036,33 @@ IN_PROC_BROWSER_TEST_F(
   injector.set_fake_request_for_next_commit(
       std::move(interface_provider_request_with_pending_request));
 
-  // Set up |dispatched_interface_request_callback| to be invoked when the
-  // interface request for FrameHostTestInterface is dispatched to the
-  // RenderFrameHostImpl.
-  base::MockCallback<base::RepeatingClosure>
-      dispatched_interface_request_callback;
+  // Expect that by the time the interface request for FrameHostTestInterface is
+  // dispatched to the RenderFrameHost, WebContentsObserver::DidFinishNavigation
+  // will have already been invoked.
+  bool did_finish_navigation = false;
   auto* main_rfh = shell()->web_contents()->GetMainFrame();
+  DidFinishNavigationObserver navigation_finish_observer(
+      main_rfh, base::BindLambdaForTesting([&did_finish_navigation]() {
+        did_finish_navigation = true;
+      }));
+
+  base::RunLoop wait_until_interface_request_is_dispatched;
   ScopedInterfaceRequestMonitor monitor(
       main_rfh, mojom::FrameHostTestInterface::Name_,
-      dispatched_interface_request_callback.Get());
-
-  // Set up |navigation_finished_callback| to be fired on
-  // WebContentsObserver::DidFinishNavigation.
-  base::MockCallback<base::RepeatingClosure> navigation_finished_callback;
-  DidFinishNavigationObserver navigation_finish_observer(
-      main_rfh, navigation_finished_callback.Get());
-
-  // Expect that DidFinishNavigation takes place first, and dispatching second.
-  testing::InSequence in_sequence;
-  EXPECT_CALL(navigation_finished_callback, Run());
-  EXPECT_CALL(dispatched_interface_request_callback, Run());
+      base::BindLambdaForTesting([&]() {
+        EXPECT_TRUE(did_finish_navigation);
+        wait_until_interface_request_is_dispatched.Quit();
+      }));
 
   // Start the same-process navigation.
   test::ScopedInterfaceFilterBypass filter_bypass;
   ASSERT_TRUE(NavigateToURL(shell(), second_url));
-  ASSERT_EQ(main_rfh, shell()->web_contents()->GetMainFrame());
-  ASSERT_EQ(second_url, injector.url_of_last_commit());
-  ASSERT_TRUE(injector.original_request_of_last_commit().is_pending());
+  EXPECT_EQ(main_rfh, shell()->web_contents()->GetMainFrame());
+  EXPECT_EQ(second_url, injector.url_of_last_commit());
+  EXPECT_TRUE(injector.original_request_of_last_commit().is_pending());
+
+  // Wait until the interface request for FrameHostTestInterface is dispatched.
+  wait_until_interface_request_is_dispatched.Run();
 }
 
 // The InterfaceProvider interface, which is used by the RenderFrame to access
