@@ -214,6 +214,8 @@ class NET_EXPORT NetworkQualityEstimator
       const std::map<nqe::internal::NetworkID,
                      nqe::internal::CachedNetworkQuality> read_prefs);
 
+  const NetworkQualityEstimatorParams* params() { return params_.get(); }
+
   typedef nqe::internal::Observation Observation;
   typedef nqe::internal::ObservationBuffer ObservationBuffer;
 

@@ -74,7 +74,12 @@ class TestPrefDelegate : public NetworkQualitiesPrefsManager::PrefDelegate {
 };
 
 TEST(NetworkQualitiesPrefManager, Write) {
-  TestNetworkQualityEstimator estimator;
+  // Force set the ECT to Slow 2G so that the ECT does not match the default
+  // ECT for the current connection type. This forces the prefs to be written
+  // for the current connection.
+  std::map<std::string, std::string> variation_params;
+  variation_params["force_effective_connection_type"] = "Slow-2G";
+  TestNetworkQualityEstimator estimator(variation_params);
 
   std::unique_ptr<TestPrefDelegate> prefs_delegate(new TestPrefDelegate());
   TestPrefDelegate* prefs_delegate_ptr = prefs_delegate.get();
@@ -114,8 +119,14 @@ TEST(NetworkQualitiesPrefManager, Write) {
 }
 
 TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
-  static const size_t kMaxCacheSize = 10u;
-  TestNetworkQualityEstimator estimator;
+  static const size_t kMaxCacheSize = 20u;
+
+  // Force set the ECT to Slow 2G so that the ECT does not match the default
+  // ECT for the current connection type. This forces the prefs to be written
+  // for the current connection.
+  std::map<std::string, std::string> variation_params;
+  variation_params["force_effective_connection_type"] = "Slow-2G";
+  TestNetworkQualityEstimator estimator(variation_params);
 
   std::unique_ptr<TestPrefDelegate> prefs_delegate(new TestPrefDelegate());
 
@@ -185,7 +196,12 @@ TEST(NetworkQualitiesPrefManager, WriteAndReadWithMultipleNetworkIDs) {
 
 // Verifies that the prefs are cleared correctly.
 TEST(NetworkQualitiesPrefManager, ClearPrefs) {
-  TestNetworkQualityEstimator estimator;
+  // Force set the ECT to Slow 2G so that the ECT does not match the default
+  // ECT for the current connection type. This forces the prefs to be written
+  // for the current connection.
+  std::map<std::string, std::string> variation_params;
+  variation_params["force_effective_connection_type"] = "Slow-2G";
+  TestNetworkQualityEstimator estimator(variation_params);
 
   std::unique_ptr<TestPrefDelegate> prefs_delegate(new TestPrefDelegate());
 

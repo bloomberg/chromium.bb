@@ -730,7 +730,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-3");
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   // Taken from network_quality_estimator_params.cc.
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(272), rtt);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(273), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
   EXPECT_TRUE(
       estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
@@ -760,7 +760,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
           "effective_connection_type"));
 
   EXPECT_EQ(4, rtt_throughput_estimates_observer.notifications_received());
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(272),
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(273),
             rtt_throughput_estimates_observer.http_rtt());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(209),
             rtt_throughput_estimates_observer.transport_rtt());
@@ -768,7 +768,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
             rtt_throughput_estimates_observer.downstream_throughput_kbps());
 
   EXPECT_EQ(2U, rtt_observer.observations().size());
-  EXPECT_EQ(272, rtt_observer.observations().at(0).rtt_ms);
+  EXPECT_EQ(273, rtt_observer.observations().at(0).rtt_ms);
   EXPECT_EQ(NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM,
             rtt_observer.observations().at(0).source);
   EXPECT_EQ(209, rtt_observer.observations().at(1).rtt_ms);
@@ -857,7 +857,7 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-3");
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(272), rtt);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(273), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
   EXPECT_TRUE(
       estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
