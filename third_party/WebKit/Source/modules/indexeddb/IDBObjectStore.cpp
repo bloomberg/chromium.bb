@@ -529,13 +529,13 @@ IDBRequest* IDBObjectStore::put(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, source, transaction_.Get(), std::move(metrics));
 
+  value_wrapper.DoneCloning();
   value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
-  value_wrapper.ExtractBlobDataHandles(request->transit_blob_handles());
 
+  request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   BackendDB()->Put(
-      transaction_->Id(), Id(), WebData(value_wrapper.ExtractWireBytes()),
-      value_wrapper.WrappedBlobInfo(), key,
-      static_cast<WebIDBPutMode>(put_mode),
+      transaction_->Id(), Id(), WebData(value_wrapper.TakeWireBytes()),
+      value_wrapper.TakeBlobInfo(), key, static_cast<WebIDBPutMode>(put_mode),
       request->CreateWebCallbacks().release(), index_ids, index_keys);
 
   return request;
