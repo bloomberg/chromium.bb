@@ -68,7 +68,11 @@ void GpuOutputSurfaceMac::SwapBuffers(viz::OutputSurfaceFrame frame) {
 
 void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
     const gpu::SwapBuffersCompleteParams& params) {
+  DCHECK(!params.ca_layer_params.is_empty);
+  // TODO(ccameron): Move the call to ui::AcceleratedWidgetMac from here to
+  // ui::AcceleratedWidgetMac.
   const gfx::CALayerParams& ca_layer_params = params.ca_layer_params;
+  client_->DidReceiveCALayerParams(ca_layer_params);
   remote_layers_->UpdateLayers(ca_layer_params.ca_context_id);
   if (should_show_frames_state_ == SHOULD_SHOW_FRAMES) {
     ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(widget_);

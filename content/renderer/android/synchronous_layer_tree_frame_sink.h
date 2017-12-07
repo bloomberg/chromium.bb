@@ -153,6 +153,8 @@ class SynchronousLayerTreeFrameSink
         bool will_draw_and_swap,
         const viz::RenderPassList& render_passes) override {}
     void DisplayDidDrawAndSwap() override {}
+    void DisplayDidReceiveCALayerParams(
+        const gfx::CALayerParams& ca_layer_params) override {}
   };
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface

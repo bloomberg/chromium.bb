@@ -17,6 +17,8 @@ class FakeOutputSurfaceClient : public viz::OutputSurfaceClient {
   void DidReceiveSwapBuffersAck(uint64_t swap_id) override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override {}
+  void DidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override {}
 
   int swap_count() { return swap_count_; }
 

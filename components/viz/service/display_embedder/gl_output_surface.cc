@@ -140,9 +140,10 @@ void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result,
 
 void GLOutputSurface::OnGpuSwapBuffersCompleted(
     const gpu::SwapBuffersCompleteParams& params) {
-  // TODO(ccameron): Route |params.ca_layer_params|.
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
+  if (!params.ca_layer_params.is_empty)
+    client_->DidReceiveCALayerParams(params.ca_layer_params);
   DidReceiveSwapBuffersAck(params.swap_response.result,
                            params.swap_response.swap_id);
   latency_info_cache_.OnSwapBuffersCompleted(params.swap_response);
