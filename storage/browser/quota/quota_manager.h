@@ -105,6 +105,7 @@ struct UsageInfo {
 // The quota manager class.  This class is instantiated per profile and
 // held by the profile.  With the exception of the constructor and the
 // proxy() method, all methods should only be called on the IO thread.
+// TODO(sashab): Refactor this class to take a url::Origin, crbug.com/598424.
 class STORAGE_EXPORT QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,

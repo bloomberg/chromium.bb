@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "storage/common/quota/quota_types.mojom";
-import "url/mojo/url.mojom";
+import "url/mojo/origin.mojom";
 
 // API for the renderer process to request quota information from the browser
 // process.
@@ -13,11 +13,10 @@ import "url/mojo/url.mojom";
 // success.
 // TODO(sashab): Remove origin_url and render_frame_id, moving this interface to
 // be per-execution context instead of per-process.
-// TODO(sashab): Change origin_url to a url.mojom.Origin instead.
 // TODO(sashab): Move this API and the necessary types to WebKit/common/.
 interface QuotaDispatcherHost {
   // Renderer process queries storage usage and quota from the browser process.
-  QueryStorageUsageAndQuota(url.mojom.Url origin_url,
+  QueryStorageUsageAndQuota(url.mojom.Origin origin,
                             storage.mojom.StorageType storage_type) =>
       (storage.mojom.QuotaStatusCode error,
        int64 current_usage,
@@ -26,7 +25,7 @@ interface QuotaDispatcherHost {
   // Renderer process requests storage quota from the browser process.
   // render_frame_id is used for showing the permissions UI.
   RequestStorageQuota(int64 render_frame_id,
-                      url.mojom.Url origin_url,
+                      url.mojom.Origin origin,
                       storage.mojom.StorageType storage_type,
                       uint64 requested_size) =>
       (storage.mojom.QuotaStatusCode error,

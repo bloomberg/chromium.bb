@@ -10,10 +10,12 @@
 #include "content/public/browser/quota_permission_context.h"
 #include "storage/common/quota/quota_status_code.h"
 
-class GURL;
-
 namespace storage {
 class QuotaManager;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -34,11 +36,11 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
 
   // content::mojom::QuotaDispatcherHost:
   void QueryStorageUsageAndQuota(
-      const GURL& origin_url,
+      const url::Origin& origin,
       storage::StorageType storage_type,
       QueryStorageUsageAndQuotaCallback callback) override;
   void RequestStorageQuota(int64_t render_frame_id,
-                           const GURL& origin_url,
+                           const url::Origin& origin,
                            storage::StorageType storage_type,
                            uint64_t requested_size,
                            RequestStorageQuotaCallback callback) override;
@@ -49,7 +51,7 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
                                     int64_t usage,
                                     int64_t quota);
   void DidGetPersistentUsageAndQuota(int64_t render_frame_id,
-                                     const GURL& origin_url,
+                                     const url::Origin& origin,
                                      storage::StorageType storage_type,
                                      uint64_t requested_quota,
                                      RequestStorageQuotaCallback callback,
@@ -57,7 +59,7 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
                                      int64_t usage,
                                      int64_t quota);
   void DidGetPermissionResponse(
-      const GURL& origin_url,
+      const url::Origin& origin,
       uint64_t requested_quota,
       int64_t current_usage,
       int64_t current_quota,

@@ -16,10 +16,12 @@
 #include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/renderer/worker_thread.h"
 
-class GURL;
-
 namespace blink {
 class WebStorageQuotaCallbacks;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -51,11 +53,11 @@ class QuotaDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void QueryStorageUsageAndQuota(const GURL& gurl,
+  void QueryStorageUsageAndQuota(const url::Origin& origin,
                                  storage::StorageType type,
                                  std::unique_ptr<Callback> callback);
   void RequestStorageQuota(int render_frame_id,
-                           const GURL& gurl,
+                           const url::Origin& origin,
                            storage::StorageType type,
                            int64_t requested_size,
                            std::unique_ptr<Callback> callback);

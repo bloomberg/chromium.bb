@@ -685,9 +685,10 @@ class BLINK_PLATFORM_EXPORT Platform {
   // with the current usage and quota information for the partition. When
   // an error occurs WebStorageQuotaCallbacks::DidFail is called with an
   // error code.
-  virtual void QueryStorageUsageAndQuota(const WebURL& storage_partition,
-                                         WebStorageQuotaType,
-                                         WebStorageQuotaCallbacks) {}
+  virtual void QueryStorageUsageAndQuota(
+      const WebSecurityOrigin& storage_partition,
+      WebStorageQuotaType,
+      WebStorageQuotaCallbacks) {}
 
   // WebDatabase --------------------------------------------------------
 

@@ -23,6 +23,7 @@ struct CONTENT_EXPORT StorageQuotaParams {
         requested_size(0) {}
 
   int render_frame_id;
+  // TODO(sashab): Change this to url::Origin, crbug.com/598424.
   GURL origin_url;
   storage::StorageType storage_type;
   uint64_t requested_size;
