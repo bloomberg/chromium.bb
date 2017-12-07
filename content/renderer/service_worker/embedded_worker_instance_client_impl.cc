@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/scoped_child_process_reference.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
@@ -76,7 +77,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       ServiceWorkerUtils::IsScriptStreamingEnabled() && installed_scripts_info,
       std::move(dispatcher_request), std::move(controller_request),
       std::move(service_worker_host), std::move(instance_host),
-      std::move(provider_info), std::move(temporal_self_));
+      std::move(provider_info), std::move(temporal_self_),
+      ChildThreadImpl::current()->thread_safe_sender(), io_thread_runner_);
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
   wrapper_ = StartWorkerContext(

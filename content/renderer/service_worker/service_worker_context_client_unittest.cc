@@ -1,0 +1,278 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/renderer/service_worker/service_worker_context_client.h"
+
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "content/child/thread_safe_sender.h"
+#include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
+#include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/worker_thread_registry.h"
+#include "ipc/ipc_sync_message_filter.h"
+#include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
+#include "third_party/WebKit/public/platform/WebDataConsumerHandle.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/WebKit/public/platform/modules/payments/WebPaymentRequestEventData.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
+
+namespace content {
+
+namespace {
+
+// Pipes connected to the context client.
+struct ContextClientPipes {
+  // From the browser to ServiceWorkerContextClient.
+  mojom::ServiceWorkerEventDispatcherPtr event_dispatcher;
+  mojom::ControllerServiceWorkerPtr controller;
+  blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr registration;
+
+  // From ServiceWorkerContextClient to the browser.
+  blink::mojom::ServiceWorkerHostAssociatedRequest service_worker_host_request;
+  mojom::EmbeddedWorkerInstanceHostAssociatedRequest
+      embedded_worker_host_request;
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
+      registration_host_request;
+};
+
+class TestSender : public ThreadSafeSender {
+ public:
+  explicit TestSender(IPC::TestSink* ipc_sink)
+      : ThreadSafeSender(nullptr, nullptr), ipc_sink_(ipc_sink) {}
+
+  bool Send(IPC::Message* message) override { return ipc_sink_->Send(message); }
+
+ private:
+  ~TestSender() override = default;
+
+  IPC::TestSink* ipc_sink_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSender);
+};
+
+class MockWebServiceWorkerContextProxy
+    : public blink::WebServiceWorkerContextProxy {
+ public:
+  ~MockWebServiceWorkerContextProxy() override = default;
+
+  void SetRegistration(
+      std::unique_ptr<blink::WebServiceWorkerRegistration::Handle> handle)
+      override {
+    registration_handle_ = std::move(handle);
+  }
+  bool HasFetchEventHandler() override { return false; }
+
+  void DispatchActivateEvent(int event_id) override { NOTREACHED(); }
+  void DispatchBackgroundFetchAbortEvent(
+      int event_id,
+      const blink::WebString& developer_id) override {
+    NOTREACHED();
+  }
+  void DispatchBackgroundFetchClickEvent(int event_id,
+                                         const blink::WebString& developer_id,
+                                         BackgroundFetchState status) override {
+    NOTREACHED();
+  }
+  void DispatchBackgroundFetchFailEvent(
+      int event_id,
+      const blink::WebString& developer_id,
+      const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
+      override {
+    NOTREACHED();
+  }
+  void DispatchBackgroundFetchedEvent(
+      int event_id,
+      const blink::WebString& developer_id,
+      const blink::WebString& unique_id,
+      const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
+      override {
+    NOTREACHED();
+  }
+  void DispatchExtendableMessageEvent(
+      int event_id,
+      const blink::WebString& message,
+      const blink::WebSecurityOrigin& source_origin,
+      blink::WebVector<blink::MessagePortChannel>,
+      const blink::WebServiceWorkerClientInfo&) override {
+    NOTREACHED();
+  }
+  void DispatchExtendableMessageEvent(
+      int event_id,
+      const blink::WebString& message,
+      const blink::WebSecurityOrigin& source_origin,
+      blink::WebVector<blink::MessagePortChannel>,
+      std::unique_ptr<blink::WebServiceWorker::Handle>) override {
+    NOTREACHED();
+  }
+  void DispatchInstallEvent(int event_id) override { NOTREACHED(); }
+  void DispatchFetchEvent(int fetch_event_id,
+                          const blink::WebServiceWorkerRequest& web_request,
+                          bool navigation_preload_sent) override {
+    NOTREACHED();
+  }
+  void DispatchNotificationClickEvent(int event_id,
+                                      const blink::WebString& notification_id,
+                                      const blink::WebNotificationData&,
+                                      int action_index,
+                                      const blink::WebString& reply) override {
+    NOTREACHED();
+  }
+  void DispatchNotificationCloseEvent(
+      int event_id,
+      const blink::WebString& notification_id,
+      const blink::WebNotificationData&) override {
+    NOTREACHED();
+  }
+  void DispatchPushEvent(int event_id, const blink::WebString& data) override {
+    NOTREACHED();
+  }
+  void DispatchSyncEvent(int sync_event_id,
+                         const blink::WebString& tag,
+                         LastChanceOption) override {
+    NOTREACHED();
+  }
+  void DispatchAbortPaymentEvent(int event_id) override { NOTREACHED(); }
+  void DispatchCanMakePaymentEvent(
+      int event_id,
+      const blink::WebCanMakePaymentEventData&) override {
+    NOTREACHED();
+  }
+  void DispatchPaymentRequestEvent(
+      int event_id,
+      const blink::WebPaymentRequestEventData&) override {
+    NOTREACHED();
+  }
+  void OnNavigationPreloadResponse(
+      int fetch_event_id,
+      std::unique_ptr<blink::WebURLResponse>,
+      std::unique_ptr<blink::WebDataConsumerHandle>) override {
+    NOTREACHED();
+  }
+  void OnNavigationPreloadError(
+      int fetch_event_id,
+      std::unique_ptr<blink::WebServiceWorkerError>) override {
+    NOTREACHED();
+  }
+  void OnNavigationPreloadComplete(int fetch_event_id,
+                                   double completion_time,
+                                   int64_t encoded_data_length,
+                                   int64_t encoded_body_length,
+                                   int64_t decoded_body_length) override {
+    NOTREACHED();
+  }
+
+ private:
+  std::unique_ptr<blink::WebServiceWorkerRegistration::Handle>
+      registration_handle_;
+};
+
+}  // namespace
+
+class ServiceWorkerContextClientTest : public testing::Test {
+ public:
+  ServiceWorkerContextClientTest() = default;
+
+ protected:
+  void SetUp() override {
+    sender_ = base::MakeRefCounted<TestSender>(&ipc_sink_);
+    // Use this thread as the worker thread.
+    WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
+  }
+
+  void TearDown() override {
+    ServiceWorkerContextClient::ResetThreadSpecificInstanceForTesting();
+    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+        sender_, main_task_runner())
+        ->AllowReinstantiationForTesting();
+    // Unregister this thread from worker threads.
+    WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
+  }
+
+  // Creates an empty struct to initialize ServiceWorkerProviderContext.
+  mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
+      blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest*
+          out_request,
+      blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr* out_ptr) {
+    auto info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+    info->registration =
+        blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
+    blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtr host_ptr;
+    *out_request = mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
+    info->registration->host_ptr_info = host_ptr.PassInterface();
+    info->registration->request =
+        mojo::MakeRequestAssociatedWithDedicatedPipe(out_ptr);
+
+    info->registration->installing =
+        blink::mojom::ServiceWorkerObjectInfo::New();
+    info->registration->registration_id = 100;  // dummy
+    info->registration->waiting = blink::mojom::ServiceWorkerObjectInfo::New();
+    info->registration->active = blink::mojom::ServiceWorkerObjectInfo::New();
+    return info;
+  }
+
+  // Creates an ContextClient, whose pipes are connected to |out_pipes|.
+  std::unique_ptr<ServiceWorkerContextClient> CreateContextClient(
+      ContextClientPipes* out_pipes) {
+    auto event_dispatcher_request =
+        mojo::MakeRequest(&out_pipes->event_dispatcher);
+    auto controller_request = mojo::MakeRequest(&out_pipes->controller);
+    blink::mojom::ServiceWorkerHostAssociatedPtr sw_host_ptr;
+    out_pipes->service_worker_host_request =
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&sw_host_ptr);
+    mojom::EmbeddedWorkerInstanceHostAssociatedPtr embedded_worker_host_ptr;
+    out_pipes->embedded_worker_host_request =
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&embedded_worker_host_ptr);
+    EXPECT_TRUE(sender_);
+    return std::make_unique<ServiceWorkerContextClient>(
+        1 /* embeded_worker_id */, 1 /* service_worker_version_id */,
+        GURL("https://example.com") /* scope */,
+        GURL("https://example.com/SW.js") /* script_URL */,
+        false /* is_script_streaming */, std::move(event_dispatcher_request),
+        std::move(controller_request), sw_host_ptr.PassInterface(),
+        embedded_worker_host_ptr.PassInterface(),
+        CreateProviderInfo(&out_pipes->registration_host_request,
+                           &out_pipes->registration),
+        nullptr /* embedded_worker_client */, sender_, io_task_runner());
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() {
+    // Use this thread as the main thread.
+    return message_loop_.task_runner();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
+    // Use this thread as the IO thread.
+    return message_loop_.task_runner();
+  }
+
+  base::MessageLoop message_loop_;
+  IPC::TestSink ipc_sink_;
+  scoped_refptr<TestSender> sender_;
+};
+
+TEST_F(ServiceWorkerContextClientTest, Ping) {
+  ContextClientPipes pipes;
+  std::unique_ptr<ServiceWorkerContextClient> context_client =
+      CreateContextClient(&pipes);
+  MockWebServiceWorkerContextProxy mock_proxy;
+  context_client->WorkerContextStarted(&mock_proxy);
+
+  // Ping() should invoke the passed callback.
+  base::RunLoop loop;
+  pipes.event_dispatcher->Ping(loop.QuitClosure());
+  loop.Run();
+}
+
+}  // namespace content

@@ -219,8 +219,10 @@ ServiceWorkerNetworkProvider::CreateForSharedWorker(int route_id) {
 // static
 std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForController(
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
-  return base::WrapUnique(new ServiceWorkerNetworkProvider(std::move(info)));
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info,
+    scoped_refptr<ThreadSafeSender> sender) {
+  return base::WrapUnique(
+      new ServiceWorkerNetworkProvider(std::move(info), std::move(sender)));
 }
 
 // static
@@ -301,12 +303,12 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
 // Constructor for service worker execution contexts.
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info,
+    scoped_refptr<ThreadSafeSender> sender) {
   // Initialize the provider context with info for
   // ServiceWorkerGlobalScope#registration.
-  ThreadSafeSender* sender = ChildThreadImpl::current()->thread_safe_sender();
   ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      sender, base::ThreadTaskRunnerHandle::Get().get());
+      sender, base::ThreadTaskRunnerHandle::Get());
   // TODO(kinuko): Split ServiceWorkerProviderContext ctor for
   // controller and controllee.
   context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
