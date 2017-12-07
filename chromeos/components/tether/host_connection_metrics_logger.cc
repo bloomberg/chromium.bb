@@ -59,6 +59,15 @@ void HostConnectionMetricsLogger::RecordConnectionToHostResult(
           ConnectionToHostResult_FailureTetheringTimeoutEventType::
               FIRST_TIME_SETUP_WAS_NOT_REQUIRED);
       break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::TETHERING_UNSUPPORTED);
+      break;
+    case ConnectionToHostResult::CONNECTION_RESULT_FAILURE_NO_CELL_DATA:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::NO_CELL_DATA);
+      break;
     default:
       NOTREACHED();
   };

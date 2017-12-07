@@ -30165,7 +30165,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
     An &quot;unknown error&quot; is caused by the host returning an
     &quot;unknown error&quot; response code. Tethering timing out and client
-    connection error and 3) are both broken down further in
+    connection error are both broken down further in
     InstantTethering.ConnectionToHostResult.Failure.TetheringTimeout and
     InstantTethering.ConnectionToHostResult.Failure.ClientConnection,
     respectively.

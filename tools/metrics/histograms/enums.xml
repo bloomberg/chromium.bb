@@ -22479,6 +22479,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Unknown error"/>
   <int value="1" label="Tethering timed out"/>
   <int value="2" label="Client connection error"/>
+  <int value="3" label="Tethering unsupported"/>
+  <int value="4" label="No cellular data"/>
 </enum>
 
 <enum name="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
