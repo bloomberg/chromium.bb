@@ -37,10 +37,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "components/offline_pages/core/offline_page_feature.h"
-#endif
-
 namespace error_page {
 
 namespace {
@@ -1062,8 +1058,7 @@ void LocalizedError::GetStrings(
   if (!is_post && !reload_visible && !show_saved_copy_visible &&
       !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
-      IsSuggested(options.suggestions, SUGGEST_OFFLINE_CHECKS) &&
-      offline_pages::IsOfflinePagesAsyncDownloadEnabled()) {
+      IsSuggested(options.suggestions, SUGGEST_OFFLINE_CHECKS)) {
     std::unique_ptr<base::DictionaryValue> download_button =
         base::MakeUnique<base::DictionaryValue>();
     download_button->SetString(
