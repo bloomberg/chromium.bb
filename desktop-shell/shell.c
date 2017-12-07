@@ -3068,16 +3068,25 @@ desktop_shell_set_panel(struct wl_client *client,
 	weston_surface_set_label_func(surface, panel_get_label);
 	surface->output = weston_output_from_resource(output_resource);
 	view->output = surface->output;
-	weston_desktop_shell_send_configure(resource, 0,
-					    surface_resource,
-					    surface->output->width,
-					    surface->output->height);
 
 	sh_output = find_shell_output_from_weston_output(shell, surface->output);
-	sh_output->panel_surface = surface;
+	if (sh_output->panel_surface) {
+		/* The output already has a panel, tell our helper
+		 * there is no need for another one. */
+		weston_desktop_shell_send_configure(resource, 0,
+						    surface_resource,
+						    0, 0);
+	} else {
+		weston_desktop_shell_send_configure(resource, 0,
+						    surface_resource,
+						    surface->output->width,
+						    surface->output->height);
 
-	sh_output->panel_surface_listener.notify = handle_panel_surface_destroy;
-	wl_signal_add(&surface->destroy_signal, &sh_output->panel_surface_listener);
+		sh_output->panel_surface = surface;
+
+		sh_output->panel_surface_listener.notify = handle_panel_surface_destroy;
+		wl_signal_add(&surface->destroy_signal, &sh_output->panel_surface_listener);
+	}
 }
 
 static int
