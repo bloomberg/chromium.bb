@@ -184,6 +184,14 @@ void ImeAdapterAndroid::UpdateState(const TextInputState& state) {
                               state.composition_end, state.reply_to_request);
 }
 
+void ImeAdapterAndroid::UpdateAfterViewSizeChanged() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ImeAdapter_updateAfterViewSizeChanged(env, obj);
+}
+
 void ImeAdapterAndroid::UpdateFrameInfo(
     const gfx::SelectionBound& selection_start,
     float dip_scale,

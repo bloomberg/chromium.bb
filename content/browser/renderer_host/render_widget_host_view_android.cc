@@ -2230,6 +2230,13 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
   SendGestureEvent(web_gesture);
 }
 
+void RenderWidgetHostViewAndroid::OnSizeChanged() {
+  if (ime_adapter_android_)
+    ime_adapter_android_->UpdateAfterViewSizeChanged();
+  if (popup_zoomer_)
+    popup_zoomer_->HidePopup();
+}
+
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   EvictFrameIfNecessary();
   WasResized();

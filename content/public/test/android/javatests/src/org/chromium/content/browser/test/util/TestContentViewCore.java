@@ -223,9 +223,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void onConfigurationChanged(Configuration newConfig) {}
 
     @Override
-    public void onSizeChanged(int wPix, int hPix, int owPix, int ohPix) {}
-
-    @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return false;
     }

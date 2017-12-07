@@ -325,11 +325,6 @@ public interface ContentViewCore {
     void onConfigurationChanged(Configuration newConfig);
 
     /**
-     * @see View#onSizeChanged(int, int, int, int)
-     */
-    void onSizeChanged(int wPix, int hPix, int owPix, int ohPix);
-
-    /**
      * @see View#onGenericMotionEvent(MotionEvent)
      */
     boolean onGenericMotionEvent(MotionEvent event);

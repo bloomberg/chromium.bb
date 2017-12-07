@@ -128,17 +128,6 @@ public class ContentView extends FrameLayout
     }
 
     @Override
-    protected void onSizeChanged(int w, int h, int ow, int oh) {
-        try {
-            TraceEvent.begin("ContentView.onSizeChanged");
-            super.onSizeChanged(w, h, ow, oh);
-            mContentViewCore.onSizeChanged(w, h, ow, oh);
-        } finally {
-            TraceEvent.end("ContentView.onSizeChanged");
-        }
-    }
-
-    @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         return mContentViewCore.onCreateInputConnection(outAttrs);
     }
