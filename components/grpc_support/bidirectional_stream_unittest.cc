@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_util.h"
+#include "base/strings/strcat.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/grpc_support/include/bidirectional_stream_c.h"
 #include "components/grpc_support/test/get_stream_engine.h"
@@ -285,7 +285,7 @@ TEST_P(BidirectionalStreamTest, StartExampleBidiStream) {
   ASSERT_EQ(std::string(kHelloBodyValue, 2), test.read_data.front());
   // Verify that individual read data joined using empty separator match
   // expected body.
-  ASSERT_EQ(std::string(kHelloBodyValue), base::JoinString(test.read_data, ""));
+  ASSERT_EQ(std::string(kHelloBodyValue), base::StrCat(test.read_data));
   ASSERT_EQ(std::string(kHelloTrailerValue),
             test.response_trailers[kHelloTrailerName]);
   bidirectional_stream_destroy(test.stream);
@@ -329,7 +329,7 @@ TEST_P(BidirectionalStreamTest, SimpleGetWithFlush) {
   ASSERT_EQ(std::string(kHelloHeaderValue),
             test.response_headers[kHelloHeaderName]);
   ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
-  ASSERT_EQ(std::string(kHelloBodyValue), base::JoinString(test.read_data, ""));
+  ASSERT_EQ(std::string(kHelloBodyValue), base::StrCat(test.read_data));
   ASSERT_EQ(std::string(kHelloTrailerValue),
             test.response_trailers[kHelloTrailerName]);
   // Flush after done is ignored.
@@ -356,7 +356,7 @@ TEST_P(BidirectionalStreamTest, SimplePostWithFlush) {
   ASSERT_EQ(std::string(kHelloHeaderValue),
             test.response_headers[kHelloHeaderName]);
   ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
-  ASSERT_EQ(std::string(kHelloBodyValue), base::JoinString(test.read_data, ""));
+  ASSERT_EQ(std::string(kHelloBodyValue), base::StrCat(test.read_data));
   ASSERT_EQ(std::string(kHelloTrailerValue),
             test.response_trailers[kHelloTrailerName]);
   // Flush after done is ignored.
@@ -386,7 +386,7 @@ TEST_P(BidirectionalStreamTest, SimplePostWithFlushTwice) {
   ASSERT_EQ(std::string(kHelloHeaderValue),
             test.response_headers[kHelloHeaderName]);
   ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
-  ASSERT_EQ(std::string(kHelloBodyValue), base::JoinString(test.read_data, ""));
+  ASSERT_EQ(std::string(kHelloBodyValue), base::StrCat(test.read_data));
   ASSERT_EQ(std::string(kHelloTrailerValue),
             test.response_trailers[kHelloTrailerName]);
   // Flush after done is ignored.
@@ -413,7 +413,7 @@ TEST_P(BidirectionalStreamTest, SimplePostWithFlushAfterOneWrite) {
   ASSERT_EQ(std::string(kHelloHeaderValue),
             test.response_headers[kHelloHeaderName]);
   ASSERT_EQ(TestBidirectionalStreamCallback::ON_SUCCEEDED, test.response_step);
-  ASSERT_EQ(std::string(kHelloBodyValue), base::JoinString(test.read_data, ""));
+  ASSERT_EQ(std::string(kHelloBodyValue), base::StrCat(test.read_data));
   ASSERT_EQ(std::string(kHelloTrailerValue),
             test.response_trailers[kHelloTrailerName]);
   // Flush after done is ignored.

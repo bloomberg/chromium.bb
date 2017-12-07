@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -48,9 +49,8 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     const std::map<std::string, std::string>& variation_params,
     base::SchedulerBackwardCompatibility backward_compatibility =
         base::SchedulerBackwardCompatibility::DISABLED) {
-
-  auto pool_descriptor_it = variation_params.find(
-      base::JoinString({variation_param_prefix, pool_name}, ""));
+  auto pool_descriptor_it =
+      variation_params.find(base::StrCat({variation_param_prefix, pool_name}));
   if (pool_descriptor_it == variation_params.end())
     return nullptr;
   const auto& pool_descriptor = pool_descriptor_it->second;

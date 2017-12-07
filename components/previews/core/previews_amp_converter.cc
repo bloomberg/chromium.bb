@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/previews/core/previews_features.h"
@@ -165,7 +166,7 @@ bool PreviewsAMPConverter::GetAMPURL(const GURL& url, GURL* new_amp_url) const {
   if (!entry.prefix.empty() || !entry.suffix.empty() ||
       !entry.suffix_html.empty()) {
     DCHECK(entry.prefix.empty() || entry.prefix[0] == '/');
-    path = base::JoinString({entry.prefix, url.path(), entry.suffix}, "");
+    path = base::StrCat({entry.prefix, url.path(), entry.suffix});
     if (!entry.suffix_html.empty() &&
         base::EndsWith(path, ".html", base::CompareCase::SENSITIVE)) {
       // Insert suffix_html before the .html extension.

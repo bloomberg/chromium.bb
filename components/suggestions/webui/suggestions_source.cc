@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -83,7 +84,7 @@ std::string RenderOutputHtml(
   }
   out.push_back("</ul>");
   out.push_back(kHtmlFooter);
-  return base::JoinString(out, base::StringPiece());
+  return base::StrCat(out);
 }
 
 // Returns the HTML needed to display that no suggestions are available.
@@ -96,7 +97,7 @@ std::string RenderOutputHtmlNoSuggestions(const std::string& base_url,
   out.push_back("<p>You have no suggestions.</p>\n");
   out.push_back(GetRefreshHtml(base_url, is_refresh));
   out.push_back(kHtmlFooter);
-  return base::JoinString(out, base::StringPiece());
+  return base::StrCat(out);
 }
 
 }  // namespace

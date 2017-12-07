@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -41,7 +42,7 @@ bool DumpX509CertificateChain(const base::FilePath& file_path,
     std::cerr << "ERROR: X509Certificate::GetPEMEncodedChain failed.\n";
     return false;
   }
-  return WriteToFile(file_path, base::JoinString(pem_encoded, ""));
+  return WriteToFile(file_path, base::StrCat(pem_encoded));
 }
 
 // Returns a hex-encoded sha256 of the DER-encoding of |cert_handle|.
