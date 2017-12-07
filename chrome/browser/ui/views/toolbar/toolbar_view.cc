@@ -346,11 +346,6 @@ bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
   return true;
 }
 
-void ToolbarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_TOOLBAR;
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_TOOLBAR));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, Menu::Delegate overrides:
 

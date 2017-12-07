@@ -232,9 +232,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <message name="IDS_ACCNAME_APP" desc="The accessible name for the app menu.">
         Chromium
       </message>
-      <message name="IDS_ACCNAME_TOOLBAR" desc="The accessible name for the application's toolbar.">
-        main
-      </message>
       <!-- Hung Browser Detector -->
       <if expr="is_win">
         <message name="IDS_BROWSER_HUNGBROWSER_MESSAGE" desc="Content of the dialog box shown when the browser is hung">
