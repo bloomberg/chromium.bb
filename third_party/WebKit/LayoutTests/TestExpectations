@@ -75,6 +75,7 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/image-with-clip-path.svg 
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-and-object-creation.svg [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/js-late-clipPath-creation.svg [ Failure ]
 
+crbug.com/771643 virtual/spv175/compositing/overflow/border-radius-composited-subframe.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/composited-descendant-grandparent-border-radius-mask.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/composited-descendant-requiring-border-radius-mask.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]

@@ -17,6 +17,7 @@ class ClipRect;
 class DisplayItemClient;
 class PaintLayer;
 class GraphicsContext;
+class LayoutBoxModelObject;
 class LayoutPoint;
 
 // This class is responsible for painting self-painting PaintLayer.
@@ -139,7 +140,8 @@ class CORE_EXPORT PaintLayerPainter {
 
   static bool NeedsToClip(const PaintLayerPaintingInfo& local_painting_info,
                           const ClipRect&,
-                          const PaintLayerFlags&);
+                          const PaintLayerFlags&,
+                          const LayoutBoxModelObject&);
 
   // Returns true if the painted output of this PaintLayer and its children is
   // invisible and therefore can't impact painted output.

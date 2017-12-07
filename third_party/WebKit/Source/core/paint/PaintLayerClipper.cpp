@@ -609,7 +609,13 @@ bool PaintLayerClipper::ShouldClipOverflow(
     const ClipRectsContext& context) const {
   if (&layer_ == context.root_layer && !context.ShouldRespectRootLayerClip())
     return false;
-  return HasOverflowClip(layer_);
+  // Embedded objects with border radius need to compute clip rects when
+  // painting child mask layers. We do not have access to paint phases here,
+  // so always claim to clip and ignore it later when painting the foreground
+  // phases.
+  return HasOverflowClip(layer_) ||
+         (layer_.GetLayoutObject().IsLayoutEmbeddedContent() &&
+          layer_.GetLayoutObject().StyleRef().HasBorderRadius());
 }
 
 }  // namespace blink
