@@ -24,7 +24,6 @@ PassKitTabHelper::PassKitTabHelper(web::WebState* web_state,
                                    id<PassKitTabHelperDelegate> delegate)
     : web_state_(web_state), delegate_(delegate) {
   DCHECK(web_state_);
-  DCHECK(delegate_);
 }
 
 PassKitTabHelper::~PassKitTabHelper() {

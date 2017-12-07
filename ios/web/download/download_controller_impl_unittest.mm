@@ -44,6 +44,11 @@ class DownloadControllerImplTest : public WebTest {
   FakeDownloadControllerDelegate delegate_;
 };
 
+// Tests that DownloadController::GetDelegate returns delegate_.
+TEST_F(DownloadControllerImplTest, Delegate) {
+  ASSERT_EQ(&delegate_, download_controller()->GetDelegate());
+}
+
 // Tests that DownloadController::FromBrowserState returns the same object for
 // each call.
 TEST_F(DownloadControllerImplTest, FromBrowserState) {
