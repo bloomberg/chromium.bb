@@ -747,19 +747,6 @@ ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
   LocalFrame* frame = context_document->GetFrame();
   DCHECK(frame);
 
-  if (!is_external_script_) {
-    bool should_bypass_main_world_csp =
-        (frame->GetScriptController().ShouldBypassMainWorldCSP());
-
-    AtomicString nonce = element_->GetNonceForElement();
-    if (!should_bypass_main_world_csp &&
-        !element_->AllowInlineScriptForCSP(
-            nonce, start_line_number_, script->InlineSourceTextForCSP(),
-            ContentSecurityPolicy::InlineType::kBlock)) {
-      return ExecuteScriptResult::kShouldFireErrorEvent;
-    }
-  }
-
   const bool is_imported_script = context_document != element_document;
 
   // 3. "If the script is from an external file,
@@ -853,6 +840,21 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   // if the MIME check fails, which is considered as load failure.
   if (!pending_script->CheckMIMETypeBeforeRunScript(context_document))
     error_occurred = true;
+
+  if (!error_occurred && !is_external_script_) {
+    bool should_bypass_main_world_csp =
+        frame->GetScriptController().ShouldBypassMainWorldCSP();
+
+    AtomicString nonce = element_->GetNonceForElement();
+    if (!should_bypass_main_world_csp &&
+        !element_->AllowInlineScriptForCSP(
+            nonce, start_line_number_, script->InlineSourceTextForCSP(),
+            ContentSecurityPolicy::InlineType::kBlock)) {
+      // Consider as if "the script's script is null" retrospectively,
+      // if the CSP check fails, which is considered as load failure.
+      error_occurred = true;
+    }
+  }
 
   const bool was_canceled = pending_script->WasCanceled();
   const bool is_external = pending_script->IsExternal();
