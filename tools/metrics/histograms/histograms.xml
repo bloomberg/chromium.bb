@@ -10132,7 +10132,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Tilings are used for decomposition of the layer's entire contents at a
     picture screenspace resolution to do threaded rasterization.
 
-    Team: threaded-rendering-dev@chromium.org.
+    Team: animations-dev@chromium.org.
   </summary>
 </histogram>
 
@@ -10149,7 +10149,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram base="true" name="Compositing.Browser.LayersUpdateTime"
     units="microseconds">
-  <owner>threaded-rendering-dev@chromium.org</owner>
+  <owner>animations-dev@chromium.org</owner>
   <summary>
     Time spent updating layers, in microseconds. Recorded when layers are
     updated (in a browser process).
@@ -10499,7 +10499,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Tilings are used for decomposition of the layer's entire contents at a
     picture screenspace resolution to do threaded rasterization.
 
-    Team: threaded-rendering-dev@chromium.org.
+    Team: animations-dev@chromium.org.
   </summary>
 </histogram>
 
@@ -10516,7 +10516,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram base="true" name="Compositing.Renderer.LayersUpdateTime"
     units="microseconds">
-  <owner>threaded-rendering-dev@chromium.org</owner>
+  <owner>animations-dev@chromium.org</owner>
   <summary>
     Time spent updating layers, in microseconds. Recorded when layers are
     updated (in a renderer process).
@@ -21244,7 +21244,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     the other two metrics which measure the size of scrollers on scroll, we may
     have a better idea of not compositing small scrollers.
 
-    Team: input-dev@chromium.org, threaded-rendering-dev@chromium.org.
+    Team: input-dev@chromium.org, animations-dev@chromium.org.
   </summary>
 </histogram>
 
@@ -21259,7 +21259,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     For those small scrollers that users may rarely scroll, there is no need to
     composite them even if we are able to do so.
 
-    Team: input-dev@chromium.org, threaded-rendering-dev@chromium.org.
+    Team: input-dev@chromium.org, animations-dev@chromium.org.
   </summary>
 </histogram>
 
