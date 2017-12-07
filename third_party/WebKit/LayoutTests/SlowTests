@@ -103,8 +103,8 @@ crbug.com/420008 virtual/threaded/http/tests/devtools/tracing/ [ Slow ]
 
 # Misc DevTools tests that are slow
 crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/ [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-events.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-sidebar.js [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-events.js [ Slow ]
 crbug.com/667560 http/tests/devtools/startup/console/console-format-startup.html [ Slow ]
 crbug.com/679833 http/tests/devtools/network/network-datareceived.js [ Slow ]
 webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.js [ Slow ]
@@ -118,9 +118,9 @@ crbug.com/504565 [ Mac ] http/tests/devtools/search/sources-search-scope.js [ Sl
 crbug.com/451577 http/tests/devtools/resource-tree/resource-tree-crafted-frame-add.js [ Slow ]
 crbug.com/451577 http/tests/devtools/resource-tree/resource-tree-frame-in-crafted-frame.js [ Slow ]
 crbug.com/510337 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-reload.html [ Slow ]
-crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.html [ Slow ]
-crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.html [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-reload.js [ Slow ]
+crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-resources.js [ Slow ]
+crbug.com/451577 [ Win10 ] http/tests/devtools/extensions/extensions-sidebar.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/layers/layer-canvas-log.js [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/network/network-domain-filter.js [ Slow ]
 
@@ -173,7 +173,7 @@ crbug.com/237270 [ Win7 ] fast/css/custom-font-xheight.html [ Slow ]
 crbug.com/241576 [ Win ] http/tests/appcache/404-manifest.html [ Slow ]
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]
 crbug.com/245154 editing/selection/modify_move/move-by-character-brute-force.html [ Slow ]
-crbug.com/246749 http/tests/devtools/extensions/extensions-panel.html [ Slow ]
+crbug.com/246749 http/tests/devtools/extensions/extensions-panel.js [ Slow ]
 
 # This test takes 5+ seconds as intended because it tests connection throttling.
 crbug.com/459377 http/tests/websocket/multiple-connections-throttled.html [ Slow ]

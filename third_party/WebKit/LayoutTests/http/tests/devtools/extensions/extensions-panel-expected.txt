@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 12: hello
 Tests WebInspector extension API
-
 
 Started extension.
 Running tests...
@@ -30,13 +28,13 @@ Panel shown, now toggling console...
 Panel resized, test passed.
 RUNNING TEST: extension_testOpenResource
 Showing .../extensions-panel.html
-Showing resource .../devtools/extensions/extensions-panel.html in panel sources), line: 1001
+Showing resource .../extensions/resources/extensions-panel.html in panel sources), line: 1001
 Showing .../abe.png
 Showing resource .../extensions/resources/abe.png in panel sources), line: 1002
 Showing .../missing.txt
 Showing resource .../extensions/resources/missing.txt in panel network), line: undefined
-Showing not-found.html
-error: Extension server error: Object not found: not-found.html
+Showing .../not-found.html
+error: Extension server error: Object not found: http://127.0.0.1:8000/devtools/extensions/not-found.html
 Showing javascript:console.error('oh no!')
 error: Extension server error: Object not found: javascript:console.error('oh no!')
 RUNNING TEST: extension_testSearch

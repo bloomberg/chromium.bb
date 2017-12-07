@@ -1,3 +1,5 @@
+CONSOLE WARNING: line 31: network.onFinished is deprecated. Use network.onRequestFinished instead
+CONSOLE WARNING: line 31: webInspector.resources is deprecated. Use webInspector.network instead
 Tests public interface of WebInspector Extensions API
 
 Started extension.

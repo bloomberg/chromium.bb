@@ -1,5 +1,5 @@
+CONSOLE WARNING: line 8029: The JavaScript context bogus was not found in the frame http://127.0.0.1:8000/devtools/resources/extensions-frame-eval.html
 Tests WebInspector extension API
-
 
 Started extension.
 Running tests...

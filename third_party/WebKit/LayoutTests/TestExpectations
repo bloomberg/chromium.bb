@@ -2053,7 +2053,7 @@ crbug.com/723826 http/tests/security/w3c/cross-origin-objects.html [ Failure Pas
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
-crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-columns-visible.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.js [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
@@ -3123,7 +3123,7 @@ crbug.com/731535 [ Win ] fast/dom/Window/window-resize-contents.html [ Failure P
 crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
 
 # Sheriff failures 2017-06-14
-crbug.com/733448 http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
+crbug.com/733448 http/tests/devtools/extensions/extensions-network.js [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
@@ -3430,7 +3430,7 @@ crbug.com/757165 [ Win ] fast/spatial-navigation/snav-zero-margin-content.html [
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-z-index.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-filter-test.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
-crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.html [ Skip ]
+crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/sources/ui-source-code-metadata.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
 crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]

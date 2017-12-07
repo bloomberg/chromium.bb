@@ -1,14 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/extensions-test.js"></script>
-<script src="../../inspector/timeline-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script type="text/javascript">
-function initialize_timelineExtensionTest()
-{
+(async function() {
+  await TestRunner.loadModule('extensions_test_runner');
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
 
-InspectorTest.enableTimelineExtensionAndStart = function(callback) {
+  TestRunner.enableTimelineExtensionAndStart = function(callback) {
     const provider = Extensions.extensionServer.traceProviders().peekLast();
     const timelinePanel = UI.panels.timeline;
     const setting = Timeline.TimelinePanel._settingForTraceProvider(provider);
@@ -16,28 +15,24 @@ InspectorTest.enableTimelineExtensionAndStart = function(callback) {
     TestRunner.addResult(`Provider short display name: ${provider.shortDisplayName()}`);
     TestRunner.addResult(`Provider long display name: ${provider.longDisplayName()}`);
     PerformanceTestRunner.startTimeline().then(callback);
-}
+  }
 
-}
+  await ExtensionsTestRunner.runExtensionTests([
+    function extension_testTimeline(nextTest) {
+      var session;
+      var sessionTimeOffset;
+      var startTime;
 
-function extension_testTimeline(nextTest)
-{
-    var session;
-    var sessionTimeOffset;
-    var startTime;
-
-    function onRecordingStarted(s)
-    {
+      function onRecordingStarted(s) {
         sessionTimeOffset = (Date.now() - performance.now()) * 1000;
         startTime = performance.now();
         output("traceProvider.onRecordingStarted fired.");
         output("TracingSession:");
         dumpObject(s);
         session = s;
-     }
+       }
 
-     function onRecordingStopped()
-     {
+      function onRecordingStopped() {
         output("traceProvider.onRecordingStopped fired.");
 
         const endTime = performance.now();
@@ -54,37 +49,28 @@ function extension_testTimeline(nextTest)
         ]};
         var url = "data:application/json," + escape(JSON.stringify(data));
         session.complete(url, sessionTimeOffset);
-    }
+      }
 
-    var traceProvider = webInspector.timeline.addTraceProvider("extension trace provider", "long extension name");
-    output("TraceProvider:");
-    dumpObject(traceProvider);
-    traceProvider.onRecordingStarted.addListener(onRecordingStarted);
-    traceProvider.onRecordingStopped.addListener(onRecordingStopped);
-    extension_startTimeline(
-        () => extension_stopTimeline(
-            () => extension_dumpFlameChart(nextTest)));
-}
+      var traceProvider = webInspector.timeline.addTraceProvider("extension trace provider", "long extension name");
+      output("TraceProvider:");
+      dumpObject(traceProvider);
+      traceProvider.onRecordingStarted.addListener(onRecordingStarted);
+      traceProvider.onRecordingStopped.addListener(onRecordingStopped);
+      extension_startTimeline(
+          () => extension_stopTimeline(
+              () => extension_dumpFlameChart(nextTest)));
+    },
 
-function extension_startTimeline(callback)
-{
-    evaluateOnFrontend("InspectorTest.enableTimelineExtensionAndStart(reply);", callback);
-}
+    function extension_startTimeline(callback) {
+      evaluateOnFrontend("TestRunner.enableTimelineExtensionAndStart(reply);", callback);
+    },
 
-function extension_stopTimeline(callback)
-{
-    evaluateOnFrontend("PerformanceTestRunner.stopTimeline().then(reply);", callback);
-}
+    function extension_stopTimeline(callback) {
+      evaluateOnFrontend("PerformanceTestRunner.stopTimeline().then(reply);", callback);
+    },
 
-function extension_dumpFlameChart(callback)
-{
-    evaluateOnFrontend("PerformanceTestRunner.dumpTimelineFlameChart(['long extension name']); reply()", callback);
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests timeline support in WebInspector Extensions API</p>
-<span id="test-element"><b></b></span>
-</body>
-</html>
+    function extension_dumpFlameChart(callback) {
+      evaluateOnFrontend("PerformanceTestRunner.dumpTimelineFlameChart(['long extension name']); reply()", callback);
+    },
+  ]);
+})();

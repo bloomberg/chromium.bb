@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 1: 42
 Tests that webInspector.inspectedWindow.reload() successfully injects and preprocesses user's code upon reload
 
 Started extension.
@@ -11,6 +10,6 @@ Without injected code: foo = undefined
 RUNNING TEST: extension_testReloadInjectsCodeWithMessage
 Page reloaded.
 Source received:
-(function(){console.log(42)})()
+console.log(42)
 All tests done.
 

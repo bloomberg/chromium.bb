@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 3: don't panic!
 Tests resource-related methods of WebInspector extension API
-
 
 Started extension.
 Running tests...
@@ -24,9 +22,15 @@ page resources:
             getContent : <function>
             setContent : <function>
             type : "document"
-            url : .../subframe.html
+            url : .../inspected-page.html
         }
         3 : {
+            getContent : <function>
+            setContent : <function>
+            type : "document"
+            url : .../subframe.html
+        }
+        4 : {
             getContent : <function>
             setContent : <function>
             type : "script"
