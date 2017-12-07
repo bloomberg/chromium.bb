@@ -484,6 +484,18 @@
     'ui_touch_selection_unittests': {},
   },
 
+  # TODO(dpranke): These are run on the p/chromium waterfall; they should
+  # probably be run on other builders, and we should get rid of the p/chromium
+  # waterfall.
+  'public_build_scripts': {
+    'checkbins': {
+      'script': 'checkbins.py',
+    },
+    'sizes': {
+      'script': 'sizes.py',
+    },
+  },
+
   'system_webview_shell_instrumentation_tests': {
     'system_webview_shell_layout_test_apk': {},
   },
