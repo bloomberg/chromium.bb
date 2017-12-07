@@ -16,10 +16,12 @@ cr.define('print_preview', function() {
    *     holding printer sharing invitations.
    * @param {!print_preview.UserInfo} userInfo Event target that contains
    *     information about the logged in user.
+   * @param {!print_preview.AppState} appState Contains recent destination list.
    * @constructor
    * @extends {print_preview.Overlay}
    */
-  function DestinationSearch(destinationStore, invitationStore, userInfo) {
+  function DestinationSearch(
+      destinationStore, invitationStore, userInfo, appState) {
     print_preview.Overlay.call(this);
 
     /**
@@ -39,6 +41,13 @@ cr.define('print_preview', function() {
      * @private {!print_preview.UserInfo}
      */
     this.userInfo_ = userInfo;
+
+    /**
+     * Contains recent destinations that are currently set to be persisted into
+     * the sticky settings.
+     * @private {!print_preview.AppState}
+     */
+    this.appState_ = appState;
 
     /**
      * Currently displayed printer sharing invitation.
@@ -308,12 +317,33 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @param {?string} filterAccount Account to filter recent destinations by.
+     * @return {!Array<!print_preview.Destination>} List of recent destinations
+     * @private
+     */
+    getRecentDestinations_(filterAccount) {
+      let recentDestinations = [];
+      this.appState_.recentDestinations.forEach((recentDestination) => {
+        const origin = recentDestination.origin;
+        const id = recentDestination.id;
+        const account = recentDestination.account || '';
+        const destination =
+            this.destinationStore_.getDestination(origin, id, account);
+        if (destination &&
+            (!destination.account || destination.account == filterAccount)) {
+          recentDestinations.push(destination);
+        }
+      });
+      return recentDestinations;
+    },
+
+    /**
      * Renders all of the destinations in the destination store.
      * @private
      */
     renderDestinations_: function() {
-      const recentDestinations = this.destinationStore_.getRecentDestinations(
-          this.userInfo_.activeUser);
+      const recentDestinations =
+          this.getRecentDestinations_(this.userInfo_.activeUser);
       const localDestinations = [];
       const cloudDestinations = [];
       const unregisteredCloudDestinations = [];
@@ -650,8 +680,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationStoreSelect_: function() {
-      const recentDestinations = this.destinationStore_.getRecentDestinations(
-          this.userInfo_.activeUser);
+      const recentDestinations =
+          this.getRecentDestinations_(this.userInfo_.activeUser);
       this.recentList_.updateDestinations(recentDestinations);
       this.reflowLists_();
     },

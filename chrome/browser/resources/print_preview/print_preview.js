@@ -65,11 +65,19 @@ cr.define('print_preview', function() {
     this.userInfo_ = new print_preview.UserInfo();
 
     /**
+     * Data store which holds print destinations.
+     * @type {!print_preview.DestinationStore}
+     * @private
+     */
+    this.destinationStore_ = new print_preview.DestinationStore(
+        this.userInfo_, this.listenerTracker);
+
+    /**
      * Application state.
      * @type {!print_preview.AppState}
      * @private
      */
-    this.appState_ = new print_preview.AppState();
+    this.appState_ = new print_preview.AppState(this.destinationStore_);
 
     /**
      * Data model that holds information about the document to print.
@@ -77,14 +85,6 @@ cr.define('print_preview', function() {
      * @private
      */
     this.documentInfo_ = new print_preview.DocumentInfo();
-
-    /**
-     * Data store which holds print destinations.
-     * @type {!print_preview.DestinationStore}
-     * @private
-     */
-    this.destinationStore_ = new print_preview.DestinationStore(
-        this.userInfo_, this.appState_, this.listenerTracker);
 
     /**
      * Data store which holds printer sharing invitations.
@@ -116,7 +116,8 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationSearch_ = new print_preview.DestinationSearch(
-        this.destinationStore_, this.invitationStore_, this.userInfo_);
+        this.destinationStore_, this.invitationStore_, this.userInfo_,
+        this.appState_);
     this.addChild(this.destinationSearch_);
 
     /**
@@ -747,7 +748,8 @@ cr.define('print_preview', function() {
           settings.unitType, settings.shouldPrintSelectionOnly);
       this.destinationStore_.init(
           settings.isInAppKioskMode, settings.printerName,
-          settings.serializedDefaultDestinationSelectionRulesStr);
+          settings.serializedDefaultDestinationSelectionRulesStr,
+          this.appState_.recentDestinations || []);
       this.appState_.setInitialized();
 
       // This is only visible in the task manager.

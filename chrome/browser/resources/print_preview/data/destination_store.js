@@ -126,11 +126,10 @@ cr.define('print_preview', function() {
      * A data store that stores destinations and dispatches events when the
      * data store changes.
      * @param {!print_preview.UserInfo} userInfo User information repository.
-     * @param {!print_preview.AppState} appState Application state.
      * @param {!WebUIListenerTracker} listenerTracker Tracker for WebUI
      *     listeners added in DestinationStore constructor.
      */
-    constructor(userInfo, appState, listenerTracker) {
+    constructor(userInfo, listenerTracker) {
       super();
 
       /**
@@ -144,12 +143,6 @@ cr.define('print_preview', function() {
        * @private {!print_preview.UserInfo}
        */
       this.userInfo_ = userInfo;
-
-      /**
-       * Used to load and persist the selected destination.
-       * @private {!print_preview.AppState}
-       */
-      this.appState_ = appState;
 
       /**
        * Used to track metrics.
@@ -267,6 +260,13 @@ cr.define('print_preview', function() {
       this.useSystemDefaultAsDefault_ =
           loadTimeData.getBoolean('useSystemDefaultPrinter');
 
+
+      /**
+       * The recent print destinations, set when the store is initialized.
+       * @private {!Array<!print_preview.AppStateRecentDestination>}
+       */
+      this.recentDestinations_ = [];
+
       this.reset_();
 
       this.addWebUIEventListeners_(listenerTracker);
@@ -288,23 +288,16 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {?string} filterAccount Account to filter recent destinations by.
-     * @return {!Array<!print_preview.Destination>} List of recent destinations
+     * Gets the destination, if any, matching |account|, |id|, and |origin| in
+     * the destination map.
+     * @param {!print_preview.DestinationOrigin} origin The origin of the
+     *     destination.
+     * @param {string} id The destination ID
+     * @param {string} account The account the destination is associated with.
+     * @return {?print_preview.Destination}
      */
-    getRecentDestinations(filterAccount) {
-      let recentDestinations = [];
-      this.appState_.recentDestinations.forEach(function(recentDestination) {
-        const origin = recentDestination.origin;
-        const id = recentDestination.id;
-        const account = recentDestination.account || '';
-        const destination =
-            this.destinationMap_[this.getDestinationKey_(origin, id, account)];
-        if (destination &&
-            (!destination.account || destination.account == filterAccount)) {
-          recentDestinations.push(destination);
-        }
-      }.bind(this));
-      return recentDestinations;
+    getDestination(origin, id, account) {
+      return this.destinationMap_[this.getDestinationKey_(origin, id, account)];
     }
 
     /**
@@ -353,25 +346,38 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * @param {(?print_preview.Destination |
+     *          ?print_preview.AppStateRecentDestination)} destination
+     * @return {boolean} Whether the destination is valid.
+     */
+    isDestinationValid(destination) {
+      return !!destination && !!destination.id && !!destination.origin;
+    }
+
+    /**
      * Initializes the destination store. Sets the initially selected
      * destination. If any inserted destinations match this ID, that destination
-     * will be automatically selected. This method must be called after the
-     * print_preview.AppState has been initialized.
+     * will be automatically selected.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
      * @param {string} systemDefaultDestinationId ID of the system default
      *     destination.
      * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
      *     default destination selection rules.
+     * @param {!Array<!print_preview.AppStateRecentDestination>}
+     *     recentDestinations The recent print destinations.
      */
     init(
         isInAppKioskMode, systemDefaultDestinationId,
-        serializedDefaultDestinationSelectionRulesStr) {
+        serializedDefaultDestinationSelectionRulesStr, recentDestinations) {
       this.pdfPrinterEnabled_ = !isInAppKioskMode;
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
 
-      if (!this.appState_.isSelectedDestinationValid()) {
+      const isRecentDestinationValid = recentDestinations.length > 0 &&
+          this.isDestinationValid(recentDestinations[0]);
+
+      if (!isRecentDestinationValid) {
         const destinationMatch = this.convertToDestinationMatch_(
             serializedDefaultDestinationSelectionRulesStr);
         if (destinationMatch) {
@@ -381,11 +387,12 @@ cr.define('print_preview', function() {
       }
 
       if (this.systemDefaultDestinationId_.length == 0 &&
-          !this.appState_.isSelectedDestinationValid()) {
+          !isRecentDestinationValid) {
         this.selectPdfDestination_();
         return;
       }
 
+      this.recentDestinations_ = recentDestinations;
       let origin = null;
       let id = '';
       let account = '';
@@ -394,33 +401,30 @@ cr.define('print_preview', function() {
       let extensionId = '';
       let extensionName = '';
       let foundDestination = false;
-      if (this.appState_.recentDestinations) {
-        // Run through the destinations forward. As soon as we find a
-        // destination, don't select any future destinations, just mark
-        // them recent. Otherwise, there is a race condition between selecting
-        // destinations/updating the print ticket and this selecting a new
-        // destination that causes random print preview errors.
-        for (let i = 0; i < this.appState_.recentDestinations.length; i++) {
-          origin = this.appState_.recentDestinations[i].origin;
-          id = this.appState_.recentDestinations[i].id;
-          account = this.appState_.recentDestinations[i].account || '';
-          name = this.appState_.recentDestinations[i].displayName || '';
-          capabilities = this.appState_.recentDestinations[i].capabilities;
-          extensionId = this.appState_.recentDestinations[i].extensionId || '';
-          extensionName =
-              this.appState_.recentDestinations[i].extensionName || '';
-          const candidate = this.destinationMap_[this.getDestinationKey_(
-              origin, id, account)];
-          if (candidate != null) {
-            if (!foundDestination && !this.useSystemDefaultAsDefault_)
-              this.selectDestination(candidate);
-            candidate.isRecent = true;
-            foundDestination = true;
-          } else if (!foundDestination && !this.useSystemDefaultAsDefault_) {
-            foundDestination = this.fetchPreselectedDestination_(
-                origin, id, account, name, capabilities, extensionId,
-                extensionName);
-          }
+      // Run through the destinations forward. As soon as we find a
+      // destination, don't select any future destinations, just mark
+      // them recent. Otherwise, there is a race condition between selecting
+      // destinations/updating the print ticket and this selecting a new
+      // destination that causes random print preview errors.
+      for (let destination of recentDestinations) {
+        origin = destination.origin;
+        id = destination.id;
+        account = destination.account || '';
+        name = destination.displayName || '';
+        capabilities = destination.capabilities;
+        extensionId = destination.extensionId || '';
+        extensionName = destination.extensionName || '';
+        const candidate =
+            this.destinationMap_[this.getDestinationKey_(origin, id, account)];
+        if (candidate != null) {
+          candidate.isRecent = true;
+          if (!foundDestination && !this.useSystemDefaultAsDefault_)
+            this.selectDestination(candidate);
+          foundDestination = true;
+        } else if (!foundDestination && !this.useSystemDefaultAsDefault_) {
+          foundDestination = this.fetchPreselectedDestination_(
+              origin, id, account, name, capabilities, extensionId,
+              extensionName);
         }
       }
 
@@ -606,10 +610,9 @@ cr.define('print_preview', function() {
      * @private
      */
     convertPreselectedToDestinationMatch_() {
-      if (this.appState_.isSelectedDestinationValid()) {
+      if (this.isDestinationValid(this.selectedDestination_)) {
         return this.createExactDestinationMatch_(
-            this.appState_.selectedDestination.origin,
-            this.appState_.selectedDestination.id);
+            this.selectedDestination_.origin, this.selectedDestination_.id);
       }
       if (this.systemDefaultDestinationId_.length > 0) {
         return this.createExactDestinationMatch_(
@@ -690,7 +693,6 @@ cr.define('print_preview', function() {
       // Update and persist selected destination.
       this.selectedDestination_ = destination;
       this.selectedDestination_.isRecent = true;
-      this.appState_.persistSelectedDestination(this.selectedDestination_);
       // Adjust metrics.
       if (destination.cloudID &&
           this.destinations_.some(function(otherDestination) {
@@ -1006,7 +1008,6 @@ cr.define('print_preview', function() {
       if (this.selectedDestination_ &&
           (existingDestination == this.selectedDestination_ ||
            destination == this.selectedDestination_)) {
-        this.appState_.persistSelectedDestination(this.selectedDestination_);
         cr.dispatchSimpleEvent(
             this,
             DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
@@ -1041,7 +1042,7 @@ cr.define('print_preview', function() {
       const existingDestination = this.destinationMap_[key];
       if (existingDestination == null) {
         destination.isRecent |=
-            this.appState_.recentDestinations.some(function(recent) {
+            this.recentDestinations_.some(function(recent) {
               return (
                   destination.id == recent.id &&
                   destination.origin == recent.origin);
@@ -1293,8 +1294,7 @@ cr.define('print_preview', function() {
     //    and Destination.origin by complex ID.
     /**
      * Returns key to be used with {@code destinationMap_}.
-     * @param {print_preview.DestinationOrigin | string} origin Destination
-     *     origin.
+     * @param {!print_preview.DestinationOrigin} origin Destination origin.
      * @param {string} id Destination id.
      * @param {string} account User account destination is registered for.
      * @private
