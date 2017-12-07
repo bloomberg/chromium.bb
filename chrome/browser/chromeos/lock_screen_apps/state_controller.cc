@@ -43,7 +43,6 @@
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/events/devices/input_device_manager.h"
-#include "ui/events/devices/stylus_state.h"
 
 using ash::mojom::CloseLockScreenNoteReason;
 using ash::mojom::LockScreenNoteOrigin;
@@ -52,10 +51,6 @@ using ash::mojom::TrayActionState;
 namespace lock_screen_apps {
 
 namespace {
-
-// The time span a stylus eject is considered valid - i.e. the time period
-// within a stylus eject event can cause a lock screen note launch.
-constexpr int kStylusEjectValidityMs = 1000;
 
 // Key for user pref that contains the 256 bit AES key that should be used to
 // encrypt persisted user data created on the lock screen.
@@ -267,11 +262,6 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
 void StateController::InitializeWithStylusInputPresent() {
   stylus_input_missing_ = false;
 
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->GetScreenBrightnessPercent(
-          base::Bind(&StateController::SetInitialScreenState,
-                     weak_ptr_factory_.GetWeakPtr()));
   power_manager_client_observer_.Add(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   session_observer_.Add(session_manager::SessionManager::Get());
@@ -406,34 +396,9 @@ void StateController::OnAppWindowRemoved(extensions::AppWindow* app_window) {
       false /*close_window*/, CloseLockScreenNoteReason::kAppWindowClosed);
 }
 
-void StateController::OnStylusStateChanged(ui::StylusState state) {
-  if (lock_screen_note_state_ != TrayActionState::kAvailable)
-    return;
-
-  if (state != ui::StylusState::REMOVED) {
-    stylus_eject_timestamp_ = base::TimeTicks();
-    return;
-  }
-
-  if (screen_state_ == ScreenState::kOn) {
-    RequestNewLockScreenNote(LockScreenNoteOrigin::kStylusEject);
-  } else {
-    stylus_eject_timestamp_ = tick_clock_->NowTicks();
-  }
-}
-
 void StateController::OnTouchscreenDeviceConfigurationChanged() {
   if (stylus_input_missing_ && ash::stylus_utils::HasStylusInput())
     InitializeWithStylusInputPresent();
-}
-
-void StateController::BrightnessChanged(int level, bool user_initiated) {
-  if (level == 0 && !user_initiated) {
-    ResetNoteTakingWindowAndMoveToNextState(
-        true /*close_window*/, CloseLockScreenNoteReason::kScreenDimmed);
-  }
-
-  SetScreenState(level == 0 ? ScreenState::kOff : ScreenState::kOn);
 }
 
 void StateController::SuspendImminent(
@@ -527,35 +492,11 @@ void StateController::FocusAppWindow(bool reverse) {
   note_app_window_->web_contents()->Focus();
 }
 
-void StateController::SetInitialScreenState(
-    base::Optional<double> screen_brightness) {
-  if (screen_state_ != ScreenState::kUnknown || !screen_brightness.has_value())
-    return;
-
-  SetScreenState(screen_brightness.value() == 0 ? ScreenState::kOff
-                                                : ScreenState::kOn);
-}
-
-void StateController::SetScreenState(ScreenState screen_state) {
-  if (screen_state_ == screen_state)
-    return;
-
-  screen_state_ = screen_state;
-
-  if (screen_state_ == ScreenState::kOn && !stylus_eject_timestamp_.is_null() &&
-      tick_clock_->NowTicks() - stylus_eject_timestamp_ <
-          base::TimeDelta::FromMilliseconds(kStylusEjectValidityMs)) {
-    stylus_eject_timestamp_ = base::TimeTicks();
-    RequestNewLockScreenNote(LockScreenNoteOrigin::kStylusEject);
-  }
-}
-
 void StateController::ResetNoteTakingWindowAndMoveToNextState(
     bool close_window,
     CloseLockScreenNoteReason reason) {
   note_window_observer_.RemoveAll();
   app_window_observer_.RemoveAll();
-  stylus_eject_timestamp_ = base::TimeTicks();
   app_launch_delayed_for_animation_ = false;
   if (first_app_run_toast_manager_)
     first_app_run_toast_manager_->Reset();
@@ -587,7 +528,8 @@ void StateController::ResetNoteTakingWindowAndMoveToNextState(
     note_app_window_ = nullptr;
   }
 
-  UpdateLockScreenNoteState(app_manager_->IsNoteTakingAppAvailable()
+  UpdateLockScreenNoteState(app_manager_ &&
+                                    app_manager_->IsNoteTakingAppAvailable()
                                 ? TrayActionState::kAvailable
                                 : TrayActionState::kNotAvailable);
 }

@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
-#include "base/time/time.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -153,11 +152,9 @@ class StateController : public ash::mojom::TrayActionClient,
   void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   // ui::InputDeviceEventObserver:
-  void OnStylusStateChanged(ui::StylusState state) override;
   void OnTouchscreenDeviceConfigurationChanged() override;
 
   // chromeos::PowerManagerClient::Observer
-  void BrightnessChanged(int level, bool user_initiated) override;
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
   // Creates and registers an app window as action handler for the action on
@@ -188,17 +185,6 @@ class StateController : public ash::mojom::TrayActionClient,
   }
 
  private:
-  // The screen state determined by observing brightness changes from power
-  // manager client.
-  enum class ScreenState {
-    // The screen state has not yet been initialized.
-    kUnknown,
-    // The screen is on - i.e. not completely dimmed.
-    kOn,
-    // The screen is off - it's brightness level is 0.
-    kOff
-  };
-
   // Gets the encryption key that should be used to encrypt user data created on
   // the lock screen. If a key hadn't previously been created and saved to
   // user prefs, a new key is created and saved.
@@ -243,16 +229,6 @@ class StateController : public ash::mojom::TrayActionClient,
   // It focuses the app window.
   void FocusAppWindow(bool reverse);
 
-  // Updates the screen state to match the current screen brightness - no-op
-  // unless the current screen state is unknown.
-  void SetInitialScreenState(base::Optional<double> screen_brightness);
-
-  // Updates ths screen state - if the stylus was recently removed and screen
-  // has turned on, this will launch a new note action (stylus being removed
-  // should launch the note action, but this is deferred if the screen is off
-  // when the removal event occurs).
-  void SetScreenState(ScreenState screen_state);
-
   // Lock screen note action state.
   ash::mojom::TrayActionState lock_screen_note_state_ =
       ash::mojom::TrayActionState::kNotAvailable;
@@ -263,15 +239,6 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
   std::unique_ptr<LockScreenProfileCreator> lock_screen_profile_creator_;
-
-  // The current screen state.
-  ScreenState screen_state_ = ScreenState::kUnknown;
-
-  // The time-stamp of the last observed stylus eject event. This will get set
-  // if stylus was ejected while the screen was off, and the note action launch
-  // was thus deferred. If the screen is turned on soon after the stylus is
-  // ejected, lock screen note action will be launched.
-  base::TimeTicks stylus_eject_timestamp_;
 
   // Whether sending app launch request to the note taking app (using
   // |app_manager_|) was delayed until the note action launch animation is
