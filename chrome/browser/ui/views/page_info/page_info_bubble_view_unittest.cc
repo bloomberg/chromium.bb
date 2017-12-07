@@ -221,11 +221,12 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   list.back().is_incognito = false;
   list.back().setting = CONTENT_SETTING_BLOCK;
 
-  // Initially, no permissions are shown because they are all set to default.
-  int num_expected_children = 0;
+  // Initially, no permissions are shown because they are all set to default,
+  // except for Flash.
+  int num_expected_children = 3;
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
 
-  num_expected_children = kViewsPerPermissionRow * list.size();
+  num_expected_children += kViewsPerPermissionRow * list.size();
   list.back().setting = CONTENT_SETTING_ALLOW;
   api_->SetPermissionInfo(list);
   EXPECT_EQ(num_expected_children, api_->permissions_view()->child_count());
@@ -279,7 +280,8 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
 
 // Test UI construction and reconstruction with USB devices.
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
-  const int kExpectedChildren = 0;
+  // One permission row is always shown here (Flash). https://crbug.com/791142
+  const int kExpectedChildren = kViewsPerPermissionRow;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
 
   const GURL origin = GURL(kUrl).GetOrigin();

@@ -181,6 +181,10 @@ bool ShouldShowPermission(
   // gets checked there regardless of default setting on Desktop.
   if (info.type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
     return true;
+#else
+  // Flash will always be shown. See https://crbug.com/791142.
+  if (info.type == CONTENT_SETTINGS_TYPE_PLUGINS)
+    return true;
 #endif
 
 #if !defined(OS_ANDROID)
