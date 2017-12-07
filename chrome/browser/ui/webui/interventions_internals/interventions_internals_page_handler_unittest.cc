@@ -67,7 +67,9 @@ constexpr char kOfflinePageFlagLink[] =
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
 constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
 
-constexpr char kDefaultFlagValue[] = "Not Forced";
+constexpr char kDefaultFlagValue[] = "Default";
+constexpr char kEnabledFlagValue[] = "Enabled";
+constexpr char kDisabledFlagValue[] = "Disabled";
 
 // The map that would be passed to the callback in GetPreviewsEnabledCallback.
 std::unordered_map<std::string, mojom::PreviewsStatusPtr> passed_in_modes;
@@ -477,7 +479,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptEnabled) {
   ASSERT_NE(passed_in_flags.end(), noscript_flag);
   EXPECT_EQ(flag_descriptions::kEnableNoScriptPreviewsName,
             noscript_flag->second->description);
-  EXPECT_EQ("Forced Enabled", noscript_flag->second->value);
+  EXPECT_EQ(kEnabledFlagValue, noscript_flag->second->value);
   EXPECT_EQ(kNoScriptFlagLink, noscript_flag->second->link);
 }
 
@@ -494,7 +496,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptDisabled) {
   ASSERT_NE(passed_in_flags.end(), noscript_flag);
   EXPECT_EQ(flag_descriptions::kEnableNoScriptPreviewsName,
             noscript_flag->second->description);
-  EXPECT_EQ("Forced Disabled", noscript_flag->second->value);
+  EXPECT_EQ(kDisabledFlagValue, noscript_flag->second->value);
   EXPECT_EQ(kNoScriptFlagLink, noscript_flag->second->link);
 }
 
@@ -534,7 +536,7 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   EXPECT_EQ(flag_descriptions::kEnableOfflinePreviewsName,
             offline_page_flag->second->description);
 #endif  // OS_ANDROID
-  EXPECT_EQ("Forced Enabled", offline_page_flag->second->value);
+  EXPECT_EQ(kEnabledFlagValue, offline_page_flag->second->value);
   EXPECT_EQ(kOfflinePageFlagLink, offline_page_flag->second->link);
 }
 
@@ -554,7 +556,7 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   EXPECT_EQ(flag_descriptions::kEnableOfflinePreviewsName,
             offline_page_flag->second->description);
 #endif  // OS_ANDROID
-  EXPECT_EQ("Forced Disabled", offline_page_flag->second->value);
+  EXPECT_EQ(kDisabledFlagValue, offline_page_flag->second->value);
   EXPECT_EQ(kOfflinePageFlagLink, offline_page_flag->second->link);
 }
 
