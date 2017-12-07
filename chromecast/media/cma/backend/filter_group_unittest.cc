@@ -139,7 +139,8 @@ class MockInputQueue : public StreamMixer::InputQueue {
   MockInputQueue(AudioContentType content_type, float volume)
       : content_type_(content_type),
         instantaneous_volume_(volume),
-        data_(GetTestData()) {
+        data_(GetTestData()),
+        primary_(true) {
     ON_CALL(*this, TargetVolume())
         .WillByDefault(testing::Return(kTargetVolume));
     ON_CALL(*this, InstantaneousVolume())
@@ -148,15 +149,16 @@ class MockInputQueue : public StreamMixer::InputQueue {
   ~MockInputQueue() override = default;
 
   const ::media::AudioBus* data() const { return data_.get(); }
+  AudioContentType content_type() const override { return content_type_; }
+
   MOCK_METHOD0(TargetVolume, float());
   MOCK_METHOD0(InstantaneousVolume, float());
 
  private:
   // StreamMixer::InputQueue implementation.
   int input_samples_per_second() const override { return kInputSampleRate; }
-  bool primary() const override { return true; }
+  bool primary() const override { return primary_; }
   std::string device_id() const override { return "test"; }
-  AudioContentType content_type() const override { return content_type_; }
   bool IsDeleting() const override { return false; }
   void Initialize(const MediaPipelineBackend::AudioDecoder::RenderingDelay&
                       mixer_rendering_delay) override {}
@@ -191,13 +193,14 @@ class MockInputQueue : public StreamMixer::InputQueue {
   float instantaneous_volume_;
   FilterGroup* filter_group_ = nullptr;
   std::unique_ptr<::media::AudioBus> data_;
+  bool primary_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputQueue);
 };
 
 class FilterGroupTest : public testing::Test {
  protected:
-  FilterGroupTest() : input_(std::make_unique<MockInputQueue>()) {}
+  FilterGroupTest() {}
   ~FilterGroupTest() override {}
 
   void MakeFilterGroup(
@@ -213,14 +216,14 @@ class FilterGroupTest : public testing::Test {
         std::unordered_set<std::string>() /* device_ids */,
         std::vector<FilterGroup*>());
     filter_group_->Initialize(kInputSampleRate);
-    filter_group_->AddActiveInput(input_.get());
+    filter_group_->AddActiveInput(&input_);
     filter_group_->UpdatePlayoutChannel(kChannelAll);
   }
 
   float Input(int channel, int frame) {
-    DCHECK_LE(channel, input_->data()->channels());
-    DCHECK_LE(frame, input_->data()->frames());
-    return input_->data()->channel(channel)[frame];
+    DCHECK_LE(channel, input_.data()->channels());
+    DCHECK_LE(frame, input_.data()->frames());
+    return input_.data()->channel(channel)[frame];
   }
 
   void AssertPassthrough() {
@@ -237,7 +240,7 @@ class FilterGroupTest : public testing::Test {
 
   float RightInput(int frame) { return Input(1, frame); }
 
-  std::unique_ptr<MockInputQueue> input_;
+  MockInputQueue input_;
   std::unique_ptr<FilterGroup> filter_group_;
   MockPostProcessingPipeline* post_processor_ = nullptr;
 
@@ -248,7 +251,7 @@ class FilterGroupTest : public testing::Test {
 TEST_F(FilterGroupTest, Passthrough) {
   MakeFilterGroup(FilterGroup::GroupType::kFinalMix, false /* mix to mono */,
                   std::make_unique<MockPostProcessingPipeline>());
-  EXPECT_CALL(*input_.get(), TargetVolume()).Times(0);
+  EXPECT_CALL(input_, TargetVolume()).Times(0);
   EXPECT_CALL(*post_processor_,
               ProcessFrames(_, kInputFrames, kInstantaneousVolume, false));
 
@@ -259,7 +262,7 @@ TEST_F(FilterGroupTest, Passthrough) {
 TEST_F(FilterGroupTest, StreamGroupsDoNotMonoMix) {
   MakeFilterGroup(FilterGroup::GroupType::kStream, true /* mix to mono */,
                   std::make_unique<MockPostProcessingPipeline>());
-  EXPECT_CALL(*input_.get(), TargetVolume()).Times(0);
+  EXPECT_CALL(input_, TargetVolume()).Times(0);
   EXPECT_CALL(*post_processor_,
               ProcessFrames(_, kInputFrames, kInstantaneousVolume, false));
 
@@ -270,7 +273,7 @@ TEST_F(FilterGroupTest, StreamGroupsDoNotMonoMix) {
 TEST_F(FilterGroupTest, LinearizeGroupsDoNotMonoMix) {
   MakeFilterGroup(FilterGroup::GroupType::kLinearize, true /* mix to mono */,
                   std::make_unique<MockPostProcessingPipeline>());
-  EXPECT_CALL(*input_.get(), TargetVolume()).Times(0);
+  EXPECT_CALL(input_, TargetVolume()).Times(0);
   EXPECT_CALL(*post_processor_,
               ProcessFrames(_, kInputFrames, kInstantaneousVolume, false));
 
@@ -395,20 +398,38 @@ TEST_F(FilterGroupTest, SelectsOutputChannelBeforePostProcessors) {
   }
 }
 
-TEST_F(FilterGroupTest, ChecksLoudestContentType) {
+TEST_F(FilterGroupTest, ChecksContentType) {
   MakeFilterGroup(FilterGroup::GroupType::kStream, false,
                   std::make_unique<MockPostProcessingPipeline>());
-  AudioContentType type = AudioContentType::kCommunication;
-  MockInputQueue tts_loud_input(type, kInstantaneousVolume + .001);
-  filter_group_->AddActiveInput(&tts_loud_input);
-  EXPECT_CALL(*post_processor_, SetContentType(type));
+
+  MockInputQueue tts_input(AudioContentType::kCommunication,
+                           kInstantaneousVolume);
+  MockInputQueue alarm_input(AudioContentType::kAlarm, kInstantaneousVolume);
+
+  // Media input stream + tts input stream -> tts content type.
+  filter_group_->AddActiveInput(&tts_input);
+  EXPECT_CALL(*post_processor_,
+              SetContentType(AudioContentType::kCommunication));
   filter_group_->MixAndFilter(kInputFrames);
 
+  // Media input + tts input + alarm input -> tts content type (no update).
+  filter_group_->AddActiveInput(&alarm_input);
+  EXPECT_CALL(*post_processor_,
+              SetContentType(AudioContentType::kCommunication))
+      .Times(0);
+  filter_group_->MixAndFilter(kInputFrames);
+
+  // Media input + alarm input -> alarm content type.
   filter_group_->ClearActiveInputs();
-  MockInputQueue tts_quiet_input(type, kInstantaneousVolume - .001);
-  filter_group_->AddActiveInput(&tts_quiet_input);
-  filter_group_->AddActiveInput(input_.get());
-  EXPECT_CALL(*post_processor_, SetContentType(kDefaultContentType));
+  filter_group_->AddActiveInput(&input_);
+  filter_group_->AddActiveInput(&alarm_input);
+  EXPECT_CALL(*post_processor_, SetContentType(AudioContentType::kAlarm));
+  filter_group_->MixAndFilter(kInputFrames);
+
+  // Media input stream -> media input
+  EXPECT_CALL(*post_processor_, SetContentType(AudioContentType::kMedia));
+  filter_group_->ClearActiveInputs();
+  filter_group_->AddActiveInput(&input_);
   filter_group_->MixAndFilter(kInputFrames);
 }
 

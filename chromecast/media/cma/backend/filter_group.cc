@@ -35,7 +35,7 @@ FilterGroup::FilterGroup(int num_channels,
       frames_zeroed_(0),
       last_volume_(0.0),
       delay_frames_(0),
-      loudest_content_type_(AudioContentType::kMedia),
+      content_type_(AudioContentType::kMedia),
       post_processing_pipeline_(std::move(pipeline)) {
   for (auto* const m : mixed_inputs) {
     DCHECK_EQ(m->GetOutputChannelCount(), num_channels);
@@ -51,7 +51,7 @@ FilterGroup::~FilterGroup() = default;
 void FilterGroup::Initialize(int output_samples_per_second) {
   output_samples_per_second_ = output_samples_per_second;
   CHECK(post_processing_pipeline_->SetSampleRate(output_samples_per_second));
-  post_processing_pipeline_->SetContentType(loudest_content_type_);
+  post_processing_pipeline_->SetContentType(content_type_);
 }
 
 bool FilterGroup::CanProcessInput(StreamMixer::InputQueue* input) {
@@ -68,15 +68,12 @@ float FilterGroup::MixAndFilter(int chunk_size) {
   ResizeBuffersIfNecessary(chunk_size);
 
   float volume = 0.0f;
-  AudioContentType loudest_content_type = loudest_content_type_;
+  AudioContentType content_type = static_cast<AudioContentType>(-1);
 
   // Recursively mix inputs.
   for (auto* filter_group : mixed_inputs_) {
-    float tmp = filter_group->MixAndFilter(chunk_size);
-    if (tmp > volume) {
-      volume = tmp;
-      loudest_content_type = filter_group->loudest_content_type();
-    }
+    volume = std::max(volume, filter_group->MixAndFilter(chunk_size));
+    content_type = std::max(content_type, filter_group->content_type());
   }
 
   // |volume| can only be 0 if no |mixed_inputs_| have data.
@@ -106,11 +103,8 @@ float FilterGroup::MixAndFilter(int chunk_size) {
       input->VolumeScaleAccumulate(c != 0, temp_->channel(c), chunk_size,
                                    mixed_->channel(c));
     }
-    float tmp = input->InstantaneousVolume();
-    if (tmp > volume) {
-      volume = tmp;
-      loudest_content_type = input->content_type();
-    }
+    volume = std::max(volume, input->InstantaneousVolume());
+    content_type = std::max(content_type, input->content_type());
   }
 
   mixed_->ToInterleaved<::media::FloatSampleTypeTraits<float>>(chunk_size,
@@ -143,9 +137,11 @@ float FilterGroup::MixAndFilter(int chunk_size) {
   bool is_silence = (volume == 0.0f);
   if (!is_silence) {
     last_volume_ = volume;
-    if (loudest_content_type != loudest_content_type_) {
-      loudest_content_type_ = loudest_content_type;
-      post_processing_pipeline_->SetContentType(loudest_content_type_);
+    DCHECK_NE(-1, static_cast<int>(content_type))
+        << "Got frames without content type.";
+    if (content_type != content_type_) {
+      content_type_ = content_type;
+      post_processing_pipeline_->SetContentType(content_type_);
     }
   }
 
