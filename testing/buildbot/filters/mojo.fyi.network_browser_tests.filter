@@ -842,6 +842,9 @@
 -ChromeResourceDispatcherHostDelegateBrowserTest.ThrottlesAddedExactlyOnceToTinySniffedDownloads
 -ChromeResourceDispatcherHostDelegateBrowserTest.MirrorRequestHeader
 
+# Failing NoStatePrefetch tests
+# https://crbug.com/792776
+#
 # Depends on the prerender's ResourceThrottle which updates the histogram the
 # test monitors (PrerenderResourceThrottle).
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchHistograms/0
@@ -849,6 +852,11 @@
 # TODO(jam): switch the tests to hook in via URLLoaderFactory to check load flags.
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.IssuesIdlePriorityRequests/0
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.IssuesIdlePriorityRequests/1
+# Crashing.
+-NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookie/1
+-NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookie/0
+-NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/0
+-NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCookieCrossDomain/1
 
 # Add support of download_to_file for URLLoader.
 # http://crbug.com/791702
