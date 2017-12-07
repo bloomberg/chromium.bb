@@ -36,11 +36,11 @@ namespace ukm {
 // A small shim exposing UkmRecorder methods to tests.
 class TestRecordingHelper {
  public:
-  TestRecordingHelper(UkmRecorder* recorder) : recorder_(recorder) {}
+  explicit TestRecordingHelper(UkmRecorder* recorder) : recorder_(recorder) {}
 
   void UpdateSourceURL(SourceId source_id, const GURL& url) {
     recorder_->UpdateSourceURL(source_id, url);
-  };
+  }
 
   std::unique_ptr<UkmEntryBuilder> GetEntryBuilder(SourceId source_id,
                                                    const char* event_name) {
@@ -49,6 +49,8 @@ class TestRecordingHelper {
 
  private:
   UkmRecorder* recorder_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRecordingHelper);
 };
 
 namespace {
@@ -717,6 +719,60 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       EXPECT_EQ(ids[4], proto_report.sources(1).id());
       EXPECT_EQ("https://google.com/foobar4", proto_report.sources(1).url());
     }
+  }
+}
+
+TEST_F(UkmServiceTest, UnsupportedSchemes) {
+  struct {
+    const char* url;
+    bool expected_kept;
+  } test_cases[] = {
+      {"http://google.ca/", true},
+      {"https://google.ca/", true},
+      {"ftp://google.ca/", false},
+      {"about:blank", false},
+      {"chrome://version/", false},
+      {"file:///tmp/", false},
+      {"chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj", false},
+      {"abc://google.ca/", false},
+      {"www.google.ca/", false},
+  };
+
+  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE, {});
+  UkmService service(&prefs_, &client_);
+  TestRecordingHelper recorder(&service);
+
+  EXPECT_EQ(GetPersistedLogCount(), 0);
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  int64_t id_counter = 1;
+  int expected_kept_count = 0;
+  for (const auto& test : test_cases) {
+    auto source_id = GetWhitelistedSourceId(id_counter++);
+    recorder.UpdateSourceURL(source_id, GURL(test.url));
+    recorder.GetEntryBuilder(source_id, "FakeEntry");
+    if (test.expected_kept)
+      ++expected_kept_count;
+  }
+
+  service.Flush();
+  EXPECT_EQ(GetPersistedLogCount(), 1);
+  Report proto_report = GetPersistedReport();
+
+  EXPECT_EQ(expected_kept_count, proto_report.sources_size());
+  for (const auto& test : test_cases) {
+    bool found = false;
+    for (int i = 0; i < proto_report.sources_size(); ++i) {
+      if (proto_report.sources(i).url() == test.url) {
+        found = true;
+        break;
+      }
+    }
+    EXPECT_EQ(test.expected_kept, found) << test.url;
   }
 }
 

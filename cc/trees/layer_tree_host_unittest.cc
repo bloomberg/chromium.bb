@@ -8209,7 +8209,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestImageDecodingHints);
 
 class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestCheckerboardUkm() : url_(GURL("chrome://test")) {}
+  LayerTreeHostTestCheckerboardUkm() : url_(GURL("https://example.com")) {}
 
   void BeginTest() override {
     PostSetNeedsCommitToMainThread();

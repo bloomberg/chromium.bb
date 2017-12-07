@@ -90,16 +90,6 @@ IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest,
-                       IgnoreUnsupportedScheme) {
-  GURL url("about:blank");
-  content::NavigationHandleObserver observer(shell()->web_contents(), url);
-  content::NavigateToURL(shell(), url);
-  EXPECT_TRUE(observer.has_committed());
-  EXPECT_EQ(nullptr, GetSourceForNavigationId(observer.navigation_id()));
-  EXPECT_EQ(GURL(), GetAssociatedURLForWebContentsDocument());
-}
-
-IN_PROC_BROWSER_TEST_F(SourceUrlRecorderWebContentsObserverBrowserTest,
                        IgnoreUrlInSubframe) {
   GURL main_url = embedded_test_server()->GetURL("/page_with_iframe.html");
   GURL subframe_url = embedded_test_server()->GetURL("/title1.html");
