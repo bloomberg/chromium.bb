@@ -32,6 +32,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,6 +55,8 @@ using autofill::SuggestionVectorIdsAre;
 using autofill::SuggestionVectorValuesAre;
 using autofill::SuggestionVectorLabelsAre;
 using testing::_;
+
+using UkmEntry = ukm::builders::PageWithPassword;
 
 namespace autofill {
 class AutofillPopupDelegate;
@@ -1178,17 +1181,18 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
         kAcceptedContextHistogram,
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
     // Trigger UKM reporting, which happens at destruction time.
+    ukm::SourceId expected_source_id = client->GetUkmSourceId();
     manager.reset();
     autofill_client.reset();
     client.reset();
 
     const auto& entries =
-        test_ukm_recorder.GetEntriesByName("PageWithPassword");
+        test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* entry : entries) {
-      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kMainFrameUrl));
+      EXPECT_EQ(expected_source_id, entry->source_id);
       test_ukm_recorder.ExpectEntryMetric(
-          entry, password_manager::kUkmPageLevelUserAction,
+          entry, UkmEntry::kPageLevelUserActionName,
           static_cast<int64_t>(
               password_manager::PasswordManagerMetricsRecorder::
                   PageLevelUserAction::kShowAllPasswordsWhileSomeAreSuggested));
@@ -1267,6 +1271,7 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
         kAcceptedContextHistogram,
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
     // Trigger UKM reporting, which happens at destruction time.
+    ukm::SourceId expected_source_id = client->GetUkmSourceId();
     manager.reset();
     autofill_client.reset();
     client.reset();
@@ -1275,9 +1280,9 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
         test_ukm_recorder.GetEntriesByName("PageWithPassword");
     EXPECT_EQ(1u, entries.size());
     for (const auto* entry : entries) {
-      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kMainFrameUrl));
+      EXPECT_EQ(expected_source_id, entry->source_id);
       test_ukm_recorder.ExpectEntryMetric(
-          entry, password_manager::kUkmPageLevelUserAction,
+          entry, UkmEntry::kPageLevelUserActionName,
           static_cast<int64_t>(
               password_manager::PasswordManagerMetricsRecorder::
                   PageLevelUserAction::kShowAllPasswordsWhileNoneAreSuggested));

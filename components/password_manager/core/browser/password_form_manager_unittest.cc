@@ -3834,11 +3834,6 @@ TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
             form_data->password_value, form_data->manual_or_generated));
       }
 
-      // Bind the UKM SourceId to any URL, it does not matter. The SourceId
-      // needs to be bound, though, for reporting to happen.
-      client()->GetUkmRecorder()->UpdateSourceURL(client()->GetUkmSourceId(),
-                                                  GURL("https://example.com/"));
-
       std::vector<const PasswordForm*> suppressed_forms_ptrs;
       for (const auto& form : suppressed_forms)
         suppressed_forms_ptrs.push_back(&form);
@@ -4053,8 +4048,8 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
       auto metrics_recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-          form_to_fill.origin.SchemeIsCryptographic(), &test_ukm_recorder,
-          test_ukm_recorder.GetNewSourceID(), form_to_fill.origin);
+          form_to_fill.origin.SchemeIsCryptographic(),
+          client()->GetUkmSourceId());
       FakeFormFetcher fetcher;
       PasswordFormManager form_manager(
           password_manager(), client(),
@@ -4068,7 +4063,7 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
         ukm::builders::PasswordForm::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, form_to_fill.origin);
+      EXPECT_EQ(client()->GetUkmSourceId(), entry->source_id);
       test_ukm_recorder.ExpectEntryMetric(
           entry, ukm::builders::PasswordForm::kManagerFill_ActionName,
           test.expected_event);

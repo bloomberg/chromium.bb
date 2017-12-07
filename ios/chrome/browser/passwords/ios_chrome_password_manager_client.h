@@ -88,7 +88,6 @@ class IOSChromePasswordManagerClient
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const password_manager::LogManager* GetLogManager() const override;
-  ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder& GetMetricsRecorder()
       override;

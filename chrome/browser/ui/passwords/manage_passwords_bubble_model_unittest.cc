@@ -46,6 +46,8 @@ using ::testing::_;
 
 namespace {
 
+constexpr ukm::SourceId kTestSourceId = 0x1234;
+
 constexpr char kSignInPromoCountTilNoThanksMetric[] =
     "PasswordManager.SignInPromoCountTilNoThanks";
 constexpr char kSignInPromoCountTilSignInMetric[] =
@@ -535,9 +537,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
           // Setup metrics recorder
           auto recorder = base::MakeRefCounted<
               password_manager::PasswordFormMetricsRecorder>(
-              true /*is_main_frame_secure*/, &test_ukm_recorder,
-              test_ukm_recorder.GetNewSourceID(),
-              GURL("https://www.example.com/"));
+              true /*is_main_frame_secure*/, kTestSourceId);
 
           // Exercise bubble.
           ON_CALL(*controller(), GetPasswordFormMetricsRecorder())
@@ -601,8 +601,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
             test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
         EXPECT_EQ(1u, entries.size());
         for (const auto* entry : entries) {
-          test_ukm_recorder.ExpectEntrySourceHasUrl(
-              entry, GURL("https://www.example.com/"));
+          EXPECT_EQ(kTestSourceId, entry->source_id);
           test_ukm_recorder.ExpectEntryMetric(
               entry,
               update ? UkmEntry::kUpdating_Prompt_ShownName

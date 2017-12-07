@@ -21,17 +21,16 @@ namespace password_manager {
 
 namespace {
 
-constexpr char kTestUrl[] = "https://www.example.com/";
+constexpr ukm::SourceId kTestSourceId = 0x1234;
 
 using UkmEntry = ukm::builders::PasswordForm;
 
-// Create a UkmEntryBuilder with a SourceId that is initialized for kTestUrl.
+// Create a UkmEntryBuilder with kTestSourceId.
 scoped_refptr<PasswordFormMetricsRecorder> CreatePasswordFormMetricsRecorder(
     bool is_main_frame_secure,
     ukm::TestUkmRecorder* test_ukm_recorder) {
-  return base::MakeRefCounted<PasswordFormMetricsRecorder>(
-      is_main_frame_secure, test_ukm_recorder,
-      test_ukm_recorder->GetNewSourceID(), GURL(kTestUrl));
+  return base::MakeRefCounted<PasswordFormMetricsRecorder>(is_main_frame_secure,
+                                                           kTestSourceId);
 }
 
 // TODO(crbug.com/738921) Replace this with generalized infrastructure.
@@ -44,7 +43,7 @@ void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
   auto entries = test_ukm_recorder->GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
-    test_ukm_recorder->ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+    EXPECT_EQ(kTestSourceId, entry->source_id);
     if (expected_count) {
       test_ukm_recorder->ExpectEntryMetric(entry, metric_name, value);
     } else {
@@ -467,7 +466,7 @@ TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
     auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+      EXPECT_EQ(kTestSourceId, entry->source_id);
 
       if (test.credential_source_type !=
           metrics_util::CredentialSourceType::kUnknown) {
@@ -532,7 +531,7 @@ TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
     auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* const entry : entries) {
-      test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+      EXPECT_EQ(kTestSourceId, entry->source_id);
       test_ukm_recorder.ExpectEntryMetric(
           entry, test.expected_trigger_metric,
           static_cast<int64_t>(test.expected_metric_value));
@@ -566,7 +565,7 @@ TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
   auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
-    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+    EXPECT_EQ(kTestSourceId, entry->source_id);
     test_ukm_recorder.ExpectEntryMetric(
         entry, UkmEntry::kSaving_Prompt_InteractionName,
         static_cast<int64_t>(BubbleDismissalReason::kAccepted));
@@ -603,7 +602,7 @@ TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
   auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* const entry : entries) {
-    test_ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(kTestUrl));
+    EXPECT_EQ(kTestSourceId, entry->source_id);
     test_ukm_recorder.ExpectEntryMetric(
         entry, UkmEntry::kUser_Action_CorrectedUsernameInFormName, 2u);
     test_ukm_recorder.ExpectEntryMetric(

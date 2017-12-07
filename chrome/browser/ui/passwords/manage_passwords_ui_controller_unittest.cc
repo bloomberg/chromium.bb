@@ -457,8 +457,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
     ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
     auto recorder =
         base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
-            true /*is_main_frame_secure*/, &test_ukm_recorder, source_id,
-            GURL("http://www.example.com/"));
+            true /*is_main_frame_secure*/, source_id);
 
     // Exercise controller.
     std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
@@ -496,8 +495,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
         test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
     EXPECT_EQ(1u, entries.size());
     for (const auto* entry : entries) {
-      test_ukm_recorder.ExpectEntrySourceHasUrl(
-          entry, GURL("http://www.example.com/"));
+      EXPECT_EQ(source_id, entry->source_id);
 
       if (test.edit_username) {
         test_ukm_recorder.ExpectEntryMetric(
@@ -938,8 +936,7 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
     auto recorder =
         base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
-            true /*is_main_frame_secure*/, &test_ukm_recorder, source_id,
-            GURL("http://www.example.com/"));
+            true /*is_main_frame_secure*/, source_id);
     std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
         CreateFormManagerWithMetricsRecorder(recorder));
 
@@ -981,8 +978,7 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
         test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
     ASSERT_EQ(1u, entries.size());
     auto* entry = entries[0];
-    test_ukm_recorder.ExpectEntrySourceHasUrl(entry,
-                                              GURL("http://www.example.com/"));
+    EXPECT_EQ(source_id, entry->source_id);
 
     if (is_update) {
       histogram_tester.ExpectUniqueSample(

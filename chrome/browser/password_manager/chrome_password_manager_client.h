@@ -129,7 +129,6 @@ class ChromePasswordManagerClient
   void LogPasswordReuseDetectedEvent() override;
 #endif
 
-  ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder& GetMetricsRecorder()
       override;
@@ -227,10 +226,6 @@ class ChromePasswordManagerClient
   const password_manager::SyncCredentialsFilter credentials_filter_;
 
   std::unique_ptr<password_manager::LogManager> log_manager_;
-
-  // If set, this stores a ukm::SourceId that is bound to the last committed
-  // navigation of the tab owning this ChromePasswordManagerClient.
-  base::Optional<ukm::SourceId> ukm_source_id_;
 
   // Recorder of metrics that is associated with the last committed navigation
   // of the WebContents owning this ChromePasswordManagerClient. May be unset at
