@@ -57,10 +57,6 @@ GvrKeyboardDelegate::~GvrKeyboardDelegate() {
     gvr_keyboard_destroy(&gvr_keyboard_);
 }
 
-void GvrKeyboardDelegate::SetController(VrController* controller) {
-  controller_ = controller;
-}
-
 void GvrKeyboardDelegate::SetUiInterface(vr::KeyboardUiInterface* ui) {
   ui_ = ui;
 }
@@ -69,14 +65,6 @@ void GvrKeyboardDelegate::OnBeginFrame() {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   gvr_keyboard_set_frame_time(gvr_keyboard_, &target_time);
   gvr_keyboard_advance_frame(gvr_keyboard_);
-
-  if (controller_) {
-    bool pressed = controller_->ButtonUpHappened(
-        gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK);
-    gvr_keyboard_update_button_state(
-        gvr_keyboard_, gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK,
-        pressed);
-  }
 }
 
 void GvrKeyboardDelegate::ShowKeyboard() {
@@ -127,6 +115,16 @@ void GvrKeyboardDelegate::Draw(const vr::CameraModel& model) {
                                viewport_rect.y(), viewport_rect.bottom()};
   gvr_keyboard_set_viewport(gvr_keyboard_, eye, &viewport);
   gvr_keyboard_render(gvr_keyboard_, eye);
+}
+
+void GvrKeyboardDelegate::OnButtonDown(const gfx::PointF& position) {
+  gvr_keyboard_update_button_state(
+      gvr_keyboard_, gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK, true);
+}
+
+void GvrKeyboardDelegate::OnButtonUp(const gfx::PointF& position) {
+  gvr_keyboard_update_button_state(
+      gvr_keyboard_, gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK, false);
 }
 
 void GvrKeyboardDelegate::UpdateInput(const vr::TextInputInfo& info) {

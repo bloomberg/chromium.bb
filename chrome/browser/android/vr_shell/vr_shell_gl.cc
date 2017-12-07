@@ -162,8 +162,7 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
                      gvr_context* gvr_api,
                      bool reprojected_rendering,
                      bool daydream_support,
-                     bool start_in_web_vr_mode,
-                     GvrKeyboardDelegate* keyboard_delegate)
+                     bool start_in_web_vr_mode)
     : ui_(std::move(ui)),
       web_vr_mode_(start_in_web_vr_mode),
       surfaceless_rendering_(reprojected_rendering),
@@ -171,7 +170,6 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       browser_(browser_interface),
-      keyboard_delegate_(keyboard_delegate),
       fps_meter_(),
       webvr_js_time_(kWebVRSlidingAverageSize),
       webvr_render_time_(kWebVRSlidingAverageSize),
@@ -456,8 +454,6 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
   gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_api);
   controller_.reset(new VrController(gvr_api));
   ui_->OnPlatformControllerInitialized(controller_.get());
-  if (keyboard_delegate_)
-    keyboard_delegate_->SetController(controller_.get());
 
   VrMetricsUtil::LogVrViewerType(gvr_api_->GetViewerType());
 

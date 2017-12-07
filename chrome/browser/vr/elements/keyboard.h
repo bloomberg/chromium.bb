@@ -29,6 +29,12 @@ class Keyboard : public UiElement {
       int target_property_id,
       cc::Animation* animation) override;
 
+  void OnHoverEnter(const gfx::PointF& position) override;
+  void OnHoverLeave() override;
+  void OnMove(const gfx::PointF& position) override;
+  void OnButtonDown(const gfx::PointF& position) override;
+  void OnButtonUp(const gfx::PointF& position) override;
+
  private:
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Vector3dF& head_direction) override;

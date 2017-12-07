@@ -9,6 +9,7 @@
 
 namespace gfx {
 class Point3F;
+class PointF;
 class Transform;
 }  // namespace gfx
 
@@ -28,6 +29,12 @@ class KeyboardDelegate {
                        gfx::Point3F* hit_position) = 0;
   virtual void OnBeginFrame() {}
   virtual void Draw(const CameraModel&) = 0;
+
+  virtual void OnHoverEnter(const gfx::PointF& position) {}
+  virtual void OnHoverLeave() {}
+  virtual void OnMove(const gfx::PointF& position) {}
+  virtual void OnButtonDown(const gfx::PointF& position) {}
+  virtual void OnButtonUp(const gfx::PointF& position) {}
 };
 
 }  // namespace vr
