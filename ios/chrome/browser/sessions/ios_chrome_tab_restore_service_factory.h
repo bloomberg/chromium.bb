@@ -33,9 +33,8 @@ class IOSChromeTabRestoreServiceFactory
 
   static IOSChromeTabRestoreServiceFactory* GetInstance();
 
-  // Returns the default factory used to build TabRestoreService. Can be
-  // registered with SetTestingFactory to use the TabRestoreService instance
-  // during testing.
+  // Returns the default factory used to build TabRestoreServices. Can be
+  // registered with SetTestingFactory to use real instances during testing.
   static TestingFactoryFunction GetDefaultFactory();
 
  private:

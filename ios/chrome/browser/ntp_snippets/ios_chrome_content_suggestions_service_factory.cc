@@ -21,18 +21,18 @@
 using ntp_snippets::ContentSuggestionsService;
 
 // static
-IOSChromeContentSuggestionsServiceFactory*
-IOSChromeContentSuggestionsServiceFactory::GetInstance() {
-  return base::Singleton<IOSChromeContentSuggestionsServiceFactory>::get();
-}
-
-// static
 ContentSuggestionsService*
 IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   DCHECK(!browser_state->IsOffTheRecord());
   return static_cast<ContentSuggestionsService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
+}
+
+// static
+IOSChromeContentSuggestionsServiceFactory*
+IOSChromeContentSuggestionsServiceFactory::GetInstance() {
+  return base::Singleton<IOSChromeContentSuggestionsServiceFactory>::get();
 }
 
 // static
