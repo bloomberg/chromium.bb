@@ -191,6 +191,10 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Called on the UI thread after the heap dump has been added to the trace.
   void DumpProcessFinishedUIThread();
 
+  // Must be called on the UI thread.
+  // Called after the MDPs have been given time to emit memory dumps.
+  void OnMinimumTimeHasElapsed();
+
   // Sends the end of the data pipe to the profiling service.
   void AddClientToProfilingService(profiling::mojom::ProfilingClientPtr client,
                                    base::ProcessId pid,
@@ -264,9 +268,10 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // a renderer process if one is already not going.
   bool always_sample_for_tests_;
 
-  // Only used for testing. Must only ever be used from the UI thread. Will be
-  // called after the profiling process dumps heaps into the trace log.
-  base::OnceClosure dump_process_for_tracing_callback_;
+  // Must only ever be used from the UI thread. Will be called after the
+  // profiling process dumps heaps into the trace log and MDPs have been given
+  // time to do the same.
+  base::OnceClosure finish_tracing_callback_;
 
   // True if the instance is attempting to take a trace to upload to the crash
   // servers. Pruning of small allocations is always enabled for these traces.
@@ -274,6 +279,11 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // Guards |taking_trace_for_upload_|.
   base::Lock taking_trace_for_upload_lock_;
+
+  // If the instance has started a trace, the trace should be stopped when both
+  // members become true. Both members must only be accessed on the UI thread.
+  bool minimum_time_has_elapsed_ = false;
+  bool heap_dump_has_been_added_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };

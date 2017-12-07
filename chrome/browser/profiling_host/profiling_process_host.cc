@@ -322,10 +322,17 @@ void ProfilingProcessHost::OnDumpProcessesForTracingCallback(
 }
 
 void ProfilingProcessHost::DumpProcessFinishedUIThread() {
-  if (dump_process_for_tracing_callback_) {
-    std::move(dump_process_for_tracing_callback_).Run();
-    dump_process_for_tracing_callback_.Reset();
-  }
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  heap_dump_has_been_added_ = true;
+  if (minimum_time_has_elapsed_ && !finish_tracing_callback_.is_null())
+    std::move(finish_tracing_callback_).Run();
+}
+
+void ProfilingProcessHost::OnMinimumTimeHasElapsed() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  minimum_time_has_elapsed_ = true;
+  if (heap_dump_has_been_added_ && !finish_tracing_callback_.is_null())
+    std::move(finish_tracing_callback_).Run();
 }
 
 void ProfilingProcessHost::AddClientToProfilingService(
@@ -545,19 +552,24 @@ void ProfilingProcessHost::RequestTraceWithHeapDump(
           &content::TracingController::StopTracing),
       base::Unretained(content::TracingController::GetInstance()), sink);
 
+  // There is no race condition between setting
+  // |finish_tracing_callback_| and starting tracing, since
+  // the callback is only ever accessed on the UI thread.
+  DCHECK(!finish_tracing_callback_);
+  finish_tracing_callback_ = std::move(stop_tracing_closure);
+
+  heap_dump_has_been_added_ = false;
   if (stop_immediately_after_heap_dump_for_tests) {
-    // There is no race condition between setting
-    // |dump_process_for_tracing_callback_| and starting tracing, since running
-    // the callback is an asynchronous task executed on the UI thread.
-    DCHECK(!dump_process_for_tracing_callback_);
-    dump_process_for_tracing_callback_ = std::move(stop_tracing_closure);
+    minimum_time_has_elapsed_ = true;
   } else {
-    // Wait 30 seconds, then end the trace. 10 seconds has been observed to not
-    // be sufficient time for the profiling service to dump its data to the
-    // trace.
+    minimum_time_has_elapsed_ = false;
+
+    // Give the MDPs 10 seconds to emit their memory dumps to the trace.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, std::move(stop_tracing_closure),
-        base::TimeDelta::FromSeconds(30));
+        FROM_HERE,
+        base::BindOnce(&ProfilingProcessHost::OnMinimumTimeHasElapsed,
+                       base::Unretained(this)),
+        base::TimeDelta::FromSeconds(10));
   }
 }
 
