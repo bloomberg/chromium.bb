@@ -138,8 +138,14 @@ void CopyFragmentDataToLayoutBoxForInlineChildren(
         layout_box.SetLocation(child_offset.ToLayoutPoint());
       }
 
-      CopyFragmentDataToLayoutBoxForInlineChildren(
-          ToNGPhysicalContainerFragment(*child), child_offset);
+      // The Location() of inline LayoutObject is relative to the
+      // LayoutBlockFlow. If |child| is a block layout root (e.g., inline block,
+      // float, etc.), it creates another inline formatting context. Do not copy
+      // to its descendants in this case.
+      if (!child->IsBlockLayoutRoot()) {
+        CopyFragmentDataToLayoutBoxForInlineChildren(
+            ToNGPhysicalContainerFragment(*child), child_offset);
+      }
     }
   }
 }
