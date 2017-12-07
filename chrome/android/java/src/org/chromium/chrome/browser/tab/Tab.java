@@ -739,6 +739,13 @@ public class Tab
                 return handleJavaCrash();
             }
 
+            if (mNativeTabAndroid == 0) {
+                // if mNativeTabAndroid is invalid then we are going to crash anyways on the
+                // native side. Lets crash on the java side so that we can have a better stack
+                // trace. https://crbug.com/662877
+                throw new RuntimeException("Please post this crash on crbug.com/662877");
+            }
+
             // We load the URL from the tab rather than directly from the ContentView so the tab has
             // a chance of using a prerenderer page is any.
             int loadType = nativeLoadUrl(mNativeTabAndroid, params.getUrl(),
