@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-06
+#-updated: 2017-12-07
 
 # liblouis: Unified French Grade 2 Table
 
@@ -63,6 +63,8 @@ class voyabr2 ⠼âêîôûëïüœ./,●
 
 #punctuation ' 56		so the line below compiles
 letsign 56
+#nocontractsign 56
+#multind 56-46 letsign capsletter
 noletsignafter '.\X2019\X0092
 hyphen - 36
 
@@ -361,8 +363,10 @@ nofor after voy endword niau 1345-24-13
 nofor after voy endword niaux 1345-24-13-1346
 
 partword oi 23456
+
 noback before con always om 2456
 nofor before bmpabr always om 2456
+nofor after conabr midword omh 2456-125
 nofor before voyabr before voyabr2 always ombr 2456-23
 nofor before voyabr before voyabr2 always omn 2456-1345
 after conabr endword om 2456
@@ -577,6 +581,7 @@ word et 23456
 word été 2356
 word étés 2356-234
 word faire 124
+word festoù 56-124-15-234-2345-153-23456
 word grand 12456
 word grands 12456-234
 word il 24
@@ -2378,6 +2383,51 @@ before apost sufword parce\squ 1234-456-12345
 before apost sufword presqu 235-12345
 before apost sufword puisqu 1234-12345
 
+#Mots finissant par z
+word barometz 56-12-1-1235-135-134-15-2345-1356
+word binz 12-35-1356
+word biz 12-24-1356
+word bletz 45-15-2345-1356
+word blitz 45-24-2345-1356
+word breitschwanz 23-15-24-2345-234-12356-2456-2-1356
+word buchholz 12-136-12356-125-135-123-1356
+word chintz 12356-35-2345-1356
+word cz 56-14-1356
+word ersatz 15-1235-234-1-2345-1356
+word fritz 56-124-1235-24-2345-1356
+word graetz 12456-1-15-2345-1356
+word günz 1245-1256-1345-1356
+word hafiz 125-1-124-24-1356
+prfword hertz 125-236-2345-1356
+word hz 56-125-1356
+prfword khoz 13-125-135-1356
+word kibboutz 13-24-12-12-1256-2345-1356
+word kirghiz 13-24-1235-1245-125-24-1356
+word kronprinz 13-1235-346-235-35-1356
+word leibniz 123-15-24-12-1345-24-1356
+word lenz 56-123-15-1345-1356
+word lorentz 123-135-1235-15-1345-2345-1356
+word lutz 56-123-136-2345-1356
+word noz 1345-135-1356
+word oghouz 135-1245-125-135-136-1356
+word oz 56-135-1356
+prfword quartz 12345-4-2345-1356
+word quiz 12345-24-1356
+word ranz 1235-2-1356
+word rémiz 1235-123456-134-24-1356
+word ruolz 1235-136-135-123-1356
+word ruz 56-1235-136-1356
+word saghyz 234-1-1245-125-13456-1356
+word sbrinz 234-23-35-1356
+word schwarz 234-14-125-2456-1-1235-1356
+word schwyz 234-14-125-2456-13456-1356
+word seltz 234-15-123-2345-1356
+word slivovitz 234-123-24-1236-135-1236-24-2345-1356
+word solonetz 234-135-123-135-1345-15-2345-1356
+word spitz 234-1234-24-2345-1356
+word trez 356-1356
+prfword witz 2456-24-2345-1356
+
 #Mots commençant par "gn" pour éviter confusion avec le guillemet
 nofor begword gnangn 2356-2-2356	gnangnan
 nofor begword gnathost 2356-1-2345-125-135-234-2345	gnathostome
@@ -2432,6 +2482,8 @@ nofor postpunc !" 235-2356
 nofor postpunc !) 235-356
 nofor postpunc !] 235-356-12
 nofor postpunc !} 235-356-3-3
+
+#Signes suivis d'une ponctuation
 nofor postpunc ), 356-2
 nofor postpunc ); 356-23
 nofor postpunc ). 356-256
@@ -2460,6 +2512,7 @@ word ) 56-356
 nofor pass2 @56-1235-24[@1356] @1-1-1-1356
 nofor correct "riaaaz" "riz"
 
+#Correction des sigles dont les lettres sont séparées par des points
 nofor pass3 $l[]@256$l@256 @56-56
 nofor pass3 @46$l[]@256@46$l@256 @56-56
 nofor pass2 @56-56-256$l[]@256 @56-56
@@ -2472,9 +2525,9 @@ nofor correct $ls["t.s."] "tiens."
 nofor correct $ls["v.t."] "vient."
 nofor correct $ls["t.t."] "tient."
 
-nofor pass2 $a[@36-3-36]$a @36-123-1-36
 
 #Quelques corrections après traitement
+nofor pass2 $a[@36-3-36]$a @36-123-1-36
 nofor correct "grèo" "ïsso"
 nofor correct $l["-te-"]"il" "-t-"
 nofor correct $l["-te-"]"el" "-t-"
