@@ -40,6 +40,7 @@ class KEYBOARD_EXPORT NotificationManager {
   void SendNotifications(
       bool bounds_obscure_usable_region,
       bool bounds_affect_layout,
+      bool is_locked,
       const gfx::Rect& bounds,
       const base::ObserverList<KeyboardControllerObserver>& observers);
 
