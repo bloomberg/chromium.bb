@@ -599,9 +599,9 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.gyro.x, gfx::DegToRad(-x_ang_accel));
-  EXPECT_THAT(buffer->reading.gyro.y, gfx::DegToRad(-y_ang_accel));
-  EXPECT_THAT(buffer->reading.gyro.z, gfx::DegToRad(-z_ang_accel));
+  EXPECT_THAT(buffer->reading.gyro.x, gfx::DegToRad(x_ang_accel));
+  EXPECT_THAT(buffer->reading.gyro.y, gfx::DegToRad(y_ang_accel));
+  EXPECT_THAT(buffer->reading.gyro.z, gfx::DegToRad(z_ang_accel));
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
@@ -639,9 +639,9 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
   base::RunLoop().RunUntilIdle();
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
-  EXPECT_THAT(buffer->reading.magn.x, -x_magn_field * kMicroteslaInMilligauss);
-  EXPECT_THAT(buffer->reading.magn.y, -y_magn_field * kMicroteslaInMilligauss);
-  EXPECT_THAT(buffer->reading.magn.z, -z_magn_field * kMicroteslaInMilligauss);
+  EXPECT_THAT(buffer->reading.magn.x, x_magn_field * kMicroteslaInMilligauss);
+  EXPECT_THAT(buffer->reading.magn.y, y_magn_field * kMicroteslaInMilligauss);
+  EXPECT_THAT(buffer->reading.magn.z, z_magn_field * kMicroteslaInMilligauss);
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
@@ -730,9 +730,9 @@ TEST_F(PlatformSensorAndProviderTestWin,
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
 
-  EXPECT_THAT(buffer->reading.orientation_quat.x, -x);
-  EXPECT_THAT(buffer->reading.orientation_quat.y, -y);
-  EXPECT_THAT(buffer->reading.orientation_quat.z, -z);
+  EXPECT_THAT(buffer->reading.orientation_quat.x, x);
+  EXPECT_THAT(buffer->reading.orientation_quat.y, y);
+  EXPECT_THAT(buffer->reading.orientation_quat.z, z);
   EXPECT_THAT(buffer->reading.orientation_quat.w, w);
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
