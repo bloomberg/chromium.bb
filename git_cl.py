@@ -2574,7 +2574,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def GetMostRecentPatchset(self):
     data = self._GetChangeDetail(['CURRENT_REVISION'])
-    return data['revisions'][data['current_revision']]['_number']
+    patchset = data['revisions'][data['current_revision']]['_number']
+    self.SetPatchset(patchset)
+    return patchset
 
   def FetchDescription(self, force=False):
     data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'],
@@ -4427,7 +4429,7 @@ def CMDstatus(parser, args):
       if issueid:
         print(issueid)
     elif options.field == 'patch':
-      patchset = cl.GetPatchset()
+      patchset = cl.GetMostRecentPatchset()
       if patchset:
         print(patchset)
     elif options.field == 'status':
