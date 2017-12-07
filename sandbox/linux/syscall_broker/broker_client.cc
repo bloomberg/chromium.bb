@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
-#include "sandbox/linux/syscall_broker/broker_policy.h"
+#include "sandbox/linux/syscall_broker/broker_permission_list.h"
 
 #if defined(OS_ANDROID) && !defined(MSG_CMSG_CLOEXEC)
 #define MSG_CMSG_CLOEXEC 0x40000000
@@ -27,12 +27,12 @@
 namespace sandbox {
 namespace syscall_broker {
 
-BrokerClient::BrokerClient(const BrokerPolicy& broker_policy,
+BrokerClient::BrokerClient(const BrokerPermissionList& broker_permission_list,
                            BrokerChannel::EndPoint ipc_channel,
                            const BrokerCommandSet& allowed_command_set,
                            bool fast_check_in_client,
                            bool quiet_failures_for_tests)
-    : broker_policy_(broker_policy),
+    : broker_permission_list_(broker_permission_list),
       ipc_channel_(std::move(ipc_channel)),
       allowed_command_set_(allowed_command_set),
       fast_check_in_client_(fast_check_in_client),
@@ -58,9 +58,9 @@ int BrokerClient::Stat64(const char* pathname, struct stat64* sb) {
 
 int BrokerClient::Rename(const char* oldpath, const char* newpath) {
   if (fast_check_in_client_ &&
-      !CommandRenameIsSafe(allowed_command_set_, broker_policy_, oldpath,
-                           newpath, nullptr, nullptr)) {
-    return -broker_policy_.denied_errno();
+      !CommandRenameIsSafe(allowed_command_set_, broker_permission_list_,
+                           oldpath, newpath, nullptr, nullptr)) {
+    return -broker_permission_list_.denied_errno();
   }
 
   base::Pickle write_pickle;
@@ -92,9 +92,9 @@ int BrokerClient::Rename(const char* oldpath, const char* newpath) {
 
 int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) {
   if (fast_check_in_client_ &&
-      !CommandReadlinkIsSafe(allowed_command_set_, broker_policy_, path,
-                             nullptr)) {
-    return -broker_policy_.denied_errno();
+      !CommandReadlinkIsSafe(allowed_command_set_, broker_permission_list_,
+                             path, nullptr)) {
+    return -broker_permission_list_.denied_errno();
   }
 
   base::Pickle write_pickle;
@@ -161,15 +161,15 @@ int BrokerClient::PathAndFlagsSyscall(BrokerCommand syscall_type,
   // IPC.
   if (fast_check_in_client_) {
     if (syscall_type == COMMAND_OPEN &&
-        !CommandOpenIsSafe(allowed_command_set_, broker_policy_, pathname,
-                           flags, NULL /* file_to_open */,
+        !CommandOpenIsSafe(allowed_command_set_, broker_permission_list_,
+                           pathname, flags, NULL /* file_to_open */,
                            NULL /* unlink_after_open */)) {
-      return -broker_policy_.denied_errno();
+      return -broker_permission_list_.denied_errno();
     }
     if (syscall_type == COMMAND_ACCESS &&
-        !CommandAccessIsSafe(allowed_command_set_, broker_policy_, pathname,
-                             flags, NULL)) {
-      return -broker_policy_.denied_errno();
+        !CommandAccessIsSafe(allowed_command_set_, broker_permission_list_,
+                             pathname, flags, NULL)) {
+      return -broker_permission_list_.denied_errno();
     }
   }
 
@@ -231,9 +231,9 @@ int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
                                     void* result_ptr,
                                     size_t expected_result_size) const {
   if (fast_check_in_client_ &&
-      !CommandStatIsSafe(allowed_command_set_, broker_policy_, pathname,
-                         nullptr)) {
-    return -broker_policy_.denied_errno();
+      !CommandStatIsSafe(allowed_command_set_, broker_permission_list_,
+                         pathname, nullptr)) {
+    return -broker_permission_list_.denied_errno();
   }
 
   base::Pickle write_pickle;

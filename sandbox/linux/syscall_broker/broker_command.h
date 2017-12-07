@@ -14,7 +14,7 @@
 namespace sandbox {
 namespace syscall_broker {
 
-class BrokerPolicy;
+class BrokerPermissionList;
 
 constexpr size_t kMaxMessageLength = 4096;
 
@@ -51,32 +51,32 @@ using BrokerCommandSet = std::bitset<COMMAND_MAX + 1>;
 // (client or broker process) of a broker IPC command. The implementations
 // must be safe when called from an async signal handler.
 bool CommandAccessIsSafe(const BrokerCommandSet& command_set,
-                         const BrokerPolicy& policy,
+                         const BrokerPermissionList& policy,
                          const char* requested_filename,
                          int requested_mode,  // e.g. F_OK, R_OK, W_OK.
                          const char** filename_to_use);
 
 bool CommandOpenIsSafe(const BrokerCommandSet& command_set,
-                       const BrokerPolicy& policy,
+                       const BrokerPermissionList& policy,
                        const char* requested_filename,
                        int requested_flags,  // e.g. O_RDONLY, O_RDWR.
                        const char** filename_to_use,
                        bool* unlink_after_open);
 
 bool CommandReadlinkIsSafe(const BrokerCommandSet& command_set,
-                           const BrokerPolicy& policy,
+                           const BrokerPermissionList& policy,
                            const char* requested_filename,
                            const char** filename_to_use);
 
 bool CommandRenameIsSafe(const BrokerCommandSet& command_set,
-                         const BrokerPolicy& policy,
+                         const BrokerPermissionList& policy,
                          const char* old_filename,
                          const char* new_filename,
                          const char** old_filename_to_use,
                          const char** new_filename_to_use);
 
 bool CommandStatIsSafe(const BrokerCommandSet& command_set,
-                       const BrokerPolicy& policy,
+                       const BrokerPermissionList& policy,
                        const char* requested_filename,
                        const char** filename_to_use);
 

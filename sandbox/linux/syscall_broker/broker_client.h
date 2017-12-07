@@ -17,7 +17,7 @@ namespace sandbox {
 
 namespace syscall_broker {
 
-class BrokerPolicy;
+class BrokerPermissionList;
 
 // This class can be embedded in a sandboxed process and can be
 // used to perform certain system calls in another, presumably
@@ -34,7 +34,7 @@ class BrokerClient {
   // |ipc_channel| needs to be a suitable SOCK_SEQPACKET unix socket.
   // |fast_check_in_client| should be set to true and
   // |quiet_failures_for_tests| to false unless you are writing tests.
-  BrokerClient(const BrokerPolicy& policy,
+  BrokerClient(const BrokerPermissionList& policy,
                BrokerChannel::EndPoint ipc_channel,
                const BrokerCommandSet& allowed_command_set,
                bool fast_check_in_client,
@@ -78,7 +78,7 @@ class BrokerClient {
                         void* result_ptr,
                         size_t expected_result_size) const;
 
-  const BrokerPolicy& broker_policy_;
+  const BrokerPermissionList& broker_permission_list_;
   const BrokerChannel::EndPoint ipc_channel_;
   const BrokerCommandSet allowed_command_set_;
   const bool fast_check_in_client_;  // Whether to forward a request that we

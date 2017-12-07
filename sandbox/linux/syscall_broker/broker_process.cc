@@ -41,7 +41,7 @@ BrokerProcess::BrokerProcess(
       fast_check_in_client_(fast_check_in_client),
       quiet_failures_for_tests_(quiet_failures_for_tests),
       allowed_command_set_(allowed_command_set),
-      broker_policy_(denied_errno, permissions) {}
+      broker_permission_list_(denied_errno, permissions) {}
 
 BrokerProcess::~BrokerProcess() {
   if (initialized_) {
@@ -77,7 +77,7 @@ bool BrokerProcess::Init(
     ipc_reader.reset();
     broker_pid_ = child_pid;
     broker_client_ = std::make_unique<BrokerClient>(
-        broker_policy_, std::move(ipc_writer), allowed_command_set_,
+        broker_permission_list_, std::move(ipc_writer), allowed_command_set_,
         fast_check_in_client_, quiet_failures_for_tests_);
     initialized_ = true;
     return true;
@@ -87,7 +87,7 @@ bool BrokerProcess::Init(
   // we get notified if the client disappears.
   ipc_writer.reset();
   CHECK(broker_process_init_callback.Run());
-  BrokerHost broker_host(broker_policy_, allowed_command_set_,
+  BrokerHost broker_host(broker_permission_list_, allowed_command_set_,
                          std::move(ipc_reader));
   for (;;) {
     switch (broker_host.HandleRequest()) {

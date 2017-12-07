@@ -24,7 +24,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
-#include "sandbox/linux/syscall_broker/broker_policy.h"
+#include "sandbox/linux/syscall_broker/broker_permission_list.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
 namespace sandbox {
@@ -46,7 +46,7 @@ int sys_open(const char* pathname, int flags) {
 // Write the syscall return value (-errno) to |write_pickle| and append
 // a file descriptor to |opened_files| if relevant.
 void OpenFileForIPC(const BrokerCommandSet& allowed_command_set,
-                    const BrokerPolicy& policy,
+                    const BrokerPermissionList& policy,
                     const std::string& requested_filename,
                     int flags,
                     base::Pickle* write_pickle,
@@ -77,7 +77,7 @@ void OpenFileForIPC(const BrokerCommandSet& allowed_command_set,
 // Perform access(2) on |requested_filename| with mode |mode| if allowed by our
 // policy. Write the syscall return value (-errno) to |write_pickle|.
 void AccessFileForIPC(const BrokerCommandSet& allowed_command_set,
-                      const BrokerPolicy& policy,
+                      const BrokerPermissionList& policy,
                       const std::string& requested_filename,
                       int mode,
                       base::Pickle* write_pickle) {
@@ -100,7 +100,7 @@ void AccessFileForIPC(const BrokerCommandSet& allowed_command_set,
 // Perform stat(2) on |requested_filename| and marshal the result to
 // |write_pickle|.
 void StatFileForIPC(const BrokerCommandSet& allowed_command_set,
-                    const BrokerPolicy& policy,
+                    const BrokerPermissionList& policy,
                     BrokerCommand command_type,
                     const std::string& requested_filename,
                     base::Pickle* write_pickle) {
@@ -134,7 +134,7 @@ void StatFileForIPC(const BrokerCommandSet& allowed_command_set,
 // Perform rename(2) on |old_filename| to |new_filename| and marshal the
 // result to |write_pickle|.
 void RenameFileForIPC(const BrokerCommandSet& allowed_command_set,
-                      const BrokerPolicy& policy,
+                      const BrokerPermissionList& policy,
                       const std::string& old_filename,
                       const std::string& new_filename,
                       base::Pickle* write_pickle) {
@@ -155,7 +155,7 @@ void RenameFileForIPC(const BrokerCommandSet& allowed_command_set,
 
 // Perform readlink(2) on |filename| using a buffer of MAX_PATH bytes.
 void ReadlinkFileForIPC(const BrokerCommandSet& allowed_command_set,
-                        const BrokerPolicy& policy,
+                        const BrokerPermissionList& policy,
                         const std::string& filename,
                         base::Pickle* write_pickle) {
   const char* file_to_access = nullptr;
@@ -177,7 +177,7 @@ void ReadlinkFileForIPC(const BrokerCommandSet& allowed_command_set,
 // Handle a |command_type| request contained in |iter| and write the reply
 // to |write_pickle|, adding any files opened to |opened_files|.
 bool HandleRemoteCommand(const BrokerCommandSet& allowed_command_set,
-                         const BrokerPolicy& policy,
+                         const BrokerPermissionList& policy,
                          base::PickleIterator iter,
                          base::Pickle* write_pickle,
                          std::vector<int>* opened_files) {
@@ -239,10 +239,10 @@ bool HandleRemoteCommand(const BrokerCommandSet& allowed_command_set,
 
 }  // namespace
 
-BrokerHost::BrokerHost(const BrokerPolicy& broker_policy,
+BrokerHost::BrokerHost(const BrokerPermissionList& broker_permission_list,
                        const BrokerCommandSet& allowed_command_set,
                        BrokerChannel::EndPoint ipc_channel)
-    : broker_policy_(broker_policy),
+    : broker_permission_list_(broker_permission_list),
       allowed_command_set_(allowed_command_set),
       ipc_channel_(std::move(ipc_channel)) {}
 
@@ -277,8 +277,9 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   base::PickleIterator iter(pickle);
   base::Pickle write_pickle;
   std::vector<int> opened_files;
-  bool result = HandleRemoteCommand(allowed_command_set_, broker_policy_, iter,
-                                    &write_pickle, &opened_files);
+  bool result =
+      HandleRemoteCommand(allowed_command_set_, broker_permission_list_, iter,
+                          &write_pickle, &opened_files);
 
   if (result) {
     CHECK_LE(write_pickle.size(), kMaxMessageLength);
