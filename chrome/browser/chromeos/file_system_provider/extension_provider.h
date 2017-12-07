@@ -48,6 +48,7 @@ class ExtensionProvider : public ProviderInterface {
       const ProvidedFileSystemInfo& file_system_info) override;
   const Capabilities& GetCapabilities() const override;
   const ProviderId& GetId() const override;
+  const std::string& GetName() const override;
 
  private:
   ExtensionProvider(const extensions::ExtensionId& extension_id,
@@ -55,6 +56,7 @@ class ExtensionProvider : public ProviderInterface {
 
   ProviderId provider_id_;
   Capabilities capabilities_;
+  std::string name_;
 };
 
 }  // namespace file_system_provider

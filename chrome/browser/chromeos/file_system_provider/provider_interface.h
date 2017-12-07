@@ -54,6 +54,9 @@ class ProviderInterface {
 
   // Returns id of this provider.
   virtual const ProviderId& GetId() const = 0;
+
+  // Returns a user friendly name of this provider.
+  virtual const std::string& GetName() const = 0;
 };
 
 }  // namespace file_system_provider
