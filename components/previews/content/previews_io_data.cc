@@ -207,7 +207,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     PreviewsType type,
     net::EffectiveConnectionType effective_connection_type_threshold,
     const std::vector<std::string>& host_blacklist_from_server) const {
-  if (!request.url().has_host()) {
+  if (!request.url().has_host() || !PreviewsUserData::GetData(request)) {
     // Don't capture UMA on this case, as it is not important and can happen
     // when navigating to files on disk, etc.
     return false;
