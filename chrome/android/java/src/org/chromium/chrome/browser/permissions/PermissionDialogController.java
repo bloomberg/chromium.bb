@@ -241,6 +241,13 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
             @Override
             public void onDismiss(DialogInterface dialog) {
                 mDialog = null;
+
+                if (mDialogDelegate == null) {
+                    // We get into here if a tab navigates or is closed underneath the prompt.
+                    mState = NOT_SHOWING;
+                    return;
+                }
+
                 if (mState == PROMPT_ACCEPTED) {
                     // Request Android permissions if necessary. This will call back into either
                     // onAndroidPermissionAccepted or onAndroidPermissionCanceled, which will
@@ -287,15 +294,16 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
 
     public void dismissFromNative(PermissionDialogDelegate delegate) {
         if (mDialogDelegate == delegate) {
-            if (mState == PROMPT_OPEN) {
-                mDialog.setOnDismissListener(null);
-                mDialog.dismiss();
-                mDialog = null;
-                mState = NOT_SHOWING;
-            } else {
-                assert mState == PROMPT_PENDING || mState == REQUEST_ANDROID_PERMISSIONS;
-            }
+            // Some caution is required here to handle cases where the user actions or dismisses
+            // the prompt at roughly the same time as native. Due to asynchronicity, this function
+            // may be called after onClick and before onDismiss, or before both of those listeners.
             mDialogDelegate = null;
+            if (mState == PROMPT_OPEN) {
+                mDialog.dismiss();
+            } else {
+                assert mState == PROMPT_PENDING || mState == REQUEST_ANDROID_PERMISSIONS
+                        || mState == PROMPT_DENIED || mState == PROMPT_ACCEPTED;
+            }
         } else {
             assert mRequestQueue.contains(delegate);
             mRequestQueue.remove(delegate);
