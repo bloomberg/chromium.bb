@@ -23,8 +23,9 @@ class TestMultiTabLoadingPageLoadMetricsObserver
   ~TestMultiTabLoadingPageLoadMetricsObserver() override {}
 
  private:
-  bool IsAnyTabLoading(content::NavigationHandle* navigation_handle) override {
-    return multi_tab_loading_;
+  int NumberOfTabsWithInflightLoad(
+      content::NavigationHandle* navigation_handle) override {
+    return multi_tab_loading_ ? 1 : 0;
   }
 
   const bool multi_tab_loading_;
@@ -82,6 +83,8 @@ class MultiTabLoadingPageLoadMetricsObserverTest
 
 TEST_F(MultiTabLoadingPageLoadMetricsObserverTest, SingleTabLoading) {
   SimulatePageLoad(SingleTabLoading, Foreground);
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramMultiTabLoadingNumTabsWithInflightLoad, 0, 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramMultiTabLoadingFirstContentfulPaint, 0);
   histogram_tester().ExpectTotalCount(
@@ -102,6 +105,8 @@ TEST_F(MultiTabLoadingPageLoadMetricsObserverTest, SingleTabLoading) {
 
 TEST_F(MultiTabLoadingPageLoadMetricsObserverTest, MultiTabLoading) {
   SimulatePageLoad(MultiTabLoading, Foreground);
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramMultiTabLoadingNumTabsWithInflightLoad, 1, 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramMultiTabLoadingFirstContentfulPaint, 1);
   histogram_tester().ExpectTotalCount(
@@ -122,6 +127,8 @@ TEST_F(MultiTabLoadingPageLoadMetricsObserverTest, MultiTabLoading) {
 
 TEST_F(MultiTabLoadingPageLoadMetricsObserverTest, MultiTabBackground) {
   SimulatePageLoad(MultiTabLoading, Background);
+  histogram_tester().ExpectUniqueSample(
+      internal::kHistogramMultiTabLoadingNumTabsWithInflightLoad, 1, 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramMultiTabLoadingFirstContentfulPaint, 0);
   histogram_tester().ExpectTotalCount(

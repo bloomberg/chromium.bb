@@ -56967,6 +56967,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Clients.MultiTabLoading.NumTabsWithInflightLoad"
+    units="tabs">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Records the number of tabs with inflight loading activities. Recorded when a
+    new page load starts.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Clients.SubresourceFilter.ActivationDecision"
     enum="SubresourceFilterActivationDecision">
   <owner>bmcquade@chromium.org</owner>
