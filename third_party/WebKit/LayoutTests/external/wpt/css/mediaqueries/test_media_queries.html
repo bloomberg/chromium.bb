@@ -2,12 +2,12 @@
 <html>
 <head>
   <title>Media Queries Self-Contained Test Suite</title>
-  <link rel="author" title="L. David Baron" href="http://dbaron.org/">
+  <link rel="author" title="L. David Baron" href="https://dbaron.org/">
   <link rel="author" title="Anne van Kesteren" href="http://annevankesteren.nl/">
   <link rel="author" title="Ms2ger" href="mailto:Ms2ger@gmail.com">
   <link rel="help" href="http://www.w3.org/TR/css3-mediaqueries/">
-  <script type="text/javascript" src="../../../resources/testharness.js"></script>
-  <script type="text/javascript" src="../../../resources/testharnessreport.js"></script>
+  <script type="text/javascript" src="/resources/testharness.js"></script>
+  <script type="text/javascript" src="/resources/testharnessreport.js"></script>
 <script id="metadata_cache">/*
 {
   "subtest_1": { "assert": "query (orientation) should be parseable" },
@@ -378,7 +378,7 @@
 </head>
 <body onload="run()">
 <div id=log></div>
-<iframe id="subdoc" src="resources/media_queries_iframe.html"></iframe>
+<iframe id="subdoc" src="support/media_queries_iframe.html"></iframe>
 <div id="content" style="display: none"></div>
 
 <script type="text/javascript">
@@ -394,7 +394,7 @@ function run() {
 
     function query_applies(q) {
       style.setAttribute("media", q);
-      return body_cs.getPropertyValue("text-decoration") == "underline solid rgb(0, 0, 0)";
+      return body_cs.getPropertyValue("text-decoration-line") == "underline";
     }
 
     function should_apply(q) {
