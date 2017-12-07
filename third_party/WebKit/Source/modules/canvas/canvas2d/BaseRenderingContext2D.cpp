@@ -45,7 +45,7 @@ const char BaseRenderingContext2D::kLtrDirectionString[] = "ltr";
 const double BaseRenderingContext2D::kCDeviceScaleFactor = 1.0;
 
 BaseRenderingContext2D::BaseRenderingContext2D()
-    : clip_antialiasing_(kNotAntiAliased) {
+    : clip_antialiasing_(kNotAntiAliased), origin_tainted_by_content_(false) {
   state_stack_.push_back(CanvasRenderingContext2DState::Create());
 }
 
@@ -151,6 +151,7 @@ void BaseRenderingContext2D::Reset() {
 #endif
   }
   ValidateStateStack();
+  origin_tainted_by_content_ = false;
 }
 
 static inline void ConvertCanvasStyleToUnionType(
@@ -195,10 +196,8 @@ void BaseRenderingContext2D::setStrokeStyle(
   } else if (style.IsCanvasPattern()) {
     CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
-    if (OriginClean() && !canvas_pattern->OriginClean()) {
-      SetOriginTainted();
-      ClearResolvedFilters();
-    }
+    if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean())
+      SetOriginTaintedByContent();
 
     canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
   }
@@ -238,9 +237,8 @@ void BaseRenderingContext2D::setFillStyle(
   } else if (style.IsCanvasPattern()) {
     CanvasPattern* canvas_pattern = style.GetAsCanvasPattern();
 
-    if (OriginClean() && !canvas_pattern->OriginClean()) {
-      SetOriginTainted();
-      ClearResolvedFilters();
+    if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean()) {
+      SetOriginTaintedByContent();
     }
     if (canvas_pattern->GetPattern()->IsTextureBacked())
       DisableDeferral(kDisableDeferralReasonUsingTextureBackedPattern);
@@ -1107,7 +1105,9 @@ bool ShouldDisableDeferral(CanvasImageSource* image_source,
   return false;
 }
 
-void BaseRenderingContext2D::ClearResolvedFilters() {
+void BaseRenderingContext2D::SetOriginTaintedByContent() {
+  SetOriginTainted();
+  origin_tainted_by_content_ = true;
   for (auto& state : state_stack_)
     state->ClearResolvedFilter();
 }
@@ -1274,11 +1274,9 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   ValidateStateStack();
 
-  if (OriginClean() &&
-      WouldTaintOrigin(image_source, ExecutionContext::From(script_state))) {
-    SetOriginTainted();
-    ClearResolvedFilters();
-  }
+  if (!origin_tainted_by_content_ &&
+      WouldTaintOrigin(image_source, ExecutionContext::From(script_state)))
+    SetOriginTaintedByContent();
 
   Draw(
       [this, &image_source, &image, &src_rect, dst_rect](

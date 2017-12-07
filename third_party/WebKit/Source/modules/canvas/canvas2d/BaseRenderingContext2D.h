@@ -410,9 +410,14 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void ClearCanvas();
   bool RectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
-  void ClearResolvedFilters();
+  // Sets the origin to be tainted by the content of the canvas, such
+  // as a cross-origin image. This is as opposed to some other reason
+  // such as tainting from a filter applied to the canvas.
+  void SetOriginTaintedByContent();
 
   ImageDataColorSettings GetColorSettingsAsImageDataColorSettings() const;
+
+  bool origin_tainted_by_content_;
 };
 
 template <typename DrawFunc, typename ContainsFunc>
