@@ -2728,6 +2728,13 @@ crbug.com/669473 external/wpt/css/css-ui/outline-014.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui/outline-015.html [ Failure ]
 crbug.com/669473 external/wpt/css/css-ui/outline-016.html [ Failure ]
 
+# Media queries do not support calc() for internal CSS length values.
+crbug.com/421909 external/wpt/css/mediaqueries/mq-calc-001.html [ Failure ]
+crbug.com/421909 external/wpt/css/mediaqueries/mq-calc-002.html [ Failure ]
+crbug.com/421909 external/wpt/css/mediaqueries/mq-calc-003.html [ Failure ]
+crbug.com/421909 external/wpt/css/mediaqueries/mq-calc-004.html [ Failure ]
+crbug.com/421909 external/wpt/css/mediaqueries/mq-calc-005.html [ Failure ]
+
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
