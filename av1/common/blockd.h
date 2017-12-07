@@ -1105,23 +1105,34 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 
 void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
 
-static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
-  const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
-  return AOMMIN(tx_size_cat + 1, MAX_TX_DEPTH);
+static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize, int is_inter) {
+  TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter);
+  int depth = 0;
+  while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
+    depth++;
+    tx_size = sub_tx_size_map[tx_size];
+  }
+  return depth;
 }
 
-static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize) {
-  if (tx_size == max_txsize_rect_intra_lookup[bsize]) return 0;
-  const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
-  const TX_SIZE coded_tx_size = txsize_sqr_map[tx_size];
-  return (int)(tx_size_cat + 1 - (int)coded_tx_size);
+static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize,
+                                   int is_inter) {
+  TX_SIZE ctx_size = get_max_rect_tx_size(bsize, is_inter);
+  int depth = 0;
+  while (tx_size != ctx_size) {
+    depth++;
+    ctx_size = sub_tx_size_map[ctx_size];
+    assert(depth <= MAX_TX_DEPTH);
+  }
+  return depth;
 }
 
-static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize) {
-  if (depth == 0) return max_txsize_rect_intra_lookup[bsize];
-  const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
-  assert(tx_size_cat + 1 - depth >= 0 && tx_size_cat + 1 - depth < TX_SIZES);
-  return (TX_SIZE)(tx_size_cat + 1 - depth);
+static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize,
+                                       int is_inter) {
+  TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, is_inter);
+  TX_SIZE tx_size = max_tx_size;
+  for (int d = 0; d < depth; ++d) tx_size = sub_tx_size_map[tx_size];
+  return tx_size;
 }
 
 static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi,

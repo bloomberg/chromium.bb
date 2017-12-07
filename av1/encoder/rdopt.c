@@ -2324,7 +2324,7 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
     const int is_inter = is_inter_block(mbmi);
     const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                          : intra_tx_size_cat_lookup[bsize];
-    const int depth = tx_size_to_depth(tx_size, bsize);
+    const int depth = tx_size_to_depth(tx_size, bsize, is_inter);
     const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
     return r_tx_size;
@@ -2437,7 +2437,6 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
                             TX_TYPE tx_type, TX_SIZE tx_size, int prune) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const TX_SIZE max_tx_size = max_txsize_lookup[bs];
   const int is_inter = is_inter_block(mbmi);
 
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
@@ -2449,7 +2448,6 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   if (is_inter && x->use_default_inter_tx_type &&
       tx_type != get_default_tx_type(0, xd, 0, tx_size))
     return 1;
-  if (max_tx_size >= TX_32X32 && tx_size == TX_4X4) return 1;
   const AV1_COMMON *const cm = &cpi->common;
   const TxSetType tx_set_type =
       get_ext_tx_set_type(tx_size, bs, is_inter, cm->reduced_tx_set_used);
@@ -2588,74 +2586,28 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   int64_t rd = INT64_MAX;
   int n;
-  int start_tx, end_tx;
+  int start_tx;
+  int depth;
   int64_t best_rd = INT64_MAX, last_rd = INT64_MAX;
-  const TX_SIZE max_tx_size = max_txsize_lookup[bs];
-  TX_SIZE best_tx_size = max_tx_size;
+  const int is_inter = is_inter_block(mbmi);
+  const TX_SIZE max_rect_tx_size = get_max_rect_tx_size(bs, is_inter);
+  TX_SIZE best_tx_size = max_rect_tx_size;
   TX_TYPE best_tx_type = DCT_DCT;
 #if CONFIG_TXK_SEL
   TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
 #endif  // CONFIG_TXK_SEL
   const int tx_select = cm->tx_mode == TX_MODE_SELECT;
-  const int is_inter = is_inter_block(mbmi);
 
   av1_invalid_rd_stats(rd_stats);
 
-  int evaluate_rect_tx = 0;
   if (tx_select) {
-    evaluate_rect_tx = is_rect_tx_allowed(xd, mbmi);
-  } else {
-    const TX_SIZE chosen_tx_size =
-        tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
-    evaluate_rect_tx = is_rect_tx(chosen_tx_size);
-    assert(IMPLIES(evaluate_rect_tx, is_rect_tx_allowed(xd, mbmi)));
-  }
-  if (evaluate_rect_tx) {
-    TX_TYPE tx_start = DCT_DCT;
-    TX_TYPE tx_end = TX_TYPES;
-#if CONFIG_TXK_SEL
-    // The tx_type becomes dummy when lv_map is on. The tx_type search will be
-    // performed in av1_search_txk_type()
-    tx_end = DCT_DCT + 1;
-#endif
-    TX_TYPE tx_type;
-    for (tx_type = tx_start; tx_type < tx_end; ++tx_type) {
-      if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) continue;
-      const TX_SIZE rect_tx_size = get_max_rect_tx_size(bs, is_inter);
-      RD_STATS this_rd_stats;
-      const TxSetType tx_set_type = get_ext_tx_set_type(
-          rect_tx_size, bs, is_inter, cm->reduced_tx_set_used);
-      if (av1_ext_tx_used[tx_set_type][tx_type]) {
-        rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type,
-                      rect_tx_size);
-        ref_best_rd = AOMMIN(rd, ref_best_rd);
-        if (rd < best_rd) {
-#if CONFIG_TXK_SEL
-          memcpy(best_txk_type, mbmi->txk_type,
-                 sizeof(best_txk_type[0]) * MAX_SB_SQUARE /
-                     (TX_SIZE_W_MIN * TX_SIZE_H_MIN));
-#endif
-          best_tx_type = tx_type;
-          best_tx_size = rect_tx_size;
-          best_rd = rd;
-          *rd_stats = this_rd_stats;
-        }
-      }
-#if !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
-      const int is_inter = is_inter_block(mbmi);
-      if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
-#endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
-    }
-  }
-
-  if (tx_select) {
-    start_tx = max_tx_size;
-    end_tx = AOMMAX((int)TX_4X4, start_tx - MAX_TX_DEPTH + evaluate_rect_tx);
+    start_tx = max_rect_tx_size;
+    depth = 0;
   } else {
     const TX_SIZE chosen_tx_size =
         tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
     start_tx = chosen_tx_size;
-    end_tx = chosen_tx_size;
+    depth = MAX_TX_DEPTH;
   }
 
   int prune = 0;
@@ -2665,8 +2617,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   }
 
   last_rd = INT64_MAX;
-  for (n = start_tx; n >= end_tx; --n) {
-    if (is_rect_tx(n)) break;
+  for (n = start_tx; depth <= MAX_TX_DEPTH; depth++, n = sub_tx_size_map[n]) {
     TX_TYPE tx_start = DCT_DCT;
     TX_TYPE tx_end = TX_TYPES;
 #if CONFIG_TXK_SEL
@@ -2683,8 +2634,8 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       // Early termination in transform size search.
       if (cpi->sf.tx_size_search_breakout &&
           (rd == INT64_MAX ||
-           (this_rd_stats.skip == 1 && tx_type != DCT_DCT && n < start_tx) ||
-           (n < (int)max_tx_size && rd > last_rd))) {
+           (this_rd_stats.skip == 1 && tx_type != DCT_DCT && n != start_tx) ||
+           (n != (int)start_tx && rd > last_rd))) {
         break;
       }
 

@@ -429,11 +429,8 @@ static void reset_tx_size(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
         tx_size_from_tx_mode(mbmi->sb_type, tx_mode, is_inter_block(mbmi));
   } else {
     BLOCK_SIZE bsize = mbmi->sb_type;
-    TX_SIZE max_rect_txsize = get_max_rect_tx_size(bsize, is_inter_block(mbmi));
     TX_SIZE min_tx_size =
-        (TX_SIZE)AOMMAX((int)TX_4X4,
-                        txsize_sqr_map[max_rect_txsize] - MAX_TX_DEPTH +
-                            is_rect_tx(max_rect_txsize));
+        depth_to_tx_size(MAX_TX_DEPTH, bsize, is_inter_block(mbmi));
     mbmi->tx_size = (TX_SIZE)AOMMAX(mbmi->tx_size, min_tx_size);
   }
 }
@@ -4538,8 +4535,8 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     const TX_SIZE tx_size = mbmi->tx_size;
     const int tx_size_ctx = get_tx_size_context(xd);
     const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
-    const int depth = tx_size_to_depth(tx_size, bsize);
-    const int max_depths = bsize_to_max_depth(bsize);
+    const int depth = tx_size_to_depth(tx_size, bsize, 0);
+    const int max_depths = bsize_to_max_depth(bsize, 0);
     update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
                max_depths + 1);
   }

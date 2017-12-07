@@ -504,7 +504,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                        : intra_tx_size_cat_lookup[bsize];
-  const int max_depths = bsize_to_max_depth(bsize);
+  const int max_depths = bsize_to_max_depth(bsize, 0);
   const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
@@ -512,7 +512,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     max_depths + 1, ACCT_STR);
   assert(depth >= 0 && depth <= max_depths);
-  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize);
+  const TX_SIZE tx_size = depth_to_tx_size(depth, bsize, 0);
   return tx_size;
 }
 

@@ -263,8 +263,8 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const TX_SIZE tx_size = mbmi->tx_size;
     const int tx_size_ctx = get_tx_size_context(xd);
     const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
-    const int depth = tx_size_to_depth(tx_size, bsize);
-    const int max_depths = bsize_to_max_depth(bsize);
+    const int depth = tx_size_to_depth(tx_size, bsize, 0);
+    const int max_depths = bsize_to_max_depth(bsize, 0);
 
     assert(depth >= 0 && depth <= max_depths);
     assert(!is_inter_block(mbmi));

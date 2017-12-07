@@ -2815,7 +2815,6 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // A block should only fail to have a matching transform if it's
   // large and rectangular (such large transform sizes aren't
   // available).
-  assert(block_width >= 32 && block_height >= 32);
   assert((block_width == wpx && block_height == hpx) ||
          (block_width == (wpx >> 1) && block_height == hpx) ||
          (block_width == wpx && block_height == (hpx >> 1)));
