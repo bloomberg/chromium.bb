@@ -58,6 +58,29 @@ idl_compiler_files =
         ],
         "abspath")
 
+web_idl_scripts = get_path_info([
+                                  "web_idl/argument.py",
+                                  "web_idl/attribute.py",
+                                  "web_idl/callback_function.py",
+                                  "web_idl/collection.py",
+                                  "web_idl/collector.py",
+                                  "web_idl/constant.py",
+                                  "web_idl/dictionary.py",
+                                  "web_idl/ecma_script_types.py",
+                                  "web_idl/enumeration.py",
+                                  "web_idl/extended_attribute.py",
+                                  "web_idl/idl_types.py",
+                                  "web_idl/implements.py",
+                                  "web_idl/interface.py",
+                                  "web_idl/literal_token.py",
+                                  "web_idl/namespace.py",
+                                  "web_idl/operation.py",
+                                  "web_idl/typedef.py",
+                                  "web_idl/utilities.py",
+                                  "web_idl/idl_definition_builder.py",
+                                ],
+                                "abspath")
+
 # Calls the compute_interfaces_info_individual script.
 #
 # Parameters:
@@ -538,5 +561,29 @@ template("generate_origin_trial_features") {
     # http://crbug.com/358074
     deps = invoker.deps +
            [ "//third_party/WebKit/Source/bindings/modules:interfaces_info" ]
+  }
+}
+
+template("generate_web_idl_collection") {
+  action(target_name) {
+    script = "//third_party/WebKit/Source/bindings/scripts/generate_web_idl_collection.py"
+    output_dir = invoker.output_dir
+    output_file_name = invoker.output
+    output_path = "${output_dir}/${output_file_name}"
+    inputs = web_idl_scripts + invoker.sources
+    outputs = [
+      output_path,
+    ]
+
+    # List input file names in a temporary file.
+    response_file_contents = rebase_path(invoker.sources, root_build_dir)
+    args = [
+      "--idl-list-file",
+      "{{response_file_name}}",
+      "--component",
+      invoker.component,
+      "--output",
+      rebase_path(output_path, root_build_dir),
+    ]
   }
 }
