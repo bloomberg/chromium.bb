@@ -197,6 +197,10 @@ void Ui::RequestFocus(int element_id) {
   input_manager_->RequestFocus(element_id);
 }
 
+void Ui::RequestUnfocus(int element_id) {
+  input_manager_->RequestUnfocus(element_id);
+}
+
 void Ui::OnInputEdited(const TextInputInfo& info) {
   input_manager_->OnInputEdited(info);
 }

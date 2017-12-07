@@ -25,6 +25,9 @@ class TextInput : public UiElement {
   // Called when the user enters text while this element is focused.
   typedef base::RepeatingCallback<void(const TextInputInfo&)>
       OnInputEditedCallback;
+  // Called when the user commits text while this element is focused.
+  typedef base::RepeatingCallback<void(const TextInputInfo&)>
+      OnInputCommittedCallback;
   TextInput(int maximum_width_pixels,
             float font_height_meters,
             OnFocusChangedCallback focus_changed_callback,
@@ -37,6 +40,7 @@ class TextInput : public UiElement {
   void OnInputCommitted(const TextInputInfo& info) override;
 
   void RequestFocus();
+  void RequestUnfocus();
   void UpdateInput(const TextInputInfo& info);
 
   void SetHintText(const base::string16& text);
@@ -44,6 +48,10 @@ class TextInput : public UiElement {
   void SetCursorColor(SkColor color);
   void SetHintColor(SkColor color);
   void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
+
+  void set_input_committed_callback(const OnInputCommittedCallback& callback) {
+    input_commit_callback_ = callback;
+  }
 
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Vector3dF& look_at) final;
@@ -60,6 +68,7 @@ class TextInput : public UiElement {
 
   OnFocusChangedCallback focus_changed_callback_;
   OnInputEditedCallback input_edit_callback_;
+  OnInputEditedCallback input_commit_callback_;
   TextInputDelegate* delegate_ = nullptr;
   TextInputInfo text_info_;
   bool focused_ = false;

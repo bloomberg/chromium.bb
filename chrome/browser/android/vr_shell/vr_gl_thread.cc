@@ -57,6 +57,8 @@ void VrGLThread::Init() {
   if (keyboard_enabled) {
     text_input_delegate_->SetRequestFocusCallback(
         base::BindRepeating(&vr::Ui::RequestFocus, base::Unretained(ui.get())));
+    text_input_delegate_->SetRequestUnfocusCallback(base::BindRepeating(
+        &vr::Ui::RequestUnfocus, base::Unretained(ui.get())));
     if (keyboard_delegate) {
       keyboard_delegate_->SetUiInterface(ui.get());
       text_input_delegate_->SetUpdateInputCallback(
