@@ -30,7 +30,9 @@ import gclient_utils
 from third_party import httplib2
 
 LOGGER = logging.getLogger()
-TRY_LIMIT = 5
+# With a starting sleep time of 1 second, 2^n exponential backoff, and six
+# total tries, the sleep time between the first and last tries will be 31s.
+TRY_LIMIT = 6
 
 
 # Controls the transport protocol used to communicate with gerrit.
@@ -258,19 +260,21 @@ class GceAuthenticator(Authenticator):
   def _get(url, **kwargs):
     next_delay_sec = 1
     for i in xrange(TRY_LIMIT):
-      if i > 0:
-        # Retry server error status codes.
-        LOGGER.info('Encountered server error; retrying after %d second(s).',
-                    next_delay_sec)
-        time.sleep(next_delay_sec)
-        next_delay_sec *= 2
-
       p = urlparse.urlparse(url)
       c = GetConnectionObject(protocol=p.scheme)
       resp, contents = c.request(url, 'GET', **kwargs)
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
       if resp.status < httplib.INTERNAL_SERVER_ERROR:
         return (resp, contents)
+
+      # Retry server error status codes.
+      LOGGER.warn('Encountered server error')
+      if TRY_LIMIT - i > 1:
+        LOGGER.info('Will retry in %d seconds (%d more times)...',
+                    next_delay_sec, TRY_LIMIT - i - 1)
+        time.sleep(next_delay_sec)
+        next_delay_sec *= 2
+
 
   @classmethod
   def _get_token_dict(cls):
@@ -341,7 +345,7 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                      Common additions include 204, 400, and 404.
   Returns: A string buffer containing the connection's reply.
   """
-  sleep_time = 0.5
+  sleep_time = 1
   for idx in range(TRY_LIMIT):
     response, contents = conn.request(**conn.req_params)
 
@@ -377,7 +381,8 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
                 conn.req_params['uri'],
                 http_version, http_version, response.status, response.reason)
     if TRY_LIMIT - idx > 1:
-      LOGGER.warn('... will retry %d more times.', TRY_LIMIT - idx - 1)
+      LOGGER.info('Will retry in %d seconds (%d more times)...',
+                  sleep_time, TRY_LIMIT - idx - 1)
       time.sleep(sleep_time)
       sleep_time = sleep_time * 2
   if response.status not in accept_statuses:
