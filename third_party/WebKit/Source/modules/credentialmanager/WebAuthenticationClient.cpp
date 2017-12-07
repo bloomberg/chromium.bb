@@ -21,37 +21,13 @@ namespace blink {
 namespace {
 using PublicKeyCallbacks = WebAuthenticationClient::PublicKeyCallbacks;
 
-WebCredentialManagerError GetWebCredentialManagerErrorFromStatus(
-    webauth::mojom::blink::AuthenticatorStatus status) {
-  switch (status) {
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
-      return WebCredentialManagerError::kWebCredentialManagerNotAllowedError;
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_SUPPORTED_ERROR:
-      return WebCredentialManagerError::kWebCredentialManagerNotSupportedError;
-    case webauth::mojom::blink::AuthenticatorStatus::SECURITY_ERROR:
-      return WebCredentialManagerError::kWebCredentialManagerSecurityError;
-    case webauth::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
-      return WebCredentialManagerError::kWebCredentialManagerUnknownError;
-    case webauth::mojom::blink::AuthenticatorStatus::CANCELLED:
-      return WebCredentialManagerError::kWebCredentialManagerCancelledError;
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
-      return blink::kWebCredentialManagerNotImplementedError;
-    case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
-      NOTREACHED();
-      break;
-  };
-
-  NOTREACHED();
-  return blink::WebCredentialManagerError::kWebCredentialManagerUnknownError;
-}
-
 void RespondToPublicKeyCallback(
     std::unique_ptr<PublicKeyCallbacks> callbacks,
     webauth::mojom::blink::AuthenticatorStatus status,
     webauth::mojom::blink::PublicKeyCredentialInfoPtr credential) {
   if (status != webauth::mojom::AuthenticatorStatus::SUCCESS) {
     DCHECK(!credential);
-    callbacks->OnError(GetWebCredentialManagerErrorFromStatus(status));
+    callbacks->OnError(mojo::ConvertTo<WebCredentialManagerError>(status));
     return;
   }
 

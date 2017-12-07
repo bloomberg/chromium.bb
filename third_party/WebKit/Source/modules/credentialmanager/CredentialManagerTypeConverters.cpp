@@ -32,6 +32,40 @@ using webauth::mojom::blink::PublicKeyCredentialType;
 using webauth::mojom::blink::AuthenticatorTransport;
 
 // static
+blink::WebCredentialManagerError
+TypeConverter<blink::WebCredentialManagerError, AuthenticatorStatus>::Convert(
+    const AuthenticatorStatus& status) {
+  switch (status) {
+    case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
+      return blink::WebCredentialManagerError::
+          kWebCredentialManagerNotAllowedError;
+    case webauth::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
+      return blink::WebCredentialManagerError::
+          kWebCredentialManagerPendingRequestError;
+    case webauth::mojom::blink::AuthenticatorStatus::NOT_SUPPORTED_ERROR:
+      return blink::WebCredentialManagerError::
+          kWebCredentialManagerNotSupportedError;
+    case webauth::mojom::blink::AuthenticatorStatus::SECURITY_ERROR:
+      return blink::WebCredentialManagerError::
+          kWebCredentialManagerSecurityError;
+    case webauth::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
+      return blink::WebCredentialManagerError::
+          kWebCredentialManagerUnknownError;
+    case webauth::mojom::blink::AuthenticatorStatus::CANCELLED:
+      return blink::WebCredentialManagerError::
+          kWebCredentialManagerCancelledError;
+    case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
+      return blink::kWebCredentialManagerNotImplementedError;
+    case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
+      NOTREACHED();
+      break;
+  };
+
+  NOTREACHED();
+  return blink::WebCredentialManagerError::kWebCredentialManagerUnknownError;
+}
+
+// static
 Vector<uint8_t>
 TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView>::Convert(
     const blink::ArrayBufferOrArrayBufferView& buffer) {

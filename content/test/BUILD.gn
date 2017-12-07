@@ -1883,9 +1883,7 @@ test("content_unittests") {
   # Screen capture unit tests.
   if (is_linux || is_mac || is_win) {
     deps += [ "//third_party/libyuv" ]
-    sources += [
-      "../browser/media/capture/web_contents_video_capture_device_unittest.cc",
-    ]
+    sources += [ "../browser/media/capture/web_contents_video_capture_device_unittest.cc" ]
     if (use_aura) {
       sources += [ "../browser/media/capture/cursor_renderer_aura_unittest.cc" ]
     }
@@ -1958,9 +1956,15 @@ test("content_unittests") {
       "../browser/speech/endpointer/endpointer_unittest.cc",
       "../browser/speech/speech_recognition_engine_unittest.cc",
       "../browser/speech/speech_recognizer_impl_unittest.cc",
-      "../browser/webauth/authenticator_impl_unittest.cc",
     ]
     deps += [ "//third_party/libvpx" ]
+  }
+
+  # HID support is not available without udev.
+  is_linux_without_udev = is_linux && !use_udev
+  if (!is_linux_without_udev && !is_android) {
+    sources += [ "../browser/webauth/authenticator_impl_unittest.cc" ]
+    deps += [ "//device/u2f:test_support" ]
   }
 
   if (use_aura) {

@@ -110,3 +110,23 @@ fuzzer_test("u2f_ble_frames_fuzzer") {
   ]
   libfuzzer_options = [ "max_len=65535" ]
 }
+
+is_linux_without_udev = is_linux && !use_udev
+
+source_set("test_support") {
+  testonly = true
+
+  # Android doesn't compile.
+  # Linux, requires udev.
+  if (!is_linux_without_udev && !is_android) {
+    sources = [
+      "fake_hid_impl_for_testing.cc",
+      "fake_hid_impl_for_testing.h",
+    ]
+    deps = [
+      "//base",
+      "//mojo/public/cpp/bindings",
+      "//services/device/public/interfaces",
+    ]
+  }
+}

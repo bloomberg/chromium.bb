@@ -7,6 +7,7 @@
 
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCredentialManagerError.h"
 #include "public/platform/modules/webauth/authenticator.mojom-blink.h"
 
 namespace blink {
@@ -20,6 +21,12 @@ class PublicKeyCredentialUserEntity;
 namespace mojo {
 
 // webauth::mojom::blink::Authenticator ---------------------------------------
+template <>
+struct TypeConverter<blink::WebCredentialManagerError,
+                     webauth::mojom::blink::AuthenticatorStatus> {
+  static blink::WebCredentialManagerError Convert(
+      const webauth::mojom::blink::AuthenticatorStatus&);
+};
 
 template <>
 struct TypeConverter<Vector<uint8_t>, blink::ArrayBufferOrArrayBufferView> {

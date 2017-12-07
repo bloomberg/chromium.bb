@@ -7,8 +7,12 @@
 #include <string>
 
 #include "base/base64url.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "content/browser/webauth/attestation_object.h"
 #include "content/browser/webauth/attested_credential_data.h"
 #include "content/browser/webauth/authenticator_data.h"
@@ -23,7 +27,9 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_frame_host.h"
+#include "device/u2f/fake_hid_impl_for_testing.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/interfaces/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -464,6 +470,16 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     return authenticator;
   }
 
+  AuthenticatorPtr ConnectToAuthenticator(
+      service_manager::Connector* connector,
+      std::unique_ptr<base::OneShotTimer> timer) {
+    authenticator_impl_.reset(
+        new AuthenticatorImpl(main_rfh(), connector, std::move(timer)));
+    AuthenticatorPtr authenticator;
+    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
+    return authenticator;
+  }
+
  private:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
 };
@@ -658,6 +674,46 @@ TEST_F(AuthenticatorImplTest, TestRegisterResponseData) {
   EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_id());
   EXPECT_EQ(GetTestAttestationObjectBytes(),
             response->GetCBOREncodedAttestationObject());
+}
+
+TEST_F(AuthenticatorImplTest, TestTimeout) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  MakePublicKeyCredentialOptionsPtr options =
+      GetTestMakePublicKeyCredentialOptions();
+  TestMakeCredentialCallback cb;
+
+  // Set up service_manager::Connector for tests.
+  std::unique_ptr<device::FakeHidManager> fake_hid_manager =
+      std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  std::unique_ptr<service_manager::Connector> connector =
+      service_manager::Connector::Create(&request);
+  service_manager::Connector::TestApi test_api(connector.get());
+  test_api.OverrideBinderForTesting(
+      device::mojom::kServiceName, device::mojom::HidManager::Name_,
+      base::Bind(&device::FakeHidManager::AddBinding,
+                 base::Unretained(fake_hid_manager.get())));
+
+  // Set up a timer for testing.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
+      new base::TestMockTimeTaskRunner(base::Time::Now(),
+                                       base::TimeTicks::Now()));
+  std::unique_ptr<base::TickClock> tick_clock = task_runner->GetMockTickClock();
+  auto timer = base::MakeUnique<base::OneShotTimer>(tick_clock.get());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+
+  authenticator->MakeCredential(std::move(options), cb.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  std::pair<webauth::mojom::AuthenticatorStatus,
+            webauth::mojom::PublicKeyCredentialInfoPtr>& response =
+      cb.WaitForCallback();
+  EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
+            response.first);
 }
 
 }  // namespace content
