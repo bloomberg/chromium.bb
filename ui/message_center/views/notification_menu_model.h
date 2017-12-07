@@ -26,7 +26,7 @@ class MESSAGE_CENTER_EXPORT NotificationMenuModel
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  Notification notification_;
+  const std::string notification_id_;
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuModel);
 };
 

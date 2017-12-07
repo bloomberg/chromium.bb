@@ -541,6 +541,17 @@ void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {
   }
 }
 
+void MessageCenterImpl::DisableNotification(const std::string& id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!iterating_);
+  Notification* notification = notification_list_->GetNotificationById(id);
+
+  if (notification && notification->delegate()) {
+    notification->delegate()->DisableNotification();
+    RemoveNotificationsForNotifierId(notification->notifier_id());
+  }
+}
+
 void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

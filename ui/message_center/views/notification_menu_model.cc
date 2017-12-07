@@ -24,7 +24,7 @@ const int kShowSettingsCommand = 1;
 }  // namespace
 
 NotificationMenuModel::NotificationMenuModel(const Notification& notification)
-    : ui::SimpleMenuModel(this), notification_(notification) {
+    : ui::SimpleMenuModel(this), notification_id_(notification.id()) {
   DCHECK(!notification.display_source().empty());
   AddItem(kTogglePermissionCommand,
           l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_NOTIFIER_DISABLE,
@@ -53,13 +53,10 @@ bool NotificationMenuModel::IsCommandIdEnabled(int command_id) const {
 void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case kTogglePermissionCommand:
-      notification_.delegate()->DisableNotification();
-      // TODO(estade): this will not close other open notifications from the
-      // same site.
-      MessageCenter::Get()->RemoveNotification(notification_.id(), false);
+      MessageCenter::Get()->DisableNotification(notification_id_);
       break;
     case kShowSettingsCommand:
-      MessageCenter::Get()->ClickOnSettingsButton(notification_.id());
+      MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
       break;
     default:
       NOTREACHED();
