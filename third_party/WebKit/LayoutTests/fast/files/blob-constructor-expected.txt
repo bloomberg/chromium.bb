@@ -31,12 +31,6 @@ PASS new Blob([(new Float64Array(100)).buffer]).size is 800
 PASS new Blob([(new Float64Array(100)).buffer, (new Int32Array(100)).buffer, (new Uint8Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size is 1400
 PASS new Blob([new Blob([(new Int32Array(100)).buffer]), (new Uint8Array(100)).buffer, (new Float32Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size is 1000
 PASS new Blob([new Uint8Array(new SharedArrayBuffer(4))]) threw exception TypeError: Failed to construct 'Blob': The provided ArrayBufferView value must not be shared..
-PASS OMICRON_WITH_OXIA.charCodeAt(0) is 0x1F79
-PASS reader.result.charCodeAt(0) is 0x1F79
-PASS CONTAINS_UNPAIRED_SURROGATES.charCodeAt(3) is 0xDC00
-PASS CONTAINS_UNPAIRED_SURROGATES.charCodeAt(7) is 0xD800
-PASS reader.result.charCodeAt(3) is 0xFFFD
-PASS reader.result.charCodeAt(7) is 0xFFFD
 PASS successfullyParsed is true
 
 TEST COMPLETE
