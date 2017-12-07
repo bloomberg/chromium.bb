@@ -33,6 +33,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "components/viz/service/display_embedder/gl_output_surface_mac.h"
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
 #endif
 
@@ -129,6 +130,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           std::move(context_provider), widget,
           synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get(),
           GL_TEXTURE_2D, GL_RGB);
+#elif defined(OS_MACOSX)
+      output_surface = base::MakeUnique<GLOutputSurfaceMac>(
+          std::move(context_provider), synthetic_begin_frame_source.get());
 #else
       NOTREACHED();
 #endif

@@ -7,6 +7,10 @@
 
 #include "components/viz/common/quads/render_pass.h"
 
+namespace gfx {
+struct CALayerParams;
+}  // namespace gfx
+
 namespace viz {
 
 class DisplayClient {
@@ -16,6 +20,8 @@ class DisplayClient {
   virtual void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                                       const RenderPassList& render_passes) = 0;
   virtual void DisplayDidDrawAndSwap() = 0;
+  virtual void DisplayDidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) = 0;
 };
 
 }  // namespace viz

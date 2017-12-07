@@ -107,6 +107,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void DidReceiveSwapBuffersAck(uint64_t swap_id) override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
+  void DidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override;
   void DidReceivePresentationFeedback(
       uint64_t swap_id,
       const gfx::PresentationFeedback& feedback) override;

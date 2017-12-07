@@ -224,6 +224,9 @@ void TestLayerTreeFrameSink::DisplayDidDrawAndSwap() {
   test_client_->DisplayDidDrawAndSwap();
 }
 
+void TestLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
+    const gfx::CALayerParams& ca_layer_params) {}
+
 void TestLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }

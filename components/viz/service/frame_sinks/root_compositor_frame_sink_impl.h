@@ -74,6 +74,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                               const RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;
+  void DisplayDidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override;
 
   void OnClientConnectionLost();
 

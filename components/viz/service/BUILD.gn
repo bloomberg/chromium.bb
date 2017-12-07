@@ -201,6 +201,8 @@ viz_component("service") {
     sources += [
       "display_embedder/compositor_overlay_candidate_validator_mac.h",
       "display_embedder/compositor_overlay_candidate_validator_mac.mm",
+      "display_embedder/gl_output_surface_mac.cc",
+      "display_embedder/gl_output_surface_mac.h",
       "display_embedder/software_output_device_mac.h",
       "display_embedder/software_output_device_mac.mm",
     ]

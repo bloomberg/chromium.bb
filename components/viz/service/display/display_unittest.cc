@@ -186,6 +186,8 @@ class StubDisplayClient : public DisplayClient {
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
                               const RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
+  void DisplayDidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override{};
 };
 
 void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {

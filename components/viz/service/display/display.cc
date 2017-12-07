@@ -461,6 +461,12 @@ void Display::DidReceiveTextureInUseResponses(
     renderer_->DidReceiveTextureInUseResponses(responses);
 }
 
+void Display::DidReceiveCALayerParams(
+    const gfx::CALayerParams& ca_layer_params) {
+  if (client_)
+    client_->DisplayDidReceiveCALayerParams(ca_layer_params);
+}
+
 void Display::DidReceivePresentationFeedback(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {

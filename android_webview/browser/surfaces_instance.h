@@ -64,6 +64,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
       bool will_draw_and_swap,
       const viz::RenderPassList& render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
+  void DisplayDidReceiveCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override {}
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

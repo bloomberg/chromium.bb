@@ -132,6 +132,12 @@ void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {
   // be drawn.
 }
 
+void DirectLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
+    const gfx::CALayerParams& ca_layer_params) {
+  // TODO(ccameron): Continue plumbing |ca_layer_params| through to
+  // ui::AcceleratedWidgetMac.
+}
+
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
