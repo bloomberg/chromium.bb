@@ -21,11 +21,15 @@ class StyleContentAlignmentData {
       ContentPosition position,
       ContentDistributionType distribution,
       OverflowAlignment overflow = kOverflowAlignmentDefault)
-      : position_(position), distribution_(distribution), overflow_(overflow) {}
+      : position_(static_cast<unsigned>(position)),
+        distribution_(static_cast<unsigned>(distribution)),
+        overflow_(overflow) {}
 
-  void SetPosition(ContentPosition position) { position_ = position; }
+  void SetPosition(ContentPosition position) {
+    position_ = static_cast<unsigned>(position);
+  }
   void SetDistribution(ContentDistributionType distribution) {
-    distribution_ = distribution;
+    distribution_ = static_cast<unsigned>(distribution);
   }
   void SetOverflow(OverflowAlignment overflow) { overflow_ = overflow; }
 

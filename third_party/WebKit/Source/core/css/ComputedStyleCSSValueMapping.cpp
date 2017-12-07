@@ -663,18 +663,18 @@ ValueForContentPositionAndDistributionWithOverflowAlignment(
     const StyleContentAlignmentData& data) {
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
   // Handle content-distribution values
-  if (data.Distribution() != kContentDistributionDefault)
+  if (data.Distribution() != ContentDistributionType::kDefault)
     result->Append(*CSSIdentifierValue::Create(data.Distribution()));
 
   // Handle content-position values (either as fallback or actual value)
   switch (data.GetPosition()) {
-    case kContentPositionNormal:
+    case ContentPosition::kNormal:
       // Handle 'normal' value, not valid as content-distribution fallback.
-      if (data.Distribution() == kContentDistributionDefault) {
+      if (data.Distribution() == ContentDistributionType::kDefault) {
         result->Append(*CSSIdentifierValue::Create(CSSValueNormal));
       }
       break;
-    case kContentPositionLastBaseline:
+    case ContentPosition::kLastBaseline:
       result->Append(
           *CSSValuePair::Create(CSSIdentifierValue::Create(CSSValueLast),
                                 CSSIdentifierValue::Create(CSSValueBaseline),
@@ -685,8 +685,8 @@ ValueForContentPositionAndDistributionWithOverflowAlignment(
   }
 
   // Handle overflow-alignment (only allowed for content-position values)
-  if ((data.GetPosition() >= kContentPositionCenter ||
-       data.Distribution() != kContentDistributionDefault) &&
+  if ((data.GetPosition() >= ContentPosition::kCenter ||
+       data.Distribution() != ContentDistributionType::kDefault) &&
       data.Overflow() != kOverflowAlignmentDefault)
     result->Append(*CSSIdentifierValue::Create(data.Overflow()));
   DCHECK_GT(result->length(), 0u);

@@ -35,8 +35,8 @@ class ComputedStyleInitialValues{
   // Hand-written methods.
 
   static StyleContentAlignmentData InitialContentAlignment() {
-    return StyleContentAlignmentData(kContentPositionNormal,
-                                     kContentDistributionDefault,
+    return StyleContentAlignmentData(ContentPosition::kNormal,
+                                     ContentDistributionType::kDefault,
                                      kOverflowAlignmentDefault);
   }
   static StyleSelfAlignmentData InitialDefaultAlignment() {

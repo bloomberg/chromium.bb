@@ -1643,34 +1643,34 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ContentPosition content_position)
     : CSSValue(kIdentifierClass) {
   switch (content_position) {
-    case kContentPositionNormal:
+    case ContentPosition::kNormal:
       value_id_ = CSSValueNormal;
       break;
-    case kContentPositionBaseline:
+    case ContentPosition::kBaseline:
       value_id_ = CSSValueBaseline;
       break;
-    case kContentPositionLastBaseline:
+    case ContentPosition::kLastBaseline:
       value_id_ = CSSValueLastBaseline;
       break;
-    case kContentPositionCenter:
+    case ContentPosition::kCenter:
       value_id_ = CSSValueCenter;
       break;
-    case kContentPositionStart:
+    case ContentPosition::kStart:
       value_id_ = CSSValueStart;
       break;
-    case kContentPositionEnd:
+    case ContentPosition::kEnd:
       value_id_ = CSSValueEnd;
       break;
-    case kContentPositionFlexStart:
+    case ContentPosition::kFlexStart:
       value_id_ = CSSValueFlexStart;
       break;
-    case kContentPositionFlexEnd:
+    case ContentPosition::kFlexEnd:
       value_id_ = CSSValueFlexEnd;
       break;
-    case kContentPositionLeft:
+    case ContentPosition::kLeft:
       value_id_ = CSSValueLeft;
       break;
-    case kContentPositionRight:
+    case ContentPosition::kRight:
       value_id_ = CSSValueRight;
       break;
   }
@@ -1680,32 +1680,32 @@ template <>
 inline ContentPosition CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueNormal:
-      return kContentPositionNormal;
+      return ContentPosition::kNormal;
     case CSSValueBaseline:
-      return kContentPositionBaseline;
+      return ContentPosition::kBaseline;
     case CSSValueFirstBaseline:
-      return kContentPositionBaseline;
+      return ContentPosition::kBaseline;
     case CSSValueLastBaseline:
-      return kContentPositionLastBaseline;
+      return ContentPosition::kLastBaseline;
     case CSSValueCenter:
-      return kContentPositionCenter;
+      return ContentPosition::kCenter;
     case CSSValueStart:
-      return kContentPositionStart;
+      return ContentPosition::kStart;
     case CSSValueEnd:
-      return kContentPositionEnd;
+      return ContentPosition::kEnd;
     case CSSValueFlexStart:
-      return kContentPositionFlexStart;
+      return ContentPosition::kFlexStart;
     case CSSValueFlexEnd:
-      return kContentPositionFlexEnd;
+      return ContentPosition::kFlexEnd;
     case CSSValueLeft:
-      return kContentPositionLeft;
+      return ContentPosition::kLeft;
     case CSSValueRight:
-      return kContentPositionRight;
+      return ContentPosition::kRight;
     default:
       break;
   }
   NOTREACHED();
-  return kContentPositionNormal;
+  return ContentPosition::kNormal;
 }
 
 template <>
@@ -1713,19 +1713,19 @@ inline CSSIdentifierValue::CSSIdentifierValue(
     ContentDistributionType content_distribution)
     : CSSValue(kIdentifierClass) {
   switch (content_distribution) {
-    case kContentDistributionDefault:
+    case ContentDistributionType::kDefault:
       value_id_ = CSSValueDefault;
       break;
-    case kContentDistributionSpaceBetween:
+    case ContentDistributionType::kSpaceBetween:
       value_id_ = CSSValueSpaceBetween;
       break;
-    case kContentDistributionSpaceAround:
+    case ContentDistributionType::kSpaceAround:
       value_id_ = CSSValueSpaceAround;
       break;
-    case kContentDistributionSpaceEvenly:
+    case ContentDistributionType::kSpaceEvenly:
       value_id_ = CSSValueSpaceEvenly;
       break;
-    case kContentDistributionStretch:
+    case ContentDistributionType::kStretch:
       value_id_ = CSSValueStretch;
       break;
   }
@@ -1735,18 +1735,18 @@ template <>
 inline ContentDistributionType CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueSpaceBetween:
-      return kContentDistributionSpaceBetween;
+      return ContentDistributionType::kSpaceBetween;
     case CSSValueSpaceAround:
-      return kContentDistributionSpaceAround;
+      return ContentDistributionType::kSpaceAround;
     case CSSValueSpaceEvenly:
-      return kContentDistributionSpaceEvenly;
+      return ContentDistributionType::kSpaceEvenly;
     case CSSValueStretch:
-      return kContentDistributionStretch;
+      return ContentDistributionType::kStretch;
     default:
       break;
   }
   NOTREACHED();
-  return kContentDistributionStretch;
+  return ContentDistributionType::kStretch;
 }
 
 template <>
