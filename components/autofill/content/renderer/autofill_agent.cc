@@ -824,9 +824,20 @@ void AutofillAgent::OnInferredFormSubmission(SubmissionSource source) {
     return;
   }
 
-  FormData form_data;
-  if (GetSubmittedForm(&form_data)) {
-    FireHostSubmitEvents(form_data, /*known_success=*/true);
+  if (source == SubmissionSource::FRAME_DETACHED) {
+    // Should not access the frame because it is now detached. Instead, use
+    // |constructed_form_| or |last_interacted_form_| depending on whether the
+    // form is formless or not.
+    if (!last_interacted_form_.IsNull()) {
+      FireHostSubmitEvents(last_interacted_form_, /*known_success=*/true);
+    } else if (constructed_form_) {
+      FireHostSubmitEvents(*constructed_form_, /*known_success=*/true);
+    }
+  } else {
+    FormData form_data;
+    if (GetSubmittedForm(&form_data)) {
+      FireHostSubmitEvents(form_data, /*known_success=*/true);
+    }
   }
   ResetLastInteractedElements();
 }
