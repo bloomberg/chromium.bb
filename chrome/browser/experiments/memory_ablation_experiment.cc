@@ -12,6 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/process/process_metrics.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
 
@@ -86,13 +87,26 @@ void MemoryAblationExperiment::AllocateMemory(size_t size) {
 void MemoryAblationExperiment::TouchMemory(size_t offset) {
   if (memory_) {
     size_t page_size = base::GetPageSize();
-    auto* memory = static_cast<volatile uint8_t*>(memory_.get());
+    uint8_t* memory = memory_.get();
     size_t max_offset = std::min(offset + kTouchChunkSize, memory_size_);
+    if (offset == 0) {
+      // Fill the first page with random bytes. We'll use this page as
+      // a template for all other pages.
+      size_t rand_size = std::min(page_size, memory_size_);
+      base::RandBytes(memory, rand_size);
+      offset += rand_size;
+    }
     for (; offset < max_offset; offset += page_size) {
-      memory[offset] = static_cast<uint8_t>(offset);
+      // Copy from the first page.
+      size_t copy_size = std::min(page_size, max_offset - offset);
+      memcpy(memory + offset, memory, copy_size);
+      // Make this page different by stamping it with the offset.
+      if (copy_size >= sizeof(size_t)) {
+        *reinterpret_cast<size_t*>(memory + offset) = offset;
+      }
     }
     // Make sure compiler doesn't optimize away the writes.
-    base::debug::Alias(memory_.get());
+    base::debug::Alias(memory);
     if (offset < memory_size_) {
       ScheduleTouchMemory(offset);
     }
