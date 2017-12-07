@@ -543,7 +543,15 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               HasOneSample(3));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 15));
+
+  // For --site-per-process, the total process count will be 12 instead of 15,
+  // because the third tab's subframes (b, c, d) will reuse matching subframe
+  // processes from the second tab (across BrowsingInstances).  This subframe
+  // process consolidation was added as part of https://crbug.com/512560.  Note
+  // that the a.com main frame in tab 3 won't reuse tab 2's main frame process,
+  // so this is still one process higher than the lower bound.
+  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 12));
+
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 17));
   EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
@@ -610,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               HasOneSample(3));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 16));
+  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(3, 3, 13));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 0, 21));
   EXPECT_THAT(details->uma()->GetAllSamples("SiteIsolation.ProxyCount"),
@@ -899,7 +907,18 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, MAYBE_IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               HasOneSample(4));
-  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 4, 4));
+
+  // As part of https://crbug.com/512560, subframes that require a dedicated
+  // process started reusing existing processes when possible, so under
+  // --site-per-process, tab1's web iframe will share the process with tab2's
+  // web iframe, since they have the same site. This won't affect
+  // --isolate-extensions, because the web iframe's site won't require a
+  // dedicated process in that mode. Hence, with site-per-process, there should
+  // be three total renderer processes: one for the two web iframes, one for
+  // extension3, and one for extension 1's background page. With only
+  // --isolate-extensions, there should be four total renderer processes, as
+  // each web iframe will go into its own process.
+  EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 4, 3));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 2));
 }

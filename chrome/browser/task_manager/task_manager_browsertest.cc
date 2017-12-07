@@ -1324,29 +1324,38 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, OrderingOfDependentRows) {
   // random e.g. zygote or gpu activity).
   index = FindResourceIndex(MatchTab("Cross-site iframe factory"));
 
-  // Tab 2's rows should immediately follow tab 1.
-  int tab2_start = index + static_cast<int>(subframe_offsets.size()) + 1;
-  int tab2_count = ShouldExpectSubframes() ? 4 : 1;
-  ASSERT_LE(tab2_start + tab2_count, model()->GetRowCount());
-
+  // All of Tab 2's subframes will reuse Tab 1's existing processes for
+  // corresponding sites.  Tab 2's d.com main frame row should then appear
+  // after all the subframe processes.
+  int tab2_subframe_count = ShouldExpectSubframes() ? 3 : 0;
+  int tab2_main_frame_index = index +
+                              static_cast<int>(subframe_offsets.size()) +
+                              tab2_subframe_count + 1;
   EXPECT_EQ("Tab: Cross-site iframe factory",
-            base::UTF16ToUTF8(model()->GetRowTitle(tab2_start)));
-  if (ShouldExpectSubframes()) {
-    // The relative ordering of tab1's subframe rows shall be the same as what
-    // was observed previously.
-    ASSERT_EQ(subframe_offsets[0],
-              FindResourceIndex(MatchSubframe("http://b.com/")) - index);
-    ASSERT_EQ(subframe_offsets[1],
-              FindResourceIndex(MatchSubframe("http://c.com/")) - index);
-    ASSERT_EQ(subframe_offsets[2],
-              FindResourceIndex(MatchSubframe("http://d.com/")) - index);
+            base::UTF16ToUTF8(model()->GetRowTitle(tab2_main_frame_index)));
 
-    // Because the subframes for tab 2 are nested, their order is deterministic.
-    EXPECT_EQ("Subframe: http://a.com/",
-              base::UTF16ToUTF8(model()->GetRowTitle(tab2_start + 1)));
-    EXPECT_EQ("Subframe: http://c.com/",
-              base::UTF16ToUTF8(model()->GetRowTitle(tab2_start + 2)));
+  if (ShouldExpectSubframes()) {
+    // Tab 2's a.com subframe should share Tab 1's main frame process and go
+    // directly below it.
+    EXPECT_EQ(index + 1, FindResourceIndex(MatchSubframe("http://a.com/")));
+
+    // The other tab 2 subframes (b.com and c.com) should join existing
+    // subframe processes from tab 1.  Check that the b.com and c.com subframe
+    // processes now have two rows each.
+    int subframe_b_index = FindResourceIndex(MatchSubframe("http://b.com/"));
+    int subframe_c_index = FindResourceIndex(MatchSubframe("http://c.com/"));
+    int subframe_d_index = FindResourceIndex(MatchSubframe("http://d.com/"));
     EXPECT_EQ("Subframe: http://b.com/",
-              base::UTF16ToUTF8(model()->GetRowTitle(tab2_start + 3)));
+              base::UTF16ToUTF8(model()->GetRowTitle(subframe_b_index + 1)));
+    EXPECT_EQ("Subframe: http://c.com/",
+              base::UTF16ToUTF8(model()->GetRowTitle(subframe_c_index + 1)));
+
+    // The subframe processes should preserve their relative ordering.
+    EXPECT_EQ(subframe_offsets[0] < subframe_offsets[1],
+              subframe_b_index < subframe_c_index);
+    EXPECT_EQ(subframe_offsets[1] < subframe_offsets[2],
+              subframe_c_index < subframe_d_index);
+    EXPECT_EQ(subframe_offsets[0] < subframe_offsets[2],
+              subframe_b_index < subframe_d_index);
   }
 }

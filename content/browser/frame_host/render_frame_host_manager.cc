@@ -1244,16 +1244,13 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // BrowserContext.
   DCHECK_EQ(new_instance->GetBrowserContext(), browser_context);
 
-  // If |new_instance| is a new SiteInstance for a subframe with an isolated
-  // origin, set its process reuse policy so that such subframes are
-  // consolidated into existing processes for that isolated origin.
+  // If |new_instance| is a new SiteInstance for a subframe that requires a
+  // dedicated process, set its process reuse policy so that such subframes are
+  // consolidated into existing processes for that site.
   SiteInstanceImpl* new_instance_impl =
       static_cast<SiteInstanceImpl*>(new_instance.get());
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!frame_tree_node_->IsMainFrame() && !new_instance_impl->HasProcess() &&
-      new_instance_impl->HasSite() &&
-      policy->IsIsolatedOrigin(
-          url::Origin::Create(new_instance_impl->GetSiteURL()))) {
+      new_instance_impl->RequiresDedicatedProcess()) {
     new_instance_impl->set_process_reuse_policy(
         SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   }
