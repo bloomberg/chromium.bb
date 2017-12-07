@@ -38,8 +38,6 @@ public class NativeTest {
             "org.chromium.native_test.NativeTest.Shard";
     public static final String EXTRA_STDOUT_FILE =
             "org.chromium.native_test.NativeTest.StdoutFile";
-    public static final String EXTRA_UBSAN_OPTIONS =
-            "org.chromium.native_test.NativeTest.UBSAN_OPTIONS";
 
     private static final String TAG = "cr_NativeTest";
 
