@@ -75,12 +75,6 @@ extern const char kBrowserUnpinTrace[];
 #if defined(OS_WIN)
 extern const char kHungAudioThreadDetails[];
 
-// Hung renderer crash reports are only sent on Windows.
-extern const char kHungRendererOutstandingAckCount[];
-extern const char kHungRendererOutstandingEventType[];
-extern const char kHungRendererLastEventType[];
-extern const char kHungRendererReason[];
-
 // Whether the machine is enterprise managed (only sent on Windows).
 extern const char kIsEnterpriseManaged[];
 

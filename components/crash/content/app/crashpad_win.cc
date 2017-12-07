@@ -172,8 +172,10 @@ DWORD WINAPI DumpProcessForHungInputThread(void* crash_keys_str) {
   if (crash_keys_str && base::SplitStringIntoKeyValuePairs(
                             reinterpret_cast<const char*>(crash_keys_str), ':',
                             ',', &crash_keys)) {
+    auto* simple_annotations =
+        crashpad::CrashpadInfo::GetCrashpadInfo()->simple_annotations();
     for (const auto& crash_key : crash_keys) {
-      base::debug::SetCrashKeyValue(crash_key.first, crash_key.second);
+      simple_annotations->SetKeyValue(crash_key.first, crash_key.second);
     }
   }
   DumpWithoutCrashing();

@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
@@ -50,8 +49,7 @@ void KillPluginOnIOThread(int child_id) {
     const content::ChildProcessData& data = iter.GetData();
     if (data.id == child_id) {
 #if defined(OS_WIN)
-      base::StringPairs crash_keys = {
-          {crash_keys::kHungRendererReason, "plugin"}};
+      base::StringPairs crash_keys = {{"hung-reason", "plugin"}};
       CrashDumpAndTerminateHungChildProcess(data.handle, crash_keys);
 #else
       base::Process process =
