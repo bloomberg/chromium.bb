@@ -43,7 +43,7 @@ static constexpr char const* kFragmentShader = SHADER(
 }  // namespace
 
 Controller::Controller() {
-  set_name(kController);
+  SetName(kController);
   set_hit_testable(false);
   SetVisible(true);
 }

@@ -70,7 +70,7 @@ TEST(Button, SizePropagatesToSubElements) {
 
 TEST(Button, DrawPhasePropagatesToSubElements) {
   Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
-  button.set_draw_phase(kPhaseOverlayForeground);
+  button.SetDrawPhase(kPhaseOverlayForeground);
 
   for (auto& child : button.children()) {
     EXPECT_EQ(kPhaseOverlayForeground, child->draw_phase());
@@ -79,7 +79,7 @@ TEST(Button, DrawPhasePropagatesToSubElements) {
 
 TEST(Button, NamePropagatesToSubElements) {
   Button button(base::Callback<void()>(), vector_icons::kMicrophoneIcon);
-  button.set_name(kCloseButton);
+  button.SetName(kCloseButton);
 
   for (auto& child : button.children()) {
     EXPECT_EQ(child->owner_name_for_test(), kCloseButton);

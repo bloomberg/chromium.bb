@@ -1002,13 +1002,13 @@ TEST(UiReticleTest, ReticleRenderedOnPlanarChildren) {
   Model model;
 
   auto reticle = base::MakeUnique<Reticle>(&scene, &model);
-  reticle->set_draw_phase(kPhaseNone);
+  reticle->SetDrawPhase(kPhaseNone);
   scene.root_element().AddChild(std::move(reticle));
 
   auto element = base::MakeUnique<UiElement>();
   UiElement* parent = element.get();
-  parent->set_draw_phase(kPhaseForeground);
-  parent->set_name(k2dBrowsingRoot);
+  parent->SetDrawPhase(kPhaseForeground);
+  parent->SetName(k2dBrowsingRoot);
   scene.root_element().AddChild(std::move(element));
   model.reticle.target_element_id = parent->id();
 
@@ -1020,7 +1020,7 @@ TEST(UiReticleTest, ReticleRenderedOnPlanarChildren) {
   //   - Rotated
   for (int i = 0; i < 4; i++) {
     element = base::MakeUnique<UiElement>();
-    element->set_draw_phase(kPhaseForeground);
+    element->SetDrawPhase(kPhaseForeground);
     parent->AddChild(std::move(element));
   }
   parent->children()[1]->SetTranslate(1, 0, 0);
@@ -1081,7 +1081,7 @@ TEST_F(UiTest, ReticleStackingAtopForeground) {
   CreateScene(kNotInCct, kNotInWebVr);
   UiElement* element = scene_->GetUiElementByName(kContentQuad);
   EXPECT_TRUE(element);
-  element->set_draw_phase(kPhaseOverlayForeground);
+  element->SetDrawPhase(kPhaseOverlayForeground);
   model_->reticle.target_element_id = element->id();
   auto unsorted = scene_->GetVisible2dBrowsingOverlayElements();
   auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
@@ -1110,7 +1110,7 @@ TEST_F(UiTest, ReticleStackingWithControllerElements) {
   CreateScene(kNotInCct, kNotInWebVr);
   UiElement* element = scene_->GetUiElementByName(kReticle);
   EXPECT_TRUE(element);
-  element->set_draw_phase(kPhaseBackground);
+  element->SetDrawPhase(kPhaseBackground);
   EXPECT_NE(scene_->GetUiElementByName(kLaser)->draw_phase(),
             element->draw_phase());
   model_->reticle.target_element_id = 0;

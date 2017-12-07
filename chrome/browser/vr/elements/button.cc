@@ -29,7 +29,7 @@ Button::Button(base::Callback<void()> click_handler,
   set_hit_testable(false);
 
   auto background = base::MakeUnique<Rect>();
-  background->set_type(kTypeButtonBackground);
+  background->SetType(kTypeButtonBackground);
   background->set_bubble_events(true);
   background->SetTransitionedProperties({TRANSFORM});
   background->set_hit_testable(false);
@@ -37,7 +37,7 @@ Button::Button(base::Callback<void()> click_handler,
   AddChild(std::move(background));
 
   auto vector_icon = base::MakeUnique<VectorIcon>(512);
-  vector_icon->set_type(kTypeButtonForeground);
+  vector_icon->SetType(kTypeButtonForeground);
   vector_icon->SetIcon(icon);
   vector_icon->set_bubble_events(true);
   vector_icon->SetTransitionedProperties({TRANSFORM});
@@ -46,7 +46,7 @@ Button::Button(base::Callback<void()> click_handler,
   AddChild(std::move(vector_icon));
 
   auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
-  hit_plane->set_type(kTypeButtonHitTarget);
+  hit_plane->SetType(kTypeButtonHitTarget);
   hit_plane->set_bubble_events(true);
   hit_plane_ = hit_plane.get();
   foreground_->AddChild(std::move(hit_plane));
@@ -121,9 +121,9 @@ void Button::OnStateUpdated() {
 }
 
 void Button::OnSetDrawPhase() {
-  background_->set_draw_phase(draw_phase());
-  foreground_->set_draw_phase(draw_phase());
-  hit_plane_->set_draw_phase(draw_phase());
+  background_->SetDrawPhase(draw_phase());
+  foreground_->SetDrawPhase(draw_phase());
+  hit_plane_->SetDrawPhase(draw_phase());
 }
 
 void Button::OnSetName() {

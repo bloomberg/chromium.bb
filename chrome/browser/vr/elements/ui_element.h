@@ -114,7 +114,7 @@ class UiElement : public cc::AnimationTarget {
   };
 
   UiElementName name() const { return name_; }
-  void set_name(UiElementName name);
+  void SetName(UiElementName name);
   virtual void OnSetName();
 
   UiElementName owner_name_for_test() const { return owner_name_for_test_; }
@@ -123,11 +123,11 @@ class UiElement : public cc::AnimationTarget {
   }
 
   UiElementType type() const { return type_; }
-  void set_type(UiElementType type);
+  void SetType(UiElementType type);
   virtual void OnSetType();
 
   DrawPhase draw_phase() const { return draw_phase_; }
-  void set_draw_phase(DrawPhase draw_phase);
+  void SetDrawPhase(DrawPhase draw_phase);
   virtual void OnSetDrawPhase();
 
   // Returns true if the element needs to be re-drawn.

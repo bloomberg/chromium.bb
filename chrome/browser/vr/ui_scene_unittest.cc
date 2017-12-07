@@ -60,7 +60,7 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(NumElementsInSubtree(&scene.root_element()), 1u);
 
   auto element = base::MakeUnique<UiElement>();
-  element->set_draw_phase(kPhaseForeground);
+  element->SetDrawPhase(kPhaseForeground);
   UiElement* parent = element.get();
   int parent_id = parent->id();
   scene.AddUiElement(kRoot, std::move(element));
@@ -68,7 +68,7 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(NumElementsInSubtree(&scene.root_element()), 2u);
 
   element = base::MakeUnique<UiElement>();
-  element->set_draw_phase(kPhaseForeground);
+  element->SetDrawPhase(kPhaseForeground);
   UiElement* child = element.get();
   int child_id = child->id();
 
@@ -148,7 +148,7 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
   UiScene scene;
   auto element = base::MakeUnique<UiElement>();
   UiElement* container = element.get();
-  element->set_name(kWebVrRoot);
+  element->SetName(kWebVrRoot);
   scene.AddUiElement(kRoot, std::move(element));
 
   auto root = base::MakeUnique<ViewportAwareRoot>();
@@ -157,11 +157,11 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
 
   element = base::MakeUnique<UiElement>();
   UiElement* child = element.get();
-  element->set_draw_phase(kPhaseOverlayForeground);
+  element->SetDrawPhase(kPhaseOverlayForeground);
   viewport_aware_root->AddChild(std::move(element));
 
   element = base::MakeUnique<UiElement>();
-  element->set_draw_phase(kPhaseOverlayForeground);
+  element->SetDrawPhase(kPhaseOverlayForeground);
   child->AddChild(std::move(element));
 
   EXPECT_FALSE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
