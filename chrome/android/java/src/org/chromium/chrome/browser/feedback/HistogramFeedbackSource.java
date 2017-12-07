@@ -17,6 +17,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 public class HistogramFeedbackSource implements FeedbackSource {
     public static final String HISTOGRAMS_KEY = "histograms";
 
+    // Minimum physical memory (in KB) required on the device to get a dump of the buckets.
+    // Currently, it is required that the physical memory be more than 2 GB.
+    private static final int MIN_PHYSICAL_MEMORY_KB = 2 * 1024 * 1024 + 1;
+
     private final boolean mIsOffTheRecord;
 
     HistogramFeedbackSource(Profile profile) {
@@ -27,7 +31,10 @@ public class HistogramFeedbackSource implements FeedbackSource {
     public Pair<String, String> getLogs() {
         if (mIsOffTheRecord) return null;
         int jsonVerbosityLevel = JSONVerbosityLevel.JSON_VERBOSITY_LEVEL_FULL;
-        if (SysUtils.isLowEndDevice()) {
+
+        if (SysUtils.isLowEndDevice()
+                || SysUtils.amountOfPhysicalMemoryKB() < MIN_PHYSICAL_MEMORY_KB
+                || SysUtils.isCurrentlyLowMemory()) {
             jsonVerbosityLevel = JSONVerbosityLevel.JSON_VERBOSITY_LEVEL_OMIT_BUCKETS;
         }
         return Pair.create(HISTOGRAMS_KEY, StatisticsRecorderAndroid.toJson(jsonVerbosityLevel));
