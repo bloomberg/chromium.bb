@@ -673,13 +673,34 @@ SelectToSpeak.prototype = {
   },
 
   /**
+   * Converts the speech rate into an enum based on
+   * tools/metrics/histograms/enums.xml.
+   * These values are persisted to logs. Entries should not be
+   * renumbered and numeric values should never be reused.
+   * @return {number} the current speech rate as an int for metrics.
+   */
+  speechRateToSparceHistogramInt_: function() {
+    return this.speechRate_ * 100;
+  },
+
+  /**
    * Records an event that Select-to-Speak has begun speaking.
    */
   recordStartEvent_: function() {
-    // TODO(katie): Add tracking for speech rate, how STS was activated,
-    // whether word highlighting is on or off (as histograms?).
     chrome.metricsPrivate.recordUserAction(
         'Accessibility.CrosSelectToSpeak.StartSpeech');
+    chrome.metricsPrivate.recordSparseValue(
+        'Accessibility.CrosSelectToSpeak.SpeechRate',
+        this.speechRateToSparceHistogramInt_());
+    chrome.metricsPrivate.recordValue(
+        {
+          metricName: 'Accessibility.CrosSelectToSpeak.WordHighlighting',
+          type: chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LINEAR,
+          min: 1,     // According to histogram.h, this should be 1 for enums.
+          max: 2,     // Maximum should be exclusive.
+          buckets: 3  // Number of buckets: 0, 1 and overflowing 2.
+        },
+        this.wordHighlight_ ? 1 : 0);
   },
 
   /**
