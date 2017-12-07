@@ -9,6 +9,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/navigation_handle.h"
@@ -45,10 +49,17 @@ SafeBrowsingTriggeredPopupBlocker::PageData::~PageData() {
 }
 
 // static
+void SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kAbusiveExperienceInterventionEnforce,
+                                true /* default_value */);
+}
+
+// static
 std::unique_ptr<SafeBrowsingTriggeredPopupBlocker>
 SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
     content::WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(kAbusiveExperienceEnforce))
+  if (!IsEnabled(web_contents))
     return nullptr;
 
   auto* observer_manager =
@@ -74,7 +85,7 @@ bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyStrongPopupBlocker(
     should_block = open_url_params->triggering_event_info ==
                    blink::WebTriggeringEventInfo::kFromUntrustedEvent;
   }
-  if (!base::FeatureList::IsEnabled(kAbusiveExperienceEnforce))
+  if (!IsEnabled(web_contents()))
     return false;
 
   if (should_block) {
@@ -156,4 +167,19 @@ void SafeBrowsingTriggeredPopupBlocker::OnSafeBrowsingCheckComplete(
 
 void SafeBrowsingTriggeredPopupBlocker::OnSubresourceFilterGoingAway() {
   scoped_observer_.RemoveAll();
+}
+
+bool SafeBrowsingTriggeredPopupBlocker::IsEnabled(
+    const content::WebContents* web_contents) {
+  // If feature is disabled, return false. This is done so that if the feature
+  // is broken it can be disabled irrespective of the policy.
+  if (!base::FeatureList::IsEnabled(kAbusiveExperienceEnforce))
+    return false;
+
+  // If enterprise policy is not set, this will return true which is the default
+  // preference value.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kAbusiveExperienceInterventionEnforce);
 }

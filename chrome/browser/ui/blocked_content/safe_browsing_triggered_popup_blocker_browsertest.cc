@@ -17,16 +17,24 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/v4_embedded_test_server_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
@@ -123,8 +131,12 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
 
   void SetUp() override {
     database_helper_ = CreateTestDatabase();
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     InProcessBrowserTest::SetUp();
   }
+
   void SetUpOnMainThread() override {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
@@ -170,10 +182,16 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
     return database_helper_.get();
   }
 
+  void UpdatePolicy(const policy::PolicyMap& policy) {
+    provider_.UpdateChromePolicy(policy);
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestSafeBrowsingDatabaseHelper> database_helper_;
   std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> popup_blocker_;
+  policy::MockConfigurationPolicyProvider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerBrowserTest);
 };
@@ -260,6 +278,57 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   EXPECT_TRUE(opened_window);
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
+                       DrivenByEnterprisePolicy) {
+  // Disable Abusive experience intervention policy.
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kAbusiveExperienceInterventionEnforce,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             std::make_unique<base::Value>(false), nullptr);
+  UpdatePolicy(policy);
+
+  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
+  ConfigureAsAbusive(a_url);
+
+  // Navigate to a_url, should not trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  bool opened_window = false;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
+  EXPECT_TRUE(opened_window);
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+
+  // Since the policy change can take effect without browser restart, verify
+  // that enabling the policy here should disallow opening new tabs or windows
+  // from any new tab opened after the policy is set.
+  policy.Set(policy::key::kAbusiveExperienceInterventionEnforce,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
+             std::make_unique<base::Value>(true), nullptr);
+  UpdatePolicy(policy);
+
+  // Open a new tab to make sure the SafeBrowsingTriggeredPopupBlocker gets
+  // created for the new tab.
+  chrome::NewTab(browser());
+
+  // Navigate to a_url, should trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  opened_window = false;
+  content::WebContents* web_contents1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents1, "openWindow()", &opened_window));
+  EXPECT_FALSE(opened_window);
+  // Make sure the popup UI was shown.
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents1)
+                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
