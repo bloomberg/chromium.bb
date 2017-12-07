@@ -14,10 +14,10 @@ Example usage:
     --target-arch=arm
 """
 
+import argparse
 import hashlib
 import json
 import logging
-import optparse
 import os
 import re
 import shutil
@@ -460,8 +460,22 @@ class OrderfileGenerator(object):
         self._BUILD_ROOT, self._options.arch + '_uninstrumented_out')
 
     if options.profile:
+      output_directory = os.path.join(self._instrumented_out_dir, 'Release')
+      host_cyglog_dir = os.path.join(output_directory, 'cyglog_data')
+      # Only override the defaults when using lightweight instrumentation,
+      # as the regular profiling code is likely too slow for these.
+      urls = [profile_android_startup.AndroidProfileTool.TEST_URL]
+      use_wpr = True
+      simulate_user = False
+      if options.simulate_user and not options.lightweight_instrumentation:
+        logging.error(
+            '--simulate-user required --lightweight-instrumentation, ignoring.')
+      if options.lightweight_instrumentation:
+        urls = options.urls
+        use_wpr = not options.no_wpr
+        simulate_user = options.simulate_user
       self._profiler = profile_android_startup.AndroidProfileTool(
-          os.path.join(self._instrumented_out_dir, 'Release'))
+          output_directory, host_cyglog_dir, use_wpr, urls, simulate_user)
 
     self._output_data = {}
     self._step_recorder = StepRecorder(options.buildbot)
@@ -742,47 +756,49 @@ class OrderfileGenerator(object):
     return self._output_data
 
 
-def CreateOptionParser():
-  parser = optparse.OptionParser()
-  parser.add_option(
+def CreateArgumentParser():
+  """Creates and returns the argument parser."""
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
       '--lightweight-instrumentation', action='store_true', default=False,
       help='Use the lightweight instrumentation path')
-  parser.add_option(
+  parser.add_argument(
       '--buildbot', action='store_true',
       help='If true, the script expects to be run on a buildbot')
-  parser.add_option(
+  parser.add_argument(
       '--verify', action='store_true',
       help='If true, the script only verifies the current orderfile')
-  parser.add_option('--target-arch', action='store', dest='arch',
-                    default=cygprofile_utils.DetectArchitecture(),
-                    choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
-                    help='The target architecture for which to build')
-  parser.add_option('--output-json', action='store', dest='json_file',
-                    help='Location to save stats in json format')
-  parser.add_option(
+  parser.add_argument('--target-arch', action='store', dest='arch',
+                      default=cygprofile_utils.DetectArchitecture(),
+                      choices=['arm', 'arm64', 'x86', 'x86_64', 'x64', 'mips'],
+                      help='The target architecture for which to build')
+  parser.add_argument('--output-json', action='store', dest='json_file',
+                      help='Location to save stats in json format')
+  parser.add_argument(
       '--skip-profile', action='store_false', dest='profile', default=True,
       help='Don\'t generate a profile on the device. Only patch from the '
       'existing profile.')
-  parser.add_option(
+  parser.add_argument(
       '--skip-patch', action='store_false', dest='patch', default=True,
       help='Only generate the raw (unpatched) orderfile, don\'t patch it.')
-  parser.add_option(
+  parser.add_argument(
       '--netrc', action='store',
       help='A custom .netrc file to use for git checkin. Only used on bots.')
-  parser.add_option(
+  parser.add_argument(
       '--branch', action='store', default='master',
       help='When running on buildbot with a netrc, the branch orderfile '
       'hashes get checked into.')
   # Note: -j50 was causing issues on the bot.
-  parser.add_option(
+  parser.add_argument(
       '-j', '--jobs', action='store', default=20,
       help='Number of jobs to use for compilation.')
-  parser.add_option(
+  parser.add_argument(
       '-l', '--max-load', action='store', default=4, help='Max cpu load.')
-  parser.add_option('--goma-dir', help='GOMA directory.')
-  parser.add_option(
+  parser.add_argument('--goma-dir', help='GOMA directory.')
+  parser.add_argument(
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
-  parser.add_option('--adb-path', help='Path to the adb binary.')
+  parser.add_argument('--adb-path', help='Path to the adb binary.')
+  profile_android_startup.AddProfileCollectionArguments(parser)
   return parser
 
 
@@ -815,11 +831,11 @@ def CreateOrderfile(options, orderfile_updater_class):
   return False
 
 
-def main(argv):
-  parser = CreateOptionParser()
-  options, _ = parser.parse_args(argv)
+def main():
+  parser = CreateArgumentParser()
+  options = parser.parse_args()
   return 0 if CreateOrderfile(options, OrderfileUpdater) else 1
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())

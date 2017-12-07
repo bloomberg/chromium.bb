@@ -84,16 +84,19 @@ def PlotResidency(data, output_filename):
     data: (dict) As returned by ParseDump().
     output_filename: (str) Output filename.
   """
+  residency = data['residency']
+  max_percentage = max((100. * sum(d)) / len(d) for d in residency.values())
+  logging.info('Max residency = %.2f%%', max_percentage)
+
   start = data['start']
   end = data['end']
-  data = data['residency']
   fig, ax = plt.subplots(figsize=(20, 10))
-  timestamps = sorted(data.keys())
-  x_max = len(data.values()[0]) * 4096
+  timestamps = sorted(residency.keys())
+  x_max = len(residency.values()[0]) * 4096
   for t in timestamps:
     offset_ms = (t - timestamps[0]) / 1e6
-    incore = [i * 4096 for (i, x) in enumerate(data[t]) if x]
-    outcore = [i * 4096 for (i, x) in enumerate(data[t]) if not x]
+    incore = [i * 4096 for (i, x) in enumerate(residency[t]) if x]
+    outcore = [i * 4096 for (i, x) in enumerate(residency[t]) if not x]
     percentage = 100. * len(incore) / (len(incore) + len(outcore))
     plt.text(x_max, offset_ms, '%.1f%%' % percentage)
     for (d, color) in ((incore, (.2, .6, .05, 1)), (outcore, (1, 0, 0, 1))):
