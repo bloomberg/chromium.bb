@@ -14,7 +14,7 @@ namespace scheduler {
 LazyThreadControllerForTest::LazyThreadControllerForTest()
     : ThreadControllerImpl(base::MessageLoop::current(),
                            nullptr,
-                           std::make_unique<base::DefaultTickClock>()),
+                           base::DefaultTickClock::GetInstance()),
       thread_ref_(base::PlatformThread::CurrentRef()) {
   if (message_loop_)
     task_runner_ = message_loop_->task_runner();

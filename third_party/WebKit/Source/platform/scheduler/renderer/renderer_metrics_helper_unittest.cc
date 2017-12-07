@@ -10,7 +10,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebFrameScheduler.h"
-#include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
@@ -33,12 +32,11 @@ class RendererMetricsHelperTest : public ::testing::Test {
 
   void SetUp() {
     histogram_tester_.reset(new base::HistogramTester());
-    clock_ = std::make_unique<base::SimpleTestTickClock>();
     mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
+        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_ = std::make_unique<RendererSchedulerImpl>(
         CreateTaskQueueManagerWithUnownedClockForTest(
-            nullptr, mock_task_runner_, clock_.get()));
+            nullptr, mock_task_runner_, &clock_));
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }
 
@@ -50,8 +48,8 @@ class RendererMetricsHelperTest : public ::testing::Test {
   void RunTask(MainThreadTaskQueue::QueueType queue_type,
                base::TimeTicks start,
                base::TimeDelta duration) {
-    DCHECK_LE(clock_->NowTicks(), start);
-    clock_->SetNowTicks(start + duration);
+    DCHECK_LE(clock_.NowTicks(), start);
+    clock_.SetNowTicks(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(queue_type));
 
@@ -65,8 +63,8 @@ class RendererMetricsHelperTest : public ::testing::Test {
   void RunTask(WebFrameScheduler* scheduler,
                base::TimeTicks start,
                base::TimeDelta duration) {
-    DCHECK_LE(clock_->NowTicks(), start);
-    clock_->SetNowTicks(start + duration);
+    DCHECK_LE(clock_.NowTicks(), start);
+    clock_.SetNowTicks(start + duration);
     scoped_refptr<MainThreadTaskQueueForTest> queue(
         new MainThreadTaskQueueForTest(QueueType::kDefault));
     queue->SetFrameScheduler(scheduler);
@@ -191,7 +189,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
     return builder.Build();
   }
 
-  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   RendererMetricsHelper* metrics_helper_;  // NOT OWNED

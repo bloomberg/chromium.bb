@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/test/simple_test_tick_clock.h"
-#include "platform/scheduler/base/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,26 +18,19 @@ class TaskCostEstimatorTest : public ::testing::Test {
   TaskCostEstimatorTest() {}
   ~TaskCostEstimatorTest() override {}
 
-  void SetUp() override {
-    test_time_source_.reset(new TestTimeSource(&clock_));
-  }
-
   base::SimpleTestTickClock clock_;
-  std::unique_ptr<TestTimeSource> test_time_source_;
 };
 
 class TaskCostEstimatorForTest : public TaskCostEstimator {
  public:
-  TaskCostEstimatorForTest(TestTimeSource* test_time_source,
+  TaskCostEstimatorForTest(base::TickClock* clock,
                            int sample_count,
                            double estimation_percentile)
-      : TaskCostEstimator(test_time_source,
-                          sample_count,
-                          estimation_percentile) {}
+      : TaskCostEstimator(clock, sample_count, estimation_percentile) {}
 };
 
 TEST_F(TaskCostEstimatorTest, BasicEstimation) {
-  TaskCostEstimatorForTest estimator(test_time_source_.get(), 1, 100);
+  TaskCostEstimatorForTest estimator(&clock_, 1, 100);
   base::PendingTask task(FROM_HERE, base::Closure());
 
   estimator.WillProcessTask(task);
@@ -50,7 +42,7 @@ TEST_F(TaskCostEstimatorTest, BasicEstimation) {
 }
 
 TEST_F(TaskCostEstimatorTest, Clear) {
-  TaskCostEstimatorForTest estimator(test_time_source_.get(), 1, 100);
+  TaskCostEstimatorForTest estimator(&clock_, 1, 100);
   base::PendingTask task(FROM_HERE, base::Closure());
 
   estimator.WillProcessTask(task);
@@ -63,7 +55,7 @@ TEST_F(TaskCostEstimatorTest, Clear) {
 }
 
 TEST_F(TaskCostEstimatorTest, NestedRunLoop) {
-  TaskCostEstimatorForTest estimator(test_time_source_.get(), 1, 100);
+  TaskCostEstimatorForTest estimator(&clock_, 1, 100);
   base::PendingTask task(FROM_HERE, base::Closure());
 
   // Make sure we ignore the tasks inside the nested run loop.

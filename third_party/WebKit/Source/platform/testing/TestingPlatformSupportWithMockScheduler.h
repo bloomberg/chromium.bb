@@ -6,13 +6,10 @@
 #define TestingPlatformSupportWithMockScheduler_h
 
 #include <memory>
+#include "base/test/simple_test_tick_clock.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebThread.h"
-
-namespace base {
-class SimpleTestTickClock;
-}
 
 namespace cc {
 class OrderedSimpleTaskRunner;
@@ -67,7 +64,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
  protected:
   static double GetTestTime();
 
-  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
   std::unique_ptr<WebThread> thread_;

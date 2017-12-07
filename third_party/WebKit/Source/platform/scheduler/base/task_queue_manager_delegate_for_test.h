@@ -21,7 +21,7 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
  public:
   static scoped_refptr<TaskQueueManagerDelegateForTest> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<base::TickClock> time_source);
+      base::TickClock* time_source);
 
   // SingleThreadTaskRunner:
   bool PostDelayedTask(const base::Location& from_here,
@@ -44,11 +44,11 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
   ~TaskQueueManagerDelegateForTest() override;
   TaskQueueManagerDelegateForTest(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<base::TickClock> time_source);
+      base::TickClock* time_source);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<base::TickClock> time_source_;
+  base::TickClock* time_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManagerDelegateForTest);
 };

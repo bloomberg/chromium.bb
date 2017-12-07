@@ -13,7 +13,6 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/lazy_now.h"
 #include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,15 +51,14 @@ void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
 class SchedulerHelperTest : public ::testing::Test {
  public:
   SchedulerHelperTest()
-      : clock_(new base::SimpleTestTickClock()),
-        mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_.get(), false)),
+      : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, false)),
         scheduler_helper_(new WorkerSchedulerHelper(
             CreateTaskQueueManagerWithUnownedClockForTest(nullptr,
                                                           mock_task_runner_,
-                                                          clock_.get()),
+                                                          &clock_),
             nullptr)),
         default_task_runner_(scheduler_helper_->DefaultWorkerTaskQueue()) {
-    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+    clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
   ~SchedulerHelperTest() override {}
@@ -85,7 +83,7 @@ class SchedulerHelperTest : public ::testing::Test {
   }
 
  protected:
-  std::unique_ptr<base::SimpleTestTickClock> clock_;
+  base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
   std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;

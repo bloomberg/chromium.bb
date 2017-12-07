@@ -5,7 +5,6 @@
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 
 #include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/base/thread_controller_impl.h"
 
 namespace blink {
@@ -25,10 +24,10 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
   ThreadControllerForTest(
       base::MessageLoop* message_loop,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      std::unique_ptr<base::TickClock> time_source)
+      base::TickClock* time_source)
       : ThreadControllerImpl(message_loop,
                              std::move(task_runner),
-                             std::move(time_source)) {}
+                             time_source) {}
 
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override {
     if (!message_loop_)
@@ -59,16 +58,16 @@ std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerWithUnownedClockForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::SimpleTestTickClock* clock) {
   return CreateTaskQueueManagerForTest(message_loop, std::move(task_runner),
-                                       std::make_unique<TestTimeSource>(clock));
+                                       clock);
 }
 
 std::unique_ptr<TaskQueueManager> CreateTaskQueueManagerForTest(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<base::TickClock> clock) {
+    base::TickClock* clock) {
   return std::make_unique<TaskQueueManagerForTest>(
-      std::make_unique<ThreadControllerForTest>(
-          message_loop, std::move(task_runner), std::move(clock)));
+      std::make_unique<ThreadControllerForTest>(message_loop,
+                                                std::move(task_runner), clock));
 }
 
 }  // namespace scheduler

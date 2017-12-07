@@ -85,7 +85,7 @@ std::unique_ptr<TaskQueueManager> TaskQueueManager::TakeOverCurrentThread() {
   return std::unique_ptr<TaskQueueManager>(
       new TaskQueueManager(internal::ThreadControllerImpl::Create(
           base::MessageLoop::current(),
-          std::make_unique<base::DefaultTickClock>())));
+          base::DefaultTickClock::GetInstance())));
 }
 
 TaskQueueManager::AnyThread::AnyThread()

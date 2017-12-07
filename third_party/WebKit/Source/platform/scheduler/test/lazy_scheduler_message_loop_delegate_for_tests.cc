@@ -23,7 +23,7 @@ LazySchedulerMessageLoopDelegateForTests::
     LazySchedulerMessageLoopDelegateForTests()
     : message_loop_(base::MessageLoop::current()),
       thread_id_(base::PlatformThread::CurrentId()),
-      time_source_(std::make_unique<base::DefaultTickClock>()),
+      time_source_(base::DefaultTickClock::GetInstance()),
       pending_observer_(nullptr) {
   if (message_loop_)
     original_task_runner_ = message_loop_->task_runner();

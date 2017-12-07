@@ -9,7 +9,6 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/base/task_queue_manager.h"
 #include "platform/scheduler/base/test_task_time_observer.h"
-#include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/worker_scheduler_helper.h"
 #include "platform/scheduler/test/create_task_queue_manager_for_test.h"
 #include "platform/scheduler/test/test_task_queue.h"
@@ -27,21 +26,19 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
   ~AutoAdvancingVirtualTimeDomainTest() override {}
 
   void SetUp() override {
-    clock_.reset(new base::SimpleTestTickClock());
-    clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
+    clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
 
-    test_time_source_.reset(new TestTimeSource(clock_.get()));
     mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), false);
+        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
 
     scheduler_helper_.reset(
         new WorkerSchedulerHelper(CreateTaskQueueManagerWithUnownedClockForTest(
-                                      nullptr, mock_task_runner_, clock_.get()),
+                                      nullptr, mock_task_runner_, &clock_),
                                   nullptr));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
     task_queue_ = scheduler_helper_->DefaultWorkerTaskQueue();
-    initial_time_ = clock_->NowTicks();
+    initial_time_ = clock_.NowTicks();
     auto_advancing_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
         initial_time_, scheduler_helper_.get()));
     scheduler_helper_->RegisterTimeDomain(auto_advancing_time_domain_.get());
@@ -54,8 +51,7 @@ class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
   }
 
   base::TimeTicks initial_time_;
-  std::unique_ptr<base::SimpleTestTickClock> clock_;
-  std::unique_ptr<TestTimeSource> test_time_source_;
+  base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
   scoped_refptr<TaskQueue> task_queue_;
@@ -87,7 +83,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeAdvances) {
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced());
   mock_task_runner_->RunUntilIdle();
 
-  EXPECT_EQ(initial_time_, clock_->NowTicks());
+  EXPECT_EQ(initial_time_, clock_.NowTicks());
   EXPECT_EQ(initial_time_ + delay,
             auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_TRUE(task_run);
@@ -109,7 +105,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
   EXPECT_CALL(mock_observer, OnVirtualTimeAdvanced()).Times(0);
   mock_task_runner_->RunUntilIdle();
 
-  EXPECT_EQ(initial_time_, clock_->NowTicks());
+  EXPECT_EQ(initial_time_, clock_.NowTicks());
   EXPECT_EQ(initial_time_, auto_advancing_time_domain_->CreateLazyNow().Now());
   EXPECT_FALSE(task_run);
 
