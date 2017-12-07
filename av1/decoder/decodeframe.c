@@ -219,7 +219,7 @@ static void predict_and_reconstruct_intra_block(
     }
   }
 #if CONFIG_CFL
-  if (plane == AOM_PLANE_Y && xd->cfl.store_y) {
+  if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
     cfl_store_tx(xd, row, col, tx_size, mbmi->sb_type);
   }
 #endif  // CONFIG_CFL
@@ -567,7 +567,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   }
 #if CONFIG_CFL
   if (mbmi->uv_mode != UV_CFL_PRED) {
-    if (!cfl->is_chroma_reference && is_inter_block(mbmi)) {
+    if (!cfl->is_chroma_reference && is_inter_block(mbmi) &&
+        is_cfl_allowed(mbmi)) {
       cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
     }
   }
