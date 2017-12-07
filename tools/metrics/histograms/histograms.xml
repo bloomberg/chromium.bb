@@ -80047,6 +80047,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Track how a user interfacts with the android signin promo.</summary>
 </histogram>
 
+<histogram name="Signin.AuthenticatedLaunchUserEvent"
+    enum="AuthenticatedLaunchUserEvent">
+  <owner>zmin@chromium.org</owner>
+  <summary>
+    Records the UI event when user clicks a locked profile on UserManager.
+    Please note that if the local reauth failed, UserManager might show Gaia
+    Reauth dialog.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AuthError" enum="GoogleServiceAuthError">
   <owner>mlerman@chromium.org</owner>
   <summary>

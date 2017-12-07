@@ -218,7 +218,16 @@ void DisplayErrorMessage(const base::string16 error_message,
       web_ui->GetWebContents()->GetBrowserContext());
 }
 
+void RecordAuthenticatedLaunchUserEvent(
+    const AuthenticatedLaunchUserEvent& event) {
+  UMA_HISTOGRAM_ENUMERATION(kAuthenticatedLaunchUserEventMetricsName, event,
+                            AuthenticatedLaunchUserEvent::EVENT_COUNT);
+}
+
 }  // namespace
+
+const char kAuthenticatedLaunchUserEventMetricsName[] =
+    "Signin.AuthenticatedLaunchUserEvent";
 
 // ProfileUpdateObserver ------------------------------------------------------
 
@@ -430,6 +439,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   // Only try to validate locally or check the password change detection
   // if we actually have a local credential saved.
   if (!entry->GetLocalAuthCredentials().empty()) {
+    RecordAuthenticatedLaunchUserEvent(
+        AuthenticatedLaunchUserEvent::LOCAL_REAUTH_DIALOG);
     if (LocalAuth::ValidateLocalAuthCredentials(entry, password)) {
       ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
       return;
@@ -458,12 +469,16 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   if (!email_address_.empty()) {
     // In order to support the upgrade case where we have a local hash but no
     // password token, the user must perform a full online reauth.
+    RecordAuthenticatedLaunchUserEvent(
+        AuthenticatedLaunchUserEvent::GAIA_REAUTH_DIALOG);
     UserManagerProfileDialog::ShowReauthDialog(
         browser_context, email_address_, signin_metrics::Reason::REASON_UNLOCK);
   } else if (entry->IsSigninRequired() && entry->IsSupervised()) {
     // Supervised profile will only be locked when force-sign-in is enabled
     // and it shouldn't be unlocked. Display the error message directly via
     // the system profile to avoid profile creation.
+    RecordAuthenticatedLaunchUserEvent(
+        AuthenticatedLaunchUserEvent::SUPERVISED_PROFILE_BLOCKED_WARNING);
     DisplayErrorMessage(
         l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_NOT_ALLOWED_BY_POLICY),
         web_ui());
@@ -474,10 +489,14 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // merge. We consider a profile as pre-existing if it has been actived
     // previously. A pre-existed profile can still be used if it has been signed
     // in with an email address matched RestrictSigninToPattern policy already.
+    RecordAuthenticatedLaunchUserEvent(
+        AuthenticatedLaunchUserEvent::USED_PROFILE_BLOCKED_WARNING);
     DisplayErrorMessage(
         l10n_util::GetStringUTF16(IDS_USER_NOT_ALLOWED_BY_POLICY), web_ui());
   } else {
     // Fresh sign in via user manager without existing email address.
+    RecordAuthenticatedLaunchUserEvent(
+        AuthenticatedLaunchUserEvent::FORCED_PRIMARY_SIGNIN_DIALOG);
     UserManagerProfileDialog::ShowSigninDialog(
         browser_context, profile_path,
         signin_util::IsForceSigninEnabled()

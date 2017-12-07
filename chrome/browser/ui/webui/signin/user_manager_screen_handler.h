@@ -32,6 +32,19 @@ class FilePath;
 class ListValue;
 }
 
+extern const char kAuthenticatedLaunchUserEventMetricsName[];
+
+// UI event when user click a locked profile. It must matches the
+// AuthenticatedLaunchUserEvent in enums.xml
+enum AuthenticatedLaunchUserEvent {
+  LOCAL_REAUTH_DIALOG,
+  GAIA_REAUTH_DIALOG,
+  SUPERVISED_PROFILE_BLOCKED_WARNING,
+  USED_PROFILE_BLOCKED_WARNING,
+  FORCED_PRIMARY_SIGNIN_DIALOG,
+  EVENT_COUNT,
+};
+
 class UserManagerScreenHandler
     : public content::WebUIMessageHandler,
       public proximity_auth::ScreenlockBridge::LockHandler,
