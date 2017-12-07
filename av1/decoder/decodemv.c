@@ -448,7 +448,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
   is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
 
   if (is_split) {
-    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
@@ -495,8 +495,7 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
   // TODO(debargha): Clean up the logic here. This function should only
   // be called for intra.
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-  const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                       : intra_tx_size_cat_lookup[bsize];
+  const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, is_inter);
   const int max_depths = bsize_to_max_depth(bsize, 0);
   const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -957,7 +956,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const TX_SIZE mtx_size =
       get_max_rect_tx_size(xd->mi[0]->mbmi.sb_type, inter_block);
   const TX_SIZE tx_size =
-      inter_block ? AOMMAX(sub_tx_size_map[mtx_size], mbmi->min_tx_size)
+      inter_block ? AOMMAX(sub_tx_size_map[1][mtx_size], mbmi->min_tx_size)
                   : mbmi->tx_size;
 #endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;

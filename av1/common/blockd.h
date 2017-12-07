@@ -944,10 +944,7 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
 }
 
 static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize, int is_inter) {
-  if (is_inter)
-    return max_txsize_rect_lookup[bsize];
-  else
-    return max_txsize_rect_intra_lookup[bsize];
+  return max_txsize_rect_lookup[is_inter][bsize];
 }
 
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
@@ -1102,9 +1099,22 @@ static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize, int is_inter) {
   int depth = 0;
   while (depth < MAX_TX_DEPTH && tx_size != TX_4X4) {
     depth++;
-    tx_size = sub_tx_size_map[tx_size];
+    tx_size = sub_tx_size_map[is_inter][tx_size];
   }
   return depth;
+}
+
+static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize, int is_inter) {
+  TX_SIZE tx_size = get_max_rect_tx_size(bsize, is_inter);
+  assert(tx_size != TX_4X4);
+  int depth = 0;
+  while (tx_size != TX_4X4) {
+    depth++;
+    tx_size = sub_tx_size_map[is_inter][tx_size];
+    assert(depth < 10);
+  }
+  assert(depth <= MAX_TX_CATS);
+  return depth - 1;
 }
 
 static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize,
@@ -1113,7 +1123,7 @@ static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize,
   int depth = 0;
   while (tx_size != ctx_size) {
     depth++;
-    ctx_size = sub_tx_size_map[ctx_size];
+    ctx_size = sub_tx_size_map[is_inter][ctx_size];
     assert(depth <= MAX_TX_DEPTH);
   }
   return depth;
@@ -1123,7 +1133,7 @@ static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize,
                                        int is_inter) {
   TX_SIZE max_tx_size = get_max_rect_tx_size(bsize, is_inter);
   TX_SIZE tx_size = max_tx_size;
-  for (int d = 0; d < depth; ++d) tx_size = sub_tx_size_map[tx_size];
+  for (int d = 0; d < depth; ++d) tx_size = sub_tx_size_map[is_inter][tx_size];
   return tx_size;
 }
 

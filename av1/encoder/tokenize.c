@@ -559,7 +559,7 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
 #endif
   } else {
     // Half the block size in transform block unit.
-    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     const int step = bsw * bsh;
@@ -640,7 +640,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
       const int is_split =
           (l_max_tx_size != mbmi->inter_tx_size[0][0] && bsize == bsizec &&
            txsize_to_bsize[l_max_tx_size] == bsizec);
-      if (is_split) max_tx_size = sub_tx_size_map[max_tx_size];
+      if (is_split) max_tx_size = sub_tx_size_map[1][max_tx_size];
     }
 #endif  // DISABLE_VARTX_FOR_CHROMA == 2
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];

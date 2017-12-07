@@ -685,7 +685,7 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
     encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
   } else {
     assert(tx_size < TX_SIZES_ALL);
-    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
     // This is the square transform block partition entry point.
@@ -807,7 +807,7 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
       const int is_split =
           (l_max_tx_size != mbmi->inter_tx_size[0][0] && bsize == bsizec &&
            txsize_to_bsize[l_max_tx_size] == bsizec);
-      if (is_split) max_tx_size = sub_tx_size_map[max_tx_size];
+      if (is_split) max_tx_size = sub_tx_size_map[1][max_tx_size];
     }
 #endif  // DISABLE_VARTX_FOR_CHROMA == 2
 

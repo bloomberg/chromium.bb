@@ -285,7 +285,7 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
         pd->dst.stride, max_scan_line, eob, cm->reduced_tx_set_used);
     *eob_total += eob;
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
     const int bsw = tx_size_wide_unit[sub_txs];
@@ -532,7 +532,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           const int is_split =
               (l_max_tx_size != mbmi->inter_tx_size[0][0] && bsize == bsizec &&
                txsize_to_bsize[l_max_tx_size] == bsizec);
-          if (is_split) max_tx_size = sub_tx_size_map[max_tx_size];
+          if (is_split) max_tx_size = sub_tx_size_map[1][max_tx_size];
         }
 #endif  // DISABLE_VARTX_FOR_CHROMA == 2
         const int bh_var_tx = tx_size_high_unit[max_tx_size];

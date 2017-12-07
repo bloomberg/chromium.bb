@@ -4424,7 +4424,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       allow_update_cdf) {
     const TX_SIZE tx_size = mbmi->tx_size;
     const int tx_size_ctx = get_tx_size_context(xd);
-    const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
+    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
     const int depth = tx_size_to_depth(tx_size, bsize, 0);
     const int max_depths = bsize_to_max_depth(bsize, 0);
     update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
@@ -4590,7 +4590,7 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
@@ -4659,7 +4659,7 @@ static void set_txfm_context(MACROBLOCKD *xd, TX_SIZE tx_size, int blk_row,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
 
   } else {
-    const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
+    const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
     int i;
 
