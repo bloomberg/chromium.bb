@@ -16,7 +16,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
@@ -109,19 +109,19 @@ void QuotaDispatcher::WillStopCurrentWorkerThread() {
 }
 
 void QuotaDispatcher::QueryStorageUsageAndQuota(
-    const GURL& origin_url,
+    const url::Origin& origin,
     StorageType type,
     std::unique_ptr<Callback> callback) {
   DCHECK(callback);
   int request_id = pending_quota_callbacks_.Add(std::move(callback));
   quota_host_->QueryStorageUsageAndQuota(
-      origin_url, type,
+      origin, type,
       base::BindOnce(&QuotaDispatcher::DidQueryStorageUsageAndQuota,
                      base::Unretained(this), request_id));
 }
 
 void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
-                                          const GURL& origin_url,
+                                          const url::Origin& origin,
                                           StorageType type,
                                           int64_t requested_size,
                                           std::unique_ptr<Callback> callback) {
@@ -130,7 +130,7 @@ void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
       << "Requests may show permission UI and are not allowed from workers.";
   int request_id = pending_quota_callbacks_.Add(std::move(callback));
   quota_host_->RequestStorageQuota(
-      render_frame_id, origin_url, type, requested_size,
+      render_frame_id, origin, type, requested_size,
       base::BindOnce(&QuotaDispatcher::DidGrantStorageQuota,
                      base::Unretained(this), request_id));
 }

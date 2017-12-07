@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::QuotaClient;
 using storage::QuotaManager;
@@ -48,11 +48,11 @@ QuotaDispatcherHost::QuotaDispatcherHost(
       weak_factory_(this) {}
 
 void QuotaDispatcherHost::QueryStorageUsageAndQuota(
-    const GURL& origin_url,
+    const url::Origin& origin,
     storage::StorageType storage_type,
     QueryStorageUsageAndQuotaCallback callback) {
   quota_manager_->GetUsageAndQuotaForWebApps(
-      origin_url, storage_type,
+      origin.GetURL(), storage_type,
       base::Bind(&QuotaDispatcherHost::DidQueryStorageUsageAndQuota,
                  weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback))));
@@ -60,7 +60,7 @@ void QuotaDispatcherHost::QueryStorageUsageAndQuota(
 
 void QuotaDispatcherHost::RequestStorageQuota(
     int64_t render_frame_id,
-    const GURL& origin_url,
+    const url::Origin& origin,
     storage::StorageType storage_type,
     uint64_t requested_size,
     mojom::QuotaDispatcherHost::RequestStorageQuotaCallback callback) {
@@ -75,14 +75,14 @@ void QuotaDispatcherHost::RequestStorageQuota(
          storage_type == storage::kStorageTypePersistent);
   if (storage_type == storage::kStorageTypePersistent) {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin_url, storage_type,
+        origin.GetURL(), storage_type,
         base::Bind(&QuotaDispatcherHost::DidGetPersistentUsageAndQuota,
-                   weak_factory_.GetWeakPtr(), render_frame_id, origin_url,
+                   weak_factory_.GetWeakPtr(), render_frame_id, origin,
                    storage_type, requested_size,
                    base::Passed(std::move(callback))));
   } else {
     quota_manager_->GetUsageAndQuotaForWebApps(
-        origin_url, storage_type,
+        origin.GetURL(), storage_type,
         base::Bind(&QuotaDispatcherHost::DidGetTemporaryUsageAndQuota,
                    weak_factory_.GetWeakPtr(), requested_size,
                    base::Passed(std::move(callback))));
@@ -99,7 +99,7 @@ void QuotaDispatcherHost::DidQueryStorageUsageAndQuota(
 
 void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
     int64_t render_frame_id,
-    const GURL& origin_url,
+    const url::Origin& origin,
     storage::StorageType storage_type,
     uint64_t requested_quota,
     RequestStorageQuotaCallback callback,
@@ -117,7 +117,7 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
   // TODO(nhiroki): The backend should accept uint64_t values.
   int64_t requested_quota_signed =
       base::saturated_cast<int64_t>(requested_quota);
-  if (quota_manager_->IsStorageUnlimited(origin_url, storage_type) ||
+  if (quota_manager_->IsStorageUnlimited(origin.GetURL(), storage_type) ||
       requested_quota_signed <= current_quota) {
     std::move(callback).Run(storage::kQuotaStatusOk, current_usage,
                             requested_quota);
@@ -129,20 +129,20 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
   DCHECK(permission_context_);
   StorageQuotaParams params;
   params.render_frame_id = render_frame_id;
-  params.origin_url = origin_url;
+  params.origin_url = origin.GetURL();
   params.storage_type = storage_type;
   params.requested_size = requested_quota;
 
   permission_context_->RequestQuotaPermission(
       params, process_id_,
       base::Bind(&QuotaDispatcherHost::DidGetPermissionResponse,
-                 weak_factory_.GetWeakPtr(), origin_url, requested_quota,
+                 weak_factory_.GetWeakPtr(), origin, requested_quota,
                  current_usage, current_quota,
                  base::Passed(std::move(callback))));
 }
 
 void QuotaDispatcherHost::DidGetPermissionResponse(
-    const GURL& origin_url,
+    const url::Origin& origin,
     uint64_t requested_quota,
     int64_t current_usage,
     int64_t current_quota,
@@ -156,8 +156,11 @@ void QuotaDispatcherHost::DidGetPermissionResponse(
   }
 
   // Otherwise, return the new quota.
+  // TODO(sashab): net::GetHostOrSpecFromURL(origin.GetURL()) potentially does
+  // wasted work, e.g. if the origin has a host it can return that early. Maybe
+  // rewrite to just convert the host to a string directly.
   quota_manager_->SetPersistentHostQuota(
-      net::GetHostOrSpecFromURL(origin_url), requested_quota,
+      net::GetHostOrSpecFromURL(origin.GetURL()), requested_quota,
       base::Bind(&QuotaDispatcherHost::DidSetHostQuota,
                  weak_factory_.GetWeakPtr(), current_usage,
                  base::Passed(std::move(callback))));
