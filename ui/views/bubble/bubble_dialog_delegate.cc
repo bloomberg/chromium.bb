@@ -240,9 +240,13 @@ gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
   // The argument rect has its origin at the bubble's arrow anchor point;
   // its size is the preferred size of the bubble's client view (this view).
   bool anchor_minimized = anchor_widget() && anchor_widget()->IsMinimized();
+  // If GetAnchorView() returns nullptr or GetAnchorRect() returns an empty rect
+  // at (0, 0), don't try and adjust arrow if off-screen.
+  gfx::Rect anchor_rect = GetAnchorRect();
+  bool has_anchor = GetAnchorView() || anchor_rect != gfx::Rect();
   return GetBubbleFrameView()->GetUpdatedWindowBounds(
-      GetAnchorRect(), GetWidget()->client_view()->GetPreferredSize(),
-      adjust_if_offscreen_ && !anchor_minimized);
+      anchor_rect, GetWidget()->client_view()->GetPreferredSize(),
+      adjust_if_offscreen_ && !anchor_minimized && has_anchor);
 }
 
 void BubbleDialogDelegateView::OnNativeThemeChanged(
