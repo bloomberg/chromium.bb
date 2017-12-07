@@ -53,7 +53,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
  public:
   std::unique_ptr<WebRTCPeerConnectionHandler> CreateRTCPeerConnectionHandler(
-      WebRTCPeerConnectionHandlerClient*) override;
+      WebRTCPeerConnectionHandlerClient*,
+      scoped_refptr<base::SingleThreadTaskRunner>) override;
 };
 
 }  // namespace blink

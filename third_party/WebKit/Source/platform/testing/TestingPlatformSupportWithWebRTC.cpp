@@ -101,7 +101,8 @@ void MockWebRTCPeerConnectionHandler::Stop() {}
 
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
-    WebRTCPeerConnectionHandlerClient*) {
+    WebRTCPeerConnectionHandlerClient*,
+    scoped_refptr<base::SingleThreadTaskRunner>) {
   return std::make_unique<MockWebRTCPeerConnectionHandler>();
 }
 

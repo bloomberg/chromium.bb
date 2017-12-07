@@ -245,8 +245,9 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
   RTCPeerConnectionHandlerUnderTest(
       WebRTCPeerConnectionHandlerClient* client,
       PeerConnectionDependencyFactory* dependency_factory)
-      : RTCPeerConnectionHandler(client, dependency_factory) {
-  }
+      : RTCPeerConnectionHandler(client,
+                                 dependency_factory,
+                                 base::ThreadTaskRunnerHandle::Get()) {}
 
   MockPeerConnectionImpl* native_peer_connection() {
     return static_cast<MockPeerConnectionImpl*>(

@@ -249,7 +249,9 @@ std::unique_ptr<WebGestureCurve> Platform::CreateFlingAnimationCurve(
 }
 
 std::unique_ptr<WebRTCPeerConnectionHandler>
-Platform::CreateRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient*) {
+Platform::CreateRTCPeerConnectionHandler(
+    WebRTCPeerConnectionHandlerClient*,
+    scoped_refptr<base::SingleThreadTaskRunner>) {
   return nullptr;
 }
 

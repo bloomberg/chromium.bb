@@ -95,7 +95,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
  public:
   RTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
-      PeerConnectionDependencyFactory* dependency_factory);
+      PeerConnectionDependencyFactory* dependency_factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~RTCPeerConnectionHandler() override;
 
   // Destroy all existing RTCPeerConnectionHandler objects.
@@ -360,6 +361,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // Track which ICE Connection state that this PeerConnection has gone through.
   bool ice_state_seen_[webrtc::PeerConnectionInterface::kIceConnectionMax] = {};
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<RTCPeerConnectionHandler> weak_factory_;
 

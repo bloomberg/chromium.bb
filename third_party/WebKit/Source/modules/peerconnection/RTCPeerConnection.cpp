@@ -514,7 +514,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
     return;
   }
 
-  peer_handler_ = Platform::Current()->CreateRTCPeerConnectionHandler(this);
+  peer_handler_ = Platform::Current()->CreateRTCPeerConnectionHandler(
+      this, document->GetTaskRunner(TaskType::kUnthrottled));
   if (!peer_handler_) {
     closed_ = true;
     stopped_ = true;
