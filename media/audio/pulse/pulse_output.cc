@@ -130,58 +130,66 @@ void PulseAudioOutputStream::Close() {
 void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
   int bytes_remaining = requested_bytes;
   while (bytes_remaining > 0) {
-    void* buffer = NULL;
-    size_t bytes_to_fill = params_.GetBytesPerBuffer();
-    CHECK_GE(pa_stream_begin_write(pa_stream_, &buffer, &bytes_to_fill), 0);
-    CHECK_EQ(bytes_to_fill, static_cast<size_t>(params_.GetBytesPerBuffer()));
+    void* pa_buffer = nullptr;
+    size_t pa_buffer_size = params_.GetBytesPerBuffer();
+    CHECK_GE(pa_stream_begin_write(pa_stream_, &pa_buffer, &pa_buffer_size), 0);
 
-    // NOTE: |bytes_to_fill| may be larger than |requested_bytes| now, this is
-    // okay since pa_stream_begin_write() is the authoritative source on how
-    // much can be written.
-
-    int frames_filled = 0;
-    if (source_callback_) {
-      const base::TimeDelta delay = pulse::GetHardwareLatency(pa_stream_);
-      frames_filled = source_callback_->OnMoreData(
-          delay, base::TimeTicks::Now(), 0, audio_bus_.get());
-
-      // Zero any unfilled data so it plays back as silence.
-      if (frames_filled < audio_bus_->frames()) {
-        audio_bus_->ZeroFramesPartial(
-            frames_filled, audio_bus_->frames() - frames_filled);
-      }
-
-      audio_bus_->Scale(volume_);
-      audio_bus_->ToInterleaved<Float32SampleTypeTraits>(
-          audio_bus_->frames(), reinterpret_cast<float*>(buffer));
-    } else {
-      memset(buffer, 0, bytes_to_fill);
+    if (!source_callback_) {
+      memset(pa_buffer, 0, pa_buffer_size);
+      pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, NULL, 0LL,
+                      PA_SEEK_RELATIVE);
+      bytes_remaining -= pa_buffer_size;
+      continue;
     }
 
-    if (pa_stream_write(pa_stream_, buffer, bytes_to_fill, NULL, 0LL,
-                        PA_SEEK_RELATIVE) < 0) {
-      if (source_callback_) {
+    size_t unwritten_frames_in_bus = audio_bus_->frames();
+    size_t frames_filled = source_callback_->OnMoreData(
+        pulse::GetHardwareLatency(pa_stream_), base::TimeTicks::Now(), 0,
+        audio_bus_.get());
+
+    // Zero any unfilled data so it plays back as silence.
+    if (frames_filled < unwritten_frames_in_bus) {
+      audio_bus_->ZeroFramesPartial(frames_filled,
+                                    unwritten_frames_in_bus - frames_filled);
+    }
+
+    audio_bus_->Scale(volume_);
+
+    size_t frame_size = params_.GetBytesPerBuffer() / unwritten_frames_in_bus;
+    size_t frames_to_copy = pa_buffer_size / frame_size;
+    size_t frame_offset_in_bus = 0;
+    do {
+      // Grab frames and get the count.
+      frames_to_copy =
+          std::min(audio_bus_->frames() - frame_offset_in_bus, frames_to_copy);
+
+      audio_bus_->ToInterleavedPartial<Float32SampleTypeTraits>(
+          frame_offset_in_bus, frames_to_copy,
+          reinterpret_cast<float*>(pa_buffer));
+      frame_offset_in_bus += frames_to_copy;
+      unwritten_frames_in_bus -= frames_to_copy;
+
+      if (pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, NULL, 0LL,
+                          PA_SEEK_RELATIVE) < 0) {
         source_callback_->OnError();
+        return;
       }
-    }
-
-    // NOTE: As mentioned above, |bytes_remaining| may be negative after this.
-    bytes_remaining -= bytes_to_fill;
-
-    // Despite telling Pulse to only request certain buffer sizes, it will not
-    // always obey.  In these cases we need to avoid back to back reads from
-    // the renderer as it won't have time to complete the request.
-    //
-    // We can't defer the callback as Pulse will never call us again until we've
-    // satisfied writing the requested number of bytes.
-    //
-    // TODO(dalecurtis): It might be worth choosing the sleep duration based on
-    // the hardware latency return above.  Watch http://crbug.com/366433 to see
-    // if a more complicated wait process is necessary.  We may also need to see
-    // if a PostDelayedTask should be used here to avoid blocking the PulseAudio
-    // command thread.
-    if (source_callback_ && bytes_remaining > 0)
-      base::PlatformThread::Sleep(params_.GetBufferDuration() / 4);
+      bytes_remaining -= pa_buffer_size;
+      if (unwritten_frames_in_bus) {
+        // Reset the buffer and the size:
+        //   - If pa_buffer isn't nulled out, then it will get re-used, and
+        //     there will be a race between PA reading and us writing.
+        //   - If we don't shrink the pa_buffer_size to a small value, we get
+        //     stuttering as the memory allocation can take far too long. This
+        //     also means that we will never get more than we want, and we
+        //     dont need to memset.
+        pa_buffer = nullptr;
+        pa_buffer_size = unwritten_frames_in_bus * frame_size;
+        CHECK_GE(pa_stream_begin_write(pa_stream_, &pa_buffer, &pa_buffer_size),
+                 0);
+        frames_to_copy = pa_buffer_size / frame_size;
+      }
+    } while (unwritten_frames_in_bus);
   }
 }
 
