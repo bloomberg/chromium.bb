@@ -24,7 +24,14 @@ MediaRouterAndroidBridge::MediaRouterAndroidBridge(MediaRouterAndroid* router)
       Java_ChromeMediaRouter_create(env, reinterpret_cast<jlong>(this)));
 }
 
-MediaRouterAndroidBridge::~MediaRouterAndroidBridge() = default;
+MediaRouterAndroidBridge::~MediaRouterAndroidBridge() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // When |this| is destroyed, there might still pending runnables on the Java
+  // side, that are keeping the Java object alive. These runnables might try to
+  // call back to the native side when executed. We need to signal to the Java
+  // counterpart that it can't call back into native anymore.
+  Java_ChromeMediaRouter_teardown(env, java_media_router_);
+}
 
 void MediaRouterAndroidBridge::CreateRoute(const MediaSource::Id& source_id,
                                            const MediaSink::Id& sink_id,
