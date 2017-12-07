@@ -13722,6 +13722,21 @@
             "chrome_internal"
         ]
     },
+    "cyan-wificell-pre-cq": {
+        "_template": "wificell_pre_cq",
+        "boards": [
+            "cyan"
+        ],
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "daisy-chrome-perf": {
         "_template": "chrome_perf",
         "boards": [
@@ -15885,6 +15900,21 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "elm-wificell-pre-cq": {
+        "_template": "wificell_pre_cq",
+        "boards": [
+            "elm"
+        ],
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
     },
     "enguarde-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -32723,6 +32753,21 @@
             "chrome_internal"
         ]
     },
+    "lulu-wificell-pre-cq": {
+        "_template": "wificell_pre_cq",
+        "boards": [
+            "lulu"
+        ],
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "lumpy-chrome-perf": {
         "_template": "chrome_perf",
         "boards": [
@@ -35191,6 +35236,54 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "name": "daisy-wificell-pre-cq",
+                "overlays": "both",
+                "useflags": [
+                    "chrome_internal"
+                ],
+                "vm_tests": []
+            },
+            {
+                "_template": "wificell_pre_cq",
+                "boards": [
+                    "lulu"
+                ],
+                "grouped": true,
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "name": "lulu-wificell-pre-cq",
+                "overlays": "both",
+                "useflags": [
+                    "chrome_internal"
+                ],
+                "vm_tests": []
+            },
+            {
+                "_template": "wificell_pre_cq",
+                "boards": [
+                    "cyan"
+                ],
+                "grouped": true,
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "name": "cyan-wificell-pre-cq",
+                "overlays": "both",
+                "useflags": [
+                    "chrome_internal"
+                ],
+                "vm_tests": []
+            },
+            {
+                "_template": "wificell_pre_cq",
+                "boards": [
+                    "elm"
+                ],
+                "grouped": true,
+                "internal": true,
+                "manifest": "official.xml",
+                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+                "name": "elm-wificell-pre-cq",
                 "overlays": "both",
                 "useflags": [
                     "chrome_internal"

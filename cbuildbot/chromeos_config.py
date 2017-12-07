@@ -2067,6 +2067,18 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
           'daisy-wificell-pre-cq',
           site_config.templates.wificell_pre_cq,
           board_configs['daisy']),
+      site_config.Add(
+          'lulu-wificell-pre-cq',
+          site_config.templates.wificell_pre_cq,
+          board_configs['lulu']),
+      site_config.Add(
+          'cyan-wificell-pre-cq',
+          site_config.templates.wificell_pre_cq,
+          board_configs['cyan']),
+      site_config.Add(
+          'elm-wificell-pre-cq',
+          site_config.templates.wificell_pre_cq,
+          board_configs['elm']),
   )
 
   # Bluestreak specific PreCQ.

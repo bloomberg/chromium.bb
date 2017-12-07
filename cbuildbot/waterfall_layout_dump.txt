@@ -804,6 +804,7 @@ cyan-release-afdo-generate-tryjob (gce_beefy)
 cyan-release-afdo-use-tryjob (gce_beefy)
 cyan-release-tryjob (gce_beefy)
 cyan-unittest-stress (gce_beefy)
+cyan-wificell-pre-cq (gce_beefy)
 daisy-chrome-pfq-tryjob (gce_beefy)
 daisy-chromium-pfq-tryjob (gce_beefy)
 daisy-compile-only-pre-cq (gce_beefy)
@@ -895,6 +896,7 @@ elm-release-afdo-generate-tryjob (gce_beefy)
 elm-release-afdo-use-tryjob (gce_beefy)
 elm-release-tryjob (gce_beefy)
 elm-unittest-stress (gce_beefy)
+elm-wificell-pre-cq (gce_beefy)
 enguarde-chrome-pfq-tryjob (gce_beefy)
 enguarde-chromium-pfq-tryjob (gce_beefy)
 enguarde-compile-only-pre-cq (gce_beefy)
@@ -1566,6 +1568,7 @@ lulu-release-afdo-generate-tryjob (gce_beefy)
 lulu-release-afdo-use-tryjob (gce_beefy)
 lulu-release-tryjob (gce_beefy)
 lulu-unittest-stress (gce_beefy)
+lulu-wificell-pre-cq (gce_beefy)
 lumpy-chrome-pfq-tryjob (gce_beefy)
 lumpy-chromium-pfq-tryjob (gce_beefy)
 lumpy-compile-only-pre-cq (gce_beefy)
@@ -1637,7 +1640,10 @@ meowth-release-afdo-use-tryjob (gce_beefy)
 meowth-release-tryjob (gce_beefy)
 meowth-unittest-stress (gce_beefy)
 [mixed-wificell-pre-cq] (gce_beefy)
+  cyan-wificell-pre-cq
   daisy-wificell-pre-cq
+  elm-wificell-pre-cq
+  lulu-wificell-pre-cq
   veyron_jerry-wificell-pre-cq
   veyron_speedy-wificell-pre-cq
   winky-wificell-pre-cq
