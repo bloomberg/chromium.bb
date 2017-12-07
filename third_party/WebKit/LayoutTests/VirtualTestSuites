@@ -370,62 +370,74 @@
   {
     "prefix": "layout_ng",
     "base": "fast/block/basic",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "fast/block/margin-collapse",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "fast/block/float",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/wpt/css/CSS2/linebox",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/wpt/css/CSS2/normal-flow",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/wpt/css/CSS2/abspos",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/wpt/css/CSS2/positioning",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/wpt/css/CSS2/floats",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "external/wpt/css/CSS2/floats-clear",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "layout_ng",
     "base": "overflow",
-    "args": ["--enable-blink-features=LayoutNG"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
-    "prefix": "layout_ng_paint",
+    "prefix": "layout_ng",
     "base": "fast/inline",
-    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
-    "prefix": "layout_ng_paint",
+    "prefix": "layout_ng",
     "base": "fast/writing-mode",
-    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments"]
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments",
+             "--enable-slimming-paint-v175"]
   },
   {
     "prefix": "feature-policy",
