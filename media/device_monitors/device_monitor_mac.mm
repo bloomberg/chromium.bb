@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
+#include "media/audio/mac/audio_device_listener_mac.h"
 
 namespace {
 
@@ -82,9 +83,7 @@ class DeviceMonitorMacImpl {
 void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
     const std::vector<DeviceInfo>& snapshot_devices) {
   bool video_device_added = false;
-  bool audio_device_added = false;
   bool video_device_removed = false;
-  bool audio_device_removed = false;
 
   // Compare the current system devices snapshot with the ones cached to detect
   // additions, present in the former but not in the latter. If we find a device
@@ -97,9 +96,7 @@ void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
     if (cached_devices_iterator == cached_devices_.end()) {
       video_device_added |= ((it->type() == DeviceInfo::kVideo) ||
                              (it->type() == DeviceInfo::kMuxed));
-      audio_device_added |= ((it->type() == DeviceInfo::kAudio) ||
-                             (it->type() == DeviceInfo::kMuxed));
-      DVLOG(1) << "Device has been added, id: " << it->unique_id();
+      DVLOG(1) << "Video device has been added, id: " << it->unique_id();
     } else {
       cached_devices_.erase(cached_devices_iterator);
     }
@@ -109,18 +106,13 @@ void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
     video_device_removed |= ((it->type() == DeviceInfo::kVideo) ||
                              (it->type() == DeviceInfo::kMuxed) ||
                              (it->type() == DeviceInfo::kInvalid));
-    audio_device_removed |= ((it->type() == DeviceInfo::kAudio) ||
-                             (it->type() == DeviceInfo::kMuxed) ||
-                             (it->type() == DeviceInfo::kInvalid));
-    DVLOG(1) << "Device has been removed, id: " << it->unique_id();
+    DVLOG(1) << "Video device has been removed, id: " << it->unique_id();
   }
   // Update the cached devices with the current system snapshot.
   cached_devices_ = snapshot_devices;
 
   if (video_device_added || video_device_removed)
     monitor_->NotifyDeviceChanged(base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
-  if (audio_device_added || audio_device_removed)
-    monitor_->NotifyDeviceChanged(base::SystemMonitor::DEVTYPE_AUDIO);
 }
 
 // Forward declaration for use by CrAVFoundationDeviceObserver.
@@ -450,8 +442,16 @@ DeviceMonitorMac::~DeviceMonitorMac() {}
 void DeviceMonitorMac::StartMonitoring() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Monitoring via AVFoundation";
-  device_monitor_impl_.reset(
-      new AVFoundationMonitorImpl(this, device_task_runner_));
+  device_monitor_impl_ =
+      std::make_unique<AVFoundationMonitorImpl>(this, device_task_runner_);
+  audio_device_listener_ = std::make_unique<AudioDeviceListenerMac>(
+      base::BindRepeating([] {
+        if (base::SystemMonitor::Get()) {
+          base::SystemMonitor::Get()->ProcessDevicesChanged(
+              base::SystemMonitor::DEVTYPE_AUDIO);
+        }
+      }),
+      true /* monitor_default_input */, true /* monitor_addition_removal */);
 }
 
 void DeviceMonitorMac::NotifyDeviceChanged(

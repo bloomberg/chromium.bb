@@ -151,7 +151,13 @@ const base::Feature kLoadingWithMojo{"LoadingWithMojo",
 // invalidated upon notifications sent by base::SystemMonitor. If disabled, the
 // cache is considered invalid on every enumeration request.
 const base::Feature kMediaDevicesSystemMonitorCache{
-    "MediaDevicesSystemMonitorCaching", base::FEATURE_DISABLED_BY_DEFAULT};
+  "MediaDevicesSystemMonitorCaching",
+#if defined(OS_MACOSX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables the memory coordinator.
 // WARNING:
