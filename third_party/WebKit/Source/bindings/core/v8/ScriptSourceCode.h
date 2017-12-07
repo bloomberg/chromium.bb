@@ -68,7 +68,7 @@ class CORE_EXPORT ScriptSourceCode final {
 
   const String& Source() const { return source_; }
   ScriptResource* GetResource() const { return resource_; }
-  const KURL& Url() const;
+  KURL Url() const;
   int StartLine() const { return start_position_.line_.OneBasedInt(); }
   const TextPosition& StartPosition() const { return start_position_; }
   ScriptSourceLocationType SourceLocationType() const {
@@ -79,14 +79,12 @@ class CORE_EXPORT ScriptSourceCode final {
   ScriptStreamer* Streamer() const { return streamer_; }
 
  private:
-  void TreatNullSourceAsEmpty();
-
-  String source_;
+  const String source_;
   Member<ScriptResource> resource_;
   Member<ScriptStreamer> streamer_;
-  mutable KURL url_;
-  TextPosition start_position_;
-  ScriptSourceLocationType source_location_type_;
+  const KURL url_;
+  const TextPosition start_position_;
+  const ScriptSourceLocationType source_location_type_;
 };
 
 }  // namespace blink
