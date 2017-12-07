@@ -15,6 +15,7 @@ class NavigationHandle;
 namespace internal {
 
 // Exposed for tests.
+extern const char kHistogramMultiTabLoadingNumTabsWithInflightLoad[];
 extern const char kHistogramMultiTabLoadingFirstContentfulPaint[];
 extern const char kHistogramMultiTabLoadingForegroundToFirstContentfulPaint[];
 extern const char kHistogramMultiTabLoadingFirstMeaningfulPaint[];
@@ -39,6 +40,9 @@ class MultiTabLoadingPageLoadMetricsObserver
       content::NavigationHandle* navigation_handle,
       const GURL& currently_committed_url,
       bool started_in_foreground) override;
+  page_load_metrics::PageLoadMetricsObserver::ObservePolicy OnCommit(
+      content::NavigationHandle* navigation_handle,
+      ukm::SourceId source_id) override;
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
@@ -53,10 +57,14 @@ class MultiTabLoadingPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
 
  protected:
-  // Overridden in testing.
-  virtual bool IsAnyTabLoading(content::NavigationHandle* navigation_handle);
+  // Overridden in testing. Returns the number of loading tabs, excluding
+  // current tab.
+  virtual int NumberOfTabsWithInflightLoad(
+      content::NavigationHandle* navigation_handle);
 
  private:
+  int num_loading_tabs_when_started_;
+
   DISALLOW_COPY_AND_ASSIGN(MultiTabLoadingPageLoadMetricsObserver);
 };
 
