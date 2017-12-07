@@ -184,7 +184,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
           Adopt(std::move(info->installing)));
   EXPECT_EQ(worker, existing_worker);
   ASSERT_EQ(1UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(0)->type());
   ipc_sink()->ClearMessages();
 

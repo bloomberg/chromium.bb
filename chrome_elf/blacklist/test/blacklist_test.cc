@@ -361,7 +361,8 @@ TEST_F(BlacklistTest, SetupFailed) {
   result = blacklist_registry_key_->ReadValueDW(blacklist::kBeaconState,
                                                 &blacklist_state);
   EXPECT_EQ(ERROR_SUCCESS, result);
-  EXPECT_EQ(blacklist_state, blacklist::BLACKLIST_SETUP_FAILED);
+  EXPECT_EQ(blacklist_state,
+            static_cast<DWORD>(blacklist::BLACKLIST_SETUP_FAILED));
 }
 
 TEST_F(BlacklistTest, SetupSucceeded) {
@@ -379,7 +380,8 @@ TEST_F(BlacklistTest, SetupSucceeded) {
   DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
   blacklist_registry_key_->ReadValueDW(blacklist::kBeaconState,
                                        &blacklist_state);
-  EXPECT_EQ(blacklist_state, blacklist::BLACKLIST_SETUP_RUNNING);
+  EXPECT_EQ(blacklist_state,
+            static_cast<DWORD>(blacklist::BLACKLIST_SETUP_RUNNING));
 
   DWORD attempt_count = blacklist::kBeaconMaxAttempts;
   blacklist_registry_key_->ReadValueDW(blacklist::kBeaconAttemptCount,

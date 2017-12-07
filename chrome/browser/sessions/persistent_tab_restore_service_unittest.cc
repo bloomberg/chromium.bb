@@ -607,7 +607,7 @@ TEST_F(PersistentTabRestoreServiceTest, ManyWindowsInSessionService) {
 
   // We should get back kMaxEntries entries. We added more, but
   // TabRestoreService only allows up to kMaxEntries.
-  ASSERT_EQ(kMaxEntries, service_->entries().size());
+  ASSERT_EQ(static_cast<size_t>(kMaxEntries), service_->entries().size());
 
   // The first entry should come from the session service.
   sessions::TabRestoreService::Entry* entry = service_->entries().front().get();

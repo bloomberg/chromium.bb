@@ -57,7 +57,8 @@ TEST(ScopedResourceTest, CreateScopedResource) {
                                 texture->size(), texture->format()));
 
   EXPECT_LT(0u, texture->id());
-  EXPECT_EQ(static_cast<unsigned>(viz::RGBA_8888), texture->format());
+  EXPECT_EQ(static_cast<unsigned>(viz::RGBA_8888),
+            static_cast<unsigned>(texture->format()));
   EXPECT_EQ(gfx::Size(30, 30), texture->size());
 }
 

@@ -237,7 +237,8 @@ TEST_F(PrerenderingTest, SinglePrerender) {
   WebPrerender web_prerender = PrerendererClient()->ReleaseWebPrerender();
   EXPECT_FALSE(web_prerender.IsNull());
   EXPECT_EQ(ToWebURL("http://prerender.com/"), web_prerender.Url());
-  EXPECT_EQ(kPrerenderRelTypePrerender, web_prerender.RelTypes());
+  EXPECT_EQ(static_cast<unsigned>(kPrerenderRelTypePrerender),
+            web_prerender.RelTypes());
 
   EXPECT_EQ(1u, PrerenderingSupport()->AddCount(web_prerender));
   EXPECT_EQ(1u, PrerenderingSupport()->TotalCount());

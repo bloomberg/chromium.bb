@@ -114,7 +114,8 @@ TEST_F(StatusTrayStateChangerWinTest, DISABLED_ComApiTest) {
   // Run the interesting code.
   tray_watcher_->EnsureTrayIconVisible();
 
-  EXPECT_EQ(PREFERENCE_SHOW_ALWAYS, GetNotifyItem()->preference);
+  EXPECT_EQ(static_cast<DWORD>(PREFERENCE_SHOW_ALWAYS),
+            GetNotifyItem()->preference);
   SendNotifyItemUpdate(std::move(notify_item));
   notify_item = GetNotifyItem();
 

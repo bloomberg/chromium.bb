@@ -234,11 +234,14 @@ TEST_F(ServiceWorkerProviderContextTest, CreateForController) {
   // associated registration and its versions.
   provider_context = nullptr;
   ASSERT_EQ(3UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(1)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(2)->type());
   // ServiceWorkerRegistrationObjectHost Mojo connection got broken.
   base::RunLoop().RunUntilIdle();
@@ -275,7 +278,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     // the controller.
     provider_context = nullptr;
     ASSERT_EQ(1UL, ipc_sink()->message_count());
-    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+    EXPECT_EQ(static_cast<uint32_t>(
+                  ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
               ipc_sink()->GetMessageAt(0)->type());
     ipc_sink()->ClearMessages();
   }
@@ -315,7 +319,8 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 
     EXPECT_TRUE(client->was_set_controller_called());
     ASSERT_EQ(1UL, ipc_sink()->message_count());
-    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+    EXPECT_EQ(static_cast<uint32_t>(
+                  ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
               ipc_sink()->GetMessageAt(0)->type());
   }
 }
@@ -385,9 +390,11 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   // client. See the comment on dispatchMessageEvent() of the mock).
   EXPECT_TRUE(client->was_dispatch_message_event_called());
   ASSERT_EQ(2UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(1)->type());
 }
 
@@ -452,11 +459,14 @@ TEST_F(ServiceWorkerProviderContextTest,
   EXPECT_EQ(registration_id, registration->RegistrationId());
   EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());
   ASSERT_EQ(3UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(1)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(2)->type());
 
   ipc_sink()->ClearMessages();
@@ -464,11 +474,14 @@ TEST_F(ServiceWorkerProviderContextTest,
   // The registration dtor decrements the refcounts.
   registration = nullptr;
   ASSERT_EQ(3UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(1)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(2)->type());
   // The Mojo connection has been dropped.
   base::RunLoop().RunUntilIdle();
@@ -524,11 +537,14 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());
     ASSERT_EQ(3UL, ipc_sink()->message_count());
-    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+    EXPECT_EQ(static_cast<uint32_t>(
+                  ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
               ipc_sink()->GetMessageAt(0)->type());
-    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+    EXPECT_EQ(static_cast<uint32_t>(
+                  ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
               ipc_sink()->GetMessageAt(1)->type());
-    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+    EXPECT_EQ(static_cast<uint32_t>(
+                  ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
               ipc_sink()->GetMessageAt(2)->type());
   }
 
@@ -538,11 +554,14 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
   registration1 = nullptr;
   registration2 = nullptr;
   ASSERT_EQ(3UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(1)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+  EXPECT_EQ(static_cast<uint32_t>(
+                ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID),
             ipc_sink()->GetMessageAt(2)->type());
   // The 1st Mojo connection has been dropped.
   base::RunLoop().RunUntilIdle();

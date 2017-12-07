@@ -72,7 +72,7 @@ TEST_F(ChildTraceMessageFilterTest, TestHistogramTriggers) {
 
   EXPECT_TRUE(fake_sender_.last_message_);
   EXPECT_EQ(fake_sender_.last_message_->type(),
-            TracingHostMsg_TriggerBackgroundTrace::ID);
+            static_cast<uint32_t>(TracingHostMsg_TriggerBackgroundTrace::ID));
 }
 
 TEST_F(ChildTraceMessageFilterTest, TestHistogramAborts) {
@@ -84,7 +84,7 @@ TEST_F(ChildTraceMessageFilterTest, TestHistogramAborts) {
 
   EXPECT_TRUE(fake_sender_.last_message_);
   EXPECT_EQ(fake_sender_.last_message_->type(),
-            TracingHostMsg_AbortBackgroundTrace::ID);
+            static_cast<uint32_t>(TracingHostMsg_AbortBackgroundTrace::ID));
 }
 
 }  // namespace tracing

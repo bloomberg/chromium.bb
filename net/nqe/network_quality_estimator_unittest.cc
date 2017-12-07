@@ -3053,7 +3053,7 @@ TEST(NetworkQualityEstimatorTest, TypicalNetworkQualities) {
       base::RunLoop().Run();
 
       EXPECT_EQ(effective_connection_type,
-                estimator.GetEffectiveConnectionType());
+                static_cast<size_t>(estimator.GetEffectiveConnectionType()));
     }
   }
 }

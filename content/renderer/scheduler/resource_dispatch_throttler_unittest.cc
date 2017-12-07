@@ -408,9 +408,12 @@ TEST_F(ResourceDispatchThrottlerTest, MessageOrderingPreservedWhenThrottling) {
     const auto& priority_msg = *sent_messages_[i + 1];
     const auto& cancel_msg = *sent_messages_[i + 2];
 
-    EXPECT_EQ(request_msg.type(), ResourceHostMsg_RequestResource::ID);
-    EXPECT_EQ(priority_msg.type(), ResourceHostMsg_DidChangePriority::ID);
-    EXPECT_EQ(cancel_msg.type(), ResourceHostMsg_CancelRequest::ID);
+    EXPECT_EQ(request_msg.type(),
+              static_cast<uint32_t>(ResourceHostMsg_RequestResource::ID));
+    EXPECT_EQ(priority_msg.type(),
+              static_cast<uint32_t>(ResourceHostMsg_DidChangePriority::ID));
+    EXPECT_EQ(cancel_msg.type(),
+              static_cast<uint32_t>(ResourceHostMsg_CancelRequest::ID));
 
     EXPECT_EQ(GetRequestId(request_msg), GetRequestId(priority_msg));
     EXPECT_EQ(GetRequestId(request_msg) - 1, GetRequestId(cancel_msg));

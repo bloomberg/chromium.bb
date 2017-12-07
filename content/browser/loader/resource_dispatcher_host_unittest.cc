@@ -104,7 +104,8 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
   ASSERT_GE(messages.size(), 2U);
 
   // The first messages should be received response.
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, messages[0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            messages[0].type());
 
   base::PickleIterator iter(messages[0]);
   int request_id;
@@ -810,7 +811,8 @@ void CheckRequestCompleteErrorCode(const IPC::Message& message,
   int request_id;
   int error_code;
 
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, message.type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_RequestComplete::ID),
+            message.type());
 
   base::PickleIterator iter(message);
   ASSERT_TRUE(IPC::ReadParam(&message, &iter, &request_id));
@@ -1006,7 +1008,7 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
   }
 
   void GenerateDataReceivedACK(const IPC::Message& msg) {
-    EXPECT_EQ(ResourceMsg_DataReceived::ID, msg.type());
+    EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID), msg.type());
 
     int request_id = -1;
     bool result = base::PickleIterator(msg).ReadInt(&request_id);
@@ -1083,7 +1085,8 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
     // We should have gotten one RequestComplete message.
     ASSERT_EQ(1U, msgs.size());
     ASSERT_EQ(1U, msgs[0].size());
-    EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
+    EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_RequestComplete::ID),
+              msgs[0][0].type());
 
     // The RequestComplete message should have had the expected error code.
     CheckRequestCompleteErrorCode(msgs[0][0], expected_error_code);
@@ -1275,9 +1278,11 @@ void CheckSuccessfulRequestWithErrorCode(
   ASSERT_EQ(4U, messages.size());
 
   // The first messages should be received response
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, messages[0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            messages[0].type());
 
-  ASSERT_EQ(ResourceMsg_SetDataBuffer::ID, messages[1].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_SetDataBuffer::ID),
+            messages[1].type());
 
   base::PickleIterator iter(messages[1]);
   int request_id;
@@ -1289,7 +1294,8 @@ void CheckSuccessfulRequestWithErrorCode(
 
   // Followed by the data, currently we only do the data in one chunk, but
   // should probably test multiple chunks later
-  ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[2].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+            messages[2].type());
 
   int data_offset;
   int data_length;
@@ -1316,7 +1322,8 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
 void CheckSuccessfulRedirect(const std::vector<IPC::Message>& messages,
                              const std::string& reference_data) {
   ASSERT_EQ(5U, messages.size());
-  ASSERT_EQ(ResourceMsg_ReceivedRedirect::ID, messages[0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedRedirect::ID),
+            messages[0].type());
 
   const std::vector<IPC::Message> second_req_msgs =
       std::vector<IPC::Message>(messages.begin() + 1, messages.end());
@@ -1331,7 +1338,8 @@ void CheckFailedRequest(const std::vector<IPC::Message>& messages,
   size_t failure_index = messages.size() - 1;
 
   if (messages.size() == 2) {
-    EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, messages[0].type());
+    EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+              messages[0].type());
   }
 
   CheckRequestCompleteErrorCode(messages[failure_index], expected_error);
@@ -1411,10 +1419,12 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   // Check that request 2 and 4 got canceled, as far as the renderer is
   // concerned.  Request 2 will have been deleted.
   ASSERT_EQ(1U, msgs[1].size());
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[1][0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[1][0].type());
 
   ASSERT_EQ(2U, msgs[3].size());
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[3][0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[3][0].type());
   CheckRequestCompleteErrorCode(msgs[3][1], net::ERR_ABORTED);
 
   // However, request 4 should have actually gone to completion. (Only request 2
@@ -1493,7 +1503,8 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
   ASSERT_EQ(2U, msgs[0].size());
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[0][0].type());
   CheckRequestCompleteErrorCode(msgs[0][1], net::ERR_ABORTED);
 
   // But it continues detached.
@@ -1967,7 +1978,8 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
   // The detachable request was cancelled by the renderer before it
   // finished. From the perspective of the renderer, it should have cancelled.
   ASSERT_EQ(2U, msgs[1].size());
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[1][0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[1][0].type());
   CheckRequestCompleteErrorCode(msgs[1][1], net::ERR_ABORTED);
   // But it completed anyway. For the network stack, no requests were canceled.
   EXPECT_EQ(4, network_delegate()->completed_requests());
@@ -2069,7 +2081,8 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
 
   // The request should have cancelled.
   ASSERT_EQ(2U, msgs[0].size());
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[0][0].type());
   CheckRequestCompleteErrorCode(msgs[0][1], net::ERR_ABORTED);
   // And not run to completion.
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -2815,7 +2828,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
   accum_.GetClassifiedMessages(&msgs);
 
   ASSERT_EQ(2U, msgs.size());
-  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedRedirect::ID),
+            msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
 
   second_filter->OnChannelClosing();
@@ -2969,7 +2983,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
   accum_.GetClassifiedMessages(&msgs);
 
   ASSERT_EQ(2U, msgs.size());
-  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedRedirect::ID),
+            msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
 
   second_filter->OnChannelClosing();
@@ -3055,7 +3070,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   accum_.GetClassifiedMessages(&msgs);
 
   ASSERT_EQ(2U, msgs.size());
-  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedRedirect::ID),
+            msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
 
   second_filter->OnChannelClosing();
@@ -3144,7 +3160,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   accum_.GetClassifiedMessages(&msgs);
 
   ASSERT_EQ(2U, msgs.size());
-  EXPECT_EQ(ResourceMsg_ReceivedRedirect::ID, msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedRedirect::ID),
+            msgs[0][0].type());
   CheckSuccessfulRequest(msgs[1], kResponseBody);
 
   second_filter->OnChannelClosing();
@@ -3178,11 +3195,15 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedACKs) {
 
   size_t size = msgs[0].size();
 
-  EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
-  EXPECT_EQ(ResourceMsg_SetDataBuffer::ID, msgs[0][1].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_SetDataBuffer::ID),
+            msgs[0][1].type());
   for (size_t i = 2; i < size - 1; ++i)
-    EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
-  EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][size - 1].type());
+    EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+              msgs[0][i].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_RequestComplete::ID),
+            msgs[0][size - 1].type());
 }
 
 // Request a very large detachable resource and cancel part way. Some of the
@@ -3256,10 +3277,13 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
   accum_.GetClassifiedMessages(&msgs);
 
   // We expect 1x ReceivedResponse, 1x SetDataBuffer, Nx ReceivedData messages.
-  EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
-  EXPECT_EQ(ResourceMsg_SetDataBuffer::ID, msgs[0][1].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_SetDataBuffer::ID),
+            msgs[0][1].type());
   for (size_t i = 2; i < msgs[0].size(); ++i)
-    EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+    EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+              msgs[0][i].type());
 
   // NOTE: If we fail the above checks then it means that we probably didn't
   // load a big enough response to trigger the delay mechanism we are trying to
@@ -3277,7 +3301,8 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
         break;
       }
 
-      EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+      EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+                msgs[0][i].type());
 
       ResourceHostMsg_DataReceived_ACK msg(1);
       OnMessageReceived(msg, filter_.get());
@@ -3305,10 +3330,13 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
   accum_.GetClassifiedMessages(&msgs);
 
   // We expect 1x ReceivedResponse, 1x SetDataBuffer, Nx ReceivedData messages.
-  EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
-  EXPECT_EQ(ResourceMsg_SetDataBuffer::ID, msgs[0][1].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_ReceivedResponse::ID),
+            msgs[0][0].type());
+  EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_SetDataBuffer::ID),
+            msgs[0][1].type());
   for (size_t i = 2; i < msgs[0].size(); ++i)
-    EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+    EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+              msgs[0][i].type());
 
   // NOTE: If we fail the above checks then it means that we probably didn't
   // load a big enough response to trigger the delay mechanism.
@@ -3331,7 +3359,8 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
         break;
       }
 
-      EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+      EXPECT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+                msgs[0][i].type());
 
       ResourceHostMsg_DataReceived_ACK msg(1);
       OnMessageReceived(msg, filter_.get());
@@ -3510,7 +3539,8 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   // DataDownloaded
   size_t total_len = 0;
   for (size_t i = 1; i < messages.size() - 1; i++) {
-    ASSERT_EQ(ResourceMsg_DataDownloaded::ID, messages[i].type());
+    ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_DataDownloaded::ID),
+              messages[i].type());
     base::PickleIterator iter(messages[i]);
     int request_id, data_len;
     ASSERT_TRUE(IPC::ReadParam(&messages[i], &iter, &request_id));

@@ -258,14 +258,16 @@ TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
   StartRequestAndWaitWithResponseDataSize(kDataSize);
   const auto& messages = filter_->messages();
   ASSERT_EQ(4u, messages.size());
-  ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[2]->type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+            messages[2]->type());
   ResourceMsg_DataReceived::Param params;
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
   EXPECT_EQ(kDataSize, encoded_data_length);
 
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[3]->type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_RequestComplete::ID),
+            messages[3]->type());
   ResourceMsg_RequestComplete::Param completion_params;
   ResourceMsg_RequestComplete::Read(messages[3].get(), &completion_params);
   network::URLLoaderCompletionStatus status = std::get<1>(completion_params);
@@ -280,20 +282,23 @@ TEST_F(AsyncResourceHandlerTest, TwoChunksLengths) {
   StartRequestAndWaitWithResponseDataSize(kDataSize);
   const auto& messages = filter_->messages();
   ASSERT_EQ(5u, messages.size());
-  ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[2]->type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+            messages[2]->type());
   ResourceMsg_DataReceived::Param params;
   ResourceMsg_DataReceived::Read(messages[2].get(), &params);
 
   int encoded_data_length = std::get<3>(params);
   EXPECT_EQ(32768, encoded_data_length);
 
-  ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[3]->type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_DataReceived::ID),
+            messages[3]->type());
   ResourceMsg_DataReceived::Read(messages[3].get(), &params);
 
   encoded_data_length = std::get<3>(params);
   EXPECT_EQ(32768, encoded_data_length);
 
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, messages[4]->type());
+  ASSERT_EQ(static_cast<uint32_t>(ResourceMsg_RequestComplete::ID),
+            messages[4]->type());
   ResourceMsg_RequestComplete::Param completion_params;
   ResourceMsg_RequestComplete::Read(messages[4].get(), &completion_params);
   network::URLLoaderCompletionStatus status = std::get<1>(completion_params);

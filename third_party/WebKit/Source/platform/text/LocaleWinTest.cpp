@@ -169,9 +169,9 @@ TEST_F(LocaleWinTest, formatDate) {
 }
 
 TEST_F(LocaleWinTest, firstDayOfWeek) {
-  EXPECT_EQ(kSunday, FirstDayOfWeek(kEnglishUS));
-  EXPECT_EQ(kMonday, FirstDayOfWeek(kFrenchFR));
-  EXPECT_EQ(kSunday, FirstDayOfWeek(kJapaneseJP));
+  EXPECT_EQ(static_cast<unsigned>(kSunday), FirstDayOfWeek(kEnglishUS));
+  EXPECT_EQ(static_cast<unsigned>(kMonday), FirstDayOfWeek(kFrenchFR));
+  EXPECT_EQ(static_cast<unsigned>(kSunday), FirstDayOfWeek(kJapaneseJP));
 }
 
 TEST_F(LocaleWinTest, monthLabels) {
