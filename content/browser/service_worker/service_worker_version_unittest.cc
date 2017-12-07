@@ -917,6 +917,37 @@ TEST_F(ServiceWorkerVersionTest, UpdateCachedMetadata) {
   version_->RemoveListener(&listener);
 }
 
+TEST_F(ServiceWorkerVersionTest, RestartWorker) {
+  StartWorker(version_.get(),
+              ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+
+  ServiceWorkerStatusCode event_status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
+                         CreateReceiverOnCurrentThread(&event_status));
+
+  // Restart the worker. The inflight event should have been failed.
+  bool has_stopped = false;
+  version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
+  ServiceWorkerStatusCode start_status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        CreateReceiverOnCurrentThread(&start_status));
+  base::RunLoop().RunUntilIdle();
+
+  // All inflight events should have been aborted.
+  EXPECT_EQ(event_status, SERVICE_WORKER_ERROR_FAILED);
+  // The worker should have been stopped.
+  EXPECT_TRUE(has_stopped);
+  // The worker should have been successfully re-started after stopped.
+  EXPECT_EQ(SERVICE_WORKER_OK, start_status);
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+
+  // SetAllRequestExpirations() after restarting should not crash since all
+  // events should have been removed at this point: crbug.com/791451.
+  version_->SetAllRequestExpirations(base::TimeTicks());
+}
+
 class MessageReceiverControlEvents : public MessageReceiver {
  public:
   MessageReceiverControlEvents() : MessageReceiver() {}

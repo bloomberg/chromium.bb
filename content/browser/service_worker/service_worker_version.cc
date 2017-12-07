@@ -1496,6 +1496,8 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 
 void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
+  DCHECK(pending_requests_.IsEmpty());
+  DCHECK(request_timeouts_.empty());
   DCHECK(start_worker_first_purpose_);
 
   if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)) {
@@ -1932,6 +1934,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
     iter.Advance();
   }
   pending_requests_.Clear();
+  request_timeouts_.clear();
   external_request_uuid_to_request_id_.clear();
   event_dispatcher_.reset();
   controller_ptr_.reset();
