@@ -5019,6 +5019,9 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     transform_feedback_manager_.reset();
   }
 
+  // Record this value before resetting the frame buffer below.
+  bool is_offscreen = !!offscreen_target_frame_buffer_;
+
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();
   offscreen_target_color_render_buffer_.reset();
@@ -5046,6 +5049,13 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   if (group_.get()) {
     group_->Destroy(this, have_context);
     group_ = NULL;
+  }
+
+  // If this is not an offscreen surface then it shouldn't be shared and we
+  // should have the only remaining ref. Logging to debug crbug.com/787086
+  if (!is_offscreen && surface_ && !surface_->HasOneRef()) {
+    LOG(ERROR) << "crbug.com/787086: Decoder is not the sole owner of "
+                  "|surface_| at destruction time";
   }
 
   // Destroy the surface before the context, some surface destructors make GL
