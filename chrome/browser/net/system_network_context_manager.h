@@ -67,6 +67,9 @@ class SystemNetworkContextManager {
 
   // Flushes all pending proxy configuration changes.
   void FlushProxyConfigMonitorForTesting();
+  // Call |FlushForTesting()| on Network Service related interfaces. For test
+  // use only.
+  void FlushNetworkInterfaceForTesting();
 
  private:
   // Creates parameters for the NetworkContext. May only be called once, since
