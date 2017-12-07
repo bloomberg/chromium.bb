@@ -431,14 +431,6 @@ void ArcSettingsServiceImpl::SyncBackupEnabled() const {
     DCHECK(value->is_bool());
     backup_settings->SetBackupEnabled(value->GetBool(),
                                       !pref->IsUserModifiable());
-  } else {
-    // TODO(crbug.com/783567): Remove this code path after we made sure we
-    // rolled the ARC image that implements backup_settings.
-    //
-    // Fallback to use intent broadcast, if the new method is not available.
-    SendBoolPrefSettingsBroadcast(
-        prefs::kArcBackupRestoreEnabled,
-        "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED");
   }
 
   if (GetPrefs()->IsManagedPreference(prefs::kArcBackupRestoreEnabled)) {

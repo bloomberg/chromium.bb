@@ -29,6 +29,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_backup_settings_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -178,8 +179,6 @@ constexpr char kWifi1Guid[] = "{wifi1_guid}";
 
 constexpr char kONCPacUrl[] = "http://domain.com/x";
 
-constexpr char kBackupBroadcastAction[] =
-    "org.chromium.arc.intent_helper.SET_BACKUP_ENABLED";
 constexpr char kLocationServiceBroadcastAction[] =
     "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED";
 constexpr char kSetProxyBroadcastAction[] =
@@ -245,9 +244,24 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
         ->SetInstance(fake_intent_helper_instance_.get());
     WaitForInstanceReady(
         ArcServiceManager::Get()->arc_bridge_service()->intent_helper());
+
+    fake_backup_settings_instance_ =
+        std::make_unique<FakeBackupSettingsInstance>();
+    ArcServiceManager::Get()
+        ->arc_bridge_service()
+        ->backup_settings()
+        ->SetInstance(fake_backup_settings_instance_.get());
+    WaitForInstanceReady(
+        ArcServiceManager::Get()->arc_bridge_service()->backup_settings());
   }
 
   void TearDownOnMainThread() override {
+    ArcServiceManager::Get()
+        ->arc_bridge_service()
+        ->backup_settings()
+        ->SetInstance(nullptr);
+    fake_backup_settings_instance_.reset();
+
     ArcServiceManager::Get()
         ->arc_bridge_service()
         ->intent_helper()
@@ -301,6 +315,7 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<FakeIntentHelperInstance> fake_intent_helper_instance_;
+  std::unique_ptr<FakeBackupSettingsInstance> fake_backup_settings_instance_;
 
  private:
   void SetupNetworkEnvironment() {
@@ -337,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   prefs->SetBoolean(prefs::kArcBackupRestoreEnabled, true);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
 
-  fake_intent_helper_instance_->clear_broadcasts();
+  fake_backup_settings_instance_->ClearCallHistory();
 
   // The policy is set to false.
   policy::PolicyMap policy;
@@ -347,18 +362,15 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
              nullptr);
   UpdatePolicy(policy);
 
-  // The pref is disabled and managed, and the corresponding broadcast is sent
-  // at least once.
+  // The pref is disabled and managed, and the corresponding sync method
+  // reflects the pref.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  base::DictionaryValue expected_broadcast_extras;
-  expected_broadcast_extras.SetBoolean("enabled", false);
-  expected_broadcast_extras.SetBoolean("managed", true);
-  EXPECT_GE(CountBroadcasts(fake_intent_helper_instance_->broadcasts(),
-                            kBackupBroadcastAction, &expected_broadcast_extras),
-            1);
+  EXPECT_TRUE(fake_backup_settings_instance_->set_backup_enabled_called());
+  EXPECT_FALSE(fake_backup_settings_instance_->enabled());
+  EXPECT_TRUE(fake_backup_settings_instance_->managed());
 
-  fake_intent_helper_instance_->clear_broadcasts();
+  fake_backup_settings_instance_->ClearCallHistory();
 
   // The policy is set to true.
   policy.Set(policy::key::kArcBackupRestoreEnabled,
@@ -367,30 +379,27 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
              nullptr);
   UpdatePolicy(policy);
 
-  // The pref is enabled and managed, and the corresponding broadcast is sent at
-  // least once.
+  // The pref is enabled and managed, and the corresponding sync method
+  // reflects the pref.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  expected_broadcast_extras.SetBoolean("enabled", true);
-  EXPECT_GE(CountBroadcasts(fake_intent_helper_instance_->broadcasts(),
-                            kBackupBroadcastAction, &expected_broadcast_extras),
-            1);
+  EXPECT_TRUE(fake_backup_settings_instance_->set_backup_enabled_called());
+  EXPECT_TRUE(fake_backup_settings_instance_->enabled());
+  EXPECT_TRUE(fake_backup_settings_instance_->managed());
 
-  fake_intent_helper_instance_->clear_broadcasts();
+  fake_backup_settings_instance_->ClearCallHistory();
 
   // The policy is unset.
   policy.Erase(policy::key::kArcBackupRestoreEnabled);
   UpdatePolicy(policy);
 
-  // The pref is disabled and unmanaged, and the corresponding broadcast is
-  // sent.
+  // The pref is disabled and unmanaged, and the corresponding sync method
+  // reflects the pref.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  expected_broadcast_extras.SetBoolean("enabled", false);
-  expected_broadcast_extras.SetBoolean("managed", false);
-  EXPECT_EQ(CountBroadcasts(fake_intent_helper_instance_->broadcasts(),
-                            kBackupBroadcastAction, &expected_broadcast_extras),
-            1);
+  EXPECT_TRUE(fake_backup_settings_instance_->set_backup_enabled_called());
+  EXPECT_FALSE(fake_backup_settings_instance_->enabled());
+  EXPECT_FALSE(fake_backup_settings_instance_->managed());
 }
 
 IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
