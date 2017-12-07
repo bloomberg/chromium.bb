@@ -5,7 +5,7 @@
 /** @fileoverview Tests for shared Polymer elements. */
 
 /** @const {string} Path to source root. */
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
