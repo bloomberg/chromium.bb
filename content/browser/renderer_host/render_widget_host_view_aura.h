@@ -448,9 +448,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   ui::InputMethod* GetInputMethod() const;
 
-  // Get the focused view that should be used for retrieving the text selection.
-  RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
-
   // Returns whether the widget needs an input grab to work properly.
   bool NeedsInputGrab();
 
