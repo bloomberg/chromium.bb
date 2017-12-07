@@ -54,11 +54,16 @@ html {
 body {
   background-attachment: fixed !important;
   cursor: default;
+  display: none;
   font-family: arial, sans-serif;
   font-size: small;
   height: 100%;
   margin: 0;
   overflow-x: hidden;
+}
+
+body.inited {
+  display: block;
 }
 
 /* Button defaults vary by platform. Reset CSS so that the NTP can use buttons
