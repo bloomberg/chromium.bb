@@ -29,6 +29,7 @@
 #include "platform/text/Character.h"
 #include "platform/wtf/ByteSwap.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -254,54 +255,13 @@ HarfBuzzFace* FontPlatformData::GetHarfBuzzFace() const {
   return harf_buzz_face_.get();
 }
 
-static inline bool TableHasSpace(hb_face_t* face,
-                                 hb_set_t* glyphs,
-                                 hb_tag_t tag,
-                                 hb_codepoint_t space) {
-  unsigned count = hb_ot_layout_table_get_lookup_count(face, tag);
-  for (unsigned i = 0; i < count; i++) {
-    hb_ot_layout_lookup_collect_glyphs(face, tag, i, glyphs, glyphs, glyphs,
-                                       nullptr);
-    if (hb_set_has(glyphs, space))
-      return true;
-  }
-  return false;
-}
-
 bool FontPlatformData::HasSpaceInLigaturesOrKerning(
     TypesettingFeatures features) const {
   HarfBuzzFace* hb_face = GetHarfBuzzFace();
   if (!hb_face)
     return false;
 
-  hb_font_t* font =
-      hb_face->GetScaledFont(nullptr, HarfBuzzFace::NoVerticalLayout);
-  DCHECK(font);
-  hb_face_t* face = hb_font_get_face(font);
-  DCHECK(face);
-
-  hb_codepoint_t space;
-  // If the space glyph isn't present in the font then each space character
-  // will be rendering using a fallback font, which grantees that it cannot
-  // affect the shape of the preceding word.
-  if (!hb_font_get_glyph(font, kSpaceCharacter, 0, &space))
-    return false;
-
-  if (!hb_ot_layout_has_substitution(face) &&
-      !hb_ot_layout_has_positioning(face)) {
-    return false;
-  }
-
-  bool found_space_in_table = false;
-  hb_set_t* glyphs = hb_set_create();
-  if (features & kKerning)
-    found_space_in_table = TableHasSpace(face, glyphs, HB_OT_TAG_GPOS, space);
-  if (!found_space_in_table && (features & kLigatures))
-    found_space_in_table = TableHasSpace(face, glyphs, HB_OT_TAG_GSUB, space);
-
-  hb_set_destroy(glyphs);
-
-  return found_space_in_table;
+  return hb_face->HasSpaceInLigaturesOrKerning(features);
 }
 
 unsigned FontPlatformData::GetHash() const {

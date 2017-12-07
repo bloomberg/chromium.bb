@@ -72,6 +72,15 @@ void HbFaceDeleter::operator()(hb_face_t* face) {
     hb_face_destroy(face);
 }
 
+struct HbSetDeleter {
+  void operator()(hb_set_t* set) {
+    if (set)
+      hb_set_destroy(set);
+  }
+};
+
+using HbSetUniquePtr = std::unique_ptr<hb_set_t, HbSetDeleter>;
+
 static scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t*);
 
 HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
@@ -208,6 +217,71 @@ static hb_bool_t HarfBuzzGetGlyphExtents(hb_font_t* hb_font,
   SkiaTextMetrics(&hb_font_data->paint_)
       .GetGlyphExtentsForHarfBuzz(glyph, extents);
   return true;
+}
+
+static inline bool TableHasSpace(hb_face_t* face,
+                                 hb_set_t* glyphs,
+                                 hb_tag_t tag,
+                                 hb_codepoint_t space) {
+  unsigned count = hb_ot_layout_table_get_lookup_count(face, tag);
+  for (unsigned i = 0; i < count; i++) {
+    hb_ot_layout_lookup_collect_glyphs(face, tag, i, glyphs, glyphs, glyphs,
+                                       nullptr);
+    if (hb_set_has(glyphs, space))
+      return true;
+  }
+  return false;
+}
+
+static bool GetSpaceGlyph(hb_font_t* font, hb_codepoint_t& space) {
+  return hb_font_get_nominal_glyph(font, kSpaceCharacter, &space);
+}
+
+bool HarfBuzzFace::HasSpaceInLigaturesOrKerning(TypesettingFeatures features) {
+  const hb_codepoint_t kInvalidCodepoint = static_cast<hb_codepoint_t>(-1);
+  hb_codepoint_t space = kInvalidCodepoint;
+
+  HbSetUniquePtr glyphs(hb_set_create());
+
+  // Check whether computing is needed and compute for gpos/gsub.
+  if (features & kKerning &&
+      harf_buzz_font_data_->space_in_gpos_ ==
+          HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Unknown) {
+    if (space == kInvalidCodepoint && !GetSpaceGlyph(unscaled_font_, space))
+      return false;
+    // Compute for gpos.
+    hb_face_t* face = hb_font_get_face(unscaled_font_);
+    DCHECK(face);
+    harf_buzz_font_data_->space_in_gpos_ =
+        hb_ot_layout_has_positioning(face) &&
+                TableHasSpace(face, glyphs.get(), HB_OT_TAG_GPOS, space)
+            ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present
+            : HarfBuzzFontData::SpaceGlyphInOpenTypeTables::NotPresent;
+  }
+
+  hb_set_clear(glyphs.get());
+
+  if (features & kLigatures &&
+      harf_buzz_font_data_->space_in_gsub_ ==
+          HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Unknown) {
+    if (space == kInvalidCodepoint && !GetSpaceGlyph(unscaled_font_, space))
+      return false;
+    // Compute for gpos.
+    hb_face_t* face = hb_font_get_face(unscaled_font_);
+    DCHECK(face);
+    harf_buzz_font_data_->space_in_gsub_ =
+        hb_ot_layout_has_substitution(face) &&
+                TableHasSpace(face, glyphs.get(), HB_OT_TAG_GSUB, space)
+            ? HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present
+            : HarfBuzzFontData::SpaceGlyphInOpenTypeTables::NotPresent;
+  }
+
+  return (features & kKerning &&
+          harf_buzz_font_data_->space_in_gpos_ ==
+              HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present) ||
+         (features & kLigatures &&
+          harf_buzz_font_data_->space_in_gsub_ ==
+              HarfBuzzFontData::SpaceGlyphInOpenTypeTables::Present);
 }
 
 static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {

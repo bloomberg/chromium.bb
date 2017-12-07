@@ -32,6 +32,7 @@
 #define HarfBuzzFace_h
 
 #include "base/memory/scoped_refptr.h"
+#include "platform/fonts/TypesettingFeatures.h"
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
@@ -63,6 +64,8 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   // return in the harfBuzzGetGlyph function.
   hb_font_t* GetScaledFont(scoped_refptr<UnicodeRangeSet>,
                            VerticalLayoutCallbacks) const;
+
+  bool HasSpaceInLigaturesOrKerning(TypesettingFeatures);
 
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);
