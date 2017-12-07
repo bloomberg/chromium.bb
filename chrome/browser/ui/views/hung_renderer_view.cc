@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -374,13 +373,13 @@ bool HungRendererDialogView::Cancel() {
     base::StringPairs crash_keys;
 
     crash_keys.push_back(std::make_pair(
-        crash_keys::kHungRendererOutstandingAckCount,
+        "hung-outstanding-acks",
         base::IntToString(unresponsive_state_.outstanding_ack_count)));
     crash_keys.push_back(std::make_pair(
-        crash_keys::kHungRendererOutstandingEventType,
+        "hung-outstanding-event-type",
         base::IntToString(unresponsive_state_.outstanding_event_type)));
     crash_keys.push_back(
-        std::make_pair(crash_keys::kHungRendererLastEventType,
+        std::make_pair("hung-last-event-type",
                        base::IntToString(unresponsive_state_.last_event_type)));
 
     // Try to generate a crash report for the hung process.

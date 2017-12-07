@@ -35,11 +35,6 @@ const char kShutdownType[] = "shutdown-type";
 const char kBrowserUnpinTrace[] = "browser-unpin-trace";
 
 #if defined(OS_WIN)
-const char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
-const char kHungRendererOutstandingEventType[] = "hung-outstanding-event-type";
-const char kHungRendererLastEventType[] = "hung-last-event-type";
-const char kHungRendererReason[] = "hung-reason";
-
 const char kIsEnterpriseManaged[] = "is-enterprise-managed";
 
 // Registry values used to determine Chrome's update channel; see
@@ -104,10 +99,6 @@ size_t RegisterChromeCrashKeys() {
     {"subresource_url", kLargeSize},
     {"total-discardable-memory-allocated", kSmallSize},
 #if defined(OS_WIN)
-    {kHungRendererOutstandingAckCount, kSmallSize},
-    {kHungRendererOutstandingEventType, kSmallSize},
-    {kHungRendererLastEventType, kSmallSize},
-    {kHungRendererReason, kSmallSize},
     {kIsEnterpriseManaged, kSmallSize},
 #endif
     {kViewCount, kSmallSize},

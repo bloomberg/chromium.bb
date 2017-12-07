@@ -52,12 +52,6 @@ constexpr char kBrowserUnpinTrace[] = "browser-unpin-trace";
 constexpr char kApValue[] = "ap";
 constexpr char kCohortName[] = "cohort-name";
 
-constexpr char kHungRendererOutstandingAckCount[] = "hung-outstanding-acks";
-constexpr char kHungRendererOutstandingEventType[] =
-    "hung-outstanding-event-type";
-constexpr char kHungRendererLastEventType[] = "hung-last-event-type";
-constexpr char kHungRendererReason[] = "hung-reason";
-
 constexpr char kIsEnterpriseManaged[] = "is-enterprise-managed";
 
 constexpr char kViewCount[] = "view-count";
@@ -116,10 +110,6 @@ size_t RegisterCrashKeysHelper() {
       {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},
       {kViewCount, kSmallSize},
-      {kHungRendererOutstandingAckCount, kSmallSize},
-      {kHungRendererOutstandingEventType, kSmallSize},
-      {kHungRendererLastEventType, kSmallSize},
-      {kHungRendererReason, kSmallSize},
 
       // media/:
       {kZeroEncodeDetails, kSmallSize},
