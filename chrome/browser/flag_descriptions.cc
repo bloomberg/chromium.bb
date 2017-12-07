@@ -1988,12 +1988,6 @@ const char kOfflineBookmarksName[] = "Enable offline bookmarks";
 const char kOfflineBookmarksDescription[] =
     "Enable saving bookmarked pages for offline viewing.";
 
-const char kOfflinePagesAsyncDownloadName[] =
-    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages.)*";
-const char kOfflinePagesAsyncDownloadDescription[] =
-    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages such )*"
-    R"*(that the user can click on it to download the page later.)*";
-
 const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
 const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
 

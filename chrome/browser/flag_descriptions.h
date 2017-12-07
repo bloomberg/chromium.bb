@@ -1221,9 +1221,6 @@ extern const char kNtpPopularSitesDescription[];
 extern const char kOfflineBookmarksName[];
 extern const char kOfflineBookmarksDescription[];
 
-extern const char kOfflinePagesAsyncDownloadName[];
-extern const char kOfflinePagesAsyncDownloadDescription[];
-
 extern const char kOfflinePagesCtName[];
 extern const char kOfflinePagesCtDescription[];
 

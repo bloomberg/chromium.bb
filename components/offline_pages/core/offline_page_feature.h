@@ -16,7 +16,6 @@ extern const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
-extern const base::Feature kOfflinePagesAsyncDownloadFeature;
 extern const base::Feature kPrefetchingOfflinePagesFeature;
 extern const base::Feature kOfflinePagesLoadSignalCollectingFeature;
 extern const base::Feature kOfflinePagesCTV2Feature;
@@ -46,9 +45,6 @@ bool IsBackgroundLoaderForDownloadsEnabled();
 
 // Returns true if concurrent background loading is enabled for svelte.
 bool IsOfflinePagesSvelteConcurrentLoadingEnabled();
-
-// Returns true if downloading a page asynchonously is enabled.
-bool IsOfflinePagesAsyncDownloadEnabled();
 
 // Returns true if prefetching offline pages is enabled.
 bool IsPrefetchingOfflinePagesEnabled();
