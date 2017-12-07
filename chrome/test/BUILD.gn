@@ -2559,7 +2559,6 @@ test("unit_tests") {
     "//net/tools/testserver/",
     "//third_party/accessibility-audit/axs_testing.js",
     "//third_party/chaijs/chai.js",
-    "//third_party/hunspell_dictionaries/",
     "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/",
     "//third_party/tlslite/",
