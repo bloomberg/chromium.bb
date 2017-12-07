@@ -1,0 +1,39 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/utility/printing/pdf_to_emf_converter_factory_impl.h"
+
+#include "chrome/utility/printing/pdf_to_emf_converter_impl.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
+
+namespace printing {
+
+PdfToEmfConverterFactoryImpl::PdfToEmfConverterFactoryImpl() = default;
+
+PdfToEmfConverterFactoryImpl::~PdfToEmfConverterFactoryImpl() = default;
+
+void PdfToEmfConverterFactoryImpl::CreateConverter(
+    mojo::ScopedHandle pdf_file_in,
+    const printing::PdfRenderSettings& render_settings,
+    mojom::PdfToEmfConverterClientPtr client,
+    CreateConverterCallback callback) {
+  auto converter = std::make_unique<PdfToEmfConverterImpl>(
+      std::move(pdf_file_in), render_settings, std::move(client));
+  uint32_t page_count = converter->total_page_count();
+  mojom::PdfToEmfConverterPtr converter_ptr;
+  mojo::MakeStrongBinding(std::move(converter),
+                          mojo::MakeRequest(&converter_ptr));
+
+  std::move(callback).Run(std::move(converter_ptr), page_count);
+}
+
+// static
+void PdfToEmfConverterFactoryImpl::Create(
+    mojom::PdfToEmfConverterFactoryRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<PdfToEmfConverterFactoryImpl>(),
+                          std::move(request));
+}
+
+}  // namespace printing

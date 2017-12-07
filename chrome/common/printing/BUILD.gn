@@ -7,10 +7,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "pdf_render_settings.mojom",
+    "pdf_to_emf_converter.mojom",
     "pdf_to_pwg_raster_converter.mojom",
   ]
 
   deps = [
+    "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
 }

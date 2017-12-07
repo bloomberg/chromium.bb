@@ -201,6 +201,14 @@ static_library("utility") {
       "printing_handler.h",
     ]
     deps += [ "//pdf" ]
+    if (is_win) {
+      sources += [
+        "printing/pdf_to_emf_converter_factory_impl.cc",
+        "printing/pdf_to_emf_converter_factory_impl.h",
+        "printing/pdf_to_emf_converter_impl.cc",
+        "printing/pdf_to_emf_converter_impl.h",
+      ]
+    }
   }
 
   if (enable_basic_printing || enable_print_preview) {
