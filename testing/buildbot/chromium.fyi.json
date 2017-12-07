@@ -4268,8 +4268,7 @@
       {
         "args": [
           "--mus",
-          "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mus.browser_tests.filter"
+          "--override-use-software-gl-for-tests"
         ],
         "name": "mus_browser_tests",
         "swarming": {
