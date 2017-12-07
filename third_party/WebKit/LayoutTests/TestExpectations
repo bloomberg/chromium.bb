@@ -1910,6 +1910,25 @@ crbug.com/711529 http/tests/permissions/test-query.html [ Timeout ]
 crbug.com/711529 http/tests/security/cross-origin-createImageBitmap-structured-clone.html [ Timeout ]
 crbug.com/711529 http/tests/workers/shared-worker-performance-timeline.html [ Timeout ]
 
+# Expected failures during incremental implementation of mojo notification.
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/click-dedicated-worker.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/click-document.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/click-shared-worker.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/click-window-focus-document.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-dedicated-worker.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-dispatch-asynchronous.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-document.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-shared-worker.html [ Skip ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/request-permission-granted.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/serviceworkerregistration-page-notification-fetch-resources.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/show-dedicated-worker.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/show-document.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/show-shared-worker.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/update-dedicated-worker.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/update-document.html [ Timeout ]
+crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/update-shared-worker.html [ Timeout ]
+
+
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 
 # Automatically-added expectations for CSS tests which are temporarily

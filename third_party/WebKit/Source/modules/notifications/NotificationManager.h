@@ -42,6 +42,9 @@ class NotificationManager final
       ScriptState*,
       NotificationPermissionCallback* deprecated_callback);
 
+  // Shows a notification that is not tied to any service worker.
+  void DisplayNonPersistentNotification(const String& title);
+
   virtual void Trace(blink::Visitor*);
 
  private:
