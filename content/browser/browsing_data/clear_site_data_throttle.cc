@@ -473,10 +473,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
     } else if (input_types[i] == kDatatypeStorage) {
       data_type = clear_storage;
     } else if (input_types[i] == kDatatypeCache) {
-      delegate->AddMessage(
-          current_url, "The \"cache\" datatype is temporarily not supported.",
-          CONSOLE_MESSAGE_LEVEL_ERROR);
-      continue;
+      data_type = clear_cache;
     } else {
       delegate->AddMessage(
           current_url,
