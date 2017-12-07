@@ -62,7 +62,6 @@ AppCacheHost::AppCacheHost(int host_id,
       frontend_(frontend),
       service_(service),
       storage_(service->storage()),
-      pending_callback_param_(nullptr),
       main_resource_was_namespace_entry_(false),
       main_resource_blocked_(false),
       associated_cache_info_pending_(false),
@@ -146,7 +145,6 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
       frontend_->OnContentBlocked(host_id_, manifest_url);
       return true;
     }
-
     // Note: The client detects if the document was not loaded using HTTP GET
     // and invokes SelectCache without a manifest url, so that detection step
     // is also skipped here. See WebApplicationCacheHostImpl.cc
@@ -155,7 +153,6 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
     LoadOrCreateGroup(manifest_url);
     return true;
   }
-
   // TODO(michaeln): If there was a manifest URL, the user agent may report
   // to the user that it was ignored, to aid in application development.
   FinishCacheSelection(nullptr, nullptr);
@@ -194,14 +191,12 @@ bool AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
   return true;
 }
 
-void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback,
-                                         void* callback_param) {
+void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null());
 
   pending_get_status_callback_ = std::move(callback);
-  pending_callback_param_ = callback_param;
   if (is_selection_pending())
     return;
 
@@ -211,19 +206,15 @@ void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback,
 void AppCacheHost::DoPendingGetStatus() {
   DCHECK_EQ(false, pending_get_status_callback_.is_null());
 
-  std::move(pending_get_status_callback_)
-      .Run(GetStatus(), pending_callback_param_);
-  pending_callback_param_ = nullptr;
+  std::move(pending_get_status_callback_).Run(GetStatus());
 }
 
-void AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback,
-                                           void* callback_param) {
+void AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback) {
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null());
 
   pending_start_update_callback_ = std::move(callback);
-  pending_callback_param_ = callback_param;
   if (is_selection_pending())
     return;
 
@@ -243,19 +234,16 @@ void AppCacheHost::DoPendingStartUpdate() {
     }
   }
 
-  std::move(pending_start_update_callback_)
-      .Run(success, pending_callback_param_);
-  pending_callback_param_ = nullptr;
+  std::move(pending_start_update_callback_).Run(success);
 }
 
-void AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback,
-                                         void* callback_param) {
+void AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback) {
   DCHECK(pending_start_update_callback_.is_null() &&
          pending_swap_cache_callback_.is_null() &&
          pending_get_status_callback_.is_null());
 
   pending_swap_cache_callback_ = std::move(callback);
-  pending_callback_param_ = callback_param;
+
   if (is_selection_pending())
     return;
 
@@ -279,8 +267,7 @@ void AppCacheHost::DoPendingSwapCache() {
     }
   }
 
-  std::move(pending_swap_cache_callback_).Run(success, pending_callback_param_);
-  pending_callback_param_ = nullptr;
+  std::move(pending_swap_cache_callback_).Run(success);
 }
 
 void AppCacheHost::SetSpawningHostId(

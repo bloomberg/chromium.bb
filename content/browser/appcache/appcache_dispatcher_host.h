@@ -16,6 +16,7 @@
 #include "base/process/process.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
+#include "content/common/appcache.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
@@ -25,49 +26,51 @@ class ChromeAppCacheService;
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The RenderProcessHostImpl creates
 // an instance and delegates calls to it.
-class AppCacheDispatcherHost : public BrowserMessageFilter {
+class AppCacheDispatcherHost : public IPC::Sender,
+                               public mojom::AppCacheBackend {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,
-                         int process_id);
-
-  // BrowserIOMessageFilter implementation
-  void OnChannelConnected(int32_t peer_pid) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
- protected:
+                         int process_id,
+                         base::WeakPtr<IPC::Sender> sender);
   ~AppCacheDispatcherHost() override;
 
+  static void Create(ChromeAppCacheService* appcache_service,
+                     int process_id,
+                     base::WeakPtr<IPC::Sender> sender,
+                     mojom::AppCacheBackendRequest request);
+
+  void InitBackend();
+
+  bool Send(IPC::Message* msg) override;
+
  private:
-  // IPC message handlers
-  void OnRegisterHost(int host_id);
-  void OnUnregisterHost(int host_id);
-  void OnSetSpawningHostId(int host_id, int spawning_host_id);
-  void OnSelectCache(int host_id,
-                     const GURL& document_url,
-                     int64_t cache_document_was_loaded_from,
-                     const GURL& opt_manifest_url);
-  void OnSelectCacheForSharedWorker(int host_id, int64_t appcache_id);
-  void OnMarkAsForeignEntry(int host_id,
-                            const GURL& document_url,
-                            int64_t cache_document_was_loaded_from);
-  void OnGetStatus(int host_id, IPC::Message* reply_msg);
-  void OnStartUpdate(int host_id, IPC::Message* reply_msg);
-  void OnSwapCache(int host_id, IPC::Message* reply_msg);
-  void OnGetResourceList(
-      int host_id,
-      std::vector<AppCacheResourceInfo>* resource_infos);
-  void GetStatusCallback(AppCacheStatus status, void* param);
-  void StartUpdateCallback(bool result, void* param);
-  void SwapCacheCallback(bool result, void* param);
+  // mojom::AppCacheHost
+  void RegisterHost(int32_t host_id) override;
+  void UnregisterHost(int32_t host_id) override;
+  void SetSpawningHostId(int32_t host_id, int spawning_host_id) override;
+  void SelectCache(int32_t host_id,
+                   const GURL& document_url,
+                   int64_t cache_document_was_loaded_from,
+                   const GURL& opt_manifest_url) override;
+  void SelectCacheForSharedWorker(int32_t host_id,
+                                  int64_t appcache_id) override;
+  void MarkAsForeignEntry(int32_t host_id,
+                          const GURL& document_url,
+                          int64_t cache_document_was_loaded_from) override;
+  void GetStatus(int32_t host_id, GetStatusCallback callback) override;
+  void StartUpdate(int32_t host_id, StartUpdateCallback callback) override;
+  void SwapCache(int32_t host_id, SwapCacheCallback callback) override;
+  void GetResourceList(int32_t host_id,
+                       GetResourceListCallback callback) override;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;
 
-  std::unique_ptr<IPC::Message> pending_reply_msg_;
-
   // The corresponding ChildProcessHost object's id().
   int process_id_;
+
+  base::WeakPtr<IPC::Sender> sender_;
 
   base::WeakPtrFactory<AppCacheDispatcherHost> weak_factory_;
 

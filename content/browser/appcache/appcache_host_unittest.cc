@@ -130,20 +130,13 @@ class AppCacheHostTest : public testing::Test {
     ~MockQuotaManagerProxy() override {}
   };
 
-  void GetStatusCallback(AppCacheStatus status, void* param) {
+  void GetStatusCallback(AppCacheStatus status) {
     last_status_result_ = status;
-    last_callback_param_ = param;
   }
 
-  void StartUpdateCallback(bool result, void* param) {
-    last_start_result_ = result;
-    last_callback_param_ = param;
-  }
+  void StartUpdateCallback(bool result) { last_start_result_ = result; }
 
-  void SwapCacheCallback(bool result, void* param) {
-    last_swap_result_ = result;
-    last_callback_param_ = param;
-  }
+  void SwapCacheCallback(bool result) { last_swap_result_ = result; }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -157,7 +150,6 @@ class AppCacheHostTest : public testing::Test {
   AppCacheStatus last_status_result_;
   bool last_swap_result_;
   bool last_start_result_;
-  void* last_callback_param_;
 };
 
 TEST_F(AppCacheHostTest, Basic) {
@@ -172,26 +164,18 @@ TEST_F(AppCacheHostTest, Basic) {
   // See that the callbacks are delivered immediately
   // and respond as if there is no cache selected.
   last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  host.GetStatusWithCallback(std::move(get_status_callback_),
-                             reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(std::move(get_status_callback_));
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 
   last_start_result_ = true;
-  host.StartUpdateWithCallback(
-      base::BindOnce(&AppCacheHostTest::StartUpdateCallback,
-                     base::Unretained(this)),
-      reinterpret_cast<void*>(2));
+  host.StartUpdateWithCallback(base::BindOnce(
+      &AppCacheHostTest::StartUpdateCallback, base::Unretained(this)));
   EXPECT_FALSE(last_start_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(2), last_callback_param_);
 
   last_swap_result_ = true;
-  host.SwapCacheWithCallback(
-      base::BindOnce(&AppCacheHostTest::SwapCacheCallback,
-                     base::Unretained(this)),
-      reinterpret_cast<void*>(3));
+  host.SwapCacheWithCallback(base::BindOnce(
+      &AppCacheHostTest::SwapCacheCallback, base::Unretained(this)));
   EXPECT_FALSE(last_swap_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(3), last_callback_param_);
 }
 
 TEST_F(AppCacheHostTest, SelectNoCache) {
@@ -304,11 +288,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 
   // The callback should not occur until we finish cache selection.
   last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  last_callback_param_ = reinterpret_cast<void*>(-1);
-  host.GetStatusWithCallback(std::move(get_status_callback_),
-                             reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(std::move(get_status_callback_));
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE, last_status_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load with NULL, a failure.
   host.OnCacheLoaded(nullptr, kMockCacheId);
@@ -322,7 +303,6 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 
   // Callback should have fired upon completing the cache load too.
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 }
 
 TEST_F(AppCacheHostTest, FailedGroupLoad) {
@@ -337,11 +317,8 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
   // The callback should not occur until we finish cache selection.
   last_status_result_ = AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  last_callback_param_ = reinterpret_cast<void*>(-1);
-  host.GetStatusWithCallback(std::move(get_status_callback_),
-                             reinterpret_cast<void*>(1));
+  host.GetStatusWithCallback(std::move(get_status_callback_));
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_OBSOLETE, last_status_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load will NULL, a failure.
   host.OnGroupLoaded(nullptr, kMockManifestUrl);
@@ -355,7 +332,6 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
   // Callback should have fired upon completing the group load.
   EXPECT_EQ(AppCacheStatus::APPCACHE_STATUS_UNCACHED, last_status_result_);
-  EXPECT_EQ(reinterpret_cast<void*>(1), last_callback_param_);
 }
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {

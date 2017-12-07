@@ -48,3 +48,57 @@ struct AppCacheErrorDetails {
   int32 status;
   bool is_cross_origin;
 };
+
+
+// AppCache messages sent from the child process to the browser.
+interface AppCacheBackend {
+  // Informs the browser of a new appcache host.
+  RegisterHost(int32 host_id);
+
+  // Informs the browser of an appcache host being destroyed.
+  UnregisterHost(int32 host_id);
+
+  // Informs the browser of which host caused another to be created.
+  // This can influence which appcache should be utilized for the main
+  // resource load into the newly created host, so it should be sent
+  // prior to the main resource request being initiated.
+  SetSpawningHostId(int32 host_id, int32 spawning_host_id);
+
+  // Initiates the cache selection algorithm for the given host.
+  // This is sent prior to any subresource loads. An AppCacheMsg_CacheSelected
+  // message will be sent in response.
+  // 'host_id' indentifies a specific document or worker
+  // 'document_url' the url of the main resource
+  // 'appcache_document_was_loaded_from' the id of the appcache the main
+  //     resource was loaded from or kAppCacheNoCacheId
+  // 'opt_manifest_url' the manifest url specified in the <html> tag if any
+  SelectCache(int32 host_id,
+              url.mojom.Url document_url,
+              int64 appcache_document_was_loaded_from,
+              url.mojom.Url opt_manifest_url);
+
+  // Initiates worker specific cache selection algorithm for the given host.
+  SelectCacheForSharedWorker(int32 host_id, int64 appcache_id);
+
+  // Informs the browser of a 'foreign' entry in an appcache.
+  MarkAsForeignEntry(int32 host_id,
+                     url.mojom.Url document_url,
+                     int64 appcache_document_was_loaded_from);
+
+  // Returns the status of the appcache associated with host_id.
+  [Sync]
+  GetStatus(int32 host_id) => (AppCacheStatus status);
+
+  // Initiates an update of the appcache associated with host_id.
+  [Sync]
+  StartUpdate(int32 host_id) => (bool success);
+
+  // Swaps a new pending appcache, if there is one, into use for host_id.
+  [Sync]
+  SwapCache(int32 host_id) => (bool success);
+
+  // Gets resource list from appcache synchronously.
+  [Sync]
+  GetResourceList(int32 host_id) => (array<AppCacheResourceInfo> resources);
+};
+
