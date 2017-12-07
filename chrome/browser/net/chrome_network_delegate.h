@@ -49,10 +49,6 @@ namespace net {
 class URLRequest;
 }
 
-namespace policy {
-class URLBlacklistManager;
-}
-
 // ChromeNetworkDelegate is the central point from within the chrome code to
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
@@ -66,11 +62,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   // Pass through to ChromeExtensionsNetworkDelegate::set_extension_info_map().
   void set_extension_info_map(extensions::InfoMap* extension_info_map);
-
-  void set_url_blacklist_manager(
-      const policy::URLBlacklistManager* url_blacklist_manager) {
-    url_blacklist_manager_ = url_blacklist_manager;
-  }
 
   // If |profile| is nullptr or not set, events will be broadcast to all
   // profiles, otherwise they will only be sent to the specified profile.
@@ -224,7 +215,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   StringPrefMember* allowed_domains_for_apps_;
 
   // Weak, owned by our owner.
-  const policy::URLBlacklistManager* url_blacklist_manager_;
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
 

@@ -1650,6 +1650,7 @@ split_static_library("browser") {
     "//components/payments/core",
     "//components/physical_web/eddystone",
     "//components/policy:generated",
+    "//components/policy/content/",
     "//components/policy/core/browser",
     "//components/policy/proto",
     "//components/prefs:prefs",

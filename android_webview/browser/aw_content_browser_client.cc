@@ -41,6 +41,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -517,6 +518,8 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
             navigation_handle));
+    throttles.push_back(base::MakeUnique<PolicyBlacklistNavigationThrottle>(
+        navigation_handle, browser_context_.get()));
   }
   return throttles;
 }
