@@ -1189,7 +1189,7 @@ config("default_warnings") {
       ]
     }
   } else {
-    if (is_mac && !is_nacl) {
+    if ((is_mac || is_ios) && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
       # availability is newer than the deployment target.
       cflags += [ "-Wunguarded-availability" ]
@@ -1363,13 +1363,6 @@ config("chromium_code") {
     if (is_mac || is_ios) {
       cflags_objc = [ "-Wobjc-missing-property-synthesis" ]
       cflags_objcc = [ "-Wobjc-missing-property-synthesis" ]
-    }
-
-    # TODO(crbug.com/761419): Add to default_warnings instead of to
-    # chromium_code once fixed in third_party.
-    if (is_ios) {
-      cflags_objc += [ "-Wunguarded-availability" ]
-      cflags_objcc += [ "-Wunguarded-availability" ]
     }
   }
 
