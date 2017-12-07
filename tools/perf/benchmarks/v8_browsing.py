@@ -224,8 +224,8 @@ class V8FutureDesktopBrowsingBenchmark(
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
-      '--enable-blink-features=BlinkRuntimeCallStats '
-      '--enable-features=V8VmFuture')
+      '--enable-blink-features=BlinkRuntimeCallStats')
+    options.AppendExtraBrowserArgs('--enable-features=V8VmFuture')
 
   @classmethod
   def Name(cls):
@@ -240,7 +240,8 @@ class V8FutureMobileBrowsingBenchmark(
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(
-      '--enable-blink-features=BlinkRuntimeCallStats '
+      '--enable-blink-features=BlinkRuntimeCallStats')
+    options.AppendExtraBrowserArgs(
       '--enable-features=V8VmFuture')
 
   def GetExpectations(self):
