@@ -121,6 +121,43 @@ TEST_P(ParameterizedNGOffsetMappingTest, StoredResult) {
   EXPECT_TRUE(IsOffsetMappingStored());
 }
 
+TEST_P(ParameterizedNGOffsetMappingTest, NGInlineFormattingContextOf) {
+  SetBodyInnerHTML(
+      "<div id=container>"
+      "  foo"
+      "  <span id=inline-block style='display:inline-block'>blah</span>"
+      "  <span id=inline-span>bar</span>"
+      "</div>");
+
+  const Element* container = GetElementById("container");
+  const Element* inline_block = GetElementById("inline-block");
+  const Element* inline_span = GetElementById("inline-span");
+  const Node* blah = inline_block->firstChild();
+  const Node* foo = inline_block->previousSibling();
+  const Node* bar = inline_span->firstChild();
+
+  EXPECT_EQ(nullptr,
+            NGInlineFormattingContextOf(Position::BeforeNode(*container)));
+  EXPECT_EQ(nullptr,
+            NGInlineFormattingContextOf(Position::AfterNode(*container)));
+
+  const LayoutObject* container_object = container->GetLayoutObject();
+  EXPECT_EQ(container_object, NGInlineFormattingContextOf(Position(foo, 0)));
+  EXPECT_EQ(container_object, NGInlineFormattingContextOf(Position(bar, 0)));
+  EXPECT_EQ(container_object,
+            NGInlineFormattingContextOf(Position::BeforeNode(*inline_block)));
+  EXPECT_EQ(container_object,
+            NGInlineFormattingContextOf(Position::AfterNode(*inline_block)));
+  EXPECT_EQ(container_object,
+            NGInlineFormattingContextOf(Position::BeforeNode(*inline_span)));
+  EXPECT_EQ(container_object,
+            NGInlineFormattingContextOf(Position::AfterNode(*inline_span)));
+
+  const LayoutObject* inline_block_object = inline_block->GetLayoutObject();
+  EXPECT_EQ(inline_block_object,
+            NGInlineFormattingContextOf(Position(blah, 0)));
+}
+
 TEST_P(ParameterizedNGOffsetMappingTest, OneTextNode) {
   SetupHtml("t", "<div id=t>foo</div>");
   const Node* foo_node = layout_object_->GetNode();
