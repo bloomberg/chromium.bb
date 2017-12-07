@@ -32,14 +32,42 @@ that.)
 * **Security_Impact-**{**Head**, **Beta**, **Stable**, **None**}: Designates
 which branch(es) were impacted by the bug. Only apply the label corresponding
 with the earliest affected branch. **None** means that a security bug is in a
-disabled feature, or otherwise doesn't impact Chrome. Note that **Security_Severity**
-should still be set on **Security_Impact-None** issues, as if the feature were enabled or
-the code reachable.
-* **Restrict-View-SecurityTeam** or **Restrict-View-SecurityNotify**: Labels
-that restrict access to the bug for members of security@chromium.org or
-security-notify@chromium.org, respectively. Should a bug ever contain
-confidential information, or if the reporter wishes to remain anonymous, we add
-**Restrict-View-Google** and/or **Restrict-View-SecurityEmbargo**.
+disabled feature, or otherwise doesn't impact Chrome. Note that
+**Security_Severity** should still be set on **Security_Impact-None** issues, as
+if the feature were enabled or the code reachable.
+* **Restrict-View-**{**SecurityTeam**, **SecurityNotify**, **Google**,
+**SecurityEmbargo**}: Labels that restrict access to the bug. Meaning and usage
+guidelines are as follows:
+  * **Restrict-View-SecurityTeam**: Restricts access to members of
+    *security@chromium.org*. This is the default that should be used for general
+    security bugs that aren't sensitive otherwise.
+  * **Restrict-View-SecurityNotify**: Restricts access to members of
+    *security-notify@chromium.org*, which includes external parties who ship
+    Chromium-based products and who need to know about available bug fixes.
+    *security@chromium.org* is a member of that group so the former is a
+    superset of the latter. **Restrict-View-SecurityNotify** is not suitable for
+    sensitive bugs.
+  * **Restrict-View-Google**: Restricts access to users that are Google
+    employees (but also via their *chromium.org* accounts). This should be used
+    for bugs that aren't OK for external contributors to see (even if we trust
+    them with security work), for example due to:
+      * legal reasons (bug affects a partner Google is under NDA and the
+        information is subject to that)
+      * the bug affecting more Google products than Chrome and Chrome OS
+  * **Restrict-View-SecurityEmbargo**: Restricts access to
+    *security@chromium.org* and and stops Sheriffbot from publishing the bug
+    automatically. Use this if the bug in question is subject to disclosure
+    decisions made externally, such as:
+      * We receive advance notice of security bugs from an upstream open source
+        project or Google partner and they organize a coordinated disclosure
+        process. We'd remove the restriction label if/when the embarge gets
+        lifted.
+      * The reporter indicates a preference to remain anonymous an the bug
+        history would give away the reporter's identity (if they file using an
+        anonymous account, this doesn't apply).
+
+  If multiple restriction labels are appropriate, set all of them. Note that all
+  restriction labels must be satisfied for a user to have access to a bug.
 * **reward-**{**topanel**, **unpaid**, **na**, **inprocess**, _#_}: Labels used
 in tracking bugs nominated for our [Vulnerability Reward
 Program](https://www.chromium.org/Home/chromium-security/vulnerability-rewards-program).
@@ -54,11 +82,10 @@ systems are affected.
 * **Merge-**{**Request-?**, **Approved-?**, **Merged-?**}: Security fixes
 are frequently merged to earlier release branches.
 * **Release-#-M##**: Denotes which exact patch a security fix made it into.
-This is more fine-grained than the **M-** label. **Release-0-M50** denotes the
+This is more fine-grained than the **M-#** label. **Release-0-M50** denotes the
 initial release of a M50 to Stable.
 * **CVE-####-####**: For security bugs that get assigned a CVE, we tag the
 appropriate bug(s) with the label for easy searching.
-
 **Type-Bug-Security** bugs should always have **Security_Severity**, 
 **Security_Impact**, **OS**, **Pri**, **M**, **Component**, and an
 **owner** set.
@@ -80,6 +107,92 @@ the pathname.)
 * Views code (e.g. `ui/message_center/views`) is used on Windows, Linux, Chrome
 OS, and perhaps Fuchsia (?). Views for macOS is increasingly a thing, but Cocoa
 code (e.g. `ui/message_center/cocoa`) is particular to macOS.
+
+## Sheriffbot automation
+
+Security labels guide the actions taken by
+[SheriffBot](https://www.chromium.org/issue-tracking/autotriage). The source of
+truth for the actual rule set is
+[go/sheriffbot-source](https://goto.google.com/sheriffbot-source) (sorry, Google
+employees only). The motivation behind these rules is to help automate the
+security bug life cycle so security sheriffs and security engineers in general
+spend less time updating bugs and can do more useful work instead.
+
+The following sections describe the current set of rules relevant to security
+bugs. The list below only describes rules that change the labels described
+above. There are additional rules for sending nag messages and janitorial tasks;
+check the [sheriffbot source](https://goto.google.com/sheriffbot-source) for
+details.
+
+### Remove Invalid **Release-#** Labels
+
+Only bugs that affect stable should carry a release label, this rule removes
+release labels that are set on bugs not affecting stable.
+
+### Remove Invalid **Security_Impact-X** Labels
+
+There should be exactly one **Security_Impact-X** label and it should be one of
+the 4 valid impact labels (None, Stable, Beta, Head). This rule removes any
+invalid and excess impact labels.
+
+### Adjust **Security_Impact-X** To Match Milestone Labels
+
+Based on **M-#** milestone labels this rule assigns corresponding
+**Security_Impact-X** labels if they are incorrect or absent.
+
+### Update **M-#** Labels
+
+Bugs that are labelled with milestones earlier than the current milestone will
+be relabeled to set the label for the current milestone and
+**Security_Impact-Stable**.
+
+Bugs that carry a **Security_Impact-X** label but are missing a milestone label
+will be assigned the **M-#** label corresponding to the respective milestone.
+
+### Set **ReleaseBlock-X** For Regressions
+
+If there's a high or medium severity security regression in beta or ToT, add a
+**ReleaseBlock-Stable** label to prevent that regression to be shipped to users.
+
+Similarly, critical security regressions are marked **ReleaseBlock-Beta**.
+
+### Adjust **Pri-#** To Match Severity
+
+Adjust **Pri-#** according to the priority rules for severity labels described
+above.
+
+### Drop **Restrict-View-{SecurityTeam,SecurityNotify}** From Old And Fixed Bugs
+
+Remove **Restrict-View-SecurityTeam** and **Restrict-View-SecurityNotify** from
+security bugs that have been closed (Fixed, Verified, Duplicate, WontFix,
+Invalid) more than 14 weeks ago and add the **allpublic** label to make the bugs
+accessible publicly. The idea here is that security bug fixes will generally
+require 12 weeks to ship (2 release cycles for ToT changes to hit stable). This
+catches cases where the bug owner forgets to mark the bug public after the fix
+is released.
+
+### Set **Restrict-View-SecurityNotify** On Fixed Bugs
+
+Replace **Restrict-View-SecurityTeam** with **Restrict-View-SecurityNotify** for
+fixed security bugs. Rationale is that while fixed bugs are generally not
+intended to become public immediately, we'd like to give access to external
+parties depending on Chromium via *security-notify@chromium.org*.
+
+### Set **Merge-Request-X** For Beta Branch For Fixed Bugs
+
+Fixed security bugs that affect stable or beta and are critical or high severity
+will automatically trigger a merge request for the current beta branch.
+
+### Drop **ReleaseBlock-X** Labels From **Security_Impact-None** Bugs
+
+No need to stop a release if the bug doesn't have any consequences.
+
+### Set **Status:Fixed** For Open Security Bugs With Merge Labels
+
+Security bugs that have a merge label (but excluding bugs with **component:OS**)
+are marked as fixed automatically. The rationale is that if something gets
+merged to a release branch, there's a high likelihood that the bug is actually
+fixed.
 
 ## An Example
 
