@@ -74,6 +74,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
 
   // PendingScript
   ScriptType GetScriptType() const override { return ScriptType::kModule; }
+  bool CheckMIMETypeBeforeRunScript(Document* context_document) const override;
   Script* GetSource(const KURL& document_url,
                     bool& error_occurred) const override;
   bool IsReady() const override { return ready_; }

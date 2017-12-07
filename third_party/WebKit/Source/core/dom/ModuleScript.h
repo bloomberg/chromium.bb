@@ -82,8 +82,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                                       const TextPosition&);
 
   ScriptType GetScriptType() const override { return ScriptType::kModule; }
-  bool CheckMIMETypeBeforeRunScript(Document* context_document,
-                                    const SecurityOrigin*) const override;
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override;
 

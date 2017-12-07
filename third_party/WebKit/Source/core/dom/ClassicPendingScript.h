@@ -63,6 +63,7 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
     return blink::ScriptType::kClassic;
   }
 
+  bool CheckMIMETypeBeforeRunScript(Document* context_document) const override;
   ClassicScript* GetSource(const KURL& document_url,
                            bool& error_occurred) const override;
   bool IsReady() const override;

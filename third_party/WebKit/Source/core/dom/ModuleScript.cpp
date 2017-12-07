@@ -226,13 +226,6 @@ void ModuleScript::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(preinstantiation_error_);
 }
 
-bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
-                                                const SecurityOrigin*) const {
-  // We don't check MIME type here because we check the MIME type in
-  // ModuleScriptLoader::WasModuleLoadSuccessful().
-  return true;
-}
-
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
   DVLOG(1) << *this << "::RunScript()";
   settings_object_->ExecuteModule(this,

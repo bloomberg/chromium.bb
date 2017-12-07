@@ -82,6 +82,11 @@ class CORE_EXPORT PendingScript
 
   virtual void Trace(blink::Visitor*);
 
+  // Returns false if the script should not be run due to MIME type check.
+  // Should be called just before GetSource().
+  virtual bool CheckMIMETypeBeforeRunScript(
+      Document* context_document) const = 0;
+
   virtual Script* GetSource(const KURL& document_url,
                             bool& error_occurred) const = 0;
 
