@@ -69,23 +69,25 @@ bool ChromeToolbarModelDelegate::ShouldDisplayURL() const {
   //   of view-source:chrome://newtab, which should display its URL despite what
   //   chrome://newtab says.
   content::NavigationEntry* entry = GetNavigationEntry();
-  if (entry) {
-    if (entry->IsViewSourceMode() ||
-        entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
-      return true;
-    }
+  if (!entry)
+    return true;
 
-    GURL url = entry->GetURL();
-    GURL virtual_url = entry->GetVirtualURL();
-    if (url.SchemeIs(content::kChromeUIScheme) ||
-        virtual_url.SchemeIs(content::kChromeUIScheme)) {
-      if (!url.SchemeIs(content::kChromeUIScheme))
-        url = virtual_url;
-      return url.host() != chrome::kChromeUINewTabHost;
-    }
+  if (entry->IsViewSourceMode() ||
+      entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
+    return true;
   }
 
-  return !search::IsInstantNTP(GetActiveWebContents());
+  GURL url = entry->GetURL();
+  GURL virtual_url = entry->GetVirtualURL();
+  if (url.SchemeIs(content::kChromeUIScheme) ||
+      virtual_url.SchemeIs(content::kChromeUIScheme)) {
+    if (!url.SchemeIs(content::kChromeUIScheme))
+      url = virtual_url;
+    return url.host() != chrome::kChromeUINewTabHost;
+  }
+
+  Profile* profile = GetProfile();
+  return !profile || !search::IsInstantNTPURL(url, profile);
 }
 
 security_state::SecurityLevel ChromeToolbarModelDelegate::GetSecurityLevel()
