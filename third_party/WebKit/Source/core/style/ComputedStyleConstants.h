@@ -212,25 +212,25 @@ enum OverflowAlignment {
 
 enum ItemPositionType { kNonLegacyPosition, kLegacyPosition };
 
-enum ContentPosition {
-  kContentPositionNormal,
-  kContentPositionBaseline,
-  kContentPositionLastBaseline,
-  kContentPositionCenter,
-  kContentPositionStart,
-  kContentPositionEnd,
-  kContentPositionFlexStart,
-  kContentPositionFlexEnd,
-  kContentPositionLeft,
-  kContentPositionRight
+enum class ContentPosition : unsigned {
+  kNormal,
+  kBaseline,
+  kLastBaseline,
+  kCenter,
+  kStart,
+  kEnd,
+  kFlexStart,
+  kFlexEnd,
+  kLeft,
+  kRight
 };
 
-enum ContentDistributionType {
-  kContentDistributionDefault,
-  kContentDistributionSpaceBetween,
-  kContentDistributionSpaceAround,
-  kContentDistributionSpaceEvenly,
-  kContentDistributionStretch
+enum class ContentDistributionType : unsigned {
+  kDefault,
+  kSpaceBetween,
+  kSpaceAround,
+  kSpaceEvenly,
+  kStretch
 };
 
 // Reasonable maximum to prevent insane font sizes from causing crashes on some

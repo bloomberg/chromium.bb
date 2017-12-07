@@ -103,7 +103,7 @@ void LayoutFullScreen::UpdateStyle(LayoutObject* parent) {
   fullscreen_style->GetFont().Update(nullptr);
 
   fullscreen_style->SetDisplay(EDisplay::kFlex);
-  fullscreen_style->SetJustifyContentPosition(kContentPositionCenter);
+  fullscreen_style->SetJustifyContentPosition(ContentPosition::kCenter);
   // TODO (lajava): Since the FullScrenn layout object is anonymous, its Default
   // Alignment (align-items) value can't be used to resolve its children Self
   // Alignment 'auto' values.

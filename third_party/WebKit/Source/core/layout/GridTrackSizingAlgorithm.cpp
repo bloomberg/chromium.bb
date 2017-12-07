@@ -1369,7 +1369,7 @@ void GridTrackSizingAlgorithm::StretchAutoTracks() {
   LayoutUnit free_space = strategy_->FreeSpaceForStretchAutoTracksStep();
   if (auto_sized_tracks_for_stretch_index_.IsEmpty() || (free_space <= 0) ||
       (layout_grid_->ContentAlignment(direction_).Distribution() !=
-       kContentDistributionStretch))
+       ContentDistributionType::kStretch))
     return;
 
   unsigned number_of_auto_sized_tracks =

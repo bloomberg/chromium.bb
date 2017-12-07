@@ -1568,7 +1568,7 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
     return;
   }
 
-  if (align_content.GetPosition() == kContentPositionFlexStart)
+  if (align_content.GetPosition() == ContentPosition::kFlexStart)
     return;
 
   LayoutUnit available_cross_axis_space = CrossAxisContentExtent();
@@ -1590,7 +1590,7 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
       AdjustAlignmentForChild(*flex_item.box, line_offset);
     }
 
-    if (align_content.Distribution() == kContentDistributionStretch &&
+    if (align_content.Distribution() == ContentDistributionType::kStretch &&
         available_cross_axis_space > 0)
       line_contexts[line_number].cross_axis_extent +=
           available_cross_axis_space /
