@@ -1991,28 +1991,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self optOutScrollsToTopForSubviews];
 
-  DCHECK((currentURL == _lastRegisteredRequestURL) ||  // latest navigation
-         // previous navigation
-         ![[_navigationStates lastAddedNavigation] isEqual:navigation] ||
-         // invalid URL load
-         (!_lastRegisteredRequestURL.is_valid() &&
-          _documentURL.spec() == url::kAboutBlankURL) ||
-         // about URL was changed by WebKit (e.g. about:newtab -> about:blank)
-         (_lastRegisteredRequestURL.scheme() == url::kAboutScheme &&
-          currentURL.spec() == url::kAboutBlankURL) ||
-         // In a very unfortunate edge case, window.history.didReplaceState
-         // message can arrive between the |webView:didCommitNavigation| and
-         // |webView:didFinishNavigation| callbacks of the page that contains
-         // the replaceState call. In this case, _lastRegisteredRequestURL and
-         // webView.URL are already updated to the replace state URL, but
-         // currentURL is still the old URL. See crbug.com/788464.
-         // TODO(crbug.com/788465): simplify history state handling to avoid
-         // this hack.
-         (_lastRegisteredRequestURL == net::GURLWithNSURL(_webView.URL)))
-      << std::endl
-      << "currentURL = [" << currentURL << "]" << std::endl
-      << "_lastRegisteredRequestURL = [" << _lastRegisteredRequestURL << "]";
-
   // Perform post-load-finished updates.
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess];
 
@@ -4556,10 +4534,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   BOOL isLastNavigation =
       !navigation ||
       [[_navigationStates lastAddedNavigation] isEqual:navigation];
-  DCHECK(_documentURL == _lastRegisteredRequestURL ||  // latest navigation
-         !isLastNavigation ||                          // previous navigation
-         (!_lastRegisteredRequestURL.is_valid() &&     // invalid URL load
-          _documentURL.spec() == url::kAboutBlankURL));
 
   // Update HTTP response headers.
   _webStateImpl->UpdateHttpResponseHeaders(_documentURL);
