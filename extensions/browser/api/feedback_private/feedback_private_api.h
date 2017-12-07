@@ -117,7 +117,8 @@ class FeedbackPrivateReadLogSourceFunction : public UIThreadExtensionFunction {
 
 #if defined(OS_CHROMEOS)
  private:
-  void OnCompleted(const api::feedback_private::ReadLogSourceResult& result);
+  void OnCompleted(
+      std::unique_ptr<api::feedback_private::ReadLogSourceResult> result);
 #endif  // defined(OS_CHROMEOS)
 };
 

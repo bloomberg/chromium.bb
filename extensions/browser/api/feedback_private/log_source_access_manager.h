@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/feedback/anonymizer_tool.h"
@@ -29,8 +30,8 @@ namespace extensions {
 // - A source may not be accessed too frequently by an extension.
 class LogSourceAccessManager {
  public:
-  using ReadLogSourceCallback =
-      base::Callback<void(const api::feedback_private::ReadLogSourceResult&)>;
+  using ReadLogSourceCallback = base::Callback<void(
+      std::unique_ptr<api::feedback_private::ReadLogSourceResult>)>;
 
   explicit LogSourceAccessManager(content::BrowserContext* context);
   ~LogSourceAccessManager();
@@ -152,7 +153,8 @@ class LogSourceAccessManager {
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // For removing PII from log strings from log sources.
-  std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_for_anonymizer_;
+  scoped_refptr<feedback::AnonymizerToolContainer> anonymizer_container_;
 
   base::WeakPtrFactory<LogSourceAccessManager> weak_factory_;
 

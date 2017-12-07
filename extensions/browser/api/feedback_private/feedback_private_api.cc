@@ -232,9 +232,9 @@ ExtensionFunction::ResponseAction FeedbackPrivateReadLogSourceFunction::Run() {
 
 #if defined(OS_CHROMEOS)
 void FeedbackPrivateReadLogSourceFunction::OnCompleted(
-    const feedback_private::ReadLogSourceResult& result) {
+    std::unique_ptr<feedback_private::ReadLogSourceResult> result) {
   Respond(
-      ArgumentList(feedback_private::ReadLogSource::Results::Create(result)));
+      ArgumentList(feedback_private::ReadLogSource::Results::Create(*result)));
 }
 #endif  // defined(OS_CHROMEOS)
 
