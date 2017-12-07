@@ -112,6 +112,10 @@ void TextInput::SetCursorColor(SkColor color) {
   cursor_element_->SetColor(color);
 }
 
+void TextInput::SetHintColor(SkColor color) {
+  hint_element_->SetColor(color);
+}
+
 void TextInput::UpdateInput(const TextInputInfo& info) {
   if (text_info_ == info)
     return;

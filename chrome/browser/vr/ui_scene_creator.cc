@@ -1140,6 +1140,8 @@ void UiSceneCreator::CreateOmnibox() {
       VR_BIND(TextInputInfo, Model, model_, omnibox_text_field_info,
               UiBrowserInterface, browser_, StartAutocomplete(value.text)));
   omnibox_text_field->SetSize(width, 0);
+  omnibox_text_field->SetHintText(
+      l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
   omnibox_text_field->set_name(kOmniboxTextField);
   omnibox_text_field->set_x_anchoring(LEFT);
   omnibox_text_field->set_x_centering(LEFT);
@@ -1158,6 +1160,8 @@ void UiSceneCreator::CreateOmnibox() {
             &TextInput::SetTextColor);
   BindColor(model_, omnibox_text_field.get(), &ColorScheme::cursor,
             &TextInput::SetCursorColor);
+  BindColor(model_, omnibox_text_field.get(), &ColorScheme::omnibox_hint,
+            &TextInput::SetHintColor);
 
   scene_->AddUiElement(kOmniboxContainer, std::move(omnibox_text_field));
 

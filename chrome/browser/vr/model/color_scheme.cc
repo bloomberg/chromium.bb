@@ -114,6 +114,7 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_background = 0xFFEEEEEE;
   normal_scheme.omnibox_icon = 0xA6000000;
   normal_scheme.omnibox_text = 0xFF595959;
+  normal_scheme.omnibox_hint = 0xFF999999;
   normal_scheme.omnibox_suggestion_content = 0xFF595959;
   normal_scheme.omnibox_suggestion_description = 0xFF5595FE;
   normal_scheme.cursor = 0xFF5595FE;
