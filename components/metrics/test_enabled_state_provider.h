@@ -19,8 +19,8 @@ class TestEnabledStateProvider : public EnabledStateProvider {
   ~TestEnabledStateProvider() override {}
 
   // EnabledStateProvider
-  bool IsConsentGiven() override;
-  bool IsReportingEnabled() override;
+  bool IsConsentGiven() const override;
+  bool IsReportingEnabled() const override;
 
   void set_consent(bool consent) { consent_ = consent; }
   void set_enabled(bool enabled) { enabled_ = enabled; }

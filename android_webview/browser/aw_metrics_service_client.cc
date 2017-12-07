@@ -196,12 +196,12 @@ void AwMetricsServiceClient::InitializeWithClientId() {
   Java_AwMetricsServiceClient_nativeInitialized(env);
 }
 
-bool AwMetricsServiceClient::IsConsentGiven() {
+bool AwMetricsServiceClient::IsConsentGiven() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return consent_;
 }
 
-bool AwMetricsServiceClient::IsReportingEnabled() {
+bool AwMetricsServiceClient::IsReportingEnabled() const {
   return consent_ && in_sample_;
 }
 

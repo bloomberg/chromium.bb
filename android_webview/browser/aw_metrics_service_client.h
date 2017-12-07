@@ -54,8 +54,8 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
                   net::URLRequestContextGetter* request_context);
 
   // metrics::EnabledStateProvider implementation
-  bool IsConsentGiven() override;
-  bool IsReportingEnabled() override;
+  bool IsConsentGiven() const override;
+  bool IsReportingEnabled() const override;
 
   // The below functions must not be called until initialization has
   // asynchronously finished.
