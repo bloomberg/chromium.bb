@@ -22435,6 +22435,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.BookmarkApp.TimeBetweenOpenAppAndLastNavigation"
+    units="ms">
+  <owner>mgiuca@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <summary>
+    The time between the last navigation in the context and us opening a new app
+    window in response to a new navigation. If it is very small, the context
+    probably redirected immediately, which is a bad user experience.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BookmarkAppLaunchContainer"
     enum="AppLaunchContainer">
   <owner>benwells@chromium.org</owner>
