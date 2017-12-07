@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/system/data_pipe.h"
+#include "content/public/common/url_loader.mojom.h"
 
 namespace net {
 struct RedirectInfo;
@@ -38,16 +38,17 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // Called when the request receives its response. No further calls will be
   // made to the delegate. The response body is returned as a stream in
   // |body_stream|. |navigation_data| is passed to the NavigationHandle.
-  // If --enable-network-service, then |consumer_handle| will be used,
-  // otherwise |body_stream|. Only one of these will ever be non-null.
-  // |subresource_loader_params| is used in the network service only
-  // for passing necessary info to create a custom subresource loader in
-  // the renderer process if the navigated context is controlled by a request
-  // interceptor like AppCache or ServiceWorker.
+  // If the Network Service or NavigationMojoResponse is enabled, then the
+  // |url_loader_client_endpoints| will be used, otherwise |body_stream|. Only
+  // one of these will ever be non-null.
+  // |subresource_loader_params| is used in the network service only for passing
+  // necessary info to create a custom subresource loader in the renderer
+  // process if the navigated context is controlled by a request interceptor
+  // like AppCache or ServiceWorker.
   virtual void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body_stream,
-      mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const net::SSLInfo& ssl_info,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,

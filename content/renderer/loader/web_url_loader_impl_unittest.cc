@@ -91,7 +91,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      mojo::ScopedDataPipeConsumerHandle consumer_handle) override {
+      mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) override {
     EXPECT_FALSE(peer_);
     if (sync_load_response_.encoded_body_length != -1)
       EXPECT_TRUE(is_sync);

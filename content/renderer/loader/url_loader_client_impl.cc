@@ -20,6 +20,7 @@ URLLoaderClientImpl::URLLoaderClientImpl(
     : request_id_(request_id),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(std::move(task_runner)),
+      url_loader_client_binding_(this),
       weak_factory_(this) {}
 
 URLLoaderClientImpl::~URLLoaderClientImpl() {
@@ -103,6 +104,13 @@ void URLLoaderClientImpl::FlushDeferredMessages() {
   }
 }
 
+void URLLoaderClientImpl::Bind(mojom::URLLoaderClientEndpointsPtr endpoints) {
+  url_loader_.Bind(std::move(endpoints->url_loader));
+  url_loader_client_binding_.Bind(std::move(endpoints->url_loader_client));
+  url_loader_client_binding_.set_connection_error_handler(base::BindOnce(
+      &URLLoaderClientImpl::OnConnectionClosed, weak_factory_.GetWeakPtr()));
+}
+
 void URLLoaderClientImpl::OnReceiveResponse(
     const ResourceResponseHead& response_head,
     const base::Optional<net::SSLInfo>& ssl_info,
@@ -175,6 +183,7 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
 
 void URLLoaderClientImpl::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  has_received_complete_ = true;
   if (!body_consumer_) {
     if (NeedsStoringMessage()) {
       StoreAndDispatch(ResourceMsg_RequestComplete(request_id_, status));
@@ -214,6 +223,14 @@ void URLLoaderClientImpl::OnUploadProgress(
                                            total_size);
   }
   std::move(ack_callback).Run();
+}
+
+void URLLoaderClientImpl::OnConnectionClosed() {
+  // If the connection aborts before the load completes, mark it as aborted.
+  if (!has_received_complete_) {
+    OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    return;
+  }
 }
 
 }  // namespace content

@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -521,9 +522,12 @@ class DropStreamHandleConsumedFilter : public BrowserMessageFilter {
 // After a renderer crash, the StreamHandle must be released.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        StreamHandleReleasedOnRendererCrash) {
-  // |stream_handle_| is only used with PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
+  // Disable this test when the |stream_handle_| is not used.
+  if (!IsBrowserSideNavigationEnabled() ||
+      base::FeatureList::IsEnabled(features::kNetworkService) ||
+      IsNavigationMojoResponseEnabled()) {
     return;
+  }
 
   GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));

@@ -861,7 +861,7 @@ class FrameFocusedObserver {
 // resumed automatically if a Wait method is called for a future event.
 // Note: This class is one time use only! After it successfully tracks a
 // navigation it will ignore all subsequent navigations. Explicitly create
-// mutliple instances of this class if you want to pause multiple navigations.
+// multiple instances of this class if you want to pause multiple navigations.
 class TestNavigationManager : public WebContentsObserver {
  public:
   // Monitors any frame in WebContents.
@@ -885,6 +885,10 @@ class TestNavigationManager : public WebContentsObserver {
   // * Called after |WaitForRequestStart|, it causes the request to be sent.
   // * Called after |WaitForResponse|, it causes the response to be committed.
   void ResumeNavigation();
+
+  // Returns the NavigationHandle associated with the navigation. It is non-null
+  // only in between DidStartNavigation(...) and DidFinishNavigation(...).
+  NavigationHandle* GetNavigationHandle();
 
  protected:
   // Derived classes can override if they want to filter out navigations. This

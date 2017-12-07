@@ -87,9 +87,6 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {
       base::BindOnce(&NavigationURLLoaderImplCore::ProceedWithResponse, core_));
 }
 
-void NavigationURLLoaderImpl::InterceptNavigation(
-    NavigationURLLoader::NavigationInterceptionCB callback) {}
-
 void NavigationURLLoaderImpl::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {
@@ -108,8 +105,8 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
     bool is_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  delegate_->OnResponseStarted(response, std::move(body),
-                               mojo::ScopedDataPipeConsumerHandle(), ssl_info,
+  delegate_->OnResponseStarted(response, mojom::URLLoaderClientEndpointsPtr(),
+                               std::move(body), ssl_info,
                                std::move(navigation_data), request_id,
                                is_download, is_stream, base::nullopt);
 }

@@ -40,9 +40,6 @@ void TestNavigationURLLoader::ProceedWithResponse() {
   response_proceeded_ = true;
 }
 
-void TestNavigationURLLoader::InterceptNavigation(
-    NavigationURLLoader::NavigationInterceptionCB callback) {}
-
 void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   net::RedirectInfo redirect_info;
   redirect_info.status_code = 302;
@@ -76,10 +73,10 @@ void TestNavigationURLLoader::CallOnResponseStarted(
           ->GetProcess()
           ->GetID();
   GlobalRequestID global_id(child_id, ++request_id);
-  delegate_->OnResponseStarted(response, std::move(body),
-                               mojo::ScopedDataPipeConsumerHandle(),
-                               net::SSLInfo(), std::move(navigation_data),
-                               global_id, false, false, base::nullopt);
+  delegate_->OnResponseStarted(response, mojom::URLLoaderClientEndpointsPtr(),
+                               std::move(body), net::SSLInfo(),
+                               std::move(navigation_data), global_id, false,
+                               false, base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

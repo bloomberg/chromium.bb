@@ -132,3 +132,7 @@
 -CrossSiteDocumentBlockingTest.BlockDocuments
 -CrossSiteDocumentBlockingIsolatedOriginTest.BlockDocumentsFromIsolatedOrigin
 -CrossSiteDocumentBlockingTest.RangeRequest
+
+# https://crbug.com/790933
+-ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreload
+-ServiceWorkerNavigationPreloadTest.RedirectAndRespondWithNavigationPreload

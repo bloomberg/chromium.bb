@@ -655,16 +655,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->previews_state =
       static_cast<PreviewsState>(request.GetPreviewsState());
 
-  // PlzNavigate: during navigation, the renderer should request a stream which
-  // contains the body of the response. The network request has already been
-  // made by the browser.
-  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  // PlzNavigate: The network request has already been made by the browser.
+  // The renderer should request a stream which contains the body of the
+  // response. If the Network Service or NavigationMojoResponse is enabled, the
+  // URLLoaderClientEndpoints is used instead to get the body.
+  mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
   if (stream_override_) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(WebURLRequest::kFrameTypeNone, request.GetFrameType());
-    if (stream_override_->consumer_handle.is_valid()) {
-      consumer_handle = std::move(stream_override_->consumer_handle);
+    if (stream_override_->url_loader_client_endpoints) {
+      url_loader_client_endpoints =
+          std::move(stream_override_->url_loader_client_endpoints);
     } else {
       resource_request->resource_body_stream_url = stream_override_->stream_url;
     }
@@ -697,7 +699,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       false /* is_sync */,
       std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this),
       request.GetLoadingIPCType(), url_loader_factory_,
-      extra_data->TakeURLLoaderThrottles(), std::move(consumer_handle));
+      extra_data->TakeURLLoaderThrottles(),
+      std::move(url_loader_client_endpoints));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
