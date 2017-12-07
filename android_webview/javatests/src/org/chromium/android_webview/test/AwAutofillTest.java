@@ -538,9 +538,6 @@ public class AwAutofillTest {
             int cnt = 0;
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
-            // Note that we cancel autofill in loading as a precautious measure.
-            cnt += waitForCallbackAndVerifyTypes(
-                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
             DOMUtils.waitForNonZeroNodeBounds(mAwContents.getWebContents(), "text1");
             // Note that we currently depend on keyboard app's behavior.
             // TODO(changwan): mock out IME interaction.
@@ -586,9 +583,6 @@ public class AwAutofillTest {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
             executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
-            // Note that we cancel autofill in loading as a precautious measure.
-            cnt += waitForCallbackAndVerifyTypes(
-                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             // Note that we currently call ENTER/EXIT one more time.
             cnt += waitForCallbackAndVerifyTypes(cnt,
@@ -703,10 +697,6 @@ public class AwAutofillTest {
             loadUrlSync(url);
             int cnt = 0;
             executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
-            // Note that we cancel autofill in loading as a precautious measure.
-            cnt += waitForCallbackAndVerifyTypes(
-                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
-
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
 
             // Note that we currently call ENTER/EXIT one more time.
@@ -749,9 +739,6 @@ public class AwAutofillTest {
             loadUrlSync(url);
             int cnt = 0;
             executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
-            // Note that we cancel autofill in loading as a precautious measure.
-            cnt += waitForCallbackAndVerifyTypes(
-                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             // Note that we currently call ENTER/EXIT one more time.
             cnt += waitForCallbackAndVerifyTypes(cnt,
@@ -762,7 +749,7 @@ public class AwAutofillTest {
             assertEquals(1, values.size());
             assertEquals("a", values.get(0).second.getTextValue());
             executeJavaScriptAndWaitForResult("document.getElementById('text1').value='c';");
-            assertEquals(7, getCallbackCount());
+            assertEquals(5, getCallbackCount());
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             // Check if NotifyVirtualValueChanged() called one more time and value is 'cb', this
             // means javascript change didn't trigger the NotifyVirtualValueChanged().
@@ -796,9 +783,6 @@ public class AwAutofillTest {
             loadUrlSync(url);
             int cnt = 0;
             executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
-            // Note that we cancel autofill in loading as a precautious measure.
-            cnt += waitForCallbackAndVerifyTypes(
-                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             // Note that we currently call ENTER/EXIT one more time.
             cnt += waitForCallbackAndVerifyTypes(cnt,
@@ -836,8 +820,6 @@ public class AwAutofillTest {
         int cnt = 0;
         loadUrlSync(FILE_URL);
         executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
-        // Note that we cancel autofill in loading as a precautious measure.
-        cnt += waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
         // Cancel called for the first query.
         // Note that we currently call ENTER/EXIT one more time.
@@ -866,9 +848,6 @@ public class AwAutofillTest {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
             executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
-            // Note that we cancel autofill in loading as a precautious measure.
-            cnt += waitForCallbackAndVerifyTypes(
-                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
             // Note that we currently call ENTER/EXIT one more time.
             cnt += waitForCallbackAndVerifyTypes(cnt,
