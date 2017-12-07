@@ -155,12 +155,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                              Modulator*,
                              const ScriptFetchOptions&);
 
-  enum class ExecuteScriptResult {
-    kShouldFireErrorEvent,
-    kShouldFireLoadEvent,
-    kShouldFireNone
-  };
-  ExecuteScriptResult DoExecuteScript(const Script*);
   void DispatchLoadEvent();
   void DispatchErrorEvent();
 
