@@ -110,7 +110,7 @@ review the change. If there are comments after landing, the author is obligated
 to address them in a followup patch.
 
 Do not use TBR just because a change is urgent or the reviewer is being slow.
-Contact the reviewer directly or find somebody.
+Contact the reviewer directly or find somebody else to review your change.
 
 To send a change TBR, annotate the description and send email like normal.
 Otherwise the reviewer won't know to review the patch.
