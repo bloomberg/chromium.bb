@@ -1333,6 +1333,82 @@ TEST_F(NetworkStateHandlerTest,
 }
 
 TEST_F(NetworkStateHandlerTest,
+       EthernetIsDefaultNetwork_ThenTetherConnects_ThenEthernetDisconnects) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  // The ethernet corresponding to |eth1| starts out connected, then ends up
+  // becoming disconnected.
+  const std::string eth1 = kShillManagerClientStubDefaultService;
+
+  // Disconnect the Wi-Fi network, which will serve as the underlying connection
+  // for the Tether network under test.
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(eth1, test_observer_->default_network());
+
+  // Simulate a host scan, and reset the change counts for the connection flow.
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  test_observer_->reset_change_counts();
+  test_observer_->reset_updates();
+
+  // Preconditions.
+  EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ(eth1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+
+  // Set the Tether network state to "connecting." This is expected to be called
+  // before the connection to the underlying hotspot Wi-Fi network begins.
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectingState());
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // Associate Tether and Wi-Fi networks.
+  network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+      kTetherGuid1, "wifi1_guid");
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // Connect to the underlying Wi-Fi network.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+
+  // Now, set the Tether network state to "connected."
+  network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectedState());
+  EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(3, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // No default network changes should have occurred, since the Ethernet
+  // network should still be considered the default network.
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+
+  // Disconnect from the Ethernet network.
+  service_test_->SetServiceProperty(eth1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+
+  // The Tether network should now be the default network. However, there should
+  // have been two updates to the default network: one which changed it from
+  // |eth1| to null, then one from null to |kTetherGuid1"|.
+  EXPECT_EQ(2u, test_observer_->default_network_change_count());
+  EXPECT_EQ(kTetherGuid1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+}
+
+TEST_F(NetworkStateHandlerTest,
        SetTetherNetworkStateConnectionState_NoDefaultThenTetherThenEthernet) {
   network_state_handler_->SetTetherTechnologyState(
       NetworkStateHandler::TECHNOLOGY_ENABLED);

@@ -1410,8 +1410,8 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
       // If the new default network from Shill's point of view is a Wi-Fi
       // network which corresponds to a hotspot for a Tether network, set the
       // default network to be the associated Tether network instead.
-      default_network_path_ = network->tether_guid();
-      return;
+      network = GetNetworkStateFromGuid(network->tether_guid());
+      default_network_path_ = network->path();
     }
   }
   if (network && !network->IsConnectedState()) {
